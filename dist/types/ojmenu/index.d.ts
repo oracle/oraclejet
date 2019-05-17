@@ -6,14 +6,6 @@ export interface ojMenu extends baseComponent<ojMenuSettableProperties> {
         ariaFocusSkipLink?: string;
         labelCancel?: string;
     };
-    onDisabledChanged: ((event: JetElementCustomEvent<ojMenu["disabled"]>) => any) | null;
-    onOpenOptionsChanged: ((event: JetElementCustomEvent<ojMenu["openOptions"]>) => any) | null;
-    onOjAction: ((event: ojMenu.ojAction) => any) | null;
-    onOjAnimateEnd: ((event: ojMenu.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojMenu.ojAnimateStart) => any) | null;
-    onOjBeforeOpen: ((event: ojMenu.ojBeforeOpen) => any) | null;
-    onOjClose: ((event: ojMenu.ojClose) => any) | null;
-    onOjOpen: ((event: ojMenu.ojOpen) => any) | null;
     addEventListener<T extends keyof ojMenuEventMap>(type: T, listener: (this: HTMLElement, ev: ojMenuEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojMenuSettableProperties>(property: T): ojMenu[T];
@@ -58,6 +50,10 @@ export namespace ojMenu {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojMenu["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type openOptionsChanged = JetElementCustomEvent<ojMenu["openOptions"]>;
     // tslint:disable-next-line interface-over-type-literal
     type OpenOptions = {
         display?: string;

@@ -3,12 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcolor', 'ojs/ojlogger', 'ojs/ojslider', 'jqueryui-amd/widgets/draggable', 'ojs/ojtouchproxy', 'ojs/ojeditablevalue'],
        function(oj, $, Components, Color, Logger)
 {
-  
-
+  "use strict";
 var __oj_color_spectrum_metadata = 
 {
   "properties": {
@@ -53,7 +51,8 @@ var __oj_color_spectrum_metadata =
       "type": "object",
       "properties": {
         "instruction": {
-          "type": "string"
+          "type": "string",
+          "value": ""
         }
       }
     },
@@ -83,7 +82,7 @@ var __oj_color_spectrum_metadata =
       "value": []
     },
     "transientValue": {
-      "type": "oj.Color",
+      "type": "object",
       "writeback": true,
       "readOnly": true
     },
@@ -117,7 +116,7 @@ var __oj_color_spectrum_metadata =
       "readOnly": true
     },
     "value": {
-      "type": "oj.Color",
+      "type": "object",
       "writeback": true
     }
   },
@@ -247,7 +246,7 @@ var __oj_color_spectrum_metadata =
    * @ojstatus preview
    * @class oj.ojColorSpectrum
    * @ojtsimport {module: "ojcolor", type: "AMD", importName: "Color"}
-   * @ojshortdesc Enables a custom color value to be specified from a display containing a saturation/luminosity spectrum, plus hue and opacity sliders.
+   * @ojshortdesc A color spectrum allows a custom color value to be specified from a display containing a saturation/luminosity spectrum, plus hue and opacity sliders.
    * @classdesc
 
    * <h3 id="colorSpectrumOverview-section">
@@ -318,7 +317,8 @@ var __oj_color_spectrum_metadata =
         /**
          * The value of the element representing the current color.
          * @member
-         * @type {oj.Color}
+         * @type {Object}
+         * @ojsignature {target:"Type", value:"oj.Color", jsdocOverride:true}
          * @ojformat color
          * @default null
          * @ojwriteback
@@ -352,7 +352,9 @@ var __oj_color_spectrum_metadata =
          * @ojshortdesc Retrieves the transient value of the component.
          * @alias transientValue
          * @member
-         * @type {oj.Color}
+         * @ojformat color
+         * @type {Object}
+         * @ojsignature {target:"Type", value:"oj.Color", jsdocOverride:true}
          * @expose
          * @instance
          * @memberof oj.ojColorSpectrum
@@ -489,7 +491,8 @@ var __oj_color_spectrum_metadata =
 
         this._super();
 
-        this._updateLabelledBy(null, this.options.labelledBy, this._$spectrumThumb);
+        this._updateLabelledBy(this.element[0], null,
+          this.options.labelledBy, this._$spectrumThumb);
 
         // custom element's use oj-label.
         if (!this._IsCustomElement()) {
@@ -539,7 +542,7 @@ var __oj_color_spectrum_metadata =
             this._setOptDisabled(newval, true);
             break;
           case 'labelledBy':  // remove the old one and add the new one
-            this._updateLabelledBy(originalValue, newval, this._$spectrumThumb);
+            this._updateLabelledBy(this.element[0], originalValue, newval, this._$spectrumThumb);
             break;
           default:
             break;
@@ -828,19 +831,19 @@ var __oj_color_spectrum_metadata =
        * Updates the thumb's current (x,y) position relative to the spectrum top left. Note this does not
        * move the thumb - refer to _moveThumb().
        * @param {number} x  the x displacement into the spectrum.  If NaN the value is ignored.
-       * @param {number} y  the y displacement into the spectrum.  If NaN the value is ignored.
+       * @param {number} y  the y displacement into the spectrum.
        * @return {void}
        * @memberof oj.ojColorSpectrum
        * @instance
        * @private
        */
       _setThumbPosition: function (x, y) {
+        // y can never be NaN
+        // x is only NaN from _keyDown() function
         if (!isNaN(x)) {
           this._xThumb = x;
         }
-        if (!isNaN(y)) {
-          this._yThumb = y;
-        }
+        this._yThumb = y;
         this._moveThumb(0, 0);
       },
 
@@ -1345,6 +1348,8 @@ var __oj_color_spectrum_metadata =
         this._$alphaSlider = this._$boundElem.find('.oj-colorspectrum-alpha');
         this._$spectrum = this._$boundElem.find('.oj-colorspectrum-spectrum');
         this._$spectrumThumb = this._$boundElem.find('.oj-colorspectrum-thumb');
+        // Set initial temporary left and top values
+        this._$spectrumThumb.css({ left: '-9999px', top: '-9999px' });
 
         // Get the thumb radius.  It appears that if the page has other components
         // and the page geometry is changing, offsetWidth is sometimes zero.  Here
@@ -1486,8 +1491,8 @@ var __oj_color_spectrum_metadata =
         this._markup = (function () {
           return [
             "<div class='oj-colorspectrum-container'>",
-            "<div class='oj-colorspectrum-spectrum' tabindex='-1' style='position:relative'>",
-            "<div class='oj-colorspectrum-thumb' role='slider' aria-describedby='' style='position:absolute;top:-9999px;left:-9999px;' tabIndex='0'></div>",
+            "<div class='oj-colorspectrum-spectrum' tabindex='-1'>",
+            "<div class='oj-colorspectrum-thumb' role='slider' aria-describedby='' tabIndex='0'></div>",
             '</div>',
             "<div class='oj-colorspectrum-thumb-description oj-helper-hidden-accessible'>" + thumbDesc + '</div>',
             "<input class='oj-colorspectrum-hue' aria-label='" + hueTitle + "'></input>",
@@ -1897,6 +1902,7 @@ var __oj_color_spectrum_metadata =
        *
        * @expose
        * @memberof oj.ojColorSpectrum
+       * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
        * @instance
        *
        * @example <caption>Set a single subproperty of a complex property:</caption>

@@ -27,10 +27,10 @@
       vertical-align: middle; 
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        max-width: var(--oj-form-control-lg-max-width);
-        min-width: var(--oj-form-control-min-width);    
+        max-width: var(--oj-text-field-lg-max-width);
+        min-width: var(--oj-text-field-min-width);    
         // font size needs to be on the root, because max/min width is in em.
-        font-size: var(--oj-form-control-trigger-font-size);
+        font-size: var(--oj-text-field-trigger-font-size);
         @include oj-form-control-text-size-adjust-css-vars();
       }
       @else {
@@ -59,13 +59,13 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         @include oj-form-control-content-css-vars();
-        height: var(--oj-form-control-input-height);
+        height: var(--oj-text-field-input-height);
         @include oj-form-control-content-no-focus-padding($outputCssVars: true);
         html:not([dir="rtl"]) & {
-          padding-left: var(--oj-form-control-padding-horizontal);
+          padding-left: var(--oj-text-field-padding-horizontal);
         }
         html[dir="rtl"] & {
-          padding-right: var(--oj-form-control-padding-horizontal);
+          padding-right: var(--oj-text-field-padding-horizontal);
         }
       }
       @else {
@@ -109,17 +109,23 @@
       text-overflow: ellipsis;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        background-color: var(--oj-form-control-bg-color);
-        color: var(--oj-form-control-input-value-color);    
-        font-size: var(--oj-form-control-trigger-font-size);
+        background-color: var(--oj-text-field-bg-color);
+        color: var(--oj-text-field-input-value-color);    
+        font-size: var(--oj-text-field-trigger-font-size);
         box-shadow: none;
         @include oj-form-control-text-size-adjust-css-vars();
-        @include oj-placeholder()
-        {
-          color: var(--oj-form-control-placeholder-color);
+        // Prefix hardcoded because of caniuse-lite issue, should be removed once resolved
+        &:-ms-input-placeholder {
+          color: var(--oj-text-field-placeholder-color);
           // in Firefox the default opacity is not 1 for placeholder
           opacity: 1;
-          font-style: var(--oj-form-control-placeholder-font-style);
+          font-style: var(--oj-text-field-placeholder-font-style);
+        }
+        &::placeholder {
+          color: var(--oj-text-field-placeholder-color);
+          // in Firefox the default opacity is not 1 for placeholder
+          opacity: 1;
+          font-style: var(--oj-text-field-placeholder-font-style);
         }  
       } @else {
         background-color: $formControlBgColor;
@@ -143,6 +149,12 @@
       background-color: transparent;
       border-color: transparent;
       outline: none;
+      @include oj-ltr() {
+        padding-left: 0;
+      }
+      @include oj-rtl() {
+        padding-right: 0;
+      }
     }
 
     /* apply to the selected entries */
@@ -158,6 +170,16 @@
       }
     }
 
+    /* apply to the first selected entry in readonly mode */
+    .oj-combobox.oj-read-only li.oj-combobox-selected-choice:first-child {
+      @include oj-ltr() {
+        padding-left: 0;
+      }
+      @include oj-rtl() {
+        padding-right: 0;
+      }
+    }
+
     /* don't show dropdown trigger */
     .oj-combobox.oj-read-only .oj-combobox-arrow,
     .oj-combobox.oj-read-only .oj-combobox-divider {
@@ -170,6 +192,26 @@
       display: none;
     }
 
+    .oj-combobox-multi.oj-loading .oj-combobox-choices,
+    .oj-combobox.oj-loading .oj-combobox-choice {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-image: var(--oj-loading-bg-image);
+        animation: LoadingGradientAnimation 3s infinite;
+      }
+      @else {
+        background-image: $loadingBgImage;
+        animation: LoadingGradientAnimation 3s infinite; 
+      }
+      background-size: 200% 200%;
+      opacity: 1;
+    }
+
+    .oj-combobox-multi.oj-loading .oj-combobox-input,
+    .oj-combobox.oj-loading .oj-combobox-input {
+      background-color: transparent;
+    }
+
     /* Styling for text-align */
     .oj-form-control-text-align-right .oj-combobox .oj-combobox-input
     {
@@ -177,17 +219,33 @@
     }
     .oj-form-control-text-align-start .oj-combobox .oj-combobox-input
     {
-      @include oj-bidi-property(
-        $property: 'text-align',
-        $startOrEnd: start,
-        $important: false) ;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        text-align: left;
+        html[dir="rtl"] & {
+          text-align: right;
+        }
+      }
+      @else {
+        @include oj-bidi-property(
+          $property: 'text-align',
+          $startOrEnd: start,
+          $important: false);
+      }
     }
     .oj-form-control-text-align-end .oj-combobox .oj-combobox-input
     {
-      @include oj-bidi-property(
-        $property: 'text-align',
-        $startOrEnd: end,
-        $important: false) ;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        text-align: right;
+        html[dir="rtl"] & {
+          text-align: left;
+        }
+      }
+      @else {
+        @include oj-bidi-property(
+          $property: 'text-align',
+          $startOrEnd: end,
+          $important: false);
+      }
     }
     .oj-form-control-text-align-right .oj-combobox .oj-combobox-choices li
     {
@@ -195,17 +253,33 @@
     }
     .oj-form-control-text-align-start .oj-combobox .oj-combobox-choices li
     {
-      @include oj-bidi-property(
-        $property: 'float',
-        $startOrEnd: start,
-        $important: false) ;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        float: left;
+        html[dir="rtl"] & {
+          float: right;
+        }
+      }
+      @else {
+        @include oj-bidi-property(
+          $property: 'float',
+          $startOrEnd: start,
+          $important: false);
+      }
     }
     .oj-form-control-text-align-end .oj-combobox .oj-combobox-choices li
     {
-      @include oj-bidi-property(
-        $property: 'float',
-        $startOrEnd: end,
-        $important: false) ;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        float: right;
+        html[dir="rtl"] & {
+          float: left;
+        }
+      }
+      @else {
+        @include oj-bidi-property(
+          $property: 'float',
+          $startOrEnd: end,
+          $important: false);
+      }
     }
     .oj-form-control-text-align-right .oj-combobox-selected-choice,
     .oj-form-control-text-align-end .oj-combobox-selected-choice {
@@ -243,12 +317,12 @@
       display: inline-flex;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        border-left: solid var(--oj-form-control-border-bottom-width) var(--oj-form-control-border-color);
+        border-left: solid var(--oj-text-field-border-bottom-width) var(--oj-text-field-border-color);
         html:not([dir="rtl"]) & {
-          margin-left: var(--oj-form-control-padding-horizontal);
+          margin-left: var(--oj-text-field-padding-horizontal);
         }
         html[dir="rtl"] & {
-          margin-right: var(--oj-form-control-padding-horizontal);
+          margin-right: var(--oj-text-field-padding-horizontal);
         }
       }
       @else {
@@ -274,9 +348,9 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         @include oj-form-control-content-css-vars();
-        min-height: var(--oj-form-control-trigger-height);
-        padding-left: var(--oj-form-control-padding-horizontal);  
-        padding-right: var(--oj-form-control-padding-horizontal);  
+        min-height: var(--oj-text-field-trigger-height);
+        padding-left: var(--oj-text-field-padding-horizontal);  
+        padding-right: var(--oj-text-field-padding-horizontal);  
         @include oj-form-control-content-focus-padding($outputCssVars: true,
                                                        $focusPaddingBottom: 5px);
       }
@@ -316,7 +390,7 @@
       white-space: nowrap; 
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        line-height: calc(var(--oj-form-control-trigger-height) * 0.9);
+        line-height: calc(var(--oj-text-field-trigger-height) * 0.9);
       }
       @else {
         line-height: calc(#{$formControlTriggerHeight} * 0.9);        
@@ -400,7 +474,7 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         @include oj-form-control-border-message-width-css-vars();
-        border-color: var(--oj-form-control-border-color-invalid);
+        border-color: var(--oj-text-field-border-color-invalid);
       }
       @else {
         @include oj-form-control-border-message-width;
@@ -417,7 +491,7 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         @include oj-form-control-border-message-width-css-vars();
-        border-color: var(--oj-form-control-border-color-warning);
+        border-color: var(--oj-text-field-border-color-warning);
       }
       @else {
         @include oj-form-control-border-message-width;
@@ -451,7 +525,7 @@
     .oj-combobox.oj-disabled .oj-combobox-divider { 
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        border-color: var(--oj-form-control-border-color-disabled);
+        border-color: var(--oj-text-field-border-color-disabled);
       }
       @else {
         border-color: $formControlBorderColorDisabled;        
@@ -561,9 +635,9 @@
 
     // remove borders, inherit colors and stretch the height
     // need extra specificity since base selector has direction selectors
-    .oj-form-control-inherit .oj-combobox .oj-combobox-choice,
-    .oj-form-control-inherit .oj-combobox .oj-combobox-choices,
-    .oj-form-control-inherit .oj-combobox-input {    
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {    
       @include oj-form-control-inherit();  
     }
 

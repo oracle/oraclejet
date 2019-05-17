@@ -3,7 +3,7 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
+
 define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojtranslation', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojmessaging', 'ojs/ojvalidation-base', 'ojs/ojlogger',
 'ojs/ojjquery-hammer', 'promise', 'ojs/ojpopup', 'ojs/ojlabel'], 
   /*        
@@ -11,15 +11,15 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojtranslation', 'ojs/ojcontext'
     * @param {jQuery} $        
     * @param {Object} Hammer        
   */
-  function(oj, $, Hammer, Translations, Context, ThemeUtils, Components, AnimationUtils, Message, __ValidationBase, Logger)
+function(oj, $, Hammer, Translations, Context, ThemeUtils, Components, AnimationUtils, Message, __ValidationBase, Logger)
 {
-
+  "use strict";
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
 
-/* global Promise:false, __ValidationBase:false, Logger:false, Context:false */
+/* global Promise:false, __ValidationBase:false, Logger:false, Context:false, ThemeUtils:false, */
 
 /**
  * @class oj.EditableValueUtils
@@ -457,80 +457,6 @@ oj.EditableValueUtils.setPickerAttributes = function (picker, pickerAttributes) 
 };
 
 /**
- * Use this to get the oj-label's label element's id when there is a for/id relationship
- * between the oj-label and the form component. Some components need this information to
- * use as their aria-labelledby on their dom element(s) that takes focus.
- * @param {jQuery} widget The custom form component jQuery object.
- * We use this to find the oj-label element
- * by looking at oj-label's for attribute matching the id.
- * @param {string} defaultLabelId. the value we want to add to oj-label's label-id attribute if
- * we can't find an existing id to use as aria-labelledby on the form component.
- * @return {string|null} return the string to use as the aria-labelledby on the form component's
- * focusable element. If oj-label doesn't exist, this will return null.
- * @ignore
- */
-oj.EditableValueUtils.getOjLabelId = function (widget, defaultLabelId) {
-  var formCompId;
-  var labelElements;
-  var ojLabelCustom;
-  var id;
-  var labelElement;
-  var labelElementId;
-  var labelId;
-
-  if (this.hasNoLabelFlag(widget)) {
-    return null;
-  }
-
-  var widgetElem = widget[0];
-  formCompId = widgetElem.id;
-  // oj-label and the form component as siblings is the most common case, so check for that first.
-  labelElements = Array.prototype.filter.call(widgetElem.parentNode.children,
-    function (child) {
-      return child !== widgetElem && child.getAttribute('for') === formCompId;
-    });
-
-  if (labelElements.length === 0) {
-    ojLabelCustom = document.querySelector("oj-label[for='" + formCompId + "']");
-  } else {
-    ojLabelCustom = labelElements[0];
-  }
-
-  if (ojLabelCustom) {
-    labelId = ojLabelCustom.getAttribute('label-id');
-    if (labelId) {
-      // if label-id is set, oj-label writes it directly on the label element's id
-      return labelId;
-    }
-
-    id = ojLabelCustom.id;
-    if (id) {
-      // the contract is for the label element's id, it's the oj-label id + this suffix
-      // (if oj-label doesn't have the label-id attribute set)
-      return id + oj.EditableValueUtils.CUSTOM_LABEL_ELEMENT_ID;
-    }
-
-    // oj-label has no label-id or id, so get oj-label's label element, get its id and use that.
-    labelElement = ojLabelCustom.querySelector('label');
-    if (labelElement) {
-      labelElementId = labelElement.id;
-    }
-    if (labelElementId) {
-      return labelElementId;
-    }
-
-    // if we get here, we did find oj-label, but it did not have label-id nor id,
-    // and we also didn't find its label element's id.
-    // What we need to do now is write label-id onto oj-label, given the defaultLabelId parameter.
-    if (defaultLabelId) {
-      ojLabelCustom.setAttribute('label-id', defaultLabelId);
-      return defaultLabelId;
-    }
-  }
-  return null;
-};
-
-/**
  * Helper to see if a special property was set to indicate we definitely have no label.
  * This is a performance enhancement for the corner case where input components are rendered in a
  * ojTable. Input components rendered in an ojTable have no label so we don't need to waste time
@@ -542,6 +468,122 @@ oj.EditableValueUtils.getOjLabelId = function (widget, defaultLabelId) {
  */
 oj.EditableValueUtils.hasNoLabelFlag = function (widget) {
   return widget[0].hasAttribute('data-oj-no-labelledby');
+};
+
+/**
+ * Given the labelledBy (e.g., this.options.labelledBy), use this to
+ * get the oj-label's label element's id when there is a for/id relationship
+ * between the oj-label and the form component, but the form component wants to
+ * write aria-labelledby on a div instead of using the for/id relationship in dom.
+ * Some components need this information to
+ * use as their aria-labelledby on their dom element(s) that takes focus. An example
+ * is oj-switch and oj-slider which put display:none on its input and uses aria-labelledby
+ * on its thumb.
+ * This is the preferred way rather than using a 'for' attribute search to find the oj-label.
+ * @param labelledBy
+ * @param defaultLabelId
+ * @return {string|null} return the string to use as the aria-labelledby on the form component's
+ * focusable element. If oj-label doesn't exist, this will return null.
+ * @ignore
+ * @private
+ */
+oj.EditableValueUtils._getOjLabelAriaLabelledBy = function (labelledBy, defaultLabelId) {
+  var ariaLabelledBy;
+  var ojlabels = oj.EditableValueUtils._getCustomOjLabelElements(labelledBy);
+  if (ojlabels) {
+    ariaLabelledBy = '';
+    for (var j = 0; j < ojlabels.length; j++) {
+      var ojlabel = ojlabels[j];
+      var oneLabelElementId = ojlabel.getAttribute('label-id');
+      if (!oneLabelElementId) {
+        var labelElement = ojlabel.querySelector('label');
+        if (labelElement) {
+          oneLabelElementId = labelElement.getAttribute('id');
+        } else {
+          // this is the case where the form component has
+          // labelled-by pointing to oj-label that hasn't been
+          // upgraded yet and doesn't have label-id on it.
+          // this isn't the way the form component and its label
+          // should be linked, but it is possible.
+          ojlabel.setAttribute('label-id', defaultLabelId);
+          oneLabelElementId = defaultLabelId;
+        }
+      }
+      ariaLabelledBy += oneLabelElementId;
+      if (j + 1 < ojlabels.length) {
+        ariaLabelledBy += ' ';
+      }
+    }
+  }
+  return ariaLabelledBy;
+};
+
+/**
+ * @ignore
+ * @private
+ */
+oj.EditableValueUtils._getCustomOjLabelElements = function (labelledBy) {
+  var labelElements = [];
+
+  if (labelledBy) {
+    // split into individual ids
+    var split = labelledBy.split(/\s+/);
+    for (var i = 0; i < split.length; i++) {
+      var labelId = split[i];
+      var labelElement = document.getElementById(labelId);
+      // don't push any null elements. it's possible labelled-by element can't be found.
+      if (labelElement) {
+        labelElements.push(labelElement);
+      } else {
+        Logger.info('Cannot find oj-label with id ' + labelElement);
+      }
+    }
+  }
+  return labelElements;
+};
+/**
+ * Called during component initialization. Sets the sub-id on the input and
+ * set data-oj-input-id attribute on each oj-label
+ * that is pointing to the form component with the labelled-by attribute.
+ * @ignore
+ * @private
+ */
+oj.EditableValueUtils._setInputId = function (contentElement, inputId, labelledBy) {
+  if (inputId) {
+    oj.EditableValueUtils.setSubIdForCustomLabelFor(contentElement, inputId);
+    // most likely it is one label per component, but it is possible to have more than one
+    // label per component.
+    var ojlabels = oj.EditableValueUtils._getCustomOjLabelElements(labelledBy);
+    if (ojlabels) {
+      var id = contentElement.id;
+      for (var i = 0; i < ojlabels.length; i++) {
+        var ojlabel = ojlabels[i];
+        ojlabel.setAttribute('data-oj-input-id', id);
+      }
+    }
+  }
+};
+/**
+ * Called when labelledBy option is changed on the form components with inputs, like
+ * oj-input-text. Sets the data-oj-input-id attribute on each oj-label
+ * that is pointing to the form component with the labelled-by attribute and also
+ * updates the required validator's translation label text, if any.
+ * @ignore
+ * @private
+ */
+oj.EditableValueUtils._labelledByChangedForInputComp = function (labelledBy, id) {
+  var ojlabels = oj.EditableValueUtils._getCustomOjLabelElements(labelledBy);
+  if (ojlabels) {
+    for (var i = 0; i < ojlabels.length; i++) {
+      var ojlabel = ojlabels[i];
+      ojlabel.setAttribute('data-oj-input-id', id);
+      // update the required translation text
+      if (this._IsRequired() && this.options.translations.required) {
+        this._implicitReqValidator = null;
+        this._getImplicitRequiredValidator();
+      }
+    }
+  }
 };
 
 /**
@@ -622,37 +664,147 @@ oj.EditableValueUtils.setSubIdForCustomLabelFor = function (element, widgetId) {
   element.setAttribute('id', widgetId + '|input');
 };
 
-/** For custom element only.
+/**
+ * For custom element only. Only called from the 'set' components, like oj-radioset.
  * When labelledBy changes, we need to update the aria-labelledby attribute.
  * Note: If labelledBy changes from a value to null, we should still remove the oldValue from
  * aria-labelledby.
+ * Note: This way isn't perfect since it assumes the internal label's id is oj-label id
+ * + '|label'. Used by oj-radioset, oj-checkboxset, oj-color*
+ * @param {Element} rootElement the root element, like oj-radioset. It must have an id.
  * @param {string|null} originalValue the old value of the labelledBy option
  * @param {string|null} value the new value of the labelledBy option.
  * @param {jQuery} $elems jquery Object containing the node(s) to add/remove aria-labelledby to.
  * @private
  * @ignore
  */
-oj.EditableValueUtils._updateLabelledBy = function (originalValue, value, $elems) {
+oj.EditableValueUtils._updateLabelledBy = function (rootElement, originalValue, value, $elems) {
   var suffix = oj.EditableValueUtils.CUSTOM_LABEL_ELEMENT_ID;
+  var byId;
+  var tokens;
+  var originalTokens;
+  var i;
 
   if (!this._IsCustomElement()) {
     return;
   }
 
-  if (originalValue) {
-    // eslint-disable-next-line no-param-reassign
-    originalValue += suffix;
+  // originalValue is the 'old' value of labelledBy and value is the 'new' value of
+  // labelledBy. The most likely use case if originalValue is null. Check for that first.
+  if (!originalValue && value) {
+    // value can be a space-separated list of ids, so we need to split it and add the suffix
+    // to each one and put it back into a space-separated list.
+    // same thing as above, but for 'value'.
+    tokens = value.split(/\s+/);
+    for (i = 0; i < tokens.length; i++) {
+      byId = tokens[i];
+      // this adds one id at a time to aria-labelledBy attribute. It
+      // makes sure there are not duplicates.
+      oj.EditableValueUtils._addAriaLabelledBy($elems, byId + suffix);
+      // this sets data-oj-set-id on oj-label which in turn sets
+      // described-by on oj-radioset or other 'set' form component.
+      oj.EditableValueUtils._addSetIdOnLabel(byId, rootElement.id);
+    }
+  } else if (originalValue && !value) {
+    // if  original value has a value and value doesn't, remove all
+    // value can be a space-separated list of ids, so we need to split it and add the suffix
+    // to each one and put it back into a space-separated list.
+    // same thing as above, but for 'value'.
+    tokens = originalValue.split(/\s+/);
+    for (i = 0; i < tokens.length; i++) {
+      byId = tokens[i];
+      // this adds/removes one id at a time to aria-labelledBy attribute. It
+      // makes sure there are not duplicates.
+      oj.EditableValueUtils._removeAriaLabelledBy($elems, byId + suffix);
+      oj.EditableValueUtils._removeDescribedByWithPrefix(rootElement, byId + '|');
+    }
+  } else if (originalValue && value) {
+    // if both original value and value have values, then we should figure out which are the
+    // same and ignore them, and remove the ones from original value that are unique and
+    // add the ones for value that are unique.
+    tokens = value.split(/\s+/);
+    originalTokens = originalValue.split(/\s+/);
+    for (i = 0; i < originalTokens.length; i++) {
+      byId = originalTokens[i];
+      if (value.indexOf(byId) === -1) {
+        // not in both, so remove it (add the suffix)
+        oj.EditableValueUtils._removeAriaLabelledBy($elems, byId + suffix);
+        oj.EditableValueUtils._removeDescribedByWithPrefix(rootElement, byId + '|');
+      }
+    }
+    for (i = 0; i < tokens.length; i++) {
+      byId = tokens[i];
+      if (originalValue.indexOf(byId) === -1) {
+        // not in both, so add it (add the suffix)
+        oj.EditableValueUtils._addAriaLabelledBy($elems, byId + suffix);
+        oj.EditableValueUtils._addSetIdOnLabel(byId, rootElement.id);
+      }
+    }
   }
-  if (value) {
-    // eslint-disable-next-line no-param-reassign
-    value += suffix;
+};
+
+/** For custom element only.
+ * When describedBy changes, we need to update the aria-described attribute.
+ * @param {string|null} originalValue the old value of the labelledBy option
+ * @param {string|null} value the new value of the labelledBy option.
+ * @private
+ * @ignore
+ */
+oj.EditableValueUtils._updateDescribedBy = function (originalValue, value) {
+  var byId;
+  var tokens;
+  var originalTokens;
+  var i;
+
+  if (!this._IsCustomElement()) {
+    return;
   }
 
-  if (originalValue) {
-    oj.EditableValueUtils._removeAriaLabelledBy($elems, originalValue);
-  }
-  if (value) {
-    oj.EditableValueUtils._addAriaLabelledBy($elems, value);
+  // originalValue is the 'old' value of describedBy and value is the 'new' value of
+  // describedBy. The most likely use case if originalValue is null. Check for that first.
+  if (!originalValue && value) {
+    // value can be a space-separated list of ids, so we need to split it
+    // to each one and put it back into a space-separated list.
+    // same thing as above, but for 'value'.
+    tokens = value.split(/\s+/);
+    for (i = 0; i < tokens.length; i++) {
+      byId = tokens[i];
+      // this adds one id at a time to aria-labelledBy attribute. It
+      // makes sure there are not duplicates.
+      this._addAriaDescribedBy(byId);
+    }
+  } else if (originalValue && !value) {
+    // if  original value has a value and value doesn't, remove all
+    // value can be a space-separated list of ids, so we need to split it
+    // to each one and put it back into a space-separated list.
+    // same thing as above, but for 'value'.
+    tokens = originalValue.split(/\s+/);
+    for (i = 0; i < tokens.length; i++) {
+      byId = tokens[i];
+      // this adds/removes one id at a time to aria-labelledBy attribute. It
+      // makes sure there are not duplicates.
+      this._removeAriaDescribedBy(byId);
+    }
+  } else if (originalValue && value) {
+    // if both original value and value have values, then we should figure out which are the
+    // same and ignore them, and remove the ones from original value that are unique and
+    // add the ones for value that are unique.
+    tokens = value.split(/\s+/);
+    originalTokens = originalValue.split(/\s+/);
+    for (i = 0; i < originalTokens.length; i++) {
+      byId = originalTokens[i];
+      if (value.indexOf(byId) === -1) {
+        // not in both, so remove it
+        this._removeAriaDescribedBy(byId);
+      }
+    }
+    for (i = 0; i < tokens.length; i++) {
+      byId = tokens[i];
+      if (originalValue.indexOf(byId) === -1) {
+        // not in both, so add it
+        this._addAriaDescribedBy(byId);
+      }
+    }
   }
 };
 
@@ -825,11 +977,60 @@ oj.EditableValueUtils._AfterSetOptionAsyncValidators = function () {
  * @ignore
  */
 // called when 'converter' option changed, usually from option/setOption calls
-oj.EditableValueUtils._AfterSetOptionConverter = function (option) {
+oj.EditableValueUtils._AfterSetOptionConverter = function () {
+  // clear the cached converter instance and push new hint to messaging
+  this._converter = null;
+  this._converterChangedCounter += 1;
+
+  var converter = this._GetConverter();
+  if (converter instanceof Promise) {
+    var self = this;
+    this._setBusyStateAsyncConverterLoading();
+    var converterCounter = this._converterChangedCounter;
+    this._loadingConverter(converter).then(function () {
+      if (converterCounter === self._converterChangedCounter) {
+        self._ResetConverter();
+      }
+      self._clearBusyStateAsyncConverterLoading();
+    });
+  } else {
+    this._ResetConverter();
+  }
+};
+
+/**
+ * Performs post processing after we have the loaded converter
+ * during component initialization.
+ *
+ * @returns {undefined}
+ * @private
+ * @ignore
+ */
+oj.EditableValueUtils._AfterCreateConverterCached = function () {
+  // can't show validator hints or converter hints until we have the converter
+  // because some validators have the converter as an option.
+  this._initComponentMessaging(this._MESSAGING_CONTENT_UPDATE_TYPE.ALL);
+  // need a converter to format the value
+  this._Refresh('value', this.options.value, false);
+  // trigger messagesShownChanged for messagesShown if it's non-empty.
+  // this.options['messagesShown'] would have been
+  // updated in _ComponentCreate if messagesCustom was non-empty. Because we are setting
+  // the 'changed' flag to true, the messagesShownChanged event will be fired, and that's what we want.
+  if (this.options.messagesShown.length > 0) {
+    this._setMessagesOption('messagesShown', this.options.messagesShown, null, true);
+  }
+};
+/**
+ * Called when converter option changes and we have the new converter.
+ *
+ * @private
+ * @ignore
+ */
+oj.EditableValueUtils._ResetConverter = function () {
   var displayValue;
 
-  // clear the cached converter instance and push new hint to messaging
-  this._ResetConverter();
+  this._getComponentMessaging().update(
+    this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.CONVERTER_HINT));
 
   if (this._hasInvalidMessagesShowing()) {
     this._clearComponentMessages();
@@ -838,22 +1039,8 @@ oj.EditableValueUtils._AfterSetOptionConverter = function (option) {
     this._SetValue(displayValue, null, oj.EditableValueUtils.converterOptionOptions);
   } else {
     // refresh UI display value when there was no need to run full validation
-    this._Refresh('converter', this.options[option], true);
+    this._Refresh('converter', this.options.converter, true);
   }
-};
-
-/**
- * Clears the cached converter stored in _converter and pushes new converter hint to messaging.
- * Called when converter option changes
- *
- * @private
- * @ignore
- */
-oj.EditableValueUtils._ResetConverter = function () {
-  this._converter = null;
-
-  this._getComponentMessaging().update(
-    this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.CONVERTER_HINT));
 };
 
 /**
@@ -937,8 +1124,6 @@ oj.EditableValueUtils._GetNormalizedAsyncValidatorsFromOption = function () {
   var normalizedValidators = [];
   var validator;
   var validatorsOption;
-  // var vOptions;
-  // var vTypeStr;
 
   validatorsOption = this.options.asyncValidators;
 
@@ -959,19 +1144,41 @@ oj.EditableValueUtils._GetNormalizedAsyncValidatorsFromOption = function () {
 };
 /**
  * Returns the normalized converter instance.
+ * This could return a Promise during component initialization or when changing the
+ * component's converter property.
  *
- * @return {Object} a converter instance or null
+ * @return {Object|null|Promise<Object>|Promise<null>} a converter instance or null
+ * or a Promise to a converter instance or null.
  *
  * @private
  * @ignore
  */
 oj.EditableValueUtils._GetConverter = function () {
   var converterOption;
+  var converterInstanceReturn;
+  var self = this;
+  var converterPromise;
 
   // this._converter holds the instance
   if (!this._converter) {
     converterOption = this.options.converter;
-    this._converter = __ValidationBase.IntlConverterUtils.getConverterInstance(converterOption);
+    if (converterOption instanceof Promise) {
+      converterPromise = converterOption;
+    } else {
+      converterInstanceReturn =
+      __ValidationBase.IntlConverterUtils.getConverterInstance(converterOption);
+      if (converterInstanceReturn instanceof Promise) {
+        converterPromise = converterInstanceReturn;
+      }
+    }
+
+    if (converterPromise) {
+      return converterPromise.then(function (ci) {
+        self._converter = ci;
+        return self._converter || null;
+      });
+    }
+    this._converter = converterInstanceReturn;
   }
 
   return this._converter || null;
@@ -1077,6 +1284,70 @@ oj.EditableValueUtils._ClearBusyStateAsyncValidatorHint = function (counter) {
     }
   }
 };
+/** .
+ * Add 'data-oj-set-id' on oj-label, which in turn will
+ * set described-by back on the Form component.
+ * @param {string} ojLabelId the oj-label element's id.
+ * @param {string} formComponentId the id of the form component
+ * @private
+ * @ignore
+ */
+oj.EditableValueUtils._addSetIdOnLabel = function (ojLabelId, formComponentId) {
+  var ojLabel = document.getElementById(ojLabelId);
+  if (ojLabel && !ojLabel.getAttribute('data-oj-set-id')) {
+    ojLabel.setAttribute('data-oj-set-id', formComponentId);
+  }
+};
+
+/**
+ * Set busy state for component for async converter loading.
+ *
+ * @private
+ * @ignore
+ */
+oj.EditableValueUtils._SetBusyStateAsyncConverterLoading = function () {
+  // Set a page-level busy state if not already set for async converter loading
+  if (!this._resolveBusyStateAsyncConverterLoading) {
+    var domElem = this.element[0];
+    var busyContext = Context.getContext(domElem).getBusyContext();
+    var description = 'The page is waiting for async converter loading ';
+
+    if (domElem && domElem.id) {
+      description += 'for "' + domElem.id + '" ';
+    }
+    description += 'to finish.';
+
+    this._resolveBusyStateAsyncConverterLoading =
+      busyContext.addBusyState({ description: description });
+  }
+};
+
+/**
+ * Clear busy state for async converter loading
+ * @private
+ * @ignore
+ */
+oj.EditableValueUtils._ClearBusyStateAsyncConverterLoading = function () {
+  if (this._resolveBusyStateAsyncConverterLoading !== undefined) {
+    this._resolveBusyStateAsyncConverterLoading();
+    delete this._resolveBusyStateAsyncConverterLoading;
+  }
+};
+
+/**
+ * Retrieve the delay before showing status
+ * @return {number} the delay in ms
+ * @private
+ * @ignore
+ */
+oj.EditableValueUtils._getShowLoadingDelay = function () {
+  if (this._defaultOptions == null) {
+    this._defaultOptions = ThemeUtils.parseJSONFromFontFamily('oj-form-control-option-defaults');
+  }
+  var delay = parseInt(this._defaultOptions.showIndicatorDelay, 10);
+
+  return isNaN(delay) ? 0 : delay;
+};
 
 /** .
  * Add the id to the widget's aria-labelledby attribute.
@@ -1108,7 +1379,7 @@ oj.EditableValueUtils._addAriaLabelledBy = function ($elems, id) {
   });
 };
 
-/** .
+/**
  * Remove the id from the widget's aria-labelledby attribute.
  * @param {jQuery} $elems the jquery element(s) that represents the node on which aria-labelledby is
  * @param {string} id id to remove from aria-labelledby
@@ -1142,6 +1413,33 @@ oj.EditableValueUtils._removeAriaLabelledBy = function ($elems, id) {
   });
 };
 /**
+ * Remove the id that starts with the prefix from the element's described-by attribute.
+ * @param {Element} element the element, like oj-radioset
+ * @param {string} prefix prefix of the described-by value to remove.
+ * @private
+ * @ignore
+ */
+oj.EditableValueUtils._removeDescribedByWithPrefix = function (element, prefix) {
+  var describedBy;
+  var tokens;
+
+  describedBy = element.getAttribute('described-by');
+  // split into tokens
+  tokens = describedBy ? describedBy.split(/\s+/) : [];
+  tokens = tokens.filter(function (item) {
+    return item.indexOf(prefix) === -1;
+  });
+  // join the tokens back together and trim whitespace
+  describedBy = tokens.join(' ').trim();
+  // join the tokens back together and trim whitespace
+  describedBy = tokens.join(' ').trim();
+  if (describedBy) {
+    element.setAttribute('described-by', describedBy);
+  } else {
+    element.removeAttribute('described-by');
+  }
+};
+/**
  * Set the type of the input element based on virtualKeyboard option.
  *
  * @param {Array.<string>} allowedTypes an array of allowed types
@@ -1161,22 +1459,16 @@ oj.EditableValueUtils._SetInputType = function (allowedTypes) {
     // Get input type from component's virtualKeyboard option
     if (allowedTypes.indexOf(this.options.virtualKeyboard) >= 0) {
       inputType = this.options.virtualKeyboard;
-    }
-/* For future support
-      else
-      {
-        // Get input type from converter's virtualKeyboardHint option
-        var converter = this._GetConverter();
-        if (converter && converter['resolvedOptions'])
-        {
-          var resOptions = converter['resolvedOptions']();
-          if (allowedTypes.indexOf(resOptions['virtualKeyboardHint']) >= 0)
-          {
-            inputType = resOptions['virtualKeyboardHint'];
-          }
+    } else {
+      // Get input type from converter's virtualKeyboardHint option
+      var converter = this._GetConverter();
+      if (converter && converter.resolvedOptions) {
+        var resOptions = converter.resolvedOptions();
+        if (allowedTypes.indexOf(resOptions.virtualKeyboardHint) >= 0) {
+          inputType = resOptions.virtualKeyboardHint;
         }
       }
-*/
+    }
   }
 
   if (inputType == null) {
@@ -1314,19 +1606,12 @@ var _PENDING = 'pending';
  * </p>
  *
  * @example <caption>Initialize component</caption>
- * &lt;input id="foo" type="text"/&gt;
- * &lt;script&gt;
- * &nbsp;&nbsp;$('#foo").ojInputText({'value': 'abc'});
- * &lt;/script&gt;
- * // using knockout ojComponent binding
- * &lt;input id="foo" data-bind="ojComponent: {component: 'ojInputText', value: 'abc'}"/&gt;
- * @example <caption>Initialize component value using ko observable</caption>
- * &lt;input id="foo" data-bind="ojComponent: {component: 'ojInputText', value: salary}"/&gt;
+ * &lt;oj-input-text id="foo" value="abc"/&gt;
+ * @example <caption>Initialize component value using two way data binding</caption>
+ * &lt;oj-input-text id="foo" value="{{salary}}"/&gt;
  * &lt;script&gt;
  * &nbsp;&nbsp;var salary = ko.observable('abc');
  * &lt;/script&gt;
- * @example <caption>Initialize component value using element value</caption>
- * &lt;input id="foo" data-bind="ojComponent: {component: 'ojInputText'}" value='abc'/&gt;
  */
 oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
   {
@@ -1351,7 +1636,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * // setter
        * myComp.describedBy = "someId";
        *
-       * @ojshortdesc described the relationship between this component and another element.
+       * @ojshortdesc Specifies a relationship between this component and another element.
        * @expose
        * @type {?string}
        * @public
@@ -1377,7 +1662,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        *   <ul>
        *    <li>if there are validation errors, they are shown.</li>
        *    <li>if no errors result from the validation, the <code class="prettyprint">value</code>
-       *    property is updated. Page authors can listen to the <code class="prettyprint">onValueChanged</code>
+       *    property is updated. Page authors can listen to the <code class="prettyprint">valueChanged</code>
        *    event to clear custom errors.</li>
        *   </ul>
        *  </li>
@@ -1410,7 +1695,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * // setter
        * myComp.disabled = false;
        *
-       * @ojshortdesc Whether the component is disabled. The default is false.
+       * @ojshortdesc Specifies whether the component is disabled. The default is false.
        * @expose
        * @type {boolean}
        * @default false
@@ -1468,8 +1753,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * // set all.  Must list every resource key, as those not listed are lost.
        * myComp.displayOptions = {converterHint: "none", validatorHint: "none", helpInstruction: "none"};
        *
-       * @ojshortdesc Customize how to display to the user the
-       *  form field's messages, converter and validator hints and help instruction text.
+       * @ojshortdesc Display options for the form field's messages, converter and validator hints, and help instruction text.
        * @expose
        * @access public
        * @instance
@@ -1535,12 +1819,6 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
       },
       /**
        * Form component help information.
-       * <p>
-       * The properties supported on the <code class="prettyprint">help</code> option are:
-       *
-       * @property {string=} instruction this represents advisory information for the component
-       * The default value is <code class="prettyprint">""</code>.
-       *
        * @expose
        * @memberof oj.editableValue
        * @instance
@@ -1562,10 +1840,10 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        *
        * @example <caption>Get or set the <code class="prettyprint">help.definition</code> sub-option, after initialization:</caption>
        * // getter
-       * var definitionText = $( ".selector" ).ojFoo( "option", "help.definition" );
+       * var definitionText = myInputComp.help.definition;
        *
        * // setter:
-       * $( ".selector" ).ojFoo( "option", "help.definition", "Enter your name" );
+       * myInputComp.help.definition = "Enter your name";
        */
       /**
        * <p>help source url.  See the top-level <code class="prettyprint">help</code> option for details.
@@ -1580,10 +1858,10 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        *
        * @example <caption>Get or set the <code class="prettyprint">help.source</code> sub-option, after initialization:</caption>
        * // getter
-       * var helpSource = $( ".selector" ).ojFoo( "option", "help.source" );
+       * var helpSource = myInputComp.help.source;
        *
        * // setter:
-       * $( ".selector" ).ojFoo( "option", "help.source", "www.abc.com" );
+       * myInputComp.help.source = "www.abc.com";
        */
       /**
        * Represents hints for oj-form-layout element to render help information on the label of the editable component.
@@ -1749,7 +2027,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        *   // submit data to the server
        * }
        *
-       * @ojshortdesc List of messages an app would add to the component
+       * @ojshortdesc A list of messages added by an application to the component. See the Help documentation for more information.
        * @expose
        * @access public
        * @instance
@@ -1779,7 +2057,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        *
        * @example <caption>Get <code class="prettyprint">messagesShown</code> for the component:</caption>
        * // Foo is InputText, InputNumber, Select, etc.
-       * var messages = $(".selector").ojFoo("option", "messagesShown");
+       * var messages = myInputComp.messagesShown;
        *
        * @expose
        * @access public
@@ -1813,7 +2091,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        *
        * @example <caption>Get <code class="prettyprint">messagesShown</code> for the component:</caption>
        * // Foo is InputText, InputNumber, Select, etc.
-       * var messages = $(".selector").ojFoo("option", "messagesShown");
+       * var messages = myInputComp.messagesShown;
        *
        * @expose
        * @access public
@@ -1877,7 +2155,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        *   instruction: 'some new value'
        * };
        *
-       * @ojshortdesc Represents advisory information for the component
+       * @ojshortdesc Represents advisory information for the component, such as would be appropriate for a tooltip.
        * @expose
        * @access public
        * @instance
@@ -1885,8 +2163,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * @ojtranslatable
        * @default ""
        * @memberof! oj.editableValue
-       * @ojtsignore
-       * @type {string}
+       * @type {string=}
        * @since 4.0.0
        */
       title: '',
@@ -1989,7 +2266,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * // Setter: sets '20'
        * myComp.value = '20';
        *
-       * @ojshortdesc The value of the editablevalue component
+       * @ojshortdesc The value of the component.
        * @expose
        * @access public
        * @instance
@@ -2001,8 +2278,8 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * @ojsignature {
        *                 target: "Accessor",
        *                 value: {
-       *                          GetterType: "V",
-       *                          SetterType: "SV"}
+       *                          GetterType: "V|null",
+       *                          SetterType: "SV|null"}
        *              }
        */
       value: undefined,
@@ -2030,9 +2307,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * $messageComponentInlineCloseAnimation: (effect: "collapse", endMaxHeight: "#newHeight") !default;
        * </code></pre>
        *
-       * @ojshortdesc Triggered when a default animation is about to start, such as when the component is
-       * being opened/closed or a child item is being added/removed. The default animation can
-       * be cancelled by calling event.preventDefault.
+       * @ojshortdesc Triggered when a default animation is about to start, such as when the component is being opened/closed or a child item is being added/removed.
        *
        * @expose
        * @event
@@ -2224,7 +2499,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      *   attribute is not updated and the error is shown.
      *   </li>
      *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
-     *   attribute is updated; page author can listen to the <code class="prettyprint">onValueChanged</code>
+     *   attribute is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
      *   event to clear custom errors.</li>
      * </ul>
      * </li>
@@ -2248,6 +2523,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @expose
      * @return {void}
      * @memberof oj.editableValue
+     * @ojshortdesc Called when the DOM underneath the component changes, requiring a re-render of the component.
      * @since 0.7
      */
     refresh: function () {
@@ -2270,6 +2546,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @expose
      * @return {void}
      * @memberof oj.editableValue
+     * @ojshortdesc Resets the component by clearing all messages and messages attributes, and updates the component's display value using the attribute value.
      * @since 0.7
      */
     reset: function () {
@@ -2297,6 +2574,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @return {void}
      * @expose
      * @memberof oj.editableValue
+     * @ojshortdesc Takes all deferred messages and shows them.
      * @since 0.7
      */
     showMessages: function () {
@@ -2479,6 +2757,8 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      */
     _AfterCreate: function () {
       var describedBy;
+      var i;
+      var self = this;
 
       this._super();
 
@@ -2489,44 +2769,58 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
       // create an ojLabel, but <oj-input-text> will not. Instead the app dev uses <oj-label>.
       if (!this._IsCustomElement()) {
         this._createOjLabel();
-      } else {
-        // If this is a custom element, we need to write the default style class + "-label"
-        // onto the oj-label. The reason is so
-        // we can theme the oj-label based on what form control it is labeling. We use this in
-        // our themes to line up the label to the form control,
-        // e.g., oj-label-inline.oj-radioset-label {margin-top:.5em;}.
-        if (this.customOjLabelElement === undefined) {
-          this.customOjLabelElement = this._getCustomOjLabelElement();
-        }
-        if (this.customOjLabelElement) {
-          this.customOjLabelElement.classList.add(this._GetDefaultStyleClass() + '-label');
+      } else if (this.options.labelledBy) {
+        var ojlabels = oj.EditableValueUtils._getCustomOjLabelElements(this.options.labelledBy);
+        if (ojlabels) {
+          for (i = 0; i < ojlabels.length; i++) {
+            var ojlabel = ojlabels[i];
+            ojlabel.classList.add(this._GetDefaultStyleClass() + '-label');
+          }
         }
       }
-
 
       // set describedby on the element as aria-describedby
       describedBy = this.options.describedBy;
 
       if (describedBy) {
-        this._addAriaDescribedBy(describedBy);
+        var eachIdArray = describedBy.split(/\s+/);
+        for (i = 0; i < eachIdArray.length; i++) {
+          this._addAriaDescribedBy(eachIdArray[i]);
+        }
       }
-
-      // initialize component messaging
-      this._initComponentMessaging();
 
       // run deferred validation
       this._runDeferredValidation(this._VALIDATION_CONTEXT.COMPONENT_CREATE);
 
-      // trigger messagesShownChanged for messagesShown if it's non-empty.
-      // this.options['messagesShown'] would have been
-      // updated in _ComponentCreate if messagesCustom was non-empty. Because we are setting
-      // the 'changed' flag to true, the messagesShownChanged event will be fired, and that's what we want.
-      if (this.options.messagesShown.length > 0) {
-        this._setMessagesOption('messagesShown', this.options.messagesShown, null, true);
+      // Validators can have a dependency on the converter, so don't do anything with a validator
+      // until the converter is loaded. That includes don't show a validator hint.
+      var converter = this._GetConverter();
+      if (converter instanceof Promise) {
+        this._setBusyStateAsyncConverterLoading();
+        this._converterChangedCounter = 0;
+        this._loadingConverter(converter).then(function () {
+          self._AfterCreateConverterCached();
+          self._clearBusyStateAsyncConverterLoading();
+        });
+      } else {
+        // this code gets called if you have a synchronous converter
+        // or no converter at all.
+        this._AfterCreateConverterCached();
+        this._setValidOption(this._determineValidFromMessagesOptions(), null);
       }
-
-      this._Refresh('value', this.options.value, false);
     },
+
+    /**
+     * If we have asynchronous converter loading, the input is readonly and a loading indicator
+     * is shown to the user.
+     * When the converter is 100% loaded, then the field is set back to how it was.
+     * That is when we do the tasks that either need a converter or need the field to be enabled,
+     * like showing messagesCustom. Those tasks are done in this method.
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
 
     /**
      * <p>Saves all the element's attributes. In _destroy all attributes will be restored.
@@ -2783,41 +3077,45 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
       var skipSetOption = false;
       var oldValue;
       var newValue;
+      var i;
 
-      // Step 1: Remember previous values
-      if (typeof name === 'string' && value !== undefined) {
-        switch (name) {
-          case 'messagesHidden':
-            // this option can never be set programmatically by page author
-            skipSetOption = true;
-            break;
+      switch (name) {
+        case 'messagesHidden':
+          // this option can never be set programmatically by page author
+          skipSetOption = true;
+          break;
 
-          case 'messagesShown':
-            // this option can never be set programmatically by page author
-            skipSetOption = true;
-            break;
+        case 'messagesShown':
+          // this option can never be set programmatically by page author
+          skipSetOption = true;
+          break;
 
-          case 'rawValue':
-            // rawValue is readOnly, so throw an error here.
-            skipSetOption = true;
-            break;
+        case 'rawValue':
+          // rawValue is readOnly, so throw an error here.
+          skipSetOption = true;
+          break;
 
-          case 'describedBy':
-            // This sets the aria-describedby on the correct dom node
-            oldValue = this.options.describedBy;
-            newValue = value;
-
-            if (oldValue) {
-              this._removeAriaDescribedBy(oldValue);
+        case 'describedBy':
+          // This sets the aria-describedby on the correct dom node
+          oldValue = this.options.describedBy;
+          newValue = value;
+          this._updateDescribedBy(oldValue, newValue);
+          break;
+        case 'labelledBy':
+          if (value) {
+            var ojlabels = oj.EditableValueUtils._getCustomOjLabelElements(value);
+            if (ojlabels) {
+              for (i = 0; i < ojlabels.length; i++) {
+                var ojlabel = ojlabels[i];
+                ojlabel.classList.add(this._GetDefaultStyleClass() + '-label');
+              }
             }
-            if (newValue) {
-              this._addAriaDescribedBy(newValue);
-            }
-            break;
+          }
 
-          default:
-            break;
-        }
+          break;
+
+        default:
+          break;
       }
 
 
@@ -3465,7 +3763,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * document programmatically after the component has
      * been created.
      *
-     * @memberof oj.baseComponent
+     * @memberof oj.editableValue
      * @instance
      * @protected
      */
@@ -4409,51 +4707,6 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
       return this.options.messagesShown.concat(this.options.messagesHidden); // todo: revisit
     },
     /**
-     * Finds the oj-label element associated with this form component and returns it.
-     * @returns {Element|null}
-     * @private
-     * @memberof oj.editableValue
-     * @instance
-     */
-    _getCustomOjLabelElement: function () {
-      var labelElement = null;
-      var labelElements;
-      var labelledBy = this.options.labelledBy;
-      var widget = this.widget();
-      var widgetId;
-
-      if (labelledBy) {
-        // First, if 'labelledBy', look for the oj-label by its 'id' since that will be fastest.
-        labelElement = document.getElementById(labelledBy);
-      }
-
-      // if there is no label element found and the "has no label flag" is not set, then look at the 'id'/'for' combination.
-      // if the "has no label flag" is set then we definitely have no label so we don't need to
-      // go through this logic to look for it. Otherwise, we might have a label so we need to look for it.
-      if (labelElement === null && !oj.EditableValueUtils.hasNoLabelFlag(widget)) {
-        // If 'id', look for the label by its 'for' attribute. (First look for sibling
-        // since that is the most common way and attribute selector searches perform better than
-        // looking at the entire document.)
-        // widget will be the JET form element, like oj-input-text, in jquery format.
-        var widgetElem = widget[0];
-        widgetId = widgetElem.id;
-        if (widgetId) {
-          // $labelElement will be the <oj-label>.
-          labelElements = Array.prototype.filter.call(widgetElem.parentNode.children,
-            function (child) {
-              return child !== widgetElem && child.getAttribute('for') === widgetId;
-            });
-          if (labelElements.length === 0) {
-            // a sibling label is not found, so look for it from the document level.
-            labelElement = document.querySelector("[for='" + widgetId + "']");
-          } else {
-            labelElement = labelElements[0]; // return the first match
-          }
-        }
-      }
-      return labelElement;
-    },
-    /**
      * Helper method to retrieve the label text. Needed for required translation.
      * Returns the form component's label or oj-label's textContent, if the label was found.
      *
@@ -4467,10 +4720,18 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
         return this.$label[0].textContent;
       }
 
-      if (this.customOjLabelElement === undefined) {
-        this.customOjLabelElement = this._getCustomOjLabelElement();
+      var ojlabels = oj.EditableValueUtils._getCustomOjLabelElements(this.options.labelledBy);
+      var labelTextContent = null;
+      if (ojlabels) {
+        for (var i = 0; i < ojlabels.length; i++) {
+          if (i > 0) {
+            labelTextContent += ' ';
+          }
+          var ojlabel = ojlabels[i];
+          labelTextContent = ojlabel.textContent;
+        }
       }
-      return this.customOjLabelElement ? this.customOjLabelElement.textContent : null;
+      return labelTextContent;
     },
 
     /**
@@ -4540,8 +4801,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
 
     /**
      * Initializes component messaging both when component is initialized or when displayOptions is
-     * set/changed.
-     *
+     * set/changed. Call this only when you know the converter has resolved.
      * @private
      * @memberof oj.editableValue
      * @instance
@@ -5370,6 +5630,39 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
     },
 
     /**
+     * This gets called while the converter module is loading asynchronously
+     * @protected
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _SetLoading: function () {
+      var widgetElem = this.widget()[0];
+      var focusElem = this.GetFocusElement();
+      widgetElem.classList.add('oj-loading');
+      this._saveAriaLabel = focusElem.getAttribute('aria-label');
+      var loadingText = Translations.getTranslatedString('oj-ojEditableValue.loading');
+      focusElem.setAttribute('aria-label', loadingText);
+    },
+
+    /**
+     * This gets called when the converter was loading asynchronously
+     * and now it is loaded.
+     * @protected
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _ClearLoading: function () {
+      var widgetElem = this.widget()[0];
+      var focusElem = this.GetFocusElement();
+      widgetElem.classList.remove('oj-loading');
+      if (this._saveAriaLabel) {
+        focusElem.setAttribute('aria-label', this._saveAriaLabel);
+      } else {
+        focusElem.removeAttribute('aria-label');
+      }
+    },
+
+    /**
      * @private
      * @memberof oj.editableValue
      * @instance
@@ -5400,6 +5693,33 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
       this._updateMessagesOption('messagesShown', newMsgs);
       // update valid option to INVALID_SHOWN
       this._setValidOption(_INVALID_SHOWN, null);
+    },
+
+    /**
+     * When we are asynchronously loading a converter we show a loading indication
+     * and make the input (not the component) readonly.
+     * @param converterPromise {Promise<Converter>}
+     * @return {Promise<Object|null>} a Promise to a converter instance or null
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _loadingConverter: function (converterPromise) {
+      var self = this;
+      var showLoadingIndicatorDelay = oj.EditableValueUtils._getShowLoadingDelay();
+      var converterCounter = this._converterChangedCounter;
+      var loadingTimeout = setTimeout(function () {
+        // _converterChangedCounter is incremented if we get a change of converter option.
+        if (converterCounter === self._converterChangedCounter) {
+          self._SetLoading();
+        }
+      }, showLoadingIndicatorDelay);
+
+      return converterPromise.then(function (ci) {
+        self._ClearLoading();
+        clearTimeout(loadingTimeout);
+        return ci;
+      });
     },
 
     /**
@@ -5656,7 +5976,14 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
         });
       });
     },
-
+    /**
+     * propogate described-by to aria-describedby
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @private
+     */
+    _updateDescribedBy: oj.EditableValueUtils._updateDescribedBy,
     /**
      * Set busy state for async validators
      *
@@ -5688,7 +6015,36 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @instance
      * @private
      */
-    _clearBusyStateAsyncValidatorHint: oj.EditableValueUtils._ClearBusyStateAsyncValidatorHint
+    _clearBusyStateAsyncValidatorHint: oj.EditableValueUtils._ClearBusyStateAsyncValidatorHint,
+    /**
+     * Set busy state for async converter loading
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @private
+     */
+    _setBusyStateAsyncConverterLoading: oj.EditableValueUtils._SetBusyStateAsyncConverterLoading,
+    /**
+     * Clear  busy state for async converter loading
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @private
+     */
+    _clearBusyStateAsyncConverterLoading:
+    oj.EditableValueUtils._ClearBusyStateAsyncConverterLoading,
+    /**
+     * If we have asynchronous converter loading, the input is readonly and a loading indicator
+     * is shown to the user.
+     * When the converter is 100% loaded, then the field is set back to how it was.
+     * That is when we do the tasks that either need a converter or need the field to be enabled,
+     * like showing messagesCustom. Those tasks are done in this method.
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _AfterCreateConverterCached: oj.EditableValueUtils._AfterCreateConverterCached
 
   }, true);
 
@@ -6438,7 +6794,7 @@ oj.InlineMessagingStrategy.prototype._buildMessagesHtml = function (document) {
  */
 
 /* jslint browser: true*/
-/* global Promise:false, Hammer:false, Components:false, Message:false, Context:false, ThemeUtils:false, Config:false, Translations:false */
+/* global Promise:false, Hammer:false, Components:false, Message:false, Context:false, ThemeUtils:false, Translations:false */
 /**
  * A messaging strategy that uses an instance of ojPopup component to show and hide messaging content.
  *
@@ -7274,7 +7630,7 @@ oj.PopupMessagingStrategy.prototype._popupCloseCallback = function (event) {
   this._inPressEvent = null;
 
   var popupContent = oj.PopupMessagingStrategyPoolUtils.getPopupContentNode(target);
-  popupContent.innerHTML = '';
+  popupContent.innerHTML = ''; // @HTMLUpdateOK
 
   if (this._resolveBusyState) {
     this._resolveBusyState();
@@ -7624,7 +7980,7 @@ function (document, summary, detail, severityLevel, addSeverityClass) {
 
   msgDom.appendChild(msgContent); // @HTMLUpdateOK
 
-  return msgDom.outerHTML;
+  return msgDom.outerHTML; // @HTMLUpdateOK
 };
 
 /**

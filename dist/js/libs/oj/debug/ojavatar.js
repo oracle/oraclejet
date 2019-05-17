@@ -3,11 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'ojs/ojcomposite', 'ojs/ojcomponentcore'],
-       function(oj, Composite)
+define(['ojs/ojcore', 'ojs/ojvcomponent', 'ojs/ojcomponentcore'], function(oj, VComponent)
 {
-
+  "use strict";
 var __oj_avatar_metadata = 
 {
   "properties": {
@@ -40,16 +38,63 @@ var __oj_avatar_metadata =
   },
   "extension": {}
 };
+"use strict";
+
+/** @jsx VComponent.h */
+var _tagName = 'oj-avatar';
+
+var Avatar =
+/** @class */
+function (_super) {
+  __extends(Avatar, _super);
+
+  function Avatar(props, content) {
+    var _this = _super.call(this, _tagName, props, content) || this;
+
+    _this.props = props;
+    _this.content = content;
+    return _this;
+  }
+
+  Avatar.prototype.render = function () {
+    var props = this.props;
+    var size = props.size || 'md';
+    var innerContent;
+
+    if (props.src) {
+      innerContent = VComponent.h("div", {
+        "class": "oj-avatar-background-image",
+        style: "background-image: url(\"" + props.src + "\")"
+      });
+    } else if (props.initials) {
+      innerContent = VComponent.h("div", {
+        "class": "oj-avatar-initials"
+      }, props.initials);
+    } else {
+      innerContent = VComponent.h("div", {
+        "class": "oj-avatar-placeholder"
+      });
+    }
+
+    return VComponent.h("div", {
+      "class": 'oj-avatar-outer ' + (!props.initials || props.src ? 'oj-avatar-' + size : 'oj-avatar-has-initials oj-avatar-' + size),
+      "aria-hidden": "true"
+    }, VComponent.h("div", {
+      "class": "oj-avatar-inner"
+    }, innerContent));
+  };
+
+  return Avatar;
+}(VComponent);
+
+VComponent.register(_tagName, __oj_avatar_metadata, Avatar);
+
 /**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
- /**
  * @ojcomponent oj.ojAvatar
  * @ojsignature {target: "Type", value: "class ojAvatar extends JetElement<ojAvatarSettableProperties>"}
  * @since 4.0.0
  * @ojstatus preview
- * @ojshortdesc An icon capable of displaying a custom image, initials, or a placeholder image.
+ * @ojshortdesc An avatar represents a person or entity as initials or an image.
  *
  * @classdesc
  * <h3 id="avatarOverview-section">
@@ -75,11 +120,11 @@ var __oj_avatar_metadata =
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  *  </h3>
  *
- * <p>The application <b>must</b> set role and aria-label for accessibility purposes.  JET Avatar does not have
+ * <p>If the application sets the role of oj-avatar to 'img' aria-label <b>must</b> be set for accessibility purposes.  JET Avatar does not have
  * any interaction with the application, therefore it is not keyboard navigable by default.
  * The aria-label will be picked up by the tabbable/focusable parent unless it is
  * overriden by the application.
- * The application can set a tooltip by setting the title attribute of the avatar.
+ * The application can set a tooltip by setting the title attribute of the avatar.  It is recommended that the title and aria-label attributes are in sync.
  *
  *
  * <p>In order to meet accessibility requirements for text, color contrast ratio
@@ -130,7 +175,7 @@ var __oj_avatar_metadata =
  * <p> The following CSS classes can be applied by the page author as needed.</p>
  * {@ojinclude "name":"stylingDoc"}
  */
- /**
+/**
  * Specifies the size of the avatar.
  * @expose
  * @name size
@@ -138,13 +183,13 @@ var __oj_avatar_metadata =
  * @ojshortdesc Specifies the size of the avatar.
  * @instance
  * @type {string}
- * @ojvalue {string} "xxs" {"description": "extra, extra small avatar", "displayName": "XXS"}
- * @ojvalue {string} "xs" {"description": "extra small avatar", "displayName": "XS"}
- * @ojvalue {string} "sm" {"description": "small avatar", "displayName": "SM"}
- * @ojvalue {string} "md" {"description": "medium avatar (default, if unspecified)", "displayName": "MD"}
- * @ojvalue {string} "lg" {"description": "large avatar", "displayName": "LG"}
- * @ojvalue {string} "xl" {"description": "extra large avatar", "displayName": "XL"}
- * @ojvalue {string} "xxl" {"description": "extra, extra large avatar", "displayName": "XXL"}
+ * @ojvalue {string} "xxs" {"description": "extra, extra small avatar", "displayName": "Extra Extra Small"}
+ * @ojvalue {string} "xs" {"description": "extra small avatar", "displayName": "Extra Small"}
+ * @ojvalue {string} "sm" {"description": "small avatar", "displayName": "Small"}
+ * @ojvalue {string} "md" {"description": "medium avatar (default, if unspecified)", "displayName": "Medium"}
+ * @ojvalue {string} "lg" {"description": "large avatar", "displayName": "Large"}
+ * @ojvalue {string} "xl" {"description": "extra large avatar", "displayName": "Extra Large"}
+ * @ojvalue {string} "xxl" {"description": "extra, extra large avatar", "displayName": "Extra Extra Large"}
  * @ojvalueskeeporder
  * @default "md"
  * @example <caption>Renders avatar displaying default placeholder image with <code class="prettyprint">size</code>
@@ -220,31 +265,6 @@ var __oj_avatar_metadata =
   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
   * @memberof oj.ojAvatar
   */
-var view =
-  "<div class=\"oj-avatar-outer\" data-bind=\"css: !$properties.initials || $properties.src ? 'oj-avatar-'" +
-  "  + $properties.size : 'oj-avatar-has-initials oj-avatar-'+ $properties.size\"aria-hidden=\"true\">" +
-  '  <div class="oj-avatar-inner">' +
-  '    <!-- ko if: $properties.src -->' +
-  '    <div class="oj-avatar-background-image"' +
-  "         data-bind=\"style:{'background-image':'url(' + $properties.src + ')'}\">" +
-  '      <div class="oj-avatar-initials" data-bind="text: $properties.initials"></div>' +
-  '    </div>' +
-  '    <!-- /ko -->' +
-  '    <!-- ko if: $properties.initials && !$properties.src -->' +
-  '    <div class="oj-avatar-initials" data-bind="text: $properties.initials"></div>' +
-  '    <!-- /ko -->' +
-  '    <!-- ko if: !$properties.initials && !$properties.src -->' +
-  '    <div class="oj-avatar-placeholder"></div>' +
-  '    <!-- /ko -->' +
-  '  </div>' +
-  '</div>';
-/* global __oj_avatar_metadata */
-// eslint-disable-next-line no-undef
-Composite.register('oj-avatar',
-  {
-    view: view,
-    metadata: __oj_avatar_metadata
-  });
 
 /**
  * Sets a property or a single subproperty for complex properties and notifies the component
@@ -256,6 +276,7 @@ Composite.register('oj-avatar',
  *
  * @expose
  * @memberof oj.ojAvatar
+ * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
  * @instance
  * @return {void}
  *
@@ -289,4 +310,5 @@ Composite.register('oj-avatar',
  * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
  */
 
+return Avatar;
 });

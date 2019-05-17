@@ -3,9 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistview'], function(oj, $, Logger)
 {
+  "use strict";
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
@@ -363,8 +363,17 @@ oj.ListViewDndContext.prototype._unsetDraggable = function (target) {
 
     if (dragger != null) {
       dragger.removeAttr('draggable');
+      this._unsetItemDraggable(dragger);
     }
   }
+};
+
+/**
+ * Determine if drag and drop is currently in progress
+ * @return {boolean} true if dnd is in progress, false otherwise
+ */
+oj.ListViewDndContext.prototype.isDndInProgress = function () {
+  return (this.m_dragImage != null);
 };
 /** ********************************* Drag and drop handler ***********************************************/
 /**
@@ -901,9 +910,9 @@ oj.ListViewDndContext.prototype._handleDragOver = function (event) {
     // this will check for matching data types
     returnValue = this._invokeDropCallback('dragOver', event, { item: item.get(0) });
 
-    // note drop is allowed in the case where reordering is enabled, but only if there's no dragOver callback
+    // note drop is allowed in the case where reordering is enabled and drag source is itself, but only if there's no dragOver callback
     // to prevent the drop
-    if ((returnValue === -1 && this.IsItemReOrdering()) ||
+    if ((returnValue === -1 && this.IsItemReOrdering() && this.isDndInProgress()) ||
         returnValue === false || event.isDefaultPrevented()) {
       dropTarget = this._createDropTarget(item);
 
@@ -924,9 +933,9 @@ oj.ListViewDndContext.prototype._handleDragOver = function (event) {
       // this will check for matching data types
       returnValue = this._invokeDropCallback('dragOver', event, { item: item.get(0) });
 
-      // note drop is allowed in the case where reordering is enabled, but only if there's no dragOver callback
+      // note drop is allowed in the case where reordering is enabled and drag source is itself, but only if there's no dragOver callback
       // to prevent the drop
-      if ((returnValue === -1 && this.IsItemReOrdering()) ||
+      if ((returnValue === -1 && this.IsItemReOrdering() && this.isDndInProgress()) ||
           returnValue === false || event.isDefaultPrevented()) {
         // if it is non-group item
         if (item.hasClass(this.listview.getItemStyleClass())) {

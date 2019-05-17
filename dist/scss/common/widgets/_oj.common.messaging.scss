@@ -154,7 +154,15 @@
     
     .oj-message {
       display: flex;
-      @include oj-bidi-property($property: 'text-align', $startOrEnd: start);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        text-align: left;
+        html[dir="rtl"] & {
+          text-align: right;
+        }
+      }
+      @else {
+        @include oj-bidi-property($property: 'text-align', $startOrEnd: start);
+      }
       white-space: nowrap; /* 1 */
     }
 

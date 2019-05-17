@@ -3,9 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery'], function(oj, $)
 {
+  "use strict";
 /**
  * Creates an attribute group handler that will generate stylistic attribute values such as colors or shapes based on data set categories.
  *
@@ -190,31 +190,6 @@ ColorAttributeGroupHandler.prototype.getValueRamp = function () {
 /**
  * Creates an element and appends a div for each style class
  * @returns {jQuery} The jQuery element containing divs for each style class
- * @export
- * @deprecated since version 4.2.0
- * @memberof oj.ColorAttributeGroupHandler
- * @method createAttrDiv
- */
-ColorAttributeGroupHandler.createAttrDiv = function () {
-  return ColorAttributeGroupHandler.__createAttrDiv();
-};
-
-/**
- * Processes the colors for each div on the given element
- * @param {jQuery} attrGpsDiv The jQuery element containing divs for each style class
- * @return {void}
- * @export
- * @deprecated since version 4.2.0
- * @memberof oj.ColorAttributeGroupHandler
- * @method processAttrDiv
- */
-ColorAttributeGroupHandler.processAttrDiv = function (attrGpsDiv) {
-  ColorAttributeGroupHandler.__processAttrDiv(attrGpsDiv);
-};
-
-/**
- * Creates an element and appends a div for each style class
- * @returns {jQuery} The jQuery element containing divs for each style class
  * @ignore
  */
 ColorAttributeGroupHandler.__createAttrDiv = function () {
@@ -223,7 +198,7 @@ ColorAttributeGroupHandler.__createAttrDiv = function () {
   }
 
   var attrGpsDiv = $(document.createElement('div'));
-  attrGpsDiv.attr('style', 'display:none;');
+  attrGpsDiv.css('display', 'none;');
   attrGpsDiv.attr('id', 'attrGps');
   $(document.body).append(attrGpsDiv); // @HTMLUpdateOK
   for (var i = 0; i < ColorAttributeGroupHandler._STYLE_CLASSES.length; i++) {

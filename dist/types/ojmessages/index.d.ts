@@ -15,11 +15,6 @@ export interface ojMessages extends JetElement<ojMessagesSettableProperties> {
         };
         labelLandmark?: string;
     };
-    onDisplayChanged: ((event: JetElementCustomEvent<ojMessages["display"]>) => any) | null;
-    onDisplayOptionsChanged: ((event: JetElementCustomEvent<ojMessages["displayOptions"]>) => any) | null;
-    onMessagesChanged: ((event: JetElementCustomEvent<ojMessages["messages"]>) => any) | null;
-    onPositionChanged: ((event: JetElementCustomEvent<ojMessages["position"]>) => any) | null;
-    onTranslationsChanged: ((event: JetElementCustomEvent<ojMessages["translations"]>) => any) | null;
     addEventListener<T extends keyof ojMessagesEventMap>(type: T, listener: (this: HTMLElement, ev: ojMessagesEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojMessagesSettableProperties>(property: T): ojMessages[T];
@@ -29,6 +24,36 @@ export interface ojMessages extends JetElement<ojMessagesSettableProperties> {
     setProperties(properties: ojMessagesSettablePropertiesLenient): void;
     close(message: ojMessage.Message): void;
     closeAll(closeFilter?: (message: ojMessage.Message) => boolean): void;
+}
+export namespace ojMessages {
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged = JetElementCustomEvent<ojMessages["display"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojMessages["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesChanged = JetElementCustomEvent<ojMessages["messages"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type positionChanged = JetElementCustomEvent<ojMessages["position"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type translationsChanged = JetElementCustomEvent<ojMessages["translations"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Position = {
+        my?: PositionAlign;
+        at?: PositionAlign;
+        offset?: PositionPoint;
+        of?: string | PositionPoint;
+        collision?: 'flip' | 'fit' | 'flipfit' | 'none';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type PositionAlign = {
+        vertical?: 'top' | 'bottom' | 'center';
+        horizontal?: 'start' | 'end' | 'left' | 'center' | 'bottom';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type PositionPoint = {
+        x?: number;
+        y?: number;
+    };
 }
 export interface ojMessagesEventMap extends HTMLElementEventMap {
     'displayChanged': JetElementCustomEvent<ojMessages["display"]>;
@@ -54,24 +79,4 @@ export interface ojMessagesSettableProperties extends JetSettableProperties {
 }
 export interface ojMessagesSettablePropertiesLenient extends Partial<ojMessagesSettableProperties> {
     [key: string]: any;
-}
-export namespace ojMessages {
-    // tslint:disable-next-line interface-over-type-literal
-    type Position = {
-        my?: PositionAlign;
-        at?: PositionAlign;
-        offset?: PositionPoint;
-        of?: string | PositionPoint;
-        collision?: 'flip' | 'fit' | 'flipfit' | 'none';
-    };
-    // tslint:disable-next-line interface-over-type-literal
-    type PositionAlign = {
-        vertical?: 'top' | 'bottom' | 'center';
-        horizontal?: 'start' | 'end' | 'left' | 'center' | 'bottom';
-    };
-    // tslint:disable-next-line interface-over-type-literal
-    type PositionPoint = {
-        x?: number;
-        y?: number;
-    };
 }

@@ -7,28 +7,9 @@ export interface ojDialog extends baseComponent<ojDialogSettableProperties> {
     modality: 'modal' | 'modeless';
     position: ojDialog.Position;
     resizeBehavior: 'resizable' | 'none';
-    role: string;
     translations: {
         labelCloseIcon?: string;
     };
-    onCancelBehaviorChanged: ((event: JetElementCustomEvent<ojDialog["cancelBehavior"]>) => any) | null;
-    onDialogTitleChanged: ((event: JetElementCustomEvent<ojDialog["dialogTitle"]>) => any) | null;
-    onDragAffordanceChanged: ((event: JetElementCustomEvent<ojDialog["dragAffordance"]>) => any) | null;
-    onInitialVisibilityChanged: ((event: JetElementCustomEvent<ojDialog["initialVisibility"]>) => any) | null;
-    onModalityChanged: ((event: JetElementCustomEvent<ojDialog["modality"]>) => any) | null;
-    onPositionChanged: ((event: JetElementCustomEvent<ojDialog["position"]>) => any) | null;
-    onResizeBehaviorChanged: ((event: JetElementCustomEvent<ojDialog["resizeBehavior"]>) => any) | null;
-    onRoleChanged: ((event: JetElementCustomEvent<ojDialog["role"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojDialog.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojDialog.ojAnimateStart) => any) | null;
-    onOjBeforeClose: ((event: ojDialog.ojBeforeClose) => any) | null;
-    onOjBeforeOpen: ((event: ojDialog.ojBeforeOpen) => any) | null;
-    onOjClose: ((event: ojDialog.ojClose) => any) | null;
-    onOjFocus: ((event: ojDialog.ojFocus) => any) | null;
-    onOjOpen: ((event: ojDialog.ojOpen) => any) | null;
-    onOjResize: ((event: ojDialog.ojResize) => any) | null;
-    onOjResizeStart: ((event: ojDialog.ojResizeStart) => any) | null;
-    onOjResizeStop: ((event: ojDialog.ojResizeStop) => any) | null;
     addEventListener<T extends keyof ojDialogEventMap>(type: T, listener: (this: HTMLElement, ev: ojDialogEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojDialogSettableProperties>(property: T): ojDialog[T];
@@ -81,20 +62,46 @@ export namespace ojDialog {
     }> {
     }
     interface ojResize extends CustomEvent<{
-        event: Event;
+        originalEvent: object;
+        originalPosition: object;
+        originalSize: object;
+        position: object;
+        size: object;
         [propName: string]: any;
     }> {
     }
     interface ojResizeStart extends CustomEvent<{
-        event: Event;
+        originalEvent: object;
+        originalPosition: object;
+        originalSize: object;
+        position: object;
+        size: object;
         [propName: string]: any;
     }> {
     }
     interface ojResizeStop extends CustomEvent<{
-        event: Event;
+        originalEvent: object;
+        originalPosition: object;
+        originalSize: object;
+        position: object;
+        size: object;
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type cancelBehaviorChanged = JetElementCustomEvent<ojDialog["cancelBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dialogTitleChanged = JetElementCustomEvent<ojDialog["dialogTitle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dragAffordanceChanged = JetElementCustomEvent<ojDialog["dragAffordance"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type initialVisibilityChanged = JetElementCustomEvent<ojDialog["initialVisibility"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type modalityChanged = JetElementCustomEvent<ojDialog["modality"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type positionChanged = JetElementCustomEvent<ojDialog["position"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type resizeBehaviorChanged = JetElementCustomEvent<ojDialog["resizeBehavior"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Position = {
         my?: PositionAlign;
@@ -132,7 +139,6 @@ export interface ojDialogEventMap extends baseComponentEventMap<ojDialogSettable
     'modalityChanged': JetElementCustomEvent<ojDialog["modality"]>;
     'positionChanged': JetElementCustomEvent<ojDialog["position"]>;
     'resizeBehaviorChanged': JetElementCustomEvent<ojDialog["resizeBehavior"]>;
-    'roleChanged': JetElementCustomEvent<ojDialog["role"]>;
 }
 export interface ojDialogSettableProperties extends baseComponentSettableProperties {
     cancelBehavior: 'icon' | 'escape' | 'none';
@@ -142,7 +148,6 @@ export interface ojDialogSettableProperties extends baseComponentSettablePropert
     modality: 'modal' | 'modeless';
     position: ojDialog.Position;
     resizeBehavior: 'resizable' | 'none';
-    role: string;
     translations: {
         labelCloseIcon?: string;
     };

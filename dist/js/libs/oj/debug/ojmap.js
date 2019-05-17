@@ -3,16 +3,15 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'ojs/ojkeysetimpl'],
-       /*
-        * @param {Object} oj 
-        * @param {Object} KeySetImpl
-        */
-       function(oj, KeySetImpl)
+/*
+* @param {Object} oj 
+* @param {Object} KeySetImpl
+*/
+function(oj, KeySetImpl)
 {
-
-/* global KeySetImpl:false, Map:false, Symbol:false */
+  "use strict";
+/* global KeySetImpl:false, Map:false */
 
 /**
  * Implementation of the ES6 Map API:

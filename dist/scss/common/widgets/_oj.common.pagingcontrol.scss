@@ -244,7 +244,7 @@
     /* Styling for the page mode page link when selected. */
     .oj-pagingcontrol-nav-page.oj-selected {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        border: 1px solid var(--oj-form-control-label-color);
+        border: 1px solid var(--oj-label-color);
         color: var(--oj-text-color);
       } @else {
         border: 1px solid $formControlLabelColor;
@@ -274,7 +274,7 @@
     /* Styling for the page mode page label. */
     label.oj-pagingcontrol-nav-label {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        color: var(--oj-form-control-label-color);
+        color: var(--oj-label-color);
         font-size: var(--oj-font-size);
       } @else {
         color: $formControlLabelColor;
@@ -287,15 +287,21 @@
     input.oj-pagingcontrol-nav-input.oj-inputtext-input {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
         text-align: center;       
-        color: var(--oj-form-control-input-value-color);
-        background-color: var(--oj-form-control-bg-color);
+        color: var(--oj-text-field-input-value-color);
+        background-color: var(--oj-text-field-bg-color);
         @include oj-form-control-border($outputCssVars: true);
-        @include oj-placeholder()
-        {
-          color: var(--oj-form-control-placeholder-color);
+        // Prefix hardcoded because of caniuse-lite issue, should be removed once resolved
+        &:-ms-input-placeholder {
+          color: var(--oj-text-field-placeholder-color);
           // in Firefox the default opacity is not 1 for placeholder
           opacity: 1;
-          font-style: var(--oj-form-control-placeholder-font-style);
+          font-style: var(--oj-text-field-placeholder-font-style);
+        }
+        &::placeholder {
+          color: var(--oj-text-field-placeholder-color);
+          // in Firefox the default opacity is not 1 for placeholder
+          opacity: 1;
+          font-style: var(--oj-text-field-placeholder-font-style);
         }
         // iOS's iPad has a bug of showing an inner top shadow, the below CSS is to remove it for webkit
         -webkit-appearance: none;
@@ -319,7 +325,7 @@
     /* Styling for the page mode page input element when readOnly. */
     input[readOnly].oj-pagingcontrol-nav-input.oj-inputtext-input {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        color: var(--oj-form-control-label-color);
+        color: var(--oj-label-color);
         min-width: var(--oj-font-size);
         max-width: var(--oj-font-size);
       } @else {
@@ -332,7 +338,7 @@
     /* Styling for the page mode maximum number of pages text. */
     .oj-pagingcontrol-nav-input-max {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        color: var(--oj-form-control-label-color);
+        color: var(--oj-label-color);
         font-size: var(--oj-font-size);
         @include oj-ltr() {
           padding-left: var(--oj-paging-padding);
@@ -355,7 +361,7 @@
     /* Styling for the page mode page range summary. */
     .oj-pagingcontrol-nav-input-summary {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        color: var(--oj-form-control-label-color);
+        color: var(--oj-label-color);
         font-size: var(--oj-font-size);
         @include oj-ltr() {
           padding-right: var(--oj-paging-padding);

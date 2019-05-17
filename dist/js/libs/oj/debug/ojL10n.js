@@ -335,7 +335,7 @@
                   if (partBundle === true || partBundle === 1) {
                     partBundle = req(pref + prefixedLoc + '/' + suff);
                   }
-                  _mixin(value, partBundle);
+                  _mixin(value, partBundle || {});
                 }
               };
 

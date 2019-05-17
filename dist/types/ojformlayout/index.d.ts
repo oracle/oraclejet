@@ -5,11 +5,6 @@ export interface ojFormLayout extends JetElement<ojFormLayoutSettableProperties>
     labelWidth: string;
     labelWrapping: 'truncate' | 'wrap';
     maxColumns: number;
-    onDirectionChanged: ((event: JetElementCustomEvent<ojFormLayout["direction"]>) => any) | null;
-    onLabelEdgeChanged: ((event: JetElementCustomEvent<ojFormLayout["labelEdge"]>) => any) | null;
-    onLabelWidthChanged: ((event: JetElementCustomEvent<ojFormLayout["labelWidth"]>) => any) | null;
-    onLabelWrappingChanged: ((event: JetElementCustomEvent<ojFormLayout["labelWrapping"]>) => any) | null;
-    onMaxColumnsChanged: ((event: JetElementCustomEvent<ojFormLayout["maxColumns"]>) => any) | null;
     addEventListener<T extends keyof ojFormLayoutEventMap>(type: T, listener: (this: HTMLElement, ev: ojFormLayoutEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojFormLayoutSettableProperties>(property: T): ojFormLayout[T];
@@ -18,6 +13,18 @@ export interface ojFormLayout extends JetElement<ojFormLayoutSettableProperties>
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojFormLayoutSettableProperties>): void;
     setProperties(properties: ojFormLayoutSettablePropertiesLenient): void;
     refresh(): void;
+}
+export namespace ojFormLayout {
+    // tslint:disable-next-line interface-over-type-literal
+    type directionChanged = JetElementCustomEvent<ojFormLayout["direction"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = JetElementCustomEvent<ojFormLayout["labelEdge"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelWidthChanged = JetElementCustomEvent<ojFormLayout["labelWidth"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelWrappingChanged = JetElementCustomEvent<ojFormLayout["labelWrapping"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxColumnsChanged = JetElementCustomEvent<ojFormLayout["maxColumns"]>;
 }
 export interface ojFormLayoutEventMap extends HTMLElementEventMap {
     'directionChanged': JetElementCustomEvent<ojFormLayout["direction"]>;

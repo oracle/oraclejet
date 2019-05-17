@@ -17,7 +17,7 @@ $dateTimePickerSwitcherBgColor:         $neutralColor7 !default;
 $trainConnectorBgColor:                 $neutralColor11 !default;
 $trainContinuousConnectorBgColorSelected:$neutralColor11 !default;
 $trainBgColorActive:                    $brandColorLight3 !default;
-$swipeActionsNeutralActionBgColor:       $neutralColor13 !default;  //settings: ignore
+$swipeActionsNeutralActionBgColor:       $neutralColor13 !default; //settings: ignore
 $swipeActionsActionTextColor:         $neutralColor1 !default; // text color applied to all action items //settings: ignore
 $swipeActionsActionBgColor:           $brandColor !default; // background color applied to all action items //settings: ignore
 
@@ -272,11 +272,11 @@ $messageNotificationOverlayBorderRadius:  12px !default;
 $messageNotificationOverlayHeaderBgColor: $neutralColor4 !default;
 $messageNotificationOverlayBodyBgColor:   $neutralColor6 !default;
 
-$messageCategoryFontSize:                 oj-px-to-rem(17px, $baseFontSize: 16px) !default;
-$messageTimeFontSize:                     oj-px-to-rem(17px, $baseFontSize: 16px) !default;
-$messageSummaryFontSize:                  oj-px-to-rem(19px, $baseFontSize: 16px) !default;
+$messageCategoryFontSize:                 oj-px-to-rem(13px, $baseFontSize: 16px) !default;
+$messageTimeFontSize:                     oj-px-to-rem(13px, $baseFontSize: 16px) !default;
+$messageSummaryFontSize:                  oj-px-to-rem(15px, $baseFontSize: 16px) !default;
 $messageSummaryLineHeight:                1.2 !default;
-$messageDetailFontSize:                   oj-px-to-rem(19px, $baseFontSize: 16px) !default;
+$messageDetailFontSize:                   oj-px-to-rem(15px, $baseFontSize: 16px) !default;
 $messageDetailLineHeight:                 1.2 !default;
 
 // BUTTONS

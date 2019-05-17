@@ -3,10 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-
 define(['ojs/ojcore', 'jquery'], function(oj, $)
 {
+  "use strict";
 /**
  * This class contains all utility methods used by the data grid collection model.
  * @export
@@ -52,6 +51,10 @@ oj.DataCollectionEditUtils.basicHandleEditEnd = function (event, ui) {
  * @instance
  */
 oj.DataCollectionEditUtils.basicHandleRowEditEnd = function (event, ui) {
+  if (ui == null || ui.rowContext == null) {
+    // eslint-disable-next-line no-param-reassign
+    ui = event.detail;
+  }
   var inputComponents = $(ui.rowContext.parentElement).find('.oj-component-initnode');
   for (var i = 0; i < inputComponents.length; i++) {
     // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
@@ -75,4 +78,5 @@ oj.DataCollectionEditUtils.basicHandleRowEditEnd = function (event, ui) {
   return true;
 };
 
+  return oj.DataCollectionEditUtils;
 });

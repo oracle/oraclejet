@@ -3,9 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'ojL10n!ojtranslations/nls/timezoneData', 'ojs/ojlocaledata', 'ojs/ojvalidation-base'], function(oj, ojtd, LocaleData)
 {
+  "use strict";
 
 /* global ojtd:true, LocaleData:false*/
 

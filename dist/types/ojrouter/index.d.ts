@@ -36,7 +36,7 @@ declare class Router {
     }>;
     configure(option: {
         [key: string]: RouterState.ConfigOptions;
-    } | ((id: string) => RouterState | undefined | null)): Router;
+    } | ((id: string) => RouterState | RouterState.ConfigOptions | undefined | null)): Router;
     createChildRouter(name: string, parentStateId?: string): Router;
     dispose(): undefined;
     getChildRouter(name: string): Router | undefined;

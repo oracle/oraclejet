@@ -13,16 +13,30 @@
     // BODY CLASSES
     /* Class used to suppress copy/paste and context menus for hybrid mobile apps */
     .oj-hybrid {
+
       // suppress copy/paste and iOS mag lens
-      @include oj-user-select-property(none);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        user-select: none;
+      }
+      @else {
+        @include oj-user-select-property(none);
+      }
+
       // Turn off context menu popups
       -webkit-tap-highlight-color: transparent;
       -webkit-touch-callout: none;
     }
     .oj-hybrid input,
     .oj-hybrid textarea {
-      // allow text selection on input and text areas
-      @include oj-user-select-property(text);
+      // allow text selection on input and text areas@if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        user-select: text;
+      }
+      @else {
+        @include oj-user-select-property(text);
+      }
     }
 
     // PADDING
@@ -123,7 +137,7 @@
         width: var(--oj-app-layout-offcanvas-width);
         max-width: var(--oj-app-layout-offcanvas-max-width);
         background-color: var(--oj-app-layout-hybrid-offcanvas-bg-color);
-        color: var(--oj-contrast-text-color);
+        color: var(--oj-text-color-contrast);
         box-shadow: 3px 2px 7px unquote('hsla(var(--oj-box-shadow-hsl),0.5)');
       }
       @else {

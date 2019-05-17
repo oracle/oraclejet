@@ -200,11 +200,13 @@
         @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
           font-size: var(--oj-font-size-sm);
           color: var(--oj-text-color);
+          user-select: none;
         } @else {
           font-size: $smallFontSize;
           color: $textColor;
+          @include oj-user-select-property(none);
         }
-        @include oj-user-select-property(none);
+        
     }
 
     .oj-legend-title {
@@ -281,7 +283,7 @@
 
     .oj-legend-title {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        color: var(--oj-tertiary-text-color);
+        color: var(--oj-text-color-tertiary);
       } @else {
         color: $tertiaryTextColor;
       }
@@ -289,7 +291,7 @@
 
     .oj-legend-section-title {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        color: var(--oj-tertiary-text-color);
+        color: var(--oj-text-color-tertiary);
       } @else {
         color: $tertiaryTextColor;
       }

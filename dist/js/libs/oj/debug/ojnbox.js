@@ -3,11 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtNBox'], function(oj, $, Config, comp, DvtAttributeUtils, dvt)
 {
-  
-
+  "use strict";
 var __oj_n_box_metadata = 
 {
   "properties": {
@@ -58,27 +57,10 @@ var __oj_n_box_metadata =
       "value": ""
     },
     "countLabel": {
-      "type": "function",
-      "properties": {
-        "row": {
-          "type": "string"
-        },
-        "column": {
-          "type": "string"
-        },
-        "nodeCount": {
-          "type": "number"
-        },
-        "totalNodeCount": {
-          "type": "number"
-        },
-        "highlightedNodeCount": {
-          "type": "number"
-        }
-      }
+      "type": "function"
     },
     "data": {
-      "type": "oj.DataProvider"
+      "type": "object"
     },
     "groupAttributes": {
       "type": "Array<string>",
@@ -379,36 +361,7 @@ var __oj_n_box_metadata =
       "type": "object",
       "properties": {
         "renderer": {
-          "type": "function",
-          "properties": {
-            "parentElement": {
-              "type": "Element"
-            },
-            "id": {
-              "type": "any"
-            },
-            "label": {
-              "type": "string"
-            },
-            "secondaryLabel": {
-              "type": "string"
-            },
-            "row": {
-              "type": "string"
-            },
-            "column": {
-              "type": "string"
-            },
-            "color": {
-              "type": "string"
-            },
-            "indicatorColor": {
-              "type": "string"
-            },
-            "componentElement": {
-              "type": "Element"
-            }
-          }
+          "type": "function"
         }
       }
     },
@@ -590,7 +543,7 @@ var __oj_n_box_node_metadata =
           "value": "none"
         },
         "shape": {
-          "type": "\"circle\"|\"diamond\"|\"ellipse\"|\"human\"|\"plus\"|\"rectangle\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|string"
+          "type": "string"
         },
         "source": {
           "type": "string"
@@ -651,7 +604,7 @@ var __oj_n_box_node_metadata =
           ]
         },
         "shape": {
-          "type": "\"circle\"|\"diamond\"|\"ellipse\"|\"human\"|\"plus\"|\"rectangle\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|string"
+          "type": "string"
         },
         "source": {
           "type": "string"
@@ -712,16 +665,16 @@ var __oj_n_box_node_metadata =
  * @since 1.1.0
  * @ojstatus preview
  * @ojrole application
- * @ojshortdesc An interactive data visualization (typically found in Human Capital Management applications) in which employees are grouped and compared across two dimensions.  Each dimension can be split into multiple ranges.
+ * @ojshortdesc NBox is an interactive data visualization (typically found in Human Capital Management applications) in which employees are grouped and compared across two dimensions.  Each dimension can be split into multiple ranges.
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojNBox<K, D> extends dvtBaseComponent<ojNBoxSettableProperties<K, D>>",
+ *                value: "class ojNBox<K, D extends oj.ojNBox.Node<K>|any> extends dvtBaseComponent<ojNBoxSettableProperties<K, D>>",
  *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
  *               },
  *               {
  *                target: "Type",
- *                value: "ojNBoxSettableProperties<K, D> extends dvtBaseComponentSettableProperties",
+ *                value: "ojNBoxSettableProperties<K, D extends oj.ojNBox.Node<K>|any> extends dvtBaseComponentSettableProperties",
  *                for: "SettableProperties"
  *               }
  *              ]
@@ -829,6 +782,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
       * An alias for the $current context variable when referenced inside nodeTemplate when using a DataProvider.
       * @expose
       * @name as
+      * @ojshortdesc Specifies the alias for the current item when referenced inside the nodeTemplate.
       * @memberof oj.ojNBox
       * @instance
       * @type {string}
@@ -841,6 +795,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * The content the cells will display. "auto" switches between nodes and cell counts based on available space. "counts" forces the NBox to always render cell counts.
        * @expose
        * @name cellContent
+       * @ojshortdesc Specifies the content displayed in cells. See the Help documentation for more information.
        * @memberof oj.ojNBox
        * @instance
        * @type {string}
@@ -854,6 +809,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * Whether or not the cell maximize/de-maximize gestures are enabled.
        * @expose
        * @name cellMaximize
+       * @ojshortdesc Specifies whether cell maximize/de-maximize gestures are enabled.
        * @memberof oj.ojNBox
        * @instance
        * @type {string}
@@ -867,6 +823,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * The list of cells. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
        * @expose
        * @name cells
+       * @ojshortdesc Specifies the list of cells. Also accepts a Promise for deferred data rendering.
        * @memberof oj.ojNBox
        * @instance
        * @type {Array.<Object>|Promise|null}
@@ -900,6 +857,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * The list of columns. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
        * @expose
        * @name columns
+       * @ojshortdesc Specifies the list of columns. Also accepts a Promise for deferred data rendering.
        * @memberof oj.ojNBox
        * @instance
        * @type {Array.<Object>|Promise|null}
@@ -953,12 +911,14 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
 
       /**
       * The oj.DataProvider for the NBox. It should provide rows where each row corresponds to a single NBox node.
+      * The oj.DataProvider can either have an arbitrary data shape, in which case an <oj-n-box-node> element must be specified in the itemTemplate slot or it can have [oj.ojNBox.Node]{@link oj.ojNBox#Node} as its data shape, in which case no template is required.
       * @expose
       * @name data
+      * @ojshortdesc Specifies the data provider for the NBox. See the Help documentation for more information.
       * @memberof oj.ojNBox
       * @instance
-      * @type {oj.DataProvider|null}
-      * @ojsignature {target: "Type", value: "oj.DataProvider<K, D>|null"}
+      * @type {Object|null}
+      * @ojsignature {target: "Type", value: "oj.DataProvider<K, D>|null", jsdocOverride:true}
       * @default null
       * @example <caption>Initialize the NBox with the
       * <code class="prettyprint">data</code> attribute specified:</caption>
@@ -992,6 +952,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * An array of attributes to style the group nodes with. Any attributes not listed will be ignored.
        * @expose
        * @name groupAttributes
+       * @ojshortdesc An array of attributes for styling the group nodes.
        * @memberof oj.ojNBox
        * @instance
        * @type {Array.<string>}
@@ -1008,6 +969,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * An array of category strings used for category filtering. Data items with a category in hiddenCategories will be filtered.
        * @expose
        * @name hiddenCategories
+       * @ojshortdesc An array of category strings used for filtering. Data items with any category matching an item in this array will be filtered.
        * @memberof oj.ojNBox
        * @instance
        * @type {Array.<string>}
@@ -1030,9 +992,10 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
       hoverBehavior: 'none',
 
       /**
-       * An array of category strings used for category highlighting. Data items with a category in highlightedCategories will be highlighted.
+       * An array of category strings used for category highlighting. Data items matching categories in highlightedCategories will be highlighted.
        * @expose
        * @name highlightedCategories
+       * @ojshortdesc An array of category strings used for highlighting. Data items matching categories in this array will be highlighted.
        * @memberof oj.ojNBox
        * @instance
        * @type {Array.<string>}
@@ -1045,6 +1008,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
        * @expose
        * @name highlightMatch
+       * @ojshortdesc The matching condition for the highlightedCategories property. See the Help documentation for more information.
        * @memberof oj.ojNBox
        * @instance
        * @type {string}
@@ -1058,6 +1022,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * Determines node label truncation behavior. Labels are always truncated if limited by container (e.g. cell, dialog) width. Optionally, NBox can further truncate node labels to increase the number of nodes visible to the user. "on" allows label truncation to increase number of visible nodes. "ifRequired" only allows truncation when limited by container width.
        * @expose
        * @name labelTruncation
+       * @ojshortdesc Specifies node label truncation behavior. See the Help documentation for more information.
        * @memberof oj.ojNBox
        * @instance
        * @type {string}
@@ -1096,6 +1061,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * @expose
        * @ojtsignore
        * @name nodes
+       * @ojshortdesc The list of nodes. Also accepts a Promise for deferred data rendering.
        * @memberof oj.ojNBox
        * @instance
        * @type {Array.<Object>|Promise|null}
@@ -1109,7 +1075,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
       /**
        * The color for the "other" group nodes which aggregate any group nodes that fall below the otherThreshold, if specified.  The default value varies based on theme.
        * @expose
-       * @ojshortdesc The color for the "other" group nodes.
+       * @ojshortdesc The color for the "other" group nodes. See the Help documentation for more information.
        * @name otherColor
        * @memberof oj.ojNBox
        * @instance
@@ -1121,7 +1087,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
       /**
        * A percentage (0-1) of the nodes collection size that determines the value beneath which any groups will be aggregated into an "other" node.
        * @expose
-       * @ojshortdesc The threshold for aggregating nodes into an "other" group node.
+       * @ojshortdesc The threshold for aggregating nodes into an "other" group node. See the Help documentation for more information.
        * @name otherThreshold
        * @memberof oj.ojNBox
        * @instance
@@ -1134,6 +1100,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * The list of rows. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
        * @expose
        * @name rows
+       * @ojshortdesc The list of rows. Also accepts a Promise for deferred data rendering.
        * @memberof oj.ojNBox
        * @instance
        * @type {Array.<Object>|Promise|null}
@@ -1176,6 +1143,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * An array containing the ids of the selected nodes.
        * @expose
        * @name selection
+       * @ojshortdesc Specifies the ids of the selected nodes.
        * @memberof oj.ojNBox
        * @instance
        * @type {Array.<any>}
@@ -1212,6 +1180,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
          * The duration of the animations in milliseconds.  The default value comes from the CSS and varies based on theme.
          * @expose
          * @name styleDefaults.animationDuration
+         * @ojshortdesc The duration of the animations in milliseconds.
          * @memberof! oj.ojNBox
          * @instance
          * @type {number}
@@ -1246,9 +1215,11 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
            * The CSS style object defining the style of the cell labels.  The default value comes from the CSS and varies based on theme.
            * @expose
            * @name styleDefaults.cellDefaults.labelStyle
+           * @ojshortdesc The CSS style object defining the style of the cell labels.
            * @memberof! oj.ojNBox
            * @instance
            * @type {Object}
+           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
            */
           labelStyle: undefined,
 
@@ -1256,9 +1227,11 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
            * The CSS style object defining the styles of the cell background and border when the cell is maximized.  The default value comes from the CSS and varies based on theme.
            * @expose
            * @name styleDefaults.cellDefaults.maximizedSvgStyle
+           * @ojshortdesc The CSS style object defining the styles of the cell background and border when the cell is maximized.
            * @memberof! oj.ojNBox
            * @instance
            * @type {Object}
+           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
            */
           maximizedSvgStyle: undefined,
 
@@ -1266,16 +1239,18 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
            * The CSS style object defining the styles of the cell background and border when the cell is minimized.  The default value comes from the CSS and varies based on theme.
            * @expose
            * @name styleDefaults.cellDefaults.minimizedSvgStyle
+           * @ojshortdesc The CSS style object defining the styles of the cell background and border when the cell is minimized.
            * @memberof! oj.ojNBox
            * @instance
            * @type {Object}
+           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
            */
           minimizedSvgStyle: undefined,
 
           /**
            * Determines when to display the cell count label (extra info displayed after primary cell label). "off" never show the count label. "on" always show the count label. Show countLabel value if specified, otherwise use a simple node count. "auto" show the count label if countLabel attribute is defined.
            * @expose
-           * @ojshortdesc Determines when to display the cell count label.
+           * @ojshortdesc Specifies when to display the cell count label. See the Help documentation for more information.
            * @name styleDefaults.cellDefaults.showCount
            * @memberof! oj.ojNBox
            * @instance
@@ -1291,9 +1266,11 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
            * The CSS style object defining the styles of the cell background and border.  The default value comes from the CSS and varies based on theme.
            * @expose
            * @name styleDefaults.cellDefaults.svgStyle
+           * @ojshortdesc The CSS style object defining the styles of the cell background and border.
            * @memberof! oj.ojNBox
            * @instance
            * @type {Object}
+           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
            */
           svgStyle: undefined
         },
@@ -1302,9 +1279,11 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
          * The CSS style object defining the style of the column labels.  The default value comes from the CSS and varies based on theme.
          * @expose
          * @name styleDefaults.columnLabelStyle
+         * @ojshortdesc The CSS style object defining the style of the column labels.
          * @memberof! oj.ojNBox
          * @instance
          * @type {Object}
+         * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
          */
         columnLabelStyle: undefined,
 
@@ -1312,14 +1291,16 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
          * The CSS style object defining the style of the columns title.  The default value comes from the CSS and varies based on theme.
          * @expose
          * @name styleDefaults.columnsTitleStyle
+         * @ojshortdesc The CSS style object defining the style of the columns title.
          * @memberof! oj.ojNBox
          * @instance
          * @type {Object}
+         * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
          */
         columnsTitleStyle: undefined,
 
         /**
-         * Specifies initial hover delay in ms for highlighting data items.
+         * Specifies initial hover delay in milliseconds for highlighting data items.
          * @expose
          * @name styleDefaults.hoverBehaviorDelay
          * @memberof! oj.ojNBox
@@ -1365,6 +1346,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
            * The default background color of the nodes.  The default value comes from the CSS and varies based on theme.
            * @expose
            * @name styleDefaults.nodeDefaults.color
+           * @ojshortdesc The default background color of the nodes.
            * @memberof! oj.ojNBox
            * @instance
            * @type {string}
@@ -1396,6 +1378,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
              * The default border radius of the node icons. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.  The default value varies based on theme.
              * @expose
              * @name styleDefaults.nodeDefaults.iconDefaults.borderRadius
+             * @ojshortdesc The default border radius of the node icons. See the Help documentation for more information.
              * @memberof! oj.ojNBox
              * @instance
              * @type {string}
@@ -1551,6 +1534,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
              * The default border radius of the node indicator icons. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.  The default value varies based on theme.
              * @expose
              * @name styleDefaults.nodeDefaults.indicatorIconDefaults.borderRadius
+             * @ojshortdesc The default border radius of the node indicator icons. See the Help documentation for more information.
              * @memberof! oj.ojNBox
              * @instance
              * @type {string}
@@ -1673,9 +1657,11 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
            * The CSS style object defining the style of the node labels.  The default value comes from the CSS and varies based on theme.
            * @expose
            * @name styleDefaults.nodeDefaults.labelStyle
+           * @ojshortdesc The CSS style object defining the style of the node labels.
            * @memberof! oj.ojNBox
            * @instance
            * @type {Object}
+           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
            */
           labelStyle: undefined,
 
@@ -1683,9 +1669,11 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
            * The CSS style object defining the style of the node secondary labels.  The default value comes from the CSS and varies based on theme.
            * @expose
            * @name styleDefaults.nodeDefaults.secondaryLabelStyle
+           * @ojshortdesc The CSS style object defining the style of the node secondary labels.
            * @memberof! oj.ojNBox
            * @instance
            * @type {Object}
+           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
            */
           secondaryLabelStyle: undefined
         },
@@ -1694,9 +1682,11 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
          * The CSS style object defining the style of the row labels.  The default value comes from the CSS and varies based on theme.
          * @expose
          * @name styleDefaults.rowLabelStyle
+         * @ojshortdesc The CSS style object defining the style of the row labels.
          * @memberof! oj.ojNBox
          * @instance
          * @type {Object}
+         * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
          */
         rowLabelStyle: undefined,
 
@@ -1704,9 +1694,11 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
          * The CSS style object defining the style of the rows title.  The default value comes from the CSS and varies based on theme.
          * @expose
          * @name styleDefaults.rowsTitleStyle
+         * @ojshortdesc The CSS style object defining the style of the rows title.
          * @memberof! oj.ojNBox
          * @instance
          * @type {Object}
+         * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
          * @default null
          */
         rowsTitleStyle: undefined
@@ -1731,6 +1723,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
         *  </ul>
         * @expose
         * @name tooltip.renderer
+        * @ojshortdesc A function that returns a custom tooltip. See the Help documentation for more information.
         * @memberof! oj.ojNBox
         * @instance
         * @type {function(Object)|null}
@@ -1744,6 +1737,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events if the element does not require an internal feature that requires a touch start gesture like scrolling. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature.
        * @expose
        * @name touchResponse
+       * @ojshortdesc Specifies configuration options for touch and hold delays on mobile devices. See the Help documentation for more information.
        * @memberof oj.ojNBox
        * @instance
        * @type {string}
@@ -1953,42 +1947,6 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
     },
 
     //* * @inheritdoc */
-    _GetTranslationMap: function () {
-      // The translations are stored on the options object.
-      var translations = this.options.translations;
-
-      // Safe to modify super's map because function guarantees a new map is returned
-      var ret = this._super();
-      ret['DvtUtilBundle.NBOX'] = translations.componentName;
-      ret['DvtNBoxBundle.HIGHLIGHTED_COUNT'] = translations.highlightedCount;
-      ret['DvtNBoxBundle.OTHER'] = translations.labelOther;
-      ret['DvtNBoxBundle.GROUP_NODE'] = translations.labelGroup;
-      ret['DvtNBoxBundle.SIZE'] = translations.labelSize;
-      ret['DvtNBoxBundle.ADDITIONAL_DATA'] = translations.labelAdditionalData;
-      return ret;
-    },
-
-    //* * @inheritdoc */
-    _HandleEvent: function (event) {
-      var type = event.type;
-      if (type === 'adfPropertyChange') {
-        var properties = event.properties;
-        var keys = Object.keys(properties);
-        for (var i = 0; i < keys.length; i++) {
-          var key = keys[i];
-          var value = properties[key];
-          if (key === '_drawer') {
-            this.options[key] = value ? { id: value } : null;
-          } else if (key === 'maximizedRow' || key === 'maximizedColumn') {
-            this._UserOptionChange(key, value);
-          }
-        }
-      } else {
-        this._super(event);
-      }
-    },
-
-    //* * @inheritdoc */
     _LoadResources: function () {
       // Ensure the resources object exists
       if (this.options._resources == null) { this.options._resources = {}; }
@@ -2046,6 +2004,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
      * @return {String} NBox rows title.
      * @expose
      * @memberof oj.ojNBox
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @instance
      */
     getRowsTitle: function () {
@@ -2058,6 +2018,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
      * @return {Number} NBox row count.
      * @expose
      * @memberof oj.ojNBox
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @instance
      */
     getRowCount: function () {
@@ -2074,6 +2036,9 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
      * @return {Object|null} An object containing properties for the row, or null if none exists.
      * @expose
      * @memberof oj.ojNBox
+     * @ojshortdesc Returns information for automation testing verification of a specified NBox row.
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @instance
      */
     getRow: function (rowValue) {
@@ -2087,6 +2052,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
      * @return {String} NBox columns title.
      * @expose
      * @memberof oj.ojNBox
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @instance
      */
     getColumnsTitle: function () {
@@ -2099,6 +2066,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
      * @return {Number} NBox column count.
      * @expose
      * @memberof oj.ojNBox
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @instance
      */
     getColumnCount: function () {
@@ -2115,6 +2084,9 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
      * @return {Object|null} An object containing properties for the column, or null if none exists.
      * @expose
      * @memberof oj.ojNBox
+     * @ojshortdesc Returns information for automation testing verification of a specified NBox column.
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @instance
      */
     getColumn: function (columnValue) {
@@ -2156,6 +2128,9 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
      * @return {Object|null} An object containing properties for the cell, or null if none exists.
      * @expose
      * @memberof oj.ojNBox
+     * @ojshortdesc Returns information for automation testing verification of a specified NBox cell.
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @instance
      */
     getCell: function (rowValue, columnValue) {
@@ -2177,6 +2152,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
      * @return {String} group behavior The group behavior of the NBox ('withinCell', 'acrossCells', 'none').
      * @expose
      * @memberof oj.ojNBox
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @instance
      */
     getGroupBehavior: function () {
@@ -2200,6 +2177,9 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
      * @return {Object|null} An object containing properties for the group node, or null if none exists.
      * @expose
      * @memberof oj.ojNBox
+     * @ojshortdesc Returns information for automation testing verification of a specified NBox group node.
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @instance
      */
     getGroupNode: function (groupCategory) {
@@ -2229,6 +2209,9 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
      * @return {Object|null} An object containing properties for the dialog, or null if none exists.
      * @expose
      * @memberof oj.ojNBox
+     * @ojshortdesc Returns information for automation testing verification of the currently active NBox dialog.
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @instance
      */
     getDialog: function () {
@@ -2245,6 +2228,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
     /**
      * {@ojinclude "name":"nodeContextDoc"}
      * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
+     * @ojsignature {target: "Type", value: "oj.ojNBox.NodeContext<K>|oj.ojNBox.CellContext|oj.ojNBox.DialogContext|oj.ojNBox.GroupNodeContext|null", jsdocOverride: true, for: "returns"}
      * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
      *
      * @example {@ojinclude "name":"nodeContextExample"}
@@ -2252,6 +2236,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
      * @expose
      * @instance
      * @memberof oj.ojNBox
+     * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
      */
     getContextByNode: function (node) {
       // context objects are documented with @ojnodecontext
@@ -2437,7 +2422,6 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  // PROPERTY TYPEDEFS
 /**
  * @typedef {Object} oj.ojNBox.Node
- * @ojtsignore
  * @property {any=} id The node id. The node id should be set by the application if the DataProvider is not being used.
  * @property {string=} borderColor The border color of the node. Does not apply if custom image is specified.
  * @property {number=} borderWidth The border width of the node in pixels. Does not apply if custom image is specified.
@@ -2481,7 +2465,10 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @property {number=} yPercentage An optional vertical position (as a percentage) to be used in the average position calculation when grouping across cells.
  * @property {string=} shortDesc The description of this node. This is used for accessibility and also for customizing the tooltip text.
  * @ojsignature [{target: "Type", value: "K", for: "id"},
- *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+ *               {target: "Type", value: "<K>", for: "genericTypeParameters"},
+ *               {target: "Type", value: "CSSStyleDeclaration", for: "icon.svgStyle", jsdocOverride:true},
+ *               {target: "Type", value: "CSSStyleDeclaration", for: "indicatorIcon.svgStyle", jsdocOverride:true},
+ *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride:true}]
  */
 
 /**
@@ -2497,8 +2484,12 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @property {Object=} minimizedSvgStyle The CSS style object for this cell. Used for customizing the minimized cell background and border.
  * @property {string=} minimizedSvgClassName The CSS style class for this cell. Used for customizing the minimized cell background and border.
  * @property {string} row The id of the row containing this cell.
- * @property {"on"|"off"|"auto"|string} [showCount="auto"] Determines when to display the cell count label (extra info displayed after primary cell label). "off" never show the count label. "on" always show the count label. Show countLabel value if specified, otherwise use a simple node count. "auto" show the count label if countLabel attribute is defined.
+ * @property {"on"|"off"|"auto"} [showCount="auto"] Determines when to display the cell count label (extra info displayed after primary cell label). "off" never show the count label. "on" always show the count label. Show countLabel value if specified, otherwise use a simple node count. "auto" show the count label if countLabel attribute is defined.
  * @property {string=} shortDesc The description of this cell. This is used for accessibility.
+ * @ojsignature [{target: "Type", value: "CSSStyleDeclaration", for: "labelStyle", jsdocOverride: true},
+ *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true},
+ *               {target: "Type", value: "CSSStyleDeclaration", for: "maximizedSvgStyle", jsdocOverride: true},
+ *               {target: "Type", value: "CSSStyleDeclaration", for: "minimizedSvgStyle", jsdocOverride: true}]
  */
 
 /**
@@ -2506,6 +2497,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @property {string} id The id of the column. Used to identify this column.
  * @property {string=} label The text for the column label.
  * @property {Object=} labelStyle The CSS style object defining the style of the column label.
+ * @ojsignature {target: "Type", value: "CSSStyleDeclaration", for: "labelStyle", jsdocOverride: true}
  */
 
 /**
@@ -2513,6 +2505,34 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @property {string} id The id of the row. Used to identify this row.
  * @property {string=} label The text for the row label.
  * @property {Object=} labelStyle The CSS style object defining the style of the row label.
+ * @ojsignature {target: "Type", value: "CSSStyleDeclaration", for: "labelStyle", jsdocOverride: true}
+ */
+
+/**
+ * @typedef {Object} oj.ojNBox.NodeContext Context for NBox node with specified id.
+ * @property {any} id The id of the node.
+ * @property {"oj-nbox-node"} subId Identifies the type of the associated DOM node.
+ * @ojsignature [{target: "Type", value: "K", for: "id"},
+ *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+ */
+ /**
+ * @typedef {Object} oj.ojNBox.CellContext Context for NBox cell with specified row and column values.
+ * @property {string} row The id of the row.
+ * @property {string} column The id of the column.
+ * @property {"oj-nbox-cell"} subId Identifies the type of the associated DOM node.
+ */
+
+ /**
+ * @typedef {Object} oj.ojNBox.DialogContext Context for NBox group node dialog.
+ * @property {"oj-nbox-dialog"} subId Identifies the type of the associated DOM node.
+ */
+
+ /**
+ * @typedef {Object} oj.ojNBox.GroupNodeContext Context for NBox node with specified id.
+ * @property {string} row The id of the row of the associated cell, if one exists.
+ * @property {string} column The id of the column of the associated cell, if one exists.
+ * @property {string} groupCategory The category represented by the returned group node.
+ * @property {"oj-nbox-group-node"} subId Identifies the type of the associated DOM node.
  */
 
 /**
@@ -2645,6 +2665,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
   * @ojstatus preview
   * @ojslot nodeTemplate
   * @ojmaxitems 1
+  * @ojshortdesc The nodeTemplate slot is used to specify the template for creating each node of the NBox. See the Help documentation for more information.
+  *
   * @memberof oj.ojNBox
   * @property {Element} componentElement The &lt;oj-n-box> custom element.
   * @property {Object} data The data object for the current node.
@@ -2666,6 +2688,28 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
   * &lt;/oj-n-box>
  */
 
+
+  /**
+ * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
+ * This slot takes precedence over the tooltip.renderer property if specified.
+ * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
+ * <ul>
+ *   <li>$current - an object that contains information for the current node. (See [oj.ojNBox.TooltipContext]{@link oj.ojNBox.TooltipContext} for a list of properties available on $current) </li>
+ * </ul>
+ *
+ * @ojstatus preview
+ * @ojslot tooltipTemplate
+ * @ojslotitemprops oj.ojNBox.TooltipContext
+ * @memberof oj.ojNBox
+ * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
+ *
+ * @example <caption>Initialize the NBox with a tooltip template specified:</caption>
+ * &lt;oj-n-box>
+ *  &lt;template slot="tooltipTemplate">
+ *    &lt;span>&lt;oj-bind-text value="[[$current.label + ' (' + $current.secondaryLabel + ')']]">&lt;/oj-bind-text>&lt;/span>
+ *  &lt;/template>
+ * &lt;/oj-n-box>
+ */
 // Node Context Objects ********************************************************
 
 /**
@@ -2704,6 +2748,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @ojnodecontext oj-nbox-node
  * @memberof oj.ojNBox
+ * @ojsignature {target: "Type", value: "K", for: "id"}
  */
 
 /**
@@ -2726,7 +2771,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * <pre class="prettyprint">
  * <code>
  * &lt;oj-n-box data='[[dataProvider]]'>
- *  &lt;template slot='nodeTemplate'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node row='[[$current.data.potential]]'
  *      column='[[$current.data.performance]]'
  *      short-desc='[[$current.data.shortDesc]]'
@@ -2774,7 +2819,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  */
 /**
  * An optional array of additional category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with other visualization elements.
- * Defaults to node's id if unspecified
+ * If not defined, the node id is used.
  * @expose
  * @name categories
  * @memberof! oj.ojNBoxNode
@@ -2878,6 +2923,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * The border radius of this icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.
  * @expose
  * @name icon.borderRadius
+ * @ojshortdesc The border radius of this icon. See the Help documentation for more information.
  * @memberof! oj.ojNBoxNode
  * @instance
  * @type {string=}
@@ -3040,6 +3086,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @memberof! oj.ojNBoxNode
  * @instance
  * @type {Object=}
+ * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">icon.svgStyle</code> attribute specified:</caption>
@@ -3119,6 +3166,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * The border radius of this indicator icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.
  * @expose
  * @name indicatorIcon.borderRadius
+ * @ojshortdesc The border radius of this indicator icon. See the Help documentation for more information.
  * @memberof! oj.ojNBoxNode
  * @instance
  * @type {string=}
@@ -3279,6 +3327,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @memberof! oj.ojNBoxNode
  * @instance
  * @type {(Object|null)=}
+ * @ojsignature {target: "Type", value: "CSSStyleDeclaration|null", jsdocOverride: true}
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">indicatorIcon.svgStyle</code> attribute specified:</caption>
@@ -3379,6 +3428,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @memberof! oj.ojNBoxNode
  * @instance
  * @type {Object|null}
+ * @ojsignature {target: "Type", value: "CSSStyleDeclaration|null", jsdocOverride: true}
  * @default null
  *
  * @example <caption>Initialize NBox node with the

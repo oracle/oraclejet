@@ -22,7 +22,14 @@
 
     .oj-nbox {
       // hide any selection effects on the actual component
-      @include oj-user-select-property(none);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        user-select: none;
+      }
+      @else 
+      {
+        @include oj-user-select-property(none);
+      }
       width:100%;
       height:540px;
     }

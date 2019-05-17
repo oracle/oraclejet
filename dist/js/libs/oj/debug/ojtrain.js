@@ -3,16 +3,14 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'], 
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        */
-       function(oj, $)
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+*/
+function(oj, $)
 {
- 
-
+  "use strict";
 var __oj_train_metadata = 
 {
   "properties": {
@@ -63,7 +61,7 @@ var __oj_train_metadata =
  * @ojcomponent oj.ojTrain
  * @augments oj.baseComponent
  * @ojstatus preview
- * @ojshortdesc Displays a navigation visual element that allows an application user to go between different steps of a process.
+ * @ojshortdesc A train allows a user to navigate between different steps of a process.
  * @since 1.0.0
  * @classdesc
  * <h3 id="trainOverview-section">
@@ -110,11 +108,11 @@ var __oj_train_metadata =
 
         /**
          * @typedef {Object} oj.ojTrain.Step
-         * @property {string} id string id of the step
-         * @property {string} label string label of the step
-         * @property {boolean} [disabled] boolean indicates whether the step is disabled
-         * @property {boolean} [visited] boolean indicates whether the step has been visited
-         * @property {"info"|"error"|"fatal"|"warning"} [messageType] string the type of message icon displayed on the step
+         * @property {string} id id of the step
+         * @property {string} label label of the step
+         * @property {boolean} [disabled] indicates whether the step is disabled
+         * @property {boolean} [visited] indicates whether the step has been visited
+         * @property {"info"|"error"|"fatal"|"warning"} [messageType] the type of message icon displayed on the step
          *
          */
 
@@ -164,7 +162,7 @@ var __oj_train_metadata =
 
         /**
          * Indicates the id of the current selected step.  Default is the first step in the steps array.
-         * @ojshortdesc Indicates the id of the current selected step.
+         * @ojshortdesc Specifies the id of the current selected step.
          * @expose
          * @public
          * @type {string}
@@ -213,9 +211,9 @@ var __oj_train_metadata =
         deselect: null,
 
         /**
-         * Triggered immediately before a Step is selected.
+         * Triggered immediately before a step is selected.
          * The ojBeforeSelect can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
-         * @ojshortdesc Triggered immediately before a Step is selected.
+         * @ojshortdesc Triggered immediately before a step is selected.
          * @ojcancelable
          * @expose
          * @event
@@ -673,7 +671,7 @@ var __oj_train_metadata =
 
       /**
        * Returns the step based on the id passed in. If the step doesn't exist, return null.
-       * @ojshortdesc Returns the step based on the id passed in.
+       * @ojshortdesc Returns the specified step.
        * @public
        * @param {string} id The id of the step.
        * @return {Object | null} step object.
@@ -721,7 +719,7 @@ var __oj_train_metadata =
 
       /**
        * Returns the id of the next selectable step based on the current selectedStep. If the current step is the last selectable step, the function returns null
-       * @ojshortdesc Returns the id of the next selectable step based on the current selectedStep.
+       * @ojshortdesc Returns the id of the next selectable step based on the current selected step.
        * @public
        * @return {string | null} next selectable Id
        * @expose
@@ -740,7 +738,7 @@ var __oj_train_metadata =
 
       /**
        * Returns the id of the previous selectable step based on the current selectedStep. If the current step is the first selectable step, the function returns null
-       * @ojshortdesc Returns the id of the previous selectable step based on the current selectedStep.
+       * @ojshortdesc Returns the id of the previous selectable step based on the current selected step.
        * @public
        * @return {string | null} previous selectable Id
        * @expose
@@ -776,7 +774,7 @@ var __oj_train_metadata =
 
       /**
        * Update the step with the specified id with the provided property bag.
-       * @ojshortdesc Update the step with the specified id with the provided property bag.
+       * @ojshortdesc Update the specified step with a new set of properties.
        * @public
        * @param {string} id The id of the step to update
        * @param {Object} stepProperties The set of step properties to update. Will overwrite any previously set values.

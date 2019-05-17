@@ -23,12 +23,13 @@
             position: relative;
             border-width: 1px 0;
             border-style: solid;
-            @include oj-user-select-property (none);
             box-sizing: border-box;
             @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              user-select: none;
               border-color: var(--oj-collection-border-color);
               min-height: var(--oj-collection-row-height);
             } @else {
+              @include oj-user-select-property (none);
               border-color: $collectionBorderColor;
               // min-height is 1 row to leave space for the no data message.
               min-height: $collectionRowHeight;
@@ -199,7 +200,7 @@
             pointer-events: none;
             top: 1px;
             width: calc(100% - 2px);
-            height: calc(100% - 1px);
+            height: calc(100% - 2px);
             @include oj-ltr() {
                 left: 1px;
             }
@@ -207,7 +208,7 @@
                 right: 1px;
             }
             @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-              @include oj-browser-focus-outline-approximation-css-vars(var(--oj-primary-text-color));
+              @include oj-browser-focus-outline-approximation-css-vars(var(--oj-text-color-primary));
             } @else {
               @include oj-browser-focus-outline-approximation($primaryTextColor);
             }
@@ -218,7 +219,7 @@
         .oj-listview-expand-icon.oj-focus-highlight::before,
         .oj-listview-collapse-icon.oj-focus-highlight::before {
           @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            @include oj-browser-focus-outline-approximation-css-vars(var(--oj-primary-text-color));
+            @include oj-browser-focus-outline-approximation-css-vars(var(--oj-text-color-primary));
           } @else {
             @include oj-browser-focus-outline-approximation($primaryTextColor);
           }
@@ -304,6 +305,7 @@
         /* Styling for group item element that is sticky */
         .oj-listview-group-item.oj-sticky {
             position: -webkit-sticky;
+            position: sticky;
             top: 0;
         }
 

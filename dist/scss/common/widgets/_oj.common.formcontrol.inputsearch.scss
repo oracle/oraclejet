@@ -27,9 +27,9 @@
       vertical-align: middle; 
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        max-width: var(--oj-form-control-lg-max-width);
-        min-width: var(--oj-form-control-min-width);
-        font-size: var(--oj-form-control-input-font-size);
+        max-width: var(--oj-text-field-lg-max-width);
+        min-width: var(--oj-text-field-min-width);
+        font-size: var(--oj-text-field-input-font-size);
         @include oj-form-control-text-size-adjust-css-vars();
       }
       @else {
@@ -59,7 +59,7 @@
       {
         @include oj-form-control-content-css-vars;
         // TODO
-        height: var(--oj-form-control-input-height);
+        height: var(--oj-text-field-input-height);
         @include oj-form-control-content-no-focus-padding($outputCssVars: true);
       }
       @else {
@@ -99,17 +99,23 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         box-shadow: none;
-        padding: 0 var(--oj-form-control-padding-horizontal);
-        background-color: var(--oj-form-control-bg-color);
-        color: var(--oj-form-control-input-value-color);
-        font-size: var(--oj-form-control-input-font-size);
+        padding: 0 var(--oj-text-field-padding-horizontal);
+        background-color: var(--oj-text-field-bg-color);
+        color: var(--oj-text-field-input-value-color);
+        font-size: var(--oj-text-field-input-font-size);
         @include oj-form-control-text-size-adjust-css-vars();
-        @include oj-placeholder()
-        {
-          color: var(--oj-form-control-placeholder-color);
+        // Prefix hardcoded because of caniuse-lite issue, should be removed once resolved
+        &:-ms-input-placeholder {
+          color: var(--oj-text-field-placeholder-color);
           // in Firefox the default opacity is not 1 for placeholder
           opacity: 1;
-          font-style: var(--oj-form-control-placeholder-font-style);
+          font-style: var(--oj-text-field-placeholder-font-style);
+        }
+        &::placeholder {
+          color: var(--oj-text-field-placeholder-color);
+          // in Firefox the default opacity is not 1 for placeholder
+          opacity: 1;
+          font-style: var(--oj-text-field-placeholder-font-style);
         }
       } @else {
         @include oj-box-shadow(none);
@@ -156,7 +162,7 @@
       line-height: inherit;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        font-size: var(--oj-form-control-input-font-size);
+        font-size: var(--oj-text-field-input-font-size);
         @include oj-form-control-text-size-adjust-css-vars();
         html:not([dir="rtl"]) & {
           padding-left: var(--oj-input-search-icon-padding-start);
@@ -203,7 +209,7 @@
     .oj-inputsearch.oj-invalid .oj-inputsearch-choice {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        border-color: var(--oj-form-control-border-color-invalid);
+        border-color: var(--oj-text-field-border-color-invalid);
         @include oj-form-control-border-message-width-css-vars();
       }
       @else {
@@ -219,7 +225,7 @@
     .oj-inputsearch.oj-warning .oj-inputsearch-choice {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        border-color: var(--oj-form-control-border-color-warning);
+        border-color: var(--oj-text-field-border-color-warning);
         @include oj-form-control-border-message-width-css-vars();
       }
       @else {
@@ -268,22 +274,22 @@
     // -----------------------------------------------------------------------------------------
 
     // remove borders, inherit colors and stretch the height
-    .oj-form-control-inherit .oj-inputsearch-choice,
-    .oj-form-control-inherit .oj-inputsearch-input {
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-choice,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input {
       @include oj-form-control-inherit();
     }
 
     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
     {
       // TODO
-      .oj-form-control-inherit .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus .oj-inputsearch-choice  {
+      .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus .oj-inputsearch-choice  {
         border-width: 0;        
       }
     }
     @else {
       // if a focus border width is set reset it back to 0
       @if ($formControlInputBorderWidthFocus != null) {                      
-        .oj-form-control-inherit .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus .oj-inputsearch-choice  {
+        .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus .oj-inputsearch-choice  {
           border-width:0;
         }
       }

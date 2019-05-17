@@ -3,15 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'ojs/ojkeysetimpl'], function(oj, KeySetImpl)
 {
-/* global Set:false, Symbol:false, KeySetImpl:false */
+  "use strict";
+/* global KeySetImpl:false, Set:false */
 
 /**
  * An immutable set of keys.
@@ -206,7 +201,7 @@ KeySet.prototype.GetInternalSize = function () {
  * @protected
  */
 KeySet.prototype.Clone = function () {
-  return this._populate(this._keys);
+  return new Set(this._keys);
 };
 
 KeySetImpl.call(KeySet.prototype);
@@ -220,10 +215,12 @@ KeySetImpl.call(KeySet.prototype);
  * @param {(Set|Array)=} keys A set of keys to initialize this KeySet with.
  * @ojstatus preview
  * @class ExpandedKeySet
- * @classdesc The ExpandedKeySet class contains a set of keys of the expanded items.
+ * @classdesc The ExpandedKeySet class contains a set of keys of the expanded items.  See
+ * also the <a href="ObservableExpandedKeySet.html">observable</a> version of this class.
  * @extends {KeySet}
  * @constructor
  * @since 4.1.0
+ * @ojdeprecated {since: '7.0.0', description: 'Use KeySetImpl instead.'}
  * @ojsignature [{target: "Type", value: "class ExpandedKeySet<K> extends KeySet<K>", genericParameters: [{"name": "K", "description": "Type of Key"}]},
  *               {target: "Type", value: "Set<K>|Array<K>", for:"keys"}]
  * @example <caption>Creates a new ExpandedKeySet with an initial set of keys to expand:</caption>
@@ -358,6 +355,7 @@ ExpandedKeySet.prototype.values = function () {
  * @extends {KeySet}
  * @constructor
  * @since 4.1.0
+ * @ojdeprecated {since: '7.0.0', description: 'Use AllKeySetImpl instead.'}
  * @ojsignature {target: "Type", value: "class ExpandAllKeySet<K> extends KeySet<K>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}]}
  * @example <caption>Creates a new ExpandAllKeySet to expand all keys</caption>
@@ -482,10 +480,327 @@ ExpandAllKeySet.prototype.deletedValues = function () {
   return this.Clone();
 };
 
+/* global KeySet:false, AllKeySetImpl:false */
+
+/**
+ * Create a new immutable KeySet containing the keys of items.
+ * Use this KeySet when specifying individual keys to select or expand.
+ *
+ * @param {(Set|Array)=} keys A set of keys to initialize this KeySet with.
+ * @ojstatus preview
+ * @class KeySetImpl
+ * @classdesc The KeySetImpl class contains a set of keys of items.
+ * @extends {KeySet}
+ * @constructor
+ * @since 7.0.0
+ * @ojsignature [{target: "Type", value: "class KeySetImpl<K> extends KeySet<K>", genericParameters: [{"name": "K", "description": "Type of Key"}]},
+ *               {target: "Type", value: "Set<K>|Array<K>", for:"keys"}]
+ * @example <caption>Creates a new KeySetImpl with an initial set of keys:</caption>
+ * require(['ojs/ojkeyset'],
+ *   function(keySet) {
+ *     var KeySetImpl = new keySet.KeySetImpl(['item1', 'item3']);
+ *   }
+ * );
+ */
+var KeySetImpl = function (keys) {
+  this.InitializeWithKeys(keys);
+};
+
+// Subclass from KeySet
+oj.Object.createSubclass(KeySetImpl, KeySet, 'KeySetImpl');
+
+// make it available internally
+oj.KeySetImpl = KeySetImpl;
+
+/**
+ * Returns a new KeySet based on this set with the specified keys included.
+ * If none of the keys specified are being added, then this KeySet is returned.
+ *
+ * @param {Set|Array} keys a set of keys to add to this KeySet.
+ * @return {KeySetImpl} a new KeySet with the specified keys included.
+ * @expose
+ * @instance
+ * @alias add
+ * @memberof KeySetImpl
+ * @ojsignature {target: "Type", value: "(keys: Set<K>|Array<K>): KeySetImpl<K>"}
+ */
+KeySetImpl.prototype.add = function (keys) {
+  return /** @type {!KeySetImpl} */ (this.AddOrDeleteInternal(true, keys));
+};
+
+/**
+ * Returns a new KeySet that represents a set with all keys.
+ *
+ * @return {AllKeySetImpl} a new KeySet that represents a set with all keys.
+ * @expose
+ * @instance
+ * @alias addAll
+ * @memberof KeySetImpl
+ * @ojsignature {target: "Type", value: "(): AllKeySetImpl<K>"}
+ */
+KeySetImpl.prototype.addAll = function () {
+  return new AllKeySetImpl();
+};
+
+/**
+ * Determines whether this is a set that represents all keys.
+ *
+ * @return {boolean} true if this is a set that reprsents all keys, false otherwise.
+ * @expose
+ * @instance
+ * @alias isAddAll
+ * @memberof KeySetImpl
+ */
+KeySetImpl.prototype.isAddAll = function () {
+  return false;
+};
+
+/**
+ * Returns a new KeySet based on this set with the specified keys excluded.
+ * If none of the keys specified are being deleted, then this KeySet is returned.
+ *
+ * @param {Set|Array} keys a set of keys to remove from this KeySet.
+ * @return {KeySetImpl} a new KeySet with the specified keys excluded.
+ * @expose
+ * @instance
+ * @alias delete
+ * @memberof KeySetImpl
+ * @ojsignature {target: "Type", value: "(keys: Set<K>|Array<K>): KeySetImpl<K>"}
+ */
+KeySetImpl.prototype.delete = function (keys) {
+  return /** @type {!KeySetImpl} */ (this.AddOrDeleteInternal(false, keys));
+};
+
+/**
+ * Returns a new KeySet containing no keys.  If this KeySet already contains no keys then
+ * the current KeySet is returned.
+ *
+ * @return {KeySetImpl} a new KeySet with no keys.
+ * @expose
+ * @instance
+ * @alias clear
+ * @memberof KeySetImpl
+ * @ojsignature {target: "Type", value: "(): KeySetImpl<K>"}
+ */
+KeySetImpl.prototype.clear = function () {
+  return this.GetInternalSize() === 0 ? this : new KeySetImpl();
+};
+
+/**
+ * Determines whether the specified key is in this set.
+ *
+ * @param {any} key the key to check whether it is in this set.
+ * @return {boolean} true if the specified key is in the set, false otherwise.
+ * @expose
+ * @instance
+ * @alias has
+ * @memberof KeySetImpl
+ * @ojsignature {target: "Type", value: "K", for:"key"}
+ */
+KeySetImpl.prototype.has = function (key) {
+  return (this.get(key) !== this.NOT_A_KEY);
+};
+
+/**
+ * Returns the keys in this KeySet in the order they are added.
+ *
+ * @return {Set} the keys in this KeySet in the order they are added.
+ * @expose
+ * @instance
+ * @alias values
+ * @memberof KeySetImpl
+ * @ojsignature {target: "Type", value: "Set<K>", for:"returns"}
+ */
+KeySetImpl.prototype.values = function () {
+  return this.Clone();
+};
+
+/* global KeySet:false, KeySetImpl:false */
+
+/**
+ * Create a new immutable KeySet that represents a set with all keys.
+ * Use this KeySet when select or expand all keys.
+ *
+ * @ojstatus preview
+ * @class AllKeySetImpl
+ * @classdesc The AllKeySetImpl class represents a set with all keys.
+ * @extends {KeySet}
+ * @constructor
+ * @since 7.0.0
+ * @ojsignature {target: "Type", value: "class AllKeySetImpl<K> extends KeySet<K>", genericParameters: [{"name": "K", "description": "Type of Key"}]}
+ * @example <caption>Creates a new AllKeySetImpl to select all keys</caption>
+ * require(['ojs/ojkeyset'],
+ *   function(keySet) {
+ *     var AllKeySetImpl = new keySet.AllKeySetImpl();
+ *   }
+ * );
+ */
+var AllKeySetImpl = function () {
+  this.InitializeWithKeys(null);
+};
+
+// Subclass from KeySet
+oj.Object.createSubclass(AllKeySetImpl, KeySet, 'AllKeySetImpl');
+
+// make it available internally
+oj.AllKeySetImpl = AllKeySetImpl;
+
+/**
+ * Returns a new KeySet with the specified keys included in the set.  Specifically,
+ * the specified keys will be deleted from the currently excluded keys.
+ * If the keys specified are already added then this KeySet is returned.
+ *
+ * @param {Set|Array} keys a set of keys to add to this KeySet.
+ * @return {AllKeySetImpl} a new KeySet with the specified keys included.
+ * @expose
+ * @instance
+ * @alias add
+ * @memberof! AllKeySetImpl
+ * @ojsignature {target: "Type", value: "(keys: Set<K>|Array<K>): AllKeySetImpl<K>"}
+ */
+AllKeySetImpl.prototype.add = function (keys) {
+  // add keys on all = remove deleted keys
+  return /** @type {!AllKeySetImpl} */ (this.AddOrDeleteInternal(false, keys));
+};
+
+/**
+ * Returns a new KeySet that represents a set with all keys.  If this KeySet already is
+ * a set with all keys, then this would just return itself.
+ *
+ * @return {AllKeySetImpl} a new KeySet that represents a set with all keys.
+ * @expose
+ * @instance
+ * @alias addAll
+ * @memberof! AllKeySetImpl
+ * @ojsignature {target: "Type", value: "(): AllKeySetImpl<K>"}
+ */
+AllKeySetImpl.prototype.addAll = function () {
+  return this.GetInternalSize() === 0 ? this : new AllKeySetImpl();
+};
+
+/**
+ * Determines whether this is a set that represents all keys.
+ *
+ * @return {boolean} true if this is a set that reprsents all keys, false otherwise.
+ * @expose
+ * @instance
+ * @alias isAddAll
+ * @memberof! AllKeySetImpl
+ */
+AllKeySetImpl.prototype.isAddAll = function () {
+  return true;
+};
+
+/**
+ * Returns a new KeySet based on this set with the specified keys deleted.  Specifically,
+ * the returned KeySet represents all keys except for the keys deleted.
+ * If the keys specified are already deleted then this KeySet is returned.
+ *
+ * @param {Set|Array} keys a set of keys to remove from this KeySet.
+ * @return {AllKeySetImpl} a new KeySet with the specified keys excluded.
+ * @expose
+ * @instance
+ * @alias delete
+ * @memberof! AllKeySetImpl
+ * @ojsignature {target: "Type", value: "(keys: Set<K>|Array<K>): AllKeySetImpl<K>"}
+ */
+AllKeySetImpl.prototype.delete = function (keys) {
+  // remove keys on all = add to excluded keys
+  return /** @type {!AllKeySetImpl} */ (this.AddOrDeleteInternal(true, keys));
+};
+
+/**
+ * Returns a new KeySet containing no keys.
+ *
+ * @return {KeySetImpl} a new KeySet with no keys.
+ * @expose
+ * @instance
+ * @alias clear
+ * @memberof! AllKeySetImpl
+ * @ojsignature {target: "Type", value: "(): KeySetImpl<K>"}
+ */
+AllKeySetImpl.prototype.clear = function () {
+  return new KeySetImpl();
+};
+
+/**
+ * Determines whether the specified key is in this set.
+ *
+ * @param {any} key the key to check whether it is in this set.
+ * @return {boolean} true if the specified key is in this set, false otherwise.
+ * @expose
+ * @instance
+ * @alias has
+ * @memberof! AllKeySetImpl
+ * @ojsignature {target: "Type", value: "K", for: "key"}
+ */
+AllKeySetImpl.prototype.has = function (key) {
+  return (this.get(key) === this.NOT_A_KEY);
+};
+
+/**
+ * Returns a set of keys of the items that are excluded from this set.
+ *
+ * @return {Set} the keys of the deleted items.
+ * @expose
+ * @instance
+ * @alias deletedValues
+ * @memberof! AllKeySetImpl
+ * @ojsignature {target: "Type", value: "Set<K>", for: "returns"}
+ */
+AllKeySetImpl.prototype.deletedValues = function () {
+  return this.Clone();
+};
+
+/**
+ * Copyright (c) 2019, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+/* global AllKeySetImpl:false, KeySetImpl:false */
+
+/**
+ * Contains a set of utility methods for working with KeySet.
+ * @class
+ * @ignore
+ * @tsignore
+ */
+var KeySetUtils = {};
+
+/**
+ * Converts a KeySet into an array
+ */
+KeySetUtils.toArray = function (keyset) {
+  var arr;
+
+  var set = keyset.isAddAll() ? keyset.deletedValues() : keyset.values();
+  if (Array.from) {
+    arr = Array.from(set);
+  } else {
+    // IE11 does not support Array.from
+    arr = [];
+    set.forEach(function (value) {
+      arr.push(value);
+    });
+  }
+  arr.inverted = keyset.isAddAll();
+  return arr;
+};
+
+/**
+ * Converts an array into a KeySet
+ */
+KeySetUtils.toKeySet = function (arr) {
+  var keyset = arr.inverted ? new AllKeySetImpl() : new KeySetImpl();
+  return keyset.add(arr);
+};
+
 ;return {
   'KeySet': KeySet,
   'ExpandedKeySet': ExpandedKeySet,
-  'ExpandAllKeySet': ExpandAllKeySet
+  'ExpandAllKeySet': ExpandAllKeySet,
+  'KeySetImpl': KeySetImpl,
+  'AllKeySetImpl': AllKeySetImpl,
+  'KeySetUtils': KeySetUtils
 }
 
 });

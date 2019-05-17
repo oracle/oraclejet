@@ -3,13 +3,11 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'promise', 
         'ojs/ojpopupcore'], 
-       function(oj, $, Context, ThemeUtils, Components, AnimationUtils)
+function(oj, $, Context, ThemeUtils, Components, AnimationUtils)
 {
- 
-
+  "use strict";
 var __oj_popup_metadata = 
 {
   "properties": {
@@ -254,11 +252,11 @@ var __oj_popup_metadata =
 
   /**
    * @typedef {Object} oj.ojPopup.Position
-   * @property {oj.ojPopup.PositionAlign} [my] Defines which edge on the popup to align with the target ("of") element.
-   * @property {oj.ojPopup.PositionAlign} [at] Defines which position on the target element ("of") to align the positioned element
+   * @property {Object} [my] Defines which edge on the popup to align with the target ("of") element.
+   * @property {Object} [at] Defines which position on the target element ("of") to align the positioned element
    *                                  against.
-   * @property {oj.ojPopup.PositionPoint} [offset] Defines a point offset in pixels from the ("my") alignment.
-   * @property {string|oj.ojPopup.PositionPoint} [of] Which element to position the popup against.  The default is the
+   * @property {Object} [offset] Defines a point offset in pixels from the ("my") alignment.
+   * @property {string|Object} [of] Which element to position the popup against.  The default is the
    * <code class="prettyprint">launcher</code> argument passed to the
    * <code class="prettyprint">open</code> method. <p>
    *
@@ -281,6 +279,10 @@ var __oj_popup_metadata =
    * <li><b>flipcenter</b> first applies the flip rule and follows with center alignment.</li>
    * <li><b>"none"</b> no collision detection.</li>
    * </ul>
+   * @ojsignature [{target:"Type", value:"oj.ojPopup.PositionAlign", for:"my", jsdocOverride:true},
+   *               {target:"Type", value:"oj.ojPopup.PositionAlign", for:"at", jsdocOverride:true},
+   *               {target:"Type", value:"oj.ojPopup.PositionPoint", for:"offset", jsdocOverride:true},
+   *               {target:"Type", value:"string|oj.ojPopup.PositionPoint", for:"of", jsdocOverride:true}]
    */
 
   /**
@@ -289,7 +291,7 @@ var __oj_popup_metadata =
    * @ojstatus preview
    * @since 1.1.0
    * @ojdisplayname Popup
-   * @ojshortdesc Displays a popup window that can display arbitrary content.
+   * @ojshortdesc A popup temporarily 'pops up' content in the foreground.
    * @ojrole tooltip
    * @ojrole dialog
    * @ojrole alertdialog
@@ -420,6 +422,8 @@ var __oj_popup_metadata =
    *        assumes that the popup will remain a child of its original parent.</li>
    *    <li>Popups containing iframes are problematic.  The iframe elements "may" fire a HTTP GET
    *        request for its src attribute each time the iframe is reparented in the document.</li>
+   *    <li>If an iframe is added to the popup's content, it must not be the first or last tab stop
+   *        within the popup or keyboard and VoiceOver navigation will not remain within the popup.</li>
    *    <li>In some browsers, reparenting a popup that contains elements having overflow, will cause
    *        these overflow elements to reset their scrollTop.</li>
    *  </ol>
@@ -468,6 +472,7 @@ var __oj_popup_metadata =
          *
          * @expose
          * @memberof oj.ojPopup
+         * @ojshortdesc Specifies the auto dismissal behavior.
          * @instance
          * @type {string}
          * @default 'focusLoss'
@@ -490,13 +495,14 @@ var __oj_popup_metadata =
          */
         autoDismiss: 'focusLoss',
         /**
-         * Defines the presents of border, shadow and background color of the root popup dom.
+         * Defines the presence of border, shadow and background color of the root popup dom.
          * Value of <code class="prettyprint">none</code> applies the
          * <code class="prettyprint">oj-popup-no-chrome</code> selector defined by the active
          * theme to the root dom of the popup to remove the default chrome.
          *
          * @expose
          * @memberof oj.ojPopup
+         * @ojshortdesc Specifies whether to use the border, shadow, and background colors from the active theme.
          * @instance
          * @type {string}
          * @default 'default'
@@ -524,6 +530,7 @@ var __oj_popup_metadata =
          *
          * @expose
          * @memberof oj.ojPopup
+         * @ojshortdesc Specifies whether the popup steals focus to its content when initially opened.
          * @instance
          * @type {string}
          * @default 'auto'
@@ -572,6 +579,7 @@ var __oj_popup_metadata =
          *                value: "oj.ojPopup.Position",
          *                jsdocOverride: true}
          * @name position
+         * @ojshortdesc Specifies the position of a popup when launched. See the Help documentation for more information.
          * @example <caption>Initialize the popup with <code class="prettyprint">position</code>
          *           attribute specified:</caption>
          * &lt;oj-popup position.my.horizontal="left"
@@ -731,6 +739,7 @@ var __oj_popup_metadata =
            * @instance
            * @alias position.of
            * @name position.of
+           * @ojshortdesc Which element to position the popup against. See the Help documentation for more information.
            * @type {string|{x: number, y: number}}
            */
           of: undefined,
@@ -767,6 +776,7 @@ var __oj_popup_metadata =
          *
          * @expose
          * @memberof oj.ojPopup
+         * @ojshortdesc Specifies whether to display a decoration pointing from the popup to the launching element. See the Help documentation for more information.
          * @instance
          * @type {string}
          * @default 'none'
@@ -796,6 +806,7 @@ var __oj_popup_metadata =
          *
          * @expose
          * @memberof oj.ojPopup
+         * @ojshortdesc Specifies whether the popup should block user input to the page.
          * @instance
          * The modality of the popup. Valid values are:
          * @ojvalue {string} "modeless" defines a modeless popup.
@@ -835,6 +846,7 @@ var __oj_popup_metadata =
          * @expose
          * @event
          * @memberof oj.ojPopup
+         * @ojshortdesc Triggered before the popup is launched.
          * @instance
          * @ojcancelable
          * @ojbubbles
@@ -847,6 +859,7 @@ var __oj_popup_metadata =
          * @expose
          * @event
          * @memberof oj.ojPopup
+         * @ojshortdesc Triggered after the popup is launched.
          * @instance
          * @ojbubbles
          */
@@ -859,6 +872,7 @@ var __oj_popup_metadata =
          * @expose
          * @event
          * @memberof oj.ojPopup
+         * @ojshortdesc Triggered before the popup is dismissed.
          * @instance
          * @ojcancelable
          * @ojbubbles
@@ -871,6 +885,7 @@ var __oj_popup_metadata =
          * @expose
          * @event
          * @memberof oj.ojPopup
+         * @ojshortdesc Triggered after the popup is dismissed.
          * @instance
          * @ojbubbles
          */
@@ -885,6 +900,7 @@ var __oj_popup_metadata =
          * @expose
          * @event
          * @memberof oj.ojPopup
+         * @ojshortdesc Triggered after focus has been transfered to the popup.
          * @instance
          * @ojbubbles
          */
@@ -897,6 +913,7 @@ var __oj_popup_metadata =
          * @expose
          * @event
          * @memberof oj.ojPopup
+         * @ojshortdesc Triggered when a default animation is about to start, such as when the component is being opened/closed or a child item is being added/removed.
          * @instance
          * @ojcancelable
          * @ojbubbles
@@ -913,22 +930,22 @@ var __oj_popup_metadata =
          *            endCallback function when it finishes its own animation handling and any
          *            custom animation has ended.
          *
-         * @example <caption>Bind an event listener to the
-         *          <code class="prettyprint">onOjAnimateStart</code> property to override the default
+         * @example <caption>Add a listener for the
+         *          <code class="prettyprint">ojAnimateStart</code> event to override the default
          *          "close" animation:</caption>
-         * myPopup.onOjAnimateStart = function( event )
+         * myPopup.addEventListener("ojAnimateStart", function( event )
          *   {
          *     // verify that the component firing the event is a component of interest and action
          *      is close
          *     if (event.detail.action == "close") {
          *       event.preventDefault();
          *       oj.AnimationUtils.slideOut(event.detail.element).then(event.detail.endCallback);
-         *   };
+         *   });
          *
          * @example <caption>The default open and close animations are controlled via the theme
          *          (SCSS) :</caption>
          * $popupOpenAnimation: ((effect: "zoomIn"), "fadeIn")  !default;
-         * $popupCloseAnimation: ((effect: "zoomOut", persist: "all"), "fadeOut")  !default;
+         * $popupCloseAnimation: ((effect: "zoomOut"), "fadeOut")  !default;
          */
         animateStart: null,
         /**
@@ -940,6 +957,7 @@ var __oj_popup_metadata =
          * @expose
          * @event
          * @memberof oj.ojPopup
+         * @ojshortdesc Triggered when a default animation had ended, such as when the component is being opened/closed or a child item is being added/removed.
          * @instance
          * @ojcancelable
          * @ojbubbles
@@ -952,15 +970,15 @@ var __oj_popup_metadata =
          *                      <li>"close" - when a popup component is closed</li>
          *                    </ul>
          *
-         * @example <caption>Bind an event listener to the
-         *          <code class="prettyprint">onOjAnimateEnd</code> property to listen for the "close"
+         * @example <caption>Add a listener for the
+         *          <code class="prettyprint">ojAnimateEnd</code> event to listen for the "close"
          *          ending animation:</caption>
-         * myPopup.onOjAnimateEnd = function( event )
+         * myPopup.addEventListener("ojAnimateEnd", function( event )
          *   {
          *     // verify that the component firing the event is a component of interest and action
          *      is close
          *     if (event.detail.action == "close") {}
-         *   };
+         *   });
          *
          * @example <caption>The default open and close animations are controlled via the theme
          *          (SCSS) :</caption>
@@ -1055,6 +1073,7 @@ var __oj_popup_metadata =
        * @expose
        * @method
        * @name oj.ojPopup#open
+       * @ojshortdesc Opens the popup.
        * @memberof oj.ojPopup
        * @instance
        * @param {!(string|Element)} launcher selector or dom element that is associated with the
@@ -1221,6 +1240,7 @@ var __oj_popup_metadata =
        * @expose
        * @method
        * @name oj.ojPopup#close
+       * @ojshortdesc Closes the popup.
        * @memberof oj.ojPopup
        * @instance
        * @return {void}
@@ -1288,7 +1308,6 @@ var __oj_popup_metadata =
         var animationOptions = this.options.animation;
 
         if (!this._ignoreBeforeCloseResultant && animationOptions && animationOptions.close) {
-          var style = element.attr('style');
           var actionPrefix = animationOptions.actionPrefix;
           var action = actionPrefix ? [actionPrefix, 'close'].join('-') : 'close';
 
@@ -1298,7 +1317,6 @@ var __oj_popup_metadata =
             oj.PositionUtils.addTransformOriginAnimationEffectsOption(element,
               animationOptions.close), this)
             .then(function () {
-              element.attr('style', style);
               element.hide();
             });
           return promise;
@@ -1340,6 +1358,7 @@ var __oj_popup_metadata =
        * @expose
        * @method
        * @name oj.ojPopup#isOpen
+       * @ojshortdesc Returns the state of whether the popup is currently visible.
        * @memberof oj.ojPopup
        * @instance
        * @return {boolean} <code>true</code> if the popup is open.
@@ -1364,6 +1383,7 @@ var __oj_popup_metadata =
        * @expose
        * @method
        * @name oj.ojPopup#refresh
+       * @ojshortdesc Refreshes the popup, causing it to reevaluate its position.
        * @memberof oj.ojPopup
        * @instance
        * @return {void}

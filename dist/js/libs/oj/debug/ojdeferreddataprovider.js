@@ -3,14 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj, $, ko)
 {
+  "use strict";
 var DeferredDataProvider = /** @class */ (function () {
     function DeferredDataProvider(_dataProvider, _capabilityFunc) {
         this._dataProvider = _dataProvider;
@@ -269,9 +264,9 @@ oj['DeferredDataProvider'] = DeferredDataProvider;
  * Determines whether this DataProvider supports certain feature.
  *
  * @ojstatus preview
- * @param {string} capabilityName capability name. Supported capability names are:
+ * @param {string=} capabilityName capability name. Supported capability names are:
  *                  "fetchByKeys", "fetchByOffset", and "sort"
- * @return {Object} capability information or null if unsupported
+ * @return {any} capability information or null if unsupported
  * @export
  * @expose
  * @memberof oj.DeferredDataProvider

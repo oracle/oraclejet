@@ -21,10 +21,12 @@
     .oj-gantt {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
         animation-duration: var(--oj-dvt-animation-duration);
+        user-select: none;
       } @else {
         animation-duration: $dvtAnimationDuration;
+        @include oj-user-select-property(none);
       }
-      @include oj-user-select-property(none);
+      
       outline: none;
     }
 
@@ -102,6 +104,60 @@
       }
     }
 
+    .oj-gantt-row-label-open-icon {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/legend/open-ena.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/legend/open-ena-r.png");
+      }
+    }
+
+    .oj-gantt-row-label-open-icon.oj-hover {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/legend/open-ovr.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/legend/open-ovr-r.png");
+      }
+    }
+
+    .oj-gantt-row-label-open-icon.oj-active {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/legend/open-dwn.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/legend/open-dwn-r.png");
+      }
+    }
+
+    .oj-gantt-row-label-close-icon {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/legend/closed-ena.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/legend/closed-ena-r.png");
+      }
+    }
+
+    .oj-gantt-row-label-close-icon.oj-hover {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/legend/closed-ovr.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/legend/closed-ovr-r.png");
+      }
+    }
+
+    .oj-gantt-row-label-close-icon.oj-active {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/legend/closed-dwn.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/legend/closed-dwn-r.png");
+      }
+    }
+
     /* Styling for all tasks */
     .oj-gantt-task {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
@@ -159,7 +215,7 @@
       filter: none;
     }
 
-    /* Styling related to tasks as drag sources */
+    /* Styling related to interactivity */
     .oj-gantt-task.oj-draggable,
     .oj-gantt-task-label.oj-draggable,
     .oj-gantt-task-progress.oj-draggable {
@@ -177,10 +233,18 @@
       stroke-dasharray: 5,2;
     }
 
+    .oj-gantt-task-resize-handle {
+      opacity: 0;
+    }
+    
+    .oj-gantt-task-resize-handle.oj-draggable {
+      cursor: ew-resize;
+    }
+
     /* Styling for all task labels */
     .oj-gantt-task-label {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        color: var(--oj-primary-text-color);
+        color: var(--oj-text-color-primary);
         font-size: var(--oj-font-size-sm);
       } @else {
         color: $primaryTextColor;

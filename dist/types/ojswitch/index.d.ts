@@ -2,13 +2,9 @@ import { editableValue, editableValueEventMap, editableValueSettableProperties }
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojSwitch extends editableValue<boolean, ojSwitchSettableProperties> {
     disabled: boolean;
+    labelledBy: string | null;
     readonly: boolean;
     value: boolean;
-    onDisabledChanged: ((event: JetElementCustomEvent<ojSwitch["disabled"]>) => any) | null;
-    onReadonlyChanged: ((event: JetElementCustomEvent<ojSwitch["readonly"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojSwitch["value"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojSwitch.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojSwitch.ojAnimateStart) => any) | null;
     addEventListener<T extends keyof ojSwitchEventMap>(type: T, listener: (this: HTMLElement, ev: ojSwitchEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojSwitchSettableProperties>(property: T): ojSwitch[T];
@@ -31,16 +27,26 @@ export namespace ojSwitch {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojSwitch["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojSwitch["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyChanged = JetElementCustomEvent<ojSwitch["readonly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojSwitch["value"]>;
 }
 export interface ojSwitchEventMap extends editableValueEventMap<boolean, ojSwitchSettableProperties> {
     'ojAnimateEnd': ojSwitch.ojAnimateEnd;
     'ojAnimateStart': ojSwitch.ojAnimateStart;
     'disabledChanged': JetElementCustomEvent<ojSwitch["disabled"]>;
+    'labelledByChanged': JetElementCustomEvent<ojSwitch["labelledBy"]>;
     'readonlyChanged': JetElementCustomEvent<ojSwitch["readonly"]>;
     'valueChanged': JetElementCustomEvent<ojSwitch["value"]>;
 }
 export interface ojSwitchSettableProperties extends editableValueSettableProperties<boolean> {
     disabled: boolean;
+    labelledBy: string | null;
     readonly: boolean;
     value: boolean;
 }

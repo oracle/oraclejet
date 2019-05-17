@@ -19,18 +19,7 @@ export interface editableValue<V, SP extends editableValueSettableProperties<V, 
     labelHint: string;
     messagesCustom: Message[];
     readonly valid: 'valid' | 'pending' | 'invalidHidden' | 'invalidShown';
-    value: V;
-    onDescribedByChanged: ((event: JetElementCustomEvent<editableValue<V, SP, SV, RV>["describedBy"]>) => any) | null;
-    onDisabledChanged: ((event: JetElementCustomEvent<editableValue<V, SP, SV, RV>["disabled"]>) => any) | null;
-    onDisplayOptionsChanged: ((event: JetElementCustomEvent<editableValue<V, SP, SV, RV>["displayOptions"]>) => any) | null;
-    onHelpChanged: ((event: JetElementCustomEvent<editableValue<V, SP, SV, RV>["help"]>) => any) | null;
-    onHelpHintsChanged: ((event: JetElementCustomEvent<editableValue<V, SP, SV, RV>["helpHints"]>) => any) | null;
-    onLabelHintChanged: ((event: JetElementCustomEvent<editableValue<V, SP, SV, RV>["labelHint"]>) => any) | null;
-    onMessagesCustomChanged: ((event: JetElementCustomEvent<editableValue<V, SP, SV, RV>["messagesCustom"]>) => any) | null;
-    onValidChanged: ((event: JetElementCustomEvent<editableValue<V, SP, SV, RV>["valid"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<editableValue<V, SP, SV, RV>["value"]>) => any) | null;
-    onOjAnimateEnd: ((event: editableValue.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: editableValue.ojAnimateStart) => any) | null;
+    value: V | null;
     addEventListener<T extends keyof editableValueEventMap<V, SP, SV, RV>>(type: T, listener: (this: HTMLElement, ev: editableValueEventMap<V, SP, SV, RV>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof editableValueSettableProperties<V, SV, RV>>(property: T): editableValue<V, SP, SV, RV>[T];
@@ -56,6 +45,24 @@ export namespace editableValue {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["describedBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["help"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpHintsChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["helpHints"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHintChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["labelHint"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesCustomChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["messagesCustom"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["valid"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["value"]>;
 }
 export interface editableValueEventMap<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> extends baseComponentEventMap<SP> {
     'ojAnimateEnd': editableValue.ojAnimateEnd;
@@ -89,7 +96,7 @@ export interface editableValueSettableProperties<V, SV = V, RV = V> extends base
     labelHint: string;
     messagesCustom: Message[];
     readonly valid: 'valid' | 'pending' | 'invalidHidden' | 'invalidShown';
-    value: SV;
+    value: SV | null;
 }
 export interface editableValueSettablePropertiesLenient<V, SV = V, RV = V> extends Partial<editableValueSettableProperties<V, SV, RV>> {
     [key: string]: any;

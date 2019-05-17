@@ -77,7 +77,7 @@
         .oj-rowexpander-collapse-icon.oj-focus-highlight,
         .oj-rowexpander-lazyload-icon.oj-focus-highlight {
           @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            outline: dotted 1px var(--oj-primary-text-color);
+            outline: dotted 1px var(--oj-text-color-primary);
             outline: -webkit-focus-ring-color auto;
           } @else {
             @include oj-browser-focus-outline-approximation($primaryTextColor);

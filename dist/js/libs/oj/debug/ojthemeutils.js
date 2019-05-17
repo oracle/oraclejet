@@ -3,9 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojlogger'], function(Logger)
 {
+  "use strict";
 /*
 ** Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
 */
@@ -28,7 +28,7 @@ var ThemeUtils = function () {};
  * @memberof oj.ThemeUtils
  * @export
  * @static
- * @hideconstructor
+ * @memberof oj.ThemeUtils
  *
  * @return {string|null} the name of the theme
  */
@@ -65,7 +65,7 @@ ThemeUtils.getThemeName = function () {
  * @method getThemeTargetPlatform
  * @memberof oj.ThemeUtils
  * @return {string|null} the target platform can be any string the theme
- * wants to send down, but the usual values are 'web', 'ios', 'android', 'windows'
+ * wants to send down, but common values are 'all', 'web', 'ios', 'android', 'windows'
  */
 ThemeUtils.getThemeTargetPlatform = function () {
   // get the map of theme info

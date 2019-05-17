@@ -2,8 +2,8 @@
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['./DvtToolkit'], function(dvt) {
+  "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
 (function(dvt) {
@@ -63,10 +63,9 @@ dvt.NBox.prototype.Init = function(context, callback, callbackObj) {
   this.EventManager = new DvtNBoxEventManager(this);
   this.EventManager.addListeners(this);
 
-  // Drag and drop support
-  this._dragSource = new dvt.DragSource(context);
-  this._dropTarget = new DvtNBoxDropTarget(this);
-  this.EventManager.setDragSource(this._dragSource);
+  // Drag and drop support - not used in JET
+  // this._dragSource = new dvt.DragSource(context);
+  // this.EventManager.setDragSource(this._dragSource);
 
   // Set up keyboard handler on non-touch devices
   if (!dvt.Agent.isTouchDevice())
@@ -74,12 +73,6 @@ dvt.NBox.prototype.Init = function(context, callback, callbackObj) {
 
   // Make sure the object has an id for clipRect naming
   this.setId('nbox' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
-
-  /**
-   * The legend of the nbox.  This will be set during render time.
-   * @type {dvt.Legend}
-   */
-  this.legend = null;
 
   /**
    * The array of logical objects for this nbox.
@@ -117,6 +110,7 @@ dvt.NBox.prototype.SetOptions = function(options) {
   else if (!this.Options) // No object has ever been provided, copy the defaults
     this.Options = this.GetDefaults();
   this._displayables = [];
+  this.Options['__displayableCache'] = new dvt.BaseComponentCache();
 
   // Initialize the selection handler
   var selectionMode = this.Options[dvt.NBoxConstants.SELECTION_MODE];
@@ -170,21 +164,6 @@ dvt.NBox.prototype.render = function(options, width, height) {
   var container = new dvt.Container(this.getCtx());
   this.addChild(container);
   DvtNBoxRenderer.render(this, container, new dvt.Rectangle(0, 0, this.Width, this.Height));
-
-  // Set the nbox, the panel drawer and the legend as keyboard listeners that are connected through tabbing
-  var keyboardHandlers = [this];
-  var legendData = DvtNBoxDataUtils.getLegend(this);
-  if (legendData && legendData['sections']) {
-    var panelDrawer = DvtNBoxDataUtils.getDisplayable(this, legendData, 'panelDrawer');
-    if (panelDrawer) {
-      keyboardHandlers.push(panelDrawer);
-      if (panelDrawer.isDisclosed()) {
-        var legend = DvtNBoxDataUtils.getDisplayable(this, legendData, 'legend');
-        keyboardHandlers.push(legend);
-      }
-    }
-  }
-  this.getCtx().setKeyboardFocusArray(keyboardHandlers);
 
   // if no keyboard focus, set to drawer if present
   if (options && DvtNBoxDataUtils.getDrawer(this) && DvtNBoxDataUtils.getGrouping(this)) {
@@ -294,7 +273,7 @@ dvt.NBox.prototype._getOnAnimationEndFunction = function(options) {
 
     this.setMouseEnabled(true);
     if (!this.AnimationStopped) {
-      if (this.Animation && dvt.Agent.isPlatformIE() && dvt.Agent.getVersion() >= 12) {
+      if (this.Animation && (dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge') && dvt.Agent.version >= 12) {
         // Edge can return incorrect values for getBBox on text elements after animation
         // Hacking for now by forcing a full non-animated render
         this.Animation = null;
@@ -376,55 +355,16 @@ dvt.NBox.prototype._updateKeyboardFocusEffect = function() {
  */
 dvt.NBox.prototype.processEvent = function(event, source) {
   var type = event['type'];
-  var options = this.getSanitizedOptions();
-  if (type == 'categoryHide' || type == 'categoryShow') {
-    event = this._processHideShowEvent(event);
-  }
-  else if (type == 'categoryHighlight') {
+  if (type == 'categoryHighlight') {
     event = this._processRolloverEvent(event);
   }
   else if (type == 'selection') {
     event = this._processSelectionEvent(event);
   }
-  else if (options['_legend'] && type == dvt.PanelDrawerEvent.TYPE) {
-    var disclosure = event.getSubType() == dvt.PanelDrawerEvent.SUBTYPE_HIDE ? 'undisclosed' : 'disclosed';
-    event = dvt.EventFactory.newAdfPropertyChangeEvent(dvt.NBoxConstants.LEGEND_DISCLOSURE, disclosure);
-    options[dvt.NBoxConstants.LEGEND_DISCLOSURE] = disclosure;
-    this.render(options);
-  }
 
   if (event) {
     this.dispatchEvent(event);
   }
-};
-
-
-/**
- * Processes hide/show event
- * @param {object} event hide/show event
- * @return {object} processed event
- * @private
- */
-dvt.NBox.prototype._processHideShowEvent = function(event) {
-  var options = this.getSanitizedOptions();
-  var hiddenCategories = options[dvt.NBoxConstants.HIDDEN_CATEGORIES];
-  if (!hiddenCategories) {
-    hiddenCategories = [];
-  }
-  var categoryIndex = dvt.ArrayUtils.getIndex(hiddenCategories, event['category']);
-  if (event['type'] == 'categoryHide' && categoryIndex == -1) {
-    hiddenCategories.push(event['category']);
-  }
-  if (event['type'] == 'categoryShow' && categoryIndex != -1) {
-    hiddenCategories.splice(categoryIndex, 1);
-  }
-  if (hiddenCategories.length == 0) {
-    hiddenCategories = null;
-  }
-  event = dvt.EventFactory.newAdfPropertyChangeEvent(dvt.NBoxConstants.HIDDEN_CATEGORIES, hiddenCategories);
-  options[dvt.NBoxConstants.HIDDEN_CATEGORIES] = hiddenCategories;
-  this.render(options);
-  return event;
 };
 
 
@@ -493,18 +433,6 @@ dvt.NBox.prototype._processSelectionEvent = function(event) {
 
 
 /**
- * Distributes the specified event to this nbox's children.
- * @param {object} event
- * @param {object} source The component that is the source of the event, if available.
- * @private
- */
-dvt.NBox.prototype._distributeToChildren = function(event, source) {
-  if (this.legend && this.legend != source)
-    this.legend.processEvent(event, source);
-};
-
-
-/**
  * Registers the object peer with the nbox.  The peer must be registered to participate
  * in interactivity.
  * @param {DvtNBoxObjPeer} peer
@@ -554,16 +482,6 @@ dvt.NBox.prototype.getSelectionHandler = function() {
   */
 dvt.NBox.prototype.isSelectionSupported = function() {
   return (this._selectionHandler ? true : false);
-};
-
-
-/**
- * Returns the array of DvtShowPopupBehaviors for the given stamp id.
- * @param {string} stampId The id of the stamp containing the showPopupBehaviors.
- * @return {array} The array of showPopupBehaviors.
- */
-dvt.NBox.prototype.getShowPopupBehaviors = function(stampId) {
-  return this._popupBehaviors ? this._popupBehaviors[stampId] : null;
 };
 
 
@@ -743,10 +661,11 @@ dvt.NBox.prototype.getAutomation = function() {
  * @override
  */
 dvt.NBox.prototype.GetComponentDescription = function() {
+  var translations = this.getOptions().translations;
   if (DvtNBoxDataUtils.hasValidData(this))
-    return dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'NBOX', DvtNBoxDataUtils.getColumnCount(this) * DvtNBoxDataUtils.getRowCount(this));
+    return dvt.ResourceUtils.format(translations.componentName, [DvtNBoxDataUtils.getColumnCount(this) * DvtNBoxDataUtils.getRowCount(this)]);
   else
-    return dvt.Bundle.getTranslation(this.getOptions(), 'labelInvalidData', dvt.Bundle.UTIL_PREFIX, 'INVALID_DATA');
+    return translations.labelInvalidData;
 };
 
 /**
@@ -892,113 +811,6 @@ dvt.NBox.prototype.isAnimationAllowed = function() {
  */
 dvt.NBox.prototype.setAnimationAllowed = function(animationAllowed) {
   this._animationAllowed = animationAllowed;
-};
-
-// APIs called by the ADF Faces drag source for dvt.NBox
-
-
-/**
- * If this object supports drag, returns the client id of the drag component.
- * Otherwise returns null.
- * @param mouseX the x coordinate of the mouse
- * @param mouseY the x coordinate of the mouse
- * @param clientIds the array of client ids of the valid drag components
- */
-dvt.NBox.prototype.isDragAvailable = function(mouseX, mouseY, clientIds) {
-  return this._dragSource.isDragAvailable(clientIds);
-};
-
-
-/**
- * Returns the transferable object for a drag initiated at these coordinates.
- */
-dvt.NBox.prototype.getDragTransferable = function(mouseX, mouseY) {
-  return this._dragSource.getDragTransferable(mouseX, mouseY);
-};
-
-
-/**
- * Returns the feedback for the drag operation.
- */
-dvt.NBox.prototype.getDragOverFeedback = function(mouseX, mouseY) {
-  return this._dragSource.getDragOverFeedback(mouseX, mouseY);
-};
-
-
-/**
- * Returns an Object containing the drag context info.
- */
-dvt.NBox.prototype.getDragContext = function(mouseX, mouseY) {
-  return this._dragSource.getDragContext(mouseX, mouseY);
-};
-
-
-/**
- * Returns the offset to use for the drag feedback. This positions the drag
- * feedback relative to the pointer.
- */
-dvt.NBox.prototype.getDragOffset = function(mouseX, mouseY) {
-  return this._dragSource.getDragOffset(mouseX, mouseY);
-};
-
-
-/**
- * Returns the offset from the mouse pointer where the drag is considered to be located.
- */
-dvt.NBox.prototype.getPointerOffset = function(xOffset, yOffset) {
-  return this._dragSource.getPointerOffset(xOffset, yOffset);
-};
-
-
-/**
- * Notifies the component that a drag started.
- */
-dvt.NBox.prototype.initiateDrag = function() {
-  this._dragSource.initiateDrag();
-};
-
-
-/**
- * Clean up after the drag is completed.
- */
-dvt.NBox.prototype.dragDropEnd = function() {
-  this._dragSource.dragDropEnd();
-};
-
-// APIs called by the ADF Faces drop target for dvt.NBox
-
-
-/**
- * If a drop is possible at these mouse coordinates, returns the client id
- * of the drop component. Returns null if drop is not possible.
- */
-dvt.NBox.prototype.acceptDrag = function(mouseX, mouseY, clientIds) {
-  return this._dropTarget.acceptDrag(mouseX, mouseY, clientIds);
-};
-
-
-/**
- * Paints drop site feedback as a drag enters the drop site.
- */
-dvt.NBox.prototype.dragEnter = function() {
-  this._dropTarget.dragEnter();
-};
-
-
-/**
- * Cleans up drop site feedback as a drag exits the drop site.
- */
-dvt.NBox.prototype.dragExit = function() {
-  this._dropTarget.dragExit();
-};
-
-
-/**
- * Returns the object representing the drop site. This method is called when a valid
- * drop is performed.
- */
-dvt.NBox.prototype.getDropSite = function(mouseX, mouseY) {
-  return this._dropTarget.getDropSite(mouseX, mouseY);
 };
 
 // Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -1240,16 +1052,6 @@ dvt.NBoxConstants.DRAWER = '_drawer';
 /**
  * @const
  */
-dvt.NBoxConstants.LEGEND = '_legend';
-
-/**
- * @const
- */
-dvt.NBoxConstants.LEGEND_DISCLOSURE = 'legendDisclosure';
-
-/**
- * @const
- */
 dvt.NBoxConstants.ID = 'id';
 
 /**
@@ -1348,16 +1150,6 @@ dvt.NBoxConstants.HEIGHT = 'height';
 dvt.NBoxConstants.WIDTH = 'width';
 
 
-dvt.Bundle.addDefaultStrings(dvt.Bundle.NBOX_PREFIX, {
-  'HIGHLIGHTED_COUNT': '{0}/{1}',
-  'COMMA_SEP_LIST': '{0}, {1}',
-  'OTHER': 'Other',
-  'LEGEND': 'Legend',
-  'GROUP_NODE': 'Group',
-  'ADDITIONAL_DATA': 'Additional Data',
-  'SIZE': 'Size'
-});
-
 // Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -1370,24 +1162,21 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.NBOX_PREFIX, {
  * @extends {dvt.BaseComponentDefaults}
  */
 var DvtNBoxDefaults = function(context) {
-  this.Init({'skyros': DvtNBoxDefaults.VERSION_1, 'alta': DvtNBoxDefaults.SKIN_ALTA}, context);
+  this.Init({'alta': DvtNBoxDefaults.SKIN_ALTA}, context);
 };
 
 dvt.Obj.createSubclass(DvtNBoxDefaults, dvt.BaseComponentDefaults);
 
-
 /**
  * Defaults for version 1.
  */
-DvtNBoxDefaults.VERSION_1 = {
+DvtNBoxDefaults.SKIN_ALTA = {
   'skin': dvt.CSSStyle.SKIN_ALTA,
   'selectionMode': 'multiple',
   'animationOnDataChange': 'none',
   'animationOnDisplay': 'none',
   'cellMaximize' : 'on',
   'cellContent' : 'auto',
-  'legendDisplay': 'auto',
-  'legendDisclosure': 'disclosed',
   'groupBehavior': 'withinCell',
   'otherColor': '#636363',
   'otherThreshold': 0,
@@ -1449,9 +1238,6 @@ DvtNBoxDefaults.VERSION_1 = {
         'borderWidth': 0,
         'borderRadius' : 0,
         'shape': dvt.SimpleMarker.CIRCLE}},
-    '__legendDefaults' : {'sectionStyle': 'color: #252525;' + dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_12,
-      'itemStyle': 'color: #252525;' + dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12,
-      'markerColor': '#808080'},
     '_categoryNodeDefaults' : {'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)}
   },
   '__layout': {
@@ -1485,16 +1271,10 @@ DvtNBoxDefaults.VERSION_1 = {
     'drawerCountVerticalGap': 3,
     'drawerStartGap': 6,
     'drawerLabelGap': 6,
-    'drawerHeaderHeight': 31,
-    'legendBottomGap': 10
+    'drawerHeaderHeight': 31
   }
 };
 
-/**
- * Defaults for alta.
- */
-DvtNBoxDefaults.SKIN_ALTA = {
-};
 
 var DvtNBoxCell = function() {};
 
@@ -1530,6 +1310,7 @@ DvtNBoxCell.prototype.Init = function(nbox, data) {
   DvtNBoxCell.superclass.Init.call(this, nbox.getCtx(), null, 'c:' + r + ',' + c);
   this._nbox = nbox;
   this._data = data;
+  this._data['__cacheId'] = 'cell:' + this.getId();
   this._scrollContainer = false;
 };
 
@@ -1619,20 +1400,14 @@ DvtNBoxCell.prototype.handleDoubleClick = function() {
 
   var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(this._nbox);
   var maximizedColumn = DvtNBoxDataUtils.getMaximizedColumn(this._nbox);
-  var options = this._nbox.getSanitizedOptions();
-  var event = dvt.EventFactory.newAdfPropertyChangeEvent(dvt.NBoxConstants.DRAWER, null);
-  options[dvt.NBoxConstants.DRAWER] = null;
+  DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, dvt.NBoxConstants.DRAWER, null);
   if (maximizedRow == this._data[dvt.NBoxConstants.ROW] && maximizedColumn == this._data[dvt.NBoxConstants.COLUMN]) {
-    options[dvt.NBoxConstants.MAXIMIZED_ROW] = null;
-    event['properties'][dvt.NBoxConstants.MAXIMIZED_ROW] = null;
-    options[dvt.NBoxConstants.MAXIMIZED_COLUMN] = null;
-    event['properties'][dvt.NBoxConstants.MAXIMIZED_COLUMN] = null;
+    DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, dvt.NBoxConstants.MAXIMIZED_ROW, null);
+    DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, dvt.NBoxConstants.MAXIMIZED_COLUMN, null);
   }
   else {
-    options[dvt.NBoxConstants.MAXIMIZED_ROW] = this._data[dvt.NBoxConstants.ROW];
-    event['properties'][dvt.NBoxConstants.MAXIMIZED_ROW] = this._data[dvt.NBoxConstants.ROW];
-    options[dvt.NBoxConstants.MAXIMIZED_COLUMN] = this._data[dvt.NBoxConstants.COLUMN];
-    event['properties'][dvt.NBoxConstants.MAXIMIZED_COLUMN] = this._data[dvt.NBoxConstants.COLUMN];
+    DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, dvt.NBoxConstants.MAXIMIZED_ROW, this._data[dvt.NBoxConstants.ROW]);
+    DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, dvt.NBoxConstants.MAXIMIZED_COLUMN, this._data[dvt.NBoxConstants.COLUMN]);
   }
 
   var otherCell;
@@ -1657,9 +1432,7 @@ DvtNBoxCell.prototype.handleDoubleClick = function() {
     this._nbox.EventManager.setFocused(false);
   }
 
-
-  this._nbox.processEvent(event);
-  this._nbox.render(options);
+  this._nbox.processEvent(dvt.EventFactory.newRenderEvent());
 };
 
 
@@ -1713,11 +1486,12 @@ DvtNBoxCell.prototype.HandleKeyboardEvent = function(event) {
 DvtNBoxCell.prototype.getAriaLabel = function() {
   var cellIndex = this.getCellIndex();
   var states = [];
+  var translations = this._nbox.getOptions().translations;
   if (DvtNBoxDataUtils.isCellMaximized(this._nbox, cellIndex))
-    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'STATE_MAXIMIZED'));
+    states.push(translations.stateMaximized);
   else if (DvtNBoxDataUtils.isCellMinimized(this._nbox, cellIndex))
-    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'STATE_MINIMIZED'));
-  states.push([dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'SIZE'), this.getNodeCount()]);
+    states.push(translations.stateMinimized);
+  states.push([translations.labelSize, this.getNodeCount()]);
   return dvt.Displayable.generateAriaLabel(this.getData()['shortDesc'], states);
 };
 
@@ -1728,7 +1502,7 @@ DvtNBoxCell.prototype.getAriaLabel = function() {
 /**
  * @override
  */
-DvtNBoxCell.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace) 
+DvtNBoxCell.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace)
 {
   return DvtNBoxKeyboardHandler.getKeyboardBoundingBox(this, targetCoordinateSpace);
 };
@@ -1737,7 +1511,7 @@ DvtNBoxCell.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace)
 /**
  * @override
  */
-DvtNBoxCell.prototype.getTargetElem = function() 
+DvtNBoxCell.prototype.getTargetElem = function()
 {
   return this.getElem();
 };
@@ -1771,7 +1545,7 @@ DvtNBoxCell.prototype.isShowingKeyboardFocusEffect = function() {
 /**
  * @override
  */
-DvtNBoxCell.prototype.getNextNavigable = function(event) 
+DvtNBoxCell.prototype.getNextNavigable = function(event)
 {
   var next = null;
   if (this._nbox.EventManager.getKeyboardHandler().isNavigationEvent(event)) {
@@ -1996,7 +1770,7 @@ DvtNBoxNode.prototype.Init = function(nbox, data) {
   this._data = data;
   this._nbox.registerObject(this);
   var selectionMode = this._nbox.getOptions()[dvt.NBoxConstants.SELECTION_MODE];
-  if (selectionMode == 'single' || selectionMode == 'multiple' || this.getAction()) {
+  if (selectionMode == 'single' || selectionMode == 'multiple') {
     this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
   }
   this._maxAlpha = 1;
@@ -2010,14 +1784,6 @@ DvtNBoxNode.prototype.Init = function(nbox, data) {
  */
 DvtNBoxNode.prototype.getData = function() {
   return this._data;
-};
-
-/**
- * Return the action string for the data item, if any exists
- * @return {string} the action outcome for the data item
- */
-DvtNBoxNode.prototype.getAction = function() {
-  return this._data['action'];
 };
 
 /**
@@ -2212,36 +1978,6 @@ DvtNBoxNode.prototype.handleDoubleClick = function() {
 /**
  * @override
  */
-DvtNBoxNode.prototype.getShowPopupBehaviors = function() {
-  if (!this._showPopupBehaviors) {
-    this._showPopupBehaviors = [];
-    var spbs = this._data['showPopupBehaviors'];
-    if (spbs) {
-      for (var i = 0; i < spbs.length; i++) {
-        this._showPopupBehaviors.push(new dvt.ShowPopupBehavior(spbs[i]['popupId'], spbs[i]['triggerType'], spbs[i]['alignId'], spbs[i]['align']));
-      }
-    }
-  }
-  return this._showPopupBehaviors;
-};
-
-
-/**
- * @override
- */
-DvtNBoxNode.prototype.getPopupBounds = function(behavior) {
-  if (behavior && behavior.getAlign()) {
-    var matrix = DvtNBoxRenderer.getGlobalMatrix(this);
-    var background = DvtNBoxDataUtils.getDisplayable(this._nbox, this._data, 'background');
-    return new dvt.Rectangle(matrix.getTx() + background.getX(), matrix.getTy() + background.getY(), background.getWidth(), background.getHeight());
-  }
-  return null;
-};
-
-
-/**
- * @override
- */
 DvtNBoxNode.prototype.isDragAvailable = function(clientIds) {
   return this._nbox.__isDragAvailable(clientIds);
 };
@@ -2318,7 +2054,7 @@ DvtNBoxNode.prototype.getCategories = function() {
 /**
  * @override
  */
-DvtNBoxNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace) 
+DvtNBoxNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace)
 {
   return DvtNBoxKeyboardHandler.getKeyboardBoundingBox(this, targetCoordinateSpace);
 };
@@ -2326,7 +2062,7 @@ DvtNBoxNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace)
 /**
  * @override
  */
-DvtNBoxNode.prototype.getTargetElem = function() 
+DvtNBoxNode.prototype.getTargetElem = function()
 {
   return this.getElem();
 };
@@ -2334,7 +2070,7 @@ DvtNBoxNode.prototype.getTargetElem = function()
 /**
  * @override
  */
-DvtNBoxNode.prototype.showKeyboardFocusEffect = function() 
+DvtNBoxNode.prototype.showKeyboardFocusEffect = function()
 {
   this._isShowingKeyboardFocusEffect = true;
   this.showHoverEffect();
@@ -2347,7 +2083,7 @@ DvtNBoxNode.prototype.showKeyboardFocusEffect = function()
 /**
  * @override
  */
-DvtNBoxNode.prototype.hideKeyboardFocusEffect = function() 
+DvtNBoxNode.prototype.hideKeyboardFocusEffect = function()
 {
   this._isShowingKeyboardFocusEffect = false;
   this.hideHoverEffect();
@@ -2365,7 +2101,7 @@ DvtNBoxNode.prototype.isShowingKeyboardFocusEffect = function() {
 /**
  * @override
  */
-DvtNBoxNode.prototype.getNextNavigable = function(event) 
+DvtNBoxNode.prototype.getNextNavigable = function(event)
 {
   var next = null;
   if (event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey) {
@@ -2656,7 +2392,7 @@ DvtNBoxNodeOverflow.prototype._addAccessibilityAttributes = function() {
  * @override
  */
 DvtNBoxNodeOverflow.prototype.getDatatip = function(target, x, y) {
-  return dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'ADDITIONAL_DATA');
+  return this._nbox.getOptions().translations.labelAdditionalData;
 };
 
 
@@ -2674,7 +2410,7 @@ DvtNBoxNodeOverflow.prototype.getAriaLabel = function() {
 /**
  * @override
  */
-DvtNBoxNodeOverflow.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace) 
+DvtNBoxNodeOverflow.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace)
 {
   return DvtNBoxKeyboardHandler.getKeyboardBoundingBox(this, targetCoordinateSpace);
 };
@@ -2683,7 +2419,7 @@ DvtNBoxNodeOverflow.prototype.getKeyboardBoundingBox = function(targetCoordinate
 /**
  * @override
  */
-DvtNBoxNodeOverflow.prototype.getTargetElem = function() 
+DvtNBoxNodeOverflow.prototype.getTargetElem = function()
 {
   return this.getElem();
 };
@@ -2692,7 +2428,7 @@ DvtNBoxNodeOverflow.prototype.getTargetElem = function()
 /**
  * @override
  */
-DvtNBoxNodeOverflow.prototype.showKeyboardFocusEffect = function() 
+DvtNBoxNodeOverflow.prototype.showKeyboardFocusEffect = function()
 {
   this._isShowingKeyboardFocusEffect = true;
   DvtNBoxDataUtils.getDisplayable(this._nbox, this, 'focusEffect').show();
@@ -2702,7 +2438,7 @@ DvtNBoxNodeOverflow.prototype.showKeyboardFocusEffect = function()
 /**
  * @override
  */
-DvtNBoxNodeOverflow.prototype.hideKeyboardFocusEffect = function() 
+DvtNBoxNodeOverflow.prototype.hideKeyboardFocusEffect = function()
 {
   this._isShowingKeyboardFocusEffect = false;
   DvtNBoxDataUtils.getDisplayable(this._nbox, this, 'focusEffect').hide();
@@ -2720,7 +2456,7 @@ DvtNBoxNodeOverflow.prototype.isShowingKeyboardFocusEffect = function() {
 /**
  * @override
  */
-DvtNBoxNodeOverflow.prototype.getNextNavigable = function(event) 
+DvtNBoxNodeOverflow.prototype.getNextNavigable = function(event)
 {
   var next = null;
   if (this._nbox.EventManager.getKeyboardHandler().isNavigationEvent(event)) {
@@ -2752,10 +2488,10 @@ DvtNBoxNodeOverflow.prototype.getDisplayable = function() {
  */
 DvtNBoxNodeOverflow.prototype.getKeyboardFocusDisplayable = function() {
   // return first hidden node when maximizing the cell
-  var oldPrevNode = this['__prev'];
-  var newPrevNode = DvtNBoxDataUtils.getNode(this._nbox, DvtNBoxDataUtils.getNodeIndex(this._nbox, oldPrevNode[dvt.NBoxConstants.ID]));
-  var newNode = newPrevNode['__next'];
-  return DvtNBoxDataUtils.getDisplayable(this._nbox, newNode);
+  var oldPrevNodeData = this.previousNavigable.getData();
+  var newPrevNodeData = DvtNBoxDataUtils.getNode(this._nbox, DvtNBoxDataUtils.getNodeIndex(this._nbox, oldPrevNodeData[dvt.NBoxConstants.ID]));
+  var newPrevNode = DvtNBoxDataUtils.getDisplayable(this._nbox, newPrevNodeData);
+  return newPrevNode.nextNavigable;
 };
 
 var DvtNBoxCategoryNode = function() {};
@@ -2791,6 +2527,7 @@ DvtNBoxCategoryNode.prototype.Init = function(nbox, data) {
                                            isNaN(data[dvt.NBoxConstants.CELL]) ? data[dvt.NBoxConstants.ID] : data[dvt.NBoxConstants.CELL] + ':' + data[dvt.NBoxConstants.ID]);// TODO for : Passing non container params weird
   this._nbox = nbox;
   this._data = data;
+  this._data['__cacheId'] = 'categoryNode:' + this.getId();
   this._nbox.registerObject(this);
   this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
   this._maxAlpha = 1;
@@ -2893,13 +2630,8 @@ DvtNBoxCategoryNode.prototype.getSelectionShape = function() {
  * @return {string} the label for this category node
  */
 DvtNBoxCategoryNode.prototype.getLabel = function() {
-  var labels = DvtNBoxDataUtils.getCategoryNodeLabels(this._nbox, this._data);
-  while (labels.length > 1) {
-    var params = [labels[0], labels[1]];
-    var joined = dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'COMMA_SEP_LIST', params);
-    labels.splice(0, 2, joined);
-  }
-  return labels[0];
+  // TODO: consider translating?  See oj-converter.plural-separator
+  return DvtNBoxDataUtils.getCategoryNodeLabels(this._nbox, this._data).join(', ');
 };
 
 
@@ -2924,7 +2656,8 @@ DvtNBoxCategoryNode.prototype.getDatatip = function(target, x, y) {
     }
     return this._nbox.getCtx().getTooltipManager().getCustomTooltip(tooltipFunc, dataContext);
   }
-  return this.getShortDesc() + '\n' + dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'SIZE'), this._data['nodeIndices'].length]);
+  var translations = this._nbox.getOptions().translations;
+  return this.getShortDesc() + '\n' + dvt.ResourceUtils.format(translations.labelAndValue, [translations.labelSize, this._data['nodeIndices'].length]);
 };
 
 /**
@@ -2992,11 +2725,8 @@ DvtNBoxCategoryNode.prototype.handleDoubleClick = function() {
  * Opens nBox drawer.  Triggered on single click with selection disabled, double click with selection enabled.
  */
 DvtNBoxCategoryNode.prototype.openDrawer = function() {
-  var options = this._nbox.getSanitizedOptions();
-  options[dvt.NBoxConstants.DRAWER] = {'id': this.getId()};
-  var event = dvt.EventFactory.newAdfPropertyChangeEvent(dvt.NBoxConstants.DRAWER, this.getId());
-  this._nbox.processEvent(event);
-  this._nbox.render(options);
+  DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, dvt.NBoxConstants.DRAWER, {id: this.getId()});
+  this._nbox.processEvent(dvt.EventFactory.newRenderEvent());
 };
 
 
@@ -3133,7 +2863,7 @@ DvtNBoxCategoryNode.compareSize = function(a, b) {
 /**
  * @override
  */
-DvtNBoxCategoryNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace) 
+DvtNBoxCategoryNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace)
 {
   return DvtNBoxKeyboardHandler.getKeyboardBoundingBox(this, targetCoordinateSpace);
 };
@@ -3141,7 +2871,7 @@ DvtNBoxCategoryNode.prototype.getKeyboardBoundingBox = function(targetCoordinate
 /**
  * @override
  */
-DvtNBoxCategoryNode.prototype.getTargetElem = function() 
+DvtNBoxCategoryNode.prototype.getTargetElem = function()
 {
   return this.getElem();
 };
@@ -3149,7 +2879,7 @@ DvtNBoxCategoryNode.prototype.getTargetElem = function()
 /**
  * @override
  */
-DvtNBoxCategoryNode.prototype.showKeyboardFocusEffect = function() 
+DvtNBoxCategoryNode.prototype.showKeyboardFocusEffect = function()
 {
   this._isShowingKeyboardFocusEffect = true;
   this.showHoverEffect();
@@ -3160,7 +2890,7 @@ DvtNBoxCategoryNode.prototype.showKeyboardFocusEffect = function()
 /**
  * @override
  */
-DvtNBoxCategoryNode.prototype.hideKeyboardFocusEffect = function() 
+DvtNBoxCategoryNode.prototype.hideKeyboardFocusEffect = function()
 {
   this._isShowingKeyboardFocusEffect = false;
   this.hideHoverEffect();
@@ -3178,7 +2908,7 @@ DvtNBoxCategoryNode.prototype.isShowingKeyboardFocusEffect = function() {
 /**
  * @override
  */
-DvtNBoxCategoryNode.prototype.getNextNavigable = function(event) 
+DvtNBoxCategoryNode.prototype.getNextNavigable = function(event)
 {
   var next = null;
   if (event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey)
@@ -3281,7 +3011,7 @@ DvtNBoxCategoryRolloverHandler.prototype.GetRolloverCallback = function(event, o
     if (this._callback)
       this._callback.call(this._callbackObj, event, this._source);
   };
-  return dvt.Obj.createCallback(this, callback);
+  return callback.bind(this);
 };
 
 /**
@@ -3296,7 +3026,7 @@ DvtNBoxCategoryRolloverHandler.prototype.GetRolloutCallback = function(event, ob
     if (this._callback)
       this._callback.call(this._callbackObj, event, this._source);
   };
-  return dvt.Obj.createCallback(this, callback);
+  return callback.bind(this);
 };
 
 var DvtNBoxDrawer = function() {};
@@ -3331,6 +3061,7 @@ DvtNBoxDrawer.prototype.Init = function(nbox, data) {
   DvtNBoxDrawer.superclass.Init.call(this, nbox.getCtx(), null, data['id'] + '_d');
   this._nbox = nbox;
   this._data = data;
+  this._data['__cacheId'] = 'drawer:' + this.getId();
   this._nbox.registerObject(this);
 };
 
@@ -3398,11 +3129,8 @@ DvtNBoxDrawer.prototype.handleDoubleClick = function() {
  * Closes this drawer
  */
 DvtNBoxDrawer.prototype.closeDrawer = function() {
-  var options = this._nbox.getSanitizedOptions();
-  options[dvt.NBoxConstants.DRAWER] = null;
-  var event = dvt.EventFactory.newAdfPropertyChangeEvent(dvt.NBoxConstants.DRAWER, null);
-  this._nbox.processEvent(event);
-  this._nbox.render(options);
+  DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, dvt.NBoxConstants.DRAWER, null);
+  this._nbox.processEvent(dvt.EventFactory.newRenderEvent());
 };
 
 
@@ -3473,7 +3201,7 @@ DvtNBoxDrawer.prototype.getAriaLabel = function() {
 /**
  * @override
  */
-DvtNBoxDrawer.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace) 
+DvtNBoxDrawer.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace)
 {
   return DvtNBoxKeyboardHandler.getKeyboardBoundingBox(this, targetCoordinateSpace);
 };
@@ -3481,7 +3209,7 @@ DvtNBoxDrawer.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace)
 /**
  * @override
  */
-DvtNBoxDrawer.prototype.getTargetElem = function() 
+DvtNBoxDrawer.prototype.getTargetElem = function()
 {
   return this.getElem();
 };
@@ -3489,7 +3217,7 @@ DvtNBoxDrawer.prototype.getTargetElem = function()
 /**
  * @override
  */
-DvtNBoxDrawer.prototype.showKeyboardFocusEffect = function() 
+DvtNBoxDrawer.prototype.showKeyboardFocusEffect = function()
 {
   this._isShowingKeyboardFocusEffect = true;
   DvtNBoxDataUtils.getDisplayable(this._nbox, this.getData(), 'focusEffect').show();
@@ -3499,7 +3227,7 @@ DvtNBoxDrawer.prototype.showKeyboardFocusEffect = function()
 /**
  * @override
  */
-DvtNBoxDrawer.prototype.hideKeyboardFocusEffect = function() 
+DvtNBoxDrawer.prototype.hideKeyboardFocusEffect = function()
 {
   this._isShowingKeyboardFocusEffect = false;
   DvtNBoxDataUtils.getDisplayable(this._nbox, this.getData(), 'focusEffect').hide();
@@ -3517,7 +3245,7 @@ DvtNBoxDrawer.prototype.isShowingKeyboardFocusEffect = function() {
 /**
  * @override
  */
-DvtNBoxDrawer.prototype.getNextNavigable = function(event) 
+DvtNBoxDrawer.prototype.getNextNavigable = function(event)
 {
   var next = null;
   if (this._nbox.EventManager.getKeyboardHandler().isNavigationEvent(event)) {
@@ -3628,63 +3356,6 @@ DvtNBoxDataAnimationHandler.prototype.getAnimationDuration = function() {
   return DvtNBoxStyleUtils.getAnimationDuration(this._oldNBox);
 };
 
-/**
- * Drop Target event handler for dvt.NBox
- * @param {dvt.NBox} view
- * @class DvtNBoxDropTarget
- * @extends {dvt.DropTarget}
- * @constructor
- */
-var DvtNBoxDropTarget = function(view) {
-  this._view = view;
-};
-
-dvt.Obj.createSubclass(DvtNBoxDropTarget, dvt.DropTarget);
-
-
-/**
- * @override
- */
-DvtNBoxDropTarget.prototype.acceptDrag = function(mouseX, mouseY, clientIds) {
-  // If there is no cell under the point, then don't accept the drag
-  var cell = this._view.__getCellUnderPoint(mouseX, mouseY);
-  if (!cell) {
-    this._view.__showDropSiteFeedback(null);
-    return null;
-  }
-  else if (cell != this._dropSite) {
-    this._view.__showDropSiteFeedback(cell);
-    this._dropSite = cell;
-  }
-
-  // Return the first clientId, since this component has only a single drag source
-  return clientIds[0];
-};
-
-
-/**
- * @override
- */
-DvtNBoxDropTarget.prototype.dragExit = function() {
-  // Remove drop site feedback
-  this._view.__showDropSiteFeedback(null);
-  this._dropSite = null;
-};
-
-
-/**
- * @override
- */
-DvtNBoxDropTarget.prototype.getDropSite = function(mouseX, mouseY) {
-  var cell = this._view.__getCellUnderPoint(mouseX, mouseY);
-  if (cell) {
-    var data = cell.getData();
-    return {row: data[dvt.NBoxConstants.ROW], column: data[dvt.NBoxConstants.COLUMN]};
-  }
-  else
-    return null;
-};
-
 // Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Event Manager for dvt.NBox.
@@ -3694,7 +3365,7 @@ DvtNBoxDropTarget.prototype.getDropSite = function(mouseX, mouseY) {
  * @constructor
  */
 var DvtNBoxEventManager = function(nbox) {
-  this.Init(nbox.getCtx(), nbox.processEvent, nbox);
+  this.Init(nbox.getCtx(), nbox.processEvent, nbox, nbox);
   this._nbox = nbox;
 };
 
@@ -3705,7 +3376,6 @@ dvt.Obj.createSubclass(DvtNBoxEventManager, dvt.EventManager);
  */
 DvtNBoxEventManager.prototype.OnClickInternal = function(event) {
   var obj = this.GetLogicalObject(event.target);
-  this._processActionEvent(obj);
 
   // Only open drawer if category node not selectable. If selectable, open using double click.
   if (obj instanceof DvtNBoxCategoryNode && !obj.isSelectable())
@@ -3716,7 +3386,7 @@ DvtNBoxEventManager.prototype.OnClickInternal = function(event) {
  * @override
  */
 DvtNBoxEventManager.prototype.OnDblClickInternal = function(event) {
-  this._handleDblClick(this.GetCurrentTargetForEvent(event));
+  this._handleDblClick(event.target);
 };
 
 
@@ -3724,15 +3394,7 @@ DvtNBoxEventManager.prototype.OnDblClickInternal = function(event) {
  * @override
  */
 DvtNBoxEventManager.prototype.HandleTouchDblClickInternal = function(event) {
-  this._handleDblClick(this.GetCurrentTargetForEvent(event));
-};
-
-/**
- * @override
- */
-DvtNBoxEventManager.prototype.HandleTouchHoverEndInternal = function(event) {
-  var obj = this.GetLogicalObject(event.target);
-  this._processActionEvent(obj);
+  this._handleDblClick(event.target);
 };
 
 /**
@@ -3740,7 +3402,6 @@ DvtNBoxEventManager.prototype.HandleTouchHoverEndInternal = function(event) {
  */
 DvtNBoxEventManager.prototype.HandleTouchClickInternal = function(event) {
   var obj = this.GetLogicalObject(event.target);
-  this._processActionEvent(obj);
 
   // Only open drawer if category node not selectable. If selectable, open using double click.
   if (obj instanceof DvtNBoxCategoryNode && !obj.isSelectable())
@@ -3804,7 +3465,7 @@ DvtNBoxEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOver)
 
   // Fire the event to the rollover handler, who will fire to the component callback.
   var rolloverEvent = dvt.EventFactory.newCategoryHighlightEvent(options['highlightedCategories'], bOver);
-  var hoverBehaviorDelay = dvt.StyleUtils.getTimeMilliseconds(options['styleDefaults']['hoverBehaviorDelay']);
+  var hoverBehaviorDelay = dvt.CSSStyle.getTimeMilliseconds(options['styleDefaults']['hoverBehaviorDelay']);
   this.RolloverHandler.processEvent(rolloverEvent, this._nbox.getNodeDisplayables(), hoverBehaviorDelay, options['highlightMatch'] == 'any');
 };
 
@@ -3813,16 +3474,6 @@ DvtNBoxEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOver)
  */
 DvtNBoxEventManager.prototype.CreateCategoryRolloverHandler = function(callback, callbackObj) {
   return new DvtNBoxCategoryRolloverHandler(callback, callbackObj);
-};
-
-/**
- * Processes an action on the specified data item.
- * @param {dvt.Displayable} obj The logical object of the data item.
- * @private
- */
-DvtNBoxEventManager.prototype._processActionEvent = function(obj) {
-  if (obj && obj.getAction && obj.getAction())
-    this.FireEvent(dvt.EventFactory.newActionEvent('action', obj.getAction(), obj.getId()));
 };
 
 /**
@@ -4236,7 +3887,7 @@ DvtNBoxAutomation.prototype.getDomElementForSubId = function(subId) {
             displayable = node;
             break;
           }
-          node = DvtNBoxDataUtils.getDisplayable(nBox, node.getData()['__next']);
+          node = node.nextNavigable;
           count++;
         }
       }
@@ -4333,7 +3984,7 @@ DvtNBoxAutomation.prototype.getDomElementForSubId = function(subId) {
                   displayable = node;
                   break;
                 }
-                node = DvtNBoxDataUtils.getDisplayable(nBox, node.getData()['__next']);
+                node = node.nextNavigable;
                 count++;
               }
             }
@@ -4816,7 +4467,6 @@ dvt.Obj.createSubclass(DvtNBoxRenderer, dvt.Obj);
 DvtNBoxRenderer.render = function(nbox, container, availSpace) {
   DvtNBoxRenderer._renderBackground(nbox, container, availSpace);
   if (DvtNBoxDataUtils.hasValidData(nbox)) {
-    DvtNBoxRenderer._renderLegend(nbox, container, availSpace);
     DvtNBoxRenderer._adjustAvailSpace(availSpace);
 
     DvtNBoxRenderer._renderTitles(nbox, container, availSpace);
@@ -4824,7 +4474,6 @@ DvtNBoxRenderer.render = function(nbox, container, availSpace) {
     DvtNBoxRenderer._renderCells(nbox, container, availSpace);
     DvtNBoxRenderer._renderNodes(nbox, container, availSpace);
     DvtNBoxRenderer._renderInitialSelection(nbox);
-    DvtNBoxRenderer._fixZOrder(nbox);
   } else {
     //Render empty text
     DvtNBoxRenderer._renderEmptyText(nbox, container, availSpace);
@@ -4847,59 +4496,6 @@ DvtNBoxRenderer._renderBackground = function(nbox, container, availSpace) {
   clipPath.addRect(availSpace.x, availSpace.y, availSpace.w, availSpace.h);
   container.setClipPath(clipPath);
 };
-
-
-/**
- * Renders the nbox legend.
- * @param {dvt.NBox} nbox The nbox being rendered.
- * @param {dvt.Container} container The container to render into.
- * @param {dvt.Rectangle} availSpace The available space.
- */
-DvtNBoxRenderer._renderLegend = function(nbox, container, availSpace) {
-  var legendData = DvtNBoxDataUtils.getLegend(nbox);
-  if (legendData && legendData['sections']) {
-    var options = nbox.getOptions();
-    var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
-
-    var panelDrawer = new dvt.PanelDrawer(nbox.getCtx(), nbox.processEvent, nbox, 'pd1');
-    panelDrawer.addEvtListener(dvt.PanelDrawerEvent.TYPE, nbox.processEvent, false, nbox);
-    panelDrawer.setDockSide(dvt.PanelDrawer.DOCK_TOP);
-    panelDrawer.setMaxHeight(availSpace.h - options['__layout']['legendBottomGap']);
-    panelDrawer.setMaxWidth(availSpace.w / 3);
-    container.addChild(panelDrawer);
-
-    var legend = dvt.Legend.newInstance(nbox.getCtx(), nbox.processEvent, nbox);
-    container.addChild(legend);
-    var preferredSize = legend.getPreferredSize(legendData, panelDrawer.getMaxContentWidth(), panelDrawer.getMaxContentHeight());
-    legend.render(legendData, preferredSize.w, preferredSize.h);
-    container.removeChild(legend);
-
-    var legendEna = options['_resources']['legend_ena'];
-    var legendOvr = options['_resources']['legend_ovr'];
-    var legendDwn = options['_resources']['legend_dwn'];
-    var legendEnaImg = new dvt.Image(nbox.getCtx(), legendEna['src'], 0, 0, legendEna['width'], legendEna['height']);
-    var legendOvrImg = new dvt.Image(nbox.getCtx(), legendOvr['src'], 0, 0, legendOvr['width'], legendOvr['height']);
-    var legendDwnImg = new dvt.Image(nbox.getCtx(), legendDwn['src'], 0, 0, legendDwn['width'], legendDwn['height']);
-    panelDrawer.addPanel(legend, legendEnaImg, legendOvrImg, legendDwnImg, dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'LEGEND'), 'legend');
-    if (rtl) {
-      panelDrawer.setDiscloseDirection(dvt.PanelDrawer.DIR_RIGHT);
-    }
-    panelDrawer.renderComponent();
-    if (options[dvt.NBoxConstants.LEGEND_DISCLOSURE] == 'disclosed') {
-      panelDrawer.setDisplayedPanelId('legend');
-      panelDrawer.setDisclosed(true, true);
-    }
-    var dims = panelDrawer.getDimensions();
-    panelDrawer.setTranslate(rtl ? 0 : availSpace.w, 0);
-    if (rtl) {
-      availSpace.x += dims.w;
-    }
-    availSpace.w -= dims.w;
-    DvtNBoxDataUtils.setDisplayable(nbox, legendData, legend, 'legend');
-    DvtNBoxDataUtils.setDisplayable(nbox, legendData, panelDrawer, 'panelDrawer');
-  }
-};
-
 
 /**
  * Renders the nbox titles and updates the available space.
@@ -5293,10 +4889,11 @@ DvtNBoxRenderer._renderIndividualNodes = function(nbox, container, availSpace) {
             }
 
             //keyboard navigation
-            var prevNode = n > 0 ? nodes[n - 1] : null;
-            if (prevNode) {
-              node['__prev'] = prevNode;
-              prevNode['__next'] = node;
+            var prevNodeData = n > 0 ? nodes[n - 1] : null;
+            if (prevNodeData) {
+              var prevNode = DvtNBoxDataUtils.getDisplayable(nbox, prevNodeData);
+              nodeContainer.previousNavigable = prevNode;
+              prevNode.nextNavigable = nodeContainer;
             }
           }
         }
@@ -5323,8 +4920,8 @@ DvtNBoxRenderer._renderIndividualNodes = function(nbox, container, availSpace) {
             //keyboard navigation
             var prevNode = DvtNBoxDataUtils.getLastNavigableNode(nbox, cell.getChildContainer());
             if (prevNode && prevNode instanceof DvtNBoxNode) {
-              overflowContainer['__prev'] = prevNode.getData();
-              prevNode.getData()['__next'] = overflowContainer;
+              overflowContainer.previousNavigable = prevNode;
+              prevNode.nextNavigable = overflowContainer;
             }
             DvtNBoxDataUtils.setDisplayable(nbox, overflowContainer, overflowContainer);
             DvtNBoxDataUtils.setDisplayable(nbox, cellData, overflowContainer, 'overflow');
@@ -5546,10 +5143,9 @@ DvtNBoxRenderer.positionText = function(text, x, y, angle) {
   text.setY(y);
   if (angle) {
     var matrix = text.getMatrix();
-    matrix.translate(-x, -y);
-    matrix.rotate(angle);
-    matrix.translate(x, y);
-    text.setMatrix(matrix);
+    matrix = matrix.translate(-x, -y);
+    matrix = matrix.rotate(angle);
+    text.setMatrix(matrix.translate(x, y));
   }
 };
 
@@ -5630,7 +5226,7 @@ DvtNBoxRenderer._forceLayoutGroups = function(groups, width, height) {
   for (var i = 0; i < sortedGroups.length; i++) {
     var x = i * Math.cos(thetaStep * i);
     var y = i * Math.sin(thetaStep * i);
-    positions[sortedGroups[i]] = dvt.VectorUtils.createVector(x, y);
+    positions[sortedGroups[i]] = DvtVectorUtils.create(x, y);
   }
   // Force iterations
   var alpha = 1;
@@ -5646,15 +5242,15 @@ DvtNBoxRenderer._forceLayoutGroups = function(groups, width, height) {
       var iPos = positions[iGroup];
       var iSize = groups[iGroup]['nodeIndices'].length;
       // Gravity
-      displacement[iGroup] = dvt.VectorUtils.createVector(alpha * xGravity * iPos.x, alpha * yGravity * iPos.y);
+      displacement[iGroup] = DvtVectorUtils.create(alpha * xGravity * iPos.x, alpha * yGravity * iPos.y);
       for (var j = 0; j < sortedGroups.length; j++) {
         if (i != j) {
           // Repulsion
           var jGroup = sortedGroups[j];
           var jPos = positions[jGroup];
           var jSize = groups[jGroup]['nodeIndices'].length;
-          var difference = dvt.VectorUtils.subtractVectors(iPos, jPos);
-          var distance = dvt.VectorUtils.getMagnitude(difference);
+          var difference = DvtVectorUtils.subtract(iPos, jPos);
+          var distance = DvtVectorUtils.getMagnitude(difference);
           var angle = Math.atan2(difference.y, difference.x);
           // every PI/2 interval is the same, shift so that 0 < angle < PI/2
           while (angle < 0) {
@@ -5673,7 +5269,7 @@ DvtNBoxRenderer._forceLayoutGroups = function(groups, width, height) {
           if (distance < minimumDistance) {
             // Shift the current node backwards (bigger nodes move proportionally less than smaller nodes)
             var repulsion = (jSize / (iSize + jSize)) * ((minimumDistance - distance) / distance);
-            displacement[iGroup] = dvt.VectorUtils.addVectors(displacement[iGroup], dvt.VectorUtils.scaleVector(difference, (1 - alpha) * repulsion));
+            displacement[iGroup] = DvtVectorUtils.add(displacement[iGroup], DvtVectorUtils.scale(difference, (1 - alpha) * repulsion));
           }
         }
       }
@@ -5681,7 +5277,7 @@ DvtNBoxRenderer._forceLayoutGroups = function(groups, width, height) {
     // Apply displacement
     for (var i = 0; i < sortedGroups.length; i++) {
       var iGroup = sortedGroups[i];
-      positions[iGroup] = dvt.VectorUtils.addVectors(positions[iGroup], displacement[iGroup]);
+      positions[iGroup] = DvtVectorUtils.add(positions[iGroup], displacement[iGroup]);
     }
     alpha *= alphaDecay;
   }
@@ -5766,11 +5362,10 @@ DvtNBoxRenderer._renderDrawer = function(nbox, container, availSpace) {
       drawer.render(container, availSpace);
     }
     else {
-      // Wwe have stale drawer data, null it out
+      // We have stale drawer data, null it out
       var options = nbox.getOptions();
       options[dvt.NBoxConstants.DRAWER] = null;
-      var event = dvt.EventFactory.newAdfPropertyChangeEvent(dvt.NBoxConstants.DRAWER, null);
-      nbox.processEvent(event);
+      DvtNBoxDataUtils.fireOptionChangeEvent(nbox, dvt.NBoxConstants.DRAWER, null);
     }
   }
 };
@@ -5783,11 +5378,11 @@ DvtNBoxRenderer._renderDrawer = function(nbox, container, availSpace) {
  * @return {dvt.Matrix} a matrix that will maintain the child's position when reparented
  */
 DvtNBoxRenderer.getGlobalMatrix = function(displayable) {
-  var matrix = displayable.getMatrix().clone();
+  var matrix = displayable.getMatrix();
   var current = displayable.getParent();
   while (current) {
     var currentMatrix = current.getMatrix();
-    matrix.translate(currentMatrix.getTx(), currentMatrix.getTy());
+    matrix = matrix.translate(currentMatrix.getTx(), currentMatrix.getTy());
     current = current.getParent();
   }
   return matrix;
@@ -6012,20 +5607,7 @@ DvtNBoxRenderer.setFill = function(displayable, fillString) {
 };
 
 
-/**
- * Moves the legend (which is rendered first) to the top of the z order
- *
- * @param {dvt.NBox} nbox the nbox component
- */
-DvtNBoxRenderer._fixZOrder = function(nbox) {
-  var legendData = DvtNBoxDataUtils.getLegend(nbox);
-  if (legendData && legendData['sections']) {
-    var panelDrawer = DvtNBoxDataUtils.getDisplayable(nbox, legendData, 'panelDrawer');
-    if (panelDrawer) {
-      panelDrawer.getParent().addChild(panelDrawer);
-    }
-  }
-};
+
 
 
 /**
@@ -6095,7 +5677,7 @@ DvtNBoxRenderer.getNodeOrderFunction = function(nbox) {
 DvtNBoxRenderer._renderEmptyText = function(nbox, container, availSpace) {
   // Get the empty text string
   var options = nbox.getOptions();
-  var emptyTextStr = dvt.Bundle.getTranslation(options, 'labelInvalidData', dvt.Bundle.UTIL_PREFIX, 'INVALID_DATA');
+  var emptyTextStr = options.translations.labelInvalidData;
 
   dvt.TextUtils.renderEmptyText(container, emptyTextStr,
       new dvt.Rectangle(availSpace.x, availSpace.y, availSpace.w, availSpace.h),
@@ -6272,7 +5854,7 @@ DvtNBoxCellRenderer.renderHeader = function(nbox, cellData, cellContainer, noCou
         else if (showCount == 'on') {
           countText = '' + cellCounts['total'][cellIndex];
           if (cellCounts['highlighted']) {
-            countText = dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'HIGHLIGHTED_COUNT', [cellCounts['highlighted'][cellIndex], countText]);
+            countText = dvt.ResourceUtils.format(options.translations.highlightedCount, [cellCounts['highlighted'][cellIndex], countText]);
           }
         }
       }
@@ -7402,9 +6984,9 @@ DvtNBoxNodeRenderer._renderNodeBackground = function(nbox, node, nodeContainer, 
     selectionRect.setRx(borderRadius);
     selectionRect.setRy(borderRadius);
   }
-  selectionRect.setHoverStroke(new dvt.SolidStroke(hoverColor, null, 2), new dvt.SolidStroke(selectionColor, null, 4));
-  selectionRect.setSelectedStroke(new dvt.SolidStroke(selectionColor, null, 4), null);
-  selectionRect.setSelectedHoverStroke(new dvt.SolidStroke(hoverColor, null, 2), new dvt.SolidStroke(selectionColor, null, 6));
+  selectionRect.setHoverStroke(new dvt.Stroke(hoverColor, 1, 2), new dvt.Stroke(selectionColor, 1, 4));
+  selectionRect.setSelectedStroke(new dvt.Stroke(selectionColor, 1, 4), null);
+  selectionRect.setSelectedHoverStroke(new dvt.Stroke(hoverColor, 1, 2), new dvt.Stroke(selectionColor, 1, 6));
   nodeContainer.addChild(selectionRect);
   nodeContainer.setSelectionShape(selectionRect);
   var nodeRect = new dvt.Rect(nbox.getCtx(),
@@ -7479,7 +7061,6 @@ DvtNBoxNodeRenderer._renderNodeIndicator = function(nbox, node, nodeContainer, n
     else {
       indicatorMarker = new dvt.SimpleMarker(nbox.getCtx(),
           indicatorIcon[dvt.NBoxConstants.SHAPE],
-          dvt.CSSStyle.SKIN_ALTA,
           indicatorIconX, indicatorIconY,
           indicatorIconWidth, indicatorIconHeight,
           indicatorIconBorderRadius);
@@ -7563,7 +7144,6 @@ DvtNBoxNodeRenderer._renderNodeIcon = function(nbox, node, nodeContainer, nodeLa
     else {
       iconMarker = new dvt.SimpleMarker(nbox.getCtx(),
           icon[dvt.NBoxConstants.SHAPE],
-          dvt.CSSStyle.SKIN_ALTA,
           iconX,
           iconY,
           iconWidth - iconBorderWidth,
@@ -7908,9 +7488,8 @@ DvtNBoxNodeRenderer.animateInsert = function(animationHandler, newNode) {
             var finalMatrix = DvtNBoxRenderer.getGlobalMatrix(newNode);
             var centerMatrix = DvtNBoxRenderer.getGlobalMatrix(groupNode);
             var centerOffset = new dvt.Point((nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth']) / 2, nodeLayout['nodeHeight'] / 2);
-            centerMatrix.translate(-centerOffset.x, -centerOffset.y);
             newNBox.addChild(newNode);
-            newNode.setMatrix(centerMatrix);
+            newNode.setMatrix(centerMatrix.translate(-centerOffset.x, -centerOffset.y));
             var movePlayable = new dvt.AnimMoveTo(newNBox.getCtx(), newNode, new dvt.Point(finalMatrix.getTx(), finalMatrix.getTy()), animationHandler.getAnimationDuration());
             dvt.Playable.appendOnEnd(movePlayable, function() {newNode.setMatrix(childMatrix); parent.addChild(newNode)});
             animationHandler.add(movePlayable, animationPhase);
@@ -7995,9 +7574,9 @@ DvtNBoxCategoryNodeRenderer._renderNodeBackground = function(nbox, node, nodeCon
     selectionRect.setRx(borderRadius);
     selectionRect.setRy(borderRadius);
   }
-  selectionRect.setHoverStroke(new dvt.SolidStroke(hoverColor, null, 2), new dvt.SolidStroke(selectionColor, null, 4));
-  selectionRect.setSelectedStroke(new dvt.SolidStroke(selectionColor, null, 4), null);
-  selectionRect.setSelectedHoverStroke(new dvt.SolidStroke(hoverColor, null, 2), new dvt.SolidStroke(selectionColor, null, 6));
+  selectionRect.setHoverStroke(new dvt.Stroke(hoverColor, 1, 2), new dvt.Stroke(selectionColor, 1, 4));
+  selectionRect.setSelectedStroke(new dvt.Stroke(selectionColor, 1, 4), null);
+  selectionRect.setSelectedHoverStroke(new dvt.Stroke(hoverColor, 1, 2), new dvt.Stroke(selectionColor, 1, 6));
   nodeContainer.addChild(selectionRect);
   nodeContainer.setSelectionShape(selectionRect);
 
@@ -8074,7 +7653,6 @@ DvtNBoxCategoryNodeRenderer._renderNodeIndicator = function(nbox, node, nodeCont
     var indicatorIconColor = indicatorIcon[dvt.NBoxConstants.COLOR] ? indicatorIcon[dvt.NBoxConstants.COLOR] : contrastColor;
     var indicatorMarker = new dvt.SimpleMarker(nbox.getCtx(),
         indicatorIcon[dvt.NBoxConstants.SHAPE],
-        dvt.CSSStyle.SKIN_ALTA,
         (rtl ? 1 : -1) * (side - indicatorWidth) / 2,
         0,
         indicatorIcon[dvt.NBoxConstants.WIDTH] * indicatorIconScale,
@@ -8417,7 +7995,6 @@ DvtNBoxDrawerRenderer._renderHeader = function(nbox, data, drawerContainer) {
       if (indicatorIcon) {
         var indicatorMarker = new dvt.SimpleMarker(nbox.getCtx(),
             indicatorIcon[dvt.NBoxConstants.SHAPE],
-            dvt.CSSStyle.SKIN_ALTA,
             indicatorX + countIndicatorSectionWidth / 2,
             countIndicatorHeight / 2,
             indicatorIcon[dvt.NBoxConstants.WIDTH] * scale,
@@ -8533,10 +8110,11 @@ DvtNBoxDrawerRenderer._renderBody = function(nbox, data, drawerContainer) {
       }
 
       //keyboard navigation
-      var prevNode = n > 0 ? nodes[n - 1] : null;
-      if (prevNode) {
-        node['__prev'] = prevNode;
-        prevNode['__next'] = node;
+      var prevNodeData = n > 0 ? nodes[n - 1] : null;
+      if (prevNodeData) {
+        var prevNodeContainer = DvtNBoxDataUtils.getDisplayable(nbox, prevNodeData);
+        nodeContainer.previousNavigable = prevNodeContainer;
+        prevNodeContainer.nextNavigable = nodeContainer;
       }
     }
   }
@@ -8754,6 +8332,7 @@ DvtNBoxDataUtils.processDataObject = function(nbox) {
   // Process rows
   for (var r = 0; r < DvtNBoxDataUtils.getRowCount(nbox); r++) {
     var rowObj = DvtNBoxDataUtils.getRow(nbox, r);
+    rowObj['__cacheId'] = 'row:' + rowObj['id'];
     rowMap[rowObj[dvt.NBoxConstants.ID]] = r;
   }
   options['__rowMap'] = rowMap;
@@ -8761,6 +8340,7 @@ DvtNBoxDataUtils.processDataObject = function(nbox) {
   // Process columns
   for (var c = 0; c < DvtNBoxDataUtils.getColumnCount(nbox); c++) {
     var columnObj = DvtNBoxDataUtils.getColumn(nbox, c);
+    columnObj['__cacheId'] = 'column:' + columnObj['id'];
     columnMap[columnObj[dvt.NBoxConstants.ID]] = c;
   }
   options['__columnMap'] = columnMap;
@@ -8800,62 +8380,17 @@ DvtNBoxDataUtils.processDataObject = function(nbox) {
   // Disable maximize if we're grouping across cells
   if (DvtNBoxDataUtils.getGrouping(nbox) && DvtNBoxDataUtils.getGroupBehavior(nbox) == dvt.NBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS) {
     options[dvt.NBoxConstants.MAXIMIZED_ROW] = null;
-    DvtNBoxDataUtils.fireSetPropertyEvent(nbox, dvt.NBoxConstants.MAXIMIZED_ROW, null);
+    DvtNBoxDataUtils.fireOptionChangeEvent(nbox, dvt.NBoxConstants.MAXIMIZED_ROW, null);
     options[dvt.NBoxConstants.MAXIMIZED_COLUMN] = null;
-    DvtNBoxDataUtils.fireSetPropertyEvent(nbox, dvt.NBoxConstants.MAXIMIZED_COLUMN, null);
+    DvtNBoxDataUtils.fireOptionChangeEvent(nbox, dvt.NBoxConstants.MAXIMIZED_COLUMN, null);
   }
   // Disable maximize if either row or column is invalid
   if ((options[dvt.NBoxConstants.MAXIMIZED_ROW] && isNaN(rowMap[options[dvt.NBoxConstants.MAXIMIZED_ROW]])) ||
       (options[dvt.NBoxConstants.MAXIMIZED_COLUMN] && isNaN(columnMap[options[dvt.NBoxConstants.MAXIMIZED_COLUMN]]))) {
     options[dvt.NBoxConstants.MAXIMIZED_ROW] = null;
-    DvtNBoxDataUtils.fireSetPropertyEvent(nbox, dvt.NBoxConstants.MAXIMIZED_ROW, null);
+    DvtNBoxDataUtils.fireOptionChangeEvent(nbox, dvt.NBoxConstants.MAXIMIZED_ROW, null);
     options[dvt.NBoxConstants.MAXIMIZED_COLUMN] = null;
-    DvtNBoxDataUtils.fireSetPropertyEvent(nbox, dvt.NBoxConstants.MAXIMIZED_COLUMN, null);
-  }
-  // Process legend
-  var legend = options[dvt.NBoxConstants.LEGEND];
-  if (legend && legend['sections']) {
-    var legendPrecedence = ['color',
-                            'iconFill',
-                            'iconShape',
-                            'iconPattern',
-                            'indicatorColor',
-                            'indicatorIconColor',
-                            'indicatorIconShape',
-                            'indicatorIconPattern'];
-
-    legend['sections'] = legend['sections'].slice(0);
-    var sortFunc = function(a, b) {
-      return dvt.ArrayUtils.getIndex(legendPrecedence, a['type']) - dvt.ArrayUtils.getIndex(legendPrecedence, b['type']);
-    };
-    legend['sections'].sort(sortFunc);
-    var hiddenCategories = options[dvt.NBoxConstants.HIDDEN_CATEGORIES];
-
-    // Generate the legend
-    legend['hideAndShowBehavior'] = 'on';
-    legend['textStyle'] = options['styleDefaults']['__legendDefaults']['itemStyle'];
-    //N.B. - The rowGap value specifies an additional gap between legend items. The default gap is 4px. By specifying 2 we will get 6 px gap.
-    legend['layout'] = {'rowGap': 2}; //TODO switch to public attrs once they're available
-    legend['symbolWidth'] = 16;
-    legend['symbolHeight'] = 16;
-    for (var i = 0; i < legend['sections'].length; i++) {
-      var section = legend['sections'][i];
-      section['titleStyle'] = options['styleDefaults']['__legendDefaults']['sectionStyle'];
-      for (var j = 0; j < section['items'].length; j++) {
-        var item = section['items'][j];
-        var category = item['categories'] && item['categories'].length > 0 ? item['categories'][0] : item['id'];
-        item['categoryVisibility'] = dvt.ArrayUtils.getIndex(hiddenCategories, category) != -1 ? 'hidden' : null;
-        if (item['indicatorColor']) {
-          item['color'] = item['indicatorColor'];
-        }
-        if (!item['color']) {
-          item['color'] = options['styleDefaults']['__legendDefaults']['markerColor'];
-        }
-        if (item['shape']) {
-          item['markerShape'] = item['shape'];
-        }
-      }
-    }
+    DvtNBoxDataUtils.fireOptionChangeEvent(nbox, dvt.NBoxConstants.MAXIMIZED_COLUMN, null);
   }
 };
 
@@ -9333,11 +8868,20 @@ DvtNBoxDataUtils.getCategoryNodeLabels = function(nbox, categoryNode) {
 DvtNBoxDataUtils.setDisplayable = function(nbox, dataObject, displayable, key) {
   var displayables = nbox.getDisplayables();
   var fullKey = key ? '__displayable:' + key : '__displayable';
-  if (dataObject[fullKey]) {
-    displayables[dataObject[fullKey]] = displayable;
+  // If the dataObject has an id, use an external cache instead of writing directly into the object
+  var id = dataObject['__cacheId'] == null ? dataObject['id'] : dataObject['__cacheId'];
+  var cache = nbox.getOptions()['__displayableCache'];
+  var displayableIndex = (id == null) ? dataObject[fullKey] : cache.getFromCachedMap(id, fullKey);
+  if (displayableIndex != null) {
+    displayables[displayableIndex] = displayable;
   }
   else {
-    dataObject[fullKey] = displayables.length;
+    if (id == null) {
+      dataObject[fullKey] = displayables.length;
+    }
+    else {
+      cache.putToCachedMap(id, fullKey, displayables.length);
+    }
     displayables.push(displayable);
   }
 };
@@ -9356,7 +8900,10 @@ DvtNBoxDataUtils.getDisplayable = function(nbox, dataObject, key) {
     return null;
   }
   var fullKey = key ? '__displayable:' + key : '__displayable';
-  var index = dataObject[fullKey];
+  // If the dataObject has an id, index is in an external cache rather than directly in the object
+  var id = dataObject['__cacheId'] == null ? dataObject['id'] : dataObject['__cacheId'];
+  var cache = nbox.getOptions()['__displayableCache'];
+  var index = (id == null) ? dataObject[fullKey] : cache.getFromCachedMap(id, fullKey);
   var displayables = nbox.getDisplayables();
   return index == null ? null : displayables[index];
 };
@@ -9428,16 +8975,6 @@ DvtNBoxDataUtils.isCellMaximized = function(nbox, cellIndex) {
   var cellRow = cell[dvt.NBoxConstants.ROW];
   var cellColumn = cell[dvt.NBoxConstants.COLUMN];
   return (maximizedRow == cellRow && maximizedColumn == cellColumn);
-};
-
-/**
- * Returns the legend data object
- *
- * @param {dvt.NBox} nbox the nbox component
- * @return {object} the legend data object
- */
-DvtNBoxDataUtils.getLegend = function(nbox) {
-  return nbox.getOptions()['_legend'];
 };
 
 
@@ -9555,14 +9092,14 @@ DvtNBoxDataUtils.getNodeSecondaryLabel = function(nbox, node) {
 };
 
 /**
- * Fires an adfPropertyChange event to the nbox
+ * Fires an option event to the nbox
  *
  * @param {dvt.NBox} nbox the nbox component
  * @param {string} key the property name
  * @param {object} value the property value
  */
-DvtNBoxDataUtils.fireSetPropertyEvent = function(nbox, key, value) {
-  var event = dvt.EventFactory.newAdfPropertyChangeEvent(key, value);
+DvtNBoxDataUtils.fireOptionChangeEvent = function(nbox, key, value) {
+  var event = dvt.EventFactory.newOptionChangeEvent(key, value);
   nbox.processEvent(event);
 };
 
@@ -9623,26 +9160,27 @@ DvtNBoxDataUtils.isDrawerSelected = function(nbox, categoryNode) {
  * @return {string} aria-label description for the object
  */
 DvtNBoxDataUtils.buildAriaDesc = function(nbox, object, datatip, selected) {
+  var translations = nbox.getOptions().translations;
   var baseDesc = (object instanceof DvtNBoxCategoryNode || object instanceof DvtNBoxDrawer) ?
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'GROUP_NODE'), datatip]) :
+      dvt.ResourceUtils.format(translations.labelAndValue, [translations.labelGroup, datatip]) :
       datatip;
 
   var states = [];
   if (selected)
-    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'STATE_SELECTED'));
+    states.push(translations.stateSelected);
   else
-    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'STATE_UNSELECTED'));
+    states.push(translations.stateUnselected);
 
   if (object instanceof DvtNBoxCategoryNode) {
     var nodeCount = object.getData()['nodeIndices'].length;
-    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'STATE_COLLAPSED'));
-    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'SIZE'), nodeCount]));
+    states.push(translations.stateCollapsed);
+    states.push(dvt.ResourceUtils.format(translations.labelAndValue, [translations.labelSize, nodeCount]));
   }
   else if (object instanceof DvtNBoxDrawer) {
     var categoryNodeData = DvtNBoxDataUtils.getCategoryNode(nbox, object.getData()[dvt.NBoxConstants.ID]);
     var nodeCount = categoryNodeData['nodeIndices'].length;
-    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'STATE_EXPANDED'));
-    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'SIZE'), nodeCount]));
+    states.push(translations.stateExpanded);
+    states.push(dvt.ResourceUtils.format(translations.labelAndValue, [translations.labelSize, nodeCount]));
   }
 
   return dvt.Displayable.generateAriaLabel(baseDesc, states);
@@ -9659,16 +9197,13 @@ DvtNBoxDataUtils.getFirstNavigableNode = function(nbox, container) {
   if (container.getNumChildren() > 0) {
     //find first displayable object
     navigable = container.getChildAt(0);
-    var prevData;
+    var prevNavigable;
     do {
-      if (navigable instanceof DvtNBoxNode) {
-        prevData = navigable.getData()['__prev'];
+      if (navigable instanceof DvtNBoxNode || navigable instanceof DvtNBoxNodeOverflow) {
+        prevNavigable = navigable.previousNavigable;
       }
-      else if (navigable instanceof DvtNBoxNodeOverflow) {
-        prevData = navigable['__prev'];
-      }
-      navigable = prevData ? DvtNBoxDataUtils.getDisplayable(nbox, prevData) : navigable;
-    } while (prevData);
+      navigable = prevNavigable || navigable;
+    } while (prevNavigable);
   }
   return navigable;
 };
@@ -9686,16 +9221,16 @@ DvtNBoxDataUtils.getLastNavigableNode = function(nbox, container) {
   if (childCnt > 0) {
     //get last displayable object
     navigable = container.getChildAt(childCnt - 1);
-    var nextData;
+    var nextNavigable;
     do {
       if (navigable instanceof DvtNBoxNode) {
-        nextData = navigable.getData()['__next'];
+        nextNavigable = navigable.nextNavigable;
       }
       else {
-        nextData = null;
+        nextNavigable = null;
       }
-      navigable = nextData ? DvtNBoxDataUtils.getDisplayable(nbox, nextData) : navigable;
-    } while (nextData);
+      navigable = nextNavigable || navigable;
+    } while (nextNavigable);
   }
   return navigable;
 };
@@ -9710,14 +9245,14 @@ DvtNBoxDataUtils.getLastNavigableNode = function(nbox, container) {
  */
 DvtNBoxDataUtils.getNextNavigableNode = function(nbox, object, event) {
   var bNext = (event.keyCode == dvt.KeyboardEvent.RIGHT_ARROW || event.keyCode == dvt.KeyboardEvent.DOWN_ARROW) ? true : false;
-  var nextData;
+  var nextNavigable;
   if (object instanceof DvtNBoxNode) {
-    nextData = bNext ? object.getData()['__next'] : object.getData()['__prev'];
+    nextNavigable = bNext ? object.nextNavigable : object.previousNavigable;
   }
   else if (object instanceof DvtNBoxNodeOverflow) {
-    nextData = bNext ? null : object['__prev'];
+    nextNavigable = bNext ? null : object.previousNavigable;
   }
-  return nextData ? DvtNBoxDataUtils.getDisplayable(nbox, nextData) : object;
+  return nextNavigable || object;
 };
 
 
@@ -9770,7 +9305,7 @@ DvtNBoxStyleUtils.getAnimationOnDataChange = function(nbox) {
  * @return {number} The animation duration in seconds.
  */
 DvtNBoxStyleUtils.getAnimationDuration = function(nbox) {
-  return dvt.StyleUtils.getTimeMilliseconds(nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.ANIMATION_DURATION]) / 1000;
+  return dvt.CSSStyle.getTimeMilliseconds(nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.ANIMATION_DURATION]) / 1000;
 };
 
 
@@ -9821,7 +9356,7 @@ DvtNBoxStyleUtils.getCellStyle = function(nbox, cellIndex) {
   var nBoxCellDefault = options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS]['_' + styleKeys[0]];
 
   var cellStyle = new dvt.CSSStyle();
-  dvt.ArrayUtils.forEach(DvtNBoxStyleUtils._getCellStyleProperties(), function(entry) {
+  DvtNBoxStyleUtils._getCellStyleProperties().forEach(function(entry) {
     var attribute = dvt.CSSStyle.cssStringToObjectProperty(entry);
     //Pick the value from cell style options or from cell style default
     var value = (cellStyleOption && cellStyleOption[attribute] != null) ? cellStyleOption[attribute] :
@@ -9842,7 +9377,7 @@ DvtNBoxStyleUtils.getCellStyleObject = function(nbox, cellIndex) {
   var styleKeys = DvtNBoxStyleUtils._getCellStyleKeys(nbox, cellIndex);
   var cellStyleOption = DvtNBoxStyleUtils._getCellStyleOption(nbox, cellIndex, styleKeys[0], styleKeys[1]);
   if (cellStyleOption) {
-    dvt.ArrayUtils.forEach(DvtNBoxStyleUtils._getCellStyleProperties(), function(entry) {
+    DvtNBoxStyleUtils._getCellStyleProperties().forEach(function(entry) {
       delete cellStyleOption[dvt.CSSStyle.cssStringToObjectProperty(entry)];
     });
   }
@@ -10380,24 +9915,68 @@ DvtNBoxStyleUtils.getLabelHalign = function(nbox, data) {
   }
 };
 
-dvt.exportProperty(dvt, 'NBox', dvt.NBox);
-dvt.exportProperty(dvt.NBox, 'newInstance', dvt.NBox.newInstance);
-dvt.exportProperty(dvt.NBox.prototype, 'render', dvt.NBox.prototype.render);
-dvt.exportProperty(dvt.NBox.prototype, 'getAutomation', dvt.NBox.prototype.getAutomation);
-dvt.exportProperty(dvt.NBox.prototype, 'highlight', dvt.NBox.prototype.highlight);
+// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
-dvt.exportProperty(DvtNBoxAutomation.prototype, 'getDomElementForSubId', DvtNBoxAutomation.prototype.getDomElementForSubId);
-dvt.exportProperty(DvtNBoxAutomation.prototype, 'getData', DvtNBoxAutomation.prototype.getData);
-dvt.exportProperty(DvtNBoxAutomation.prototype, 'getGroupNode', DvtNBoxAutomation.prototype.getGroupNode);
-dvt.exportProperty(DvtNBoxAutomation.prototype, 'getCell', DvtNBoxAutomation.prototype.getCell);
-dvt.exportProperty(DvtNBoxAutomation.prototype, 'getCellNode', DvtNBoxAutomation.prototype.getCellNode);
-dvt.exportProperty(DvtNBoxAutomation.prototype, 'getNode', DvtNBoxAutomation.prototype.getNode);
-dvt.exportProperty(DvtNBoxAutomation.prototype, 'getCellGroupNode', DvtNBoxAutomation.prototype.getCellGroupNode);
-dvt.exportProperty(DvtNBoxAutomation.prototype, 'getDialog', DvtNBoxAutomation.prototype.getDialog);
-dvt.exportProperty(DvtNBoxAutomation.prototype, 'getDialogNode', DvtNBoxAutomation.prototype.getDialogNode);
-dvt.exportProperty(DvtNBoxAutomation.prototype, 'getNodeIdFromIndex', DvtNBoxAutomation.prototype.getNodeIdFromIndex);
-dvt.exportProperty(DvtNBoxAutomation.prototype, 'getNodeIndexFromId', DvtNBoxAutomation.prototype.getNodeIndexFromId);
+/**
+ * Vector math utilities.
+ * @class DvtVectorUtils
+ */
+var DvtVectorUtils = {
+  /**
+   * Creates a vector from the origin to the specified coordinate
+   *
+   * @param {number} x the x coordinate of the vector
+   * @param {number} y the y coordinate of the vector
+   * @return {object} an object with x and y properties representing the vector
+   */
+  create: function(x, y) {
+    return {x: x, y: y};
+  },
 
+  /**
+   * Adds two vectors
+   *
+   * @param {object} v1 an object with x and y properties representing the first addend
+   * @param {object} v2 an object with x and y properties representing the second addend
+   * @return {object} an object with x and y properties representing the sum
+   */
+  add: function(v1, v2) {
+    return DvtVectorUtils.create(v1.x + v2.x, v1.y + v2.y);
+  },
+
+
+  /**
+   * Subtracts two vectors
+   *
+   * @param {object} v1 an object with x and y properties representing the minuend
+   * @param {object} v2 an object with x and y properties representing the subtrahend
+   * @return {object} an object with x and y properties representing the difference
+   */
+  subtract: function(v1, v2) {
+    return DvtVectorUtils.create(v1.x - v2.x, v1.y - v2.y);
+  },
+
+  /**
+   * Scales a vector
+   *
+   * @param {object} v an object with x and y properties representing the vector
+   * @param {number} s the scalar by which to scale the vector
+   * @return {object} an object with x and y properties representing the scaled vector
+   */
+  scale: function(v, s) {
+    return DvtVectorUtils.create(v.x * s, v.y * s);
+  },
+
+  /**
+   * Scales a vector
+   *
+   * @param {object} v an object with x and y properties representing the vector
+   * @return {number} the magnitude of the vector
+   */
+  getMagnitude: function(v) {
+    return Math.sqrt(v.x * v.x + v.y * v.y);
+  }
+};
 
 })(dvt);
   return dvt;

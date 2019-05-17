@@ -11,10 +11,6 @@ export interface ojLabel extends baseComponent<ojLabelSettableProperties> {
         tooltipHelp?: string;
         tooltipRequired?: string;
     };
-    onForChanged: ((event: JetElementCustomEvent<ojLabel["for"]>) => any) | null;
-    onHelpChanged: ((event: JetElementCustomEvent<ojLabel["help"]>) => any) | null;
-    onLabelIdChanged: ((event: JetElementCustomEvent<ojLabel["labelId"]>) => any) | null;
-    onShowRequiredChanged: ((event: JetElementCustomEvent<ojLabel["showRequired"]>) => any) | null;
     addEventListener<T extends keyof ojLabelEventMap>(type: T, listener: (this: HTMLElement, ev: ojLabelEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojLabelSettableProperties>(property: T): ojLabel[T];
@@ -23,6 +19,16 @@ export interface ojLabel extends baseComponent<ojLabelSettableProperties> {
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojLabelSettableProperties>): void;
     setProperties(properties: ojLabelSettablePropertiesLenient): void;
     refresh(): void;
+}
+export namespace ojLabel {
+    // tslint:disable-next-line interface-over-type-literal
+    type forChanged = JetElementCustomEvent<ojLabel["for"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged = JetElementCustomEvent<ojLabel["help"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelIdChanged = JetElementCustomEvent<ojLabel["labelId"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type showRequiredChanged = JetElementCustomEvent<ojLabel["showRequired"]>;
 }
 export interface ojLabelEventMap extends baseComponentEventMap<ojLabelSettableProperties> {
     'forChanged': JetElementCustomEvent<ojLabel["for"]>;

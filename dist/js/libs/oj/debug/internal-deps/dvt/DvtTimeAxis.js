@@ -2,8 +2,8 @@
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['./DvtToolkit'], function(dvt) {
+  "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
 (function(dvt) {
@@ -111,48 +111,8 @@ dvt.TimeAxis.prototype.Init = function(context, callback, callbackObj)
 
   // Internationalization strings
   this._dateFormatStrings = {
-    dayNames: [
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SHORT_SUNDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SHORT_MONDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SHORT_TUESDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SHORT_WEDNESDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SHORT_THURSDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SHORT_FRIDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SHORT_SATURDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SUNDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_MONDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_TUESDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_WEDNESDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_THURSDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_FRIDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SATURDAY', null)
-    ],
-    monthNames: [
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_JANUARY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_FEBRUARY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_MARCH', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_APRIL', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_MAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_JUNE', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_JULY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_AUGUST', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_SEPTEMBER', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_OCTOBER', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_NOVEMBER', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_DECEMBER', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_JANUARY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_FEBRUARY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_MARCH', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_APRIL', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_MAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_JUNE', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_JULY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_AUGUST', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SEPTEMBER', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_OCTOBER', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_NOVEMBER', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_DECEMBER', null)
-    ]
+    dayNames: context.LocaleData.getDayNames('abbreviated').concat(context.LocaleData.getDayNames('wide')),
+    monthNames: context.LocaleData.getMonthNames('abbreviated').concat(context.LocaleData.getMonthNames('wide'))
   };
 
   // Create the defaults object
@@ -228,7 +188,7 @@ dvt.TimeAxis.prototype.getDateFormatStrings = function()
  * Returns the overall length of the content.
  * @return {number} The overall length of the content.
  */
-dvt.TimeAxis.prototype.getContentLength = function() 
+dvt.TimeAxis.prototype.getContentLength = function()
 {
   return this._contentLength;
 };
@@ -340,7 +300,7 @@ dvt.TimeAxis.prototype.getPreferredLength = function(options, minViewPortLength)
  */
 dvt.TimeAxis.prototype.hasValidOptions = function()
 {
-  var hasValidScale = this._scale && dvt.ArrayUtils.getIndex(dvt.TimeAxis._VALID_SCALES, this._scale) != -1;
+  var hasValidScale = this._scale && dvt.TimeAxis._VALID_SCALES.indexOf(this._scale) != -1;
   var hasValidCustomScale = this._scale && this._customTimeScales && this._customTimeScales[this._scale];
   var hasValidStartAndEnd = this._start && this._end && (this._end > this._start);
 
@@ -355,7 +315,7 @@ dvt.TimeAxis.prototype.GetComponentDescription = function()
   if (this._shortDesc)
     return this._shortDesc;
   else
-    return dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'TIMEAXIS');
+    return this.Options.translations.componentName;
 };
 
 /**
@@ -1147,7 +1107,7 @@ var DvtTimeAxisDefaults = function(context)
   this.Init({'alta': DvtTimeAxisDefaults.VERSION_1}, context);
 };
 
-dvt.Obj.createSubclass(DvtTimeAxisDefaults, dvt.BaseComponentDefaults, 'DvtTimeAxisDefaults');
+dvt.Obj.createSubclass(DvtTimeAxisDefaults, dvt.BaseComponentDefaults);
 
 /**
  * Contains overrides for version 1.
@@ -1400,11 +1360,11 @@ DvtTimeAxisFormatter.prototype.getDateFormatValue = function(date, mask, isUTC)
 
 var DvtTimeAxisParser = function() {};
 
-dvt.Obj.createSubclass(DvtTimeAxisParser, dvt.Obj, 'DvtTimeAxisParser');
+dvt.Obj.createSubclass(DvtTimeAxisParser, dvt.Obj);
 
 /**
- * Parses the specified XML String and returns the root node of the time axis
- * @param {string} options The String containing XML describing the component.
+ * Parses the specified data options and returns the root node of the time axis
+ * @param {object} options The data options describing the component.
  * @return {object} An object containing the parsed properties
  */
 DvtTimeAxisParser.prototype.parse = function(options)
@@ -1451,7 +1411,7 @@ DvtTimeAxisParser.prototype.ParseRootAttributes = function()
  */
 var DvtTimeAxisRenderer = new Object();
 
-dvt.Obj.createSubclass(DvtTimeAxisRenderer, dvt.Obj, 'DvtTimeAxisRenderer');
+dvt.Obj.createSubclass(DvtTimeAxisRenderer, dvt.Obj);
 
 /**
  * Renders the time axis (top left corner at (0,0)).
@@ -1500,7 +1460,7 @@ DvtTimeAxisRenderer._renderAxisBlock = function(timeAxis, axisStart, axisSize, s
 
     var axisClass = DvtTimeAxisStyleUtils.getAxisClass(timeAxis.Options);
     if (axisClass)
-      timeAxis._axis.getImpl().getElem().setAttribute('class', axisClass);
+      timeAxis._axis.getElem().setAttribute('class', axisClass);
   }
   else
   {
@@ -1529,10 +1489,10 @@ DvtTimeAxisRenderer._renderAxisBlock = function(timeAxis, axisStart, axisSize, s
   timeAxis._axis.removeChildren();
 
   // apply stroke dash array to turn on/off border sides accordingly
-  timeAxis._axis.getImpl().getElem().setAttribute('stroke-dasharray', timeAxis.calcStrokeDashArray());
+  timeAxis._axis.getElem().setAttribute('stroke-dasharray', timeAxis.calcStrokeDashArray());
 
   var separatorStyle = new dvt.CSSStyle(separatorStyle);
-  timeAxis._separatorStroke = new dvt.SolidStroke(separatorStyle.getStyle(dvt.CSSStyle.COLOR));
+  timeAxis._separatorStroke = new dvt.Stroke(separatorStyle.getStyle(dvt.CSSStyle.COLOR));
 
   var axisSize = timeAxis.getContentSize();
   var axisStart = axisStart + timeAxis.isVertical() ? timeAxis.getBorderWidth('left') : timeAxis.getBorderWidth('top');
@@ -1677,7 +1637,7 @@ DvtTimeAxisRenderer._addAxisLabel = function(container, label, x, y, maxLength, 
   dvt.TextUtils.centerTextVertically(label, y); // align text vertically
 
   if (labelClass)
-    label.getImpl().getElem().setAttribute('class', labelClass);
+    label.getElem().setAttribute('class', labelClass);
 };
 
 /**
@@ -1688,7 +1648,7 @@ DvtTimeAxisRenderer._addAxisLabel = function(container, label, x, y, maxLength, 
  * @param {number} x2 The x coordinate of the other  endpoint of the tick line
  * @param {number} y1 The y coordinate of an endpoint of the tick line
  * @param {number} y2 The y coordinate of the other endpoint of the tick line
- * @param {dvt.SolidStroke} stroke The stroke of the tick mark.
+ * @param {dvt.Stroke} stroke The stroke of the tick mark.
  * @param {string} id The id of the tick mark
  * @param {string=} tickClass The class to be applied on the line element
  * @return {dvt.Line}
@@ -1702,7 +1662,7 @@ DvtTimeAxisRenderer._addTick = function(context, container, x1, x2, y1, y2, stro
 
   container.addChild(line);
   if (tickClass)
-    line.getImpl().getElem().setAttribute('class', tickClass);
+    line.getElem().setAttribute('class', tickClass);
 
   return line;
 };
@@ -1713,7 +1673,7 @@ DvtTimeAxisRenderer._addTick = function(context, container, x1, x2, y1, y2, stro
  */
 var DvtTimeAxisStyleUtils = new Object();
 
-dvt.Obj.createSubclass(DvtTimeAxisStyleUtils, dvt.Obj, 'DvtTimeAxisStyleUtils');
+dvt.Obj.createSubclass(DvtTimeAxisStyleUtils, dvt.Obj);
 
 /**
  * The default Axis border-width.
@@ -1907,10 +1867,6 @@ DvtTimeAxisStyleUtils.isBorderLeftVisible = function(options)
 {
   return options['_resources'] ? options['_resources']['borderLeftVisible'] : false;
 };
-
-dvt.exportProperty(dvt, 'TimeAxis', dvt.TimeAxis);
-dvt.exportProperty(dvt.TimeAxis, 'newInstance', dvt.TimeAxis.newInstance);
-dvt.exportProperty(dvt.TimeAxis.prototype, 'render', dvt.TimeAxis.prototype.render);
 
 })(dvt);
   return dvt;

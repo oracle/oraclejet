@@ -3,11 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojdnd'],
-       function(oj, $, Context, Components)
+function(oj, $, Context, Components)
 {
-
+  "use strict";
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
@@ -6479,7 +6478,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         obj = obj.children('a:eq(0)');
         obj = obj.find('span:eq(0)');
         this._emitEvent({ obj: obj, name: val }, 'set_text', true);
-        return (obj[0].textContent = val);
+        obj[0].textContent = val;
+        return val;
       },
 
       /**
@@ -8095,10 +8095,11 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             this._data.core.toLoad = remaining;
             $.each(current, function (i, val) {
               if (!_this._isLoaded(val)) {        // if load not loaded,
-                _this._load_node(val,               // load it.
-                                 function () { _this._reload_nodes(true); },    // success func
-                                 function () { _this._reload_nodes(true); }     // error func
-                                );
+                _this._load_node(
+                  val,               // load it.
+                  function () { _this._reload_nodes(true); },    // success func
+                  function () { _this._reload_nodes(true); }     // error func
+                );
                 bDone = false;        // note we're not complete yet since we just loaded a node
               }
             });

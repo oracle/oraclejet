@@ -27,10 +27,10 @@
       display: inline-block;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        max-width: var(--oj-form-control-lg-max-width);
-        min-width: var(--oj-form-control-min-width);
+        max-width: var(--oj-text-field-lg-max-width);
+        min-width: var(--oj-text-field-min-width);
         // font size needs to be on the root, because max/min width is in em.
-        font-size: var(--oj-form-control-trigger-font-size);
+        font-size: var(--oj-text-field-trigger-font-size);
         @include oj-form-control-text-size-adjust-css-vars();
       }
       @else {
@@ -65,16 +65,16 @@
     .oj-select-choice {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        @include oj-form-control-content-css-vars($valueColor: --oj-form-control-trigger-value-color);
-        height: var(--oj-form-control-trigger-height);
+        @include oj-form-control-content-css-vars($valueColor: --oj-text-field-trigger-value-color);
+        height: var(--oj-text-field-trigger-height);
         html:not([dir="rtl"]) & {
-          padding-left: var(--oj-form-control-padding-horizontal);
+          padding-left: var(--oj-text-field-padding-horizontal);
           padding-right: 0;
         }
         html[dir="rtl"] & {
           padding-left: 0;
-          padding-right: var(--oj-form-control-padding-horizontal);
-        }        
+          padding-right: var(--oj-text-field-padding-horizontal);
+        }
       }
       @else {
         @include oj-form-control-content($formControlTriggerValueColor);
@@ -104,6 +104,12 @@
       background-color: transparent;
       border-color: transparent;
       outline: none;
+      @include oj-ltr() {
+        padding-left: 0;
+      }
+      @include oj-rtl() {
+        padding-right: 0;
+      }
     }
 
     /* apply to the selected entries */
@@ -116,6 +122,16 @@
       }
       @else {
         @include oj-form-control-content-readonly;        
+      }
+    }
+
+    /* apply to the first selected entry in readonly mode */
+    .oj-select.oj-read-only li.oj-select-selected-choice:first-child {
+      @include oj-ltr() {
+        padding-left: 0;
+      }
+      @include oj-rtl() {
+        padding-right: 0;
       }
     }
 
@@ -136,17 +152,33 @@
     }
     .oj-form-control-text-align-start .oj-select .oj-select-choice
     {
-      @include oj-bidi-property(
-        $property: 'text-align',
-        $startOrEnd: start,
-        $important: false) ;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        text-align: left;
+        html[dir="rtl"] & {
+          text-align: right;
+        }
+      }
+      @else {
+        @include oj-bidi-property(
+          $property: 'text-align',
+          $startOrEnd: start,
+          $important: false);
+      }
     }
     .oj-form-control-text-align-end .oj-select .oj-select-choice
     {
-      @include oj-bidi-property(
-        $property: 'text-align',
-        $startOrEnd: end,
-        $important: false) ;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        text-align: right;
+        html[dir="rtl"] & {
+          text-align: left;
+        }
+      }
+      @else {
+        @include oj-bidi-property(
+          $property: 'text-align',
+          $startOrEnd: end,
+          $important: false);
+      }
     }
 
     /* Styling for native render mode text-align */
@@ -169,11 +201,18 @@
     }
     .oj-form-control-text-align-start .oj-select .oj-select-select
     {
-      @include oj-bidi-property(
-        $property: 'text-align',
-        $startOrEnd: start,
-        $important: false) ;
-
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        text-align: left;
+        html[dir="rtl"] & {
+          text-align: right;
+        }
+      }
+      @else {
+        @include oj-bidi-property(
+          $property: 'text-align',
+          $startOrEnd: start,
+          $important: false);
+      }
       @include oj-ltr() {
         direction: ltr;
       }
@@ -184,11 +223,18 @@
     }
     .oj-form-control-text-align-end .oj-select .oj-select-select
     {
-      @include oj-bidi-property(
-        $property: 'text-align',
-        $startOrEnd: end,
-        $important: false) ;
-
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        text-align: right;
+        html[dir="rtl"] & {
+          text-align: left;
+        }
+      }
+      @else {
+        @include oj-bidi-property(
+          $property: 'text-align',
+          $startOrEnd: end,
+          $important: false);
+      }
       @include oj-ltr() {
         direction: rtl;
         @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
@@ -221,17 +267,33 @@
     }
     .oj-form-control-text-align-start .oj-select .oj-select-choices li
     {
-      @include oj-bidi-property(
-        $property: 'float',
-        $startOrEnd: start,
-        $important: false) ;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        float: left;
+        html[dir="rtl"] & {
+          float: right;
+        }
+      }
+      @else {
+        @include oj-bidi-property(
+          $property: 'float',
+          $startOrEnd: start,
+          $important: false);
+      }
     }
     .oj-form-control-text-align-end .oj-select .oj-select-choices li
     {
-      @include oj-bidi-property(
-        $property: 'float',
-        $startOrEnd: end,
-        $important: false) ;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        float: right;
+        html[dir="rtl"] & {
+          float: left;
+        }
+      }
+      @else {
+        @include oj-bidi-property(
+          $property: 'float',
+          $startOrEnd: end,
+          $important: false);
+      }
     }
     .oj-form-control-text-align-right .oj-select-selected-choice,
     .oj-form-control-text-align-end .oj-select-selected-choice {
@@ -255,8 +317,8 @@
       height: auto;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        min-height: calc(var(--oj-form-control-trigger-height) * 1.28);
-        padding: 0 var(--oj-form-control-padding-horizontal) 5px;  
+        min-height: calc(var(--oj-text-field-trigger-height) * 1.28);
+        padding: 0 var(--oj-text-field-padding-horizontal) 5px;  
         @include oj-form-control-content-css-vars;
       }
       @else {
@@ -292,9 +354,9 @@
       padding: 0;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        line-height: calc(var(--oj-form-control-trigger-height) * 0.9);
-        color: var(--oj-form-control-placeholder-color); 
-        font-style: var(--oj-form-control-placeholder-font-style);      
+        line-height: calc(var(--oj-text-field-trigger-height) * 0.9);
+        color: var(--oj-text-field-placeholder-color); 
+        font-style: var(--oj-text-field-placeholder-font-style);      
       }
       @else {
         line-height: calc(#{$formControlTriggerHeight} * 0.9);
@@ -309,9 +371,9 @@
     .oj-select-multi .oj-listbox-input {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        background-color: var(--oj-form-control-bg-color);
-        color: var(--oj-form-control-input-value-color);
-        font-size: var(--oj-form-control-input-font-size);
+        background-color: var(--oj-text-field-bg-color);
+        color: var(--oj-text-field-input-value-color);
+        font-size: var(--oj-text-field-input-font-size);
         @include oj-form-control-text-size-adjust-css-vars();    
       }
       @else {
@@ -416,8 +478,8 @@
     .oj-select-multi.oj-invalid .oj-select-choices {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        border-width: var(--oj-form-control-messaging-border-top-width) var(--oj-form-control-messaging-border-right-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-left-width);
-        border-color: var(--oj-form-control-border-color-invalid);
+        border-width: var(--oj-text-field-messaging-border-top-width) var(--oj-text-field-messaging-border-right-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-left-width);
+        border-color: var(--oj-text-field-border-color-invalid);
       }
       @else {
         @include oj-form-control-border-message-width;
@@ -432,8 +494,8 @@
     .oj-select-multi.oj-warning .oj-select-choices {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        border-width: var(--oj-form-control-messaging-border-top-width) var(--oj-form-control-messaging-border-right-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-left-width);
-        border-color: var(--oj-form-control-border-color-warning);
+        border-width: var(--oj-text-field-messaging-border-top-width) var(--oj-text-field-messaging-border-right-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-left-width);
+        border-color: var(--oj-text-field-border-color-warning);
       }
       @else {
         @include oj-form-control-border-message-width;
@@ -482,8 +544,8 @@
     .oj-select-chosen.oj-select-default {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        color: var(--oj-form-control-placeholder-color); 
-        font-style: var(--oj-form-control-placeholder-font-style);
+        color: var(--oj-text-field-placeholder-color); 
+        font-style: var(--oj-text-field-placeholder-font-style);
       }
       @else {
         color: $formControlPlaceholderColor; 
@@ -507,10 +569,10 @@
       {
         box-shadow: none;
         html:not([dir="rtl"]) & {
-          padding-right: var(--oj-form-control-padding-horizontal);
+          padding-right: var(--oj-text-field-padding-horizontal);
         }
         html[dir="rtl"] & {
-          padding-left: var(--oj-form-control-padding-horizontal);
+          padding-left: var(--oj-text-field-padding-horizontal);
         }
       }
       @else {
@@ -642,7 +704,7 @@
       }
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        line-height: var(--oj-form-control-trigger-height);
+        line-height: var(--oj-text-field-trigger-height);
         color: var(--oj-select-arrow-color);        
       }
       @else {
@@ -656,7 +718,7 @@
     .oj-select-native.oj-disabled .oj-select-arrow {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        opacity: var(--oj-form-control-opacity-disabled);
+        opacity: var(--oj-text-field-opacity-disabled);
       }
       @else {
         opacity: $formControlOpacityDisabled;        
@@ -673,9 +735,9 @@
     .oj-select-select {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        @include oj-form-control-content-css-vars($valueColor: '--oj-form-control-trigger-value-color');
-        height: var(--oj-form-control-trigger-height);
-        padding: 0 var(--oj-form-control-padding-horizontal);        
+        @include oj-form-control-content-css-vars($valueColor: '--oj-text-field-trigger-value-color');
+        height: var(--oj-text-field-trigger-height);
+        padding: 0 var(--oj-text-field-padding-horizontal);        
       }
       @else {
         @include oj-form-control-content($formControlTriggerValueColor);
@@ -691,8 +753,8 @@
     select.oj-select-select.oj-select-default:not([multiple]) {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        color: var(--oj-form-control-placeholder-color); 
-        font-style: var(--oj-form-control-placeholder-font-style);        
+        color: var(--oj-text-field-placeholder-color); 
+        font-style: var(--oj-text-field-placeholder-font-style);        
       }
       @else {
         color: $formControlPlaceholderColor; 
@@ -713,7 +775,7 @@
     .oj-select-select option {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        background-color: var(--oj-form-control-bg-color);
+        background-color: var(--oj-text-field-bg-color);
       }
       @else {
         background-color: $formControlBgColor;        
@@ -733,7 +795,7 @@
       .oj-select-native.oj-enabled .oj-select-select:active {
         @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
         {
-          background-color: var(--oj-form-control-trigger-bg-color-active);
+          background-color: var(--oj-text-field-trigger-bg-color-active);
         }
         @else {
           background-color: $formControlTriggerBgColorActive;          
@@ -757,19 +819,19 @@
 
     // remove borders, inherit colors and stretch the height
     // need extra specificity since base selector has direction selectors
-    .oj-form-control-inherit .oj-select .oj-select-choice,
-    .oj-form-control-inherit .oj-select .oj-select-choices {    
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {    
       @include oj-form-control-inherit();
     }
 
     // Styling on form control dom which doesn't require text-align, padding, or color
-    .oj-form-control-inherit .oj-select-select,
-    .oj-form-control-inherit .oj-select-chosen {
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select-chosen {
       background-color:inherit;
       border-width: 0;
     }
     
-    .oj-form-control-inherit .oj-select-select {
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select {
       height:100%;
     }
     

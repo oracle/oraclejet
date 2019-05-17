@@ -3,9 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'knockout', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojkoshared'], function(oj, ko, Logger, Context, BindingProviderImpl)
 {
+  "use strict";
 /* global BindingProviderImpl:false */
 
 /**
@@ -65,9 +65,11 @@ ko.bindingHandlers._ojBindDom_ = {
   init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
     var _currentPromise;
     var _resolveBusyStateCallback;
+    var _childrenBindingsPromiseResolver;
 
     function configChanged(configPromise) {
       registerBusyState();
+      initChildrenBindingsAppliedPromise();
 
       configPromise.then(function (config) {
         if (configPromise === _currentPromise) {
@@ -87,13 +89,36 @@ ko.bindingHandlers._ojBindDom_ = {
             Logger.error('An error %o occurred during view insertion and apply bindings for oj-bind-dom.', e);
           } finally {
             resolveBusyState();
+            resolveChildrenBindingsAppliedPromise();
           }
         }
       }, function (reason) { // errorback
         resolveBusyState();
+        resolveChildrenBindingsAppliedPromise();
         Logger.error('An error %o occurred during view insertion and apply bindings for oj-bind-dom.', reason);
       }
       );
+    }
+
+    function initChildrenBindingsAppliedPromise() {
+      if (!_childrenBindingsPromiseResolver) {
+        var nearestCustomParent = element.parentNode;
+        while (nearestCustomParent &&
+          !oj.ElementUtils.isValidCustomElementName(nearestCustomParent.localName)) {
+          nearestCustomParent = nearestCustomParent.parentNode;
+        }
+        var isImmediate = element.parentNode === nearestCustomParent;
+        _childrenBindingsPromiseResolver = oj._KnockoutBindingProvider
+          .getInstance()
+          .__RegisterBindingAppliedPromiseForChildren(nearestCustomParent, isImmediate);
+      }
+    }
+
+    function resolveChildrenBindingsAppliedPromise() {
+      if (_childrenBindingsPromiseResolver) {
+        _childrenBindingsPromiseResolver();
+        _childrenBindingsPromiseResolver = null;
+      }
     }
 
     function registerBusyState() {
@@ -130,7 +155,7 @@ ko.virtualElements.allowedBindings._ojBindDom_ = true;
 /**
  * @ojstatus preview
  * @ojcomponent oj.ojBindDom
- * @ojshortdesc Renders HTML content with access to passed in data properties.
+ * @ojshortdesc An oj-bind-dom element renders HTML content with access to passed in data properties.
  * @ojsignature {target: "Type", value:"class ojBindDom extends JetElement<ojBindDomSettableProperties>"}
  * @ojbindingelement
  * @since 6.1.0
@@ -159,6 +184,7 @@ ko.virtualElements.allowedBindings._ojBindDom_ = true;
  * @name config
  * @memberof oj.ojBindDom
  * @instance
+ * @ojshortdesc Configuration object that defines a view and data available to the oj-bind-dom element. The configuration object can be specified directly or via a Promise.
  * @type {object|Promise}
  * @example <caption>Initialize the oj-bind-dom:</caption>
  * &lt;oj-bind-dom config='[[myConfig]]'>

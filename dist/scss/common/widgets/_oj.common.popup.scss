@@ -10,13 +10,6 @@
 //-------------------------------------------------------------------------------------------------
 
 @function oj-popup-tail-url($edge, $width, $height, $borderColor, $borderWidth, $fillColor, $x1, $y1, $x2, $y2, $x3, $y3) {
-  $x1: oj-strip-unit($x1);
-  $y1: oj-strip-unit($y1);
-  $x2: oj-strip-unit($x2);
-  $y2: oj-strip-unit($y2);
-  $x3: oj-strip-unit($x3);
-  $y3: oj-strip-unit($y3);
-  $borderWidth: oj-strip-unit($borderWidth);
   @if function-exists(oj-popup-tail-url-delegate) {
     @return oj-popup-tail-url-delegate($edge, $width, $height, $borderColor, $borderWidth, $fillColor, $x1, $y1, $x2, $y2, $x3, $y3);
   } @else {
@@ -41,28 +34,28 @@
     .oj-popup-layer {
       @extend .oj-component-layer;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        z-index: var(--oj-popup-zindex);
+        z-index: var(--oj-popup-z-index);
       } @else {
         z-index: $popupZindex;
       }
     }
     .oj-popup-layer.oj-focus-within {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        z-index: calc(var(--oj-popup-zindex) + 1);
+        z-index: calc(var(--oj-popup-z-index) + 1);
       } @else {
         z-index: calc(#{$popupZindex} + 1);
       }
     }
     .oj-popup-layer.oj-popup-tail-simple {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        z-index: var(--oj-popup-tail-zindex);
+        z-index: var(--oj-popup-tail-z-index);
       } @else {
         z-index: $popupTailZindex;
       }
     }
     .oj-popup-layer.oj-popup-tail-simple.oj-focus-within {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        z-index: calc(var(--oj-popup-tail-zindex) + 1);
+        z-index: calc(var(--oj-popup-tail-z-index) + 1);
       } @else {
         z-index: calc(#{$popupTailZindex} + 1);
       }
@@ -80,7 +73,7 @@
         background-color: $popupBgColor;
         @include oj-box-shadow($popupBoxShadow);
       }
-      @include oj-will-change-property(top, left);
+      will-change: top, left;
     }
     .oj-popup.oj-popup-tail-simple {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
@@ -94,7 +87,7 @@
         border-color: $popupTailBorderColor;
         background-color: $popupTailBgcolor;
       }
-      @include oj-will-change-property(top, left, bottom, right);
+      will-change: top, left, bottom, right;
     }
     .oj-popup.oj-popup-no-chrome {
       border-width: 0;
@@ -124,7 +117,7 @@
     
     .oj-popup.oj-focus-highlight {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        outline: dotted 1px var(--oj-primary-text-color);
+        outline: dotted 1px var(--oj-text-color-primary);
         outline: -webkit-focus-ring-color auto;
       } @else {
         @include oj-browser-focus-outline-approximation($primaryTextColor);
@@ -182,32 +175,32 @@
     } 
     .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top {
       @include oj-icon-content(
-        $icon: oj-popup-tail-url('left-top', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, $popupTailSimpleWidth, $popupTailSimpleHeight, 0, 0, $popupTailSimpleWidth, round($popupTailSimpleHeight * 0.25))
+        $icon: oj-popup-tail-url('left-top', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidthRawValue, $popupTailBgcolor, $popupTailSimpleWidthRawValue, $popupTailSimpleHeightRawValue, 0, 0, $popupTailSimpleWidthRawValue, round($popupTailSimpleHeightRawValue * 0.25))
       );
     }
     .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-middle {
       @include oj-icon-content(
-        $icon: oj-popup-tail-url('left-middle', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, $popupTailSimpleWidth, 0, 0, ($popupTailSimpleWidth / 2), $popupTailSimpleWidth, $popupTailSimpleHeight)
+        $icon: oj-popup-tail-url('left-middle', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidthRawValue, $popupTailBgcolor, $popupTailSimpleWidthRawValue, 0, 0, ($popupTailSimpleWidthRawValue / 2), $popupTailSimpleWidthRawValue, $popupTailSimpleHeightRawValue)
       );
     }
     .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom {
       @include oj-icon-content(
-        $icon: oj-popup-tail-url('left-bottom', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, $popupTailSimpleWidth, 0, 0, $popupTailSimpleHeight, $popupTailSimpleWidth, round($popupTailSimpleHeight * 0.75))
+        $icon: oj-popup-tail-url('left-bottom', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidthRawValue, $popupTailBgcolor, $popupTailSimpleWidthRawValue, 0, 0, $popupTailSimpleHeightRawValue, $popupTailSimpleWidthRawValue, round($popupTailSimpleHeightRawValue * 0.75))
       );
     }
     .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top {
       @include oj-icon-content(
-        $icon: oj-popup-tail-url('right-top', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, 0, round($popupTailSimpleHeight * 0.25), $popupTailSimpleWidth, 0, 0, $popupTailSimpleHeight)
+        $icon: oj-popup-tail-url('right-top', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidthRawValue, $popupTailBgcolor, 0, round($popupTailSimpleHeightRawValue * 0.25), $popupTailSimpleWidthRawValue, 0, 0, $popupTailSimpleHeightRawValue)
       );
     }
     .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-middle {
       @include oj-icon-content(
-        $icon: oj-popup-tail-url('right-middle', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, 0, 0, $popupTailSimpleWidth, ($popupTailSimpleHeight / 2), 0, $popupTailSimpleHeight)
+        $icon: oj-popup-tail-url('right-middle', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidthRawValue, $popupTailBgcolor, 0, 0, $popupTailSimpleWidthRawValue, ($popupTailSimpleHeightRawValue / 2), 0, $popupTailSimpleHeightRawValue)
       );
     }
     .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom {
       @include oj-icon-content(
-        $icon: oj-popup-tail-url('right-bottom', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, 0, 0, $popupTailSimpleWidth, $popupTailSimpleHeight, 0, round($popupTailSimpleHeight * .75))
+        $icon: oj-popup-tail-url('right-bottom', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidthRawValue, $popupTailBgcolor, 0, 0, $popupTailSimpleWidthRawValue, $popupTailSimpleHeightRawValue, 0, round($popupTailSimpleHeightRawValue * .75))
       );
     }
     .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-top {
@@ -217,7 +210,7 @@
         top: calc(0px - #{$popupTailSimpleHeight});
       }
       @include oj-icon-content(
-        $icon: oj-popup-tail-url('center-top', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, 0, $popupTailSimpleHeight, ($popupTailSimpleWidth / 2), 0, $popupTailSimpleWidth, $popupTailSimpleHeight)
+        $icon: oj-popup-tail-url('center-top', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidthRawValue, $popupTailBgcolor, 0, $popupTailSimpleHeightRawValue, ($popupTailSimpleWidthRawValue / 2), 0, $popupTailSimpleWidthRawValue, $popupTailSimpleHeightRawValue)
       );
     }
     .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-bottom {
@@ -227,7 +220,7 @@
         bottom: calc(0px - #{$popupTailSimpleHeight});
       }
       @include oj-icon-content(
-        $icon: oj-popup-tail-url('center-bottom', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, 0, 0, ($popupTailSimpleWidth / 2), $popupTailSimpleHeight, $popupTailSimpleWidth, 0)
+        $icon: oj-popup-tail-url('center-bottom', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidthRawValue, $popupTailBgcolor, 0, 0, ($popupTailSimpleWidthRawValue / 2), $popupTailSimpleHeightRawValue, $popupTailSimpleWidthRawValue, 0)
       );
     }
 

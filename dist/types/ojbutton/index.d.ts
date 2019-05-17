@@ -3,10 +3,6 @@ export interface ojButton<SP extends ojButtonSettableProperties = ojButtonSettab
     chroming: 'full' | 'half' | 'outlined';
     disabled: boolean;
     display: 'all' | 'icons';
-    onChromingChanged: ((event: JetElementCustomEvent<ojButton<SP>["chroming"]>) => any) | null;
-    onDisabledChanged: ((event: JetElementCustomEvent<ojButton<SP>["disabled"]>) => any) | null;
-    onDisplayChanged: ((event: JetElementCustomEvent<ojButton<SP>["display"]>) => any) | null;
-    onOjAction: ((event: ojButton.ojAction) => any) | null;
     addEventListener<T extends keyof ojButtonEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojButtonEventMap<SP>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojButtonSettableProperties>(property: T): ojButton<SP>[T];
@@ -20,6 +16,12 @@ export namespace ojButton {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type chromingChanged<SP extends ojButtonSettableProperties = ojButtonSettableProperties> = JetElementCustomEvent<ojButton<SP>["chroming"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged<SP extends ojButtonSettableProperties = ojButtonSettableProperties> = JetElementCustomEvent<ojButton<SP>["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged<SP extends ojButtonSettableProperties = ojButtonSettableProperties> = JetElementCustomEvent<ojButton<SP>["display"]>;
 }
 export interface ojButtonEventMap<SP extends ojButtonSettableProperties = ojButtonSettableProperties> extends baseComponentEventMap<SP> {
     'ojAction': ojButton.ojAction;
@@ -61,11 +63,6 @@ export interface ojButtonsetMany extends ojButtonset<ojButtonsetManySettableProp
     display: 'all' | 'icons';
     focusManagement: 'oneTabstop' | 'none';
     value: any[] | null;
-    onChromingChanged: ((event: JetElementCustomEvent<ojButtonsetMany["chroming"]>) => any) | null;
-    onDisabledChanged: ((event: JetElementCustomEvent<ojButtonsetMany["disabled"]>) => any) | null;
-    onDisplayChanged: ((event: JetElementCustomEvent<ojButtonsetMany["display"]>) => any) | null;
-    onFocusManagementChanged: ((event: JetElementCustomEvent<ojButtonsetMany["focusManagement"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojButtonsetMany["value"]>) => any) | null;
     addEventListener<T extends keyof ojButtonsetManyEventMap>(type: T, listener: (this: HTMLElement, ev: ojButtonsetManyEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojButtonsetManySettableProperties>(property: T): ojButtonsetMany[T];
@@ -73,6 +70,18 @@ export interface ojButtonsetMany extends ojButtonset<ojButtonsetManySettableProp
     setProperty<T extends keyof ojButtonsetManySettableProperties>(property: T, value: ojButtonsetManySettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojButtonsetManySettableProperties>): void;
     setProperties(properties: ojButtonsetManySettablePropertiesLenient): void;
+}
+export namespace ojButtonsetMany {
+    // tslint:disable-next-line interface-over-type-literal
+    type chromingChanged = JetElementCustomEvent<ojButtonsetMany["chroming"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojButtonsetMany["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged = JetElementCustomEvent<ojButtonsetMany["display"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type focusManagementChanged = JetElementCustomEvent<ojButtonsetMany["focusManagement"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojButtonsetMany["value"]>;
 }
 export interface ojButtonsetManyEventMap extends ojButtonsetEventMap<ojButtonsetManySettableProperties> {
     'chromingChanged': JetElementCustomEvent<ojButtonsetMany["chroming"]>;
@@ -97,11 +106,6 @@ export interface ojButtonsetOne extends ojButtonset<ojButtonsetOneSettableProper
     display: 'all' | 'icons';
     focusManagement: 'oneTabstop' | 'none';
     value: any;
-    onChromingChanged: ((event: JetElementCustomEvent<ojButtonsetOne["chroming"]>) => any) | null;
-    onDisabledChanged: ((event: JetElementCustomEvent<ojButtonsetOne["disabled"]>) => any) | null;
-    onDisplayChanged: ((event: JetElementCustomEvent<ojButtonsetOne["display"]>) => any) | null;
-    onFocusManagementChanged: ((event: JetElementCustomEvent<ojButtonsetOne["focusManagement"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojButtonsetOne["value"]>) => any) | null;
     addEventListener<T extends keyof ojButtonsetOneEventMap>(type: T, listener: (this: HTMLElement, ev: ojButtonsetOneEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojButtonsetOneSettableProperties>(property: T): ojButtonsetOne[T];
@@ -109,6 +113,18 @@ export interface ojButtonsetOne extends ojButtonset<ojButtonsetOneSettableProper
     setProperty<T extends keyof ojButtonsetOneSettableProperties>(property: T, value: ojButtonsetOneSettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojButtonsetOneSettableProperties>): void;
     setProperties(properties: ojButtonsetOneSettablePropertiesLenient): void;
+}
+export namespace ojButtonsetOne {
+    // tslint:disable-next-line interface-over-type-literal
+    type chromingChanged = JetElementCustomEvent<ojButtonsetOne["chroming"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojButtonsetOne["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged = JetElementCustomEvent<ojButtonsetOne["display"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type focusManagementChanged = JetElementCustomEvent<ojButtonsetOne["focusManagement"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojButtonsetOne["value"]>;
 }
 export interface ojButtonsetOneEventMap extends ojButtonsetEventMap<ojButtonsetOneSettableProperties> {
     'chromingChanged': JetElementCustomEvent<ojButtonsetOne["chroming"]>;
@@ -131,10 +147,6 @@ export interface ojMenuButton extends ojButton<ojMenuButtonSettableProperties> {
     chroming: 'full' | 'half' | 'outlined';
     disabled: boolean;
     display: 'all' | 'icons';
-    onChromingChanged: ((event: JetElementCustomEvent<ojMenuButton["chroming"]>) => any) | null;
-    onDisabledChanged: ((event: JetElementCustomEvent<ojMenuButton["disabled"]>) => any) | null;
-    onDisplayChanged: ((event: JetElementCustomEvent<ojMenuButton["display"]>) => any) | null;
-    onOjAction: ((event: ojMenuButton.ojAction) => any) | null;
     addEventListener<T extends keyof ojMenuButtonEventMap>(type: T, listener: (this: HTMLElement, ev: ojMenuButtonEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojMenuButtonSettableProperties>(property: T): ojMenuButton[T];
@@ -148,6 +160,12 @@ export namespace ojMenuButton {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type chromingChanged = JetElementCustomEvent<ojMenuButton["chroming"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojMenuButton["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged = JetElementCustomEvent<ojMenuButton["display"]>;
 }
 export interface ojMenuButtonEventMap extends ojButtonEventMap<ojMenuButtonSettableProperties> {
     'ojAction': ojMenuButton.ojAction;

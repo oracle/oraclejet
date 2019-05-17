@@ -22,11 +22,12 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
         background-color: var(--oj-time-axis-bg-color);
         border: 1px solid var(--oj-time-axis-border-color);
+        user-select: none;
       } @else {
         background-color: $dvtTimeAxisBgColor;
         border: 1px solid $dvtTimeAxisBorderColor;
+        @include oj-user-select-property(none);
       }
-      @include oj-user-select-property(none);
       outline: none;
     }
 

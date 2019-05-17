@@ -2,12 +2,6 @@ import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, 
 export interface ojTrain extends baseComponent<ojTrainSettableProperties> {
     selectedStep: string;
     steps: ojTrain.Step[];
-    onSelectedStepChanged: ((event: JetElementCustomEvent<ojTrain["selectedStep"]>) => any) | null;
-    onStepsChanged: ((event: JetElementCustomEvent<ojTrain["steps"]>) => any) | null;
-    onOjBeforeDeselect: ((event: ojTrain.ojBeforeDeselect) => any) | null;
-    onOjBeforeSelect: ((event: ojTrain.ojBeforeSelect) => any) | null;
-    onOjDeselect: ((event: ojTrain.ojDeselect) => any) | null;
-    onOjSelect: ((event: ojTrain.ojSelect) => any) | null;
     addEventListener<T extends keyof ojTrainEventMap>(type: T, listener: (this: HTMLElement, ev: ojTrainEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojTrainSettableProperties>(property: T): ojTrain[T];
@@ -52,6 +46,10 @@ export namespace ojTrain {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type selectedStepChanged = JetElementCustomEvent<ojTrain["selectedStep"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type stepsChanged = JetElementCustomEvent<ojTrain["steps"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Step = {
         id: string;

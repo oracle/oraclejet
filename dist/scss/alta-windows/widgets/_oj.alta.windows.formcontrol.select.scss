@@ -40,8 +40,8 @@
 
     .oj-select-select::-ms-value {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background-color: var(--oj-form-control-bg-color); 
-        color: var(--oj-form-control-input-value-color);
+        background-color: var(--oj-text-field-bg-color); 
+        color: var(--oj-text-field-input-value-color);
       } @else {
         background-color: $formControlBgColor; 
         color: $formControlInputValueColor;  
@@ -50,7 +50,7 @@
 
     .oj-select-select[disabled] {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background: var(--oj-form-control-bg-color);
+        background: var(--oj-text-field-bg-color);
       } @else {
         background: $formControlBgColor;         
       }
@@ -70,7 +70,7 @@
 
     .oj-select-native.oj-enabled .oj-select-select:active {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background-color: var(--oj-form-control-bg-color);
+        background-color: var(--oj-text-field-bg-color);
       } @else {
         background-color: $formControlBgColor;        
       }    
@@ -82,7 +82,7 @@
       padding-left: 0;
       padding-right: 0;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        min-height: calc(var(--oj-form-control-trigger-height) * 2);
+        min-height: calc(var(--oj-text-field-trigger-height) * 2);
       } @else {
         min-height: calc(#{$formControlTriggerHeight} * 2);        
       }

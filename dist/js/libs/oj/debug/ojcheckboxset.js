@@ -3,15 +3,14 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'ojs/ojoption'], 
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        */
-       function(oj, $, Logger)
+define(['ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'ojs/ojoption'], 
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+*/
+function(oj, $, Logger, Translations)
 {
-
+  "use strict";
 var __oj_checkboxset_metadata = 
 {
   "properties": {
@@ -56,7 +55,8 @@ var __oj_checkboxset_metadata =
       "type": "object",
       "properties": {
         "instruction": {
-          "type": "string"
+          "type": "string",
+          "value": ""
         }
       }
     },
@@ -86,21 +86,10 @@ var __oj_checkboxset_metadata =
       "value": []
     },
     "optionRenderer": {
-      "type": "function",
-      "properties": {
-        "component": {
-          "type": "Element"
-        },
-        "index": {
-          "type": "number"
-        },
-        "data": {
-          "type": "object"
-        }
-      }
+      "type": "function"
     },
     "options": {
-      "type": "oj.DataProvider"
+      "type": "object"
     },
     "optionsKeys": {
       "type": "object",
@@ -193,13 +182,13 @@ var __oj_checkboxset_metadata =
    * do not do a value change check in _SetValue
    */
   var _sValueChangeCheckFalse = { doValueChangeCheck: false };
-/* global Logger:false*/
+/* global Logger:false, Translations:false*/
 
 /**
  * @ojcomponent oj.ojCheckboxset
  * @augments oj.editableValue
  * @since 0.6
- * @ojshortdesc A grouping of related checkboxes where any number of boxes may be checked.
+ * @ojshortdesc A checkbox set allows the user to select one or more options from a set.
  * @ojrole checkbox
  * @ojrole checkboxgroup
  * @ojrole option
@@ -208,11 +197,13 @@ var __oj_checkboxset_metadata =
  * @ojstatus preview
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojCheckboxset<K, D> extends editableValue<Array<any>, ojCheckboxsetSettableProperties<K, D>>"
+ *                value: "class ojCheckboxset<K, D, V =any> extends editableValue<Array<V>, ojCheckboxsetSettableProperties<K, D, V>>",
+ *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"},
+ *                , {"name": "V", "description": "Type of each item in the value of the component"}]
  *               },
  *               {
  *                target: "Type",
- *                value: "ojCheckboxsetSettableProperties<K, D> extends editableValueSettableProperties<Array<any>>",
+ *                value: "ojCheckboxsetSettableProperties<K, D, V> extends editableValueSettableProperties<Array<V>>",
  *                for: "SettableProperties"
  *               }
  *              ]
@@ -309,14 +300,6 @@ var __oj_checkboxset_metadata =
  * <br/>
  * // set the value to "ciao". (The 'ciao' checkbox will be checked)
  * myComp.value = ["ciao"];
- *
- * @example <caption>Initialize an oj-checkboxset via the JET component binding:</caption>
- * &lt;oj-label id="grouplabel">Time&lt;/oj-label>
- * &lt;oj-checkboxset id="checkboxset" value="{{checkboxsetValue}}"
- *                    labelled-by="grouplabel">
- *   &lt;oj-option id="morningid" value="morning">Morning&lt;/oj-option>
- *   &lt;oj-option id="nightid" value="night">Night&lt;/oj-option>
- * &lt;/oj-checkboxset>
  */
   oj.__registerWidget('oj.ojCheckboxset', $.oj.editableValue,
     {
@@ -348,6 +331,7 @@ var __oj_checkboxset_metadata =
      * @expose
      * @type {boolean}
      * @default false
+     * @ojshortdesc Specifies if the component is disabled. If true, then all of its inputs and labels are also disabled. See the Help documentation for more information.
      * @public
      * @instance
      * @memberof oj.ojCheckboxset
@@ -374,6 +358,7 @@ var __oj_checkboxset_metadata =
      *
      * @expose
      * @type {string|null}
+     * @ojshortdesc Establishes a relationship between this component and another element, typically an oj-label custom element. See the Help documenation for more information.
      * @public
      * @instance
      * @memberof oj.ojCheckboxset
@@ -399,6 +384,7 @@ var __oj_checkboxset_metadata =
      * @access public
      * @expose
      * @type {?boolean}
+     * @ojshortdesc Specifies whether the component is read-only. A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
      * @alias readonly
      * @instance
      * @memberof oj.ojCheckboxset
@@ -487,7 +473,7 @@ var __oj_checkboxset_metadata =
      * @expose
      * @access public
      * @instance
-     * @type {oj.DataProvider|null}
+     * @type {Object|null}
      * @ojsignature { target: "Type",
      *                value: "oj.DataProvider<K, D>|null",
      *                jsdocOverride: true}
@@ -639,7 +625,7 @@ var __oj_checkboxset_metadata =
      *   property is not updated and the error is shown.
      *   </li>
      *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
-     *   property is updated; page author can listen to the <code class="prettyprint">onValueChanged</code>
+     *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
      *   event to clear custom errors.</li>
      * </ul>
      * </li>
@@ -690,6 +676,7 @@ var __oj_checkboxset_metadata =
      * @instance
      * @memberof oj.ojCheckboxset
      * @type {boolean}
+     * @ojshortdesc Specifies whether the component is required or optional. See the Help documentation for more information.
      * @default false
      * @since 0.7
      * @see #translations
@@ -736,6 +723,8 @@ var __oj_checkboxset_metadata =
      * @memberof oj.ojCheckboxset
      * @ojwriteback
      * @type {Array.<any>}
+     * @ojsignature [{target: "Type", value: "Array<V>|null"}]
+     * @ojshortdesc An array that represents the value of the component. See the Help documentation for more information.
      */
         value: []
       },
@@ -755,6 +744,7 @@ var __oj_checkboxset_metadata =
    * @expose
    * @public
    * @return {void}
+   * @ojshortdesc Refreshes the checkboxset. A refresh is required after a checkboxset is programmatically changed. See the Help documentation for more information.
    * @memberof oj.ojCheckboxset
    * @instance
    */
@@ -809,6 +799,7 @@ var __oj_checkboxset_metadata =
    * @method
    * @access public
    * @expose
+   * @ojshortdesc Validates the component's display value using all validators registered on the component. If there are no validation errors. then the value is updated. See the Help documentation for more information.
    * @instance
    * @memberof oj.ojCheckboxset
    * @since 4.0.0
@@ -1036,24 +1027,43 @@ var __oj_checkboxset_metadata =
    * @instance
    */
       _processOjOptions: function () {
+        // if the value doesn't exist as an option, it will end up at the top of the resultant array
+        function sortValuesInOptionsOrder(vals, opts) {
+          var values = vals.slice(0);
+          var optIndex = opts.length - 1;
+          var valIndex = values.length - 1;
+          while (valIndex > 0 && optIndex > -1) {
+            var optVal = opts[optIndex].value;
+            var val = values[valIndex];
+            if (optVal !== val) {
+              var i = values.indexOf(optVal);
+              if (i > -1) {
+                values[i] = val;
+                values[valIndex] = optVal;
+                valIndex -= 1;
+              }
+              optIndex -= 1;
+            } else {
+              valIndex -= 1;
+              optIndex -= 1;
+            }
+          }
+          return values;
+        }
+
         if (this._IsCustomElement()) {
       // set the custom renderer on oj-option
           var i;
           var len;
-          var firstSelectedIndex = false;
-          var updatedFirstSelectedIndex = false;
           var renderer = this._customOptionRenderer.bind(this);
           var options = this.element.children('oj-option');
+          var selectedOptionsArray = sortValuesInOptionsOrder(this.options.value, options);
+
           if (options.length > 0) {
             for (i = 0, len = options.length; i < len; i++) {
               options[i].customOptionRenderer = renderer;
-              this._needSeparator = true;
               if (this.options.readOnly) {
-                if (!firstSelectedIndex) {
-                  firstSelectedIndex = this._isFirstSelectedOption(options[i]);
-                  this._needSeparator = false;
-                }
-                this._processReadonlyOptions(options[i], false);
+                this._processReadonlyOptions(options[i], selectedOptionsArray, false);
               } else {
                 this._initInputLabelFromOjOption(options[i]);
               }
@@ -1062,15 +1072,12 @@ var __oj_checkboxset_metadata =
 
       // for oj-option that are inside the wrapper (after refresh)
           options = this.element.children('.oj-checkboxset-wrapper').find('oj-option');
+          selectedOptionsArray = sortValuesInOptionsOrder(this.options.value, options);
           if (options.length > 0) {
             for (i = 0, len = options.length; i < len; i++) {
               options[i].customOptionRenderer = renderer;
               if (this.options.readOnly) {
-                if (!updatedFirstSelectedIndex) {
-                  updatedFirstSelectedIndex = this._isFirstSelectedOption(options[i]);
-                  this._needSeparator = false;
-                }
-                this._processReadonlyOptions(options[i], true);
+                this._processReadonlyOptions(options[i], selectedOptionsArray, true);
               } else {
                 this._initInputLabelFromOjOption(options[i]);
               }
@@ -1078,21 +1085,13 @@ var __oj_checkboxset_metadata =
           }
         }
       },
-      _isFirstSelectedOption: function (elem) {
-        var optionValue = elem.value;
-        var selectedOptionsArray = this.options.value;
-        if (selectedOptionsArray.indexOf(optionValue) > -1) {
-          return true;
-        }
-        return false;
-      },
+
     /**
      * @memberof oj.ojCheckboxset
      * @instance
      * @private
      */
-      _processReadonlyOptions: function (elem, isAlreadyProcessed) {
-        var selectedOptionsArray = this.options.value;
+      _processReadonlyOptions: function (elem, selectedOptionsArray, isAlreadyProcessed) {
         var parentSpan;
         var optionValue = elem.value;
         var selectedArrayLength = selectedOptionsArray.length;
@@ -1121,9 +1120,13 @@ var __oj_checkboxset_metadata =
           if (noCheckboxSelected !== null) {
             span.textContent = noCheckboxSelected;
           }
-          elem.parentElement.insertBefore(span, elem);
-        } else if (selectedOptionsArray.indexOf(optionValue) > -1) {
-          this._initReadonlyLabelFromOjOption(elem, parentSpan);
+          elem.parentElement.insertBefore(span, elem);// @HTMLUpdateOK
+        } else {
+          var i = selectedOptionsArray.indexOf(optionValue);
+          if (i > -1) {
+            var isLastOption = (i === selectedOptionsArray.length - 1);
+            this._initReadonlyLabelFromOjOption(elem, parentSpan, isLastOption);
+          }
         }
       },
    /**
@@ -1256,10 +1259,24 @@ var __oj_checkboxset_metadata =
      * @instance
      * @private
      */
-      _initReadonlyLabelFromOjOption: function (elem, parentSpan) {
+      _initReadonlyLabelFromOjOption: function (elem, parentSpan, isLastOption) {
+        function toggleLabelSeparator(label, needsSeparator) {
+          var separatorNode = label.querySelector('span[data-oj-internal]');
+          if (needsSeparator && !separatorNode) {
+            var separator = Translations.getTranslatedString('oj-converter.plural-separator');
+            separatorNode = document.createElement('span');
+            separatorNode.setAttribute('data-oj-internal', '');
+            separatorNode.textContent = separator;
+            label.appendChild(separatorNode);
+          } else if (!needsSeparator && separatorNode) {
+            separatorNode.parentElement.removeChild(separatorNode);
+          }
+        }
+
         var label;
-        var separator = ', ';
         var ojoption = elem;
+        var isRowDirection = this.element.hasClass('oj-choice-direction-row');
+        var needsSeparator = (isRowDirection && !isLastOption);
         if (parentSpan) {
           $(ojoption).uniqueId();
 
@@ -1274,35 +1291,17 @@ var __oj_checkboxset_metadata =
             checkbox.parentElement.classList.add('oj-helper-hidden');
           }
           parentSpan.classList.remove('oj-helper-hidden');
-
-          if (this.element.hasClass('oj-choice-direction-row')) {
-            if (!this._needSeparator) {
-              // if it is first selected element in update, we should remove the separator during update.
-              var labelWrapper = elem.parentElement;
-              var text = labelWrapper.innerText;
-              if (text && text.substring(0, 2) === separator) {
-                labelWrapper.innerText = text.substring(2);
-              }
-              this._needSeparator = true;
-            }
-          }
+          toggleLabelSeparator(ojoption.parentElement, needsSeparator);
         } else {
           elem.classList.remove('oj-helper-hidden');
           var span = document.createElement('span');
           label = document.createElement('label');
-          ojoption.parentElement.insertBefore(span, ojoption);
+          ojoption.parentElement.insertBefore(span, ojoption);// @HTMLUpdateOK
           span.setAttribute('class', 'oj-choice-item');
-          if (this.element.hasClass('oj-choice-direction-row')) {
-            if (this._needSeparator) {
-              var separatorNode = document.createTextNode(separator);
-              label.appendChild(separatorNode);
-            } else {
-              this._needSeparator = true;
-            }
-            label.appendChild(ojoption);
-          } else {
+          label.appendChild(ojoption);
+          toggleLabelSeparator(label, needsSeparator);
+          if (!isRowDirection) {
             label.setAttribute('class', 'oj-checkbox-label');
-            label.appendChild(ojoption);
           }
           span.appendChild(label);
         }
@@ -1420,8 +1419,8 @@ var __oj_checkboxset_metadata =
           this.element.addClass('oj-choice-direction-column');
         }
         this._refreshRequired(this.options.required);
-
-        this._updateLabelledBy(null, this.options.labelledBy, this.widget());
+        var widget = this.widget();
+        this._updateLabelledBy(widget[0], null, this.options.labelledBy, widget);
       },
       _events:
       {
@@ -1753,8 +1752,9 @@ var __oj_checkboxset_metadata =
             this._processOjOptions();
             break;
           case 'labelledBy':
-        // remove the old one and add the new one
-            this._updateLabelledBy(originalValue, value, this.widget());
+            // remove the old one and add the new one
+            var widget = this.widget();
+            this._updateLabelledBy(widget[0], originalValue, value, widget);
             break;
           case 'options':
             oj.RadioCheckboxUtils.generateOptionsFromData.call(this);

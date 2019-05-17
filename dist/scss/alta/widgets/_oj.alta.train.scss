@@ -22,23 +22,21 @@
 @if $includeTrainClasses != false {
   @include module-include-once("alta.train") {
 
-
-      .oj-train-button.oj-visited::before {
-        content: "";
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        display: var(--oj-train-icon-display-visited);
-      } @else {
-        display: $trainVisitedIconDisplay;
-      }
-        @extend .oj-fwk-icon-checkmark-blue;
-      }
-
-      .oj-train-button.oj-hover.oj-visited::before {
-        content: "";
-        @extend .oj-fwk-icon-checkmark-white;
-      }
+    .oj-train-button.oj-visited::before {
+      content: "";
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+      display: var(--oj-train-icon-display-visited);
+    } @else {
+      display: $trainVisitedIconDisplay;
+    }
+      @extend .oj-fwk-icon-checkmark-blue;
+    }
 
 
+    .oj-train-button.oj-hover.oj-visited::before {
+      content: "";
+      @extend .oj-fwk-icon-checkmark-white;
+    }
   }
 }

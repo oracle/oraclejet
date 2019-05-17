@@ -3,11 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption', 'promise', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview'], 
-       function(oj, $, Context, ThemeUtils, TimerUtils, Components, Logger)
+function(oj, $, Context, ThemeUtils, TimerUtils, Components, Logger)
 {
-
+  "use strict";
 var __oj_combobox_many_metadata = 
 {
   "properties": {
@@ -19,7 +18,11 @@ var __oj_combobox_many_metadata =
       "type": "object",
       "properties": {
         "type": {
-          "type": "'number'|'datetime'"
+          "type": "string",
+          "enumValues": [
+            "datetime",
+            "number"
+          ]
         },
         "options": {
           "type": "object"
@@ -67,7 +70,8 @@ var __oj_combobox_many_metadata =
       "type": "object",
       "properties": {
         "instruction": {
-          "type": "string"
+          "type": "string",
+          "value": ""
         }
       }
     },
@@ -88,6 +92,9 @@ var __oj_combobox_many_metadata =
       "type": "string",
       "value": ""
     },
+    "labelledBy": {
+      "type": "string"
+    },
     "messagesCustom": {
       "type": "Array<Object>",
       "writeback": true,
@@ -98,39 +105,16 @@ var __oj_combobox_many_metadata =
       "value": 0
     },
     "optionRenderer": {
-      "type": "function",
-      "properties": {
-        "component": {
-          "type": "Element"
-        },
-        "parent": {
-          "type": "Element"
-        },
-        "index": {
-          "type": "number"
-        },
-        "depth": {
-          "type": "number"
-        },
-        "leaf": {
-          "type": "boolean"
-        },
-        "data": {
-          "type": "object"
-        },
-        "parentElement": {
-          "type": "Element"
-        }
-      }
+      "type": "function"
     },
     "options": {
-      "type": "Array<(oj.ojCombobox.Option|oj.ojCombobox.Optgroup)>|oj.DataProvider"
+      "type": "Array<Object>|object"
     },
     "optionsKeys": {
-      "type": "oj.ojCombobox.OptionsKeys",
+      "type": "object",
       "properties": {
         "childKeys": {
-          "type": "oj.ojCombobox.OptionsKeys",
+          "type": "object",
           "properties": {
             "label": {
               "type": "string"
@@ -142,7 +126,7 @@ var __oj_combobox_many_metadata =
               "type": "string"
             },
             "childKeys": {
-              "type": "oj.ojCombobox.OptionsKeys",
+              "type": "object",
               "properties": {
                 "label": {
                   "type": "string"
@@ -154,7 +138,7 @@ var __oj_combobox_many_metadata =
                   "type": "string"
                 },
                 "childKeys": {
-                  "type": "oj.ojCombobox.OptionsKeys"
+                  "type": "object"
                 }
               }
             }
@@ -205,7 +189,13 @@ var __oj_combobox_many_metadata =
         "filterFurther": {
           "type": "string"
         },
+        "moreMatchesFound": {
+          "type": "string"
+        },
         "noMatchesFound": {
+          "type": "string"
+        },
+        "oneMatchesFound": {
           "type": "string"
         },
         "required": {
@@ -237,15 +227,7 @@ var __oj_combobox_many_metadata =
     },
     "validators": {
       "type": "Array",
-      "value": [],
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "options": {
-          "type": "object"
-        }
-      }
+      "value": []
     },
     "value": {
       "type": "Array<any>",
@@ -284,7 +266,11 @@ var __oj_combobox_one_metadata =
       "type": "object",
       "properties": {
         "type": {
-          "type": "'number'|'datetime'"
+          "type": "string",
+          "enumValues": [
+            "datetime",
+            "number"
+          ]
         },
         "options": {
           "type": "object"
@@ -340,7 +326,8 @@ var __oj_combobox_one_metadata =
       "type": "object",
       "properties": {
         "instruction": {
-          "type": "string"
+          "type": "string",
+          "value": ""
         }
       }
     },
@@ -361,6 +348,9 @@ var __oj_combobox_one_metadata =
       "type": "string",
       "value": ""
     },
+    "labelledBy": {
+      "type": "string"
+    },
     "messagesCustom": {
       "type": "Array<Object>",
       "writeback": true,
@@ -371,39 +361,16 @@ var __oj_combobox_one_metadata =
       "value": 0
     },
     "optionRenderer": {
-      "type": "function",
-      "properties": {
-        "component": {
-          "type": "Element"
-        },
-        "parent": {
-          "type": "Element"
-        },
-        "index": {
-          "type": "number"
-        },
-        "depth": {
-          "type": "number"
-        },
-        "leaf": {
-          "type": "boolean"
-        },
-        "data": {
-          "type": "object"
-        },
-        "parentElement": {
-          "type": "Element"
-        }
-      }
+      "type": "function"
     },
     "options": {
-      "type": "Array<(oj.ojCombobox.Option|oj.ojCombobox.Optgroup)>|oj.DataProvider"
+      "type": "Array<Object>|object"
     },
     "optionsKeys": {
-      "type": "oj.ojCombobox.OptionsKeys",
+      "type": "object",
       "properties": {
         "childKeys": {
-          "type": "oj.ojCombobox.OptionsKeys",
+          "type": "object",
           "properties": {
             "label": {
               "type": "string"
@@ -415,7 +382,7 @@ var __oj_combobox_one_metadata =
               "type": "string"
             },
             "childKeys": {
-              "type": "oj.ojCombobox.OptionsKeys",
+              "type": "object",
               "properties": {
                 "label": {
                   "type": "string"
@@ -427,7 +394,7 @@ var __oj_combobox_one_metadata =
                   "type": "string"
                 },
                 "childKeys": {
-                  "type": "oj.ojCombobox.OptionsKeys"
+                  "type": "object"
                 }
               }
             }
@@ -478,7 +445,13 @@ var __oj_combobox_one_metadata =
         "filterFurther": {
           "type": "string"
         },
+        "moreMatchesFound": {
+          "type": "string"
+        },
         "noMatchesFound": {
+          "type": "string"
+        },
+        "oneMatchesFound": {
           "type": "string"
         },
         "required": {
@@ -510,15 +483,7 @@ var __oj_combobox_one_metadata =
     },
     "validators": {
       "type": "Array",
-      "value": [],
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "options": {
-          "type": "object"
-        }
-      }
+      "value": []
     },
     "value": {
       "type": "any",
@@ -599,7 +564,8 @@ var __oj_select_many_metadata =
       "type": "object",
       "properties": {
         "instruction": {
-          "type": "string"
+          "type": "string",
+          "value": ""
         }
       }
     },
@@ -620,6 +586,9 @@ var __oj_select_many_metadata =
       "type": "string",
       "value": ""
     },
+    "labelledBy": {
+      "type": "string"
+    },
     "messagesCustom": {
       "type": "Array<Object>",
       "writeback": true,
@@ -630,39 +599,16 @@ var __oj_select_many_metadata =
       "value": 15
     },
     "optionRenderer": {
-      "type": "function",
-      "properties": {
-        "component": {
-          "type": "Element"
-        },
-        "parent": {
-          "type": "Element"
-        },
-        "index": {
-          "type": "number"
-        },
-        "depth": {
-          "type": "number"
-        },
-        "leaf": {
-          "type": "boolean"
-        },
-        "data": {
-          "type": "object"
-        },
-        "parentElement": {
-          "type": "Element"
-        }
-      }
+      "type": "function"
     },
     "options": {
-      "type": "Array<(oj.ojSelect.Option|oj.ojSelect.Optgroup)>|oj.DataProvider"
+      "type": "Array<Object>|object"
     },
     "optionsKeys": {
-      "type": "oj.ojSelect.OptionsKeys",
+      "type": "object",
       "properties": {
         "childKeys": {
-          "type": "oj.ojSelect.OptionsKeys",
+          "type": "object",
           "properties": {
             "label": {
               "type": "string"
@@ -674,21 +620,7 @@ var __oj_select_many_metadata =
               "type": "string"
             },
             "childKeys": {
-              "type": "oj.ojSelect.OptionsKeys",
-              "properties": {
-                "label": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                },
-                "children": {
-                  "type": "string"
-                },
-                "childKeys": {
-                  "type": "oj.ojSelect.OptionsKeys"
-                }
-              }
+              "type": "object"
             }
           }
         },
@@ -848,7 +780,8 @@ var __oj_select_one_metadata =
       "type": "object",
       "properties": {
         "instruction": {
-          "type": "string"
+          "type": "string",
+          "value": ""
         }
       }
     },
@@ -869,6 +802,9 @@ var __oj_select_one_metadata =
       "type": "string",
       "value": ""
     },
+    "labelledBy": {
+      "type": "string"
+    },
     "messagesCustom": {
       "type": "Array<Object>",
       "writeback": true,
@@ -879,39 +815,16 @@ var __oj_select_one_metadata =
       "value": 15
     },
     "optionRenderer": {
-      "type": "function",
-      "properties": {
-        "component": {
-          "type": "Element"
-        },
-        "parent": {
-          "type": "Element"
-        },
-        "index": {
-          "type": "number"
-        },
-        "depth": {
-          "type": "number"
-        },
-        "leaf": {
-          "type": "boolean"
-        },
-        "data": {
-          "type": "object"
-        },
-        "parentElement": {
-          "type": "Element"
-        }
-      }
+      "type": "function"
     },
     "options": {
-      "type": "Array<(oj.ojSelect.Option|oj.ojSelect.Optgroup)>|oj.DataProvider"
+      "type": "Array<Object>|object"
     },
     "optionsKeys": {
-      "type": "oj.ojSelect.OptionsKeys",
+      "type": "object",
       "properties": {
         "childKeys": {
-          "type": "oj.ojSelect.OptionsKeys",
+          "type": "object",
           "properties": {
             "label": {
               "type": "string"
@@ -923,21 +836,7 @@ var __oj_select_one_metadata =
               "type": "string"
             },
             "childKeys": {
-              "type": "oj.ojSelect.OptionsKeys",
-              "properties": {
-                "label": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                },
-                "children": {
-                  "type": "string"
-                },
-                "childKeys": {
-                  "type": "oj.ojSelect.OptionsKeys"
-                }
-              }
+              "type": "object"
             }
           }
         },
@@ -1122,7 +1021,7 @@ var __oj_select_one_metadata =
           case _ComboUtils.KEY.ALT:
             return true;
           default:
-            if (e.metaKey || e.ctrlKey) {
+            if (e.metaKey) {
               return true;
             }
             return false;
@@ -1376,12 +1275,6 @@ var __oj_select_one_metadata =
     // _ComboUtils
     killEvent: function (event) {
       event.preventDefault();
-    },
-
-    // _ComboUtils
-    killEventImmediately: function (event) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
     },
 
     // _ComboUtils
@@ -2049,7 +1942,7 @@ var __oj_select_one_metadata =
               new oj.TreeDataProviderView(dataProvider,
                                           { dataMapping: { mapFields: mapFields } }) :
               new oj.ListDataProviderView(dataProvider,
-                                                  { dataMapping: { mapFields: mapFields } });
+                                          { dataMapping: { mapFields: mapFields } });
           }
         }
         // save the data provider or wrapper
@@ -2376,16 +2269,19 @@ var __oj_select_one_metadata =
       // check if data provider support filtering?
       var filterCapability = dataProvider.getCapability('filter');
       var $co = oj.AttributeFilterOperator.AttributeOperator.$co;
+      var $regex = oj.AttributeFilterOperator.AttributeOperator.$regex;
       var filterThruDataProvider = false;
+      var filterSupportsRegex = false;
 
-      // only filter thru data provider if it supports contains($co) operator
+      // only filter thru data provider if it supports contains($co or $regex) operator
       if (filterCapability) {
         var filters = filterCapability.operators;
         if (filters && filters.length > 0) {
-          for (var f = 0; f < filters.length; f++) {
-            if (filters[f] === $co) {
-              filterThruDataProvider = true;
-              break;
+          if (filters.indexOf($co) >= 0 || filters.indexOf($regex) >= 0) {
+            filterThruDataProvider = true;
+
+            if (filters.indexOf($regex) >= 0) {
+              filterSupportsRegex = true;
             }
           }
         }
@@ -2406,9 +2302,15 @@ var __oj_select_one_metadata =
           } else {
             attrName = 'label';
           }
-
-          fetchListParms.filterCriterion =
-            { op: $co, attribute: attrName, value: query.term };
+          // case insensitive query should use $regex
+          if (filterSupportsRegex) {
+            fetchListParms.filterCriterion =
+              { op: $regex, attribute: attrName, value: new RegExp(query.term, 'i') };
+          } else {
+            // if no regex support just fallback to $co
+            fetchListParms.filterCriterion =
+              { op: $co, attribute: attrName, value: query.term };
+          }
         } else if (!isTree) {
           // for local filtering increase the fetch size
           fetchListParms.size = _ComboUtils.FILTERING_FETCH_SIZE;
@@ -2644,7 +2546,8 @@ var __oj_select_one_metadata =
     // _ComboUtils
     // Readonly support for the custom element only
     isReadonly: function (widget) {
-      return widget._IsCustomElement() && widget.options.readOnly;
+      return widget._IsCustomElement() &&
+        (widget.options.readOnly || widget.options.loading === 'loading');
     },
 
     /*
@@ -2840,6 +2743,7 @@ var __oj_select_one_metadata =
           opts.element.data(elemName)._destroy();
         }
         this.container = this._createContainer();
+        this.container.find('.oj-listbox-drop').css('display', 'none');
 
         //  - ojselect - rootAttributes are not propagated to generated jet component
         var rootAttr = opts.rootAttributes;
@@ -2855,7 +2759,15 @@ var __oj_select_one_metadata =
           return opts.element.closest('body');
         }
           );
-        this.container.attr('style', this._getAttribute('style'));
+        // We’re copying the style attribute over from the outer element to
+        // the container. Normally setting the style attribute would
+        // trigger a CSP inline style violation. However, we won’t hit this
+        // because when CSP is enabled, the outer element won’t have a style
+        // attribute and thus attr(‘style’) won’t be called.
+        var style = this._getAttribute('style');
+        if (style) {
+          this.container.attr('style', this._getAttribute('style'));
+        }
         this.elementTabIndex = this._getAttribute('tabindex');
 
         // 'opts.element' is initialized in _setup() menthod in component files
@@ -2882,15 +2794,7 @@ var __oj_select_one_metadata =
         this.results.on('click', _ComboUtils.killEvent);
 
         //  - oghag missing label for ojselect and ojcombobox
-        var label = this.ojContext._GetLabelElement();
-        if (label) {
-          var labelId = label.attr('id');
-          if (labelId) {
-            results.attr('aria-labelledby', labelId);
-          } else {
-            results.attr('aria-label', label.text());
-          }
-        } else {
+        if (!this.ojContext._IsCustomElement()) {
           var alabel = this.ojContext.element.attr('aria-label');
           if (alabel) {
             results.attr('aria-label', alabel);
@@ -3019,11 +2923,21 @@ var __oj_select_one_metadata =
           this.container.addClass('oj-read-only');
           if (this._classNm === 'oj-combobox') {
             if (this.ojContext.multiple) {
+              // the following code is for oj-combobox-many
               $content = null;
               this.selection.attr('tabindex', '0');
-              this.selection.attr('aria-labelledby',
-                oj.EditableValueUtils.getOjLabelId($(this.ojContext.OuterWrapper),
-                                                   this.ojContext.uuid));
+              if (this.ojContext.options.labelledBy) {
+                // for oj-combobox-many in readonly mode, when you click on the field it is the
+                // wrapper that gets focus, not the input, so you need aria-labelledby to point
+                // to label element's id.
+                var defaultLabelId = this.uuid + '_Label';
+                var ariaLabelledBy =
+                oj.EditableValueUtils._getOjLabelAriaLabelledBy(
+                  this.ojContext.options.labelledBy, defaultLabelId);
+                if (ariaLabelledBy) {
+                  this.selection.attr('aria-labelledby', ariaLabelledBy);
+                }
+              }
             } else {
               $content.attr('readonly', true);
             }
@@ -3061,8 +2975,10 @@ var __oj_select_one_metadata =
         var dropdown = this.dropdown;
         var self;
 
+        //  - period character in element id prevents options box open/close
+        // escapeSelector handles special characters
         if ($(event.target).closest(dropdown).length ||
-            $(event.target).closest('#' + dropdown.attr('data-oj-containerid')).length) {
+            $(event.target).closest('#' + $.escapeSelector(dropdown.attr('data-oj-containerid'))).length) {
           return;
         }
 
@@ -5109,11 +5025,6 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice,
       //  - ojselect missing id attribute on oj-select-choice div
       selection.attr('id', this._classNm + '-choice-' + idSuffix);
 
-      var elementLabel = $("label[for='" + this._getAttribute('id') + "']");
-      if (!elementLabel.attr('id')) {
-        elementLabel.attr('id', this._classNm + '-label-' + idSuffix);
-      }
-
       // add aria associations
       selection.find('.' + this._classNm + '-input').attr('id', this._classNm + '-input-' + idSuffix);
       if (!this.results.attr('id')) {
@@ -5129,11 +5040,16 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice,
         this.search.attr('aria-owns', this.results.attr('id'));
       }
 
-      this.search.attr('aria-labelledby', elementLabel.attr('id'));
-      this.opts.element.attr('aria-labelledby', elementLabel.attr('id'));
-
-      if (this.search.attr('id')) {
-        elementLabel.attr('for', this.search.attr('id'));
+      if (!this.ojContext._IsCustomElement()) {
+        var elementLabel = $("label[for='" + this._getAttribute('id') + "']");
+        if (!elementLabel.attr('id')) {
+          elementLabel.attr('id', this._classNm + '-label-' + idSuffix);
+        }
+        this.search.attr('aria-labelledby', elementLabel.attr('id'));
+        this.opts.element.attr('aria-labelledby', elementLabel.attr('id'));
+        if (this.search.attr('id')) {
+          elementLabel.attr('for', this.search.attr('id'));
+        }
       }
 
       if (this._getAttribute('aria-label')) {
@@ -5671,10 +5587,14 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice,
             "   <a class='oj-combobox-arrow oj-combobox-icon oj-component-icon oj-clickable-icon-nocontext oj-combobox-open-icon'",
             "       role='button' aria-label='expand'></a>",
             '</div>',
-            "<div class='oj-listbox-drop' style='display:none' role='presentation'>",
+            "<div class='oj-listbox-drop' role='presentation'>",
             "   <ul class='oj-listbox-results' role='listbox'>",
             '   </ul>',
-            '</div>'].join('')); // @HTMLUpdateOK
+            '</div>',
+
+            "<div role='region' class='oj-helper-hidden-accessible oj-listbox-liveregion' aria-live='polite'></div>"
+
+          ].join('')); // @HTMLUpdateOK
 
         // if end slot is provided, use the slot instead
         if (this.ojContext._IsCustomElement()) {
@@ -5819,7 +5739,6 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice,
       }
     });
 
-
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -5869,7 +5788,7 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
             "  <a class='oj-select-arrow oj-component-icon oj-clickable-icon-nocontext oj-select-open-icon' role='presentation'>",
             '</a></div>',
 
-            "<div class='oj-listbox-drop' style='display:none' role='dialog'>",
+            "<div class='oj-listbox-drop' role='dialog'>",
 
             "  <div class='oj-listbox-search-wrapper'>",
 
@@ -6211,7 +6130,6 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
 
   });
 
-
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -6545,11 +6463,6 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
                           _this._selectChoice($(this));
                         });
 
-      elementLabel = $("label[for='" + this._getAttribute('id') + "']");
-      if (!elementLabel.attr('id')) {
-        elementLabel.attr('id', this._classNm + '-label-' + idSuffix);
-      }
-
       this._contentElement = (this._elemNm === 'ojcombobox') ? this.search : this.selection;
 
       // add aria associations
@@ -6558,11 +6471,17 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
         this.results.attr('id', 'oj-listbox-results-' + idSuffix);
       }
       this._contentElement.attr('aria-owns', this.results.attr('id'));
-      this._contentElement.attr('aria-labelledby', elementLabel.attr('id'));
-      this.opts.element.attr('aria-labelledby', elementLabel.attr('id'));
 
-      if (this.search.attr('id')) {
-        elementLabel.attr('for', this.search.attr('id'));
+      if (!this.ojContext._IsCustomElement()) {
+        elementLabel = $("label[for='" + this._getAttribute('id') + "']");
+        if (!elementLabel.attr('id')) {
+          elementLabel.attr('id', this._classNm + '-label-' + idSuffix);
+        }
+        this._contentElement.attr('aria-labelledby', elementLabel.attr('id'));
+        this.opts.element.attr('aria-labelledby', elementLabel.attr('id'));
+        if (this.search.attr('id')) {
+          elementLabel.attr('for', this.search.attr('id'));
+        }
       }
 
       if (this._getAttribute('aria-label')) {
@@ -6856,6 +6775,10 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
       }
 
       this.selection.find('.' + this._classNm + '-selected-choice').remove();
+      //  - screen reader does not read combobox default value
+      // this is to reset aria-describedBy on the contentElement
+      // the aria-describedBy will be updated in _addSelectedChoice
+      this._contentElement.attr('aria-describedBy', '');
       this.selection.find('.oj-select-default').remove();
       $(filtered).each(function () {
         self._addSelectedChoice(this);
@@ -6972,11 +6895,16 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
 
       formatted = this.opts.formatSelection(data);
       if (formatted !== undefined) {
+        // set the text and id for the label
         var selectedLabelId = this._classNm + '-selected-choice-label-' + _ComboUtils.nextUid();
-        choice.find('div').addClass(this._classNm + '-selected-choice-label').text(formatted);
+        choice.find('div').addClass(this._classNm + '-selected-choice-label').text(formatted).attr('id', selectedLabelId);
         choice.find('.' + this._classNm + '-clear-entry').attr('aria-label', formatted + ' remove');
         choice.attr('valueText', formatted);
+        //  - screen reader does not read combobox default value
+        // update aria-describedBy with the selection label id on the contentElement
+        // so the labels for the selected items can be read out by the screen reader
         var describedById = this._contentElement.attr('aria-describedBy');
+        this._contentElement.attr('aria-describedBy', (describedById ? describedById + ' ' : '') + selectedLabelId);
         if (this._classNm === 'oj-combobox') {
           this.selection.attr('aria-describedBy', (describedById ? describedById + ' ' : '') + selectedLabelId);
         }
@@ -7211,15 +7139,19 @@ var _OjMultiCombobox = _ComboUtils.clazz(_AbstractMultiChoice,
         }
         ).html([  // @HTMLUpdateOK
           "<ul class='oj-combobox-choices'>",
-          "  <li class='oj-combobox-search-field'><span style='display:none'>&nbsp;</span>",
+          "  <li class='oj-combobox-search-field'><span class='oj-helper-hidden'>&nbsp;</span>",
           "    <input type='text' role='combobox' aria-expanded='false' aria-autocomplete='list' autocomplete='off' autocorrect='off' autocapitalize='off' spellcheck='false' class='oj-combobox-input'>",
           '  </li>',
           '</ul>',
           "<div class='oj-combobox-description oj-helper-hidden-accessible'/>",
-          "<div class='oj-listbox-drop oj-listbox-drop-multi' style='display:none'>",
+          "<div class='oj-listbox-drop oj-listbox-drop-multi'>",
           "   <ul class='oj-listbox-results' role='listbox'>",
           '   </ul>',
-          '</div>'].join('')); // @HTMLUpdateOK
+          '</div>',
+
+          "<div role='region' class='oj-helper-hidden-accessible oj-listbox-liveregion' aria-live='polite'></div>"
+
+        ].join('')); // @HTMLUpdateOK
       return container;
     },
 
@@ -7353,7 +7285,7 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
           "<ul class='oj-select-choices' tabindex='0' role='combobox' ",
           "  aria-autocomplete='none' aria-expanded='false'>",
           '</ul>',
-          "<div class='oj-listbox-drop' style='display:none' role='dialog'>",
+          "<div class='oj-listbox-drop' role='dialog'>",
 
           "  <div class='oj-listbox-search-wrapper'>",
 
@@ -7463,7 +7395,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
         "   <a class='oj-inputsearch-search-button oj-inputsearch-search-icon oj-component-icon oj-clickable-icon-nocontext'",
         "       role='button' aria-label='search'></a>",
         '</div>',
-        "<div class='oj-listbox-drop' style='display:none' role='presentation'>",
+        "<div class='oj-listbox-drop' role='presentation'>",
         "   <ul class='oj-listbox-results' role='listbox'>",
         '   </ul>',
         '</div>',
@@ -7720,16 +7652,17 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    * @augments oj.ojCombobox
    * @since 0.6
    * @ojdisplayname Single-select Combobox
-   * @ojshortdesc A dropdown list that supports single selection, text input, and search filtering.
+   * @ojshortdesc A combobox one is a dropdown list that supports single selection, text input, and search filtering.
    * @ojrole combobox
    * @ojsignature [{
    *                target: "Type",
-   *                value: "class ojComboboxOne<K, D> extends ojCombobox<any, ojComboboxOneSettableProperties<K, D>, any, string>",
-   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
+   *                value: "class ojComboboxOne<K, D, V= any> extends ojCombobox<V, ojComboboxOneSettableProperties<K, D, V>, V, string>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}
+   *                , {"name": "V", "description": "Type of value of the component"}]
    *               },
    *               {
    *                target: "Type",
-   *                value: "ojComboboxOneSettableProperties<K, D> extends ojComboboxSettableProperties<any, any, string>",
+   *                value: "ojComboboxOneSettableProperties<K, D, V=any> extends ojComboboxSettableProperties<V>",
    *                for: "SettableProperties"
    *               }
    *              ]
@@ -7794,16 +7727,17 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    * @augments oj.ojCombobox
    * @since 0.6
    * @ojdisplayname Multi-select Combobox
-   * @ojshortdesc A dropdown list that supports multiple selections, text input, and search filtering.
+   * @ojshortdesc A combobox many is a dropdown list that supports multiple selections, text input, and search filtering.
    * @ojrole combobox
    * @ojsignature [{
    *                target: "Type",
-   *                value: "class ojComboboxMany<K, D> extends ojCombobox<Array<any>|null, ojComboboxManySettableProperties<K, D>, Array<any>|null, string>",
-   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
+   *                value: "class ojComboboxMany<K, D, V= any> extends ojCombobox<Array<V>, ojComboboxManySettableProperties<K, D, V>, Array<V>, Array<string>>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}
+   *                ,{"name": "V", "description": "Type of each item in the value of the component"}]
    *               },
    *               {
    *                target: "Type",
-   *                value: "ojComboboxManySettableProperties<K, D> extends ojComboboxSettableProperties<Array<any>|null, Array<any>|null, string>",
+   *                value: "ojComboboxManySettableProperties<K, D, V= any> extends ojComboboxSettableProperties<Array<V>>",
    *                for: "SettableProperties"
    *               }
    *              ]
@@ -7970,15 +7904,14 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * }];
        * myComp.asyncValidators = myValidators;
        * @name asyncValidators
-       * @ojshortdesc Specifies a list of async validators for
-       * performing async validation by the element.
+       * @ojshortdesc Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.
        * @expose
        * @access public
        * @instance
        * @memberof oj.ojComboboxOne
        * @default []
        * @ojsignature  { target: "Type",
-       *       value: "Array<oj.AsyncValidator<any>>",
+       *       value: "Array<oj.AsyncValidator<V>>",
        *       jsdocOverride: true}
        * @type {Array.<Object>}
        */
@@ -8036,15 +7969,14 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * }];
        * myComp.asyncValidators = myValidators;
        * @name asyncValidators
-       * @ojshortdesc Specifies a list of async validators for
-       * performing async validation by the element.
+       * @ojshortdesc Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.
        * @expose
        * @access public
        * @instance
        * @memberof oj.ojComboboxMany
        * @default []
        * @ojsignature  { target: "Type",
-       *       value: "Array<oj.AsyncValidator<Array<any>>>",
+       *       value: "Array<oj.AsyncValidator<Array<V>>>",
        *       jsdocOverride: true}
        * @type {Array.<Object>}
        */
@@ -8089,7 +8021,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * </p>
        * <p>Since async validators are run asynchronously, you should wait on the BusyContext before
        * you check valid property or the value property. Alternatively you can add a callback to
-       * the onValidChanged or ojValueChanged events.
+       * the validChanged or valueChanged events.
        * </p>
        * <p>
        * The steps performed always, running validation and clearing messages is the same as
@@ -8107,7 +8039,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       /**
        * {@ojinclude "name":"comboboxCommonConverter"}
        *
-       * @property {'number'|'datetime'} type - the conveter type registered with the oj.ConverterFactory.
+       * @property {'number'|'datetime'} type - the converter type registered with the oj.ConverterFactory.
        * Supported types are 'number' and 'datetime'. See {@link oj.ConverterFactory} for details. <br/>
        * E.g., <code class="prettyprint">{converter: {type: 'number'}</code>
        * @property {Object=} options - optional Object literal of options that the converter expects.
@@ -8131,14 +8063,14 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * myComp.converter = myConverter;
        *
        * @name converter
-       * @ojshortdesc An object to convert value.
+       * @ojshortdesc An object that converts the value. See the Help documentation for more information.
        * @expose
        * @access public
        * @instance
        * @memberof oj.ojComboboxOne
        * @ojsignature {
        *    target: "Type",
-       *    value: "oj.Converter<any>|oj.Validation.RegisteredConverter|null",
+       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|oj.Validation.RegisteredConverter|null",
        *    jsdocOverride: true}
        * @type {Object|null}
        * @default null
@@ -8146,7 +8078,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       /**
        * {@ojinclude "name":"comboboxCommonConverter"}
        *
-       * @property {'number'|'datetime'} type - the conveter type registered with the oj.ConverterFactory.
+       * @property {'number'|'datetime'} type - the converter type registered with the oj.ConverterFactory.
        * Supported types are 'number' and 'datetime'. See {@link oj.ConverterFactory} for details. <br/>
        * E.g., <code class="prettyprint">{converter: {type: 'number'}</code>
        * @property {Object=} options - optional Object literal of options that the converter expects.
@@ -8171,21 +8103,21 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * myComp.converter = myConverter;
        *
        * @name converter
-       * @ojshortdesc An object to convert value.
+       * @ojshortdesc An object that converts the value. See the Help documentation for more information.
        * @expose
        * @access public
        * @instance
        * @memberof oj.ojComboboxMany
        * @ojsignature {
        *    target: "Type",
-       *    value: "oj.Converter<any>|oj.Validation.RegisteredConverter|null",
+       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|oj.Validation.RegisteredConverter|null",
        *    jsdocOverride: true}
        * @type {Object|null}
        * @default null
        */
       /**
-       * A converter instance that duck types {@link oj.Converter}. Or an object literal containing
-       * the following properties.
+       * A converter instance or Promise to a converter instance that duck types {@link oj.Converter}.
+       * Or an object literal containing the following properties.
        * <p>
        * When <code class="prettyprint">converter</code> property changes due to programmatic
        * intervention, the element performs various tasks based on the current state it is in. </br>
@@ -8228,7 +8160,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * </ul>
        * </p>
        *
-       * @ojshortdesc An object to convert value.
+       * @ojshortdesc An object that converts the value. See the Help documentation for more information.
        * @expose
        * @access public
        * @instance
@@ -8264,6 +8196,60 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        */
         filterOnOpen: 'none',
 
+       /**
+       * {@ojinclude "name":"comboboxCommonLabelledBy"}
+       * @name labelledBy
+       * @expose
+       * @ojshortdesc The oj-label sets the labelledBy property
+       * programmatically on the form component.
+       * @type {string|null}
+       * @default null
+       * @since 7.0.0
+       * @access public
+       * @instance
+       * @memberof oj.ojComboboxMany
+       */
+      /**
+       * {@ojinclude "name":"comboboxCommonLabelledBy"}
+       * @name labelledBy
+       * @expose
+       * @ojshortdesc The oj-label sets the labelledBy property
+       * programmatically on the form component.
+       * @type {string|null}
+       * @default null
+       * @since 7.0.0
+       * @access public
+       * @instance
+       * @memberof oj.ojComboboxOne
+       */
+      /**
+       * <p>
+       * The oj-label sets the labelledBy property programmatically on the form component
+       * to make it easy for the form component to find its oj-label component (a
+       * document.getElementById call.)
+       * </p>
+       * <p>
+       * The application developer should use the 'for'/'id api
+       * to link the oj-label with the form component;
+       * the 'for' on the oj-label to point to the 'id' on the input form component.
+       * This is the most performant way for the oj-label to find its form component.
+       * </p>
+       *
+       * // setter
+       * myComp.labelledBy = "labelId";
+       *
+       * @expose
+       * @ojshortdesc The oj-label sets the labelledBy property
+       * programmatically on the form component.
+       * @type {string|null}
+       * @default null
+       * @since 7.0.0
+       * @access public
+       * @instance
+       * @memberof oj.ojCombobox
+       * @ojfragment comboboxCommonLabelledBy
+       */
+        labelledBy: null,
       /**
        * The placeholder text to set on the element. The placeholder specifies a short hint that can be displayed before user
        * selects or enters a value.
@@ -8323,7 +8309,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @typedef {Object} oj.ojCombobox.Optgroup
        * @property {boolean=} disabled Option group is disabled.
        * @property {string} label The display label for the option group.
-       * @property {Array.<oj.ojCombobox.Option|oj.ojCombobox.Optgroup>} children The Option or Optgroup children.
+       * @property {Array.<Object>} children The Option or Optgroup children.
+       * @ojsignature { target: "Type", value: "Array.<oj.ojCombobox.Option|oj.ojCombobox.Optgroup>", for: "children", jsdocOverride: true}
        */
       /**
        * {@ojinclude "name":"comboboxCommonOptions"}
@@ -8332,7 +8319,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @expose
        * @access public
        * @instance
-       * @type {Array.<oj.ojCombobox.Option|oj.ojCombobox.Optgroup>|oj.DataProvider|null}
+       * @type {Array.<Object>|Object|null}
        * @ojsignature { target: "Type",
        *                value: "Array<oj.ojCombobox.Option|oj.ojCombobox.Optgroup>|oj.DataProvider<K, D>|null",
        *                jsdocOverride: true}
@@ -8379,7 +8366,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @expose
        * @access public
        * @instance
-       * @type {Array.<oj.ojCombobox.Option|oj.ojCombobox.Optgroup>|oj.DataProvider|null}
+       * @type {Array.<Object>|Object|null}
        *
        * @ojsignature { target: "Type",
        *                value: "Array<oj.ojCombobox.Option|oj.ojCombobox.Optgroup>|oj.DataProvider<K, D>|null",
@@ -8434,7 +8421,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        *   <ul>
        *   <li><code class="prettyprint">value</code> in <code class="prettyprint">oj.ojCombobox.Option</code> must be the row key in the data provider.</li>
        *   <li>A maximum of 15 rows will be displayed in the dropdown. If more than 15 results are available then users need to filter further.</li>
-       *   <li>If the data provider supports the filter criteria capability including the contains (<code class="prettyprint">$co</code>) operator, JET Combobox will request the data provider to do filtering. Otherwise it will filter internally.</li>
+       *   <li>If the data provider supports the filter criteria capability including the contains (<code class="prettyprint">$co or $regex</code>) operator, JET Combobox will request the data provider to do filtering. Otherwise it will filter internally.</li>
        *   <li>See also <a href="#perf-section">Improve page load performance</a></li>
        *   </ul>
        * </li>
@@ -8452,7 +8439,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @property {?string=} label The key name for the label.
        * @property {?string=} value The key name for the value.
        * @property {?string=} children The key name for the children.
-       * @property {?oj.ojCombobox.OptionsKeys=} childKeys The object for the child keys.
+       * @property {?Object=} childKeys The object for the child keys.
+       * @ojsignature {target:"Type", for:"childKeys", value:"oj.ojCombobox.OptionsKeys", jsdocOverride:true}
        */
       /**
        * {@ojinclude "name":"comboboxCommonOptionsKeys"}
@@ -8468,9 +8456,10 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @expose
        * @access public
        * @instance
-       * @type {?oj.ojCombobox.OptionsKeys}
+       * @type {?Object}
        * @default null
        * @memberof oj.ojComboboxOne
+       * @ojsignature {target:"Type", value:"oj.ojCombobox.OptionsKeys|null", jsdocOverride:true}
        */
       /**
        * {@ojinclude "name":"comboboxCommonOptionsKeys"}
@@ -8486,9 +8475,10 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @expose
        * @access public
        * @instance
-       * @type {?oj.ojCombobox.OptionsKeys}
+       * @type {?Object}
        * @default null
        * @memberof oj.ojComboboxMany
+       * @ojsignature {target:"Type", value:"oj.ojCombobox.OptionsKeys|null", jsdocOverride:true}
        */
       /**
        * Specify the key names to use in the options array.
@@ -8562,6 +8552,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
          * The key name for the children. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.children
+         * @ojshortdesc The key name for the children. It is ignored when using a TreeDataProvider.
          * @expose
          * @public
          * @instance
@@ -8575,6 +8566,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
          * The key name for the children. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.children
+         * @ojshortdesc The key name for the children. It is ignored when using a TreeDataProvider.
          * @expose
          * @public
          * @instance
@@ -8589,31 +8581,37 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
          * The object for the child keys. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.childKeys
+         * @ojshortdesc The object for the child keys. It is ignored when using a TreeDataProvider.
          * @expose
          * @public
          * @instance
          * @memberof! oj.ojComboboxOne
-         * @type {?oj.ojCombobox.OptionsKeys}
+         * @type {?Object}
+         * @ojsignature {target:"Type", value:"oj.ojCombobox.OptionsKeys", jsdocOverride:true}
          * @default null
          * @property {?string=} label The key name for the label.
          * @property {?string=} value The key name for the value.
          * @property {?string=} children The key name for the children.
-         * @property {?oj.ojCombobox.OptionsKeys=} childKeys The object for the child keys.
+         * @property {?Object=} childKeys The object for the child keys.
+         * @ojsignature {target:"Type", for:"childKeys", value:"oj.ojCombobox.OptionsKeys|null", jsdocOverride:true}
          */
         /**
          * The object for the child keys. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.childKeys
+         * @ojshortdesc The object for the child keys. It is ignored when using a TreeDataProvider.
          * @expose
          * @public
          * @instance
          * @memberof! oj.ojComboboxMany
-         * @type {?oj.ojCombobox.OptionsKeys}
+         * @type {?Object}
+         * @ojsignature {target:"Type", value:"oj.ojCombobox.OptionsKeys", jsdocOverride:true}
          * @default null
          * @property {?string=} label The key name for the label.
          * @property {?string=} value The key name for the value.
          * @property {?string=} children The key name for the children.
-         * @property {?oj.ojCombobox.OptionsKeys=} childKeys The object for the child keys.
+         * @property {?Object=} childKeys The object for the child keys.
+         * @ojsignature {target:"Type", for:"childKeys", value:"oj.ojCombobox.OptionsKeys|null", jsdocOverride:true}
          */
         },
 
@@ -9005,7 +9003,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       */
         required: false,
 
-     /**
+      /**
        * Dictates element's readonly state.
        *
        * @example <caption>Initialize the combobox with the <code class="prettyprint">readonly</code> attribute:</caption>
@@ -9021,7 +9019,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @name readOnly
        * @alias readonly
        * @expose
-       * @ojshortdesc Specifies whether a value is readonly
+       * @ojshortdesc Specifies whether the component is read-only. A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
        * @access public
        * @instance
        * @memberof oj.ojComboboxOne
@@ -9044,7 +9042,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @name readOnly
        * @alias readonly
        * @expose
-       * @ojshortdesc Specifies whether a value is readonly
+       * @ojshortdesc Specifies whether the component is read-only. A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
        * @access public
        * @instance
        * @memberof oj.ojComboboxMany
@@ -9093,7 +9091,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       * myCombobox.validators = myValidators;
       *
       * @name validators
-      * @ojshortdesc Specifies a list of validators for performing validation by the element.
+      * @ojshortdesc Specifies a list of synchronous validators for performing validation by the element. See the Help documentation for more information.
       * @expose
       * @access public
       * @instance
@@ -9101,7 +9099,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       * @type {Array}
       * @default []
       * @ojsignature  { target: "Type",
-      *   value: "Array<oj.Validator<any>|oj.Validation.RegisteredValidator>|null",
+      *   value: "Array<oj.Validator<V>|oj.Validation.RegisteredValidator>|null",
       *   jsdocOverride: true}
       */
      /**
@@ -9144,7 +9142,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       * myCombobox.validators = myValidators;
       *
       * @name validators
-      * @ojshortdesc Specifies a list of validators for performing validation by the element.
+      * @ojshortdesc Specifies a list of synchronous validators for performing validation by the element. See the Help documentation for more information.
       * @expose
       * @access public
       * @instance
@@ -9152,7 +9150,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       * @type {Array}
       * @default []
       * @ojsignature  { target: "Type",
-      *   value: "Array<oj.Validator<Array<any>>|oj.Validation.RegisteredValidator>|null",
+      *   value: "Array<oj.Validator<V>|oj.Validation.RegisteredValidator>|null",
       *   jsdocOverride: true}
       */
       /**
@@ -9245,6 +9243,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @property {any} value current value of JET Combobox
        * @property {string} [label] display label of value above. If missing, String(value) is used.
        * @memberof oj.ojComboboxOne
+       * @ojsignature { target: "Type",
+       *                value: "V|null", for: "value"}
        *
        * @example <caption>Initialize the Combobox with the <code class="prettyprint">value-option</code> attribute specified:</caption>
        * &lt;oj-combobox-one value-option="[[valueOption]]">&lt;/oj-combobox-one>
@@ -9270,7 +9270,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        *<p>If <code class="prettyprint">valueOptions</code> is not specified or one of the selected values is missing, then the labels will be fetched from the data provider.</p>
        *
        * @name valueOptions
-       * @ojshortdesc The current values of the element and theirs associated display labels.
+       * @ojshortdesc The current values of the element and their associated display labels.
        * @expose
        * @instance
        * @type {null | Array.<Object>}
@@ -9280,7 +9280,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @property {any} value a current value of JET Combobox
        * @property {string} [label] display label of value above. If missing, String(value) is used.
        * @ojsignature { target: "Type",
-       *                value: "Array<{value: any, label?: string}> | null",
+       *                value: "Array<{value: V, label?: string}> | null",
        *                jsdocOverride: true}
        *
        * @memberof oj.ojComboboxMany
@@ -9321,6 +9321,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @instance
        * @memberof oj.ojComboboxOne
        * @type {any}
+       * @ojsignature { target: "Type",
+       *                value: "V|null"}
        * @default null
        * @ojwriteback
        */
@@ -9345,6 +9347,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @instance
        * @memberof oj.ojComboboxMany
        * @type {Array.<any>|null}
+       * @ojsignature { target: "Type",
+       *                value: "Array<V>|null"}
        * @default null
        * @ojwriteback
        */
@@ -9413,14 +9417,9 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       _AfterCreate: function () {
         this._super();
 
-        // For custom element syntax, oj-label puts for=forId+"|input" on its label element.
-        // So we need to change the input element's id to match that by calling
-        // setSubIdForCustomLabelFor on EditableValueUtils.
         if (this._IsCustomElement()) {
-          var inputId = this.OuterWrapper.id;
-          if (inputId) {
-            oj.EditableValueUtils.setSubIdForCustomLabelFor(this._GetContentElement()[0], inputId);
-          }
+          oj.EditableValueUtils._setInputId(
+            this._GetContentElement()[0], this.OuterWrapper.id, this.options.labelledBy);
         }
       },
 
@@ -9480,6 +9479,12 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
         return this.options.required;
       },
     /**
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @private
+     */
+      _labelledByChangedForInputComp: oj.EditableValueUtils._labelledByChangedForInputComp,
+    /**
      * Performs post processing after required option is set by taking the following steps.
      *
      * - if component is invalid and has messgesShown -> required: false/true -> clear component errors;
@@ -9503,6 +9508,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      * @protected
      */
       _AfterSetOptionRequired: oj.EditableValueUtils._AfterSetOptionRequired,
+
     /**
      * When validators option changes, take the following steps.
      *
@@ -9560,8 +9566,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      */
       _AfterSetOptionConverter: oj.EditableValueUtils._AfterSetOptionConverter,
     /**
-     * Clears the cached converter stored in _converter and pushes new converter hint to messaging.
-     * Called when convterer option changes
+     * Called when converter option changes and we have gotten the new converter
      * @memberof! oj.ojCombobox
      * @instance
      * @protected
@@ -9660,6 +9665,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      * @memberof oj.ojCombobox
      * @instance
      * @return {void}
+     * @ojshortdesc Refreshes the combobox.
      * @public
      */
       refresh: function () {
@@ -9754,6 +9760,11 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
           // Readonly support
         } else if (key === 'readOnly') {
           this.combobox.applyReadonlyState();
+        } else if (key === 'labelledBy') {
+          if (this.options.labelledBy) {
+            var id = this._GetContentElement()[0].id;
+            this._labelledByChangedForInputComp(this.options.labelledBy, id);
+          }
         }
       },
       /**
@@ -9941,6 +9952,29 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       },
 
     /**
+     *
+     * @protected
+     * @override
+     * @instance
+     * @memberof! oj.ojCombobox
+     */
+      _SetLoading: function () {
+        this._super();
+        this.combobox.applyReadonlyState();
+      },
+
+    /**
+     *
+     * @protected
+     * @override
+     * @instance
+     * @memberof! oj.ojCombobox
+     */
+      _ClearLoading: function () {
+        this._super();
+        this.combobox.applyReadonlyState();
+      },
+    /**
      * <ol>
      * <li>All messages are cleared, including custom messages added by the app. </li>
      * <li>If no converter is present then processing continues to next step. If a converter is
@@ -9971,6 +10005,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      * the component passed all validations.
      * The Promise resolves to "invalid" if there were converter parse errors or
      * if there were validation errors.
+     * @ojshortdesc Validates the component's display value using all converters and validators registered on the component. If there are no validation errors, then the value is updated. See the Help documentation for more information.
      * @method
      * @access public
      * @expose
@@ -10298,6 +10333,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    * When the slot is not provided, the default drop down arrow icon and the divider will be rendered.</p>
    *
    * @ojslot end
+   * @ojshortdesc The end slot enables replacement of the combobox's drop down arrow and divider. See the Help documentation for more information.
    * @since 4.2.0
    * @ojstatus preview
    * @memberof oj.ojComboboxOne
@@ -11897,16 +11933,17 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    * @augments oj.ojSelect
    * @since 0.6
    * @ojdisplayname Single Select
-   * @ojshortdesc A dropdown list that supports single selection and search filtering.
+   * @ojshortdesc A select one is a dropdown list that supports single selection and search filtering.
    * @ojrole combobox
    * @ojsignature [{
    *                target: "Type",
-   *                value: "class ojSelectOne<K, D> extends ojSelect<any, ojSelectOneSettableProperties<K, D>>",
-   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
+   *                value: "class ojSelectOne<K, D, V = any> extends ojSelect<V, ojSelectOneSettableProperties<K, D, V>>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"},
+   *                , {"name": "V", "description": "Type of value of the component"}]
    *               },
    *               {
    *                target: "Type",
-   *                value: "ojSelectOneSettableProperties<K, D> extends ojSelectSettableProperties<any>",
+   *                value: "ojSelectOneSettableProperties<K, D, V= any> extends ojSelectSettableProperties<V>",
    *                for: "SettableProperties"
    *               }
    *              ]
@@ -11973,16 +12010,17 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    * @augments oj.ojSelect
    * @since 0.6
    * @ojdisplayname Multi Select
-   * @ojshortdesc A dropdown list that supports multiple selections and search filtering.
+   * @ojshortdesc A select many is a dropdown list that supports multiple selections and search filtering.
    * @ojrole combobox
    * @ojsignature [{
    *                target: "Type",
-   *                value: "class ojSelectMany<K, D> extends ojSelect<Array<any>|null, ojSelectManySettableProperties<K, D>>",
-   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
+   *                value: "class ojSelectMany<K, D, V=any> extends ojSelect<Array<V>, ojSelectManySettableProperties<K, D, V>>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}
+   *                , {"name": "V", "description": "Type of each item in the value of the component"}]
    *               },
    *               {
    *                target: "Type",
-   *                value: "ojSelectManySettableProperties<K, D> extends ojSelectSettableProperties<Array<any>|null>",
+   *                value: "ojSelectManySettableProperties<K, D, V=Array<any>> extends ojSelectSettableProperties<Array<V>>",
    *                for: "SettableProperties"
    *               }
    *              ]
@@ -12092,6 +12130,112 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       widgetEventPrefix: 'oj',
       options:
       {
+      /**
+       * <p>
+       * The oj-label sets the labelledBy property programmatically on the form component
+       * to make it easy for the form component to find its oj-label component (a
+       * document.getElementById call.)
+       * </p>
+       * <p>
+       * The application developer should use the 'for'/'id api
+       * to link the oj-label with the form component;
+       * the 'for' on the oj-label to point to the 'id' on the input form component.
+       * This is the most performant way for the oj-label to find its form component.
+       * </p>
+       *
+       * @example <caption>Initialize component with <code class="prettyprint">for</code> attribute:</caption>
+       * &lt;oj-label for="selectOneId">Name:&lt;/oj-label>
+       * &lt;oj-select-one id="selectOneId">
+       * &lt;/oj-select-one>
+       * // ojLabel then writes the labelled-by attribute on the oj-switch.
+       * &lt;oj-label id="labelId" for="selectOneId">Name:&lt;/oj-label>
+       * &lt;oj-select-one id="selectOneId" labelled-by"labelId">
+       * &lt;/oj-select-one>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
+       * // getter
+       * var labelledBy = myComp.labelledBy;
+       *
+       * // setter
+       * myComp.labelledBy = "labelId";
+       *
+       * @expose
+       * @name labelledBy
+       * @ojshortdesc The oj-label sets the labelledBy property
+       * programmatically on the form component.
+       * @type {string|null}
+       * @public
+       * @instance
+       * @since 7.0.0
+       * @memberof oj.ojSelectOne
+       */
+     /**
+       * <p>
+       * The oj-label sets the labelledBy property programmatically on the form component
+       * to make it easy for the form component to find its oj-label component (a
+       * document.getElementById call.)
+       * </p>
+       * <p>
+       * The application developer should use the 'for'/'id api
+       * to link the oj-label with the form component;
+       * the 'for' on the oj-label to point to the 'id' on the input form component.
+       * This is the most performant way for the oj-label to find its form component.
+       * </p>
+       *
+       * @example <caption>Initialize component with <code class="prettyprint">for</code> attribute:</caption>
+       * &lt;oj-label for="selectManyId">Name:&lt;/oj-label>
+       * &lt;oj-select-many id="selectManyId">
+       * &lt;/oj-select-many>
+       * // ojLabel then writes the labelled-by attribute on the oj-switch.
+       * &lt;oj-label id="labelId" for="selectManyId">Name:&lt;/oj-label>
+       * &lt;oj-select-many id="selectManyId" labelled-by"labelId">
+       * &lt;/oj-select-many>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
+       * // getter
+       * var labelledBy = myComp.labelledBy;
+       *
+       * // setter
+       * myComp.labelledBy = "labelId";
+       *
+       * @expose
+       * @name labelledBy
+       * @ojshortdesc The oj-label sets the labelledBy property
+       * programmatically on the form component.
+       * @type {string|null}
+       * @public
+       * @instance
+       * @since 7.0.0
+       * @memberof oj.ojSelectMany
+       */
+     /**
+       * <p>
+       * The oj-label sets the labelledBy property programmatically on the form component
+       * to make it easy for the form component to find its oj-label component (a
+       * document.getElementById call.)
+       * </p>
+       * <p>
+       * The application developer should use the 'for'/'id api
+       * to link the oj-label with the form component;
+       * the 'for' on the oj-label to point to the 'id' on the input form component.
+       * This is the most performant way for the oj-label to find its form component.
+       * </p>
+       *
+       *
+       * // setter
+       * myComp.labelledBy = "labelId";
+       *
+       * @expose
+       * @ojshortdesc The oj-label sets the labelledBy property
+       * programmatically on the form component.
+       * @type {string|null}
+       * @default null
+       * @public
+       * @instance
+       * @since 7.0.0
+       * @memberof oj.ojSelect
+       */
+        labelledBy: null,
       /**
        * {@ojinclude "name":"selectCommonMinimumResultsForSearch"}
        *
@@ -12347,7 +12491,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @expose
        * @access public
        * @instance
-       * @type {Array.<oj.ojSelect.Option|oj.ojSelect.Optgroup>|oj.DataProvider|null}
+       * @type {Array.<Object>|Object|null}
        * @ojsignature { target: "Type",
        *                value: "Array<oj.ojSelect.Option|oj.ojSelect.Optgroup>|oj.DataProvider<K, D>|null",
        *                jsdocOverride: true}
@@ -12395,7 +12539,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @expose
        * @access public
        * @instance
-       * @type {Array.<oj.ojSelect.Option|oj.ojSelect.Optgroup>|oj.DataProvider|null}
+       * @type {Array.<Object>|Object|null}
        * @ojsignature { target: "Type",
        *                value: "Array<oj.ojSelect.Option|oj.ojSelect.Optgroup>|oj.DataProvider<K, D>|null",
        *                jsdocOverride: true}
@@ -12449,7 +12593,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        *   <ul>
        *   <li><code class="prettyprint">value</code> in <code class="prettyprint">oj.ojSelect.Option</code> must be the row key in the data provider.</li>
        *   <li>A maximum of 15 rows will be displayed in the dropdown. If more than 15 results are available then users need to filter further. Please note that users can't filter further if render-mode is <code class="prettyprint">native</code>.</li>
-       *   <li>If the data provider supports the filter criteria capability including the contains (<code class="prettyprint">$co</code>) operator, JET Select will request the data provider to do filtering. Otherwise it will filter internally.</li>
+       *   <li>If the data provider supports the filter criteria capability including the contains (<code class="prettyprint">$co or $regex</code>) operator, JET Select will request the data provider to do filtering. Otherwise it will filter internally.</li>
        *   <li>See also <a href="#perf-section">Improve page load performance</a></li>
        *   </ul>
        * </li>
@@ -12467,7 +12611,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @property {?string=} label The key name for the label.
        * @property {?string=} value The key name for the value.
        * @property {?string=} children The key name for the children.
-       * @property {?oj.ojSelect.OptionsKeys=} childKeys The object for the child keys.
+       * @property {?Object=} childKeys The object for the child keys.
+       * @ojsignature {target:"Type", value:"?(oj.ojSelect.OptionsKeys)", for:"childKeys", jsdocOverride:true}
        */
       /**
        * {@ojinclude "name":"selectCommonOptionsKeys"}
@@ -12484,9 +12629,10 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @expose
        * @access public
        * @instance
-       * @type {?oj.ojSelect.OptionsKeys}
+       * @type {?Object}
        * @default null
        * @memberof oj.ojSelectOne
+       * @ojsignature {target:"Type", value:"oj.ojSelect.OptionsKeys|null", jsdocOverride:true}
        */
       /**
        * {@ojinclude "name":"selectCommonOptionsKeys"}
@@ -12503,9 +12649,10 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @expose
        * @access public
        * @instance
-       * @type {?oj.ojSelect.OptionsKeys}
+       * @type {?Object}
        * @default null
        * @memberof oj.ojSelectMany
+       * @ojsignature {target:"Type", value:"oj.ojSelect.OptionsKeys|null", jsdocOverride:true}
        */
       /**
        * Specify the key names to use in the options array.
@@ -12579,6 +12726,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
          * The key name for the children. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.children
+         * @ojshortdesc The key name for the children. It is ignored when using a TreeDataProvider.
          * @expose
          * @public
          * @instance
@@ -12592,6 +12740,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
          * The key name for the children. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.children
+         * @ojshortdesc The key name for the children. It is ignored when using a TreeDataProvider.
          * @expose
          * @public
          * @instance
@@ -12606,35 +12755,27 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
          * The object for the child keys. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.childKeys
+         * @ojshortdesc The object for the child keys. It is ignored when using a TreeDataProvider.
          * @expose
          * @public
          * @instance
          * @memberof! oj.ojSelectOne
-         * @type {?oj.ojSelect.OptionsKeys}
-         * @ojsignature { target: "Type",
-         *                value: "?"}
+         * @type {?Object}
          * @default null
-         * @property {?string=} label The key name for the label.
-         * @property {?string=} value The key name for the value.
-         * @property {?string=} children The key name for the children.
-         * @property {?oj.ojSelect.OptionsKeys=} childKeys The object for the child keys.
+         * @ojsignature {target:"Type", value:"oj.ojSelect.OptionsKeys|null", jsdocOverride:true}
          */
         /**
          * The object for the child keys. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.childKeys
+         * @ojshortdesc The object for the child keys. It is ignored when using a TreeDataProvider.
          * @expose
          * @public
          * @instance
          * @memberof! oj.ojSelectMany
-         * @type {?oj.ojSelect.OptionsKeys}
-         * @ojsignature { target: "Type",
-         *                value: "?"}
+         * @type {?Object}
          * @default null
-         * @property {?string=} label The key name for the label.
-         * @property {?string=} value The key name for the value.
-         * @property {?string=} children The key name for the children.
-         * @property {?oj.ojSelect.OptionsKeys=} childKeys The object for the child keys.
+         * @ojsignature {target:"Type", value:"oj.ojSelect.OptionsKeys|null", jsdocOverride:true}
          */
         },
 
@@ -12940,6 +13081,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @property {any} value current value of JET Select
        * @property {string} [label] display label of value above. If missing, String(value) is used.
        * @memberof oj.ojSelectOne
+       * @ojsignature { target: "Type",
+       *                value: "V|null", for: "value"}
        *
        * @example <caption>Initialize the Select with the <code class="prettyprint">value-option</code> attribute specified:</caption>
        * &lt;oj-select-one value-option="[[valueOption]]">&lt;/oj-select-one>
@@ -12965,7 +13108,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        *<p>If <code class="prettyprint">valueOptions</code> is not specified or one of the selected values is missing, then the labels will be fetched from the data provider.</p>
        *
        * @name valueOptions
-       * @ojshortdesc The current values of the element and theirs associated display labels.
+       * @ojshortdesc The current values of the element and their associated display labels.
        * @expose
        * @instance
        * @type {null | Array.<Object>}
@@ -12975,7 +13118,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @property {any} value a current value of JET Select
        * @property {string} [label] display label of value above. If missing, String(value) is used.
        * @ojsignature { target: "Type",
-       *                value: "Array<{value: any, label?: string}> | null",
+       *                value: "Array<{value: V, label?: string}> | null",
        *                jsdocOverride: true}
        *
        * @memberof oj.ojSelectMany
@@ -13021,6 +13164,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @instance
        * @memberof oj.ojSelectOne
        * @type {any}
+       * @ojsignature { target: "Type",
+       *                value: "V|null"}
        * @ojwriteback
        */
       /**
@@ -13044,6 +13189,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @instance
        * @memberof oj.ojSelectMany
        * @type {Array.<any>|null}
+       * @ojsignature { target: "Type",
+       *                value: "Array<V>|null"}
        * @default null
        * @ojwriteback
        */
@@ -13088,16 +13235,26 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      * @memberof! oj.ojSelect
      */
       _AfterCreate: function () {
+        var ariaLabelledBy;
         this._super();
 
-      // For custom element syntax, we need to get the label id and
-      // set aria-labelledby on the focusable element.
+        // For custom element syntax, we need to get the label id and
+        // set aria-labelledby on the focusable element.
         if (this._IsCustomElement()) {
-          var defaultLabelId = this.uuid + '_Label';
-          var labelId = oj.EditableValueUtils.getOjLabelId($(this.OuterWrapper), defaultLabelId);
-          // Readonly support
-          if (labelId && (!this.multiple || !_ComboUtils.isReadonly(this))) {
-            this._GetContentElement().attr('aria-labelledby', labelId);
+          if (this.options.labelledBy) {
+            var defaultLabelId = this.uuid + '_Label';
+            ariaLabelledBy =
+            oj.EditableValueUtils._getOjLabelAriaLabelledBy(
+              this.options.labelledBy, defaultLabelId);
+            // Readonly support
+            if (ariaLabelledBy && (!this.multiple || !_ComboUtils.isReadonly(this))) {
+              this._GetContentElement().attr('aria-labelledby', ariaLabelledBy);
+            }
+            // update the required translation text
+            if (this._IsRequired() && this.options.translations.required) {
+              this._implicitReqValidator = null;
+              this._getImplicitRequiredValidator();
+            }
           }
         }
       },
@@ -13444,6 +13601,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      * @memberof oj.ojSelect
      * @instance
      * @return {void}
+     * @ojshortdesc Refreshes the visual state of the select.
      * @public
      */
       refresh: function () {
@@ -13728,6 +13886,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      *  });
      * @return {Promise} Promise resolves to "valid" if the component passed validation.
      * The Promise resolves to "invalid" if there were validation errors.
+     * @ojshortdesc Validates the component's display value using all validators registered on the component. If there are no validation errors, then the value is updated. See the Help documentation for more information.
      * @method
      * @access public
      * @expose
@@ -14178,6 +14337,22 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
           }
         } else if (key === 'multiple' && !this._IsCustomElement()) {
           this.multiple = value;
+        } else if (key === 'labelledBy') {
+          if (this.options.labelledBy) {
+            var defaultLabelId = this.uuid + '_Label';
+            var ariaLabelledBy =
+            oj.EditableValueUtils._getOjLabelAriaLabelledBy(
+              this.options.labelledBy, defaultLabelId);
+            // Readonly support
+            if (ariaLabelledBy && (!this.multiple || !_ComboUtils.isReadonly(this))) {
+              this._GetContentElement().attr('aria-labelledby', ariaLabelledBy);
+            }
+            // update the required translation text
+            if (this._IsRequired() && this.options.translations.required) {
+              this._implicitReqValidator = null;
+              this._getImplicitRequiredValidator();
+            }
+          }
         }
       },
 

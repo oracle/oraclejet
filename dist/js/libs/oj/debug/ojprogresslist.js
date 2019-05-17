@@ -3,16 +3,16 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomposite', 'ojs/ojknockouttemplateutils', 'ojs/ojcomponentcore', 'ojs/ojlistview', 'ojs/ojprogress'], 
-       function(oj, $, ko, Composite, KnockoutTemplateUtils)
-{
 
+define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomposite', 'ojs/ojknockouttemplateutils', 'ojs/ojcomponentcore', 'ojs/ojlistview', 'ojs/ojprogress'], 
+function(oj, $, ko, Composite, KnockoutTemplateUtils)
+{
+  "use strict";
 var __oj_progress_list_metadata = 
 {
   "properties": {
     "data": {
-      "type": "oj.DataProvider|oj.TableDataSource"
+      "type": "object"
     }
   },
   "methods": {
@@ -296,7 +296,7 @@ Composite.register('oj-progress-item',
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @since 4.0.0
  * @ojdisplayname Progress List
- * @ojshortdesc Displays a ListView where data rows are ProgressItems.
+ * @ojshortdesc A progress list displays a list of items and their progress, it is most commonly used in conjunction with a file picker to display file upload progress.
  * @ojstatus preview
  * @class oj.ojProgressList
  * @ojsignature {target: "Type", value:"class ojProgressList extends JetElement<ojProgressListSettableProperties>"}
@@ -331,8 +331,9 @@ Composite.register('oj-progress-item',
  * @memberof oj.ojProgressList
  * @instance
  * @ojshortdesc Data used by the ProgressList.
- * @type {oj.DataProvider|oj.TableDataSource|null}
- * @ojsignature {target: "Type", value: "oj.DataProvider<any, any>|null"}
+ * @type {Object|null}
+ * @ojsignature [{target: "Type", value: "oj.DataProvider<any, any>|null"},
+ *               {target: "Type", value: "oj.DataProvider|oj.TableDataSource|null", consumedBy:"js"}]
  *
  * @default null
  *

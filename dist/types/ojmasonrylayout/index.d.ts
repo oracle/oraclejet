@@ -6,17 +6,6 @@ export interface ojMasonryLayout extends baseComponent<ojMasonryLayoutSettablePr
         labelPasteAfter?: string;
         labelPasteBefore?: string;
     };
-    onReorderHandleChanged: ((event: JetElementCustomEvent<ojMasonryLayout["reorderHandle"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojMasonryLayout.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojMasonryLayout.ojAnimateStart) => any) | null;
-    onOjBeforeInsert: ((event: ojMasonryLayout.ojBeforeInsert) => any) | null;
-    onOjBeforeRemove: ((event: ojMasonryLayout.ojBeforeRemove) => any) | null;
-    onOjBeforeReorder: ((event: ojMasonryLayout.ojBeforeReorder) => any) | null;
-    onOjBeforeResize: ((event: ojMasonryLayout.ojBeforeResize) => any) | null;
-    onOjInsert: ((event: ojMasonryLayout.ojInsert) => any) | null;
-    onOjRemove: ((event: ojMasonryLayout.ojRemove) => any) | null;
-    onOjReorder: ((event: ojMasonryLayout.ojReorder) => any) | null;
-    onOjResize: ((event: ojMasonryLayout.ojResize) => any) | null;
     addEventListener<T extends keyof ojMasonryLayoutEventMap>(type: T, listener: (this: HTMLElement, ev: ojMasonryLayoutEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojMasonryLayoutSettableProperties>(property: T): ojMasonryLayout[T];
@@ -92,6 +81,8 @@ export namespace ojMasonryLayout {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type reorderHandleChanged = JetElementCustomEvent<ojMasonryLayout["reorderHandle"]>;
 }
 export interface ojMasonryLayoutEventMap extends baseComponentEventMap<ojMasonryLayoutSettableProperties> {
     'ojAnimateEnd': ojMasonryLayout.ojAnimateEnd;

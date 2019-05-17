@@ -431,7 +431,7 @@
     .oj-button.oj-focus-highlight .oj-button-button {  // custom element only
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        @include oj-browser-focus-outline-approximation-css-vars(var(--oj-primary-text-color));
+        @include oj-browser-focus-outline-approximation-css-vars(var(--oj-text-color-primary));
       }
       @else {
         @include oj-browser-focus-outline-approximation($primaryTextColor);        
@@ -1339,11 +1339,11 @@
    {
      .oj-button-primary {
        @include oj-button-alt($altBgColor: var(--oj-button-primary-color),
-                              $altTextColor: var(--oj-contrast-text-color));
+                              $altTextColor: var(--oj-text-color-contrast));
      }
      .oj-button-confirm {
        @include oj-button-alt($altBgColor: var(--oj-button-confirm-color),
-                              $altTextColor: var(--oj-contrast-text-color));
+                              $altTextColor: var(--oj-text-color-contrast));
      }
    }
    @else {

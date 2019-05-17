@@ -3,9 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['jquery', 'knockout'], function($, ko)
 {
+  "use strict";
 /* global ko:false */
 
 /**
@@ -83,10 +83,8 @@ KnockoutTemplateUtils.getRenderer = function (template, bReplaceNode) {
 
       var elem = dummyDiv.children[0];
       if (elem) {
-        if (elem.namespaceURI === 'http://www.w3.org/2000/svg') {
-          dummyDiv.removeChild(elem);
-          $(dummyDiv).remove();
-        }
+        dummyDiv.removeChild(elem);
+        $(dummyDiv).remove();
         return { insert: elem };
       }
       return { preventDefault: true };

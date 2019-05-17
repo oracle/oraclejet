@@ -4,9 +4,9 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojhtmlutils', 'ojs/ojlogger'],
-       function(ko, oj, BindingProviderImpl, HtmlUtils, Logger)
+function(ko, oj, BindingProviderImpl, HtmlUtils, Logger)
 {
-
+  "use strict";
 /* global ko:false, oj:false, BindingProviderImpl: false, WeakMap: false, Map: false, HtmlUtils:false, Logger: false*/
 
 /**
@@ -59,7 +59,9 @@ function JetTemplateEngine() {
    * @param {Element=} alternateParent an element where the template element will be
    * temporarily added as a child. If the parameter is ommitted, the componentElement will
    * be used
-   * @return {Object} resolved properties
+   * @return {Object} an object that implemenets three functions: peek(), subscribe() and dispose()
+   * peek() returns the current value of the resolved properties, subscribe allows registering a subscription to the changes in resolved property values with
+   * the subscription callback receiving the new value as a parameter, and dispose() removes the subscription.
    * @ignore
    */
   this.resolveProperties = function (componentElement, node, elementTagName, propertySet,
@@ -71,26 +73,66 @@ function JetTemplateEngine() {
     var contribs = _getPropertyContributorsViaCache(node, context, elementTagName,
       propertySet, alternateParent || componentElement);
 
-    var boundValues = {};
-    contribs.evalMap.forEach(function (value, tokens) {
-      var leafValue = ko.ignoreDependencies(_evaluateAndUnwrap, null, [value, context]);
-      if (propertyValidator) {
-        propertyValidator(tokens, leafValue);
-      }
-      boundValues[tokens[0]] = _getMergedValue(boundValues, tokens, leafValue);
-    });
-
-    var extend = oj.CollectionUtils.copyInto;
-    var valueMap = extend({}, contribs.staticMap, null, true);
-    valueMap = extend(valueMap, boundValues, null, true);
-
-    return valueMap;
+    return _createComputed(contribs, context, propertyValidator);
   };
+
+  /**
+   * Defines a special 'tracked' property on the target object. Mutating the tracked property will cause the DOM produced
+   * by the .execute() method to get automatically updated
+   * @param {Object} target an object where the property is defined
+   * @param {string} name property name
+   * @param {*=} optional initial value
+   */
+  this.defineTrackableProperty = function (target, name, value) {
+    _createPropertyBackedByObservable(target, name, value);
+  };
+
+  /**
+    * Provides a promise for JET's Knockout throttling timeout
+    * @return {Promise} a promise for JET's Knockout throttling timeout completing or a promise that will be resolved immediately for the case
+    * when there is no outstanding throttling timeout
+    */
+  this.getThrottlePromise = function () {
+    return BindingProviderImpl.getThrottlePromise();
+  };
+
+  function _createPropertyBackedByObservable(target, name, value) {
+    var obs = ko.observable(value);
+    Object.defineProperty(target, name, {
+      get: function () { return obs(); },
+      set: function (val) { obs(val); },
+      enumerable: true
+    });
+  }
 
   var _propertyContribsCache = new WeakMap();
 
-  function _evaluateAndUnwrap(evaluator, context) {
-    return ko.utils.unwrapObservable(evaluator(context));
+  function _createComputed(contribs, context, propertyValidator) {
+    var computed = ko.pureComputed(function () {
+      var boundValues = {};
+      contribs.evalMap.forEach(function (evaluator, tokens) {
+        var leafValue = ko.utils.unwrapObservable(evaluator(context));
+        if (propertyValidator) {
+          propertyValidator(tokens, leafValue);
+        }
+        boundValues[tokens[0]] = _getMergedValue(boundValues, tokens, leafValue);
+      });
+      var extend = oj.CollectionUtils.copyInto;
+      var valueMap = extend({}, contribs.staticMap, null, true);
+      valueMap = extend(valueMap, boundValues, null, true);
+
+      return valueMap;
+    });
+
+    return _wrap(computed, ['peek', 'subscribe', 'dispose']);
+  }
+
+  function _wrap(delegate, methods) {
+    var ret = {};
+    methods.forEach(function (method) {
+      ret[method] = delegate[method].bind(delegate);
+    });
+    return ret;
   }
 
   function _getPropertyContributorsViaCache(node, context, elementTagName, propertySet, parent) {
@@ -178,7 +220,9 @@ function JetTemplateEngine() {
 
   function _getContext(componentElement, node, properties, alias, templateAlias) {
     // Always use the binding context for the template  element
-    var bindingContext = ko.contextFor(node);
+    // Note: the context for oj_bind_for_each template is stored on __ojBindingContext property.
+    var bindingContext = node.__ojBindingContext ?
+      node.__ojBindingContext : ko.contextFor(node);
     // In the rare case it's not defined, check the componentElement and log a message
     if (!bindingContext) {
       Logger.info('Binding context not found when processing template for element with id: ' +

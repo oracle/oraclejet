@@ -3,10 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], function(oj, ko, signals, Logger)
 {
-
+  "use strict";
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -484,7 +483,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
 
     router._childRouters.every(function (child) {
       if ((!child._parentState || child._parentState === parentStateId) &&
-          child.stateFromIdCallback(sId)) {
+          child._getStateFromId(sId)) {
         result = child;
         return false;
       }
@@ -593,7 +592,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
   _StateChange.prototype.getState = function () {
     if (!this.state) {
       if (this.value) {
-        this.state = this.router.stateFromIdCallback(_getShortId(this.value));
+        this.state = this.router._getStateFromId(_getShortId(this.value));
       }
     }
 
@@ -911,7 +910,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
    * @param {string | undefined} origin
    */
   function _update(change, origin) {
-    var oldState = change.router.stateFromIdCallback(_getShortId(change.router._stateId()));
+    var oldState = change.router._getStateFromId(_getShortId(change.router._stateId()));
     var newState = change.getState();
 
     return Promise.resolve()
@@ -957,11 +956,11 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
           var segments = _getSegments(change.value);
           newState._paramOrder.forEach(function (name, ii) {
             var newValue = _decodeSlash(segments[ii + 1]);
-            var oldValue = newState._parameters[name];
+            var oldValue = newState[_parametersValue][name];
 
             // Update the parameter value
             if (newValue !== oldValue) {
-              newState._parameters[name] = newValue;
+              newState[_parametersValue][name] = newValue;
             }
           });
 
@@ -1235,11 +1234,15 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
    * <h6>Trigger a state transition when user ask to navigate:</h6>
    * <pre class="prettyprint"><code>
    * &lt;div id="routing-container">
-   *    &lt;div id='buttons-container' data-bind="foreach: router.states">
-   *      &lt;!-- Use the go function of the state as the handler for a click binding -->
-   *      &lt;input type="button"
-   *             data-bind="click: go,  attr: {id: id},
-   *             ojComponent: {component: 'ojButton', label: label}"/>
+   *    &lt;div id='buttons-container'>
+   *      &lt;oj-bind-for-each data="[[router.states]]">
+   *        &lt;template>
+   *          &lt;!-- Use the go function of the state as the handler for a click binding -->
+   *          &lt;oj-button :id="[[$current.data.id]]" on-oj-action="[[go]]">
+   *            &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
+   *          &lt;/oj-button>
+   *        &lt;/template>
+   *      &lt;/oj-bind-for-each>
    *    &lt;/div>
    * &lt;/div>
    * </code></pre>
@@ -1247,7 +1250,9 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
    * <h6>Listen to the state change and updates the dependent parts:</h6>
    * <pre class="prettyprint"><code>
    * &lt;!-- Display the content of the current state -->
-   * &lt;h2 id="pageContent" data-bind="text: router.currentValue"/>
+   * &lt;h2 id="pageContent">
+   *   &lt;oj-bind-text value="[[router.currentValue]]">&lt;/oj-bind-text>
+   * &lt;/h2>
    * </code></pre>
    *
    * @desc
@@ -1327,17 +1332,15 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
      * @readonly
      *
      * @example <caption>A buttonSet using the router stateId for 2-way binding:</caption>
-     * &lt;div data-bind="ojComponent: { component: 'ojButtonset',
-     *                                checked: router.stateId,
-     *                                focusManagement:'none' }"&gt;
-     *    &lt;!-- ko foreach: router.states --&gt;
-     *       &lt;label data-bind="attr: {for: id}"&gt;&lt;/label&gt;
-     *       &lt;input type="radio" name="chapter"
-     *              data-bind="value: id, attr: {id: id},
-     *                         ojComponent: { component: 'ojButton',
-     *                                        label: label}"/&gt;
-     *    &lt;!-- /ko --&gt;
-     * &lt;/div&gt;
+     * &lt;oj-buttonset-one value="{{router.stateId}}">
+     *    &lt;oj-bind-for-each data="[[router.states]]">
+     *      &lt;template>
+     *        &lt;oj-option value="[[$current.data.id]]">
+     *          &lt;span>&lt;oj-bind-text value="$current.data.label">&lt;/oj-bind-text>&lt;/span>
+     *        &lt;/oj-option>
+     *      &lt;/template>
+     *    &lt;/oj-bind-for-each>
+     * &lt;/oj-buttonset-one&gt;
      *
      */
     this._stateIdComp = ko.pureComputed({
@@ -1383,13 +1386,13 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
      * @readonly
      *
      * @example <caption>Hide a panel when the state of the router is not yet defined:</caption>
-     *    &lt;div data-bind="if: router.currentState()"&gt;
+     *    &lt;oj-bind-if test="[[router.currentState()]]"&gt;
      *       &lt;!-- content of the panel --&gt;
-     *    &lt;/div&gt;
+     *    &lt;/oj-bind-if&gt;
      */
     this._currentState = ko.pureComputed(function () {
       var shortId = _getShortId(router._stateId());
-      return ko.ignoreDependencies(router.stateFromIdCallback, router, [shortId]);
+      return ko.ignoreDependencies(router._getStateFromId, router, [shortId]);
     });
 
 
@@ -1402,12 +1405,14 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
      * @readonly
      *
      * @example <caption>Display the content of the current state:</caption>
-     * &lt;h2 id="pageContent" data-bind="text: router.currentValue"/&gt;
+     * &lt;h2 id="pageContent">
+     *   &lt;oj-bind-text value="[[router.currentValue]]">&lt;/oj-bind-text>
+     * &lt;/h2>
      */
     this._currentValue = ko.pureComputed(function () {
       var shortId = _getShortId(router._stateId());
       var retValue;
-      var currentState = ko.ignoreDependencies(router.stateFromIdCallback, router, [shortId]);
+      var currentState = ko.ignoreDependencies(router._getStateFromId, router, [shortId]);
       if (currentState) {
         retValue = currentState.value;
       }
@@ -1504,7 +1509,6 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
 
      * To customize the behavior of the moduleduleConfig object, it is possible to create your own
      * moduleConfig and merge other properties or modifies the value of existing properties.
-     * It is recommended to use $.extend as described in the third example below.
      *
      * @name oj.Router#moduleConfig
      * @type {Object}
@@ -1542,17 +1546,6 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
      *       return (okToExit) ? true: false;
      *    }
      * };
-     *
-     * @example <caption>Creates a custom moduleConfig replacing the name property</caption>
-     * dynamicConfig = ko.pureComputed(function () {
-     *    if (smallOnly()) {
-     *       // Add the prefix 'phone/' to change the viewModel location
-     *       return $.extend({},
-     *                       router.moduleConfig,
-     *                       {name: 'phone/' + router.moduleConfig.name()});
-     *    }
-     *    return router.moduleConfig;
-     * });
      */
     this._moduleConfig = Object.create(null, {
       name: {
@@ -1562,7 +1555,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
           // ojModule name cannot afford to be null
           var stateId = _getShortId(this._stateId()) ||
               this._defaultStateId || this._states[0].name;
-          var currentState = this.stateFromIdCallback(stateId);
+          var currentState = this._getStateFromId(stateId);
           if (currentState) {
             retValue = currentState.value;
             if (!retValue || (typeof retValue !== 'string')) {
@@ -1649,63 +1642,41 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
      */
     this._getObservableModuleConfig = function () {
       if (!this._observableModuleConfig) {
-        var currentStateObservable = router.currentState;
-
-        var currentStateVal = currentStateObservable.peek();
-
-        var config2 = ko.observable(_getConfigObject(currentStateVal, router));
-
-        // Subscribe to the changes and update config2 appropriately
-        currentStateObservable.subscribe(function (state) {
-          var oldConfig = config2.peek();
-          var oldName = oldConfig.name;
+        var stateObservable = router.currentState;
+        var initialState = stateObservable.peek();
+        var omc = ko.observable(_getConfigObject(initialState, router));
+        // Subscribe to the changes and update omc appropriately
+        stateObservable.subscribe(function (state) {
+          var omcObject = omc.peek();
+          var oldName = omcObject.name;
           var newName = _getNameFromState(state);
           if (oldName !== newName) {
-            config2(_getConfigObject(state, router)); // all new config value when the name changes
+            omc(_getConfigObject(state, router)); // all new config value when the name changes
           } else {
             // update parameters only
-            var params = oldConfig.params.ojRouter[_parametersValue];
-            var paramKeys = Object.keys(params);
-            for (var i = 0; i < paramKeys.length; i++) {
-              var paramKey = paramKeys[i];
-              var value = state[_parametersValue][paramKey];
-              params[paramKey](value);
-            }
+            _updateConfigObject(state, omcObject);
           }
         });
-        this._observableModuleConfig = config2;
+        this._observableModuleConfig = omc;
       }
       return this._observableModuleConfig;
     };
 
     function _getConfigObject(currentState, _router) {
-      var obj = {};
-
-      obj.name = _router.moduleConfig.name;
-
-      if (currentState) {
-        var params = {};
-        obj.params = params;
-        var paramsFromRouter = {};
-        params.ojRouter = paramsFromRouter;
-        paramsFromRouter.parentRouter = _router;
-
-        Object.defineProperty(paramsFromRouter, 'direction',
-          {
-            get: function () {
+      var obj = {
+        name: _getNameFromState(currentState),
+        params: {
+          ojRouter: {
+            parentRouter: _router,
+            get direction() {
               return _router._navigationType;
-            },
-            enumerable: true
-          });
-        var observableParams = {};
-        paramsFromRouter[_parametersValue] = observableParams;
-
-        var routerParams = currentState[_parametersValue];
-        var paramKeys = Object.keys(routerParams);
-        paramKeys.forEach(function (paramKey) {
-          var value = routerParams[paramKey];
-          observableParams[paramKey] = ko.observable(value);
-        });
+            }
+          }
+        }
+      };
+      obj.params.ojRouter[_parametersValue] = {};
+      if (currentState) {
+        _updateConfigObject(currentState, obj);
 
         obj.lifecycleListener = {
           attached: _router.moduleConfig.lifecycleListener.attached
@@ -1713,6 +1684,21 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
       }
 
       return obj;
+    }
+
+    function _updateConfigObject(currentState, config) {
+      var params = config.params.ojRouter[_parametersValue];
+      var stateParams = currentState[_parametersValue];
+      var paramKeys = Object.keys(stateParams);
+      paramKeys.forEach(function (paramKey) {
+        var value = stateParams[paramKey];
+        var setter = params[paramKey];
+        if (!setter) {
+          setter = ko.observable();
+          params[paramKey] = setter;
+        }
+        setter(value);
+      });
     }
 
     function _getNameFromState(currentState) {
@@ -1956,8 +1942,18 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
    * @param {string} stateId The state id.
    * @return {oj.RouterState | undefined} The state object.
    */
-  oj.Router.prototype.stateFromIdCallback = function (stateId) {
-    return getStateFromId(this, stateId);
+  oj.Router.prototype._getStateFromId = function (stateId) {
+    var state;
+    if (this._stateFromIdCallback) {
+      state = this._stateFromIdCallback(stateId);
+      // If return is a config object, instantiate RouterState with it
+      if (state && !(state instanceof oj.RouterState)) {
+        state = new oj.RouterState(stateId, state, this);
+      }
+    } else {
+      state = getStateFromId(this, stateId);
+    }
+    return state;
   };
 
   /**
@@ -2017,7 +2013,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
    * @export
    * @see oj.RouterState
    * @ojsignature { target:'Type',
-   *              value: '{[key:string]: oj.RouterState.ConfigOptions}|((id:string)=> oj.RouterState|undefined|null)',
+   *              value: '{[key:string]: oj.RouterState.ConfigOptions}|((id:string)=> oj.RouterState|oj.RouterState.ConfigOptions|undefined|null)',
    *              for: 'option'}
    * @example <caption>Add three states with id 'home', 'book' and 'tables':</caption>
    * router.configure({
@@ -2050,18 +2046,16 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
     if (typeof option === 'function') {
       this._states = null;
       // Override prototype
-      this.stateFromIdCallback = option;
+      this._stateFromIdCallback = option;
     } else {
       this._states = [];
-      // Restore prototype
-      delete this.stateFromIdCallback;
 
       Object.keys(option).forEach(function (key) {
         var rsOptions = option[key];
         this._states.push(new oj.RouterState(key, rsOptions, this));
          // Set the defaultStateId of the router from the isDefault property
         if ((typeof (rsOptions.isDefault) === 'boolean') && rsOptions.isDefault) {
-          this._defaultStateId = key;
+          this._defaultStateId = _getShortId(key);
         }
       }, this);
     }
@@ -2079,7 +2073,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
    * var homeStateValue = homeState.value;
    */
   oj.Router.prototype.getState = function (stateId) {
-    return this.stateFromIdCallback(stateId);
+    return this._getStateFromId(stateId);
   };
 
   /**
@@ -3677,11 +3671,16 @@ var Router = oj.Router;
      * @name oj.RouterState#label
      * @type {string|undefined}
      * @example <caption>Use the label property for the text of anchor tags in a list:</caption>
-     * &lt;ul id="foreachMenu" data-bind="foreach: router.states">
-     *   &lt;li>
-     *     &lt;a data-bind="text: label, css: {'active': isCurrent()},
-     *                   attr: {id: id}, click: go"> &lt;/a>
-     *   &lt;/li>
+     * &lt;ul id="foreachMenu">
+     *   &lt;oj-bind-for-each data="[[router.states]]">
+     *     &lt;template>
+     *       &lt;li>
+     *         &lt;a :style.active="[[isCurrent]]" :id="[[id]]" on-click="[[go]]">
+     *           &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
+     *         &lt;/a>
+     *       &lt;/li>
+     *     &lt;/template>
+     *   &lt;/oj-bind-for-each>
      * &lt;/ul>
      */
     this._label = options.label;
@@ -3725,11 +3724,16 @@ var Router = oj.Router;
          * @readonly
          * @type {!string}
          * @example <caption>Use the state id property for the attribute id of anchor tags in a list:</caption>
-         * &lt;ul id="foreachMenu" data-bind="foreach: router.states">
-         *   &lt;li>
-         *     &lt;a data-bind="text: label, css: {'active': isCurrent()},
-         *                   attr: {id: id}, click: go"> &lt;/a>
-         *   &lt;/li>
+         * &lt;ul id="foreachMenu">
+         *   &lt;oj-bind-for-each data="[[router.states]]">
+         *     &lt;template>
+         *       &lt;li>
+         *         &lt;a :style.active="[[isCurrent]]" :id="[[id]]" on-click="[[go]]">
+         *           &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
+         *         &lt;/a>
+         *       &lt;/li>
+         *     &lt;/template>
+         *   &lt;/oj-bind-for-each>
          * &lt;/ul>
          */
         value: this._id,
@@ -3828,11 +3832,16 @@ var Router = oj.Router;
    * </ul>
    * @export
    * @example <caption>Use the go function as the handler for a click binding:</caption>
-   * &lt;ul id="foreachMenu" data-bind="foreach: router.states">
-   *   &lt;li>
-   *     &lt;a data-bind="text: label, css: {'active': isCurrent()},
-   *                   attr: {id: id}, click: go"> &lt;/a>
-   *   &lt;/li>
+   * &lt;ul id="foreachMenu">
+   *   &lt;oj-bind-for-each data="[[router.states]]">
+   *     &lt;template>
+   *       &lt;li>
+   *         &lt;a :style.active="[[isCurrent]]" :id="[[id]]" on-click="[[go]]">
+   *           &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
+   *         &lt;/a>
+   *       &lt;/li>
+   *     &lt;/template>
+   *   &lt;/oj-bind-for-each>
    * &lt;/ul>
    */
   oj.RouterState.prototype.go = function () {
@@ -3851,11 +3860,16 @@ var Router = oj.Router;
    * created.
    * @export
    * @example <caption>Use the is function to change the css of the state links:</caption>
-   * &lt;ul id="foreachMenu" data-bind="foreach: router.states">
-   *   &lt;li>
-   *     &lt;a data-bind="text: label, css: {'active': isCurrent()},
-   *                   attr: {id: id}, click: go"> &lt;/a>
-   *   &lt;/li>
+   * &lt;ul id="foreachMenu">
+   *   &lt;oj-bind-for-each data="[[router.states]]">
+   *     &lt;template>
+   *       &lt;li>
+   *         &lt;a :style.active="[[isCurrent]]" :id="[[id]]" on-click="[[go]]">
+   *           &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
+   *         &lt;/a>
+   *       &lt;/li>
+   *     &lt;/template>
+   *   &lt;/oj-bind-for-each>
    * &lt;/ul>
    */
   oj.RouterState.prototype.isCurrent = function () {

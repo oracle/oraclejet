@@ -3,23 +3,21 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojtranslation', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'touchr'],
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        * @param {Object} Hammer
-        */
-       function(oj, $, Context, Translations, Hammer)
-  
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+* @param {Object} Hammer
+*/
+function(oj, $, Context, Translations, Hammer)
 {
-
+  "use strict";
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
 
-/* global Hammer:false Promise:false, Translations:false, Context:false */
+/* global Hammer:false, Translations:false, Context:false */
 
 /**
  * @namespace oj.PullToRefreshUtils
@@ -284,7 +282,7 @@ oj.PullToRefreshUtils._handlePull = function (event, content, options) {
     oj.PullToRefreshUtils._createDefaultContent(content, primaryText, secondaryText);
   }
 
-  content.prev().text(Translations.getTranslatedString('oj-pullToRefresh.ariaRefreshingLink'));
+  content.prev().text(oj.PullToRefreshUtils._getTranslatedString('oj-pullToRefresh.ariaRefreshingLink'));
 
   // set it back to auto so we can get the actual height
   content.css('height', 'auto');
@@ -340,7 +338,7 @@ oj.PullToRefreshUtils._handleRelease = function (event, element, content, refres
     };
 
     // change text to complete
-    content.prev().text(Translations.getTranslatedString('oj-pullToRefresh.ariaRefreshCompleteLink'));
+    content.prev().text(oj.PullToRefreshUtils._getTranslatedString('oj-pullToRefresh.ariaRefreshCompleteLink'));
     // hide the link
     content.prev().prev().css('position', '');
 
@@ -500,7 +498,7 @@ oj.PullToRefreshUtils._renderAccessibleLink = function (element, panel, refreshF
   var status;
 
   link = $(document.createElement('a'));
-  link.text(Translations.getTranslatedString('oj-pullToRefresh.ariaRefreshLink'));
+  link.text(oj.PullToRefreshUtils._getTranslatedString('oj-pullToRefresh.ariaRefreshLink'));
   link.addClass('oj-helper-hidden-accessible')
     .attr('href', '#')
     .focus(function () {
@@ -527,6 +525,23 @@ oj.PullToRefreshUtils._renderAccessibleLink = function (element, panel, refreshF
 
   panel.append(link); // @HtmlUpdateOK
   panel.append(status); // @HtmlUpdateOK
+};
+
+/**
+ * Get translated string given string.
+ * This will select pullToRefresh translations, then Refresher translations if needed
+ * @private
+ */
+oj.PullToRefreshUtils._getTranslatedString = function (str) {
+  var translatedString = Translations.getTranslatedString(str);
+
+  // if translatedString is the same, pullToRefresh translations don't exist
+  if (translatedString === str) {
+    var strArray = str.split('.');
+    var refresherString = 'oj-ojRefresher.' + strArray[1];
+    translatedString = Translations.getTranslatedString(refresherString);
+  }
+  return translatedString;
 };
 
 /**

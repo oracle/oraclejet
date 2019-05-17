@@ -3,10 +3,84 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'knockout', 'ojs/ojlogger'], function(oj, ko, Logger)
 {
-/* global ko:false, Logger:false, WeakMap: false */
+  "use strict";
+
+/* global Promise: false */
+/**
+ * @private
+ * @constructor
+ * Global Change Queue Implementation
+ * The queue is used to delay component updates until all model changes have been propagated
+ * This is a private class that does not need to be xported
+ */
+function GlobalChangeQueue() {
+  this.Init();
+}
+
+// Subclass from oj.Object
+oj.Object.createSubclass(GlobalChangeQueue, oj.Object, 'ComponentBinding.GlobalChangeQueue');
+
+GlobalChangeQueue.prototype.Init = function () {
+  GlobalChangeQueue.superclass.Init.call(this);
+  this._trackers = [];
+  this._queue = [];
+};
+
+GlobalChangeQueue.prototype.registerComponentChanges = function (tracker) {
+  if (this._trackers.indexOf(tracker) === -1) {
+    this._trackers.push(tracker);
+    if (!this._delayTimer) {
+      this._delayTimer = setTimeout(oj.Object.createCallback(this, this._deliverChangesImpl), 1);// @HTMLUpdateOK; delaying our own callback
+      this._delayPromise = new Promise(
+        function (resolve) {
+          this._delayPromiseResolver = resolve;
+        }.bind(this)
+      );
+    }
+  }
+};
+
+
+GlobalChangeQueue.prototype.deliverChanges = function () {
+  if (this._delayTimer) {
+    clearTimeout(this._delayTimer);
+  }
+  this._deliverChangesImpl();
+};
+
+GlobalChangeQueue.prototype.getThrottlePromise = function () {
+  return this._delayPromise || Promise.resolve();
+};
+
+GlobalChangeQueue.prototype._deliverChangesImpl = function () {
+  this._delayTimer = null;
+  this._resolveDelayPromise();
+  var trackers = this._trackers;
+  this._trackers = [];
+
+
+  for (var i = 0; i < trackers.length; i++) {
+    var tracker = trackers[i];
+    this._queue.push({ tracker: tracker, changes: tracker.flushChanges() });
+  }
+
+  while (this._queue.length > 0) {
+    var record = this._queue.shift();
+    record.tracker.applyChanges(record.changes);
+  }
+};
+
+GlobalChangeQueue.prototype._resolveDelayPromise = function () {
+  if (this._delayPromise) {
+    this._delayPromiseResolver();
+    this._delayPromiseResolver = null;
+    this._delayPromise = null;
+  }
+};
+
+/* global ko:false, Logger:false, WeakMap: false, GlobalChangeQueue: false */
 
 /**
  * @ignore
@@ -19,6 +93,8 @@ function _KoCustomBindingProvider() {
 
   var _OJ_EXTENDED = '_ojExtended';
   var _OJ_CACHE_SCOPE = '_ojCacheScope';
+
+  var _changeQueue = new GlobalChangeQueue();
 
   this.install = function () {
     var provider = ko.bindingProvider;
@@ -121,6 +197,14 @@ function _KoCustomBindingProvider() {
   this.createEvaluator = function (expression, bindingContext) {
     return _createEvaluatorViaCache(this.createBindingExpressionEvaluator,
       expression, bindingContext);
+  };
+
+  this.getGlobalChangeQueue = function () {
+    return _changeQueue;
+  };
+
+  this.getThrottlePromise = function () {
+    return this.getGlobalChangeQueue().getThrottlePromise();
   };
 
 

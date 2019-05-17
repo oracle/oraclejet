@@ -3,12 +3,11 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojtranslation', 'knockout', 'ojs/ojcomposite', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojknockout', 
         'promise', 'ojs/ojpopupcore', 'ojs/ojmessage', 'ojs/ojdataprovider'], 
-       function(oj, $, Context, ThemeUtils, Translations, ko, Composite, Components, AnimationUtils, Logger)
+function(oj, $, Context, ThemeUtils, Translations, ko, Composite, Components, AnimationUtils, Logger)
 {
-
+  "use strict";
 var __oj_messages_metadata = 
 {
   "properties": {
@@ -35,7 +34,7 @@ var __oj_messages_metadata =
       }
     },
     "messages": {
-      "type": "Array<Object>|oj.DataProvider"
+      "type": "Array<Object>|object"
     },
     "position": {
       "type": "object",
@@ -159,7 +158,7 @@ var __oj_messages_metadata =
  * @ojcomponent oj.ojMessages
  * @since 5.0.0
  * @ojdisplayname Messages
- * @ojshortdesc Manages layout and display of messages.
+ * @ojshortdesc Messages manages the layout and display of child messages.
  * @ojstatus preview
  * @ojsignature {target: "Type", value:"class ojMessages extends JetElement<ojMessagesSettableProperties>"}
  * @ojtsimport {module: "ojmessage", type: "AMD", imported: ["ojMessage"]}
@@ -375,8 +374,9 @@ var __oj_messages_metadata =
  *                {"severity": "warning", "summary": "Some summary 2", "detail": "Some detail 2"}];
  * myMessages.messages = new oj.ArrayDataProvider(messages);
  * @expose
- * @type {null | Array.<Object> | oj.DataProvider}
+ * @type {null | Array.<Object> | Object}
  * @name messages
+ * @ojshortdesc Specifies the collection of structured message data used to display the individual messages. See the Help documentation for more information.
  * @default null
  * @instance
  * @since 5.0.0
@@ -412,6 +412,7 @@ var __oj_messages_metadata =
  * @expose
  * @type {string}
  * @name display
+ * @ojshortdesc Specifies the display purpose of the messages. See the Help documentation for more information.
  * @default "general"
  * @ojvalue {string} "general" messages pertaining to the page or region of the application
  * @ojvalue {string} "notification" often used for communicating alerts arriving asynchronously
@@ -462,6 +463,7 @@ var __oj_messages_metadata =
  * @instance
  * @type {Object|null}
  * @name position
+ * @ojshortdesc Specifies the position and presentation style of the messages. See the Help documentation for more information.
  * @ojsignature { target: "Type",
  *                value: "oj.ojMessages.Position|null",
  *                jsdocOverride: true}
@@ -595,6 +597,7 @@ var __oj_messages_metadata =
  * @instance
  * @alias position.of
  * @name position.of
+ * @ojshortdesc Specifies which element to position the messages overlay against. See the Help documentation for more information.
  * @type {string}
  */
 
@@ -624,6 +627,7 @@ var __oj_messages_metadata =
  * @expose
  * @member
  * @name displayOptions
+ * @ojshortdesc Specifies the display options for contents of all the messages.
  * @memberof! oj.ojMessages
  * @instance
  * @since 6.1.0
@@ -734,7 +738,8 @@ var __oj_messages_metadata =
  * <code class="prettyprint">&lt;oj-message></code> children are automatically stamped for each
  * message data in the collection.
  *
- * @ojslot Default
+ * @ojchild Default
+ * @ojshortdesc The oj-messages element accepts only oj-message elements as children for the default slot. See the Help documentation for more information.
  * @memberof oj.ojMessages
  * @since 5.0.0
  *
@@ -767,6 +772,7 @@ var __oj_messages_metadata =
  *
  * @ojstatus preview
  * @ojslot messageTemplate
+ * @ojshortdesc The messageTemplate slot is used to specify the template for rendering each message. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojMessages
  * @since 6.2.0
@@ -800,6 +806,7 @@ var __oj_messages_metadata =
  *
  * @expose
  * @function close
+ * @ojshortdesc Unconditionally closes the specified message. See the Help documentation for more information.
  * @memberof! oj.ojMessages
  * @instance
  * @since 5.0.0
@@ -827,6 +834,7 @@ var __oj_messages_metadata =
  *
  * @expose
  * @function closeAll
+ * @ojshortdesc Closes all child messages matching an optional filter criteria. See the Help documentation for more information.
  * @memberof! oj.ojMessages
  * @instance
  * @since 5.0.0
@@ -855,6 +863,7 @@ var __oj_messages_metadata =
  * of the change, triggering a [property]Changed event.
  *
  * @function setProperty
+ * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
  * @param {any} value - The new value to set the property to.
  * @return {void}
@@ -918,11 +927,11 @@ var __oj_messages_metadata =
 
 /**
  * @typedef {Object} oj.ojMessages.Position
- * @property {oj.ojMessages.PositionAlign} [my] Defines which edge on the popup to align with the target ("of") element.
- * @property {oj.ojMessages.PositionAlign} [at] Defines which position on the target element ("of") to align the positioned element
+ * @property {Object} [my] Defines which edge on the popup to align with the target ("of") element.
+ * @property {Object} [at] Defines which position on the target element ("of") to align the positioned element
  *                                  against.
- * @property {oj.ojMessages.PositionPoint} [offset] Defines a point offset in pixels from the ("my") alignment.
- * @property {string|oj.ojMessages.PositionPoint} [of] Which element to position the popup against.
+ * @property {Object} [offset] Defines a point offset in pixels from the ("my") alignment.
+ * @property {string|Object} [of] Which element to position the popup against.
  *
  * If the value is a string, it should be a selector or the literal string value
  * of <code class="prettyprint">window</code>.  Otherwise, a point of x,y.  When a point
@@ -942,6 +951,10 @@ var __oj_messages_metadata =
  *  is applied to ensure as much of the element is visible as possible.</li>
  * <li><b>"none"</b> no collision detection.</li>
  * </ul>
+ * @ojsignature [{target:"Type", value:"oj.ojMessages.PositionAlign", for:"my", jsdocOverride:true},
+ *               {target:"Type", value:"oj.ojMessages.PositionAlign", for:"at", jsdocOverride:true},
+ *               {target:"Type", value:"oj.ojMessages.PositionPoint", for:"offset", jsdocOverride:true},
+ *               {target:"Type", value:"string|oj.ojMessages.PositionPoint", for:"of", jsdocOverride:true}]
  */
 
 var _MESSAGES_VIEW =
@@ -1585,10 +1598,15 @@ MessagesViewModel.prototype._getPopupServiceEvents = function () {
 
 MessagesViewModel.prototype._refresh = function () {
   if (this._isOverlayOpen()) {
-    var position = this._getPositionAsJqUi();
+    var messagesBoundingRect = this._composite.getBoundingClientRect();
 
-    var composite = $(this._composite);
-    composite.position(position);
+    // We will reposition only if messages are fully in viewport. Otherwise overflowing messages
+    //  cannot be scrolled with page scroll since our popup repositions for scroll events.
+    if (messagesBoundingRect.height < document.documentElement.clientHeight &&
+        messagesBoundingRect.width < document.documentElement.clientWidth) {
+      var position = this._getPositionAsJqUi();
+      $(this._composite).position(position);
+    }
   }
 };
 

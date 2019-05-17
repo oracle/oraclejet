@@ -2,8 +2,8 @@
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
+  "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
 (function(dvt) {
@@ -57,12 +57,30 @@ dvt.ThematicMap.prototype.Init = function(context, callback, callbackObj) {
  */
 dvt.ThematicMap.prototype._createLayers = function() {
   this._areaLayers = new dvt.Container(this.getCtx());
+
   this._dataAreaLayers = new dvt.Container(this.getCtx());
+  this._dataAreaLayers.setAriaRole('region', true);
+
   this._dataPointLayers = new dvt.Container(this.getCtx());
+  this._dataPointLayers.setAriaRole('region', true);
+
   this._labelLayers = new dvt.Container(this.getCtx());
+
   this._linkLayers = new dvt.Container(this.getCtx());
+  this._linkLayers.setAriaRole('region', true);
 };
 
+/**
+ * Helper function to set aria properties on displayable containers (after options have been set)
+ * @private
+ */
+dvt.ThematicMap.prototype._updateAriaForLayers = function() {
+  var translations = this.Options.translations;
+
+  this._dataAreaLayers.setAriaProperty('label', translations.areasRegion, true);
+  this._dataPointLayers.setAriaProperty('label', translations.markersRegion, true);
+  this._linkLayers.setAriaProperty('label', translations.linksRegion, true);
+};
 /**
  * Returns a new instance of DvtJsonThematicMap. Currently only called by json supported platforms.
  * @param {dvt.Context} context The rendering context.
@@ -395,6 +413,7 @@ dvt.ThematicMap.prototype._calcMinZoom = function() {
  * @private
  */
 dvt.ThematicMap.prototype._render = function(pzcContainer, cpContainer) {
+  this._updateAriaForLayers();
 
   // Add all containers
   cpContainer.addChild(this._areaLayers);
@@ -545,7 +564,7 @@ dvt.ThematicMap.prototype._transformContainers = function(pzcMatrix) {
 
   // update point and label layers with new panX/panY
   var mat = new dvt.Matrix();
-  mat.translate(pzcMatrix.getTx(), pzcMatrix.getTy());
+  mat = mat.translate(pzcMatrix.getTx(), pzcMatrix.getTy());
 
   // this._dataPointLayers zoom transforms handled by markers to avoid scaling marker filter effects
   // tx/ty transforms are handled by tmap for better interactivity
@@ -593,12 +612,12 @@ dvt.ThematicMap.prototype._constrainPanning = function(zoom) {
 
 /**
  * Updates the dvt.Animator associated with a pan or zoom event with additional properties for containers not added to the content pane.
- * @param {dvt.BaseComponentEvent} event The pan or zoom event
+ * @param {object} event The pan or zoom event
  * @param {boolean} bRecenterObjs Whether to recenter map objects that are pinned to a particular long/lat or x/y coordinate
  * @private
  */
 dvt.ThematicMap.prototype._updateAnimator = function(event, bRecenterObjs) {
-  var animator = event.getAnimator();
+  var animator = event.animator;
   if (animator) {
     var contentPane = this._pzc.getContentPane();
     var mat = animator.getDestVal(contentPane, contentPane.getMatrix);
@@ -617,27 +636,27 @@ dvt.ThematicMap.prototype._updateAnimator = function(event, bRecenterObjs) {
 
 /**
  * Processes a zoom event for this component and subcomponents.
- * @param {dvt.ZoomEvent} event The event to process
+ * @param {object} event The event to process
  * @protected
  */
 dvt.ThematicMap.prototype.HandleZoomEvent = function(event) {
-  var type = event.getSubType();
-  switch (type) {
-    case dvt.ZoomEvent.SUBTYPE_ADJUST_PAN_CONSTRAINTS:
+  var subtype = event.subtype;
+  switch (subtype) {
+    case 'adjustPanConstraints':
       // Calculate the new content dimensions based on the new zoom
       if (this._panning)
-        this._constrainPanning(event.getNewZoom());
+        this._constrainPanning(event.newZoom);
       break;
-    case dvt.ZoomEvent.SUBTYPE_ZOOMING:
-    case dvt.ZoomEvent.SUBTYPE_ELASTIC_ANIM_BEGIN:
+    case 'zooming':
+    case 'elasticAnimBegin':
       this._updateAnimator(event, true);
       break;
-    case dvt.ZoomEvent.SUBTYPE_ZOOMED:
-      var zoom = event.getNewZoom();
+    case 'zoomed':
+      var zoom = event.newZoom;
       if (zoom != null) {
         var pzcMatrix = this._pzc.getContentPane().getMatrix();
         // null out animator for Flash. Temp fix until  is done.
-        event._animator = null;
+        event.animator = null;
         this.dispatchEvent(dvt.EventFactory.newThematicMapViewportChangeEvent(pzcMatrix.getTx(), pzcMatrix.getTy(), zoom));
 
         this._transformContainers(pzcMatrix);
@@ -646,12 +665,12 @@ dvt.ThematicMap.prototype.HandleZoomEvent = function(event) {
           this._layers[i].HandleZoomEvent(event, pzcMatrix);
       }
       break;
-    case dvt.ZoomEvent.SUBTYPE_ZOOM_AND_CENTER:
+    case 'zoomAndCenter':
       // zoom and center on the current selection from the last clicked data layer
       // this can include both points and areas
       this.fitSelectedRegions();
       break;
-    case dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_END:
+    case 'zoomToFitEnd':
       // reset pan/zoom state
       this.dispatchEvent(dvt.EventFactory.newThematicMapViewportChangeEvent());
       break;
@@ -664,15 +683,15 @@ dvt.ThematicMap.prototype.HandleZoomEvent = function(event) {
  * @override
  */
 dvt.ThematicMap.prototype.HandlePanEvent = function(event) {
-  var subType = event.getSubType();
-  if (subType == dvt.PanEvent.SUBTYPE_ELASTIC_ANIM_BEGIN || subType == dvt.PanEvent.SUBTYPE_PANNING) {
+  var subtype = event.subtype;
+  if (subtype == 'elasticAnimBegin' || subtype == 'panning') {
     this._updateAnimator(event, false);
   }
-  else if (subType == dvt.PanEvent.SUBTYPE_PANNED) {
-    if (event.getNewX() != null) {
+  else if (subtype == 'panned') {
+    if (event.newX != null) {
       var pzcMatrix = this._pzc.getContentPane().getMatrix();
       // null out animator for Flash. Temp fix until  is done.
-      event._animator = null;
+      event.animator = null;
       this.dispatchEvent(dvt.EventFactory.newThematicMapViewportChangeEvent(pzcMatrix.getTx(), pzcMatrix.getTy(), this._pzc.getZoom()));
 
       this._transformContainers(pzcMatrix);
@@ -681,20 +700,6 @@ dvt.ThematicMap.prototype.HandlePanEvent = function(event) {
         this._layers[i].HandlePanEvent(pzcMatrix);
     }
   }
-};
-
-/**
- * @override
- */
-dvt.ThematicMap.prototype.GetControlPanelBehavior = function() {
-  return dvt.PanZoomComponent.CONTROL_PANEL_BEHAVIOR_HIDDEN;
-};
-
-/**
- * @override
- */
-dvt.ThematicMap.prototype.GetControlPanel = function() {
-  return null;
 };
 
 /**
@@ -985,13 +990,6 @@ dvt.ThematicMap.prototype.getAutomation = function() {
 /**
  * @override
  */
-dvt.ThematicMap.prototype.GetComponentDescription = function() {
-  return dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'THEMATIC_MAP');
-};
-
-/**
- * @override
- */
 dvt.ThematicMap.prototype.highlight = function(categories) {
   // Update the options
   this.Options['highlightedCategories'] = dvt.JsonUtils.clone(categories);
@@ -1080,14 +1078,13 @@ dvt.ThematicMap.prototype._getAreaFromDataLayer = function(areaName, dataLayer) 
  * @extends {dvt.BaseComponentDefaults}
  */
 var DvtThematicMapDefaults = function(context) {
-  this.Init({'fusion': DvtThematicMapDefaults.DEFAULT,
-    'alta': DvtThematicMapDefaults.SKIN_ALTA}, context);
+  this.Init({'alta': DvtThematicMapDefaults.SKIN_ALTA}, context);
 };
 
 dvt.Obj.createSubclass(DvtThematicMapDefaults, dvt.BaseComponentDefaults);
 
 /** @const **/
-DvtThematicMapDefaults.DEFAULT = {
+DvtThematicMapDefaults.SKIN_ALTA = {
   'animationDuration' : 500,
   'animationOnDisplay' : 'none',
   'animationOnMapChange' : 'none',
@@ -1102,7 +1099,7 @@ DvtThematicMapDefaults.DEFAULT = {
   'zooming' : 'none',
   'styleDefaults' : {
     'skin' : 'alta',
-    '_areaStyle' : {'backgroundColor': '#B8CDEC', 'borderColor': '#FFFFFF'},
+    '_areaStyle' : {'backgroundColor': '#DDDDDD', 'borderColor': '#FFFFFF'},
     'hoverBehaviorDelay' : 200,
     'dataAreaDefaults' : {
       'borderColor' : '#FFFFFF',
@@ -1115,10 +1112,10 @@ DvtThematicMapDefaults.DEFAULT = {
       'borderColor' : '#FFFFFF',
       'borderStyle' : 'solid',
       'borderWidth' : 0.5,
-      'color' : '#000000',
+      'color' : 'rgb(51,51,51)',
       'height' : 8,
-      'labelStyle' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS + dvt.BaseComponentDefaults.FONT_SIZE_13 + 'color:#000000'),
-      'opacity' : 0.4,
+      'labelStyle' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color:#333333'),
+      'opacity' : 1,
       'scaleX' : 1,
       'scaleY' : 1,
       'shape' : 'circle',
@@ -1130,24 +1127,11 @@ DvtThematicMapDefaults.DEFAULT = {
       '_selectedColor' : '#000000',
       'width' : 2
     },
-    'labelStyle' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS + dvt.BaseComponentDefaults.FONT_SIZE_11)
+    'labelStyle' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12)
   },
   'resources' : {
     'images' : {},
     'translations' : {}
-  }
-};
-
-/** @const **/
-DvtThematicMapDefaults.SKIN_ALTA = {
-  'styleDefaults' : {
-    '_areaStyle' : {'backgroundColor': '#DDDDDD', 'borderColor': '#FFFFFF'},
-    'dataMarkerDefaults' : {
-      'color' : 'rgb(51,51,51)',
-      'labelStyle' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color:#333333'),
-      'opacity' : 1
-    },
-    'labelStyle' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12)
   }
 };
 
@@ -1224,313 +1208,6 @@ DvtThematicMapDefaults.prototype.getNoCloneObject = function() {
 DvtThematicMapDefaults.prototype.getAnimationDuration = function(options)
 { 
   return options['animationDuration'];
-};
-
-// APIs called by the ADF Faces drag source for dvt.ThematicMap
-
-/**
- * Returns the current drag source.
- * @return {DvtDragSource}
- * @private
- */
-dvt.ThematicMap.prototype._getCurrentDragSource = function() {
-  for (var i = 0; i < this._layers.length; i++) {
-    var dataLayers = this._layers[i].getDataLayers();
-    for (var id in dataLayers) {
-      var dataLayer = dataLayers[id];
-      var dragSource = dataLayer.getDragSource();
-      if (dragSource && dragSource.getDragCandidate())
-        return dragSource;
-    }
-  }
-  return null;
-};
-
-/**
- * If this object supports drag, returns the client id of the drag component.
- * Otherwise returns null.
- * @param {number} mouseX The mouse x-coordinate
- * @param {number} mouseY The mouse y-coordinate
- * @param {Array} clientIds the array of client ids of the valid drag components
- * @return {boolean}
- */
-dvt.ThematicMap.prototype.isDragAvailable = function(mouseX, mouseY, clientIds) {
-  this._dragAllowed = false;
-  var dragSource = this._getCurrentDragSource();
-  return dragSource ? dragSource.isDragAvailable(clientIds) : false;
-};
-
-/**
- * Returns the transferable object for a drag initiated at these coordinates.
- * @param {number} mouseX The mouse x-coordinate
- * @param {number} mouseY The mouse y-coordinate
- * @return {Object}
- */
-dvt.ThematicMap.prototype.getDragTransferable = function(mouseX, mouseY) {
-  var dragSource = this._getCurrentDragSource();
-  return dragSource ? dragSource.getDragTransferable(mouseX, mouseY) : null;
-};
-
-/**
- * Returns the feedback for the drag operation.
- * @param {number} mouseX The mouse x-coordinate
- * @param {number} mouseY The mouse y-coordinate
- * @return {Object}
- */
-dvt.ThematicMap.prototype.getDragOverFeedback = function(mouseX, mouseY) {
-  var dragSource = this._getCurrentDragSource();
-  return dragSource ? dragSource.getDragOverFeedback(mouseX, mouseY) : null;
-};
-
-/**
- * Returns an Object containing the drag context info.
- * @param {number} mouseX The mouse x-coordinate
- * @param {number} mouseY The mouse y-coordinate
- * @return {Object}
- */
-dvt.ThematicMap.prototype.getDragContext = function(mouseX, mouseY) {
-  var dragSource = this._getCurrentDragSource();
-  return dragSource ? dragSource.getDragContext(mouseX, mouseY) : null;
-};
-
-/**
- * Returns the offset to use for the drag feedback. This positions the drag
- * feedback relative to the pointer.
- * @param {number} mouseX The mouse x-coordinate
- * @param {number} mouseY The mouse y-coordinate
- * @return {Object}
- */
-dvt.ThematicMap.prototype.getDragOffset = function(mouseX, mouseY) {
-  var dragSource = this._getCurrentDragSource();
-  return dragSource ? dragSource.getDragOffset(mouseX, mouseY) : null;
-};
-
-
-/**
- * Returns the offset from the mouse pointer where the drag is considered to be located.
- * @param {number} xOffset The mouse x-offset
- * @param {number} yOffset The mouse y-offset
- * @return {Object}
- */
-dvt.ThematicMap.prototype.getPointerOffset = function(xOffset, yOffset) {
-  var dragSource = this._getCurrentDragSource();
-  return dragSource ? dragSource.getPointerOffset(xOffset, yOffset) : null;
-};
-
-
-/**
- * Notifies the component that a drag started.
- */
-dvt.ThematicMap.prototype.initiateDrag = function() {
-  var dragSource = this._getCurrentDragSource();
-  if (dragSource)
-    dragSource.initiateDrag();
-};
-
-
-/**
- * Clean up after the drag is completed.
- */
-dvt.ThematicMap.prototype.dragDropEnd = function() {
-  var dragSource = this._getCurrentDragSource();
-  if (dragSource)
-    dragSource.dragDropEnd();
-  // : clean up the pan zoom touches after DnD
-  this.getPanZoomCanvas().resetTouchTargets();
-};
-
-
-/**
- * Implemented for dvt.DragRecognizer
- * @override
- */
-dvt.ThematicMap.prototype.prepDrag = function() {
-  if (this._panning)
-    this._startDragDropTimer(1000);
-  else
-    this._dragAllowed = true;
-};
-
-
-/**
- * Implemented for dvt.DragRecognizer
- * @override
- */
-dvt.ThematicMap.prototype.abortPrep = function() {
-  this._stopDragDropTimer();
-};
-
-
-/**
- * Implemented for dvt.DragRecognizer
- * @override
- */
-dvt.ThematicMap.prototype.recognizeDrag = function() {
-  this._stopDragDropTimer();
-  return this._dragAllowed;
-};
-
-
-/**
- * Starts the drag timer to prevent immediately initiating a drag action when panning is available
- * @param {number} time The time in milliseconds to set the timer for
- * @private
- */
-dvt.ThematicMap.prototype._startDragDropTimer = function(time) {
-  this._dragDropTimer = new dvt.Timer(this.getCtx(), time, this._handleDragDropTimer, this, 1);
-  this._dragDropTimer.start();
-};
-
-
-/**
- * Stops the drag timer and allows a drag action to initiate
- * @private
- */
-dvt.ThematicMap.prototype._handleDragDropTimer = function() {
-  this._stopDragDropTimer();
-  this._dragAllowed = true;
-};
-
-
-/**
- * Stops the drag timer
- * @private
- */
-dvt.ThematicMap.prototype._stopDragDropTimer = function() {
-  if (this._dragDropTimer) {
-    this._dragDropTimer.stop();
-    this._dragDropTimer = null;
-  }
-};
-
-// APIs called by the ADF Faces drop target for dvt.ThematicMap
-
-/**
- * Returns the current map drop target for the given coordinate
- * @param {number} mouseX The mouse x-coordinate
- * @param {number} mouseY The mouse y-coordinate
- * @return {DvtThematicMapDropTarget}
- * @private
- */
-dvt.ThematicMap.prototype._getCurrentDropTarget = function(mouseX, mouseY) {
-  for (var i = 0; i < this._layers.length; i++) {
-    if (this._layers[i].getDropTarget) {
-      var dropTarget = this._layers[i].getDropTarget();
-      if (dropTarget && dropTarget.getDropSite(mouseX, mouseY))
-        return dropTarget;
-    }
-  }
-  return null;
-};
-
-/**
- * If a drop is possible at these mouse coordinates, returns the client id
- * of the drop component. Returns null if drop is not possible.
- * @param {number} mouseX The mouse x-coordinate
- * @param {number} mouseY The mouse y-coordinate
- * @param {Array} clientIds the array of client ids of the valid drag components
- * @return {string}
- */
-dvt.ThematicMap.prototype.acceptDrag = function(mouseX, mouseY, clientIds) {
-  var zoom = this._pzc.getZoom();
-  mouseX = (mouseX - this._pzc.getPanX()) / zoom;
-  mouseY = (mouseY - this._pzc.getPanY()) / zoom;
-  this._dropTarget = this._getCurrentDropTarget(mouseX, mouseY);
-  if (this._dropTarget)
-    return this._dropTarget.acceptDrag(mouseX, mouseY, clientIds);
-  else
-    return null;
-};
-
-/**
- * Paints drop site feedback as a drag enters the drop site.
- */
-dvt.ThematicMap.prototype.dragEnter = function() {
-  if (this._dropTarget)
-    this._dropTarget.dragEnter();
-};
-
-/**
- * Cleans up drop site feedback as a drag exits the drop site.
- */
-dvt.ThematicMap.prototype.dragExit = function() {
-  if (this._dropTarget)
-    this._dropTarget.dragExit();
-};
-
-/**
- * Returns the object representing the drop site. This method is called when a valid
- * drop is performed.
- * @param {number} mouseX The mouse x-coordinate
- * @param {number} mouseY The mouse y-coordinate
- * @return {object} the object representing the drop site
- */
-dvt.ThematicMap.prototype.getDropSite = function(mouseX, mouseY) {
-  var zoom = this._pzc.getZoom();
-  mouseX = (mouseX - this._pzc.getPanX()) / zoom;
-  mouseY = (mouseY - this._pzc.getPanY()) / zoom;
-  if (this._dropTarget)
-    return this._dropTarget.getDropSite(mouseX, mouseY);
-  else
-    return null;
-};
-
-/**
- * Drop Target event handler for dvt.ThematicMap
- * @param {DvtMapAreaLayer} areaLayer The area layer this drop target belongs to
- * @param {String} basemap The basemap name
- * @extends {dvt.DropTarget}
- * @constructor
- */
-var DvtThematicMapDropTarget = function(areaLayer, basemap) {
-  this._areaLayer = areaLayer;
-  this._basemap = basemap;
-};
-
-dvt.Obj.createSubclass(DvtThematicMapDropTarget, dvt.DropTarget);
-
-
-/**
- * @override
- */
-DvtThematicMapDropTarget.prototype.acceptDrag = function(mouseX, mouseY, clientIds) {
-  // If there is no obj under the point, then don't accept the drag
-  var obj = this._areaLayer.__getObjectUnderPoint(mouseX, mouseY);
-  if (!obj) {
-    this._areaLayer.__showDropSiteFeedback(null);
-    return null;
-  }
-  else if (obj != this._dropSite) {
-    this._areaLayer.__showDropSiteFeedback(obj);
-    this._dropSite = obj;
-  }
-
-  // Return the first clientId, since this component has only a single drag source
-  return clientIds[0];
-};
-
-
-/**
- * @override
- */
-DvtThematicMapDropTarget.prototype.dragExit = function() {
-  // Remove drop site feedback
-  this._areaLayer.__showDropSiteFeedback(null);
-  this._dropSite = null;
-};
-
-
-/**
- * @override
- */
-DvtThematicMapDropTarget.prototype.getDropSite = function(mouseX, mouseY) {
-  var obj = this._areaLayer.__getObjectUnderPoint(mouseX, mouseY);
-  if (obj) {
-    var projPoint = DvtThematicMapProjections.inverseProject(mouseX, mouseY, this._basemap);
-    return {regionId: obj.getAreaId(), localX: projPoint.x, localY: projPoint.y};
-  } else {
-    return null;
-  }
 };
 
 /**
@@ -1792,16 +1469,12 @@ DvtSelectablePath.prototype.showHoverEffect = function() {
  */
 DvtSelectablePath.prototype.CreateSelectedHoverStrokes = function() {
   if (!this.SelectedHoverInnerStroke) {
-    this.SelectedHoverInnerStroke = this.HoverInnerStroke.clone();
-    this.SelectedHoverInnerStroke.setWidth(DvtSelectablePath.HOVER_STROKE_WIDTH);
-    if (this._bSupportsVectorEffects)
-      this.SelectedHoverInnerStroke.setFixedWidth(true);
+    this.SelectedHoverInnerStroke = new dvt.Stroke(this.HoverInnerStroke.getColor(), this.HoverInnerStroke.getAlpha(),
+      DvtSelectablePath.HOVER_STROKE_WIDTH, this._bSupportsVectorEffects);
   }
   if (!this.SelectedHoverOuterStroke) {
-    this.SelectedHoverOuterStroke = this.SelectedOuterStroke.clone();
-    this.SelectedHoverOuterStroke.setWidth(DvtSelectablePath.SELECTED_HOVER_OUTER_STROKE_WIDTH);
-    if (this._bSupportsVectorEffects)
-      this.SelectedHoverOuterStroke.setFixedWidth(true);
+    this.SelectedHoverOuterStroke = new dvt.Stroke(this.SelectedOuterStroke.getColor(), this.SelectedOuterStroke.getAlpha(),
+      DvtSelectablePath.SELECTED_HOVER_OUTER_STROKE_WIDTH, this._bSupportsVectorEffects);
   }
 };
 
@@ -1817,49 +1490,6 @@ DvtSelectablePath.prototype.hideHoverEffect = function() {
   DvtSelectablePath.superclass.hideHoverEffect.call(this);
 };
 
-
-/**
- * @override
- */
-DvtSelectablePath.prototype.setHoverStroke = function(innerStroke, outerStroke) {
-  DvtSelectablePath.superclass.setHoverStroke.call(this, innerStroke, outerStroke);
-  if (this._bSupportsVectorEffects) {
-    if (this.HoverInnerStroke)
-      this.HoverInnerStroke.setFixedWidth(true);
-    if (this.HoverOuterStroke)
-      this.HoverOuterStroke.setFixedWidth(true);
-  }
-  return this;
-};
-
-/**
- * @override
- */
-DvtSelectablePath.prototype.setSelectedStroke = function(innerStroke, outerStroke) {
-  DvtSelectablePath.superclass.setSelectedStroke.call(this, innerStroke, outerStroke);
-  if (this._bSupportsVectorEffects) {
-    if (this.SelectedInnerStroke)
-      this.SelectedInnerStroke.setFixedWidth(true);
-    if (this.SelectedOuterStroke)
-      this.SelectedOuterStroke.setFixedWidth(true);
-  }
-  return this;
-};
-
-/**
- * @override
- */
-DvtSelectablePath.prototype.setSelectedHoverStroke = function(innerStroke, outerStroke) {
-  DvtSelectablePath.superclass.setSelectedHoverStroke.call(this, innerStroke, outerStroke);
-  if (this._bSupportsVectorEffects) {
-    if (this.SelectedHoverInnerStroke)
-      this.SelectedHoverInnerStroke.setFixedWidth(true);
-    if (this.SelectedHoverOuterStroke)
-      this.SelectedHoverOuterStroke.setFixedWidth(true);
-  }
-  return this;
-};
-
 /**
  * Updates the stroke width for a shape on zoom.
  * @param {DvtPath} shape
@@ -1870,25 +1500,22 @@ DvtSelectablePath.prototype._updateStrokeZoomWidth = function(shape, fixedWidth)
   if (!this._bSupportsVectorEffects) {
     var stroke = shape.getStroke();
     if (stroke) {
-      stroke = stroke.clone();
-      stroke.setWidth(fixedWidth / this.Zoom);
-      shape.setStroke(stroke);
+      var updatedStroke = new dvt.Stroke(stroke.getColor(), stroke.getAlpha(), fixedWidth / this.Zoom, stroke.isFixedWidth());
+      shape.setStroke(updatedStroke);
     }
   }
 };
 
 /**
- * Adjusts the stroke width for this map area on zoom and returns a new DvtStroke.
- * @param {DvtStroke} stroke
+ * Adjusts the stroke width for this map area on zoom and returns a new dvt.Stroke.
+ * @param {dvt.Stroke} stroke
  * @param {boolean} fixedWidth
- * @return {DvtStroke}
+ * @return {dvt.Stroke}
  * @private
  */
 DvtSelectablePath.prototype._adjustStrokeZoomWidth = function(stroke, fixedWidth) {
   if (!this._bSupportsVectorEffects) {
-    var adjustedStroke = stroke.clone();
-    adjustedStroke.setWidth(fixedWidth / this.Zoom);
-    return adjustedStroke;
+    return new dvt.Stroke(stroke.getColor(), stroke.getAlpha(), fixedWidth / this.Zoom, stroke.isFixedWidth());
   }
   return stroke;
 };
@@ -1957,18 +1584,18 @@ DvtCustomDataItem.prototype.Init = function(context, dataItem, styles) {
   // Create bounding rect where we will apply interaction effects and wai-aria properties
   this._boundingRect = new dvt.Rect(context, 0, 0, this._width, this._height);
   this._boundingRect.setInvisibleFill();
-  var his = new dvt.SolidStroke(styles['selectedInnerColor'], 1, 2);
-  var hos = new dvt.SolidStroke('rgb(235, 236, 237)', 1, 2);
-  var sis = new dvt.SolidStroke(styles['selectedInnerColor'], 1, 1);
-  var sos = new dvt.SolidStroke(styles['selectedOuterColor'], 1, 2);
-  var shis = new dvt.SolidStroke(styles['selectedInnerColor'], 1, 2);
-  var shos = new dvt.SolidStroke(styles['selectedOuterColor'], 1, 2);
+  var his = new dvt.Stroke(styles['selectedInnerColor'], 1, 2);
+  var hos = new dvt.Stroke('rgb(235, 236, 237)', 1, 2);
+  var sis = new dvt.Stroke(styles['selectedInnerColor'], 1, 1);
+  var sos = new dvt.Stroke(styles['selectedOuterColor'], 1, 2);
+  var shis = new dvt.Stroke(styles['selectedInnerColor'], 1, 2);
+  var shos = new dvt.Stroke(styles['selectedOuterColor'], 1, 2);
   this._boundingRect.setHoverStroke(his, hos).setSelectedStroke(sis, sos).setSelectedHoverStroke(shis, shos);
   // Bounding rect stroke alignment is set to OUTER.
   // For OUTER stroke alignment, the stroke is applied on the outer edge of the path of the bounding rect.
   // The outer stroke will circumscribe inner stroke and the width of outer stroke won't be reduced by inner stroke.
   // The outer stroke visible width will be same as specified.
-  this._boundingRect.setStrokeAlignment(dvt.Stroke.OUTER);
+  this._boundingRect.setStrokeAlignment('outer');
   this.addChildAt(this._boundingRect, 0);
 };
 
@@ -2126,7 +1753,7 @@ if (this) {
   }
 }
 
-dvt.Obj.createSubclass(DvtBaseMapManager, dvt.Obj, 'DvtBaseMapManager');
+dvt.Obj.createSubclass(DvtBaseMapManager, dvt.Obj);
 /** @const */
 DvtBaseMapManager.TYPE_LABELS = 0;// contain region labels
 /** @const */
@@ -2620,9 +2247,7 @@ DvtMapLabel.prototype.Init = function(context, label, labelInfo, labelDisplay, p
 
         var polyline = new dvt.Polyline(context, line[1]);
         polyline.setPixelHinting(true);
-        var stroke = new dvt.SolidStroke('#000000');
-        if (this._bSupportsVectorEffects)
-          stroke.setFixedWidth(true);
+        var stroke = new dvt.Stroke('#000000', 1, 1, this._bSupportsVectorEffects);
         polyline.setStroke(stroke);
         this._leaderLines.push(polyline);
       }
@@ -2731,13 +2356,12 @@ DvtMapLabel.prototype.update = function(pzcMatrix) {
 
   if (this._currentState != -1) {
     var mat = new dvt.Matrix();
-    mat.translate(zoom * this._center.x - this._center.x, zoom * this._center.y - this._center.y);
-    this.setMatrix(mat);
+    this.setMatrix(mat.translate(zoom * this._center.x - this._center.x, zoom * this._center.y - this._center.y));
     if (this._leaderLine) {
       this._leaderLine.setMatrix(new dvt.Matrix(zoom, 0, 0, zoom));
       if (!this._bSupportsVectorEffects) {
-        var stroke = this._leaderLine.getStroke().clone();
-        stroke.setWidth(1 / zoom);
+        var copyStroke = this._leaderLine.getStroke();
+        var stroke = new dvt.Stroke(copyStroke.getColor(), copyStroke.getAlpha(), (1 / zoom), copyStroke.isFixedWidth());
         this._leaderLine.setStroke(stroke);
       }
     }
@@ -2807,8 +2431,7 @@ var DvtMapObjPeer = function(data, dataLayer, displayable, label, center, locati
   this.Init(data, dataLayer, displayable, label, center, locationName);
 };
 
-// Normally shouldn't set typeName unless we absolutely need it, but we do for the map obj peers
-dvt.Obj.createSubclass(DvtMapObjPeer, dvt.Obj, 'DvtMapObjPeer');
+dvt.Obj.createSubclass(DvtMapObjPeer, dvt.Obj);
 
 /**
  * The order in which the delete animation occurs
@@ -2936,22 +2559,6 @@ DvtMapObjPeer.prototype.getDataLayer = function() {
 };
 
 /**
- * Returns true if this data object has an action
- * @return {boolean}
- */
-DvtMapObjPeer.prototype.hasAction = function() {
-  return this.getAction() != null;
-};
-
-/**
- * Returns the action of this data object
- * @return {string}
- */
-DvtMapObjPeer.prototype.getAction = function() {
-  return this._data['action'];
-};
-
-/**
  * Sets the visibility of this data object
  * @param {boolean} bVisible True if this data object is visible and false otherwise
  */
@@ -3017,10 +2624,11 @@ DvtMapObjPeer.prototype.getDatatip = function() {
  * @return {object}
  */
 DvtMapObjPeer.prototype.getDataContext = function() {
+  var data = this._data._noTemplate ? this._itemData : this._data
   return {
     'color': this.getDatatipColor(),
     'component': this._view.getOptions()['_widgetConstructor'],
-    'data': this._data,
+    'data': data,
     'id': this.getId(),
     'itemData': this._itemData,
     'label': this._label ? this._label.getTextString() : null,
@@ -3047,7 +2655,7 @@ DvtMapObjPeer.prototype.getDatatipColor = function() {
 DvtMapObjPeer.prototype.getAriaLabel = function() {
   var states = [];
   if (this.isSelectable())
-    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, this.isSelected() ? 'STATE_SELECTED' : 'STATE_UNSELECTED'));
+    states.push(this._view.getOptions().translations[this.isSelected() ? 'stateSelected' : 'stateUnselected']);
   return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states);
 };
 
@@ -3150,22 +2758,6 @@ DvtMapObjPeer.prototype.hideHoverEffect = function() {
     else
       this.processDefaultHoverEffect(false);
   }
-};
-
-/**
- * Implemented for DvtPopupSource.
- * @override
- */
-DvtMapObjPeer.prototype.setShowPopupBehaviors = function(behaviors) {
-  this._showPopupBehaviors = behaviors;
-};
-
-/**
- * Implemented for DvtPopupSource.
- * @override
- */
-DvtMapObjPeer.prototype.getShowPopupBehaviors = function() {
-  return this._showPopupBehaviors;
 };
 
 /**
@@ -3386,7 +2978,7 @@ DvtMapObjPeer.prototype.animateUpdate = function(handler, oldObj) {
       this.Displayable.setFill(startFill);
       if (oldObj.getLabel() && this._label) {
         var endLabelFill = this._label.getFill();
-        this._label.setFill(oldObj.getLabel().getFill().clone());
+        this._label.setFill(oldObj.getLabel().getFill());
         if (!endLabelFill.equals(this._label.getFill()))
           anim.getAnimator().addProp(dvt.Animator.TYPE_FILL, this._label, this._label.getFill, this._label.setFill, endLabelFill);
       }
@@ -3576,8 +3168,7 @@ var DvtMapAreaPeer = function(data, dataLayer, displayable, label, locationName)
   this.Init(data, dataLayer, displayable, label, locationName);
 };
 
-// Normally shouldn't set typeName unless we absolutely need it, but we do for the map obj peers
-dvt.Obj.createSubclass(DvtMapAreaPeer, DvtMapObjPeer, 'DvtMapAreaPeer');
+dvt.Obj.createSubclass(DvtMapAreaPeer, DvtMapObjPeer);
 
 /**
  * @param {object} data The options for this data object
@@ -3689,8 +3280,7 @@ var DvtMapLinkPeer = function(data, dataLayer, displayable, startPt, endPt, star
   this.Init(data, dataLayer, displayable, startPt, endPt, startMarker, endMarker);
 };
 
-// Normally shouldn't set typeName unless we absolutely need it, but we do for the map obj peers
-dvt.Obj.createSubclass(DvtMapLinkPeer, DvtMapObjPeer, 'DvtMapLinkPeer');
+dvt.Obj.createSubclass(DvtMapLinkPeer, DvtMapObjPeer);
 
 /**
  * Initializiation method for subclassing
@@ -4042,8 +3632,9 @@ DvtMapArea.prototype.contains = function(x, y) {
  */
 DvtMapArea.prototype.HandleZoomEvent = function(pzcMatrix) {
   if (!this._bSupportsVectorEffects && this._shape && this._areaStrokeWidth) {
-    var zoomStroke = this._shape.getStroke().clone();
-    zoomStroke.setWidth(this._areaStrokeWidth / pzcMatrix.getA());
+    var copyStroke = this._shape.getStroke();
+    var zoomStroke = new dvt.Stroke(copyStroke.getColor(), copyStroke.getAlpha(), 
+      this._areaStrokeWidth / pzcMatrix.getA(), copyStroke.isFixedWidth());
     this._shape.setStroke(zoomStroke);
   }
 };
@@ -4119,7 +3710,7 @@ DvtMapLayer.prototype.updateDataLayer = function(dataLayer, pzcMatrix, topLayerN
   this.addDataLayer(dataLayer);
   dataLayer.render(this.PzcMatrix);
   // create a zoom event so we can update the data objects with the current zoom
-  dataLayer.HandleZoomEvent(new dvt.ZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOMED), this.PzcMatrix);
+  dataLayer.HandleZoomEvent(dvt.EventFactory.newZoomEvent('zoomed'), this.PzcMatrix);
 
   if (this._oldDataLayer) {
     var anim = dataLayer.getAnimation();
@@ -4233,7 +3824,7 @@ DvtMapLayer.prototype.render = function(pzcMatrix) {
 
 /**
  * Handles a zoom event for this map layer
- * @param {dvt.ZoomEvent} event The zoom event
+ * @param {object} event The zoom event
  * @param {dvt.Matrix} pzcMatrix The current pan zoom canvas pan and zoom state
  * @protected
  */
@@ -4354,11 +3945,6 @@ DvtMapAreaLayer.prototype.Init = function(tmap, layerName, labelDisplay, labelTy
   this._tmap.getAreaLayerContainer().addChildAt(this.AreaContainer, 0);
   this._tmap.getLabelContainer().addChildAt(this.LabelContainer, 0);
 
-  this._dropTarget = new DvtThematicMapDropTarget(this, this._tmap.getMapName());
-};
-
-DvtMapAreaLayer.prototype.getDropTarget = function() {
-  return this._dropTarget;
 };
 
 DvtMapAreaLayer.prototype.getLabelType = function() {
@@ -4701,9 +4287,7 @@ DvtMapAreaLayer.prototype.__showDropSiteFeedback = function(obj) {
           this._dropSiteCSSStyle.getStyle(dvt.CSSStyle.BORDER_WIDTH).substring(0, this._dropSiteCSSStyle.getStyle(dvt.CSSStyle.BORDER_WIDTH).indexOf('px')) : 1;
       if (!this._tmap.supportsVectorEffects())
         strokeWidth /= this.PzcMatrix.getA();
-      var stroke = new dvt.SolidStroke(this._dropSiteCSSStyle.getStyle(dvt.CSSStyle.BORDER_COLOR), 1, strokeWidth);
-      if (this._tmap.supportsVectorEffects())
-        stroke.setFixedWidth(true);
+      var stroke = new dvt.Stroke(this._dropSiteCSSStyle.getStyle(dvt.CSSStyle.BORDER_COLOR), 1, strokeWidth, this._tmap.supportsVectorEffects());
 
       this._dropSiteFeedback.setStroke(stroke);
       this.AreaContainer.addChild(this._dropSiteFeedback);
@@ -4756,9 +4340,9 @@ DvtMapDataLayer.prototype.Init = function(tmap, parentLayer, clientId, eventHand
 
   this._linkMap = {};
 
-  // Drag and drop support
-  this._dragSource = new dvt.DragSource(tmap.getCtx());
-  this._eventHandler.setDragSource(this._dragSource);
+  // Drag and drop support - not used in JET
+  // this._dragSource = new dvt.DragSource(tmap.getCtx());
+  // this._eventHandler.setDragSource(this._dragSource);
 
   this._dataAreaLayer = new dvt.Container(this._tmap.getCtx());
   this._dataPointLayer = new dvt.Container(this._tmap.getCtx());
@@ -4781,9 +4365,9 @@ DvtMapDataLayer.prototype.getOptions = function() {
   return this._options;
 };
 
-DvtMapDataLayer.prototype.getDragSource = function() {
-  return this._dragSource;
-};
+// DvtMapDataLayer.prototype.getDragSource = function() {
+  // return this._dragSource;
+// };
 
 
 /**
@@ -5107,7 +4691,7 @@ DvtMapDataLayer.prototype.render = function(pzcMatrix) {
 
 /**
  * Handles zoom events for the data layer objects
- * @param {dvt.ZoomEvent} event The zoom event sent by the pan zoom canvas
+ * @param {object} event The zoom event sent by the pan zoom canvas
  * @param {dvt.Matrix} pzcMatrix The pan zoom canvas matrix
  * @protected
  */
@@ -5313,10 +4897,19 @@ DvtThematicMapKeyboardHandler.prototype.processKeyDown = function(event) {
     this._linkNavType = DvtThematicMapKeyboardHandler.LINK_NAV;
     // Traverse data objects in order of areas ] markers ] links
     var navigables = [];
-    if (focusObj instanceof DvtMapAreaPeer)
+    // If we're currently in the area data layer, move to markers
+    if (focusObj instanceof DvtMapAreaPeer) {
       navigables = this._tmap.getNavigableMarkers();
-    // DvtMapLinkPeer and DvtMapAreaPeer are subclasses of DvtMapObjPeer so we need to check type name instead of instanceof
-    if (focusObj.getTypeName() === 'DvtMapObjPeer' || navigables.length === 0) {
+      // If there were no navigable data markers, try links
+      if (navigables.length === 0) {
+        navigables = this._tmap.getNavigableLinks();
+      }
+    }
+    // If we're currently in the marker data layer, move to links.
+    // DvtMapObjPeer is the class we associate for markers and even though DvtMapAreaPeer subclasses
+    // DvtMapObjPeer, we're doing the instanceof check after the more specific DvtMapAreaPeer check so 
+    // we can assume this means that we are currently in the marker data layer.
+    else if (focusObj instanceof DvtMapObjPeer) {
       navigables = this._tmap.getNavigableLinks();
     }
     if (navigables.length > 0) {
@@ -5330,11 +4923,23 @@ DvtThematicMapKeyboardHandler.prototype.processKeyDown = function(event) {
     this._linkNavType = DvtThematicMapKeyboardHandler.LINK_NAV;
     // Traverse data objects in order of links [ markers [ areas
     var navigables = [];
-    if (focusObj instanceof DvtMapLinkPeer)
+    
+
+    if (focusObj instanceof DvtMapLinkPeer) {
       navigables = this._tmap.getNavigableMarkers();
-    // DvtMapLinkPeer and DvtMapAreaPeer are subclasses of DvtMapObjPeer so we need to check type name instead of instanceof
-    if (focusObj.getTypeName() === 'DvtMapObjPeer' || navigables.length === 0)
+      // If there were no navigable data markers, try areas
+      if (navigables.length === 0) {
+        navigables = this._tmap.getNavigableAreas();
+      }
+    }
+    // If we're currently in the marker data layer, move to links.
+    // DvtMapObjPeer is the class we associate for markers and even though DvtMapAreaPeer subclasses
+    // DvtMapObjPeer, we're doing the instanceof check after the more specific DvtMapAreaPeer check so 
+    // we can assume this means that we are currently in the marker data layer.
+    else if (!(focusObj instanceof DvtMapAreaPeer) && focusObj instanceof DvtMapObjPeer) {
       navigables = this._tmap.getNavigableAreas();
+    }
+
     if (navigables.length > 0) {
       focusObj = dvt.KeyboardHandler.getNextAdjacentNavigable(focusObj, event, navigables);
       this._tmap.ensureObjInViewport(event, focusObj);
@@ -5442,20 +5047,16 @@ DvtThematicMapKeyboardHandler.getFirstNavigableLink = function(marker, event, li
  * @constructor
  */
 var DvtThematicMapEventManager = function(context, callback, callbackObj) {
-  this.Init(context, callback, callbackObj);
+  this.Init(context, callback, callbackObj, callbackObj);
 };
 
 dvt.Obj.createSubclass(DvtThematicMapEventManager, dvt.EventManager);
 
 /**
- * Helper class to initialize an event manager for a thematic map.
- * @param {dvt.Context} context The rendering context.
- * @param {function} callback The function that should be called to dispatch component events.
- * @param {DvtThematicMap} callbackObj The object to dispatch component events to
- * @protected
+ * @override
  */
-DvtThematicMapEventManager.prototype.Init = function(context, callback, callbackObj) {
-  DvtThematicMapEventManager.superclass.Init.call(this, context, callback, callbackObj);
+DvtThematicMapEventManager.prototype.Init = function(context, callback, callbackObj, component) {
+  DvtThematicMapEventManager.superclass.Init.call(this, context, callback, callbackObj, component);
   this._selectionHandlers = new Object();
   this._tmap = callbackObj;
   this._bPassOnEvent = false;
@@ -5653,7 +5254,7 @@ DvtThematicMapEventManager.prototype.ProcessRolloverEvent = function(event, obj,
 
   // Fire the event to the rollover handler, who will fire to the component callback.
   var rolloverEvent = dvt.EventFactory.newCategoryHighlightEvent(options['highlightedCategories'], bOver);
-  var hoverBehaviorDelay = dvt.StyleUtils.getTimeMilliseconds(options['styleDefaults']['hoverBehaviorDelay']);
+  var hoverBehaviorDelay = dvt.CSSStyle.getTimeMilliseconds(options['styleDefaults']['hoverBehaviorDelay']);
   this.RolloverHandler.processEvent(rolloverEvent,
       this._tmap.getNavigableAreas().concat(this._tmap.getNavigableMarkers()).concat(this._tmap.getNavigableLinks()),
       hoverBehaviorDelay, options['highlightMatch'] == 'any');
@@ -5933,8 +5534,10 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
         var dataObj;
         if (renderer) {
           var initState = {'hovered': false, 'selected': false, 'focused': false};
-          var data = markers[j];
-          var context = this._tmap.getOptions()['_contextHandler'](this._tmap.getElem(), null, data, data['_itemData'], initState, null);
+          var data = markers[j]['_noTemplate'] ? markers[j]['_itemData'] : markers[j];
+          var itemData = markers[j]['_itemData'];
+
+          var context = this._tmap.getOptions()['_contextHandler'](this._tmap.getElem(), null, data, itemData, initState, null);
           var svgElem = renderer(context);
           dataObj = this._createCustomDataItem(parentLayer, dataLayer, markers[j], svgElem, isAreaDataLayer);
         } else {
@@ -5968,6 +5571,21 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
 
     var links = dataLayerOptions['links'];
     if (links) {
+      var markerMap = new ctx.ojMap();
+      var areaMap = new ctx.ojMap();
+      var markers = dataLayer.getDataMarkerCollection();
+      for (var i = 0; i < markers.length; i++) {
+        var marker = markers[i];
+        if (marker)
+          markerMap.set(marker.getId(), marker);
+      }
+      var areas = dataLayer.getDataAreaCollection();
+      for (var i = 0; i < areas.length; i++) {
+        var area = areas[i];
+        if (area)
+          areaMap.set(area.getId(), area);
+      }
+
       for (var j = 0; j < links.length; j++) {
         if (hiddenCategories && dvt.ArrayUtils.hasAnyItem(hiddenCategories, links[j]['categories'])) {
           // placeholder null object for automation
@@ -5975,7 +5593,7 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
           continue;
         }
 
-        var dataObj = this._createLink(dataLayer, links[j]);
+        var dataObj = this._createLink(dataLayer, links[j], markerMap, areaMap);
         if (dataObj) {
           dataLayer.addLinkObject(dataObj);
         }
@@ -6007,7 +5625,6 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
  * @private
  */
 DvtThematicMapJsonParser.prototype._parseStyles = function(styles) {
-  this._tmap.parseComponentJson(styles);
   //If the areaStyle is a string convert it to object
   var areaStyle = styles['areaSvgStyle'] || styles['areaStyle'];
   if (areaStyle && !(areaStyle instanceof Object))
@@ -6030,7 +5647,7 @@ DvtThematicMapJsonParser.prototype._parseStyles = function(styles) {
 DvtThematicMapJsonParser._getAreaCSSStyle = function(styleObj) {
   var style = new dvt.CSSStyle();
   //Area CSS Style supports only border-color and background-color attributes
-  dvt.ArrayUtils.forEach([dvt.CSSStyle.BORDER_COLOR, dvt.CSSStyle.BACKGROUND_COLOR], function(entry) {
+  [dvt.CSSStyle.BORDER_COLOR, dvt.CSSStyle.BACKGROUND_COLOR].forEach(function(entry) {
     var value = null;
     //convert CSS string property to object attribute
     var attribute = dvt.CSSStyle.cssStringToObjectProperty(entry);
@@ -6060,9 +5677,7 @@ DvtThematicMapJsonParser.prototype._createPathShapes = function(paths) {
     // Style area layer border and background colors
     var borderColor = this._areaLayerStyle.getStyle(dvt.CSSStyle.BORDER_COLOR);
     if (borderColor && borderColor != 'transparent') {
-      var stroke = new dvt.SolidStroke(borderColor);
-      if (this._tmap.supportsVectorEffects())
-        stroke.setFixedWidth(true);
+      var stroke = new dvt.Stroke(borderColor, 1, 1, this._tmap.supportsVectorEffects());
       path.setStroke(stroke);
     }
 
@@ -6102,9 +5717,9 @@ DvtThematicMapJsonParser.prototype._createArea = function(layer, dataLayer, data
     if (!data['labelStyle'])
       data['labelStyle'] = this._tmap.getStyleDefaults()['labelStyle'];
 
-    var hs = new dvt.SolidStroke(data['hoverColor'], 1, DvtSelectablePath.HOVER_STROKE_WIDTH);
-    var sis = new dvt.SolidStroke(data['selectedInnerColor'], 1, DvtSelectablePath.SELECTED_INNER_STROKE_WIDTH);
-    var sos = new dvt.SolidStroke(data['selectedOuterColor'], 1, DvtSelectablePath.SELECTED_OUTER_STROKE_WIDTH);
+    var hs = new dvt.Stroke(data['hoverColor'], 1, DvtSelectablePath.HOVER_STROKE_WIDTH, this._tmap.supportsVectorEffects());
+    var sis = new dvt.Stroke(data['selectedInnerColor'], 1, DvtSelectablePath.SELECTED_INNER_STROKE_WIDTH, this._tmap.supportsVectorEffects());
+    var sos = new dvt.Stroke(data['selectedOuterColor'], 1, DvtSelectablePath.SELECTED_OUTER_STROKE_WIDTH, this._tmap.supportsVectorEffects());
     path.setHoverStroke(hs, null).setSelectedStroke(sis, sos);
 
     // disable labels in area layer if data layer exists and has label
@@ -6183,7 +5798,7 @@ DvtThematicMapJsonParser.prototype._createMarker = function(layer, dataLayer, da
   }
   else {
     var shapeType = data['shape'] ? data['shape'] : this._tmap.getOptions()['styleDefaults']['dataMarkerDefaults']['shape'];
-    marker = new dvt.SimpleMarker(this._tmap.getCtx(), shapeType, this._tmap.getSkinName(), center.x, center.y, width, height, br);
+    marker = new dvt.SimpleMarker(this._tmap.getCtx(), shapeType, center.x, center.y, width, height, br);
   }
   var rotation = data['rotation'];
   if (rotation) {
@@ -6241,7 +5856,7 @@ DvtThematicMapJsonParser.prototype._createImage = function(layer, dataLayer, dat
         peer.__recenter();
       }
     };
-    dvt.ImageLoader.loadImage(this._tmap.getCtx(), data['url'], callback);
+    dvt.ImageLoader.loadImage(data['url'], callback);
   }
   return peer;
 };
@@ -6281,39 +5896,27 @@ DvtThematicMapJsonParser.prototype._createCustomDataItem = function(layer, dataL
  * Creates a logical object for a map data link item.
  * @param {DvtMapDataLayer} dataLayer The data layer this data object belongs to
  * @param {Object} data The JSON object containing data object attributes
+ * @param {*} idToMarkerMap ojMap keyed by marker ids valued by marker objects
+ * @param {*} idToAreaMap ojMap keyed by area ids valued by area objects
  * @return {DvtMapObjPeer} The logical object
  * @private
  */
-DvtThematicMapJsonParser.prototype._createLink = function(dataLayer, data) {
+DvtThematicMapJsonParser.prototype._createLink = function(dataLayer, data, idToMarkerMap, idToAreaMap) {
   var startLoc = data['startLocation'];
   var endLoc = data['endLocation'];
-  var ctx = this._tmap.getCtx();
 
   var startPt;
   var startMarker;
   if (startLoc['id']) {
-    // Get x/y from marker. Markers are created before links.
-    var markers = dataLayer.getDataMarkerCollection();
-    for (var i = 0; i < markers.length; i++) {
-      var marker = markers[i];
-      // Account for filtered data items
-      if (marker && dvt.Obj.compareValues(ctx, marker.getId(), startLoc['id'])) {
-        startMarker = marker;
-        startPt = marker.getCenter();
-        break;
-      }
+    startMarker = idToMarkerMap.get(startLoc['id']);
+    if (startMarker) {
+      startPt = startMarker.getCenter();
     }
     // Check areas if no marker with id matches
-    if (!startMarker) {
-      var areas = dataLayer.getDataAreaCollection();
-      for (var i = 0; i < areas.length; i++) {
-        var area = areas[i];
-        // Account for filtered data items
-        if (area && dvt.Obj.compareValues(ctx, area.getId(), startLoc['id'])) {
-          startMarker = area;
-          startPt = this._getPtFromLocation(dataLayer, {'location': area.getLocation()});
-          break;
-        }
+    else {
+      startMarker = idToAreaMap.get(startLoc['id']);
+      if (startMarker) {
+        startPt = this._getPtFromLocation(dataLayer, {'location': startMarker.getLocation()});
       }
     }
   } else {
@@ -6323,28 +5926,17 @@ DvtThematicMapJsonParser.prototype._createLink = function(dataLayer, data) {
   var endPt;
   var endMarker;
   if (endLoc['id']) {
+    endMarker = idToMarkerMap.get(endLoc['id']);
     // Get x/y from marker. Markers are created before links.
-    var markers = dataLayer.getDataMarkerCollection();
-    for (var i = 0; i < markers.length; i++) {
-      var marker = markers[i];
-      // Account for filtered data items
-      if (marker && dvt.Obj.compareValues(ctx, marker.getId(), endLoc['id'])) {
-        endMarker = marker;
-        endPt = marker.getCenter();
-        break;
-      }
+    if (endMarker) {
+      endPt = endMarker.getCenter();
     }
+
     // Check areas if no marker with id matches
-    if (!endMarker) {
-      var areas = dataLayer.getDataAreaCollection();
-      for (var i = 0; i < areas.length; i++) {
-        var area = areas[i];
-        // Account for filtered data items
-        if (area && dvt.Obj.compareValues(ctx, area.getId(), endLoc['id'])) {
-          endMarker = area;
-          endPt = this._getPtFromLocation(dataLayer, {'location': area.getLocation()});
-          break;
-        }
+    else {
+      endMarker = idToAreaMap.get(endLoc['id']);
+      if (endMarker) {
+        endPt = this._getPtFromLocation(dataLayer, {'location': endMarker.getLocation()});
       }
     }
   } else {
@@ -6365,20 +5957,18 @@ DvtThematicMapJsonParser.prototype._createLink = function(dataLayer, data) {
   var strokeWidth = data['width'];
   if (!strokeWidth)
     strokeWidth = linkDefaults['width'];
-  var stroke = new dvt.SolidStroke(strokeColor, 1, strokeWidth);
-
-  stroke.setFixedWidth(true);
+  var stroke = new dvt.Stroke(strokeColor, 1, strokeWidth, true);
   curve.setStroke(stroke);
 
   var hoverColor = linkDefaults['_hoverColor'];
   var selectedColor = linkDefaults['_selectedColor'];
 
-  var his = new dvt.SolidStroke(hoverColor, 1, strokeWidth);
-  var hos = new dvt.SolidStroke(strokeColor, 1, strokeWidth + 2);
-  var sis = new dvt.SolidStroke(strokeColor, 1, strokeWidth);
-  var sos = new dvt.SolidStroke(selectedColor, 1, strokeWidth + 2);
-  var shis = new dvt.SolidStroke(hoverColor, 1, strokeWidth);
-  var shos = new dvt.SolidStroke(selectedColor, 1, strokeWidth + 2);
+  var his = new dvt.Stroke(hoverColor, 1, strokeWidth);
+  var hos = new dvt.Stroke(strokeColor, 1, strokeWidth + 2);
+  var sis = new dvt.Stroke(strokeColor, 1, strokeWidth);
+  var sos = new dvt.Stroke(selectedColor, 1, strokeWidth + 2);
+  var shis = new dvt.Stroke(hoverColor, 1, strokeWidth);
+  var shos = new dvt.Stroke(selectedColor, 1, strokeWidth + 2);
   curve.setHoverStroke(his, hos).setSelectedStroke(sis, sos).setSelectedHoverStroke(shis, shos);
 
   return new DvtMapLinkPeer(data, dataLayer, curve, startPt, endPt, startMarker, endMarker);
@@ -6465,11 +6055,11 @@ DvtThematicMapJsonParser.prototype._createLabel = function(layer, dataLayer, dat
  */
 DvtThematicMapJsonParser.prototype._styleDisplayable = function(style, displayable) {
   var backgroundColor = style['color'];
-  var gradient = (dvt.Agent.isTouchDevice() || this._tmap.getSkinName() == dvt.CSSStyle.SKIN_ALTA) ? 'none' : style['visualEffects'];
 
   // handle custom svg where color is set by user
   if (displayable instanceof dvt.SimpleMarker) {
-    if (style['borderStyle'] != 'none') {
+    var strokeType = style['borderStyle'];
+    if (strokeType != 'none') {
       var borderWidth = style['borderWidth'];
       if (typeof borderWidth == 'string') {
         if (borderWidth.slice(-2) == 'px')
@@ -6477,25 +6067,19 @@ DvtThematicMapJsonParser.prototype._styleDisplayable = function(style, displayab
         else
           borderWidth = parseFloat(style['borderWidth']);
       }
-      var stroke = new dvt.SolidStroke(style['borderColor'], 1, borderWidth);
-      if (!this._tmap.isMarkerZoomBehaviorFixed())
-        stroke.setFixedWidth(true);
-      stroke.setType(dvt.Stroke.convertTypeString(style['borderStyle']));
+      var stroke = new dvt.Stroke(style['borderColor'], 1, borderWidth, 
+        !this._tmap.isMarkerZoomBehaviorFixed(), dvt.Stroke.getDefaultDashProps(strokeType, borderWidth));
       displayable.setStroke(stroke);
     }
 
     var opacity = style['opacity'];
-    if (gradient != 'none')
-      displayable.setFill(new dvt.MarkerGradient.createMarkerGradient(backgroundColor, displayable, opacity));
-    else if (backgroundColor)
+    if (backgroundColor)
       displayable.setSolidFill(backgroundColor, opacity);
   }
   else if (displayable instanceof dvt.Path) {
     var borderColor = style['borderColor'];
     if (borderColor) {
-      var stroke = new dvt.SolidStroke(borderColor);
-      if (this._tmap.supportsVectorEffects())
-        stroke.setFixedWidth(true);
+      var stroke = new dvt.Stroke(borderColor, 1, 1, this._tmap.supportsVectorEffects());
       displayable.setStroke(stroke);
     }
 
@@ -6907,7 +6491,7 @@ DvtThematicMapProjections._getAffineProjection = function(mapBounds, point, rotR
   var viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(mapBounds, DvtThematicMapProjections._VIEWPORT_BOUNDS);
   if (rotRadians) {
     var rotMatrix = new dvt.Matrix();
-    rotMatrix.rotate(rotRadians);
+    rotMatrix = rotMatrix.rotate(rotRadians);
     viewPortTransform = DvtThematicMapProjections._concatAffineTransforms(viewPortTransform, rotMatrix);
   }
   var transformedPoint = viewPortTransform.transformPoint(point);
@@ -7187,18 +6771,18 @@ DvtThematicMapProjections._getInverseUSAProjection = function(x, y) {
   var viewPortTransform;
   if (DvtThematicMapProjections._ALASKA_WINDOW.containsPoint(x, y)) {
     viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._ALASKA_BOUNDS, DvtThematicMapProjections._ALASKA_WINDOW);
-    viewPortTransform.invert();
+    viewPortTransform = viewPortTransform.invert();
     var point = viewPortTransform.transformPoint(new dvt.Point(x, y));
     return DvtThematicMapProjections._getInverseMercatorProjection(point.x, point.y);
   }
   else if (DvtThematicMapProjections._HAWAII_WINDOW.containsPoint(x, y)) {
     viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._HAWAII_BOUNDS, DvtThematicMapProjections._HAWAII_WINDOW);
-    viewPortTransform.invert();
+    viewPortTransform = viewPortTransform.invert();
     return viewPortTransform.transformPoint(new dvt.Point(x, y));
   }
   else if (DvtThematicMapProjections._VIEWPORT_BOUNDS.containsPoint(x, y)) {
     viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._USA_BOUNDS, DvtThematicMapProjections._VIEWPORT_BOUNDS);
-    viewPortTransform.invert();
+    viewPortTransform = viewPortTransform.invert();
     var point = viewPortTransform.transformPoint(new dvt.Point(x, y));
     return DvtThematicMapProjections._getInverseOrthographicProjection(new dvt.Point(- 95, 36), point.x, point.y);
   }
@@ -7214,7 +6798,7 @@ DvtThematicMapProjections._getInverseUSAProjection = function(x, y) {
  */
 DvtThematicMapProjections._getInverseWorldProjection = function(x, y) {
   var viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._WORLD_BOUNDS, DvtThematicMapProjections._VIEWPORT_BOUNDS);
-  viewPortTransform.invert();
+  viewPortTransform = viewPortTransform.invert();
   var point = viewPortTransform.transformPoint(new dvt.Point(x, y));
   return DvtThematicMapProjections._getInverseRobinsonProjection(point.x, point.y);
 };
@@ -7233,7 +6817,7 @@ DvtThematicMapProjections._getInverseAustraliaProjection = function(x, y) {
   else
     viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._AUSTRALIA_BOUNDS, DvtThematicMapProjections._VIEWPORT_BOUNDS);
 
-  viewPortTransform.invert();
+    viewPortTransform = viewPortTransform.invert();
   var point = viewPortTransform.transformPoint(new dvt.Point(x, y));
   return DvtThematicMapProjections._getInverseMercatorProjection(point.x, point.y);
 };
@@ -7250,10 +6834,10 @@ DvtThematicMapProjections._getInverseAffineProjection = function(mapBounds, poin
   var viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(mapBounds, DvtThematicMapProjections._VIEWPORT_BOUNDS);
   if (rotRadians) {
     var rotMatrix = new dvt.Matrix();
-    rotMatrix.rotate(rotRadians);
+    rotMatrix = rotMatrix.rotate(rotRadians);
     viewPortTransform = DvtThematicMapProjections._concatAffineTransforms(viewPortTransform, rotMatrix);
   }
-  viewPortTransform.invert();
+  viewPortTransform = viewPortTransform.invert();
   return viewPortTransform.transformPoint(point);
 };
 
@@ -7348,21 +6932,6 @@ DvtThematicMapProjections._getInverseRobinsonProjection = function(x, y) {
 
   return new dvt.Point(originalX, originalY);
 };
-
-dvt.exportProperty(DvtBaseMapManager, 'getLayerIds', DvtBaseMapManager.getLayerIds);
-
-dvt.exportProperty(dvt, 'ThematicMap', dvt.ThematicMap);
-dvt.exportProperty(dvt.ThematicMap, 'newInstance', dvt.ThematicMap.newInstance);
-dvt.exportProperty(dvt.ThematicMap.prototype, 'updateLayer', dvt.ThematicMap.prototype.updateLayer);
-dvt.exportProperty(dvt.ThematicMap.prototype, 'destroy', dvt.ThematicMap.prototype.destroy);
-dvt.exportProperty(dvt.ThematicMap.prototype, 'getAutomation', dvt.ThematicMap.prototype.getAutomation);
-dvt.exportProperty(dvt.ThematicMap.prototype, 'highlight', dvt.ThematicMap.prototype.highlight);
-dvt.exportProperty(dvt.ThematicMap.prototype, 'processDefaultHoverEffect', dvt.ThematicMap.prototype.processDefaultHoverEffect);
-dvt.exportProperty(dvt.ThematicMap.prototype, 'processDefaultSelectionEffect', dvt.ThematicMap.prototype.processDefaultSelectionEffect);
-dvt.exportProperty(dvt.ThematicMap.prototype, 'processDefaultFocusEffect', dvt.ThematicMap.prototype.processDefaultFocusEffect);
-
-dvt.exportProperty(DvtThematicMapAutomation.prototype, 'getDomElementForSubId', DvtThematicMapAutomation.prototype.getDomElementForSubId);
-dvt.exportProperty(DvtThematicMapAutomation.prototype, 'getData', DvtThematicMapAutomation.prototype.getData);
 
 /**
  * Thematic Map MapProvider utility class for converting a GeoJSON object into a basemap.

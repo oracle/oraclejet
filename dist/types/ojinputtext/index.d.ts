@@ -5,6 +5,7 @@ export interface inputBase<V, SP extends inputBaseSettableProperties<V, SV>, SV 
     asyncValidators: Array<AsyncValidator<V>>;
     autocomplete: 'on' | 'off' | string;
     autofocus: boolean;
+    labelledBy: string | null;
     placeholder: string;
     readonly rawValue: RV;
     readonly: boolean;
@@ -21,16 +22,6 @@ export interface inputBase<V, SP extends inputBaseSettableProperties<V, SV>, SV 
             messageSummary?: string;
         };
     };
-    onAsyncValidatorsChanged: ((event: JetElementCustomEvent<inputBase<V, SP, SV, RV>["asyncValidators"]>) => any) | null;
-    onAutocompleteChanged: ((event: JetElementCustomEvent<inputBase<V, SP, SV, RV>["autocomplete"]>) => any) | null;
-    onAutofocusChanged: ((event: JetElementCustomEvent<inputBase<V, SP, SV, RV>["autofocus"]>) => any) | null;
-    onPlaceholderChanged: ((event: JetElementCustomEvent<inputBase<V, SP, SV, RV>["placeholder"]>) => any) | null;
-    onRawValueChanged: ((event: JetElementCustomEvent<inputBase<V, SP, SV, RV>["rawValue"]>) => any) | null;
-    onReadonlyChanged: ((event: JetElementCustomEvent<inputBase<V, SP, SV, RV>["readonly"]>) => any) | null;
-    onRequiredChanged: ((event: JetElementCustomEvent<inputBase<V, SP, SV, RV>["required"]>) => any) | null;
-    onValidatorsChanged: ((event: JetElementCustomEvent<inputBase<V, SP, SV, RV>["validators"]>) => any) | null;
-    onOjAnimateEnd: ((event: inputBase.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: inputBase.ojAnimateStart) => any) | null;
     addEventListener<T extends keyof inputBaseEventMap<V, SP, SV, RV>>(type: T, listener: (this: HTMLElement, ev: inputBaseEventMap<V, SP, SV, RV>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof inputBaseSettableProperties<V, SV, RV>>(property: T): inputBase<V, SP, SV, RV>[T];
@@ -55,6 +46,24 @@ export namespace inputBase {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type asyncValidatorsChanged<V, SP extends inputBaseSettableProperties<V, SV>, SV = V, RV = V> = JetElementCustomEvent<inputBase<V, SP, SV, RV>["asyncValidators"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type autocompleteChanged<V, SP extends inputBaseSettableProperties<V, SV>, SV = V, RV = V> = JetElementCustomEvent<inputBase<V, SP, SV, RV>["autocomplete"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type autofocusChanged<V, SP extends inputBaseSettableProperties<V, SV>, SV = V, RV = V> = JetElementCustomEvent<inputBase<V, SP, SV, RV>["autofocus"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged<V, SP extends inputBaseSettableProperties<V, SV>, SV = V, RV = V> = JetElementCustomEvent<inputBase<V, SP, SV, RV>["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type placeholderChanged<V, SP extends inputBaseSettableProperties<V, SV>, SV = V, RV = V> = JetElementCustomEvent<inputBase<V, SP, SV, RV>["placeholder"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rawValueChanged<V, SP extends inputBaseSettableProperties<V, SV>, SV = V, RV = V> = JetElementCustomEvent<inputBase<V, SP, SV, RV>["rawValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyChanged<V, SP extends inputBaseSettableProperties<V, SV>, SV = V, RV = V> = JetElementCustomEvent<inputBase<V, SP, SV, RV>["readonly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type requiredChanged<V, SP extends inputBaseSettableProperties<V, SV>, SV = V, RV = V> = JetElementCustomEvent<inputBase<V, SP, SV, RV>["required"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validatorsChanged<V, SP extends inputBaseSettableProperties<V, SV>, SV = V, RV = V> = JetElementCustomEvent<inputBase<V, SP, SV, RV>["validators"]>;
 }
 export interface inputBaseEventMap<V, SP extends inputBaseSettableProperties<V, SV>, SV = V, RV = V> extends editableValueEventMap<V, SP, SV, RV> {
     'ojAnimateEnd': inputBase.ojAnimateEnd;
@@ -62,6 +71,7 @@ export interface inputBaseEventMap<V, SP extends inputBaseSettableProperties<V, 
     'asyncValidatorsChanged': JetElementCustomEvent<inputBase<V, SP, SV, RV>["asyncValidators"]>;
     'autocompleteChanged': JetElementCustomEvent<inputBase<V, SP, SV, RV>["autocomplete"]>;
     'autofocusChanged': JetElementCustomEvent<inputBase<V, SP, SV, RV>["autofocus"]>;
+    'labelledByChanged': JetElementCustomEvent<inputBase<V, SP, SV, RV>["labelledBy"]>;
     'placeholderChanged': JetElementCustomEvent<inputBase<V, SP, SV, RV>["placeholder"]>;
     'rawValueChanged': JetElementCustomEvent<inputBase<V, SP, SV, RV>["rawValue"]>;
     'readonlyChanged': JetElementCustomEvent<inputBase<V, SP, SV, RV>["readonly"]>;
@@ -72,6 +82,7 @@ export interface inputBaseSettableProperties<V, SV = V, RV = V> extends editable
     asyncValidators: Array<AsyncValidator<V>>;
     autocomplete: 'on' | 'off' | string;
     autofocus: boolean;
+    labelledBy: string | null;
     placeholder: string;
     readonly rawValue: RV;
     readonly: boolean;
@@ -92,8 +103,8 @@ export interface inputBaseSettableProperties<V, SV = V, RV = V> extends editable
 export interface inputBaseSettablePropertiesLenient<V, SV = V, RV = V> extends Partial<inputBaseSettableProperties<V, SV, RV>> {
     [key: string]: any;
 }
-export interface ojInputPassword extends inputBase<string | null, ojInputPasswordSettableProperties> {
-    value: string | null;
+export interface ojInputPassword<V = string> extends inputBase<V, ojInputPasswordSettableProperties<V>> {
+    value: V | null;
     translations: {
         regexp?: {
             messageDetail?: string;
@@ -105,16 +116,13 @@ export interface ojInputPassword extends inputBase<string | null, ojInputPasswor
             messageSummary?: string;
         };
     };
-    onValueChanged: ((event: JetElementCustomEvent<ojInputPassword["value"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojInputPassword.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojInputPassword.ojAnimateStart) => any) | null;
-    addEventListener<T extends keyof ojInputPasswordEventMap>(type: T, listener: (this: HTMLElement, ev: ojInputPasswordEventMap[T]) => any, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojInputPasswordEventMap<V>>(type: T, listener: (this: HTMLElement, ev: ojInputPasswordEventMap<V>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
-    getProperty<T extends keyof ojInputPasswordSettableProperties>(property: T): ojInputPassword[T];
+    getProperty<T extends keyof ojInputPasswordSettableProperties<V>>(property: T): ojInputPassword<V>[T];
     getProperty(property: string): any;
-    setProperty<T extends keyof ojInputPasswordSettableProperties>(property: T, value: ojInputPasswordSettableProperties[T]): void;
-    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojInputPasswordSettableProperties>): void;
-    setProperties(properties: ojInputPasswordSettablePropertiesLenient): void;
+    setProperty<T extends keyof ojInputPasswordSettableProperties<V>>(property: T, value: ojInputPasswordSettableProperties<V>[T]): void;
+    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojInputPasswordSettableProperties<V>>): void;
+    setProperties(properties: ojInputPasswordSettablePropertiesLenient<V>): void;
 }
 export namespace ojInputPassword {
     interface ojAnimateEnd extends CustomEvent<{
@@ -130,14 +138,16 @@ export namespace ojInputPassword {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged<V = string> = JetElementCustomEvent<ojInputPassword<V>["value"]>;
 }
-export interface ojInputPasswordEventMap extends inputBaseEventMap<string | null, ojInputPasswordSettableProperties> {
+export interface ojInputPasswordEventMap<V = string> extends inputBaseEventMap<V, ojInputPasswordSettableProperties<V>> {
     'ojAnimateEnd': ojInputPassword.ojAnimateEnd;
     'ojAnimateStart': ojInputPassword.ojAnimateStart;
-    'valueChanged': JetElementCustomEvent<ojInputPassword["value"]>;
+    'valueChanged': JetElementCustomEvent<ojInputPassword<V>["value"]>;
 }
-export interface ojInputPasswordSettableProperties extends inputBaseSettableProperties<string | null> {
-    value: string | null;
+export interface ojInputPasswordSettableProperties<V = string> extends inputBaseSettableProperties<V> {
+    value: V | null;
     translations: {
         regexp?: {
             messageDetail?: string;
@@ -150,27 +160,21 @@ export interface ojInputPasswordSettableProperties extends inputBaseSettableProp
         };
     };
 }
-export interface ojInputPasswordSettablePropertiesLenient extends Partial<ojInputPasswordSettableProperties> {
+export interface ojInputPasswordSettablePropertiesLenient<V = string> extends Partial<ojInputPasswordSettableProperties<V>> {
     [key: string]: any;
 }
-export interface ojInputText extends inputBase<any, ojInputTextSettableProperties> {
+export interface ojInputText<V = any> extends inputBase<V, ojInputTextSettableProperties<V>> {
     clearIcon: 'never' | 'always' | 'conditional';
-    converter: Converter<any> | Validation.RegisteredConverter | null;
+    converter: Promise<Converter<V>> | Converter<V> | Validation.RegisteredConverter | null;
     list: string;
     virtualKeyboard: 'auto' | 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
-    onClearIconChanged: ((event: JetElementCustomEvent<ojInputText["clearIcon"]>) => any) | null;
-    onConverterChanged: ((event: JetElementCustomEvent<ojInputText["converter"]>) => any) | null;
-    onListChanged: ((event: JetElementCustomEvent<ojInputText["list"]>) => any) | null;
-    onVirtualKeyboardChanged: ((event: JetElementCustomEvent<ojInputText["virtualKeyboard"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojInputText.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojInputText.ojAnimateStart) => any) | null;
-    addEventListener<T extends keyof ojInputTextEventMap>(type: T, listener: (this: HTMLElement, ev: ojInputTextEventMap[T]) => any, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojInputTextEventMap<V>>(type: T, listener: (this: HTMLElement, ev: ojInputTextEventMap<V>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
-    getProperty<T extends keyof ojInputTextSettableProperties>(property: T): ojInputText[T];
+    getProperty<T extends keyof ojInputTextSettableProperties<V>>(property: T): ojInputText<V>[T];
     getProperty(property: string): any;
-    setProperty<T extends keyof ojInputTextSettableProperties>(property: T, value: ojInputTextSettableProperties[T]): void;
-    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojInputTextSettableProperties>): void;
-    setProperties(properties: ojInputTextSettablePropertiesLenient): void;
+    setProperty<T extends keyof ojInputTextSettableProperties<V>>(property: T, value: ojInputTextSettableProperties<V>[T]): void;
+    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojInputTextSettableProperties<V>>): void;
+    setProperties(properties: ojInputTextSettablePropertiesLenient<V>): void;
 }
 export namespace ojInputText {
     interface ojAnimateEnd extends CustomEvent<{
@@ -186,40 +190,43 @@ export namespace ojInputText {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type clearIconChanged<V = any> = JetElementCustomEvent<ojInputText<V>["clearIcon"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type converterChanged<V = any> = JetElementCustomEvent<ojInputText<V>["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type listChanged<V = any> = JetElementCustomEvent<ojInputText<V>["list"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type virtualKeyboardChanged<V = any> = JetElementCustomEvent<ojInputText<V>["virtualKeyboard"]>;
 }
-export interface ojInputTextEventMap extends inputBaseEventMap<any, ojInputTextSettableProperties> {
+export interface ojInputTextEventMap<V = any> extends inputBaseEventMap<V, ojInputTextSettableProperties<V>> {
     'ojAnimateEnd': ojInputText.ojAnimateEnd;
     'ojAnimateStart': ojInputText.ojAnimateStart;
-    'clearIconChanged': JetElementCustomEvent<ojInputText["clearIcon"]>;
-    'converterChanged': JetElementCustomEvent<ojInputText["converter"]>;
-    'listChanged': JetElementCustomEvent<ojInputText["list"]>;
-    'virtualKeyboardChanged': JetElementCustomEvent<ojInputText["virtualKeyboard"]>;
+    'clearIconChanged': JetElementCustomEvent<ojInputText<V>["clearIcon"]>;
+    'converterChanged': JetElementCustomEvent<ojInputText<V>["converter"]>;
+    'listChanged': JetElementCustomEvent<ojInputText<V>["list"]>;
+    'virtualKeyboardChanged': JetElementCustomEvent<ojInputText<V>["virtualKeyboard"]>;
 }
-export interface ojInputTextSettableProperties extends inputBaseSettableProperties<any> {
+export interface ojInputTextSettableProperties<V = any> extends inputBaseSettableProperties<V> {
     clearIcon: 'never' | 'always' | 'conditional';
-    converter: Converter<any> | Validation.RegisteredConverter | null;
+    converter: Promise<Converter<V>> | Converter<V> | Validation.RegisteredConverter | null;
     list: string;
     virtualKeyboard: 'auto' | 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
 }
-export interface ojInputTextSettablePropertiesLenient extends Partial<ojInputTextSettableProperties> {
+export interface ojInputTextSettablePropertiesLenient<V = any> extends Partial<ojInputTextSettableProperties<V>> {
     [key: string]: any;
 }
-export interface ojTextArea extends inputBase<any, ojTextAreaSettableProperties> {
-    converter: Converter<any> | Validation.RegisteredConverter | null;
+export interface ojTextArea<V = any> extends inputBase<V, ojTextAreaSettableProperties<V>> {
+    converter: Promise<Converter<V>> | Converter<V> | Validation.RegisteredConverter | null;
     resizeBehavior: 'both' | 'horizontal' | 'vertical' | 'none';
     rows: number;
-    onConverterChanged: ((event: JetElementCustomEvent<ojTextArea["converter"]>) => any) | null;
-    onResizeBehaviorChanged: ((event: JetElementCustomEvent<ojTextArea["resizeBehavior"]>) => any) | null;
-    onRowsChanged: ((event: JetElementCustomEvent<ojTextArea["rows"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojTextArea.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojTextArea.ojAnimateStart) => any) | null;
-    addEventListener<T extends keyof ojTextAreaEventMap>(type: T, listener: (this: HTMLElement, ev: ojTextAreaEventMap[T]) => any, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojTextAreaEventMap<V>>(type: T, listener: (this: HTMLElement, ev: ojTextAreaEventMap<V>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
-    getProperty<T extends keyof ojTextAreaSettableProperties>(property: T): ojTextArea[T];
+    getProperty<T extends keyof ojTextAreaSettableProperties<V>>(property: T): ojTextArea<V>[T];
     getProperty(property: string): any;
-    setProperty<T extends keyof ojTextAreaSettableProperties>(property: T, value: ojTextAreaSettableProperties[T]): void;
-    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojTextAreaSettableProperties>): void;
-    setProperties(properties: ojTextAreaSettablePropertiesLenient): void;
+    setProperty<T extends keyof ojTextAreaSettableProperties<V>>(property: T, value: ojTextAreaSettableProperties<V>[T]): void;
+    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojTextAreaSettableProperties<V>>): void;
+    setProperties(properties: ojTextAreaSettablePropertiesLenient<V>): void;
 }
 export namespace ojTextArea {
     interface ojAnimateEnd extends CustomEvent<{
@@ -235,19 +242,25 @@ export namespace ojTextArea {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type converterChanged<V = any> = JetElementCustomEvent<ojTextArea<V>["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type resizeBehaviorChanged<V = any> = JetElementCustomEvent<ojTextArea<V>["resizeBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rowsChanged<V = any> = JetElementCustomEvent<ojTextArea<V>["rows"]>;
 }
-export interface ojTextAreaEventMap extends inputBaseEventMap<any, ojTextAreaSettableProperties> {
+export interface ojTextAreaEventMap<V = any> extends inputBaseEventMap<V, ojTextAreaSettableProperties<V>> {
     'ojAnimateEnd': ojTextArea.ojAnimateEnd;
     'ojAnimateStart': ojTextArea.ojAnimateStart;
-    'converterChanged': JetElementCustomEvent<ojTextArea["converter"]>;
-    'resizeBehaviorChanged': JetElementCustomEvent<ojTextArea["resizeBehavior"]>;
-    'rowsChanged': JetElementCustomEvent<ojTextArea["rows"]>;
+    'converterChanged': JetElementCustomEvent<ojTextArea<V>["converter"]>;
+    'resizeBehaviorChanged': JetElementCustomEvent<ojTextArea<V>["resizeBehavior"]>;
+    'rowsChanged': JetElementCustomEvent<ojTextArea<V>["rows"]>;
 }
-export interface ojTextAreaSettableProperties extends inputBaseSettableProperties<any> {
-    converter: Converter<any> | Validation.RegisteredConverter | null;
+export interface ojTextAreaSettableProperties<V = any> extends inputBaseSettableProperties<V> {
+    converter: Promise<Converter<V>> | Converter<V> | Validation.RegisteredConverter | null;
     resizeBehavior: 'both' | 'horizontal' | 'vertical' | 'none';
     rows: number;
 }
-export interface ojTextAreaSettablePropertiesLenient extends Partial<ojTextAreaSettableProperties> {
+export interface ojTextAreaSettablePropertiesLenient<V = any> extends Partial<ojTextAreaSettableProperties<V>> {
     [key: string]: any;
 }

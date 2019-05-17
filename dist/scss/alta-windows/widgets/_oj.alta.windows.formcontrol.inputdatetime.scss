@@ -49,11 +49,11 @@
     {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
         html:not([dir="rtl"]) & {
-           border-radius: var(--oj-form-control-border-radius) var(--oj-form-control-border-radius) var(--oj-form-control-border-radius) var(--oj-form-control-border-radius);
+           border-radius: var(--oj-text-field-border-radius) var(--oj-text-field-border-radius) var(--oj-text-field-border-radius) var(--oj-text-field-border-radius);
         }
         
         html[dir="rtl"] & {
-           border-radius: var(--oj-form-control-border-radius) var(--oj-form-control-border-radius) var(--oj-form-control-border-radius) var(--oj-form-control-border-radius);          
+           border-radius: var(--oj-text-field-border-radius) var(--oj-text-field-border-radius) var(--oj-text-field-border-radius) var(--oj-text-field-border-radius);          
         }
         //todo:
       }

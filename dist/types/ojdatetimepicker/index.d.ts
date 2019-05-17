@@ -7,11 +7,6 @@ export interface ojDatePicker extends ojInputDate<ojDatePickerSettableProperties
     min: string | null;
     renderMode: 'jet';
     value: string;
-    onMaxChanged: ((event: JetElementCustomEvent<ojDatePicker["max"]>) => any) | null;
-    onMinChanged: ((event: JetElementCustomEvent<ojDatePicker["min"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojDatePicker["value"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojDatePicker.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojDatePicker.ojAnimateStart) => any) | null;
     addEventListener<T extends keyof ojDatePickerEventMap>(type: T, listener: (this: HTMLElement, ev: ojDatePickerEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojDatePickerSettableProperties>(property: T): ojDatePicker[T];
@@ -34,6 +29,12 @@ export namespace ojDatePicker {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojDatePicker["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged = JetElementCustomEvent<ojDatePicker["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojDatePicker["value"]>;
 }
 export interface ojDatePickerEventMap extends ojInputDateEventMap<ojDatePickerSettableProperties> {
     'ojAnimateEnd': ojDatePicker.ojAnimateEnd;
@@ -58,11 +59,6 @@ export interface ojDateTimePicker extends ojInputDateTime<ojDateTimePickerSettab
     min: string | null;
     renderMode: 'jet';
     value: string;
-    onMaxChanged: ((event: JetElementCustomEvent<ojDateTimePicker["max"]>) => any) | null;
-    onMinChanged: ((event: JetElementCustomEvent<ojDateTimePicker["min"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojDateTimePicker["value"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojDateTimePicker.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojDateTimePicker.ojAnimateStart) => any) | null;
     addEventListener<T extends keyof ojDateTimePickerEventMap>(type: T, listener: (this: HTMLElement, ev: ojDateTimePickerEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojDateTimePickerSettableProperties>(property: T): ojDateTimePicker[T];
@@ -85,6 +81,12 @@ export namespace ojDateTimePicker {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojDateTimePicker["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged = JetElementCustomEvent<ojDateTimePicker["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojDateTimePicker["value"]>;
 }
 export interface ojDateTimePickerEventMap extends ojInputDateTimeEventMap<ojDateTimePickerSettableProperties> {
     'ojAnimateEnd': ojDateTimePicker.ojAnimateEnd;
@@ -104,7 +106,7 @@ export interface ojDateTimePickerSettablePropertiesLenient extends Partial<ojDat
     [key: string]: any;
 }
 export interface ojInputDate<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> extends inputBase<string, SP> {
-    converter: Converter<string> | Validation.RegisteredConverter;
+    converter: Promise<Converter<string>> | Converter<string> | Validation.RegisteredConverter;
     datePicker: {
         changeMonth: 'select' | 'none';
         changeYear: 'select' | 'none';
@@ -179,19 +181,6 @@ export interface ojInputDate<SP extends ojInputDateSettableProperties = ojInputD
         tooltipCalendarTimeDisabled?: string;
         weekHeader?: string;
     };
-    onConverterChanged: ((event: JetElementCustomEvent<ojInputDate<SP>["converter"]>) => any) | null;
-    onDatePickerChanged: ((event: JetElementCustomEvent<ojInputDate<SP>["datePicker"]>) => any) | null;
-    onDayFormatterChanged: ((event: JetElementCustomEvent<ojInputDate<SP>["dayFormatter"]>) => any) | null;
-    onDayMetaDataChanged: ((event: JetElementCustomEvent<ojInputDate<SP>["dayMetaData"]>) => any) | null;
-    onKeyboardEditChanged: ((event: JetElementCustomEvent<ojInputDate<SP>["keyboardEdit"]>) => any) | null;
-    onMaxChanged: ((event: JetElementCustomEvent<ojInputDate<SP>["max"]>) => any) | null;
-    onMinChanged: ((event: JetElementCustomEvent<ojInputDate<SP>["min"]>) => any) | null;
-    onPickerAttributesChanged: ((event: JetElementCustomEvent<ojInputDate<SP>["pickerAttributes"]>) => any) | null;
-    onRenderModeChanged: ((event: JetElementCustomEvent<ojInputDate<SP>["renderMode"]>) => any) | null;
-    onValidatorsChanged: ((event: JetElementCustomEvent<ojInputDate<SP>["validators"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojInputDate<SP>["value"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojInputDate.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojInputDate.ojAnimateStart) => any) | null;
     addEventListener<T extends keyof ojInputDateEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojInputDateEventMap<SP>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojInputDateSettableProperties>(property: T): ojInputDate<SP>[T];
@@ -217,6 +206,28 @@ export namespace ojInputDate {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type converterChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type datePickerChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["datePicker"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dayFormatterChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["dayFormatter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dayMetaDataChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["dayMetaData"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type keyboardEditChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["keyboardEdit"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type pickerAttributesChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["pickerAttributes"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type renderModeChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["renderMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validatorsChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["validators"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["value"]>;
     // tslint:disable-next-line interface-over-type-literal
     type DayFormatterInput = {
         fullYear: number;
@@ -246,7 +257,7 @@ export interface ojInputDateEventMap<SP extends ojInputDateSettableProperties = 
     'valueChanged': JetElementCustomEvent<ojInputDate<SP>["value"]>;
 }
 export interface ojInputDateSettableProperties extends inputBaseSettableProperties<string> {
-    converter: Converter<string> | Validation.RegisteredConverter;
+    converter: Promise<Converter<string>> | Converter<string> | Validation.RegisteredConverter;
     datePicker: {
         changeMonth: 'select' | 'none';
         changeYear: 'select' | 'none';
@@ -326,7 +337,7 @@ export interface ojInputDateSettablePropertiesLenient extends Partial<ojInputDat
     [key: string]: any;
 }
 export interface ojInputDateTime<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> extends ojInputDate<SP> {
-    converter: Converter<string> | Validation.RegisteredConverter;
+    converter: Promise<Converter<string>> | Converter<string> | Validation.RegisteredConverter;
     max: string | null;
     min: string | null;
     renderMode: 'jet' | 'native';
@@ -378,15 +389,6 @@ export interface ojInputDateTime<SP extends ojInputDateTimeSettableProperties = 
         tooltipCalendarTimeDisabled?: string;
         weekHeader?: string;
     };
-    onConverterChanged: ((event: JetElementCustomEvent<ojInputDateTime<SP>["converter"]>) => any) | null;
-    onMaxChanged: ((event: JetElementCustomEvent<ojInputDateTime<SP>["max"]>) => any) | null;
-    onMinChanged: ((event: JetElementCustomEvent<ojInputDateTime<SP>["min"]>) => any) | null;
-    onRenderModeChanged: ((event: JetElementCustomEvent<ojInputDateTime<SP>["renderMode"]>) => any) | null;
-    onTimePickerChanged: ((event: JetElementCustomEvent<ojInputDateTime<SP>["timePicker"]>) => any) | null;
-    onValidatorsChanged: ((event: JetElementCustomEvent<ojInputDateTime<SP>["validators"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojInputDateTime<SP>["value"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojInputDateTime.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojInputDateTime.ojAnimateStart) => any) | null;
     addEventListener<T extends keyof ojInputDateTimeEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojInputDateTimeEventMap<SP>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojInputDateTimeSettableProperties>(property: T): ojInputDateTime<SP>[T];
@@ -412,6 +414,20 @@ export namespace ojInputDateTime {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type converterChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = JetElementCustomEvent<ojInputDateTime<SP>["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = JetElementCustomEvent<ojInputDateTime<SP>["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = JetElementCustomEvent<ojInputDateTime<SP>["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type renderModeChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = JetElementCustomEvent<ojInputDateTime<SP>["renderMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type timePickerChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = JetElementCustomEvent<ojInputDateTime<SP>["timePicker"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validatorsChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = JetElementCustomEvent<ojInputDateTime<SP>["validators"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = JetElementCustomEvent<ojInputDateTime<SP>["value"]>;
 }
 export interface ojInputDateTimeEventMap<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> extends ojInputDateEventMap<SP> {
     'ojAnimateEnd': ojInputDateTime.ojAnimateEnd;
@@ -425,7 +441,7 @@ export interface ojInputDateTimeEventMap<SP extends ojInputDateTimeSettablePrope
     'valueChanged': JetElementCustomEvent<ojInputDateTime<SP>["value"]>;
 }
 export interface ojInputDateTimeSettableProperties extends ojInputDateSettableProperties {
-    converter: Converter<string> | Validation.RegisteredConverter;
+    converter: Promise<Converter<string>> | Converter<string> | Validation.RegisteredConverter;
     max: string | null;
     min: string | null;
     renderMode: 'jet' | 'native';
@@ -482,7 +498,7 @@ export interface ojInputDateTimeSettablePropertiesLenient extends Partial<ojInpu
     [key: string]: any;
 }
 export interface ojInputTime extends inputBase<string, ojInputTimeSettableProperties> {
-    converter: Converter<string> | Validation.RegisteredConverter;
+    converter: Promise<Converter<string>> | Converter<string> | Validation.RegisteredConverter;
     keyboardEdit: 'enabled' | 'disabled';
     max: string | null;
     min: string | null;
@@ -532,17 +548,6 @@ export interface ojInputTime extends inputBase<string, ojInputTimeSettableProper
         tooltipTime?: string;
         tooltipTimeDisabled?: string;
     };
-    onConverterChanged: ((event: JetElementCustomEvent<ojInputTime["converter"]>) => any) | null;
-    onKeyboardEditChanged: ((event: JetElementCustomEvent<ojInputTime["keyboardEdit"]>) => any) | null;
-    onMaxChanged: ((event: JetElementCustomEvent<ojInputTime["max"]>) => any) | null;
-    onMinChanged: ((event: JetElementCustomEvent<ojInputTime["min"]>) => any) | null;
-    onPickerAttributesChanged: ((event: JetElementCustomEvent<ojInputTime["pickerAttributes"]>) => any) | null;
-    onRenderModeChanged: ((event: JetElementCustomEvent<ojInputTime["renderMode"]>) => any) | null;
-    onTimePickerChanged: ((event: JetElementCustomEvent<ojInputTime["timePicker"]>) => any) | null;
-    onValidatorsChanged: ((event: JetElementCustomEvent<ojInputTime["validators"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojInputTime["value"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojInputTime.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojInputTime.ojAnimateStart) => any) | null;
     addEventListener<T extends keyof ojInputTimeEventMap>(type: T, listener: (this: HTMLElement, ev: ojInputTimeEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojInputTimeSettableProperties>(property: T): ojInputTime[T];
@@ -568,6 +573,24 @@ export namespace ojInputTime {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type converterChanged = JetElementCustomEvent<ojInputTime["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type keyboardEditChanged = JetElementCustomEvent<ojInputTime["keyboardEdit"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojInputTime["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged = JetElementCustomEvent<ojInputTime["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type pickerAttributesChanged = JetElementCustomEvent<ojInputTime["pickerAttributes"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type renderModeChanged = JetElementCustomEvent<ojInputTime["renderMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type timePickerChanged = JetElementCustomEvent<ojInputTime["timePicker"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validatorsChanged = JetElementCustomEvent<ojInputTime["validators"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojInputTime["value"]>;
 }
 export interface ojInputTimeEventMap extends inputBaseEventMap<string, ojInputTimeSettableProperties> {
     'ojAnimateEnd': ojInputTime.ojAnimateEnd;
@@ -583,7 +606,7 @@ export interface ojInputTimeEventMap extends inputBaseEventMap<string, ojInputTi
     'valueChanged': JetElementCustomEvent<ojInputTime["value"]>;
 }
 export interface ojInputTimeSettableProperties extends inputBaseSettableProperties<string> {
-    converter: Converter<string> | Validation.RegisteredConverter;
+    converter: Promise<Converter<string>> | Converter<string> | Validation.RegisteredConverter;
     keyboardEdit: 'enabled' | 'disabled';
     max: string | null;
     min: string | null;

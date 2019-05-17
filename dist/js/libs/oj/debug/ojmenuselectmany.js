@@ -3,12 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcomposite', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojoption', 'ojs/ojdataprovider'], 
-       function(Composite, $)
+function(Composite, $)
 {
- 
-
+  "use strict";
 var __oj_menu_select_many_metadata = 
 {
   "properties": {
@@ -17,7 +15,7 @@ var __oj_menu_select_many_metadata =
       "value": false
     },
     "options": {
-      "type": "Array|oj.DataProvider"
+      "type": "Array<Object>|object"
     },
     "value": {
       "type": "Array<any>",
@@ -39,13 +37,13 @@ var __oj_menu_select_many_metadata =
  * All rights reserved.
  */
 
-/* global ko:false, Hammer:false, Promise:false, Composite:false */
+/* global Composite:false */
 
  /**
    * @ojcomponent oj.ojMenuSelectMany
    * @since 6.0.0
    * @ojdisplayname Menu Multi Select
-   * @ojshortdesc Checkable menu items supporting multiple selections
+   * @ojshortdesc A menu select many allows the user to select one or more menu items from a set.
    * @ojrole menuitemcheckbox
    * @ojsignature {target: "Type", value:"class ojMenuSelectMany extends JetElement<ojMenuSelectManySettableProperties>"}
    * @ojstatus preview
@@ -110,7 +108,7 @@ var __oj_menu_select_many_metadata =
  * @access public
  * @instance
  * @since 6.0.0
- * @type {Array|oj.DataProvider|null}
+ * @type {Array<Object>|Object|null}
  * @default null
  * @ojsignature { target: "Type",
  *                value: "Array<oj.ojMenuSelectMany.Option>|oj.DataProvider<any, any>|null",

@@ -49,7 +49,7 @@ export interface ojListView<K, D> extends baseComponent<ojListViewSettableProper
         } | undefined) | null;
         selectable?: ((param0: ojListView.ItemContext<K, D>) => boolean) | boolean;
     };
-    scrollPolicy: 'auto' | 'loadMoreOnScroll';
+    scrollPolicy: 'auto' | 'loadAll' | 'loadMoreOnScroll';
     scrollPolicyOptions: {
         fetchSize?: number;
         maxCount?: number;
@@ -64,6 +64,7 @@ export interface ojListView<K, D> extends baseComponent<ojListViewSettableProper
         offsetX?: number;
         offsetY?: number;
     };
+    selected: KeySet<K>;
     selection: K[];
     selectionMode: 'none' | 'single' | 'multiple';
     selectionRequired: boolean;
@@ -80,34 +81,9 @@ export interface ojListView<K, D> extends baseComponent<ojListViewSettableProper
         labelPasteAfter?: string;
         labelPasteBefore?: string;
         msgFetchingData?: string;
+        msgItemsAppended?: string;
         msgNoData?: string;
     };
-    onAsChanged: ((event: JetElementCustomEvent<ojListView<K, D>["as"]>) => any) | null;
-    onCurrentItemChanged: ((event: JetElementCustomEvent<ojListView<K, D>["currentItem"]>) => any) | null;
-    onDataChanged: ((event: JetElementCustomEvent<ojListView<K, D>["data"]>) => any) | null;
-    onDndChanged: ((event: JetElementCustomEvent<ojListView<K, D>["dnd"]>) => any) | null;
-    onDrillModeChanged: ((event: JetElementCustomEvent<ojListView<K, D>["drillMode"]>) => any) | null;
-    onExpandedChanged: ((event: JetElementCustomEvent<ojListView<K, D>["expanded"]>) => any) | null;
-    onFirstSelectedItemChanged: ((event: JetElementCustomEvent<ojListView<K, D>["firstSelectedItem"]>) => any) | null;
-    onGroupHeaderPositionChanged: ((event: JetElementCustomEvent<ojListView<K, D>["groupHeaderPosition"]>) => any) | null;
-    onItemChanged: ((event: JetElementCustomEvent<ojListView<K, D>["item"]>) => any) | null;
-    onScrollPolicyChanged: ((event: JetElementCustomEvent<ojListView<K, D>["scrollPolicy"]>) => any) | null;
-    onScrollPolicyOptionsChanged: ((event: JetElementCustomEvent<ojListView<K, D>["scrollPolicyOptions"]>) => any) | null;
-    onScrollPositionChanged: ((event: JetElementCustomEvent<ojListView<K, D>["scrollPosition"]>) => any) | null;
-    onSelectionChanged: ((event: JetElementCustomEvent<ojListView<K, D>["selection"]>) => any) | null;
-    onSelectionModeChanged: ((event: JetElementCustomEvent<ojListView<K, D>["selectionMode"]>) => any) | null;
-    onSelectionRequiredChanged: ((event: JetElementCustomEvent<ojListView<K, D>["selectionRequired"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojListView.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojListView.ojAnimateStart) => any) | null;
-    onOjBeforeCollapse: ((event: ojListView.ojBeforeCollapse<K>) => any) | null;
-    onOjBeforeCurrentItem: ((event: ojListView.ojBeforeCurrentItem<K>) => any) | null;
-    onOjBeforeExpand: ((event: ojListView.ojBeforeExpand<K>) => any) | null;
-    onOjCollapse: ((event: ojListView.ojCollapse<K>) => any) | null;
-    onOjCopy: ((event: ojListView.ojCopy) => any) | null;
-    onOjCut: ((event: ojListView.ojCut) => any) | null;
-    onOjExpand: ((event: ojListView.ojExpand<K>) => any) | null;
-    onOjPaste: ((event: ojListView.ojPaste) => any) | null;
-    onOjReorder: ((event: ojListView.ojReorder) => any) | null;
     addEventListener<T extends keyof ojListViewEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojListViewEventMap<K, D>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojListViewSettableProperties<K, D>>(property: T): ojListView<K, D>[T];
@@ -195,6 +171,38 @@ export namespace ojListView {
     }> {
     }
     // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type currentItemChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["currentItem"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dndChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["dnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type drillModeChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["drillMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type expandedChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["expanded"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type firstSelectedItemChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["firstSelectedItem"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type groupHeaderPositionChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["groupHeaderPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type itemChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["item"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPolicyChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["scrollPolicy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPolicyOptionsChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["scrollPolicyOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPositionChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["scrollPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectedChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["selected"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionRequiredChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["selectionRequired"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type ContextByNode<K> = {
         subId: string;
         key: K;
@@ -244,6 +252,7 @@ export interface ojListViewEventMap<K, D> extends baseComponentEventMap<ojListVi
     'scrollPolicyChanged': JetElementCustomEvent<ojListView<K, D>["scrollPolicy"]>;
     'scrollPolicyOptionsChanged': JetElementCustomEvent<ojListView<K, D>["scrollPolicyOptions"]>;
     'scrollPositionChanged': JetElementCustomEvent<ojListView<K, D>["scrollPosition"]>;
+    'selectedChanged': JetElementCustomEvent<ojListView<K, D>["selected"]>;
     'selectionChanged': JetElementCustomEvent<ojListView<K, D>["selection"]>;
     'selectionModeChanged': JetElementCustomEvent<ojListView<K, D>["selectionMode"]>;
     'selectionRequiredChanged': JetElementCustomEvent<ojListView<K, D>["selectionRequired"]>;
@@ -296,7 +305,7 @@ export interface ojListViewSettableProperties<K, D> extends baseComponentSettabl
         } | undefined) | null;
         selectable?: ((param0: ojListView.ItemContext<K, D>) => boolean) | boolean;
     };
-    scrollPolicy: 'auto' | 'loadMoreOnScroll';
+    scrollPolicy: 'auto' | 'loadAll' | 'loadMoreOnScroll';
     scrollPolicyOptions: {
         fetchSize?: number;
         maxCount?: number;
@@ -311,6 +320,7 @@ export interface ojListViewSettableProperties<K, D> extends baseComponentSettabl
         offsetX?: number;
         offsetY?: number;
     };
+    selected: KeySet<K>;
     selection: K[];
     selectionMode: 'none' | 'single' | 'multiple';
     selectionRequired: boolean;
@@ -327,6 +337,7 @@ export interface ojListViewSettableProperties<K, D> extends baseComponentSettabl
         labelPasteAfter?: string;
         labelPasteBefore?: string;
         msgFetchingData?: string;
+        msgItemsAppended?: string;
         msgNoData?: string;
     };
 }

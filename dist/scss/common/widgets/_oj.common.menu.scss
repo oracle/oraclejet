@@ -25,7 +25,7 @@
       @extend .oj-component-layer;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        z-index: var(--oj-popup-zindex);        
+        z-index: var(--oj-popup-z-index);        
       }
       @else {
         z-index: $popupZindex;        
@@ -255,24 +255,42 @@
 
     // > and (space) select the same anchors
     .oj-menu-item > a {
+      @if ($themeTargetPlatform == web or $themeTargetPlatform == null) {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) & {
+            padding-right: var(--oj-menu-text-to-edge-padding);
+          }
+          html[dir="rtl"] & {
+            padding-left: var(--oj-menu-text-to-edge-padding);
+          }
 
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        html:not([dir="rtl"]) & {
-          padding-right: var(--oj-menu-text-to-edge-padding);
+        } @else {
+          @include oj-ltr() {
+            padding-right: $menuTextToEdgePadding; 
+          }
+          @include oj-rtl() {
+            padding-left: $menuTextToEdgePadding;
+          }
         }
-        html[dir="rtl"] & {
-          padding-left: var(--oj-menu-text-to-edge-padding);
-        }
-
       } @else {
-        @include oj-ltr() {
-          padding-right: $menuTextToEdgePadding; 
-        }
-        @include oj-rtl() {
-          padding-left: $menuTextToEdgePadding;
+        // $themeTargetPlatform in (android, ios, windows)
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) & {
+            padding-right: calc(16px + (2 * var(--oj-menu-submenu-icon-padding)));
+          }
+          html[dir="rtl"] & {
+            padding-left: calc(16px + (2 * var(--oj-menu-submenu-icon-padding)));
+          }
+        } @else {
+          // leave space for submenu icon (16px) plus spacing before/after it
+          @include oj-ltr() {
+              padding-right: calc(16px + (2 * #{$menuSubmenuIconPadding}));
+          }
+          @include oj-rtl() {
+              padding-left: calc(16px + (2 * #{$menuSubmenuIconPadding}));
+          }
         }
       }
-
       // relative positioning so that the absolutely positioned submenu icons are
       // positioned relative to the <a>
       position: relative;
@@ -462,6 +480,21 @@
         // In themes with borders between every menu item, don't put one immediately after a group divider
         border-top-width: 0;
     }
+
+    @if ($themeTargetPlatform == android) {
+      // oj-focus (or oj-focus-ancestor) is applied to a group divider whenever an adjacent menu item has the oj-focus 
+      // (or oj-focus-ancestor) class
+      .oj-menu-divider.oj-focus,
+      .oj-menu-divider.oj-focus-ancestor {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          border-color: var(--oj-menu-item-border-color-focus);
+        } @else {
+          // In Android, focused items get a border, and the adjacent divider, if any, serves as that border.
+          border-color: $menuItemBorderColorFocus;
+        }
+      }
+    }
+
 
     // The oj-focus-highlight class applies focus styling that may not be desirable
     // when the focus results from pointer interaction (touch or mouse), but which is
@@ -733,7 +766,14 @@
         // In Mobile Safari and Android Chrome, prevents press-hold from selecting the text and showing the selection handles and (in Safari) the Copy/Define callout.
         // Per v1.1.0 Release Notes, in iOS7 only, this doesn't work well: the selection UI just appears for a neighboring region instead.  Not even setting the style
         // on the document helps, as the style seems not to inherit.  iOS8 and Android Chrome are fine.
-        @include oj-user-select-property(none);
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+        {
+          user-select: none;
+        }
+        @else 
+        {
+          @include oj-user-select-property(none);
+        }
     }
 
     // High Contrast

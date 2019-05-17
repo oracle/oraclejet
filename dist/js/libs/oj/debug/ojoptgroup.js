@@ -3,10 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'], 
-       function(oj, $)
+function(oj, $)
 {
+  "use strict";
 //%COMPONENT_METADATA%
 var __oj_optgroup_metadata = 
 {
@@ -57,7 +57,7 @@ function ojOptGroup(context) {
  * @ojcomponent oj.ojOptgroup
  * @since 4.0.0
  * @ojdisplayname Option Group
- * @ojshortdesc Supports grouping of child oj-option elements.
+ * @ojshortdesc An optgroup supports grouping of child oj-option elements.
  * @ojrole option
  * @ojstatus preview
  * @ojsignature class ojOptgroup extends JetElement<ojOptgroupSettableProperties>
@@ -148,6 +148,7 @@ function ojOptGroup(context) {
  * of the change, triggering a [property]Changed event.
  *
  * @function setProperty
+ * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
  * @param {any} value - The new value to set the property to.
  * @return {void}

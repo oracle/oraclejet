@@ -2,8 +2,8 @@
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['./DvtToolkit', './DvtAxis'], function(dvt) {
+  "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
 (function(dvt) {
@@ -82,7 +82,7 @@ DvtGauge.prototype.SetOptions = function(options) {
   }
 
   //  - Disable gradient overlay by default for IE
-  if (dvt.Agent.isPlatformIE() && this.Options['visualEffects'] == 'auto')
+  if ((dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge') && this.Options['visualEffects'] == 'auto')
     this.Options['visualEffects'] = 'none';
 
   if (options['className'])
@@ -96,7 +96,7 @@ DvtGauge.prototype.SetOptions = function(options) {
 /**
  * @override
  */
-DvtGauge.prototype.render = function(options, width, height) 
+DvtGauge.prototype.render = function(options, width, height)
 {
   // Update if a new options object has been provided or initialize with defaults if needed.
   if (options)
@@ -164,7 +164,7 @@ DvtGauge.prototype.PostRender = function(options, container) {
     if (dvt.Agent.isTouchDevice()) {
       this._container.setAriaProperty('live', 'assertive');
       if (value != tooltip)
-        tooltip = value + dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ARIA_LABEL_DESC_DELIMITER') + tooltip;
+        tooltip = value + dvt.Context.ARIA_LABEL_DESC_DELIMITER + tooltip;
     }
     if (value != tooltip)
       container.setAriaProperty('label', tooltip);
@@ -214,7 +214,7 @@ DvtGauge.prototype.__getLogicalObject = function() {
  * @param {number} width The width of the component.
  * @param {number} height The height of the component.
  */
-DvtGauge.prototype.Render = function(container, width, height) 
+DvtGauge.prototype.Render = function(container, width, height)
 {
   // subclasses should override
 };
@@ -237,7 +237,7 @@ DvtGauge.prototype._setAnimation = function(container, bData, oldShapes, width, 
   var bBlackBoxUpdate = false;
   var animationOnDataChange = (this._bEditing || this._bResizeRender) ? 'none' : this.getOptions()['animationOnDataChange'];
   var animationOnDisplay = (this._bEditing || this._bResizeRender) ? 'none' : this.getOptions()['animationOnDisplay'];
-  var animationDuration = dvt.StyleUtils.getTimeMilliseconds(this.getOptions()['animationDuration']) / 1000;
+  var animationDuration = dvt.CSSStyle.getTimeMilliseconds(this.getOptions()['animationDuration']) / 1000;
 
   if (!animationOnDisplay && !animationOnDataChange)
     return;
@@ -416,7 +416,7 @@ DvtGauge.prototype.__processValueChangeEnd = function(x, y) {
     var value = DvtGaugeRenderer.getFormattedMetricLabel(this.Options['value'], this);
     var tooltip = DvtGaugeRenderer.getTooltipString(this);
     if (value != tooltip) {
-      tooltip = value + dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ARIA_LABEL_DESC_DELIMITER') + tooltip;
+      tooltip = value + dvt.Context.ARIA_LABEL_DESC_DELIMITER + tooltip;
       this._container.setAriaProperty('label', tooltip);
     }
   }
@@ -521,32 +521,28 @@ DvtGauge.prototype.CreateKeyboardHandler = function(manager) {
 /**
  * @override
  */
-DvtGauge.prototype.GetComponentDescription = function() {
-  return dvt.Bundle.getTranslation(this.getOptions(), 'componentName', dvt.Bundle.UTIL_PREFIX, 'GAUGE');
-};
-
-/**
- * @override
- */
 DvtGauge.prototype.UpdateAriaAttributes = function() {
   if (!this._bStaticRendering) {
     var tooltip = DvtGaugeRenderer.getTooltipString(this);
     if (this.IsParentRoot()) {
+      var translations = this.Options.translations;
       if (this.Options['readOnly']) {
         this.getCtx().setAriaRole('img');
-        this.getCtx().setAriaLabel(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST',
-            [dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DATA_VISUALIZATION'),
-              dvt.Displayable.generateAriaLabel(dvt.StringUtils.processAriaLabel(this.GetComponentDescription()),
-             tooltip ? [tooltip] : null)]));
+        this.getCtx().setAriaLabel(dvt.ResourceUtils.format(translations.labelAndValue,
+            [translations.labelDataVisualization,
+             dvt.Displayable.generateAriaLabel(
+               dvt.TextUtils.processAriaLabel(this.GetComponentDescription()), tooltip ? [tooltip] : null)
+            ]
+        ));
       } else {
         this.getCtx().setAriaRole('application');
-        this.getCtx().setAriaLabel(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST',
-            [dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DATA_VISUALIZATION'), dvt.StringUtils.processAriaLabel(this.GetComponentDescription())]));
+        this.getCtx().setAriaLabel(dvt.ResourceUtils.format(translations.labelAndValue,
+            [translations.labelDataVisualization, dvt.TextUtils.processAriaLabel(this.GetComponentDescription())]));
       }
     }
     else if (this.Options['readOnly']) {
       this.setAriaRole('img');
-      this.setAriaProperty('label', dvt.Displayable.generateAriaLabel(dvt.StringUtils.processAriaLabel(this.GetComponentDescription()), tooltip ? [tooltip] : null));
+      this.setAriaProperty('label', dvt.Displayable.generateAriaLabel(dvt.TextUtils.processAriaLabel(this.GetComponentDescription()), tooltip ? [tooltip] : null));
     }
   }
 };
@@ -623,9 +619,24 @@ DvtGaugeAutomation.prototype.getMetricLabel = function() {
   return DvtGaugeRenderer.getFormattedMetricLabel(this.getValue(), this._gauge);
 };
 
+/**
+ * Calculated axis information and drawable creation.
+ * @class
+ * @constructor
+ * @extends {dvt.BaseAxisInfo}
+ */
+var DvtGaugeDataAxisInfo = function(context, options, availSpace) {
+  this.Init(context, options, availSpace);
+};
 
-dvt.Bundle.addDefaultStrings(dvt.Bundle.GAUGE_PREFIX, {
-});
+dvt.Obj.createSubclass(DvtGaugeDataAxisInfo, dvt.BaseAxisInfo);
+
+DvtGaugeDataAxisInfo.prototype.Init = function(context, options, availSpace) {
+  DvtGaugeDataAxisInfo.superclass.Init.call(this, context, options, availSpace);
+  this.MixinInit.call(this, context, options, availSpace);
+}
+
+dvt.DataAxisInfoMixin.call(DvtGaugeDataAxisInfo.prototype);
 
 /**
  * Default values and utility functions for component versioning.
@@ -637,43 +648,29 @@ var DvtGaugeDefaults = function() {};
 
 dvt.Obj.createSubclass(DvtGaugeDefaults, dvt.BaseComponentDefaults);
 
-
-/**
- * Defaults for ALTA.
- */
-DvtGaugeDefaults.SKIN_ALTA = {
-  'skin': dvt.CSSStyle.SKIN_ALTA,
-  'color': '#393737',
-  'metricLabel': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)},
-  '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA),
-  'label': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)},
-  '_thresholdColors': ['#ed6647', '#fad55c', '#68c182']
-};
-
-
 /**
  * Defaults for version 1.
  */
-DvtGaugeDefaults.VERSION_1 = {
-  'skin': dvt.CSSStyle.SKIN_SKYROS,
+DvtGaugeDefaults.SKIN_ALTA = {
+  'skin': dvt.CSSStyle.SKIN_ALTA,
   'min': 0, 'max': 100,
   'center': {},
-  'color': '#313842', 'borderColor': null, 'visualEffects': 'auto', 'emptyText': null,
+  'color': '#393737', 'borderColor': null, 'visualEffects': 'auto', 'emptyText': null,
   'animationOnDataChange': 'none', 'animationOnDisplay': 'none', 'animationDuration': 500,
   'readOnly': 'true',
   'metricLabel': {
     'rendered': 'auto',
     'scaling': 'auto',
-    'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS),
+    'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA),
     'textType': 'number'
   },
-  '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS),
+  '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA),
   'label': {
-    'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS),
+    'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA),
     'position': 'auto'
   },
 
-  '_thresholdColors': ['#D62800', '#FFCF21', '#84AE31'],
+  '_thresholdColors': ['#ed6647', '#fad55c', '#68c182'],
   // Internal layout constants
   '__layout': {'outerGap': 1, 'labelGap': 5}
 };
@@ -685,22 +682,10 @@ DvtGaugeDefaults.VERSION_1 = {
 DvtGaugeDefaults.prototype.Init = function(defaultsMap) {
   // This will only be called via subclasses.  Combine with defaults from this class before passing to super.
   var ret = {
-    'skyros': dvt.JsonUtils.merge(defaultsMap['skyros'], DvtGaugeDefaults.VERSION_1),
     'alta': dvt.JsonUtils.merge(defaultsMap['alta'], DvtGaugeDefaults.SKIN_ALTA)
   };
 
   DvtGaugeDefaults.superclass.Init.call(this, ret);
-};
-
-
-/**
- * Returns true if the skyros skin effects should be used.
- * @param {DvtGauge} gauge
- * @return {boolean}
- */
-DvtGaugeDefaults.isSkyrosSkin = function(gauge) 
-{
-  return (gauge.getOptions()['skin'] == dvt.CSSStyle.SKIN_SKYROS);
 };
 
 /**
@@ -811,7 +796,7 @@ DvtGaugeDataUtils.getReferenceObject = function(gauge, index) {
  * @constructor
  */
 var DvtGaugeEventManager = function(gauge) {
-  this.Init(gauge.getCtx(), gauge.dispatchEvent, gauge);
+  this.Init(gauge.getCtx(), gauge.dispatchEvent, gauge, gauge);
   this._gauge = gauge;
   this.IsMouseEditing = false;
 };
@@ -911,7 +896,7 @@ DvtGaugeEventManager.prototype.PreEventBubble = function(event) {
 /**
  * @override
  */
-DvtGaugeEventManager.prototype.ProcessKeyboardEvent = function(event) 
+DvtGaugeEventManager.prototype.ProcessKeyboardEvent = function(event)
 {
   if (!this.KeyboardHandler)
     return false;
@@ -1032,8 +1017,6 @@ dvt.Obj.createSubclass(DvtGaugeStyleUtils, dvt.Obj);
 
 /** @private @const*/
 DvtGaugeStyleUtils._THRESHOLD_COLOR_RAMP = ['#ed6647', '#fad55c', '#68c182'];
-/** @private @const*/
-DvtGaugeStyleUtils._SKYROS_THRESHOLD_COLOR_RAMP = ['#D62800', '#FFCF21', '#84AE31'];
 
 /** @private @const*/
 DvtGaugeStyleUtils._ALTA_CIRCLE = {'startAngle': 202.5, 'angleExtent': 225,
@@ -1247,7 +1230,7 @@ DvtGaugeStyleUtils.getPlotAreaBorderColor = function(gauge) {
   var borderColor = options['plotArea']['borderColor'];
   if ((gauge instanceof dvt.StatusMeterGauge) && options['orientation'] != 'circular' &&
       borderColor == null) {
-    return options['skin'] == 'skyros' ? '#C6C6C6' : '#D6DFE6';
+    return '#D6DFE6';
   }
 
   return borderColor;
@@ -1356,11 +1339,12 @@ dvt.Obj.createSubclass(DvtGaugeRenderer, dvt.Obj);
 DvtGaugeRenderer.renderEmptyText = function(gauge, container, availSpace) {
   // Get the empty text string
   var options = gauge.getOptions();
+  var translations = options.translations;
   var emptyTextStr = options['emptyText'];
   if (!emptyTextStr)
-    emptyTextStr = dvt.Bundle.getTranslation(options, 'labelNoData', dvt.Bundle.UTIL_PREFIX, 'NO_DATA', null);
+    emptyTextStr = translations.labelNoData;
   if (!DvtGaugeDataUtils.hasValidData(gauge))
-    emptyTextStr = dvt.Bundle.getTranslation(options, 'labelInvalidData', dvt.Bundle.UTIL_PREFIX, 'INVALID_DATA', null);
+    emptyTextStr = translations.labelInvalidData;;
 
   // Set font size
   var metricLabelStyle = options['_statusMessageStyle'];
@@ -1450,7 +1434,7 @@ DvtGaugeRenderer._formatMetricLabelValue = function(value, gauge, converter, sca
   }
 
   // when scaling is set then init formatter
-  var formatter = new dvt.LinearScaleAxisValueFormatter(gauge.getCtx(), minValue, maxValue, increment, scaling, autoPrecision);
+  var formatter = new dvt.LinearScaleAxisValueFormatter(gauge.getCtx(), minValue, maxValue, increment, scaling, autoPrecision, options.translations);
   if (converter && converter['getAsString'])
     output = formatter.format(value, converter);
   else if (converter && converter['format'])
@@ -1503,7 +1487,7 @@ DvtGaugeRenderer.getTooltipString = function(gauge) {
   else if (options['shortDesc'] != null)
     return options['shortDesc'];
   else if (options['label']['text'])
-    return dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [options['label']['text'], metricValue]);
+    return dvt.ResourceUtils.format(options.translations.labelAndValue, [options['label']['text'], metricValue]);
   else // Use the formatted metric label
     return metricValue;
 };
@@ -1593,7 +1577,7 @@ DvtGaugeRenderer.renderLabel = function(gauge, container, bounds, color, valign)
     var fontStyle = labelStyle.clone();
     label.setCSSStyle(labelStyle);
     var size = labelStyle.getStyle('font-size') || dvt.TextUtils.getOptimalFontSize(label.getCtx(), label.getTextString(), label.getCSSStyle(), bounds);
-    fontStyle.setFontSize('font-size', size);
+    fontStyle.setFontSize('font-size', size, gauge.getCtx());
 
     // Set color
     if (color != null)
@@ -1748,7 +1732,7 @@ dvt.LedGauge.prototype.Render = function(container, width, height)
  * @extends {DvtGaugeDefaults}
  */
 var DvtLedGaugeDefaults = function(context) {
-  this.Init({'skyros': DvtLedGaugeDefaults.VERSION_1, 'alta': {}}, context);
+  this.Init({'alta': DvtLedGaugeDefaults.SKIN_ALTA}, context);
 };
 
 dvt.Obj.createSubclass(DvtLedGaugeDefaults, DvtGaugeDefaults);
@@ -1757,7 +1741,7 @@ dvt.Obj.createSubclass(DvtLedGaugeDefaults, DvtGaugeDefaults);
 /**
  * Defaults for version 1.
  */
-DvtLedGaugeDefaults.VERSION_1 = {
+DvtLedGaugeDefaults.SKIN_ALTA = {
   'type': 'circle'
 };
 
@@ -1770,19 +1754,7 @@ var DvtLedGaugeRenderer = new Object();
 dvt.Obj.createSubclass(DvtLedGaugeRenderer, dvt.Obj);
 
 /** @private **/
-DvtLedGaugeRenderer._SKYROS_SHAPE_TRIANGLE_CMDS = 'M-42,36.6Q-50,36.6,-46.54,28.6L-4,-43.07Q0,-50,4,-43.07L46.54,28.6Q50,36.6,42,36.6Z';
-
-/** @private **/
 DvtLedGaugeRenderer._SHAPE_TRIANGLE_CMDS = [- 50, 36.6, 0, - 50, 50, 36.6];
-
-/** @private **/
-DvtLedGaugeRenderer._SKYROS_SHAPE_TRIANGLE_INNER_CMDS = [- 50, 36.6, 0, - 50, 50, 36.6];
-
-/**
- * Polygon commands for star shape.  Centered at (0,0) with size of 100.
- * @private
- */
-DvtLedGaugeRenderer._SKYROS_SHAPE_STAR_CMDS = [- 13.05, - 12.94, - 50, - 11.13, - 21.06, 11.9, - 30.74, 47.6, 0.1, 27.18, 31.06, 47.44, 21.17, 11.79, 50, - 11.39, 13.05, - 13.01, - 0.06, - 47.59];
 
 /**
  * Polygon commands for star shape.  Centered at (0,0) with size of 100.
@@ -1791,13 +1763,7 @@ DvtLedGaugeRenderer._SKYROS_SHAPE_STAR_CMDS = [- 13.05, - 12.94, - 50, - 11.13, 
 DvtLedGaugeRenderer._SHAPE_STAR_CMDS = [- 50, - 11.22, - 16.69, - 17.94, 0, - 47.55, 16.69, - 17.94, 50, - 11.22, 26.69, 13.8, 30.9, 47.56, 0, 33.42, - 30.9, 47.56, - 26.69, 13.8];
 
 /** @private **/
-DvtLedGaugeRenderer._SKYROS_SHAPE_ARROW_CMDS = 'M0,45L21,45Q24.414,44.414,25,41L25,10L42,10Q48.5,9.1,45,4L2,-38Q0,-39,-2,-38L-45,4Q-48.5,9.1,-42,10L-25,10L-25,41Q-24.414,44.414,-21,45Z';
-
-/** @private **/
 DvtLedGaugeRenderer._SHAPE_ARROW_CMDS = [25, 48, 25, 8, 47.5, 8, 0, - 39, - 47.5, 8, - 25, 8, - 25, 48];
-
-/** @private **/
-DvtLedGaugeRenderer._SKYROS_SHAPE_ARROW_INNER_CMDS = [25, 48, 25, 8, 47.5, 8, 0, - 39, - 47.5, 8, - 25, 8, - 25, 48];
 
 /** @private **/
 DvtLedGaugeRenderer._SHAPE_HUMAN_CMDS = 'M -0.06059525142297417 -50.86842065108466 C -11.4496388584463 -50.86842065108466 ' +
@@ -1892,7 +1858,6 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
   var cx = bounds.x + bounds.w / 2;
   var cy = bounds.y + bounds.h / 2;
   var r = Math.min(bounds.w, bounds.h) / 2;
-  var isSkyros = DvtGaugeDefaults.isSkyrosSkin(gauge);
 
   // Initialize the cache if not done already.  The cache stores the paths centered at 0,0 and at scale 100.
   if (!DvtLedGaugeRenderer._cache)
@@ -1918,11 +1883,11 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
   }
   else {
     if (type == 'star')
-      cmds = isSkyros ? DvtLedGaugeRenderer._SKYROS_SHAPE_STAR_CMDS : DvtLedGaugeRenderer._SHAPE_STAR_CMDS;
+      cmds = DvtLedGaugeRenderer._SHAPE_STAR_CMDS;
     else if (type == 'triangle')
-      cmds = isSkyros ? DvtLedGaugeRenderer._SKYROS_SHAPE_TRIANGLE_CMDS : DvtLedGaugeRenderer._SHAPE_TRIANGLE_CMDS;
+      cmds = DvtLedGaugeRenderer._SHAPE_TRIANGLE_CMDS;
     else if (type == 'arrow')
-      cmds = isSkyros ? DvtLedGaugeRenderer._SKYROS_SHAPE_ARROW_CMDS : DvtLedGaugeRenderer._SHAPE_ARROW_CMDS;
+      cmds = DvtLedGaugeRenderer._SHAPE_ARROW_CMDS;
     else if (type == 'human')
       cmds = DvtLedGaugeRenderer._SHAPE_HUMAN_CMDS;
     else {
@@ -1939,7 +1904,7 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
     }
 
     // These shapes are defined as polygons
-    if ((!isSkyros && (type == 'triangle' || type == 'arrow')) || type == 'star') {
+    if ((type == 'triangle' || type == 'arrow') || type == 'star') {
       cmds = dvt.PolygonUtils.scale(cmds, scale, scale);
 
       // Translate from center of (0,0)
@@ -1955,7 +1920,7 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
   }
 
   // Apply the style properties
-  if (isSkyros || options['visualEffects'] == 'none')
+  if (options['visualEffects'] == 'none')
     shape.setSolidFill(color);
   else {
     var arColors = [dvt.ColorUtils.adjustHSL(color, 0, - .09, .04), dvt.ColorUtils.adjustHSL(color, 0, - .04, - .05)];
@@ -1971,7 +1936,7 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
   shape.setStyle(options['svgStyle']);
 
   // rotate the shape if needed
-  var rotation = isSkyros ? options['rotation'] + 90 : options['rotation'];
+  var rotation = options['rotation'];
   if (rotation && (type == 'arrow' || type == 'triangle' || (shape instanceof dvt.Path && type != 'human')))
     shape = DvtLedGaugeRenderer._rotate(gauge, container, shape, bounds);
 
@@ -1999,8 +1964,7 @@ DvtLedGaugeRenderer._rotate = function(gauge, container, shape, bounds) {
   // Rotate the shape, non-90 degree rotation values are ignored
   var rotation = options && (options['rotation'] % 90 == 0) ? options['rotation'] : 0;
   var rotationMatrix = new dvt.Matrix();
-  rotationMatrix.rotate(Math.PI * (rotation) / 180);
-  shape.setMatrix(rotationMatrix);
+  shape.setMatrix(rotationMatrix.rotate(Math.PI * (rotation) / 180));
 
   // Translate the shape so that it's centered within the bounds
   var groupDims = translateGroup.getDimensions();
@@ -2008,8 +1972,7 @@ DvtLedGaugeRenderer._rotate = function(gauge, container, shape, bounds) {
   var ty = (bounds.y + bounds.h / 2) - (groupDims.y + groupDims.h / 2);
 
   var matrix = new dvt.Matrix();
-  matrix.translate(tx, ty);
-  translateGroup.setMatrix(matrix);
+  translateGroup.setMatrix(matrix.translate(tx, ty));
 
   // Return the group with its transform
   return translateGroup;
@@ -2028,199 +1991,6 @@ DvtLedGaugeRenderer._renderVisualEffects = function(gauge, container, bounds) {
 
   if (options['visualEffects'] == 'none')
     return;
-
-  // Render the visual effects
-  if (DvtGaugeDefaults.isSkyrosSkin(gauge)) {
-    if (type == 'circle')
-      DvtLedGaugeRenderer._renderOverlayCircle(gauge, container, bounds);
-    else if (type == 'diamond')
-      DvtLedGaugeRenderer._renderOverlayDiamond(gauge, container, bounds);
-    else if (type == 'triangle')
-      DvtLedGaugeRenderer._renderOverlayTriangle(gauge, container, bounds);
-    else if (type == 'arrow')
-      DvtLedGaugeRenderer._renderOverlayArrow(gauge, container, bounds);
-    else // rectangle
-      DvtLedGaugeRenderer._renderOverlayRectangle(gauge, container, bounds);
-  }
-};
-
-/**
- * Renders the visual effects for the rectangle LED into the specified area.
- * @param {dvt.LedGauge} gauge The gauge being rendered.
- * @param {dvt.Container} container The container to render into.
- * @param {dvt.Rectangle} bounds The bounds of the shape.
- * @private
- */
-DvtLedGaugeRenderer._renderOverlayRectangle = function(gauge, container, bounds) {
-  // Overlay Shape
-  var dx = bounds.w * 0.04;
-  var dy = bounds.h * 0.04;
-  var overlayBounds = new dvt.Rectangle(bounds.x + dx, bounds.y + dy, bounds.w - 2 * dx, bounds.h - 2 * dy);
-  var overlay = new dvt.Rect(gauge.getCtx(), overlayBounds.x, overlayBounds.y, overlayBounds.w, overlayBounds.h);
-  overlay.setMouseEnabled(false);
-  container.addChild(overlay);
-
-  // Gradient
-  var arColors = ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'];
-  var arAlphas = [0.75, 0.5, 0.15, 0, 0.2, 0.4, 0.2];
-  var arStops = [0, 0.05, 0.4, 0.6, 0.8, 0.9, 1.0];
-  var gradient = new dvt.LinearGradientFill(270, arColors, arAlphas, arStops);
-  overlay.setFill(gradient);
-};
-
-/**
- * Renders the visual effects for the diamond LED into the specified area.
- * @param {dvt.LedGauge} gauge The gauge being rendered.
- * @param {dvt.Container} container The container to render into.
- * @param {dvt.Rectangle} bounds The bounds of the shape.
- * @private
- */
-DvtLedGaugeRenderer._renderOverlayDiamond = function(gauge, container, bounds) {
-  // Overlay Shape
-  var dx = bounds.w * 0.05;
-  var dy = bounds.h * 0.05;
-  var overlayBounds = new dvt.Rectangle(bounds.x + dx, bounds.y + dy, bounds.w - 2 * dx, bounds.h - 2 * dy);
-  var cx = overlayBounds.x + overlayBounds.w / 2;
-  var cy = overlayBounds.y + overlayBounds.h / 2;
-  var r = Math.min(overlayBounds.w, overlayBounds.h) / 2;
-  var overlay = new dvt.Polygon(gauge.getCtx(), [cx - r, cy, cx, cy - r, cx + r, cy, cx, cy + r]);
-  overlay.setMouseEnabled(false);
-  container.addChild(overlay);
-
-  // Gradient
-  var arColors = ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'];
-  var arAlphas = [0.75, 0.5, 0.15, 0, 0.2, 0.4, 0.2];
-  var arStops = [0, 0.05, 0.4, 0.6, 0.8, 0.9, 1.0];
-  var gradient = new dvt.LinearGradientFill(270, arColors, arAlphas, arStops);
-  overlay.setFill(gradient);
-};
-
-/**
- * Renders the visual effects for the triangle LED into the specified area.
- * @param {dvt.LedGauge} gauge The gauge being rendered.
- * @param {dvt.Container} container The container to render into.
- * @param {dvt.Rectangle} bounds The bounds of the shape.
- * @private
- */
-DvtLedGaugeRenderer._renderOverlayTriangle = function(gauge, container, bounds) {
-  // Overlay Shape
-  var dx = bounds.w * 0.05;
-  var dy = bounds.h * 0.05;
-  var isSkyros = DvtGaugeDefaults.isSkyrosSkin(gauge);
-  var overlayBounds = new dvt.Rectangle(bounds.x + dx, bounds.y + dy, bounds.w - 2 * dx, bounds.h - 2 * dy);
-  var cmds = DvtLedGaugeRenderer._SKYROS_SHAPE_TRIANGLE_INNER_CMDS;
-  var scale = Math.min(overlayBounds.w / 100, overlayBounds.h / 100);
-  cmds = dvt.PolygonUtils.scale(cmds, scale, scale);
-
-  // Translate from center of (0,0)
-  cmds = dvt.PolygonUtils.translate(cmds, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
-
-  var overlay = new dvt.Polygon(gauge.getCtx(), cmds);
-  // Calculate the gradient params
-  var options = gauge.getOptions();
-  var rotation = options && (options['rotation'] % 90 == 0) ? options['rotation'] : 0;
-  var gradientRotation = isSkyros ? rotation - 90 : 360 - rotation;
-  var arColors = ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'];
-  var arAlphas = [0.3, 0.55, 0.0, 0.25, 0.1];
-  var arStops = [0, 0.05, 0.4, 0.9, 1.0];
-  var gradient = new dvt.LinearGradientFill(gradientRotation, arColors, arAlphas, arStops);
-  overlay.setFill(gradient);
-
-  // Add to display list
-  overlay = DvtLedGaugeRenderer._rotate(gauge, container, overlay, overlayBounds);
-  overlay.setMouseEnabled(false);
-  container.addChild(overlay);
-};
-
-/**
- * Renders the visual effects for the arrow LED into the specified area.
- * @param {dvt.LedGauge} gauge The gauge being rendered.
- * @param {dvt.Container} container The container to render into.
- * @param {dvt.Rectangle} bounds The bounds of the shape.
- * @private
- */
-DvtLedGaugeRenderer._renderOverlayArrow = function(gauge, container, bounds) {
-  // Overlay Shape
-  var dx = bounds.w * 0.05;
-  var dy = bounds.h * 0.05;
-  var isSkyros = DvtGaugeDefaults.isSkyrosSkin(gauge);
-  var overlayBounds = new dvt.Rectangle(bounds.x + dx, bounds.y + dy, bounds.w - 2 * dx, bounds.h - 2 * dy);
-  var cmds = DvtLedGaugeRenderer._SKYROS_SHAPE_ARROW_INNER_CMDS;
-
-  var scale = Math.min(overlayBounds.w / 100, overlayBounds.h / 100);
-  cmds = dvt.PolygonUtils.scale(cmds, scale, scale);
-
-  // Translate from center of (0,0)
-  cmds = dvt.PolygonUtils.translate(cmds, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
-
-  var overlay = new dvt.Polygon(gauge.getCtx(), cmds);
-
-  // Calculate the gradient params
-  var options = gauge.getOptions();
-  var rotation = options && (options['rotation'] % 90 == 0) ? options['rotation'] : 0;
-  var gradientRotation = isSkyros ? rotation - 90 : 360 - rotation;
-  var arColors = ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'];
-  var arAlphas = [0.3, 0.55, 0.0, 0.25, 0.1];
-  var arStops = [0, 0.05, 0.4, 0.9, 1.0];
-  var gradient = new dvt.LinearGradientFill(gradientRotation, arColors, arAlphas, arStops);
-  overlay.setFill(gradient);
-
-  // Add to display list
-  overlay = DvtLedGaugeRenderer._rotate(gauge, container, overlay, overlayBounds);
-  overlay.setMouseEnabled(false);
-  container.addChild(overlay);
-};
-
-/**
- * Renders the visual effects for the circle LED into the specified area.
- * @param {dvt.LedGauge} gauge The gauge being rendered.
- * @param {dvt.Container} container The container to render into.
- * @param {dvt.Rectangle} bounds The bounds of the shape.
- * @private
- */
-DvtLedGaugeRenderer._renderOverlayCircle = function(gauge, container, bounds) {
-  // The circle uses two overlays.
-  var dx = bounds.w * 0.05;
-  var dy = bounds.h * 0.05;
-  var gradientBounds = new dvt.Rectangle(bounds.x + dx, bounds.y + dy, bounds.w - 2 * dx, bounds.h - 2 * dy);
-
-  //********************* First Overlay: "Overlay" ************************/
-  // Shape
-  var cx = gradientBounds.x + gradientBounds.w / 2;
-  var cy = gradientBounds.y + gradientBounds.h / 2;
-  var radius = Math.min(gradientBounds.w, gradientBounds.h) / 2;
-  var overlay = new dvt.Circle(gauge.getCtx(), cx, cy, radius);
-  overlay.setMouseEnabled(false);
-  container.addChild(overlay);
-
-  // Gradient
-  var arColors = ['#FFFFFF', '#FFFFFF', '#FFFFFF'];
-  var arAlphas = [0, 0.25, 0.5];
-  var arStops = [0.15, 0.7, 0.95];
-  var gradientCx = cx;
-  var gradientCy = cy - radius * 0.6;// per UX
-  var gradientRadius = radius * 1.5;
-  var gradient = new dvt.RadialGradientFill(arColors, arAlphas, arStops, gradientCx, gradientCy, gradientRadius, [gradientBounds.x, gradientBounds.y, gradientBounds.w, gradientBounds.h]);
-  overlay.setFill(gradient);
-
-  //********************* Second Overlay: "Highlight" ************************/
-  // Shape
-  var rx = radius * 0.6;// per UX
-  var ry = radius * 0.4;// per UX
-  cy = cy - 0.3 * ry;// per UX
-  var highlight = new dvt.Oval(gauge.getCtx(), cx, cy - ry, rx, ry);
-  highlight.setMouseEnabled(false);
-  container.addChild(highlight);
-
-  // Gradient
-  var highlightColors = ['#FFFFFF', '#FFFFFF', '#FFFFFF'];
-  var highlightAlphas = [0, 0.2, 0.5];
-  var highlightStops = [0.6, 0.8, 1.0];
-  var highlightCx = cx;
-  var highlightCy = cy;
-  var highlightRadius = rx;
-  var highlightGradient = new dvt.RadialGradientFill(highlightColors, highlightAlphas, highlightStops, highlightCx, highlightCy, highlightRadius, [gradientBounds.x, gradientBounds.y, gradientBounds.w, gradientBounds.h]);
-  highlight.setFill(highlightGradient);
 };
 
 /**
@@ -2467,34 +2237,23 @@ dvt.StatusMeterGauge.prototype.GetValueAt = function(x, y) {
  * @extends {DvtGaugeDefaults}
  */
 var DvtStatusMeterGaugeDefaults = function(context) {
-  this.Init({'skyros': DvtStatusMeterGaugeDefaults.VERSION_1, 'alta': DvtStatusMeterGaugeDefaults.SKIN_ALTA}, context);
+  this.Init({'alta': DvtStatusMeterGaugeDefaults.SKIN_ALTA}, context);
 };
 
 dvt.Obj.createSubclass(DvtStatusMeterGaugeDefaults, DvtGaugeDefaults);
 
-
-/**
- * Defaults for alta.
- */
-DvtStatusMeterGaugeDefaults.SKIN_ALTA = {
-  'color': '#393737',
-  'metricLabel': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)},
-  'plotArea' : {'color': '#E4E8EA'}
-};
-
-
 /**
  * Defaults for version 1.
  */
-DvtStatusMeterGaugeDefaults.VERSION_1 = {
+DvtStatusMeterGaugeDefaults.SKIN_ALTA = {
   'angleExtent': 360,
   'borderRadius': 'auto',
-  'color': '#313842',
+  'color': '#393737',
   'indicatorSize': 1,
   'innerRadius': .7,
-  'metricLabel': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS), 'position': 'auto'},
+  'metricLabel': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA), 'position': 'auto'},
   'orientation': 'horizontal',
-  'plotArea' : {'color': '#AAAAAA', 'rendered': 'auto', 'borderRadius': 'auto'},
+  'plotArea' : {'color': '#E4E8EA', 'rendered': 'auto', 'borderRadius': 'auto'},
   'startAngle': 90,
   'thresholdDisplay': 'onIndicator'
 };
@@ -2680,7 +2439,8 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
   axisOptions['tickLabel'] = {
     'rendered' : 'off'
   };
-  var axisInfo = dvt.AxisInfo.newInstance(gauge.getCtx(), axisOptions, bounds);
+  axisOptions.translations = options.translations;
+  var axisInfo = new DvtGaugeDataAxisInfo(gauge.getCtx(), axisOptions, bounds);
 
   // Store the axisInfo on the gauge for editing support
   gauge.__axisInfo = axisInfo;
@@ -2803,7 +2563,7 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
 
   // Apply style properties
   var color = DvtGaugeStyleUtils.getColor(gauge);
-  if (!DvtGaugeDefaults.isSkyrosSkin(gauge) && options['visualEffects'] != 'none') {
+  if (options['visualEffects'] != 'none') {
     var arColors = [dvt.ColorUtils.adjustHSL(color, 0, - .09, .04), dvt.ColorUtils.adjustHSL(color, 0, - .04, - .05)];
     var arAlphas = [1, 1];
     var arStops = [0, 1];
@@ -2849,17 +2609,16 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
         referenceLine = new dvt.Line(gauge.getCtx(), xCoord, yCoord, xCoord, yCoord + referenceLineSize);
       }
       var lineWidth = referenceObjects[i]['lineWidth'] ? referenceObjects[i]['lineWidth'] : 2;
-      var stroke = new dvt.SolidStroke(refColor, 1, lineWidth);
-      if (referenceObjects[i]['lineStyle'])
-        stroke.setStyle(dvt.Stroke.convertTypeString(referenceObjects[i]['lineStyle']));
+      var lineStyle = referenceObjects[i]['lineStyle'];
+      var stroke = new dvt.Stroke(refColor, 1, lineWidth, false, dvt.Stroke.getDefaultDashProps(lineStyle, lineWidth));
       referenceLine.setStroke(stroke);
       container.addChild(referenceLine);
 
       // Shadowing effect
       // Fix for : Shadow causes the reference line to disappear in IE11
-      if (!dvt.Agent.isPlatformIE() && options['visualEffects'] != 'none') {
+      if (dvt.Agent.browser !== 'ie' && dvt.Agent.browser !== 'edge' && options['visualEffects'] != 'none') {
         var shadowRGBA = dvt.ColorUtils.makeRGBA(0, 0, 0, 0.8);
-        var shadow = new dvt.Shadow(shadowRGBA, 0.75, 3, 3, 50, 1, 2, false, false, false);
+        var shadow = new dvt.Shadow(shadowRGBA, 0.75, 3, 3, 50, 1, 2);
         referenceLine.addDrawEffect(shadow);
       }
     }
@@ -2898,7 +2657,7 @@ DvtStatusMeterGaugeRenderer._createShape = function(gauge, context, x1, x2, y1, 
   var height = Math.abs(y2 - y1);
   var options = gauge.getOptions();
   var multiplier = options['orientation'] == 'vertical' ? width : height;
-  var defaultValue = DvtGaugeDefaults.isSkyrosSkin(gauge) ? '25%' : '15%';
+  var defaultValue = '15%';
   var borderRadiusInput = options['plotArea']['borderRadius'] != 'auto' ? options['plotArea']['borderRadius'] : options['borderRadius'];
   var cmds = dvt.PathUtils.rectangleWithBorderRadius(x, y, width, height, borderRadiusInput, multiplier, defaultValue);
   return new dvt.Path(context, cmds);
@@ -2919,21 +2678,6 @@ DvtStatusMeterGaugeRenderer._renderVisualEffects = function(gauge, container, sh
 
   if (options['visualEffects'] == 'none')
     return;
-
-  // Gradient
-  if (DvtGaugeDefaults.isSkyrosSkin(gauge)) {
-    var arColors = ['#FFFFFF', '#FFFFFF', '#FFFFFF'];
-    var arAlphas = [0.5, 0.3125, 0];
-    var arStops = [0, 0.3, 1.0];
-    var gradient = new dvt.LinearGradientFill(gradientAngle, arColors, arAlphas, arStops);
-    shape.setFill(gradient);
-    gauge.__shapes.push(shape);
-
-    // Overlay Shape
-    shape.setMouseEnabled(false);
-    if (bRender)
-      container.addChild(shape);
-  }
 };
 
 
@@ -2957,14 +2701,8 @@ DvtStatusMeterGaugeRenderer._renderPlotAreaVisualEffects = function(gauge, conta
   var arColors, gradient;
 
   // Gradient
-  if (DvtGaugeDefaults.isSkyrosSkin(gauge)) {
-    arColors = [dvt.ColorUtils.getDarker(color, .1), color, dvt.ColorUtils.getBrighter(color, .7)];
-    gradient = new dvt.LinearGradientFill(gradientAngle, arColors, [1, 1, 1], [0, 0.04, 0.73]);
-  }
-  else {
-    arColors = [dvt.ColorUtils.adjustHSL(color, 0, - .04, - .05), dvt.ColorUtils.adjustHSL(color, 0, - .09, .04)];
+  arColors = [dvt.ColorUtils.adjustHSL(color, 0, - .04, - .05), dvt.ColorUtils.adjustHSL(color, 0, - .09, .04)];
     gradient = new dvt.LinearGradientFill(gradientAngle, arColors, [1, 1], [0, 1]);
-  }
   shape.setFill(gradient);
   shape.setClassName(options['plotArea']['svgClassName']);
   shape.setStyle(options['plotArea']['svgStyle']);
@@ -3083,7 +2821,7 @@ DvtStatusMeterGaugeRenderer._renderMetricLabelOutsidePlotArea = function(gauge, 
 
     // Truncate to fit
     // : fire fox reports a bigger height by 1/2px.
-    var maxHeight = dvt.Agent.isPlatformGecko() ? bounds.h + 2 : bounds.h;
+    var maxHeight = dvt.Agent.browser === 'firefox' ? bounds.h + 2 : bounds.h;
     dvt.TextUtils.fitText(metricLabel, metricLabelSpace, maxHeight, container);
   }
 };
@@ -3222,7 +2960,7 @@ DvtStatusMeterGaugeRenderer._renderLabel = function(gauge, container, bounds, me
   var labelString = options['label']['text'];
   if (!DvtStatusMeterGaugeRenderer._hasMetricLabelOutsidePlotArea(options) && options['metricLabel']['rendered'] == 'on') {
     var metricLabelString = DvtGaugeRenderer.getFormattedMetricLabel(options['value'], gauge);
-    labelString = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [labelString, metricLabelString]);
+    labelString = dvt.ResourceUtils.format(options.translations.labelAndValue, [labelString, metricLabelString]);
   }
   var labelStyle = options['label']['style'];
   var fontStyle = labelStyle.clone();
@@ -3240,7 +2978,7 @@ DvtStatusMeterGaugeRenderer._renderLabel = function(gauge, container, bounds, me
       size = dvt.TextUtils.getOptimalFontSize(tempLabel.getCtx(), tempLabel.getTextString(), tempLabel.getCSSStyle(), new dvt.Rectangle(labelSpace.x, labelSpace.y, Number.MAX_VALUE, labelSpace.h));
   }
   var label = new dvt.MultilineText(gauge.getCtx(), labelString);
-  fontStyle.setFontSize('font-size', size);
+  fontStyle.setFontSize('font-size', size, gauge.getCtx());
   label.setCSSStyle(fontStyle);
   dvt.TextUtils.fitText(label, labelSpace.w, labelSpace.h, gauge);
   if (options['label']['position'] == 'center' || (options['label']['position'] == 'auto' && isVert)) {
@@ -3351,11 +3089,7 @@ DvtStatusMeterGaugeRenderer._drawCircularReferenceLine = function(gauge, contain
   var p1 = DvtStatusMeterGaugeRenderer._calcPointOnArc(bounds, innerRadius, angle);
   var p2 = DvtStatusMeterGaugeRenderer._calcPointOnArc(bounds, outerRadius, angle);
   var shape = new dvt.Line(context, p1.x, p1.y, p2.x, p2.y);
-
-  var stroke = new dvt.SolidStroke(color, 1, lineWidth);
-  if (lineStyle) {
-    stroke.setStyle(dvt.Stroke.convertTypeString(lineStyle));
-  }
+  var stroke = new dvt.Stroke(color, 1, lineWidth, false, dvt.Stroke.getDefaultDashProps(lineStyle, lineWidth));
   shape.setStroke(stroke);
   container.addChild(shape);
 };
@@ -3646,7 +3380,12 @@ DvtStatusMeterGaugeRenderer._renderCenterContent = function(gauge, options, boun
     if (!customContent)
       return;
     var newOverlay = context.createOverlayDiv();
-    newOverlay.appendChild(customContent); // @HtmlUpdateOk
+    if (Array.isArray(customContent)) {
+      customContent.forEach(function(node) {newOverlay.appendChild(node);}); // @HtmlUpdateOk
+    }
+    else {
+      newOverlay.appendChild(customContent); // @HtmlUpdateOk
+    }
     gauge.centerDiv = newOverlay;
     parentDiv.appendChild(newOverlay); // @HtmlUpdateOk
 
@@ -3719,7 +3458,7 @@ DvtStatusMeterGaugeIndicator.prototype.setCoords = function(x1, x2, y1, y2) {
   var height = Math.abs(y2 - y1);
   var options = this._gauge.getOptions();
   var multiplier = options['orientation'] == 'vertical' ? width : height;
-  var defaultValue = DvtGaugeDefaults.isSkyrosSkin(this._gauge) ? '25%' : '15%';
+  var defaultValue = '15%';
 
   var cmds = dvt.PathUtils.rectangleWithBorderRadius(x, y, width, height, options['borderRadius'], multiplier, defaultValue);
   this.setCmds(cmds);
@@ -4002,7 +3741,7 @@ dvt.DialGauge.prototype.GetValueAt = function(x, y) {
  * @extends {DvtGaugeDefaults}
  */
 var DvtDialGaugeDefaults = function(context) {
-  this.Init({'skyros': DvtDialGaugeDefaults.VERSION_1, 'alta': {}}, context);
+  this.Init({'alta': DvtDialGaugeDefaults.SKIN_ALTA}, context);
 };
 
 dvt.Obj.createSubclass(DvtDialGaugeDefaults, DvtGaugeDefaults);
@@ -4011,7 +3750,7 @@ dvt.Obj.createSubclass(DvtDialGaugeDefaults, DvtGaugeDefaults);
 /**
  * Defaults for version 1.
  */
-DvtDialGaugeDefaults.VERSION_1 = {
+DvtDialGaugeDefaults.SKIN_ALTA = {
   'background': {'startAngle': 180, 'angleExtent': 180, 'indicatorLength': 0.7},
   'metricLabel': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)},
   'tickLabel': {
@@ -4106,17 +3845,15 @@ DvtDialGaugeRenderer._renderShape = function(gauge, container, bounds) {
   // Apply the transformations to correctly position the indicator
   // 1. Translate the indicator so that the anchor point is at the origin
   var mat = new dvt.Matrix();
-  mat.translate(-indicatorAnchor.x, -indicatorAnchor.y);
-  mat.scale(scale, scale);
-  indicator.setMatrix(mat);
+  mat = mat.translate(-indicatorAnchor.x, -indicatorAnchor.y);
+  indicator.setMatrix(mat.scale(scale, scale));
 
   // 2. Rotate the indicator
   rotateContainer.setAngle(angleRads);
 
   // 3. Translate to the anchor point on the background
   mat = new dvt.Matrix();
-  mat.translate(backgroundAnchor.x, backgroundAnchor.y);
-  translateContainer.setMatrix(mat);
+  translateContainer.setMatrix(mat.translate(backgroundAnchor.x, backgroundAnchor.y));
 
   // Add the DvtDialGaugeIndicator for rotation support
   gauge.__shapes.push(rotateContainer);
@@ -4184,14 +3921,13 @@ DvtDialGaugeRenderer._createBackground = function(gauge, bounds) {
         var scale = Math.min(bounds.w / width, bounds.h / height);
         var tx = (bounds.w - scale * width) / 2;
         var ty = (bounds.h - scale * height) / 2;
-        matrix.scale(scale, scale);
-        matrix.translate(tx, ty);
-        shape.setMatrix(matrix);
+        matrix = matrix.scale(scale, scale);
+        shape.setMatrix(matrix.translate(tx, ty));
 
         // Create an image loader to set the width and height of the image after loads.  This is
         // needed to correctly load svg images in webkit.
-        if (isSvg && dvt.Agent.isPlatformWebkit()) {
-          var imageDims = dvt.ImageLoader.loadImage(gauge.getCtx(), source, dvt.Obj.createCallback(shape, shape.__setDimensions));
+        if (isSvg && (dvt.Agent.browser === 'safari' || dvt.Agent.browser === 'chrome')) {
+          var imageDims = dvt.ImageLoader.loadImage(source, shape.__setDimensions.bind(shape));
           if (imageDims)
             shape.__setDimensions(imageDims);
         }
@@ -4279,8 +4015,8 @@ DvtDialGaugeRenderer._createIndicator = function(gauge, bounds) {
 
         // Create an image loader to set the width and height of the image after loads.  This is
         // needed to correctly load svg images in webkit.
-        if (isSvg && dvt.Agent.isPlatformWebkit()) {
-          var imageDims = dvt.ImageLoader.loadImage(gauge.getCtx(), source, dvt.Obj.createCallback(shape, shape.__setDimensions));
+        if (isSvg && (dvt.Agent.browser === 'safari' || dvt.Agent.browser === 'chrome')) {
+          var imageDims = dvt.ImageLoader.loadImage(source, shape.__setDimensions.bind(shape));
           if (imageDims) {
             // Once the image is initially loaded, ping it with the given size.  This is needed to get the
             // browser to correctly render the SVG.  The returned size from imageDims may not be correct
@@ -4545,8 +4281,7 @@ dvt.Obj.createSubclass(DvtDialGaugeIndicator, dvt.Container);
 DvtDialGaugeIndicator.prototype.setAngle = function(angleRads) {
   // Use a matrix to prevent the angles from being cumulative
   var mat = new dvt.Matrix();
-  mat.rotate(angleRads);
-  this.setMatrix(mat);
+  this.setMatrix(mat.rotate(angleRads));
 
   // Store the param
   this._angleRads = angleRads;
@@ -4672,7 +4407,7 @@ dvt.RatingGauge.prototype.Render = function(container, width, height)
     // Show images at the size of the selected shape if defined
     var onLoad = function(imageInfo) {
       // IE11 gives a size of 0x0 for loaded images: https://connect.microsoft.com/IE/feedbackdetail/view/925655/svg-image-has-0x0-size-in-ie11
-      if (dvt.Agent.isPlatformIE() && dvt.Agent.getVersion() == 11 && imageInfo && imageInfo.width == 0 && imageInfo.height == 0) {
+      if ((dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge') && dvt.Agent.version == 11 && imageInfo && imageInfo.width == 0 && imageInfo.height == 0) {
         imageInfo.width = 1;
         imageInfo.height = 1;
       }
@@ -4686,7 +4421,7 @@ dvt.RatingGauge.prototype.Render = function(container, width, height)
       }
       this.PostRender(this.Options, container);
     };
-    dvt.ImageLoader.loadImage(this.getCtx(), this.Options['selectedState']['source'], dvt.Obj.createCallback(this, onLoad));
+    dvt.ImageLoader.loadImage(this.Options['selectedState']['source'], onLoad.bind(this));
     return false;
   }
   else {
@@ -4915,33 +4650,21 @@ dvt.RatingGauge.prototype.CreateEventManager = function() {
  * @extends {DvtGaugeDefaults}
  */
 var DvtRatingGaugeDefaults = function(context) {
-  this.Init({'skyros': DvtRatingGaugeDefaults.VERSION_1, 'alta': DvtRatingGaugeDefaults.SKIN_ALTA}, context);
+  this.Init({'alta': DvtRatingGaugeDefaults.SKIN_ALTA}, context);
 };
 
 dvt.Obj.createSubclass(DvtRatingGaugeDefaults, DvtGaugeDefaults);
 
-
-/**
- * Defaults for ALTA.
- */
-DvtRatingGaugeDefaults.SKIN_ALTA = {
-  'unselectedState': {'shape': 'star', 'color': '#C4CED7', 'borderColor': null},
-  'selectedState': {'shape': 'star', 'color': '#F8C15A', 'borderColor': null},
-  'hoverState': {'shape': 'star', 'color': '#007CC8', 'borderColor': null},
-  'changedState': {'shape': 'star', 'color': '#ED2C02', 'borderColor': null}
-};
-
-
 /**
  * Defaults for version 1.
  */
-DvtRatingGaugeDefaults.VERSION_1 = {
+DvtRatingGaugeDefaults.SKIN_ALTA = {
   'min': 0, 'max': 5,
   'orientation': 'horizontal',
-  'unselectedState': {'shape': 'star', 'color': '#F2F2F2', 'borderColor': '#B6B6B6'},
-  'selectedState': {'shape': 'star', 'color': '#F8C15A', 'borderColor': '#F5A700'},
-  'hoverState': {'shape': 'star', 'color': '#66A7DA', 'borderColor': '#4A86C5'},
-  'changedState': {'shape': 'star', 'color': '#F8C15A', 'borderColor': '#959595'},
+  'unselectedState': {'shape': 'star', 'color': '#C4CED7'},
+  'selectedState': {'shape': 'star', 'color': '#F8C15A'},
+  'hoverState': {'shape': 'star', 'color': '#007CC8'},
+  'changedState': {'shape': 'star', 'color': '#ED2C02'},
   'preserveAspectRatio' : 'meet',
   'step': 1
 };
@@ -5077,7 +4800,7 @@ DvtRatingGaugeRenderer._createShapes = function(gauge, container, stateOptions) 
   var shapeWidth = gauge.__shapeWidth;
   var shapeHeight = gauge.__shapeHeight;
 
-  var useShape = dvt.Agent.isPlatformIE() ? null : DvtRatingGaugeRenderer._createShape(context, 0, 0, shapeWidth, shapeHeight, stateOptions, options);
+  var useShape = (dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge') ? null : DvtRatingGaugeRenderer._createShape(context, 0, 0, shapeWidth, shapeHeight, stateOptions, options);
 
   for (var i = 0; i < options['max']; i++) {
     var x, y;
@@ -5094,7 +4817,7 @@ DvtRatingGaugeRenderer._createShapes = function(gauge, container, stateOptions) 
       y = bounds.y + bounds.h / 2 - shapeHeight / 2;
     }
 
-    if (dvt.Agent.isPlatformIE()) {
+    if ((dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge')) {
       var shape = DvtRatingGaugeRenderer._createShape(context, x, y, shapeWidth, shapeHeight, stateOptions, options);
 
       if (shape) {
@@ -5150,7 +4873,7 @@ DvtRatingGaugeRenderer._createShape = function(context, x, y, width, height, sta
  * @constructor
  */
 var DvtRatingGaugeEventManager = function(gauge) {
-  this.Init(gauge.getCtx(), gauge.dispatchEvent, gauge);
+  this.Init(gauge.getCtx(), gauge.dispatchEvent, gauge, gauge);
   this._gauge = gauge;
 };
 
@@ -5213,7 +4936,7 @@ DvtRatingGaugeEventManager.prototype.OnMouseDown = function(event) {
 /**
  * @override
  */
-DvtRatingGaugeEventManager.prototype.ProcessKeyboardEvent = function(event) 
+DvtRatingGaugeEventManager.prototype.ProcessKeyboardEvent = function(event)
 {
   // Need to clear out the flag to make rating gauge tooltips work with keyboarding
   this.IsMouseEditing = false;
@@ -5226,28 +4949,6 @@ DvtRatingGaugeEventManager.prototype.ProcessKeyboardEvent = function(event)
 DvtRatingGaugeEventManager.prototype.IsShowingTooltipWhileEditing = function() {
   return true;
 };
-
-dvt.exportProperty(dvt, 'DialGauge', dvt.DialGauge);
-dvt.exportProperty(dvt, 'LedGauge', dvt.LedGauge);
-dvt.exportProperty(dvt, 'RatingGauge', dvt.RatingGauge);
-dvt.exportProperty(dvt, 'StatusMeterGauge', dvt.StatusMeterGauge);
-dvt.exportProperty(dvt.DialGauge, 'DialGauge', dvt.DialGauge);
-dvt.exportProperty(dvt.DialGauge, 'LedGauge', dvt.LedGauge);
-dvt.exportProperty(dvt.DialGauge, 'RatingGauge', dvt.RatingGauge);
-dvt.exportProperty(dvt.DialGauge, 'StatusMeterGauge', dvt.StatusMeterGauge);
-
-dvt.exportProperty(DvtGauge.prototype, 'getAutomation', DvtGauge.prototype.getAutomation);
-dvt.exportProperty(DvtGauge.prototype, 'destroy', DvtGauge.prototype.destroy);
-dvt.exportProperty(DvtGauge.prototype, 'render', DvtGauge.prototype.render);
-
-dvt.exportProperty(DvtGaugeAutomation.prototype, 'getDomElementForSubId', DvtGaugeAutomation.prototype.getDomElementForSubId);
-dvt.exportProperty(DvtGaugeAutomation.prototype, 'getValue', DvtGaugeAutomation.prototype.getValue);
-dvt.exportProperty(DvtGaugeAutomation.prototype, 'getMetricLabel', DvtGaugeAutomation.prototype.getMetricLabel);
-
-/**
- * Exporting for test automation purposes only.
- */
-dvt.LedGaugeRenderer = DvtLedGaugeRenderer;
 
 })(dvt);
   return dvt;

@@ -3,9 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'ojs/ojtranslation', 'jquery', 'ojs/ojmessaging', 'ojs/ojlogger', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-amd/keycode', 'jqueryui-amd/focusable', 'jqueryui-amd/tabbable', 'ojs/ojcustomelement'], function(oj, Translations, $, Message, Logger)
 {
+  "use strict";
 /*
 ** Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 **
@@ -888,7 +888,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
        * @memberof oj.baseComponent
        * @instance
        * @ojtranslatable
-       * @type {Object|null}
+       * @type {object|null}
        *
        *
        * @example <caption>Initialize the component, overriding some translated resources and leaving the others intact:</caption>
@@ -3472,6 +3472,32 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
       return true;
     },
 
+   /**
+    * Method called by the CustomElementBridge to notify the component of changes to
+    * any watched attributes registered in its metadata extension._WATCHED_ATTRS property.
+    * @param {string} attr The name of the watched attribute
+    * @param {string} oldValue The old attribute value
+    * @param {string} newValue The new attribute value
+    * @memberof oj.baseComponent
+    * @instance
+    * @private
+    */
+    __handleWatchedAttribute: function (attr, oldValue, newValue) {
+      this._WatchedAttributeChanged(attr, oldValue, newValue);
+    },
+
+   /**
+    * Method for components to override in order to handle changes to watched attributes.
+    * @param {string} attr The name of the watched attribute
+    * @param {string} oldValue The old attribute value
+    * @param {string} newValue The new attribute value
+    * @memberof oj.baseComponent
+    * @instance
+    * @protected
+    */
+    // eslint-disable-next-line no-unused-vars
+    _WatchedAttributeChanged: function (attr, oldValue, newValue) {},
+
     /**
      * Method called by the CustomElementBridge to get the element to call focus on for this custom element
      * which can be the root custom element or an HTML element like an input or select.
@@ -3877,7 +3903,7 @@ function _returnTrue() {
  * @ojslot contextMenu
  * @memberof oj.baseComponent
  *
- * @ojshortdesc The contextMenu slot is set on the &lt;oj-menu> instance within this element.  It designates the JET Menu that this component should launch as a context menu.
+ * @ojshortdesc The contextMenu slot is set on the oj-menu instance within this element.  It designates the JET Menu to launch as a context menu.
  * @ojmaxitems 1
  *
  * @example <caption>Initialize the component with a context menu:</caption>
@@ -3890,8 +3916,9 @@ function _returnTrue() {
  */
 
 /**
- * Sets a property or a single subproperty for complex properties and notifies the component
+ * Sets a property or a subproperty (of a complex property) and notifies the component
  * of the change, triggering a [property]Changed event.
+ * The value should be of the same type as the type of the attribute mentioned in this API document.
  *
  * @function setProperty
  * @since 4.0.0
@@ -3901,13 +3928,16 @@ function _returnTrue() {
  *
  * @expose
  * @memberof oj.baseComponent
+ * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
  * @instance
  *
- * @example <caption>Set a single subproperty of a complex property:</caption>
+ * @ojtsexample <caption>Set a single subproperty of a complex property:</caption>
  * myComponent.setProperty('complexProperty.subProperty1.subProperty2', "someValue");
  */
 /**
- * Retrieves a value for a property or a single subproperty for complex properties.
+ * Retrieves the value of a property or a subproperty.
+ * The return type will be the same as the type of the property as specified in this API document.
+ * If the method is invoked with an incorrect property/subproperty name, it returns undefined.
  * @function getProperty
  * @since 4.0.0
  * @param {string} property - The property name to get. Supports dot notation for subproperty access.
@@ -3915,13 +3945,16 @@ function _returnTrue() {
  *
  * @expose
  * @memberof oj.baseComponent
+ * @ojshortdesc Retrieves the value of a property or a subproperty.
  * @instance
  *
- * @example <caption>Get a single subproperty of a complex property:</caption>
- * var subpropValue = myComponent.getProperty('complexProperty.subProperty1.subProperty2');
+ * @ojtsexample <caption>Get a single subproperty of a complex property:</caption>
+ * let subpropValue = myComponent.getProperty('complexProperty.subProperty1.subProperty2');
  */
 /**
  * Performs a batch set of properties.
+ * The type of value for each property being set must match the type of the property as specified in this
+ * API document.
  * @function setProperties
  * @since 4.0.0
  * @param {Object} properties - An object containing the property and value pairs to set.
@@ -3929,9 +3962,10 @@ function _returnTrue() {
  *
  * @expose
  * @memberof oj.baseComponent
+ * @ojshortdesc Performs a batch set of properties.
  * @instance
  *
- * @example <caption>Set a batch of properties:</caption>
+ * @ojtsexample <caption>Set a batch of properties:</caption>
  * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
  */
 
@@ -4089,9 +4123,11 @@ oj.ComponentMessaging.prototype.deactivate = function () {
  * @private
  */
 oj.ComponentMessaging.prototype.close = function () {
-  $.each(this._strategies, function (i, strategy) {
-    strategy.close();
-  });
+  if (this._activated) {
+    $.each(this._strategies, function (i, strategy) {
+      strategy.close();
+    });
+  }
 };
 
 /**
@@ -5117,15 +5153,14 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
   },
 
   DefinePropertyCallback: function (proto, property, propertyMeta) {
-    var listener;
     var ext = propertyMeta.extension;
     Object.defineProperty(proto, property, {
       enumerable: true,
       get: function () {
+        var bridge = oj.BaseCustomElementBridge.getInstance(this);
         if (propertyMeta._eventListener) {
-          return listener;
+          return bridge.GetEventListenerProperty(property);
         } else if (ext && ext._COPY_TO_INNER_ELEM) {
-          var bridge = oj.BaseCustomElementBridge.getInstance(this);
           return bridge._getCopyProperty(this, property, propertyMeta);
         }
 
@@ -5138,7 +5173,6 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
         if (!bridge.SaveEarlyPropertySet(property, value)) {
           if (propertyMeta._eventListener) {
             bridge.SetEventListenerProperty(this, property, value);
-            listener = value;
           } else if (!bridge._validateAndSetCopyProperty(this, property, value, propertyMeta)) {
             // For widget based components, see if there is a default value assigned in the
             // metadata if application tries to unset the property. For composites and
@@ -5172,7 +5206,14 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
   GetAttributes: function (metadata) {
     var attrs = oj.BaseCustomElementBridge.getAttributes(metadata.properties);
     if (metadata.extension._GLOBAL_TRANSFER_ATTRS) {
-      return attrs.concat(metadata.extension._GLOBAL_TRANSFER_ATTRS);
+      attrs = attrs.concat(metadata.extension._GLOBAL_TRANSFER_ATTRS);
+    }
+    // Private array based API to allow widget based components to specify any
+    // additional attributes they want to get notified about, e.g. data-oj-input-id.
+    // These attributes will get passed through to the widget via the
+    // __handleWatchedAttribute method.
+    if (metadata.extension._WATCHED_ATTRS) {
+      attrs = attrs.concat(metadata.extension._WATCHED_ATTRS);
     }
     return attrs;
   },
@@ -5199,19 +5240,30 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
 
   HandleAttributeChanged: function (element, attr, oldValue, newValue) {
     var transferAttrs = this._EXTENSION._GLOBAL_TRANSFER_ATTRS;
-    var transfer = transferAttrs && transferAttrs.indexOf(attr) !== -1;
-    if (!this._removingTransfer && transfer && this._WIDGET_ELEM) {
-      // When we transfer the attribute the app will not be able to remove the
-      // attribute from the DOM, we will recommend binding the value if the value
-      // needs to be toggled.
-      this._WIDGET_ELEM.setAttribute(attr, newValue);
-      // Remove attribute from custom element after transfering value to inner element
-      // Set a flag so we know that we're removing the attribute, not app so
-      // that on attribute changed we don't remove it again
-      this._removingTransfer = true;
-      element.removeAttribute(attr);
-    } else if (this._removingTransfer && transfer) {
-      this._removingTransfer = false;
+    var bTransfer = transferAttrs && transferAttrs.indexOf(attr) !== -1;
+    var watchedAttrs = this._EXTENSION._WATCHED_ATTRS;
+    var bWatchedAttr = watchedAttrs && watchedAttrs.indexOf(attr) !== -1;
+    if (bTransfer && this._WIDGET_ELEM) {
+      if (!this._removingTransfer) {
+        // When we transfer the attribute the app will not be able to remove the
+        // attribute from the DOM, we will recommend binding the value if the value
+        // needs to be toggled.
+        this._WIDGET_ELEM.setAttribute(attr, newValue);
+        // Remove attribute from custom element after transfering value to inner element
+        // Set a flag so we know that we're removing the attribute, not app so
+        // that on attribute changed we don't remove it again
+        this._removingTransfer = true;
+        element.removeAttribute(attr);
+      } else if (this._removingTransfer) {
+        this._removingTransfer = false;
+      }
+    } else if (bWatchedAttr && oldValue !== newValue && this._WIDGET_INSTANCE) {
+      // Check to see if this is attribute is being watched by the component
+      // in which case we will just pass this through as is without converting
+      // the attribute to a property name. Components are responsible for retrieving
+      // attribute values on component initialization. This method only handles changes
+      // after the fact.
+      this._WIDGET_INSTANCE.__handleWatchedAttribute(attr, oldValue, newValue);
     }
   },
 
@@ -5861,7 +5913,7 @@ oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto, {
       oj.Components.markPendingSubtreeHidden(element);
     }
 
-    oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS_PROXY);
+    oj.BaseCustomElementBridge.__InitProperties(element, element);
   },
 
   InitializePrototype: function (proto) {
@@ -7143,7 +7195,7 @@ oj.DomUtils.makeFocusable = (function () {
  */
 oj.FocusUtils = {};
 
-oj.FocusUtils._TABBABLE = ':tabbable';
+oj.FocusUtils._TABBABLE = ':tabbable,iframe';
 
 // These functions inspired by AdfFocusUtils
 
@@ -7577,7 +7629,7 @@ oj.GestureUtils.startDetectContextMenuGesture = function (rootNode, callback) {
 /**
  * in some OS/browser combinations you can attempt to detect high contrast mode
  * in javascript, go to the url below and look for "High Contrast"
- * http://www.w3.org/TR/wai-aria-practices/
+ * https://www.w3.org/TR/2016/WD-wai-aria-practices-1.1-20160317/
  *
  * This function uses a variation of the code in the "High Contrast" section of
  * the site above to try and detect high contrast mode
@@ -7596,19 +7648,24 @@ function _ojHighContrast() {
   // I don't care about the actual image, but I do want a legit image
   // otherwise I see an error in chrome and I don't want users to be
   // confused by seeing any error.
+  var div = document.createElement('div');
+  div.style.border = '1px solid';
+  div.style.borderColor = 'red green';
+  div.style.position = 'absolute';
+  div.style.top = '-999px';
+  div.style.backgroundImage = 'url(data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=)';
+  var body = document.body;
+  body.appendChild(div);     // @HTMLUpdateOK safe manipulation
+  var computedStyles = window.getComputedStyle(div);
 
-  var div = $("<div style='border: 1px solid;border-color:red green;position: absolute;top: -999px;background-image: url(data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=);'></div>");
-  div.appendTo('body');     // @HTMLUpdateOK safe manipulation
+  var bki = computedStyles.backgroundImage;
 
-  var bki = div.css('backgroundImage');
-  // console.log("background-image:" + bki);
-  // console.log("borderTopColor == borderRightColor: ", div.css("borderTopColor") == div.css("borderRightColor"));
-  if (div.css('borderTopColor') === div.css('borderRightColor') ||
+  if (computedStyles.borderTopColor === computedStyles.borderRightColor ||
       (bki != null && (bki === 'none' || bki === 'url (invalid-url:)'))) {
-    $('body').addClass('oj-hicontrast');
+    body.classList.add('oj-hicontrast');
   }
 
-  div.remove();
+  body.removeChild(div);
 }
 
 $(document).ready(function () {

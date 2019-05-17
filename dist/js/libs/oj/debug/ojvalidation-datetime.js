@@ -3,10 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojtranslation', 'ojL10n!ojtranslations/nls/localeElements', 'ojs/ojlocaledata', 'ojs/ojvalidation-base', 'ojs/ojlogger'], 
-  function(oj, $, Config, Translations, ojld, LocaleData, __ValidationBase, Logger)
+function(oj, $, Config, Translations, ojld, LocaleData, __ValidationBase, Logger)
 {
+  "use strict";
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -18,7 +18,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojtranslation', 'ojL10n!ojt
 
 /**
  * In most use cases you will use the ConverterFactory to get an instance of a
- * DateTimeConverter.
+ * DateTimeConverter or you will use new oj.IntlDateTimeConverter.
  * @class
  * @param {Object=} options an object literal used to provide an optional information to
  * @augments oj.Converter
@@ -31,6 +31,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojtranslation', 'ojL10n!ojt
  * @export
  * @since 0.6
  * @see oj.ConverterFactory
+ * @see oj.IntlDateTimeConverter
  */
 oj.DateTimeConverter = function (options) {
   this.Init(options);
@@ -331,7 +332,7 @@ oj.DateRestrictionValidator.prototype._inDisabled = function (valueDateParam) {
  *
  * @param {string} value that is being validated
  * @returns {void}
- * @ojdeprecated {since: '6.2.0', description: 'This currently returns the original value
+ * @ojdeprecated {since: '6.2.0', target: "returnType", value: ["string"], description: 'This currently returns the original value
  * if successful. In v8.0 it will return nothing if successful.'}
  * @throws {Error} when there is no match
  * @ojsignature {target: "Type", for: "returns",
@@ -521,7 +522,7 @@ oj.DateTimeRangeValidator.prototype.Init = function (options) {
  *
  * @param {string} value that is being validated
  * @returns {void}
- * @ojdeprecated {since: '6.2.0', description: 'This currently returns the original value
+ * @ojdeprecated {since: '6.2.0', target: "returnType", value: ["string"], description: 'This currently returns the original value
  * if successful. In v8.0 it will return nothing if successful.'}
  * @ojsignature {target: "Type", for: "returns",
  *                value: "void"}
@@ -1240,11 +1241,11 @@ oj.IntlDateTimeConverter = function (options) {
  *   <tbody>
  *     <tr>
  *       <td>true</td>
- *       <td>T13:10  is formatted as “1:10 PM”</td>
+ *       <td>T13:10  is formatted as "1:10 PM"</td>
  *     </tr>
  *     <tr>
  *       <td>false</td>
- *       <td>T13:10 is formatted as “13:10”</td>
+ *       <td>T13:10 is formatted as "13:10"</td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -1490,17 +1491,17 @@ oj.IntlDateTimeConverter = function (options) {
  *     <tr>
  *       <td>datetime</td>
  *       <td>date and time portions are displayed.</td>
- *       <td>“September 20, 2015 12:04 PM”, “September 20, 2015 12:05:35 PM Pacific Daylight Time”</td>
+ *       <td>"September 20, 2015 12:04 PM", "September 20, 2015 12:05:35 PM Pacific Daylight Time"</td>
  *     </tr>
  *     <tr>
  *       <td>date</td>
  *       <td>date portion only is displayed.</td>
- *       <td>“September 20, 2015”</td>
+ *       <td>"September 20, 2015"</td>
  *     </tr>
  *     <tr>
  *       <td>time</td>
  *       <td>time portion only is displayed.</td>
- *       <td>“12:05:35”</td>
+ *       <td>“12:05:35�?</td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -1658,7 +1659,7 @@ oj.IntlDateTimeConverter.prototype.format = function (value) {
  * @param {Object=} relativeOptions - an Object literal containing the following properties. The
  * default options are ignored during relative formatting -
  * @param {string=} relativeOptions.formatUsing - Specifies the relative formatting convention to.
- * Allowed values are "displayName" and “calendar”. Setting value to 'displayName' uses the relative
+ * Allowed values are "displayName" and "calendar". Setting value to 'displayName' uses the relative
  * display name for the instance of the dateField, and one or two past and future instances.
  * When omitted we use the implicit rules.
  * @param {string=} relativeOptions.dateField - To be used in conjunction of 'displayName'  value
@@ -1667,8 +1668,8 @@ oj.IntlDateTimeConverter.prototype.format = function (value) {
  * "fromNow" means the system's current date is the reference and "toNow" means the value attribute
  * is the reference. Default "fromNow".
  * @param {boolean=} relativeOptions.dateOnly - A boolean value that can be used in conjunction with
- * “calendar” of formatUsing attribute.  When set to true date only format is used. Example: “Sunday”
- * instead of “Sunday at 2:30 PM”. Default value is false.
+ * "calendar" of formatUsing attribute.  When set to true date only format is used. Example: "Sunday"
+ * instead of "Sunday at 2:30 PM". Default value is false.
  * @param {string=} relativeOptions.timeZone - The timeZone attribute can be used to specify the
  * time zone of the  value parameter.  The system’s time zone is used for the current time. If timeZone
  * attribute is not specified, we use the system’s time zone  for both. The value parameter, which is an
@@ -1689,22 +1690,22 @@ oj.IntlDateTimeConverter.prototype.format = function (value) {
  *
  * @example <caption>Relative time using dateField. Assuming system’s current date is 2016-07-28.</caption>
  * Format relative year:
- * var options = {formatUsing: ”displayName”, dateField: “year”};
+ * var options = {formatUsing: "displayName", dateField: "year"};
  * var formatted = converter.formatRelative("2015-06-01T00:00:00", options); -> last year
  *
  * @example <caption>Relative time using relativeTime. Assuming system’s current date is 2016-07-28.</caption>
- * var options = {formatUsing: ”displayName”, dateField: “day”, relativeTime: ”fromNow”};
+ * var options = {formatUsing: "displayName", dateField: "day", relativeTime: "fromNow"};
  * var formatted = converter.formatRelative("2016-07-28T00:00:00", options); -> tomorrow
- * options = {formatUsing: ”displayName”, dateField: “day”, relativeTime: toNow};
+ * options = {formatUsing: "displayName", dateField: "day", relativeTime: toNow};
  * formatted = converter.formatRelative("2016-07-28T00:00:00", options); -> yesterday
  *
  * @example <caption>Relative time using calendar. Assuming system’s current date is 2016-07-28.</caption>
- * var options = {formatUsing: ”calendar”};
+ * var options = {formatUsing: "calendar"};
  * var formatted = converter.formatRelative("2016-07-28T14:15:00", options); -> tomorrow at 2:30 PM
  *
  *
  * @example <caption>Relative time using timeZone. Assuming that the system’s time zone is America/Los_Angeles.</caption>
- * var options = {timeZone:”America/New_York”};
+ * var options = {timeZone:"America/New_York"};
  * var nyDateInFuture = new Date();
  * nyDateInFuture.setHours(nyDateInFuture.getHours() + 6);
  * var formatted = converter.formatRelative(oj.IntlConverterUtils.dateToLocalIso(nyDateInFuture), options); -> in 3 hours
@@ -2076,6 +2077,19 @@ oj.IntlDateTimeConverter.prototype._processConverterError = function (e, value) 
             maxValue: parameterMap.maxValue
           });
 
+        converterError = new oj.ConverterError(summary, detail);
+      } else if (errorCode === 'isoStringOutOfRange') {
+        summary = Translations.getTranslatedString(
+          'oj-converter.datetime.invalidISOString.invalidRangeSummary', {
+            isoStr: parameterMap.isoString,
+            propertyName: propName,
+            value: parameterMap.value
+          });
+        detail = Translations.getTranslatedString(
+          'oj-converter.datetime.datetimeOutOfRange.detail', {
+            minValue: parameterMap.minValue,
+            maxValue: parameterMap.maxValue
+          });
         converterError = new oj.ConverterError(summary, detail);
       }
     } else if (e instanceof SyntaxError) {
@@ -3546,37 +3560,6 @@ OraDateTimeConverter = (function () {
     return hour12 === 'h';
   }
 
-  function _isLeapYear(y) {
-    if (y % 400 === 0) {
-      return true;
-    } else if (y % 100 === 0) {
-      return false;
-    } else if (y % 4 === 0) {
-      return true;
-    }
-    return false;
-  }
-
-  function _getDaysInMonth(y, m) {
-    switch (m) {
-      case 0 :
-      case 2 :
-      case 4 :
-      case 6 :
-      case 7 :
-      case 9 :
-      case 11 :
-        return 31;
-      case 1:
-        if (_isLeapYear(y)) {
-          return 29;
-        }
-        return 28;
-      default:
-        return 30;
-    }
-  }
-
   // returns the locale's pattern from the predefined styles.
   // EX: for en-US dateFormat:"full" returns the pattern "EEEE, MMMM d, y".
   function _expandPredefinedStylesFormat(options, localeElements, caller) {
@@ -4293,6 +4276,22 @@ OraDateTimeConverter = (function () {
     return index;
   }
 
+  function _parseTimezoneOffset(_offset) {
+    var offsetParts = _offset.split(':');
+    // offset is +hh:mm
+    if (offsetParts.length === 2) {
+      offsetParts[0] = parseInt(offsetParts[0], 10);
+      offsetParts[1] = parseInt(offsetParts[1], 10);
+    } else if (_offset.length === 3) { // offset is +hh
+      offsetParts[0] = parseInt(_offset, 10);
+      offsetParts[1] = 0;
+    } else { // offset is +hhmm
+      offsetParts[0] = parseInt(_offset.substr(0, 3), 10);
+      offsetParts[1] = parseInt(_offset.substr(3), 10);
+    }
+    return offsetParts;
+  }
+
   function _formatImpl(localeElements, options, isoStrInfo, locale) {
     var ret;
     var format;
@@ -4384,9 +4383,9 @@ OraDateTimeConverter = (function () {
       } else if (isoStrInfo.format !== _LOCAL) {
         switch (isoStrInfo.format) {
           case _OFFSET :
-            offset = isoStrInfo.timeZone.split(':');
-            var hoursOffset = parseInt(offset[0], 10);
-            var minOffset = parseInt(offset[1], 10);
+            var offsetParts = _parseTimezoneOffset(isoStrInfo.timeZone);
+            var hoursOffset = offsetParts[0];
+            var minOffset = offsetParts[1];
             offset = (hoursOffset * 60) +
               (oj.OraI18nUtils.startsWith(isoStrInfo.timeZone, '-') ? -minOffset : minOffset);
             break;
@@ -4472,7 +4471,7 @@ OraDateTimeConverter = (function () {
               } else {
                 ret.push('+0000');
               }
-            } else {
+            } else if (part !== undefined) {
               ret.push(
                 (part <= 0 ? '-' : '+') +
                   oj.OraI18nUtils.padZeros(Math.floor(Math.abs(part / 60)), 2) +
@@ -4485,7 +4484,7 @@ OraDateTimeConverter = (function () {
             part = _getTimezoneOffset(value, options, isTimeOnly);
             if (part === 0) {
               ret.push('Z');
-            } else {
+            } else if (part !== undefined) {
               ret.push(
                 (part <= 0 ? '-' : '+') +
                   oj.OraI18nUtils.padZeros(Math.floor(Math.abs(part / 60)), 2) + ':' +
@@ -4498,7 +4497,7 @@ OraDateTimeConverter = (function () {
             part = _getTimezoneOffset(value, options, isTimeOnly);
             if (part === 0) {
               ret.push('Z');
-            } else {
+            } else if (part !== undefined) {
               ret.push(
                 (part <= 0 ? '-' : '+') +
                   oj.OraI18nUtils.padZeros(Math.floor(Math.abs(part / 60)), 2));
@@ -4585,7 +4584,7 @@ OraDateTimeConverter = (function () {
     var day1 = d1.getDate();
     var day2 = d2.getDate();
     if (_isNextMonth(d1, d2)) {
-      day2 += _getDaysInMonth(d1.getFullYear, d1.getMonth());
+      day2 += oj.OraI18nUtils._getDaysInMonth(d1.getFullYear, d1.getMonth());
     }
     return day2 - day1;
   }
@@ -5356,7 +5355,7 @@ OraDateTimeConverter = (function () {
       }
     }
     month -= 1;
-    var daysInMonth = _getDaysInMonth(year, month);
+    var daysInMonth = oj.OraI18nUtils._getDaysInMonth(year, month);
     // if both month and day > 12 and swapped, throw exception
     // based on original order
     if (foundDay && dayIndex !== foundDayIndex && month > 12) {
@@ -5518,7 +5517,7 @@ OraDateTimeConverter = (function () {
         _throwWeekdayMismatch(dName, parsedDate.getDate());
       }
     }
-    var daysInMonth = _getDaysInMonth(year, month);
+    var daysInMonth = oj.OraI18nUtils._getDaysInMonth(year, month);
     _validateRange('day', day, 1, daysInMonth, day, 1, daysInMonth);
     var result = {
       value: parsedDate,
@@ -5729,7 +5728,7 @@ OraDateTimeConverter = (function () {
     _validateRange('month', month, 0, 11, month + 1, 1, 12);
 
     // validate day range, depending on the month and year
-    var daysInMonth = _getDaysInMonth(year, month);
+    var daysInMonth = oj.OraI18nUtils._getDaysInMonth(year, month);
     _validateRange('day', date, 1, daysInMonth, date, 1, daysInMonth);
     parsedDate.setFullYear(year, month, date);
 
@@ -5897,12 +5896,11 @@ OraDateTimeConverter = (function () {
         value[3], value[4], value[5]);
     switch (isoStrFormat) {
       case _OFFSET :
-        var tzPart = isoStrInfo.timeZone;
-        origOffset = tzPart.split(':');
-        var hoursOffset = parseInt(origOffset[0], 10);
-        var minOffset = parseInt(origOffset[1], 10);
+        var tzParts = _parseTimezoneOffset(isoStrInfo.timeZone);
+        var hoursOffset = tzParts[0];
+        var minOffset = tzParts[1];
         origOffset = (hoursOffset * 60) +
-          (oj.OraI18nUtils.startsWith(tzPart, '-') ? -minOffset : minOffset);
+          (hoursOffset < 0 ? -minOffset : minOffset);
         break;
       case _ZULU :
         origOffset = 0;
@@ -5916,7 +5914,10 @@ OraDateTimeConverter = (function () {
     // 2.adjust utcd to target zone
     utcd -= (newOffset + origOffset) * 60000;
     // 3.get target zone offset
-    index = zone.parse(utcd, false, true, false);
+    var getOption = oj.OraI18nUtils.getGetOption(options, 'OraDateTimeConverter');
+    var dst = getOption('dst', 'boolean', [true, false], false);
+    var isTimeOnly = isoStrInfo.dateTime.indexOf('T') === 0;
+    index = zone.parse(utcd, dst, !isTimeOnly, false);
     newOffset = -zone.ofset(index);
     // adjust the offset
     newOffset -= origOffset;

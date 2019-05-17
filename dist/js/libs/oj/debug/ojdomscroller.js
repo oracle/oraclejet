@@ -3,14 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'jquery'], function(oj, $)
 {
+  "use strict";
 /* jslint browser: true*/
 /*
 ** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
@@ -47,21 +42,35 @@ oj.DomScroller = function (element, dataprovider, options) {
   this._successCallback = options.success;
   this._requestCallback = options.request;
   this._errorCallback = options.error;
+  this._beforeFetchCallback = options.beforeFetch;
+  this._localKeyValidator = options.localKeyValidator;
   this._registerDataSourceEventListeners();
   this._fetchTrigger = options.fetchTrigger;
   if (this._fetchTrigger == null || isNaN(this._fetchTrigger)) {
     this._fetchTrigger = 0;
   }
   this._initialScrollTop = this._element.scrollTop;
+  this._nextFetchTrigger = ((this._element.scrollHeight - this._element.clientHeight) / 2) +
+    this._fetchTrigger;
+  this._lastFetchTrigger = 0;
+  this._isScrollTriggeredByMouseWheel = false;
 
-  $(this._getScrollEventElement()).on('scroll.domscroller', function () {
-    var target = this._element;
-    var scrollTop = this._getScrollTop(target);
-    var maxScrollTop = target.scrollHeight - target.clientHeight;
-    if (maxScrollTop > 0) {
-      this._handleScrollerScrollTop(scrollTop, maxScrollTop);
-    }
-  }.bind(this));
+  $(this._getScrollEventElement()).on({
+    'scroll.domscroller': function () {
+      var target = this._element;
+      var scrollTop = this._getScrollTop(target);
+      var maxScrollTop = target.scrollHeight - target.clientHeight;
+      if (maxScrollTop > 0) {
+        this._handleScrollerScrollTop(scrollTop, maxScrollTop);
+      }
+    }.bind(this),
+    'wheel.domscroller': function () {
+      this._isScrollTriggeredByMouseWheel = true;
+    }.bind(this),
+    'mousedown.domscroller': function () {
+      this._isScrollTriggeredByMouseWheel = false;
+    }.bind(this)
+  });
 };
 
 /**
@@ -138,7 +147,7 @@ oj.DomScroller.prototype._getScrollTop = function (element) {
  */
 oj.DomScroller.prototype.destroy = function () {
   this._unregisterDataSourceEventListeners();
-  $(this._getScrollEventElement()).off('scroll.domscroller');
+  $(this._getScrollEventElement()).off('.domscroller');
 };
 
 /**
@@ -153,10 +162,43 @@ oj.DomScroller.prototype.destroy = function () {
  */
 oj.DomScroller.prototype.checkViewport = function () {
   if (this._asyncIterator && this._element.clientHeight > 0 &&
-      !this._checkOverflow()) {
+      !this.isOverflow()) {
     return this._fetchMoreRows();
   }
   return Promise.resolve(null);
+};
+
+/**
+ * Fetch more rows if beforeFetch callback allows it
+ * @private
+ */
+oj.DomScroller.prototype._doFetch = function (scrollTop) {
+  var self = this;
+
+  if (this._beforeFetchCallback(scrollTop - this._fetchTrigger)) {
+    this._lastFetchTrigger = scrollTop;
+
+    var isMouseWheel = self._isScrollTriggeredByMouseWheel;
+    this._fetchPromise = this._fetchMoreRows().then(function (result) {
+      if (self._successCallback) {
+        // eslint-disable-next-line no-param-reassign
+        result.isMouseWheel = isMouseWheel;
+        self._successCallback(result);
+        self._fetchPromise = null;
+        // re-calculated on next scroll
+        self._nextFetchTrigger = undefined;
+      }
+    }, function (reason) {
+      if (self._errorCallback) {
+        self._errorCallback(reason);
+        self._fetchPromise = null;
+        self._nextFetchTrigger = undefined;
+      }
+    });
+  } else {
+    // items not rendered yet, reset nextFetchTrigger so it gets calculated again
+    this._nextFetchTrigger = undefined;
+  }
 };
 
 /**
@@ -164,29 +206,42 @@ oj.DomScroller.prototype.checkViewport = function () {
  * @private
  */
 oj.DomScroller.prototype._handleScrollerScrollTop = function (scrollTop, maxScrollTop) {
-  if (maxScrollTop - scrollTop <= 1 && scrollTop > this._fetchTrigger && !this._fetchPromise) {
-    if (this._asyncIterator) {
-      var self = this;
-      this._fetchMoreRows().then(function (result) {
-        if (self._successCallback) {
-          self._successCallback(result);
+  if (!this._fetchPromise && this._asyncIterator) {
+    if (isNaN(this._nextFetchTrigger)) {
+      this._nextFetchTrigger = Math.max(0, (maxScrollTop - scrollTop) / 2);
+    }
+
+    if (scrollTop - this._lastFetchTrigger > this._nextFetchTrigger) {
+      this._doFetch(scrollTop);
+
+      // note beforeFetchCallback would return false if the render queue is non-empty
+      // in which case we should just wait until the next idle cycle to clear the queue
+      return;
+    }
+  }
+
+  if (maxScrollTop - scrollTop < 1 && scrollTop > this._fetchTrigger) {
+    if (this._fetchPromise) {
+      // at the bottom but fetch has not return yet, in which case we will block UI via requestCallback
+      if (this._asyncIterator) {
+        if (this._requestCallback != null) {
+          this._requestCallback();
         }
-      }, function (reason) {
-        if (self._errorCallback) {
-          self._errorCallback(reason);
-        }
-      });
-    } else if (this._errorCallback != null) {
-      this._errorCallback();
+      } else if (this._errorCallback != null) {
+        this._errorCallback();
+      }
+    } else if (this._asyncIterator) {
+      // at the bottom and all items from last fetch are rendered, start a new fetch
+      this._doFetch(scrollTop);
     }
   }
 };
 
 /**
  * Check whether the scroll DOM has overflowed
- * @private
+ * @return {boolean} true if overflowed, false otherwise
  */
-oj.DomScroller.prototype._checkOverflow = function () {
+oj.DomScroller.prototype.isOverflow = function () {
   var element = this._element;
 
   if (element.scrollHeight > element.clientHeight + this._fetchTrigger) {
@@ -207,9 +262,6 @@ oj.DomScroller.prototype._fetchMoreRows = function () {
       var self = this;
 
       if (this._asyncIterator) {
-        if (this._requestCallback != null) {
-          this._requestCallback();
-        }
         this._fetchPromise = this._asyncIterator.next().then(function (_result) {
           var result = _result;
           self._fetchPromise = null;
@@ -250,35 +302,80 @@ oj.DomScroller.prototype._fetchMoreRows = function () {
   return this._fetchPromise;
 };
 
+/**
+ * @private
+ */
 oj.DomScroller.prototype._handleDataRowMutateEvent = function (event) {
-  var mutationType = null;
-  var eventDetail = null;
+  // if everything has been fetched already then we don't have to do anything also
+  if (this._asyncIterator == null) {
+    return;
+  }
+
+  var eventDetail;
+  var indexes;
+  var keys;
+  var self = this;
+
+  if (event.detail.add != null) {
+    eventDetail = event.detail.add;
+    // for add, it exists if index is in range, or before/after key is in range
+    if (eventDetail.indexes != null) {
+      indexes = eventDetail.indexes;
+    } else if (eventDetail.addBeforeKeys != null) {
+      keys = eventDetail.addBeforeKeys;
+    } else if (eventDetail.afterKeys != null) {
+      // deprecated but still needs to support it
+      keys = eventDetail.afterKeys;
+    } else {
+      // no keys and indexes, then it's inserting to the end
+      // since we already bail when there are nothing to fetch, the only
+      // case is when we have not reached the end yet, in which case
+      // we should not do anything since it's outside of range
+    }
+
+    this._handleDataRowAddedOrRemoved(keys, indexes, function () {
+      self._rowCount += 1;
+    });
+  }
 
   if (event.detail.remove != null) {
-    mutationType = 'remove';
     eventDetail = event.detail.remove;
-  }
-  if (event.detail.add != null) {
-    mutationType = 'add';
-    eventDetail = event.detail.add;
-  }
+    // for remove, it exists if index or key is in range
+    if (eventDetail.indexes != null) {
+      indexes = eventDetail.indexes;
+    } else if (eventDetail.keys != null) {
+      keys = eventDetail.keys;
+    }
 
-  if (mutationType != null) {
-    var eventIndexes = eventDetail.indexes;
-    var eventIndexesCount = eventIndexes.length;
-    for (var i = 0; i < eventIndexesCount; i++) {
-      var rowIdx = eventIndexes[i];
+    this._handleDataRowAddedOrRemoved(keys, indexes, function () {
+      self._rowCount -= 1;
+    });
+  }
+};
 
+/**
+ * @private
+ */
+oj.DomScroller.prototype._handleDataRowAddedOrRemoved = function (keys, indexes, callback) {
+  if (indexes) {
+    for (var i = 0; i < indexes.length; i++) {
+      var rowIdx = indexes[i];
       // we only care if the row is in our range
       if (rowIdx !== undefined &&
           this._rowCount > 0 &&
           rowIdx <= this._rowCount) {
-        if (mutationType === 'add') {
-          this._rowCount = this._rowCount + 1;
-        } else if (mutationType === 'remove') {
-          this._rowCount = this._rowCount - 1;
-        }
+        callback();
       }
+    }
+  } else if (keys) {
+    var keyValidator = this._localKeyValidator;
+    if (keyValidator != null) {
+      // forEach works for both Array and Set
+      keys.forEach(function (key) {
+        if (keyValidator(key)) {
+          callback();
+        }
+      });
     }
   }
 };

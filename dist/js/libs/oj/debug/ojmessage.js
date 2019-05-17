@@ -3,13 +3,11 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojtranslation', 'hammerjs', 'ojs/ojcomposite', 'ojs/ojcomponentcore', 'ojs/ojanimation', 
-      'ojs/ojvalidation-base', 'ojs/ojlogger', 'ojs/ojjquery-hammer', 'ojs/ojknockout', 'ojs/ojbutton', 'ojs/ojvalidation-datetime'], 
-       function(oj, $, ko, Context, ThemeUtils, Translations,  Hammer, Composite, Components, AnimationUtils, __ValidationBase, Logger)
-{
- 
 
+define(['ojs/ojcore', 'jquery', 'knockout', 'require', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojtranslation', 'hammerjs', 'ojs/ojcomposite', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojjquery-hammer', 'ojs/ojknockout', 'ojs/ojbutton'], 
+function(oj, $, ko, localRequire, Context, ThemeUtils, Translations,  Hammer, Composite, Components, AnimationUtils, Logger)
+{
+  "use strict";
 var __oj_message_metadata = 
 {
   "properties": {
@@ -115,9 +113,7 @@ var __oj_message_metadata =
     "getSubIdByNode": {}
   },
   "events": {
-    "ojClose": {},
-    "ojAnimateStart": {},
-    "ojAnimateEnd": {}
+    "ojClose": {}
   },
   "extension": {}
 };
@@ -126,13 +122,13 @@ var __oj_message_metadata =
  * All rights reserved.
  */
 
-/* global ko:false, Hammer:false, Promise:false, Components:false, __ValidationBase: false, Logger:false, Translations:false, ThemeUtils:false, Context:false */
+/* global ko:false, Hammer:false, Promise:false, Components:false, Logger:false, Translations:false, ThemeUtils:false, Context:false, localRequire:false */
 
 /**
  * @ojcomponent oj.ojMessage
  * @since 5.0.0
  * @ojdisplayname Message
- * @ojshortdesc Displays a message
+ * @ojshortdesc A message conveys categorized information to the user, often regarding errors.
  * @ojstatus preview
  * @ojsignature {target: "Type", value:"class ojMessage extends JetElement<ojMessageSettableProperties>"}
  *
@@ -289,6 +285,7 @@ var __oj_message_metadata =
  * @expose
  * @type {string}
  * @name message.icon
+ * @ojshortdesc Specifies the URL for the custom image to be used as an icon representing the message. See the Help documentation for more information.
  * @default ""
  * @instance
  * @since 5.0.0
@@ -314,6 +311,7 @@ var __oj_message_metadata =
  * @expose
  * @type {string}
  * @name message.category
+ * @ojshortdesc Specifies message category text which is shown next to the message icon. See the Help documentation for more information.
  * @default ""
  * @instance
  * @since 5.0.0
@@ -374,6 +372,7 @@ var __oj_message_metadata =
  * @expose
  * @type {string}
  * @name message.timestamp
+ * @ojshortdesc Specifies a timestamp for the message to be displayed in the message header. See the Help documentation for more information.
  * @default ""
  * @instance
  * @since 5.0.0
@@ -449,6 +448,7 @@ var __oj_message_metadata =
  * @expose
  * @type {number}
  * @name message.autoTimeout
+ * @ojshortdesc Specifies the duration in milliseconds that the message will be shown before it closes automatically. See the Help documentation for more information.
  * @default -1
  * @instance
  * @since 5.0.0
@@ -538,6 +538,7 @@ var __oj_message_metadata =
  * @expose
  * @type {string}
  * @name message.sound
+ * @ojshortdesc Specifies the sound to be played when a message is opened. This is needed for accessibility. See the Help documentation for more information.
  * @default "none"
  * @instance
  * @since 5.0.0
@@ -596,6 +597,8 @@ var __oj_message_metadata =
  * @expose
  * @type {string}
  * @name displayOptions.category
+ * @ojshortdesc Specifies the display option for message category text in this message.
+ *
  * @ojvalue {string} "header" if the {@link oj.ojMessage#message.category} property is specified,
  *  its value will be displayed in the header region of the message next to message icon. If
  *  {@link oj.ojMessage#message.category} property is not specified, a translated text corresponding
@@ -665,6 +668,7 @@ var __oj_message_metadata =
    *
    * @ojstatus preview
    * @ojslot detail
+   * @ojshortdesc The detail slot accepts DOM nodes as children. It is useful for adding links or buttons to the message's detail area.
    * @ojmaxitems 1
    * @memberof oj.ojMessage
    * @since 6.2.0
@@ -696,22 +700,18 @@ var __oj_message_metadata =
  * @ojsignature {target:"Type", value:"oj.ojMessage.Message", for:"message", jsdocOverride: true}
  */
 
+// Currently animate events is public API, however we do NOT want applications to use this API.
+// It is being removed in near future. Excluding it from JSDoc since v7.0.0 using @ignore hence.
 /**
- * Triggered when the default animation is about to start for the open or close actions of the message .
+ * Triggered when the default animation is about to start for the open or close actions of the message.
  * The default animation can be cancelled by calling
  * <code class="prettyprint">event.preventDefault</code>.
  *
- * <p>In order to override open animation, the ojAnimateStart event listener needs to be
- * registered before the component is created. This means that <code>onOjAnimateStart</code>
- * cannot be used to register listener for 'open' action because it doesn't exist
- * until the component is upgraded or created at which time it is open. For the 'open' action, use
- * the <code>addEventListener</code> method on the associated oj-message elements or
- * <code>on-oj-animate-start</code> attribute to register a listener instead.</p>
- *
- * @expose
+ * @ignore
  * @event
  * @memberof oj.ojMessage
  * @name animateStart
+ * @ojshortdesc Triggered when the default animation is about to start for the open or close actions of the message. See the Help documentation for more information.
  * @instance
  * @since 5.0.0
  * @ojcancelable
@@ -728,16 +728,16 @@ var __oj_message_metadata =
  *            endCallback function when it finishes its own animation handling and any
  *            custom animation has ended.
  *
- * @example <caption>Bind an event listener to the
- *          <code class="prettyprint">onOjAnimateStart</code> property to override the default
+ * @example <caption>Add a listener for the
+ *          <code class="prettyprint">ojAnimateStart</code> event to override the default
  *          "close" animation:</caption>
- * myMessage.onOjAnimateStart = function(event) {
+ * myMessage.addEventListener("ojAnimateStart", function(event) {
  *   // verify that the component firing the event is a component of interest and action is close
  *   if (event.detail.action == "close") {
  *     event.preventDefault();
  *     oj.AnimationUtils.slideOut(event.detail.element, {"persist":  "all"}).then(event.detail.endCallback);
  *   }
- * };
+ * });
  *
  * @example <caption>The default open and close animations are controlled via the theme
  *          (SCSS) :</caption>
@@ -749,15 +749,18 @@ var __oj_message_metadata =
  * $messageNotificationOverlayCloseAnimation: ((effect: "zoomOut", persist: "all"), "fadeOut")  !default;
  */
 
+// Currently animate events is public API, however we do NOT want applications to use this API.
+// It is being removed in near future. Excluding it from JSDoc since v7.0.0 using @ignore hence.
 /**
  * Triggered when the default animation is about to end for the open or close actions of the message.
  * The default animation can be cancelled by calling
  * <code class="prettyprint">event.preventDefault</code>.
  *
- * @expose
+ * @ignore
  * @event
  * @memberof oj.ojMessage
  * @name animateEnd
+ * @ojshortdesc Triggered when the default animation is about to end for the open or close actions of the message.
  * @instance
  * @since 5.0.0
  * @ojcancelable
@@ -772,13 +775,13 @@ var __oj_message_metadata =
  *                      <li>"close" - when a message is closed</li>
  *                    </ul>
  *
- * @example <caption>Bind an event listener to the
- *          <code class="prettyprint">onOjAnimateEnd</code> property to listen for the "close"
+ * @example <caption>Add a listener for the
+ *          <code class="prettyprint">ojAnimateEnd</code> event to listen for the "close"
  *          ending animation:</caption>
- * myMessage.onOjAnimateEnd = function(event) {
+ * myMessage.addEventListener("ojAnimateEnd", function(event) {
  *   // verify that the component firing the event is a component of interest and action is close
  *   if (event.detail.action == "close") {}
- * };
+ * });
  *
  * @example <caption>The default open and close animations are controlled via the theme
  *          (SCSS) :</caption>
@@ -816,6 +819,7 @@ var __oj_message_metadata =
  * of the change, triggering a [property]Changed event.
  *
  * @function setProperty
+ * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
  * @param {any} value - The new value to set the property to.
  * @expose
@@ -906,9 +910,9 @@ var _MESSAGE_VIEW =
   '      </oj-bind-if>' +
   '    </div>' +
   '    <div class="oj-message-trailing-header">' +
-  '      <oj-bind-if test="[[computedTimestamp]]">' +
+  '      <oj-bind-if test="[[formattedTimestamp]]">' +
   '        <div class="oj-message-timestamp">' +
-  '          <oj-bind-text value="[[computedTimestamp]]"></oj-bind-text> ' +
+  '          <oj-bind-text value="[[formattedTimestamp]]"></oj-bind-text> ' +
   '        </div>' +
   '      </oj-bind-if>' +
   '      <oj-bind-if test="[[hasCloseAffordance]]">' +
@@ -1034,7 +1038,7 @@ MessageViewModel.prototype._propertyChanged = function (detail) {
   }
 
   if (subPropertyChanged(detail, 'message', 'timestamp')) {
-    this.computedTimestamp(this._computeTimestamp());
+    this.formattedTimestamp(this._formatTimestamp());
   }
 
   if (subPropertyChanged(detail, 'message', 'summary')) {
@@ -1167,41 +1171,71 @@ MessageViewModel.prototype._computeSeverity = function () {
   return (message.severity === 'fatal') ? 'error' : message.severity;
 };
 
-MessageViewModel.prototype._computeTimestamp = function () {
+MessageViewModel.prototype._formatTimestamp = function () {
   var message = this._properties.message;
 
-  if (oj.StringUtils.isEmptyOrUndefined(message.timestamp)) {
-    return undefined;
+  if (!oj.StringUtils.isEmptyOrUndefined(message.timestamp)) {
+    // loading library could be long running op. Set a busy state.
+    var busyContext = Context.getContext(this._composite).getBusyContext();
+    var options =
+      { description: 'oj-message is busy loading required libraries and processing timestamp' };
+    var resolve = busyContext.addBusyState(options);
+
+    // Our NLS rules restrict that the numerals in the date string should be in latin digits
+    //  regardless of the locale/language. The standard JS Date/DateTimeFormat global objects in
+    //  its toLocaleString/toLocaleTimeString/format methods always translates the numerals also
+    //  into respective languages (eg. ar-EG), without providing an option. Hence we need to use our
+    //  default converter that deals with our NLS requirements already. However, the validation
+    //  module is significantly huge, having static dependency on them increases our core module
+    //  size, so optimizing performance by loading it dynamically and asynchronously only when
+    //  timestamp is defined.
+    var converterPromise = this._getConverterPromise(message.timestamp);
+
+    converterPromise.then(function (converter) {
+      try {
+        var formattedTimestamp = converter.format(message.timestamp);
+
+        // fine to update the observable directly with resolved value, it will also be updated
+        //  in propertyChanged() if timestamp was to change
+        this.formattedTimestamp(formattedTimestamp);
+      } catch (e) {
+        // expect oj.ConverterError if supplied value is not valid
+        Logger.info(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
+          "': failed to parse or format the supplied value to message.timestamp='",
+          message.timestamp, "'."].join(''));
+      } finally {
+        resolve();
+      }
+    }.bind(this));
   }
 
-  try {
-    // get the default converter, use default format as in UX specs
-    var converter = __ValidationBase.Validation.converterFactory(
-      oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-      .createConverter({ pattern: 'MM/dd/yy, hh:mm a' });
+  return undefined;
+};
 
-    var formattedTimestamp = converter.format(message.timestamp);
+MessageViewModel.prototype._getConverterPromise = function (timestamp) {
+  var validationBaseLoadPromise = oj.__getRequirePromise('./ojvalidation-base', localRequire);
+  var validationDateTimeLoadPromise =
+    oj.__getRequirePromise('./ojvalidation-datetime', localRequire);
 
-    // not so-clean implementation about how we avoid displaying date part when it is same date,
-    //  should be solved better when we provide API to set custom converter in near future
-    if (this._isDateToday(message.timestamp)) {
-      formattedTimestamp = formattedTimestamp.split(', ')[1];
-    }
-
-    return formattedTimestamp;
-  } catch (e) {
-    // expect oj.ConverterError if supplied value is not valid
-    Logger.info(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
-      "': failed to parse or format the supplied value to message.timestamp='",
-      message.timestamp, "'."].join(''));
-
-    return undefined;
+  if (!validationBaseLoadPromise || !validationDateTimeLoadPromise) {
+    Logger.warning(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
+      "': failed to parse message.timestamp='", timestamp,
+      "' because require() is not available"].join(''));
   }
+
+  return Promise.all([validationBaseLoadPromise, validationDateTimeLoadPromise])
+    .then(function (loadedObjects) {
+      // get the default datetime converter
+      var dateTimeConverterFactory = loadedObjects[0].Validation.converterFactory('datetime');
+      // use default format as in UX specs
+      var pattern = this._isDateToday(timestamp) ? 'hh:mm a' : 'MM/dd/yy, hh:mm a';
+      return dateTimeConverterFactory.createConverter({ pattern: pattern });
+    }.bind(this));
 };
 
 MessageViewModel.prototype._isDateToday = function (isoDate) {
   var todayDate = new Date();
-  var suppliedDate = __ValidationBase.IntlConverterUtils.isoToLocalDate(isoDate);
+  var suppliedDate = new Date(isoDate);
 
   return todayDate.getUTCFullYear() === suppliedDate.getUTCFullYear() &&
          todayDate.getUTCMonth() === suppliedDate.getUTCMonth() &&
@@ -1530,7 +1564,7 @@ MessageViewModel.prototype._createObservables = function () {
   this.computedIconClass = ko.observable(this._computeIconClass());
   this.computedSeverity = ko.observable(this._computeSeverity());
   this.computedCategory = ko.observable(this._computeCategory());
-  this.computedTimestamp = ko.observable(this._computeTimestamp());
+  this.formattedTimestamp = ko.observable(this._formatTimestamp());
   this.computedLabelCloseIcon = ko.observable(this._computeLabelCloseIcon());
   this.computedMessageCloseSelectors = ko.observable(this._computeMessageCloseSelectors());
   this.computedSummary = ko.observable(this._computeSummary());

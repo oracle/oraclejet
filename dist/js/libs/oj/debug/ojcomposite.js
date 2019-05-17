@@ -3,10 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockout'], function(oj, HtmlUtils, Logger)
 {
-/* global Promise:false */
+  "use strict";
+/* global Promise:false , Logger:false */
 
 /**
  * <p>
@@ -19,6 +19,7 @@ define(['ojs/ojcore', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'promise', 'ojs/ojcusto
  *
  * @namespace
  * @ojtsmodule
+ * @ojtsimport {module: "ojmetadata", type: "AMD", importName:"MetadataTypes"}
  * @since 2.0.0
  */
 oj.Composite = {};
@@ -32,12 +33,13 @@ var Composite = oj.Composite;
  * @return {Promise|null}
  * @ojdeprecated {since: '5.0.0', description: 'Use Composite.getComponentMetadata instead.'}
  * @ojsignature {target: "Type", value: "Promise<oj.Composite.Metadata>|null", for: "returns", jsdocOverride: true}
- *
+ * @ignore
  * @export
  * @memberof oj.Composite
  *
  */
 oj.Composite.getMetadata = function (name) {
+  Logger.error('Composite.getMetadata(\'' + name + '\'): This method is scheduled for removal.  Call Composite.getComponentMetadata instead.');
   var metadata = oj.Composite.getComponentMetadata(name);
   return metadata ? Promise.resolve(metadata) : null;
 };
@@ -51,7 +53,7 @@ oj.Composite.getMetadata = function (name) {
  * @memberof oj.Composite
  * @since 5.0.0
  * @ojstatus preview
- * @ojsignature {target: "Type", value: "oj.Composite.Metadata|null", for: "returns", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "MetadataTypes.ComponentMetadata|null", for: "returns", jsdocOverride: true}
  *
  */
 oj.Composite.getComponentMetadata = function (name) {
@@ -72,18 +74,12 @@ oj.Composite.getComponentMetadata = function (name) {
  * @param {string} name The component name, which should contain a dash '-' and not be a reserved tag name.
  * @param {Object} descriptor The registration descriptor. The descriptor will contain keys for Metadata, View, ViewModel
  * and CSS that are detailed below. At a minimum a composite must register Metadata and View files, but all others are optional.
- * The composite resources should be mapped directly to each descriptor key. The support for an object with an 'inline' key mapped
- * to the resource has been deprecated in 5.0.0.
+ * The composite resources should be mapped directly to each descriptor key.
  * See the <a href="CompositeOverview.html#registration">registration section</a> above for a sample usage.
- * @param {oj.Composite.Metadata} descriptor.metadata A JSON formatted object describing the composite APIs. See the <a href="CompositeOverview.html#metadata">metadata documentation</a> for more info.
- * @param {string|Array.<Node>|DocumentFragment} descriptor.view A string, array of DOM nodes, or document fragment representing the HTML that will be used for the composite.
- *                                 <b>The array of DOM nodes and document fragment types are deprecated in 5.0.0.</b>
- * @param {string} descriptor.css (Deprecated) A string containing the composite CSS. <b>Note that this key should not be used if the composite
- *                                styles contain references to any external resources.</b>
- * @param {function(oj.Composite.ViewModelContext):void|Object} [descriptor.viewModel] This option is only applicable to composites hosting a Knockout template
- *                                      with a ViewModel and ultimately resolves to a constructor function or object instance.
- *                                      If the initial ViewModel resolves to an object instance, the initialize lifecycle listener
- *                                      will be called. See the <a href="CompositeOverview.html#ViewModel">initialize documentation</a> for more information.
+ * @param {Object} descriptor.metadata A JSON formatted object describing the composite APIs. See the <a href="CompositeOverview.html#metadata">metadata documentation</a> for more info.
+ * @param {string} descriptor.view A string representing the HTML that will be used for the composite.
+ * @param {function(oj.Composite.ViewModelContext):void} [descriptor.viewModel] This option is only applicable to composites hosting a Knockout template
+ *                                      with a ViewModel and ultimately resolves to a constructor function.
  * @param {function(string, string, Object, function(string):any):any} [descriptor.parseFunction] The function that will be called to parse attribute values.
  *                                                              Note that this function is only called for non bound attributes. The parseFunction will take the following parameters:
  * <ul>
@@ -98,16 +94,11 @@ oj.Composite.getComponentMetadata = function (name) {
  * @ojsignature [
  *               {target: "Type",
  *                value: "<P extends PropertiesType= PropertiesType>(name: string, descriptor: {
- *                metadata: Metadata;
+ *                metadata: MetadataTypes.ComponentMetadata;
  *                view: string;
  *                viewModel?: {new(context: ViewModelContext<P>): ViewModel<P>};
- *                parseFunction?: ((value: string, name: string, meta: object, defaultParseFunction?: (value: string) => any) => any);}): void"}]
+ *                parseFunction?: ((value: string, name: string, meta: MetadataTypes.ComponentMetadataProperties, defaultParseFunction?: (value: string) => any) => any);}): void"}]
  * @return {void}
- *
- *
- * @ojdeprecated [{target: "property", for: "descriptor.css", since: "4.1.0", description: "Please use require-css, a RequireJS CSS plugin for CSS loading instead."},
- *               {target: "parameterType", for: "descriptor.view", value: ["Array.<Node>", "DocumentFragment"], since: "5.0.0", description: "Please use the string type instead."},
- *               {target: "parameterType", for: "descriptor.viewModel", value: "Object", since: "5.0.0", description: "Please return a constructor function instead."}]
  *
  * @export
  * @memberof oj.Composite
@@ -169,19 +160,6 @@ oj.Composite.__BINDING_PROVIDER = '__oj_binding_prvdr';
 
 
 // TYPEDEFS
-
-/**
- * @typedef {Object} oj.Composite.Metadata This typedef only contains the top level run time metadata properties.
- * Please see the <a href=CompositeOverview.html#metadata>Metadata</a> section for the full set of run time and design time metadata properties.
- * @property {string} name
- * @property {string} version
- * @property {string} jetVersion
- * @property {Object=} properties
- * @property {Object=} methods
- * @property {Object=} events
- * @property {Object=} slots
- */
-
 /**
  * @typedef {Object} oj.Composite.ViewModel
  * @property {function(oj.Composite.ViewModelContext):(Promise|void)=} [activated] Invoked after the ViewModel is initialized.
@@ -196,22 +174,6 @@ oj.Composite.__BINDING_PROVIDER = '__oj_binding_prvdr';
  * @property {function(oj.Composite.PropertyChangedContext):void=} [propertyChanged] Invoked when properties are updated and before the
  *                                                                                 [property]Changed event is fired.
  * @property {function(Element):void=} [disconnected] Invoked when this composite component is disconnected from the DOM.
- *
- * @property {function(oj.Composite.ViewModelContext):void=} initialize Invoked only if the ViewModel specified during registration is
- *                                                                      an object instance as opposed to a constructor function. If the registered
- *                                                                      ViewModel is a constructor function, the same context object will be passed
- *                                                                      to the constructor function instead. This method can return 1) nothing in
- *                                                                      which case the original model instance will be used, 2) a new model instance
- *                                                                      which will replace the original, or 3) a Promise which resolves to a new model
- *                                                                      instance which will replace the original and delay additional lifecycle phases
- *                                                                      until it is resolved.
- * @property {function(Element):void=} attached Invoked after the View is inserted into the DOM and will only be called once.
- *                                                                    Note that if the composite needs to add/remove event listeners,
- *                                                                    we recommend using the connected/disconnected methods.
- * @property {function(oj.Composite.ViewModelContext):void=} detached Invoked when this composite component is detached from the DOM.
- * @ojdeprecated [{target: "property", for: "initialize", since: "5.0.0", description: "Please pass a constructor function to Composite.register() instead."},
- *               {target: "property", for: "attached", since: "4.2.0", description: "Please use the connected method instead."},
- *               {target: "property", for: "detached", since: "4.2.0", description: "Please use the disconnected method instead."}]
  * @ojsignature [{target:"Type", value:"<P extends PropertiesType= PropertiesType>", for: "genericTypeParameters"},
  *               {target: "Type", value: "((context: ViewModelContext<P>) => Promise<any> | void)", for: "activated"},
  *               {target: "Type", value: "((context: ViewModelContext<P>) => void)", for: "connected"},
@@ -227,12 +189,8 @@ oj.Composite.__BINDING_PROVIDER = '__oj_binding_prvdr';
  * @property {Object} slotCounts A map of slot name to assigned nodes count for the View.
  * @property {string} unique A unique string that can be used for unique id generation.
  * @property {string} uniqueId The ID of the composite component if specified. Otherwise, it is the same as unique.
- *
- * @property {Object} props A Promise evaluating to the composite component's properties.
- * @property {Object} slotNodeCounts A Promise evaluating to a map of slot name to assigned nodes count for the View.
- * @ojdeprecated [{target: "property", for: "props", since: "5.0.0", description: "Please use the 'properties' property instead."},
- *               {target: "property", for: "slotNodeCounts", since: "5.0.0", description: "Please use the 'slotCounts' property instead."}]
  * @ojsignature [{target:"Type", value:"<P extends PropertiesType= PropertiesType>", for: "genericTypeParameters"},
+ *               {target:"Type", value:"{[key: string]: number}", for: "slotCounts"},
  *               {target: "Type", value: "P", for: "properties"}]
  */
 
@@ -399,10 +357,19 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       if (typeof model === 'function') {
         // eslint-disable-next-line new-cap
         model = new model(vmContext);
-      } else { // The initialize callback is deprecated in 5.0.0. If the function returns a value, use it as the new model instance.
+      } else {
+        var elementInfo = oj.BaseCustomElementBridge.getElementInfo(element);
+        if (model) {
+          Logger.error(elementInfo + ': ViewModel should be specified as a constructor function.  Support for all other types is scheduled for removal.');
+        }
+        // The initialize callback is deprecated in 5.0.0. If the function returns a value, use it as the new model instance.
+        var deprecationMessageFunction = function () {
+          return elementInfo + ": The ViewModel 'initialize' callback is scheduled for removal.  ViewModel should be specified as a constructor function.";
+        };
         model = oj.CompositeTemplateRenderer.invokeViewModelMethod(model,
                                                                    'initialize',
-                                                                   [vmContext])
+                                                                   [vmContext],
+                                                                   deprecationMessageFunction)
           || model;
       }
       this._VIEW_MODEL = model;
@@ -547,14 +514,22 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       return descriptor._metadata;
     },
 
+    GetTrackChildrenOption: function () {
+      return 'immediate';
+    },
+
     HandleDetached: function (element) {
       // Invoke callback on the superclass
       oj.BaseCustomElementBridge.proto.HandleDetached.call(this, element);
 
       // Detached is deprecated in 4.2.0 for disconnected
+      var deprecationMessageFunction = function () {
+        return oj.BaseCustomElementBridge.getElementInfo(element) + ": The ViewModel 'detached' callback is scheduled for removal.  Use the 'disconnected' callback instead.";
+      };
       oj.CompositeTemplateRenderer.invokeViewModelMethod(this._VIEW_MODEL,
                                                          'detached',
-                                                         [element]);
+                                                         [element],
+                                                         deprecationMessageFunction);
       oj.CompositeTemplateRenderer.invokeViewModelMethod(this._VIEW_MODEL,
                                                          'disconnected',
                                                          [element]);
@@ -595,6 +570,7 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
           if (typeof (view) === 'string') {
             cache.view = oj.CompositeElementBridge._getDomNodes(view, element);
           } else {
+            Logger.error(oj.BaseCustomElementBridge.getElementInfo(element) + ': View should be passed as a string.  Support for all other types is scheduled for removal.');
             cache.view = view;
           }
         }
@@ -625,7 +601,7 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       }
 
       // Loop through all element attributes to get initial properties
-      oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS);
+      oj.BaseCustomElementBridge.__InitProperties(element, element);
     },
 
     InitializePrototype: function (proto) {
@@ -784,6 +760,9 @@ oj.CompositeElementBridge.register = function (tagName, descriptor) {
     oj.CompositeElementBridge._getResource(descriptor, oj.BaseCustomElementBridge.DESC_KEY_META);
   descrip[oj.BaseCustomElementBridge.DESC_KEY_VIEW] =
     oj.CompositeElementBridge._getResource(descriptor, oj.BaseCustomElementBridge.DESC_KEY_VIEW);
+  if (descriptor[oj.BaseCustomElementBridge.DESC_KEY_CSS]) {
+    Logger.error(tagName + ': Component CSS should be loaded using the require-css RequireJS CSS plugin');
+  }
   descrip[oj.BaseCustomElementBridge.DESC_KEY_CSS] =
     oj.CompositeElementBridge._getResource(descriptor, oj.BaseCustomElementBridge.DESC_KEY_CSS);
   descrip[oj.BaseCustomElementBridge.DESC_KEY_VIEW_MODEL] =
@@ -975,16 +954,24 @@ oj.CompositeElementBridge._getResource = function (descriptor, key) {
   if (resource != null) {
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     if (hasOwnProperty.call(resource, 'inline')) {
+      Logger.error(oj.CompositeElementBridge._getResourceErrorMessage(key, 'inline', 'scheduled for removal'));
       return resource.inline;
     } else if (hasOwnProperty.call(resource, 'promise')) {
-      throw new Error("The 'promise' resource type for descriptor key '" + key +
-                      "' is no longer supported." +
-                      ' The resource should be passed directly as the value instead.');
+      throw new Error(oj.CompositeElementBridge._getResourceErrorMessage(key, 'promise', 'no longer supported'));
     } else {
       return resource;
     }
   }
   return undefined;
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeElementBridge._getResourceErrorMessage = function (key, resourceType, desupportType) {
+  return "The '" + resourceType + "' resource type for descriptor key '" + key +
+  "' is " + desupportType + '.' +
+  ' The resource should be passed directly as the value instead.';
 };
 
 /**
@@ -999,7 +986,7 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
 };
 
 /**
- * @ojoverviewdoc ComponentPackOverview - [5]JET Pack Metadata
+ * @ojoverviewdoc ComponentPackOverview - [7]JET Pack Metadata
  * @classdesc
  * {@ojinclude "name":"componentPackOverviewDoc"}
  */
@@ -1664,8 +1651,6 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *   <li>$slotCounts: A map of slot name to assigned nodes count for the View.</li>
  *   <li>$unique: A unique string that can be used for unique id generation.</li>
  *   <li>$uniqueId: The ID of the composite component if specified. Otherwise, it is the same as unique.</li>
- *   <li>$props: Deprecated since 5.0.0, use $properties instead. A Promise evaluating to the composite component's properties.</li>
- *   <li>$slotNodeCounts: Deprecated since 5.0.0, use $slotCounts instead. A Promise evaluating to a map of slot name to assigned nodes count for the View.</li>
  * </ul>
  * </p>
  *
@@ -1783,7 +1768,7 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  */
 
 /**
- * @ojoverviewdoc MetadataOverview - [4]JET Metadata
+ * @ojoverviewdoc MetadataOverview - [6]JET Metadata
  * @classdesc
  * {@ojinclude "name":"metadataOverviewDoc"}
  */
@@ -1837,399 +1822,9 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  * <h3 id="top">Top Level Keys
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#top"></a>
  * </h3>
- * <table class="params">
- *   <thead>
- *     <tr>
- *       <th>Key</th>
- *       <th>Used at Runtime</th>
- *       <th>Required</th>
- *       <th>Type</th>
- *       <th>Description</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td class="rt">name</td>
- *       <td>yes</td>
- *       <td>yes</td>
- *       <td>{string}</td>
- *       <td>The component name.
- *           The component name must meet the following requirements (based upon the <a href="https://www.w3.org/TR/custom-elements/#custom-elements-core-concepts">W3C Custom Element spec</a>):
- *           <ul>
- *             <li>The name can include only letters, digits, '-', and '_'.</li>
- *             <li>The letters in the name should be all lowercase.
- *             <li>The name cannot be one of the following reserved names:
- *             <ul>
- *               <li>annotation-xml
- *               <li>color-profile
- *               <li>font-face
- *               <li>font-face-src
- *               <li>font-face-uri
- *               <li>font-face-format
- *               <li>font-face-name
- *               <li>missing-glyph
- *             </ul>
- *           </ul>
- *           <h6>Note:</h6>
- *           The <b>full name</b> of a component consists of its <code>pack</code> metadata value (if specified) and its <code>name</code> metadata
- *           value, appended together with a hyphen separating them:&nbsp;&nbsp;<code><i>[pack_value]</i>-<i>[name_value]</i></code>.
- *           <b>This full name corresponds to the Component's custom element tag name</b>.  The names of standalone JET Components that are
- *           <b>not</b> members of a <a href="ComponentPackOverview.html">JET Pack</a> have the following additional requirements:
- *           <ul>
- *             <li>At least one hyphen is required.</li>
- *             <li>The first segment (up to the first hyphen) is a namespace prefix. <b>The namespace prefix 'oj' is reserved for components that are
- *               bundled with the JET release.</b></li>
- *             <li>The first hyphen must be followed by at least one character.</li>
- *           <ul>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td class="rt">version</td>
- *       <td>yes</td>
- *       <td>yes</td>
- *       <td>{string}</td>
- *       <td>The component version. Note that changes to the metadata even for minor updates like updating the
- *         jetVersion should result in at least a minor component version change, e.g. 1.0.0 -> 1.0.1.</td>
- *     </tr>
- *     <tr>
- *       <td class="rt">jetVersion</td>
- *       <td>yes</td>
- *       <td>yes</td>
- *       <td>{string}</td>
- *       <td>The <a href="http://semver.org/">semantic version</a> of the supported JET version(s).
- *         JET Component authors should not specify a semantic version range that includes unreleased JET major versions
- *         as major releases may contain non backwards compatible changes. Authors should instead recertify components
- *         with each major release and update the metadata or release a new version that is compatible with the new
- *         release changes.</td>
- *     </tr>
- *     <tr>
- *       <td class="rt">properties</td>
- *       <td>yes</td>
- *       <td>no</td>
- *       <td>{Object<string,<string>}</td>
- *       <td>See <a href="#properties">Properties</a> table below for details.</td>
- *     </tr>
-*     <tr>
- *       <td class="rt">methods</td>
- *       <td>yes</td>
- *       <td>no</td>
- *       <td>{Object<string,<string>}</td>
- *       <td>See <a href="#methods">Methods</a> table below for details.</td>
- *     </tr>
- *     <tr>
- *       <td class="rt">events</td>
- *       <td>yes</td>
- *       <td>no</td>
- *       <td>{Object<string,<string>}</td>
- *       <td>See <a href="#events">Events</a> table below for details.</td>
- *     </tr>
- *     <tr>
- *       <td class="rt">slots</td>
- *       <td>yes</td>
- *       <td>no</td>
- *       <td>{Object<string,<string>}</td>
- *       <td>See <a href="#slots">Slots</a> table below for details.</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>compositeDependencies</code></td>
- *       <td>no</td>
- *       <td>no</td>
- *       <td>{Object<string, string>}</td>
- *       <td>Dependency to semantic version mapping for composite dependencies.
- *         3rd party libraries should not be included in this mapping.
- *         <code>{"composite1": "1.2.0", "composite2": ">=2.1.0"}</code>
- *         <p><b><i>This metadata property is deprecated as of JET 5.0.0.</i></b>  Please use the "dependencies" metadata property instead.</p>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>dependencies</code></td>
- *       <td>no</td>
- *       <td>no</td>
- *       <td>{Object<string, string>}</td>
- *       <td>Dependency to semantic version mapping for JET Component dependencies.
- *         3rd party libraries should not be included directly in this mapping; instead, define the 3rd party library with a
- *         <a href="ComponentTypeOverview.html#referencecomponents">JET Reference Component</a> and include the dependency upon that Reference Component.
- *         <h6>Example:</h6>
- *         <pre class="prettyprint"><code>dependencies:  {"oj-foo-composite1": "1.2.0", "oj-foo-composite2": "^2.1.0"}</code></pre>
- *         <h6>Note:</h6>
- *         <ul>
- *           <li>Always use the <b>full name</b> of the component when declaring a dependency upon it.</li>
-             <li>Dependencies upon JET Custom Components, JET Reference Components, and JET Resource Components may use semantic version range syntax to specify the range of versions
-               that are acceptable to fulfill the dependency requirement.</li>
- *         </ul>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>description</code></td>
- *       <td>no</td>
- *       <td>no</td>
- *       <td>{string}</td>
- *       <td>A high-level description for the component.</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>displayName</code></td>
- *       <td>no</td>
- *       <td>no</td>
- *       <td>{string}</td>
- *       <td>A user friendly, translatable name of the component.</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>extension</code></td>
- *       <td>no</td>
- *       <td>no</td>
- *       <td>{Object}</td>
- *       <td>Placeholder for Extension metadata.  Each section is identified by a key that specifies the downstream tool that will process this metadata.
- *         <h6>For example:</h6>
- *         <table class="params">
- *           <thead>
- *             <tr>
- *               <th>Name</th>
- *               <th>Type</th>
- *               <th>Description</th>
- *             </tr>
- *           </thead>
- *           <tbody>
- *             <tr>
- *               <td class="name"><code>vbcs</code></td>
- *               <td>{string}</td>
- *               <td>Indentifies an object with VBCS-specific metadata</td>
- *             </tr>
- *           </tbody>
- *         </table>
- *         </br>
- *         Please consult the documentation for the downstream tool to determine what (if any) extension metadata is supported.
- *      </td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>help</code></td>
- *       <td>no</td>
- *       <td>no</td>
- *       <td>{string}</td>
- *       <td>Specifies a URL to detailed API documentation for this component.</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>icon</code></td>
- *       <td>no</td>
- *       <td>no</td>
- *       <td>{Object}</td>
- *       <td>One or more optional images for representing the component within a design time environment's component palette. The object has the following properties:
- *         <h6>Properties</h6>
- *         <table class="params">
- *           <thead>
- *             <tr>
- *               <th>Name</th>
- *               <th>Type</th>
- *               <th>Description</th>
- *             </tr>
- *           </thead>
- *           <tbody>
- *             <tr>
- *               <td class="name"><code>iconPath</code></td>
- *               <td>{string}</td>
- *               <td>A relative path to the default (enabled) icon.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>selectedIconPath</code></td>
- *               <td>{string}</td>
- *               <td>A relative path to the icon that represents the selected state of the component.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>hoverIconPath</code></td>
- *               <td>{string}</td>
- *               <td>A relative path to the icon that represents the hover state of the component.</td>
- *             </tr>
- *           </tbody>
- *         </table>
- *      </td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>license</code></td>
- *       <td>no</td>
- *       <td>no</td>
- *       <td>{string}</td>
- *       <td>A reference to the license under which use of the component is granted.  The value can be:
- *         <ul>
- *           <li>the name of the license text file packaged with the component</li>
- *           <li>a URL to a remote license file</li>
- *         </ul>
- *         If unspecified, downstream consumers can look for a default, case-insensitive license file at the root of the component package.
- *       </td>
- *     </tr>
- *     <tr>
- *       <td class="name">pack</td>
- *       <td>no</td>
- *       <td>no</td>
- *       <td>{string}</td>
- *       <td>Identifies the component as belonging to the specified JET Component Pack, or <b>JET Pack</b>.
- *         <p>A <a href="ComponentPackOverview.html">JET Pack</a> is a versioned set of JET Components with additional metadata that enables
- *           applications to easily install and configure path mappings to the components and shared resources in that JET Pack.
- *           <ul>
- *             <li>If specified, then there should exist a JET Pack whose name is the <code>pack</code> value, and which lists this component's <b>full name</b> in its
- *               <code>dependencies</code> metadata.</li>
- *             <li>If unspecified, then this is a standalone JET Component that is not a member of any JET Pack.</li>
- *           </ul>
- *         </p>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>propertyLayout</code></td>
- *       <td>no</td>
- *       <td>no</td>
- *       <td>{Array<{Object}>}</td>
- *       <td>An optional ordered array of one or more <b><i>propertyLayoutGroup</i></b> objects.  A propertyLayoutGroup enables a component author to order
- *           and shape the groupings of their properties in the design time environment for their component.  Each propertyLayoutGroup object is defined as follows:
- *         <h6>Properties</h6>
- *         <table class="params">
- *           <thead>
- *             <tr>
- *               <th>Name</th>
- *               <th>Type</th>
- *               <th>Description</th>
- *             </tr>
- *           </thead>
- *           <tbody>
- *             <tr>
- *               <td class="name"><code>propertyGroup</code></td>
- *               <td>{string}</td>
- *               <td>The property group name associated with this propertyLayoutGroup.  Reserved values include:
- *                 <ul>
- *                   <li><code>"common"</code> - an ordered group of properties that are commonly used for configuring this
- *                       component, so they should be prominently highlighted and the design time environment should provide
- *                       extra assistance</li>
- *                   <li><code>"data"</code> - an ordered group of properties associated with data binding</li>
- *                 </ul>
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>displayName</code></td>
- *               <td>{string}</td>
- *               <td>An optional user friendly, translatable name for this propertyLayoutGroup.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>items</code></td>
- *               <td>{Array<{string | Object}>}</td>
- *               <td>An ordered array of one or more items in this propertyLayoutGroup:
- *                 <ul>
- *                   <li>Items of type {string} represent the names of component properties or sub-properties.</li>
- *                   <li>Items of type {Object} represent a nested layout structure.</li>
- *                 </ul>
- *               </td>
- *             </tr>
- *           </tbody>
- *         </table>
- *         <h6>Notes</h6>
- *         <ul>
- *           <li>Component authors are <b>not</b> required to map all of their properties within their component's <code>propertyLayout</code> object.
- *               Design time environments are expected to implement designs that enable access to both mapped and unmapped properties.</li>
- *           <li>Nested propertyLayoutGroups enable support for design time environments that expose collapsible sections of related properties –
- *               in which case, a section heading is suggested by that propertyLayoutGroup's <code>displayName</code>.</li>
- *           <li>If the design time environment does not support nested property groupings, then the assumption is that
- *               nested propertyLayoutGroups will be inlined within their common parent propertyLayoutGroup.</li>
- *         </ul>
- *         <h6>Example</h6>
- *         A typical Property Inspector layout for the oj-input-text component might look as follows:
- *  <pre class="prettyprint"><code>
- *  "propertyLayout":
- *    [
- *      {
- *        "propertyGroup": "common",
- *        "displayName": "Common",
- *        "items": ["labelHint", "placeholder", "required", "disabled", "readonly"]
- *      },
- *      {
- *        "propertyGroup": "data",
- *        "displayName": "Data",
- *        "items": ["value"]
- *      }
- *    ]
- *  </code></pre>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>styleClasses</code></td>
- *       <td>no</td>
- *       <td>no</td>
- *       <td>{Array.<{Object}>}</td>
- *       <td>Optional array of groupings of style class names that are applicable to this component.  Each grouping object has the following properties:
- *         <h6>Properties</h6>
- *         <table class="params">
- *           <thead>
- *             <tr>
- *               <th>Name</th>
- *               <th>Type</th>
- *               <th>Description</th>
- *             </tr>
- *           </thead>
- *           <tbody>
- *             <tr>
- *               <td class="name"><code>styleGroup</code></td>
- *               <td>{Array.<{string}>}</td>
- *               <td>Array of mutually exclusive style class names that belong to this group.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>description</code></td>
- *               <td>{string}</td>
- *               <td>A translatable high-level description for this group of styleClasses.</td>
- *             </tr>
- *           </tbody>
- *         </table>
- *      </td>
- *     </tr>
- *     <tr>
- *       <td class="name">type</td>
- *       <td>no</td>
- *       <td>no</td>
- *       <td>{"composite" | "core" | "pack" | "reference" | "resource"}
- *         <p><b>Default:</b>&nbsp;&nbsp;"composite"</p>
- *       </td>
- *       <td>Identifies the type of this JET Component.
- *         <p>Supported values are:</p>
- *         <table class="params">
- *           <thead>
- *             <tr>
- *               <th>Value</th>
- *               <th>Description</th>
- *             </tr>
- *           </thead>
- *           <tbody>
- *             <tr>
- *               <td class="name">composite</td>
- *               <td>Identifies the component as a <a href="ComponentTypeOverview.html#customcomponents">custom JET Web Component</a>, also known as a "Composite Component".
-                   <b>This is the default, if <code>type</code> is unspecified.</b></td>
- *             </tr>
- *             <tr>
- *               <td class="name">core</td>
- *               <td>Identifies the component as a <a href="ComponentTypeOverview.html#corecomponents">JET Web Component</a> that is bundled with a particular version of JET.</td>
- *             </tr>
- *             <tr>
- *               <td class="name">pack</td>
- *               <td>Identifies the component as a <a href="ComponentTypeOverview.html#componentpacks">JET Component Pack</a>, or <b>JET Pack</b>.  A JET Pack is a versioned set
- *                 of JET Web Components with additional metadata that enables applications to easily install and configure path mappings to the artifacts in that JET Pack.
- *                 <p>The <code>dependencies</code> metadata property is used to specify the versioned components that make up the JET Pack.</p></td>
- *             </tr>
- *             <tr>
- *               <td class="name">reference</td>
- *               <td>Identifies the component as a <a href="ComponentTypeOverview.html#referencecomponents">JET Reference Component</a>, which describes a versioned external 3rd party library.
- *                 <p>A JET Reference Component can be referenced in the <code>dependencies</code> metadata of a JET Pack, a JET Resource Component, or an individual JET Web Component.</p>
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name">resource</td>
- *               <td>Identifes the component as a <a href="ComponentTypeOverview.html#resourcecomponents">JET Resource Component</a>, which describes a versioned set of shared resources
- *                 (such as shared CSS, JavaScript base classes & utility code, icons, translation bundles, etc.)
- *                 <p>A JET Resource Component can be referenced in the <code>dependencies</code> metadata of a JET Pack, another JET Resource Component, or an individual JET Web Component.</p>
- *               </td>
- *             </tr>
- *           </tbody>
- *         </table>
- *         <p>Metadata for JET Packs, JET Reference Components, and JET Resource Components are described in more detail in the <a href="ComponentPackOverview.html">JET Packs</a> topic.</p>
- *      </td>
- *     </tr>
- *   </tbody>
- * </table>
- *
- * <h3 id="properties">Property Keys
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#properties"></a>
+ * <%MetadataTypes.ComponentMetadata%>
+ * <h3 id="ComponentMetadataProperties">Property Keys
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#ComponentMetadataProperties"></a>
  * </h3>
  * <table class="params">
  *   <thead>
@@ -2242,383 +1837,13 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *     <tr>
  *       <td class="name"><code>[property name]</code></td>
  *       <td>Object containing the following properties:
- *         <h6>Properties</h6>
- *         <table class="params">
- *           <thead>
- *             <tr>
- *               <th>Name</th>
- *               <th>Used at Runtime</th>
- *               <th>Type</th>
- *               <th>Description</th>
- *             </tr>
- *           </thead>
- *           <tbody>
- *             <tr>
- *               <td class="rt">enumValues</td>
- *               <td>yes</td>
- *               <td>{Array<string>}</td>
- *               <td>An optional list of valid enum values for a string property. An error is thrown if a property value does not
- *                 match one of the provided enumValues.</td>
- *             </tr>
- *             <tr>
- *               <td class="rt">properties</td>
- *               <td>yes</td>
- *               <td>{Object}</td>
- *               <td>A nested properties object for complex properties. Subproperties exposed using nested properties objects in the metadata can
- *                 be set using dot notation in the attribute.
- *                 See the <a href="CustomElementOverview.html#ce-properties-subproperties-section">Subproperties</a> section for more details on
- *                 working with subproperties.</td>
- *             </tr>
- *             <tr>
- *               <td class="rt">readOnly</td>
- *               <td>yes</td>
- *               <td>{boolean}</td>
- *               <td>Determines whether a property can be updated outside of the ViewModel.
- *                 False by default. If readOnly is true, the property can only be updated by the ViewModel or by the
- *                 components within the composite component. This property only needs to be defined for the top level property,
- *                 with subproperties inheriting that value.</td>
- *             </tr>
- *             <tr>
- *               <td class="rt">type</td>
- *               <td>yes</td>
- *               <td>{string}</td>
- *               <td>The type of the property, following
- *                 <a href="https://developers.google.com/closure/compiler/docs/js-for-compiler#types">Google's Closure Compiler</a> syntax.
- *                 We will parse string, number, boolean, array and object types for non data-bound attributes, but will not provide
- *                 type checking for array and object elements. However, for documentation purposes, it may still be beneficial to provide
- *                 array and object element details using the Closure Compiler syntax.</td>
- *             </tr>
- *             <tr>
- *               <td class="rt">value</td>
- *               <td>yes</td>
- *               <td>{object}</td>
- *               <td>An optional default value for a property. For complex properties, the default value can be specified as an object for
- *                   top level property or at the leaf subproperty levels, but not both.</td>
- *             </tr>
- *             <tr>
- *               <td class="rt">writeback</td>
- *               <td>yes</td>
- *               <td>{boolean}</td>
- *               <td>Applicable when the application uses two way data binding to bind an expression to a property. If the property
- *                 is marked as writeback, the JET Web Component can directly update the value of the bound expression after a user interaction
- *                 like selection. False by default. This property only needs to be defined for the top level property, with subproperties
- *                 inheriting that value.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>description</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>A description for the property.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>displayName</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>A user friendly, translatable name of the property.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>eventGroup</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>Optional group name for this property's corresponding <b><i>[property]</i>Changed event</b> in a
- *                   design time environment.  Reserved values are:
- *                 <ul>
- *                   <li><code>"common"</code> - Applications will commonly want to react to changes to this property at runtime,
- *                     so its corresponding property change event should be prominently highlighted and the design time environment
- *                     should provide extra assistance.</li>
- *                 </ul>
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>exclusiveMaximum</code></td>
- *               <td>no</td>
- *               <td>{number}|{string}</td>
- *               <td>Validation metadata - specifies the <i>exclusive</i> high end of a possible range of values (e.g., "exclusiveMaximum": 1.0 → valid property value is <1.0). If the value is a string, then it is assumed to represent a dateTime value in the ISO 8601 extended date/time format.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>exclusiveMinimum</code></td>
- *               <td>no</td>
- *               <td>{number}|{string}</td>
- *               <td>Validation metadata - specifies the <i>exclusive</i> low end of a possible range of values (e.g., "exclusiveMinimum": 0.0 → valid property value is >0.0). If the value is a string, then it is assumed to represent a dateTime value in the ISO 8601 extended date/time format.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>extension</code></td>
- *               <td>no</td>
- *               <td>{Object}</td>
- *               <td>Placeholder for Extension metadata.  Each section is identified by a key that specifies the downstream tool that will process this metadata.
- *                 <h6>For example:</h6>
- *                 <table class="params">
- *                   <thead>
- *                     <tr>
- *                       <th>Name</th>
- *                       <th>Type</th>
- *                       <th>Description</th>
- *                     </tr>
- *                   </thead>
- *                   <tbody>
- *                     <tr>
- *                       <td class="name"><code>vbcs</code></td>
- *                       <td>{string}</td>
- *                       <td>Indentifies an object with VBCS-specific metadata</td>
- *                     </tr>
- *                   </tbody>
- *                 </table>
- *                 </br>
- *                 Please consult the documentation for the downstream tool to determine what (if any) extension metadata is supported.
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>format</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>Format hint for a primitive type that can be used for simple validation in the design time environment,
- *                   or to invoke a specialized customizer control or set of controls.  The following set of reserved format
- *                   keywords are supported:
- *                 <h6>{number} type formats</h6>
- *                 <table class="params">
- *                   <thead>
- *                     <tr>
- *                       <th>Keyword</th>
- *                       <th>Description</th>
- *                     </tr>
- *                   </thead>
- *                   <tbody>
- *                     <tr>
- *                       <td class="name"><code>double</code></td>
- *                       <td>floating point number with double precision</td>
- *                     </tr>
- *                     <tr>
- *                       <td class="name"><code>float</code></td>
- *                       <td>floating point number with single precision</td>
- *                     </tr>
- *                     <tr>
- *                       <td class="name"><code>int32</code></td>
- *                       <td>signed 32-bit integer</td>
- *                     </tr>
- *                     <tr>
- *                       <td class="name"><code>int64</code></td>
- *                       <td>signed 64-bit integer</td>
- *                     </tr>
- *                   </tbody>
- *                 </table>
- *                 <h6>{string} type formats</h6>
- *                 <table class="params">
- *                   <thead>
- *                     <tr>
- *                       <th>Keyword</th>
- *                       <th>Description</th>
- *                     </tr>
- *                   </thead>
- *                   <tbody>
- *                     <tr>
- *                       <td class="name"><code>binary</code></td>
- *                       <td>sequence of octets</td>
- *                     </tr>
- *                     <tr>
- *                       <td class="name"><code>byte</code></td>
- *                       <td>sequence of base64-encoded characters</td>
- *                     </tr>
- *                     <tr>
- *                       <td class="name"><code>color</code></td>
- *                       <td>CSS color value</td>
- *                     </tr>
- *                     <tr>
- *                       <td class="name"><code>date</code></td>
- *                       <td>date in RFC 3339 format, using the "full-date" profile</td>
- *                     </tr>
- *                     <tr>
- *                       <td class="name"><code>date-time</code></td>
- *                       <td>date-time in RFC 3339 format, using the "date-time" profile</td>
- *                     </tr>
- *                     <tr>
- *                       <td class="name"><code>email</code></td>
- *                       <td>Internet email address in RFC 5322 format</td>
- *                     </tr>
- *                     <tr>
- *                       <td class="name"><code>time</code></td>
- *                       <td>time in RFC 3339 format, using the "full-time" profile</td>
- *                     </tr>
- *                     <tr>
- *                       <td class="name"><code>password</code></td>
- *                       <td>hint to UIs to obscure input</td>
- *                     </tr>
- *                     <tr>
- *                       <td class="name"><code>uri</code></td>
- *                       <td>Uniform Resource Identifier in RFC 3986 format</td>
- *                     </tr>
- *                   </tbody>
- *                 </table>
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>help</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>Specifies a URL to detailed API documentation for this component property.  The value
- *                   can be either an absolute URL, or an anchor string to be appended at the end of the
- *                   Component-level <code>help</code> value after a hash ('&#x23') character.
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>maximum</code></td>
- *               <td>no</td>
- *               <td>{number}|{string}</td>
- *               <td>Validation metadata - specifies the <i>inclusive</i> high end of a possible range of values (e.g., "maximum": 1.0 → valid property value is <=1.0).
- *               If the value is a string, then it is assumed to represent a dateTime value in the ISO 8601 extended date/time format.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>minimum</code></td>
- *               <td>no</td>
- *               <td>{number}|{string}</td>
- *               <td>Validation metadata - specifies the <i>inclusive</i> low end of a possible range of values (e.g., "minimum": 0.0 → valid property value is >=0.0).
- *               If the value is a string, then it is assumed to represent a dateTime value in the ISO 8601 extended date/time format.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>pattern</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>Javascript regular expression that can be used to validate a string value at design time
- *                   <h6>Example:</h6>
- *                   To validate a string that matches the format of a U.S. Social Security number, you could specify the following:
- *                   <code>"pattern": "^\d{3}-?\d{2}-?\d{4}$"</code>
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>placeholder</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>User-friendly, translatable hint text that appears in an empty input field at design time.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>propertyEditorValues</code></td>
- *               <td>no</td>
- *               <td>{Object}</td>
- *               <td>Design time metadata that lists suggested property values, and optional information about each suggested value.
- *                   <p>Each key represents a suggested property value – if <code>enumValues</code> runtime metadata is specified, then
- *                   it is expected that some or all of the keys will match the values in the <code>enumValues</code> array.  Conversely,
- *                   the absence of <code>enumValues</code> runtime metadata indicates that the property can accept values in addition
- *                   to those suggested by its <code>propertyEditorValues</code> metadata.</p>
- *                   The corresponding value for each key is an Object with the following properties:
- *                   <h6>Properties</h6>
- *                   <table class="params">
- *                     <thead>
- *                       <tr>
- *                         <th>Name</th>
- *                         <th>Type</th>
- *                         <th>Description</th>
- *                       </tr>
- *                     </thead>
- *                     <tbody>
- *                       <tr>
- *                         <td class="name"><code>description</code></td>
- *                         <td>{string}</td>
- *                         <td>A translatable description for the value.</td>
- *                       </tr>
- *                       <tr>
- *                         <td class="name"><code>displayName</code></td>
- *                         <td>{string}</td>
- *                         <td>A displayable, translatable label for the value.</td>
- *                       </tr>
- *                       <tr>
- *                         <td class="name"><code>icon</code></td>
- *                         <td>{Object}</td>
- *                         <td>One or more optional images for representing the value. The object has the following properties:
- *                           <h6>Properties</h6>
- *                           <table class="params">
- *                             <thead>
- *                               <tr>
- *                                 <th>Name</th>
- *                                 <th>Type</th>
- *                                 <th>Description</th>
- *                               </tr>
- *                             </thead>
- *                             <tbody>
- *                               <tr>
- *                                 <td class="name"><code>iconPath</code></td>
- *                                 <td>{string}</td>
- *                                 <td>A relative path to the icon that represents the value.</td>
- *                               </tr>
- *                               <tr>
- *                                 <td class="name"><code>selectedIconPath</code></td>
- *                                 <td>{string}</td>
- *                                 <td>A relative path to the icon that represents the selected state of the value.</td>
- *                               </tr>
- *                               <tr>
- *                                 <td class="name"><code>hoverIconPath</code></td>
- *                                 <td>{string}</td>
- *                                 <td>A relative path to the icon that represents the hover state of the value.</td>
- *                               </tr>
- *                             </tbody>
- *                           </table>
- *                         </td>
- *                       </tr>
- *                     </tbody>
- *                   </table>
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>propertyGroup</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>Optional group name for this property in a design time environment.  Reserved values include:
- *                   <ul>
- *                     <li><code>"common"</code> - This property is commonly used for configuring this component,
- *                       so it should be prominently highlighted and the design time environment should provide
- *                       extra assistance.</li>
- *                     <li><code>"data"</code> - This property is commonly associated with data binding.</li>
- *                   </ul>
- *                   Nested group names can be specified using a period ('.') as a separator.  For example,
- *                   a Charting component can choose to prominently group properties relating to a business chart's
- *                   Legend with the <code>propertyGroup</code> specified as "common.legend"
- *                   <h6>Notes</h6>
- *                   <ul>
- *                     <li>Component authors are <b>not</b> required to map all of their properties to a particular
- *                         <code>propertyGroup</code>.  Design time environments are expected to implement designs
- *                         that enable access to both mapped and unmapped properties.</li>
- *                     <li>Component authors can optionally specify their preferred layout and ordering of component
- *                         properties within a <code>propertyGroup</code> by providing additional Component-level
- *                         <code>propertyLayout</code> metadata.</li>
- *                     <li>Conversely, if a property is mapped to a particular <code>propertyGroup</code> but
- *                         is <b>not</b> referenced in the corresponding <code>propertyLayout</code> metadata,
- *                         then its layout and ordering is undefined.</li>
- *                   </ul>
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>required</code></td>
- *               <td>no</td>
- *               <td>{boolean}</td>
- *               <td>Specifies whether the property must have a valid value at run time. False by default.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>translatable</code></td>
- *               <td>no</td>
- *               <td>{boolean}</td>
- *               <td>True if the <em>value</em> of this property (or its sub-properties, unless explicitly overridden)
- *                   is eligible to be_included_when application resources are translated for Internationalization. False by default.
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>units</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>User-friendly, translatable text string specifying what units are represented by a property value -- e.g., "pixels".</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>visible</code></td>
- *               <td>no</td>
- *               <td>{boolean}</td>
- *               <td>Specifies whether the property should be visible at design time. True by default.</td>
- *             </tr>
- *           </tbody>
- *         </table>
+ *          <%MetadataTypes.ComponentMetadataProperties%>
  *       </td>
  *     </tr>
  *   </tbody>
  * </table>
- *
- * <h3 id="methods">Method Keys
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#methods"></a>
+ * <h3 id="ComponentMetadataMethods">Method Keys
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#ComponentMetadataMethods"></a>
  * </h3>
  * <table class="params">
  *   <thead>
@@ -2631,125 +1856,13 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *     <tr>
  *       <td class="name"><code>[method name]</code></td>
  *       <td>Object containing the following properties:
- *         <h6>Properties</h6>
- *         <table class="params">
- *           <thead>
- *             <tr>
- *               <th>Name</th>
- *               <th>Used at Runtime</th>
- *               <th>Type</th>
- *               <th>Description</th>
- *             </tr>
- *           </thead>
- *           <tbody>
- *             <tr>
- *               <td class="rt">internalName</td>
- *               <td>yes</td>
- *               <td>{string}</td>
- *               <td>An optional ViewModel method name that is different from, but maps to this method.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>description</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>A description for the method.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>displayName</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>A user friendly, translatable name of the method.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>extension</code></td>
- *               <td>no</td>
- *               <td>{Object}</td>
- *               <td>Placeholder for Extension metadata.  Each section is identified by a key that specifies the downstream tool that will process this metadata.
- *                 <h6>For example:</h6>
- *                 <table class="params">
- *                   <thead>
- *                     <tr>
- *                       <th>Name</th>
- *                       <th>Type</th>
- *                       <th>Description</th>
- *                     </tr>
- *                   </thead>
- *                   <tbody>
- *                     <tr>
- *                       <td class="name"><code>vbcs</code></td>
- *                       <td>{string}</td>
- *                       <td>Indentifies an object with VBCS-specific metadata</td>
- *                     </tr>
- *                   </tbody>
- *                 </table>
- *                 </br>
- *                 Please consult the documentation for the downstream tool to determine what (if any) extension metadata is supported.
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>help</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>Specifies a URL to detailed API documentation for this component method.  The value
- *                   can be either an absolute URL, or an anchor string to be appended at the end of the
- *                   Component-level <code>help</code> value after a hash ('&#x23') character.
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>params</code></td>
- *               <td>no</td>
- *               <td>{Array<{Object}>}</td>
- *               <td>An array of objects describing the method parameter.  Each parameter object has the following properties:
- *                 <h6>Properties</h6>
- *                 <table class="params">
- *                  <thead>
- *                   <tr>
- *                    <th>Name</th>
- *                    <th>Type</th>
- *                    <th>Description</th>
- *                   </tr>
- *                  </thead>
- *                  <tbody>
- *                   <tr>
- *                    <td class="name"><code>description</code></td>
- *                    <td>{string}</td>
- *                    <td>A translatable description of the parameter</td>
- *                   </tr>
- *                   <tr>
- *                    <td class="name"><code>name</code></td>
- *                    <td>{string}</td>
- *                    <td>The name of the parameter.</td>
- *                   </tr>
- *                   <tr>
- *                    <td class="name"><code>type</code></td>
- *                    <td>{string}</td>
- *                    <td>The type of the property, typically following <a href="https://github.com/google/closure-compiler/wiki/Annotating-JavaScript-for-the-Closure-Compiler">Google's Closure Compiler</a> syntax. The metadata also supports Typescript data types.</td>
- *                   </tr>
- *                 </tbody>
- *                </table>
- *              </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>return</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>The return type of the method, following Closure Compiler syntax.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>visible</code></td>
- *               <td>no</td>
- *               <td>{boolean}</td>
- *               <td>Specifies whether the method should be visible at design time. True by default.</td>
- *             </tr>
- *           </tbody>
- *         </table>
+ *          <%MetadataTypes.ComponentMetadataMethods%>
  *       </td>
  *     </tr>
  *   </tbody>
  * </table>
- *
- * <h3 id="events">Event Keys
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#events"></a>
+ * <h3 id="ComponentMetadataEvents">Event Keys
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#ComponentMetadataEvents"></a>
  * </h3>
  * <table class="params">
  *   <thead>
@@ -2762,164 +1875,13 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *     <tr>
  *       <td class="name"><code>[event name]</code></td>
  *       <td>Object containing the following properties:
- *         <h6>Properties</h6>
- *         <table class="params">
- *           <thead>
- *             <tr>
- *               <th>Name</th>
- *               <th>Used at Runtime</th>
- *               <th>Type</th>
- *               <th>Description</th>
- *             </tr>
- *           </thead>
- *           <tbody>
- *             <tr>
- *               <td class="name"><code>bubbles</code></td>
- *               <td>no</td>
- *               <td>{boolean}</td>
- *               <td>Indicates whether the event bubbles up through the DOM or not. Defaults to false.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>cancelable</code></td>
- *               <td>no</td>
- *               <td>{boolean}</td>
- *               <td>Indicates whether the event is cancelable or not. Defaults to false.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>description</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>A description for the event.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>detail</code></td>
- *               <td>no</td>
- *               <td>{object}</td>
- *               <td>Describes the properties available on the event's detail property, which contains data passed
- *                   when initializing the event. The metadata object has the following properties:
- *                 <h6>Properties</h6>
- *                 <table class="params">
- *                   <thead>
- *                     <tr>
- *                       <th>Name</th>
- *                       <th>Type</th>
- *                       <th>Description</th>
- *                     </tr>
- *                   </thead>
- *                   <tbody>
- *                     <tr>
- *                       <td class="name"><code>[field name]</code></td>
- *                       <td>{Object}</td>
- *                       <td>Information about the specified field in the event's payload.  The object
- *                         has the following properties:
- *                         <h6>Properties</h6>
- *                         <table class="params">
- *                           <thead>
- *                             <tr>
- *                               <th>Name</th>
- *                               <th>Type</th>
- *                               <th>Description</th>
- *                             </tr>
- *                           </thead>
- *                           <tbody>
- *                             <tr>
- *                               <td class="name"><code>description</code></td>
- *                               <td>{string}</td>
- *                               <td>An optional, translatable description of this field</td>
- *                             </tr>
- *                             <tr>
- *                               <td class="name"><code>type</code></td>
- *                               <td>{string}</td>
- *                               <td>The type of this field's value</td>
- *                             </tr>
- *                             <tr>
- *                               <td class="name"><code>eventGroup</code></td>
- *                               <td>{string}</td>
- *                               <td>Optional flag that maps this field for special consideration in a design time
- *                                   environment -- the value should match the <code>eventGroup</code> value of
- *                                   the containing Event metadata element)
- *                               </td>
- *                             </tr>
- *                            </tbody>
- *                          </table>
- *                       </td>
- *                     </tr>
- *                   </tbody>
- *                 </table>
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>displayName</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>A user friendly, translatable name of the event.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>eventGroup</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>Optional group name for this event in a design time environment.  Reserved values are:
- *                 <ul>
- *                   <li><code>"common"</code> - Applications will commonly want to invoke application logic
- *                       in response to this event, so it should be prominently highlighted and the design time
- *                       environment should provide extra assistance.</li>
- *                 </ul>
- *                 If an event is mapped to an <code>eventGroup</code>, then members of that event's
- *                 <code>detail</code> metadata can be also be flagged with that same <code>eventGroup</code>
- *                 name – this enables the design time environment to map event payload details with any extra
- *                 assistance afforded by that grouping.
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>extension</code></td>
- *               <td>no</td>
- *               <td>{Object}</td>
- *               <td>Placeholder for Extension metadata.  Each section is identified by a key that specifies the downstream tool that will process this metadata.
- *                 <h6>For example:</h6>
- *                 <table class="params">
- *                   <thead>
- *                     <tr>
- *                       <th>Name</th>
- *                       <th>Type</th>
- *                       <th>Description</th>
- *                     </tr>
- *                   </thead>
- *                   <tbody>
- *                     <tr>
- *                       <td class="name"><code>vbcs</code></td>
- *                       <td>{string}</td>
- *                       <td>Indentifies an object with VBCS-specific metadata</td>
- *                     </tr>
- *                   </tbody>
- *                 </table>
- *                 </br>
- *                 Please consult the documentation for the downstream tool to determine what (if any) extension metadata is supported.
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>help</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>Specifies a URL to detailed API documentation for this component event.  The value
- *                   can be either an absolute URL, or an anchor string to be appended at the end of the
- *                   Component-level <code>help</code> value after a hash ('&#x23') character.
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>visible</code></td>
- *               <td>no</td>
- *               <td>{boolean}</td>
- *               <td>Specifies whether the event should be visible at design time. True by default.</td>
- *             </tr>
- *           </tbody>
- *         </table>
+ *          <%MetadataTypes.ComponentMetadataEvents%>
  *       </td>
  *     </tr>
  *   </tbody>
  * </table>
- *
- * <h3 id="slots">Slot Keys
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#slots"></a>
+ * <h3 id="ComponentMetadataSlots">Slot Keys
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#ComponentMetadataSlots"></a>
  * </h3>
  * <table class="params">
  *   <thead>
@@ -2932,122 +1894,7 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *     <tr>
  *       <td class="name"><code>[slot name]</code></td>
  *       <td>Object containing the following properties:
- *         <h6>Properties</h6>
- *         <table class="params">
- *           <thead>
- *             <tr>
- *               <th>Name</th>
- *               <th>Used at Runtime</th>
- *               <th>Type</th>
- *               <th>Description</th>
- *             </tr>
- *           </thead>
- *           <tbody>
- *             <tr>
- *               <td class="name"><code>data</code></td>
- *               <td>no</td>
- *               <td>{Object}</td>
- *               <td>
- *                 An object whose keys are the variable names available on $current and whose values are objects that
- *                 provide additional information about the variable as described in the table below. These variables
- *                 extend what's available on the application context and will be exposed as subproperties
- *                 on the $current variable and any application provided aliases.
- *                 This property only applies to template slots.
- *                 <h6>Properties</h6>
- *                 <table class="params">
- *                   <thead>
- *                     <tr>
- *                       <th>Name</th>
- *                       <th>Type</th>
- *                       <th>Description</th>
- *                     </tr>
- *                   </thead>
- *                   <tbody>
- *                     <tr>
- *                       <td class="name"><code>description</code></td>
- *                       <td>{string}</td>
- *                       <td>The description for the data property.</td>
- *                     </tr>
- *                     <tr>
- *                       <td class="name"><code>type</code></td>
- *                       <td>{string}</td>
- *                       <td>The data property type.</td>
- *                     </tr>
- *                   </tbody>
- *                 </table>
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>description</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>A description for the slot.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>displayName</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>A user friendly, translatable name of the slot.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>extension</code></td>
- *               <td>no</td>
- *               <td>{Object}</td>
- *               <td>Placeholder for Extension metadata.  Each section is identified by a key that specifies the downstream tool that will process this metadata.
- *                 <h6>For example:</h6>
- *                 <table class="params">
- *                   <thead>
- *                     <tr>
- *                       <th>Name</th>
- *                       <th>Type</th>
- *                       <th>Description</th>
- *                     </tr>
- *                   </thead>
- *                   <tbody>
- *                     <tr>
- *                       <td class="name"><code>vbcs</code></td>
- *                       <td>{string}</td>
- *                       <td>Indentifies an object with VBCS-specific metadata</td>
- *                     </tr>
- *                   </tbody>
- *                 </table>
- *                 </br>
- *                 Please consult the documentation for the downstream tool to determine what (if any) extension metadata is supported.
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>help</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>Specifies a URL to detailed API documentation for this component slot.  The value
- *                   can be either an absolute URL, or an anchor string to be appended at the end of the
- *                   Component-level <code>help</code> value after a hash ('&#x23') character.
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>maxItems</code></td>
- *               <td>no</td>
- *               <td>{number}</td>
- *               <td>Specifies the maximum number of elements that the design time environment should allow
- *                   to be added to this slot.  If unspecified, the default is that there is no maximum.
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>minItems</code></td>
- *               <td>no</td>
- *               <td>{number}</td>
- *               <td>Specifies the minimum number of elements that the design time environment should allow
- *                   to be added to this slot.  If unspecified, the default is 0.
- *               </td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>visible</code></td>
- *               <td>no</td>
- *               <td>{boolean}</td>
- *               <td>Specifies whether the slot should be visible at design time. True by default.</td>
- *             </tr>
- *           </tbody>
- *         </table>
+ *          <%MetadataTypes.ComponentMetadataSlots%>
  *       </td>
  *     </tr>
  *   </tbody>

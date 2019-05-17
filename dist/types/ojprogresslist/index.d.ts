@@ -2,7 +2,6 @@ import { DataProvider } from '../ojdataprovider';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojProgressList extends JetElement<ojProgressListSettableProperties> {
     data: DataProvider<any, any> | null;
-    onDataChanged: ((event: JetElementCustomEvent<ojProgressList["data"]>) => any) | null;
     addEventListener<T extends keyof ojProgressListEventMap>(type: T, listener: (this: HTMLElement, ev: ojProgressListEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojProgressListSettableProperties>(property: T): ojProgressList[T];
@@ -10,6 +9,10 @@ export interface ojProgressList extends JetElement<ojProgressListSettablePropert
     setProperty<T extends keyof ojProgressListSettableProperties>(property: T, value: ojProgressListSettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojProgressListSettableProperties>): void;
     setProperties(properties: ojProgressListSettablePropertiesLenient): void;
+}
+export namespace ojProgressList {
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged = JetElementCustomEvent<ojProgressList["data"]>;
 }
 export interface ojProgressListEventMap extends HTMLElementEventMap {
     'dataChanged': JetElementCustomEvent<ojProgressList["data"]>;

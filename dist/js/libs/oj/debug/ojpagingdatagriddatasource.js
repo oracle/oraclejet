@@ -3,14 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'jquery', 'ojs/ojmessaging', 'ojs/ojpagingtabledatasource'], function(oj, $, Message)
 {
+  "use strict";
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
@@ -230,7 +225,7 @@ oj.PagingDataGridDataSource.prototype.setPage = function (value, options) {
     oj.PagingDataGridDataSource.superclass.handleEvent
       .call(this, oj.PagingModel.EventType.BEFOREPAGE, { page: value, previousPage: this._page });
   } catch (err) {
-    return Promise.reject(null);
+    return Promise.reject(err);
   }
 
   this._pageSize = options.pageSize != null ? options.pageSize : this._pageSize;
@@ -244,11 +239,11 @@ oj.PagingDataGridDataSource.prototype.setPage = function (value, options) {
   return new Promise(function (resolve, reject) {
     self._fetchInternal(options).then(function () {
       resolve(null);
-    }, function () {
+    }, function (err) {
       // restore old page
       self._page = previousPage;
       self._startIndex = self._page * self._pageSize;
-      reject(null);
+      reject(err);
     });
   });
 };
@@ -957,4 +952,12 @@ oj.PagingHeaderSet.prototype.getLabel = function (level) {
   return this.m_headerSet.getLabel(level);
 };
 
+// Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
+
+var PagingDataGridDataSource = {};
+PagingDataGridDataSource.PagingDataGridDataSource = oj.PagingDataGridDataSource;
+PagingDataGridDataSource.PagingHeaderSet = oj.PagingHeaderSet;
+PagingDataGridDataSource.PagingCellSet = oj.PagingCellSet;
+
+  return PagingDataGridDataSource;
 });

@@ -18,7 +18,7 @@
       box-sizing: border-box;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        z-index: var(--oj-app-layout-fixed-zindex);
+        z-index: var(--oj-app-layout-fixed-z-index);
       }
       @else {
         z-index: $appLayoutFixedZindex;        

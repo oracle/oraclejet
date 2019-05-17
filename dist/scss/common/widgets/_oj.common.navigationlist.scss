@@ -27,6 +27,10 @@
         .oj-navigationlist-listview-container {
             overflow-x:hidden;
         }
+        
+        .oj-navigationlist-listview {
+          position: relative;
+        }
 
         .oj-navigationlist-touch {
              -webkit-tap-highlight-color: rgba(0,0,0,0);
@@ -535,7 +539,6 @@
             }
             border-style: solid;
         }
-
 
 
         /* Padding for sublist    */
@@ -1941,6 +1944,19 @@
             margin-left: 1.142rem;//16px
         }
 
+        /* hicontrast overrides for sliding navlist */
+        html:not([dir=rtl]) .oj-hicontrast .oj-navigationlist-slider :not(.oj-selected).oj-hover.oj-navigationlist-item, 
+        html:not([dir=rtl]) .oj-hicontrast .oj-navigationlist-slider :not(.oj-selected).oj-focus.oj-navigationlist-item,
+        .oj-hicontrast .oj-navigationlist-slider :not(.oj-selected).oj-hover.oj-navigationlist-item, 
+        .oj-hicontrast .oj-navigationlist-slider :not(.oj-selected).oj-focus.oj-navigationlist-item {
+          border: 1px dotted;
+        }
+
+        html:not([dir=rtl]) .oj-hicontrast .oj-navigationlist-slider :not(.oj-selected).oj-navigationlist-item,
+        .oj-hicontrast .oj-navigationlist-slider :not(.oj-selected).oj-navigationlist-item {
+          border-width: 0;
+        }
+
 
         /* override menu css*/
 
@@ -1963,6 +1979,7 @@
         //Height is fixed as 12px font need not to change wrt page font
         .oj-navigationlist-hierarchical-menu .oj-menu-item a {
             line-height: 12px;
+            height: 20px;
         }
 
         .oj-navigationlist-hierarchical-menu .oj-menu-item.oj-focus>a,
@@ -2114,6 +2131,43 @@
           }
         }
 
+        /* Styling on the status text, such as fetching data */
+        .oj-navigationlist-status-message {
+            position: absolute;
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            padding: var(--oj-panel-padding);
+          } @else {
+            padding: $panelPadding;
+          }
+            display: none;
+        }
+
+        .oj-navigationlist-horizontal .oj-navigationlist-status-message {
+          padding: 0;
+        }
+
+        /* Styling for the activity indicator*/
+        .oj-navigationlist-loading-icon {
+            display: block;
+            width:  40px;
+            height: 40px;
+            margin: auto;
+            @include oj-icon-content(
+                $icon: oj-image-url("spinner_full.gif"),
+                $lowResProportion: 0.25
+            );
+        }
+        .oj-navigationlist-horizontal .oj-navigationlist-loading-icon {
+          width:  24px;
+          height: 24px;
+          @include oj-icon-content(
+              $icon: oj-image-url("spinner_full.gif"),
+              $lowResProportion: 0.15
+          );
+        }
+
+        
+
         //todo
         /* Override  default options*/
         $navigationListDefaultOptions: ();
@@ -2166,6 +2220,10 @@
         @if ($navigationListHierarchyMenuThresholdOptionDefault)
         {
           $navigationListDefaultOptions: map-merge($navigationListDefaultOptions, (hierarchyMenuDisplayThresholdLevel: $navigationListHierarchyMenuThresholdOptionDefault));
+        }
+
+        @if ($loadingIndicatorDelayDuration) {
+            $navigationListDefaultOptions: map-merge($navigationListDefaultOptions, (showIndicatorDelay: $loadingIndicatorDelayDuration));
         }
 
         .oj-navigationlist-option-defaults {

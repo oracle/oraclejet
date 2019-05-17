@@ -2,8 +2,6 @@ import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropert
 export interface ojOptgroup extends JetElement<ojOptgroupSettableProperties> {
     disabled: boolean;
     label: string;
-    onDisabledChanged: ((event: JetElementCustomEvent<ojOptgroup["disabled"]>) => any) | null;
-    onLabelChanged: ((event: JetElementCustomEvent<ojOptgroup["label"]>) => any) | null;
     addEventListener<T extends keyof ojOptgroupEventMap>(type: T, listener: (this: HTMLElement, ev: ojOptgroupEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojOptgroupSettableProperties>(property: T): ojOptgroup[T];
@@ -12,6 +10,12 @@ export interface ojOptgroup extends JetElement<ojOptgroupSettableProperties> {
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojOptgroupSettableProperties>): void;
     setProperties(properties: ojOptgroupSettablePropertiesLenient): void;
     refresh(): void;
+}
+export namespace ojOptgroup {
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojOptgroup["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojOptgroup["label"]>;
 }
 export interface ojOptgroupEventMap extends HTMLElementEventMap {
     'disabledChanged': JetElementCustomEvent<ojOptgroup["disabled"]>;

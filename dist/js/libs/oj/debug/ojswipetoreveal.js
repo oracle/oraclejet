@@ -3,17 +3,15 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'hammerjs', 'ojs/ojoffcanvas', 'promise', 'touchr'],
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        * @param {Object} Hammer
-        */
-       function(oj, $, Context, Hammer, OffcanvasUtils)
- 
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+* @param {Object} Hammer
+*/
+function(oj, $, Context, Hammer, OffcanvasUtils) 
 {
-
+  "use strict";
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
@@ -118,7 +116,7 @@ oj.SwipeToRevealUtils.setupSwipeActions = function (elem, options) {
 
   // However, this does not get trigger in hybrid app, see .
   // this change ensures that it always get reset
-  outerWrapper.on('touchstart.swipetoreveal', function () {
+  outerWrapper.on('touchstart.swipetoreveal', function (event) {
     drawerShown = false;
 
     // prevent click event from firing when tapping on outer wrapper (like list item) while offcanvas is still open

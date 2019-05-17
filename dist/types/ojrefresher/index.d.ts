@@ -4,10 +4,11 @@ export interface ojRefresher extends baseComponent<ojRefresherSettableProperties
     target: Element;
     text: string;
     threshold: number;
-    onRefreshContentChanged: ((event: JetElementCustomEvent<ojRefresher["refreshContent"]>) => any) | null;
-    onTargetChanged: ((event: JetElementCustomEvent<ojRefresher["target"]>) => any) | null;
-    onTextChanged: ((event: JetElementCustomEvent<ojRefresher["text"]>) => any) | null;
-    onThresholdChanged: ((event: JetElementCustomEvent<ojRefresher["threshold"]>) => any) | null;
+    translations: {
+        ariaRefreshCompleteLink?: string;
+        ariaRefreshLink?: string;
+        ariaRefreshingLink?: string;
+    };
     addEventListener<T extends keyof ojRefresherEventMap>(type: T, listener: (this: HTMLElement, ev: ojRefresherEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojRefresherSettableProperties>(property: T): ojRefresher[T];
@@ -15,6 +16,16 @@ export interface ojRefresher extends baseComponent<ojRefresherSettableProperties
     setProperty<T extends keyof ojRefresherSettableProperties>(property: T, value: ojRefresherSettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojRefresherSettableProperties>): void;
     setProperties(properties: ojRefresherSettablePropertiesLenient): void;
+}
+export namespace ojRefresher {
+    // tslint:disable-next-line interface-over-type-literal
+    type refreshContentChanged = JetElementCustomEvent<ojRefresher["refreshContent"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type targetChanged = JetElementCustomEvent<ojRefresher["target"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type textChanged = JetElementCustomEvent<ojRefresher["text"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type thresholdChanged = JetElementCustomEvent<ojRefresher["threshold"]>;
 }
 export interface ojRefresherEventMap extends baseComponentEventMap<ojRefresherSettableProperties> {
     'refreshContentChanged': JetElementCustomEvent<ojRefresher["refreshContent"]>;
@@ -27,6 +38,11 @@ export interface ojRefresherSettableProperties extends baseComponentSettableProp
     target: Element;
     text: string;
     threshold: number;
+    translations: {
+        ariaRefreshCompleteLink?: string;
+        ariaRefreshLink?: string;
+        ariaRefreshingLink?: string;
+    };
 }
 export interface ojRefresherSettablePropertiesLenient extends Partial<ojRefresherSettableProperties> {
     [key: string]: any;

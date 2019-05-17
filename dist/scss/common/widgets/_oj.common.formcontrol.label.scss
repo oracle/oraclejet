@@ -45,10 +45,10 @@
         // color/size/weight as the label text.
         @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
         {
-          color: var(--oj-form-control-label-color);
-          font-size: var(--oj-form-control-label-font-size);
-          font-weight: var(--oj-form-control-label-font-weight);
-          margin-bottom: var(--oj-form-control-label-margin-bottom);
+          color: var(--oj-label-color);
+          font-size: var(--oj-label-font-size);
+          font-weight: var(--oj-label-font-weight);
+          margin-bottom: var(--oj-label-margin-bottom);
         }
         @else {
           color: $formControlLabelColor;
@@ -98,7 +98,15 @@
     // When labels are on top of the field, the alta spec says the
     // icons (required, help) come after the label. We use float to achieve this.
     .oj-label label {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        float: left;
+        html[dir="rtl"] & {
+          float: right;
+        }
+      }
+      @else {
         @include oj-bidi-property($property: 'float', $startOrEnd: start);
+      }
     }
 
     // JET is designed to be mobile first, therefore by default labels are 
@@ -108,7 +116,15 @@
     // We use float to position them this way.
     .oj-label-required-icon,
     .oj-label-help-icon {
-         @include oj-bidi-property($property: 'float', $startOrEnd: end);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        float: right;
+        html[dir="rtl"] & {
+          float: left;
+        }
+      }
+      @else {
+        @include oj-bidi-property($property: 'float', $startOrEnd: end);
+      }
          // need 6px of space between icons and label. if floating
          // end, then that means icons are after label, so we want
          // space on the left in ltr.
@@ -126,7 +142,15 @@
     // cut off.
     .oj-label-help-icon-anchor {
       text-decoration: none;
-      @include oj-bidi-property($property: 'float', $startOrEnd: end);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        float: right;
+        html[dir="rtl"] & {
+          float: left;
+        }
+      }
+      @else {
+        @include oj-bidi-property($property: 'float', $startOrEnd: end);
+      }
         @include oj-ltr {
           padding-right: 2px;
        }
@@ -155,7 +179,7 @@
         {
           @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
           {
-            padding-right: var(--oj-form-control-inline-gutter);
+            padding-right: var(--oj-label-inline-gutter);
           }
           @else
           {
@@ -167,7 +191,7 @@
         {
           @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
           {
-            padding-left: var(--oj-form-control-inline-gutter);
+            padding-left: var(--oj-label-inline-gutter);
           }
           @else
           {
@@ -192,7 +216,7 @@
         vertical-align: top;
         @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
         {
-          margin-top: var(--oj-form-control-inline-margin-top);
+          margin-top: var(--oj-label-inline-margin-top);
         }
         @else {
           margin-top: $formControlLabelInlineMarginTop;
@@ -204,7 +228,7 @@
         {
           @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
           {
-            padding-right: var(--oj-form-control-inline-gutter);            
+            padding-right: var(--oj-label-inline-gutter);            
           }
           @else {
             padding-right: $formControlLabelInlineGutter;
@@ -215,7 +239,7 @@
         {
           @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
           {
-            padding-left: var(--oj-form-control-inline-gutter);            
+            padding-left: var(--oj-label-inline-gutter);            
           }
           @else {
             padding-left: $formControlLabelInlineGutter;
@@ -229,7 +253,7 @@
         vertical-align: top;
         @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
         {
-          margin-top: var(--oj-form-control-inline-margin-top);
+          margin-top: var(--oj-label-inline-margin-top);
         }
         @else {
           margin-top: $formControlLabelInlineMarginTop;
@@ -242,7 +266,15 @@
     // We use float to achieve this. The oj-label-inline selector tells
     // us it is inline.
     .oj-label-inline label {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        float: right;
+        html[dir="rtl"] & {
+          float: left;
+        }
+      }
+      @else {
         @include oj-bidi-property($property: 'float', $startOrEnd: end);
+      }
     }
     
     // When labels are inline with the field, the alta spec says the
@@ -252,7 +284,15 @@
     .oj-label-inline .oj-label-required-icon,
     .oj-label-inline .oj-label-help-icon
     {
-      @include oj-bidi-property($property: 'float', $startOrEnd: start);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        float: left;
+        html[dir="rtl"] & {
+          float: right;
+        }
+      }
+      @else {
+        @include oj-bidi-property($property: 'float', $startOrEnd: start);
+      }
       @include oj-ltr {
          margin-right: 6px;
          margin-left: 0;
@@ -263,7 +303,15 @@
       }
     }
     .oj-label-inline .oj-label-help-icon-anchor {
-      @include oj-bidi-property($property: 'float', $startOrEnd: start);    
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        float: left;
+        html[dir="rtl"] & {
+          float: right;
+        }
+      }
+      @else {
+        @include oj-bidi-property($property: 'float', $startOrEnd: start);
+      }
     }
 
     .oj-label-inline.oj-label-inline-top {
@@ -283,18 +331,18 @@
     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
     {
       .oj-label-required-icon:before {
-        content: var(--oj-form-control-label-required-char);
+        content: var(--oj-label-required-char);
       }
       .oj-label-required-icon {
-        color: var(--oj-form-control-label-required-icon-color);
-        font-size: var(--oj-form-control-label-required-char-font-size);
+        color: var(--oj-label-required-icon-color);
+        font-size: var(--oj-label-required-char-font-size);
         font-weight: normal;
         line-height: var(--oj-font-size);
         font-family: inherit;
-        background-color: var(--oj-form-control-label-required-icon-background-color);
-        border-radius: var(--oj-form-control-label-required-icon-border-radius);
-        height: var(--oj-form-control-label-required-icon-height);
-        width: var(--oj-form-control-label-required-icon-width);
+        background-color: var(--oj-label-required-icon-background-color);
+        border-radius: var(--oj-label-required-icon-border-radius);
+        height: var(--oj-label-required-icon-height);
+        width: var(--oj-label-required-icon-width);
       }
     }
     @else {

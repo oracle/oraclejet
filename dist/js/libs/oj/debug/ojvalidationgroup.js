@@ -3,15 +3,13 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojlogger'], 
-       /*
-        * @param {Object} oj 
-        */
-       function(oj, Context, Components, Logger)
+/*
+* @param {Object} oj 
+*/
+function(oj, Context, Components, Logger)
 {
- 
-
+  "use strict";
 var __oj_validation_group_metadata = 
 {
   "properties": {
@@ -47,6 +45,7 @@ var __oj_validation_group_metadata =
  * @ojcomponent oj.ojValidationGroup
  * @since 4.2.0
  * @ojstatus preview
+ * @ojshortdesc A validation group tracks and summarizes the current validity state of a group of components.
  * @ojsignature class ojValidationGroup extends JetElement<ojValidationGroupSettableProperties>
  *
  * @classdesc
@@ -136,6 +135,7 @@ var __oj_validation_group_metadata =
  * </p>
  * @member
  * @name valid
+ * @ojshortdesc Read-only property used for retrieving the current validity state of the group of components being tracked. See the Help documentation for more information.
  * @expose
  * @memberof oj.ojValidationGroup
  * @instance
@@ -161,6 +161,7 @@ var __oj_validation_group_metadata =
  * of the change, triggering a [property]Changed event.
  *
  * @function setProperty
+ * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
  * @param {any} value - The new value to set the property to.
  * @return {void}
@@ -403,9 +404,10 @@ function ojValidationGroup(context) {
    * If the parameter passed in is "@firstInvalidShown", then
    * it sets focus on the first enabled component with invalid messages showing, if any.
    * If nothing is passed in, it will set focus to the first enabled component being tracked,
-   * if any. An enabled
-   * component is one that is not disabled or readonly.
+   * if any. An enabled component is one that is not disabled or readonly.
+   *
    * @function focusOn
+   * @ojshortdesc Sets the focus on one of the enabled components that is being tracked. See the Help documentation for more information.
    * @param {string=} key - "@firstInvalidShown" will focus on first invalidShown enabled
    * component in DOM order, if any. When no parameter is passed in, the method will
    * focus on first enabled component regardless of the valid state, if any. An enabled

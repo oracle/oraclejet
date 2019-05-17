@@ -3,14 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojarraydataprovider', 'ojs/ojeventtarget', 'ojs/ojtreedataprovider'], function(oj, $, ko)
 {
+  "use strict";
   var ArrayDataProvider = oj['ArrayDataProvider'];
 
 var ArrayTreeDataProvider = /** @class */ (function () {
@@ -69,6 +64,10 @@ var ArrayTreeDataProvider = /** @class */ (function () {
         });
     };
     ArrayTreeDataProvider.prototype.getCapability = function (capabilityName) {
+        // No filtering support yet
+        if (capabilityName === 'filter') {
+            return null;
+        }
         return this._baseDataProvider.getCapability(capabilityName);
     };
     ArrayTreeDataProvider.prototype.getTotalSize = function () {
@@ -89,6 +88,11 @@ var ArrayTreeDataProvider = /** @class */ (function () {
         return null;
     };
     ArrayTreeDataProvider.prototype.fetchFirst = function (params) {
+        if (params && params.filterCriterion) {
+            // clear out filterCriterion until support for filtering is added
+            params = $.extend({}, params);
+            params.filterCriterion = null;
+        }
         var baseIterable = this._baseDataProvider.fetchFirst(params);
         return new this.TreeAsyncIterable(this, new this.TreeAsyncIterator(this, baseIterable));
     };

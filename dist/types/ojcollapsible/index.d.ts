@@ -3,13 +3,6 @@ export interface ojCollapsible extends baseComponent<ojCollapsibleSettableProper
     disabled: boolean;
     expandArea: 'header' | 'disclosureIcon';
     expanded: boolean;
-    onDisabledChanged: ((event: JetElementCustomEvent<ojCollapsible["disabled"]>) => any) | null;
-    onExpandAreaChanged: ((event: JetElementCustomEvent<ojCollapsible["expandArea"]>) => any) | null;
-    onExpandedChanged: ((event: JetElementCustomEvent<ojCollapsible["expanded"]>) => any) | null;
-    onOjBeforeCollapse: ((event: ojCollapsible.ojBeforeCollapse) => any) | null;
-    onOjBeforeExpand: ((event: ojCollapsible.ojBeforeExpand) => any) | null;
-    onOjCollapse: ((event: ojCollapsible.ojCollapse) => any) | null;
-    onOjExpand: ((event: ojCollapsible.ojExpand) => any) | null;
     addEventListener<T extends keyof ojCollapsibleEventMap>(type: T, listener: (this: HTMLElement, ev: ojCollapsibleEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojCollapsibleSettableProperties>(property: T): ojCollapsible[T];
@@ -44,6 +37,12 @@ export namespace ojCollapsible {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojCollapsible["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type expandAreaChanged = JetElementCustomEvent<ojCollapsible["expandArea"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type expandedChanged = JetElementCustomEvent<ojCollapsible["expanded"]>;
 }
 export interface ojCollapsibleEventMap extends baseComponentEventMap<ojCollapsibleSettableProperties> {
     'ojBeforeCollapse': ojCollapsible.ojBeforeCollapse;

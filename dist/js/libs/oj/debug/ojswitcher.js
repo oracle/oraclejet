@@ -3,11 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcustomelement'], 
-       function(oj, Components)
+function(oj, Components)
 {
-
+  "use strict";
 var __oj_switcher_metadata = 
 {
   "properties": {
@@ -39,8 +38,8 @@ var __oj_switcher_metadata =
  *               }
  * @since 4.0.0
  * @ojstatus preview
- * @ojshortdesc Dynamically decides which child element should be made visible.
- * @classdesc The switcher element dynamically decides which child element should be made visible. It will make a child element visible only if it's <code class="prettyprint">slot</code> attribute's value matches with switcher's <code class="prettyprint">value</code> property.
+ * @ojshortdesc A switcher dynamically decides which child element should be made visible.
+ * @classdesc The switcher element dynamically decides which child element should be made visible. It will make a child element visible only if its <code class="prettyprint">slot</code> attribute's value matches with switcher's <code class="prettyprint">value</code> property.
  * <p> If child content is expensive to render, use <a href="oj.ojDefer.html">oj-defer</a> to defer rendering until child element is made visible.
  * <pre class="prettyprint">
  * <code>
@@ -111,7 +110,7 @@ var __oj_switcher_metadata =
  * @instance
  * @type {string}
  * @default ""
- * @ojshortdesc Gets and Sets value for this switcher.
+ * @ojshortdesc Specifies the value for this switcher.
  * @desc <code class="prettyprint">value</code> of the switcher. Setting <code class="prettyprint">value</code> will make all child elements with matching <code class="prettyprint">slot</code> attribute as visible and hides elements which are not matching.
  * @example <caption>Initialize the Switcher with the <code class="prettyprint">value</code> attribute specified:</caption>
  *  &lt;oj-switcher value='settings'> ... &lt;/oj-switcher>

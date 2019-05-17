@@ -2,8 +2,6 @@ import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, 
 export interface ojConveyorBelt extends baseComponent<ojConveyorBeltSettableProperties> {
     contentParent: string | null;
     orientation: 'horizontal' | 'vertical';
-    onContentParentChanged: ((event: JetElementCustomEvent<ojConveyorBelt["contentParent"]>) => any) | null;
-    onOrientationChanged: ((event: JetElementCustomEvent<ojConveyorBelt["orientation"]>) => any) | null;
     addEventListener<T extends keyof ojConveyorBeltEventMap>(type: T, listener: (this: HTMLElement, ev: ojConveyorBeltEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojConveyorBeltSettableProperties>(property: T): ojConveyorBelt[T];
@@ -12,6 +10,12 @@ export interface ojConveyorBelt extends baseComponent<ojConveyorBeltSettableProp
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojConveyorBeltSettableProperties>): void;
     setProperties(properties: ojConveyorBeltSettablePropertiesLenient): void;
     refresh(): void;
+}
+export namespace ojConveyorBelt {
+    // tslint:disable-next-line interface-over-type-literal
+    type contentParentChanged = JetElementCustomEvent<ojConveyorBelt["contentParent"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type orientationChanged = JetElementCustomEvent<ojConveyorBelt["orientation"]>;
 }
 export interface ojConveyorBeltEventMap extends baseComponentEventMap<ojConveyorBeltSettableProperties> {
     'contentParentChanged': JetElementCustomEvent<ojConveyorBelt["contentParent"]>;

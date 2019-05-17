@@ -13,7 +13,7 @@
     .oj-messages-layer {
       @extend .oj-component-layer;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        z-index: var(--oj-messages-zindex);
+        z-index: var(--oj-messages-z-index);
       } @else {
         z-index: $messagesZindex;        
       }
@@ -21,7 +21,7 @@
     
     .oj-messages-layer.oj-focus-within {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        z-index: calc(var(--oj-messages-zindex) + 1);
+        z-index: calc(var(--oj-messages-z-index) + 1);
       } @else {
         z-index: calc(#{$messagesZindex} + 1);
       }

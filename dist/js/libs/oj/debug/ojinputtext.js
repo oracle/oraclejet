@@ -3,15 +3,15 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojvalidation-base', 'ojs/ojeditablevalue'], 
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        */
-       function(oj, $, __ValidationBase)
-{
 
+define(['ojs/ojcore', 'jquery', 'ojs/ojvalidation-base', 'ojs/ojlogger', 'ojs/ojeditablevalue'], 
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+*/
+function(oj, $, __ValidationBase, Logger)
+{
+  "use strict";
 var __oj_input_password_metadata = 
 {
   "properties": {
@@ -74,7 +74,8 @@ var __oj_input_password_metadata =
       "type": "object",
       "properties": {
         "instruction": {
-          "type": "string"
+          "type": "string",
+          "value": ""
         }
       }
     },
@@ -94,6 +95,9 @@ var __oj_input_password_metadata =
     "labelHint": {
       "type": "string",
       "value": ""
+    },
+    "labelledBy": {
+      "type": "string"
     },
     "messagesCustom": {
       "type": "Array<Object>",
@@ -273,7 +277,8 @@ var __oj_input_text_metadata =
       "type": "object",
       "properties": {
         "instruction": {
-          "type": "string"
+          "type": "string",
+          "value": ""
         }
       }
     },
@@ -293,6 +298,9 @@ var __oj_input_text_metadata =
     "labelHint": {
       "type": "string",
       "value": ""
+    },
+    "labelledBy": {
+      "type": "string"
     },
     "list": {
       "type": "string",
@@ -482,7 +490,8 @@ var __oj_text_area_metadata =
       "type": "object",
       "properties": {
         "instruction": {
-          "type": "string"
+          "type": "string",
+          "value": ""
         }
       }
     },
@@ -502,6 +511,9 @@ var __oj_text_area_metadata =
     "labelHint": {
       "type": "string",
       "value": ""
+    },
+    "labelledBy": {
+      "type": "string"
     },
     "messagesCustom": {
       "type": "Array<Object>",
@@ -619,7 +631,7 @@ var __oj_text_area_metadata =
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/* global __ValidationBase:false */
+/* global __ValidationBase:false, Logger:false */
 
 /**
  * @ojcomponent oj.inputBase
@@ -793,7 +805,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        * </p>
        * <p>Since async validators are run asynchronously, you should wait on the BusyContext before
        * you check valid property or the value property. Alternatively you can add a callback to
-       * the onValidChanged or ojValueChanged events.
+       * the validChanged or valueChanged events.
        * </p>
        * <p>
        * The steps performed always, running validation and clearing messages is the same as
@@ -862,6 +874,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        *       value: "Array<oj.AsyncValidator<V>>",
        *       jsdocOverride: true}
        * @type {Array.<Object>}
+       * @ojshortdesc Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.
        * @default []
        */
       asyncValidators: [],
@@ -889,7 +902,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        *   property is not updated, and the error is shown.
        *   The display value is not refreshed in this case. </li>
        *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
-       *   property is updated; page author can listen to the <code class="prettyprint">onValueChanged</code>
+       *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
        *   event to clear custom errors. The
        *   display value is refreshed with the formatted value provided by converter.</li>
        * </ul>
@@ -931,7 +944,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        *
        * // setter
        * myComp.autocomplete = "on";
-       * @ojshortdesc Dictates component's autocomplete state.
+       * @ojshortdesc Specifies a component's autocomplete state. See the Help documentation for more information.
        * @expose
        * @type {string}
        * @ojsignature {target: "Type", value: "'on'|'off'|string", jsdocOverride: true}
@@ -965,11 +978,51 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        * @instance
        * @since 4.0.0
        * @memberof oj.inputBase
+       * @ojshortdesc Specifies whether the component will get input focus when the page is loaded. See the Help documentation for more information.
        * @ojextension {_COPY_TO_INNER_ELEM: true}
        */
       autofocus: false,
       /**
-       * It indicates the name of the component.
+       * <p>
+       * The oj-label sets the labelledBy property programmatically on the form component
+       * to make it easy for the form component to find its oj-label component (a
+       * document.getElementById call.)
+       * </p>
+       * <p>
+       * The application developer should use the 'for'/'id api
+       * to link the oj-label with the form component;
+       * the 'for' on the oj-label to point to the 'id' on the input form component.
+       * This is the most performant way for the oj-label to find its form component.
+       * </p>
+       *
+       * @example <caption>Initialize component with <code class="prettyprint">for</code> attribute:</caption>
+       * &lt;oj-label for="textId">Name:&lt;/oj-label>
+       * &lt;oj-input-text id="textId">
+       * &lt;/oj-input-text>
+       * // ojLabel then writes the labelled-by attribute on the oj-input-text.
+       * &lt;oj-label id="labelId" for="textId">Name:&lt;/oj-label>
+       * &lt;oj-input-text id="textId" labelled-by"labelId">
+       * &lt;/oj-input-text>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
+       * // getter
+       * var labelledBy = myComp.labelledBy;
+       *
+       * // setter
+       * myComp.labelledBy = "labelId";
+       *
+       * @expose
+       * @ojshortdesc The oj-label sets the labelledBy property programmatically on the form component. See the Help documentation for more information.
+       * @type {string|null}
+       * @default null
+       * @public
+       * @instance
+       * @since 7.0.0
+       * @memberof oj.inputBase
+       */
+      labelledBy: null,
+      /**
+       * Specifies the name of the component.
        *
        * @example <caption>Initialize component with <code class="prettyprint">name</code> attribute:</caption>
        * &lt;oj-some-element name="myName">&lt;/oj-some-element>
@@ -1034,6 +1087,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        * @access public
        * @instance
        * @memberof! oj.inputBase
+       * @ojshortdesc Read-only property used for retrieving the current value from the input field in string form. See the Help documentation for more information.
        * @type {string}
        * @ojsignature {target: "Type", value: "RV"}
        * @since 1.2.0
@@ -1042,7 +1096,9 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        */
       rawValue: undefined,
       /**
-       * Dictates component's readonly state.
+       * Whether the component is readonly. The readOnly property sets or returns whether an element is readOnly, or not.
+       * A readOnly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
+       * If you want to prevent the user from interacting with the element, use the disabled property instead.
        *
        * @example <caption>Initialize component with <code class="prettyprint">readonly</code> attribute:</caption>
        * &lt;oj-some-element readonly>&lt;/oj-some-element>
@@ -1057,6 +1113,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        * @expose
        * @type {boolean}
        * @alias readonly
+       * @ojshortdesc Specifies whether the component is read-only.  A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
        * @default false
        * @instance
        * @memberof! oj.inputBase
@@ -1133,6 +1190,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        * @access public
        * @instance
        * @memberof oj.inputBase
+       * @ojshortdesc Specifies whether the component is required or optional. See the Help documentation for more information.
        * @type {boolean}
        * @default false
        * @since 0.7
@@ -1254,6 +1312,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        * @instance
        * @default []
        * @memberof oj.inputBase
+       * @ojshortdesc Specifies a list of synchronous validators for performing validation by the element. See the Help documentation for more information.
        * @ojsignature  { target: "Type",
        *   value: "Array<oj.Validator<V>|oj.Validation.RegisteredValidator>|null",
        *   jsdocOverride: true}
@@ -1360,7 +1419,6 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       var ret = this._superApply(arguments);
       var options = ['disabled', 'readOnly'];
       var self = this;
-      var widgetId;
 
       this._refreshRequired(this.options.required);
 
@@ -1381,12 +1439,8 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       });
 
       if (this._IsCustomElement()) {
-        // if it is a custom element, then set the sub-id on the input so if they have a oj-label
-        // pointing to it with the 'for' attrbiute, JAWS will read the label.
-        widgetId = this.widget().attr('id');
-        if (widgetId) {
-          oj.EditableValueUtils.setSubIdForCustomLabelFor(this._GetContentElement()[0], widgetId);
-        }
+        oj.EditableValueUtils._setInputId(
+          this._GetContentElement()[0], this.widget()[0].id, this.options.labelledBy);
       }
       return ret;
     },
@@ -1485,8 +1539,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
      */
     _AfterSetOptionConverter: oj.EditableValueUtils._AfterSetOptionConverter,
     /**
-     * Clears the cached converter stored in _converter and pushes new converter hint to messaging.
-     * Called when convterer option changes
+     * Called when converter option changes and we have gotten the new converter
      * @memberof! oj.inputBase
      * @instance
      * @protected
@@ -1548,15 +1601,16 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
 
       if (key === 'disabled' || key === 'readOnly') {
         this._processOptions(key, value);
-      }
-
-      if (key === 'pattern') {
+      } else if (key === 'pattern') {
         this._defaultRegExpValidator[oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP] =
           this._getImplicitRegExpValidator();
         this._AfterSetOptionValidators();
+      } else if (key === 'labelledBy') {
+        if (this.options.labelledBy) {
+          var id = this._GetContentElement()[0].id;
+          this._labelledByChangedForInputComp(this.options.labelledBy, id);
+        }
       }
-
-
       return retVal;
     },
     /**
@@ -1620,6 +1674,32 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       }
 
       return ret;
+    },
+
+   /**
+    *
+    * @protected
+    * @override
+    * @instance
+    * @memberof! oj.inputBase
+    */
+    _SetLoading: function () {
+      this._super();
+      this.element.prop('readonly', true);
+      this._refreshStateTheming('readOnly', true);
+    },
+
+   /**
+    *
+    * @protected
+    * @override
+    * @instance
+    * @memberof! oj.inputBase
+    */
+    _ClearLoading: function () {
+      this._super();
+      this.element.prop('readonly', this.options.readOnly);
+      this._refreshStateTheming('readOnly', this.options.readOnly);
     },
 
     _attachDetachEventHandlers: function () {
@@ -2023,6 +2103,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
 
      * @expose
      * @memberof oj.inputBase
+     * @ojshortdesc Refreshes the component.
      * @public
      * @return {void}
      * @instance
@@ -2042,6 +2123,12 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
      * @private
      */
     _refreshRequired: oj.EditableValueUtils._refreshRequired,
+    /**
+     * @memberof! oj.inputBase
+     * @instance
+     * @private
+     */
+    _labelledByChangedForInputComp: oj.EditableValueUtils._labelledByChangedForInputComp,
     /**
      * the validate method from v3.x that returns a boolean
      * @memberof! oj.inputBase
@@ -2108,6 +2195,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
      * @access public
      * @expose
      * @memberof oj.inputBase
+     * @ojshortdesc Validates the component's display value using all converters and validators registered on the component. If there are no validation errors. then the value is updated. See the Help documentation for more information.
      * @instance
      * @since 4.0.0
      * @ojstatus preview
@@ -2154,16 +2242,17 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
  * @augments oj.inputBase
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojInputPassword extends inputBase<string|null, ojInputPasswordSettableProperties>"
+ *                value: "class ojInputPassword<V = string> extends inputBase<V, ojInputPasswordSettableProperties<V>>",
+ *                genericParameters: [{"name": "V", "description": "Type of value of the component"}]
  *               },
  *               {
  *                target: "Type",
- *                value: "ojInputPasswordSettableProperties extends inputBaseSettableProperties<string|null>",
+ *                value: "ojInputPasswordSettableProperties<V = string> extends inputBaseSettableProperties<V>",
  *                for: "SettableProperties"
  *               }
  *              ]
  * @since 0.6
- * @ojshortdesc Provides basic support for specifying a text value of type 'password'.
+ * @ojshortdesc An input password allows the user to enter a password.
  * @ojrole textbox
  * @ojstatus preview
  *
@@ -2318,7 +2407,9 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
        * @default null
        * @ojwriteback
        * @memberof oj.ojInputPassword
-       * @type {?string}
+       * @type {string|null}
+       * @ojsignature { target: "Type",
+       *                value: "V|null"}
        */
       value: undefined
 
@@ -2447,16 +2538,17 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
  * @augments oj.inputBase
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojInputText extends inputBase<any, ojInputTextSettableProperties>"
+ *                value: "class ojInputText<V = any> extends inputBase<V, ojInputTextSettableProperties<V>>",
+ *                genericParameters: [{"name": "V", "description": "Type of value of the component"}]
  *               },
  *               {
  *                target: "Type",
- *                value: "ojInputTextSettableProperties extends inputBaseSettableProperties<any>",
+ *                value: "ojInputTextSettableProperties<V = any> extends inputBaseSettableProperties<V>",
  *                for: "SettableProperties"
  *               }
  *              ]
  * @since 0.6
- * @ojshortdesc Provides basic support for specifying a text value.
+ * @ojshortdesc An input text allows the user to enter a text value.
  * @ojrole textbox
  * @ojstatus preview
  *
@@ -2568,7 +2660,7 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
        * @ojvalue {string} "conditional" The clear icon is visible under the following conditions:
        * if the component has a non-empty value AND it either has focus OR the mouse is over the field.
        * @default "never"
-       * @desc Specifies if the clear icon should be visible.
+       * @desc Specifies if an icon to clear the input field should be visible.
        *
        * @example <caption>Initialize the oj-input-text with the <code class="prettyprint">clear-icon</code> attribute specified:</caption>
        * &lt;oj-input-text clear-icon="conditional" id="inputcontrol">&lt;/oj-input-text>
@@ -2582,7 +2674,8 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
        */
       clearIcon: 'never',
       /**
-       * a converter instance that duck types {@link oj.Converter}. Or an object literal containing
+       * A converter instance or Promise to a converter instance
+       * that duck types {@link oj.Converter}. Or an object literal containing
        * the following properties.
        * {@ojinclude "name":"inputBaseConverterOptionDoc"}
        *
@@ -2616,10 +2709,11 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
        * @access public
        * @instance
        * @memberof! oj.ojInputText
+       * @ojshortdesc An object that converts the value. See the Help documentation for more information.
        * @default null
        * @ojsignature {
        *    target: "Type",
-       *    value: "oj.Converter<any>|oj.Validation.RegisteredConverter|null",
+       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|oj.Validation.RegisteredConverter|null",
        *    jsdocOverride: true}
        * @type {Object|null}
        */
@@ -2653,11 +2747,13 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
        * @expose
        * @instance
        * @memberof! oj.ojInputText
+       * @ojshortdesc Specifies a list of pre-defined options to present to the user. See the Help documentation for more information.
        * @type {string}
        * @public
        * @ojextension {_COPY_TO_INNER_ELEM: true}
        */
       list: '',
+
       /**
        * Regular expression pattern which will be used to validate the component's value.
        * <p>
@@ -3085,16 +3181,17 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
  * @augments oj.inputBase
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojTextArea extends inputBase<any, ojTextAreaSettableProperties>"
+ *                value: "class ojTextArea<V = any> extends inputBase<V, ojTextAreaSettableProperties<V>>",
+ *                genericParameters: [{"name": "V", "description": "Type of value of the component"}]
  *               },
  *               {
  *                target: "Type",
- *                value: "ojTextAreaSettableProperties extends inputBaseSettableProperties<any>",
+ *                value: "ojTextAreaSettableProperties<V = any> extends inputBaseSettableProperties<V>",
  *                for: "SettableProperties"
  *               }
  *              ]
  * @since 0.6
- * @ojshortdesc Provides basic support for specifying a multi-line text value.
+ * @ojshortdesc A text area allows the user to enter a multi-line text value.
  * @ojrole textbox
  * @ojstatus preview
  *
@@ -3197,7 +3294,8 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
     options:
     {
       /**
-       * a converter instance that duck types {@link oj.Converter}. Or an object literal containing
+       * A converter instance or Promise to a converter instance
+       * that duck types {@link oj.Converter}. Or an object literal containing
        * the following properties.
        * {@ojinclude "name":"inputBaseConverterOptionDoc"}
        *
@@ -3232,13 +3330,15 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
        * @instance
        * @default null
        * @memberof! oj.ojTextArea
+       * @ojshortdesc An object that converts the value. See the Help documentation for more information.
        * @ojsignature {
        *    target: "Type",
-       *    value: "oj.Converter<any>|oj.Validation.RegisteredConverter|null",
+       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|oj.Validation.RegisteredConverter|null",
        *    jsdocOverride: true}
        * @type {Object|null}
        */
       converter: null,
+
       /**
        * Regular expression pattern which will be used to validate the component's value.
        * <p>
@@ -3273,6 +3373,7 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
        *
        * @expose
        * @memberof oj.ojTextArea
+       * @ojshortdesc Specifies the resize behavior, based upon native browser support. See the Help documentation for more information.
        * @instance
        * @type {string}
        * @ojvalue {string} "both" The textarea will be interactively resizable horizontally and vertically.
@@ -3310,6 +3411,7 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
        * @expose
        * @instance
        * @memberof! oj.ojTextArea
+       * @ojshortdesc Specifies the visible number of lines in the text area.
        * @type {number}
        * @ojextension {_COPY_TO_INNER_ELEM: true}
        */

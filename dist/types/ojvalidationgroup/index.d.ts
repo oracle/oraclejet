@@ -1,7 +1,6 @@
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojValidationGroup extends JetElement<ojValidationGroupSettableProperties> {
     readonly valid: 'valid' | 'pending' | 'invalidHidden' | 'invalidShown';
-    onValidChanged: ((event: JetElementCustomEvent<ojValidationGroup["valid"]>) => any) | null;
     addEventListener<T extends keyof ojValidationGroupEventMap>(type: T, listener: (this: HTMLElement, ev: ojValidationGroupEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojValidationGroupSettableProperties>(property: T): ojValidationGroup[T];
@@ -11,6 +10,10 @@ export interface ojValidationGroup extends JetElement<ojValidationGroupSettableP
     setProperties(properties: ojValidationGroupSettablePropertiesLenient): void;
     focusOn(key?: '@firstInvalidShown'): void;
     showMessages(): void;
+}
+export namespace ojValidationGroup {
+    // tslint:disable-next-line interface-over-type-literal
+    type validChanged = JetElementCustomEvent<ojValidationGroup["valid"]>;
 }
 export interface ojValidationGroupEventMap extends HTMLElementEventMap {
     'validChanged': JetElementCustomEvent<ojValidationGroup["valid"]>;

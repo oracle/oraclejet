@@ -3,12 +3,12 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 //although Config has a direct dependency on oj.LocaleData and oj.TimezoneData we will not list 
 // these direct dependencies here because of circulare reference error. These dependencies are tested in the code
 // if they exist so it's safe to leave them out from the define arg list.
 define(['require','ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtranslations'  ], function(require, oj, ojt)
 {
+  "use strict";
 /*
 ** Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 **

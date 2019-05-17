@@ -3,64 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'knockout', 'ojs/ojkeysetimpl', 'ojs/ojknockouttemplateutils', 'ojs/ojresponsiveknockoututils', 'ojs/ojlogger',  'ojs/ojkoshared', 'jqueryui-amd/widget'], 
-    function(oj, $, Context, ko, KeySetImpl, KnockoutTemplateUtils, ResponsiveKnockoutUtils, Logger, BindingProviderImpl)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'knockout', 'ojs/ojkeysetimpl', 'ojs/ojknockouttemplateutils', 'ojs/ojresponsiveknockoututils', 'ojs/ojlogger',  'ojs/ojkoshared', 'ojs/ojtemplateengine', 'jqueryui-amd/widget'], 
+function(oj, $, Context, ko, KeySetImpl, KnockoutTemplateUtils, ResponsiveKnockoutUtils, Logger, BindingProviderImpl, templateEngine)
 {
-/**
- * @private
- * @constructor
- * Global Change Queue Implementation
- * The queue is used to delay component updates until all model changes have been propagated
- * This is a private class that does not need to be xported
- */
-function GlobalChangeQueue() {
-  this.Init();
-}
-
-// Subclass from oj.Object
-oj.Object.createSubclass(GlobalChangeQueue, oj.Object, 'ComponentBinding.GlobalChangeQueue');
-
-GlobalChangeQueue.prototype.Init = function () {
-  GlobalChangeQueue.superclass.Init.call(this);
-  this._trackers = [];
-  this._queue = [];
-};
-
-GlobalChangeQueue.prototype.registerComponentChanges = function (tracker) {
-  if (this._trackers.indexOf(tracker) === -1) {
-    this._trackers.push(tracker);
-    if (!this._delayTimer) {
-      this._delayTimer = setTimeout(oj.Object.createCallback(this, this._deliverChangesImpl), 1);// @HTMLUpdateOK; delaying our own callback
-    }
-  }
-};
-
-
-GlobalChangeQueue.prototype.deliverChanges = function () {
-  if (this._delayTimer) {
-    clearTimeout(this._delayTimer);
-  }
-  this._deliverChangesImpl();
-};
-
-GlobalChangeQueue.prototype._deliverChangesImpl = function () {
-  this._delayTimer = null;
-  var trackers = this._trackers;
-  this._trackers = [];
-
-
-  for (var i = 0; i < trackers.length; i++) {
-    var tracker = trackers[i];
-    this._queue.push({ tracker: tracker, changes: tracker.flushChanges() });
-  }
-
-  while (this._queue.length > 0) {
-    var record = this._queue.shift();
-    record.tracker.applyChanges(record.changes);
-  }
-};
-
+  "use strict";
 /* jslint browser: true, devel: true */
 /* global ComponentChangeTracker:false, ko:false, GlobalChangeQueue:false, BindingProviderImpl: false, Logger:false */
 
@@ -234,7 +180,7 @@ oj.ComponentBinding.prototype.setupManagedAttributes = function (opts) {
  * @export
  */
 oj.ComponentBinding.deliverChanges = function () {
-  oj.ComponentBinding._changeQueue.deliverChanges();
+  BindingProviderImpl.getGlobalChangeQueue().deliverChanges();
 };
 
 /**
@@ -339,7 +285,8 @@ oj.ComponentBinding.prototype._update =
         }
       };
 
-      changeTracker = new ComponentChangeTracker(updaterCallback, oj.ComponentBinding._changeQueue);
+      changeTracker = new ComponentChangeTracker(updaterCallback,
+            BindingProviderImpl.getGlobalChangeQueue());
 
       // Create a compatible valueAccessor for backward compatibility with the managed attributes and custom bindings that
       // expect the ojComponent value to be defined inline. We can use already-resolved binding value here because the component
@@ -869,11 +816,6 @@ oj.ComponentBinding._deliverCreateDestroyEventToManagedProps = function (isCreat
     }
   }
 };
-
-/**
- * @private
- */
-oj.ComponentBinding._changeQueue = new GlobalChangeQueue();
 
 /**
  * @private
@@ -2042,9 +1984,8 @@ BindingProviderImpl.addPostprocessor(
           var eventName = oj.__AttributeUtils.eventListenerPropertyToEventType(propName);
           var isDomEvent = eventName && !metadataProps[propName];
           _expressionHandler.setupExpression(attr.value, propName, isDomEvent ?
-            domListenerMetadata :
-            metadataProps[propName.split('.')[0]],
-            oj.BaseCustomElementBridge.isPromiseType(element, propName));
+                                             domListenerMetadata :
+                                             metadataProps[propName.split('.')[0]]);
         }
 
         bridge.__INITIALIZING_PROPS = false;
@@ -2058,7 +1999,7 @@ BindingProviderImpl.addPostprocessor(
 
           var metadata =
               _isDomEvent ? domListenerMetadata : metadataProps[_propName.split('.')[0]]; // send metadata for top level property
-          _expressionHandler.setupExpression(detail.value, _propName, metadata, false);
+          _expressionHandler.setupExpression(detail.value, _propName, metadata);
         };
 
         element.addEventListener(_ATTRIBUTE_CHANGED, attributeListener);
@@ -2079,7 +2020,7 @@ BindingProviderImpl.addPostprocessor(
               }
 
               setup(isComposite);
-              bridge.PlaybackEarlyPropertySets(element);
+              bridge.playbackEarlyPropertySets(element);
               oj._KnockoutBindingProvider.getInstance().__NotifyBindingsApplied(element);
             },
             null,
@@ -2111,7 +2052,7 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
   var _CHANGED_EVENT_SUFFIX = 'Changed';
 
   // This function should be called when the bindings are applied initially and whenever the expression attribute changes
-  this.setupExpression = function (attrVal, propName, metadata, immediateWriteback) {
+  this.setupExpression = function (attrVal, propName, metadata) {
     // If no metadata was passed in, just return bc this is not a component property.
     if (!metadata) {
       return undefined;
@@ -2194,12 +2135,6 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
           }
         );
         initialRead = false;
-      }
-
-      // Some top level Promise properties support immediate writeback like the oj-dynamic component
-      // ready API
-      if (immediateWriteback) {
-        _writeToObservable(propName, expr, element[propName], evaluator);
       }
 
       // Only listen for property changes for writeable properties
@@ -2307,14 +2242,47 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
     var topProp = splitProps[0];
     var listener = function (evt) {
       if (!_isSettingProperty(topProp)) {
-        var value = evt.detail.value;
-        // If the propName has '.' we need to walk the top level value and writeback
-        // subproperty value
-        for (var i = 1; i < splitProps.length; i++) {
-          var subprop = splitProps[i];
-          value = value[subprop];
+        var written = false;
+        var reason;
+        ko.ignoreDependencies(
+          function () {
+            var value = evt.detail.value;
+            // If the propName has '.' we need to walk the top level value and writeback
+            // subproperty value
+            for (var i = 1; i < splitProps.length; i++) {
+              var subprop = splitProps[i];
+              value = value[subprop];
+            }
+
+            var target = evaluator(bindingContext);
+
+            if (ko.isObservable(target)) {
+              if (ko.isWriteableObservable(target)) {
+                target(oj.ComponentBinding.__cloneIfArray(value));
+                written = true;
+              } else {
+                reason = 'the observable is not writeable';
+              }
+            } else {
+              var writerExpr = oj.__ExpressionUtils.getPropertyWriterExpression(expr);
+              if (writerExpr != null) {
+                var wrirerEvaluator =
+                      BindingProviderImpl.createEvaluator(writerExpr, bindingContext);
+                wrirerEvaluator(bindingContext)(oj.ComponentBinding.__cloneIfArray(value));
+                written = true;
+              } else {
+                reason = 'the expression is not a valid update target';
+              }
+            }
+          }
+        );
+
+        if (!written) {
+          if (reason) {
+            Logger.info("The expression '%s' for property '%s' was not updated because %s.",
+                          expr, propName, reason);
+          }
         }
-        _writeToObservable(propName, expr, value, evaluator);
       }
     };
 
@@ -2412,41 +2380,7 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
       }
     };
 
-    return new ComponentChangeTracker(updater, oj.ComponentBinding._changeQueue);
-  }
-
-  function _writeToObservable(propName, expr, value, evaluator) {
-    var written = false;
-    var reason = '';
-    ko.ignoreDependencies(
-      function () {
-        var target = evaluator(bindingContext);
-        if (ko.isObservable(target)) {
-          if (ko.isWriteableObservable(target)) {
-            target(oj.ComponentBinding.__cloneIfArray(value));
-            written = true;
-          } else {
-            reason = 'the observable is not writeable';
-          }
-        } else {
-          var writerExpr = oj.__ExpressionUtils.getPropertyWriterExpression(expr);
-          if (writerExpr != null) {
-            var wrirerEvaluator =
-                  BindingProviderImpl.createEvaluator(writerExpr, bindingContext);
-            wrirerEvaluator(bindingContext)(oj.ComponentBinding.__cloneIfArray(value));
-            written = true;
-          } else {
-            reason = 'the expression is not a valid update target';
-          }
-        }
-      }
-    );
-    if (!written) {
-      if (reason) {
-        Logger.info("The expression '%s' for property '%s' was not updated because %s.",
-                      expr, propName, reason);
-      }
-    }
+    return new ComponentChangeTracker(updater, BindingProviderImpl.getGlobalChangeQueue());
   }
 };
 
@@ -2562,7 +2496,7 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
               var propName = oj.__AttributeUtils.attributeToPropertyName(attrNode.nodeName);
               expressionHandler.setupExpression(attrNode.value, propName, {
                 _domListener: true
-              }, false);
+              });
             }
 
             ko.utils.domNodeDisposal.addDisposeCallback(node, function () {
@@ -2843,6 +2777,7 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
   }
 }());
 
+/* global Promise:false */
 /**
  * @ignore
  * @constructor
@@ -2852,10 +2787,61 @@ oj._KnockoutBindingProvider = function () {
   /**
    * @ignore
    */
+  this._resolveWhenChildrenBindingsApplied = function (elem, trackOption) {
+    var childrenPromises = this._getChildrenBindingsAppliedPromises(elem);
+    if (trackOption === 'none' || childrenPromises.length === 0) {
+      oj.BaseCustomElementBridge.getInstance(elem).resolveBindingProvider(this);
+    } else {
+      var promises = [];
+      while (childrenPromises.length > 0) {
+        var callbackItem = childrenPromises.shift();
+        if (trackOption === 'nearestCustomElement' ||
+           (trackOption === 'immediate' && callbackItem.immediate === true)) {
+          promises.push(callbackItem.promiseCallback);
+        }
+      }
+      Promise.all(promises).then(function () {
+        this._resolveWhenChildrenBindingsApplied(elem, trackOption);
+      }.bind(this));
+    }
+  };
+
+  this._getChildrenBindingsAppliedPromises = function (elem, create) {
+    if (!elem._whenChildrenBindingsApplied && create) {
+      Object.defineProperty(elem, '_whenChildrenBindingsApplied', {
+        value: [],
+        enumerable: false
+      });
+    }
+    return elem._whenChildrenBindingsApplied || [];
+  };
+
+  /**
+   * @ignore
+   */
+  this.__RegisterBindingAppliedPromiseForChildren = function (parent, immediate) {
+    var promiseResolver = null;
+    if (parent) {
+      var childrenPromise = new Promise(function (resolve) {
+        promiseResolver = resolve;
+      });
+      this._getChildrenBindingsAppliedPromises(parent, true);
+      parent._whenChildrenBindingsApplied.push({
+        immediate: immediate,
+        promiseCallback: childrenPromise
+      });
+    }
+    return promiseResolver;
+  };
+
+  /**
+   * @ignore
+   */
   this.__NotifyBindingsApplied = function (elem) {
     // This method is only called from the CustomElementBinding where we know the
     // oj.BaseCustomElementBridge class is available
-    oj.BaseCustomElementBridge.getInstance(elem).resolveBindingProvider(this);
+    var trackOption = oj.BaseCustomElementBridge.getTrackChildrenOption(elem);
+    this._resolveWhenChildrenBindingsApplied(elem, trackOption);
   };
 };
 
@@ -2872,7 +2858,7 @@ oj._KnockoutBindingProvider.getInstance = function () {
 oj._KnockoutBindingProvider._instance = new oj._KnockoutBindingProvider();
 
 /**
- * @ojoverviewdoc BindingOverview - [6]JET Binding Elements
+ * @ojoverviewdoc BindingOverview - [4]JET Binding Elements
  * @classdesc
  * {@ojinclude "name":"bindingOverviewDoc"}
  */
@@ -3079,7 +3065,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   and modified by Oracle JET team to be included into Oracle JET project.
 */
 
-/* global ko:false, Symbol:false, Map:false, KeySetImpl:false, Context:false, BindingProviderImpl: false */
+/* global ko:false, Symbol:false, Map:false, KeySetImpl:false, Context:false, BindingProviderImpl: false, Promise:false, templateEngine:false */
 
 (function () {
   'use strict';
@@ -3095,35 +3081,6 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   var MAX_LIST_SIZE = 9007199254740991;
 
   var supportsDocumentFragment = document && typeof document.createDocumentFragment === 'function';
-
-  // Get a copy of the (possibly virtual) child nodes of the given element,
-  // put them into a container, then empty the given node.
-  function makeTemplateNode(sourceNode) {
-    var container = document.createElement('div');
-    var parentNode;
-    if (sourceNode._templateNode && sourceNode._templateNode.content) {
-      // For e.g. <template> tags
-      parentNode = sourceNode._templateNode.content; // parentNode = sourceNode.content;
-    } else if (sourceNode._templateNode) {
-      parentNode = sourceNode._templateNode;
-    } else {
-      // allow body of a script tag to be used as a template
-      var scripts = sourceNode.parentNode.getElementsByTagName('SCRIPT');
-      parentNode = scripts &&
-        scripts.length > 0 ? ko.utils.parseHtmlFragment(scripts[0].text, document) : sourceNode;
-    }
-
-    var nodes = Array.isArray(parentNode) ? parentNode : ko.virtualElements.childNodes(parentNode);
-    ko.utils.arrayForEach(nodes, function (child) {
-      // FIXME - This cloneNode could be expensive; we may prefer to iterate over the
-      // parentNode children in reverse (so as not to foul the indexes as childNodes are
-      // removed from parentNode when inserted into the container)
-      if (child) {
-        container.insertBefore(child.cloneNode(true), null); // @HTMLUpdateOK
-      }
-    });
-    return container;
-  }
 
   // Mimic a KO change item 'add'
   function valueToChangeAddItem(value, index, key) {
@@ -3164,6 +3121,28 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     return result;
   }
 
+  function findNearestCustomParent(element, parentTrackingContext) {
+    var parent = element.parentNode;
+    while (parent && !oj.ElementUtils.isValidCustomElementName(parent.localName)) {
+      parent = parent.parentNode;
+    }
+    if (!parent) {
+      parent = parentTrackingContext ? parentTrackingContext._nearestCustomParent : null;
+    }
+    return parent;
+  }
+
+  function findImmediateState(element, nearestCustomParent, parentTrackingContext) {
+    var isImmediate = false;
+    var nestedElement = !!parentTrackingContext;
+    if (element.parentNode === nearestCustomParent) {
+      isImmediate = true;
+    } else if (nestedElement && !element.parentNode.parentNode) {
+      isImmediate = parentTrackingContext._immediate;
+    }
+    return isImmediate;
+  }
+
   // store a symbol for caching the pending delete info index in the data item objects
   var PENDING_DELETE_INDEX_KEY = createSymbolOrString('_ko_ffe_pending_delete_index');
 
@@ -3174,13 +3153,9 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
    */
   function OjForEach(element, value, context) {
     this.element = value.element || element;
-    this.$context = context;
+    this.element._templateNode.__ojBindingContext = context;
     this.data = value.data;
     this.as = value.as;
-    // Check to see if the template node overrides the as attribute
-    this.templateAlias = this.element._templateNode ?
-      this.element._templateNode.getAttribute('data-oj-as') : null;
-    this.templateNode = makeTemplateNode(this.element);
     this.changeQueue = [];
     this.firstLastNodesList = [];
     this.indexesToDelete = [];
@@ -3189,6 +3164,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
     // Remove existing content.
     ko.virtualElements.emptyNode(this.element);
+    this._initChildrenBindingsAppliedPromise();
 
     if (this.data.fetchFirst) { // the data is a DataProvider object
       this.fetchData();
@@ -3234,6 +3210,32 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
       description: 'oj-bind-for-each binding on a node with the Id ' +
         containerElement.id + 'is loading data.'
     });
+  };
+
+  // initializes a promise for expanding an element and applying bindings to its children
+  OjForEach.prototype._initChildrenBindingsAppliedPromise = function () {
+    var currentContext = this.element._templateNode.__ojBindingContext.$current;
+    var parentTrackingContext = currentContext ?
+    { _nearestCustomParent: currentContext._nearestCustomParent,
+      _immediate: currentContext._immediate } : null;
+    var nearestCustomParent =
+      findNearestCustomParent(this.element, parentTrackingContext);
+    var isImmediate =
+      findImmediateState(this.element, nearestCustomParent, parentTrackingContext);
+    this.trackingContext = {
+      _nearestCustomParent: nearestCustomParent,
+      _immediate: isImmediate
+    };
+    this._childrenBindingsPromiseResolver = oj._KnockoutBindingProvider.getInstance()
+      .__RegisterBindingAppliedPromiseForChildren(nearestCustomParent, isImmediate);
+  };
+
+  // resolves _whenChildrenBindingsApplied promise for the element
+  OjForEach.prototype._resolveChildrenBindingsAppliedPromise = function () {
+    if (this._childrenBindingsPromiseResolver) {
+      this._childrenBindingsPromiseResolver();
+      this._childrenBindingsPromiseResolver = null;
+    }
   };
 
   // This function is used to retrieve data from data provider - on initial update and
@@ -3479,6 +3481,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
       this.rendering_queued = true;
       self.processQueue();
     }
+    this._resolveChildrenBindingsAppliedPromise();
   };
 
 
@@ -3520,27 +3523,31 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
     for (var i = 0, len = valuesToAdd.length; i < len; ++i) {
       var childNodes;
-      var childContext;
+      var currentChildContext;
 
       // we check if we have a pending delete with reusable nodesets for this data, and if yes, we reuse one nodeset
       var pendingDelete = this.getPendingDeleteFor(valuesToAdd[i]);
       if (pendingDelete && pendingDelete.nodesets.length) {
         childNodes = pendingDelete.nodesets.pop();
-        childContext = pendingDelete.childContext;
+        currentChildContext = pendingDelete.currentChildContext;
       } else {
-        var templateClone = this.templateNode.cloneNode(true);
-        var current = {
+        currentChildContext = {
           data: valuesToAdd[i],
           index: index + i,
           observableIndex: ko.observable()
         };
-        childContext = BindingProviderImpl.extendBindingContext(this.$context, current, this.as,
-          this.templateAlias, this.$context);
-
-        // apply bindings first, and then process child nodes, because bindings can add childnodes
-        ko.applyBindingsToDescendants(childContext, templateClone);
-
-        childNodes = ko.virtualElements.childNodes(templateClone);
+        Object.defineProperties(currentChildContext, {
+          _nearestCustomParent: {
+            value: this.trackingContext._nearestCustomParent,
+            enumerable: false
+          },
+          _immediate: {
+            value: this.trackingContext._immediate,
+            enumerable: false
+          }
+        });
+        childNodes = templateEngine.execute(this.element,
+          this.element._templateNode, currentChildContext, this.as);
       }
 
       // Note discussion at https://github.com/angular/angular.js/issues/7851
@@ -3549,7 +3556,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
         first: childNodes[0],
         last: childNodes[childNodes.length - 1],
         key: keysToAdd ? keysToAdd[i] : null,
-        childContext: childContext
+        currentChildContext: currentChildContext
       });
     }
 
@@ -3642,7 +3649,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     if (this.shouldDelayDeletion(changeItem.value)) {
       var pd = this.getOrCreatePendingDeleteFor(changeItem.value);
       pd.nodesets.push(this.getNodesForIndex(changeItem.index));
-      pd.childContext = this.firstLastNodesList[changeItem.index].childContext;
+      pd.currentChildContext = this.firstLastNodesList[changeItem.index].currentChildContext;
     } else { // simple data, just remove the nodes
       this.removeNodes(this.getNodesForIndex(changeItem.index));
     }
@@ -3658,7 +3665,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     var removeFn = function () {
       var parent = nodes[0].parentNode;
       for (var i = nodes.length - 1; i >= 0; --i) {
-        ko.cleanNode(nodes[i]);
+        templateEngine.clean(nodes[i]);
         parent.removeChild(nodes[i]);
       }
     };
@@ -3699,9 +3706,9 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   // Updates observableIndex property for the data
   OjForEach.prototype.updateIndexes = function (fromIndex) {
     for (var i = fromIndex, len = this.firstLastNodesList.length; i < len; ++i) {
-      var ctx = this.firstLastNodesList[i].childContext;
-      if (ctx && ctx.$current) {
-        ctx.$current.observableIndex(i);
+      var ctx = this.firstLastNodesList[i].currentChildContext;
+      if (ctx && ctx.observableIndex) {
+        ctx.observableIndex(i);
       }
     }
   };
@@ -3962,7 +3969,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 /**
  * @ojstatus preview
  * @ojcomponent oj.ojBindForEach
- * @ojshortdesc Binds items of an array to the specified markup section. The markup section is duplicated for each array item when element is rendered.
+ * @ojshortdesc An oj-bind-for-each binds items of an array to the specified markup section. The markup section is duplicated for each array item when element is rendered.
  * @ojbindingelement
  * @ojsignature {target: "Type", value:"class ojBindForEach extends JetElement<ojBindForEachSettableProperties>"}
  * @since 4.1.0
@@ -4002,13 +4009,15 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 /**
  * The array or an oj.DataProvider that you wish to iterate over. Required property.
  * Note that the &lt;oj-bind-for-each&gt; will dynamically update the generated
- * DOM in response to changes if the value is an observableArray.
+ * DOM in response to changes if the value is an observableArray, or in response
+ * to oj.DataProvider events.
  * @expose
  * @name data
  * @memberof oj.ojBindForEach
+ * @ojshortdesc The array or oj.DataProvider that you wish to iterate over. See  the Help documentation for more information.
  * @instance
- * @type {array|oj.DataProvider}
- * @ojsignature {target: "Type", value:"Array<any>|oj.DataProvider<any, any>"}
+ * @type {array|Object}
+ * @ojsignature {target: "Type", value:"Array<any>|oj.DataProvider<any, any>", jsdocOverride:true}
  */
 
  /**
@@ -4018,6 +4027,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * @expose
  * @name as
  * @memberof oj.ojBindForEach
+ * @ojshortdesc An alias for the array item. This is useful if multiple oj-bind-for-each elements are nested to provide access to the data for each iteration level.
  * @instance
  * @type {string}
  * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
@@ -4037,6 +4047,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * @ojstatus preview
  * @ojchild Default
  * @ojmaxitems 1
+ * @ojshortdesc The oj-bind-for-each default slot is used to specify the template for binding items of an array if no named slots were defined by the application.
  * @memberof oj.ojBindForEach
  * @property {Object} data The current array item being rendered.
  * @property {number} index Zero-based index of the current array item being rendered. The index value is not updated in response to array additions and removals and is only recommended for static arrays.
@@ -4048,7 +4059,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 /**
  * @ojstatus preview
  * @ojcomponent oj.ojBindIf
- * @ojshortdesc Conditionally render its contents only if a provided test returns true.
+ * @ojshortdesc An oj-bind-if renders its contents only if a provided test returns true.
  * @ojsignature {target: "Type", value:"class ojBindIf extends JetElement<ojBindIfSettableProperties>"}
  * @ojbindingelement
  * @since 4.1.0
@@ -4099,7 +4110,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 /**
  * @ojstatus preview
  * @ojcomponent oj.ojBindText
- * @ojshortdesc Binds a text node to an expression.
+ * @ojshortdesc An oj-bind-text binds a text node to an expression.
  * @ojsignature {target: "Type", value:"class ojBindText extends JetElement<ojBindTextSettableProperties>"}
  * @ojbindingelement
  * @since 4.1.0

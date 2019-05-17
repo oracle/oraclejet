@@ -139,7 +139,7 @@ export interface DvtDiagramLayoutContextNode {
         y: number;
     }): void;
 }
-export interface ojDiagram<K1, K2, D1, D2> extends dvtBaseComponent<ojDiagramSettableProperties<K1, K2, D1, D2>> {
+export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> extends dvtBaseComponent<ojDiagramSettableProperties<K1, K2, D1, D2>> {
     animationOnDataChange: 'auto' | 'none';
     animationOnDisplay: 'auto' | 'none';
     as: string;
@@ -234,10 +234,10 @@ export interface ojDiagram<K1, K2, D1, D2> extends dvtBaseComponent<ojDiagramSet
         linkDefaults: {
             color: string;
             endConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
-            labelStyle: object;
+            labelStyle: CSSStyleDeclaration;
             startConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
             svgClassName: string;
-            svgStyle: object;
+            svgStyle: CSSStyleDeclaration;
             width: number;
         };
         nodeDefaults: {
@@ -255,10 +255,10 @@ export interface ojDiagram<K1, K2, D1, D2> extends dvtBaseComponent<ojDiagramSet
                 sourceHoverSelected: string;
                 sourceSelected: string;
                 svgClassName: string;
-                svgStyle: object;
+                svgStyle: CSSStyleDeclaration;
                 width: number;
             };
-            labelStyle: object;
+            labelStyle: CSSStyleDeclaration;
             showDisclosure: 'off' | 'on';
         };
         promotedLink: {
@@ -266,7 +266,7 @@ export interface ojDiagram<K1, K2, D1, D2> extends dvtBaseComponent<ojDiagramSet
             endConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
             startConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
             svgClassName: string;
-            svgStyle: object;
+            svgStyle: CSSStyleDeclaration;
             width: number;
         };
     };
@@ -304,41 +304,6 @@ export interface ojDiagram<K1, K2, D1, D2> extends dvtBaseComponent<ojDiagramSet
         stateUnselected?: string;
         stateVisible?: string;
     };
-    onAnimationOnDataChangeChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["animationOnDataChange"]>) => any) | null;
-    onAnimationOnDisplayChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["animationOnDisplay"]>) => any) | null;
-    onAsChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["as"]>) => any) | null;
-    onDndChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["dnd"]>) => any) | null;
-    onExpandedChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["expanded"]>) => any) | null;
-    onFocusRendererChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["focusRenderer"]>) => any) | null;
-    onHiddenCategoriesChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["hiddenCategories"]>) => any) | null;
-    onHighlightMatchChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["highlightMatch"]>) => any) | null;
-    onHighlightedCategoriesChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["highlightedCategories"]>) => any) | null;
-    onHoverBehaviorChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["hoverBehavior"]>) => any) | null;
-    onHoverRendererChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["hoverRenderer"]>) => any) | null;
-    onLayoutChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["layout"]>) => any) | null;
-    onLinkDataChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["linkData"]>) => any) | null;
-    onLinkHighlightModeChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["linkHighlightMode"]>) => any) | null;
-    onMaxZoomChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["maxZoom"]>) => any) | null;
-    onMinZoomChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["minZoom"]>) => any) | null;
-    onNodeDataChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["nodeData"]>) => any) | null;
-    onNodeHighlightModeChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["nodeHighlightMode"]>) => any) | null;
-    onOverviewChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["overview"]>) => any) | null;
-    onPanDirectionChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["panDirection"]>) => any) | null;
-    onPanningChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["panning"]>) => any) | null;
-    onPromotedLinkBehaviorChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["promotedLinkBehavior"]>) => any) | null;
-    onRendererChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["renderer"]>) => any) | null;
-    onSelectionChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["selection"]>) => any) | null;
-    onSelectionModeChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["selectionMode"]>) => any) | null;
-    onSelectionRendererChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["selectionRenderer"]>) => any) | null;
-    onStyleDefaultsChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["styleDefaults"]>) => any) | null;
-    onTooltipChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["tooltip"]>) => any) | null;
-    onTouchResponseChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["touchResponse"]>) => any) | null;
-    onZoomRendererChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zoomRenderer"]>) => any) | null;
-    onZoomingChanged: ((event: JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zooming"]>) => any) | null;
-    onOjBeforeCollapse: ((event: ojDiagram.ojBeforeCollapse) => any) | null;
-    onOjBeforeExpand: ((event: ojDiagram.ojBeforeExpand) => any) | null;
-    onOjCollapse: ((event: ojDiagram.ojCollapse) => any) | null;
-    onOjExpand: ((event: ojDiagram.ojExpand) => any) | null;
     addEventListener<T extends keyof ojDiagramEventMap<K1, K2, D1, D2>>(type: T, listener: (this: HTMLElement, ev: ojDiagramEventMap<K1, K2, D1, D2>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojDiagramSettableProperties<K1, K2, D1, D2>>(property: T): ojDiagram<K1, K2, D1, D2>[T];
@@ -347,11 +312,6 @@ export interface ojDiagram<K1, K2, D1, D2> extends dvtBaseComponent<ojDiagramSet
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojDiagramSettableProperties<K1, K2, D1, D2>>): void;
     setProperties(properties: ojDiagramSettablePropertiesLenient<K1, K2, D1, D2>): void;
     getContextByNode(node: Element): object | null;
-    getLink(linkIndex: number): object | null;
-    getLinkCount(): number;
-    getNode(nodeIndex: number): object | null;
-    getNodeCount(): number;
-    getPromotedLink(startNodeIndex: number, endNodeIndex: number): object | null;
 }
 export namespace ojDiagram {
     interface ojBeforeCollapse extends CustomEvent<{
@@ -374,6 +334,121 @@ export namespace ojDiagram {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDataChangeChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["animationOnDataChange"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDisplayChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["animationOnDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dndChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["dnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type expandedChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["expanded"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type focusRendererChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["focusRenderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hiddenCategoriesChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["hiddenCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightMatchChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["highlightMatch"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightedCategoriesChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["highlightedCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverBehaviorChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["hoverBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverRendererChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["hoverRenderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type layoutChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["layout"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type linkDataChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["linkData"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type linkHighlightModeChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["linkHighlightMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxZoomChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["maxZoom"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minZoomChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["minZoom"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type nodeDataChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["nodeData"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type nodeHighlightModeChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["nodeHighlightMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type overviewChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["overview"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type panDirectionChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["panDirection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type panningChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["panning"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type promotedLinkBehaviorChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["promotedLinkBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rendererChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["renderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionRendererChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["selectionRenderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type styleDefaultsChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["styleDefaults"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["tooltip"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type touchResponseChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["touchResponse"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type zoomRendererChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zoomRenderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type zoomingChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zooming"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Link<K1, K2> = {
+        id?: K1;
+        categories: string[];
+        color?: string;
+        label?: string;
+        labelStyle?: CSSStyleDeclaration | null;
+        selectable?: 'auto' | 'off';
+        shortDesc?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        width?: number;
+        startNode: K2;
+        endNode: K2;
+        startConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
+        endConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Node<K> = {
+        id?: K;
+        categories?: string[];
+        icon?: {
+            borderColor?: string;
+            borderRadius?: string;
+            borderWidth?: number;
+            color?: string;
+            pattern?: 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' |
+               'smallDiamond' | 'smallTriangle' | string;
+            opacity?: number;
+            shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+            source?: string;
+            sourceHover?: string;
+            sourceHoverSelected?: string;
+            sourceSelected?: string;
+            width?: number;
+            height?: number;
+            svgStyle?: CSSStyleDeclaration;
+            svgClassName?: string;
+        };
+        label?: string;
+        labelStyle?: CSSStyleDeclaration | null;
+        overview?: {
+            icon?: {
+                shape?: 'inherit' | 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+                svgStyle?: CSSStyleDeclaration;
+                svgClassName?: string;
+            };
+        };
+        selectable?: 'auto' | 'off';
+        shortDesc?: string;
+        showDisclosure?: 'on' | 'off';
+        descendantsConnectivity?: 'connected' | 'disjoint' | 'unknown';
+    };
     // tslint:disable-next-line interface-over-type-literal
     type RendererContext<K1, D1> = {
         parentElement: Element;
@@ -416,7 +491,7 @@ export namespace ojDiagram {
         itemData: D1 | D2 | D2[];
     };
 }
-export interface ojDiagramEventMap<K1, K2, D1, D2> extends dvtBaseComponentEventMap<ojDiagramSettableProperties<K1, K2, D1, D2>> {
+export interface ojDiagramEventMap<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> extends dvtBaseComponentEventMap<ojDiagramSettableProperties<K1, K2, D1, D2>> {
     'ojBeforeCollapse': ojDiagram.ojBeforeCollapse;
     'ojBeforeExpand': ojDiagram.ojBeforeExpand;
     'ojCollapse': ojDiagram.ojCollapse;
@@ -453,7 +528,7 @@ export interface ojDiagramEventMap<K1, K2, D1, D2> extends dvtBaseComponentEvent
     'zoomRendererChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zoomRenderer"]>;
     'zoomingChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zooming"]>;
 }
-export interface ojDiagramSettableProperties<K1, K2, D1, D2> extends dvtBaseComponentSettableProperties {
+export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> extends dvtBaseComponentSettableProperties {
     animationOnDataChange: 'auto' | 'none';
     animationOnDisplay: 'auto' | 'none';
     as: string;
@@ -548,10 +623,10 @@ export interface ojDiagramSettableProperties<K1, K2, D1, D2> extends dvtBaseComp
         linkDefaults: {
             color: string;
             endConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
-            labelStyle: object;
+            labelStyle: CSSStyleDeclaration;
             startConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
             svgClassName: string;
-            svgStyle: object;
+            svgStyle: CSSStyleDeclaration;
             width: number;
         };
         nodeDefaults: {
@@ -569,10 +644,10 @@ export interface ojDiagramSettableProperties<K1, K2, D1, D2> extends dvtBaseComp
                 sourceHoverSelected: string;
                 sourceSelected: string;
                 svgClassName: string;
-                svgStyle: object;
+                svgStyle: CSSStyleDeclaration;
                 width: number;
             };
-            labelStyle: object;
+            labelStyle: CSSStyleDeclaration;
             showDisclosure: 'off' | 'on';
         };
         promotedLink: {
@@ -580,7 +655,7 @@ export interface ojDiagramSettableProperties<K1, K2, D1, D2> extends dvtBaseComp
             endConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
             startConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
             svgClassName: string;
-            svgStyle: object;
+            svgStyle: CSSStyleDeclaration;
             width: number;
         };
     };
@@ -619,7 +694,7 @@ export interface ojDiagramSettableProperties<K1, K2, D1, D2> extends dvtBaseComp
         stateVisible?: string;
     };
 }
-export interface ojDiagramSettablePropertiesLenient<K1, K2, D1, D2> extends Partial<ojDiagramSettableProperties<K1, K2, D1, D2>> {
+export interface ojDiagramSettablePropertiesLenient<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> extends Partial<ojDiagramSettableProperties<K1, K2, D1, D2>> {
     [key: string]: any;
 }
 export interface ojDiagramLink extends JetElement<ojDiagramLinkSettableProperties> {
@@ -628,27 +703,14 @@ export interface ojDiagramLink extends JetElement<ojDiagramLinkSettablePropertie
     endConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
     endNode: any;
     label?: string;
-    labelStyle?: object | null;
+    labelStyle?: CSSStyleDeclaration | null;
     selectable?: 'auto' | 'off';
     shortDesc?: string;
     startConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
     startNode: any;
     svgClassName?: string;
-    svgStyle?: object;
+    svgStyle?: CSSStyleDeclaration;
     width?: number;
-    onCategoriesChanged: ((event: JetElementCustomEvent<ojDiagramLink["categories"]>) => any) | null;
-    onColorChanged: ((event: JetElementCustomEvent<ojDiagramLink["color"]>) => any) | null;
-    onEndConnectorTypeChanged: ((event: JetElementCustomEvent<ojDiagramLink["endConnectorType"]>) => any) | null;
-    onEndNodeChanged: ((event: JetElementCustomEvent<ojDiagramLink["endNode"]>) => any) | null;
-    onLabelChanged: ((event: JetElementCustomEvent<ojDiagramLink["label"]>) => any) | null;
-    onLabelStyleChanged: ((event: JetElementCustomEvent<ojDiagramLink["labelStyle"]>) => any) | null;
-    onSelectableChanged: ((event: JetElementCustomEvent<ojDiagramLink["selectable"]>) => any) | null;
-    onShortDescChanged: ((event: JetElementCustomEvent<ojDiagramLink["shortDesc"]>) => any) | null;
-    onStartConnectorTypeChanged: ((event: JetElementCustomEvent<ojDiagramLink["startConnectorType"]>) => any) | null;
-    onStartNodeChanged: ((event: JetElementCustomEvent<ojDiagramLink["startNode"]>) => any) | null;
-    onSvgClassNameChanged: ((event: JetElementCustomEvent<ojDiagramLink["svgClassName"]>) => any) | null;
-    onSvgStyleChanged: ((event: JetElementCustomEvent<ojDiagramLink["svgStyle"]>) => any) | null;
-    onWidthChanged: ((event: JetElementCustomEvent<ojDiagramLink["width"]>) => any) | null;
     addEventListener<T extends keyof ojDiagramLinkEventMap>(type: T, listener: (this: HTMLElement, ev: ojDiagramLinkEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojDiagramLinkSettableProperties>(property: T): ojDiagramLink[T];
@@ -656,6 +718,34 @@ export interface ojDiagramLink extends JetElement<ojDiagramLinkSettablePropertie
     setProperty<T extends keyof ojDiagramLinkSettableProperties>(property: T, value: ojDiagramLinkSettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojDiagramLinkSettableProperties>): void;
     setProperties(properties: ojDiagramLinkSettablePropertiesLenient): void;
+}
+export namespace ojDiagramLink {
+    // tslint:disable-next-line interface-over-type-literal
+    type categoriesChanged = JetElementCustomEvent<ojDiagramLink["categories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojDiagramLink["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type endConnectorTypeChanged = JetElementCustomEvent<ojDiagramLink["endConnectorType"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type endNodeChanged = JetElementCustomEvent<ojDiagramLink["endNode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojDiagramLink["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelStyleChanged = JetElementCustomEvent<ojDiagramLink["labelStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectableChanged = JetElementCustomEvent<ojDiagramLink["selectable"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojDiagramLink["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type startConnectorTypeChanged = JetElementCustomEvent<ojDiagramLink["startConnectorType"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type startNodeChanged = JetElementCustomEvent<ojDiagramLink["startNode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojDiagramLink["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojDiagramLink["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type widthChanged = JetElementCustomEvent<ojDiagramLink["width"]>;
 }
 export interface ojDiagramLinkEventMap extends HTMLElementEventMap {
     'categoriesChanged': JetElementCustomEvent<ojDiagramLink["categories"]>;
@@ -678,13 +768,13 @@ export interface ojDiagramLinkSettableProperties extends JetSettableProperties {
     endConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
     endNode: any;
     label?: string;
-    labelStyle?: object | null;
+    labelStyle?: CSSStyleDeclaration | null;
     selectable?: 'auto' | 'off';
     shortDesc?: string;
     startConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
     startNode: any;
     svgClassName?: string;
-    svgStyle?: object;
+    svgStyle?: CSSStyleDeclaration;
     width?: number;
 }
 export interface ojDiagramLinkSettablePropertiesLenient extends Partial<ojDiagramLinkSettableProperties> {
@@ -700,38 +790,29 @@ export interface ojDiagramNode extends JetElement<ojDiagramNodeSettablePropertie
         color?: string;
         height?: number;
         opacity?: number;
-        pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' |
-           'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
+        pattern?: 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' |
+           'smallDiamond' | 'smallTriangle' | string;
         shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
         source?: string;
         sourceHover?: string;
         sourceHoverSelected?: string;
         sourceSelected?: string;
         svgClassName?: string;
-        svgStyle?: object;
+        svgStyle?: CSSStyleDeclaration;
         width?: number;
     };
     label?: string;
-    labelStyle?: object | null;
+    labelStyle?: CSSStyleDeclaration | null;
     overview?: {
         icon?: {
             shape?: 'inherit' | 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
             svgClassName?: string;
-            svgStyle?: object;
+            svgStyle?: CSSStyleDeclaration;
         };
     };
     selectable?: 'auto' | 'off';
     shortDesc?: string;
     showDisclosure?: 'on' | 'off';
-    onCategoriesChanged: ((event: JetElementCustomEvent<ojDiagramNode["categories"]>) => any) | null;
-    onDescendantsConnectivityChanged: ((event: JetElementCustomEvent<ojDiagramNode["descendantsConnectivity"]>) => any) | null;
-    onIconChanged: ((event: JetElementCustomEvent<ojDiagramNode["icon"]>) => any) | null;
-    onLabelChanged: ((event: JetElementCustomEvent<ojDiagramNode["label"]>) => any) | null;
-    onLabelStyleChanged: ((event: JetElementCustomEvent<ojDiagramNode["labelStyle"]>) => any) | null;
-    onOverviewChanged: ((event: JetElementCustomEvent<ojDiagramNode["overview"]>) => any) | null;
-    onSelectableChanged: ((event: JetElementCustomEvent<ojDiagramNode["selectable"]>) => any) | null;
-    onShortDescChanged: ((event: JetElementCustomEvent<ojDiagramNode["shortDesc"]>) => any) | null;
-    onShowDisclosureChanged: ((event: JetElementCustomEvent<ojDiagramNode["showDisclosure"]>) => any) | null;
     addEventListener<T extends keyof ojDiagramNodeEventMap>(type: T, listener: (this: HTMLElement, ev: ojDiagramNodeEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojDiagramNodeSettableProperties>(property: T): ojDiagramNode[T];
@@ -739,6 +820,26 @@ export interface ojDiagramNode extends JetElement<ojDiagramNodeSettablePropertie
     setProperty<T extends keyof ojDiagramNodeSettableProperties>(property: T, value: ojDiagramNodeSettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojDiagramNodeSettableProperties>): void;
     setProperties(properties: ojDiagramNodeSettablePropertiesLenient): void;
+}
+export namespace ojDiagramNode {
+    // tslint:disable-next-line interface-over-type-literal
+    type categoriesChanged = JetElementCustomEvent<ojDiagramNode["categories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type descendantsConnectivityChanged = JetElementCustomEvent<ojDiagramNode["descendantsConnectivity"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type iconChanged = JetElementCustomEvent<ojDiagramNode["icon"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojDiagramNode["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelStyleChanged = JetElementCustomEvent<ojDiagramNode["labelStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type overviewChanged = JetElementCustomEvent<ojDiagramNode["overview"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectableChanged = JetElementCustomEvent<ojDiagramNode["selectable"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojDiagramNode["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type showDisclosureChanged = JetElementCustomEvent<ojDiagramNode["showDisclosure"]>;
 }
 export interface ojDiagramNodeEventMap extends HTMLElementEventMap {
     'categoriesChanged': JetElementCustomEvent<ojDiagramNode["categories"]>;
@@ -761,24 +862,24 @@ export interface ojDiagramNodeSettableProperties extends JetSettableProperties {
         color?: string;
         height?: number;
         opacity?: number;
-        pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' |
-           'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
+        pattern?: 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' |
+           'smallDiamond' | 'smallTriangle' | string;
         shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
         source?: string;
         sourceHover?: string;
         sourceHoverSelected?: string;
         sourceSelected?: string;
         svgClassName?: string;
-        svgStyle?: object;
+        svgStyle?: CSSStyleDeclaration;
         width?: number;
     };
     label?: string;
-    labelStyle?: object | null;
+    labelStyle?: CSSStyleDeclaration | null;
     overview?: {
         icon?: {
             shape?: 'inherit' | 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
             svgClassName?: string;
-            svgStyle?: object;
+            svgStyle?: CSSStyleDeclaration;
         };
     };
     selectable?: 'auto' | 'off';

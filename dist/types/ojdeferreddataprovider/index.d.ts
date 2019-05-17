@@ -8,7 +8,7 @@ declare class DeferredDataProvider<K, D> implements DataProvider<K, D> {
     fetchByKeys(params: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>;
     fetchByOffset(params: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>;
     fetchFirst(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>;
-    getCapability(capabilityName: string): object;
+    getCapability(capabilityName?: string): any;
     getTotalSize(): Promise<number>;
     isEmpty(): 'yes' | 'no' | 'unknown';
     removeEventListener(eventType: string, listener: EventListener): any;

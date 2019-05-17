@@ -330,9 +330,9 @@
   .oj-colorpalette.oj-warning .oj-colorpalette-container {
     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
     {
-      border-width: var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width);
+      border-width: var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width);
       border-style: solid;
-      border-color: var(--oj-form-control-border-color-warning);
+      border-color: var(--oj-text-field-border-color-warning);
     }
     @else {
       border-width: $formControlMessagingBorderWidth;
@@ -344,9 +344,9 @@
   .oj-colorpalette.oj-invalid .oj-colorpalette-container {
     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
     {
-      border-width: var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width);
+      border-width: var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width);
       border-style: solid;
-      border-color: var(--oj-form-control-border-color-invalid);
+      border-color: var(--oj-text-field-border-color-invalid);
     }
     @else {
       border-width: $formControlMessagingBorderWidth;

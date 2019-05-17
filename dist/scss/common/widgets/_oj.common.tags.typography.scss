@@ -102,15 +102,13 @@
       /* header */
       /* --------------------------------------------------------------- */
       @include oj-tag-selectors(
-        $tagSelectors:   "h1, h2, h3, h4, h5",
+        $tagSelectors:   "h1, h2, h3, h4, h5, h6",
         $classSelectors: ".oj-header") {
           @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
             color: var(--oj-header-text-color); 
-            font-weight: var(--oj-header-font-weight);
             }
           @else {
             color: $headerTextColor; 
-            font-weight: $headerFontWeight; 
          }
          font-family: inherit;
          font-style: normal;
@@ -185,6 +183,13 @@
             font-size: $header5FontSize; 
             font-weight: $header5FontWeight;
           }
+      }
+      
+      @include oj-tag-selectors(
+        $tagSelectors:   "h6", 
+        $classSelectors: "h6.oj-header") {
+          font-size: $header6FontSize; 
+          font-weight: $header6FontWeight;
       }
 
 

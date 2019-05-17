@@ -101,7 +101,7 @@
     .oj-statusmetergauge.oj-focus-highlight,
     .oj-ratinggauge.oj-focus-highlight {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        outline: dotted 1px var(--oj-primary-text-color);   // used on most browsers
+        outline: dotted 1px var(--oj-text-color-primary);   // used on most browsers
         outline: -webkit-focus-ring-color auto;             // used on chrome
       } @else {
         @include oj-browser-focus-outline-approximation($primaryTextColor);

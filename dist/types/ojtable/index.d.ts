@@ -1,3 +1,4 @@
+import { KeySet } from '../ojkeyset';
 import { DataProvider } from '../ojdataprovider';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K, D>> {
@@ -117,10 +118,11 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         };
     };
     editMode: 'none' | 'rowEdit';
+    editRow: ojTable.EditRow<K> | null;
     readonly firstSelectedRow: object;
     horizontalGridVisible: 'auto' | 'enabled' | 'disabled';
     rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => string | HTMLElement | void) | null;
-    scrollPolicy: 'auto' | 'loadMoreOnScroll';
+    scrollPolicy: 'auto' | 'loadAll' | 'loadMoreOnScroll';
     scrollPolicyOptions: {
         fetchSize: number;
         maxCount: number;
@@ -135,10 +137,14 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         offsetX?: number;
         offsetY?: number;
     };
+    selected: {
+        row: KeySet<K>;
+        column: KeySet<K>;
+    };
     selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart<K> & ojTable.ColumnSelectionEnd<K>>;
     selectionMode: {
-        column: 'single' | 'multiple';
-        row: 'single' | 'multiple';
+        column: 'single' | 'multiple' | 'none';
+        row: 'single' | 'multiple' | 'none';
     };
     selectionRequired: boolean;
     verticalGridVisible: 'auto' | 'enabled' | 'disabled';
@@ -166,31 +172,6 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         msgStatusSortAscending?: string;
         msgStatusSortDescending?: string;
     };
-    onAccessibilityChanged: ((event: JetElementCustomEvent<ojTable<K, D>["accessibility"]>) => any) | null;
-    onAsChanged: ((event: JetElementCustomEvent<ojTable<K, D>["as"]>) => any) | null;
-    onColumnsChanged: ((event: JetElementCustomEvent<ojTable<K, D>["columns"]>) => any) | null;
-    onColumnsDefaultChanged: ((event: JetElementCustomEvent<ojTable<K, D>["columnsDefault"]>) => any) | null;
-    onCurrentRowChanged: ((event: JetElementCustomEvent<ojTable<K, D>["currentRow"]>) => any) | null;
-    onDataChanged: ((event: JetElementCustomEvent<ojTable<K, D>["data"]>) => any) | null;
-    onDisplayChanged: ((event: JetElementCustomEvent<ojTable<K, D>["display"]>) => any) | null;
-    onDndChanged: ((event: JetElementCustomEvent<ojTable<K, D>["dnd"]>) => any) | null;
-    onEditModeChanged: ((event: JetElementCustomEvent<ojTable<K, D>["editMode"]>) => any) | null;
-    onFirstSelectedRowChanged: ((event: JetElementCustomEvent<ojTable<K, D>["firstSelectedRow"]>) => any) | null;
-    onHorizontalGridVisibleChanged: ((event: JetElementCustomEvent<ojTable<K, D>["horizontalGridVisible"]>) => any) | null;
-    onRowRendererChanged: ((event: JetElementCustomEvent<ojTable<K, D>["rowRenderer"]>) => any) | null;
-    onScrollPolicyChanged: ((event: JetElementCustomEvent<ojTable<K, D>["scrollPolicy"]>) => any) | null;
-    onScrollPolicyOptionsChanged: ((event: JetElementCustomEvent<ojTable<K, D>["scrollPolicyOptions"]>) => any) | null;
-    onScrollPositionChanged: ((event: JetElementCustomEvent<ojTable<K, D>["scrollPosition"]>) => any) | null;
-    onSelectionChanged: ((event: JetElementCustomEvent<ojTable<K, D>["selection"]>) => any) | null;
-    onSelectionModeChanged: ((event: JetElementCustomEvent<ojTable<K, D>["selectionMode"]>) => any) | null;
-    onSelectionRequiredChanged: ((event: JetElementCustomEvent<ojTable<K, D>["selectionRequired"]>) => any) | null;
-    onVerticalGridVisibleChanged: ((event: JetElementCustomEvent<ojTable<K, D>["verticalGridVisible"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojTable.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojTable.ojAnimateStart) => any) | null;
-    onOjBeforeCurrentRow: ((event: ojTable.ojBeforeCurrentRow<K>) => any) | null;
-    onOjBeforeRowEdit: ((event: ojTable.ojBeforeRowEdit) => any) | null;
-    onOjBeforeRowEditEnd: ((event: ojTable.ojBeforeRowEditEnd) => any) | null;
-    onOjSort: ((event: ojTable.ojSort) => any) | null;
     addEventListener<T extends keyof ojTableEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTableEventMap<K, D>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojTableSettableProperties<K, D>>(property: T): ojTable<K, D>[T];
@@ -252,6 +233,48 @@ export namespace ojTable {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type accessibilityChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["accessibility"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type columnsChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["columns"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type columnsDefaultChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["columnsDefault"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type currentRowChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["currentRow"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["display"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dndChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["dnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type editModeChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["editMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type editRowChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["editRow"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type firstSelectedRowChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["firstSelectedRow"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type horizontalGridVisibleChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["horizontalGridVisible"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rowRendererChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["rowRenderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPolicyChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["scrollPolicy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPolicyOptionsChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["scrollPolicyOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPositionChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["scrollPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectedChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selected"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionRequiredChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selectionRequired"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type verticalGridVisibleChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["verticalGridVisible"]>;
     // tslint:disable-next-line interface-over-type-literal
     type ColumnSelectionEnd<K> = {
         endIndex: {
@@ -328,6 +351,14 @@ export namespace ojTable {
     // tslint:disable-next-line interface-over-type-literal
     type DropRowContext = {
         rowIndex: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type EditRow<K> = {
+        rowIndex: number;
+        rowKey?: K;
+    } | {
+        rowIndex?: number;
+        rowKey: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type FooterRendererContext<K, D> = {
@@ -412,12 +443,14 @@ export interface ojTableEventMap<K, D> extends baseComponentEventMap<ojTableSett
     'displayChanged': JetElementCustomEvent<ojTable<K, D>["display"]>;
     'dndChanged': JetElementCustomEvent<ojTable<K, D>["dnd"]>;
     'editModeChanged': JetElementCustomEvent<ojTable<K, D>["editMode"]>;
+    'editRowChanged': JetElementCustomEvent<ojTable<K, D>["editRow"]>;
     'firstSelectedRowChanged': JetElementCustomEvent<ojTable<K, D>["firstSelectedRow"]>;
     'horizontalGridVisibleChanged': JetElementCustomEvent<ojTable<K, D>["horizontalGridVisible"]>;
     'rowRendererChanged': JetElementCustomEvent<ojTable<K, D>["rowRenderer"]>;
     'scrollPolicyChanged': JetElementCustomEvent<ojTable<K, D>["scrollPolicy"]>;
     'scrollPolicyOptionsChanged': JetElementCustomEvent<ojTable<K, D>["scrollPolicyOptions"]>;
     'scrollPositionChanged': JetElementCustomEvent<ojTable<K, D>["scrollPosition"]>;
+    'selectedChanged': JetElementCustomEvent<ojTable<K, D>["selected"]>;
     'selectionChanged': JetElementCustomEvent<ojTable<K, D>["selection"]>;
     'selectionModeChanged': JetElementCustomEvent<ojTable<K, D>["selectionMode"]>;
     'selectionRequiredChanged': JetElementCustomEvent<ojTable<K, D>["selectionRequired"]>;
@@ -540,10 +573,11 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         };
     };
     editMode: 'none' | 'rowEdit';
+    editRow: ojTable.EditRow<K> | null;
     readonly firstSelectedRow: object;
     horizontalGridVisible: 'auto' | 'enabled' | 'disabled';
     rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => string | HTMLElement | void) | null;
-    scrollPolicy: 'auto' | 'loadMoreOnScroll';
+    scrollPolicy: 'auto' | 'loadAll' | 'loadMoreOnScroll';
     scrollPolicyOptions: {
         fetchSize: number;
         maxCount: number;
@@ -558,10 +592,14 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         offsetX?: number;
         offsetY?: number;
     };
+    selected: {
+        row: KeySet<K>;
+        column: KeySet<K>;
+    };
     selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart<K> & ojTable.ColumnSelectionEnd<K>>;
     selectionMode: {
-        column: 'single' | 'multiple';
-        row: 'single' | 'multiple';
+        column: 'single' | 'multiple' | 'none';
+        row: 'single' | 'multiple' | 'none';
     };
     selectionRequired: boolean;
     verticalGridVisible: 'auto' | 'enabled' | 'disabled';

@@ -3,11 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'promise', 'jqueryui-amd/position'], 
-       function(oj, $, Context, Components, Logger)
+function(oj, $, Context, Components, Logger)
 {
-
+  "use strict";
 /* jslint browser: true*/
 /*
  ** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
@@ -1336,6 +1335,13 @@ oj.ZOrderUtils.applyModality = function (layer, modality) {
     } else {
       oj.ZOrderUtils._removeOverlayFromAncestorLayer(layer);
     }
+  }
+  if (modality === oj.PopupService.MODALITY.MODAL) {
+    layer.attr('aria-modal', 'true');
+  } else {
+    // saw a tech note that a "false" value doesn't convey the same information as
+    // if the attribute wasn’t present at all screen readers.
+    layer.removeAttr('aria-modal');
   }
 };
 

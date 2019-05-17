@@ -9,52 +9,19 @@
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojset', 'ojs/ojmap', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj, $, ko, ojSet, ojMap)
+define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojset', 'ojs/ojmap', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function(oj, $, ko, ojSet, ojMap, __DataProvider)
 {
 var ArrayDataProvider = /** @class */ (function () {
     function ArrayDataProvider(data, options) {
         this.data = data;
         this.options = options;
-        this._KEY = 'key';
-        this._KEYS = 'keys';
-        this._AFTERKEYS = 'afterKeys';
-        this._ADDBEFOREKEYS = 'addBeforeKeys';
-        this._DIRECTION = 'direction';
-        this._ATTRIBUTE = 'attribute';
-        this._ATTRIBUTES = 'attributes';
-        this._SORT = 'sort';
-        this._SORTCRITERIA = 'sortCriteria';
-        this._DATA = 'data';
-        this._METADATA = 'metadata';
-        this._INDEXES = 'indexes';
-        this._OFFSET = 'offset';
-        this._SIZE = 'size';
-        this._IDATTRIBUTE = 'idAttribute';
-        this._IMPLICITSORT = 'implicitSort';
-        this._KEYATTRIBUTES = 'keyAttributes';
-        this._SORTCOMPARATORS = 'sortComparators';
-        this._COMPARATORS = 'comparators';
-        this._COMPARATOR = 'comparator';
-        this._RESULTS = 'results';
-        this._CONTAINS = 'contains';
-        this._FETCHPARAMETERS = 'fetchParameters';
-        this._CONTAINSPARAMETERS = 'containsParameters';
-        this._VALUE = 'value';
-        this._DONE = 'done';
-        this._ADD = 'add';
-        this._REMOVE = 'remove';
-        this._UPDATE = 'update';
-        this._DETAIL = 'detail';
-        this._FETCHLISTRESULT = 'fetchListResult';
-        this._ATDEFAULT = '@default';
-        this._MUTATIONSEQUENCENUM = 'mutationSequenceNum';
         this.Item = /** @class */ (function () {
             function class_1(_parent, metadata, data) {
                 this._parent = _parent;
                 this.metadata = metadata;
                 this.data = data;
-                this[_parent._METADATA] = metadata;
-                this[_parent._DATA] = data;
+                this[ArrayDataProvider._METADATA] = metadata;
+                this[ArrayDataProvider._DATA] = data;
             }
             return class_1;
         }());
@@ -62,7 +29,7 @@ var ArrayDataProvider = /** @class */ (function () {
             function class_2(_parent, key) {
                 this._parent = _parent;
                 this.key = key;
-                this[_parent._KEY] = key;
+                this[ArrayDataProvider._KEY] = key;
             }
             return class_2;
         }());
@@ -71,8 +38,8 @@ var ArrayDataProvider = /** @class */ (function () {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
                 this.results = results;
-                this[_parent._FETCHPARAMETERS] = fetchParameters;
-                this[_parent._RESULTS] = results;
+                this[ArrayDataProvider._FETCHPARAMETERS] = fetchParameters;
+                this[ArrayDataProvider._RESULTS] = results;
             }
             return class_3;
         }());
@@ -81,8 +48,8 @@ var ArrayDataProvider = /** @class */ (function () {
                 this._parent = _parent;
                 this.containsParameters = containsParameters;
                 this.results = results;
-                this[_parent._CONTAINSPARAMETERS] = containsParameters;
-                this[_parent._RESULTS] = results;
+                this[ArrayDataProvider._CONTAINSPARAMETERS] = containsParameters;
+                this[ArrayDataProvider._RESULTS] = results;
             }
             return class_4;
         }());
@@ -92,9 +59,9 @@ var ArrayDataProvider = /** @class */ (function () {
                 this.fetchParameters = fetchParameters;
                 this.results = results;
                 this.done = done;
-                this[_parent._FETCHPARAMETERS] = fetchParameters;
-                this[_parent._RESULTS] = results;
-                this[_parent._DONE] = done;
+                this[ArrayDataProvider._FETCHPARAMETERS] = fetchParameters;
+                this[ArrayDataProvider._RESULTS] = results;
+                this[ArrayDataProvider._DONE] = done;
             }
             return class_5;
         }());
@@ -104,9 +71,9 @@ var ArrayDataProvider = /** @class */ (function () {
                 this.size = size;
                 this.sortCriteria = sortCriteria;
                 this.attributes = attributes;
-                this[_parent._SIZE] = size;
-                this[_parent._SORTCRITERIA] = sortCriteria;
-                this[_parent._ATTRIBUTES] = attributes;
+                this[ArrayDataProvider._SIZE] = size;
+                this[ArrayDataProvider._SORTCRITERIA] = sortCriteria;
+                this[ArrayDataProvider._ATTRIBUTES] = attributes;
             }
             return class_6;
         }());
@@ -116,9 +83,9 @@ var ArrayDataProvider = /** @class */ (function () {
                 this.fetchParameters = fetchParameters;
                 this.data = data;
                 this.metadata = metadata;
-                this[_parent._FETCHPARAMETERS] = fetchParameters;
-                this[_parent._DATA] = data;
-                this[_parent._METADATA] = metadata;
+                this[ArrayDataProvider._FETCHPARAMETERS] = fetchParameters;
+                this[ArrayDataProvider._DATA] = data;
+                this[ArrayDataProvider._METADATA] = metadata;
             }
             return class_7;
         }());
@@ -140,11 +107,11 @@ var ArrayDataProvider = /** @class */ (function () {
                 this._offset = _offset;
                 this._cachedOffset = _offset;
                 this._cacheObj = {};
-                this._cacheObj[_parent._MUTATIONSEQUENCENUM] = _parent._mutationSequenceNum;
+                this._cacheObj[ArrayDataProvider._MUTATIONSEQUENCENUM] = _parent._mutationSequenceNum;
             }
             class_9.prototype['next'] = function () {
                 var result = this._nextFunc(this._params, this._cachedOffset, this._cacheObj);
-                this._cachedOffset = this._cachedOffset + result.value[this._parent._DATA].length;
+                this._cachedOffset = this._cachedOffset + result.value[ArrayDataProvider._DATA].length;
                 return Promise.resolve(result);
             };
             return class_9;
@@ -154,8 +121,8 @@ var ArrayDataProvider = /** @class */ (function () {
                 this._parent = _parent;
                 this.value = value;
                 this.done = done;
-                this[_parent._VALUE] = value;
-                this[_parent._DONE] = done;
+                this[ArrayDataProvider._VALUE] = value;
+                this[ArrayDataProvider._DONE] = done;
             }
             return class_10;
         }());
@@ -165,9 +132,9 @@ var ArrayDataProvider = /** @class */ (function () {
                 this.add = add;
                 this.remove = remove;
                 this.update = update;
-                this[_parent._ADD] = add;
-                this[_parent._REMOVE] = remove;
-                this[_parent._UPDATE] = update;
+                this[ArrayDataProvider._ADD] = add;
+                this[ArrayDataProvider._REMOVE] = remove;
+                this[ArrayDataProvider._UPDATE] = update;
             }
             return class_11;
         }());
@@ -178,10 +145,10 @@ var ArrayDataProvider = /** @class */ (function () {
                 this.metadata = metadata;
                 this.data = data;
                 this.indexes = indexes;
-                this[_parent._KEYS] = keys;
-                this[_parent._METADATA] = metadata;
-                this[_parent._DATA] = data;
-                this[_parent._INDEXES] = indexes;
+                this[ArrayDataProvider._KEYS] = keys;
+                this[ArrayDataProvider._METADATA] = metadata;
+                this[ArrayDataProvider._DATA] = data;
+                this[ArrayDataProvider._INDEXES] = indexes;
             }
             return class_12;
         }());
@@ -194,12 +161,12 @@ var ArrayDataProvider = /** @class */ (function () {
                 this.metadata = metadata;
                 this.data = data;
                 this.indexes = indexes;
-                this[_parent._KEYS] = keys;
-                this[_parent._AFTERKEYS] = afterKeys;
-                this[_parent._ADDBEFOREKEYS] = addBeforeKeys;
-                this[_parent._METADATA] = metadata;
-                this[_parent._DATA] = data;
-                this[_parent._INDEXES] = indexes;
+                this[ArrayDataProvider._KEYS] = keys;
+                this[ArrayDataProvider._AFTERKEYS] = afterKeys;
+                this[ArrayDataProvider._ADDBEFOREKEYS] = addBeforeKeys;
+                this[ArrayDataProvider._METADATA] = metadata;
+                this[ArrayDataProvider._DATA] = data;
+                this[ArrayDataProvider._INDEXES] = indexes;
             }
             return class_13;
         }());
@@ -207,17 +174,17 @@ var ArrayDataProvider = /** @class */ (function () {
         this._sequenceNum = 0;
         this._mutationSequenceNum = 0;
         this._subscribeObservableArray(data);
-        if (options != null && options[this._KEYS] != null) {
+        if (options != null && options[ArrayDataProvider._KEYS] != null) {
             this._keysSpecified = true;
-            this._keys = options[this._KEYS];
+            this._keys = options[ArrayDataProvider._KEYS];
         }
     }
     ArrayDataProvider.prototype.containsKeys = function (params) {
         var self = this;
         return this.fetchByKeys(params).then(function (fetchByKeysResult) {
             var results = new ojSet();
-            params[self._KEYS].forEach(function (key) {
-                if (fetchByKeysResult[self._RESULTS].get(key) != null) {
+            params[ArrayDataProvider._KEYS].forEach(function (key) {
+                if (fetchByKeysResult[ArrayDataProvider._RESULTS].get(key) != null) {
                     results.add(key);
                 }
             });
@@ -229,46 +196,59 @@ var ArrayDataProvider = /** @class */ (function () {
         this._generateKeysIfNeeded();
         var results = new ojMap();
         var keys = this._getKeys();
-        var fetchAttributes = params != null ? params[this._ATTRIBUTES] : null;
+        var fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
         var findKeyIndex, i = 0;
-        params[self._KEYS].forEach(function (searchKey) {
-            findKeyIndex = null;
-            for (i = 0; i < keys.length; i++) {
-                if (oj.Object.compareValues(keys[i], searchKey)) {
-                    findKeyIndex = i;
-                    break;
+        if (params) {
+            var rowData_1 = self._getRowData();
+            params[ArrayDataProvider._KEYS].forEach(function (searchKey) {
+                findKeyIndex = null;
+                for (i = 0; i < keys.length; i++) {
+                    if (oj.Object.compareValues(keys[i], searchKey)) {
+                        findKeyIndex = i;
+                        break;
+                    }
                 }
-            }
-            if (findKeyIndex != null &&
-                findKeyIndex >= 0) {
-                var rowData = self._getRowData()[findKeyIndex];
-                if (fetchAttributes && fetchAttributes.length > 0) {
-                    rowData = self._filterRowAttributes(fetchAttributes, rowData);
+                if (findKeyIndex != null &&
+                    findKeyIndex >= 0) {
+                    var row = rowData_1[findKeyIndex];
+                    if (fetchAttributes && fetchAttributes.length > 0) {
+                        row = self._filterRowAttributes(fetchAttributes, row);
+                    }
+                    results.set(searchKey, new self.Item(self, new self.ItemMetadata(self, searchKey), row));
                 }
-                results.set(searchKey, new self.Item(self, new self.ItemMetadata(self, searchKey), rowData));
-            }
-        });
-        return Promise.resolve(new self.FetchByKeysResults(self, params, results));
+            });
+            return Promise.resolve(new self.FetchByKeysResults(self, params, results));
+        }
+        else {
+            return Promise.reject('Keys are a required parameter');
+        }
     };
     ArrayDataProvider.prototype.fetchByOffset = function (params) {
         var self = this;
-        var size = params != null ? params[this._SIZE] : -1;
-        var sortCriteria = params != null ? params[this._SORTCRITERIA] : null;
-        var offset = params != null ? params[this._OFFSET] > 0 ? params[this._OFFSET] : 0 : 0;
-        var fetchAttributes = params != null ? params[this._ATTRIBUTES] : null;
+        var size = params != null ? params[ArrayDataProvider._SIZE] : -1;
+        var sortCriteria = params != null ? params[ArrayDataProvider._SORTCRITERIA] : null;
+        var offset = params != null ? params[ArrayDataProvider._OFFSET] > 0 ? params[ArrayDataProvider._OFFSET] : 0 : 0;
+        var fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
         this._generateKeysIfNeeded();
-        var fetchParams = new this.FetchListParameters(this, size, sortCriteria, fetchAttributes);
-        var iteratorResults = this._fetchFrom(fetchParams, offset);
-        var value = iteratorResults[this._VALUE];
-        var done = iteratorResults[this._DONE];
-        var data = value[this._DATA];
-        var keys = value[this._METADATA].map(function (value) {
-            return value[self._KEY];
-        });
-        var resultsArray = data.map(function (value, index) {
-            return new self.Item(self, new self.ItemMetadata(self, keys[index]), value);
-        });
-        return Promise.resolve(new this.FetchByOffsetResults(this, params, resultsArray, done));
+        var resultsArray = [];
+        var done = true;
+        if (params) {
+            var fetchParams = new this.FetchListParameters(this, size, sortCriteria, fetchAttributes);
+            var iteratorResults = this._fetchFrom(fetchParams, offset);
+            var value = iteratorResults[ArrayDataProvider._VALUE];
+            done = iteratorResults[ArrayDataProvider._DONE];
+            var data = value[ArrayDataProvider._DATA];
+            var keys_1 = value[ArrayDataProvider._METADATA].map(function (value) {
+                return value[ArrayDataProvider._KEY];
+            });
+            resultsArray = data.map(function (value, index) {
+                return new self.Item(self, new self.ItemMetadata(self, keys_1[index]), value);
+            });
+            return Promise.resolve(new this.FetchByOffsetResults(this, params, resultsArray, done));
+        }
+        else {
+            return Promise.reject('Offset is a required parameter');
+        }
     };
     /**
      * Fetch the first block of data
@@ -306,6 +286,12 @@ var ArrayDataProvider = /** @class */ (function () {
                 }
             };
         }
+        else if (capabilityName == 'filter') {
+            return {
+                operators: ['$co', '$eq', '$ew', '$pr', '$gt', '$ge', '$lt', '$le', '$ne', '$regex', '$sw'],
+                attributeExpression: ['*']
+            };
+        }
         return null;
     };
     ArrayDataProvider.prototype.getTotalSize = function () {
@@ -337,10 +323,10 @@ var ArrayDataProvider = /** @class */ (function () {
      * Get the rows data, unwrapping observableArray if needed.
      */
     ArrayDataProvider.prototype._getRowData = function () {
-        if (!(this[this._DATA] instanceof Array)) {
-            return this[this._DATA]();
+        if (!(this[ArrayDataProvider._DATA] instanceof Array)) {
+            return this[ArrayDataProvider._DATA]();
         }
-        return this[this._DATA];
+        return this[ArrayDataProvider._DATA];
     };
     /**
      * Get the keys, unwrapping observableArray if needed.
@@ -358,7 +344,8 @@ var ArrayDataProvider = /** @class */ (function () {
     ArrayDataProvider.prototype._indexOfKey = function (searchKey) {
         var keys = this._getKeys();
         var keyIndex = -1;
-        for (var i = 0; i < keys.length; i++) {
+        var i;
+        for (i = 0; i < keys.length; i++) {
             if (oj.Object.compareValues(keys[i], searchKey)) {
                 keyIndex = i;
                 break;
@@ -376,10 +363,10 @@ var ArrayDataProvider = /** @class */ (function () {
                 throw new Error('Invalid data type. ArrayDataProvider only supports Array or observableArray.');
             }
             // subscribe to observableArray arrayChange event to get individual updates
-            var self = this;
+            var self_1 = this;
             data['subscribe'](function (changes) {
                 var i, j, id, index, status, dataArray = [], keyArray = [], indexArray = [], metadataArray = [], afterKeyArray = [];
-                self._mutationSequenceNum++;
+                self_1._mutationSequenceNum++;
                 // first check if we only have adds or only have deletes
                 var onlyAdds = true;
                 var onlyDeletes = true;
@@ -401,7 +388,7 @@ var ArrayDataProvider = /** @class */ (function () {
                     for (i = 0; i < changes.length; i++) {
                         index = changes[i].index;
                         status = changes[i].status;
-                        var iKey = self._getId(changes[i].value);
+                        var iKey = self_1._getId(changes[i].value);
                         for (j = 0; j < changes.length; j++) {
                             if (j != i &&
                                 index === changes[j].index &&
@@ -409,7 +396,7 @@ var ArrayDataProvider = /** @class */ (function () {
                                 updatedIndexes.indexOf(i) < 0 &&
                                 removeDuplicate.indexOf(i) < 0) {
                                 // Squash delete and add only if they have the same index and either no key or same key
-                                if (iKey == null || oj.Object.compareValues(iKey, self._getId(changes[j].value))) {
+                                if (iKey == null || oj.Object.compareValues(iKey, self_1._getId(changes[j].value))) {
                                     if (status === 'deleted') {
                                         removeDuplicate.push(i);
                                         updatedIndexes.push(j);
@@ -424,7 +411,7 @@ var ArrayDataProvider = /** @class */ (function () {
                     }
                     for (i = 0; i < changes.length; i++) {
                         if (updatedIndexes.indexOf(i) >= 0) {
-                            var key = self._getKeys()[changes[i].index];
+                            var key = self_1._getKeys()[changes[i].index];
                             // By this time, updatedIndexes contains indexes of "added" entries in "changes" array that
                             // have matching "deleted" entries with same keys, which should be the same as the old keys.
                             keyArray.push(key);
@@ -434,13 +421,13 @@ var ArrayDataProvider = /** @class */ (function () {
                     }
                     if (keyArray.length > 0) {
                         metadataArray = keyArray.map(function (value) {
-                            return new self.ItemMetadata(self, value);
+                            return new self_1.ItemMetadata(self_1, value);
                         });
                         var keySet_1 = new ojSet();
                         keyArray.map(function (key) {
                             keySet_1.add(key);
                         });
-                        operationUpdateEventDetail = new self.DataProviderOperationEventDetail(self, keySet_1, metadataArray, dataArray, indexArray);
+                        operationUpdateEventDetail = new self_1.DataProviderOperationEventDetail(self_1, keySet_1, metadataArray, dataArray, indexArray);
                     }
                 }
                 dataArray = [], keyArray = [], indexArray = [];
@@ -449,49 +436,49 @@ var ArrayDataProvider = /** @class */ (function () {
                         if (changes[i]['status'] === 'deleted' &&
                             updatedIndexes.indexOf(i) < 0 &&
                             removeDuplicate.indexOf(i) < 0) {
-                            keyArray.push(self._getKeys()[changes[i].index]);
+                            keyArray.push(self_1._getKeys()[changes[i].index]);
                             dataArray.push(changes[i].value);
                             indexArray.push(changes[i].index);
                         }
                     }
                     if (keyArray.length > 0) {
                         keyArray.map(function (key) {
-                            var keyIndex = self._indexOfKey(key);
-                            self._keys.splice(keyIndex, 1);
+                            var keyIndex = self_1._indexOfKey(key);
+                            self_1._keys.splice(keyIndex, 1);
                         });
                     }
                     if (keyArray.length > 0) {
                         metadataArray = keyArray.map(function (value) {
-                            return new self.ItemMetadata(self, value);
+                            return new self_1.ItemMetadata(self_1, value);
                         });
                         var keySet_2 = new ojSet();
                         keyArray.map(function (key) {
                             keySet_2.add(key);
                         });
-                        operationRemoveEventDetail = new self.DataProviderOperationEventDetail(self, keySet_2, metadataArray, dataArray, indexArray);
+                        operationRemoveEventDetail = new self_1.DataProviderOperationEventDetail(self_1, keySet_2, metadataArray, dataArray, indexArray);
                     }
                 }
                 dataArray = [], keyArray = [], indexArray = [];
                 if (!onlyDeletes) {
-                    var generatedKeys = self._generateKeysIfNeeded();
-                    var isInitiallyEmpty = self._getKeys() != null ? self._getKeys().length > 0 ? false : true : true;
+                    var generatedKeys = self_1._generateKeysIfNeeded();
+                    var isInitiallyEmpty = self_1._getKeys() != null ? self_1._getKeys().length > 0 ? false : true : true;
                     for (i = 0; i < changes.length; i++) {
                         if (changes[i]['status'] === 'added' &&
                             updatedIndexes.indexOf(i) < 0 &&
                             removeDuplicate.indexOf(i) < 0) {
-                            id = self._getId(changes[i].value);
-                            if (id == null && (generatedKeys || self._keysSpecified)) {
-                                id = self._getKeys()[changes[i].index];
+                            id = self_1._getId(changes[i].value);
+                            if (id == null && (generatedKeys || self_1._keysSpecified)) {
+                                id = self_1._getKeys()[changes[i].index];
                             }
                             if (id == null) {
-                                id = self._sequenceNum++;
-                                self._keys.splice(changes[i].index, 0, id);
+                                id = self_1._sequenceNum++;
+                                self_1._keys.splice(changes[i].index, 0, id);
                             }
-                            if (isInitiallyEmpty || self._indexOfKey(id) == -1) {
-                                self._keys.splice(changes[i].index, 0, id);
+                            else if (isInitiallyEmpty || self_1._indexOfKey(id) === -1) {
+                                self_1._keys.splice(changes[i].index, 0, id);
                             }
                             keyArray.push(id);
-                            var afterKey = self._getKeys()[changes[i].index + 1];
+                            var afterKey = self_1._getKeys()[changes[i].index + 1];
                             afterKey = afterKey == null ? null : afterKey;
                             afterKeyArray.push(afterKey);
                             dataArray.push(changes[i].value);
@@ -500,7 +487,7 @@ var ArrayDataProvider = /** @class */ (function () {
                     }
                     if (keyArray.length > 0) {
                         metadataArray = keyArray.map(function (value) {
-                            return new self.ItemMetadata(self, value);
+                            return new self_1.ItemMetadata(self_1, value);
                         });
                         var keySet_3 = new ojSet();
                         keyArray.map(function (key) {
@@ -510,35 +497,35 @@ var ArrayDataProvider = /** @class */ (function () {
                         afterKeyArray.map(function (key) {
                             afterKeySet_1.add(key);
                         });
-                        operationAddEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet_3, afterKeySet_1, afterKeyArray, metadataArray, dataArray, indexArray);
+                        operationAddEventDetail = new self_1.DataProviderAddOperationEventDetail(self_1, keySet_3, afterKeySet_1, afterKeyArray, metadataArray, dataArray, indexArray);
                     }
                 }
-                self._fireMutationEvent(operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
+                self_1._fireMutationEvent(operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
             }, null, 'arrayChange');
             data['subscribe'](function (changes) {
-                if (self._mutationEvent) {
-                    self.dispatchEvent(self._mutationEvent);
+                if (self_1._mutationEvent) {
+                    self_1.dispatchEvent(self_1._mutationEvent);
                 }
-                else if (self._mutationRemoveEvent ||
-                    self._mutationAddEvent ||
-                    self._mutationUpdateEvent) {
-                    if (self._mutationRemoveEvent) {
-                        self.dispatchEvent(self._mutationRemoveEvent);
+                else if (self_1._mutationRemoveEvent ||
+                    self_1._mutationAddEvent ||
+                    self_1._mutationUpdateEvent) {
+                    if (self_1._mutationRemoveEvent) {
+                        self_1.dispatchEvent(self_1._mutationRemoveEvent);
                     }
-                    if (self._mutationAddEvent) {
-                        self.dispatchEvent(self._mutationAddEvent);
+                    if (self_1._mutationAddEvent) {
+                        self_1.dispatchEvent(self_1._mutationAddEvent);
                     }
-                    if (self._mutationUpdateEvent) {
-                        self.dispatchEvent(self._mutationUpdateEvent);
+                    if (self_1._mutationUpdateEvent) {
+                        self_1.dispatchEvent(self_1._mutationUpdateEvent);
                     }
                 }
                 else {
-                    self.dispatchEvent(new oj.DataProviderRefreshEvent());
+                    self_1.dispatchEvent(new oj.DataProviderRefreshEvent());
                 }
-                self._mutationEvent = null;
-                self._mutationRemoveEvent = null;
-                self._mutationAddEvent = null;
-                self._mutationUpdateEvent = null;
+                self_1._mutationEvent = null;
+                self_1._mutationRemoveEvent = null;
+                self_1._mutationAddEvent = null;
+                self_1._mutationUpdateEvent = null;
             }, null, 'change');
         }
     };
@@ -602,7 +589,7 @@ var ArrayDataProvider = /** @class */ (function () {
      */
     ArrayDataProvider.prototype._generateKeysIfNeeded = function () {
         if (this._keys == null) {
-            var keyAttributes = this.options != null ? (this.options[this._KEYATTRIBUTES] || this.options[this._IDATTRIBUTE]) : null;
+            var keyAttributes = this.options != null ? (this.options[ArrayDataProvider._KEYATTRIBUTES] || this.options[ArrayDataProvider._IDATTRIBUTE]) : null;
             this._keys = [];
             var rowData = this._getRowData();
             var id = void 0, i = 0;
@@ -622,10 +609,10 @@ var ArrayDataProvider = /** @class */ (function () {
      */
     ArrayDataProvider.prototype._getId = function (row) {
         var id;
-        var keyAttributes = this.options != null ? (this.options[this._KEYATTRIBUTES] || this.options[this._IDATTRIBUTE]) : null;
+        var keyAttributes = this.options != null ? (this.options[ArrayDataProvider._KEYATTRIBUTES] || this.options[ArrayDataProvider._IDATTRIBUTE]) : null;
         if (keyAttributes != null) {
             if (Array.isArray(keyAttributes)) {
-                var i;
+                var i = void 0;
                 id = [];
                 for (i = 0; i < keyAttributes.length; i++) {
                     id[i] = this._getVal(row, keyAttributes[i]);
@@ -669,32 +656,55 @@ var ArrayDataProvider = /** @class */ (function () {
      */
     ArrayDataProvider.prototype._fetchFrom = function (params, offset, cacheObj) {
         var self = this;
-        var fetchAttributes = params != null ? params[this._ATTRIBUTES] : null;
+        var fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
         this._generateKeysIfNeeded();
-        var sortCriteria = params != null ? params[this._SORTCRITERIA] : null;
+        var sortCriteria = params != null ? params[ArrayDataProvider._SORTCRITERIA] : null;
         var indexMap = this._getCachedIndexMap(sortCriteria, cacheObj);
+        var rowData = this._getRowData();
         var mappedData = indexMap.map(function (index) {
-            var rowData = self._getRowData()[index];
+            var row = rowData[index];
             if (fetchAttributes && fetchAttributes.length > 0) {
-                rowData = self._filterRowAttributes(fetchAttributes, rowData);
+                row = self._filterRowAttributes(fetchAttributes, row);
             }
-            return rowData;
+            return row;
         });
         var mappedKeys = indexMap.map(function (index) {
             return self._getKeys()[index];
         });
-        var fetchSize = params != null ? params[this._SIZE] > 0 ? params[this._SIZE] : params[this._SIZE] < 0 ? self._getKeys().length : 25 : 25;
-        var resultData = mappedData.slice(offset, offset + fetchSize);
-        var resultKeys = mappedKeys.slice(offset, offset + fetchSize);
-        var resultMetadata = resultKeys.map(function (value) {
-            return new self.ItemMetadata(self, value);
-        });
+        var fetchSize = params != null ? params[ArrayDataProvider._SIZE] > 0 ? params[ArrayDataProvider._SIZE] : params[ArrayDataProvider._SIZE] < 0 ? self._getKeys().length : 25 : 25;
         var hasMore = offset + fetchSize < mappedData.length ? true : false;
         var mergedSortCriteria = this._mergeSortCriteria(sortCriteria);
         if (mergedSortCriteria != null) {
             params = params || {};
-            params[this._SORTCRITERIA] = mergedSortCriteria;
+            params[ArrayDataProvider._SORTCRITERIA] = mergedSortCriteria;
         }
+        var resultData = [];
+        var resultKeys = [];
+        if (params != null && params[ArrayDataProvider._FILTERCRITERION]) {
+            var filterCriterion = null;
+            if (!params[ArrayDataProvider._FILTERCRITERION].filter) {
+                filterCriterion = __DataProvider.FilterFactory.getFilter({ filterDef: params[ArrayDataProvider._FILTERCRITERION] });
+            }
+            else {
+                filterCriterion = params[ArrayDataProvider._FILTERCRITERION];
+            }
+            var i = offset;
+            while (resultData.length < fetchSize && i < mappedData.length) {
+                if (filterCriterion.filter(mappedData[i])) {
+                    resultData.push(mappedData[i]);
+                    resultKeys.push(mappedKeys[i]);
+                }
+                i++;
+            }
+            hasMore = i < mappedData.length ? true : false;
+        }
+        else {
+            resultData = mappedData.slice(offset, offset + fetchSize);
+            resultKeys = mappedKeys.slice(offset, offset + fetchSize);
+        }
+        var resultMetadata = resultKeys.map(function (value) {
+            return new self.ItemMetadata(self, value);
+        });
         var result = new this.FetchListResult(this, params, resultData, resultMetadata);
         return new this.AsyncIteratorResult(this, result, !hasMore);
     };
@@ -702,7 +712,7 @@ var ArrayDataProvider = /** @class */ (function () {
      * Get cached index map
      */
     ArrayDataProvider.prototype._getCachedIndexMap = function (sortCriteria, cacheObj) {
-        if (cacheObj && cacheObj['indexMap'] && cacheObj[this._MUTATIONSEQUENCENUM] === this._mutationSequenceNum) {
+        if (cacheObj && cacheObj['indexMap'] && cacheObj[ArrayDataProvider._MUTATIONSEQUENCENUM] === this._mutationSequenceNum) {
             return cacheObj['indexMap'];
         }
         var dataIndexes = this._getRowData().map(function (value, index) {
@@ -711,7 +721,7 @@ var ArrayDataProvider = /** @class */ (function () {
         var indexMap = this._sortData(dataIndexes, sortCriteria);
         if (cacheObj) {
             cacheObj['indexMap'] = indexMap;
-            cacheObj[this._MUTATIONSEQUENCENUM] = this._mutationSequenceNum;
+            cacheObj[ArrayDataProvider._MUTATIONSEQUENCENUM] = this._mutationSequenceNum;
         }
         return indexMap;
     };
@@ -720,8 +730,9 @@ var ArrayDataProvider = /** @class */ (function () {
      */
     ArrayDataProvider.prototype._sortData = function (indexMap, sortCriteria) {
         var self = this;
+        var rowData = this._getRowData();
         var indexedData = indexMap.map(function (index) {
-            return { index: index, value: self._getRowData()[index] };
+            return { index: index, value: rowData[index] };
         });
         if (sortCriteria != null) {
             indexedData.sort(this._getSortComparator(sortCriteria));
@@ -736,14 +747,14 @@ var ArrayDataProvider = /** @class */ (function () {
     ArrayDataProvider.prototype._getSortComparator = function (sortCriteria) {
         var self = this;
         return function (x, y) {
-            var sortComparators = self.options != null ? self.options[self._SORTCOMPARATORS] : null;
+            var sortComparators = self.options != null ? self.options[ArrayDataProvider._SORTCOMPARATORS] : null;
             var i, direction, attribute, comparator, xval, yval;
             for (i = 0; i < sortCriteria.length; i++) {
-                direction = sortCriteria[i][self._DIRECTION];
-                attribute = sortCriteria[i][self._ATTRIBUTE];
+                direction = sortCriteria[i][ArrayDataProvider._DIRECTION];
+                attribute = sortCriteria[i][ArrayDataProvider._ATTRIBUTE];
                 comparator = null;
                 if (sortComparators != null) {
-                    comparator = sortComparators[self._COMPARATORS].get(attribute);
+                    comparator = sortComparators[ArrayDataProvider._COMPARATORS].get(attribute);
                 }
                 xval = self._getVal(x.value, attribute);
                 yval = self._getVal(y.value, attribute);
@@ -776,7 +787,7 @@ var ArrayDataProvider = /** @class */ (function () {
      * Merge sort criteria
      */
     ArrayDataProvider.prototype._mergeSortCriteria = function (sortCriteria) {
-        var implicitSort = this.options != null ? this.options[this._IMPLICITSORT] : null;
+        var implicitSort = this.options != null ? this.options[ArrayDataProvider._IMPLICITSORT] : null;
         if (implicitSort != null) {
             if (sortCriteria == null) {
                 return implicitSort;
@@ -787,7 +798,7 @@ var ArrayDataProvider = /** @class */ (function () {
             for (i = 0; i < implicitSort.length; i++) {
                 found = false;
                 for (j = 0; j < mergedSortCriteria.length; j++) {
-                    if (mergedSortCriteria[j][this._ATTRIBUTE] == implicitSort[i][this._ATTRIBUTE]) {
+                    if (mergedSortCriteria[j][ArrayDataProvider._ATTRIBUTE] == implicitSort[i][ArrayDataProvider._ATTRIBUTE]) {
                         found = true;
                     }
                 }
@@ -809,7 +820,7 @@ var ArrayDataProvider = /** @class */ (function () {
             // first see if we want all attributes
             var fetchAllAttributes_1 = false;
             fetchAttribute.forEach(function (key) {
-                if (key == self._ATDEFAULT || key.name == self._ATDEFAULT) {
+                if (key == ArrayDataProvider._ATDEFAULT || key.name == ArrayDataProvider._ATDEFAULT) {
                     fetchAllAttributes_1 = true;
                 }
             });
@@ -885,6 +896,40 @@ var ArrayDataProvider = /** @class */ (function () {
         }
         return updatedData;
     };
+    ArrayDataProvider._KEY = 'key';
+    ArrayDataProvider._KEYS = 'keys';
+    ArrayDataProvider._AFTERKEYS = 'afterKeys';
+    ArrayDataProvider._ADDBEFOREKEYS = 'addBeforeKeys';
+    ArrayDataProvider._DIRECTION = 'direction';
+    ArrayDataProvider._ATTRIBUTE = 'attribute';
+    ArrayDataProvider._ATTRIBUTES = 'attributes';
+    ArrayDataProvider._SORT = 'sort';
+    ArrayDataProvider._SORTCRITERIA = 'sortCriteria';
+    ArrayDataProvider._FILTERCRITERION = 'filterCriterion';
+    ArrayDataProvider._DATA = 'data';
+    ArrayDataProvider._METADATA = 'metadata';
+    ArrayDataProvider._INDEXES = 'indexes';
+    ArrayDataProvider._OFFSET = 'offset';
+    ArrayDataProvider._SIZE = 'size';
+    ArrayDataProvider._IDATTRIBUTE = 'idAttribute';
+    ArrayDataProvider._IMPLICITSORT = 'implicitSort';
+    ArrayDataProvider._KEYATTRIBUTES = 'keyAttributes';
+    ArrayDataProvider._SORTCOMPARATORS = 'sortComparators';
+    ArrayDataProvider._COMPARATORS = 'comparators';
+    ArrayDataProvider._COMPARATOR = 'comparator';
+    ArrayDataProvider._RESULTS = 'results';
+    ArrayDataProvider._CONTAINS = 'contains';
+    ArrayDataProvider._FETCHPARAMETERS = 'fetchParameters';
+    ArrayDataProvider._CONTAINSPARAMETERS = 'containsParameters';
+    ArrayDataProvider._VALUE = 'value';
+    ArrayDataProvider._DONE = 'done';
+    ArrayDataProvider._ADD = 'add';
+    ArrayDataProvider._REMOVE = 'remove';
+    ArrayDataProvider._UPDATE = 'update';
+    ArrayDataProvider._DETAIL = 'detail';
+    ArrayDataProvider._FETCHLISTRESULT = 'fetchListResult';
+    ArrayDataProvider._ATDEFAULT = '@default';
+    ArrayDataProvider._MUTATIONSEQUENCENUM = 'mutationSequenceNum';
     return ArrayDataProvider;
 }());
 oj['ArrayDataProvider'] = ArrayDataProvider;

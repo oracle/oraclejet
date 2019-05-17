@@ -3,14 +3,14 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/draggable', 'ojs/ojtouchproxy'], 
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        */
-       function(oj, $)
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+*/
+function(oj, $)
 {
+"use strict";
 //%COMPONENT_METADATA%
 var __oj_slider_metadata = 
 {
@@ -56,7 +56,8 @@ var __oj_slider_metadata =
       "type": "object",
       "properties": {
         "instruction": {
-          "type": "string"
+          "type": "string",
+          "value": ""
         }
       }
     },
@@ -76,6 +77,9 @@ var __oj_slider_metadata =
     "labelHint": {
       "type": "string",
       "value": ""
+    },
+    "labelledBy": {
+      "type": "string"
     },
     "max": {
       "type": "number"
@@ -204,7 +208,7 @@ var __oj_slider_metadata =
    *
    * @ojrole slider
    * @since 0.7
-   * @ojshortdesc Displays an interactive slider element.
+   * @ojshortdesc A slider allows a user to set a value by moving an indicator.
    * @ojstatus preview
    *
    * @classdesc
@@ -338,12 +342,53 @@ var __oj_slider_metadata =
 
     options: {
       /**
+       * <p>
+       * The oj-label sets the labelledBy property programmatically on the form component
+       * to make it easy for the form component to find its oj-label component (a
+       * document.getElementById call.)
+       * </p>
+       * <p>
+       * The application developer should use the 'for'/'id api
+       * to link the oj-label with the form component;
+       * the 'for' on the oj-label to point to the 'id' on the input form component.
+       * This is the most performant way for the oj-label to find its form component.
+       * </p>
+       *
+       * @example <caption>Initialize component with <code class="prettyprint">for</code> attribute:</caption>
+       * &lt;oj-label for="sliderId">Name:&lt;/oj-label>
+       * &lt;oj-slider id="sliderId">
+       * &lt;/oj-slider>
+       * // ojLabel then writes the labelled-by attribute on the oj-slider.
+       * &lt;oj-label id="labelId" for="sliderId">Name:&lt;/oj-label>
+       * &lt;oj-slider id="sliderId" labelled-by"labelId">
+       * &lt;/oj-slider>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
+       * // getter
+       * var labelledBy = myComp.labelledBy;
+       *
+       * // setter
+       * myComp.labelledBy = "labelId";
+       *
+       * @expose
+       * @ojshortdesc The oj-label sets the labelledBy property
+       * programmatically on the form component.
+       * @type {string|null}
+       * @default null
+       * @public
+       * @instance
+       * @since 7.0.0
+       * @memberof oj.ojSlider
+       */
+      labelledBy: null,
+      /**
        * The maximum value of the slider.
        * The <code class="prettyprint">max</code> must not be less than the
        * <code class="prettyprint">min</code>, or else an Error is thrown during
        * initialization.
        * @expose
        * @memberof oj.ojSlider
+       * @ojshortdesc The maximum value of the slider. See the Help documentation for more information.
        * @instance
        * @type {?number}
        * @default null
@@ -367,6 +412,7 @@ var __oj_slider_metadata =
        * initialization.
        * @expose
        * @memberof oj.ojSlider
+       * @ojshortdesc The minimum value of the slider. See the Help documentation for more information.
        * @instance
        * @type {?number}
        * @default null
@@ -389,6 +435,7 @@ var __oj_slider_metadata =
        *
        * @expose
        * @memberof! oj.ojSlider
+       * @ojshortdesc Specifies the orientation of the slider.
        * @instance
        * @type {string}
        * @ojvalue {string} "horizontal" Orient the slider horizontally.
@@ -456,6 +503,7 @@ var __oj_slider_metadata =
        * // Setter
        * myComponent.disabled = true;
        *
+       * @ojshortdesc Specifies whether the component is disabled. The default is false.
        * @expose
        * @type {boolean}
        * @default false
@@ -476,6 +524,8 @@ var __oj_slider_metadata =
        * @default 1
        * @since 0.7
        * @memberof oj.ojSlider
+       * @ojshortdesc Specifies the amount to increase or decrease the value when moving in step increments. See the Help documentation for more information.
+       *
        * @example <caption>Initialize the slider with the
        * <code class="prettyprint">step</code> attribute:</caption>
        * &lt;oj-slider step=10>&lt;/oj-slider>
@@ -490,7 +540,7 @@ var __oj_slider_metadata =
       step: 1,
 
       /**
-       * The slider type determines whether the slider how the value is represented in the UI.
+       * The slider type determines how the value is represented in the UI.
        *
        * @expose
        * @type {?string}
@@ -504,6 +554,7 @@ var __oj_slider_metadata =
        * @since 0.7
        * @instance
        * @memberof oj.ojSlider
+       * @ojshortdesc The slider type specifies how the slider value is represented.
        *
        * @example <caption>Initialize component with <code class="prettyprint">type</code>
        * attribute set to "fromMax":</caption>
@@ -536,6 +587,7 @@ var __oj_slider_metadata =
        * // Setter
        * myComponent.value = 10;
        *
+       * @ojshortdesc The numerical value of the slider.
        * @expose
        * @access public
        * @instance
@@ -543,6 +595,7 @@ var __oj_slider_metadata =
        * @since 0.7
        * @ojwriteback
        * @memberof oj.ojSlider
+       * @ojshortdesc The numerical value of the slider.
        * @type {?number}
        */
       value: 0,
@@ -560,6 +613,7 @@ var __oj_slider_metadata =
        * <p>This is a read-only attribute so page authors cannot set or change it directly.</p>
        * @expose
        * @alias transientValue
+       * @ojshortdesc Read-only property used for retrieving the transient value from the component. See the Help documentation for more information.
        * @access public
        * @instance
        * @ojwriteback
@@ -693,72 +747,75 @@ var __oj_slider_metadata =
       this._super();
 
       this._makeDraggable();
+      this._setAriaInfo();
+    },
+
+    _setAriaInfo: function () {
+      var ariaLabelString;
+      var label;
+      var ariaLabelledBy;
       var thumb;
 
-      // For custom elements, set the aria-labelledby on the input element
-      // (provided the oj-label is part of the form)
+      // for oj-slider, if labelled-by attribute is set, use that to
+      // construct the aria-labelledby and put on the thumb
+      // else use aria-label if it is there.
       if (this.OuterWrapper) {
-        var defaultLabelId = this.uuid + '_Label';
-        var LId = oj.EditableValueUtils.getOjLabelId(this.widget(), defaultLabelId);
-        if (LId) {
-          this.element.attr('aria-labelledby', LId);
+        if (this.options.labelledBy) {
+          var defaultLabelId = this.uuid + '_Label';
+          ariaLabelledBy =
+          oj.EditableValueUtils._getOjLabelAriaLabelledBy(
+            this.options.labelledBy, defaultLabelId);
+          this._copyLabelledbyToThumb(ariaLabelledBy);
         }
-      }
-
-      //
-      // For custom elements, if the input has an aria-labelledby, then just
-      // copy it to the thumb (since EditableValue has already determined that
-      // the slider control is using aria-labelledby)
-      //
-      if (this.OuterWrapper) {
-        var ariaId = this.element.attr('aria-labelledby');
-        if (ariaId !== undefined && ariaId !== null) {
-          this._copyLabelledbyToThumb(ariaId);
-          return;
-        }
-      }
-
-      var label = this._GetLabelElementLocal();
-
-      //
-      // Copy any labelled-by on the <input labelled-by="id"> to the slider thumb.
-      //
-      if (label) {
-        //
-        // this id should be on the thumb: aria-labelledby =
-        //
-
-        // Set the aria-labelledby attribute of the thumb to the returned id.
-        var labelId = label.attr('id');
-        if (!labelId) {
-          labelId = label.attr('for');
-        }
-
-        if (labelId.length > 0) {
-          this._copyLabelledbyToThumb(labelId);
+        // there is a use-case where aria-label is set on the component, and we write that to the
+        // thumb.
+        if (!this.options.labelledBy || document.getElementById(this.options.labelledBy)) {
+          ariaLabelString = this.OuterWrapper.getAttribute('aria-label');
+          if (ariaLabelString) {
+            thumb = this.OuterWrapper.querySelector('.oj-slider-thumb');
+            thumb.setAttribute('aria-label', ariaLabelString);
+          }
         }
       } else {
+        // do not change the code for widget
+        label = this._GetLabelElementLocal();
+        // Copy any labelled-by on the <input labelled-by="id"> to the slider thumb.
         //
-        // Check if the <input> has aria-label=""
-        //
+        if (label) {
+          //
+          // this id should be on the thumb: aria-labelledby =
+          //
 
-        var ariaLabelString;
+          // Set the aria-labelledby attribute of the thumb to the returned id.
+          var labelId = label.attr('id');
+          if (!labelId) {
+            labelId = label.attr('for');
+          }
 
-        if (this.OuterWrapper) {
-          ariaLabelString = this._elementWrapped.attr('aria-label');
+          if (labelId.length > 0) {
+            this._copyLabelledbyToThumb(labelId);
+          }
         } else {
+          //
+          // Check if the <input> has aria-label=""
+          //
           ariaLabelString = this.element.attr('aria-label');
-        }
+          if (ariaLabelString) {
+            thumb = this._elementWrapped.find('.oj-slider-thumb');
 
-        if (ariaLabelString) {
-          thumb = this._elementWrapped.find('.oj-slider-thumb');
-
-          // Set the aria-labelledby attribute of the thumb to the returned id
-          thumb.attr('aria-label', ariaLabelString);
+            // Set the aria-labelledby attribute of the thumb to the returned id
+            thumb.attr('aria-label', ariaLabelString);
+          }
         }
       }
     },
 
+    /**
+     * Used by widget code
+     * @memberof oj.ojSlider
+     * @instance
+     * @private
+     */
     _GetLabelElementLocal: function () {
       // If <input> has aria-labelledby set, then look for label it is referring to.
       var queryResult = this._getAriaLabelledByElementLocal();
@@ -774,6 +831,12 @@ var __oj_slider_metadata =
       return null;
     },
 
+    /**
+     * Used by widget code
+     * @memberof oj.ojSlider
+     * @instance
+     * @private
+     */
     _getAriaLabelForElementLocal: function () {
       var id;
       id = this.element.prop('id');
@@ -793,6 +856,12 @@ var __oj_slider_metadata =
       return null;
     },
 
+    /**
+     * Used by widget code
+     * @memberof oj.ojSlider
+     * @instance
+     * @private
+     */
     _getAriaLabelledByElementLocal: function () {
       // look for a label with an id equal to the value of aria-labelledby.
       // .prop does not work for aria-labelledby. Need to use .attr to find
@@ -1732,7 +1801,9 @@ var __oj_slider_metadata =
         case 'type':
           this._reCreate();
           break;
-
+        case 'labelledBy':
+          this._setAriaInfo();
+          break;
         default:
           break;
       }

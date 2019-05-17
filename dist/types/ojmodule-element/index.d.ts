@@ -3,8 +3,8 @@ export interface ModuleElementAnimation {
     animate(context: {
         node: Node;
         isInitial: boolean;
-        oldViewModel: object;
-        newViewModel: object;
+        oldViewModel: ModuleViewModel;
+        newViewModel: ModuleViewModel;
         newViewParent: Node;
         oldViewParent: Node;
         removeOldView: () => undefined;
@@ -14,29 +14,31 @@ export interface ModuleElementAnimation {
     canAnimate(context: {
         node: Node;
         isInitial: boolean;
-        oldViewModel: object;
-        newViewModel: object;
+        oldViewModel: ModuleViewModel;
+        newViewModel: ModuleViewModel;
     }): boolean;
     prepareAnimation(context: {
         node: Node;
         isInitial: boolean;
-        oldViewModel: object;
-        newViewModel: object;
-    }): object;
+        oldViewModel: ModuleViewModel;
+        newViewModel: ModuleViewModel;
+    }): null | {
+        newViewParent?: Node;
+        oldViewParent?: Node;
+    };
+}
+export interface ModuleViewModel {
+    connected?(): null;
+    disconnected?(): null;
+    transitionCompleted?(): null;
 }
 export interface ojModule extends JetElement<ojModuleSettableProperties> {
-    animation: object;
+    animation: ModuleElementAnimation;
     config: {
         cleanupMode?: 'onDisconnect' | 'none';
         view: Node[];
-        viewModel: object | null;
+        viewModel: ModuleViewModel | null;
     };
-    onAnimationChanged: ((event: JetElementCustomEvent<ojModule["animation"]>) => any) | null;
-    onConfigChanged: ((event: JetElementCustomEvent<ojModule["config"]>) => any) | null;
-    onOjTransitionEnd: ((event: ojModule.ojTransitionEnd) => any) | null;
-    onOjTransitionStart: ((event: ojModule.ojTransitionStart) => any) | null;
-    onOjViewConnected: ((event: ojModule.ojViewConnected) => any) | null;
-    onOjViewDisconnected: ((event: ojModule.ojViewDisconnected) => any) | null;
     addEventListener<T extends keyof ojModuleEventMap>(type: T, listener: (this: HTMLElement, ev: ojModuleEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojModuleSettableProperties>(property: T): ojModule[T];
@@ -47,26 +49,30 @@ export interface ojModule extends JetElement<ojModuleSettableProperties> {
 }
 export namespace ojModule {
     interface ojTransitionEnd extends CustomEvent<{
-        viewModel: object;
+        viewModel: ModuleViewModel;
         [propName: string]: any;
     }> {
     }
     interface ojTransitionStart extends CustomEvent<{
-        viewModel: object;
+        viewModel: ModuleViewModel;
         [propName: string]: any;
     }> {
     }
     interface ojViewConnected extends CustomEvent<{
-        viewModel: object;
+        viewModel: ModuleViewModel;
         [propName: string]: any;
     }> {
     }
     interface ojViewDisconnected extends CustomEvent<{
-        viewModel: object;
+        viewModel: ModuleViewModel;
         view: Node[];
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type animationChanged = JetElementCustomEvent<ojModule["animation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type configChanged = JetElementCustomEvent<ojModule["config"]>;
 }
 export interface ojModuleEventMap extends HTMLElementEventMap {
     'ojTransitionEnd': ojModule.ojTransitionEnd;
@@ -77,11 +83,11 @@ export interface ojModuleEventMap extends HTMLElementEventMap {
     'configChanged': JetElementCustomEvent<ojModule["config"]>;
 }
 export interface ojModuleSettableProperties extends JetSettableProperties {
-    animation: object;
+    animation: ModuleElementAnimation;
     config: {
         cleanupMode?: 'onDisconnect' | 'none';
         view: Node[];
-        viewModel: object | null;
+        viewModel: ModuleViewModel | null;
     };
 }
 export interface ojModuleSettablePropertiesLenient extends Partial<ojModuleSettableProperties> {

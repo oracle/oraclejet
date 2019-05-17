@@ -6,9 +6,6 @@ export interface ojProgress extends baseComponent<ojProgressSettableProperties> 
     translations: {
         ariaIndeterminateProgressText?: string;
     };
-    onMaxChanged: ((event: JetElementCustomEvent<ojProgress["max"]>) => any) | null;
-    onTypeChanged: ((event: JetElementCustomEvent<ojProgress["type"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojProgress["value"]>) => any) | null;
     addEventListener<T extends keyof ojProgressEventMap>(type: T, listener: (this: HTMLElement, ev: ojProgressEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojProgressSettableProperties>(property: T): ojProgress[T];
@@ -16,6 +13,14 @@ export interface ojProgress extends baseComponent<ojProgressSettableProperties> 
     setProperty<T extends keyof ojProgressSettableProperties>(property: T, value: ojProgressSettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojProgressSettableProperties>): void;
     setProperties(properties: ojProgressSettablePropertiesLenient): void;
+}
+export namespace ojProgress {
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojProgress["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type typeChanged = JetElementCustomEvent<ojProgress["type"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojProgress["value"]>;
 }
 export interface ojProgressEventMap extends baseComponentEventMap<ojProgressSettableProperties> {
     'maxChanged': JetElementCustomEvent<ojProgress["max"]>;

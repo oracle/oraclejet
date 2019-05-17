@@ -3,15 +3,15 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcontext', 'promise', 'ojs/ojanimation'], 
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        */
-       function(oj, $, Components, Context)
-{
 
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcontext', 'promise', 'ojs/ojanimation'], 
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+*/
+function(oj, $, Components, Context)
+{
+  "use strict";
 var __oj_collapsible_metadata = 
 {
   "properties": {
@@ -70,7 +70,7 @@ var __oj_collapsible_metadata =
  * @since 0.6
  * @ojstatus preview
  * @class oj.ojCollapsible
- * @ojshortdesc Displays a header that can be expanded to show its content.
+ * @ojshortdesc A collapsible displays a header that can be expanded to show its content.
  *
  * @classdesc
  * <h3 id="collapsibleOverview-section">
@@ -325,7 +325,7 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       _createIcons: function () {
         var options = this.options;
         var icon = (options.expanded ? OPEN_ICON : CLOSE_ICON);
-        var iconTag = this._isDisabled() ? $('<span>') : $("<a href='#'>");
+        var iconTag = this._isDisabled() ? $('<span>') : $('<a>');
 
         iconTag.addClass('oj-component-icon oj-clickable-icon-nocontext oj-collapsible-header-icon ' + icon)
         .attr('aria-labelledby', this.header.attr('id'))
@@ -754,6 +754,14 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       _toggleHandler: function (event) {
         if (this._isDisabled() || event.isDefaultPrevented()) {
           return;
+        }
+
+        //  - click on button in header slot propagates to collapse/expand action
+        var target = $(event.target);
+        for (; target.length && target[0] !== this.header[0]; target = target.parent()) {
+          if (target.hasClass('oj-clickthrough-disabled')) {
+            return;
+          }
         }
 
         if (this.options.expanded) {
@@ -1267,6 +1275,29 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
      * <p>Disabled items can receive keyboard focus, but do not allow any other interaction.
      *
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+     * @memberof oj.ojCollapsible
+     */
+
+    /**
+     * {@ojinclude "name":"ojStylingDocIntro"}
+     *
+     * <table class="generic-table styling-table">
+     *   <thead>
+     *     <tr>
+     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>oj-clickthrough-disabled</td>
+     *       <td>Use on any element inside the header where you do not want Collapsible to process the click event.</td>
+     *       </td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
      * @memberof oj.ojCollapsible
      */
 

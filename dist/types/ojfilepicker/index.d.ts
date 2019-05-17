@@ -8,10 +8,6 @@ export interface ojFilePicker extends JetElement<ojFilePickerSettableProperties>
     accept: string[] | null;
     selectOn: 'auto' | 'click' | 'drop' | 'clickAndDrop';
     selectionMode: 'multiple' | 'single';
-    onAcceptChanged: ((event: JetElementCustomEvent<ojFilePicker["accept"]>) => any) | null;
-    onSelectOnChanged: ((event: JetElementCustomEvent<ojFilePicker["selectOn"]>) => any) | null;
-    onSelectionModeChanged: ((event: JetElementCustomEvent<ojFilePicker["selectionMode"]>) => any) | null;
-    onOjSelect: ((event: ojFilePicker.ojSelect) => any) | null;
     addEventListener<T extends keyof ojFilePickerEventMap>(type: T, listener: (this: HTMLElement, ev: ojFilePickerEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojFilePickerSettableProperties>(property: T): ojFilePicker[T];
@@ -26,6 +22,12 @@ export namespace ojFilePicker {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type acceptChanged = JetElementCustomEvent<ojFilePicker["accept"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectOnChanged = JetElementCustomEvent<ojFilePicker["selectOn"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged = JetElementCustomEvent<ojFilePicker["selectionMode"]>;
 }
 export interface ojFilePickerEventMap extends HTMLElementEventMap {
     'ojSelect': ojFilePicker.ojSelect;

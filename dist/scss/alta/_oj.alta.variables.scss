@@ -119,6 +119,7 @@ $header2FontSize: oj-px-to-rem(24px, $baseFontSize: 14px) !default;
 $header3FontSize: $largestFontSize !default;
 $header4FontSize: $largeFontSize   !default;
 $header5FontSize: $mediumFontSize  !default;
+$header6FontSize: $mediumFontSize  !default;
 
 // $header[1|2|3|4|5]FontWeight vars can be used
 // to override the default font weight, they are
@@ -128,6 +129,7 @@ $header2FontWeight: 300   !default;
 $header3FontWeight: 300   !default;
 $header4FontWeight: 400   !default;
 $header5FontWeight: 400   !default;
+$header6FontWeight: 400   !default;
 
 
 // PANEL
@@ -233,8 +235,9 @@ $messageNotificationOverlayBorderColor:     $neutralColor9 !default;
 $messageHeaderHeight:                       36px !default;
 $messageAutoTimeoutCloseIconDisplay:        block !default;
 $messageCategoryTextColor:                  $formControlLabelColor !default;
-$messageCategoryFontSize:                   oj-px-to-rem(11px, $baseFontSize: 14px)  !default;
+$messageCategoryFontSize:                   oj-px-to-rem(12px, $baseFontSize: 14px)  !default;
 $messageTimeTextColor:                      $textColor !default;
+$messageTimeFontSize:                       oj-px-to-rem(12px, $baseFontSize: 14px)  !default;
 $messageSummaryLineHeight:                  1.3 !default;
 $messageDetailTextColor:                    $textColor !default;
 $messageDetailLineHeight:                   1.1 !default;
@@ -595,6 +598,7 @@ $trainBgColorVisited:                     $trainBgColor !default;
 $trainBorderColorVisited:                 $trainBorderColor !default;
 $trainLabelColorVisited:                  $trainLabelColor !default;
 $trainButtonTextColorVisited:             $brandColor !default;
+$trainVisitedIconDisplay:                 inherit !default;
 $trainButtonTextVisitedDisplay:           none !default;
 
 

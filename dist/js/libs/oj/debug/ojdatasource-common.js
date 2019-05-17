@@ -3,14 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'jquery'], function(oj, $)
 {
+  "use strict";
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -940,4 +935,10 @@ oj.DiagramDataSource.EventType =
   CHANGE: 'change'
 };
 
+// Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
+
+var DataSourceCommon = {};
+DataSourceCommon.DataGridDataSource = oj.DataGridDataSource;
+
+  return DataSourceCommon;
 });

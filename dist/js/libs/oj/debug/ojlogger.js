@@ -3,9 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define([], function()
 {
+  "use strict";
 // Copyright (c) 2011, 2013, Oracle and/or its affiliates.
 // All rights reserved.
 
@@ -114,61 +114,69 @@ Logger._options = Logger._defaultOptions;
 /* public members*/
 /**
  * Writes an error message.
- * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
- *                                See examples in the overview section above.
+ * @param {any=} message A function that returns the message to be logged, a string containing zero or more substitution strings, or an object to be logged.
+ *                      See examples in the overview section above.
+ * @param {...any} optionalParams Objects with which to replace substitution strings within messages or simply additional objects to be logged.
  * @return {void}
  * @export
  * @memberof oj.Logger
  * @method error
  * @since 1.0.0
+ * @ojsignature {target: "Type", for: "optionalParams", value: "any[]"}
  */
 // eslint-disable-next-line no-unused-vars
-Logger.error = function (args) {
+Logger.error = function (message, optionalParams) {
   Logger._write(Logger.LEVEL_ERROR, Logger._METHOD_ERROR, arguments);
 };
 
 /**
  * Writes an informational  message.
- * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
- *                                See examples in the overview section above.
+ * @param {any=} message A function that returns the message to be logged, a string containing zero or more substitution strings, or an object to be logged.
+ *                      See examples in the overview section above.
+ * @param {...any} optionalParams Objects with which to replace substitution strings within messages or simply additional objects to be logged.
  * @return {void}
  * @export
  * @memberof oj.Logger
  * @method info
  * @since 1.0.0
+ * @ojsignature {target: "Type", for: "optionalParams", value: "any[]"}
  */
 // eslint-disable-next-line no-unused-vars
-Logger.info = function (args) {
+Logger.info = function (message, optionalParams) {
   Logger._write(Logger.LEVEL_INFO, Logger._METHOD_INFO, arguments);
 };
 
 /**
  * Writes a warning message.
- * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
- *                                See examples in the overview section above.
+ * @param {any=} message A function that returns the message to be logged, a string containing zero or more substitution strings, or an object to be logged.
+ *                      See examples in the overview section above.
+ * @param {...any} optionalParams Objects with which to replace substitution strings within messages or simply additional objects to be logged.
  * @export
  * @return {void}
  * @memberof oj.Logger
  * @method warn
  * @since 1.0.0
+ * @ojsignature {target: "Type", for: "optionalParams", value: "any[]"}
  */
 // eslint-disable-next-line no-unused-vars
-Logger.warn = function (args) {
+Logger.warn = function (message, optionalParams) {
   Logger._write(Logger.LEVEL_WARN, Logger._METHOD_WARN, arguments);
 };
 
 /**
  * Writes a general message.
- * @param {...(Object|string|number)} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
- *                                See examples in the overview section above.
+ * @param {any=} message A function that returns the message to be logged, a string containing zero or more substitution strings, or an object to be logged.
+ *                      See examples in the overview section above.
+ * @param {...any} optionalParams Objects with which to replace substitution strings within messages or simply additional objects to be logged.
  * @return {void}
  * @export
  * @memberof oj.Logger
  * @method log
  * @since 1.0.0
+ * @ojsignature {target: "Type", for: "optionalParams", value: "any[]"}
  */
 // eslint-disable-next-line no-unused-vars
-Logger.log = function (args) {
+Logger.log = function (message, optionalParams) {
   Logger._write(Logger.LEVEL_LOG, Logger._METHOD_LOG, arguments);
 };
 
@@ -195,6 +203,7 @@ Logger.log = function (args) {
  * @memberof oj.Logger
  * @method option
  * @since 1.0.0
+ * @ojsignature {target: "Type", for: "key", value: "'level'|'writer'|{level?: any, writer?: any}"}
  */
 Logger.option = function (key, value) {
   // getters

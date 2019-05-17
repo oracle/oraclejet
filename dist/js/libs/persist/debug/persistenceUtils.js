@@ -5,7 +5,7 @@
 
 define(['./impl/logger'], function (logger) {
   'use strict';
-  
+
   /**
    * @class persistenceUtils
    * @classdesc Provide various utilities for converting Request/Response objects
@@ -13,7 +13,7 @@ define(['./impl/logger'], function (logger) {
    * @export
    * @hideconstructor
    */
-  
+
   /**
    * Return whether the Response is a cached Response
    * @method
@@ -26,7 +26,7 @@ define(['./impl/logger'], function (logger) {
   function isCachedResponse(response) {
     return response.headers.has('x-oracle-jscpt-cache-expiration-date');
   };
-  
+
   /**
    * Return whether the Response has a generated ETag
    * @method
@@ -39,7 +39,23 @@ define(['./impl/logger'], function (logger) {
   function isGeneratedEtagResponse(response) {
     return response.headers.has('x-oracle-jscpt-etag-generated');
   };
-  
+
+  function _derivePayloadType(xhr, response) {
+    var contentType = response.headers.get('Content-Type');
+    var responseType = xhr.responseType;
+    if (_isTextPayload(response.headers)) {
+      return "text";
+    } else if (isCachedResponse(response) || responseType === 'blob') {
+      return "blob";
+    } else if (contentType && contentType.indexOf('image/') !== -1 || responseType === 'arraybuffer') {
+      return "arraybuffer";
+    } else if (contentType && contentType.indexOf('multipart/form-data') !== -1) {
+      return "multipart";
+    } else {
+      return "text";
+    }
+  }
+
   function _isTextPayload(headers) {
 
     var contentType = headers.get('Content-Type');
@@ -53,7 +69,7 @@ define(['./impl/logger'], function (logger) {
     }
     return false;
   };
-  
+
   function _isMultipartPayload(headers) {
 
     var contentType = headers.get('Content-Type');
@@ -82,7 +98,7 @@ define(['./impl/logger'], function (logger) {
     requestObject['headers'] = _getHeaderValues(request.headers);
     return _copyPayload(request, requestObject);
   };
-  
+
   function _copyProperties(sourceObj, targetObj, ignoreProps) {
     for (var k in sourceObj) {
       if (typeof (sourceObj[k]) !== 'function' &&
@@ -94,11 +110,11 @@ define(['./impl/logger'], function (logger) {
       }
     }
   };
-  
+
   function _isPrivateProperty(property) {
     return property.indexOf('_') === 0;
   };
-  
+
   function _getHeaderValues(headers) {
     var headersData = {};
     if (headers.entries) {
@@ -123,10 +139,10 @@ define(['./impl/logger'], function (logger) {
       })
     }
     _addDateHeaderIfNull(headersData);
- 
+
     return headersData;
   };
-  
+
   function _addDateHeaderIfNull(headersData) {
     // Date is not exposed for CORS request/response
     var date = headersData['date'];
@@ -140,7 +156,7 @@ define(['./impl/logger'], function (logger) {
 
   function _copyPayload(source, targetObj) {
     targetObj.body = {};
-    
+
     if ((source instanceof Request) &&
         _isMultipartPayload(source.headers)) {
       return _copyMultipartPayload(source, targetObj);
@@ -154,7 +170,7 @@ define(['./impl/logger'], function (logger) {
       });
     }
 
-    if (!(source instanceof Request) && 
+    if (!(source instanceof Request) &&
         typeof(source.arrayBuffer) === 'function') {
       return source.arrayBuffer().then(function (aBuffer) {
         if (aBuffer.byteLength > 0) {
@@ -166,7 +182,7 @@ define(['./impl/logger'], function (logger) {
 
     return Promise.reject(new Error({message: 'payload body type is not supported'}));
   };
-  
+
   function _copyMultipartPayload(request, targetObj) {
     logger.log("Offline Persistence Toolkit persistenceUtils: Copying multipart payload");
     if (typeof(request.formData) === 'function') {
@@ -236,7 +252,7 @@ define(['./impl/logger'], function (logger) {
   };
 
   /**
-   * Return a Request object constructed from the JSON object returned by 
+   * Return a Request object constructed from the JSON object returned by
    * requestToJSON
    * @method
    * @name requestFromJSON
@@ -254,11 +270,11 @@ define(['./impl/logger'], function (logger) {
 
     return _createRequestFromJsonObj(data, initFromData);
   };
-  
+
   function _copyPayloadFromJsonObj(data, targetObj) {
     var skipContentType = false;
     var body = data.body;
-    
+
     if (body.text && body.text.length > 0) {
       targetObj.body = body.text;
     } else if (body.arrayBuffer) {
@@ -275,7 +291,7 @@ define(['./impl/logger'], function (logger) {
 
     return skipContentType;
   };
-  
+
   function _createHeadersFromJsonObj(data, skipContentType) {
     var headers = new Headers();
     Object.keys(data.headers).forEach(function (key) {
@@ -287,7 +303,7 @@ define(['./impl/logger'], function (logger) {
 
     return headers;
   };
-  
+
   function _createRequestFromJsonObj(data, initFromData) {
     return Promise.resolve(new Request(data.url, initFromData));
   };
@@ -310,7 +326,7 @@ define(['./impl/logger'], function (logger) {
 
     return _createResponseFromJsonObj(data, initFromData);
   };
-  
+
   function _createResponseFromJsonObj(data, initFromData) {
     var response;
     var body = data.body;
@@ -331,7 +347,7 @@ define(['./impl/logger'], function (logger) {
   };
 
   /**
-   * Update the Response object with the provided payload. The existing payload 
+   * Update the Response object with the provided payload. The existing payload
    * will be replaced
    * @method
    * @name setResponsePayload
@@ -339,20 +355,20 @@ define(['./impl/logger'], function (logger) {
    * @static
    * @param {Response} response Response object
    * @param {Object} payload JSON payload data
-   * @return {Promise} Returns a Promise which resolves to the updated Response object 
+   * @return {Promise} Returns a Promise which resolves to the updated Response object
    */
   function setResponsePayload(response, payload) {
     logger.log("Offline Persistence Toolkit persistenceUtils: setResponsePayload()");
     return responseToJSON(response).then(function (responseObject) {
       var body = responseObject.body;
-      
+
       body.arrayBuffer = null;
       body.blob = null;
       body.text = null;
-      
+
       if (payload instanceof ArrayBuffer) {
         body.arrayBuffer = payload;
-      } else if (payload instanceof Blob) { 
+      } else if (payload instanceof Blob) {
         body.blob = payload;
       } else {
         body.text = JSON.stringify(payload);
@@ -473,7 +489,7 @@ define(['./impl/logger'], function (logger) {
    * (1) responseProxy needs to register/unregister the options so during which
    *     time period cache is able to look up shredder/unshredder
    * (2) because of asynchronous nature, there could be multiple fetch events
-   *     going on from the same url, while we don't want the registered 
+   *     going on from the same url, while we don't want the registered
    *     shredder/unshredder to grow out of control, we create a unique key
    *     so we can use the same key to unreigster the shredder/unshredder
    * (3) any cache operations needs to happen within defaultResponseProxy
@@ -489,11 +505,11 @@ define(['./impl/logger'], function (logger) {
     logger.log("Offline Persistence Toolkit persistenceUtils: buildEndpointKey() for Request with url: " + request.url);
     var endPointKeyObj = {
       url: request.url,
-      id : Math.random().toString(36).replace(/[^a-z]+/g, '')
+      id : Math.random().toString(36).replace(/[^a-z]+/g, '') // @randomNumberOk - Only used to internally keep track of request URLs
     };
     return JSON.stringify(endPointKeyObj);
   };
-  
+
   function _cloneRequest(request) {
     return requestToJSON(request, {_noClone: true}).then(function (requestJson) {
       return requestFromJSON(requestJson).then(function (requestClone) {
@@ -501,7 +517,7 @@ define(['./impl/logger'], function (logger) {
       });
     });
   };
-  
+
   function _cloneResponse(response, options) {
     options = options || {};
     return responseToJSON(response, {_noClone: true}).then(function (responseJson) {
@@ -529,6 +545,7 @@ define(['./impl/logger'], function (logger) {
     buildEndpointKey: buildEndpointKey,
     _cloneRequest: _cloneRequest,
     _cloneResponse: _cloneResponse,
+    _derivePayloadType: _derivePayloadType
   };
 });
 

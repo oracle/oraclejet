@@ -19,7 +19,6 @@ export interface dvtBaseComponent<SP extends dvtBaseComponentSettableProperties 
         stateUnselected?: string;
         stateVisible?: string;
     };
-    onTrackResizeChanged: ((event: JetElementCustomEvent<dvtBaseComponent<SP>["trackResize"]>) => any) | null;
     addEventListener<T extends keyof dvtBaseComponentEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: dvtBaseComponentEventMap<SP>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof dvtBaseComponentSettableProperties>(property: T): dvtBaseComponent<SP>[T];
@@ -27,6 +26,10 @@ export interface dvtBaseComponent<SP extends dvtBaseComponentSettableProperties 
     setProperty<T extends keyof dvtBaseComponentSettableProperties>(property: T, value: dvtBaseComponentSettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, dvtBaseComponentSettableProperties>): void;
     setProperties(properties: dvtBaseComponentSettablePropertiesLenient): void;
+}
+export namespace dvtBaseComponent {
+    // tslint:disable-next-line interface-over-type-literal
+    type trackResizeChanged<SP extends dvtBaseComponentSettableProperties = dvtBaseComponentSettableProperties> = JetElementCustomEvent<dvtBaseComponent<SP>["trackResize"]>;
 }
 export interface dvtBaseComponentEventMap<SP extends dvtBaseComponentSettableProperties = dvtBaseComponentSettableProperties> extends baseComponentEventMap<SP> {
     'trackResizeChanged': JetElementCustomEvent<dvtBaseComponent<SP>["trackResize"]>;

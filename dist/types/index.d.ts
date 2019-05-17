@@ -9,11 +9,13 @@ export namespace oj {
     let revision: string;
     let version: string;
     function ajax(settings?: object): object;
+    function assembleObject(value: object, fields: any[]): object;
+    function defineTrackableProperty(target: object, name: string, optional?: any): any;
+    function getThrottlePromise(): Promise<any>;
     function sync(method: string, model: Model | Collection, options?: object): object;
 }
 export interface baseComponent<SP extends baseComponentSettableProperties = baseComponentSettableProperties> extends JetElement<SP> {
     translations: object | null;
-    onTranslationsChanged: ((event: JetElementCustomEvent<baseComponent<SP>["translations"]>) => any) | null;
     addEventListener<T extends keyof baseComponentEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: baseComponentEventMap<SP>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof baseComponentSettableProperties>(property: T): baseComponent<SP>[T];
@@ -22,6 +24,10 @@ export interface baseComponent<SP extends baseComponentSettableProperties = base
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, baseComponentSettableProperties>): void;
     setProperties(properties: baseComponentSettablePropertiesLenient): void;
     refresh(): void;
+}
+export namespace baseComponent {
+    // tslint:disable-next-line interface-over-type-literal
+    type translationsChanged<SP extends baseComponentSettableProperties = baseComponentSettableProperties> = JetElementCustomEvent<baseComponent<SP>["translations"]>;
 }
 export interface baseComponentEventMap<SP extends baseComponentSettableProperties = baseComponentSettableProperties> extends HTMLElementEventMap {
     'translationsChanged': JetElementCustomEvent<baseComponent<SP>["translations"]>;

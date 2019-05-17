@@ -3,15 +3,15 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup'], 
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        * @param {Object} Hammer  
-        */
-       function(oj, $, Hammer)
+define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup'], 
+      /*
+      * @param {Object} oj 
+      * @param {jQuery} $
+      * @param {Object} Hammer  
+      */
+      function(oj, $, Hammer, Logger, Context)
 {
+  "use strict";
 //%COMPONENT_METADATA%
 var __oj_label_metadata = 
 {
@@ -69,7 +69,7 @@ var __oj_label_metadata =
  * All rights reserved.
  */
 
-/* global Hammer:false */
+/* global Hammer:false, Logger:false, Context:false */
 
 (function () {
   /**
@@ -86,13 +86,7 @@ var __oj_label_metadata =
    * @type {string}
    */
   var _REQUIRED_ICON_ID = '_requiredIcon';
-  /**
-   * String used to append to the 'for' attribute on the label element
-   * @const
-   * @private
-   * @type {string}
-   */
-  var _FORM_INPUT_SUFFIX = '|input';
+
   /**
    * aria-describedby
    * @const
@@ -114,13 +108,7 @@ var __oj_label_metadata =
    * @type {string}
    */
   var _ARIA_LABELLEDBY = 'aria-labelledby';
-  /**
-   * labelled-by
-   * @const
-   * @private
-   * @type {string}
-   */
-  var _LABELLED_BY = 'labelled-by';
+
   /*!
    * JET oj-label. @VERSION
    */
@@ -188,7 +176,7 @@ var __oj_label_metadata =
    * {@ojinclude "name":"stylingDoc"}
    * @ojstatus preview
    * @ojcomponent oj.ojLabel
-   * @ojshortdesc Provides support for 'required' and 'help' icons on form field labels.
+   * @ojshortdesc A label is a short description of requested input.
    * @since 4.0.0
    * @augments oj.baseComponent
    */
@@ -220,6 +208,7 @@ var __oj_label_metadata =
          *
          * @expose
          * @memberof oj.ojLabel
+         * @ojshortdesc Specifies the form element associated with this label. See the Help documentation for more information.
          * @instance
          * @type {string|null}
          * @default null
@@ -251,6 +240,7 @@ var __oj_label_metadata =
          *
          * @expose
          * @memberof oj.ojLabel
+         * @ojshortdesc Help information associated with this label.
          * @instance
          * @type {Object|null}
          * @default {'definition' :null, 'source': null}
@@ -299,6 +289,7 @@ var __oj_label_metadata =
          * @instance
          * @since 4.0.0
          * @memberof oj.ojLabel
+         * @ojshortdesc Specifies the id to set on the internal label element, if required. See the Help documentation for more information.
          *
          * @example <caption>Initialize the label with the
          * <code class="prettyprint">label-id</code> attribute:</caption>
@@ -321,6 +312,7 @@ var __oj_label_metadata =
          * @public
          * @instance
          * @memberof oj.ojLabel
+         * @ojshortdesc Specifies whether the label should render an icon indicating that the associated form field requires a value. See the Help documentation for more information.
          * @since 4.0.0
          *
          * @example <caption>Initialize the oj-label with the
@@ -407,6 +399,7 @@ var __oj_label_metadata =
        * @return {void}
        * @expose
        * @memberof oj.ojLabel
+       * @ojshortdesc Refreshes the component.
        */
       refresh: function () {
         this._super();
@@ -447,6 +440,106 @@ var __oj_label_metadata =
 
 
         this._drawOnCreate();
+      },
+      /**
+       * @protected
+       * @override
+       * @instance
+       * @memberof oj.ojLabel
+      */
+      _AfterCreate: function () {
+        var self = this;
+        var forOption = this.options.for;
+        var showRequiredOption = this.options.showRequired;
+        var inputIdOption;
+        var setIdOption;
+        var targetElement;
+
+        if (this.OuterWrapper) {
+          inputIdOption = this.OuterWrapper.getAttribute('data-oj-input-id');
+          setIdOption = this.OuterWrapper.getAttribute('data-oj-set-id');
+        }
+
+        // To get the 'for' on the <label>, what we do is set labelled-by on the
+        // form component (simple document.getElementById search; we want to avoid
+        // attribute searches since the performance isn't very good.),
+        // which in turn sets the data-oj-input-id on the label, which
+        // in turn sets its <label> element
+        //
+        if (inputIdOption) {
+          // get internal label element and set its 'for'
+          var labelElement = this.element[0];
+          labelElement.setAttribute('for', inputIdOption);
+        } else if (setIdOption) {
+          // This is set by oj-radioset, oj-checkboxset, etc, so the oj-label can find it fast.
+          this._targetElement = document.getElementById(setIdOption);
+          targetElement = this._targetElement;
+          if (this._needsHelpIcon()) {
+            self._addHelpSpanIdOnTarget(self.helpSpanId, targetElement);
+          }
+          if (self.options.showRequired) {
+            self._addRequiredDescribedByOnCustomFormElement(targetElement);
+          }
+        }
+
+        // find the target element using document.getElementById, then set described-by
+        // on it for helpIcon and requiredIcon accessibility.
+        // And if there isn't an data-oj-input-id attribute set on oj-label yet,
+        // set that.
+        if (forOption && this._isCustomElement) {
+          // get the targetElement in a setTimeout.
+          // do this in next tick, otherwise there can be timing issues with bindings resolving
+          // and the 'id' on the form component may not be resolved in time for oj-label to find
+          // it - if oj-label is before the oj form component.
+          // or setting labelled-by on form component which immediately
+          // sets data-oj-input-id on oj-label.
+          // If we do not do it in a setTimeout, then what we were observing is the data-oj-input-id
+          // attribute would be set on the form component, but it wasn't getting the setOption
+          // call. E.g., a test case is ojLabel with knockout where order is input and label
+          var busyContext = Context.getContext(this.OuterWrapper).getBusyContext();
+          var labelledByResolved = busyContext.addBusyState(
+            { description: "The oj-label id='" +
+            this.OuterWrapper.id + "' is looking for its form component with id " + forOption });
+          setTimeout(function () {
+            self._targetElement = document.getElementById(forOption);
+            if (self._targetElement) {
+              targetElement = self._targetElement;
+              if (self._needsHelpIcon()) {
+                self._addHelpSpanIdOnTarget(self.helpSpanId, targetElement);
+              }
+              if (showRequiredOption) {
+                self._addRequiredDescribedByOnCustomFormElement(targetElement);
+              }
+              if (!inputIdOption) {
+                if (self._isElementCustomElement(targetElement)) {
+                  var ojLabelId = self.OuterWrapper.id;
+                  self._addElementAttribute(targetElement, ojLabelId, 'labelled-by');
+                } else {
+                  self.element[0].setAttribute('for', forOption);
+                }
+              }
+            } else {
+              Logger.info('could not find an element with forOption ' + forOption);
+            }
+            labelledByResolved();
+          }, 0);
+        } else if (this._isCustomElement && this.options.labelId) {
+          // no 'for' option.
+          // look for aria-labelledby to support using
+          // <oj-label> with a non-JET component, e.g., <div>
+          // and this only works if aria-labelledby has only one id.
+          // corner-case. For the JET components that link via id/labelled-by, not for/id,
+          // the form component writes 'for' on the label, which in turn writes 'described-by'
+          // on the JET form component.
+          this._targetElement =
+            this._getTargetElementFromLabelledAttr(_ARIA_LABELLEDBY, this.options.labelId);
+          targetElement = this._targetElement;
+          if (targetElement) {
+            if (this._needsHelpIcon()) {
+              this._addHelpSpanIdOnTarget(this.helpSpanId, targetElement);
+            }
+          }
+        }
       },
       /**
        * <p>Save only the 'class' attribute since that is what
@@ -529,6 +622,57 @@ var __oj_label_metadata =
         return 'oj-ojLabel';
       },
       /**
+       * Method for components to override in order to handle changes to watched attributes.
+       * @param {string} attr The name of the watched attribute
+       * @param {string} oldValue The old attribute value
+       * @param {string} newValue The new attribute value
+       * @protected
+       * @override
+       * @instance
+       * @memberof oj.ojLabel
+       */
+      // eslint-disable-next-line no-unused-vars
+      _WatchedAttributeChanged: function (attr, oldValue, newValue) {
+        this._superApply(arguments);
+
+        switch (attr) {
+          case 'data-oj-input-id':
+            // set 'for' on the label element to be the value of this inputId.
+            this.element[0].setAttribute('for', newValue);
+            break;
+          case 'data-oj-set-id':
+            // This is set by set components like oj-radioset, oj-checkboxset, etc.
+            this._targetElement = document.getElementById(newValue);
+            var targetElement = this._targetElement;
+            // we need to wait a tick because for oj-radioset,
+            // it sets 'data-oj-set-id' on oj-label
+            // which in turn sets 'described-by' on oj-radioset. And if we didn't wait a
+            // tick, the attribute is written fine, but the describedBy option change is lost.
+            // The testcase is this:
+            // create an ojLabel with knockout where order is label and wrapped radioset
+            var needsHelpIcon = this._needsHelpIcon();
+            var needsRequiredIcon = this.options.showRequired;
+            if (needsHelpIcon || needsRequiredIcon) {
+              var busyContext = Context.getContext(this.OuterWrapper).getBusyContext();
+              var describedByResolved = busyContext.addBusyState(
+                { description: 'The oj-label is writing described-by on its target.' });
+              var self = this;
+              setTimeout(function () {
+                if (needsHelpIcon) {
+                  self._addHelpSpanIdOnTarget(self.helpSpanId, targetElement);
+                }
+                if (self.options.showRequired) {
+                  self._addRequiredDescribedByOnCustomFormElement(targetElement);
+                }
+                describedByResolved();
+              }, 0);
+            }
+            break;
+          default:
+            break;
+        }
+      },
+      /**
        * set up dom and styles on create
        * @private
        * @memberof oj.ojLabel
@@ -574,118 +718,35 @@ var __oj_label_metadata =
         // that there is help and/or required icons.
         if (this.options.showRequired) {
           this._createRequiredIconSpanDom();
-
-          // adds described-by option with required icon span id onto ojradioset and ojcheckboxset
-          // since they don't support aria-required.
-          if (this._isCustomElement) {
-            this._addRequiredDescribedByOnCustomFormElement();
-          }
         }
-
-        if (this._isCustomElement) {
-          // if oj-label has the 'for' option, then add the 'for' onto the label element. It may
-          // be a for sub-id depending upon if the target element is a oj- element or not.
-          this._refreshFor();
-        }
-
         if (this._needsHelpIcon()) {
           helpSpan = this._createIconSpan(this.helpSpanId, true);
           this._createHelp(helpSpan);
-
-          // adds described-by option with help icon span id onto the JET form component,
-          // or add aria-describedby with help icon span id onto native html element.
-          if (this._isCustomElement) {
-            this._addHelpSpanIdOnTarget(this.helpSpanId);
-          }
         }
       },
       /**
-       * If this is an oj-label, then it can point to a regular HTML element or a custom JET component,
-       * like oj-input-text. This returns the custom JET component or the regular HTML element
-       * that is linked to the oj-label.
-       * @private
-       * @instance
-       * @memberof oj.ojLabel
-       * @return {Element|null} forTargetElement is a reference to an Element object,
-       * or null if the element with id equal to the label's for attribute is not found.
-       *
-       */
-      _getCustomLabelFormElement: function () {
-        var id;
-        var targetElement = null;
-
-        if (!this._isCustomElement) {
-          return null;
-        }
-
-        // targetElement is the element with id === oj-label's 'for' option
-        targetElement = this._getForTargetElement();
-
-        if (targetElement == null) {
-          // if there isn't a 'for' option or the target wasn't found,
-          // then if there is an id option, find the
-          // element with labelled-by set, and add describedby on it.
-          // else, if there is a label-id option, find the element
-          // with aria-labelledby pointing to it
-          if (this.OuterWrapper) {
-            id = this.OuterWrapper.id;
-          }
-
-          targetElement = this._getTargetElementFromLabelledAttr(_LABELLED_BY, id);
-
-          if (targetElement == null) {
-            targetElement =
-            this._getTargetElementFromLabelledAttr(_ARIA_LABELLEDBY, this.options.labelId);
-          }
-        }
-
-        return targetElement;
-      },
-      /**
+       * Add described-by for the required icon on the custom form element.
+       * This will be oj-checkboxset or oj-radioset only.
        * For all form controls except radioset
        * and checkboxset, aria-required on the form control reads required. So no need to
-       * put aria-describedby on those.
-       * If oj-label, then add described-by for the required icon on the custom form element.
-       * This will be oj-checkboxset or oj-radioset only.
+       * put aria-describedby on those for required icon.
        * @private
        * @memberof oj.ojLabel
        * @instance
        *
        */
-      _addRequiredDescribedByOnCustomFormElement: function () {
-        var id;
-        var targetElement;
-
-        if (this.OuterWrapper) {
-          id = this.OuterWrapper.id;
-        }
-
-        targetElement = this._getTargetElementFromLabelledAttr(_LABELLED_BY, id);
-
+      _addRequiredDescribedByOnCustomFormElement: function (targetElement) {
         if (targetElement && this._isElementCustomElementAriaRequiredUnsupported(targetElement)) {
           this._addElementAttribute(targetElement, this.requiredSpanId, _DESCRIBED_BY);
         }
       },
       /**
-       * Get's the oj-label's id, then finds the target element where the labelled-by option is set
-       * to the oj-label's id. Then it checks that this is an oj-radioset or an oj-checkboxset, since
-       * those are the only two JET form controls that have the required option and don't support
-       * the aria-required attribute, and therefore needs the aria-describedby pointing to the
-       * requiredIcon span.
        * @private
        * @instance
        * @memberof oj.ojLabel
        *
        */
-      _removeRequiredDescribedByOnCustomFormElement: function () {
-        var id;
-        var targetElement;
-
-        if (this.OuterWrapper) {
-          id = this.OuterWrapper.id;
-        }
-        targetElement = this._getTargetElementFromLabelledAttr(_LABELLED_BY, id);
-
+      _removeRequiredDescribedByOnCustomFormElement: function (targetElement) {
         if (targetElement && this._isElementCustomElementAriaRequiredUnsupported(targetElement)) {
           this._removeElementAttribute(targetElement, this.requiredSpanId, _DESCRIBED_BY);
         }
@@ -700,14 +761,11 @@ var __oj_label_metadata =
        * @param {string} helpSpanId The id of the help span
        *
        */
-      _addHelpSpanIdOnTarget: function (helpSpanId) {
+      _addHelpSpanIdOnTarget: function (helpSpanId, targetElement) {
         var attributeName;
-        var targetElement = this._getCustomLabelFormElement();
 
-        if (targetElement) {
-          attributeName = this._getAriaAttributeForTarget(targetElement);
-          this._addElementAttribute(targetElement, helpSpanId, attributeName);
-        }
+        attributeName = this._getAriaAttributeForTarget(targetElement);
+        this._addElementAttribute(targetElement, helpSpanId, attributeName);
       },
       /**
        * Call for custom oj-label element only. Removes aria-describedby on native form element or
@@ -717,14 +775,11 @@ var __oj_label_metadata =
        * @memberof oj.ojLabel
        * @instance
        */
-      _removeHelpSpanIdOnTarget: function (helpSpanId) {
+      _removeHelpSpanIdOnTarget: function (helpSpanId, targetElement) {
         var attributeName;
-        var targetElement = this._getCustomLabelFormElement();
 
-        if (targetElement) {
-          attributeName = this._getAriaAttributeForTarget(targetElement);
-          this._removeElementAttribute(targetElement, helpSpanId, attributeName);
-        }
+        attributeName = this._getAriaAttributeForTarget(targetElement);
+        this._removeElementAttribute(targetElement, helpSpanId, attributeName);
       },
       /**
        * Based on the targetElement, this figures out which attribute we need to write onto
@@ -756,18 +811,6 @@ var __oj_label_metadata =
         return attributeName;
       },
       /**
-       * Return the target element of the 'for' option. Called for custom element oj-label.
-       * @private
-       * @instance
-       * @memberof oj.ojLabel
-       * @return {Element|null} is a reference to an Element object,
-       * or null if the element with id equal to the label's for attribute is not found.
-       *
-       */
-      _getForTargetElement: function () {
-        return document.getElementById(this.options.for);
-      },
-      /**
        * Return the element with by using a querySelector to search for the attribute with the id.
        * e.g., aria-labelledby attribute set to labelId.
        * @private
@@ -782,14 +825,11 @@ var __oj_label_metadata =
       _getTargetElementFromLabelledAttr: function (attrName, id) {
         var attributeSearchString;
 
-        if (id) {
-          // The ~ means to look to see if the id is in a list of whitespace-separated
-          // values, one of which is exactly equal to id, and labelled-by could have a
-          // list of whitespace-separated ids.
-          attributeSearchString = '[' + attrName + "~='" + id + "']";
-          return document.querySelector(attributeSearchString);
-        }
-        return null;
+        // The ~ means to look to see if the id is in a list of whitespace-separated
+        // values, one of which is exactly equal to id, and labelled-by could have a
+        // list of whitespace-separated ids.
+        attributeSearchString = '[' + attrName + "~='" + id + "']";
+        return document.querySelector(attributeSearchString);
       },
       /**
        * If targetElement's tagName has a "-", return true, else return false.
@@ -823,14 +863,12 @@ var __oj_label_metadata =
         var tagName;
         var found = false;
 
-        if (targetElement) {
-          tagName = targetElement.tagName.toLowerCase();
+        tagName = targetElement.tagName.toLowerCase();
 
-          for (var i = 0; i < length && !found; i++) {
-            componentName = componentNames[i];
-            if (tagName.indexOf(componentName) === 0) {
-              found = true;
-            }
+        for (var i = 0; i < length && !found; i++) {
+          componentName = componentNames[i];
+          if (tagName.indexOf(componentName) === 0) {
+            found = true;
           }
         }
 
@@ -857,12 +895,12 @@ var __oj_label_metadata =
 
         tokens = currentAttributeValue ? currentAttributeValue.split(/\s+/) : [];
       // Get index that id is in the tokens, if at all.
-        index = $.inArray(id, tokens);
+        index = tokens.indexOf(id);
       // add id if it isn't already there
         if (index === -1) {
           tokens.push(id);
         }
-        newAttributeValue = $.trim(tokens.join(' '));
+        newAttributeValue = tokens.join(' ').trim();
         elem.setAttribute(attr, newAttributeValue);
       },
       /**
@@ -886,49 +924,17 @@ var __oj_label_metadata =
         // split into tokens
         tokens = currentAttributeValue ? currentAttributeValue.split(/\s+/) : [];
         // Get index that id is in the tokens, if at all.
-        index = $.inArray(id, tokens);
+        index = tokens.indexOf(id);
         // remove that from the tokens array
         if (index !== -1) {
           tokens.splice(index, 1);
         }
         // join the tokens back together and trim whitespace
-        newAttributeValue = $.trim(tokens.join(' '));
+        newAttributeValue = tokens.join(' ').trim();
         if (newAttributeValue) {
           elem.setAttribute(attr, newAttributeValue);
         } else {
           elem.setAttribute(attr, '');
-        }
-      },
-      /**
-       * Get the 'for' attribute from oj-label and copy it to the label element, modifying it if needed.
-       * Do not call this if it isn't a custom element and the forTargetElement is null
-       * <p>
-       * If the form element is an oj- element, then set the 'for' attribute on the label element by
-       * taking oj-label's 'for' attribute and appending _FORM_INPUT_SUFFIX to it.
-       * else, copy the 'for' attribute to the label element untouched. Both of these need to work:
-       * @example &lt;oj-label for="nameId">Name:&lt;/oj-label>
-       *       &lt;oj-input-text id="nameId">&lt;/oj-input-text>
-       *
-       *
-       * @example &lt;oj-label for="nameId">Name:&lt;/label>
-       *       &lt;input id="nameId">&lt;/input>
-       *
-       * </p>
-       * @private
-       * @memberof oj.ojLabel
-       * @instance
-       * @param {Element} forTargetElement
-       */
-      _addForOnLabel: function (forTargetElement) {
-        var labelElement = this.element[0];
-        var forOption = this.options.for;
-
-        // only add the _FORM_INPUT_SUFFIX if we are pointing to a JET custom element,
-        // otherwise copy it as is.
-        if (this._isElementCustomElement(forTargetElement)) {
-          labelElement.setAttribute('for', forOption + _FORM_INPUT_SUFFIX);
-        } else {
-          labelElement.setAttribute('for', forOption);
         }
       },
       /**
@@ -967,7 +973,7 @@ var __oj_label_metadata =
       _checkRequiredOption: function () {
         var showRequired = this.options.showRequired;
 
-        if (showRequired !== null && typeof showRequired !== 'boolean') {
+        if (typeof showRequired !== 'boolean') {
           throw new Error("Option 'showRequired' has invalid value set: " + showRequired);
         }
       },
@@ -984,6 +990,9 @@ var __oj_label_metadata =
         // Use label-id to set label element's id. If label-id doesn't exist, this uses oj-label's
         // id to generate a sub-id on label.
         if (this._isCustomElement) {
+          if (!this.OuterWrapper.id) {
+            $(this.OuterWrapper).uniqueId();
+          }
           this._refreshLabelId();
         }
 
@@ -1199,9 +1208,6 @@ var __oj_label_metadata =
         // 2. Register click/touch event on label which will call a callback to open the popup on
         // PRESS
 
-        // create popup's div
-        $helpDefPopupDiv = this._createHelpDefPopupDiv();
-
         if (this._bTouchSupported) {
           // this is code to be extra careful: Check if the _eatClickOnHelpIconListener exists.
           // If it does exist, call 'off'. We don't want this click listener
@@ -1237,6 +1243,22 @@ var __oj_label_metadata =
         // (focusin from tab, not mouse, OR press from touch)
 
         this._openPopupForHelpDefCallbackListener = function (event) {
+          if ($helpDefPopupDiv == null) {
+            // create popup's div
+            $helpDefPopupDiv = self._createHelpDefPopupDiv();
+            position =
+            {
+              my: 'start bottom',
+              at: 'end top',
+              collision: 'flipcenter',
+              of: $helpIcon
+            };
+            $helpDefPopupDiv.ojPopup(
+              { position: position,
+                modality: 'modeless',
+                animation: { open: null, close: null } });
+          }
+
           self._handleOpenHelpDefPopup(event, $helpDefPopupDiv, $helpIcon);
         };
         // END CALLBACK TO OPEN POPUP
@@ -1252,18 +1274,6 @@ var __oj_label_metadata =
 
         // Add event handlers to open the help definition popup
         this._addShowHelpDefinitionEventHandlers($helpIcon);
-
-        position =
-        {
-          my: 'start bottom',
-          at: 'end top',
-          collision: 'flipcenter',
-          of: $helpIcon
-        };
-        $helpDefPopupDiv.ojPopup(
-          { position: position,
-            modality: 'modeless',
-            animation: { open: null, close: null } });
       },
       /**
        * Create the div that will be used as the popup for the help definition.
@@ -1491,6 +1501,7 @@ var __oj_label_metadata =
         var helpSpan;
         var $helpIcon;
         var needsHelpIcon;
+        var targetElement = this._targetElement;
 
         // remove the help info if it is there.
         $helpIcon = this.uiLabel.find('.oj-label-help-icon');
@@ -1512,12 +1523,12 @@ var __oj_label_metadata =
           }
           this._createHelp(helpSpan);
           if (this._isCustomElement) {
-            this._addHelpSpanIdOnTarget(helpSpanId);
+            this._addHelpSpanIdOnTarget(helpSpanId, targetElement);
           }
         } else if (helpSpan !== null) {
           helpSpan.parentNode.removeChild(helpSpan);
           if (this._isCustomElement) {
-            this._removeHelpSpanIdOnTarget(helpSpanId);
+            this._removeHelpSpanIdOnTarget(helpSpanId, targetElement);
           }
         }
       },
@@ -1543,7 +1554,7 @@ var __oj_label_metadata =
             this._createRequiredIconSpanDom();
 
             if (this._isCustomElement) {
-              this._addRequiredDescribedByOnCustomFormElement();
+              this._addRequiredDescribedByOnCustomFormElement(this._targetElement);
             }
           } else {
             // required is there, so we need to refresh the translated value in case it changed.
@@ -1559,22 +1570,62 @@ var __oj_label_metadata =
           }
 
           if (this._isCustomElement) {
-            this._removeRequiredDescribedByOnCustomFormElement();
+            this._removeRequiredDescribedByOnCustomFormElement(this._targetElement);
           }
         }
       },
       /**
-       * If this is a custom element (oj-label), it gets the 'for' target element,
-       * and if it is found, it adds the 'for' onto the label element (as a sub-id or directly,
-       * depending upon what the 'for' target element is.
+       * This gets called during component initialization and when the 'for' option changes.
+       * And this should find the targetElement, set labelledBy on it and describedBy.
        * @private
        * @memberof oj.ojLabel
        */
-      _refreshFor: function () {
-        var forTargetElement;
-        forTargetElement = this._getForTargetElement();
-        if (forTargetElement) {
-          this._addForOnLabel(forTargetElement);
+      _refreshFor: function (oldValue, newValue) {
+        var labelElement = this.element[0];
+        var ojLabelId = this.OuterWrapper.id;
+
+        if (oldValue) {
+          // If someone removes 'for', the labelled-by is removed and the
+          // internal 'for' is removed and data-oj-input-id is removed.
+          labelElement.removeAttribute('for');
+          this.OuterWrapper.removeAttribute('data-oj-input-id');
+          var oldTarget = document.getElementById(oldValue);
+          if (oldTarget) {
+            var labelledBy = oldTarget.getAttribute('labelled-by');
+            if (labelledBy) {
+              if (labelledBy === ojLabelId) {
+                oldTarget.removeAttribute('labelled-by');
+              } else {
+                // remove the ojLabelId from the labelledBy
+                var splitArray = labelledBy.split(/\s+/);
+                // remove ojLabelId from the splitArray and rejoin
+                var newArray = splitArray.filter(
+                  function (item) {
+                    return item !== ojLabelId;
+                  }
+                );
+
+                var newLabelledBy = newArray.join(' ');
+                oldTarget.setAttribute('labelled-by', newLabelledBy);
+              }
+            }
+          }
+        }
+
+        this._targetElement = document.getElementById(this.options.for);
+        if (this._targetElement) {
+          var targetElement = this._targetElement;
+          if (this._isElementCustomElement(targetElement)) {
+            this._addElementAttribute(targetElement, ojLabelId, 'labelled-by');
+            if (this._needsHelpIcon()) {
+              this._addHelpSpanIdOnTarget(this.helpSpanId, targetElement);
+            }
+            if (this.options.showRequired) {
+              this._addRequiredDescribedByOnCustomFormElement(targetElement);
+            }
+          } else {
+            labelElement.setAttribute('for', newValue);
+          }
         }
       },
       /**
@@ -1611,6 +1662,7 @@ var __oj_label_metadata =
        */
       // eslint-disable-next-line no-unused-vars
       _setOption: function (key, value) {
+        var oldValue = this.options[key];
         this._superApply(arguments);
 
         switch (key) {
@@ -1621,17 +1673,19 @@ var __oj_label_metadata =
             this._refreshHelp();
             break;
           case 'for':
+            // todo: what happens if 'for' changes? I can see that being very unlikely.
+            // but what it can do is use its id to search for labelledBy target, and
+            // remove the labelledBy target, then add 'for' and start again.
+            // it can look at this.options.for for 'old value' and value for new value
             if (this._isCustomElement) {
               // refreshes for, which is only for oj-label custom element, not ojLabel.
               // targetElement is the element with id === oj-label's for option
-              this._refreshFor();
+              this._refreshFor(oldValue, value);
             }
             break;
           case 'labelId':
-            if (this._isCustomElement) {
-              // refreshes label-id, which is only for oj-label custom element, not ojLabel.
-              this._refreshLabelId();
-            }
+            // refreshes label-id, which is only for oj-label custom element, not ojLabel.
+            this._refreshLabelId();
             break;
           default:
             break;
@@ -1823,6 +1877,7 @@ var __oj_label_metadata =
   __oj_label_metadata.extension._WIDGET_NAME = 'ojLabel';
   __oj_label_metadata.extension._INNER_ELEM = 'label';
   __oj_label_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['accesskey'];
+  __oj_label_metadata.extension._WATCHED_ATTRS = ['data-oj-input-id', 'data-oj-set-id'];
   oj.CustomElementBridge.register('oj-label', { metadata: __oj_label_metadata });
 }());
 

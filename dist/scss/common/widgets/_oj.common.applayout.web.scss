@@ -100,7 +100,7 @@
         width: var(--oj-app-layout-offcanvas-width);
         max-width: var(--oj-app-layout-offcanvas-max-width);
         background-color: var(--oj-app-layout-web-offcanvas-bg-color);
-        color: var(--oj-contrast-text-color);
+        color: var(--oj-text-color-contrast);
       }
       @else {
         width: $appLayoutOffcanvasWidth;

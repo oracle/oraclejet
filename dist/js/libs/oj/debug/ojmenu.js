@@ -3,12 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojjquery-hammer', 'promise', 'ojs/ojpopupcore', 'ojs/ojoption'], 
        function(oj, $, Hammer, Context, ThemeUtils, Components, AnimationUtils, Logger)
 {
- 
-
+  "use strict";
 var __oj_menu_metadata = 
 {
   "properties": {
@@ -165,7 +163,7 @@ var __oj_menu_metadata =
  * http://jquery.org/license
  */
 
-/* global Hammer:false, Promise:false, Components:false, Logger:false, ThemeUtils:false, Context:false */
+/* global Hammer:false, Promise:false, Components:false, Logger:false, ThemeUtils:false, Context:false, AnimationUtils:false */
 
 (function () {
   // -----------------------------------------------------------------------------
@@ -267,11 +265,11 @@ var __oj_menu_metadata =
 
   /**
    * @typedef {Object} oj.ojMenu.Position
-   * @property {oj.ojMenu.PositionAlign} [my] Defines which edge on the menu to align with the target ("of") element.
-   * @property {oj.ojMenu.PositionAlign} [at] Defines which position on the target element ("of") to align the positioned element
+   * @property {Object} [my] Defines which edge on the menu to align with the target ("of") element.
+   * @property {Object} [at] Defines which position on the target element ("of") to align the positioned element
    *                                  against.
-   * @property {oj.ojMenu.PositionPoint} [offset] Defines a point offset in pixels from the ("my") alignment.
-   * @property {string|oj.ojMenu.PositionPoint} [of] Which element to position the menu against.  The default is the
+   * @property {Object} [offset] Defines a point offset in pixels from the ("my") alignment.
+   * @property {string|Object} [of] Which element to position the menu against.  The default is the
    * <code class="prettyprint">launcher</code> argument passed to the
    * <code class="prettyprint">open</code> method. <p>
    *
@@ -294,6 +292,10 @@ var __oj_menu_metadata =
    * <li><b>flipcenter</b> first applies the flip rule and follows with center alignment.</li>
    * <li><b>"none"</b> no collision detection.</li>
    * </ul>
+   * @ojsignature [{target:"Type", value:"oj.ojMenu.PositionAlign", for:"my", jsdocOverride:true},
+   *               {target:"Type", value:"oj.ojMenu.PositionAlign", for:"at", jsdocOverride:true},
+   *               {target:"Type", value:"oj.ojMenu.PositionPoint", for:"offset", jsdocOverride:true},
+   *               {target:"Type", value:"string|oj.ojMenu.PositionPoint", for:"of", jsdocOverride:true}]
    */
 
   /**
@@ -301,7 +303,8 @@ var __oj_menu_metadata =
    * @property {string} [display] Determines whether the menu is displayed as a dropDown menu or a sheet menu.
    * @property {string} [initialFocus] Determines focus behavior when the menu is initially opened.
    * @property {string|Element} [launcher] The DOM node (which may or may not be a JET element) that launches this menu.
-   * @property {oj.ojMenu.Position} [position] Determines the position of a dropDown menu when launched. Ignored for sheet menus.
+   * @property {Object} [position] Determines the position of a dropDown menu when launched. Ignored for sheet menus.
+   * @ojsignature {target:"Type", value:"oj.ojMenu.Position", for:"position", jsdocOverride:true}
    */
 
   /**
@@ -310,7 +313,7 @@ var __oj_menu_metadata =
    * @augments oj.baseComponent
    * @ojrole menu
    * @since 0.6
-   * @ojshortdesc Displays a popup menu with support for touch, mouse, and keyboard interactions.
+   * @ojshortdesc A menu displays a list of options in a popup.
    * @ojstatus preview
    *
    * @classdesc
@@ -520,17 +523,20 @@ var __oj_menu_metadata =
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
    * </h3>
    *
-   * <p>For components like Menu and Buttonset that contain a number of like items, applications may wish to use a <code class="prettyprint">foreach</code> Knockout binding
-   * to stamp out the contents.  This binding cannot live on the same node as the JET <code class="prettyprint">ojComponent</code> binding, and must instead live on a nested
-   * virtual element as follows:
+   * <p>For components like Menu and Buttonset that contain a number of like items, applications may wish to use an <code class="prettyprint">oj-bind-for-each</code> Knockout binding
+   * to stamp out the contents as follows:
    *
    * <pre class="prettyprint">
    * <code>&lt;oj-menu id="menu" style="display:none" aria-label="Order Edit">
-   *     &lt;!-- ko foreach: menuItems -->
-   *         &lt;oj-option data-bind="attr: {id: id, disabled: disabled}">
-   *             &lt;span data-bind="text: label">&lt;/span>
-   *         &lt;/oj-option>
-   *     &lt;!-- /ko -->
+   *     &lt;oj-bind-for-each data="[[menuItems]]">
+   *         &lt;template>
+   *             &lt;oj-option :id="[[$current.data.id]]" :disabled="[[$current.data.disabled]]">
+   *                 &lt;span>
+   *                     &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
+   *                 &lt;/span>
+   *             &lt;/oj-option>
+   *         &lt;/template>
+   *     &lt;/oj-bind-for-each>
    * &lt;/oj-menu>
    * </code></pre>
    *
@@ -602,6 +608,7 @@ var __oj_menu_metadata =
        *
        * @expose
        * @memberof oj.ojMenu
+       * @ojshortdesc Specifies settings for launching a menu. See the Help documentation for more information.
        * @instance
        * @type {Object}
        * @ojsignature { target: "Type",
@@ -647,6 +654,7 @@ var __oj_menu_metadata =
          *
          * @expose
          * @alias openOptions.display
+         * @ojshortdesc Specifies whether the menu displays as a dropdown or as a sheet. See the Help documentation for more information.
          * @memberof! oj.ojMenu
          * @instance
          * @since 2.1.0
@@ -674,6 +682,7 @@ var __oj_menu_metadata =
          *
          * @expose
          * @alias openOptions.initialFocus
+         * @ojshortdesc Specifies focus behavior when the menu is initially opened.
          * @memberof! oj.ojMenu
          * @instance
          * @type {string}
@@ -703,6 +712,7 @@ var __oj_menu_metadata =
          *
          * @expose
          * @alias openOptions.launcher
+         * @ojshortdesc Specifes the DOM node that launches this menu. See the Help documentation for more information.
          * @memberof! oj.ojMenu
          * @instance
          * @type {string|Element}
@@ -753,6 +763,7 @@ var __oj_menu_metadata =
          *
          * @expose
          * @alias openOptions.position
+         * @ojshortdesc Specifies the position of a dropDown menu when launched. See the Help documentation for more information.
          * @memberof! oj.ojMenu
          * @instance
          * @type {Object}
@@ -867,6 +878,7 @@ var __oj_menu_metadata =
              * Defines the horizontal alignment of what the menu is aligned to. For top-level menus, the default value is "start". For submenus, the default value is "end".
              * @expose
              * @memberof! oj.ojMenu
+             * @ojshortdesc Defines the horizontal alignment of what the menu is aligned to. See the Help documentation for more information.
              * @instance
              * @alias openOptions.position.at.horizontal
              * @name openOptions.position.at.horizontal
@@ -882,6 +894,7 @@ var __oj_menu_metadata =
              * Defines the vertical alignment of what the menu is aligned to. For top-level menus, the default value is "bottom". For submenus, the default value is "top".
              * @expose
              * @memberof! oj.ojMenu
+             * @ojshortdesc Defines the vertical alignment of what the menu is aligned to. See the Help documentation for more information.
              * @instance
              * @alias openOptions.position.at.vertical
              * @name openOptions.position.at.vertical
@@ -910,6 +923,7 @@ var __oj_menu_metadata =
            *
            * @expose
            * @memberof! oj.ojMenu
+           * @ojshortdesc Which element to position the menu against. See the Help documentation for more information.
            * @instance
            * @alias openOptions.position.of
            * @name openOptions.position.of
@@ -1026,6 +1040,7 @@ var __oj_menu_metadata =
        * @expose
        * @event
        * @memberof oj.ojMenu
+       * @ojshortdesc Triggered when a default animation is about to start, such as when the component is being opened/closed or a child item is being added/removed.
        * @instance
        * @ojcancelable
        * @ojbubbles
@@ -1038,33 +1053,33 @@ var __oj_menu_metadata =
        *                    </ul>
        * @property {!Element} element target of animation
        * @property {!function():void} endCallback If the event listener calls
-       *            event.preventDefault to cancel the default animation, It must call the
+       *            event.preventDefault to cancel the default animation, it must call the
        *            endCallback function when it finishes its own animation handling and any
        *            custom animation has ended.
        *
-       * @example <caption>Bind an event listener to the
-       *          <code class="prettyprint">onOjAnimateStart</code> property to override the default
+       * @example <caption>Add a listener for the
+       *          <code class="prettyprint">ojAnimateStart</code> event to override the default
        *          "open" animation:</caption>
-       * myMenu.onOjAnimateStart = function( event )
+       * myMenu.addEventListener("ojAnimateStart", function( event )
        *   {
        *     // verify that the component firing the event is a component of interest and action
        *      is open
        *     if (event.detail.action == "open") {
        *       event.preventDefault();
        *       oj.AnimationUtils.fadeIn(event.detail.element).then(event.detail.endCallback);
-       *   };
+       *   });
        *
-       * @example <caption>Bind an event listener to the
-       *          <code class="prettyprint">onOjAnimateStart</code> property to override the default
+       * @example <caption>Add a listener for the
+       *          <code class="prettyprint">ojAnimateStart</code> event to override the default
        *          "close" animation:</caption>
-       * myMenu.onOjAnimateStart = function( event )
+       * myMenu.addEventListener("ojAnimateStart", function( event )
        *   {
        *     // verify that the component firing the event is a component of interest and action
        *      is close
        *     if (event.detail.action == "close") {
        *       event.preventDefault();
        *       oj.AnimationUtils.fadeOut(event.detail.element).then(event.detail.endCallback);
-       *   };
+       *   });
        */
       animateStart: null,
 
@@ -1077,6 +1092,7 @@ var __oj_menu_metadata =
        * @expose
        * @event
        * @memberof oj.ojMenu
+       * @ojshortdesc Triggered when a default animation has ended, such as when the component is being opened/closed or a child item is being added/removed.
        * @instance
        * @ojcancelable
        * @ojbubbles
@@ -1089,25 +1105,25 @@ var __oj_menu_metadata =
        *                      <li>"close" - when a menu element is closed</li>
        *                    </ul>
        *
-       * @example <caption>Bind an event listener to the
-       *          <code class="prettyprint">onOjAnimateEnd</code> property to listen for the "open"
+       * @example <caption>Add a listener for the
+       *          <code class="prettyprint">ojAnimateEnd</code> event to listen for the "open"
        *          ending animation:</caption>
-       * myMenu.onOjAnimateEnd = function( event )
+       * myMenu.addEventListener("ojAnimateEnd", function( event )
        *   {
        *     // verify that the component firing the event is a component of interest and action
        *      is open
        *     if (event.detail.action == "open") {}
-       *   };
+       *   });
        *
-       * @example <caption>Bind an event listener to the
-       *          <code class="prettyprint">onOjAnimateEnd</code> property to listen for the "close"
+       * @example <caption>Add a listener for the
+       *          <code class="prettyprint">ojAnimateEnd</code> event to listen for the "close"
        *          ending animation:</caption>
-       * myMenu.onOjAnimateEnd = function( event )
+       * myMenu.addEventListener("ojAnimateEnd", function( event )
        *   {
        *     // verify that the component firing the event is a component of interest and action
        *      is close
        *     if (event.detail.action == "close") {}
-       *   };
+       *   });
        */
       animateEnd: null,
 
@@ -1139,10 +1155,12 @@ var __oj_menu_metadata =
        * @expose
        * @event
        * @memberof oj.ojMenu
+       * @ojshortdesc Triggered before this menu is launched. See the Help documentation for more information.
        * @instance
        * @ojcancelable
        * @ojbubbles
-       * @property {oj.ojMenu.OpenOptions} openOptions effecting the open operation
+       * @property {Object} openOptions effecting the open operation
+       * @ojsignature {target:"Type", value:"oj.ojMenu.OpenOptions", for:"openOptions", jsdocOverride:true}
        */
       beforeOpen: null,
 
@@ -1218,6 +1236,7 @@ var __oj_menu_metadata =
        * @expose
        * @event
        * @memberof oj.ojMenu
+       * @ojshortdesc Triggered after this menu is launched.
        * @instance
        * @since 2.0.0
        * @property {Event} event a custom event
@@ -1235,19 +1254,20 @@ var __oj_menu_metadata =
        * @expose
        * @event
        * @memberof oj.ojMenu
+       * @ojshortdesc Triggered when a menu item is selected. To ensure keyboard accessibility, the only correct, supported way to react to the selection of a menu item is to listen for this event. See the Help documentation for more information.
        * @instance
        * @ojcancelable
        * @ojbubbles
        * @since 4.0.0
        * @example <caption>Find the value of the selected menu item:</caption>
-       *   myMenu.onOjAction = function( event )
+       *   myMenu.addEventListener("ojAction", function( event )
        *   {
        *     // the target of the action event is the selected &lt;oj-option> element
        *     var itemSelected = event.target;
        *
        *     // find the 'value' of the selected &lt;oj-option> element
        *     var selectedValue = itemSelected.value;
-       *   }
+       *   });
        */
       action: null
     },
@@ -1277,6 +1297,16 @@ var __oj_menu_metadata =
         // fixup the position option if custom element menu or submenu
         var options = this.options;
         options.openOptions.position = oj.PositionUtils.coerceToJet(options.openOptions.position);
+
+        var deferredChild = this.element[0].querySelector('oj-defer');
+        if (deferredChild) {
+          // oj-menu supports only one oj-defer as immediate child of the menu
+          // Adding data-oj-context in order to ensure all components within the oj-defer
+          // are upgraded and rendered before positioning the menu ()
+          // TODO: Consider a general solution to handle busy context of menu children
+          // to handle asynchronous initialization of menu items beyond this case
+          deferredChild.setAttribute('data-oj-context', true);
+        }
       }
     },
 
@@ -2095,6 +2125,7 @@ var __oj_menu_metadata =
      *
      * @expose
      * @memberof oj.ojMenu
+     * @ojshortdesc Refreshes the disclosed state of the menu. See the Help documentation for more information.
      * @instance
      * @return {void}
      *
@@ -2408,10 +2439,10 @@ var __oj_menu_metadata =
         }, this._getSubmenuBusyStateDescription('closing'), this.delay);
       }
 
-      var nested = item.children('.oj-menu'); // immediately nested submenu.  length 0 or 1.
+      var nested = this._IsCustomElement() ? item.children('oj-menu') : item.children('.oj-menu'); // immediately nested submenu.  length 0 or 1.
       var previousFocusInSubmenu = nested.length > 0 && previousItem.length > 0 &&
         $.contains(nested[0], previousItem[0]);
-      if (nested.length && event && (/^mouse/.test(event.type) && !this.active.hasClass('oj-disabled')) &&
+      if (nested.length && event && (/^mouse|click/.test(event.type) && !this.active.hasClass('oj-disabled')) &&
           !previousFocusInSubmenu) {
         this._startOpening(event, nested);
       }
@@ -2521,6 +2552,7 @@ var __oj_menu_metadata =
      * @expose
      * @method
      * @name oj.ojMenu#close
+     * @ojshortdesc Closes the menu.
      * @memberof oj.ojMenu
      * @instance
      * @return {void}
@@ -2686,7 +2718,6 @@ var __oj_menu_metadata =
 
       var animationOptions =
         this._getDefaultAnimation(this._sheetMenuIsOpen ? 'sheet' : 'dropdown', 'close');
-      // eslint-disable-next-line no-undef
       var promise = AnimationUtils.startAnimation(
         rootElement[0],
         'close',
@@ -2808,6 +2839,7 @@ var __oj_menu_metadata =
      *
      * @expose
      * @memberof oj.ojMenu
+     * @ojshortdesc Launches this menu after firing the ojBeforeOpen event. See the Help documentation for more information.
      * @instance
      * @return {void}
      * @ojsignature { target: "Type",
@@ -3014,7 +3046,21 @@ var __oj_menu_metadata =
       };
       psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
 
-      oj.PopupService.getInstance().open(psOptions);
+      var popupService = oj.PopupService.getInstance();
+      var openCallback = popupService.open.bind(popupService, psOptions);
+      var deferredChild = this.element[0].querySelector('oj-defer');
+      if (deferredChild) {
+        // oj-defer was scoped as a dom level busy context in the component create.
+        // Wait until all components within oj-defer have been upgraded and rendered
+        // before trying to show and then position the popup. The busy state guarding
+        // open animation, created by _setWhenReady above, is scoped to an ancestor
+        // busy context. The oj-defer busy context and busy states associated with
+        // contained components will be tracked via this sub context.
+        var busyContext = oj.Context.getContext(deferredChild).getBusyContext();
+        busyContext.whenReady().then(openCallback);
+      } else {
+        openCallback();
+      }
 
       this._disableAnimation = false;
     },
@@ -3068,7 +3114,6 @@ var __oj_menu_metadata =
 
       if (!this._isAnimationDisabled()) {
         var animationOptions = this._getDefaultAnimation(isDropDown ? 'dropdown' : 'sheet', 'open');
-        // eslint-disable-next-line no-undef
         promise = AnimationUtils.startAnimation(
           rootElement[0],
           'open',
@@ -3249,8 +3294,7 @@ var __oj_menu_metadata =
 
         var animation = this._getDefaultAnimation('submenu', 'open');
         animation = this._replaceAnimationOptions(animation, { '#myPosition': position.my });
-
-        oj.AnimationUtils.startAnimation(submenu[0], 'open', animation, this).then(resolveBusyState);
+        AnimationUtils.startAnimation(submenu[0], 'open', animation, this).then(resolveBusyState);
       }
     },
 
@@ -3372,7 +3416,6 @@ var __oj_menu_metadata =
               var animation = self._replaceAnimationOptions(defaultAnimation, {
                 '#myPosition': position.my
               });
-              // eslint-disable-next-line no-undef
               return AnimationUtils.startAnimation(submenu,
                                                       'close',
                                                       animation, self).then(function () {

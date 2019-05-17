@@ -3,11 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojtranslation', 'knockout', 'ojs/ojcomposite', 'ojs/ojlogger', 'ojs/ojcomponentcore'], 
-       function(oj, $, Translations,  ko, Composite, Logger)
+function(oj, $, Translations,  ko, Composite, Logger)
 {
-
+  "use strict";
 var __oj_file_picker_metadata = 
 {
   "properties": {
@@ -114,7 +113,7 @@ var __oj_file_picker_metadata =
  * @ojcomponent oj.ojFilePicker
  * @since 4.0.0
  * @ojdisplayname File Picker
- * @ojshortdesc Displays a clickable dropzone for selecting files from the device storage.
+ * @ojshortdesc A file picker displays a clickable dropzone for selecting files from the device storage.
  * @ojstatus preview
  * @class oj.ojFilePicker
  * @ojsignature {target: "Type", value:"class ojFilePicker extends JetElement<ojFilePickerSettableProperties>"}
@@ -327,7 +326,7 @@ var __oj_file_picker_metadata =
  */
 
 var pickerView =
-  "<input type='file' style='display:none'" +
+  "<input type='file' class='oj-helper-hidden'" +
   "       data-bind=\"attr:{multiple: $properties.selectionMode == 'multiple'," +
   '                         accept: acceptStr}">' +
   '</input>' +

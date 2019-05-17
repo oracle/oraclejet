@@ -18,12 +18,13 @@
     }
 
     .oj-timeline {
-      @include oj-user-select-property(none);
       outline:none;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
         border-color: var(--oj-timeline-border-color);
+        user-select: none;
       } @else {
         border-color:$dvtTimelineBorderColor;
+        @include oj-user-select-property(none);
       }
     }
 

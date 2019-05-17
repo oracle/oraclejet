@@ -53,10 +53,10 @@ define(['./keyValuePersistenceStore', '../persistenceStoreManager', './logger'],
               });
               return foundFiles.length > 0;
             };
-            var filename = Math.floor(Math.random() * 100000000) + '.pds';
+            var filename = Math.floor(Math.random() * 100000000) + '.pds'; // @randomNumberOk - Only used to internally generate file names
             while(checkFilename(filename))
             {
-              filename = Math.floor(Math.random() * 100000000) + '.pds';
+              filename = Math.floor(Math.random() * 100000000) + '.pds'; // @randomNumberOk - Only used to internally generate file names
             }
             _writeFile(self, filename, key, metadata, value).then(function() {
               resolve();
@@ -87,18 +87,18 @@ define(['./keyValuePersistenceStore', '../persistenceStoreManager', './logger'],
         });
       });
     };
-    
+
     function _updateFileIndex(key, filename, metadata) {
       return _getFileIndexStorage().then(function(store) {
         return store.upsert(key, metadata, {filename: filename, metadata: metadata});
       });
     };
-    
+
     function _getFileIndexStorage() {
       var options = {index: ['key']};
       return persistenceStoreManager.openStore('fileIndex', options);
     };
-    
+
     function _getFile(self, filename) {
       return new Promise(function(resolve, reject){
         self._directory.getFile(filename, {create: false, exclusive: false}, function (fileEntry) {
@@ -143,12 +143,12 @@ define(['./keyValuePersistenceStore', '../persistenceStoreManager', './logger'],
                   reject(fileError);
                 });
               });
-            }  
+            }
           });
         }
       });
     };
-    
+
     function _readBlob(arrayBuffer, pos) {
       var dataView = new DataView(arrayBuffer.slice(pos));
       return new Blob([dataView]);
@@ -167,19 +167,19 @@ define(['./keyValuePersistenceStore', '../persistenceStoreManager', './logger'],
         }
       });
     };
-    
+
     function _findByKeyFileIndex(key) {
       return _getFileIndexStorage().then(function(store) {
         return store.findByKey(key);
       });
     };
-    
+
     function _removeByKeyFileIndex(key) {
       return _getFileIndexStorage().then(function(store) {
         return store.removeByKey(key);
       });
     };
-    
+
     function _removeFile(self, filename) {
       return _getFile(self, filename).then(function(fileEntry) {
         if (fileEntry) {
@@ -200,13 +200,13 @@ define(['./keyValuePersistenceStore', '../persistenceStoreManager', './logger'],
       logger.log("Offline Persistence Toolkit fileSystemPersistenceStore: keys()");
       return _keysFileIndex();
     };
-    
+
     function _keysFileIndex() {
       return _getFileIndexStorage().then(function(store) {
         return store.keys();
       });
     };
-        
+
     FileSystemPersistenceStore.prototype.deleteAll = function () {
       logger.log("Offline Persistence Toolkit fileSystemPersistenceStore: deleteAll()");
       var self = this;
@@ -224,7 +224,7 @@ define(['./keyValuePersistenceStore', '../persistenceStoreManager', './logger'],
         return Promise.all(promiseArray);
       });
     };
-    
+
     function _deleteFileIndex() {
       return _getFileIndexStorage().then(function(store) {
         return store.delete();

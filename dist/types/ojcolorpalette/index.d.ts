@@ -14,14 +14,6 @@ export interface ojColorPalette extends editableValue<Color, ojColorPaletteSetta
     translations: {
         labelNone?: string;
     };
-    onLabelDisplayChanged: ((event: JetElementCustomEvent<ojColorPalette["labelDisplay"]>) => any) | null;
-    onLabelledByChanged: ((event: JetElementCustomEvent<ojColorPalette["labelledBy"]>) => any) | null;
-    onLayoutChanged: ((event: JetElementCustomEvent<ojColorPalette["layout"]>) => any) | null;
-    onPaletteChanged: ((event: JetElementCustomEvent<ojColorPalette["palette"]>) => any) | null;
-    onSwatchSizeChanged: ((event: JetElementCustomEvent<ojColorPalette["swatchSize"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojColorPalette["value"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojColorPalette.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojColorPalette.ojAnimateStart) => any) | null;
     addEventListener<T extends keyof ojColorPaletteEventMap>(type: T, listener: (this: HTMLElement, ev: ojColorPaletteEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojColorPaletteSettableProperties>(property: T): ojColorPalette[T];
@@ -44,6 +36,18 @@ export namespace ojColorPalette {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type labelDisplayChanged = JetElementCustomEvent<ojColorPalette["labelDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojColorPalette["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type layoutChanged = JetElementCustomEvent<ojColorPalette["layout"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type paletteChanged = JetElementCustomEvent<ojColorPalette["palette"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type swatchSizeChanged = JetElementCustomEvent<ojColorPalette["swatchSize"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojColorPalette["value"]>;
 }
 export interface ojColorPaletteEventMap extends editableValueEventMap<Color, ojColorPaletteSettableProperties> {
     'ojAnimateEnd': ojColorPalette.ojAnimateEnd;

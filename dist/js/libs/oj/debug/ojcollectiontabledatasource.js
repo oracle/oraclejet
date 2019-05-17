@@ -3,14 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'jquery', 'ojs/ojmodel', 'ojs/ojdatasource-common'], function(oj, $, Model)
 {
+  "use strict";
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -481,7 +476,8 @@ oj.CollectionTableDataSource.prototype._fetchInternal = function (_options) {
       pageSize = 25;
     }
 
-    self._collection.setRangeLocal(self._startIndex, pageSize).then(function (actual) {
+    self._collection.setRangeLocal(self._startIndex, pageSize,
+    { silent: true }).then(function (actual) {
       var result;
 
         // Do not call _getRowArray if this datasource is paged,

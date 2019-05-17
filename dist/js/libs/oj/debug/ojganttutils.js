@@ -3,14 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-
-/**
- * Copyright (c) 2018, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore'], function (oj)
 {
+  "use strict";
 /**
  * Copyright (c) 2018, Oracle and/or its affiliates.
  * All rights reserved.
@@ -20,6 +15,8 @@ define(['ojs/ojcore'], function (oj)
  * @since 6.0.0
  * @export
  * @ojtsmodule
+ * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter"]}
+ * @ojtsimport {module: "ojtimeaxis", type: "AMD", imported:["ojTimeAxis"]}
  * @hideconstructor
  * @ojstatus preview
  *
@@ -33,12 +30,22 @@ var GanttUtils = function () {};
  * @param {Element} table the oj-table element
  * @param {Element} gantt the oj-gantt element
  * @param {Object} axisInfo information about the axis in oj-gantt
- * @param {Object} axisInfo.majorAxis information about the major axis in oj-gantt.  See <a href="oj.ojGantt.html#majorAxis">majorAxis</a> in oj-gantt.
+ * @param {Object=} axisInfo.majorAxis information about the major axis in oj-gantt.  See <a href="oj.ojGantt.html#majorAxis">majorAxis</a> in oj-gantt.
+ * @param {Object=} axisInfo.majorAxis.converter A converter used to format the labels of the axis.
+ * @param {number=} axisInfo.majorAxis.height The height of the minor axis in pixels. If not specified or invalid, the gantt's default value is assumed.
+ * @param {string=} axisInfo.majorAxis.scale The time scale used for the axis.
+ * @param {(Array<string>)=} axisInfo.majorAxis.zoomOrder An array of strings containing the names of scales used for zooming from longest to shortest.
  * @param {Object} axisInfo.minorAxis information about the minor axis in oj-gantt.  See <a href="oj.ojGantt.html#minorAxis">minorAxis</a> in oj-gantt.
+ * @param {Object=} axisInfo.minorAxis.converter A converter used to format the labels of the axis.
+ * @param {number=} axisInfo.minorAxis.height The height of the minor axis in pixels. If not specified or invalid, the gantt's default value is assumed.
+ * @param {string=} axisInfo.minorAxis.scale The time scale used for the axis.
+ * @param {(Array<string>)=} axisInfo.minorAxis.zoomOrder An array of strings containing the names of scales used for zooming from longest to shortest.
  * @return {number} the height required to set on the oj-table column header to match the height of the time axis in oj-gantt
  * @export
  * @static
  * @memberof! GanttUtils
+ * @ojsignature [{target: "Type", value: "oj.ojTimeAxis.Converters|oj.Converter<string>", for: "axisInfo.majorAxis.converter"},
+ *               {target: "Type", value: "oj.ojTimeAxis.Converters|oj.Converter<string>", for: "axisInfo.minorAxis.converter"}]
  */
 GanttUtils.computeTableColumnHeaderHeight = function (table, gantt, axisInfo) {
   var totalHeight = 0;
@@ -142,7 +149,7 @@ GanttUtils._getDefaultTimeAxisHeight = function (gantt, type) {
 
   var dummyLabel = document.createElement('div');
   dummyLabel.className = axisLabelClassName;
-  dummyLabel.innerHTML = 'FooBar';
+  dummyLabel.innerHTML = 'FooBar'; // @HTMLUpdateOK
   dummyParent.appendChild(dummyLabel);
 
   var root = gantt != null ? gantt : document.body;

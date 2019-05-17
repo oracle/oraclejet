@@ -39,7 +39,14 @@
   // disable the "copy" feature on iOS
   -webkit-touch-callout: none;
    // Prevent showing selection handles on press-hold for Mobile Safari and Android Chrome
-   @include oj-user-select-property(none);
+   @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+   {
+     user-select: none;
+   }
+   @else 
+   {
+     @include oj-user-select-property(none);
+   }
    // Prevent flash on slider bar tap-hold on touch devices.
    -webkit-tap-highlight-color: transparent;
 }
@@ -50,8 +57,8 @@
       get smaller instead of overflowing its boundaries */
   @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
   {
-    max-width: var(--oj-form-control-lg-max-width);
-    min-width: var(--oj-form-control-min-width);
+    max-width: var(--oj-text-field-lg-max-width);
+    min-width: var(--oj-text-field-min-width);
   }
   @else {
     max-width: $formControlLargeMaxWidth;
@@ -114,9 +121,9 @@
 .oj-slider.oj-invalid .oj-slider-thumb {
   @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
   {
-    border-width: var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width);
+    border-width: var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width);
     border-style: solid;
-    border-color: var(--oj-form-control-border-color-invalid);
+    border-color: var(--oj-text-field-border-color-invalid);
   }
   @else {
     border-width: $formControlMessagingBorderWidth;
@@ -129,9 +136,9 @@
 .oj-slider.oj-warning .oj-slider-thumb {
   @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
   {
-    border-width: var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width);
+    border-width: var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width);
     border-style: solid;
-    border-color: var(--oj-form-control-border-color-warning);
+    border-color: var(--oj-text-field-border-color-warning);
   }
   @else {
     border-width: $formControlMessagingBorderWidth;
@@ -143,7 +150,7 @@
 .oj-slider-horizontal.oj-form-control .oj-slider-container {
   @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
   {
-    height: var(--oj-form-control-trigger-height);
+    height: var(--oj-text-field-trigger-height);
   }
   @else {
     height: $formControlTriggerHeight;
@@ -366,7 +373,7 @@
 .oj-disabled .oj-slider-bar {
   @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
   {
-    opacity: var(--oj-form-control-opacity-disabled);
+    opacity: var(--oj-text-field-opacity-disabled);
     background: var(--oj-slider-bar-bg-color-disabled);
   }
   @else {
@@ -378,7 +385,7 @@
 .oj-disabled .oj-slider-bar-value {
   @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
   {
-    opacity: var(--oj-form-control-opacity-disabled);
+    opacity: var(--oj-text-field-opacity-disabled);
     background: var(--oj-slider-bar-value-bg-color-disabled);
   }
   @else {

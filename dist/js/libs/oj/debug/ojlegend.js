@@ -3,11 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtLegend', 'ojs/ojmap', 'ojs/ojkeyset'], function(oj, $, Components, DvtAttributeUtils, dvt, ojMap, KeySet)
 {
-  
-
+  "use strict";
 var __oj_legend_metadata = 
 {
   "properties": {
@@ -16,7 +14,7 @@ var __oj_legend_metadata =
       "value": ""
     },
     "data": {
-      "type": "oj.DataProvider"
+      "type": "object"
     },
     "drilling": {
       "type": "string",
@@ -162,6 +160,12 @@ var __oj_legend_metadata =
         },
         "stateVisible": {
           "type": "string"
+        },
+        "tooltipCollapse": {
+          "type": "string"
+        },
+        "tooltipExpand": {
+          "type": "string"
         }
       }
     },
@@ -212,8 +216,7 @@ var __oj_legend_item_metadata =
       "value": "visible"
     },
     "color": {
-      "type": "string",
-      "value": "#a6acb1"
+      "type": "string"
     },
     "drilling": {
       "type": "string",
@@ -237,11 +240,10 @@ var __oj_legend_item_metadata =
       "type": "number"
     },
     "markerColor": {
-      "type": "string",
-      "value": "#a6acb1"
+      "type": "string"
     },
     "markerShape": {
-      "type": "\"circle\"|\"diamond\"|\"ellipse\"|\"human\"|\"plus\"|\"rectangle\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|string",
+      "type": "string",
       "value": "square"
     },
     "markerSvgClassName": {
@@ -249,8 +251,7 @@ var __oj_legend_item_metadata =
       "value": ""
     },
     "markerSvgStyle": {
-      "type": "object",
-      "value": {}
+      "type": "object"
     },
     "pattern": {
       "type": "string",
@@ -284,8 +285,7 @@ var __oj_legend_item_metadata =
       "value": ""
     },
     "svgStyle": {
-      "type": "object",
-      "value": {}
+      "type": "object"
     },
     "symbolType": {
       "type": "string",
@@ -340,25 +340,25 @@ var __oj_legend_section_metadata =
  * All rights reserved.
  */
 
-/* global dvt:false, Promise:false, ojMap:false, KeySet:false, Components:false */
+/* global dvt:false, KeySet:false, Components:false */
 
 /**
  * @ojcomponent oj.ojLegend
  * @augments oj.dvtBaseComponent
  * @since 0.7
  * @ojstatus preview
- * @ojshortdesc Displays an interactive description of symbols, colors, etc., used in graphical information representations.
+ * @ojshortdesc A legend displays an interactive description of symbols, colors, etc., used in graphical information representations.
  * @ojrole application
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojtsimport {module: "ojkeyset", type: "AMD", imported: ["KeySet"]}
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojLegend<K, D> extends dvtBaseComponent<ojLegendSettableProperties<K, D>>",
+ *                value: "class ojLegend<K, D extends oj.ojLegend.Item<K>|oj.ojLegend.Section<K>|any> extends dvtBaseComponent<ojLegendSettableProperties<K, D>>",
  *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
  *               },
  *               {
  *                target: "Type",
- *                value: "ojLegendSettableProperties<K, D> extends dvtBaseComponentSettableProperties",
+ *                value: "ojLegendSettableProperties<K,  D extends oj.ojLegend.Item<K>|oj.ojLegend.Section<K>|any> extends dvtBaseComponentSettableProperties",
  *                for: "SettableProperties"
  *               }
  *              ]
@@ -410,6 +410,7 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
      * @expose
      * @name as
      * @memberof oj.ojLegend
+     * @ojshortdesc An alias for the '$current' context variable passed to slot content for the nodeTemplate slot.
      * @instance
      * @type {string}
      * @default ""
@@ -421,12 +422,16 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
      * The oj.DataProvider for the sections and items of the legend. It should provide a data tree where each node in the data tree corresponds to a section or item in the legend.
      * Nodes that are leaves will be treated as items. The row key will be used as the id for legend sections and items. Note that when
      * using this attribute, a template for the <a href="#itemTemplate">itemTemplate</a> and optionally <a href="#sectionTemplate">sectionTemplate</a> slots should be provided.
+     * The oj.DataProvider can either have an arbitrary data shape, in which case an <oj-legend-item> element (and an <oj-legend-section> element for hierarchical
+     * data) must be specified in the itemTemplate (and sectionTemplate) slot or it can have oj.ojLegend.Item{@link oj.ojLegend#Item}
+     * (and oj.ojLegend.Section{@link oj.ojLegend#Section}) as its data shape, in which case no template is required.
      * @expose
      * @name data
      * @memberof oj.ojLegend
+     * @ojshortdesc Specifies the DataProvider for the sections and items of the legend. See the Help documentation for more information.
      * @instance
-     * @type {oj.DataProvider|null}
-     * @ojsignature {target: "Type", value: "oj.DataProvider<K, D>|null"}
+     * @type {Object|null}
+     * @ojsignature {target: "Type", value: "oj.DataProvider<K, D>|null", jsdocOverride:true}
      * @default null
      *
      * @example <caption>Initialize the legend with the
@@ -444,10 +449,11 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
       data: null,
 
       /**
-       *  Whether drilling is enabled on all legend items. Drillable objects will show a pointer cursor on hover and fire <code class="prettyprint">ojDrill</code> event on click. To enable or disable drilling on individual legend item, use the drilling attribute in each legend item.
+       * Whether drilling is enabled on all legend items. Drillable objects will show a pointer cursor on hover and fire <code class="prettyprint">ojDrill</code> event on click. To enable or disable drilling on individual legend item, use the drilling attribute in each legend item.
        * @expose
        * @name drilling
        * @memberof oj.ojLegend
+       * @ojshortdesc Specifies whether drilling is enabled. Drillable objects will show a pointer cursor on hover and fire an ojDrill event on click. See the Help documentation for more information.
        * @instance
        * @type {string}
        * @ojvalue {string} "on"
@@ -468,12 +474,13 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
 
       /**
        * Specifies the key set containing the ids of sections that should be expanded on initial render.
-       * Use the <a href="ExpandedKeySet.html">ExpandedKeySet</a> class to specify sections to expand.
-       * Use the <a href="ExpandAllKeySet.html">ExpandAllKeySet</a> class to expand all sections.
+       * Use the <a href="KeySetImpl.html">KeySetImpl</a> class to specify sections to expand.
+       * Use the <a href="AllKeySetImpl.html">AllKeySetImpl</a> class to expand all sections.
        * By default, all sections are expanded.
        * @expose
        * @name expanded
        * @memberof oj.ojLegend
+       * @ojshortdesc Specifies the key set containing the ids of sections that should be expanded on initial render. See the Help documentation for more information.
        * @instance
        * @type {KeySet|null}
        * @ojsignature {target:"Type", value:"oj.KeySet<K>|null"}
@@ -605,6 +612,7 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
        * @expose
        * @name hoverBehaviorDelay
        * @memberof oj.ojLegend
+       * @ojshortdesc Specifies initial hover delay in milliseconds for highlighting items in legend.
        * @instance
        * @type {number}
        * @ojunits milliseconds
@@ -676,6 +684,7 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
        * @ojtsignore
        * @name sections
        * @memberof oj.ojLegend
+       * @ojshortdesc An array of objects specifying the legend sections.
        * @instance
        * @type {Array.<Object>|null}
        * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojLegend.Section<K>>>|null",
@@ -716,6 +725,7 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
        * @expose
        * @name symbolHeight
        * @memberof oj.ojLegend
+       * @ojshortdesc The height of the legend symbol in pixels. See the Help documentation for more information.
        * @instance
        * @type {number}
        * @ojunits pixels
@@ -738,6 +748,7 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
        * @expose
        * @name symbolWidth
        * @memberof oj.ojLegend
+       * @ojshortdesc The width of the legend symbol in pixels. See the Help documentation for more information.
        * @instance
        * @type {number}
        * @ojunits pixels
@@ -759,11 +770,12 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
        * The CSS style object defining the style of the legend item text. The default value comes from the CSS and varies based on theme.
        * @expose
        * @name textStyle
+       * @ojshortdesc The CSS style object defining the style of the legend item text.
        * @memberof oj.ojLegend
        * @instance
-       * @type {Object}
+       * @type {Object=}
        * @default  {}
-       * @ojsignature {target: "Type", value: "?"}
+       * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
        *
        * @example <caption>Initialize the Legend with the <code class="prettyprint">text-style</code> attribute specified:</caption>
        * &lt;oj-legend text-style='{"fontSize":"12px"}'>&lt;/oj-legend>
@@ -883,17 +895,6 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
     },
 
     //* * @inheritdoc */
-    _GetTranslationMap: function () {
-      // The translations are stored on the options object.
-      var translations = this.options.translations;
-
-      // Safe to modify super's map because function guarentees a new map is returned
-      var ret = this._super();
-      ret['DvtUtilBundle.LEGEND'] = translations.componentName;
-      return ret;
-    },
-
-    //* * @inheritdoc */
     _GetEventTypes: function () {
       return ['drill', 'expand', 'collapse'];
     },
@@ -931,13 +932,13 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
     //* * @inheritdoc */
     _GetSimpleDataProviderConfigs: function () {
       var templateName = function (data) {
-        if (data.children) {
+        if (data && data.children) {
           return 'sectionTemplate';
         }
         return 'itemTemplate';
       };
       var templateElementName = function (data) {
-        if (data.children) {
+        if (data && data.children) {
           return 'oj-legend-section';
         }
         return 'oj-legend-item';
@@ -982,7 +983,7 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
           resultPath: 'sections',
           getAliasedPropertyNames: getAliasedPropertyNames,
           processChildrenData: processChildrenData,
-          expandedKeySet: new KeySet.ExpandAllKeySet(),
+          expandedKeySet: new oj.AllKeySetImpl(), // if this becomes dynamic see example in ojsunburst
           processOptionData: processOptionData
         }
       };
@@ -996,7 +997,8 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
     /**
      * Returns the legend title for automation testing verification.
      * @return {String} The legend title
-     * @expose
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @instance
      * @memberof oj.ojLegend
      * @ignore
@@ -1023,9 +1025,11 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
      {"text": "image", "symbolType": "image", "source": "css/samples/cookbook/images/dvt/appServer.png"}]}]'>&lt;/oj-legend>
      *  var legend = document.getElementById('legend1');
      *  var section = legend.getSection([0]);
-     * @expose
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @instance
      * @memberof oj.ojLegend
+     * @ojshortdesc Returns information for automation testing verification of a specified legend section.
      */
     getSection: function (subIdPath) {
       var ret = this._component.getAutomation().getSection(subIdPath);
@@ -1053,7 +1057,8 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
      * @ojsignature {target: "Type", value: "oj.ojLegend.ItemContext|null", jsdocOverride: true, for: "returns"}
      * @return {Object|null} An object containing properties for the legend item at the given subIdPath, or null if
      *   none exists.
-     * @expose
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @instance
      * @example <caption>Initialize Legend and get items using the <code class="prettyprint">getItem(index)</code> method:</caption>
      * // Returns {text: "line"}
@@ -1065,6 +1070,7 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
      *  var legend = document.getElementById('legend1');
      *  var item = legend.getItem([0, 0]);
      * @memberof oj.ojLegend
+     * @ojshortdesc Returns information for automation testing verification of a specified legend item.
      */
     getItem: function (subIdPath) {
       return this._component.getAutomation().getItem(subIdPath);
@@ -1082,11 +1088,15 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
     getPreferredSize: function (width, height) {
       // Check if the options has a promise.
       var hasPromise = false;
-      var legendSections = this.options.sections ? this.options.sections : [];
-      for (var i = 0; i < legendSections.length; i++) {
-        var items = legendSections[i].items;
-        if (items && items.then) {
-          hasPromise = true;
+      if (this.options.data && this._DataProviderHandler.isDataProvider(this.options.data)) {
+        hasPromise = true;
+      } else {
+        var legendSections = this.options.sections ? this.options.sections : [];
+        for (var i = 0; i < legendSections.length; i++) {
+          var items = legendSections[i].items;
+          if (items && items.then) {
+            hasPromise = true;
+          }
         }
       }
 
@@ -1096,7 +1106,7 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
       // away once we have flowing layout.
       var options = hasPromise ? null : this.options;
       var dims = this._component.getPreferredSize(options, width, height);
-      return { width: dims.getWidth(), height: dims.getHeight() };
+      return { width: dims.w, height: dims.h };
     },
 
     /**
@@ -1110,6 +1120,7 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
      * @expose
      * @instance
      * @memberof oj.ojLegend
+     * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
      */
     getContextByNode: function (node) {
       // context objects are documented with @ojnodecontext
@@ -1139,7 +1150,7 @@ Components.setDefaultOptions({
   ojLegend: {
     expanded: Components.createDynamicPropertyGetter(function (context) {
       if (context.isCustomElement && context.element.getAttribute('data')) {
-        return new oj.ExpandAllKeySet();
+        return new oj.AllKeySetImpl();
       }
       return null;
     }),
@@ -1217,23 +1228,24 @@ Components.setDefaultOptions({
 /**
 * Object type that defines a legend section.
 * @typedef {Object} oj.ojLegend.Section
-* @ojtsignore
 * @property {"on"|"off"} [collapsible="off"] Whether the section is collapsible. Only applies if the legend orientation is vertical.
 * @property {"off"|"on"} [expanded="on"] Whether the section is initially expanded. Only applies if the section is collapsible.
-* @property {sting} id The id of the legend section. For the DataProvider case, the key for the node will be used as the id.
-* @property {Array.<oj.ojLegend.Item>=} items An array of objects with the following properties defining the legend items. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
-* @property {Array.<oj.ojLegend.Section>=} sections An array of nested legend sections.
+* @property {string} id The id of the legend section. For the DataProvider case, the key for the node will be used as the id.
+* @property {Array.<Object>=} items An array of objects with the following properties defining the legend items. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
+* @property {Array.<Object>=} sections An array of nested legend sections.
 * @property {string=} title The title of the legend section.
 * @property {"center"|"end"|"start"} [titleHalign="start"] The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
 * @property {Object=} titleStyle The CSS style object defining the style of the section title.
 * @ojsignature [{target: "Type", value: "K", for: "id"},
+*               {target: "Type", value: "Array.<oj.ojLegend.Item<K>>", for: "items", jsdocOverride: true},
+*               {target: "Type", value: "Array.<oj.ojLegend.Section<K>>", for: "sections", jsdocOverride: true},
+*               {target: "Type", value: "CSSStyleDeclaration", for: "titleStyle", jsdocOverride: true},
 *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
 */
 
 /**
  * Object type that defines a chart data item.
  * @typedef {Object} oj.ojLegend.Item
- * @ojtsignore
  * @property {string=} borderColor The border color of the marker. Only applies if symbolType is "marker" or "lineWithMarker".
  * @property {Array.<string>=} categories An array of categories for the legend item. Legend items currently only support a single category. If no category is specified, this defaults to the id or text of the legend item.
  * @property {"hidden"|"visible"} [categoryVisibility="visible"] Defines whether the legend item corresponds to visible data items. A hollow symbol is shown if the value is "hidden".
@@ -1254,6 +1266,8 @@ Components.setDefaultOptions({
  * @property {"image"|"line"|"lineWithMarker"|"marker"} [symbolType="marker"] The type of legend symbol to display.
  * @property {string=} text The legend item text.
  * @ojsignature [{target: "Type", value: "K", for: "id"},
+ *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true},
+ *               {target: "Type", value: "CSSStyleDeclaration", for: "markerSvgStyle", jsdocOverride: true},
  *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
  */
 
@@ -1261,6 +1275,7 @@ Components.setDefaultOptions({
 
 /**
  * @typedef {Object} oj.ojLegend.SectionContext
+ * @ojtsignore
  * @property {string} title The title of the legend section.
  * @property {Array.<object>} sections Array of legend sections.
  * @property {Array.<object>} items Array of legend items.
@@ -1274,6 +1289,7 @@ Components.setDefaultOptions({
 
 /**
  * @typedef {Object} oj.ojLegend.ItemContext
+ * @ojtsignore
  * @property {string} text The text of the legend item.
  */
 
@@ -1317,6 +1333,8 @@ Components.setDefaultOptions({
  * @ojslot itemTemplate
  * @ojmaxitems 1
  * @memberof oj.ojLegend
+ * @ojshortdesc The itemTemplate slot is used to specify the template for creating each legend item. See the Help documentation for more information.
+ *
  * @property {Element} componentElement The &lt;oj-legend> custom element
  * @property {Object} data The data object of the node
  * @property {number} index The zero-based index of the curent node
@@ -1358,6 +1376,8 @@ Components.setDefaultOptions({
  * @ojslot sectionTemplate
  * @ojmaxitems 1
  * @memberof oj.ojLegend
+ * @ojshortdesc The sectionTemplate slot is used to specify the template for creating each legend section. See the Help documentation for more information.
+ *
  * @property {Element} componentElement The &lt;oj-legend> custom element
  * @property {Object} data The data object of the node
  * @property {number} index The zero-based index of the curent node
@@ -1458,7 +1478,7 @@ Components.setDefaultOptions({
  * @default ""
  */
 /**
- * An array of categories for the legend item. Legend items currently only support a single category. If no category is specified, this defaults to the id or text of the legend item.
+ * An array of categories for the legend item. Legend items currently only support a single category.
  * @expose
  * @name categories
  * @memberof! oj.ojLegendItem
@@ -1496,7 +1516,6 @@ Components.setDefaultOptions({
  * @instance
  * @type {string=}
  * @ojformat color
- * @default "#a6acb1"
  */
 /**
  * The border color of the marker. Only applies if symbolType is "marker" or "lineWithMarker".
@@ -1555,6 +1574,7 @@ Components.setDefaultOptions({
  * @expose
  * @name svgClassName
  * @memberof! oj.ojLegendItem
+ * @ojshortdesc The CSS style class to apply to the legend item. The style class and inline style will override any other styling specified through the options. See the Help documentation for more information.
  * @instance
  * @type {string=}
  * @default ""
@@ -1564,15 +1584,17 @@ Components.setDefaultOptions({
  * @expose
  * @name svgStyle
  * @memberof! oj.ojLegendItem
+ * @ojshortdesc The inline style to apply to the legend item. The style class and inline style will override any other styling specified through the options. See the Help documentation for more information.
  * @instance
  * @type {Object=}
- * @default {}
+ * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
  */
 /**
  * The CSS style class to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
  * @expose
  * @name markerSvgClassName
  * @memberof! oj.ojLegendItem
+ * @ojshortdesc The CSS style class to apply to the marker. The style class and inline style will override any other styling specified through the options. See the Help documentation for more information.
  * @instance
  * @type {string=}
  * @default ""
@@ -1582,15 +1604,17 @@ Components.setDefaultOptions({
  * @expose
  * @name markerSvgStyle
  * @memberof! oj.ojLegendItem
+ * @ojshortdesc The inline style to apply to the marker. The style class and inline style will override any other styling specified through the options. See the Help documentation for more information.
  * @instance
  * @type {Object=}
- * @default {}
+ * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
  */
 /**
  * The shape of the marker. Only applies if symbolType is "marker" or "lineWithMarker". Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
  * @expose
  * @name markerShape
  * @memberof! oj.ojLegendItem
+ * @ojshortdesc The shape of the marker. Only applies if symbolType is "marker" or "lineWithMarker". See the Help documentation for more information.
  * @instance
  * @type {"circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string}
  * @default "square"
@@ -1603,7 +1627,6 @@ Components.setDefaultOptions({
  * @instance
  * @type {string=}
  * @ojformat color
- * @default "#a6acb1"
  */
 /**
  * Defines whether the legend item corresponds to visible data items. A hollow symbol is shown if the value is "hidden".
@@ -1621,6 +1644,7 @@ Components.setDefaultOptions({
  * @expose
  * @name drilling
  * @memberof! oj.ojLegendItem
+ * @ojshortdesc Specifies whether drilling is enabled on the legend item. See the Help documentation for more information.
  * @instance
  * @type {string=}
  * @ojvalue {string} "on"
@@ -1697,6 +1721,7 @@ Components.setDefaultOptions({
  * @memberof! oj.ojLegendSection
  * @instance
  * @type {Object=}
+ * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
  * @default {}
  */
 /**

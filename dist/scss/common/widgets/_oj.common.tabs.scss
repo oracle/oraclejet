@@ -53,7 +53,14 @@
       white-space: nowrap;
       margin: 0;
       // touch support
-      @include oj-user-select-property (none);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        user-select: none;
+      }
+      @else 
+      {
+        @include oj-user-select-property(none);
+      }
     }
 
     .oj-tabs-tab:not(.oj-focus-highlight):focus {

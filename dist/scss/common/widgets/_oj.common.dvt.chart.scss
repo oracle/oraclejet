@@ -22,7 +22,14 @@
     }
 
     .oj-chart {
-      @include oj-user-select-property(none);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        user-select: none;
+      }
+      @else 
+      {
+        @include oj-user-select-property(none);
+      }
       width:400px;
       height:300px;
     }
@@ -165,7 +172,7 @@
 
     .oj-sparkchart.oj-focus-highlight {
         @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-          outline: dotted 1px var(--oj-primary-text-color);
+          outline: dotted 1px var(--oj-text-color-primary);
           outline: -webkit-focus-ring-color auto;
         } @else {
           @include oj-browser-focus-outline-approximation($primaryTextColor);

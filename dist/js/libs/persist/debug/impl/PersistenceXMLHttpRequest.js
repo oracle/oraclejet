@@ -447,7 +447,7 @@ define(['../persistenceUtils', './logger'], function (persistenceUtils, logger) 
     if (absoluteUrlOrigin.indexOf('http:') === 0 || absoluteUrlOrigin.indexOf('https:') === 0) {
       return false;
     }
-    if (absoluteUrlOrigin.indexOf('file:') === 0) {
+    if (absoluteUrlOrigin.indexOf('file:') === 0 || absoluteUrlOrigin.indexOf('cdvfile:') === 0) {
       return true;
     }
     if (URL && URL.prototype) {
@@ -512,11 +512,8 @@ define(['../persistenceUtils', './logger'], function (persistenceUtils, logger) 
     self._statusText = response.statusText;
     self._responseURL = request.url;
 
-    if (!persistenceUtils._isTextPayload(response.headers) &&
-      persistenceUtils.isCachedResponse(response)) {
-      // above is temp workaround before we figure out when to invoke blob()
-      // when to invoke arrayBuffer from the response object.
-      // ideally we should get the information from request.responseType
+    var payloadType = persistenceUtils._derivePayloadType(self, response);
+    if (payloadType === 'blob') {
       logger.log('Offline Persistence Toolkit PersistenceXMLHttpRequest: Calling response.blob()');
       response.blob().then(function (blobData) {
         self._responseType = 'blob';
@@ -528,8 +525,7 @@ define(['../persistenceUtils', './logger'], function (persistenceUtils, logger) 
       }, function (blobErr) {
         logger.error(blobErr);
       });
-    } else if (contentType &&
-      contentType.indexOf('image/') !== -1) {
+    } else if (payloadType === "arraybuffer") {
       logger.log('Offline Persistence Toolkit PersistenceXMLHttpRequest: Calling response.arrayBuffer()');
       response.arrayBuffer().then(function (aBuffer) {
         self._responseType = 'arrayBuffer';
@@ -542,8 +538,7 @@ define(['../persistenceUtils', './logger'], function (persistenceUtils, logger) 
       }, function (arrayBufferError) {
         logger.error('error reading response as arrayBuffer!');
       });
-    } else if (contentType &&
-      contentType.indexOf('multipart/form-data') !== -1) {
+    } else if (payloadType === "multipart") {
       logger.log('Offline Persistence Toolkit PersistenceXMLHttpRequest: Calling response.formData()');
       self._responseType = 'formData';
       var parseMultipartForm = function(data) {

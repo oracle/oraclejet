@@ -25,10 +25,6 @@ export interface ojTimeAxis extends dvtBaseComponent<ojTimeAxisSettablePropertie
         stateUnselected?: string;
         stateVisible?: string;
     };
-    onConverterChanged: ((event: JetElementCustomEvent<ojTimeAxis["converter"]>) => any) | null;
-    onEndChanged: ((event: JetElementCustomEvent<ojTimeAxis["end"]>) => any) | null;
-    onScaleChanged: ((event: JetElementCustomEvent<ojTimeAxis["scale"]>) => any) | null;
-    onStartChanged: ((event: JetElementCustomEvent<ojTimeAxis["start"]>) => any) | null;
     addEventListener<T extends keyof ojTimeAxisEventMap>(type: T, listener: (this: HTMLElement, ev: ojTimeAxisEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojTimeAxisSettableProperties>(property: T): ojTimeAxis[T];
@@ -36,6 +32,28 @@ export interface ojTimeAxis extends dvtBaseComponent<ojTimeAxisSettablePropertie
     setProperty<T extends keyof ojTimeAxisSettableProperties>(property: T, value: ojTimeAxisSettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojTimeAxisSettableProperties>): void;
     setProperties(properties: ojTimeAxisSettablePropertiesLenient): void;
+}
+export namespace ojTimeAxis {
+    // tslint:disable-next-line interface-over-type-literal
+    type converterChanged = JetElementCustomEvent<ojTimeAxis["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type endChanged = JetElementCustomEvent<ojTimeAxis["end"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scaleChanged = JetElementCustomEvent<ojTimeAxis["scale"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type startChanged = JetElementCustomEvent<ojTimeAxis["start"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Converters = {
+        default?: Converter<string>;
+        seconds?: Converter<string>;
+        minutes?: Converter<string>;
+        hours?: Converter<string>;
+        days?: Converter<string>;
+        weeks?: Converter<string>;
+        months?: Converter<string>;
+        quarters?: Converter<string>;
+        years?: Converter<string>;
+    };
 }
 export interface ojTimeAxisEventMap extends dvtBaseComponentEventMap<ojTimeAxisSettableProperties> {
     'converterChanged': JetElementCustomEvent<ojTimeAxis["converter"]>;
@@ -70,18 +88,4 @@ export interface ojTimeAxisSettableProperties extends dvtBaseComponentSettablePr
 }
 export interface ojTimeAxisSettablePropertiesLenient extends Partial<ojTimeAxisSettableProperties> {
     [key: string]: any;
-}
-export namespace ojTimeAxis {
-    // tslint:disable-next-line interface-over-type-literal
-    type Converters = {
-        default?: Converter<string>;
-        seconds?: Converter<string>;
-        minutes?: Converter<string>;
-        hours?: Converter<string>;
-        days?: Converter<string>;
-        weeks?: Converter<string>;
-        months?: Converter<string>;
-        quarters?: Converter<string>;
-        years?: Converter<string>;
-    };
 }

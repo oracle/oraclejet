@@ -3,11 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojconfig', 'touchr'],
        function(oj, $, Components, Logger, Context, Config)
 {
-
+  "use strict";
 var __oj_conveyor_belt_metadata = 
 {
   "properties": {
@@ -1571,7 +1570,7 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
  * @augments oj.baseComponent
  * @since 0.6
  * @ojstatus preview
- * @ojshortdesc Container element that manages overflow for its child elements and allows scrolling among them.
+ * @ojshortdesc A conveyor belt manages overflow for its child elements and allows scrolling among them.
  * @class oj.ojConveyorBelt
  *
  * @classdesc
@@ -1677,6 +1676,7 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
  * attribute should specify the nested elements direct parent.</p>
  *
  * @ojchild Default
+ * @ojshortdesc The oj-conveyor-belt element manages overflow for its child elements and allows scrolling among them. See the Help documentation for more information.
  * @memberof oj.ojConveyorBelt
  *
  * @example <caption>Initialize the conveyor belt with child content specified:</caption>

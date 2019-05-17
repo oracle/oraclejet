@@ -3,12 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojdnd'],
        function(oj, $, Context, Config, ThemeUtils, Components, AnimationUtils, Logger)
 {
- 
-
+  "use strict";
 var __oj_masonry_layout_metadata = 
 {
   "properties": {
@@ -1613,7 +1611,7 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
  * @augments oj.baseComponent
  * @since 1.1.0
  * @ojstatus preview
- * @ojshortdesc Container element that lays out its children in a grid of tiles.
+ * @ojshortdesc A masonry layout lays out its children in a grid of tiles.
  * @class oj.ojMasonryLayout
  *
  * @classdesc
@@ -1771,6 +1769,7 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
  *
  * @ojchild Default
  * @memberof oj.ojMasonryLayout
+ * @ojshortdesc The oj-masonry-layout element accepts arbitrary direct child elements that can be sized and positioned, which it will lay out as a grid of tiles. See the Help documentation for more information.
  *
  * @example <caption>Initialize the masonry layout with child content specified:</caption>
  * &lt;oj-masonry-layout>
@@ -2084,16 +2083,12 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
          * $masonryLayoutReorderAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDurationFast, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
          * </code></pre>
          *
-         * @ojshortdesc Triggered when a default animation is about to start, such as when the component is
-         * being opened/closed or a child item is being added/removed. The default animation can
-         * be cancelled by calling event.preventDefault.
-         *
          * @expose
          * @event
          * @memberof oj.ojMasonryLayout
          * @instance
          * @ojcancelable
-         * @ojshortdesc Event triggered when the default animation of a particular action is about to start.
+         * @ojshortdesc Event triggered when the default animation of a particular action is about to start. See the Help documentation for more information.
          * @property {string} action The action that triggers the animation.
          *            Supported values are:
          *                    <ul>
@@ -2111,9 +2106,9 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
          *            endCallback function after it finishes its own animation handling and any
          *            custom animation has ended.
          *
-         * @example <caption>Specify an <code class="prettyprint">onOjAnimateStart</code> listener
+         * @example <caption>Add a listener for the <code class="prettyprint">ojAnimateStart</code> event
          *          to override the default "insert" animation with a custom animation:</caption>
-         *   myMasonryLayout.onOjAnimateStart = function( event )
+         *   myMasonryLayout.addEventListener("ojAnimateStart", function( event )
          *   {
          *     if (!$(event.target).is("oj-masonry-layout"))
          *       return;
@@ -2124,11 +2119,11 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
          *       // Invoke new animation and call event.detail.endCallback when it ends
          *       oj.AnimationUtils.fadeIn(ui.element).then(ui.endCallback);
          *     }
-         *   }
+         *   });
          *
-         * @example <caption>Specify an <code class="prettyprint">onOjAnimateStart</code> listener
+         * @example <caption>Add a listener for the <code class="prettyprint">ojAnimateStart</code> event
          *          to prevent the default "remove" animation:</caption>
-         *   myMasonryLayout.onOjAnimateStart = function( event )
+         *   myMasonryLayout.addEventListener("ojAnimateStart", function( event )
          *   {
          *     if (!$(event.target).is("oj-masonry-layout"))
          *       return;
@@ -2138,7 +2133,7 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
          *       event.preventDefault();
          *       ui.endCallback();
          *     }
-         *   }
+         *   });
          */
         animateStart: null,
 

@@ -24,7 +24,7 @@
     .oj-dialog-layer {
       @extend .oj-component-layer;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        z-index: var(--oj-dialog-zindex);
+        z-index: var(--oj-dialog-z-index);
       } @else {
         z-index: $dialogZindex;
       }
@@ -32,7 +32,7 @@
 
     .oj-dialog-layer.oj-focus-within {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        z-index: calc(var(--oj-dialog-zindex) + 1);
+        z-index: calc(var(--oj-dialog-z-index) + 1);
       } @else {
         z-index: calc(#{$dialogZindex} + 1);
       }
@@ -78,7 +78,7 @@
         border-bottom-color: var(--oj-dialog-header-border-color);
         font-size: var(--oj-dialog-header-font-size);
         color: var(--oj-dialog-header-text-color);
-        font-weight: var(--oj-header-font-weight);
+        font-weight: var(--oj-dialog-header-font-weight);
         min-height: var(--oj-button-sm-height);
       } @else {
         // the height of any bottom padding put on here plus the height of the close icon
@@ -173,7 +173,14 @@
     .oj-dialog-title {
       overflow: hidden;
       cursor: default;
-      @include oj-user-select-property (none);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        user-select: none;
+      }
+      @else 
+      {
+        @include oj-user-select-property(none);
+      }
       // vertically center-align the title within the header
       align-self: center;
       font-size: inherit;
@@ -394,7 +401,7 @@
    .oj-dialog.oj-focus-highlight,
    .oj-dialog-header-close-wrapper.oj-focus-highlight {
      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-       outline: dotted 1px var(--oj-primary-text-color);
+       outline: dotted 1px var(--oj-text-color-primary);
        outline: -webkit-focus-ring-color auto;
      } @else {
        @include oj-browser-focus-outline-approximation($primaryTextColor);
@@ -410,7 +417,7 @@
    .oj-dialog-layer.oj-focus-within,
    .oj-dialog-layer.oj-animate-open {
      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-       z-index: calc(var(--oj-dialog-zindex) + 1);
+       z-index: calc(var(--oj-dialog-z-index) + 1);
      } @else {
        z-index: calc(#{$dialogZindex} + 1);
      }

@@ -67,7 +67,6 @@
      }
        // prevent graying on iOS safari
        -webkit-tap-highlight-color: rgba(0,0,0,0);
-       margin: 1px;
     }
 
     /* Grid display styling for the root component element. */
@@ -79,13 +78,12 @@
        border: 1px solid $collectionBorderColor;
        background-color: $collectionBgColor;
       }
-       margin: 0;
     }
 
     /* Styling for the root component element with warning. */
     .oj-table.oj-warning {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-       border: 1px solid var(--oj-form-control-border-color-warning);
+       border: 1px solid var(--oj-text-field-border-color-warning);
       } @else {
        border: 1px solid $borderColorWarning;
       }
@@ -255,6 +253,29 @@
        height: calc(#{$collectionRowHeight} - 2 * #{$collectionCellPadding});
        line-height: calc(#{$collectionRowHeight} - 2 * #{$collectionCellPadding});
        @include oj-ltr() {
+        padding-left: $collectionCellPadding;
+        padding-right: $collectionCellPadding;
+       }
+       @include oj-rtl() {
+        padding-left: $collectionCellPadding;
+        padding-right: $collectionCellPadding;
+       }
+      }
+    }
+
+    /* Editable display table styling for the column header elements. */
+    .oj-table-editable .oj-table-column-header-cell {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+       @include oj-ltr() {
+        padding-left: var(--oj-collection-cell-padding);
+        padding-right: var(--oj-collection-cell-padding);
+       }
+       @include oj-rtl() {
+        padding-left: var(--oj-collection-cell-padding);
+        padding-right: var(--oj-collection-cell-padding);
+       }
+      } @else {
+       @include oj-ltr() {
          padding-left: $collectionCellPadding;
          padding-right: $collectionCellPadding;
        }
@@ -316,7 +337,7 @@
     .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-focus-highlight {
        outline-offset: -1px;
        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-         outline: dotted 1px var(--oj-primary-text-color);
+         outline: dotted 1px var(--oj-text-color-primary);
          outline: -webkit-focus-ring-color auto;
        } @else {
          @include oj-browser-focus-outline-approximation($primaryTextColor);
@@ -410,6 +431,16 @@
       }
     }
 
+    /* Editable display table styling for the column header element. */
+    .oj-table-editable .oj-table-column-header {
+      @include oj-ltr() {
+        padding-right: 0;
+      }
+      @include oj-rtl() {
+        padding-left: 0;
+      }
+    }
+
     /* Styling for the column header text. */
     .oj-table-column-header-text {
       display: inline-block;
@@ -428,6 +459,16 @@
     /* Grid display table styling for the column header text. */
     .oj-table-grid-display .oj-table-column-header-text {
       padding-right: 0;
+    }
+
+    /* Editable display table styling for the column header text. */
+    .oj-table-editable .oj-table-column-header-text {
+      @include oj-ltr() {
+        padding-right: 0px;
+      }
+      @include oj-rtl() {
+        padding-left: 0px;
+      }
     }
 
     /* Styling for the column header sort ascending element. */
@@ -556,6 +597,7 @@
       } @else {
         border-color: $collectionHeaderBgColorSelected;
       }
+      pointer-events: none;
     }
 
     /* Styling for the data body element. */
@@ -613,7 +655,7 @@
     .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) {
        outline-offset: -1px;
        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-          outline: dotted 1px var(--oj-primary-text-color);
+          outline: dotted 1px var(--oj-text-color-primary);
           outline: -webkit-focus-ring-color auto;
        } @else {
          @include oj-browser-focus-outline-approximation($primaryTextColor);
@@ -812,7 +854,7 @@
     }
 
     /* Styling on form controls stamped inside a table */
-    .oj-table-data-cell.oj-form-control-inherit .oj-form-control {
+    .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
         height: calc(var(--oj-table-row-height) - 2 * var(--oj-collection-cell-padding));
         @include oj-form-control-padding-override(
@@ -952,17 +994,6 @@
       border-left: 1px solid var(--oj-collection-cell-border-color); }
     }
 
-    /* Styling to remove the right border of the last vertical grid line. */
-    .oj-table-vgrid-lines:last-child {
-       @include oj-ltr() {
-         border-right: 0;
-       }
-       @include oj-rtl() {
-         border-left: 0;
-       }
-    }
-
-
     /* Grid display styling for the vertical grid lines. */
     .oj-table-grid-display .oj-table-vgrid-lines,
     .oj-table-grid-display .oj-table-column-header-cell.oj-table-vgrid-lines {
@@ -982,6 +1013,18 @@
         }  
       }
     }
+    
+    /* Styling to remove the right border of the last vertical grid line. */
+    .oj-table-vgrid-lines:last-child,
+    .oj-table-grid-display .oj-table-vgrid-lines:last-child,
+    .oj-table-grid-display .oj-table-column-header-cell.oj-table-vgrid-lines:last-child {
+       @include oj-ltr() {
+         border-right: 0;
+       }
+       @include oj-rtl() {
+         border-left: 0;
+       }
+    }
 
     /* Styling for the horizontal grid lines. */
     .oj-table-hgrid-lines {
@@ -990,24 +1033,6 @@
       } @else {
         border-bottom: 1px solid $collectionCellBorderColor;
       }
-    }
-
-    /* Styling for the inline message. */
-    .oj-table-inline-message {
-      padding: 10px;
-      position: absolute;
-    }
-
-    /* Styling for the inline message with warning. */
-    .oj-table-inline-message.oj-warning {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-      background-color: var(--oj-message-component-inline-bg-color-warning);
-      border: 1px solid var(--oj-message-component-inline-border-color-warning);
-      } @else {
-        background-color: $messageComponentInlineBgColorWarning;
-        border: 1px solid $messageComponentInlineBorderColorWarning;
-      }
-      border-top-width: 0;
     }
 
     /* Styling for the status message. */

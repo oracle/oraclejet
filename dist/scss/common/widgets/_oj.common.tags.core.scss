@@ -21,7 +21,7 @@
         @include oj-normalize-html;
         @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
           font-family: var(--oj-font-family);
-          font-size: var(--oj-root-font-size); 
+          font-size: var(--oj-font-size-root); 
         }
         @else {
           font-family: $fontFamily;

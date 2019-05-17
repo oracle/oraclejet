@@ -119,7 +119,7 @@
       @else {
         width: $trainButtonContinuousConnectorDiameter;
         height: $trainButtonContinuousConnectorDiameter;
-        background-color: $trainConnectorContinuousBgColor;
+        background-color: $trainConnectorBgColor;
         @include oj-border-radius(50%);
       }
     }
@@ -192,10 +192,10 @@
         // 50% is the midpoint of the space available for the step
         // + half of the Button Diameter (24px/2) + 10px margin
         @include oj-ltr() {
-          left: calc(50% + #{$trainButtonDiameter} / 2 + #{oj-add-unit-to-zero($trainIndividualConnectorPadding)});
+          left: calc(50% + #{$trainButtonDiameter} / 2 + 10px);
         }
         @include oj-rtl() {
-          right: calc(50% + #{$trainButtonDiameter} / 2 + #{oj-add-unit-to-zero($trainIndividualConnectorPadding)});
+          right: calc(50% + #{$trainButtonDiameter} / 2 + 10px);
         }
       }
 
@@ -203,10 +203,10 @@
         background-color: $trainIndividualConnectorBgColorSelected;
         width: calc(100% - #{$trainButtonDiameter} - #{oj-add-unit-to-zero($trainIndividualConnectorPaddingSelected)} * 2);
         @include oj-ltr() {
-          left: calc(50% + #{$trainButtonDiameter} / 2 + #{oj-add-unit-to-zero($trainIndividualConnectorPaddingSelected)});
+          left: calc(50% + #{$trainButtonContinuousConnectorDiameter} / 2 + #{oj-add-unit-to-zero($trainIndividualConnectorPaddingSelected)});
         }
         @include oj-rtl() {
-          right: calc(50% + #{$trainButtonDiameter} / 2 + #{oj-add-unit-to-zero($trainIndividualConnectorPaddingSelected)});
+          right: calc(50% + #{$trainButtonContinuousConnectorDiameter} / 2 + #{oj-add-unit-to-zero($trainIndividualConnectorPaddingSelected)});
         }
       }
     }
@@ -523,6 +523,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      left: 0;
+      top: 0;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         width: var(--oj-train-icon-diameter);
@@ -556,9 +558,13 @@
       {
         background-color: var(--oj-train-bg-color-disabled);
         border-color: var(--oj-train-border-color-disabled);
+        border-width: var(--oj-train-button-border-width);
+        color: var(--oj-train-button-text-color-disabled);
       } @else {
         background-color: $trainBgColorDisabled;
         border-color: $trainBorderColorDisabled;
+        border-width: $trainButtonBorderWidth;
+        color: $trainButtonTextColorDisabled;
       }
     }
 

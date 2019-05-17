@@ -2,8 +2,8 @@
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['./DvtToolkit'], function(dvt) {
+  "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
 (function(dvt) {
@@ -38,7 +38,7 @@ dvt.Legend.newInstance = function(context, callback, callbackObj) {
  * @param {string} skin The skin whose defaults are being returned.
  * @return {object} The object containing defaults for this component.
  */
-dvt.Legend.getDefaults = function(skin) 
+dvt.Legend.getDefaults = function(skin)
 {
   return (new DvtLegendDefaults()).getDefaults(skin);
 };
@@ -130,7 +130,7 @@ dvt.Legend.prototype.getPreferredSize = function(options, maxWidth, maxHeight) {
 /**
  * @override
  */
-dvt.Legend.prototype.render = function(options, width, height) 
+dvt.Legend.prototype.render = function(options, width, height)
 {
   this.getCache().clearCache();
 
@@ -214,8 +214,8 @@ dvt.Legend.prototype.processEvent = function(event, source) {
     }
   }
 
-  // Dispatch the event to the callback if it originated from this component or it is a popup/rollover event.
-  if (this == source || type == 'adfShowPopup' || type == 'adfHidePopup') {
+  // Dispatch the event to the callback if it originated from this component.
+  if (this == source) {
     this.dispatchEvent(event);
   }
 };
@@ -231,7 +231,7 @@ dvt.Legend.prototype.__registerObject = function(peer) {
   else {
     // peer is navigable if associated with legend item using datatip, action, drilling, or hideShow is enabled
     var hideAndShow = this.getOptions()['hideAndShowBehavior'];
-    if (peer.getDatatip() != null || peer.getAction() != null || peer.isDrillable() || (hideAndShow != 'none' && hideAndShow != 'off'))
+    if (peer.getDatatip() != null || peer.isDrillable() || (hideAndShow != 'none' && hideAndShow != 'off'))
       this._navigablePeers.push(peer);
 
     this._peers.push(peer);
@@ -363,13 +363,6 @@ dvt.Legend.prototype.getContentDimensions = function(targetCoordinateSpace) {
 };
 
 /**
- * @override
- */
-dvt.Legend.prototype.GetComponentDescription = function() {
-  return dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'LEGEND');
-};
-
-/**
  * Transfer categoryVisibility property from legend item to hiddenCategories on the legend.
  * @param {array} sections The array of legend section definitions
  * @private
@@ -384,7 +377,7 @@ dvt.Legend.prototype._transferVisibilityProperties = function(sections) {
 
     // If this section has nested sections, recurse.
     if (section['sections'])
-      hiddenCategories = this._transferVisibilityProperties(section['sections']);
+      this._transferVisibilityProperties(section['sections']);
 
     // Iterate through the items and transfer properties.
     var items = section['items'];
@@ -395,7 +388,7 @@ dvt.Legend.prototype._transferVisibilityProperties = function(sections) {
       var item = items[j];
       var itemCategory = DvtLegendRenderer.getItemCategory(item, this);
 
-      if (item['categoryVisibility'] == 'hidden' && dvt.ArrayUtils.getIndex(hiddenCategories, itemCategory) < 0)
+      if (item['categoryVisibility'] == 'hidden' && hiddenCategories.indexOf(itemCategory) < 0)
         hiddenCategories.push(itemCategory);
 
       item['categoryVisibility'] = null;
@@ -409,11 +402,12 @@ dvt.Legend.prototype._transferVisibilityProperties = function(sections) {
 dvt.Legend.prototype.UpdateAriaAttributes = function() {
   if (this.IsParentRoot()) {
     var options = this.getOptions();
+    var translations = options.translations;
     var hideAndShow = options['hideAndShowBehavior'];
     if ((hideAndShow != 'off' && hideAndShow != 'none') || options['hoverBehavior'] == 'dim') {
       this.getCtx().setAriaRole('application');
-      this.getCtx().setAriaLabel(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST',
-          [dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DATA_VISUALIZATION'), dvt.StringUtils.processAriaLabel(this.GetComponentDescription())]));
+      this.getCtx().setAriaLabel(dvt.ResourceUtils.format(translations.labelAndValue,
+          [translations.labelDataVisualization, dvt.TextUtils.processAriaLabel(this.GetComponentDescription())]));
     }
   }
 };
@@ -730,49 +724,23 @@ DvtLegendAutomation.prototype._generateSectionObjects = function(sections) {
  * @extends {dvt.BaseComponentDefaults}
  */
 var DvtLegendDefaults = function(context) {
-  this.Init({'skyros': DvtLegendDefaults.VERSION_1, 'alta': DvtLegendDefaults.SKIN_ALTA, 'next': DvtLegendDefaults.SKIN_NEXT}, context);
+  this.Init({'alta': DvtLegendDefaults.SKIN_ALTA}, context);
 };
 
 dvt.Obj.createSubclass(DvtLegendDefaults, dvt.BaseComponentDefaults);
 
 /**
- * Contains overrides for the 'next' skin.
- */
-DvtLegendDefaults.SKIN_NEXT = {
-  'skin': dvt.CSSStyle.SKIN_NEXT,
-  'titleStyle': new dvt.CSSStyle('color: #737373;'),
-  '_sectionTitleStyle': new dvt.CSSStyle('color: #737373;'),
-  'layout': {
-    'titleGapWidth': 17, 'titleGapHeight': 9,
-    'symbolGapWidth': 7, 'symbolGapHeight': 4,
-    'rowGap': 4, 'columnGap': 10,
-    'sectionGapHeight': 16, 'sectionGapWidth': 24
-  }
-};
-
-
-/**
- * Contains overrides for the 'alta' skin.
+ * Defaults for version 1.
  */
 DvtLegendDefaults.SKIN_ALTA = {
   'skin': dvt.CSSStyle.SKIN_ALTA,
-  'textStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA),
-  'titleStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11 + 'color: #333333;'),
-  '_sectionTitleStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11 + 'color: #333333;')
-};
-
-
-/**
- * Defaults for version 1.
- */
-DvtLegendDefaults.VERSION_1 = {
-  'skin': dvt.CSSStyle.SKIN_SKYROS,
   'orientation': 'vertical',
   'position': null,
   'backgroundColor': null,
   'borderColor': null,
-  'textStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS + 'font-size: 11px; color: #333333;'),
-  'titleStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS + 'font-size: 12px; color: #003d5b;'),
+  'textStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11 + 'color: #333333;'),
+  'titleStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11 + 'color: #737373;'),
+  '_sectionTitleStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11 + 'color: #737373;'),
   'titleHalign': 'start',
   'hiddenCategories': [],
   'hideAndShowBehavior': 'off',
@@ -798,15 +766,14 @@ DvtLegendDefaults.VERSION_1 = {
   //*********** Internal Attributes *************************************************//
   'layout': {
     'outerGapWidth': 3, 'outerGapHeight': 3, // Used by Treemap for legend creation
-    'titleGapWidth': 8, 'titleGapHeight': 3,
-    'symbolGapWidth': 5, 'symbolGapHeight': 4,
-    'rowGap': 0, 'columnGap': 8,
-    'sectionGapHeight': 6, 'sectionGapWidth': 15
+    'titleGapWidth': 17, 'titleGapHeight': 9,
+    'symbolGapWidth': 7, 'symbolGapHeight': 4,
+    'rowGap': 4, 'columnGap': 10,
+    'sectionGapHeight': 16, 'sectionGapWidth': 24
   },
 
   'isLayout': false // true if rendering for layout purposes
 };
-
 
 /**
  * Adjusts the gap size based on the component options.
@@ -835,7 +802,7 @@ DvtLegendDefaults.prototype.getNoCloneObject = function(legend) {
  * @constructor
  */
 var DvtLegendEventManager = function(legend) {
-  this.Init(legend.getCtx(), legend.processEvent, legend);
+  this.Init(legend.getCtx(), legend.processEvent, legend, legend);
   this._legend = legend;
 };
 
@@ -951,7 +918,7 @@ DvtLegendEventManager.prototype.processHideShowEvent = function(obj) {
   var id = categories[0];
   var event;
   if (DvtLegendRenderer.isCategoryHidden(category, this._legend)) {
-    hiddenCategories.splice(dvt.ArrayUtils.getIndex(hiddenCategories, category), 1);
+    hiddenCategories.splice(hiddenCategories.indexOf(category), 1);
     event = dvt.EventFactory.newCategoryShowEvent(id, hiddenCategories);
   } else {
     hiddenCategories.push(category);
@@ -973,11 +940,6 @@ DvtLegendEventManager.prototype.processHideShowEvent = function(obj) {
  * @return {boolean} True if an event was fired.
  */
 DvtLegendEventManager.prototype.handleClick = function(obj, event) {
-  if (obj && obj.getAction && obj.getAction()) {
-    this.FireEvent(dvt.EventFactory.newActionEvent('action', obj.getAction(), obj.getId()), this._legend);
-    return true;
-  }
-
   // Drill support
   if (obj instanceof DvtLegendObjPeer && obj.isDrillable()) {
     var id = obj.getId();
@@ -1010,7 +972,7 @@ DvtLegendEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOve
 
   // Fire the event to the rollover handler, who will fire to the component callback.
   var rolloverEvent = dvt.EventFactory.newCategoryHighlightEvent(options['highlightedCategories'], bOver);
-  var hoverBehaviorDelay = dvt.StyleUtils.getTimeMilliseconds(options['hoverBehaviorDelay']);
+  var hoverBehaviorDelay = dvt.CSSStyle.getTimeMilliseconds(options['hoverBehaviorDelay']);
   this.RolloverHandler.processEvent(rolloverEvent, this._legend.__getObjects(), hoverBehaviorDelay, true);
 };
 
@@ -1053,7 +1015,7 @@ DvtLegendEventManager.prototype.toggleSectionCollapse = function(event, sectionI
 
   // Set the keyboard focus on a mouse click
   if (event.type == dvt.MouseEvent.CLICK) {
-    var peer = this.GetLogicalObject(this.GetCurrentTargetForEvent(event));
+    var peer = this.GetLogicalObject(event.target);
     if (peer.getNextNavigable)
       this.setFocusObj(peer.getNextNavigable(event));
   }
@@ -1070,16 +1032,12 @@ DvtLegendEventManager.prototype.toggleSectionCollapse = function(event, sectionI
 
   this.hideTooltip();
 
-  // Fire resize event
-  var bounds = this._legend.getContentDimensions();
-  this.FireEvent(new dvt.ResizeEvent(bounds.w, bounds.h, bounds.x, bounds.y), this._legend);
-
   // Fire expand/collapse event
   if (isExpand != null) {
-    var event = new dvt.EventFactory.newExpandCollapseEvent(isExpand ? 'expand' : 'collapse', 
-      section.id, 
-      section, 
-      this._legend.getOptions()['_widgetConstructor'], 
+    var event = new dvt.EventFactory.newExpandCollapseEvent(isExpand ? 'expand' : 'collapse',
+      section.id,
+      section,
+      this._legend.getOptions()['_widgetConstructor'],
       options.expanded
     );
     this.FireEvent(event, this._legend);
@@ -1094,13 +1052,6 @@ DvtLegendEventManager.prototype.GetTouchResponse = function() {
     return dvt.EventManager.TOUCH_RESPONSE_TOUCH_HOLD;
   else
     return dvt.EventManager.TOUCH_RESPONSE_TOUCH_START;
-};
-
-/**
- * @override
- */
-DvtLegendEventManager.prototype.getComponent = function() {
-  return this._legend;
 };
 
 /**
@@ -1301,15 +1252,13 @@ DvtLegendObjPeer.prototype.Init = function(legend, displayables, item, tooltip, 
   this._item = item;
   this._category = DvtLegendRenderer.getItemCategory(this._item, this._legend); // section title is not category
   this._id = this._category ? this._category : item['title'];
-  this._action = item['action'];
   this._drillable = drillable;
-  this._spb = item['_spb']; // popup support
   this._tooltip = tooltip;
   this._datatip = datatip;
   this._isShowingKeyboardFocusEffect = false;
 
-  // Apply the cursor for the action if specified
-  if (this._action || this._drillable) {
+  // Apply the cursor for drilling if specified
+  if (this._drillable) {
     for (var i = 0; i < this._displayables.length; i++) {
       this._displayables[i].setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
     }
@@ -1399,15 +1348,6 @@ DvtLegendObjPeer.prototype.getCategories = function(category) {
   return null;
 };
 
-
-/**
- * Return the action string for the legend item, if any exists.
- * @return {string} the action outcome for the legend item.
- */
-DvtLegendObjPeer.prototype.getAction = function() {
-  return this._action;
-};
-
 /**
  * Returns if the legend item is drillable.
  * @return {boolean}
@@ -1416,37 +1356,26 @@ DvtLegendObjPeer.prototype.isDrillable = function() {
   return this._drillable;
 };
 
-//---------------------------------------------------------------------//
-// Popup Support: DvtPopupSource impl                                  //
-//---------------------------------------------------------------------//
-
-
-/**
- * @override
- */
-DvtLegendObjPeer.prototype.getShowPopupBehaviors = function() {
-  return this._spb;
-};
-
 /**
  * @override
  */
 DvtLegendObjPeer.prototype.getAriaLabel = function() {
   var states = [];
   var options = this._legend.getOptions();
+  var translations = options.translations;
   var hideAndShow = this._legend.getOptions()['hideAndShowBehavior'];
   var bHiddenCategory = DvtLegendRenderer.isCategoryHidden(this._category, this._legend);
   var data = this.getData();
 
   if (this._displayables[0] instanceof dvt.Button) {
-    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, DvtLegendRenderer.isSectionCollapsed(data, this._legend) ? 'STATE_COLLAPSED' : 'STATE_EXPANDED'));
+    states.push(translations[DvtLegendRenderer.isSectionCollapsed(data, this._legend) ? 'stateCollapsed' : 'stateExpanded']);
     return dvt.Displayable.generateAriaLabel(data['title'], states);
   }
 
   if (hideAndShow != 'off' && hideAndShow != 'none')
-    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, bHiddenCategory ? 'STATE_HIDDEN' : 'STATE_VISIBLE'));
+    states.push(translations[bHiddenCategory ? 'stateHidden' : 'stateVisible']);
   if (this.isDrillable())
-    states.push(dvt.Bundle.getTranslation(options, 'stateDrillable', dvt.Bundle.UTIL_PREFIX, 'STATE_DRILLABLE'));
+    states.push(translations.stateDrillable);
 
   if (data['shortDesc'] != null) {
     return dvt.Displayable.generateAriaLabel(data['shortDesc'], states);
@@ -1978,7 +1907,7 @@ DvtLegendRenderer._renderVerticalSection = function(legend, container, section, 
     if (!options['isLayout']) {
       var isCollapsed = DvtLegendRenderer.isSectionCollapsed(section, legend);
       var buttonType = isCollapsed ? 'closed' : 'open';
-      var buttonTooltip = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, isCollapsed ? 'EXPAND' : 'COLLAPSE', null);
+      var buttonTooltip = options.translations[isCollapsed ? 'tooltipExpand' : 'tooltipCollapse'];
       var em = legend.getEventManager();
 
       button = DvtLegendRenderer._createButton(context, legend, section, options['_resources'], buttonType,
@@ -2442,12 +2371,12 @@ DvtLegendRenderer._createMarker = function(legend, cx, cy, symbolWidth, symbolHe
   var legendMarker;
   if (pattern && (pattern != 'none')) {
     // Pattern markers must be translated, since the pattern starts at the origin of the shape
-    legendMarker = new dvt.SimpleMarker(context, shape, legendOptions['skin'], 0, 0, symbolWidth, symbolHeight, null, null, true);
+    legendMarker = new dvt.SimpleMarker(context, shape, 0, 0, symbolWidth, symbolHeight, null, null, true);
     legendMarker.setFill(new dvt.PatternFill(pattern, color, '#FFFFFF'));
     legendMarker.setTranslate(cx, cy);
   }
   else {
-    legendMarker = new dvt.SimpleMarker(context, shape, legendOptions['skin'], cx, cy, symbolWidth, symbolHeight, null, null, true);
+    legendMarker = new dvt.SimpleMarker(context, shape, cx, cy, symbolWidth, symbolHeight, null, null, true);
     legendMarker.setSolidFill(color);
   }
 
@@ -2479,15 +2408,20 @@ DvtLegendRenderer._createMarker = function(legend, cx, cy, symbolWidth, symbolHe
  */
 DvtLegendRenderer._createLine = function(context, x, y, colWidth, rowHeight, item) {
   var lineY = y + rowHeight / 2;
-  var line = new dvt.Line(context, x, lineY, x + colWidth, lineY);
-  var stroke = new dvt.SolidStroke(item['color'], 1, item['lineWidth']);
+  // For type lineWithMarker, marker parameters cx, cy, symbolHeight and symbolWidth are rounded up.
+  // To make everything symmetrical, we round line parameters as well.
+  colWidth = colWidth % 2 == 1 ? colWidth + 1 : colWidth; // colWidth is even-ed to make up for the rounding of cx in marker for lineWithMarker types.
+  var line = new dvt.Line(context, x, Math.round(lineY), x + colWidth, Math.round(lineY));
 
   // Set the line style. The size and the spacing of the dash/dot has to be shrunk so that it's readable inside the 10px box.
   var style = item['lineStyle'];
+  var dashProps;
   if (style == 'dashed')
-    stroke.setType(dvt.Stroke.convertTypeString(style), '4,2,4');
+    dashProps = {dashArray: '4,2,4'};
   else if (style == 'dotted')
-    stroke.setType(dvt.Stroke.convertTypeString(style), '2');
+    dashProps = {dashArray: '2'};
+
+  var stroke = new dvt.Stroke(item['color'], 1, item['lineWidth'], false, dashProps);
 
   // set custom style and class
   line.setClassName(item['className'] || item['svgClassName']).setStyle(item['style'] || item['svgStyle']);
@@ -2544,7 +2478,7 @@ DvtLegendRenderer.isCategoryHidden = function(category, legend) {
   if (!hiddenCategories || hiddenCategories.length <= 0)
     return false;
 
-  return dvt.ArrayUtils.getIndex(hiddenCategories, category) !== -1;
+  return hiddenCategories.indexOf(category) !== -1;
 };
 
 /**
@@ -2557,19 +2491,6 @@ DvtLegendRenderer.isSectionCollapsed = function(section, legend) {
   var options = legend.getOptions();
   return section['expanded'] == 'off' || section['expanded'] == false || (options.expanded && options.expanded.has(section.id) == false);
 };
-
-dvt.exportProperty(dvt, 'Legend', dvt.Legend);
-dvt.exportProperty(dvt.Legend, 'newInstance', dvt.Legend.newInstance);
-dvt.exportProperty(dvt.Legend.prototype, 'destroy', dvt.Legend.prototype.destroy);
-dvt.exportProperty(dvt.Legend.prototype, 'getAutomation', dvt.Legend.prototype.getAutomation);
-dvt.exportProperty(dvt.Legend.prototype, 'getPreferredSize', dvt.Legend.prototype.getPreferredSize);
-dvt.exportProperty(dvt.Legend.prototype, 'highlight', dvt.Legend.prototype.highlight);
-dvt.exportProperty(dvt.Legend.prototype, 'render', dvt.Legend.prototype.render);
-
-dvt.exportProperty(DvtLegendAutomation.prototype, 'getDomElementForSubId', DvtLegendAutomation.prototype.getDomElementForSubId);
-dvt.exportProperty(DvtLegendAutomation.prototype, 'getItem', DvtLegendAutomation.prototype.getItem);
-dvt.exportProperty(DvtLegendAutomation.prototype, 'getSection', DvtLegendAutomation.prototype.getSection);
-dvt.exportProperty(DvtLegendAutomation.prototype, 'getTitle', DvtLegendAutomation.prototype.getTitle);
 
 })(dvt);
   return dvt;

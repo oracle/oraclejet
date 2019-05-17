@@ -1,22 +1,13 @@
-export function getComponentMetadata(name: string): Metadata | null;
+import MetadataTypes = require('../ojmetadata');
+export function getComponentMetadata(name: string): MetadataTypes.ComponentMetadata | null;
 export function register<P extends PropertiesType = PropertiesType>(name: string, descriptor: {
-    metadata: Metadata;
+    metadata: MetadataTypes.ComponentMetadata;
     view: string;
     viewModel?: {
         new (context: ViewModelContext<P>): ViewModel<P>;
     };
-    parseFunction?: ((value: string, name: string, meta: object, defaultParseFunction?: (value: string) => any) => any);
+    parseFunction?: ((value: string, name: string, meta: MetadataTypes.ComponentMetadataProperties, defaultParseFunction?: (value: string) => any) => any);
 }): void;
-// tslint:disable-next-line interface-over-type-literal
-export type Metadata = {
-    name: string;
-    version: string;
-    jetVersion: string;
-    properties?: object;
-    methods?: object;
-    events?: object;
-    slots?: object;
-};
 // tslint:disable-next-line interface-over-type-literal
 export type PropertiesType = {
     [key: string]: any;
@@ -45,7 +36,9 @@ export type ViewModel<P extends PropertiesType = PropertiesType> = {
 export type ViewModelContext<P extends PropertiesType = PropertiesType> = {
     element: Element;
     properties: P;
-    slotCounts: object;
+    slotCounts: {
+        [key: string]: number;
+    };
     unique: string;
     uniqueId: string;
 };

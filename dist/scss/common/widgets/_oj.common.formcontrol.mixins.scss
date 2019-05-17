@@ -59,7 +59,7 @@
     @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
       @media #{$responsiveQuerySmallOnly} {
         & {
-          -webkit-text-size-adjust: var(--oj-form-control-trigger-font-size-adjust);
+          -webkit-text-size-adjust: var(--oj-text-field-trigger-font-size-adjust);
         }
       }
     }
@@ -89,8 +89,8 @@
 
 }
 
-@mixin oj-form-control-content-css-vars($valueColor: '--oj-form-control-input-value-color',
-                                        $textAlign:  '--oj-form-control-text-align') {
+@mixin oj-form-control-content-css-vars($valueColor: '--oj-text-field-input-value-color',
+                                        $textAlign:  '--oj-text-field-text-align') {
 
  
   text-align: var(#{$textAlign});
@@ -100,14 +100,20 @@
   }
  
   color: var(#{$valueColor});
-  background-color: var(--oj-form-control-bg-color);
+  background-color: var(--oj-text-field-bg-color);
   @include oj-form-control-border($outputCssVars: true);
-  @include oj-placeholder()
-  {
-    color: var(--oj-form-control-placeholder-color);
+  // Prefix hardcoded because of caniuse-lite issue, should be removed once resolved
+  &:-ms-input-placeholder {
+    color: var(--oj-text-field-placeholder-color);
     // in Firefox the default opacity is not 1 for placeholder
     opacity: 1;
-    font-style: var(--oj-form-control-placeholder-font-style);
+    font-style: var(--oj-text-field-placeholder-font-style);
+  }
+  &::placeholder {
+    color: var(--oj-text-field-placeholder-color);
+    // in Firefox the default opacity is not 1 for placeholder
+    opacity: 1;
+    font-style: var(--oj-text-field-placeholder-font-style);
   }
 
   // iOS's iPad has a bug of showing an inner top shadow, the below CSS is to remove it for webkit
@@ -139,28 +145,34 @@
     }
 }
 
-@mixin oj-form-control-input-css-vars($valueColor: '--oj-form-control-input-value-color',
-                             $textAlign: '--oj-form-control-text-align') {
+@mixin oj-form-control-input-css-vars($valueColor: '--oj-text-field-input-value-color',
+                             $textAlign: '--oj-text-field-text-align') {
 
     text-align: var(#{$textAlign});
     html[dir="rtl"] & {
      text-align: var(#{$textAlign}-rtl);
     }
     color: var(#{$valueColor});
-    background-color: var(--oj-form-control-bg-color);
+    background-color: var(--oj-text-field-bg-color);
 
     // iOS's iPad has a bug of showing an inner top shadow, the below CSS is to remove it for webkit
     -webkit-appearance: none;
     // remove ios background-color on tap since we tend to put our own background-color on tap
     -webkit-tap-highlight-color: transparent;
 
-
-    @include oj-placeholder()
-    {
-      color: var(--oj-form-control-placeholder-color);
+    
+    // Prefix hardcoded because of caniuse-lite issue, should be removed once resolved
+    &:-ms-input-placeholder {
+      color: var(--oj-text-field-placeholder-color);
       // in Firefox the default opacity is not 1 for placeholder
       opacity: 1;
-      font-style: var(--oj-form-control-placeholder-font-style);
+      font-style: var(--oj-text-field-placeholder-font-style);
+    }
+    &::placeholder {
+      color: var(--oj-text-field-placeholder-color);
+      // in Firefox the default opacity is not 1 for placeholder
+      opacity: 1;
+      font-style: var(--oj-text-field-placeholder-font-style);
     }
 }
 
@@ -168,9 +180,9 @@
   border-style: solid;
 
   @if($outputCssVars) {
-    border-color: var(--oj-form-control-border-color);
-    border-width: var(--oj-form-control-border-top-width) var(--oj-form-control-border-right-width) var(--oj-form-control-border-bottom-width) var(--oj-form-control-border-left-width);
-    border-radius: var(--oj-form-control-border-radius);
+    border-color: var(--oj-text-field-border-color);
+    border-width: var(--oj-text-field-border-top-width) var(--oj-text-field-border-right-width) var(--oj-text-field-border-bottom-width) var(--oj-text-field-border-left-width);
+    border-radius: var(--oj-text-field-border-radius);
   }
   @else{
     border-color: $formControlBorderColor;
@@ -183,10 +195,10 @@
 @mixin oj-form-control-content-disabled($outputCssVars: false) {
   @if ($outputCssVars == true)
   {
-    color: var(--oj-form-control-value-color-disabled);
-    background-color: var(--oj-form-control-bg-color-disabled);
-    border-color: var(--oj-form-control-border-color-disabled);
-    opacity: var(--oj-form-control-opacity-disabled);
+    color: var(--oj-text-field-value-color-disabled);
+    background-color: var(--oj-text-field-bg-color-disabled);
+    border-color: var(--oj-text-field-border-color-disabled);
+    opacity: var(--oj-text-field-opacity-disabled);
   }
   @else
   {
@@ -206,9 +218,9 @@
   border-right-width: 0;
   @if ($outputCssVars == true)
   {
-    color: var(--oj-form-control-value-color-read-only);
-    font-size: var(--oj-form-control-font-size-read-only);
-    font-weight: var(--oj-form-control-font-weight-read-only);
+    color: var(--oj-text-field-value-color-read-only);
+    font-size: var(--oj-text-field-font-size-read-only);
+    font-weight: var(--oj-text-field-font-weight-read-only);
   }
   @else
   {
@@ -231,7 +243,7 @@
                                                 $focusPaddingBottom: 0px) {
   @if ($outputCssVars == true)
   {
-    padding-bottom: calc(var(--oj-form-control-input-border-bottom-width-focus) - var(--oj-form-control-border-bottom-width) + #{$focusPaddingBottom});
+    padding-bottom: calc(var(--oj-text-field-input-border-bottom-width-focus) - var(--oj-text-field-border-bottom-width) + #{$focusPaddingBottom});
   }
   @else {
     padding-bottom: value-bottom-difference($formControlInputBorderWidthFocus, $formControlBorderWidth, $focusPaddingBottom);
@@ -250,8 +262,8 @@
 @mixin oj-form-control-content-focus($outputCssVars: false) {
   @if ($outputCssVars == true)
   {
-    border-color: var(--oj-form-control-input-border-color-focus);
-    border-width: var(--oj-form-control-input-border-top-width-focus) var(--oj-form-control-input-border-right-width-focus) var(--oj-form-control-input-border-bottom-width-focus) var(--oj-form-control-input-border-left-width-focus);
+    border-color: var(--oj-text-field-input-border-color-focus);
+    border-width: var(--oj-text-field-input-border-top-width-focus) var(--oj-text-field-input-border-right-width-focus) var(--oj-text-field-input-border-bottom-width-focus) var(--oj-text-field-input-border-left-width-focus);
   }
   @else
   {
@@ -400,7 +412,7 @@
 }
 @mixin oj-form-control-border-message-width-css-vars()
 {
-  border-width: var(--oj-form-control-messaging-border-top-width) var(--oj-form-control-messaging-border-right-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-left-width);
+  border-width: var(--oj-text-field-messaging-border-top-width) var(--oj-text-field-messaging-border-right-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-left-width);
 }
 // returns the border-width for when there is a message (e.g., error) on the form control.
 // we calculate this because in some cases, we want only a bottom-border, in other cases we

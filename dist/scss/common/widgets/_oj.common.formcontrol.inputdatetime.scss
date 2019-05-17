@@ -55,10 +55,10 @@
          get smaller instead of overflowing its boundaries */
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        max-width: var(--oj-form-control-lg-max-width);
-        min-width: var(--oj-form-control-min-width);  
+        max-width: var(--oj-text-field-lg-max-width);
+        min-width: var(--oj-text-field-min-width);  
         // font size needs to be on the root, because max/min width is in em.
-        font-size: var(--oj-form-control-trigger-font-size);
+        font-size: var(--oj-text-field-trigger-font-size);
         @include oj-form-control-text-size-adjust-css-vars();          
       } 
       @else {
@@ -94,7 +94,7 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         max-width: calc(var(--oj-date-time-picker-width) + 2px); // need to account for the border
-        min-width: var(--oj-form-control-min-width);        
+        min-width: var(--oj-text-field-min-width);        
       }
       @else {
         max-width: calc(#{$dateTimePickerWidth} + 2px); // need to account for the border
@@ -116,18 +116,18 @@
     .oj-inputdatetime-input {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        @include oj-form-control-content-css-vars($valueColor: '--oj-form-control-trigger-value-color');
-        padding: 0 var(--oj-form-control-padding-horizontal);
-        height: var(--oj-form-control-trigger-height);
+        @include oj-form-control-content-css-vars($valueColor: '--oj-text-field-trigger-value-color');
+        padding: 0 var(--oj-text-field-padding-horizontal);
+        height: var(--oj-text-field-trigger-height);
         
         html:not([dir="rtl"]) & {
-          border-width: var(--oj-form-control-border-top-width) 0 var(--oj-form-control-border-bottom-width) var(--oj-form-control-border-left-width);
-          border-radius: var(--oj-form-control-border-radius) 0 0 var(--oj-form-control-border-radius);
+          border-width: var(--oj-text-field-border-top-width) 0 var(--oj-text-field-border-bottom-width) var(--oj-text-field-border-left-width);
+          border-radius: var(--oj-text-field-border-radius) 0 0 var(--oj-text-field-border-radius);
         }
         
         html[dir="rtl"] & {
-          border-width: var(--oj-form-control-border-top-width) var(--oj-form-control-border-right-width) var(--oj-form-control-border-bottom-width) 0;
-          border-radius: 0 var(--oj-form-control-border-radius) var(--oj-form-control-border-radius) 0;          
+          border-width: var(--oj-text-field-border-top-width) var(--oj-text-field-border-right-width) var(--oj-text-field-border-bottom-width) 0;
+          border-radius: 0 var(--oj-text-field-border-radius) var(--oj-text-field-border-radius) 0;          
         }
       }
       @else {
@@ -176,18 +176,18 @@
       border-style: solid;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        border-color: var(--oj-form-control-border-color);
-        background-color: var(--oj-form-control-bg-color);
-        height: var(--oj-form-control-trigger-height);
-        line-height: var(--oj-form-control-trigger-height);   
+        border-color: var(--oj-text-field-border-color);
+        background-color: var(--oj-text-field-bg-color);
+        height: var(--oj-text-field-trigger-height);
+        line-height: var(--oj-text-field-trigger-height);   
         
         html:not([dir="rtl"]) & {
-          border-width: var(--oj-form-control-border-top-width) var(--oj-form-control-border-right-width) var(--oj-form-control-border-bottom-width) 0;
-          border-radius: 0 var(--oj-form-control-border-radius) var(--oj-form-control-border-radius) 0;
+          border-width: var(--oj-text-field-border-top-width) var(--oj-text-field-border-right-width) var(--oj-text-field-border-bottom-width) 0;
+          border-radius: 0 var(--oj-text-field-border-radius) var(--oj-text-field-border-radius) 0;
         }     
         html[dir="rtl"] & {
-          border-width: var(--oj-form-control-border-top-width) 0 var(--oj-form-control-border-bottom-width) var(--oj-form-control-border-left-width);
-          border-radius: var(--oj-form-control-border-radius) 0 0 var(--oj-form-control-border-radius);
+          border-width: var(--oj-text-field-border-top-width) 0 var(--oj-text-field-border-bottom-width) var(--oj-text-field-border-left-width);
+          border-radius: var(--oj-text-field-border-radius) 0 0 var(--oj-text-field-border-radius);
         }
       }
       @else {
@@ -230,7 +230,7 @@
     .oj-inputdatetime.oj-warning .oj-inputdatetime-input-trigger {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        border-color: var(--oj-form-control-border-color-warning);        
+        border-color: var(--oj-text-field-border-color-warning);        
       }
       @else {
         border-color: $borderColorWarning;
@@ -241,14 +241,14 @@
     .oj-inputdatetime:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-inputdatetime-input {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        border-color: var(--oj-form-control-input-border-color-focus);
+        border-color: var(--oj-text-field-input-border-color-focus);
 
         html:not([dir="rtl"]) & {
-          border-width: var(--oj-form-control-input-border-top-width-focus) 0 var(--oj-form-control-input-border-bottom-width-focus) var(--oj-form-control-input-border-left-width-focus);
+          border-width: var(--oj-text-field-input-border-top-width-focus) 0 var(--oj-text-field-input-border-bottom-width-focus) var(--oj-text-field-input-border-left-width-focus);
         }
         
         html[dir="rtl"] & {
-          border-width: var(--oj-form-control-input-border-top-width-focus) var(--oj-form-control-input-border-right-width-focus) var(--oj-form-control-input-border-bottom-width-focus) 0;
+          border-width: var(--oj-text-field-input-border-top-width-focus) var(--oj-text-field-input-border-right-width-focus) var(--oj-text-field-input-border-bottom-width-focus) 0;
         }
       }
       @else {
@@ -265,14 +265,14 @@
     .oj-inputdatetime:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-inputdatetime-input-trigger {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        border-color: var(--oj-form-control-input-border-color-focus);
+        border-color: var(--oj-text-field-input-border-color-focus);
 
         html:not([dir="rtl"]) & {
-          border-width: var(--oj-form-control-input-border-top-width-focus) var(--oj-form-control-input-border-right-width-focus) var(--oj-form-control-input-border-bottom-width-focus) 0;
+          border-width: var(--oj-text-field-input-border-top-width-focus) var(--oj-text-field-input-border-right-width-focus) var(--oj-text-field-input-border-bottom-width-focus) 0;
         }
         
         html[dir="rtl"] & {
-          border-width: var(--oj-form-control-input-border-top-width-focus) 0 var(--oj-form-control-input-border-bottom-width-focus) var(--oj-form-control-input-border-left-width-focus);
+          border-width: var(--oj-text-field-input-border-top-width-focus) 0 var(--oj-text-field-input-border-bottom-width-focus) var(--oj-text-field-input-border-left-width-focus);
         }
       }
       @else {
@@ -292,7 +292,7 @@
       .oj-inputdatetime:not(.oj-read-only):not(.oj-inputdatetime-inline).oj-focus-highlight {
         @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
         {
-          @include oj-browser-focus-outline-approximation-css-vars(var(--oj-primary-text-color));
+          @include oj-browser-focus-outline-approximation-css-vars(var(--oj-text-color-primary));
         }
         @else {
           @include oj-browser-focus-outline-approximation($primaryTextColor);
@@ -305,7 +305,7 @@
     .oj-inputdatetime.oj-invalid .oj-inputdatetime-input-trigger {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        border-color: var(--oj-form-control-border-color-invalid);
+        border-color: var(--oj-text-field-border-color-invalid);
       }
       @else {
         border-color: $borderColorError;        
@@ -318,11 +318,11 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         html:not([dir="rtl"]) & {
-          border-width: var(--oj-form-control-messaging-border-top-width) 0 var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-left-width);
+          border-width: var(--oj-text-field-messaging-border-top-width) 0 var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-left-width);
         }
         
         html[dir="rtl"] & {
-          border-width: var(--oj-form-control-messaging-border-top-width) var(--oj-form-control-messaging-border-right-width) var(--oj-form-control-messaging-border-bottom-width) 0;
+          border-width: var(--oj-text-field-messaging-border-top-width) var(--oj-text-field-messaging-border-right-width) var(--oj-text-field-messaging-border-bottom-width) 0;
         }
       }
       @else {
@@ -353,11 +353,11 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         html:not([dir="rtl"]) & {
-          border-width: var(--oj-form-control-messaging-border-top-width) var(--oj-form-control-messaging-border-right-width) var(--oj-form-control-messaging-border-bottom-width) 0;
+          border-width: var(--oj-text-field-messaging-border-top-width) var(--oj-text-field-messaging-border-right-width) var(--oj-text-field-messaging-border-bottom-width) 0;
         }
         
         html[dir="rtl"] & {
-          border-width: var(--oj-form-control-messaging-border-top-width) 0 var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-left-width);
+          border-width: var(--oj-text-field-messaging-border-top-width) 0 var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-left-width);
         }        
       }
       @else {
@@ -387,7 +387,7 @@
     .oj-inputdatetime.oj-active .oj-inputdatetime-input {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        background-color: var(--oj-form-control-trigger-bg-color-active);
+        background-color: var(--oj-text-field-trigger-bg-color-active);
       }
       @else {
         background-color: $formControlTriggerBgColorActive;        
@@ -406,6 +406,26 @@
       }
     }
 
+    // Styling for loading converters
+    .oj-inputdatetime.oj-loading .oj-inputdatetime-input-container,
+    .oj-inputdatetime-date-only.oj-loading .oj-datepicker-popup {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-image: var(--oj-loading-bg-image);
+        animation: LoadingGradientAnimation 3s infinite;
+      }
+      @else {
+        background-image: $loadingBgImage;
+        animation: LoadingGradientAnimation 3s infinite; 
+      }
+      background-size: 200% 200%;
+    }
+
+    .oj-inputdatetime.oj-loading .oj-inputdatetime-input,
+    .oj-inputdatetime-date-only.oj-loading .oj-datepicker-inline .oj-datepicker-content {
+      background-color: transparent;
+    }
+
     /* Styling for text-align */
     .oj-form-control-text-align-right.oj-inputdatetime .oj-inputdatetime-input,
     .oj-form-control-text-align-right .oj-inputdatetime .oj-inputdatetime-input
@@ -415,26 +435,42 @@
     .oj-form-control-text-align-start.oj-inputdatetime .oj-inputdatetime-input,
     .oj-form-control-text-align-start .oj-inputdatetime .oj-inputdatetime-input
     {
-      @include oj-bidi-property(
-        $property: 'text-align',
-        $startOrEnd: start,
-        $important: false) ;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        text-align: left;
+        html[dir="rtl"] & {
+          text-align: right;
+        }
+      }
+      @else {
+        @include oj-bidi-property(
+          $property: 'text-align',
+          $startOrEnd: start,
+          $important: false);
+      }
     }
     .oj-form-control-text-align-end.oj-inputdatetime .oj-inputdatetime-input,
     .oj-form-control-text-align-end .oj-inputdatetime .oj-inputdatetime-input
     {
-      @include oj-bidi-property(
-        $property: 'text-align',
-        $startOrEnd: end,
-        $important: false) ;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        text-align: right;
+        html[dir="rtl"] & {
+          text-align: left;
+        }
+      }
+      @else {
+        @include oj-bidi-property(
+          $property: 'text-align',
+          $startOrEnd: end,
+          $important: false);
+      }
     }
 
     .oj-inputdatetime.oj-disabled .oj-inputdatetime-input-trigger {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        background-color: var(--oj-form-control-bg-color-disabled);
-        border-color: var(--oj-form-control-border-color-disabled);
-        opacity: var(--oj-form-control-opacity-disabled);        
+        background-color: var(--oj-text-field-bg-color-disabled);
+        border-color: var(--oj-text-field-border-color-disabled);
+        opacity: var(--oj-text-field-opacity-disabled);        
       }
       @else {
         background-color: $formControlBgColorDisabled;
@@ -481,7 +517,7 @@
     .oj-inputdatetime-time-icon.oj-disabled {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        background-color: var(--oj-form-control-bg-color-disabled);
+        background-color: var(--oj-text-field-bg-color-disabled);
       }
       @else {
         background-color: $formControlBgColorDisabled;        
@@ -833,7 +869,7 @@
     .oj-datepicker-calendar td.oj-datepicker-other-month a.oj-enabled {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        color: var(--oj-tertiary-text-color);
+        color: var(--oj-text-color-tertiary);
       }
       @else {
         color: $tertiaryTextColor;               
@@ -897,7 +933,15 @@
       box-sizing: border-box;
     }
     .oj-datepicker-multi .oj-datepicker-group {
-      @include oj-bidi-property($property: 'float', $startOrEnd: start);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        float: left;
+        html[dir="rtl"] & {
+          float: right;
+        }
+      }
+      @else {
+        @include oj-bidi-property($property: 'float', $startOrEnd: start);
+      }
     }
     .oj-datepicker-multi-2 .oj-datepicker-group {
       width: 50%;
@@ -945,7 +989,7 @@
     .oj-datepicker-week-col {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        color: var(--oj-form-control-label-color);
+        color: var(--oj-label-color);
         width: calc((var(--oj-date-time-picker-width) - 2 * var(--oj-date-time-picker-padding)) / 8);        
       }
       @else {
@@ -1233,9 +1277,9 @@
     .oj-timepicker-wheel.oj-focus .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position0 {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        border-radius: var(--oj-form-control-border-radius);
+        border-radius: var(--oj-text-field-border-radius);
         background-color: var(--oj-timepicker-item-bg-color-focus);
-        color: var(--oj-primary-text-color);        
+        color: var(--oj-text-color-primary);        
       }
       @else {
         @include oj-border-radius($formControlBorderRadius);
@@ -1329,13 +1373,13 @@
     // -----------------------------------------------------------------------------------------
 
     // remove borders, inherit colors and stretch the height
-    .oj-form-control-inherit .oj-inputdatetime .oj-inputdatetime-input {
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
       @include oj-form-control-inherit();
     }
 
     // Styling on form control dom which doesn't require text-align, padding, or color
-    .oj-form-control-inherit .oj-inputdatetime-input-container,
-    .oj-form-control-inherit .oj-inputdatetime .oj-inputdatetime-input-trigger {
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime-input-container,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input-trigger {
       height:100%;
       background-color:inherit;
       border-width: 0;

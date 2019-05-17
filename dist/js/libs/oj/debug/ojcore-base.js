@@ -3,17 +3,17 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['require', 'promise', 'ojs/ojlogger'], function(require, promise, Logger)
 {
-    promise['polyfill']();
+  "use strict";
+  promise['polyfill']();
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
 
 /* jslint browser: true*/
-/* global define: false,goog: true,self:true*/
+/* global self:true */
 
 /**
  * Defines the oj namespace
@@ -28,7 +28,9 @@ var _scope = {};
 // Note that the 'typeof' check  is required
 if (typeof window !== 'undefined') {
   _scope = window;
+  // eslint-disable-next-line no-restricted-globals
 } else if (typeof self !== 'undefined') {
+  // eslint-disable-next-line no-restricted-globals
   _scope = self;
 }
 
@@ -43,12 +45,12 @@ var oj = {
    * @global
    * @member {string} version JET version numberr
    */
-  version: '6.2.0',
+  version: '7.0.0',
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  revision: '2019-03-07_18-03-40',
+  revision: '2019-05-09_15-33-57',
 
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -758,7 +760,7 @@ oj.CollectionUtils._copyIntoImpl = function (
 */
 
 /* jslint browser: true*/
-/* global define: false,goog: true*/
+/* global define: false, Promise:false*/
 
 /**
  * Base class of all OJET Objects.
@@ -1322,6 +1324,25 @@ oj.__isAmdLoaderPresent = function () {
   return (typeof define === 'function' && define.amd);
 };
 
+/**
+ * Loads a file using require if AMD loader is present, otherwise returns null
+ * If loading multiple files then use multiple calls to this and Promise.all
+ * @private
+ * @param {string} module sting of the module to load
+ * @param {function} requireFunc what to use as the require function, if not specified require will be used
+ * @returns {Promise|null} returns null if no AMD loader
+ */
+oj.__getRequirePromise = function (module, requireFunc) {
+  if (oj.__isAmdLoaderPresent()) {
+    return new Promise(
+      function (resolve, reject) {
+        requireFunc([module], resolve, reject);
+      }
+    );
+  }
+  return null;
+};
+
 
 /*
 ** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
@@ -1883,6 +1904,37 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
   }
 }());
 
+/* global Set:false */
+
+/**
+ * Element utilities.
+ * @class oj.ElementUtils
+ * @ignore
+ */
+oj.ElementUtils = {
+  /**
+   * Custom element name check
+   * @param {String} localName Element name
+   * @return {boolean}
+   * @ignore
+   */
+  isValidCustomElementName: function (localName) {
+    var reservedTagList = new Set([
+      'annotation-xml',
+      'color-profile',
+      'font-face',
+      'font-face-src',
+      'font-face-uri',
+      'font-face-format',
+      'font-face-name',
+      'missing-glyph',
+    ]);
+    var reserved = reservedTagList.has(localName);
+    var validForm = /^[a-z][.0-9_a-z]*-[-.0-9_a-z]*$/.test(localName);
+    return !reserved && validForm && !localName.startsWith('oj-bind-', 0);
+  }
+};
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -2069,7 +2121,7 @@ oj.KeyUtils.equals = function (key1, key2) {
     return evt;
   }
 
-  CustomEvent.prototype = window.Event.prototype;
+  CustomEvent.prototype = Object.getPrototypeOf(new CustomEvent('bogusEvent'));
 
   window.CustomEvent = CustomEvent;
 }());
@@ -2210,6 +2262,27 @@ oj.KeyUtils.equals = function (key1, key2) {
   }
 }());
 
+(function () {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  if (new window.Set([0]).size === 0) {
+    var NativeSet = window.Set;
+    // eslint-disable-next-line no-inner-declarations
+    function Set(iterable) {
+      var set = new NativeSet();
+      if (iterable) {
+        iterable.forEach(set.add, set);
+      }
+      return set;
+    }
+    Set.prototype = NativeSet.prototype;
+    // eslint-disable-next-line no-extend-native
+    Set.prototype.constructor = Set;
+    window.Set = Set;
+  }
+}());
 
 /*
 ** Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.

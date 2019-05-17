@@ -1,8 +1,3 @@
-/**
- * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- */
 @import "../utilities/oj.utilities.urls";
 @import "../utilities/oj.utilities.math";
 @import "../utilities/oj.utilities.units";
@@ -632,6 +627,7 @@
 // Currently this is used by collection components such as datagrid, table, listview
 // but is generally applicable in places where loading indicator is used
 //$loadingIndicatorDelayDuration: "250" !default;
+//$loadingBgImage: linear-gradient(90deg, $neutralColor6 0%, $neutralColor3 10%, $neutralColor6 20%) !default;
 
 
 //-----------------------------------------------------------------------------
@@ -847,6 +843,7 @@
 //$header3FontWeight: 300   !default;
 //$header4FontWeight: 400   !default;
 //$header5FontWeight: 400   !default;
+//$header6FontWeight: 400   !default;
 
 
 // $header[1|2|3|4|5]FontSize vars are
@@ -856,6 +853,7 @@
 //$header3FontSize: $largestFontSize !default;
 //$header4FontSize: $largeFontSize   !default;
 //$header5FontSize: $mediumFontSize  !default;
+//$header6FontSize: $mediumFontSize  !default;
 
 // the background variables below are for a header "container",
 // like the title bar of a dialog or an accordion header
@@ -882,6 +880,11 @@
 //$popupTailSimpleWidth:  14px !default;
 //$popupTailSimpleHeight: 14px !default;
 
+// To avoid strip unit function these 3 raw values added for popup svg calc.
+//$popupTailBorderWidthRawValue: oj-strip-unit($popupTailBorderWidth) !default;
+//$popupTailSimpleWidthRawValue:  oj-strip-unit($popupTailSimpleWidth) !default;
+//$popupTailSimpleHeightRawValue: oj-strip-unit($popupTailSimpleHeight) !default;
+
 // animation theme defaults
 //$popupTailOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition") !default;
 //$popupTailCloseAnimation: (effect: "none") !default;
@@ -900,7 +903,7 @@
 
 // animation theme defaults
 //$popupOpenAnimation: ((effect: "zoomIn", transformOrigin: "#myPosition"), "fadeIn") !default;
-//$popupCloseAnimation: ((effect: "zoomOut", persist: "all", transformOrigin: "#myPosition"), "fadeOut") !default;
+//$popupCloseAnimation: ((effect: "zoomOut", transformOrigin: "#myPosition"), "fadeOut") !default;
 
 
 // MESSAGES / MESSAGE
@@ -1003,9 +1006,10 @@
 //$messageCloseIconDisplay:                               block !default;
 //$messageAutoTimeoutCloseIconDisplay:        block !default;
 //$messageCategoryTextColor:                  $formControlLabelColor !default;
-//$messageCategoryFontSize:                   oj-px-to-rem(11px, $baseFontSize: 14px)  !default;
+//$messageCategoryFontSize:                   oj-px-to-rem(12px, $baseFontSize: 14px)  !default;
+//$messageCategoryFontWeight:                             700 !default;
 //$messageTimeTextColor:                      $textColor !default;
-//$messageTimeFontSize:                                   inherit !default;
+//$messageTimeFontSize:                       oj-px-to-rem(12px, $baseFontSize: 14px)  !default;
 //$messageSummaryTextColor:                               $primaryTextColor !default;
 //$messageSummaryFontSize:                                inherit !default;
 //$messageSummaryFontWeight:                              500 !default;
@@ -1478,7 +1482,7 @@
 
 // animation theme defaults
 //$dialogOpenAnimation: ((effect: "zoomIn"), "fadeIn") !default;
-//$dialogCloseAnimation: ((effect: "zoomOut", persist: "all"), "fadeOut") !default;
+//$dialogCloseAnimation: ((effect: "zoomOut"), "fadeOut") !default;
 
 // ojDialog resizeBehavior, cancelBehavior, and dragAffordance options
 // default to the programmatic settings.

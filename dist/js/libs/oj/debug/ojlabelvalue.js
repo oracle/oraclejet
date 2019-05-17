@@ -3,14 +3,14 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'], 
-       /*
-        * @param {Object} oj 
-        */
-       function(oj)
-{
 
+define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'], 
+/*
+* @param {Object} oj 
+*/
+function(oj)
+{
+  "use strict";
 var __oj_label_value_metadata = 
 {
   "properties": {
@@ -50,7 +50,7 @@ var __oj_label_value_metadata =
 /**
  * @ojcomponent oj.ojLabelValue
  * @since 5.1.0
- * @ojshortdesc Used to specify label element(s) and value element(s) in a single layout element.
+ * @ojshortdesc A label value is used to lay out a label and value, it is most commonly used in a form layout.
  * @ojstatus preview
  * @ojsignature {target: "Type", value:"class ojLabelValue extends JetElement<ojLabelValueSettableProperties>"}
  *
@@ -93,6 +93,7 @@ var __oj_label_value_metadata =
  * @name colspan
  * @expose
  * @memberof oj.ojLabelValue
+ * @ojshortdesc Specifies how many columns this label/value pair will occupy in the parent form layout. See the Help documentation for more information.
  * @instance
  * @type {number}
  * @default 1
@@ -120,6 +121,7 @@ var __oj_label_value_metadata =
  * @name labelEdge
  * @expose
  * @memberof oj.ojLabelValue
+ * @ojshortdesc Specifies how the label is aligned with its value component.
  * @instance
  * @type {string}
  * @default "inherit"
@@ -147,6 +149,7 @@ var __oj_label_value_metadata =
  * @name labelWidth
  * @expose
  * @memberof oj.ojLabelValue
+ * @ojshortdesc Specifies the label width. See the Help documentation for more information.
  * @instance
  * @type {string}
  * @default "inherit"
@@ -179,6 +182,7 @@ var __oj_label_value_metadata =
  *
  * @expose
  * @memberof oj.ojLabelValue
+ * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
  * @instance
  *
  * @example <caption>Set a single subproperty of a complex property:</caption>
@@ -216,6 +220,7 @@ var __oj_label_value_metadata =
  *
  * @expose
  * @memberof oj.ojLabelValue
+ * @ojshortdesc Refreshes the component.
  * @return {void}
  * @instance
  */

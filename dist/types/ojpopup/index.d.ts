@@ -14,19 +14,6 @@ export interface ojPopup extends baseComponent<ojPopupSettableProperties> {
         ariaLiveRegionInitialFocusNone?: string;
         ariaLiveRegionInitialFocusNoneTouch?: string;
     };
-    onAutoDismissChanged: ((event: JetElementCustomEvent<ojPopup["autoDismiss"]>) => any) | null;
-    onChromeChanged: ((event: JetElementCustomEvent<ojPopup["chrome"]>) => any) | null;
-    onInitialFocusChanged: ((event: JetElementCustomEvent<ojPopup["initialFocus"]>) => any) | null;
-    onModalityChanged: ((event: JetElementCustomEvent<ojPopup["modality"]>) => any) | null;
-    onPositionChanged: ((event: JetElementCustomEvent<ojPopup["position"]>) => any) | null;
-    onTailChanged: ((event: JetElementCustomEvent<ojPopup["tail"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojPopup.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojPopup.ojAnimateStart) => any) | null;
-    onOjBeforeClose: ((event: ojPopup.ojBeforeClose) => any) | null;
-    onOjBeforeOpen: ((event: ojPopup.ojBeforeOpen) => any) | null;
-    onOjClose: ((event: ojPopup.ojClose) => any) | null;
-    onOjFocus: ((event: ojPopup.ojFocus) => any) | null;
-    onOjOpen: ((event: ojPopup.ojOpen) => any) | null;
     addEventListener<T extends keyof ojPopupEventMap>(type: T, listener: (this: HTMLElement, ev: ojPopupEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojPopupSettableProperties>(property: T): ojPopup[T];
@@ -73,6 +60,18 @@ export namespace ojPopup {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type autoDismissChanged = JetElementCustomEvent<ojPopup["autoDismiss"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type chromeChanged = JetElementCustomEvent<ojPopup["chrome"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type initialFocusChanged = JetElementCustomEvent<ojPopup["initialFocus"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type modalityChanged = JetElementCustomEvent<ojPopup["modality"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type positionChanged = JetElementCustomEvent<ojPopup["position"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tailChanged = JetElementCustomEvent<ojPopup["tail"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Position = {
         my?: PositionAlign;

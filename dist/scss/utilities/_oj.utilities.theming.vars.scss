@@ -1037,11 +1037,13 @@
   $generalVarsList: _oj-theming-add-var($generalVarsList, '$header3FontWeight', $header3FontWeight);
   $generalVarsList: _oj-theming-add-var($generalVarsList, '$header4FontWeight', $header4FontWeight);
   $generalVarsList: _oj-theming-add-var($generalVarsList, '$header5FontWeight', $header5FontWeight);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$header6FontWeight', $header6FontWeight);
   $generalVarsList: _oj-theming-add-var($generalVarsList, '$header1FontSize', $header1FontSize);
   $generalVarsList: _oj-theming-add-var($generalVarsList, '$header2FontSize', $header2FontSize);
   $generalVarsList: _oj-theming-add-var($generalVarsList, '$header3FontSize', $header3FontSize);
   $generalVarsList: _oj-theming-add-var($generalVarsList, '$header4FontSize', $header4FontSize);
   $generalVarsList: _oj-theming-add-var($generalVarsList, '$header5FontSize', $header5FontSize);
+  $generalVarsList: _oj-theming-add-var($generalVarsList, '$header6FontSize', $header6FontSize);
 
   $componentVarsList: ();
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$dialogHeaderFontSize', $dialogHeaderFontSize);

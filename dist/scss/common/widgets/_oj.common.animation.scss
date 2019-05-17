@@ -9,7 +9,13 @@
 
 @if $includeAnimationClasses != false {
   @include module-include-once("common.animation") {
-
+    @keyframes LoadingGradientAnimation {
+      0% {
+        background-position: 50%; }
+      100% {
+        background-position: -120%; }
+    }
+    
     /*
      * Viewport element for clipping ojModule view host during animation
      * so that the view content doesn't overlap surrounding elements

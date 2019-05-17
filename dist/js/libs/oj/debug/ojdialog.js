@@ -3,14 +3,12 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'promise', 
         'ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/draggable', 
         'jqueryui-amd/widgets/mouse'],
-       function(oj, $, ThemeUtils, Components, AnimationUtils)
+function(oj, $, ThemeUtils, Components, AnimationUtils)
 {
-
-
+  "use strict";
 var __oj_dialog_metadata = 
 {
   "properties": {
@@ -140,10 +138,6 @@ var __oj_dialog_metadata =
       ],
       "value": "resizable"
     },
-    "role": {
-      "type": "string",
-      "value": "dialog"
-    },
     "translations": {
       "type": "object",
       "value": {},
@@ -260,11 +254,11 @@ var __oj_dialog_metadata =
 
   /**
    * @typedef {Object} oj.ojDialog.Position
-   * @property {oj.ojDialog.PositionAlign} [my] Defines which edge on the popup to align with the target ("of") element.
-   * @property {oj.ojDialog.PositionAlign} [at] Defines which position on the target element ("of") to align the positioned element
+   * @property {Object} [my] Defines which edge on the popup to align with the target ("of") element.
+   * @property {Object} [at] Defines which position on the target element ("of") to align the positioned element
    *                                  against.
-   * @property {oj.ojDialog.PositionPoint} [offset] Defines a point offset in pixels from the ("my") alignment.
-   * @property {string|oj.ojDialog.PositionPoint} [of] Which element to position the popup against.
+   * @property {Object} [offset] Defines a point offset in pixels from the ("my") alignment.
+   * @property {string|Object} [of] Which element to position the popup against.
    *
    * If the value is a string, it should be a selector or the literal string value
    * of <code class="prettyprint">window</code>.  Otherwise, a point of x,y.  When a point
@@ -284,6 +278,10 @@ var __oj_dialog_metadata =
    *  is applied to ensure as much of the element is visible as possible.</li>
    * <li><b>"none"</b> no collision detection.</li>
    * </ul>
+   * @ojsignature [{target:"Type", value:"oj.ojDialog.PositionAlign", for:"my", jsdocOverride:true},
+   *               {target:"Type", value:"oj.ojDialog.PositionAlign", for:"at", jsdocOverride:true},
+   *               {target:"Type", value:"oj.ojDialog.PositionPoint", for:"offset", jsdocOverride:true},
+   *               {target:"Type", value:"string|oj.ojDialog.PositionPoint", for:"of", jsdocOverride:true}]
    */
 
   /**
@@ -292,7 +290,7 @@ var __oj_dialog_metadata =
    * @since 0.6
    * @ojrole dialog
    * @ojdisplayname Dialog
-   * @ojshortdesc Displays a popup window that provides information and gathers input from the application user.
+   * @ojshortdesc A dialog displays a popup window that provides information and gathers input from the application user.
    * @ojstatus preview
    *
    * @classdesc
@@ -425,6 +423,8 @@ var __oj_dialog_metadata =
    *        of its original parent.</li>
    *    <li>Dialogs containing iframes are problematic.  The iframe elements "may" fire a HTTP GET request for its src attribute
    *        each time the iframe is reparented in the document.</li>
+   *    <li>If an iframe is added to the dialog's body, it must not be the first or last tab stop within the dialog or keyboard and VoiceOver
+   *        navigation will not remain within the dialog.</li>
    *    <li>In some browsers, reparenting a dialog that contains elements having overflow, will cause these overflow elements to
    *        reset their scrollTop.</li>
    *  </ol>
@@ -437,18 +437,6 @@ var __oj_dialog_metadata =
    * <p> Setting the reading direction (LTR or RTL) is supported by setting the <code class="prettyprint">"dir"</code> attribute on the
    * <code class="prettyprint">&lt;html></code> element of the page.  As with any JET component, in the unusual case that the reading direction
    * is changed post-init, the dialog must be <code class="prettyprint">refresh()</code>ed, or the page must be reloaded.
-   *
-   * <h3 id="pseudos-section">
-   *   Pseudo-selectors
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
-   * </h3>
-   *
-   * <p>The <code class="prettyprint">:oj-dialog</code> pseudo-selector can be used in jQuery expressions to select JET Dialogs.  For example:
-   *
-   * <pre class="prettyprint">
-   * <code>$( ":oj-dialog" ) // selects all JET Dialogs on the page
-   * $myEventTarget.closest( ":oj-dialog" ) // selects the closest ancestor that is a JET Dialog
-   * </code></pre>
    *
    *<h3>Additional Examples</h3>
    *
@@ -501,6 +489,7 @@ var __oj_dialog_metadata =
          *
          * @expose
          * @memberof oj.ojDialog
+         * @ojshortdesc Specifies the cancel behavior of the dialog. See the Help documentation for more information.
          * @instance
          * @type {string}
          * @default "icon"
@@ -532,6 +521,7 @@ var __oj_dialog_metadata =
          *
          * @expose
          * @memberof oj.ojDialog
+         * @ojshortdesc Specifies the drag affordance. See the Help documentation for more information.
          * @instance
          * @type {string}
          * @default "title-bar"
@@ -610,6 +600,7 @@ var __oj_dialog_metadata =
            *
            * @expose
            * @memberof oj.ojDialog
+           * @ojshortdesc Establishes the location that the dialog will appear relative to another element. See the Help documentation for more information.
            * @instance
            * @type {Object}
            * @ojsignature { target: "Type",
@@ -765,6 +756,7 @@ var __oj_dialog_metadata =
                *
                * @expose
                * @memberof! oj.ojDialog
+               * @ojshortdesc Specifies which element to position the dialog against. See the Help documentation for more information.
                * @instance
                * @alias position.of
                * @name position.of
@@ -781,14 +773,14 @@ var __oj_dialog_metadata =
                * @alias position.collision
                * @name position.collision
                * @type {string}
-               * @ojvalue {string} "flip" the element to the opposite side of the target and the
+               * @ojvalue {string} "flip" Flip the element to the opposite side of the target and the
                *  collision detection is run again to see if it will fit. Whichever side
                *  allows more of the element to be visible will be used.
-               * @ojvalue {string} "fit" shift the element away from the edge of the window.
-               * @ojvalue {string} "flipfit" first applies the flip logic, placing the element
+               * @ojvalue {string} "fit" Shift the element away from the edge of the window.
+               * @ojvalue {string} "flipfit" First applies the flip logic, placing the element
                *  on whichever side allows more of the element to be visible. Then the fit logic
                *  is applied to ensure as much of the element is visible as possible.
-               * @ojvalue {string} "none" no collision detection.
+               * @ojvalue {string} "none" No collision detection.
                * @default "fit"
                */
         collision: 'fit',
@@ -802,7 +794,7 @@ var __oj_dialog_metadata =
       },
         /**
          *
-         * Defines the resizeBehavior of the dialog.
+         * Specifies the resizeBehavior of the dialog.
          * The default value depends on the theme.
          * In the alta-web theme, the default is <code class="prettyprint">"resizable"</code>,
          * and in alta-android, alta-ios and alta-windows themes, the
@@ -810,6 +802,7 @@ var __oj_dialog_metadata =
          *
          * @expose
          * @memberof oj.ojDialog
+         * @ojshortdesc Specifies the resizeBehavior of the dialog. See the Help documentation for more information.
          * @instance
          * @type {string}
          * @ojvalue {string} "resizable" Thie dialog will be interactively resizable.
@@ -835,8 +828,9 @@ var __oj_dialog_metadata =
          * The WAI-ARIA role of the dialog. By default, role="dialog" is added to the generated HTML markup that surrounds the dialog.
          * When used as an alert dialog, the user should set role to "alertdialog".
          *
-         * @expose
+         * @ignore
          * @memberof oj.ojDialog
+         * @ojshortdesc The WAI-ARIA role of the dialog. See the Help documentation for more information.
          * @instance
          * @type {string}
          * @default "dialog"
@@ -967,10 +961,14 @@ var __oj_dialog_metadata =
          * @expose
          * @event
          * @memberof oj.ojDialog
+         * @ojshortdesc Triggered when the dialog is being resized. See the Help documentation for more information.
          * @instance
          * @ojbubbles
-         * @property {Event} event a custom event
-
+         * @property {Object} originalEvent the underlying UI <a href="http://api.jqueryui.com/resizable/#event-resize">Event</a> object
+         * @property {Object} originalPosition the original CSS position of the dialog
+         * @property {Object} originalSize the original size of the dialog
+         * @property {Object} position the current CSS position of the dialog
+         * @property {Object} size the current size of the dialog
          */
       resize: null,
         /**
@@ -979,51 +977,15 @@ var __oj_dialog_metadata =
          * @expose
          * @event
          * @memberof oj.ojDialog
+         * @ojshortdesc Triggered when the user starts resizing the dialog. See the Help documentation for more information.
          * @instance
          * @ojcancelable
          * @ojbubbles
-         * @property {Event} event a custom event
-         *
-         * <ul>
-         * <li>
-         * <div><strong>event</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Event">Event</a>
-         * </div>
-         * <div></div>
-         * </li>
-         * <li>
-         * <div><strong>ui</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Object">Object</a>
-         * </div>
-         * <div></div>
-         * <ul>
-         * <li>
-         * <div><strong>originalPosition</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Object">Object</a>
-         * </div>
-         * <div>The CSS position of the dialog prior to being resized.</div>
-         * </li>
-         * <li>
-         * <div><strong>position</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Object">Object</a>
-         * </div>
-         * <div>The current CSS position of the dialog.</div>
-         * </li>
-         * <li>
-         * <div><strong>originalSize</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Object">Object</a>
-         * </div>
-         * <div>The size of the dialog prior to being resized.</div>
-         * </li>
-         * <li>
-         * <div><strong>size</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Object">Object</a>
-         * </div>
-         * <div>The current size of the dialog.</div>
-         * </li>
-         * </ul>
-         * </li>
-         * </ul>
+         * @property {Object} originalEvent the underlying UI <a href="http://api.jqueryui.com/resizable/#event-resize">Event</a> object
+         * @property {Object} originalPosition the original CSS position of the dialog
+         * @property {Object} originalSize the original size of the dialog
+         * @property {Object} position the current CSS position of the dialog
+         * @property {Object} size the current size of the dialog
          */
       resizeStart: null,
         /**
@@ -1032,52 +994,15 @@ var __oj_dialog_metadata =
          * @expose
          * @event
          * @memberof oj.ojDialog
+         * @ojshortdesc Triggered when the user stops resizing the dialog. See the Help documentation for more information.
          * @instance
          * @ojcancelable
          * @ojbubbles
-         * @property {Event} event a custom event
-         *
-         * <ul>
-         * <li>
-         * <div><strong>event</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Event">Event</a>
-         * </div>
-         * <div></div>
-         * </li>
-         * <li>
-         * <div><strong>ui</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Object">Object</a>
-         * </div>
-         * <div></div>
-         * <ul>
-         * <li>
-         * <div><strong>originalPosition</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Object">Object</a>
-         * </div>
-         * <div>The CSS position of the dialog prior to being resized.</div>
-         * </li>
-         * <li>
-         * <div><strong>position</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Object">Object</a>
-         * </div>
-         * <div>The current CSS position of the dialog.</div>
-         * </li>
-         * <li>
-         * <div><strong>originalSize</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Object">Object</a>
-         * </div>
-         * <div>The size of the dialog prior to being resized.</div>
-         * </li>
-         * <li>
-         * <div><strong>size</strong></div>
-         * <div>Type: <a href="http://api.jquery.com/Types/#Object">Object</a>
-         * </div>
-         * <div>The current size of the dialog.</div>
-         * </li>
-         * </ul>
-         * </li>
-         * </ul>
-         *
+         * @property {Object} originalEvent the underlying UI <a href="http://api.jqueryui.com/resizable/#event-resize">Event</a> object
+         * @property {Object} originalPosition the original CSS position of the dialog
+         * @property {Object} originalSize the original size of the dialog
+         * @property {Object} position the current CSS position of the dialog
+         * @property {Object} size the current size of the dialog
          */
       resizeStop: null,
           /**
@@ -1088,6 +1013,7 @@ var __oj_dialog_metadata =
            * @expose
            * @event
            * @memberof oj.ojDialog
+           * @ojshortdesc Triggered when a default animation is about to start, such as when the component is being opened/closed or a child item is being added/removed.
            * @instance
            * @ojcancelable
            * @ojbubbles
@@ -1105,22 +1031,22 @@ var __oj_dialog_metadata =
            *            custom animation has ended.
            *
            *
-           * @example <caption>Bind an event listener to the
-           *          <code class="prettyprint">onOjAnimateStart</code> property to override the default
+           * @example <caption>Add a listener for the
+           *          <code class="prettyprint">ojAnimateStart</code> event to override the default
            *          "close" animation:</caption>
-           * myDialog.onOjAnimateStart = function( event )
+           * myDialog.addEventListener("ojAnimateStart", function( event )
            *   {
            *     // verify that the component firing the event is a component of interest and action
            *      is close
            *     if (event.detail.action == "close") {
            *       event.preventDefault();
            *       oj.AnimationUtils.slideOut(event.detail.element).then(event.detail.endCallback);
-           *   };
+           *   });
            *
            * @example <caption>The default open and close animations are controlled via the theme
            *          (SCSS) :</caption>
            * $dialogOpenAnimation: ((effect: "zoomIn"), "fadeIn")  !default;
-           * $dialogCloseAnimation: ((effect: "zoomOut", persist: "all"), "fadeOut")  !default;
+           * $dialogCloseAnimation: ((effect: "zoomOut"), "fadeOut")  !default;
            */
 
       animateStart: null,
@@ -1133,6 +1059,7 @@ var __oj_dialog_metadata =
            * @expose
            * @event
            * @memberof oj.ojDialog
+           * @ojshortdesc Triggered when a default animation has ended, such as when the component is being opened/closed or a child item is being added/removed.
            * @instance
            * @ojcancelable
            * @ojbubbles
@@ -1145,15 +1072,15 @@ var __oj_dialog_metadata =
            *                      <li>"close" - when a dialog component is closed</li>
            *                    </ul>
            *
-           * @example <caption>Bind an event listener to the
-           *          <code class="prettyprint">onOjAnimateEnd</code> property to listen for the "close"
+           * @example <caption>Add a listener for the
+           *          <code class="prettyprint">ojAnimateEnd</code> event to listen for the "close"
            *          ending animation:</caption>
-           * myDialog.onOjAnimateEnd = function( event )
+           * myDialog.addEventListener("ojAnimateEnd", function( event )
            *   {
            *     // verify that the component firing the event is a component of interest and action
            *      is close
            *     if (event.detail.action == "close") {}
-           *   };
+           *   });
            *
            * @example <caption>The default open and close animations are controlled via the theme
            *          (SCSS) :</caption>
@@ -1605,12 +1532,9 @@ var __oj_dialog_metadata =
       var animationOptions = (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS)
         || {}).animation;
       if (!this._ignoreBeforeCloseResultant && animationOptions && animationOptions.close) {
-        var style = rootElement.attr('style');
-        /** @type {?} */
         // eslint-disable-next-line no-undef
         var promise = AnimationUtils.startAnimation(rootElement[0], 'close',
           animationOptions.close, this).then(function () {
-            rootElement.attr('style', style);
             rootElement.hide();
           });
         return promise;
@@ -1647,6 +1571,7 @@ var __oj_dialog_metadata =
      * @expose
      * @method
      * @name oj.ojDialog#isOpen
+     * @ojshortdesc Returns true if the dialog is currently open.
      * @memberof oj.ojDialog
      * @instance
      * @return {boolean} <code>true</code> if the dialog is open.
@@ -2177,7 +2102,18 @@ var __oj_dialog_metadata =
 
       this._resizableComponent = this.element.ojResizable.bind(this.element);
 
+      var minWidth = Math.max(oj.DomUtils.getCSSLengthAsFloat(this.element.css('min-width')), 10);
+      var minHeight = Math.max(oj.DomUtils.getCSSLengthAsFloat(this.element.css('min-height')), 10);
+      var maxWidth = oj.DomUtils.getCSSLengthAsFloat(this.element.css('max-width'));
+      var maxHeight = oj.DomUtils.getCSSLengthAsFloat(this.element.css('max-height'));
+      maxWidth = (maxWidth === 0) ? null : maxWidth;
+      maxHeight = (maxHeight === 0) ? null : maxHeight;
+
       this._resizableComponent({
+        minWidth: minWidth,
+        minHeight: minHeight,
+        maxWidth: maxWidth,
+        maxHeight: maxHeight,
         cancel: '.oj-dialog-content',
         containment: 'document',
         handles: resizeHandles,
@@ -2410,27 +2346,38 @@ var __oj_dialog_metadata =
 
         if (nodeCached.hasClass(OJD_HEADER)) {
           return { subId: OJD_HEADER };
-        } else if (nodeCached.hasClass(OJD_FOOTER)) {
+        }
+        if (nodeCached.hasClass(OJD_FOOTER)) {
           return { subId: OJD_FOOTER };
-        } else if (nodeCached.hasClass(OJD_CONTENT)) {
+        }
+        if (nodeCached.hasClass(OJD_CONTENT)) {
           return { subId: OJD_CONTENT };
-        } else if (nodeCached.hasClass(OJD_HEADER_CLOSE_WRAPPER)) {
+        }
+        if (nodeCached.hasClass(OJD_HEADER_CLOSE_WRAPPER)) {
           return { subId: OJD_HEADER_CLOSE_WRAPPER };
-        } else if (nodeCached.hasClass(OJ_RESIZABLE_N)) {
+        }
+        if (nodeCached.hasClass(OJ_RESIZABLE_N)) {
           return { subId: OJ_RESIZABLE_N };
-        } else if (nodeCached.hasClass(OJ_RESIZABLE_E)) {
+        }
+        if (nodeCached.hasClass(OJ_RESIZABLE_E)) {
           return { subId: OJ_RESIZABLE_E };
-        } else if (nodeCached.hasClass(OJ_RESIZABLE_S)) {
+        }
+        if (nodeCached.hasClass(OJ_RESIZABLE_S)) {
           return { subId: OJ_RESIZABLE_S };
-        } else if (nodeCached.hasClass(OJ_RESIZABLE_W)) {
+        }
+        if (nodeCached.hasClass(OJ_RESIZABLE_W)) {
           return { subId: OJ_RESIZABLE_W };
-        } else if (nodeCached.hasClass(OJ_RESIZABLE_SE)) {
+        }
+        if (nodeCached.hasClass(OJ_RESIZABLE_SE)) {
           return { subId: OJ_RESIZABLE_SE };
-        } else if (nodeCached.hasClass(OJ_RESIZABLE_SW)) {
+        }
+        if (nodeCached.hasClass(OJ_RESIZABLE_SW)) {
           return { subId: OJ_RESIZABLE_SW };
-        } else if (nodeCached.hasClass(OJ_RESIZABLE_NE)) {
+        }
+        if (nodeCached.hasClass(OJ_RESIZABLE_NE)) {
           return { subId: OJ_RESIZABLE_NE };
-        } else if (nodeCached.hasClass(OJ_RESIZABLE_NW)) {
+        }
+        if (nodeCached.hasClass(OJ_RESIZABLE_NW)) {
           return { subId: OJ_RESIZABLE_NW };
         }
       }
@@ -2565,15 +2512,30 @@ var __oj_dialog_metadata =
      * For styling, the default body slot will be rendered with the <code class="prettyprint">oj-dialog-body</code> class.
      *
      * @ojchild Default
+     * @ojshortdesc The default slot is the dialog's body. It is the same as the named "body" slot.
      * @memberof oj.ojDialog
      * @since 4.0.0
      *
-     * @example <caption>Initialize the Dialog with body content:</caption>
+     * @example <caption>Initialize the Dialog with body content (using the default slot name):</caption>
      * &lt;oj-dialog>
      *   &lt;div>Dialog Content&lt;/div>
      * &lt;/oj-dialog>
      *
-     * @example <caption>Initialize the Dialog with body content, explicitly naming the body slot:</caption>
+     */
+
+    /**
+     * <p>The <code class="prettyprint">body</code> slot is for the dialog's body area.
+     * The <code class="prettyprint">&lt;oj-dialog></code> element accepts DOM nodes as children
+     * with the body slot.
+     * For styling, the body slot will be rendered with the <code class="prettyprint">oj-dialog-body</code> class.
+     * Note that "body" is the default slot.
+     *
+     * @ojslot body
+     * @ojshortdesc The body slot is for the dialog's body area. See the Help documentation for more information.
+     * @memberof oj.ojDialog
+     * @since 4.0.0
+     *
+     * @example <caption>Initialize the Dialog with body content:</caption>
      * &lt;oj-dialog>
      *   &lt;div slot="body">Dialog Content&lt;/div>
      * &lt;/oj-dialog>
@@ -2583,9 +2545,10 @@ var __oj_dialog_metadata =
      * <p>The <code class="prettyprint">footer</code> slot is for the dialog's footer area.
      * The <code class="prettyprint">&lt;oj-dialog></code> element accepts DOM nodes as children
      * with the footer slot.
-     * For styling, the footer body slot will be rendered with the <code class="prettyprint">oj-dialog-footer</code> class.
+     * For styling, the footer slot will be rendered with the <code class="prettyprint">oj-dialog-footer</code> class.
      *
      * @ojslot footer
+     * @ojshortdesc The footer slot is for the dialog's footer area. See the Help documentation for more information.
      * @memberof oj.ojDialog
      * @since 4.0.0
      *
@@ -2605,7 +2568,9 @@ var __oj_dialog_metadata =
      * If a header slot is not specified by the user, a header will automatically be created.
      * The automatically generated header will contain a close button, and the header title will be set
      * to the dialog title.
+     *
      * @ojslot header
+     * @ojshortdesc The header slot is for the dialog's header area. See the Help documentation for more information.
      * @memberof oj.ojDialog
      * @since 4.0.0
      *
@@ -2781,7 +2746,7 @@ var __oj_dialog_metadata =
      *
      * @ojsubid oj-dialog-close
      * @memberof oj.ojDialog
-     * @deprecated {since: "2.1.0", description: "This sub-ID is deprecated."}
+     * @ojdeprecated {since: "2.1.0", description: "This sub-ID is deprecated."}
      *
      * @example <caption>Get the node for the dialog close affordance:</caption>
      * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-close'});

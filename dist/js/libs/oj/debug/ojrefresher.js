@@ -3,15 +3,14 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore',  'ojs/ojpulltorefresh', 'ojs/ojlogger', 'touchr'], 
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        */
-       function(oj, $, Context, Components, PullToRefreshUtils, Logger)
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+*/
+function(oj, $, Context, Components, PullToRefreshUtils, Logger)
 {
-
+  "use strict";
 var __oj_refresher_metadata = 
 {
   "properties": {
@@ -31,7 +30,18 @@ var __oj_refresher_metadata =
     },
     "translations": {
       "type": "object",
-      "value": {}
+      "value": {},
+      "properties": {
+        "ariaRefreshCompleteLink": {
+          "type": "string"
+        },
+        "ariaRefreshLink": {
+          "type": "string"
+        },
+        "ariaRefreshingLink": {
+          "type": "string"
+        }
+      }
     }
   },
   "methods": {
@@ -71,7 +81,7 @@ var __oj_refresher_metadata =
  * @augments oj.baseComponent
  * @since 5.1
  * @ojstatus preview
- * @ojshortdesc wrapper for attaching pull to refresh functionality to a DOM element
+ * @ojshortdesc A refresher is a wrapper for attaching pull to refresh functionality to a DOM element.
  *
  * @classdesc
  * <h3 id="refresherOverview-section">
@@ -111,7 +121,7 @@ var __oj_refresher_metadata =
          * @instance
          * @type {function():Promise.<*>}
          * @default null
-         * @ojshortdesc Specifies the refresh function
+         * @ojshortdesc Specifies the function to invoke when pull-to-refresh operation is triggered. See the Help documentation for more information.
          *
          * @example <caption>Initialize the Refresher with the <code class="prettyprint">refreshContent</code> attribute specified:</caption>
          * &lt;oj-refresher refresh-content=[[refreshFunc]]>&lt;/oj-refresher>
@@ -119,15 +129,15 @@ var __oj_refresher_metadata =
          */
         refreshContent: null,
         /**
-         * <p>The minimum distance in number of pixels that the user needs to pull down in order to trigger a refresh. The default is determined by the component.
+         * <p>The minimum distance in pixels that the user needs to pull down in order to trigger a refresh.
+         * If 0, then the threshold will default to the height of the target element.
          *
          * @expose
          * @memberof oj.ojRefresher
          * @instance
          * @type {number}
          * @default 0
-         * @ojshortdesc minimum amount of pixels needed in the pull down to trigger refreshContent. If none specified or 0, the threshold will be auto set to
-         * the height of the pull to refresh loading panel.
+         * @ojshortdesc The minimum distance in pixels that the user needs to pull down in order to trigger a refresh. See the Help documentation for more information.
          *
          * @example <caption>Initialize the Refresher with the <code class="prettyprint">threshold</code> attribute specified:</caption>
          * &lt;oj-refresher threshold='100'>&lt;/oj-refresher>
@@ -135,15 +145,16 @@ var __oj_refresher_metadata =
          */
         threshold: 0,
         /**
-         * <p>The target to detect pull down. If no target is specified, Refresher will attempt to use either the first
-         * child element of the refresher element or the first child element with class 'oj-scroller'.
+         * <p>The target to detect pull down. If no target is specified, then the wrapper will attempt to use the first child element with
+         * the 'oj-scroller' CSS style class applied to it. If no such element is found, then the first child element of the oj-refresher element
+         * will be used.
          *
          * @expose
          * @memberof oj.ojRefresher
          * @instance
          * @type {Element}
          * @default null
-         * @ojshortdesc target element on which to detect a pull down action
+         * @ojshortdesc The target element used to detect a pull-to-refresh trigger. See the Help documentation for more information.
          *
          * @example <caption>Initialize the Refresher with the <code class="prettyprint">target</code> attribute specified:</caption>
          * &lt;oj-refresher target=[[document.getElementById("listview")]]>
@@ -153,14 +164,15 @@ var __oj_refresher_metadata =
          */
         target: null,
         /**
-         * <p>The text shown in the pull to refresh panel.
+         * <p>A text messsage shown in the pull-to-refresh panel after a pull down gesture.
          *
          * @expose
          * @memberof oj.ojRefresher
          * @instance
          * @type {string}
          * @default ''
-         * @ojshortdesc description text shown in the pull down panel after a pull down
+         * @ojtranslatable
+         * @ojshortdesc Specifies a text message to display in the pull-to-refresh panel after a pull down gesture.
          *
          * @example <caption>Initialize the Refresher with the <code class="prettyprint">text</code> attribute specified:</caption>
          * &lt;oj-refresher text='Checking for updates'>

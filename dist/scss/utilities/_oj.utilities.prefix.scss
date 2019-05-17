@@ -6,17 +6,6 @@
 
 
 
-@mixin oj-will-change-property ($willChangeValue...)
-{
-  -webkit-will-change: $willChangeValue;
-  -ms-will-change: $willChangeValue;
-  -moz-will-change: $willChangeValue;
-
-  // cssLint doesn't yet support this property.
-  // tracking bug https://github.com/CSSLint/parser-lib/issues/121
-  // will-change: $willChangeValue;
-}
-
 @mixin oj-break-inside-property ($breakInsideValue)
 {
   // -moz-column-break-inside doesn't work on FF 24 on windows
@@ -43,29 +32,25 @@
 @mixin oj-placeholder ()
 {
   // tried comma separating these, didn't work
-  &::-webkit-input-placeholder {
-    @content
-  }
-
   &:-ms-input-placeholder {
-   @content
+   @content;
   }
  
   &::-ms-input-placeholder {
-   @content
+   @content;
   }
  
   &::placeholder {
-   @content
+   @content;
   }
 }
 
 @mixin oj-user-select-property ($userSelectValue)
 {
-    -ms-user-select: $userSelectValue;
     -webkit-user-select: $userSelectValue;
-    -moz-user-select: $userSelectValue;
-    user-select:$userSelectValue;
+       -moz-user-select: $userSelectValue;
+        -ms-user-select: $userSelectValue;
+            user-select: $userSelectValue;
 }
 
 
@@ -178,9 +163,16 @@
 // END FLEXBOX PROPERTIES
 //****************************************************
 
+
+@mixin oj-will-change-property ($willChangeValue...)
+{
+  @warn "mixin oj-will-change-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+  will-change: $willChangeValue;
+}
+
+
 @mixin oj-keyframes-at-rule ($name)
 {
-  
   @warn "mixin oj-keyframes-at-rule is deprecated because vendor prefixing is no longer needed, just set the property directly";
   
   @keyframes #{$name} {

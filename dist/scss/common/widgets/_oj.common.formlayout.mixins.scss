@@ -489,9 +489,12 @@
     // up in the second column.
     .oj-form-cols > .oj-flex,
     .oj-form-cols-labels-inline > .oj-flex { 
-      @include oj-break-inside-property(avoid);
-      // page-break-inside is needed for FF 24, the col break written 
-      // out by the mixin doesn't work
+
+     // -moz-column-break-inside doesn't work on FF 24 on windows
+     // try adding page-break-inside as well
+     -moz-column-break-inside: avoid;
+      -ms-column-break-inside: avoid;
+                 break-inside: avoid;
       page-break-inside: avoid; 
     } 
 

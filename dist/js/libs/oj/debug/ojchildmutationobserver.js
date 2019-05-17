@@ -3,9 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'ojs/ojcustomelement'], function(oj)
 {
+  "use strict";
 /**
  * Copyright (c) 2018, Oracle and/or its affiliates.
  * All rights reserved.
@@ -54,7 +54,7 @@ function ChildMutationObserver(element, handler) {
           filteredMutations.push(mutation);
           testElement = null;
         } else if (_trackOption === 'nearestCustomElement'
-              && !oj.BaseCustomElementBridge.isValidCustomElementName(testElement.localName)) {
+              && !oj.ElementUtils.isValidCustomElementName(testElement.localName)) {
           // we search for the nearest custom element, the mutation might be relevant, walk the DOM up to find out
           testElement = testElement.parentNode;
         } else {

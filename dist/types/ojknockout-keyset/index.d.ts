@@ -1,8 +1,15 @@
-import { ExpandedKeySet, ExpandAllKeySet } from '../ojkeyset';
+import { ExpandedKeySet, ExpandAllKeySet, KeySetImpl, AllKeySetImpl } from '../ojkeyset';
 export class ObservableExpandedKeySet<K> {
     constructor(initialValue?: ExpandedKeySet<K> | ExpandAllKeySet<K>);
     add(keys: Set<K> | K[]): ObservableExpandedKeySet<K>;
     addAll(): ObservableExpandedKeySet<K>;
     clear(): ObservableExpandedKeySet<K>;
     delete(keys: Set<K> | K[]): ObservableExpandedKeySet<K>;
+}
+export class ObservableKeySet<K> {
+    constructor(initialValue?: KeySetImpl<K> | AllKeySetImpl<K>);
+    add(keys: Set<K> | K[]): ObservableKeySet<K>;
+    addAll(): ObservableKeySet<K>;
+    clear(): ObservableKeySet<K>;
+    delete(keys: Set<K> | K[]): ObservableKeySet<K>;
 }

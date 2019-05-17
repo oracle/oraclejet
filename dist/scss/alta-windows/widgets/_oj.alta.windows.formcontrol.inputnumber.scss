@@ -40,7 +40,20 @@
 
     .oj-inputnumber-down-icon {
       @extend .oj-fwk-icon-caret-s;
-    }    
+    } 
+    
+    .oj-inputnumber.oj-loading {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-image: var(--oj-loading-bg-image);
+        animation: LoadingGradientAnimation 3s infinite;
+      }
+      @else {
+        background-image: $loadingBgImage;
+        animation: LoadingGradientAnimation 3s infinite; 
+      }
+      background-size: 200% 200%;
+    }
 
   }
 }

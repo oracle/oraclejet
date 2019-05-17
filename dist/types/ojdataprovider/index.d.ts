@@ -1,7 +1,15 @@
+export interface AttributeFilter<D> {
+    filterfilter(item: D, index?: number, array?: D[]): boolean;
+}
 export interface AttributeFilterCapability {
     defaultShape?: object;
     expansion?: object;
     ordering?: object;
+}
+export interface AttributeFilterDef<D> {
+    attribute?: string;
+    op: string;
+    value: any;
 }
 export interface AttributeFilterOperator<D> {
     attribute: string;
@@ -10,6 +18,13 @@ export interface AttributeFilterOperator<D> {
 }
 export namespace AttributeFilterOperator {
     type AttributeOperator = "$co" | "$eq" | "$ew" | "$pr" | "$gt" | "$ge" | "$lt" | "$le" | "$ne" | "$regex" | "$sw";
+}
+export interface CompoundFilter<D> {
+    filterfilter(item: D, index?: number, array?: D[]): boolean;
+}
+export interface CompoundFilterDef<D> {
+    criteria: Array<AttributeFilterDef<D> | CompoundFilterDef<D>>;
+    op: string;
 }
 export interface CompoundFilterOperator<D> {
     criteria: Array<FilterOperator<D>>;
@@ -24,13 +39,15 @@ export interface ContainsKeysResults<K> {
 }
 export interface DataMapping<K, D, Kin, Din> {
     mapFields: (item: Item<Kin, Din>) => Item<K, D>;
-    mapFilterCriterion?: (filterCriterion: FilterOperator<D>) => FilterOperator<Din>;
+    mapFilterCriterion?: (filterCriterion: AttributeFilter<D> | CompoundFilter<D>) => AttributeFilter<Din> | CompoundFilter<Din>;
     mapSortCriteria?: (sortCriteria: Array<SortCriterion<D>>) => Array<SortCriterion<Din>>;
     unmapSortCriteria?: (sortCriteria: Array<SortCriterion<Din>>) => Array<SortCriterion<D>>;
 }
 export interface DataProvider<K, D> extends EventTarget {
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;
+    createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;
+    createOptimizedKeySet?(initialSet?: Set<K>): Set<K>;
     createOptimizedKeySet?(initialSet?: Set<K>): Set<K>;
     fetchByKeys(parameters: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>;
     fetchByOffset(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>;
@@ -69,6 +86,7 @@ export namespace FetchByKeysMixin {
 export interface FetchByKeysParameters<K> {
     attributes?: Array<string | FetchAttribute>;
     keys: Set<K>;
+    scope: 'local' | 'global';
 }
 export interface FetchByKeysResults<K, D> {
     fetchParameters: FetchByKeysParameters<K>;
@@ -96,7 +114,7 @@ export interface FetchCapability {
 }
 export interface FetchListParameters<D> {
     attributes?: Array<string | FetchAttribute>;
-    filterCriterion?: FilterOperator<D>;
+    filterCriterion?: AttributeFilter<D> | CompoundFilter<D> | FilterOperator<D>;
     size: number;
     sortCriteria?: Array<SortCriterion<D>>;
 }
@@ -107,6 +125,11 @@ export interface FetchListResult<K, D> {
 }
 export interface FilterCapability {
     operators: string[];
+}
+export class FilterFactory<D> {
+    getFilter(options: {
+        filterDef: AttributeFilterDef<D> | CompoundFilterDef<D>;
+    }): AttributeFilter<D> | CompoundFilter<D>;
 }
 export interface FilterOperator<D> {
     op: AttributeFilterOperator.AttributeOperator | CompoundFilterOperator.CompoundOperator;

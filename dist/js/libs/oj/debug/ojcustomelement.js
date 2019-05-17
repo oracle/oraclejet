@@ -3,9 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'require', 'ojs/ojlogger', 'ojs/ojcontext', 'promise', 'customElements'], function(oj, require, Logger, Context)
 {
+  "use strict";
 /* global Promise:false, Set:false, Logger:false, Context:false */
 
 /**
@@ -73,6 +73,11 @@ oj.BaseCustomElementBridge.proto =
     return constructorFunc;
   },
 
+  playbackEarlyPropertySets: function (element) {
+    this._bCanSetProperty = true;
+    this.PlaybackEarlyPropertySets(element);
+  },
+
   resolveBindingProvider: function (provider) {
     if (this._bpResolve) {
       this._bpResolve(provider);
@@ -134,6 +139,11 @@ oj.BaseCustomElementBridge.proto =
     return oj.BaseCustomElementBridge._consolidateDefaults(propertyMeta);
   },
 
+  GetTrackChildrenOption: function () {
+    return this.METADATA.extension && this.METADATA.extension._TRACK_CHILDREN ?
+      this.METADATA.extension._TRACK_CHILDREN : 'none';
+  },
+
   // eslint-disable-next-line no-unused-vars
   HandleAttributeChanged: function (element, attr, oldValue, newValue) {},
 
@@ -159,6 +169,16 @@ oj.BaseCustomElementBridge.proto =
       var key = keys[i];
       elem.setProperty(key, props[key]);
     }
+  },
+
+  GetEventListenerProperty: function (property) {
+    var event = oj.__AttributeUtils.eventListenerPropertyToEventType(property);
+    // Get event listener
+    var eventListener = this._eventListeners[event];
+    if (eventListener) {
+      return eventListener.getListener();
+    }
+    return undefined;
   },
 
   GetProperty: function (element, prop, props) {
@@ -189,7 +209,6 @@ oj.BaseCustomElementBridge.proto =
   },
 
   PlaybackEarlyPropertySets: function (element) {
-    this._bCanSetProperty = true;
     if (this._earlySets) {
       while (this._earlySets.length) {
         var setObj = this._earlySets.shift();
@@ -435,6 +454,9 @@ oj.BaseCustomElementBridge.proto =
     domListener.setListener = function (listener) {
       eventListener = listener;
     };
+    domListener.getListener = function () {
+      return eventListener;
+    };
     return domListener;
   },
 
@@ -521,7 +543,7 @@ oj.BaseCustomElementBridge.proto =
     var name = this._getBindingProviderName(element);
 
     if (name === oj.BaseCustomElementBridge._NO_BINDING_PROVIDER) {
-      this.PlaybackEarlyPropertySets(element);
+      this.playbackEarlyPropertySets(element);
 
       return Promise.resolve(null);
     } else if (name === 'knockout') {
@@ -570,7 +592,7 @@ oj.BaseCustomElementBridge.proto =
     var children = element.childNodes;
     for (var i = 0; i < children.length; i++) {
       var child = children[i];
-      if (oj.BaseCustomElementBridge.isValidCustomElementName(child.localName)) {
+      if (oj.ElementUtils.isValidCustomElementName(child.localName)) {
         trackedElements.push(child);
       } else if (trackOption === 'nearestCustomElement') {
         this._getChildrenToTrack(child, trackOption, trackedElements);
@@ -643,30 +665,7 @@ oj.BaseCustomElementBridge.getAttributes = function (props) {
  */
 oj.BaseCustomElementBridge.getTrackChildrenOption = function (element) {
   var bridge = oj.BaseCustomElementBridge.getInstance(element);
-  return bridge && bridge.METADATA.extension && bridge.METADATA.extension._TRACK_CHILDREN ?
-         bridge.METADATA.extension._TRACK_CHILDREN : 'none';
-};
-
-/**
- * Custom element name check
- * @param {String} localName Element name
- * @return {boolean}
- * @ignore
- */
-oj.BaseCustomElementBridge.isValidCustomElementName = function (localName) {
-  var reservedTagList = new Set([
-    'annotation-xml',
-    'color-profile',
-    'font-face',
-    'font-face-src',
-    'font-face-uri',
-    'font-face-format',
-    'font-face-name',
-    'missing-glyph',
-  ]);
-  var reserved = reservedTagList.has(localName);
-  var validForm = /^[a-z][.0-9_a-z]*-[-.0-9_a-z]*$/.test(localName);
-  return !reserved && validForm && !localName.startsWith('oj-bind-', 0);
+  return bridge ? bridge.GetTrackChildrenOption() : 'none';
 };
 
 /**
@@ -770,7 +769,7 @@ oj.BaseCustomElementBridge.getSlotMap = function (element) {
   for (var i = 0; i < childNodeList.length; i++) {
     var child = childNodeList[i];
     // Only assign Text and Element nodes to a slot
-    if (oj.BaseCustomElementBridge.isSlotAssignable(child)) {
+    if (oj.BaseCustomElementBridge.isSlotable(child)) {
       var slot = oj.BaseCustomElementBridge.getSlotAssignment(child);
       if (!slotMap[slot]) {
         slotMap[slot] = [];
@@ -800,29 +799,12 @@ oj.BaseCustomElementBridge.getSlotAssignment = function (node) {
 };
 
 /**
- * @ignore
- */
-oj.BaseCustomElementBridge.isPromiseType = function (element, propName) {
-  var bridge = oj.BaseCustomElementBridge.getInstance(element);
-  if (!bridge._PROMISE_TYPE_MAP) {
-    bridge._PROMISE_TYPE_MAP = {};
-    var promiseProps = _getPromiseProperties(bridge.METADATA);
-    if (promiseProps) {
-      for (var i = 0; i < promiseProps.length; i++) {
-        bridge._PROMISE_TYPE_MAP[promiseProps[i]] = true;
-      }
-    }
-  }
-  return bridge._PROMISE_TYPE_MAP[propName] === true;
-};
-
-/**
  * Returns true if an element is slot assignable.
  * @param {Element} node The element to check
  * @return {boolean}
  * @ignore
  */
-oj.BaseCustomElementBridge.isSlotAssignable = function (node) {
+oj.BaseCustomElementBridge.isSlotable = function (node) {
   // Ignore text nodes that only contain whitespace
   return node.nodeType === 1 || (node.nodeType === 3 && node.nodeValue.trim());
 };
@@ -1078,51 +1060,9 @@ oj.BaseCustomElementBridge.__InitProperties = function (element, componentProps)
         }
       }
     }
-    // Handle special ResolvablePromise type by creating the Promise up front
-    // and setting it on the property. The component should pass us an array of
-    // properties that support the promise types so we avoid iterating all properties
-    // for all custome elements.
-    var promiseProps = _getPromiseProperties(bridge.METADATA);
-    if (promiseProps) {
-      // Assume all these properties are at the top level only
-      for (var j = 0; j < promiseProps.length; j++) {
-        var prop = promiseProps[j];
-        // eslint-disable-next-line no-param-reassign
-        componentProps[prop] = _createResolvablePromise();
-      }
-    }
   }
   bridge.__INITIALIZING_PROPS = false;
 };
-
-/**
- * @private
- */
-function _getPromiseProperties(metadata) {
-  var ext = metadata.extension;
-  if (ext) {
-    var dynExt = ext['oj-dynamic'];
-    if (dynExt) {
-      return dynExt.promiseProperties;
-    }
-  }
-  return null;
-}
-
-/**
- * @private
- */
-function _createResolvablePromise() {
-  var resolveCallback;
-  var rejectCallback;
-  var promise = new Promise(function (resolve, reject) {
-    resolveCallback = resolve;
-    rejectCallback = reject;
-  });
-  Object.defineProperty(promise, 'resolve', { value: resolveCallback });
-  Object.defineProperty(promise, 'reject', { value: rejectCallback });
-  return promise;
-}
 
 /**
  * @param {function} propNameFun A function that returns the actual property name to use, e.g. an alias
@@ -1628,9 +1568,9 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
  *   :Class Attribute<a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-databind-class-section"></a>
  * </h2>
  * <p>
- *   The class attribute binding supports a space delimited string of classes, an Array of classes, or an Object to toggle
- *   classes (e.g. :class="[[{errorClass: hasErrors}]]" where hasErrors is a boolean expression that determines whether the
- *   errorClass class is present in the DOM). Note that the Array and string types will override existing values in the class
+ *   The class attribute binding supports a space delimited string of classes, an Array of classes, or an Object whose keys are
+ *   individual style classes and whose values are booleans to determine whether those style classes should be present in the DOM
+ *   (e.g. :class="[[{errorClass: hasErrors}]]"). Note that the Array and string types will override existing values in the class
  *   attribute when updates occur, whereas the Object type will only add and remove the classes specified. Since JET custom elements
  *   add their own classes, we recommend using the Object type when using the class attribute binding on JET custom elements.
  * </p>
@@ -1780,13 +1720,10 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
  * &lt;oj-some-element value="{{currentValue}}" on-value-changed="{{valueChangedListener}}">&lt;/oj-some-element>
  *   </code>
  *   </pre>
- *   or programmatically using the element property or the DOM addEventListener :
+ *   or programmatically using addEventListener :
  *   <pre class="prettyprint">
  *   <code>
  * someElement.addEventListener("valueChanged", function(event) {...});
- *   </code>
- *   <code>
- * someElement.onValueChanged = function(event) {...};
  *   </code>
  *   </pre>
  * </p>
@@ -1837,22 +1774,14 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
  *   When in an iteration context (e.g. inside an <code>oj-bind-for-each</code>), the <code>data</code> parameter
  *   is equal to <code>bindingContext["$current"]</code>; otherwise, it is equal to <code>bindingContext["$data"]</code>.
  *   These event listeners should be written with signatures of <code>function(event, data, bindingContext)</code>.
+ *   Event listeners that are specified via addEventListener will not receive these additional parameters;
+ *   they will be invoked with the single event parameter only.
  * </p>
  * <p>
  *   Please note that there is a
  *   current limitation where event listeners specified using this syntax can only be
  *   set during component initialization. Subsequent setAttribute calls for the
  *   event listener attributes will be ignored.
- * </p>
- * <p>
- *   Component events that are specifically documented in a JET custom element's API
- *   doc (including [property]Changed events) can also have listeners set via direct
- *   assignment of an on[EventName] property on the element (e.g. onClick or
- *   onOjExpand). Note however that when these events bubble up through the DOM,
- *   they can only be listened to via addEventListener calls or on-[event-name]
- *   attributes on parent elements. Event listeners that are specified via addEventListener
- *   or direct property assignment will not receive the additional parameters described above;
- *   they will be invoked with the single event parameter only.
  * </p>
  *
  * <h2 id="ce-slots-section" class="subsection-title">

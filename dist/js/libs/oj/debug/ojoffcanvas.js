@@ -3,17 +3,15 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'promise', 'ojs/ojjquery-hammer', ],
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        * @param {Object} Hammer
-        */
-       function(oj, $, Hammer, Context, ThemeUtils, Components, Logger)
- 
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+* @param {Object} Hammer
+*/
+function(oj, $, Hammer, Context, ThemeUtils, Components, Logger) 
 {
-
+  "use strict";
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
@@ -120,11 +118,6 @@ oj.OffcanvasUtils._DATA_MEDIA_QUERY_KEY = 'oj-mediaQueryListener';
  * @private
  */
 oj.OffcanvasUtils._DATA_HAMMER_KEY = 'oj-offcanvasHammer';
-/**
- * @memberof oj.OffcanvasUtils
- * @private
- */
-oj.OffcanvasUtils._DATA_STYLE_KEY = 'oj-offcanvasStyle';
 
 /**
  * @memberof oj.OffcanvasUtils
@@ -178,7 +171,7 @@ oj.OffcanvasUtils.DISPLAY_MODE_OVERLAY = 'overlay';
  * @memberof oj.OffcanvasUtils
  * @private
  */
-oj.OffcanvasUtils.DISPLAY_MODE_PIN = 'pin';
+oj.OffcanvasUtils.DISPLAY_MODE_REFLOW = 'reflow';
 
 /**
  * @memberof oj.OffcanvasUtils
@@ -267,12 +260,12 @@ oj.OffcanvasUtils.TRANSITION_SELECTOR = 'oj-offcanvas-transition';
  * @memberof oj.OffcanvasUtils
  * @private
  */
-oj.OffcanvasUtils.PIN_WRAPPER_SELECTOR = 'oj-offcanvas-pin';
+oj.OffcanvasUtils.REFLOW_WRAPPER_SELECTOR = 'oj-offcanvas-pin';
 /**
  * @memberof oj.OffcanvasUtils
  * @private
  */
-oj.OffcanvasUtils.PIN_TRANSITION_SELECTOR = 'oj-offcanvas-pin-transition';
+oj.OffcanvasUtils.REFLOW_TRANSITION_SELECTOR = 'oj-offcanvas-pin-transition';
 
 /**
  * @memberof oj.OffcanvasUtils
@@ -329,7 +322,7 @@ oj.OffcanvasUtils._getDisplayMode = function (offcanvas) {
   var displayMode = offcanvas[oj.OffcanvasUtils.DISPLAY_MODE_KEY];
   if (displayMode !== oj.OffcanvasUtils.DISPLAY_MODE_OVERLAY &&
       displayMode !== oj.OffcanvasUtils.DISPLAY_MODE_PUSH &&
-      displayMode !== oj.OffcanvasUtils.DISPLAY_MODE_PIN) {
+      displayMode !== oj.OffcanvasUtils.DISPLAY_MODE_REFLOW) {
     // default displayMode in iOS is push and in android and windows are overlay
     displayMode = (ThemeUtils.parseJSONFromFontFamily('oj-offcanvas-option-defaults') || {}).displayMode;
   }
@@ -841,8 +834,8 @@ oj.OffcanvasUtils._isFixed = function (drawer) {
  * @memberof oj.OffcanvasUtils
  * @private
  */
-oj.OffcanvasUtils._isPin = function (offcanvas) {
-  return (offcanvas[oj.OffcanvasUtils.DISPLAY_MODE_KEY] === oj.OffcanvasUtils.DISPLAY_MODE_PIN);
+oj.OffcanvasUtils._isReflow = function (offcanvas) {
+  return (offcanvas[oj.OffcanvasUtils.DISPLAY_MODE_KEY] === oj.OffcanvasUtils.DISPLAY_MODE_REFLOW);
 };
 
 /**
@@ -852,31 +845,7 @@ oj.OffcanvasUtils._isPin = function (offcanvas) {
 oj.OffcanvasUtils._noInnerWrapper = function (offcanvas) {
   return (offcanvas[oj.OffcanvasUtils.CONTENT_KEY] ||
           oj.OffcanvasUtils._isFixed(oj.OffcanvasUtils._getDrawer(offcanvas)) ||
-          oj.OffcanvasUtils._isPin(offcanvas));
-};
-
-/**
- * @memberof oj.OffcanvasUtils
- * @private
- */
-oj.OffcanvasUtils._saveStyles = function (drawer) {
-  var style = drawer.attr('style');
-  if (style !== undefined) {
-    $.data(drawer[0], oj.OffcanvasUtils._DATA_STYLE_KEY, style);
-  }
-};
-
-/**
- * @memberof oj.OffcanvasUtils
- * @private
- */
-oj.OffcanvasUtils._restoreStyles = function (drawer) {
-  var style = $.data(drawer[0], oj.OffcanvasUtils._DATA_STYLE_KEY);
-  if (style) {
-    drawer.attr('style', style);
-  } else {
-    drawer.removeAttr('style');
-  }
+          oj.OffcanvasUtils._isReflow(offcanvas));
 };
 
 /**
@@ -914,7 +883,7 @@ oj.OffcanvasUtils._afterCloseHandler = function (offcanvas) {
   oj.OffcanvasUtils._unregisterCloseHandler(offcanvas);
 
   var drawer = oj.OffcanvasUtils._getDrawer(offcanvas);
-  var isPin = oj.OffcanvasUtils._isPin(offcanvas);
+  var isReflow = oj.OffcanvasUtils._isReflow(offcanvas);
 
   // validate offcanvas
   var curOffcanvas = null;
@@ -928,9 +897,9 @@ oj.OffcanvasUtils._afterCloseHandler = function (offcanvas) {
   }
 
   // After animation, set display:none and remove transition class
-  if (isPin) {
+  if (isReflow) {
     drawer.removeClass(oj.OffcanvasUtils.OPEN_SELECTOR + ' ' +
-                      oj.OffcanvasUtils.PIN_TRANSITION_SELECTOR);
+                      oj.OffcanvasUtils.REFLOW_TRANSITION_SELECTOR);
   } else {
     oj.OffcanvasUtils._toggleClass(offcanvas, wrapper, false);
   }
@@ -938,10 +907,9 @@ oj.OffcanvasUtils._afterCloseHandler = function (offcanvas) {
   // Remove the glassPane if offcanvas is modal
   oj.OffcanvasUtils._removeModality(offcanvas);
 
-  if (isPin) {
-    oj.OffcanvasUtils._getOuterWrapper(drawer).removeClass(oj.OffcanvasUtils.PIN_WRAPPER_SELECTOR);
-
-    oj.OffcanvasUtils._restoreStyles(drawer);
+  if (isReflow) {
+    oj.OffcanvasUtils._getOuterWrapper(drawer)
+      .removeClass(oj.OffcanvasUtils.REFLOW_WRAPPER_SELECTOR);
   }
 
   // fire after close event
@@ -1209,43 +1177,42 @@ oj.OffcanvasUtils._openOverlay = function (offcanvas, resolve, reject, edge) {
 };
 
 /*
-oj.OffcanvasUtils._openPin = function(offcanvas, resolve, reject, edge)
-{
+ * @memberof oj.OffcanvasUtils
+ * @private
+
+oj.OffcanvasUtils._openReflow = function (offcanvas, resolve, reject, edge) {
   var drawer = oj.OffcanvasUtils._getDrawer(offcanvas);
   var $main = $(offcanvas[oj.OffcanvasUtils.CONTENT_KEY]);
   oj.Assert.assertPrototype($main, $);
 
-  var size = offcanvas["size"];
+  var size = offcanvas.size;
 
-  //set display block to get size of offcanvas
+  // set display block to get size of offcanvas
   drawer.addClass(oj.OffcanvasUtils.OPEN_SELECTOR);
 
-  //set translationX
+  // set translationX
   window.setTimeout(function () {
-    //if size is not specified, outerWidth is used
-    if (size === undefined)
-      size = drawer.outerWidth(true) + "px";
+    // if size is not specified, outerWidth is used
+    if (size === undefined) {
+      size = drawer.outerWidth(true) + 'px';
+    }
+    drawer.addClass(oj.OffcanvasUtils.REFLOW_TRANSITION_SELECTOR);
 
-    drawer.addClass(oj.OffcanvasUtils.PIN_TRANSITION_SELECTOR);
+    // make the outer wrapper a flex layout
+    oj.OffcanvasUtils._getOuterWrapper(drawer).addClass(oj.OffcanvasUtils.REFLOW_WRAPPER_SELECTOR);
 
-    //make the outer wrapper a flex layout
-    oj.OffcanvasUtils._getOuterWrapper(drawer).addClass(oj.OffcanvasUtils.PIN_WRAPPER_SELECTOR);
+    // clear transform only work if set style
+    oj.OffcanvasUtils._setTransform(drawer, 'none');
 
-    oj.OffcanvasUtils._saveStyles(drawer);
-
-    //clear transform only work if set style
-    oj.OffcanvasUtils._setTransform(drawer, "none");
-
-    //animate on min-width
+    // animate on min-width
     window.setTimeout(function () {
-      drawer.css("min-width", size);
+      drawer.css('min-width', size);
 
       oj.OffcanvasUtils._toggleOuterWrapper(offcanvas, drawer, false);
     }, 10);
+  }, 0);    // set translationX
 
-  }, 0);    //set translationX
-
-  //insert a glassPane if offcanvas is modal
+  // insert a glassPane if offcanvas is modal
   oj.OffcanvasUtils._applyModality(offcanvas, drawer);
 
   //  - opening offcanvas automatically scrolls to the top
@@ -1256,11 +1223,11 @@ oj.OffcanvasUtils._openPin = function(offcanvas, resolve, reject, edge)
     oj.OffcanvasUtils._setFocus(offcanvas);
   }
 
-  //add transition end listener
+  // add transition end listener
   oj.OffcanvasUtils._onTransitionEnd(drawer,
     function () {
-      //After animation, remove transition class
-//      drawer.removeClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
+      // After animation, remove transition class
+      drawer.removeClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
 
       //  - opening offcanvas automatically scrolls to the top
       //  - perf: fif jank: nav drawer and list view items
@@ -1270,18 +1237,18 @@ oj.OffcanvasUtils._openPin = function(offcanvas, resolve, reject, edge)
         oj.OffcanvasUtils._setFocus(offcanvas);
       }
 
-      //fire after open event
-      drawer.trigger("ojopen", offcanvas);
+      // fire after open event
+      drawer.trigger('ojopen', offcanvas);
 
-      // - push and overlay demos don't work in ie11
-      //register dismiss handler as late as possible because IE raises focus event
-      //on the launcher that will close the offcanvas if autoDismiss is true
+      //  - push and overlay demos don't work in ie11
+      // register dismiss handler as late as possible because IE raises focus event
+      // on the launcher that will close the offcanvas if autoDismiss is true
       oj.OffcanvasUtils._registerCloseHandler(offcanvas);
 
       resolve(true);
     });
 };
-*/
+ */
 
 /**
  * @memberof oj.OffcanvasUtils
@@ -1434,33 +1401,37 @@ oj.OffcanvasUtils._openOldDrawer = function (offcanvas, resolve, reject, edge, d
 };
 
 /*
-oj.OffcanvasUtils._closePin = function(offcanvas, resolve, reject, drawer, animation)
-{
-  var endHandler = function ()
-  {
+ * @memberof oj.OffcanvasUtils
+ * @private
+
+oj.OffcanvasUtils._closeReflow = function (offcanvas, resolve, reject, drawer, animation) {
+  var endHandler = function () {
     oj.OffcanvasUtils._afterCloseHandler(offcanvas);
     resolve(true);
   };
 
-  //clear transform
+  // clear transform
   oj.OffcanvasUtils._toggleOuterWrapper(offcanvas, drawer, false);
 
-  //dim glassPane
-  if (oj.OffcanvasUtils._isModal(offcanvas))
-    offcanvas[oj.OffcanvasUtils.GLASS_PANE_KEY].removeClass(oj.OffcanvasUtils.GLASSPANE_DIM_SELECTOR);
+  // dim glassPane
+  if (oj.OffcanvasUtils._isModal(offcanvas)) {
+    offcanvas[oj.OffcanvasUtils.GLASS_PANE_KEY]
+      .removeClass(oj.OffcanvasUtils.GLASSPANE_DIM_SELECTOR);
+  }
 
   if (animation) {
-    //Before animation, add transition class
-    drawer.css("min-width", "0");
+    // Before animation, add transition class
+    drawer.addClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
+    oj.OffcanvasUtils._setTransform(drawer, '');
+    drawer.css('min-width', '0');
 
-    //add transition end listener
+    // add transition end listener
     oj.OffcanvasUtils._onTransitionEnd(drawer, endHandler);
-  }
-  else {
+  } else {
     endHandler();
   }
 };
-*/
+ */
 
 /**
  * @memberof oj.OffcanvasUtils
@@ -1569,10 +1540,11 @@ oj.OffcanvasUtils.open = function (offcanvas) {
     }
 
     var displayMode = oj.OffcanvasUtils._getDisplayMode(offcanvas);
-    var isPin = oj.OffcanvasUtils._isPin(offcanvas);
+    var isReflow = oj.OffcanvasUtils._isReflow(offcanvas);
 
-    // only support horizontal offcanvas for pin
-    if (isPin && (edge === oj.OffcanvasUtils.EDGE_TOP || edge === oj.OffcanvasUtils.EDGE_BOTTOM)) {
+    // only support horizontal offcanvas for reflow
+    if (isReflow && (edge === oj.OffcanvasUtils.EDGE_TOP ||
+                     edge === oj.OffcanvasUtils.EDGE_BOTTOM)) {
       displayMode = oj.OffcanvasUtils.DISPLAY_MODE_PUSH;
     }
 
@@ -1594,8 +1566,8 @@ oj.OffcanvasUtils.open = function (offcanvas) {
         { description: "The offcanvas selector ='" +
          offcanvas[oj.OffcanvasUtils.SELECTOR_KEY] + "' doing the open animation." });
 
-      if (isPin) {
-//        oj.OffcanvasUtils._openPin(myOffcanvas, resolve, reject, edge);
+      if (isReflow) {
+//        oj.OffcanvasUtils._openReflow(myOffcanvas, resolve, reject, edge);
       } else if (displayMode === oj.OffcanvasUtils.DISPLAY_MODE_PUSH) {
         oj.OffcanvasUtils._openPush(myOffcanvas, resolve, reject, edge);
       } else {
@@ -1821,8 +1793,7 @@ oj.OffcanvasUtils._addGlassPane = function (drawer) {
  */
 oj.OffcanvasUtils._createSurrogate = function (layer) {
   //  - offcanvas utils use of <script>
-  var surrogate = $("<span style='display:none'>");
-  surrogate.attr('aria-hidden', 'true');
+  var surrogate = $('<span></span>').css('display', 'none').attr('aria-hidden', 'true');
 
   var layerId = layer.attr('id');
 
@@ -2186,8 +2157,11 @@ oj.OffcanvasUtils._animateWrapperAndDrawer = function (wrapper, drawer, edge, si
     return;
   }
   values = matrix.split('(')[1].split(')')[0].split(',');
-    // this is the translateX
-  current = parseInt(values[4], 10);
+  var agent = oj.AgentUtils.getAgentInfo();
+    // this is the position of translateX value (IE11 the matrix looks different)
+  var index = (agent.browser === 'ie' && agent.browserVersion === 11) ? 12 : 4;
+  current = parseInt(values[index], 10);
+
   first = current;
     // the final size/destination
   final = edge === 'end' ? 0 - size : size;

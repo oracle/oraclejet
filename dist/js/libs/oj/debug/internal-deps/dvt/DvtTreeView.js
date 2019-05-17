@@ -2,11 +2,824 @@
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['./DvtToolkit', './DvtSubcomponent'], function(dvt) {
+define(['./DvtToolkit'], function(dvt) {
+  "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
 (function(dvt) {
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+
+
+
+/**
+ * Breadcrumbs component.
+ * @param {dvt.Context} context The rendering context.
+ * @param {string} callback The function that should be called to dispatch component events.
+ * @param {object} callbackObj The optional object instance on which the callback function is defined.
+ * @param {object} options The object containing options specifications for this component.
+ * @class
+ * @constructor
+ * @extends {dvt.Container}
+ */
+dvt.Breadcrumbs = function(context, callback, callbackObj, options) {
+  this.Init(context, callback, callbackObj, options);
+};
+
+dvt.Obj.createSubclass(dvt.Breadcrumbs, dvt.Container);
+
+
+/**
+ * Initializes the component.
+ * @param {dvt.Context} context The rendering context.
+ * @param {string} callback The function that should be called to dispatch component events.
+ * @param {object} callbackObj The optional object instance on which the callback function is defined.
+ * @param {object} options The object containing options specifications for this component.
+ * @protected
+ */
+dvt.Breadcrumbs.prototype.Init = function(context, callback, callbackObj, options) {
+  dvt.Breadcrumbs.superclass.Init.call(this, context);
+  this.setOptions(options);
+
+  // Create the event handler and add event listeners
+  this._eventHandler = new DvtBreadcrumbsEventManager(this, context, callback, callbackObj);
+  this._eventHandler.addListeners(this);
+
+  // Make sure the object has an id for clipRect naming
+  this.setId('breadcrumbs' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
+
+  // index of the breadcrumb with keyboard focus. index is used to find the
+  // Object stored in the _data object's item field
+  this._curCrumbIdx = -1;
+
+  // the dvt.Rect we use to show which breadcrumb has keyboard focus
+  this._keyboardFocusRect = null;
+  this._crumbs = null;
+};
+
+
+/**
+ * Specifies the non-data options for this component.
+ * @param {object} options The object containing options specifications for this component.
+ * @protected
+ */
+dvt.Breadcrumbs.prototype.setOptions = function(options) {
+  this._options = DvtBreadcrumbsDefaults.calcOptions(options);
+};
+
+
+/**
+ * Renders the component with the specified data.  If no data is supplied to a component
+ * that has already been rendered, the component will be re-rendered to the specified size.
+ * @param {object} data The object containing data for this component.
+ * @param {number} width The width of the component.
+ */
+dvt.Breadcrumbs.prototype.render = function(data, width)
+{
+  // Update if new data has been provided. Clone to avoid modifying the provided object.
+  this._data = data ? dvt.JsonUtils.clone(data) : this._data;
+
+  // Clear previous contents
+  this.removeChildren();
+  this.SetCrumbs(null);
+
+  // Render the contents
+  DvtBreadcrumbsRenderer.render(this, this, width);
+};
+
+
+/**
+ * Returns the data object for the component.
+ * @return {object} The object containing data for this component.
+ */
+dvt.Breadcrumbs.prototype.__getData = function() {
+  return this._data ? this._data : {};
+};
+
+
+/**
+ * Returns the evaluated options object, which contains the user specifications
+ * merged with the defaults.
+ * @return {object} The options object.
+ */
+dvt.Breadcrumbs.prototype.__getOptions = function() {
+  return this._options;
+};
+
+
+/**
+ * Returns the dvt.EventManager for this component.
+ * @return {dvt.EventManager}
+ */
+dvt.Breadcrumbs.prototype.getEventManager = function() {
+  return this._eventHandler;
+};
+
+/**
+ * @override
+ */
+dvt.Breadcrumbs.prototype.hideKeyboardFocusEffect = function()
+{
+  var prevCrumbIdx = this._curCrumbIdx;
+  this._curCrumbIdx = -1;
+  this._updateKeyboardFocusEffect(prevCrumbIdx, this._curCrumbIdx);
+};
+
+/**
+ * Returns the current crumb index
+ * @return {Number}
+ */
+dvt.Breadcrumbs.prototype.getCurrentCrumbIndex = function()
+{
+  return this._curCrumbIdx;
+};
+
+/**
+ * Returns the number of crumbs
+ * @return {Number}
+ */
+dvt.Breadcrumbs.prototype.getNumCrumbs = function()
+{
+  return this._data.items.length;
+};
+
+/**
+ * Updates the crumb in focus
+ * @param {boolean} bShiftKey True if the shift key was pressed
+ * @return {Number} The currently focused crumb index or -1 if none
+ */
+dvt.Breadcrumbs.prototype.updateCrumbFocus = function(bShiftKey)
+{
+  var prevCrumbIdx = this._curCrumbIdx;
+  this._curCrumbIdx = this._getUpdatedCrumbIndex(prevCrumbIdx, !bShiftKey);
+  this._updateKeyboardFocusEffect(prevCrumbIdx, this._curCrumbIdx);
+  return this._curCrumbIdx;
+};
+
+/**
+ * Returns the updated crumb index which has focus or -1 if tabbed out of the breadcrumbs. Used only for keyboarding.
+ * @param {Number} prevIndex The previously focused crumb index
+ * @param {boolean} bForward True if we are tabbing forward, false if we are shift-tabbing backwards
+ * @return {Number} The currently focused crumb index in the _data object's item array or -1 if none
+ * @private
+ */
+dvt.Breadcrumbs.prototype._getUpdatedCrumbIndex = function(prevIndex, bForward)
+{
+  // Handle initial keyboarding into breadcrumbs
+  if (prevIndex == -1) {
+    if (bForward)
+      return 0;
+    else
+      return this._data.items.length - 2;
+  }
+
+  // Handle subsequent tab and shift-tab traversal of breadcrumbs
+  if (bForward) {
+    if (prevIndex == this._data.items.length - 2)
+      return -1; // The last breadcrumb is not actionable so we are actually tabbing out of the breadcrumbs
+    else
+      return ++prevIndex;
+  } else {
+    if (prevIndex == 0)
+      return -1;
+    else
+      return --prevIndex;
+  }
+};
+
+
+/**
+ * Updates the visual keyboard focus effect
+ * @param {Number} prevIdx The index in the _data object's item array
+ *        indicating the prev breadcrumb
+ * @param {Number} nextIdx The index in the _data object's item array
+ *        indicating the next breadcrumb
+ * @private
+ */
+dvt.Breadcrumbs.prototype._updateKeyboardFocusEffect = function(prevIdx, nextIdx)
+{
+  // find the dvt.Text objects corresponding to the prev and next breadcrumbs
+  var prevKeyboardFocusRect = this._keyboardFocusRect;
+  var nextKeyboardFocusRect = null;
+
+  // find the next breadcrumb to apply focus effect to
+  var nextCrumbObj = this.getCrumb(nextIdx);
+  if (nextCrumbObj)
+  {
+    var peer = this._eventHandler.GetLogicalObject(nextCrumbObj);
+    if (peer && peer.isDrillable && peer.isDrillable())
+    {
+      // create a new focus effect rectangle for the next breadcrumb
+      var context = this.getCtx();
+      var bounds = nextCrumbObj.getDimensions();
+      var matrix = nextCrumbObj.getMatrix();
+      nextKeyboardFocusRect = new dvt.KeyboardFocusEffect(context, this, bounds, matrix);
+      this._keyboardFocusRect = nextKeyboardFocusRect;
+    }
+    else
+    {
+      // we hit the last breadcrumb, which is not drillable. so this tab
+      // takes us out of the breadcrumbs
+      // clear the reference to the focus rectangle; the focus rectangle
+      // is actually removed from the container at the end of this method
+      this._keyboardFocusRect = null;
+    }
+  }
+
+  if (prevKeyboardFocusRect)
+    prevKeyboardFocusRect.hide();
+
+  if (nextKeyboardFocusRect)
+    nextKeyboardFocusRect.show();
+};
+
+
+/**
+ * Returns the physical object corresponding to the breadcrumb with
+ * keyboard focus
+ * @param {Number} crumbIdx The index of the breadcrumb of interest
+ * @return {dvt.Button}
+ */
+dvt.Breadcrumbs.prototype.getCrumb = function(crumbIdx)
+{
+  var crumbs = this.GetCrumbs();
+  if (crumbIdx < 0 || !crumbs || crumbIdx >= crumbs.length)
+    return null;
+  return crumbs[crumbIdx];
+};
+
+/**
+ * Returns the index of the breadcrumb of interest
+ * @param {dvt.Button} crumb The breadcrumb of interest
+ * @return {Number}
+ */
+dvt.Breadcrumbs.prototype.getCrumbIndex = function(crumb)
+{
+  var crumbs = this.GetCrumbs();
+  for (var i = 0; i < crumbs.length; i++) {
+    if (crumbs[i] == crumb)
+      return i;
+  }
+};
+
+/**
+ * Sets an array of breadcrumbs
+ * @param {array} crumbs
+ * @protected
+ */
+dvt.Breadcrumbs.prototype.SetCrumbs = function(crumbs) {
+  this._crumbs = crumbs;
+};
+
+
+/**
+ * Gets an array of breadcrumbs
+ * @return {array}
+ * @protected
+ */
+dvt.Breadcrumbs.prototype.GetCrumbs = function() {
+  return this._crumbs;
+};
+
+/**
+ * Default values and utility functions for breadcrumb versioning.
+ * @class
+ */
+var DvtBreadcrumbsDefaults = new Object();
+
+dvt.Obj.createSubclass(DvtBreadcrumbsDefaults, dvt.Obj);
+
+
+/**
+ * Defaults for version 1.
+ */
+DvtBreadcrumbsDefaults.VERSION_1 = {
+  'labelStyle': dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11 + 'color: #003286;',
+  'disabledLabelStyle': dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11,
+
+  //*********** Internal Attributes *************************************************//
+  __labelGap: 4,
+  __labelSeparator: '>'
+};
+
+
+/**
+ * Combines the user options with the defaults for the specified version.  Returns the
+ * combined options object.  This object will contain internal attribute values and
+ * should be accessed in internal code only.
+ * @param {object} userOptions The object containing options specifications for this component.
+ * @return {object} The combined options object.
+ */
+DvtBreadcrumbsDefaults.calcOptions = function(userOptions) {
+  var defaults = DvtBreadcrumbsDefaults._getDefaults(userOptions);
+
+  // Use defaults if no overrides specified
+  if (!userOptions)
+    return defaults;
+  else // Merge the options object with the defaults
+    return dvt.JsonUtils.merge(userOptions, defaults);
+};
+
+
+/**
+ * Returns the default options object for the specified version of the component.
+ * @param {object} userOptions The object containing options specifications for this component.
+ * @private
+ */
+DvtBreadcrumbsDefaults._getDefaults = function(userOptions) {
+  // Note: Version checking will eventually get added here
+  // Note: Future defaults objects are deltas on top of previous objects
+  return dvt.JsonUtils.clone(DvtBreadcrumbsDefaults.VERSION_1);
+};
+
+
+/**
+ * Scales down gap sizes based on the size of the component.
+ * @param {object} options The object containing options specifications for this component.
+ * @param {Number} defaultSize The default gap size.
+ * @return {Number}
+ */
+DvtBreadcrumbsDefaults.getGapSize = function(options, defaultSize) {
+  return Math.ceil(defaultSize * options['layout']['gapRatio']);
+};
+
+/**
+ * Event Manager for dvt.Breadcrumbs.
+ */
+var DvtBreadcrumbsEventManager = function(breadcrumbs, context, callback, callbackObj) {
+  this.Init(context, callback, callbackObj);
+  this._breadcrumbs = breadcrumbs;
+};
+
+dvt.Obj.createSubclass(DvtBreadcrumbsEventManager, dvt.EventManager);
+
+
+/**
+ * @override
+ */
+DvtBreadcrumbsEventManager.prototype.OnClick = function(event) {
+  DvtBreadcrumbsEventManager.superclass.OnClick.call(this, event);
+  this._processBreadcrumbs(this.GetLogicalObject(event.target));
+};
+
+
+/**
+ * @override
+ */
+DvtBreadcrumbsEventManager.prototype.HandleTouchClickInternal = function(event) {
+  this._processBreadcrumbs(this.GetLogicalObject(event.target));
+};
+
+
+/**
+ * Processes a possible drill event on a breadcrumb.
+ * @param {obj} The logical object which was clicked or tapped.
+ * @private
+ */
+DvtBreadcrumbsEventManager.prototype._processBreadcrumbs = function(obj) {
+  if (obj && obj instanceof DvtBreadcrumbsPeer && obj.isDrillable()) {
+    // Create the event and fire to callbacks
+    var event = dvt.EventFactory.newBreadcrumbsDrillEvent(obj.getId());
+    this.FireEvent(event, this._breadcrumbs);
+  }
+};
+
+/**
+ * @override
+ */
+DvtBreadcrumbsEventManager.prototype.handleKeyboardEvent = function(event) {
+  var eventConsumed = true;
+  var keyCode = event.keyCode;
+
+  if (keyCode == dvt.KeyboardEvent.TAB) {
+    var curCrumbIdx = this._breadcrumbs.updateCrumbFocus(event.shiftKey);
+
+    // If tabbing out of interactive breadcrumbs, propagate event. Last crumb is not interactive.
+    if (curCrumbIdx == -1) {
+      eventConsumed = false;
+    } else {
+      // Accessibility Support
+      this.UpdateActiveElement(this._breadcrumbs.getCrumb(curCrumbIdx));
+    }
+  }
+  else if (keyCode == dvt.KeyboardEvent.ENTER) {
+    var crumb = this._breadcrumbs.getCrumb(this._breadcrumbs.getCurrentCrumbIndex());
+    this._processBreadcrumbs(this.GetLogicalObject(crumb));
+  }
+
+  // keystrokes are consumed by default, unless we tab out of the breadcrumbs
+  if (eventConsumed)
+    dvt.EventManager.consumeEvent(event);
+
+  return eventConsumed;
+};
+
+/**
+ * Simple logical object for drilling and tooltip support.
+ * @param {string} id The id of the associated breadcrumb.
+ * @param {dvt.Displayable} displayable The displayable associated with this logical object
+ * @class
+ * @constructor
+ * @implements {DvtTooltipSource}
+ */
+var DvtBreadcrumbsPeer = function(id, displayable, displayableText) {
+  this.Init();
+  this._id = id;
+  this._bDrillable = false;
+  this._displayable = displayable;
+  this._displayableText = displayableText;
+  this._truncated = false;
+};
+
+dvt.Obj.createSubclass(DvtBreadcrumbsPeer, dvt.SimpleObjPeer);
+
+
+/**
+ * Returns the id of the associated breadcrumb.
+ * @return {string}
+ */
+DvtBreadcrumbsPeer.prototype.getId = function() {
+  return this._id;
+};
+
+
+/**
+ * Returns true if the associated breadcrumb is drillable.
+ * @return {boolean}
+ */
+DvtBreadcrumbsPeer.prototype.isDrillable = function() {
+  return this._bDrillable;
+};
+
+
+/**
+ * Specifies whether the associated breadcrumb is drillable.
+ * @param {boolean} drillable
+ */
+DvtBreadcrumbsPeer.prototype.setDrillable = function(drillable) {
+  this._bDrillable = drillable;
+};
+
+/**
+ * @override
+ */
+DvtBreadcrumbsPeer.prototype.getDisplayable = function() {
+  return this._displayable;
+};
+
+/**
+ * @override
+ */
+DvtBreadcrumbsPeer.prototype.getTooltip = function(target) {
+  return this._truncated? this._displayableText: null;
+};
+
+/**
+ * Specifies if the displayable will be truncated when rendered.
+ * @param {boolean} truncated
+ */
+DvtBreadcrumbsPeer.prototype.setTruncated = function(truncated){
+  this._truncated = truncated;
+};
+
+/**
+ * Renderer for dvt.Breadcrumbs.
+ * @class
+ */
+var DvtBreadcrumbsRenderer = new Object();
+
+dvt.Obj.createSubclass(DvtBreadcrumbsRenderer, dvt.Obj);
+
+
+/**
+ * @private
+ */
+DvtBreadcrumbsRenderer._TOUCH_BUFFER = 3;
+
+
+/**
+ * Renders the breadcrumbs in the specified area.
+ * @param {dvt.Breadcrumbs} breadcrumbs The breadcrumbs being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {number} width The width of the component.
+ */
+DvtBreadcrumbsRenderer.render = function(breadcrumbs, container, width) {
+  var context = breadcrumbs.getCtx();
+  var dataItems = breadcrumbs.__getData().items ? breadcrumbs.__getData().items : [];
+  var options = breadcrumbs.__getOptions();
+  var eventManager = breadcrumbs.getEventManager();
+
+  // Create all of the labels
+  var labels = [];
+  var peers = [];
+  for (var i = 0; i < dataItems.length; i++) {
+    var dataItem = dataItems[i];
+    if (dataItem) {
+      // If the item does not have text, use "" as a placeholder to indicate text was missing
+      var textStr = dataItem['label'] ? dataItem['label'] : '';
+
+      // Create the text element
+      var label = DvtBreadcrumbsRenderer._createLabel(context, textStr, options, i < dataItems.length - 1);
+      labels.push(label);
+
+      // Create peer for interactivity support
+      var peer = new DvtBreadcrumbsPeer(dataItem['id'], label, textStr);
+      eventManager.associate(label, peer);
+      peers.push(peer);
+
+      // All except the last label are drillable
+      if (i < dataItems.length - 1) {
+        peer.setDrillable(true);
+      }
+    }
+  }
+  breadcrumbs.SetCrumbs(labels);
+
+  // Position the labels
+  if (dvt.Agent.isRightToLeft(context))
+    DvtBreadcrumbsRenderer._positionLabelsBidi(breadcrumbs, container, width, labels, peers);
+  else
+    DvtBreadcrumbsRenderer._positionLabels(breadcrumbs, container, width, labels, peers);
+};
+
+/**
+ * Create a state for a label button.
+ * @param {dvt.Context} context The dvt.Context to use.
+ * @param {string} text The text for the label.
+ * @param {dvt.CSSStyle} cssStyle Style object for the label.
+ * @return {dvt.Rect}
+ * @private
+ */
+DvtBreadcrumbsRenderer._createButtonState = function(context, text, cssStyle) {
+  var dvtText = new dvt.OutputText(context, text, 0, 0);
+  dvtText.setMouseEnabled(false);
+  dvtText.setCSSStyle(cssStyle);
+
+  var padTop = cssStyle.getPadding(dvt.CSSStyle.PADDING_TOP);
+  var padRight = cssStyle.getPadding(dvt.CSSStyle.PADDING_RIGHT);
+  var padBottom = cssStyle.getPadding(dvt.CSSStyle.PADDING_BOTTOM);
+  var padLeft = cssStyle.getPadding(dvt.CSSStyle.PADDING_LEFT);
+
+  var labelDims = dvt.DisplayableUtils.getDimensionsForced(context, dvtText);
+  var state = new dvt.Rect(context, 0, 0, labelDims.w + padLeft + padRight, labelDims.h + padTop + padBottom);
+  state.setInvisibleFill();
+  state.setCSSStyle(cssStyle);
+  dvtText.setTranslate(padLeft, padTop);
+  state.addChild(dvtText);
+
+  return state;
+};
+
+
+/**
+ * Create the label object, which could be a dvt.Button, dvt.Rect, or dvt.Text.
+ * @param {dvt.Context} context The dvt.Context to use.
+ * @param {string} textStr The text string for the label.
+ * @param {object} options Options for the breadcrumbs.
+ * @param {boolean} bEnabled Flag indicating if this label is enabled or not.
+ * @return {object}
+ * @private
+ */
+DvtBreadcrumbsRenderer._createLabel = function(context, textStr, options, bEnabled) {
+  var label;
+  if (bEnabled && (options.labelStyleOver || options.labelStyleDown)) {
+    var enaCss = new dvt.CSSStyle(options.labelStyle);
+    var ovrCss = new dvt.CSSStyle(options.labelStyleOver);
+    var dwnCss = new dvt.CSSStyle(options.labelStyleDown);
+
+    var ena = DvtBreadcrumbsRenderer._createButtonState(context, textStr, enaCss);
+    var ovr = DvtBreadcrumbsRenderer._createButtonState(context, textStr, ovrCss);
+    var dwn = DvtBreadcrumbsRenderer._createButtonState(context, textStr, dwnCss);
+
+    label = new dvt.Button(context, ena, ovr, dwn);
+    label.setAriaRole('link');
+    label.setAriaProperty('label', textStr);
+  }
+  else {
+    var labelStyle = bEnabled ? options.labelStyle : options.disabledLabelStyle;
+    var cssStyle = new dvt.CSSStyle(labelStyle);
+    if (cssStyle.getPadding(dvt.CSSStyle.PADDING_LEFT) || cssStyle.getPadding(dvt.CSSStyle.PADDING_RIGHT) || cssStyle.getPadding(dvt.CSSStyle.PADDING_TOP) || cssStyle.getPadding(dvt.CSSStyle.PADDING_BOTTOM)) {
+      label = DvtBreadcrumbsRenderer._createButtonState(context, textStr, cssStyle);
+    }
+    else {
+      label = new dvt.OutputText(context, textStr, 0, 0);
+      label.setCSSStyle(cssStyle);
+    }
+  }
+  return label;
+};
+
+
+/**
+ * Get the label text string.
+ * @param {object} label The label object, which could be a dvt.Button, dvt.Rect, or dvt.Text.
+ * @return {string}
+ * @private
+ */
+DvtBreadcrumbsRenderer._getLabelTextString = function(label) {
+  if (label instanceof dvt.Button) {
+    var ena = label.upState;
+    var text = ena.getChildAt(0);
+    return text.getTextString();
+  }
+  else if (label instanceof dvt.Rect) {
+    var text = label.getChildAt(0);
+    return text.getTextString();
+  }
+
+  return label.getTextString();
+};
+
+
+/**
+ * Truncates the breadcrumb labels.
+ * @param {object} label The label object, which could be a dvt.Button, dvt.Rect, or dvt.Text.
+ * @param {number} maxWidth The maximum label width.
+ * @private
+ */
+DvtBreadcrumbsRenderer._truncateLabels = function(label, maxWidth) {
+  if (label instanceof dvt.Button) {
+    var ena = label.upState;
+    var text = ena.getChildAt(0);
+    dvt.TextUtils.fitText(text, Math.max(maxWidth - text.getTranslateX(), 0), Infinity, text.getParent());
+    var ovr = label.overState;
+    text = ovr.getChildAt(0);
+    dvt.TextUtils.fitText(text, Math.max(maxWidth - text.getTranslateX(), 0), Infinity, text.getParent());
+    var dwn = label.downState;
+    text = dwn.getChildAt(0);
+    dvt.TextUtils.fitText(text, Math.max(maxWidth - text.getTranslateX(), 0), Infinity, text.getParent());
+    return;
+  }
+  else if (label instanceof dvt.Rect) {
+    var text = label.getChildAt(0);
+    dvt.TextUtils.fitText(text, Math.max(maxWidth - text.getTranslateX(), 0), Infinity, text.getParent());
+    return;
+  }
+
+  dvt.TextUtils.fitText(label, maxWidth, Infinity, label.getParent());
+};
+
+
+/**
+ * Positions the labels into the given container.
+ * @param {dvt.Breadcrumbs} breadcrumbs The breadcrumbs being rendered.
+ * @param {dvt.Container} container The container in which the labels will be added.
+ * @param {number} availWidth The available width for positioning.
+ * @param {array} labels The array of dvt.Text labels.
+ * @param {array} peers The array of peers corresponding to the labels.  The last label will never have a peer.
+ * @private
+ */
+DvtBreadcrumbsRenderer._positionLabels = function(breadcrumbs, container, availWidth, labels, peers) {
+  var options = breadcrumbs.__getOptions();
+  var eventManager = breadcrumbs.getEventManager();
+
+  var arDims = [];
+  var maxHeight = 0;
+  for (var i = 0; i < labels.length; i++) {
+    container.addChild(labels[i]);
+    var dims = labels[i].getDimensions();
+    arDims[i] = dims;
+    maxHeight = Math.max(dims.h, maxHeight);
+    container.removeChild(labels[i]);
+  }
+
+  var x = 0;
+  for (var i = 0; i < labels.length; i++) {
+    // Add and position the label, then calculate the space for the next one
+    container.addChild(labels[i]);
+    var dims = arDims[i];
+    labels[i].setTranslate(x, .5 * (maxHeight - dims.h));
+
+    // Add a buffer to make the objects easier to interact with on touch devices
+    if (dvt.Agent.isTouchDevice()) {
+      var rect = new dvt.Rect(container.getCtx(), -DvtBreadcrumbsRenderer._TOUCH_BUFFER, -DvtBreadcrumbsRenderer._TOUCH_BUFFER,
+          dims.w + 2 * DvtBreadcrumbsRenderer._TOUCH_BUFFER, dims.h + 2 * DvtBreadcrumbsRenderer._TOUCH_BUFFER);
+      rect.setInvisibleFill();
+      labels[i].addChild(rect);
+      if (i < peers.length)
+        eventManager.associate(rect, peers[i]);
+    }
+
+    // Truncate if needed
+    if (x + dims.w > availWidth) {
+      var labelString = DvtBreadcrumbsRenderer._getLabelTextString(labels[i]);
+      DvtBreadcrumbsRenderer._truncateLabels(labels[i], availWidth - x);
+
+      // Add a tooltip
+      if (i < peers.length)
+        peers[i].setTruncated(true);
+      else
+        eventManager.associate(labels[i], new dvt.SimpleObjPeer(labelString));
+
+      // No more space, all done
+      return;
+    }
+    else // Update the x
+      x += dims.w + options.__labelGap;
+
+    // Add a separator if there are more labels
+    if (i < labels.length - 1) {
+      var separator = DvtBreadcrumbsRenderer._newSeparator(breadcrumbs);
+      container.addChild(separator);
+      var sepDims = separator.getDimensions();
+      separator.setTranslate(x, .5 * (maxHeight - sepDims.h));
+
+      // Check that there is enough space
+      var separatorWidth = sepDims.w;
+      if (x + separatorWidth > availWidth) {
+        container.removeChild(separator);
+        return;
+      }
+
+      x += separatorWidth + options.__labelGap;
+    }
+  }
+};
+
+
+/**
+ * Positions the labels into the given container for BIDI locales
+ * @param {dvt.Breadcrumbs} breadcrumbs The breadcrumbs being rendered.
+ * @param {dvt.Container} container The container in which the labels will be added.
+ * @param {number} availWidth The available width for positioning.
+ * @param {array} labels The array of dvt.Text labels.
+ * @param {array} peers The array of peers corresponding to the labels.  The last label will never have a peer.
+ * @private
+ */
+DvtBreadcrumbsRenderer._positionLabelsBidi = function(breadcrumbs, container, availWidth, labels, peers) {
+  var options = breadcrumbs.__getOptions();
+  var eventManager = breadcrumbs.getEventManager();
+
+  var x = availWidth;
+  for (var i = 0; i < labels.length; i++) {
+    // Add and position the label, then calculate the space for the next one
+    container.addChild(labels[i]);
+    var dims = labels[i].getDimensions();
+
+    // Add a buffer to make the objects easier to interact with on touch devices
+    if (dvt.Agent.isTouchDevice()) {
+      var rect = new dvt.Rect(container.getCtx(), -DvtBreadcrumbsRenderer._TOUCH_BUFFER, -DvtBreadcrumbsRenderer._TOUCH_BUFFER,
+          dims.w + 2 * DvtBreadcrumbsRenderer._TOUCH_BUFFER, dims.h + 2 * DvtBreadcrumbsRenderer._TOUCH_BUFFER);
+      rect.setInvisibleFill();
+      labels[i].addChild(rect);
+      if (i < peers.length)
+        eventManager.associate(rect, peers[i]);
+    }
+
+    // Truncate if needed
+    if (x - dims.w < 0) {
+      var labelString = DvtBreadcrumbsRenderer._getLabelTextString(labels[i]);
+      DvtBreadcrumbsRenderer._truncateLabels(labels[i], x);
+      labels[i].setTranslateX(0);
+
+      // Add a tooltip
+      if (i < peers.length)
+        peers[i].setTruncated(true);
+      else
+        eventManager.associate(labels[i], new dvt.SimpleObjPeer(labelString));
+
+      // No more space, all done
+      return;
+    }
+    else {
+      // Position and update the x
+      labels[i].setTranslateX(x - dims.w);
+      x -= (dims.w + options.__labelGap);
+    }
+
+    // Add a separator if there are more labels
+    if (i < labels.length - 1) {
+      var separator = DvtBreadcrumbsRenderer._newSeparator(breadcrumbs);
+      container.addChild(separator);
+
+      // Check that there is enough space
+      var separatorWidth = separator.getDimensions().w;
+      if (x - separatorWidth < 0) {
+        container.removeChild(separator);
+        return;
+      }
+      else {
+        // Enough space, position
+        separator.setTranslateX(x - separatorWidth);
+        x -= separatorWidth + options.__labelGap;
+      }
+    }
+  }
+};
+
+
+/**
+ * Creates and returns a new separator for breadcrumb labels.
+ * @param {dvt.Breadcrumbs} breadcrumbs The breadcrumbs being rendered.
+ * @return {dvt.Text}
+ * @private
+ */
+DvtBreadcrumbsRenderer._newSeparator = function(breadcrumbs) {
+  var options = breadcrumbs.__getOptions();
+  var label = new dvt.OutputText(breadcrumbs.getCtx(), options.__labelSeparator, 0, 0);
+  label.setCSSStyle(new dvt.CSSStyle(options.labelStyle));
+  return label;
+};
+
 /**
  * The base class for tree components.
  * @extends {dvt.BaseComponent}
@@ -32,9 +845,8 @@ DvtTreeView.prototype.Init = function(context, callback, callbackObj) {
   this.EventManager.addListeners(this);
 
   // Drag and drop support
-  this._dragSource = new dvt.DragSource(context);
-  this._dropTarget = new DvtTreeDropTarget(this);
-  this.EventManager.setDragSource(this._dragSource);
+  // this._dragSource = new dvt.DragSource(context);
+  // this.EventManager.setDragSource(this._dragSource);
 
   /**
    * Field used to store the legend displayable during render.
@@ -89,7 +901,7 @@ DvtTreeView.prototype.SetOptions = function(options) {
  * @param {number} width The width of the component.
  * @param {number} height The height of the component.
  */
-DvtTreeView.prototype.render = function(options, width, height) 
+DvtTreeView.prototype.render = function(options, width, height)
 {
   // Update if a new options object has been provided or initialize with defaults if needed.
   var bNewOptions = (options || !this.Options);
@@ -327,7 +1139,7 @@ DvtTreeView.prototype.RenderEmptyText = function(container) {
   var options = this.getOptions();
   var emptyText = options['emptyText'];
   if (!emptyText)
-    emptyText = dvt.Bundle.getTranslation(options, 'labelNoData', dvt.Bundle.UTIL_PREFIX, 'NO_DATA');
+    emptyText = options.translations.labelNoData;
 
   dvt.TextUtils.renderEmptyText(container, emptyText, new dvt.Rectangle(0, 0, this.Width, this.Height), this.getEventManager(), options['_statusMessageStyle']);
 };
@@ -508,7 +1320,7 @@ DvtTreeView.prototype.ApplyParsedProperties = function(props) {
   this._maxDepth = this._root ? DvtTreeUtils.calcMaxDepth(this._root, 0) : 0;
 
   // TODO : This uses the weird client side value in seconds
-  this.AnimationDuration = dvt.StyleUtils.getTimeMilliseconds(options['animationDuration']) / 1000;
+  this.AnimationDuration = dvt.CSSStyle.getTimeMilliseconds(options['animationDuration']) / 1000;
 
   this._styles = props.styles ? props.styles : {};
 
@@ -535,42 +1347,6 @@ DvtTreeView.prototype.ApplyParsedProperties = function(props) {
 
   // Attribute Groups and Legend Support
   this._legendSource = null;
-  this._attrGroups = [];
-  if (options['attributeGroups']) {
-    var nodes = DvtTreeUtils.getAllNodes(this._root);
-    for (var i = 0; i < options['attributeGroups'].length; i++) {
-      var attrGroup = options['attributeGroups'][i];
-      var agObj = null;
-      if (attrGroup['attributeType'] == 'continuous') {
-        DvtTreeUtils.calcContinuousAttrGroupsExtents(attrGroup, nodes);
-        agObj = new dvt.ContinuousAttrGroups(attrGroup['min'], attrGroup['max'], attrGroup['minLabel'], attrGroup['maxLabel'], attrGroup['colors']);
-      }
-      else { // discrete
-        agObj = new dvt.DiscreteAttrGroups();
-        for (var groupIndex = 0; groupIndex < attrGroup['groups'].length; groupIndex++) {
-          var group = attrGroup['groups'][groupIndex];
-          agObj.add(group['id'], group['label'], {color: group['color'], pattern: group['pattern']});
-        }
-      }
-      this._attrGroups.push({attrGroups: agObj, stampId: attrGroup['S'], id: attrGroup['id']});
-
-      // If source wasn't specified, use the first attributeGroups. In ADF no legend unless explicitly specified.
-      if (!options['_adf'] && !options['_legendSource'] && i == 0)
-        this._legendSource = agObj;
-      else if (options['_legendSource'] && options['_legendSource'] == attrGroup['id'])
-        this._legendSource = agObj;
-    }
-
-    // For continuous attribute groups sent from server, evaluate to get the colors
-    DvtTreeUtils.processContinuousAttrGroups(this._attrGroups, nodes);
-  }
-
-  // ADF Context Menus
-  var menus = options['_contextMenus'];
-  if (menus && menus.length > 0) {
-    var contextMenuHandler = new dvt.ContextMenuHandler(this.getCtx(), menus);
-    this.EventManager.setContextMenuHandler(contextMenuHandler);
-  }
 
   // ADF Templates for Content Facet
   var templates = options['_templates'];
@@ -800,11 +1576,11 @@ DvtTreeView.prototype.__showDropSiteFeedback = function(node) {
 
 /**
  * Processes a breadcrumb drill event.
- * @param {dvt.BreadcrumbsDrillEvent} event
+ * @param {object} event
  */
 DvtTreeView.prototype.__processBreadcrumbsEvent = function(event) {
-  if (event instanceof dvt.BreadcrumbsDrillEvent)
-    this.__drill(event.getId(), false);
+  if (event.type === 'breadcrumbsDrill')
+    this.__drill(event.id, false);
 };
 
 
@@ -858,7 +1634,7 @@ DvtTreeView.prototype.getRootNode = function()
  *
  * @return {String} the id of the node that should receive keyboard focus
  */
-DvtTreeView.prototype.__getNavigableIdToFocus = function() 
+DvtTreeView.prototype.__getNavigableIdToFocus = function()
 {
   return this._navigableIdToFocus;
 };
@@ -871,7 +1647,7 @@ DvtTreeView.prototype.__getNavigableIdToFocus = function()
  *
  * @param {String} id The id of the node that should receive keyboard focus
  */
-DvtTreeView.prototype.__setNavigableIdToFocus = function(id) 
+DvtTreeView.prototype.__setNavigableIdToFocus = function(id)
 {
   this._navigableIdToFocus = id;
 };
@@ -880,7 +1656,7 @@ DvtTreeView.prototype.__setNavigableIdToFocus = function(id)
 /**
  * @return {String} whether nodeSelection is multiple, single, or null.
  */
-DvtTreeView.prototype.__getNodeSelection = function() 
+DvtTreeView.prototype.__getNodeSelection = function()
 {
   return this._nodeSelection;
 };
@@ -892,15 +1668,6 @@ DvtTreeView.prototype.__getNodeSelection = function()
  * @protected
  */
 DvtTreeView.prototype.CreateNode = function(nodeOptions) {
-  // subclasses must override
-  return null;
-};
-
-/**
- * Helper function to return the bundle prefix for this component.
- * @return {string}
- */
-DvtTreeView.prototype.getBundlePrefix = function() {
   // subclasses must override
   return null;
 };
@@ -1029,113 +1796,6 @@ DvtTreeView.prototype.hasDataProvider = function() {
   return !!this.getOptions()['data'];
 };
 
-// APIs called by the ADF Faces drag source for DvtTreeView
-
-
-/**
- * If this object supports drag, returns the client id of the drag component.
- * Otherwise returns null.
- * @param mouseX the x coordinate of the mouse
- * @param mouseY the x coordinate of the mouse
- * @param clientIds the array of client ids of the valid drag components
- */
-DvtTreeView.prototype.isDragAvailable = function(mouseX, mouseY, clientIds) {
-  return this._dragSource.isDragAvailable(clientIds);
-};
-
-
-/**
- * Returns the transferable object for a drag initiated at these coordinates.
- */
-DvtTreeView.prototype.getDragTransferable = function(mouseX, mouseY) {
-  return this._dragSource.getDragTransferable(mouseX, mouseY);
-};
-
-
-/**
- * Returns the feedback for the drag operation.
- */
-DvtTreeView.prototype.getDragOverFeedback = function(mouseX, mouseY) {
-  return this._dragSource.getDragOverFeedback(mouseX, mouseY);
-};
-
-
-/**
- * Returns an Object containing the drag context info.
- */
-DvtTreeView.prototype.getDragContext = function(mouseX, mouseY) {
-  return this._dragSource.getDragContext(mouseX, mouseY);
-};
-
-
-/**
- * Returns the offset to use for the drag feedback. This positions the drag
- * feedback relative to the pointer.
- */
-DvtTreeView.prototype.getDragOffset = function(mouseX, mouseY) {
-  return this._dragSource.getDragOffset(mouseX, mouseY);
-};
-
-
-/**
- * Returns the offset from the mouse pointer where the drag is considered to be located.
- */
-DvtTreeView.prototype.getPointerOffset = function(xOffset, yOffset) {
-  return this._dragSource.getPointerOffset(xOffset, yOffset);
-};
-
-
-/**
- * Notifies the component that a drag started.
- */
-DvtTreeView.prototype.initiateDrag = function() {
-  this._dragSource.initiateDrag();
-};
-
-
-/**
- * Clean up after the drag is completed.
- */
-DvtTreeView.prototype.dragDropEnd = function() {
-  this._dragSource.dragDropEnd();
-};
-
-// APIs called by the ADF Faces drop target for DvtTreeView
-
-
-/**
- * If a drop is possible at these mouse coordinates, returns the client id
- * of the drop component. Returns null if drop is not possible.
- */
-DvtTreeView.prototype.acceptDrag = function(mouseX, mouseY, clientIds) {
-  return this._dropTarget.acceptDrag(mouseX, mouseY, clientIds);
-};
-
-
-/**
- * Paints drop site feedback as a drag enters the drop site.
- */
-DvtTreeView.prototype.dragEnter = function() {
-  this._dropTarget.dragEnter();
-};
-
-
-/**
- * Cleans up drop site feedback as a drag exits the drop site.
- */
-DvtTreeView.prototype.dragExit = function() {
-  this._dropTarget.dragExit();
-};
-
-
-/**
- * Returns the object representing the drop site. This method is called when a valid
- * drop is performed.
- */
-DvtTreeView.prototype.getDropSite = function(mouseX, mouseY) {
-  return this._dropTarget.getDropSite(mouseX, mouseY);
-};
-
 /**
  * Animation handler for tree data objects.
  * @param {dvt.Context} context The platform specific context object.
@@ -1226,61 +1886,6 @@ DvtTreeAnimationHandler._isAncestor = function(ancestors, node) {
 };
 
 /**
- * Drop Target event handler for DvtTreeView
- * @param {DvtTreeView} view
- * @class DvtTreeDropTarget
- * @extends {dvt.DropTarget}
- * @constructor
- */
-var DvtTreeDropTarget = function(view) {
-  this._view = view;
-};
-
-dvt.Obj.createSubclass(DvtTreeDropTarget, dvt.DropTarget);
-
-
-/**
- * @override
- */
-DvtTreeDropTarget.prototype.acceptDrag = function(mouseX, mouseY, clientIds) {
-  // If there is no node under the point, then don't accept the drag
-  var node = this._view.__getNodeUnderPoint(mouseX, mouseY);
-  if (!node) {
-    this._view.__showDropSiteFeedback(null);
-    return null;
-  }
-  else if (node != this._dropSite) {
-    this._view.__showDropSiteFeedback(node);
-    this._dropSite = node;
-  }
-
-  // Return the first clientId, since this component has only a single drag source
-  return clientIds[0];
-};
-
-
-/**
- * @override
- */
-DvtTreeDropTarget.prototype.dragExit = function() {
-  // Remove drop site feedback
-  this._view.__showDropSiteFeedback(null);
-  this._dropSite = null;
-};
-
-
-/**
- * @override
- */
-DvtTreeDropTarget.prototype.getDropSite = function(mouseX, mouseY) {
-  var node = this._view.__getNodeUnderPoint(mouseX, mouseY);
-  if (node)
-    return {clientRowKey: node.getId()};
-  else
-    return null;
-};
-
-/**
  * Event Manager for tree components.
  * @param {DvtTreeView} view
  * @param {dvt.Context} context
@@ -1289,7 +1894,7 @@ DvtTreeDropTarget.prototype.getDropSite = function(mouseX, mouseY) {
  * @constructor
  */
 var DvtTreeEventManager = function(view, context, callback, callbackObj) {
-  this.Init(context, callback, callbackObj);
+  this.Init(context, callback, callbackObj, view);
   this._view = view;
 };
 
@@ -1490,7 +2095,7 @@ DvtTreeEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOver)
   // Fire the event to the rollover handler, who will fire to the component callback.
   var rolloverEvent = dvt.EventFactory.newCategoryHighlightEvent(options['highlightedCategories'], bOver);
   var nodes = DvtTreeUtils.getAllNodes(this.GetView().getRootNode());
-  var hoverBehaviorDelay = dvt.StyleUtils.getTimeMilliseconds(options['hoverBehaviorDelay']);
+  var hoverBehaviorDelay = dvt.CSSStyle.getTimeMilliseconds(options['hoverBehaviorDelay']);
   this.RolloverHandler.processEvent(rolloverEvent, nodes, hoverBehaviorDelay, options['highlightMatch'] == 'any');
 };
 
@@ -1508,8 +2113,6 @@ DvtTreeEventManager.prototype.GetTouchResponse = function() {
  * @implements {DvtCategoricalObject}
  * @implements {DvtTooltipSource}
  * @implements {DvtSelectable}
- * @implements {DvtPopupSource}
- * @implements {DvtContextMenuSource}
  * @implements {DvtKeyboardNavigable}
  * @implements {DvtDraggable}
  */
@@ -1632,7 +2235,7 @@ DvtTreeNode.prototype.SetLastVisitedChild = function(lastVisited)
  * @return {DvtTreeNode} The last visited child
  * @protected
  */
-DvtTreeNode.prototype.GetLastVisitedChild = function() 
+DvtTreeNode.prototype.GetLastVisitedChild = function()
 {
   return this._lastVisitedChild;
 };
@@ -1841,9 +2444,15 @@ DvtTreeNode.prototype.getShortDesc = function() {
 DvtTreeNode.prototype.getDataContext = function() {
   var options = this.getOptions();
   var itemData;
-  if (options._itemData) {
+  var data = options;
+  if (options._noTemplate) {
+    itemData = options._itemData;
+    data = options._itemData;
+  }
+  else if (options._itemData) {
     itemData = options._itemData;
     options = dvt.JsonUtils.clone(options);
+    data = options;
     delete options._itemData;
   }
   return {
@@ -1851,7 +2460,7 @@ DvtTreeNode.prototype.getDataContext = function() {
     'label': this.getLabel(),
     'value': this.getSize(),
     'color': this.getColor(),
-    'data': options,
+    'data': data,
     'itemData': itemData,
     'component': this.getView().getOptions()['_widgetConstructor']
   };
@@ -1925,19 +2534,6 @@ DvtTreeNode.prototype.isDrillReplaceEnabled = function() {
 };
 
 /**
- * @override
- */
-DvtTreeNode.prototype.getShowPopupBehaviors = function() {
-  // Retrieve from the showPopupBehaviors map in the options object, indexed via the stampid.
-  var behaviors = this.getView().getOptions()['_spb'];
-  if (!behaviors || !behaviors[this.getStampId()])
-    return null;
-
-  // If found, create a dvt.ShowPopupBehavior and return
-  return dvt.ShowPopupBehavior.createBehaviors(behaviors[this.getStampId()]);
-};
-
-/**
  * Renders this node.
  * @param {dvt.Container} container The container to render in.
  */
@@ -1962,21 +2558,10 @@ DvtTreeNode.prototype.renderChildren = function(container) {
 
 
 /**
- * Updates this node and its children with values from the attribute groups.
- * @param {dvt.AttrGroups} ag
- */
-DvtTreeNode.prototype.processAttrGroups = function(ag) {
-  var color = ag.get(this.getOptions()['_cv']);
-  if (color)
-    this._color = color;
-};
-
-
-/**
  * Default implementation of getNextNavigable. Returns this node as the next navigable.  Subclasses should override
  * @override
  */
-DvtTreeNode.prototype.getNextNavigable = function(event) 
+DvtTreeNode.prototype.getNextNavigable = function(event)
 {
   // subclasses should override
   this.MarkAsLastVisitedChild();
@@ -1987,7 +2572,7 @@ DvtTreeNode.prototype.getNextNavigable = function(event)
 /**
  * @override
  */
-DvtTreeNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace) 
+DvtTreeNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace)
 {
   // subclasses should override
   return new dvt.Rectangle(0, 0, 0, 0);
@@ -1996,7 +2581,7 @@ DvtTreeNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace)
 /**
  * @override
  */
-DvtTreeNode.prototype.getTargetElem = function() 
+DvtTreeNode.prototype.getTargetElem = function()
 {
   // subclasses should override
   return null;
@@ -2005,7 +2590,7 @@ DvtTreeNode.prototype.getTargetElem = function()
 /**
  * @override
  */
-DvtTreeNode.prototype.showKeyboardFocusEffect = function() 
+DvtTreeNode.prototype.showKeyboardFocusEffect = function()
 {
   this._isShowingKeyboardFocusEffect = true;
 
@@ -2035,7 +2620,7 @@ DvtTreeNode.prototype.hideKeyboardFocusEffect = function()
 /**
  * @override
  */
-DvtTreeNode.prototype.isShowingKeyboardFocusEffect = function() 
+DvtTreeNode.prototype.isShowingKeyboardFocusEffect = function()
 {
   return this._isShowingKeyboardFocusEffect;
 };
@@ -2136,15 +2721,6 @@ DvtTreeNode.prototype.getDragFeedback = function(mouseX, mouseY) {
  */
 DvtTreeNode.prototype.getDropSiteFeedback = function() {
   return null;
-};
-
-/**
- * Returns the bounds upon which the popup fired by the given behavior should align.
- * @param {dvt.ShowPopupBehavior} behavior The dvt.ShowPopupBehavior that is firing the popup.
- * @return {dvt.Rectangle} The rectangle that the popup should align to.
- */
-DvtTreeNode.prototype.getPopupBounds = function(behavior) {
-  return null; // subclasses can override, or else default positioning will occur
 };
 
 
@@ -2467,17 +3043,17 @@ DvtTreeNode.prototype.isRootNode = function() {
  * @param {DvtTreeNode} node The associated node, if it has been created.
  * @param {string} id The id of the associated node.
  * @param {string} tooltip The tooltip to display.
- * @param {string} datatip The datatip to display.
- * @param {string} datatipColor The border color of the datatip.
+ * @param {string|function} datatip The datatip to display.
+ * @param {string|function} datatipColor The border color of the datatip.
  * @class
  * @constructor
  * @implements {DvtTooltipSource}
  */
 var DvtTreePeer = function(node, id, tooltip, datatip, datatipColor) {
-  this.Init(tooltip, datatip, datatipColor);
-  this._node = node;
-  this._id = id;
-  this._bDrillable = false;
+    this.Init(tooltip, datatip, datatipColor);
+    this._node = node;
+    this._id = id;
+    this._bDrillable = false;
 };
 
 dvt.Obj.createSubclass(DvtTreePeer, dvt.SimpleObjPeer);
@@ -2618,14 +3194,13 @@ DvtTreeLegendRenderer._LABEL_INLINE_STYLE = 'color:' + DvtTreeLegendRenderer._LA
  * space and returns the rendered displayable.
  * @param {DvtTreeView} treeView The owning component.
  * @param {dvt.Rectangle} availSpace The rectangle within which to layout.
- * @param {dvt.AttrGroups} attrGroups An attribute groups describing the colors.
  * @return {dvt.Displayable} The rendered legend contents.
  */
-DvtTreeLegendRenderer.render = function(treeView, availSpace, attrGroups) {
+DvtTreeLegendRenderer.render = function(treeView, availSpace) {
   var options = treeView.getOptions();
   var sizeValueStr = options['sizeLabel'];
   var colorValueStr = options['colorLabel'];
-  if (sizeValueStr == null && colorValueStr == null && attrGroups == null)
+  if (sizeValueStr == null && colorValueStr == null)
     return;
 
   var context = treeView.getCtx();
@@ -2636,66 +3211,15 @@ DvtTreeLegendRenderer.render = function(treeView, availSpace, attrGroups) {
   treeView.addChild(legend);
 
   // Size/Color Labels
-  var labelContainer = DvtTreeLegendRenderer._renderLabels(context, treeView, legend, availSpace.w, sizeValueStr, colorValueStr, attrGroups);
+  var labelContainer = DvtTreeLegendRenderer._renderLabels(context, treeView, legend, availSpace.w, sizeValueStr, colorValueStr);
 
-  var borderColor = dvt.CSSStyle.afterSkinAlta(treeView.getOptions()['skin']) ? null : '#000000';
   var legendStyleArray = new Array();
   legendStyleArray.push(options['styleDefaults']['_labelStyle']);
-  var legendStyles = {borderColor: borderColor, labelStyle: dvt.CSSStyle.mergeStyles(legendStyleArray)};
-
-  // Color Section
-  var colorContainer = dvt.LegendAttrGroupsRenderer.renderAttrGroups(context, eventManager, legend, availSpace.w, availSpace.h, attrGroups, legendStyles);
 
   // Position the sections horizontally
   var labelDims = labelContainer ? labelContainer.getDimensions() : null;
-  var colorDims = colorContainer ? colorContainer.getDimensions() : null;
-  if (labelContainer && !colorContainer) // Only labels, center
+  if (labelContainer) // Only labels, center
     labelContainer.setTranslateX(availSpace.y + (availSpace.w - labelDims.w) / 2);
-  else if (colorContainer && !labelContainer) // Only colors, center
-    colorContainer.setTranslateX(availSpace.y + (availSpace.w - colorDims.w) / 2);
-  else if (colorContainer && labelContainer) {
-    // Deal with overflow
-    var availWidth = availSpace.w - DvtTreeLegendRenderer._LEGEND_SECTION_GAP;
-    if (labelDims.w + colorDims.w > availWidth) {
-      if (labelDims.w > availWidth / 2 && colorDims.w > availWidth / 2) {
-        // Both don't fit, recreate at half of the avail width each
-        legend.removeChild(labelContainer);
-        legend.removeChild(colorContainer);
-        labelContainer = DvtTreeLegendRenderer._renderLabels(context, treeView, legend, availWidth / 2, sizeValueStr, colorValueStr, attrGroups);
-        colorContainer = dvt.LegendAttrGroupsRenderer.renderAttrGroups(context, eventManager, legend, availWidth / 2, availSpace.h, attrGroups, legendStyles);
-      }
-      else if (labelDims.w > colorDims.w) {
-        // Labels don't fit, give all remaining space
-        var labelSpace = availWidth - colorDims.w;
-
-        // Recreate the labelContainer at the available size
-        legend.removeChild(labelContainer);
-        labelContainer = DvtTreeLegendRenderer._renderLabels(context, treeView, legend, labelSpace, sizeValueStr, colorValueStr, attrGroups);
-      }
-      else {
-        // Colors don't fit, give all remaining space
-        var colorSpace = availWidth - labelDims.w;
-
-        // Recreate the labelContainer at the available size
-        legend.removeChild(colorContainer);
-        colorContainer = dvt.LegendAttrGroupsRenderer.renderAttrGroups(context, eventManager, legend, colorSpace, availSpace.h, attrGroups, legendStyles);
-      }
-
-      // Size changed so recalc dimensions
-      labelDims = labelContainer.getDimensions();
-      colorDims = colorContainer.getDimensions();
-    }
-
-    // Position
-    if (dvt.Agent.isRightToLeft(context)) {
-      colorContainer.setTranslateX(availSpace.x);
-      labelContainer.setTranslateX(availSpace.x + availSpace.w - labelDims.w);
-    }
-    else {
-      labelContainer.setTranslateX(availSpace.x);
-      colorContainer.setTranslateX(availSpace.x + availSpace.w - colorDims.w);
-    }
-  }
 
   // Figure out the height used and reduce availSpace
   var legendDims = legend.getDimensions();
@@ -2716,10 +3240,9 @@ DvtTreeLegendRenderer.render = function(treeView, availSpace, attrGroups) {
  * @param {number} availWidth The available horizontal space.
  * @param {string} sizeValueStr A description of the size metric.
  * @param {string} colorValueStr A description of the color metric.
- * @param {dvt.AttrGroups} attrGroups An attribute groups describing the colors.
  * @return {dvt.Displayable} The rendered contents.
  */
-DvtTreeLegendRenderer._renderLabels = function(context, treeView, legend, availWidth, sizeValueStr, colorValueStr, attrGroups) {
+DvtTreeLegendRenderer._renderLabels = function(context, treeView, legend, availWidth, sizeValueStr, colorValueStr) {
   var isRTL = dvt.Agent.isRightToLeft(context);
   var eventManager = treeView.getEventManager();
   var styleDefaults = treeView.getOptions()['styleDefaults'];
@@ -2746,7 +3269,7 @@ DvtTreeLegendRenderer._renderLabels = function(context, treeView, legend, availW
     var sizeWidth = 0;
     if (sizeValueStr) {
       // Size Label
-      var sizeStr = dvt.Bundle.getTranslation(treeView.getOptions(), 'labelSize', treeView.getBundlePrefix(), 'SIZE');
+      var sizeStr = treeView.getOptions().translations.labelSize;
       sizeLabel = new dvt.OutputText(context, sizeStr, 0, 0);
       sizeLabel.setCSSStyle(attrTypeStyle);
 
@@ -2772,7 +3295,7 @@ DvtTreeLegendRenderer._renderLabels = function(context, treeView, legend, availW
     var colorWidth = 0;
     if (colorValueStr) {
       // Color Label
-      var colorStr = dvt.Bundle.getTranslation(treeView.getOptions(), 'labelColor', treeView.getBundlePrefix(), 'COLOR');
+      var colorStr = treeView.getOptions().translations.labelColor;
       colorLabel = new dvt.OutputText(context, colorStr, 0, 0);
       colorLabel.setCSSStyle(attrTypeStyle);
 
@@ -2928,7 +3451,7 @@ dvt.Obj.createSubclass(DvtTreeDefaults, dvt.BaseComponentDefaults);
 /**
  * Defaults for version 1. This component was exposed after the Alta skin, so no earlier defaults are provided.
  */
-DvtTreeDefaults.VERSION_1 = {
+DvtTreeDefaults.SKIN_ALTA = {
   'skin': dvt.CSSStyle.SKIN_ALTA,
 
   // Note, only attributes that are different than the XML defaults need
@@ -2966,9 +3489,7 @@ DvtTreeDefaults.VERSION_1 = {
 DvtTreeDefaults.prototype.Init = function(defaultsMap) {
   // This will only be called via subclasses.  Combine with defaults from this class before passing to super.
   var ret = {
-    'skyros': dvt.JsonUtils.merge(defaultsMap['skyros'], DvtTreeDefaults.VERSION_1),
-    'alta': dvt.JsonUtils.merge(defaultsMap['alta'], {}),
-    'next': dvt.JsonUtils.merge(defaultsMap['next'], {})
+    'alta': dvt.JsonUtils.merge(defaultsMap['alta'], DvtTreeDefaults.SKIN_ALTA)
   };
 
   DvtTreeDefaults.superclass.Init.call(this, ret);
@@ -3067,60 +3588,6 @@ DvtTreeUtils.isHiddenNode = function(categoryMap, nodeOptions) {
   return dvt.ArrayUtils.hasAnyMapItem(categoryMap, nodeOptions['categories']);
 };
 
-/**
- * If not specified, calculates and updates the attribute groups min and max values.
- * @param {object} attrGroupOptions
- * @param {array} nodes
- */
-DvtTreeUtils.calcContinuousAttrGroupsExtents = function(attrGroupOptions, nodes) {
-  // Return if explicitly defined or no stamp id specified
-  var stampId = attrGroupOptions['S'];
-  if (stampId == null || (attrGroupOptions['min'] != null && attrGroupOptions['max'] != null))
-    return;
-
-  // Loop through all the nodes to find the values
-  var min = Infinity;
-  var max = -Infinity;
-  for (var i = 0; i < nodes.length; i++) {
-    // Only process if the template id matches. This is internal and only sent by ADF.
-    var node = nodes[i];
-    if (stampId == node.getStampId()) {
-      var value = node.getOptions()['_cv'];
-      if (value != null) {
-        max = Math.max(max, value);
-        min = Math.min(min, value);
-      }
-    }
-  }
-
-  // Apply the values
-  if (attrGroupOptions['min'] == null)
-    attrGroupOptions['min'] = min;
-
-  if (attrGroupOptions['max'] == null)
-    attrGroupOptions['max'] = max;
-};
-
-/**
- * Processes the list of attribute groups, applying the continuous color properties if needed.
- * @param {array} attrGroupsList The array of attribute groups definitions.
- * @param {array} nodes The array of nodes whose attribute groups will be applied.
- */
-DvtTreeUtils.processContinuousAttrGroups = function(attrGroupsList, nodes) {
-  for (var i = 0; i < attrGroupsList.length; i++) {
-    var attrGroupsMap = attrGroupsList[i];
-    var attrGroups = attrGroupsMap.attrGroups;
-    var stampId = attrGroupsMap.stampId;
-    if (attrGroups instanceof dvt.ContinuousAttrGroups && stampId != null) {
-      for (var j = 0; j < nodes.length; j++) {
-        // Only process if the template id matches. This is internal and only sent by ADF.
-        var node = nodes[j];
-        if (stampId == node.getStampId())
-          node.processAttrGroups(attrGroups);
-      }
-    }
-  }
-};
 
 /**
  * Recursively returns an array containing all nodes in the subtree of a given node.
@@ -3286,7 +3753,7 @@ DvtTreeAutomation.prototype._getSubIdForButton = function(nodeSubId, node, displ
       // In the event of executing a click on the button during automation, the node state is updated before this check
       // so we have to check the displayable aria properties to determine the button's state
       var ariaLabel = displayable.getAriaProperty('label');
-      var isolatedText = dvt.Bundle.getTranslation(options, 'stateIsolated', dvt.Bundle.UTIL_PREFIX, 'STATE_ISOLATED');
+      var isolatedText = options.translations.stateIsolated;
       return (ariaLabel.indexOf(isolatedText) >= 0) ? DvtTreeAutomation.RESTORE : nodeSubId + ':' + DvtTreeAutomation.ISOLATE_SUFFIX;
     }
     else if (node instanceof DvtSunburstNode)
@@ -3460,7 +3927,7 @@ DvtTreeAutomation.prototype.getNode = function(subIdPath) {
 
   // If root index was the only element of subIdPath, set the node to get data for as the root, else search for the correct node
   var node = (subIdPath.length == 0) ? rootNode : this._getNodeFromPath(rootNode, subIdPath);
-  
+
   if (node) {
     return {
       'color': node.getColor(),
@@ -3958,90 +4425,6 @@ dvt.Treemap.prototype.__getDefaultNavigable = function(navigableItems)
 };
 
 /**
- * Returns the displayables to pass to the view switcher for animation.
- * @param {boolean} bOld True if this is the outgoing view.
- * @return {array} The array of displayables.
- */
-dvt.Treemap.prototype.getShapesForViewSwitcher = function(bOld) {
-  var shapes = {};
-  if (this._root) {
-    var arNodes = [this._root];
-    while (arNodes.length > 0) {
-      var node = arNodes.splice(0, 1)[0];
-      var id = node.getId();
-      var shape = node.getDisplayable();
-      if (id && shape) {
-        shapes[id] = shape;
-        shapes[id + '_text'] = node._text;
-
-        // TODO private access is not allowed, so we'll need to fix this before productizing.
-        if (node._topLeftShape) {
-          shape.removeChild(node._topLeftShape);
-        }
-        if (node._fillShape) {
-          shape.removeChild(node._fillShape);
-        }
-
-        // TODO setting the fill to deal with the issue where the animation shapes currently use the background shape
-        shape.setFill(node.GetFill());
-
-        //flatten hierarchical structure of nodes so that they animate independently
-        if (bOld) {
-          var parentNode = node.GetParent();
-          if (parentNode) {
-            var parentShape = parentNode.getDisplayable();
-            var parent = null;
-            if (parentShape) {
-              parent = parentShape.getParent();
-            }
-            else {
-              parent = this._container;
-            }
-            if (parent) {
-              //this will insert children in reverse z-order, but still after the parent node
-              var childIndex = parent.getChildIndex(parentShape);
-              if (node._border) {
-                parent.addChildAt(node._border, childIndex + 1);
-              }
-              if (node._borderBR) {
-                parent.addChildAt(node._borderBR, childIndex + 1);
-              }
-              if (node._borderTL) {
-                parent.addChildAt(node._borderTL, childIndex + 1);
-              }
-              if (node._text) {
-                parent.addChildAt(node._text, childIndex + 1);
-              }
-              parent.addChildAt(shape, childIndex + 1);
-            }
-          }
-        }
-      }
-
-      var children = node.getChildNodes();
-      if (children) {
-        arNodes = arNodes.concat(children);
-      }
-    }
-  }
-  return shapes;
-};
-
-/**
- * @override
- */
-dvt.Treemap.prototype.GetComponentDescription = function() {
-  return dvt.Bundle.getTranslation(this.getOptions(), 'componentName', dvt.Bundle.UTIL_PREFIX, 'TREEMAP');
-};
-
-/**
- * @override
- */
-dvt.Treemap.prototype.getBundlePrefix = function() {
-  return dvt.Bundle.TREEMAP_PREFIX;
-};
-
-/**
  * @override
  */
 dvt.Treemap.prototype.CreateNode = function(nodeOptions) {
@@ -4255,7 +4638,7 @@ DvtTreemapNode.prototype.setSelected = function(selected) {
     var h = Math.max(this._height - DvtTreemapNode._LINE_FUDGE_FACTOR, 0);
 
     // Workaround for different pixel drawing behavior between browsers
-    if (dvt.Agent.isPlatformWebkit())
+    if ((dvt.Agent.browser === 'safari' || dvt.Agent.browser === 'chrome'))
       y -= DvtTreemapNode._LINE_FUDGE_FACTOR;
 
     // Clear the selection inner and outer, which may be used by hover
@@ -4306,7 +4689,7 @@ DvtTreemapNode.prototype.setSelected = function(selected) {
 
       // Also apply the shadow.  Use a clone since the object is static and may be used elsewhere in the page.
       //  and : Disable shadows in safari and ff due to rendering issues.
-      if (!dvt.Agent.isBrowserSafari() && !dvt.Agent.isPlatformGecko()) {
+      if (dvt.Agent.browser !== 'safari' && dvt.Agent.browser !== 'firefox') {
         this._shape.addDrawEffect(DvtTreeNode.__NODE_SELECTED_SHADOW);
       }
 
@@ -4412,7 +4795,7 @@ DvtTreemapNode.prototype.showHoverEffect = function() {
     y = this._y + this._titleBarHeight + DvtTreemapNode.GROUP_HOVER_INNER_WIDTH / 2;
     w = this._width - DvtTreemapNode.GROUP_HOVER_INNER_WIDTH - DvtTreemapNode._LINE_FUDGE_FACTOR;
     h = this._height - this._titleBarHeight - DvtTreemapNode.GROUP_HOVER_INNER_WIDTH - DvtTreemapNode._LINE_FUDGE_FACTOR;
-    stroke = new dvt.SolidStroke(nodeHeaderDefaults['hoverInnerColor'], DvtTreemapNode.GROUP_HOVER_INNER_OPACITY, DvtTreemapNode.GROUP_HOVER_INNER_WIDTH);
+    stroke = new dvt.Stroke(nodeHeaderDefaults['hoverInnerColor'], DvtTreemapNode.GROUP_HOVER_INNER_OPACITY, DvtTreemapNode.GROUP_HOVER_INNER_WIDTH);
 
     // Update the text color
     if (this._text) {
@@ -4428,7 +4811,7 @@ DvtTreemapNode.prototype.showHoverEffect = function() {
     w = this._width - DvtTreemapNode.NODE_SELECTION_WIDTH - DvtTreemapNode._LINE_FUDGE_FACTOR;
     h = this._height - DvtTreemapNode.NODE_SELECTION_WIDTH - DvtTreemapNode._LINE_FUDGE_FACTOR;
 
-    stroke = new dvt.SolidStroke(nodeDefaults['hoverColor'], DvtTreemapNode.NODE_HOVER_OPACITY, DvtTreemapNode.NODE_SELECTION_WIDTH);
+    stroke = new dvt.Stroke(nodeDefaults['hoverColor'], DvtTreemapNode.NODE_HOVER_OPACITY, DvtTreemapNode.NODE_SELECTION_WIDTH);
   }
 
   //  - treemap visualization issues
@@ -4507,18 +4890,6 @@ DvtTreemapNode.prototype.highlight = function(bDimmed, alpha) {
  */
 DvtTreemapNode.prototype.isIsolateEnabled = function() {
   return this._isolate != 'off' && this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER;
-};
-
-/**
- * @override
- */
-DvtTreemapNode.prototype.getPopupBounds = function(behavior) {
-  // If not specified or if no align provided, defer to default behavior
-  if (!behavior || !behavior.getAlign())
-    return DvtTreemapNode.superclass.getPopupBounds.call(this, behavior);
-
-  // Otherwise align to the node
-  return new dvt.Rectangle(this._x, this._y, this._width, this._height);
 };
 
 /**
@@ -4893,10 +5264,10 @@ DvtTreemapNode.prototype._createShapeNode = function() {
       var bVisualEffects = this.getView().__getNodeCount() < 1000 || !dvt.Agent.isTouchDevice();
       if (bVisualEffects && this._width >= DvtTreemapNode.MIN_SIZE_FOR_BORDER && this._height >= DvtTreemapNode.MIN_SIZE_FOR_BORDER) {
         // Figure out the stroke colors
-        var topLeft = new dvt.SolidStroke(DvtTreemapNode.DEFAULT_NODE_TOP_BORDER_COLOR);
-        var bottomRight = new dvt.SolidStroke(DvtTreemapNode.DEFAULT_NODE_BOTTOM_BORDER_COLOR, DvtTreemapNode.DEFAULT_NODE_BORDER_OPACITY);
+        var topLeft = new dvt.Stroke(DvtTreemapNode.DEFAULT_NODE_TOP_BORDER_COLOR);
+        var bottomRight = new dvt.Stroke(DvtTreemapNode.DEFAULT_NODE_BOTTOM_BORDER_COLOR, DvtTreemapNode.DEFAULT_NODE_BORDER_OPACITY);
         if (this.hasPattern()) {
-          topLeft = new dvt.SolidStroke(this._color, DvtTreemapNode.DEFAULT_NODE_PATTERN_BORDER_OPACITY);
+          topLeft = new dvt.Stroke(this._color, DvtTreemapNode.DEFAULT_NODE_PATTERN_BORDER_OPACITY);
           bottomRight = topLeft;
         }
 
@@ -5001,13 +5372,7 @@ DvtTreemapNode.prototype._createIsolateRestoreButton = function(container) {
     }
 
     // For Alta, associate the node so the hover effect doesn't get removed.
-    if (dvt.CSSStyle.afterSkinAlta(this.getView().getOptions()['skin']))
-      this.getView().getEventManager().associate(button, this);
-    else {
-      // Associate a blank peer so the button is not treated as part of the node
-      var tooltip = dvt.Bundle.getTranslation(this.getView().getOptions(), this.__isIsolated() ? 'tooltipRestore' : 'tooltipIsolate', dvt.Bundle.TREEMAP_PREFIX, this.__isIsolated() ? 'RESTORE' : 'ISOLATE');
-      this.getView().getEventManager().associate(button, new DvtTreePeer(this, this.getId(), tooltip));
-    }
+    this.getView().getEventManager().associate(button, this);
   }
 
   return button;
@@ -5106,7 +5471,7 @@ DvtTreemapNode.prototype._createTextNode = function(container) {
   }
   else if (this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER) {
     // Note: No need to worry about available height here.  Headers are sized based on the text size.
-    var chromeAdjustment = dvt.Agent.isPlatformWebkit() ? DvtTreemapNode._LINE_FUDGE_FACTOR : 0;
+    var chromeAdjustment = (dvt.Agent.browser === 'safari' || dvt.Agent.browser === 'chrome') ? DvtTreemapNode._LINE_FUDGE_FACTOR : 0;
     text.setY(this._y + DvtTreemapNode.DEFAULT_HEADER_BORDER_WIDTH + this._titleBarHeight / 2 + chromeAdjustment);
     text.alignMiddle();
     this.ApplyHeaderTextStyle(text, 'labelStyle');
@@ -5119,7 +5484,7 @@ DvtTreemapNode.prototype._createTextNode = function(container) {
       text.setCursor('pointer');
 
       // Associate with a DvtTreePeer to handle drilling
-      var peer = new DvtTreePeer(this, this.getId(), null, this.getDatatip(), this.getDatatipColor());
+      var peer = new DvtTreePeer(this, this.getId(), null, this.getDatatip.bind(this), this.getDatatipColor.bind(this));
       peer.setDrillable(true);
       this.getView().getEventManager().associate(text, peer);
     }
@@ -5487,7 +5852,7 @@ DvtTreemapNode.prototype.getDatatipColor = function(target) {
  */
 DvtTreemapNode.prototype.getTooltip = function(target) {
   if (target && target instanceof dvt.Button)
-    return dvt.Bundle.getTranslation(this.getView().getOptions(), this.__isIsolated() ? 'tooltipRestore' : 'tooltipIsolate', dvt.Bundle.TREEMAP_PREFIX, this.__isIsolated() ? 'RESTORE' : 'ISOLATE');
+    return this.getView().getOptions().translations[this.__isIsolated() ? 'tooltipRestore' : 'tooltipIsolate'];
   else
     return null;
 };
@@ -5496,15 +5861,15 @@ DvtTreemapNode.prototype.getTooltip = function(target) {
  * @override
  */
 DvtTreemapNode.prototype.getAriaLabel = function() {
-  var options = this.getView().getOptions();
+  var translations = this.getView().getOptions().translations;
 
   var states = [];
   if (this.isSelectable())
-    states.push(dvt.Bundle.getTranslation(options, this.isSelected() ? 'stateSelected' : 'stateUnselected', dvt.Bundle.UTIL_PREFIX, this.isSelected() ? 'STATE_SELECTED' : 'STATE_UNSELECTED'));
+    states.push(translations[this.isSelected() ? 'stateSelected' : 'stateUnselected']);
   if (this.__isIsolated())
-    states.push(dvt.Bundle.getTranslation(options, 'stateIsolated', dvt.Bundle.UTIL_PREFIX, 'STATE_ISOLATED'));
+    states.push(translations.stateIsolated);
   if (this.isDrillReplaceEnabled())
-    states.push(dvt.Bundle.getTranslation(options, 'stateDrillable', dvt.Bundle.UTIL_PREFIX, 'STATE_DRILLABLE'));
+    states.push(translations.stateDrillable);
 
   return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states);
 };
@@ -5537,16 +5902,22 @@ DvtTreemapNode.prototype._createCustomNodeContent = function() {
     var context = treemap.getCtx();
     var options = this.getOptions();
     var itemData;
-    if (options._itemData) {
+    var data = options;
+    if (options._noTemplate)   {
+      itemData = options._itemData;
+      data = options._itemData;
+      }
+    else if (options._itemData) {
       itemData = options._itemData;
       options = dvt.JsonUtils.clone(options);
+      data = options;
       delete options._itemData;
     }
 
     var dataContext = {
       'bounds': {'x': this._x, 'y': this._y, 'width': this._width - DvtTreemapNode.DEFAULT_NODE_BORDER_WIDTH, 'height': this._height - DvtTreemapNode.DEFAULT_NODE_BORDER_WIDTH},
       'id': id,
-      'data': options,
+      'data': data,
       'itemData': itemData,
       'component': options['_widgetConstructor']
     };
@@ -5557,7 +5928,12 @@ DvtTreemapNode.prototype._createCustomNodeContent = function() {
     if (!customContent)
       return;
     var newOverlay = context.createOverlayDiv();
-    newOverlay.appendChild(customContent); // @HtmlUpdateOk
+    if (Array.isArray(customContent)) {
+      customContent.forEach(function(node) {newOverlay.appendChild(node);}); // @HtmlUpdateOk
+    }
+    else {
+      newOverlay.appendChild(customContent); // @HtmlUpdateOk
+    }
     var nodeContent = treemap.getNodeContent();
     nodeContent[id] = newOverlay;
     parentDiv.appendChild(newOverlay); // @HtmlUpdateOk
@@ -6071,16 +6447,6 @@ DvtTreemapEventManager.prototype.isClearMenuAllowed = function()
   return false;
 };
 
-
-
-dvt.Bundle.addDefaultStrings(dvt.Bundle.TREEMAP_PREFIX, {
-  'COLOR': 'Color',
-  'ISOLATE': 'Isolate',
-  'OTHER': 'Other',
-  'RESTORE': 'Restore',
-  'SIZE': 'Size'
-});
-
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -6089,25 +6455,15 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.TREEMAP_PREFIX, {
  * @extends {DvtTreeDefaults}
  */
 var DvtTreemapDefaults = function(context) {
-  this.Init({'skyros': DvtTreemapDefaults.VERSION_1, 'alta': {}, 'next': DvtTreemapDefaults.SKIN_NEXT}, context);
+  this.Init({'alta': DvtTreemapDefaults.SKIN_ALTA}, context);
 };
 
 dvt.Obj.createSubclass(DvtTreemapDefaults, DvtTreeDefaults);
 
 /**
- * Contains overrides for the next generation skin.
- * @const
- */
-DvtTreemapDefaults.SKIN_NEXT = {
-  'skin': dvt.CSSStyle.SKIN_NEXT,
-
-  'nodeSeparators': 'gaps'
-};
-
-/**
  * Defaults for version 1. This component was exposed after the Alta skin, so no earlier defaults are provided.
  */
-DvtTreemapDefaults.VERSION_1 = {
+DvtTreemapDefaults.SKIN_ALTA = {
   // Note, only attributes that are different than the XML defaults need
   // to be listed here, at least until the XML API is replaced.
   'groupGaps': 'outer',
@@ -6142,7 +6498,7 @@ DvtTreemapDefaults.VERSION_1 = {
     'selectedInnerColor': '#FFFFFF',
     'selectedOuterColor': '#000000'
   },
-  'nodeSeparators': 'bevels',
+  'nodeSeparators': 'gaps',
   'nodeContent': {}
 };
 
@@ -6213,7 +6569,7 @@ dvt.Sunburst.prototype.ApplyParsedProperties = function(props) {
 
   var options = this.getOptions();
 
-  if (dvt.Agent.isPlatformIE()) {
+  if ((dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge')) {
     // -- ie doesn't support cursor image positioning
     this._rotateCursor = 'url(' + options['_resources']['rotateCursor'] + '), auto';
   }
@@ -6399,7 +6755,7 @@ dvt.Sunburst.prototype.__moveToSelectedLayer = function(displayable) {
 
   // Also reapply the shadow.  Use a clone since the object is static and may be used elsewhere in the page.
   //  and : Disable shadows in safari and ff due to rendering issues.
-  if (!dvt.Agent.isBrowserSafari() && !dvt.Agent.isPlatformGecko()) {
+  if (dvt.Agent.browser !== 'safari' && dvt.Agent.browser !== 'firefox') {
     this._selectedLayer.removeAllDrawEffects();
     this._selectedLayer.addDrawEffect(DvtTreeNode.__NODE_SELECTED_SHADOW);
   }
@@ -6614,56 +6970,6 @@ dvt.Sunburst.prototype.__isRotationEnabled = function()
 };
 
 /**
- * Returns the displayables to pass to the view switcher for animation.
- * @param {boolean} bOld True if this is the outgoing view.
- * @return {array} The array of displayables.
- */
-dvt.Sunburst.prototype.getShapesForViewSwitcher = function(bOld) {
-  var shapes = {};
-  if (this._root) {
-    var arNodes = [this._root];
-    while (arNodes.length > 0) {
-      var node = arNodes.splice(0, 1)[0];
-      var id = node.getId();
-      var shape = node.getDisplayable();
-      if (id && shape) {
-        shapes[id] = shape;
-        shapes[id + '_text'] = node._text;
-
-        //flatten hierarchical structure of nodes so that they animate independently
-        if (bOld) {
-          var parent = shape.getParent();
-          if (parent) {
-            var childIndex = parent.getChildIndex(shape);
-            parent.addChildAt(node._text, childIndex + 1);
-          }
-        }
-      }
-
-      var children = node.getChildNodes();
-      if (children) {
-        arNodes = arNodes.concat(children);
-      }
-    }
-  }
-  return shapes;
-};
-
-/**
- * @override
- */
-dvt.Sunburst.prototype.GetComponentDescription = function() {
-  return dvt.Bundle.getTranslation(this.getOptions(), 'componentName', dvt.Bundle.UTIL_PREFIX, 'SUNBURST');
-};
-
-/**
- * @override
- */
-dvt.Sunburst.prototype.getBundlePrefix = function() {
-  return dvt.Bundle.SUNBURST_PREFIX;
-};
-
-/**
  * @override
  */
 dvt.Sunburst.prototype.CreateNode = function(nodeOptions) {
@@ -6687,7 +6993,7 @@ dvt.Sunburst.prototype.getCenterPoint = function() {
  * @extends {DvtTreeNode}
  * @implements {DvtKeyboardNavigable}
  */
-var DvtSunburstNode = function(sunburst, props) 
+var DvtSunburstNode = function(sunburst, props)
 {
   this.Init(sunburst, props);
 
@@ -6935,7 +7241,7 @@ DvtSunburstNode.prototype.isExpandCollapseEnabled = function() {
 /**
  * @override
  */
-DvtSunburstNode.prototype.getNextNavigable = function(event) 
+DvtSunburstNode.prototype.getNextNavigable = function(event)
 {
   var keyCode;
   var next;
@@ -7066,7 +7372,7 @@ DvtSunburstNode.prototype.getNextNavigable = function(event)
  *
  * @return {DvtSunburstNode} This node's parent, if it is not the root.  Root otherwise
  */
-DvtSunburstNode.prototype._navigateToParent = function() 
+DvtSunburstNode.prototype._navigateToParent = function()
 {
   // move to the parent, if not the root node
   var parent = this.GetParent();
@@ -7107,7 +7413,7 @@ DvtSunburstNode._normalizedRadToDeg = function(rad)
 /**
  * @override
  */
-DvtSunburstNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace) 
+DvtSunburstNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace)
 {
   if (this._shape)
   {
@@ -7127,22 +7433,11 @@ DvtSunburstNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpac
 /**
  * @override
  */
-DvtSunburstNode.prototype.getTargetElem = function() 
+DvtSunburstNode.prototype.getTargetElem = function()
 {
   if (this._shape)
     return this._shape.getElem();
   return null;
-};
-
-
-/**
- * @override
- */
-DvtSunburstNode.prototype.getContextMenuLocation = function()
-{
-  // returns the coordinate of the midpoint of the arc, along a radius that is the average of the inner and outer radii
-  var point = DvtSunburstNode._calcPointOnArc(0.5 * (this._outerRadius + this._innerRadius), this._startAngle + this._angleExtent / 2);
-  return this._shape.localToStage(point);
 };
 
 //**************** End Overridden Functions *****************//
@@ -7329,18 +7624,6 @@ DvtSunburstNode._calcPointOnArc = function(radius, angle) {
 
 
 /**
- * Returns true if this node contains the given bounding box, used for labels.
- * @param {object} bbox The bounding box to check containment for.
- * @param {DvtSunburstNode} node The sunburst node on which to check containment.
- * @private
- */
-DvtSunburstNode._containsRect = function(bbox, node) {
-  return (node.contains(bbox.x, bbox.y) && node.contains(bbox.x + bbox.w, bbox.y) &&
-          node.contains(bbox.x + bbox.w, bbox.y + bbox.h) && node.contains(bbox.x, bbox.y + bbox.h));
-};
-
-
-/**
  * Returns the angle for a point with the specified coordinates
  * relative to the origin.
  * @param {number} x The x coordinate.
@@ -7404,10 +7687,10 @@ DvtSunburstNode.prototype._createShapeNode = function() {
   var borderWidth = options['borderWidth'] || nodeDefaults['borderWidth'];
 
   // Apply the border color, border width, selected, and hover strokes
-  shape.setStroke(new dvt.SolidStroke(borderColor, 1, borderWidth));
-  shape.setHoverStroke(new dvt.SolidStroke(nodeDefaults['hoverColor'], 1, 3));
-  shape.setSelectedStroke(new dvt.SolidStroke(nodeDefaults['selectedInnerColor'], 1, 1.5), new dvt.SolidStroke(nodeDefaults['selectedOuterColor'], 1, 3.5));
-  shape.setSelectedHoverStroke(new dvt.SolidStroke(nodeDefaults['hoverColor'], 1, 3));
+  shape.setStroke(new dvt.Stroke(borderColor, 1, borderWidth));
+  shape.setHoverStroke(new dvt.Stroke(nodeDefaults['hoverColor'], 1, 3));
+  shape.setSelectedStroke(new dvt.Stroke(nodeDefaults['selectedInnerColor'], 1, 1.5), new dvt.Stroke(nodeDefaults['selectedOuterColor'], 1, 3.5));
+  shape.setSelectedHoverStroke(new dvt.Stroke(nodeDefaults['hoverColor'], 1, 3));
 
   // Allows selection cursor to be shown over nodes if nodeSelection is enabled and node is selectable
   shape.setSelectable(this.isSelectable());
@@ -7497,7 +7780,7 @@ DvtSunburstNode.prototype._createExpandCollapseButton = function(container) {
   container.addChild(button);
 
   // Associate a blank peer so the button is not treated as part of the node
-  var tooltip = dvt.Bundle.getTranslation(this.getView().getOptions(), this.isDisclosed() ? 'tooltipCollapse' : 'tooltipExpand', dvt.Bundle.SUNBURST_PREFIX, this.isDisclosed() ? 'COLLAPSE' : 'EXPAND');
+  var tooltip = this.getView().getOptions().translations[this.isDisclosed() ? 'tooltipCollapse' : 'tooltipExpand'];
 
   this.getView().getEventManager().associate(button, new DvtTreePeer(this, this.getId(), tooltip));
 
@@ -7534,7 +7817,7 @@ DvtSunburstNode.prototype._createTextNode = function(container) {
   if (this._labelDisplay == 'auto') {
     // If labelDisplay is auto, don't use rotated labels for non-IE on windows, since rotated text does not look good
     // in those browsers.
-    if (!dvt.Agent.isPlatformIE() && dvt.Agent.getOS() == dvt.Agent.WINDOWS_OS)
+    if (dvt.Agent.browser !== 'ie' && dvt.Agent.browser !== 'edge' && dvt.Agent.os == 'windows')
       bRotated = false;
     else
       bRotated = true;
@@ -7930,15 +8213,15 @@ DvtSunburstNode.prototype.__getRadius = function() {
  * @override
  */
 DvtSunburstNode.prototype.getAriaLabel = function() {
-  var options = this.getView().getOptions();
+  var translations = this.getView().getOptions().translations;
 
   var states = [];
   if (this.isSelectable())
-    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, this.isSelected() ? 'STATE_SELECTED' : 'STATE_UNSELECTED'));
+    states.push(translations[this.isSelected() ? 'stateSelected' : 'stateUnselected']);
   if (this.isExpandCollapseEnabled())
-    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, this.isDisclosed() ? 'STATE_EXPANDED' : 'STATE_COLLAPSED'));
+    states.push(translations[this.isDisclosed() ? 'stateExpanded' : 'stateCollapsed']);
   if (this.isDrillReplaceEnabled())
-    states.push(dvt.Bundle.getTranslation(options, 'stateDrillable', dvt.Bundle.UTIL_PREFIX, 'STATE_DRILLABLE'));
+    states.push(translations.stateDrillable);
 
   return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states);
 };
@@ -7985,9 +8268,15 @@ DvtSunburstNode.prototype._createRootNodeContent = function() {
   var innerSquareDimension = outerRadius * Math.sqrt(2);
   var nodeOptions = this.getOptions();
   var itemData;
-  if (nodeOptions._itemData) {
+  var data = nodeOptions;
+  if (nodeOptions._noTemplate) {
+    itemData = nodeOptions._itemData;
+    data = nodeOptions._itemData;
+  }
+  else if (nodeOptions._itemData) {
     itemData = nodeOptions._itemData;
     nodeOptions = dvt.JsonUtils.clone(nodeOptions);
+    data = nodeOptions;
     delete nodeOptions._itemData;
   }
 
@@ -7995,7 +8284,7 @@ DvtSunburstNode.prototype._createRootNodeContent = function() {
     'outerBounds': {'x': centerCoord.x - outerRadius, 'y': centerCoord.y - outerRadius, 'width': 2 * outerRadius, 'height': 2 * outerRadius },
     'innerBounds': {'x': (centerCoord.x - innerSquareDimension / 2), 'y': (centerCoord.y - innerSquareDimension / 2), 'width': innerSquareDimension, 'height': innerSquareDimension},
     'id': this._id,
-    'data': nodeOptions,
+    'data': data,
     'itemData': itemData,
     'component': options['_widgetConstructor']
   };
@@ -8006,7 +8295,12 @@ DvtSunburstNode.prototype._createRootNodeContent = function() {
   if (!customContent)
     return;
   var newOverlay = context.createOverlayDiv();
-  newOverlay.appendChild(customContent); // @HtmlUpdateOk
+  if (Array.isArray(customContent)) {
+    customContent.forEach(function(node) {newOverlay.appendChild(node);}); // @HtmlUpdateOk
+  }
+  else {
+    newOverlay.appendChild(customContent); // @HtmlUpdateOk
+  }
   sunburst.rootNodeContent = newOverlay;
   parentDiv.appendChild(newOverlay); // @HtmlUpdateOk
 
@@ -8317,16 +8611,6 @@ DvtSunburstEventManager.prototype.RotateEndTouch = function(event, touch) {
   this.GetView().__endRotation();
 };
 
-
-
-dvt.Bundle.addDefaultStrings(dvt.Bundle.SUNBURST_PREFIX, {
-  'COLLAPSE': 'Collapse',
-  'COLOR': 'Color',
-  'EXPAND': 'Expand',
-  'OTHER': 'Other',
-  'SIZE': 'Size'
-});
-
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -8335,7 +8619,7 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.SUNBURST_PREFIX, {
  * @extends {DvtTreeDefaults}
  */
 var DvtSunburstDefaults = function(context) {
-  this.Init({'skyros': DvtSunburstDefaults.VERSION_1, 'alta': {}, 'next': {}}, context);
+  this.Init({'alta': DvtSunburstDefaults.SKIN_ALTA}, context);
 };
 
 dvt.Obj.createSubclass(DvtSunburstDefaults, DvtTreeDefaults);
@@ -8343,7 +8627,7 @@ dvt.Obj.createSubclass(DvtSunburstDefaults, DvtTreeDefaults);
 /**
  * Defaults for version 1. This component was exposed after the Alta skin, so no earlier defaults are provided.
  */
-DvtSunburstDefaults.VERSION_1 = {
+DvtSunburstDefaults.SKIN_ALTA = {
   // Note, only attributes that are different than the XML defaults need
   // to be listed here, at least until the XML API is replaced.
 
@@ -8361,20 +8645,6 @@ DvtSunburstDefaults.VERSION_1 = {
   'expanded': 'all',
   'startAngle': 90
 };
-
-dvt.exportProperty(dvt, 'Sunburst', dvt.Sunburst);
-dvt.exportProperty(dvt, 'Treemap', dvt.Treemap);
-dvt.exportProperty(dvt.Treemap, 'newInstance', dvt.Treemap.newInstance);
-dvt.exportProperty(dvt.Sunburst, 'newInstance', dvt.Sunburst.newInstance);
-
-dvt.exportProperty(DvtTreeView.prototype, 'getAutomation', DvtTreeView.prototype.getAutomation);
-dvt.exportProperty(DvtTreeView.prototype, 'destroy', DvtTreeView.prototype.destroy);
-dvt.exportProperty(DvtTreeView.prototype, 'highlight', DvtTreeView.prototype.highlight);
-dvt.exportProperty(DvtTreeView.prototype, 'render', DvtTreeView.prototype.render);
-dvt.exportProperty(DvtTreeView.prototype, 'select', DvtTreeView.prototype.select);
-
-dvt.exportProperty(DvtTreeAutomation.prototype, 'getDomElementForSubId', DvtTreeAutomation.prototype.getDomElementForSubId);
-dvt.exportProperty(DvtTreeAutomation.prototype, 'getNode', DvtTreeAutomation.prototype.getNode);
 
 })(dvt);
   return dvt;

@@ -3,14 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore'], function(oj)
 {
+  "use strict";
 /* global Set:false, Symbol:false */
 
 /**
@@ -30,6 +25,7 @@ var KeySetImpl = function (initialValues) {
 
   /**
    * Returns whether the specified key is contained in this set.
+   * @private
    * @param {any} key the key to check whether it is contained in this set.
    * @return {boolean} true if the specified key is contained in this set, false otherwise.
    */
@@ -39,6 +35,7 @@ var KeySetImpl = function (initialValues) {
 
   /**
    * Finds the equavalent key of the specified key within this KeySet.
+   * @private
    * @param {any} keyToFind the key to find
    * @return {any} the key in the key that is equivalent to keyToFind, or NO_KEY if nothing equivalent can be found.
    */
@@ -81,24 +78,11 @@ var KeySetImpl = function (initialValues) {
 
   /**
    * Initialize the internal Set with a set of keys.
+   * @private
    * @param {Set|Array|null|undefined} keys the initial keys to create the internal Set with.
    */
   this.InitializeWithKeys = function (keys) {
-    this._keys = this._populate(keys);
-  };
-
-  /**
-   * IE11 does not support constructor with arguments
-   * TODO: move to CollectionUtils
-   */
-  this._populate = function (keys) {
-    var set = new Set(keys);
-    if (keys != null && set.size === 0) {
-      keys.forEach(function (key) {
-        set.add(key);
-      });
-    }
-    return set;
+    this._keys = new Set(keys);
   };
 
   this.InitializeWithKeys(initialValues);

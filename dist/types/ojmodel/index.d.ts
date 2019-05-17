@@ -8,7 +8,7 @@ export class Collection {
     lastFetchCount: number;
     lastFetchSize: number;
     length: number;
-    model: object;
+    model: Model;
     modelLimit: number;
     models: Model[];
     offset: number;
@@ -80,17 +80,17 @@ export class Collection {
     groupBy(iterator: string | ((param0: Model) => object), context?: object): object;
     include(model: object, options?: object): boolean | Promise<boolean>;
     indexBy(iterator: string | ((param0: Model) => void), context?: object): object;
-    indexOf(model: object, options?: object): number | Promise<number>;
+    indexOf(model: Model | string, options?: object): number | Promise<number>;
     initial(n?: number): Model[];
     isEmpty(): boolean;
     isRangeLocal(start: number, count: number): boolean;
     last(n?: number, options?: object): Promise<Model> | Model[] | null;
     lastIndexOf(model: Model, fromIndex?: number): number;
-    listenTo(otherObj: object, eventType: string, callback: (eventType: string, data: object) => void): undefined;
-    listenToOnce(otherObj: object, eventType: string, callback: (eventType: string, data: object) => void): undefined;
+    listenTo(otherObj: Model | Collection, eventType: string, callback: (eventType: string, data: object) => void): undefined;
+    listenToOnce(otherObj: Model | Collection, eventType: string, callback: (eventType: string, data: object) => void): undefined;
     map(iterator: ((param0: Model) => object), context?: object): object[];
-    max(iterator: ((param0: Model) => object), context?: object): object;
-    min(iterator: ((param0: object) => void), context?: object): object;
+    max(iterator: ((param0: Model) => object), context?: object): Model;
+    min(iterator: ((param0: Model) => object), context?: object): Model;
     modelId(attrs: object): null | string;
     next(n: number, options?: {
         success?: (collection: Collection, response: any, options: object) => void;
@@ -125,12 +125,12 @@ export class Collection {
         startIndex?: number;
         [propName: string]: any;
     }): Promise<Collection.SetRangeLocalPromise | undefined>;
-    remove(m: Model | Model[], options?: object): Model[] | object;
+    remove(m: Model | Model[], options?: object): Model[] | Model;
     reset(data?: object, options?: {
         silent?: boolean;
         [propName: string]: any;
     }): Model | Model[];
-    rest(n?: number, options?: object): object[] | Promise<any>;
+    rest(n?: number, options?: object): Model[] | Promise<any>;
     set(models: object, options?: {
         add?: boolean;
         remove?: boolean;
@@ -141,7 +141,9 @@ export class Collection {
     }): Promise<any> | null;
     setFetchSize(n: number): undefined;
     setModelLimit(n: number): undefined;
-    setRangeLocal(start: number, count: number): Promise<Collection.SetRangeLocalPromise>;
+    setRangeLocal(start: number, count: number, options?: {
+        silent?: boolean;
+    }): Promise<Collection.SetRangeLocalPromise>;
     shift(options?: object): Model | Promise<Model> | null;
     size(): number;
     slice(start: number, end?: number, options?: object): Promise<Model[]> | Model[];
@@ -150,17 +152,17 @@ export class Collection {
         startIndex?: number;
         [propName: string]: any;
     }): Promise<Collection.SetRangeLocalPromise> | null;
-    sortBy(iterator: string | ((param0: Model) => object), context?: object): Model[];
+    sortBy(iterator: string | ((param0: Model) => string), context?: object): Model[];
     sortedIndex(comparator: string | ((param0: Model, param1?: Model) => object)): number;
-    stopListening(otherObj?: object, eventType?: string, callback?: (eventType: string, data: object) => void): undefined;
+    stopListening(otherObj: Model | Collection, eventType?: string, callback?: (eventType: string, data: object) => void): undefined;
     sync(method: string, collection: Collection, options?: {
-        success?: (json?: any[]) => void;
+        success?: (response?: any) => void;
         error?: (xhr: any, status: any, error: any) => void;
         [propName: string]: any;
     }): object;
     toJSON(): object[];
     trigger(eventType: string): undefined;
-    unshift(m: object, options?: {
+    unshift(m: Model | object, options?: {
         silent?: boolean;
         at?: number;
         merge?: boolean;
@@ -182,6 +184,19 @@ export namespace Collection {
         count?: number;
         offset?: number;
         hasMore?: boolean;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type CustomURLCallbackOptions = {
+        recordID?: string;
+        fetchSize?: number;
+        startIndex?: number;
+        startID?: string;
+        since?: string;
+        until?: string;
+        sort?: string;
+        sortDir?: string;
+        query?: object;
+        all?: boolean;
     };
     // tslint:disable-next-line interface-over-type-literal
     type SetRangeLocalPromise = {
@@ -225,22 +240,22 @@ export class Model {
         error?: (model: Model, xhr: any, options: object) => void;
         [propName: string]: any;
     }): object;
-    get(property: string): object;
+    get(property: string): any;
     has(property: string): boolean;
     hasChanged(attribute?: string): boolean;
     invert(): object;
     isNew(): boolean;
     isValid(): boolean;
     keys(): object[];
-    listenTo(otherObj: object, eventType: string, callback: (eventType: string, data: object) => void): undefined;
-    listenToOnce(otherObj: object, eventType: string, callback: (eventType: string, data: object) => void): undefined;
+    listenTo(otherObj: Model | Collection, eventType: string, callback: (eventType: string, data: object) => void): undefined;
+    listenToOnce(otherObj: Model | Collection, eventType: string, callback: (eventType: string, data: object) => void): undefined;
     matches(attrs: object): ((param0: Model) => boolean);
     off(eventType?: string | object, callback?: (eventType: string, data: object) => void, context?: object): undefined;
     omit(keys: object[] | object): object;
     on(eventType: string | object, callback: (eventType: string, data: object) => void, context?: object): undefined;
     once(eventType: string, callback: (eventType: string, data: object) => void, context?: object): undefined;
-    pairs(): object;
-    pick(keys: object[] | object): object;
+    pairs(): object[];
+    pick(keys: object[] | object): object[];
     previous(attr: string): object;
     previousAttributes(): object;
     save(attributes?: object, options?: {
@@ -254,13 +269,19 @@ export class Model {
         [propName: string]: any;
     }): object | boolean;
     set(property: string | object, value?: object, options?: object): Model | boolean;
-    stopListening(otherObj?: object, eventType?: string, callback?: (eventType: string, data: object) => void): undefined;
+    stopListening(otherObj: Model | Collection, eventType?: string, callback?: (eventType: string, data: object) => void): undefined;
     sync(method: string, model: Model, options?: object): object;
     toJSON(): object;
     trigger(eventType: string): undefined;
     unset(property: string, options?: object): boolean;
     url(): string | null;
     values(): object[];
+}
+export namespace Model {
+    // tslint:disable-next-line interface-over-type-literal
+    type CustomURLCallbackOptions = {
+        recordID?: string;
+    };
 }
 export class OAuth {
     constructor(attributes: object, header: string);

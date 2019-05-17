@@ -37,13 +37,15 @@
               border: 1px solid var(--oj-collection-border-color);
               // color to fill the empty area around cells if the databody is not filled
               background-color: var(--oj-collection-bg-color);
+              user-select: none;
             } @else {
-            border: 1px solid $collectionBorderColor;
+              border: 1px solid $collectionBorderColor;
               // color to fill the empty area around cells if the databody is not filled
               background-color: $collectionBgColor;
+              @include oj-user-select-property(none);
             }
+
             box-sizing: border-box;
-            @include oj-user-select-property(none);
             // color to fill the empty area around cells if the databody is not filled
             // prevent graying on iOS safari
             -webkit-tap-highlight-color: rgba(0,0,0,0);
@@ -511,7 +513,7 @@
         }
 
         /* Styling on form controls stamped inside a datagrid */
-        .oj-datagrid-cell.oj-form-control-inherit {
+        .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) {
           @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
           } @else {
           @include oj-form-control-padding-override(
@@ -521,37 +523,37 @@
         }
         }
         @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-          .oj-datagrid-cell.oj-form-control-inherit .oj-inputtext-input,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-inputtext-nocomp,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-inputpassword-input,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-inputpassword-nocomp,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-textarea-input,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-textarea-nocomp,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-inputnumber-input,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-inputsearch-input,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-select-select,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-select .oj-select-choice,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-select .oj-select-choices,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-combobox .oj-combobox-choice,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-combobox .oj-combobox-choices,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-inputdatetime .oj-inputdatetime-input {
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
             padding: 0 var(--oj-collection-cell-padding) 0 var(--oj-collection-cell-padding); }
 
-          .oj-datagrid-cell.oj-form-control-inherit .oj-inputtext-input,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-inputtext-nocomp,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-inputpassword-input,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-inputpassword-nocomp,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-textarea-input,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-textarea-nocomp,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-inputnumber-input,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-inputsearch-input,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-select-select,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-select .oj-select-choice,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-select .oj-select-choices,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-combobox .oj-combobox-choice,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-combobox .oj-combobox-choices,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-combobox .oj-combobox-input,
-          .oj-datagrid-cell.oj-form-control-inherit .oj-inputdatetime .oj-inputdatetime-input {
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-input,
+          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
             font-size: var(--oj-collection-cell-font-size); }
         }
 
@@ -629,7 +631,7 @@
             width: calc(100% - 2px);
             height: calc(100% - 2px);
             @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-              outline: dotted 1px var(--oj-primary-text-color);
+              outline: dotted 1px var(--oj-text-color-primary);
               outline: -webkit-focus-ring-color auto;
             } @else {
             @include oj-browser-focus-outline-approximation($primaryTextColor);
@@ -687,7 +689,11 @@
         .oj-datagrid-scroller-touch {
             transition: 0.5s;
             transition-timing-function: ease-out;
-            @include oj-backface-visibility-property (hidden);
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+              backface-visibility: hidden;
+            } @else {
+              @include oj-backface-visibility-property (hidden);
+            }
             perspective: 1000;
         }
 

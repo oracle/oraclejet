@@ -3,15 +3,15 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojvalidation-base', 'ojs/ojlogger', 'ojs/ojeditablevalue', 'ojs/ojvalidation-number', 'ojs/ojbutton'], 
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        */
-       function(oj, $, __ValidationBase, Logger)
-{
 
+define(['ojs/ojcore', 'jquery', 'ojs/ojvalidation-base', 'ojs/ojlogger', 'ojs/ojeditablevalue', 'ojs/ojvalidation-number', 'ojs/ojbutton'], 
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+*/
+function(oj, $, __ValidationBase, Logger)
+{
+  "use strict";
 var __oj_input_number_metadata = 
 {
   "properties": {
@@ -35,7 +35,7 @@ var __oj_input_number_metadata =
     },
     "converter": {
       "type": "object",
-      "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter()",
+      "value": "oj.Validation.converterFactory('number').createConverter()",
       "properties": {
         "type": {
           "type": "string"
@@ -86,7 +86,8 @@ var __oj_input_number_metadata =
       "type": "object",
       "properties": {
         "instruction": {
-          "type": "string"
+          "type": "string",
+          "value": ""
         }
       }
     },
@@ -106,6 +107,9 @@ var __oj_input_number_metadata =
     "labelHint": {
       "type": "string",
       "value": ""
+    },
+    "labelledBy": {
+      "type": "string"
     },
     "max": {
       "type": "number"
@@ -309,7 +313,7 @@ var __oj_input_number_metadata =
  *               }
  *              ]
  * @since 0.6
- * @ojshortdesc Provides basic support for specifying a number value.
+ * @ojshortdesc An input number allows the user to enter a number value.
  * @ojrole textbox
  * @ojrole spinbutton
  * @ojstatus preview
@@ -453,7 +457,7 @@ var __oj_input_number_metadata =
        * </p>
        * <p>Since async validators are run asynchronously, you should wait on the BusyContext before
        * you check valid property or the value property. Alternatively you can add a callback to
-       * the onValidChanged or ojValueChanged events.
+       * the validChanged or valueChanged events.
        * </p>
        * <p>
        * The steps performed always, running validation and clearing messages is the same as
@@ -518,6 +522,7 @@ var __oj_input_number_metadata =
        * @access public
        * @instance
        * @memberof oj.ojInputNumber
+       * @ojshortdesc Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.
        * @ojsignature  { target: "Type",
        *       value: "Array<oj.AsyncValidator<number>>",
        *       jsdocOverride: true}
@@ -548,7 +553,7 @@ var __oj_input_number_metadata =
          *
          * // setter
          * myComp.autocomplete = "on";
-         * @ojshortdesc Dictates component's autocomplete state.
+         * @ojshortdesc Specifies a component's autocomplete state. See the Help documentation for more information.
          * @expose
          * @type {string}
          * @ojsignature {target: "Type", value: "'on'|'off'|string", jsdocOverride: true}
@@ -582,6 +587,7 @@ var __oj_input_number_metadata =
          * @default false
          * @instance
          * @memberof oj.ojInputNumber
+         * @ojshortdesc Specifies whether the component will get input focus when the page is loaded. See the Help documentation for more information.
          * @ojextension {_COPY_TO_INNER_ELEM: true}
          */
         autofocus: false,
@@ -590,7 +596,8 @@ var __oj_input_number_metadata =
         // one for if they do this will be promptly discarded.
 
         /**
-         * A number converter instance that duck types {@link oj.NumberConverter}. Or an object literal
+         * A number converter instance or a Promise to a number converter instance
+         * that duck types {@link oj.NumberConverter}. Or an object literal
          * containing the properties listed below.
          * When no converter is specified, the default converter will be used,
          * and default option of "numeric" is used.
@@ -674,20 +681,60 @@ var __oj_input_number_metadata =
          * myComponent.converter = salaryConverter;
          *
          *
-         * @default oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter()
+         * @default oj.Validation.converterFactory('number').createConverter()
          *
          * @expose
          * @access public
          * @instance
          * @memberof oj.ojInputNumber
+         * @ojshortdesc An object that converts the value. See the Help documentation for more information.
          * @ojsignature {
          *    target: "Type",
-         *    value: "oj.Converter<number>|oj.Validation.RegisteredConverter",
+         *    value: "Promise<oj.Converter<number>>|oj.Converter<number>|oj.Validation.RegisteredConverter",
          *    jsdocOverride: true}
          * @type {Object}
          */
         converter: __ValidationBase.Validation.converterFactory(
           oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter(),
+      /**
+       * <p>
+       * The oj-label sets the labelledBy property programmatically on the form component
+       * to make it easy for the form component to find its oj-label component (a
+       * document.getElementById call.)
+       * </p>
+       * <p>
+       * The application developer should use the 'for'/'id api
+       * to link the oj-label with the form component;
+       * the 'for' on the oj-label to point to the 'id' on the input form component.
+       * This is the most performant way for the oj-label to find its form component.
+       * </p>
+       *
+       * @example <caption>Initialize component with <code class="prettyprint">for</code> attribute:</caption>
+       * &lt;oj-label for="numberId">Number:&lt;/oj-label>
+       * &lt;oj-input-number id="numberId">
+       * &lt;/oj-input-number>
+       * // ojLabel then writes the labelled-by attribute on the oj-input-number.
+       * &lt;oj-label id="labelId" for="numberId">Number:&lt;/oj-label>
+       * &lt;oj-input-number id="numberId" labelled-by"labelId">
+       * &lt;/oj-input-number>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
+       * // getter
+       * var labelledBy = myComp.labelledBy;
+       *
+       * // setter
+       * myComp.labelledBy = "labelId";
+       *
+       * @expose
+       * @ojshortdesc The oj-label sets the labelledBy property programmatically on the form component.
+       * @type {string|null}
+       * @default null
+       * @public
+       * @instance
+       * @since 7.0.0
+       * @memberof oj.ojInputNumber
+       */
+        labelledBy: null,
 
         /**
          * The maximum allowed value. This number is used in the range validator; if the
@@ -703,6 +750,7 @@ var __oj_input_number_metadata =
          * <code class="prettyprint">min</code>, else an Error is thrown during initialization.
          * @expose
          * @memberof oj.ojInputNumber
+         * @ojshortdesc The maximum allowed value. A value of null indicates that there is no maximum. See the Help documentation for more information.
          * @instance
          * @type {?number}
          * @default null
@@ -738,6 +786,7 @@ var __oj_input_number_metadata =
          * <code class="prettyprint">min</code>, else an Error is thrown during initialization.
          * @expose
          * @memberof oj.ojInputNumber
+         * @ojshortdesc The minimum allowed value. A value of null indicates that there is no minimum. See the Help documentation for more information.
          * @instance
          * @type {?number}
          * @default null
@@ -776,6 +825,7 @@ var __oj_input_number_metadata =
          * @expose
          * @type {string}
          * @alias name
+         * @ojshortdesc Specifies the name of the component.
          * @access public
          * @instance
          * @default ""
@@ -824,6 +874,7 @@ var __oj_input_number_metadata =
          * @access public
          * @instance
          * @memberof oj.ojInputNumber
+         * @ojshortdesc Read-only property used for retrieving the current value from the input field in string form. See the Help documentation for more information.
          * @type {string}
          * @ojsignature {target:"Type", value:"string"}
          * @since 1.2.0
@@ -832,7 +883,9 @@ var __oj_input_number_metadata =
          */
         rawValue: undefined,
         /**
-         * Whether the component is readonly.
+         * Whether the component is readonly. The readOnly property sets or returns whether an element is readOnly, or not.
+         * A readOnly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
+         * If you want to prevent the user from interacting with the element, use the disabled property instead.
          *
          * @example <caption>Initialize component with <code class="prettyprint">readonly</code> attribute:</caption>
          * &lt;oj-input-number readonly>&lt;/oj-input-number>
@@ -851,6 +904,7 @@ var __oj_input_number_metadata =
          * @alias readonly
          * @instance
          * @memberof oj.ojInputNumber
+         * @ojshortdesc Specifies whether the component is read-only.  A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
          */
         readOnly: false,
         /**
@@ -924,6 +978,7 @@ var __oj_input_number_metadata =
          * @access public
          * @instance
          * @memberof oj.ojInputNumber
+         * @ojshortdesc Specifies whether the component is required or optional. See the Help documentation for more information.
          * @type {boolean}
          * @default false
          * @since 0.7
@@ -953,7 +1008,9 @@ var __oj_input_number_metadata =
          * @instance
          * @type {?number}
          * @default 1
+         * @ojexclusivemin 0
          * @memberof oj.ojInputNumber
+         * @ojshortdesc Specifies the amount to increase or decrease the value when moving in step increments. See the Help documentation for more information.
          * @access public
          * @example <caption>Initialize the inputNumber with the
          * <code class="prettyprint">step</code> attribute specified:</caption>
@@ -982,6 +1039,7 @@ var __oj_input_number_metadata =
          * @access public
          * @instance
          * @memberof oj.ojInputNumber
+         * @ojshortdesc Read-only property used for retrieving the transient value from the component. See the Help documentation for more information.
          * @type {number}
          * @ojsignature {target:"Type", value:"number"}
          * @since 6.2.0
@@ -1097,6 +1155,7 @@ var __oj_input_number_metadata =
          * @access public
          * @instance
          * @memberof oj.ojInputNumber
+         * @ojshortdesc Specifies a list of synchronous validators for performing validation by the element. See the Help documentation for more information.
          * @ojsignature  { target: "Type",
          *       value: "Array<oj.Validator<number>|oj.Validation.RegisteredValidator>",
          *       jsdocOverride: true}
@@ -1135,6 +1194,7 @@ var __oj_input_number_metadata =
          * @default null
          * @ojwriteback
          * @memberof oj.ojInputNumber
+         * @ojshortdesc The value of the component, which must be either a number or null. See the Help documentation for more information.
          * @type {?number}
          */
         value: null,
@@ -1235,6 +1295,7 @@ var __oj_input_number_metadata =
        * </ul>
        * @expose
        * @memberof oj.ojInputNumber
+       * @ojshortdesc Refreshes the component.
        * @access public
        * @instance
        * @return {void}
@@ -1255,6 +1316,7 @@ var __oj_input_number_metadata =
        * @expose
        * @instance
        * @memberof oj.ojInputNumber
+       * @ojshortdesc Decrements the value by the specified number of steps. See the Help documentation for more information.
        * @access public
        * @example <caption>Invoke the <code class="prettyprint">stepDown</code> method:</caption>
        * myComp.stepDown();
@@ -1275,6 +1337,7 @@ var __oj_input_number_metadata =
        * @expose
        * @instance
        * @memberof oj.ojInputNumber
+       * @ojshortdesc Increments the value by the specified number of steps. See the Help documentation for more information.
        * @access public
        * @example <caption>Invoke the <code class="prettyprint">stepUp</code> method:</caption>
        * myComp.stepUp();
@@ -1441,6 +1504,10 @@ var __oj_input_number_metadata =
         // is called from EditableValue's _AfterCreate.
         this.stepQueue = [];
         this._blurEnterSetValueCounter = 0;
+        if (this._IsCustomElement()) {
+          oj.EditableValueUtils._setInputId(
+            this._GetContentElement()[0], this.widget()[0].id, this.options.labelledBy);
+        }
       },
 
       /**
@@ -1641,8 +1708,7 @@ var __oj_input_number_metadata =
        */
       _AfterSetOptionConverter: oj.EditableValueUtils._AfterSetOptionConverter,
       /**
-       * Clears the cached converter stored in _converter and pushes new converter hint to messaging.
-       * Called when convterer option changes
+       * Called when converter option changes and we have gotten the new converter
        * @memberof oj.ojInputNumber
        * @instance
        * @protected
@@ -1781,6 +1847,12 @@ var __oj_input_number_metadata =
           this._refreshStateTheming('readOnly', this.options.readOnly);
           this._refreshRoleSpinbutton('readOnly', this.options.readOnly);
         }
+        if (key === 'labelledBy') {
+          if (this.options.labelledBy) {
+            var id = this._GetContentElement()[0].id;
+            this._labelledByChangedForInputComp(this.options.labelledBy, id);
+          }
+        }
       },
       /**
        * Override of protected base class method.
@@ -1801,7 +1873,7 @@ var __oj_input_number_metadata =
           this.buttonSet = null;
         }
         this.initialValue = null;
-
+        this.element.off('blur keydown keyup compositionstart compositionend input');
         //  - DomUtils.unwrap() will avoid unwrapping if the node is being destroyed by Knockout
         oj.DomUtils.unwrap(this.element, $(this.uiInputNumber));
         clearTimeout(this.timer);
@@ -1851,6 +1923,7 @@ var __oj_input_number_metadata =
        * @expose
        * @instance
        * @memberof oj.ojInputNumber
+       * @ojshortdesc Validates the component's display value using all validators registered on the component. If there are no validation errors. then the value is updated. See the Help documentation for more information.
        * @since 4.0.0
        * @ojstatus preview
        */
@@ -1921,6 +1994,12 @@ var __oj_input_number_metadata =
        * @instance
        * @private
        */
+      _labelledByChangedForInputComp: oj.EditableValueUtils._labelledByChangedForInputComp,
+      /**
+       * @memberof oj.ojInputNumber
+       * @instance
+       * @private
+       */
       _refreshRequired: oj.EditableValueUtils._refreshRequired,
 
 
@@ -1973,6 +2052,7 @@ var __oj_input_number_metadata =
         var ret = this._superApply(arguments);
         return $.extend(this._inputNumberDefaultAsyncValidators, ret);
       },
+
       /**
        * Returns the default styleclass for the component.
        *
@@ -1984,6 +2064,46 @@ var __oj_input_number_metadata =
       _GetDefaultStyleClass: function () {
         return 'oj-inputnumber';
       },
+
+      /**
+       *
+       * @protected
+       * @override
+       * @instance
+       * @memberof oj.ojInputNumber
+       */
+      _SetLoading: function () {
+        this._super();
+        var readOnly = true;
+
+        this.element[0].readOnly = readOnly;
+        this._refreshStateTheming('readOnly', readOnly);
+        this._refreshRoleSpinbutton('readOnly', readOnly);
+      },
+
+      /**
+       *
+       * @protected
+       * @override
+       * @instance
+       * @memberof oj.ojInputNumber
+       */
+      _ClearLoading: function () {
+        this._super();
+        var readOnly = this.options.readOnly;
+
+        // Create the buttonset if readOnly is false and there is no buttonset
+        if (!readOnly && this.buttonSet == null) {
+          var valuenow = this.options.value || 0;
+          this._createOjButtonset();
+          this._updateButtons(valuenow);
+        }
+
+        this.element[0].readOnly = readOnly;
+        this._refreshStateTheming('readOnly', readOnly);
+        this._refreshRoleSpinbutton('readOnly', readOnly);
+      },
+
       _events:
       {
         compositionstart: function () {
@@ -2162,7 +2282,6 @@ var __oj_input_number_metadata =
        */
       _draw: function () {
         var element = this.element[0];
-        var widgetId;
 
         element.classList.add('oj-inputnumber-input');
         var spanElem = document.createElement('span');
@@ -2185,14 +2304,6 @@ var __oj_input_number_metadata =
           this.uiInputNumber = divElem;
         }
 
-        if (this._IsCustomElement()) {
-          // if it is a custom element, then set the sub-id on the input so if they have a oj-label
-          // pointing to it with the 'for' attrbiute, JAWS will read the label.
-          widgetId = this.widget()[0].getAttribute('id');
-          if (widgetId) {
-            oj.EditableValueUtils.setSubIdForCustomLabelFor(this._GetContentElement()[0], widgetId);
-          }
-        }
         //
         // TODO: need to save off attributes and reset on destroy generically.
         this.saveType = element.type;

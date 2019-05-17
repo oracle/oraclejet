@@ -3,20 +3,47 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdatasource-common'], 
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        */
-       function(oj, $, Components)
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+*/
+function(oj, $, Components)
 {
-
+  "use strict";
 var __oj_row_expander_metadata = 
 {
   "properties": {
     "context": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "datasource": {
+          "type": "oj.DataProvider<K, D>"
+        },
+        "keys": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "type": "K"
+            },
+            "column": {
+              "type": "K"
+            }
+          }
+        },
+        "key": {
+          "type": "K"
+        },
+        "parentKey": {
+          "type": "K"
+        },
+        "treeDepth": {
+          "type": "number"
+        },
+        "isLeaf": {
+          "type": "boolean"
+        }
+      }
     },
     "expanded": {
       "type": "boolean",
@@ -1357,7 +1384,7 @@ oj.FlattenedTreeDataSource.prototype._processDescendantsNodeSet =
 
       // see if we need to check depth
       if (options.checkDepth) {
-        if (lastEntry.depth === depth) {
+        if (lastEntry.depth >= depth) {
           // eslint-disable-next-line no-param-reassign
           options.found = true;
           // eslint-disable-next-line no-param-reassign
@@ -1385,7 +1412,8 @@ oj.FlattenedTreeDataSource.prototype._processDescendantsNodeSet =
       if (lastEntry != null && !options.found) {
         // we'll need to also check whether the last entry is expanded (or not leaf)
         // if it is collapsed, then we can't add any nodes from the node set until
-        // we found child in the node set that has the same depth
+        // we found child in the node set that has the same or lower depth in case no siblings
+        // just next parent
         if (key === lastEntry.key) {
           if (metadata.leaf || this._isExpanded(key)) {
             // eslint-disable-next-line no-param-reassign
@@ -1841,30 +1869,6 @@ oj.FlattenedTreeDataSource.prototype._syncExpandRows = function (queue, prevNode
 };
 
 /**
- * Expands the specified array of rows.  Use batch fetching if supported.
- * @param {Array.<Object>} keys an array of row keys.
- * @private
- */
-oj.FlattenedTreeDataSource.prototype._expandRows = function (keys) {
-  var options;
-
-  // use batch fetching if supported so we'll have less trip to server.
-  if (this._isBatchFetching()) {
-    options = { queueOnly: true };
-  }
-
-  // expand each of the rows
-  for (var i = 0; i < keys.length; i++) {
-    // last expand should not have any options set to flush to batch queue
-    if (i === keys.length - 1) {
-      this._expand(keys[i]);
-    } else {
-      this._expand(keys[i], options);
-    }
-  }
-};
-
-/**
  * Insert a single row of data into the cache
  * @param {number} index the index (based on flattened view) where this is inserted
  * @param {Object} metadata the metadata of the inserted node
@@ -2247,8 +2251,18 @@ oj.FlattenedTreeDataSource.prototype.getCapability = function (feature) {
  * @ojstatus preview
  * @ojrole button
  * @ojshortdesc Enable hierarchical data to be displayed in a JET Table and JET DataGrid.
- * @ojtsignore
- *
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "class ojRowExpander<K, D> extends baseComponent<ojRowExpanderSettableProperties<K,D>>",
+ *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data of the dataprovider"}]
+ *               },
+ *               {
+ *                target: "Type",
+ *                value: "ojRowExpanderSettableProperties<K,D> extends baseComponentSettableProperties",
+ *                for: "SettableProperties"
+ *               }
+ *              ]
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @classdesc
  * <h3 id="rowexpanderOverview-section">
  *   JET RowExpander
@@ -2256,7 +2270,7 @@ oj.FlattenedTreeDataSource.prototype.getCapability = function (feature) {
  * </h3>
  * <p>Description: A JET RowExpander is primarily used inside the JET Table and JET DataGrid.  It enables hierarchical data to be displayed in a JET Table and JET DataGrid.</p>
  *
- * <p>To enable expand and collapse of rows, developers must specify oj.FlattenedTreeTableDataSource as data when used within JET Table and oj.FlattenedTreeDataGridDataSource as data when used within JET DataGrid.</p>
+ * <p>To enable expand and collapse of rows, developers must specify oj.FlattenedTreeDataProviderView as data when used within JET Table  and JET DataGrid.</p>
  *
  * <pre class="prettyprint"><code>&lt;oj-row-expander
  *   context='{{$context}}'>
@@ -2290,7 +2304,7 @@ oj.FlattenedTreeDataSource.prototype.getCapability = function (feature) {
  * </h3>
  *
  * <h4>Initial expansion</h4>
- * <p>To specify initial expanded rows with RowExpander, it is recommended that applications do this through the initial options in oj.FlattenedTreeDataSource, especially for expanding all rows initially.</p>
+ * <p>To specify initial expanded rows with RowExpander, it is recommended that applications do this through the initial options in oj.FlattenedTreeDataProvider, especially for expanding all rows initially.</p>
  */
 oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
   {
@@ -2306,6 +2320,7 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
        * @instance
        * @type {Object}
        * @default null
+       * @ojsignature {target: "Type", value: "?(oj.ojRowExpander.Context<K, D>)", jsdocOverride: true}
        *
        */
       context: null,
@@ -2313,12 +2328,16 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
        * Specifies if the RowExpander is expanded.  The default value is determined by the <code class="prettyprint">context</code> obtained from the column renderer (Table) or cell renderer (DataGrid), or null if no context is specified.
        * See <a href="#perf-section">performance</a> for recommended usage regarding initial expansion state.
        *
+       * This attribute is not supported for use with DataProvider.
+       *
        * @expose
        * @memberof oj.ojRowExpander
        * @instance
        * @type {boolean|null}
        * @default null
        * @ojwriteback
+       * @ojdeprecated {since: '7.0.0', description: 'The source of truth for expansion is the data source key set.'}
+       * @ojtsignore
        * @ojshortdesc Specifies if the RowExpander is expanded.
        *
        * @example <caption>Initialize the RowExpander with the <code class="prettyprint">expanded</code> attribute specified:</caption>
@@ -2339,7 +2358,9 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
        * @event
        * @memberof oj.ojRowExpander
        * @instance
-       * @property {string} rowKey the key of the expanded row
+       * @property {any} rowKey the key of the expanded row
+       * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"},
+     *               {target:"Type", value:"K", for:"key"}]
        */
       expand: null,
       /**
@@ -2349,7 +2370,9 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
        * @event
        * @memberof oj.ojRowExpander
        * @instance
-       * @property {string} rowKey the key of the collapsed row
+       * @property {any} rowKey the key of the collapsed row
+       * @ojsignature[{target:"Type", value:"<K>", for:"genericTypeParameters"},
+     *               {target:"Type", value:"K", for:"key"}]
        */
       collapse: null
     },
@@ -2410,12 +2433,24 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
         this.component = Components.__GetWidgetConstructor(widgetElem)('instance');
       }
       this.datasource = context.datasource;
+      if (oj.DataProviderFeatureChecker.isDataProvider(this.datasource)) {
+        this._subscribeToDataProvider();
+      }
 
       // root hidden so subtract 1
-      this.depth = context.depth;
-      this.iconState = context.state;
+      this.depth = oj.DataProviderFeatureChecker.isDataProvider(this.datasource) ?
+        context.treeDepth + 1 : context.depth;
       this.rowKey = context.key;
-      this.index = context.index;
+      if (context.state) {
+        this.iconState = context.state;
+      } else if (context.isLeaf) {
+        this.iconState = 'leaf';
+      } else {
+        this.iconState = this._getDataProviderExpanded().has(this.rowKey) ? 'expanded' : 'collapsed';
+      }
+      this.index = oj.DataProviderFeatureChecker.isDataProvider(this.datasource) ?
+        context.indexFromParent : context.index;
+
       this.parentKey = context.parentKey;
 
       this._addIndentation();
@@ -2455,8 +2490,10 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
         this.handleExpandCallback = this._handleExpandEvent.bind(this);
         this.handleCollapseCallback = this._handleCollapseEvent.bind(this);
 
-        this.datasource.on('expand', this.handleExpandCallback, this);
-        this.datasource.on('collapse', this.handleCollapseCallback, this);
+        if (!oj.DataProviderFeatureChecker.isDataProvider(this.datasource)) {
+          this.datasource.on('expand', this.handleExpandCallback, this);
+          this.datasource.on('collapse', this.handleCollapseCallback, this);
+        }
 
         // if expanded option is explicitly specified, make sure it's in sync with current state
         this._initExpanded();
@@ -2481,26 +2518,44 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
      * @private
      */
     _initExpanded: function () {
-      var expanded = this.options.expanded;
-      if (expanded != null) {
-        if (expanded && this.iconState === 'collapsed') {
-          this._expand();
-        } else if (!expanded && this.iconState === 'expanded') {
-          this._collapse();
+      if (!oj.DataProviderFeatureChecker.isDataProvider(this.datasource)) {
+        var expanded = this.options.expanded;
+        if (expanded != null) {
+          if (expanded && this.iconState === 'collapsed') {
+            this._expand();
+          } else if (!expanded && this.iconState === 'expanded') {
+            this._collapse();
+          }
+        } else {
+          // make sure expanded value reflect the current state
+          // we don't want to trigger option change event in this case
+          this.options.expanded = this.iconState !== 'collapsed';
         }
-      } else {
-        // make sure expanded value reflect the current state
-        // we don't want to trigger option change event in this case
-        this.options.expanded = this.iconState !== 'collapsed';
       }
     },
-
+    /**
+     * @private
+     */
+    _getDataProviderExpanded: function () {
+      return this._dataSourceExpanded;
+    },
+    /**
+     * @private
+     */
+    _getFlattenedDataProvider: function () {
+      if (this.datasource.getExpandedObservable) {
+        return this.datasource;
+      }
+      // paging case
+      return this.datasource.dataProvider;
+    },
     /**
      * Redraw the RowExpander element.
      *
      * @expose
      * @memberof oj.ojRowExpander
      * @instance
+     * @return {void}
      *
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
      * myRowExpander.refresh();
@@ -2529,11 +2584,50 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
       $(this.component.element).off('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
 
       // unregister expand/collapse events
-      this.datasource.off('expand', this.handleExpandCallback, this);
-      this.datasource.off('collapse', this.handleCollapseCallback, this);
+      if (oj.DataProviderFeatureChecker.isDataProvider(this.datasource)) {
+        this._dataProviderSubscription.unsubscribe();
+      } else {
+        this.datasource.off('expand', this.handleExpandCallback, this);
+        this.datasource.off('collapse', this.handleCollapseCallback, this);
+      }
 
       this.element.removeClass(this.classNames.root);
       this.element.empty();
+    },
+
+    _subscribeToDataProvider: function () {
+      var self = this;
+      var observable = this._getFlattenedDataProvider().getExpandedObservable();
+      self._dataProviderSubscription = observable.subscribe(function (value) {
+        var shouldCollapse = false;
+        var shouldExpand = false;
+
+        self._dataSourceExpanded = value.value;
+
+        if (self.iconState === 'expanded' && !self._dataSourceExpanded.has(self.rowKey)) {
+          shouldCollapse = true;
+          self._loading();
+        }
+
+        if (self.iconState === 'collapsed' && self._dataSourceExpanded.has(self.rowKey)) {
+          shouldExpand = true;
+          self._loading();
+        }
+
+        if (shouldExpand || shouldCollapse) {
+          var completionPromise = value.completionPromise;
+          if (completionPromise) {
+            completionPromise.then(function () {
+              if (shouldExpand) {
+                self._handleExpandEvent({ rowKey: self.rowKey });
+              }
+              if (shouldCollapse) {
+                self._handleCollapseEvent({ rowKey: self.rowKey });
+              }
+            });
+          }
+        }
+      });
     },
 
     /**
@@ -2544,7 +2638,12 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
     _expand: function () {
       if (this.iconState === 'collapsed') {
         this._loading();
-        this.datasource.expand(this.rowKey);
+        if (!oj.DataProviderFeatureChecker.isDataProvider(this.datasource)) {
+          this.datasource.expand(this.rowKey);
+        } else {
+          this._getFlattenedDataProvider().setExpanded(
+            this._getDataProviderExpanded().add([this.rowKey]));
+        }
         return true;
       }
       return false;
@@ -2558,7 +2657,12 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
     _collapse: function () {
       if (this.iconState === 'expanded') {
         this._loading();
-        this.datasource.collapse(this.rowKey);
+        if (!oj.DataProviderFeatureChecker.isDataProvider(this.datasource)) {
+          this.datasource.collapse(this.rowKey);
+        } else {
+          this._getFlattenedDataProvider().setExpanded(
+            this._getDataProviderExpanded().delete([this.rowKey]));
+        }
         return true;
       }
       return false;
@@ -2573,7 +2677,7 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
      * @private
      */
     _setOption: function (key, value, flags) {
-      if (key === 'expanded' && (flags._context == null || flags._context.internalSet !== true)) {
+      if (key === 'expanded' && !oj.DataProviderFeatureChecker.isDataProvider(this.datasource) && (flags._context == null || flags._context.internalSet !== true)) {
         if (value) {
           this._expand();
         } else {
@@ -2749,7 +2853,10 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
             var context = this.getTranslatedString('accessibleRowDescription', {
               level: this.depth,
               num: this.index + 1,
-              total: this.datasource.getWrappedDataSource().getChildCount(this.parentKey)
+              total: oj.DataProviderFeatureChecker.isDataProvider(this.datasource) ?
+                this._getFlattenedDataProvider().dataProvider.getChildDataProvider(
+                  this.parentKey).getTotalSize() :
+                this.datasource.getWrappedDataSource().getChildCount(this.parentKey)
             });
             // state of row expander for screen reader
             var state;
@@ -2802,23 +2909,28 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
           } else if (event.altKey && code === this.constants.NUM5_KEY) {
             // read current cell context
             if (this.component._setAccessibleContext) {
-              var ancestors = this.datasource.getAncestors(this.rowKey);
               var ancestorInfo;
-              if (ancestors != null && ancestors.length > 0) {
-                ancestorInfo = [];
-                for (var i = 0; i < ancestors.length; i++) {
-                  ancestorInfo.push({
-                    key: ancestors[i],
-                    label: this.getTranslatedString('accessibleLevelDescription',
-                                                    { level: i + 1 })
-                  });
+              if (!oj.DataProviderFeatureChecker.isDataProvider(this.datasource)) {
+                var ancestors = this.datasource.getAncestors(this.rowKey);
+                if (ancestors != null && ancestors.length > 0) {
+                  ancestorInfo = [];
+                  for (var i = 0; i < ancestors.length; i++) {
+                    ancestorInfo.push({
+                      key: ancestors[i],
+                      label: this.getTranslatedString('accessibleLevelDescription',
+                                                      { level: i + 1 })
+                    });
+                  }
                 }
               }
 
               var context = this.getTranslatedString('accessibleRowDescription', {
                 level: this.depth,
                 num: this.index + 1,
-                total: this.datasource.getWrappedDataSource().getChildCount(this.parentKey)
+                total: oj.DataProviderFeatureChecker.isDataProvider(this.datasource) ?
+                this._getFlattenedDataProvider().dataProvider.getChildDataProvider(
+                  this.parentKey).getTotalSize() :
+                  this.datasource.getWrappedDataSource().getChildCount(this.parentKey)
               });
               this.component._setAccessibleContext({
                 context: context,
@@ -2848,7 +2960,7 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
      * @private
      */
     _handleExpandEvent: function (event) {
-      var rowKey = event.rowKey;
+      var rowKey = event.rowKey ? event.rowKey : event.detail.key;
       if (rowKey === this.rowKey) {
         this._removeIconStateClass();
         this.iconState = 'expanded';
@@ -2873,7 +2985,7 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
      * @private
      */
     _handleCollapseEvent: function (event) {
-      var rowKey = event.rowKey;
+      var rowKey = event.rowKey ? event.rowKey : event.detail.key;
       if (rowKey === this.rowKey) {
         this._removeIconStateClass();
         this.iconState = 'collapsed';
@@ -2921,13 +3033,24 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
       var state = this.iconState;
 
       // show loading icon, note this changes the icon state to 'loading'
-      this._loading();
-
+      if (!oj.DataProviderFeatureChecker.isDataProvider(this.datasource)) {
+        this._loading();
+      }
       // invoke expand/collapse on datasource
       if (state === 'collapsed') {
-        this.datasource.expand(this.rowKey);
+        if (!oj.DataProviderFeatureChecker.isDataProvider(this.datasource)) {
+          this.datasource.expand(this.rowKey);
+        } else {
+          this._getFlattenedDataProvider().setExpanded(
+            this._getDataProviderExpanded().add([this.rowKey]));
+        }
       } else if (state === 'expanded') {
-        this.datasource.collapse(this.rowKey);
+        if (!oj.DataProviderFeatureChecker.isDataProvider(this.datasource)) {
+          this.datasource.collapse(this.rowKey);
+        } else {
+          this._getFlattenedDataProvider().setExpanded(
+            this._getDataProviderExpanded().delete([this.rowKey]));
+        }
       }
     },
 
@@ -3039,6 +3162,19 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
      *
      * @example <caption>Get the icon from the RowExpander:</caption>
      * var node = myRowExpander.getNodeBySubId({subId: 'oj-rowexpander-disclosure'});
+     */
+
+    /**
+     * @typedef {Object} oj.ojRowExpander.Context context object used by cell callbacks.
+     * @property {oj.DataProvider<K, D>|null} datasource a reference to the data source object
+     * @property {Object?} keys the object that contains both the row key and column key which identifies the cell
+     * @property {K} keys.row the row key
+     * @property {K} keys.column the column key
+     * @property {K?} key the row key
+     * @property {K} parentKey the parent row key
+     * @property {number} treeDepth the depth of the node
+     * @property {boolean} isLeaf true if it is a leaf node
+     * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
      */
   });
 

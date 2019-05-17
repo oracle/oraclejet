@@ -11,11 +11,6 @@ export interface ojColorSpectrum extends editableValue<Color, ojColorSpectrumSet
         labelSatLum?: string;
         labelThumbDesc?: string;
     };
-    onLabelledByChanged: ((event: JetElementCustomEvent<ojColorSpectrum["labelledBy"]>) => any) | null;
-    onTransientValueChanged: ((event: JetElementCustomEvent<ojColorSpectrum["transientValue"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojColorSpectrum["value"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojColorSpectrum.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojColorSpectrum.ojAnimateStart) => any) | null;
     addEventListener<T extends keyof ojColorSpectrumEventMap>(type: T, listener: (this: HTMLElement, ev: ojColorSpectrumEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojColorSpectrumSettableProperties>(property: T): ojColorSpectrum[T];
@@ -38,6 +33,12 @@ export namespace ojColorSpectrum {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojColorSpectrum["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type transientValueChanged = JetElementCustomEvent<ojColorSpectrum["transientValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojColorSpectrum["value"]>;
 }
 export interface ojColorSpectrumEventMap extends editableValueEventMap<Color, ojColorSpectrumSettableProperties> {
     'ojAnimateEnd': ojColorSpectrum.ojAnimateEnd;

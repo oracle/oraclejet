@@ -21,15 +21,16 @@
     }
 
     .oj-treemap {
-      @include oj-user-select-property(none);
       width:650px;
       height:400px;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      color: var(--oj-text-color);
-      font-size: var(--oj-font-size-sm);
+        color: var(--oj-text-color);
+        font-size: var(--oj-font-size-sm);
+        user-select: none;
       } @else {
-      color: $textColor;
-      font-size: $smallFontSize;
+        color: $textColor;
+        font-size: $smallFontSize;
+        @include oj-user-select-property(none);
       }
     }
 

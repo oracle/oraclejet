@@ -3,11 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'knockout', 'ojs/ojcontext', 'ojs/ojcomposite', 'ojs/ojmodule'], function(oj, ko, Context, Composite)
 {
- 
-
+  "use strict";
 var __oj_module_metadata = 
 {
   "properties": {
@@ -35,10 +33,10 @@ var __oj_module_metadata =
     }
   },
   "events": {
+    "ojViewDisconnected": {},
     "ojTransitionStart": {},
     "ojViewConnected": {},
-    "ojTransitionEnd": {},
-    "ojViewDisconnected": {}
+    "ojTransitionEnd": {}
   },
   "extension": {}
 };
@@ -53,7 +51,7 @@ var __oj_module_metadata =
  * @ojcomponent oj.ojModule
  * @since 4.2.0
  * @ojdisplayname ojModule Element
- * @ojshortdesc Navigational element that manages content replacement within a particular region of the page.
+ * @ojshortdesc A module is a navigational element that manages content replacement within a particular region of the page.
  * @ojsignature {target: "Type", value: "class ojModule extends JetElement<ojModuleSettableProperties>"}
  * @ojstatus preview
 
@@ -74,34 +72,18 @@ var __oj_module_metadata =
  * &lt;/oj-module>
  * </code>
  * </pre>
+ * <p><b>ModuleElementUtils</b> - You can use ModuleElementUtils helper methods in conjunction with oj-module
+ * to generate a configuration object for the element. See the demos and documentation for
+ * the <a href="ModuleElementUtils.html">ModuleElementUtils</a> class for details on the available methods.</p>
+ *
  * <h2 id="lifecycle">View Model Lifecycle
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#lifecycle"></a>
  * </h2>
  * <p>
- * If a ViewModel is provided as a part of configuration for the oj-module element, the following optional
- * callback methods can be defined on its ViewModel and will be called at each stage of the
- * component's lifecycle.
- *
- * <h4 class="name">connected<span class="signature">()</span></h4>
- * <div class="description">
- * <p>The optional method may be implemented on the ViewModel and will be invoked after the View is inserted into the DOM.</p>
- * <p>This method might be called multiple times - after the View is created and inserted into the DOM,
- * after the View is reconnected after being disconnected and after a parent element, oj-module, with attached View
- * is reconnected to the DOM.</p>
- * </div>
- *
- * <h4 class="name">transitionCompleted<span class="signature">()</span></h4>
- * <div class="description">
- * <p>This optional method may be implemented on ViewModel and invoked after transition to the new View is complete.
- * That includes any possible animation between the old and the new View.</p>
- * </div>
- *
- * <h4 class="name">disconnected<span class="signature">()</span></h4>
- * <div class="description">
- * <p>This optional method maybe implemented on the ViewModel and will be invoked when the View is disconnected from the DOM.</p>
- * <p>This method might be called multiple times - after the View is disconnected from the DOM and after a parent
- * element,oj-module, with attached View is disconnected from the DOM.</p>
- * </div>
+ * If a ViewModel is provided as a part of configuration for the oj-module element, it should implement the
+ * <a href="oj.ModuleViewModel.html">ModuleViewModel</a> interface to provide lifecycle callbacks.
+ * See the lifecycle methods that could be implemented on the view model
+ * that will be called at each stage of the component's lifecycle.
  */
 
 /**
@@ -114,7 +96,7 @@ var __oj_module_metadata =
  * @memberof! oj.ojModule
  * @instance
  * @type {Object|Promise}
- * @ojshortdesc The module configuration object
+ * @ojshortdesc The module configuration object. See the Help documentation for more information.
  *
  * @example <caption>Initialize the ojModule element with the <code class="prettyprint">config</code> attribute:</caption>
  * &lt;oj-module config='[[moduleConfig]]'>&lt;/oj-module>
@@ -151,6 +133,7 @@ var __oj_module_metadata =
  * @memberof! oj.ojModule
  * @instance
  * @type {Object|null}
+ * @ojsignature {target: "Type", value: "oj.ModuleViewModel|null", jsdocOverride:true}
  * @default null
  */
 
@@ -185,7 +168,8 @@ var __oj_module_metadata =
  * @instance
  * @type {Object}
  * @default null
- * @ojshortdesc Defines animation object used for view transitions.
+ * @ojshortdesc Specifies an animation object used for view transitions. See the Help documentation for more information.
+ * @ojsignature {target: "Type", value: "ModuleElementAnimation", jsdocOverride:true}
  */
 
 /**
@@ -197,6 +181,7 @@ var __oj_module_metadata =
  * @event
  * @ojshortdesc Triggered before transition to the new View is started
  * @property {Object} viewModel ViewModel for the new View.
+ * @ojsignature {target: "Type", value: "oj.ModuleViewModel", for: "viewModel", jsdocOverride:true}
  */
 
 /**
@@ -208,6 +193,7 @@ var __oj_module_metadata =
  * @event
  * @ojshortdesc Triggered after the View is inserted into the DOM
  * @property {Object} viewModel ViewModel for the View being attached to the DOM.
+ * @ojsignature {target: "Type", value: "oj.ModuleViewModel", for: "viewModel", jsdocOverride:true}
  */
 
 /**
@@ -219,6 +205,7 @@ var __oj_module_metadata =
  * @event
  * @ojshortdesc Triggered after transition to the new View is complete
  * @property {Object} viewModel ViewModel for the new View.
+ * @ojsignature {target: "Type", value: "oj.ModuleViewModel", for: "viewModel", jsdocOverride:true}
  */
 
 /**
@@ -231,6 +218,7 @@ var __oj_module_metadata =
  * @ojshortdesc Triggered after the View is removed from the DOM
  * @property {Object} viewModel An array of DOM nodes that represent the disconnected View. The application can use the nodes to store them in cache.
  * @property {Array.<Node>} view ViewModel for the new View.
+ * @ojsignature {target: "Type", value: "oj.ModuleViewModel", for: "viewModel", jsdocOverride:true}
  */
 
 function moduleViewModel(context) {
@@ -349,6 +337,8 @@ Composite.register('oj-module',
  *
  * @return {boolean} true if animation should proceed, false otherwise
  * @memberof oj.ModuleElementAnimation
+ * @ojsignature [{target: "Type", value: "oj.ModuleViewModel", for:"context.oldViewModel", jsdocOverride:true},
+ *               {target: "Type", value: "oj.ModuleViewModel", for:"context.newViewModel", jsdocOverride:true}]
  * @instance
  */
 
@@ -372,6 +362,9 @@ Composite.register('oj-module',
  * will not be moved</li>
  * </ul>
  * @memberof oj.ModuleElementAnimation
+ * @ojsignature [{target: "Type", value: "oj.ModuleViewModel", for:"context.oldViewModel", jsdocOverride:true},
+ *               {target: "Type", value: "oj.ModuleViewModel", for:"context.newViewModel", jsdocOverride:true},
+ *               {target: "Type", value: "null|{ newViewParent?: Node, oldViewParent?: Node }", for: "returns"}]
  * @instance
  */
 
@@ -397,10 +390,65 @@ Composite.register('oj-module',
  * @param {Array} context.oldDomNodes an array of DOM nodes representing the old View
  * @return {Promise} - a Promise that should be resolved when the animation, moving/removing of DOM nodes and the
  * cleanup are complete. Note that the component will not be able to navigate to a new View until the Promise is resolved.
- * @ojsignature [{target: "Type", value: "()=> undefined", for:"context.removeOldView"},
+ * @ojsignature [{target: "Type", value: "oj.ModuleViewModel", for:"context.oldViewModel", jsdocOverride:true},
+ *               {target: "Type", value: "oj.ModuleViewModel", for:"context.newViewModel", jsdocOverride:true},
+ *               {target: "Type", value: "()=> undefined", for:"context.removeOldView"},
  *               {target: "Type", value: "()=> undefined", for:"context.insertNewView"}]
  * @memberof oj.ModuleElementAnimation
  * @instance
  */
+
+/**
+ * A duck-typing interface that defines a contract for a view model consumed by the oj-module element.
+ * @ojstatus preview
+ * @since 7.0.0
+ * @export
+ * @interface ModuleViewModel
+ * @memberof oj
+ */
+
+/**
+ * This optional method may be implemented on the ViewModel and will be invoked
+ * after the View is inserted into the DOM.
+ * This method might be called multiple times - after the View is created and
+ * inserted into the DOM, after the View is reconnected after being disconnected
+ * and after a parent element, oj-module, with attached View is reconnected to the DOM.
+ * @method
+ * @since 7.0.0
+ * @name connected
+ * @ojshortdesc A callback method that is invoked after the View is inserted into the DOM.
+ * @memberof oj.ModuleViewModel
+ * @instance
+ * @ojsignature {target: "Type", value: "?(): null"}
+ */
+
+/**
+ * This optional method may be implemented on the ViewModel and invoked
+ * after transition to the new View is complete, including any possible
+ * animation between the old and the new View.
+ * @method
+ * @since 7.0.0
+ * @name transitionCompleted
+ * @ojshortdesc A callback method that is invoked after transition to the new View is complete.
+ * @memberof oj.ModuleViewModel
+ * @instance
+ * @ojsignature {target: "Type", value: "?(): null"}
+ */
+
+/**
+ * This optional method may be implemented on the ViewModel and will be invoked
+ * when the View is disconnected from the DOM.
+ * This method might be called multiple times - after the View is disconnected
+ * from the DOM and after a parent element, oj-module, with attached View is
+ * disconnected from the DOM.
+ * @method
+ * @since 7.0.0
+ * @name disconnected
+ * @ojshortdesc A callback method that is invoked after View is disconnected from the DOM.
+ * @memberof oj.ModuleViewModel
+ * @instance
+ * @ojsignature {target: "Type", value: "?(): null"}
+ */
+
 
 });

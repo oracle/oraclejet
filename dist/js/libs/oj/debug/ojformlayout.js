@@ -3,7 +3,7 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
+
 define(['ojs/ojcore', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojlogger'], 
 /*
 * @param {Object} oj 
@@ -65,7 +65,7 @@ var __oj_form_layout_metadata =
 /**
  * @ojcomponent oj.ojFormLayout
  * @since 4.1.0
- * @ojshortdesc Used to group child elements in an organized layout that can be optimized for multiple display sizes.
+ * @ojshortdesc A form layout manages the layout of labels and fields in a form.
  * @ojstatus preview
  * @ojsignature {target: "Type", value:"class ojFormLayout extends JetElement<ojFormLayoutSettableProperties>"}
  *
@@ -180,6 +180,7 @@ var __oj_form_layout_metadata =
 /**
  * @member
  * @name labelWidth
+ * @ojshortdesc Specifies the label width. See the Help documentation for more information.
  * @expose
  * @memberof oj.ojFormLayout
  * @instance
@@ -231,6 +232,7 @@ var __oj_form_layout_metadata =
 /**
  * @member
  * @name maxColumns
+ * @ojshortdesc Specifies the maximum number of columns. See the Help documentation for more information.
  * @expose
  * @memberof oj.ojFormLayout
  * @instance
@@ -264,6 +266,7 @@ var __oj_form_layout_metadata =
  * of the change, triggering a [property]Changed event.
  *
  * @function setProperty
+ * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
  * @param {any} value - The new value to set the property to.
  * @return {void}
@@ -319,7 +322,7 @@ var __oj_form_layout_metadata =
  * in the Default slot.  Content in <code class="prettyprint">&lt;oj-form-layout></code>'s Default
  * slot will be laid out in a row/column style form layout.
  *
- * @ojslot Default
+ * @ojchild Default
  * @memberof oj.ojFormLayout
  * @since 4.1.0
  *
@@ -775,9 +778,9 @@ function ojFormLayout(context) {
   }
 
   /**
-   * for editable value components that have a labelled-by attribute, we need to
-   * give the oj-label an ID and then set the labelled-by to that ID. Otherwise
-   * we set the for attribute of the oj-label to the ID of the editable value component
+   * Link the oj-label and editable component with 'for'/'id.
+   * As of v7.0 all form components have 'labelledBy' attribute. If oj-label has 'for' on it,
+   * the oj-label will set labelledBy on the form component.
    *
    * @param {Element} _ojLabel
    * @param {Element} _editableElem element to link with the oj-label
@@ -788,12 +791,8 @@ function ojFormLayout(context) {
   function _linkLabelAndElement(_ojLabel, _editableElem) {
     var ojLabel = _ojLabel;
     var editableElem = _editableElem;
-    if ('labelledBy' in editableElem) {
-      ojLabel.id = editableElem.id + LABEL_ELEMENT_ID;
-      editableElem.labelledBy = ojLabel.id;
-    } else {
-      ojLabel.setAttribute('for', editableElem.id);
-    }
+    ojLabel.id = editableElem.id + LABEL_ELEMENT_ID;
+    ojLabel.setAttribute('for', editableElem.id);
   }
 
   /**

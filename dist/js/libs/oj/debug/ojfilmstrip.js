@@ -3,11 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'promise', 'touchr'],
-       function(oj, $, Context, Components, Logger)
+function(oj, $, Context, Components, Logger)
 {
-
+  "use strict";
 var __oj_film_strip_metadata = 
 {
   "properties": {
@@ -320,7 +319,7 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
  * @augments oj.baseComponent
  * @since 1.1.0
  * @ojstatus preview
- * @ojshortdesc Container element that lays out its children in a single row or column across logical pages and allows navigating through them.
+ * @ojshortdesc A filmstrip lays out its children in a single row or column across logical pages and allows navigating through them.
  * @ojrole region
  * @class oj.ojFilmStrip
  *
@@ -1466,9 +1465,8 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         var cssAttr = this._getCssPositionAttr();
         var pagesWrapper = elem.children()
             .wrapAll("<div class='" + _OJ_FILMSTRIP_CONTAINER + ' ' +
-                     _OJ_FILMSTRIP_PAGES_CONTAINER + "' style='" +
-                     cssAttr + ": 0px;'></div>") // @HTMLUpdateOK
-            .parent();
+                     _OJ_FILMSTRIP_PAGES_CONTAINER + "'></div>") // @HTMLUpdateOK
+            .parent().css(cssAttr, '0px');
         this._pagesWrapper = pagesWrapper;
 
         var options = this.options;
@@ -2042,8 +2040,8 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
             var itemsOnPage = items.slice(i, i + fitCount);
             // initially hide the page container
             itemsOnPage.wrapAll("<div class='" + _OJ_FILMSTRIP_CONTAINER + ' ' +
-                                _OJ_FILMSTRIP_PAGE + "' style='" + _DISPLAY + ': ' +
-                                _NONE + ";' " + _ARIA_HIDDEN + "='true'></div>"); // @HTMLUpdateOK
+                                _OJ_FILMSTRIP_PAGE + "' " + _ARIA_HIDDEN + "='true'></div>") // @HTMLUpdateOK
+                                .parent().css('display', _NONE);
           }
 
           if (bNotifyAttach) {

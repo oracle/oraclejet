@@ -3,14 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 {
+  "use strict";
   var GenericEvent = oj.GenericEvent;
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -49,6 +44,19 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @type {Set.<any>}
  * @ojsignature {target: "Type",
  *               value: "Set<K>"}
+ */
+
+/**
+ * Optional string describing local or global data set to fetch
+ *
+ * @ojstatus preview
+ * @since 7.0.0
+ * @export
+ * @expose
+ * @memberof oj.FetchByKeysParameters
+ * @instance
+ * @name scope
+ * @type {"local" | "global"}
  */
 
 /**
@@ -257,7 +265,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @name mapFilterCriterion
  * @type {Function}
  * @ojsignature {target: "Type",
- *               value: "?(filterCriterion: FilterOperator<D>) => FilterOperator<Din>"}
+ *               value: "?(filterCriterion: AttributeFilter<D> | CompoundFilter<D>) => AttributeFilter<Din> | CompoundFilter<Din>"}
  */
 
 /**
@@ -377,11 +385,11 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 
 /**
  * Optional filter criterion to apply. The filter criterion would be composed of a
- * supported FilterOperator such as a AttributeFilterOperator or a CompoundFilterOperator.
+ * supported Filter such as a AttributeFilter or a CompoundFilter.
  *
  * @example
  * The following would be a valid filterCriterion:
- * {op: '$or', criteria: [{op: '$eq', attribute: 'name', value: 'Bob'}, {op: '$gt', attribute: 'level', value: 'Low'}]}
+ * {op: '$or', criteria: [{op: '$eq', value: {name: 'Bob'}}, {op: '$gt', value: {level: 'Low'}}]}
  *
  * @ojstatus preview
  * @since 4.1.0
@@ -390,14 +398,14 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @memberof oj.FetchListParameters
  * @instance
  * @name filterCriterion
- * @type {oj.FilterOperator}
+ * @type {oj.AttributeFilter | oj.CompoundFilter | oj.FilterOperator}
  * @ojsignature {target: "Type",
- *               value: "?FilterOperator<D>"}
+ *               value: "?AttributeFilter<D> | CompoundFilter<D> | FilterOperator<D>"}
  */
 
 /**
- * attributes to include in the result. If specified, then at least these set of attributes will be included in each row
- * in the data array in the FetchListResult. If not specified then the default attributes will be included.
+ * Optional attributes to include in the result. If specified, then at least these set of attributes must be included in each row
+ * in the data array in the FetchListResult. If not specified then the default attributes must be included.
  *
  * @ojstatus preview
  * @since 6.1.0
@@ -535,6 +543,113 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/* jslint browser: true,devel:true*/
+
+/**
+ * The interface for oj.AttributeFilterDef
+ *
+ * @ojstatus preview
+ * @export
+ * @interface oj.AttributeFilterDef
+ * @since 7.0.0
+ * @ojsignature {target: "Type",
+ *               value: "interface AttributeFilterDef<D>",
+ *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ */
+
+/**
+ * Optional property which specifies which attribute to filter on. This is provided for backward compatibility
+ * and has been deprecated. Please specify attribute/value pairs in the value property instead.
+ *
+ * @ojstatus preview
+ * @since 7.0.0
+ * @export
+ * @expose
+ * @memberof oj.AttributeFilterDef
+ * @instance
+ * @name attribute
+ * @type {string=}
+ * @ojdeprecated {since: '7.0.0', description: 'Use attribute pair values in the value property instead. e.g. value: {DepartmentId: 10}'}
+ * @example <caption>Attribute filter definition which filters on DepartmentId value 10</caption>
+ * {op: '$eq', attribute: 'DepartmentId', value: 10}
+ */
+
+/**
+ * Operator to apply for the filter. Valid operators defined in the AttributeFilterOperator union type are the strings:
+ * <ul>
+ *   <li>$co The entire operator value must be a substring of the attribute value for a match.</li>
+ *   <li>$eq The attribute and operator values must be identical for a match.</li>
+ *   <li>$ew The entire operator value must be a substring of the attribute value matching at the end of the attribute value.  This criterion is satisfied if the two strings are identical.</li>
+ *   <li>$pr If the attribute has a non-empty or non-null value, or if it contains a non-empty node for complex attributes, there is a match.</li>
+ *   <li>$gt If the attribute value is greater than the operator value, there is a match.</li>
+ *   <li>$ge If the attribute value is greater than or equal to the operator value, there is a match.</li>
+ *   <li>$lt If the attribute value is less than the operator value, there is a match.</li>
+ *   <li>$le If the attribute value is less than or equal to the operator value, there is a match.</li>
+ *   <li>$ne The attribute and operator values are not identical.</li>
+ *   <li>$regex If the attribute value satisfies the regular expression, there is a match.</li>
+ *   <li>$sw The entire operator value must be a substring of the attribute value, starting at the beginning of the attribute value.  This criterion is satisfied if the two strings are identical.</li>
+ * </ul>
+ *
+ * @ojstatus preview
+ * @since 7.0.0
+ * @export
+ * @expose
+ * @memberof oj.AttributeFilterDef
+ * @instance
+ * @name op
+ * @type {string}
+ */
+
+/**
+ * Specifies the value to filter for. This can be a primitive or object. If a primitive is specified, then the attribute property must
+ * be used in conjunction. However, that type of usage is only provided for backwards compatibility and has been deprecated. Therefore,
+ * value should be an object which specifies attribute/value pairs to filter on. The op will be applied to each attribute/value pair and
+ * the whole will be AND'd. For subobjects, please specify them in a nested structure.
+ *
+ * @ojstatus preview
+ * @since 7.0.0
+ * @export
+ * @expose
+ * @memberof oj.AttributeFilterDef
+ * @instance
+ * @name value
+ * @type {any}
+ * @example
+ * <caption>Filter definition which filters on DepartmentId value 10</caption>
+ * {op: '$eq', value: {DepartmentId: 10}}
+ * @example
+ * <caption>Filter definition which filters on DepartmentId value 10 and DepartmentName is Hello</caption>
+ * {op: '$eq', value: {DepartmentId: 10, DepartmentName: 'Hello'}}
+ * @example
+ * <caption>Filter definition which filters on subobject Location State is California and DepartmentName is Hello</caption>
+ * {op: '$eq', value: {DepartmentName: 'Hello', Location: {State: 'California'}}}
+ */
+
+/**
+ * End of jsdoc
+ */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
 var AttributeFilterOperator;
 (function (AttributeFilterOperator) {
     var AttributeOperator;
@@ -580,6 +695,7 @@ oj['AttributeFilterOperator']['AttributeOperator'] = AttributeFilterOperator.Att
  * @ojsignature {target: "Type",
  *               value: "interface AttributeFilterOperator<D>",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ * @ojdeprecated {since: '7.0.0', description: 'Use AttributeFilter instead.'}
  */
 
 /**
@@ -657,6 +773,130 @@ oj['AttributeFilterOperator']['AttributeOperator'] = AttributeFilterOperator.Att
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/* jslint browser: true,devel:true*/
+
+/**
+ * The interface for oj.AttributeFilter
+ *
+ * @ojstatus preview
+ * @export
+ * @interface oj.AttributeFilter
+ * @extends oj.AttributeFilterDef
+ * @since 7.0.0
+ * @ojsignature {target: "Type",
+ *               value: "interface AttributeFilter<D>",
+ *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ */
+
+/**
+ * Specifies a filter function which has the same signature as the the callback
+ * which is specified for the JS Array.filter():
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
+ * This function will be optionally used by the DataProvider to do local filtering.
+ * This function is required by the DataProvider so that it is possible for DataProvider
+ * implementations to at least do local filtering.
+ *
+ * @ojstatus preview
+ * @since 7.0.0
+ * @export
+ * @expose
+ * @memberof oj.AttributeFilter
+ * @instance
+ * @name filter
+ * @method
+ * @param {any item The current element being processed in the array.
+ * @param {number=} index The index of the current element being processed in the array.
+ * @param {Array=} array The array filter was called upon.
+ * @return {boolean} True if the element satisfies the filter.
+ * @ojsignature {target: "Type",
+ *               value: "filter(item: D, index?: number, array?: Array<D>): boolean;"}
+ */
+
+/**
+ * End of jsdoc
+ */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/* jslint browser: true,devel:true*/
+
+/**
+ * The interface for oj.CompoundFilterDef
+ *
+ * @ojstatus preview
+ * @export
+ * @interface oj.CompoundFilterDef
+ * @since 7.0.0
+ * @ojsignature {target: "Type",
+ *               value: "interface CompoundFilterDef<D>",
+ *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ */
+
+/**
+ * Operator to apply for the filter. Valid operators defined in the CompoundFilterOperator union type are the strings:
+ * <ul>
+ *   <li>$and The filters in the criteria array will be AND'd.</li>
+ *   <li>$or The filters in the criteria array will be OR'd.</li>
+ * </ul>
+ * @ojstatus preview
+ * @since 7.0.0
+ * @export
+ * @expose
+ * @memberof oj.CompoundFilterDef
+ * @instance
+ * @name op
+ * @type {string}
+ */
+
+/**
+ * Array of FilterDefs on which to apply the operator
+ *
+ * @ojstatus preview
+ * @since 7.0.0
+ * @export
+ * @expose
+ * @memberof oj.CompoundFilterDef
+ * @instance
+ * @name criteria
+ * @type {Array.<oj.AttributeFilterDef | oj.CompoundFilterDef>}
+ * @ojsignature {target: "Type",
+ *               value: "Array<AttributeFilterDef<D> | CompoundFilterDef<D>>"}
+ */
+
+/**
+ * End of jsdoc
+ */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
 var CompoundFilterOperator;
 (function (CompoundFilterOperator) {
     var CompoundOperator;
@@ -693,6 +933,7 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  * @ojsignature {target: "Type",
  *               value: "interface CompoundFilterOperator<D>",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ * @ojdeprecated {since: '7.0.0', description: 'Use CompoundFilter instead.'}
  */
 
 /**
@@ -740,6 +981,60 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  * @property {string} $and=$and The filter is only a match if both expressions evaluate to true.
  * @property {string} $or=$or The filter is a match if either expression evaluates to true.
  * @since 5.0.0
+ */
+
+/**
+ * End of jsdoc
+ */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/* jslint browser: true,devel:true*/
+
+/**
+ * The interface for oj.CompoundFilter
+ *
+ * @ojstatus preview
+ * @export
+ * @interface oj.CompoundFilter
+ * @extends oj.CompoundFilterDef
+ * @since 7.0.0
+ * @ojsignature {target: "Type",
+ *               value: "interface CompoundFilter<D>",
+ *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ */
+
+/**
+ * Specifies a filter function which has the same signature as the the callback
+ * which is specified for the JS Array.filter():
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
+ * This function will be optionally used by the DataProvider to do local filtering.
+ * This function is required by the DataProvider so that it is possible for DataProvider
+ * implementations to at least do local filtering.
+ *
+ * @ojstatus preview
+ * @since 7.0.0
+ * @export
+ * @expose
+ * @memberof oj.CompoundFilter
+ * @instance
+ * @name filter
+ * @method
+ * @param {any} item The current element being processed in the array.
+ * @param {number=} index The index of the current element being processed in the array.
+ * @param {Array=} array The array filter was called upon.
+ * @return {boolean} True if the element satisfies the filter.
+ * @ojsignature {target: "Type",
+ *               value: "filter(item: D, index?: number, array?: Array<D>): boolean;"}
  */
 
 /**
@@ -1763,6 +2058,7 @@ oj.DataProvider = function () {
  *   <li>If capabilityName is "fetchByOffset", returns a {@link oj.FetchByOffsetCapability} object.</li>
  *   <li>If capabilityName is "sort", returns a {@link oj.SortCapability} object.</li>
  *   <li>If capabilityName is "filter", returns a {@link oj.FilterCapability} object.</li>
+ *   <li>If capabilityName is "fetchCapability", returns a {@link oj.FetchCapability} object.</li>
  * </ul>
  * @export
  * @expose
@@ -2027,7 +2323,7 @@ oj.DataProvider = function () {
  * e.g. ['!lastName', '@default'] for everything except 'lastName'. For only
  * 'firstName' and 'lastName' we'd have ['firstName', 'lastName']. Order does not matter when @default is used with field exclusions "!".
  * This can be nested. e.g. ['!lastName', '@default', {name: 'location', attributes: ['address line 1', 'address line 2']}].
- * When specified attributes, exclusions and @default are all present as in  [�id�, �firstName�, �!lastName�, �@default�, �email�], this means that
+ * When specified attributes, exclusions and @default are all present as in  [‘id’, ‘firstName’, ‘!lastName’, ‘@default’, ‘email’], this means that
  * all default attributes (including 'id', 'firstName', and 'email') except for 'lastName' will be included.
  * Also, a string value for attribute is equivalent to an object value with only name. e.g.  ['lastName', 'firstName'] is the same as [{name: 'lastName'}, {name: 'firstName'}]
  *
@@ -2796,6 +3092,192 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
+var FilterImpl = /** @class */ (function () {
+    function FilterImpl(options) {
+        var filterDef = options ? options.filterDef : null;
+        if (filterDef) {
+            this['op'] = filterDef['op'];
+        }
+        if (filterDef.value) {
+            this['value'] = filterDef['value'];
+            if (filterDef['attribute']) {
+                this['attribute'] = filterDef['attribute'];
+            }
+        }
+        else if (filterDef) {
+            this['criteria'] = filterDef['criteria'];
+        }
+    }
+    FilterImpl.prototype.filter = function (item, index, array) {
+        return oj.FilterUtils.satisfy(FilterImpl._transformFilter(this), item);
+    };
+    FilterImpl._transformFilter = function (filter) {
+        var transformedExpr;
+        if (filter) {
+            var self_1 = this;
+            var op = filter.op;
+            // offline has slightly different names for some operators
+            if (op === '$le') {
+                op = '$lte';
+            }
+            else if (op === '$ge') {
+                op = '$gte';
+            }
+            else if (op === '$pr') {
+                op = "$exists";
+            }
+            if (op != '$and' && op != '$or') {
+                var filterValue = filter.value;
+                transformedExpr = {};
+                var attributeExpr = filter.attribute;
+                if (attributeExpr) {
+                    var operatorExpr = {};
+                    // need express sw and ew as regex
+                    if (op === '$sw' ||
+                        op === '$ew' ||
+                        op === '$co') {
+                        op = '$regex';
+                        filterValue = FilterImpl._fixStringExpr(op, filterValue);
+                    }
+                    operatorExpr[op] = filterValue;
+                    transformedExpr[attributeExpr] = operatorExpr;
+                }
+                else {
+                    // the field/value combos are specified in the value itself
+                    var criteriaArray = [];
+                    FilterImpl._transformObjectExpr(filterValue, op, null, criteriaArray);
+                    transformedExpr['$and'] = criteriaArray;
+                }
+            }
+            else {
+                var criteriaArray_1 = [];
+                filter.criteria.forEach(function (criterion) {
+                    criteriaArray_1.push(FilterImpl._transformFilter(criterion));
+                });
+                transformedExpr = {};
+                transformedExpr[op] = criteriaArray_1;
+            }
+        }
+        return transformedExpr;
+    };
+    FilterImpl._transformObjectExpr = function (objectExpr, op, path, criteriaArray) {
+        var self = this;
+        var objectProps = Object.keys(objectExpr);
+        if (objectProps.length > 0) {
+            Object.keys(objectExpr).forEach(function (fieldAttribute) {
+                var fieldValue = objectExpr[fieldAttribute];
+                var fieldAttributePath = path ? path + '.' + fieldAttribute : fieldAttribute;
+                if (!(fieldValue instanceof Object)) {
+                    var operatorExpr = {};
+                    // need express co, sw and ew as regex
+                    if (op === '$sw' ||
+                        op === '$ew' ||
+                        op === '$co') {
+                        op = '$regex';
+                        fieldValue = FilterImpl._fixStringExpr(op, fieldValue);
+                    }
+                    operatorExpr[op] = fieldValue;
+                    var fieldExpr = {};
+                    fieldExpr[fieldAttributePath] = operatorExpr;
+                    criteriaArray.push(fieldExpr);
+                }
+                else {
+                    FilterImpl._transformObjectExpr(fieldValue, op, fieldAttributePath, criteriaArray);
+                }
+            });
+        }
+        else {
+            var operatorExpr = {};
+            operatorExpr[op] = objectExpr;
+            var fieldExpr = {};
+            fieldExpr[path] = operatorExpr;
+            criteriaArray.push(fieldExpr);
+        }
+    };
+    FilterImpl._fixStringExpr = function (op, value) {
+        if ((typeof value === 'string') || (value instanceof String)) {
+            if (op === '$sw') {
+                value = '^' + value;
+            }
+            else if (op === '$ew') {
+                value = value + '$';
+            }
+        }
+        return value;
+    };
+    return FilterImpl;
+}());
+var FilterFactory = /** @class */ (function () {
+    function FilterFactory() {
+    }
+    FilterFactory.getFilter = function (options) {
+        return (new FilterImpl(options));
+    };
+    return FilterFactory;
+}());
+oj['FilterFactory'] = FilterFactory;
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/* jslint browser: true,devel:true*/
+
+/**
+ * The class oj.FilterFactory
+ *
+ * @ojstatus preview
+ * @export
+ * @class oj.FilterFactory
+ * @since 7.0.0
+ * @ojsignature {target: "Type",
+ *               value: "class FilterFactory<D>"}
+ * @hideconstructor
+ */
+
+/**
+ * This function is used to pass in a filter definition and returns a filter which can be used
+ * with DataProviders. It essentially takes the filter definition and then adds a local filter()
+ * function which is required when used for a DataProvider filterCriterion.
+ *
+ * @ojstatus preview
+ * @since 7.0.0
+ * @export
+ * @expose
+ * @memberof oj.FilterFactory
+ * @instance
+ * @name getFilter
+ * @method
+ * @param {Object} options Options for the getFilter() function
+ * @param {AttributeFilterDef | CompoundFilterDef} options.filterDef The filter definition for the filter to be returned.
+ * @return {AttributeFilter | CompoundFilter} Returns either an AttributeFilter or CompoundFilter depending on whether a AttributeFilterDef or CompoundFilterDef.
+ * was passed in.
+ * @ojsignature {target: "Type",
+ *               value: "(options: {filterDef: AttributeFilterDef<D> | CompoundFilterDef<D>}) : AttributeFilter<D> | CompoundFilter<D>"}
+ * @example
+ * <caption>Get filter which filters on DepartmentId value 10 and then fetch filtered rows from the DataProvider</caption>
+ * var filter = FilterFactory.getFilter({filterDef: {op: '$eq', value: {DepartmentId: 10}}};
+ * var dataProviderAsyncIterator = dataprovider.fetchFirst({filterCriterion: filter})[Symbol.asyncIterator]();
+ * dataProviderAsyncIterator.next().then(function(result)
+ * {
+ *   ...
+ **/
+
+/**
+ * End of jsdoc
+ */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
 
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -2820,6 +3302,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * @ojsignature {target: "Type",
  *               value: "interface FilterOperator<D>",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ * @ojdeprecated {since: '7.0.0', description: 'Use AttributeFilter or CompoundFilter instead.'}
  */
 
 /**
@@ -2853,6 +3336,395 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 /**
  * End of jsdoc
  */
+
+/**
+ * Copyright (c) 2017, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+/* eslint-disable */
+/**
+ * @ignore
+ * @class oj.FilterUtils
+ * @constructor
+ */
+oj.FilterUtils = function () {
+  'use strict';
+  
+  /**
+    * Helper function that checks if itemData satisfies the search criteria
+    * defined by selector or not. Undefined selector means everything is
+    * selected.
+    * @method
+    * @name satisfy
+    * @memberof! storageUtils
+    * @static
+    * @param {string} selector Rule that defines whether an object is selected
+    *                          or not.
+    * @param {object} itemData The value to check with.
+    * @returns {boolean} true if itemData satisfies search criteria defined
+    *                         by selector, and false otherwise.
+    */
+  function satisfy(selector, itemData) {
+    if (!selector) {
+      // undefined selector means select everything.
+      return true;
+    } else {
+      var expTree = _buildExpressionTree(selector);
+      return _evaluateExpressionTree(expTree, itemData);
+    }
+  };
+   
+  /**
+   * Helper function used by {@link _satisfy} to build an expression tree
+   * based on expression object for easier evaluation later.
+   * @method
+   * @name _buildExpressionTree
+   * @memberof! storageUtils
+   * @static
+   * @param {object} expression The expression that used to filter an object.
+   * @returns {object} The tree representation of the passed-in expression.
+   */
+  function _buildExpressionTree(expression) {
+    var subTree;
+    var itemTreeArray = [];
+    for (var key in expression) {
+      if (expression.hasOwnProperty(key)) {
+        var value = expression[key];
+        if (key.indexOf('$') === 0) {
+          if (_isMultiSelector(key)) {
+            if (value instanceof Array) {
+              subTree = {
+                operator: key,
+                array: []
+              };
+              for (var subindex = 0; subindex < value.length; subindex++) {
+                var itemTree = _buildExpressionTree(value[subindex]);
+                subTree.array.push(itemTree);
+              }
+            } else {
+              throw new Error("not a valid expression: " + expression);
+            }
+          } else if (_isSingleSelector(key)) {
+            throw new Error("not a valid expression: " + expression);
+          }
+        } else if (_isLiteral(value)) {
+          itemTreeArray.push({
+            left: key,
+            right: value,
+            operator: '$eq'
+          });
+        } else {
+          var partialTree = {
+            left: key,
+          };
+          _completePartialTree(partialTree, value);
+          itemTreeArray.push(partialTree);
+        }
+      }
+    }
+
+    if (itemTreeArray.length > 1) {
+      subTree = {
+        operator: '$and',
+        array: itemTreeArray
+      };
+    } else if (itemTreeArray.length === 1) {
+      subTree = itemTreeArray[0];
+    }
+
+    return subTree;
+  };
+
+  /**
+   * Helper function used by {@link _buildExpressionTree} to complete the
+   * right side of an expression tree.
+   * @method
+   * @name _completePartialTree
+   * @memberof! storageUtils
+   * @static
+   * @param {object} partialTree The tree representation of an expression.
+   * @param {object} expression The object to evaluate the expression tree
+   *                          against.
+   */
+  function _completePartialTree(partialTree, expression) {
+    var found = false;
+    for (var key in expression) {
+      if (expression.hasOwnProperty(key)) {
+        var value = expression[key];
+        if (found || !_isSingleSelector(key)) {
+          throw new Error("parsing error " + expression);
+        }
+        partialTree.operator = key;
+        partialTree.right = value;
+        found = true;
+      }
+    }
+  };
+
+  /**
+   * Helper function used by {@link find} to apply an expression tree to
+   * an object to check if this object satisfies the expression tree or not.
+   * @method
+   * @name _evaluateExpressionTree
+   * @memberof! storageUtils
+   * @tatic
+   * @param {object} expTree The tree representation of an expression.
+   * @param {object} itemData The object to evaluate the expression tree
+   *                          against.
+   * @returns {boolean} true if itemData satisfies expression tree, false
+   *                    otherwise.
+   */
+  function _evaluateExpressionTree(expTree, itemData) {
+    var operator = expTree.operator;
+    if (_isMultiSelector(operator)) {
+      if (expTree.left || !(expTree.array instanceof Array)) {
+        throw new Error("invalid expression tree!" + expTree);
+      } else {
+        var result;
+        var subTreeArray = expTree.array;
+        for (var subIndex = 0; subIndex < subTreeArray.length; subIndex++) {
+          var subResult = _evaluateExpressionTree(subTreeArray[subIndex], itemData);
+          if (operator === '$or' && subResult === true) {
+            return true;
+          } else if (operator === '$and' && subResult === false) {
+            return false;
+          }
+          result = subResult;
+        }
+        return result;
+      }
+    } else if (_isSingleSelector(operator)) {
+      var value = expTree.right;
+      var itemValue;
+
+      if (expTree.left != '*') {
+        itemValue = getValue(expTree.left, itemData);
+        return _evaluateSingleSelectorExpression(operator, value, itemValue);
+      } else {
+        var i;
+        var itemProperties = Object.keys(itemData);
+        for (i = 0; i < itemProperties.length; i++) {
+          itemValue = getValue(itemProperties[i], itemData);
+          if (_evaluateSingleSelectorExpression(operator, value, itemValue)) {
+            return true;
+          }
+        }
+        return false;
+      }
+    } else {
+      throw new Error("not a valid expression!" + expTree);
+    }
+  };
+  
+  /**
+   * Helper function to evaluate a single selector expression.
+   * @method
+   * @name _evaluateSingleSelectorExpression
+   * @memberof! storageUtils
+   * @static
+   * @param {string} operator The operator of an expression.
+   * @param {object} value The value.
+   * @param {object} itemData The object to evaluate the expression tree
+   *                          against.
+   * @returns {boolean} true if itemData satisfies expression, false
+   *                    otherwise.
+   */
+  function _evaluateSingleSelectorExpression(operator, value, itemValue) {
+    if (operator === '$lt') {
+      var fixedTokens = _fixNullForString(itemValue, value);
+      itemValue = fixedTokens[0];
+      value = fixedTokens[1];
+      return (itemValue < value);
+    } else if (operator === '$gt') {
+      var fixedTokens = _fixNullForString(itemValue, value);
+      itemValue = fixedTokens[0];
+      value = fixedTokens[1];
+      return (itemValue > value);
+    } else if (operator === '$lte') {
+      var fixedTokens = _fixNullForString(itemValue, value);
+      itemValue = fixedTokens[0];
+      value = fixedTokens[1];
+      return (itemValue <= value);
+    } else if (operator === '$gte') {
+      var fixedTokens = _fixNullForString(itemValue, value);
+      itemValue = fixedTokens[0];
+      value = fixedTokens[1];
+      return (itemValue >= value);
+    } else if (operator === '$eq') {
+      return (itemValue === value);
+    } else if (operator === '$ne') {
+      return (itemValue !== value);
+    } else if (operator === '$regex') {
+      if (itemValue) {
+        if (!(typeof itemValue === 'string') && !(itemValue instanceof String)) {
+          itemValue = new String(itemValue);
+        }
+        var matchResult = itemValue.match(value);
+        return (matchResult !== null);
+      }
+      return false;
+    } else if (operator === '$exists') {
+      if (value) {
+        return (itemValue !== null && itemValue !== undefined);
+      } else {
+        return (itemValue === null || itemValue === undefined);
+      }
+    } else {
+      throw new Error("not a valid expression! " + expTree);
+    }
+    return false;
+  }
+
+  /**
+   * Helper function that checks if the token is a multiple selector operator
+   * or not.
+   * @method
+   * @name _isMultiSelector
+   * @memberof! storageUtils
+   * @static
+   * @param {string} token The token to check against.
+   * @returns {boolean} true if the token is the supported multiple selector
+   *                    operator, false otherwise.
+   */
+  function _isMultiSelector(token) {
+    return (token === '$and' || token === '$or');
+  };
+
+  /**
+   * Helper function that checks if the token is a single selector operator
+   * or not.
+   * @method
+   * @name _isSingleSelector
+   * @memberof! storageUtils
+   * @static
+   * @param {string} token The token to check against.
+   * @returns {boolean} true if the token is the supported single selector
+   *                    operator, false otherwise.
+   */
+  function _isSingleSelector(token) {
+    return (token === '$lt' || token === '$gt' || token === '$lte' ||
+      token === '$gte' || token === '$eq' || token === '$ne' ||
+      token === '$regex' || token === '$exists');
+  };
+
+  /**
+   * Helper function that checks if the token is a literal or not.
+   * @method
+   * @name _isLiteral
+   * @memberof! storageUtils
+   * @static
+   * @param {string} token The token to check against.
+   * @returns {boolean} true if the token is a literal, false otherwise.
+   */
+  function _isLiteral(token) {
+    return (typeof(token) !== 'object');
+  };
+  
+  /**
+   * Helper function that checks if the token is a string
+   * @method
+   * @name _isSring
+   * @memberof! storageUtils
+   * @static
+   * @param {string} token The token to check against.
+   * @returns {boolean} true if the token is a string, false otherwise.
+   */
+  function _isString(token) {
+    return (token != null && (token instanceof String || typeof token === 'string'));
+  };
+  
+  /**
+   * Helper function that sets null literals to empty string for string comparison
+   * @method
+   * @name _fixNullForString
+   * @memberof! storageUtils
+   * @static
+   * @param {string} leftToken left hand token
+   * @param {string} rightToken right hand token
+   * @returns {Array} Array of left and right hand tokens
+   */
+  function _fixNullForString(leftToken, rightToken) {
+    if (_isString(leftToken) && rightToken == null) {
+      rightToken = '';
+    } else if (_isString(rightToken) && leftToken == null) {
+      leftToken = '';
+    }
+    return [leftToken, rightToken];
+  };
+
+  /**
+   * Helper function that retrieves the value of a property from an object.
+   * The object can have nested properties, and the property name could be
+   * a path to the leaf property.
+   * @method
+   * @name getValue
+   * @memberof! storageUtils
+   * @static
+   * @param {string} path The chain of the property names from the root to
+   *                      the leaf when the object has nested properties.
+   * @param {object} itemValue The object to retrieve the property value
+   *                           from.
+   * @returns {object} the object that contains all the properties defined
+   *                   in fieldsExpression array, the corresponding property
+   *                   value is obtained from itemData.
+   */
+  function getValue(path, itemValue) {
+    var paths = path.split('.');
+    var returnValue = itemValue;
+    for (var index = 0; index < paths.length; index++) {
+      returnValue = returnValue[paths[index]];
+    }
+    return returnValue;
+  };
+
+  /**
+   * Helper function that constructs an object out from value
+   * based on fields.
+   * @method
+   * @name assembleObject
+   * @param {object} value The original object to construct the return object
+   *                       from.
+   * @param {Array} fields An array of property names whose values
+   *                       should be included in the final contructed
+   *                       return object.
+   * @returns {object} the object that contains all the properties defined
+   *                   in fields array, the corresponding property
+   *                   value is obtained from value.
+   */
+  function assembleObject (value, fields) {
+    var returnObject;
+    if (!fields) {
+      returnObject = value;
+    } else {
+      returnObject = {};
+      for (var index = 0; index < fields.length; index++) {
+        var currentObject = returnObject;
+        var currentItemDataValue = value;
+        var field = fields[index];
+        var paths = field.split('.');
+        for (var pathIndex = 0; pathIndex < paths.length; pathIndex++) {
+          currentItemDataValue = currentItemDataValue[paths[pathIndex]];
+          if (!currentObject[paths[pathIndex]] && pathIndex < paths.length - 1) {
+            currentObject[paths[pathIndex]] = {};
+          }
+          if (pathIndex === paths.length - 1) {
+            currentObject[paths[pathIndex]] = currentItemDataValue;
+          } else {
+            currentObject = currentObject[paths[pathIndex]];
+          }
+        }
+      }
+    }
+    return returnObject;
+  };
+  
+  return {
+    satisfy: satisfy,
+    getValue: getValue,
+    assembleObject: assembleObject
+  };
+}();
+
 
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -2982,6 +3854,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 var __DataProvider = {};
 __DataProvider.FetchByKeysMixin = oj.FetchByKeysMixin;
 __DataProvider.FetchByOffsetMixin = oj.FetchByOffsetMixin;
+__DataProvider.FilterFactory = oj.FilterFactory;
 
   ;return __DataProvider;
 });

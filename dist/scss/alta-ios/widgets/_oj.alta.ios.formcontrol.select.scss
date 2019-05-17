@@ -82,8 +82,8 @@
     .oj-select-select.oj-select-default[multiple] {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        color: var(--oj-form-control-placeholder-color); 
-        font-style: var(--oj-form-control-placeholder-font-style);      
+        color: var(--oj-text-field-placeholder-color); 
+        font-style: var(--oj-text-field-placeholder-font-style);      
       } @else {
         color: $formControlPlaceholderColor; 
         font-style: $formControlPlaceholderFontStyle;        
@@ -96,7 +96,7 @@
     .oj-select-search-field {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        line-height: var(--oj-form-control-trigger-height);
+        line-height: var(--oj-text-field-trigger-height);
       } @else {
         line-height: $formControlTriggerHeight;
       }

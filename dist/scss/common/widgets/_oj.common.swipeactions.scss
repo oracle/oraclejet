@@ -61,7 +61,7 @@
     /* styling on focused action item. */
     .oj-swipeactions-action-panel.oj-focus-highlight {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        outline: 2px dotted var(--oj-primary-text-color);
+        outline: 2px dotted var(--oj-text-color-primary);
       } @else {
         outline: 2px dotted $primaryTextColor;
       }

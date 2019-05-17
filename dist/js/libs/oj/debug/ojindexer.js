@@ -3,20 +3,20 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojcontext', 'ojs/ojtranslation', 'promise', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore'],
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        * @param {Object} Hammer
-        */
-       function(oj, $, Hammer, Context, Translations)
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+* @param {Object} Hammer
+*/
+function(oj, $, Hammer, Context, Translations)
 {
+  "use strict";
 var __oj_indexer_metadata = 
 {
   "properties": {
     "data": {
-      "type": "oj.IndexerModel"
+      "type": "object"
     },
     "translations": {
       "type": "object",
@@ -62,7 +62,6 @@ var __oj_indexer_metadata =
  * The interface for oj.IndexerModel which should be implemented by all object instances
  * bound to the data parameter for ojIndexer.
  * @export
- * @ojtsignore
  * @since 1.2
  * @interface
  */
@@ -325,9 +324,8 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function (section) {
    * @augments oj.baseComponent
    * @since 1.2.0
    * @ojstatus preview
-   * @ojtsignore
    *
-   * @ojshortdesc Displays a list of sections that corresponds to group headers of a list.
+   * @ojshortdesc An indexer displays a list of sections that corresponds to group headers of a list.
    * @ojrole slider
    * @classdesc
    * <h3 id="indexerOverview-section">
@@ -383,15 +381,15 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function (section) {
       options:
       {
         /**
-         * The data model for the Indexer which must be a oj.IndexerModel.  Currently this option can only be
-         * set to the return value of the getIndexerModel method on the ListView instance.
-         * The data attribute should always be specified.  If not specified, then an empty indexer is rendered.
+         * The data model for the Indexer which must be a oj.IndexerModel.  Currently the <a href="oj.IndexerModelTreeDataProvider.html">IndexerModelTreeDataProvider</a>
+         * is available that applications can use as the data for both ListView and the Indexer.  If not specified, then an empty indexer is rendered.
          *
          * @ojshortdesc The data provider for the Indexer.
          * @expose
          * @memberof! oj.ojIndexer
          * @instance
-         * @type {oj.IndexerModel}
+         * @type {Object}
+         * @ojsignature {target:"Type", value:"oj.IndexerModel", jsdocOverride:true}
          * @default null
          *
          * @example <caption>Initialize the Indexer with an IndexModel:</caption>

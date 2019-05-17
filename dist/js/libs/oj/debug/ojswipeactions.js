@@ -3,16 +3,14 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojoffcanvas', 'ojs/ojswipetoreveal', 'ojs/ojoption', 'touchr'],
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        */
-       function(oj, $, Context, Config, OffcanvasUtils, SwipeToRevealUtils)
- 
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+*/
+function(oj, $, Context, Config, OffcanvasUtils, SwipeToRevealUtils)
 {
-
+  "use strict";
 var __oj_swipe_actions_metadata = 
 {
   "properties": {
@@ -71,7 +69,7 @@ var __oj_swipe_actions_metadata =
  * @since 5.1.0
  * @ojstatus preview
  *
- * @ojshortdesc Adds swipe-to-reveal functionality to elements such as items in ListView.
+ * @ojshortdesc A swipe actions component adds swipe-to-reveal functionality to elements such as items in ListView.
  * @classdesc
  * <h3 id="swipeActionsOverview-section">
  *   JET SwipeActions Component
@@ -118,6 +116,16 @@ var __oj_swipe_actions_metadata =
  *
  * {@ojinclude "name":"stylingDoc"}
  *
+ * <h3 id="accessibility-section">
+ *   Accessibility
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+ * </h3>
+ *
+ * <p>SwipeActions will display skip links that allow users to access swipe actions when the element has focus.  This implies that
+ *    when SwipeActions is a child of ListView, the skip links will become accessible when user hits the F2 key.</p>
+ * <p>Although the swipe actions are accessible with the keyboard using skip links, it is recommended that applications provide an alternative
+ *    way for the users to perform all the swipe actions.
+ *
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -131,13 +139,6 @@ var __oj_swipe_actions_metadata =
  * </h3>
  *
  * {@ojinclude "name":"keyboardDoc"}
- *
- * <h3 id="accessibility-section">
- *   Accessibility
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
- * </h3>
- *
- * <p>Although the swipe actions are accessible with the keyboard using a skip link (that becomes visible when focused), it is recommended that applications provide an alternative way for the users to perform all the swipe actions.
  */
   oj.__registerWidget('oj.ojSwipeActions', $.oj.baseComponent,
     {
@@ -210,6 +211,13 @@ var __oj_swipe_actions_metadata =
               self._handleAction(event);
             }
             enterPressed = false;
+          },
+          mouseup: function (event) {
+            // if the target is not part of content, then it must be part of the action bar
+            // note because we call preventDefault on touchstart, this will not be invoke on touch
+            if (this.m_content && !this.m_content.contains(event.target)) {
+              self._handleAction(event);
+            }
           },
           ojdefaultaction: function (event, _offcanvas) {
             var ojOption = $(_offcanvas.selector).children('oj-option.oj-swipetoreveal-default');
@@ -407,7 +415,8 @@ var __oj_swipe_actions_metadata =
         // default slot is content
         var content = slotMap[''];
         if (content && content.length > 0) {
-          content[0].classList.add('oj-swipeactions-content');
+          this.m_content = content[0];
+          this.m_content.classList.add('oj-swipeactions-content');
         }
 
         // create the offcanvas for the start/end slots
@@ -731,12 +740,13 @@ var __oj_swipe_actions_metadata =
  */
 
 /**
- * <p>The <code class="prettyprint">start</code> slot is used to specify the options to appears when user swipes from start to end on its container. The slot must be a &lt;template> element.</p>
+ * <p>The <code class="prettyprint">start</code> slot is used to specify the action bar options that appear when user swipes from start to end on its container. The slot must be a &lt;template> element.</p>
  *
  * <p>When the template is executed, it will have access to the parent binding context.  For example, in the case of ListView, $current should return the data of the row containing the swipe actions.</p>
  *
  * @ojstatus preview
  * @ojslot start
+ * @ojshortdesc The start slot is used to specify the action bar options that appear when user swipes from start to end on its container. See the Help documentation for more information.
  * @memberof oj.ojSwipeActions
  *
  * @example <caption>Initialize the SwipeActions with a set of options that appears when user swipes from start to end:</caption>
@@ -749,12 +759,13 @@ var __oj_swipe_actions_metadata =
  */
 
 /**
- * <p>The <code class="prettyprint">end</code> slot is used to specify the action bar that appears when user swipes from end to start on its container. The slot must be a &lt;template> element.</p>
+ * <p>The <code class="prettyprint">end</code> slot is used to specify the action bar options that appear when user swipes from end to start on its container. The slot must be a &lt;template> element.</p>
  *
  * <p>When the template is executed, it will have access to the parent binding context.  For example, in the case of ListView, $current should return the data of the row containing the swipe actions.</p>
  *
  * @ojstatus preview
  * @ojslot end
+ * @ojshortdesc The end slot is used to specify the action bar options that appear when user swipes from end to start on its container. See the Help documentation for more information.
  * @memberof oj.ojSwipeActions
  *
  * @example <caption>Initialize the SwipeActions with a set of options that appears when user swipes from end to start:</caption>
@@ -852,9 +863,14 @@ var __oj_swipe_actions_metadata =
  *   </thead>
  *   <tbody>
  *     <tr>
+ *       <td>ListView Item</td>
+ *       <td><kbd>F2</kbd></td>
+ *       <td>If SwipeActions is a child of ListView, then pressing F2 key on the ListView item will focus on the SwipeActions, which cause it to display the show actions links for the start and end swipe actions.</td>
+ *     </tr>
+ *     <tr>
  *       <td>Show actions link</td>
  *       <td><kbd>Enter</kbd></td>
- *       <td>Shows the start/end swipe actions.</td>
+ *       <td>Reveals the start/end swipe actions.</td>
  *     </tr>
  *     <tr>
  *       <td>Hide actions link</td>

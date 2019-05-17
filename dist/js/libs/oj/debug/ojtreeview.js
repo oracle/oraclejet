@@ -3,12 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojkeyset', 'ojdnd'],
-    function(oj, $, Context, ThemeUtils, Components, AnimationUtils, Logger)
+define(['require', 'ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojconfig', 'ojs/ojkeyset', 'ojdnd'],
+    function(localRequire, oj, $, Context, ThemeUtils, Components, AnimationUtils, Logger, Config)
 {
- 
-
+  "use strict";
 var __oj_tree_view_metadata = 
 {
   "properties": {
@@ -18,7 +16,7 @@ var __oj_tree_view_metadata =
       "readOnly": true
     },
     "data": {
-      "type": "oj.TreeDataSource"
+      "type": "object"
     },
     "dnd": {
       "type": "object",
@@ -81,91 +79,13 @@ var __oj_tree_view_metadata =
       "type": "object",
       "properties": {
         "focusable": {
-          "type": "function",
-          "properties": {
-            "componentElement": {
-              "type": "Element"
-            },
-            "data": {
-              "type": "D"
-            },
-            "depth": {
-              "type": "number"
-            },
-            "index": {
-              "type": "number"
-            },
-            "key": {
-              "type": "K"
-            },
-            "leaf": {
-              "type": "boolean"
-            },
-            "parentElement": {
-              "type": "Element"
-            },
-            "parentKey": {
-              "type": "K"
-            }
-          }
+          "type": "function"
         },
         "renderer": {
-          "type": "function",
-          "properties": {
-            "componentElement": {
-              "type": "Element"
-            },
-            "data": {
-              "type": "D"
-            },
-            "depth": {
-              "type": "number"
-            },
-            "index": {
-              "type": "number"
-            },
-            "key": {
-              "type": "K"
-            },
-            "leaf": {
-              "type": "boolean"
-            },
-            "parentElement": {
-              "type": "Element"
-            },
-            "parentKey": {
-              "type": "K"
-            }
-          }
+          "type": "function"
         },
         "selectable": {
-          "type": "function",
-          "properties": {
-            "componentElement": {
-              "type": "Element"
-            },
-            "data": {
-              "type": "D"
-            },
-            "depth": {
-              "type": "number"
-            },
-            "index": {
-              "type": "number"
-            },
-            "key": {
-              "type": "K"
-            },
-            "leaf": {
-              "type": "boolean"
-            },
-            "parentElement": {
-              "type": "Element"
-            },
-            "parentKey": {
-              "type": "K"
-            }
-          }
+          "type": "function"
         }
       }
     },
@@ -208,16 +128,17 @@ var __oj_tree_view_metadata =
   },
   "extension": {}
 };
-/* global Set:false, Components:false, Logger:false, ThemeUtils:false, Context:false */
+/* global Set:false, Components:false, Logger:false, ThemeUtils:false, Context:false, Promise:false, Symbol:false, Config:false, localRequire:false*/
 
 /**
  * @ojcomponent oj.ojTreeView
  * @augments oj.baseComponent
  * @since 4.0.0
  * @ojstatus preview
- * @ojshortdesc Displays hierarchical relationships between the items in a tree.
- * @ojtsignore
+ * @ojshortdesc A tree view displays hierarchical relationships between items.
  * @ojrole tree
+ * @ojtsimport {module: "ojtreedataprovider", type: "AMD", importName: "TreeDataProvider"}
+ * @ojtsimport {module: "ojkeyset", type: "AMD", imported: ["KeySet"]}
  * @ojsignature [{
  *                target: "Type",
  *                value: "class ojTreeView<K, D> extends baseComponent<ojTreeViewSettableProperties<K,D>>",
@@ -241,8 +162,14 @@ var __oj_tree_view_metadata =
  *   Data
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#data-section"></a>
  * </h3>
- * <p>The JET TreeView gets its data in two different ways. The first way is from a TreeDataSource. There are two types
- * of TreeDataSource that are available out of the box:</p>
+ * <p>The JET TreeView gets its data in two different ways. The first way is from a TreeDataProvider or TreeDataSource.
+ * There is one TreeDataProvider available out of the box:</p>
+ * <ul>
+ * <li><b>oj.ArrayTreeDataProvider</b> - Use this when the underlying data is an array.
+ *  See the documentation for <a href="oj.ArrayTreeDataProvider.html">oj.ArrayTreeDataProvider</a>
+ * for more details on the available options.</li>
+ * </ul>
+ * <p>There are two types of TreeDataSource that are available out of the box:</p>
  * <ul>
  * <li><b>oj.JsonTreeDataSource</b> - Use this when the underlying data is a JSON object.
  * See the documentation for <a href="oj.JsonTreeDataSource.html">oj.JsonTreeDataSource</a>
@@ -376,7 +303,7 @@ var __oj_tree_view_metadata =
  * <h4>Expand All</h4>
  * <p>While TreeView provides a convenient way to initially expand all parent items in the TreeView, it might have an impact
  * on the initial rendering performance since expanding each parent item might cause a fetch from the server depending on
- * the TreeDataSource. Other factors that could impact performance includes the depth of the tree, and the number of children
+ * the TreeDataProvider or TreeDataSource. Other factors that could impact performance includes the depth of the tree, and the number of children
  * in each level.</p>
  *
  * <h3 id="animation-section">
@@ -434,30 +361,49 @@ var __oj_tree_view_metadata =
          * @type {any}
          * @instance
          * @memberof! oj.ojTreeView
+         * @ojshortdesc Read-only property used for retrieving the key of the item that currently has focus.
          * @readonly
          * @ojwriteback
          * @ojsignature {target:"Type", value:"K"}
          *
-         * @example <caption>Get the current item:</caption>
-         * myTreeView.currentItem;
+         *
+         * @example <caption>Initialize the TreeView with the <code class="prettyprint">current-item</code> attribute specified:</caption>
+         * &lt;oj-tree-view current-item='{{myCurrentItem}}'>&lt;/oj-tree-view>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">currentItem</code> property after initialization:</caption>
+         * // getter
+         * var currentItemValue = myTreeView.currentItem;
+         *
+         * // setter
+         * myTreeView.currentItem = "item2";
          */
         currentItem: null,
 
         /**
-         * The data source for the TreeView. Accepts an instance of oj.TreeDataSource.
+         * The data source for the TreeView. Accepts an instance of oj.TreeDataProvider or oj.TreeDataSource.
          * See the data source section in the introduction for out of the box data source types.
          * If the data attribute is not specified, the child elements are used as content. If there's no
          * content specified, then an empty list is rendered.
          *
          * @expose
          * @public
-         * @type {oj.TreeDataSource}
+         * @type {Object}
          * @instance
          * @memberof! oj.ojTreeView
+         * @ojshortdesc Specifies the data for the tree. See the Help documentation for more information.
          * @default null
+         * @ojsignature [{target: "Type", value: "oj.TreeDataProvider<K, D>"},
+         *               {target: "Type", value: "oj.TreeDataSource|oj.TreeDataProvider", consumedBy:"js"}]
          *
-         * @example <caption>Initialize the TreeView with an oj.Collection:</caption>
-         * myTreeView.data = new oj.CollectionTableDataSource(collection);
+         * @example <caption>Initialize the TreeView with the <code class="prettyprint">data</code> attribute specified:</caption>
+         * &lt;oj-tree-view data='{{myDataProvider}}'>&lt;/oj-tree-view>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">data</code> property after initialization:</caption>
+         * // getter
+         * var dataValue = myTreeView.data;
+         *
+         * // setter
+         * myTreeView.data = new oj.ArrayTreeDataProvider(myArray);
          */
         data: null,
 
@@ -468,6 +414,7 @@ var __oj_tree_view_metadata =
          *
          * @expose
          * @memberof! oj.ojTreeView
+         * @ojshortdesc Customizes the drag and drop functionality. See the Help documentation for more information.
          * @type {Object}
          * @instance
          */
@@ -476,12 +423,13 @@ var __oj_tree_view_metadata =
            * @expose
            * @alias dnd.drag
            * @memberof! oj.ojTreeView
+           * @ojshortdesc Customizes the drag functionality.
            * @instance
            * @type {Object}
            * @ojsignature {target: "Type", value: "?"}
            * @default null
            * @property {Object} items If this object is specified, TreeView will initiate drag operation when the user drags on an item.
-           * @property {string|Array.<string>} [items.dataTypes] (optional) The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one
+           * @property {string|Array.<string>} [items.dataTypes] The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one
            * type, or an array of strings if multiple types are needed.<br><br>
            * For example, if selected items of employee data are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide
            * whether to accept the data. A text input may only accept "text" data type, while a chart for displaying employee data may be configured to accept the "application/employees+json" type.<br><br>
@@ -489,16 +437,16 @@ var __oj_tree_view_metadata =
            * is an array of objects, with each object representing a model object from the underlying data source. For example, if the underlying data is an oj.Collection, then this
            * would be a oj.Model object. Note that when static HTML is used, then the value would be the HTML string of the selected item.<br><br>
            * This property is required unless the application calls setData itself in a dragStart callback function.
-           * @property {function(Event, {items: Array.<D>}):void} [items.dragStart] (optional) A callback function that receives the "dragstart" event and context information as arguments:<br><br>
+           * @property {function(Event, {items: Array.<D>}):void} [items.dragStart] A callback function that receives the "dragstart" event and context information as arguments:<br><br>
            * <code class="prettyprint">function(event, context)</code><br><br>
            * All of the event payloads listed below can be found under the <code class="prettyprint">context</code> argument.
            * <ul><li><code class="prettyprint">items</code>: An array of objects, with each object representing the data of one selected item.</li></ul><br>
            * This function can set its own data and drag image as needed. If dataTypes is specified, event.dataTransfer is already populated with the default data when this function is invoked.
            * If dataTypes is not specified, this function must call event.dataTransfer.setData to set the data or else the drag operation will be cancelled. In either case, the drag image is
            * set to an image of the dragged items on the TreeView.
-           * @property {function(Event):void} [items.drag] (optional) A callback function that receives the "drag" event as argument:<br><br>
+           * @property {function(Event):void} [items.drag] A callback function that receives the "drag" event as argument:<br><br>
            * <code class="prettyprint">function(event)</code><br><br>
-           * @property {function(Event):void} [items.dragEnd] (optional) A callback function that receives the "dragend" event as argument:<br><br>
+           * @property {function(Event):void} [items.dragEnd] A callback function that receives the "dragend" event as argument:<br><br>
            * <code class="prettyprint">function(event)</code><br><br>
            *
            * @ojsignature {target: "Type",
@@ -522,6 +470,7 @@ var __oj_tree_view_metadata =
            * @expose
            * @alias dnd.drop
            * @memberof! oj.ojTreeView
+           * @ojshortdesc Customizes the drop functionality.
            * @instance
            * @type {Object}
            * @ojsignature {target: "Type", value: "?"}
@@ -529,25 +478,25 @@ var __oj_tree_view_metadata =
            * @property {Object} items  An object that specifies callback functions to handle dropping items<br><br>
            * @property {string|Array.<string>} [items.dataTypes] A data type or an array of data types this component can accept.<br><br>
            * This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
-           * @property {function(Event, {item: Element}):void} [items.dragEnter] (optional) A callback function that receives the "dragenter" event and context information as arguments:<br><br>
+           * @property {function(Event, {item: Element}):void} [items.dragEnter] A callback function that receives the "dragenter" event and context information as arguments:<br><br>
            * <code class="prettyprint">function(event, context)</code><br><br>
            * All of the event payloads listed below can be found under the <code class="prettyprint">context</code> argument.
            * <ul><li><code class="prettyprint">item</code>: The item being entered.</li></ul><br>
            * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
            * Otherwise, dataTypes will be matched against the drag dataTypes to determine if the data is acceptable. If there is a match, <code class="prettyprint">event.preventDefault()</code>
            * will be called to indicate that the data can be accepted.
-           * @property {function(Event, {item: Element}):void} [items.dragOver] (optional) A callback function that receives the "dragover" event and context information as arguments:<br><br>
+           * @property {function(Event, {item: Element}):void} [items.dragOver] A callback function that receives the "dragover" event and context information as arguments:<br><br>
            * <code class="prettyprint">function(event, context)</code><br><br>
            * All of the event payloads listed below can be found under the <code class="prettyprint">context</code> argument.
            * <ul><li><code class="prettyprint">item</code>: The item being dragged over.</li></ul><br>
            * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
            * Otherwise, dataTypes will be matched against the drag dataTypes to determine if the data is acceptable. If there is a match, <code class="prettyprint">event.preventDefault()</code>
            * will be called to indicate that the data can be accepted.
-           * @property {function(Event, {item: Element}):void} [items.dragLeave] (optional) A callback function that receives the "dragleave" event and context information as arguments:<br><br>
+           * @property {function(Event, {item: Element}):void} [items.dragLeave] A callback function that receives the "dragleave" event and context information as arguments:<br><br>
            * <code class="prettyprint">function(event, context)</code><br><br>
            * All of the event payloads listed below can be found under the <code class="prettyprint">context</code> argument.
            * <ul><li><code class="prettyprint">item</code>: The item that was last entered.</li></ul><br>
-           * @property {function(Event, oj.ojTreeView.ItemsDropOnDropContext):void} items.drop (required) A callback function that receives the "drop" event and context information as arguments:<br><br>
+           * @property {function(Event, oj.ojTreeView.ItemsDropOnDropContext):void} items.drop A required callback function that receives the "drop" event and context information as arguments:<br><br>
            * <code class="prettyprint">function(event, context)</code><br><br>
            * All of the event payloads listed below can be found under the <code class="prettyprint">context</code> argument.
            * <ul><li><code class="prettyprint">item</code>: The item being dropped on.</li>
@@ -583,6 +532,7 @@ var __oj_tree_view_metadata =
          *
          * @expose
          * @memberof! oj.ojTreeView
+         * @ojshortdesc Specifies the key set containing the keys of the items that should be expanded. See the Help documentation for more information.
          * @instance
          * @type {KeySet}
          * @default new ExpandedKeySet()
@@ -591,6 +541,9 @@ var __oj_tree_view_metadata =
          *
          * @example <caption>Initialize the TreeView with some expanded items:</caption>
          * myTreeView.expanded = new keySet.ExpandedKeySet(['item1', 'item2']);
+         *
+         * @example <caption>Initialize the TreeView with all items expanded:</caption>
+         * myListView.expanded = new ExpandAllKeySet();
          */
         expanded: new oj.ExpandedKeySet(),
 
@@ -599,6 +552,7 @@ var __oj_tree_view_metadata =
          *
          * @expose
          * @memberof! oj.ojTreeView
+         * @ojshortdesc Customizes the functionality of each item in the tree.
          * @type {Object}
          * @instance
          */
@@ -625,6 +579,7 @@ var __oj_tree_view_metadata =
            *
            * @expose
            * @alias item.focusable
+           * @ojshortdesc Specifies whether the item can receive keyboard focus. See the Help documentation for more information.
            * @memberof! oj.ojTreeView
            * @instance
            * @type {function(Object):boolean|null}
@@ -654,6 +609,7 @@ var __oj_tree_view_metadata =
            *
            * @expose
            * @alias item.renderer
+           * @ojshortdesc Specifies the renderer for the item. See the Help documentation for more information.
            * @memberof! oj.ojTreeView
            * @instance
            * @type {function(Object):Object|null}
@@ -663,10 +619,14 @@ var __oj_tree_view_metadata =
            * @default null
            *
            * @example <caption>Initialize the TreeView with a renderer:</caption>
-           * myTreeView.setProperty('item.renderer', function(itemContext)
-           * {
-           *   return itemContext['data'].get('FIRST_NAME');
-           * });
+           * &lt;oj-tree-view item.renderer='{{myRendererFunc}}'>&lt;/oj-tree-view>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">renderer</code> property after initialization:</caption>
+           * // getter
+           * var renderer = myTreeView.item.renderer;
+           *
+           * // setter
+           * myTreeView.item.renderer = myRendererFunc;
            */
           renderer: null,
 
@@ -679,6 +639,7 @@ var __oj_tree_view_metadata =
            *
            * @expose
            * @alias item.selectable
+           * @ojshortdesc Specifies whether the item can be selected. See the Help documentation for more information.
            * @memberof! oj.ojTreeView
            * @instance
            * @type {function(Object):boolean|null}
@@ -687,11 +648,15 @@ var __oj_tree_view_metadata =
            *               jsdocOverride: true}
            * @default null
            *
-           * @example <caption>Initialize the TreeView such that only leaf items are selectable:</caption>
-           * myTreeView.setProperty('item.selectable', function(itemContext)
-           * {
-           *   return itemContext['leaf'];
-           * });
+           * @example <caption>Initialize the TreeView with the <code class="prettyprint">selectable</code> attribute specified:</caption>
+           * &lt;oj-tree-view item.selectable='{{mySelectableFunc}}'>&lt;/oj-tree-view>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">selectable</code> property after initialization:</caption>
+           * // getter
+           * var selectable = myTreeView.item.selectable;
+           *
+           * // setter
+           * myTreeView.item.selectable = mySelectableFunc;
            */
           selectable: null
         },
@@ -701,14 +666,22 @@ var __oj_tree_view_metadata =
          *
          * @expose
          * @memberof! oj.ojTreeView
+         * @ojshortdesc Specifies the current selections in the tree. An empty array indicates nothing is selected.
          * @instance
          * @type {Array.<any>}
          * @default []
          * @ojwriteback
          * @ojsignature {target:"Type", value:"Array<K>"}
          *
-         * @example <caption>Initialize the TreeView with specific selection:</caption>
-         * myTreeView.selection = ['item1', 'item2'];
+         * @example <caption>Initialize the TreeView with the <code class="prettyprint">selection</code> attribute specified:</caption>
+         * &lt;oj-tree-view selection='{{mySelection}}'>&lt;/oj-tree-view>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">selection</code> property after initialization:</caption>
+         * // getter
+         * var selectionValue = myTreeView.selection;
+         *
+         * // setter
+         * myTreeView.selection = ['item1', 'item2', 'item3'];
          */
         selection: [],
 
@@ -717,6 +690,7 @@ var __oj_tree_view_metadata =
          *
          * @expose
          * @memberof! oj.ojTreeView
+         * @ojshortdesc Specifies the selection mode.
          * @instance
          * @type {string}
          * @default "none"
@@ -724,7 +698,14 @@ var __oj_tree_view_metadata =
          * @ojvalue {string} "single" Only one item can be selected at a time.
          * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
          *
-         * @example <caption>Initialize the tree view to enable multiple selection:</caption>
+         * @example <caption>Initialize the TreeView with the <code class="prettyprint">selection-mode</code> attribute specified:</caption>
+         * &lt;oj-tree-view selection-mode='multiple'>&lt;/oj-tree-view>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">selectionMode</code> property after initialization:</caption>
+         * // getter
+         * var selectionModeValue = myTreeView.selectionMode;
+         *
+         * // setter
          * myTreeView.selectionMode = 'multiple';
          */
         selectionMode: 'none',
@@ -738,6 +719,7 @@ var __oj_tree_view_metadata =
          * @expose
          * @event
          * @memberof oj.ojTreeView
+         * @ojshortdesc Triggered when the default animation of a particular action has ended.
          * @instance
          * @property {'expand'|'collapse'} action The action that started the animation. See <a href="#animation-section">animation</a> section for a list of actions.
          * @property {Element} element The target of animation.
@@ -751,6 +733,7 @@ var __oj_tree_view_metadata =
          * @expose
          * @event
          * @memberof oj.ojTreeView
+         * @ojshortdesc Triggered when the default animation of a particular action is about to start.
          * @instance
          * @property {'expand'|'collapse'} action The action that starts the animation. See <a href="#animation-section">animation</a> section for a list of actions.
          * @property {Element} element The target of animation.
@@ -766,9 +749,12 @@ var __oj_tree_view_metadata =
          * @event
          * @ojcancelable
          * @memberof oj.ojTreeView
+         * @ojshortdesc Triggered before an item is collapsed.
          * @instance
          * @property {any} key The key of the item to be collapsed.
          * @property {Element} item The item to be collapsed.
+         * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"},
+         *               {target:"Type", value:"K", for:"key"}]
          */
         beforeCollapse: null,
 
@@ -780,11 +766,15 @@ var __oj_tree_view_metadata =
          * @event
          * @ojcancelable
          * @memberof oj.ojTreeView
+         * @ojshortdesc Triggered before the current item is changed.
          * @instance
          * @property {any} previousKey The key of the previous item.
          * @property {Element} previousItem The previous item.
          * @property {any} key The key of the new current item.
          * @property {Element} item The new current item.
+         * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"},
+         *               {target:"Type", value:"K", for:"previousKey"},
+         *               {target:"Type", value:"K", for:"key"}]
          */
         beforeCurrentItem: null,
 
@@ -796,9 +786,12 @@ var __oj_tree_view_metadata =
          * @event
          * @ojcancelable
          * @memberof oj.ojTreeView
+         * @ojshortdesc Triggered before an item is expanded.
          * @instance
          * @property {any} key The key of the item to be expanded.
          * @property {Element} item The item to be expanded.
+         * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"},
+         *               {target:"Type", value:"K", for:"key"}]
          */
         beforeExpand: null,
 
@@ -811,6 +804,8 @@ var __oj_tree_view_metadata =
          * @instance
          * @property {any} key The key of the item that was just collapsed.
          * @property {Element} item The item that was just collapsed.
+         * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"},
+         *               {target:"Type", value:"K", for:"key"}]
          */
         collapse: null,
 
@@ -823,6 +818,8 @@ var __oj_tree_view_metadata =
          * @instance
          * @property {any} key The key of the item that was just expanded.
          * @property {Element} item The item that was just expanded.
+         * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"},
+         *               {target:"Type", value:"K", for:"key"}]
          */
         expand: null
       },
@@ -889,6 +886,27 @@ var __oj_tree_view_metadata =
           }
         });
 
+        if (oj.DomUtils.isTouchSupported()) {
+          this.element[0].addEventListener('touchstart', function (event) {
+            self.touchStartEvent = event;
+          });
+
+          this.element[0].addEventListener('touchcancel', function () {
+            self.touchStartEvent = null;
+          });
+
+          this.element[0].addEventListener('touchend', function (event) {
+            if (self.touchStartEvent && event.changedTouches.length) {
+              var overElem = document.elementFromPoint(event.changedTouches[0].clientX,
+                event.changedTouches[0].clientY);
+              if (overElem !== self.touchStartEvent.target) {
+                self.touchStartEvent = null;
+              }
+            }
+            self._handleMouseOut(event);
+          });
+        }
+
         // Drop marker
         var dropMarkerIcon = $(document.createElement('span'))
             .addClass('oj-treeview-drop-marker-icon oj-component-icon');
@@ -920,10 +938,13 @@ var __oj_tree_view_metadata =
 
         if (this.options.data) {
           this.element.find('ul').remove();
-          this._fetchChildren(null, function (nodeSet) {
-            self._renderItems(nodeSet, self.element);
+          this._fetchChildren(null, function (response) {
+            var fetchListResult = response[0];
+            self._renderItems(fetchListResult.value, self.element);
             self._resetFocus();
             self.element.addClass('oj-complete');
+            self._decorateTree();
+            self._lastSelectedItem = null;
           });
         } else {
           this.element.find('ul').addClass('oj-treeview-list').attr('role', 'group');
@@ -933,12 +954,31 @@ var __oj_tree_view_metadata =
           });
           this._resetFocus();
           this.element.addClass('oj-complete');
+          this._decorateTree();
+          this._lastSelectedItem = null;
+        }
+      },
+      _getDataProvider: function () {
+        var self = this;
+        var data;
+        if (self.m_dataSource == null) {
+          data = self.options.data;
+          if (!oj.DataProviderFeatureChecker.isTreeDataProvider(data)) {
+            var adapterPromise = oj.__getRequirePromise('./ojtreedataprovideradapter', localRequire);
+            if (!adapterPromise) {
+              throw new Error('Cannot adapt a TreeDataSource if require() is not available');
+            }
+
+            return adapterPromise.then(function (TreeDataSourceAdapter) {
+              return new TreeDataSourceAdapter(data);
+            });
+          }
+        } else {
+          data = self.m_dataSource;
         }
 
-        this._decorateTree();
-        this._lastSelectedItem = null;
+        return Promise.resolve(data);
       },
-
       /**
        * Fetch the children of a parent item from the data source.
        * @param {string} parentKey The key of the parent item.
@@ -947,90 +987,149 @@ var __oj_tree_view_metadata =
        */
       _fetchChildren: function (parentKey, successFunc) {
         var self = this;
-        var dataSource = self.options.data;
-        var range = { start: 0, count: dataSource.getChildCount(parentKey) };
-        var busyResolve = this._addBusyState('fetching data');
+        var dataProviderPromiseBusyResolve = self._addBusyState('getting data provider');
+        var dataProviderPromise = self._getDataProvider();
+        dataProviderPromise.then(function (dataProvider) {
+          self.m_dataSource = dataProvider;
+          dataProviderPromiseBusyResolve();
 
-        dataSource.fetchChildren(parentKey, range, {
-          success: function (nodeSet) {
-            successFunc(nodeSet);
-            busyResolve();
-          },
-          error: function (status) {
-            Logger.error(status);
-            busyResolve();
+          var childDataProvider = parentKey === null ? dataProvider :
+            dataProvider.getChildDataProvider(parentKey);
+          if (childDataProvider != null) {
+            var busyResolve = self._addBusyState('fetching data');
+
+            var enginePromise = self._loadTemplateEngine();
+            // size -1 to fetch all rows
+            var dataProviderAsyncIterator =
+              childDataProvider.fetchFirst({ size: -1 })[Symbol.asyncIterator]();
+            var promise = dataProviderAsyncIterator.next();
+
+            // new helper function to be called in recursion to fetch all data.
+            var helperFunction = function (values) {
+              // skip additional fetching if done
+              if (values[0].done) {
+                return values;
+              }
+              var nextPromise = dataProviderAsyncIterator.next();
+              var fetchMoreData = nextPromise.then(function (value) {
+                // eslint-disable-next-line no-param-reassign
+                values[0].done = value.done;
+                // eslint-disable-next-line no-param-reassign
+                values[0].value.data = values[0].value.data.concat(value.value.data);
+                // eslint-disable-next-line no-param-reassign
+                values[0].value.metadata = values[0].value.metadata.concat(value.value.metadata);
+                return helperFunction(values);
+              }, function (reason) {
+                Logger.error('Error fetching data: ' + reason);
+                busyResolve();
+              });
+              return (fetchMoreData);
+            };
+
+            Promise.all([promise, enginePromise]).then(function (values) {
+              return helperFunction(values);
+            }, function (reason) {
+              Logger.error('Error fetching data: ' + reason);
+              busyResolve();
+            }).then(function (values) {
+              successFunc(values);
+              busyResolve();
+            });
           }
+        }, function (reason) {
+          Logger.error('Error fetching data: ' + reason);
+          dataProviderPromiseBusyResolve();
         });
       },
 
       /**
        * Render the TreeView items after the data is fetched.
-       * @param {oj.JsonNodeSet|oj.CollectionNodeSet} nodeSet The array of item data returned by the data source.
+       * @param {oj.FetchListResult} fetchListResult The array of item data returned by the data source.
        * @param {jQuery} parentElem The parent element to append the items to.
        * @private
        */
-      _renderItems: function (nodeSet, parentElem) {
+      _renderItems: function (fetchListResult, parentElem) {
         var ulElem = $(document.createElement('ul'))
             .addClass('oj-treeview-list')
             .attr('role', 'group')
             .appendTo(parentElem); // @HTMLUpdateOK
 
-        for (var i = 0; i < nodeSet.getCount(); i++) {
-          this._renderItem(ulElem, nodeSet, i);
+        for (var i = 0; i < fetchListResult.data.length; i++) {
+          this._renderItem(ulElem, fetchListResult, i);
         }
       },
 
       /**
        * Render a TreeView item after the data is fetched.
        * @param {jQuery} ulElem The <ul> to attach the item to.
-       * @param {oj.JsonNodeSet|oj.CollectionNodeSet} nodeSet The array of item data returned by the data source.
+       * @param {oj.FetchListResult} fetchListResult The array of item data returned by the data source.
        * @param {number} index The index of the item.
        * @private
        */
-      _renderItem: function (ulElem, nodeSet, index) {
+      _renderItem: function (ulElem, fetchListResult, index, insertIndex, replace) {
         var self = this;
+        var i;
+        var textWrapper;
 
         // eslint-disable-next-line no-param-reassign
-        index += nodeSet.getStart();
-        var data = nodeSet.getData(index);
-        var metadata = nodeSet.getMetadata(index);
+        // index += nodeSet.getStart();
+        var data = fetchListResult.data[index];
+        var metadata = fetchListResult.metadata[index];
         var key = metadata.key;
 
         // Prevent infinite recursion due to duplicated keys ()
-        if (this._keyList.has(key)) {
-          throw new Error('JET TreeView nodes should not have duplicated keys: ' + key);
+        if (!replace) {
+          if (this._keyList.has(key)) {
+            throw new Error('JET TreeView nodes should not have duplicated keys: ' + key);
+          }
+          this._keyList.add(key);
         }
-        this._keyList.add(key);
+
+        var liElem = $(document.createElement('li'))
+            .attr('id', key);
+
+        if (replace) {
+          var oldElem = this._getItemByKey(key)[0];
+          // eslint-disable-next-line no-param-reassign
+          ulElem = $(oldElem.parentNode);
+          oldElem.parentNode.replaceChild(liElem[0], oldElem); // @HTMLUpdateOK
+        } else if (insertIndex == null || insertIndex >= ulElem.children().length) {
+          liElem.appendTo(ulElem);  // @HTMLUpdateOK
+        } else {
+          liElem.insertBefore(ulElem.children()[insertIndex]); // @HTMLUpdateOK
+        }
+
+        var context = {};
+        context.parentElement = liElem;
+        context.index = index;
+        context.data = data;
+        context.datasource = self.options.data;
+        context.parentKey = self._getKey(self._getParentItem(liElem));
+
+        context.component = Components.__GetWidgetConstructor(self.element);
+        if (self._FixRendererContext) {
+          context = self._FixRendererContext(context);
+        }
+
+        // dataSource always set by this point as it is post fetch
+        var childDataProvider = self.m_dataSource.getChildDataProvider(key);
+        metadata.leaf = (childDataProvider === null ||
+          childDataProvider.isEmpty() === 'yes');
+        metadata.depth = this._getDepth(liElem[0]);
+
+        // Merge properties from metadata into item context
+        var props = Object.keys(metadata);
+        for (i = 0; i < props.length; i++) {
+          var prop = props[i];
+          context[prop] = metadata[prop];
+        }
 
         var renderer = self.options.item.renderer;
         renderer = self._WrapCustomElementRenderer(renderer);
+        var templateElement = this._getItemTemplate();
+        var templateEngine = this._getTemplateEngine();
 
-        var liElem = $(document.createElement('li'))
-            .attr('id', key)
-            .appendTo(ulElem); // @HTMLUpdateOK
-
-        if (renderer) {
-          // TODO: store index somewhere to return in the context
-
-          var context = {};
-          context.parentElement = liElem;
-          context.index = index;
-          context.data = data;
-          context.datasource = self.options.data;
-          context.parentKey = self._getKey(self._getParentItem(liElem));
-
-          context.component = Components.__GetWidgetConstructor(self.element);
-          if (self._FixRendererContext) {
-            context = self._FixRendererContext(context);
-          }
-
-          // Merge properties from metadata into item context
-          var props = Object.keys(metadata);
-          for (var i = 0; i < props.length; i++) {
-            var prop = props[i];
-            context[prop] = metadata[prop];
-          }
-
+        if (renderer != null) {
           var content = renderer.call(self, context);
           if (content != null) {
             // Allow return of document fragment from jQuery create or JS document.createDocumentFragment
@@ -1039,26 +1138,120 @@ var __oj_tree_view_metadata =
             } else if (content.parentNode != null) {
               // Parent node exists, do nothing
             } else if (content.toString) {
-              var textWrapper = document.createElement('span');
+              textWrapper = document.createElement('span');
               textWrapper.appendChild(document.createTextNode(content.toString())); // @HTMLUpdateOK
               liElem.append(textWrapper); // @HTMLUpdateOK
             }
           }
-
-          // Get the item from root again as template replaces the item element
-          liElem = ulElem.children().eq(index);
-          context.parentElement = liElem;
-
-          // Set id on the liElem if not set by the renderer
-          if (liElem.attr('id') == null) {
-            liElem.attr('id', key);
+        } else if (templateElement != null && templateEngine != null) {
+          var componentElement = self.element[0];
+          var nodes = templateEngine.execute(componentElement, templateElement, context, null);
+          for (i = 0; i < nodes.length; i++) {
+            if (nodes[i].tagName === 'LI') {
+              liElem.replaceWith(nodes[i]);
+              break;
+            } else {
+              liElem.append(nodes[i]);
+            }
           }
+        } else {
+          textWrapper = document.createElement('span');
+          textWrapper.appendChild(document.createTextNode(data == null ? '' : data.toString())); // @HTMLUpdateOK
+          liElem.append(textWrapper); // @HTMLUpdateOK
+        }
+
+        // Get the item from root again as template replaces the item element
+        liElem = ulElem.children().eq(insertIndex != null ? insertIndex : index);
+        context.parentElement = liElem;
+
+        // Set id on the liElem if not set by the renderer
+        if (liElem.attr('id') == null) {
+          liElem.attr('id', key);
         }
 
         // Cache data and metadata for lookup
         liElem.data('data', data).data('metadata', metadata);
 
         self._decorateItem(liElem);
+      },
+
+      /**
+       * @param {Element} elem The li element to get depth of.
+       * @return {number} depth from the li, 1 is top level
+       * @private
+       * @memberof oj.ojTreeView
+       */
+      _getDepth: function (elem) {
+        var depth = 0;
+        var curr = elem;
+        while (curr && curr !== this.element[0]) {
+          curr = curr.parentElement.parentElement;
+          depth += 1;
+        }
+        return depth;
+      },
+
+      /**
+       * Initiate loading of the template engine.  An error is thrown if the template engine failed to load.
+       * @return {Promise} resolves to the template engine, or null if:
+       *                   1) there's no need because no item template is specified
+       *                   2) a renderer is present which takes precedence
+       * @private
+       * @memberof oj.ojTreeView
+       */
+      _loadTemplateEngine: function () {
+        var self = this;
+
+        if (this._getItemTemplate() != null && self.options.item.renderer == null) {
+          return new Promise(function (resolve) {
+            Config.__getTemplateEngine().then(function (engine) {
+              self.m_engine = engine;
+              resolve(engine);
+            }, function (reason) {
+              throw new Error('Error loading template engine: ' + reason);
+            });
+          });
+        }
+
+        return Promise.resolve(null);
+      },
+
+      /**
+       * Retrieve the template engine, returns null if it has not been loaded yet
+       * @private
+       * @memberof oj.ojTreeView
+       */
+      _getTemplateEngine: function () {
+        return this.m_engine;
+      },
+
+      /**
+       * Returns the inline template element inside oj-list-view
+       * @return {Element|null} the inline tmeplate element
+       * @private
+       * @memberof oj.ojTreeView
+       */
+      _getItemTemplate: function () {
+        if (this.m_template === undefined) {
+          // cache the template, assuming replacing template will require refresh
+          this.m_template = null;
+          var slotMap = this._getSlotMap();
+          var slot = slotMap.itemTemplate;
+          if (slot && slot.length > 0 && slot[0].tagName.toLowerCase() === 'template') {
+            this.m_template = slot[0];
+          }
+        }
+        return this.m_template;
+      },
+
+      /**
+       * Returns the slot map object.
+       * @return {object} slot Map
+       * @private
+       * @memberof oj.ojTreeView
+       */
+      _getSlotMap: function () {
+        return oj.BaseCustomElementBridge.getSlotMap(this.element[0]);
       },
 
       /**
@@ -1311,8 +1504,9 @@ var __oj_tree_view_metadata =
 
         var subtree = this._getSubtree(item);
         if (subtree.length === 0) {
-          self._fetchChildren(self._getKey(item), function (nodeSet) {
-            self._renderItems(nodeSet, item);
+          this._fetchChildren(self._getKey(item), function (response) {
+            var fetchListResult = response[0];
+            self._renderItems(fetchListResult.value, item);
             self._expandAfterFetch(item, animate, event);
           });
           return;
@@ -1334,7 +1528,7 @@ var __oj_tree_view_metadata =
         item.removeClass('oj-collapsed').addClass('oj-expanded').attr('aria-expanded', 'true');
 
         var subtree = this._getSubtree(item);
-        subtree.css('max-height', 'none');
+        subtree.css('display', 'block');
 
         if (animate) {
           var busyResolve = this._addBusyState('animating expand');
@@ -1386,7 +1580,7 @@ var __oj_tree_view_metadata =
           item.addClass('oj-treeview-animated'); // animation flag
 
           this._startAnimation(subtree, 'collapse').then(function () {
-            subtree.css('max-height', 0);
+            subtree.css('display', 'none');
             item.removeClass('oj-treeview-animated');
             self._trigger('collapse', event, self._getEventPayload(item));
 
@@ -1398,7 +1592,7 @@ var __oj_tree_view_metadata =
             busyResolve();
           });
         } else {
-          subtree.css('max-height', 0);
+          subtree.css('display', 'none');
         }
       },
 
@@ -1488,7 +1682,10 @@ var __oj_tree_view_metadata =
         var isSelected = this._isSelected(item);
 
         if (event) {
-          var isTouch = oj.DomUtils.isTouchSupported();
+          var sourceCapabilityTouch = event.originalEvent.sourceCapabilities &&
+            event.originalEvent.sourceCapabilities.firesTouchEvents;
+          var isTouch = oj.DomUtils.isTouchSupported() && (sourceCapabilityTouch ||
+            (this.touchStartEvent != null && this.touchStartEvent.target === event.target));
           var isMetaKey = oj.DomUtils.isMetaKeyPressed(event);
           var isMultiple = selectionMode === 'multiple';
           var isNavigation = event.keyCode === 40 || event.keyCode === 38;
@@ -1741,6 +1938,7 @@ var __oj_tree_view_metadata =
           } else {
             this._expand(item, true, event);
           }
+          this.touchStartEvent = null;
           return;
         }
 
@@ -1750,6 +1948,7 @@ var __oj_tree_view_metadata =
           item = itemContent.parent();
           this._select(item, event);
           this._focus(item, event);
+          this.touchStartEvent = null;
           return;
         }
 
@@ -1760,6 +1959,8 @@ var __oj_tree_view_metadata =
           this._lastSelectedItem = null;
           this._userOptionChange('selection', [], event);
         }
+
+        this.touchStartEvent = null;
       },
 
       /**
@@ -1769,7 +1970,7 @@ var __oj_tree_view_metadata =
        */
       _handleMouseOver: function (event) {
         // Don't add hover effect for touch
-        if (oj.DomUtils.isTouchSupported()) {
+        if (oj.DomUtils.isTouchSupported() && this.touchStartEvent) {
           return;
         }
 
@@ -1790,11 +1991,6 @@ var __oj_tree_view_metadata =
        * @private
        */
       _handleMouseOut: function (event) {
-        // Don't add hover effect for touch
-        if (oj.DomUtils.isTouchSupported()) {
-          return;
-        }
-
         var target = this._getClosestDisclosureIcon($(event.target));
         target.removeClass('oj-selected');
 
@@ -2201,6 +2397,10 @@ var __oj_tree_view_metadata =
       refresh: function () {
         this._super();
 
+        delete this.m_template;
+        delete this.m_engine;
+        delete this.m_dataSource;
+
         this._render();
       },
 
@@ -2256,6 +2456,7 @@ var __oj_tree_view_metadata =
        * @expose
        * @instance
        * @memberof oj.ojTreeView
+       * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
        */
       getContextByNode: function (node) {
         if (!$.contains(this.element[0], node)) {
@@ -2327,12 +2528,160 @@ var __oj_tree_view_metadata =
           this.refresh();
         }
       },
-
+      _SetupResources: function () {
+        this._super();
+        this._addDataProviderEventListeners();
+      },
+      _ReleaseResources: function () {
+        this._super();
+        this._removeDataProviderEventListeners();
+      },
       // @inheritdoc
       _destroy: function () {
         // TODO
+        this._removeDataProviderEventListeners();
         // Call super at the end for destroy.
         this._super();
+      },
+      _addDataProviderEventListeners: function () {
+        var dataProvider = this.options.data;
+        if (dataProvider &&
+          oj.DataProviderFeatureChecker.isTreeDataProvider(dataProvider)) {
+          this.m_handleModelMutateEventListener = this.handleModelMutateEvent.bind(this);
+          this.m_handleModelRefreshEventListener = this.handleModelRefreshEvent.bind(this);
+
+          dataProvider.addEventListener('mutate', this.m_handleModelMutateEventListener);
+          dataProvider.addEventListener('refresh', this.m_handleModelRefreshEventListener);
+        }
+      },
+      _removeDataProviderEventListeners: function () {
+        var dataProvider = this.options.data;
+        if (dataProvider && oj.DataProviderFeatureChecker.isTreeDataProvider(dataProvider)) {
+          dataProvider.removeEventListener('mutate', this.m_handleModelMutateEventListener);
+          dataProvider.removeEventListener('refresh', this.m_handleModelRefreshEventListener);
+        }
+      },
+      handleModelMutateEvent: function (event) {
+        if (event.detail.remove != null) {
+          this.handleModelRemoveEvent(event);
+        }
+        if (event.detail.add != null) {
+          this.handleModelAddEvent(event);
+        }
+        if (event.detail.update != null) {
+          this.handleModelChangeEvent(event);
+        }
+      },
+      handleModelRemoveEvent: function (event) {
+        var self = this;
+        var keys = event.detail.remove.keys;
+        var removedKeys = [];
+        if (keys == null || keys.size === 0) {
+          return;
+        }
+
+        keys.forEach(function (key) {
+          removedKeys = removedKeys.concat(self._removeAllChildrenOfParentKey(key));
+        });
+
+        // checks whether the removed item is selected, and adjust the value as needed
+        var selected = this.options.selected;
+        if (selected != null) {
+          var newSelected = selected.delete(removedKeys);
+          // update selection option if it did changed
+          if (selected !== newSelected) {
+            this._userOptionChange('selection', newSelected, null);
+          }
+        }
+
+        // checks whether the removed item is expanded, and adjust the value as needed
+        var expanded = this.options.expanded;
+        if (expanded != null) {
+          var newExpanded = expanded.delete(removedKeys);
+          // update selection option if it did changed
+          if (expanded !== newExpanded) {
+            this._userOptionChange('expanded', newExpanded, null);
+          }
+        }
+
+        this._resetFocus();
+      },
+      _removeAllChildrenOfParentKey: function (key) {
+        var self = this;
+        var removedKeys = [];
+        var elem = this._getItemByKey(key);
+        var children = this._getChildItems(elem);
+        children.each(function (index, child) {
+          var childkey = self._getKey($(child));
+          var childKeys = self._removeAllChildrenOfParentKey(childkey);
+          removedKeys = removedKeys.concat(childKeys);
+        });
+        elem[0].parentNode.removeChild(elem[0]);
+        this._keyList.delete(key);
+        removedKeys.push(key);
+        return removedKeys;
+      },
+      handleModelAddEvent: function (event) {
+        var addEvent = event.detail.add;
+        var data = addEvent.data;
+        var metadata = addEvent.metadata;
+        var keys = [];
+        var afterKeys;
+        var parentKeys = addEvent.parentKeys;
+        var indexes = addEvent.indexes;
+        addEvent.keys.forEach(function (key) {
+          keys.push(key);
+        });
+        // afterKeys is deprecated, but continue to support it until we can remove it.
+        // forEach can be called on both array and set.
+        var afterKeyIter = addEvent.addBeforeKeys ? addEvent.addBeforeKeys : addEvent.afterKeys;
+        if (afterKeyIter) {
+          afterKeys = [];
+          afterKeyIter.forEach(function (key) {
+            afterKeys.push(key);
+          });
+        }
+
+        if (data != null && keys != null && keys.length > 0 && data.length > 0 &&
+          keys.length === data.length && (indexes == null || indexes.length === data.length)) {
+          for (var i = 0; i < data.length; i++) {
+            var index = (indexes == null) ? this._getIndex(afterKeys, i) + 1 : indexes[i];
+            var parentKey = parentKeys[i];
+            var subtree;
+            if (parentKey == null) {
+              subtree = this._getRoot();
+              this._renderItem(subtree, { data: [data[i]], metadata: [metadata[i]] }, 0, index);
+            } else if (this._isInitExpanded(parentKey)) {
+              var parentItem = this._getItemByKey(parentKey);
+              subtree = this._getSubtree();
+              if (subtree.length === 0) {
+                subtree = $(document.createElement('ul'))
+                .addClass('oj-treeview-list')
+                .attr('role', 'group')
+                .appendTo(parentItem);
+              }
+              this._renderItem(subtree, { data: [data[i]], metadata: [metadata[i]] }, 0, index);
+            }
+          }
+        }
+      },
+      handleModelChangeEvent: function (event) {
+        var changeEvent = event.detail.update;
+        var data = changeEvent.data;
+        var metadata = changeEvent.metadata;
+        var keys = changeEvent.keys;
+
+        for (var i = 0; i < data.length; i++) {
+          var elem = this._getItemByKey(keys[i]);
+          if (elem != null) {
+            this._renderItem(null, { data: [data[i]], metadata: [metadata[i]] }, 0, null, true);
+          }
+        }
+
+        this._resetFocus();
+      },
+      handleModelRefreshEvent: function () {
+        this.refresh();
       }
     });
 }());
@@ -2463,12 +2812,14 @@ var __oj_tree_view_metadata =
  *
  * @property {Element} componentElement The TreeView element.
  * @property {Object} data The data object for the item (not available for static content).
- * @property {oj.TreeDataSource} datasource A reference to the data source object (not available for static content).
+ * @property {oj.TreeDataProvider|oj.TreeDataSource} datasource A reference to the data source object (not available for static content).
  * @property {number} depth The depth of the item. The depth of the first level children under the invisible root is 1.
  * @property {number} index The index of the item relative to its parent, where 0 is the index of the first item.
  * @property {Object} key the key of the item.
  * @property {boolean} leaf Whether the item is a leaf item.
  * @property {Object} parentKey The key of the parent item. The parent key is null for root item.
+ * @ojsignature [{target:"Type", value:"oj.TreeDataProvider|oj.TreeDataSource", for:"datasource", consumedBy:"js"},
+ *               {target:"Type", value:"oj.TreeDataProvider", for:"datasource", consumedBy:"ts"}]
  *
  * @ojnodecontext oj-treeview-item
  * @memberof oj.ojTreeView
@@ -2487,17 +2838,49 @@ var __oj_tree_view_metadata =
  *   <tbody>
  *     <tr>
  *       <td>oj-treeview-item-text</td>
- *       <td>Use this class on the span providing the item text in the static markup or the item renderer.</td>
+ *       <td>Use this class on the span providing the item text in the static markup or the item renderer or template slot.</td>
  *     </tr>
  *     <tr>
  *       <td>oj-treeview-item-icon</td>
- *       <td>Use this class on the span providing the item icon in the static markup or the item renderer.</td>
+ *       <td>Use this class on the span providing the item icon in the static markup or the item renderer or template slot.</td>
  *     </tr>
  *   </tbody>
  * </table>
  *
  * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
  * @memberof oj.ojTreeView
+ */
+
+// Slots
+
+/**
+ * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the list. The slot must be a &lt;template> element.
+ * The content of the template could either include the &lt;li> element, in which case that will be used as
+ * the root of the item.  Or it can be just the content which excludes the &lt;li> element.</p>
+ * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
+ * <ul>
+ *   <li>$current - an object that contains information for the current item. (See the table below for a list of properties available on $current)</li>
+ *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+ * </ul>
+ * @ojstatus preview
+ * @ojslot itemTemplate
+ * @ojshortdesc The itemTemplate slot is used to specify the template for rendering each item in the tree. See the Help documentation for more information.
+ * @ojmaxitems 1
+ * @memberof oj.ojTreeView
+ * @property {Element} componentElement The &lt;oj-tree-view> custom element
+ * @property {Object} data The data for the current item being rendered
+ * @property {number} index The zero-based index of the curent item
+ * @property {any} key The key of the current item being rendered
+ * @property {number} depth The depth of the current item being rendered. The depth of the first level children under the invisible root is 1.
+ * @property {boolean} leaf True if the current item is a leaf node.
+ * @property {any} parentkey The key of the parent item. The parent key is null for root nodes.
+ *
+ * @example <caption>Initialize the TreeView with an inline item template specified:</caption>
+ * &lt;oj-tree-view>
+ *   &lt;template slot='itemTemplate'>
+ *     &lt;span>&lt;oj-bind-text value='[[$current.data.name]]'>&lt;/span>
+ *   &lt;template>
+ * &lt;/oj-tree-view>
  */
 
 /* global __oj_tree_view_metadata:false */

@@ -3,11 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore','ojs/ojbutton','ojs/ojmenu','ojs/ojlistview'], 
-       function(oj, $, ThemeUtils, Components)
+define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore','ojs/ojdatacollection-common','ojs/ojbutton','ojs/ojmenu','ojs/ojlistview'], 
+function(oj, $, ThemeUtils, Components, DataCollectionUtils)
 {
-
+  "use strict";
 var __oj_navigation_list_metadata = 
 {
   "properties": {
@@ -20,7 +19,7 @@ var __oj_navigation_list_metadata =
       "writeback": true
     },
     "data": {
-      "type": "oj.TableDataSource|oj.TreeDataSource|oj.DataProvider"
+      "type": "object"
     },
     "display": {
       "type": "string",
@@ -60,51 +59,11 @@ var __oj_navigation_list_metadata =
       "type": "object",
       "properties": {
         "renderer": {
-          "type": "function",
-          "properties": {
-            "componentElement": {
-              "type": "Element"
-            },
-            "datasource": {
-              "type": "oj.DataProvider<K, D>"
-            },
-            "index": {
-              "type": "number"
-            },
-            "key": {
-              "type": "any"
-            },
-            "data": {
-              "type": "any"
-            },
-            "parentElement": {
-              "type": "Element"
-            }
-          }
+          "type": "function"
         },
         "selectable": {
           "type": "function|boolean",
-          "value": true,
-          "properties": {
-            "componentElement": {
-              "type": "Element"
-            },
-            "datasource": {
-              "type": "oj.DataProvider<K, D>"
-            },
-            "index": {
-              "type": "number"
-            },
-            "key": {
-              "type": "any"
-            },
-            "data": {
-              "type": "any"
-            },
-            "parentElement": {
-              "type": "Element"
-            }
-          }
+          "value": true
         }
       }
     },
@@ -173,7 +132,7 @@ var __oj_tab_bar_metadata =
       "writeback": true
     },
     "data": {
-      "type": "oj.TableDataSource|oj.DataProvider"
+      "type": "object"
     },
     "display": {
       "type": "string",
@@ -197,51 +156,11 @@ var __oj_tab_bar_metadata =
       "type": "object",
       "properties": {
         "renderer": {
-          "type": "function",
-          "properties": {
-            "componentElement": {
-              "type": "Element"
-            },
-            "datasource": {
-              "type": "oj.DataProvider<K, D>"
-            },
-            "index": {
-              "type": "number"
-            },
-            "key": {
-              "type": "K"
-            },
-            "data": {
-              "type": "D"
-            },
-            "parentElement": {
-              "type": "Element"
-            }
-          }
+          "type": "function"
         },
         "selectable": {
           "type": "function|boolean",
-          "value": true,
-          "properties": {
-            "componentElement": {
-              "type": "Element"
-            },
-            "datasource": {
-              "type": "oj.DataProvider<K, D>"
-            },
-            "index": {
-              "type": "number"
-            },
-            "key": {
-              "type": "K"
-            },
-            "data": {
-              "type": "D"
-            },
-            "parentElement": {
-              "type": "Element"
-            }
-          }
+          "value": true
         }
       }
     },
@@ -654,8 +573,16 @@ oj.DefaultNavListHandler.prototype.HandleClick = function (event) {
 oj.DefaultNavListHandler.prototype.HandleKeydown = function (event) {
 
 };
+/**
+ * Invoked when item selection changed.
+ * @protected
+ */
+// eslint-disable-next-line no-unused-vars
+oj.DefaultNavListHandler.prototype.HandleSelectionChange = function (item) {
 
-/* global _ojNavigationListView:false */
+};
+
+/* global _ojNavigationListView:false, DataCollectionUtils:false */
 
 /**
  * Handler for Horizontal Navigation List
@@ -880,6 +807,16 @@ oj.HorizontalNavListHandler.prototype.SetOptions = function (options) {
   }
 };
 
+oj.HorizontalNavListHandler.prototype.HandleSelectionChange = function (item) {
+  if (this.m_overflowMenuItem) {
+    if (item.style.display === 'none') {
+      this._highlightUnhighlightMoreItem(true);
+    } else {
+      this._highlightUnhighlightMoreItem(false);
+    }
+  }
+};
+
 oj.HorizontalNavListHandler.prototype.GetAnimationEffect = function (action) {
   if (action === 'add' ||
       action === 'remove') {
@@ -998,7 +935,7 @@ oj.HorizontalNavListHandler.prototype.BeforeInsertItem = function () {
 };
 
 oj.HorizontalNavListHandler.prototype._fixContainerWidth = function () {
-  var root = this.m_widget.getRootElement();
+  var root = this.m_widget.getListContainer();
   var width = root[0].getBoundingClientRect().width;
   if (width !== 0) { // it will be 0 when there are no elements in the list.
     this.m_freezedContainerWidth = width;
@@ -1007,7 +944,7 @@ oj.HorizontalNavListHandler.prototype._fixContainerWidth = function () {
 };
 
 oj.HorizontalNavListHandler.prototype._releaseContainerWidth = function () {
-  var root = this.m_widget.getRootElement();
+  var root = this.m_widget.getListContainer();
   root.css('maxWidth', 'none');
 
   if (this.m_freezedContainerWidth) {
@@ -1092,6 +1029,10 @@ oj.HorizontalNavListHandler.prototype._applyThreshold = function (threshold) {
         self.m_widget.ActiveAndFocus(self._getOverflowMenuButton(), null);
       }
 
+      if ($item.hasClass('oj-selected')) {
+        self._highlightUnhighlightMoreItem(true);
+      }
+
       self._showOrHideItem($item, false);
       var overflowMenuData = {};
       overflowMenuDataArray.push(overflowMenuData);
@@ -1103,6 +1044,9 @@ oj.HorizontalNavListHandler.prototype._applyThreshold = function (threshold) {
     } else {
       lastVisibleChild = $item;
       self._showOrHideItem($item, true);
+      if ($item.hasClass('oj-selected')) {
+        self._highlightUnhighlightMoreItem(false);
+      }
       if (self.m_overflowMenuItem &&
           self.m_overflowMenuItem.hasClass('oj-focus') &&
           self.m_widget.compareValues(self.m_widget.GetKey(item),
@@ -1129,6 +1073,15 @@ oj.HorizontalNavListHandler.prototype._applyThreshold = function (threshold) {
   // So relaunching menu if it is already launched.
   if (isOverflowMenuVisible) {
     this._launchOverflowMenu(null);
+  }
+};
+
+oj.HorizontalNavListHandler.prototype._highlightUnhighlightMoreItem = function (highlight) {
+  var overflowBtn = this._getOverflowMenuButton();
+  if (highlight) {
+    overflowBtn.addClass('oj-selected').removeClass('oj-default');
+  } else {
+    overflowBtn.removeClass('oj-selected').addClass('oj-default');
   }
 };
 
@@ -1160,7 +1113,7 @@ oj.HorizontalNavListHandler.prototype._getOverflowMenuButton = function () {
       .attr('aria-haspopup', 'true')
       .attr('aria-pressed', 'false')
       .attr('tabindex', '-1')
-      .attr('data-tabmod', '-1')
+      .attr(DataCollectionUtils._DATA_OJ_TABMOD, '-1')
       .attr('href', '#')
       .append(iconElement)// @HTMLUpdateOK constructed by component and not using string passed through any API
       .append(labelElement);// @HTMLUpdateOK label text is read from resource bundle and it was properly escaped
@@ -1237,7 +1190,7 @@ oj.HorizontalNavListHandler.prototype._launchOverflowMenu = function (event) {
   if (this._getOverflowMenu().is(':visible')) {
     return; // ignore if overflow menu already launched
   }
-  this._getOverflowMenuButton().addClass('oj-selected').removeClass('oj-default');
+  this._highlightUnhighlightMoreItem(true);
   this._getOverflowMenu().ojMenu('open', event, {
     launcher: self._getOverflowMenuButton(),
     initialFocus: 'firstItem',
@@ -1262,7 +1215,7 @@ oj.HorizontalNavListHandler.prototype._toggleOverflowBtnSelection = function (se
     }
 
     if (!overflowItemSelected) {
-      this._getOverflowMenuButton().addClass('oj-default').removeClass('oj-selected');
+      this._highlightUnhighlightMoreItem(false);
     }
   }
 };
@@ -1326,6 +1279,9 @@ oj._HorizontalNavListOverflowHandler = function (items, overflow, truncation, na
   this._navlistHandler = navlistHandler;
 };
 
+oj._HorizontalNavListOverflowHandler.prototype._TEXT_WIDTH_KEY = 'textWidth';
+oj._HorizontalNavListOverflowHandler.prototype._ITEM_WIDTH_KEY = 'itemWidth';
+
 oj._HorizontalNavListOverflowHandler.prototype._getOverflowMenuButton = function () {
   return this._navlistHandler._getOverflowMenuButton();
 };
@@ -1385,6 +1341,7 @@ oj._HorizontalNavListOverflowHandler.prototype._collectOverflowData = function (
 
   var item = this._items.last();
   if (this._truncation === 'progressive') {
+    this._calculateItemWidths();
     itemNonTextWidth = this._calculateItemNonTextWidth();
   }
 
@@ -1405,12 +1362,23 @@ oj._HorizontalNavListOverflowHandler.prototype._collectOverflowData = function (
   };
 };
 
+oj._HorizontalNavListOverflowHandler.prototype._calculateItemWidths = function () {
+  var self = this;
+  var items = this._items;
+
+  items.each(function (index, item) {
+    var $item = $(item);
+    var textWidth = $item.find('.' + self._getWidget().getItemLabelStyleClass())[0].getBoundingClientRect().width;
+    $item.data(self._TEXT_WIDTH_KEY, textWidth);
+    $item.data(self._ITEM_WIDTH_KEY, item.getBoundingClientRect().width);
+  });
+};
+
 oj._HorizontalNavListOverflowHandler.prototype._calculateItemNonTextWidth = function () {
   var items = this._items;
   var self = this;
   if (this._getWidget()
-      .getRootElement()
-      .hasClass('.' + this._getWidget().getHasIconsStyleClass())) {
+      .GetRootElement().find('.' + this._getWidget().getHasIconsStyleClass()).lenght > 0) {
     items = items.filter(function (index, item) {
       return $(item).find('.' + self._getWidget().getItemIconStyleClass()).length > 0;
     });
@@ -1420,10 +1388,8 @@ oj._HorizontalNavListOverflowHandler.prototype._calculateItemNonTextWidth = func
   });
   var pickItem = itemsWithRemovable &&
       itemsWithRemovable.length > 0 ? itemsWithRemovable.last() : items.last();
-  var textWidth = pickItem.find('.' + this._getWidget().getItemLabelStyleClass())[0]
-      .getBoundingClientRect()
-      .width;
-  return pickItem[0].getBoundingClientRect().width - textWidth;
+  var textWidth = pickItem.data(self._TEXT_WIDTH_KEY);
+  return pickItem.data(self._ITEM_WIDTH_KEY) - textWidth;
 };
 
 oj._HorizontalNavListOverflowHandler.prototype._isOverflowed =
@@ -1467,11 +1433,28 @@ oj._HorizontalNavListOverflowHandler.prototype._applyLabelMaxWidth = function (o
     labelMaxWidth = minLabelWidth; // use min width when it reaches threshold minimum
     // return; //Restore to original width when maxwidth reaches threshold minimum.
   }
+  var surplusWidth = 0;
+  var sumOfLongItemsWidth = 0;
+  items.each(function (index, item) {
+    var $item = $(item);
+    var textWidth = $item.data(self._TEXT_WIDTH_KEY);
+    if (textWidth < labelMaxWidth) {
+      surplusWidth += labelMaxWidth - textWidth;
+    } else {
+      sumOfLongItemsWidth += textWidth;
+    }
+  });
 
   items.each(function (index, item) {
+    var $item = $(item);
+    var textWidth = $item.data(self._TEXT_WIDTH_KEY);
+    var calcWidth = textWidth;
+    if (textWidth > labelMaxWidth) {
+      calcWidth = labelMaxWidth + ((surplusWidth * textWidth) / sumOfLongItemsWidth);
+    }
     $(item)
       .find('.' + self._getWidget().getItemLabelStyleClass())
-      .css({ 'max-width': labelMaxWidth + 'px' });
+      .css({ 'max-width': calcWidth + 'px' });
   });
 };
 
@@ -1588,7 +1571,7 @@ oj.SlidingNavListHandler.prototype.Destroy = function () {
 oj.SlidingNavListHandler.prototype._slideAnimation =
   function (item, isMovingNext, focusableElement, event, animationResolve) {
     var self = this;
-    var listRoot = this.m_widget.getRootElement();
+    var listRoot = this.m_widget.getListContainer();
     var hasFocusAncestor = listRoot.hasClass('oj-focus-ancestor');
 
     // After loading child items, listview tries to move focus to first visible
@@ -1628,7 +1611,7 @@ oj.SlidingNavListHandler.prototype._slideAnimationComplete =
 
     if (focusableElement) {
       if (needFocusAncestor) {
-        this.m_widget.getRootElement().addClass('oj-focus-ancestor'); // during animation oj-focus-ancestor is being removed due triggering of focusout event. probably this is due to hiding of element user clicked on.
+        this.m_widget.getListContainer().addClass('oj-focus-ancestor'); // during animation oj-focus-ancestor is being removed due triggering of focusout event. probably this is due to hiding of element user clicked on.
       }
       if (event && event.button === 0) {
         this.m_widget.AvoidFocusHighLight(true);
@@ -2025,7 +2008,7 @@ oj.SlidingNavListHandler.prototype._addItemToHviewMenu = function (itemKey, labe
     this._showOrHideHierarchyMenu(this.m_widget.GetOption('hierarchyMenuDisplayThresholdLevel'));
     this._hviewBtn.ojButton('option', 'disabled', false);
     this._prevButton.css('visibility', 'visible');
-    if (this.m_widget.getRootElement().hasClass('oj-focus-ancestor')) {
+    if (this.m_widget.getListContainer().hasClass('oj-focus-ancestor')) {
       // this._previousLink.attr('tabindex', '0');
       this._prevButton.attr('tabindex', '0');// @HTMLUpdateOK
     }
@@ -2219,6 +2202,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     OPTION_EDGE_BOTTOM: 'bottom',
     OPTION_SELECTION: 'selection',
     OPTION_CURRENT_ITEM: 'currentItem',
+    OPTION_ITEM: 'item',
     TAG_NAME_TAB_BAR: 'oj-tab-bar',
     NAVLIST_ITEM_SUBID_KEY: {
       navlist: 'oj-navigationlist-item',
@@ -2360,7 +2344,18 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       navlist: 'oj-navigationlist-option-defaults',
       tabbar: 'oj-tabbar-option-defaults'
     },
-
+    _LOADING_STATUS_ICON_STYLE_CLASS: {
+      navlist: 'oj-navigationlist-loading-icon',
+      tabbar: 'oj-tabbar-loading-icon'
+    },
+    _STATUS_MSG_STYLE_CLASS: {
+      navlist: 'oj-navigationlist-status-message',
+      tabbar: 'oj-tabbar-status-message'
+    },
+    _STATUS_STYLE_CLASS: {
+      navlist: 'oj-navigationlist-status',
+      tabbar: 'oj-tabbar-status'
+    },
     /**
      * Returns Item label text
      * @returns {string|null} Item label
@@ -2432,13 +2427,16 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      */
     itemInsertComplete: function (elem, context) {
       this.m_listHandler.ItemInsertComplete(elem, context);
+      _ojNavigationListView.superclass.itemInsertComplete.apply(this, arguments);
     },
 
     /**
      * Called by content handler once the content of an item is removed triggered by an remove event
      * @param {Element} elem the item element
+     * @param {boolean} restoreFocus true if focus should be restore, false otherwise
      */
-    itemRemoveComplete: function (elem) {
+    // eslint-disable-next-line no-unused-vars
+    itemRemoveComplete: function (elem, restoreFocus) {
       this.m_listHandler.ItemRemoveComplete(elem);
       _ojNavigationListView.superclass.itemRemoveComplete.apply(this, arguments);
     },
@@ -2480,6 +2478,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
             .removeAttr('aria-pressed');
           itemContent.children('.' + this.getItemLabelStyleClass())
             .contents().unwrap();
+          item.find('.' + this.getNavListRemoveIcon())
+              .remove();
           if (focusableItem.data(this._IS_TITLE_ATTR_ADDED_DUE_TO_TRUNCATION)) {
             focusableItem.removeAttr('title');
           }
@@ -2562,6 +2562,29 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     },
 
     /**
+     * Update cloned option to make it compatible with listview
+     * @private
+     */
+    updateListViewOption: function (key, value) {
+      switch (key) {
+        case this.OPTION_DRILL_MODE:
+          this.options[this.OPTION_DRILL_MODE] = (value !== 'none') ? 'collapsible' : 'none';
+          break;
+        case this.OPTION_SELECTION:
+          this.options[this.OPTION_SELECTION] = value !== null ? [value] : [];
+          break;
+        case this.OPTION_ITEM:
+          this.options[this.OPTION_ITEM] = $.extend({
+            focusable: this._focusable
+          }, value);
+          break;
+        default:
+          this.options[key] = value;
+          break;
+      }
+    },
+
+    /**
      * Returns root label for navigation list.
      * otherwise return the emptyText set in the options
      * @return {string} Label for navigation list
@@ -2630,6 +2653,14 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     },
 
     /**
+     * Whether high-watermark scrolling is specified
+     * @override
+     */
+    isLoadMoreOnScroll: function () {
+      return false;
+    },
+
+    /**
      * Whether to use grid role
      * @override
      */
@@ -2667,7 +2698,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       var opts = this._prepareListViewOptions(navlistopts);
 
       _ojNavigationListView.superclass.init.call(this, opts);
-      this.getRootElement().attr('role', 'presentation');
+      this.getListContainer().attr('role', 'presentation');
       this.element.removeClass('oj-component-initnode');
       this.ojContext._on(this.ojContext.element, {
         click: function (event) {
@@ -3022,6 +3053,32 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      */
     getOptionDefaultsStyleClass: function () {
       return this._OPTION_DEFAULT_STYLE_CLASS[this._getNavigationMode()];
+    },
+    /**
+     * Returns Navlist specific Loaidng status icon style class
+     * @override
+     * @return {string} Loading status icon style class
+     */
+    getLoadingStatusIconStyleClass: function () {
+      return this._LOADING_STATUS_ICON_STYLE_CLASS[this._getNavigationMode()];
+    },
+
+    /**
+     * Returns Navlist specific status message style class
+     * @override
+     * @return {string} status message style class
+     */
+    getStatusMessageStyleClass: function () {
+      return this._STATUS_MSG_STYLE_CLASS[this._getNavigationMode()];
+    },
+
+    /**
+     * Returns Navlist specific status style class
+     * @override
+     * @return {string} status style class
+     */
+    getStatusStyleClass: function () {
+      return this._STATUS_STYLE_CLASS[this._getNavigationMode()];
     },
 
     /**
@@ -3395,6 +3452,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
                 this._fireDeselectEvent(null, item, newSelectionValue);
                 // eslint-disable-next-line no-param-reassign
                 options.selection = [newSelectionValue];
+                this.m_listHandler.HandleSelectionChange(item);
                 if (item) {
                   this._initiateNavigation($(item));
                 }
@@ -3581,11 +3639,12 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     },
 
     /**
-     * Returns the slot map object.
-     * @return {object} slot Map
+     * Retrieves the root element
+     * @override
+     * @return {jQuery} root element
      */
-    GetSlotMap: function () {
-      return oj.BaseCustomElementBridge.getSlotMap(this.ojContext.element[0]);
+    GetRootElement: function () {
+      return this.ojContext.element;
     },
 
     /**
@@ -3768,7 +3827,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @protected
      * @override
      */
-    DestroyContentHandler: function () {
+    // eslint-disable-next-line no-unused-vars
+    DestroyContentHandler: function (completelyDestroy) {
       var data = this.GetOption('data');
       if (data === null) {
         this._restoreContent(this.element);
@@ -3923,7 +3983,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *                for: "SettableProperties"
    *               }
    *              ]
-   * @ojshortdesc Displays items as a collapsible or sliding navigation list with highly interactive features.
+   * @ojshortdesc A navigation list allows navigation between different content sections.
    * @classdesc
    * <h3 id="navlistOverview-section">
    *   JET Navigation List
@@ -3943,23 +4003,24 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * </ul>
    *
    * <p><b>oj.ArrayDataProvider</b> - Use this when the underlying data is an array object or an observableArray.  In the observableArray case, Navigation List will automatically react
-   * when items are added or removed from the array.  See the documentation for oj.ArrayDataProvider for more details on the available options.</p>
+   * when items are added or removed from the array.  See the documentation for <a href="oj.ArrayDataProvider.html">oj.ArrayDataProvider</a> for more details on the available options.</p>
    *
    * <p><b>oj.CollectionTableDataSource</b> - Use this when oj.Collection is the model for the underlying data.  Note that the Navigation List will automatically react to model event from
-   * the underlying oj.Collection.  See the documentation for oj.CollectionTableDataSource for more details on the available options.</p>
+   * the underlying oj.Collection.  See the documentation for <a href="oj.CollectionTableDataSource.html">oj.CollectionTableDataSource</a> for more details on the available options.</p>
    *
    * <p> NOTE: oj.PagingTableDataSource is not supported by Navigation List.
    *
-   * <p>The second way is from a TreeDataSource.  This is typically used to display data that are logically categorized in groups.  There are several types
-   * of TreeDataSource that are available out of the box:</p>
+   * <p>The second way is from a TreeDataProvider/TreeDataSource.  This is typically used to display data that are logically categorized in groups.  There are several types
+   * of TreeDataProvider/TreeDataSource that are available out of the box:</p>
    * <ul>
-   * <li>oj.JsonTreeDataSource</li>
+   * <li>oj.ArrayTreeDataProvider</li>
    * <li>oj.CollectionTreeDataSource</li>
    * </ul>
    *
-   * <p><b>oj.JsonTreeDataSource</b> - Use this when the underlying data is a JSON object.  See the documentation for oj.JsonTreeDataSource for more details on the available options.</p>
+   * <p><b>oj.ArrayTreeDataProvider</b> - Use this when the underlying data is an array object or an observableArray.  In the observableArray case, NavigationList will
+   * automatically  react when items are added or removed from the array.  See the documentation of <a href="oj.ArrayTreeDataProvider.html">oj.ArrayTreeDataProvider</a> for more details on the available options.</p>
    *
-   * <p><b>oj.CollectionTreeDataSource</b> - Use this when oj.Collection is the model for each group of data.  See the documentation for oj.CollectionTableDataSource
+   * <p><b>oj.CollectionTreeDataSource</b> - Use this when oj.Collection is the model for each group of data.  See the documentation for <a href="oj.CollectionTreeDataSource.html">oj.CollectionTreeDataSource</a>
    * for more details on the available options.</p>
    *
    * <p>Finally, Navigation List also supports static HTML content as data.  The structure of the content can be either flat or hierarhical.</p>
@@ -4276,7 +4337,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * An alias for the current item when referenced inside the item template. This can be especially useful
        * if oj-bind-for-each element is used inside the item template since it has its own scope of data access.
        *
-       * @ojshortdesc Gets and sets the alias for the current item when referenced inside the item template.
+       * @ojshortdesc Specifies the alias for the current item when referenced inside the item template.
        * @ojstatus preview
        * @expose
        * @public
@@ -4320,7 +4381,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * </table>
        *
        * @expose
-       * @ojshortdesc Gets and sets the key of the item that should have keyboard focus.
+       * @ojshortdesc Specifies the key of the item that should have keyboard focus. See the Help documentation for more information.
        * @public
        * @instance
        * @memberof! oj.ojNavigationList
@@ -4345,7 +4406,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * <li>sliding</li>
        * </ul>
        *
-       * @ojshortdesc Gets and sets whether expand/collapse or sliding operations are allowed.
+       * @ojshortdesc Specifies whether expand/collapse or sliding operations are allowed.
        * @expose
        * @memberof oj.ojNavigationList
        * @instance
@@ -4371,7 +4432,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       /**
        * The position of the Navigation List. Valid Values: top and start.
        * <p> NOTE: when value is <code class="prettyprint">top</code>,<code class="prettyprint">"none"</code> is the only supported drillMode and it also does't support hierarchical items.
-       * @ojshortdesc Gets and sets the edge position of the Navigation List.
+       * @ojshortdesc Specifies the edge position of the Navigation List.
        * @expose
        * @name edge
        * @memberof oj.ojNavigationList
@@ -4397,7 +4458,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * <p>The default value for hierarchyMenuThreshold varies by theme.  Each theme can set its default by setting
        * <code class="prettyprint">$navigationListHierarchyMenuDisplayThresholdLevelOptionDefault</code> as seen in the example below.
        *
-       * @ojshortdesc Gets and sets the level at which user can see hierarchical menu button (defaults to 0 if not specified in theme).
+       * @ojshortdesc Specifies the level at which the user can see hierarchical menu button. See the Help documentation for more information.
        * @expose
        * @name hierarchyMenuThreshold
        * @memberof oj.ojNavigationList
@@ -4424,7 +4485,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * <p>NOTE: This is needed only for sliding navigation list where
        * this will be used as title for the top level list elements.
        *
-       * @ojshortdesc Gets and sets the label for top level list items.
+       * @ojshortdesc Specifies the label for top level list items.
        * @type {?string}
        * @default Navigation List
        * @expose
@@ -4460,7 +4521,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        *     </tr>
        *   </tbody>
        * </table>
-       * @ojshortdesc Gets and sets the key of the selected item.
+       * @ojshortdesc Specifies the key of the selected item. See the Help documentation for more information.
        * @type {any}
        * @ojsignature {target:"Type", value:"K"}
        * @default null
@@ -4486,6 +4547,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * Use the <a href="ExpandAllKeySet.html">ExpandAllKeySet</a> class to expand all items.
        *
        * @expose
+       * @ojshortdesc Specifies the key set containing the keys of the items that should be expanded. See the Help documentation for more information.
        * @memberof! oj.ojNavigationList
        * @instance
        * @default new ExpandedKeySet();
@@ -4506,11 +4568,11 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * If the data attribute is not specified, the child elements are used as content.  If there's no
        * content specified, then an empty list is rendered.
        *
-       * @ojshortdesc Gets and sets the data provider for Navigation List.
+       * @ojshortdesc Specifies the data provider for the Navigation List. See the Help documentation for more information.
        * @expose
        * @memberof! oj.ojNavigationList
        * @instance
-       * @type {oj.TableDataSource|oj.TreeDataSource|oj.DataProvider|null}
+       * @type {Object|null}
        * @default null
        * @example <caption>Initialize the Navigation List with the <code class="prettyprint">data</code> attribute specified:</caption>
        *  &lt;oj-navigation-list data='[[tableDataSource]]'> ... &lt;/oj-navigation-list>
@@ -4522,7 +4584,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        *
        * @example <caption>Set the data attribute using oj.Collection:</caption>
        * myNavList.data = new oj.CollectionTableDataSource(collection);
-       * @ojsignature {target: "Type", value: "oj.DataProvider<K, D>|null"}
+       * @ojsignature [{target: "Type", value: "oj.DataProvider<K, D>|null"},
+       *               {target: "Type", value: "oj.TableDataSource|oj.TreeDataSource|oj.DataProvider|null", consumedBy:"js"}]
        */
       data: null,
       /**
@@ -4531,7 +4594,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * Note: <code class="prettyprint">display="icons"</code> is valid only when <code class="prettyprint">drillMode=none</code> and navigation list is a flat list.
        * It is also mandatory to provide icons for each item as stated in <a href="#icons-section">icons section</a>.
        *
-       * @ojshortdesc Gets and sets whether all or only icons need to be displayed.
+       * @ojshortdesc Specifies what needs to be displayed. See the Help documentation for more information.
        * @expose
        * @memberof oj.ojNavigationList
        * @instance
@@ -4578,7 +4641,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * Specifies the overflow behaviour.
        * NOTE: This is only applicable when <code class="prettyprint">edge</code> attribute set to <code class="prettyprint">top</code>
        *
-       * @ojshortdesc Gets and sets overflow behaviour for Navigation List.
+       * @ojshortdesc Specifies overflow behaviour for the Navigation List.
        * @expose
        * @memberof oj.ojNavigationList
        * @instance
@@ -4612,7 +4675,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       /**
        * The item property contains a subset of properties for items.
        *
-       * @ojshortdesc Customize the functionalities of each item in Navigation List.
+       * @ojshortdesc Customize the functionality of each item in Navigation List.
        * @expose
        * @memberof oj.ojNavigationList
        * @instance
@@ -4632,7 +4695,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
          * </ul>
          * If no renderer is specified, Navigation List will treat the data as a String.
          *
-         * @ojshortdesc Gets and sets the renderer for the item.
+         * @ojshortdesc Specifies the renderer for the item. See the Help documentation for more information.
          * @expose
          * @alias item.renderer
          * @memberof! oj.ojNavigationList
@@ -4657,7 +4720,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
          * Whether the item is selectable.
          * See <a href="#context-section">itemContext</a> in the introduction to see the object passed into the selectable function.
          *
-         * @ojshortdesc Gets and sets whether the item can be selected.
+         * @ojshortdesc Specifies whether the item can be selected. See the Help documentation for more information.
          * @expose
          * @alias item.selectable
          * @memberof! oj.ojNavigationList
@@ -4893,6 +4956,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @expose
      * @instance
      * @memberof oj.ojNavigationList
+     * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
      */
     getContextByNode: function (node) {
       return this.navlist.getContextByNode(node);
@@ -5015,28 +5079,33 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
           );
           break;
         case this.navlist.OPTION_SELECTION:
-          extraData = this.navlist.getItems([value])[0];
-          flags = {
-            _context: {
-              extraData: {
-                item: this._IsCustomElement() ? extraData : $(extraData)
+          if (this.navlist.isAvailable()) {
+            extraData = this.navlist.getItems([value])[0];
+            flags = {
+              _context: {
+                extraData: {
+                  item: this._IsCustomElement() ? extraData : $(extraData)
+                }
               }
-            }
-          };
+            };
+          }
           break;
         case this.navlist.OPTION_CURRENT_ITEM:
-          extraData = this.navlist.getItems([value])[0];
-          flags = {
-            _context: {
-              extraData: {
-                item: this._IsCustomElement() ? extraData : $(extraData)
+          if (this.navlist.isAvailable()) {
+            extraData = this.navlist.getItems([value])[0];
+            flags = {
+              _context: {
+                extraData: {
+                  item: this._IsCustomElement() ? extraData : $(extraData)
+                }
               }
-            }
-          };
+            };
+          }
           break;
         default:
           break;
       }
+      this.navlist.updateListViewOption(key, value);
       if (flags) {
         return this._super(key, value, flags);
       }
@@ -5051,6 +5120,12 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @private
      */
     _setOptions: function (options, flags) {
+      if (!this.navlist.isAvailable()) {
+        // NavList might have been detached, just update the options.  When NavList becomes available again, the update options will take effect.
+        this._super(options, flags);
+        return this;
+      }
+
       var result = this.navlist.setOptions(options, flags);
 
       var nonSkippedOptions = {};
@@ -5115,6 +5190,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * <p>This method does not accept any arguments.
      *
      * @expose
+     * @ojshortdesc Refreshes the visual state of the Navigation List.
      * @memberof! oj.ojNavigationList
      * @instance
      * @return {void}
@@ -5203,6 +5279,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @ojslot itemTemplate
      * @ojmaxitems 1
      * @memberof oj.ojNavigationList
+     * @ojshortdesc The itemTemplate slot is used to specify the template for rendering each item in the list. See the Help documentation for more information.
+     *
      * @property {Element} componentElement The &lt;oj-navigation-list> custom element
      * @property {Object} data The data for the current item being rendered
      * @property {number} index The zero-based index of the curent item
@@ -5669,7 +5747,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *                for: "SettableProperties"
    *               }
    *              ]
-   * @ojshortdesc Displays tab bar with advanced interactive features.
+   * @ojshortdesc A tab bar allows navigation between different content sections.
    * @classdesc
    * <h3 id="navlistOverview-section">
    *   JET Tab Bar
@@ -5893,7 +5971,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * An alias for the current item when referenced inside the item template. This can be especially useful
    * if oj-bind-for-each element is used inside the item template since it has its own scope of data access.
    *
-   * @ojshortdesc Gets and sets the alias for the current item when referenced inside the item template.
+   * @ojshortdesc Specifies the alias for the current item when referenced inside the item template.
    * @ojstatus preview
    * @name as
    * @expose
@@ -5942,7 +6020,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @memberof oj.ojTabBar
    * @type {any}
    * @default null
-   * @ojshortdesc Gets and sets the key of the item that should have keyboard focus.
+   * @ojshortdesc Specifies the key of the item that should have keyboard focus. See the Help documentation for more information.
    * @ojwriteback
    *
    * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">current-item</code> attribute specified:</caption>
@@ -5966,7 +6044,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojvalue {string} "start" This renders list items vertically. Generally used when tab bar placed on left/start of content section.
    * @ojvalue {string} "end" This renders list items vertically. Generally used when tab bar placed on right/end of content section.
    * @default start
-   * @ojshortdesc Gets and sets the edge position of the Tab Bar.
+   * @ojshortdesc Specifies the edge position of the Tab Bar.
    * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">edge</code> attribute specified:</caption>
    *  &lt;oj-tab-bar edge='top'> ... &lt;/oj-tab-bar>
    * @example <caption>Get the edge:</caption>
@@ -5981,7 +6059,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @name reorderable
    * @memberof oj.ojTabBar
    * @instance
-   * @ojshortdesc Enable or disable the item reordering functionalities.
+   * @ojshortdesc Specifies whether tabs can be reordered.
    * @ojstatus preview
    * @since 4.1.0
    * @type {string}
@@ -6003,7 +6081,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @memberof oj.ojTabBar
    * @instance
    * @ojstatus preview
-   * @ojshortdesc Gets and sets whether truncation needs to be applied.
+   * @ojshortdesc Specifies whether truncation needs to be applied.
    * @since 4.1.0
    * @type {string}
    * @ojvalue {string} "none" tabs always take up the space needed by the title texts.
@@ -6039,7 +6117,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * </table>
    * @type {any}
    * @name selection
-   * @ojshortdesc Gets and sets the key of the selected item.
+   * @ojshortdesc Specifies the key of the selected item. See the Help documentation for more information.
    * @default null
    * @ojwriteback
    * @expose
@@ -6065,9 +6143,10 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @name data
    * @memberof oj.ojTabBar
    * @instance
-   * @ojshortdesc Gets and sets the data provider for tabbar.
-   * @type {oj.TableDataSource|oj.DataProvider|null}
-   * @ojsignature {target: "Type", value: "oj.DataProvider<K, D>|null"}
+   * @ojshortdesc Specifies the data provider for the Tab Bar. See the Help documentation for more information.
+   * @type {Object|null}
+   * @ojsignature [{target: "Type", value: "oj.DataProvider<K, D>|null"},
+   *               {target: "Type", value: "oj.TableDataSource|oj.DataProvider|null", consumedBy:"js"}]
    * @default null
    * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">data</code> attribute specified:</caption>
    *  &lt;oj-tab-bar data='[[tableDataSource]]'> ... &lt;/oj-tab-bar>
@@ -6095,7 +6174,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojvalue {string} "all" Display both the label and icons.
    * @ojvalue {string} "icons" Display only the icons.
    * @default all
-   * @ojshortdesc Gets and sets whether all or only icons need to be displayed.
+   * @ojshortdesc Specifies what needs to be displayed. See the Help documentation for more information.
    * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">display</code> attribute specified:</caption>
    *  &lt;oj-tab-bar display='icons'> ... &lt;/oj-tab-bar>
    *
@@ -6118,7 +6197,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojvalue {string} "popup" popup menu will be shown with overflowed items. <p> NOTE: Setting <code class="prettyprint">overflow</code> to <code class="prettyprint">popup</code> can trigger browser reflow, so only set it when it is actually required.
    * @ojvalue {string} "hidden" overflow is clipped, and the rest of the content will be invisible.
    * @default hidden
-   * @ojshortdesc Gets and sets overflow behaviour for Tab bar.
+   * @ojshortdesc Specifies overflow behaviour for the Tab Bar.
    * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">overflow</code> attribute specified:</caption>
    *  &lt;oj-tab-bar overflow='popup'> ... &lt;/oj-tab-bar>
    * @example <caption>Get or set the <code class="prettyprint">overflow</code> property:</caption>
@@ -6142,7 +6221,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
 
   /**
    * The item property contains a subset of properties for items.
-   * @ojshortdesc Customize the functionalities of each tab on Tab bar.
+   * @ojshortdesc Customize the functionality of each tab on Tab Bar.
    * @expose
    * @memberof oj.ojTabBar
    * @instance
@@ -6162,7 +6241,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * If no renderer is specified, Tab Bar will treat the data as a String.
    *
    * @expose
-   * @ojshortdesc Gets and sets the renderer for the tab item.
+   * @ojshortdesc Specifies the renderer for the tab item. See the Help documentation for more information.
    * @name item.renderer
    * @memberof! oj.ojTabBar
    * @instance
@@ -6186,7 +6265,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * See <a href="#context-section">itemContext</a> in the introduction to see the object passed into the selectable function.
    *
    * @expose
-   * @ojshortdesc Gets and sets whether the tab can be selected.
+   * @ojshortdesc Specifies whether the tab can be selected. See the Help documentation for more information.
    * @name item.selectable
    * @memberof! oj.ojTabBar
    * @instance
@@ -6196,7 +6275,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @type {function(Object)|boolean}
    * @default true
    *
-   * @example <caption>Initialize the Tab bar such that the first 3 items are not selectable:</caption>
+   * @example <caption>Initialize the Tab Bar such that the first 3 items are not selectable:</caption>
    *  &lt;oj-tab-bar item.selectable="[[skipFirstThreeElementsFn]]">&lt;/oj-tab-bar>
    *
    *  var skipFirstThreeElementsFn = function(itemContext) {
@@ -6354,6 +6433,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @name getContextByNode
    * @instance
    * @memberof oj.ojTabBar
+   * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
    */
 
   /**
@@ -6387,6 +6467,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @ojslot itemTemplate
      * @ojmaxitems 1
      * @memberof oj.ojTabBar
+     * @ojshortdesc The itemTemplate slot is used to specify the template for rendering each item in the list. See the Help documentation for more information.
+     *
      * @property {Element} componentElement The &lt;oj-navigation-list> custom element
      * @property {Object} data The data for the current item being rendered
      * @property {number} index The zero-based index of the curent item

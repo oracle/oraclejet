@@ -3,9 +3,6 @@ export interface ojLabelValue extends JetElement<ojLabelValueSettableProperties>
     colspan: number;
     labelEdge: 'start' | 'top' | 'inherit';
     labelWidth: string;
-    onColspanChanged: ((event: JetElementCustomEvent<ojLabelValue["colspan"]>) => any) | null;
-    onLabelEdgeChanged: ((event: JetElementCustomEvent<ojLabelValue["labelEdge"]>) => any) | null;
-    onLabelWidthChanged: ((event: JetElementCustomEvent<ojLabelValue["labelWidth"]>) => any) | null;
     addEventListener<T extends keyof ojLabelValueEventMap>(type: T, listener: (this: HTMLElement, ev: ojLabelValueEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojLabelValueSettableProperties>(property: T): ojLabelValue[T];
@@ -14,6 +11,14 @@ export interface ojLabelValue extends JetElement<ojLabelValueSettableProperties>
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojLabelValueSettableProperties>): void;
     setProperties(properties: ojLabelValueSettablePropertiesLenient): void;
     refresh(): void;
+}
+export namespace ojLabelValue {
+    // tslint:disable-next-line interface-over-type-literal
+    type colspanChanged = JetElementCustomEvent<ojLabelValue["colspan"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = JetElementCustomEvent<ojLabelValue["labelEdge"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelWidthChanged = JetElementCustomEvent<ojLabelValue["labelWidth"]>;
 }
 export interface ojLabelValueEventMap extends HTMLElementEventMap {
     'colspanChanged': JetElementCustomEvent<ojLabelValue["colspan"]>;

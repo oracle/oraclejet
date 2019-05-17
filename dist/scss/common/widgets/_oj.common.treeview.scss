@@ -19,6 +19,8 @@
 
     // Prevents the grey background that appears on tap on iOS
     oj-tree-view {
+      display: block;
+      overflow: auto;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -34,8 +36,14 @@
       margin: 0 ;
       padding: 0;
       list-style-type: none;
-      @include oj-user-select-property(none);
-      overflow: hidden;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        user-select: none;
+      }
+      @else
+      {
+        @include oj-user-select-property(none);
+      }
     }
 
     // Basic item
@@ -157,11 +165,26 @@
       }
     }
 
+    // Styling for the list item elements in selected state when treeview is in high contrast mode.
+    .oj-hicontrast .oj-treeview-item-content.oj-selected {
+      border-width: 1px 2px 2px 1px;
+      border-style: solid;
+      border-color: initial;
+    }
+
+    // Styling for the list item elements in focus state when treeview is in high contrast mode.
+    .oj-hicontrast .oj-treeview-item-content.oj-focus-highlight{
+      outline-width: 2px;
+      outline-style: dotted;
+      border-width: 0 1px 1px 0;
+      border-style: dotted;
+    }
+
     // Focused item content
     .oj-treeview-item-content.oj-focus-highlight {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        outline: dotted 1px var(--oj-primary-text-color);
+        outline: dotted 1px var(--oj-text-color-primary);
         outline: -webkit-focus-ring-color auto;
       } @else {
         @include oj-browser-focus-outline-approximation($primaryTextColor);

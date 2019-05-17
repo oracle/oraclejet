@@ -2,8 +2,8 @@
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['./DvtToolkit'], function(dvt) {
+  "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
 (function(dvt) {
@@ -42,7 +42,7 @@ dvt.TimeComponent.WHEEL_UNITS_PER_LINE = 40;
  * @param {object} callbackObj The object context for the callback function
  * @protected
  */
-dvt.TimeComponent.prototype.Init = function(context, callback, callbackObj) 
+dvt.TimeComponent.prototype.Init = function(context, callback, callbackObj)
 {
   dvt.TimeComponent.superclass.Init.call(this, context, callback, callbackObj);
   this.SetPanningEnabled(true); // enable panning
@@ -51,15 +51,14 @@ dvt.TimeComponent.prototype.Init = function(context, callback, callbackObj)
 
 
 /**
- * Renders the component using the specified xml.  If no xml is supplied to a component
- * that has already been rendered, this function will rerender the component with the
- * specified size.
+ * Renders the component with the specified data.  If no data is supplied to a component
+ * that has already been rendered, the component will be rerendered to the specified size.
  * @param {object} options list of options
  * @param {number} width the width of the component
  * @param {number} height the height of the component
  * @override
  */
-dvt.TimeComponent.prototype.render = function(options, width, height) 
+dvt.TimeComponent.prototype.render = function(options, width, height)
 {
   if (options)
   {
@@ -74,7 +73,7 @@ dvt.TimeComponent.prototype.render = function(options, width, height)
   this.Width = width;
   this.Height = height;
 
-  // If new xml is provided, parse it and apply the properties
+  // If new options are provided, parse it and apply the properties
   if (this.Options)
   {
     var props = this.Parse(this.Options);
@@ -119,6 +118,52 @@ dvt.TimeComponent.prototype._applyParsedProperties = function(props)
 };
 
 /**
+ * Returns an appropriate version of the data to be publicly exposed through contexts, event payloads, etc.
+ * @param {object} data The raw data object
+ * @param {string} type The raw data object type. Must be either 'series', 'item', 'row', or 'task'
+ * @return {object} The sanitized data
+ */
+dvt.TimeComponent.sanitizeData = function (data, type)
+{
+  var seriesCopy;
+  var itemCopy;
+  var isSeriesData = type === 'series' || type === 'row';
+  if (isSeriesData)
+  {
+    var itemProp = type === 'series' ? 'items' : 'tasks';
+    if (data[itemProp].length > 0) {
+      if (data[itemProp][0]._noTemplate) {
+        seriesCopy = dvt.JsonUtils.clone(data, null, {itemProp: true});
+        seriesCopy[itemProp] = seriesCopy[itemProp].map(function (item) {
+          return item._itemData;
+        });
+        return seriesCopy;
+      } else if (data[itemProp][0]._itemData) {
+        seriesCopy = dvt.JsonUtils.clone(data, null, {itemProp: true});
+        seriesCopy[itemProp] = seriesCopy[itemProp].map(function (item) {
+          itemCopy = dvt.JsonUtils.clone(item);
+          delete itemCopy._itemData;
+          return itemCopy;
+        });
+        return seriesCopy;
+      }
+      return data;
+    }
+  }
+  else
+  {
+    if (data._noTemplate) {
+      return data._itemData;
+    } else if (data._itemData) {
+      itemCopy = dvt.JsonUtils.clone(data);
+      delete itemCopy._itemData;
+      return itemCopy;
+    }
+  }
+  return data;
+};
+
+/**
  * Combines style defaults with the styles provided
  *
  */
@@ -134,12 +179,12 @@ dvt.TimeComponent.prototype.isAnimationEnabled = function()
   return false;
 };
 
-dvt.TimeComponent.prototype.getAdjustedStartTime = function() 
+dvt.TimeComponent.prototype.getAdjustedStartTime = function()
 {
   return this._start;
 };
 
-dvt.TimeComponent.prototype.getAdjustedEndTime = function() 
+dvt.TimeComponent.prototype.getAdjustedEndTime = function()
 {
   return this._end;
 };
@@ -306,6 +351,7 @@ dvt.TimeComponent.prototype.renderZoomControls = function(options)
 {
   var context = this.getCtx();
   var timeAxis = this.getTimeAxis();
+  var translations = this.Options.translations;
 
   // Zoom in states
   var zoomInOptions = options['zoomInProps'];
@@ -385,17 +431,17 @@ dvt.TimeComponent.prototype.renderZoomControls = function(options)
     this.zoomout.setDisabledState(disabledState);
   }
 
-  this.zoomin.setTooltip(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ZOOM_IN', null));
-  this.zoomout.setTooltip(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ZOOM_OUT', null));
+  this.zoomin.setTooltip(translations.tooltipZoomIn);
+  this.zoomout.setTooltip(translations.tooltipZoomOut);
   this.zoomin.hide();
   this.zoomout.hide();
 
   if (dvt.TimeAxis.supportsTouch())
   {
     dvt.ToolkitUtils.setAttrNullNS(this.zoomin.getElem(), 'role', 'button');
-    dvt.ToolkitUtils.setAttrNullNS(this.zoomin.getElem(), 'aria-label', dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ZOOM_IN', null));
+    dvt.ToolkitUtils.setAttrNullNS(this.zoomin.getElem(), 'aria-label', translations.tooltipZoomIn);
     dvt.ToolkitUtils.setAttrNullNS(this.zoomout.getElem(), 'role', 'button');
-    dvt.ToolkitUtils.setAttrNullNS(this.zoomout.getElem(), 'aria-label', dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ZOOM_OUT', null));
+    dvt.ToolkitUtils.setAttrNullNS(this.zoomout.getElem(), 'aria-label', translations.tooltipZoomOut);
   }
 
   this.zoomin.setTranslateX(zoomInPosX);
@@ -870,7 +916,7 @@ dvt.TimeComponent.prototype.getContentDirScrollbarStyle = function()
 dvt.TimeComponent.prototype.HandleEvent = function(event, component)
 {
   var type = event['type'];
-  if (type == dvt.SimpleScrollbarEvent.TYPE)
+  if (type == 'dvtSimpleScrollbar')
   {
     event = this.processScrollbarEvent(event, component);
   }
@@ -888,8 +934,8 @@ dvt.TimeComponent.prototype.processScrollbarEvent = function(event, component)
 {
   if (component == this.timeDirScrollbar)
   {
-    var newMin = event.getNewMin();
-    var newMax = event.getNewMax();
+    var newMin = event.newMin;
+    var newMax = event.newMax;
     this._viewStartTime = newMin;
     this._viewEndTime = newMax;
     var widthFactor = this.getContentLength() / (this._end - this._start);
@@ -1003,7 +1049,7 @@ dvt.TimeComponent.prototype.endDragPan = function()
 dvt.TimeComponent.prototype.setPanCursorDown = function()
 {
   // IE doesn't support cursor image with custom positioning
-  if (dvt.Agent.isPlatformIE())
+  if ((dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge'))
     this.setCursor('move');
   else
     this.setCursor('url(' + this.getOptions()['_resources']['grabbingCursor'] + ') 8 8, move');
@@ -1015,7 +1061,7 @@ dvt.TimeComponent.prototype.setPanCursorDown = function()
 dvt.TimeComponent.prototype.setPanCursorUp = function()
 {
   // IE doesn't support cursor image with custom positioning
-  if (dvt.Agent.isPlatformIE())
+  if ((dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge'))
     this.setCursor('move');
   else
     this.setCursor('url(' + this.getOptions()['_resources']['grabCursor'] + ') 8 8, move');
@@ -1138,7 +1184,7 @@ dvt.TimeComponent.prototype.panBy = function(deltaX, deltaY)
  */
 dvt.TimeComponentEventManager = function(comp)
 {
-  this.Init(comp.getCtx(), comp.processEvent, comp);
+  this.Init(comp.getCtx(), comp.processEvent, comp, comp);
   this._comp = comp;
   this._isDragPanning = false;
   this._isPinchZoom = false;
@@ -1156,20 +1202,13 @@ dvt.TimeComponentEventManager.GECKO_MOUSEWHEEL = 'wheel';
 /**
  * @override
  */
-dvt.TimeComponentEventManager.prototype.getComponent = function() {
-  return this._comp;
-};
-
-/**
- * @override
- */
 dvt.TimeComponentEventManager.prototype.addListeners = function(displayable)
 {
   dvt.TimeComponentEventManager.superclass.addListeners.call(this, displayable);
   dvt.SvgDocumentUtils.addDragListeners(this._comp, this._onDragStart, this._onDragMove, this._onDragEnd, this);
   if (!dvt.Agent.isTouchDevice())
   {
-    if (dvt.Agent.isPlatformGecko())
+    if (dvt.Agent.browser === 'firefox')
       displayable.addEvtListener(dvt.TimeComponentEventManager.GECKO_MOUSEWHEEL, this.OnMouseWheel, false, this);
     else
       displayable.addEvtListener(dvt.MouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
@@ -1184,7 +1223,7 @@ dvt.TimeComponentEventManager.prototype.RemoveListeners = function(displayable)
   dvt.TimeComponentEventManager.superclass.RemoveListeners.call(this, displayable);
   if (!dvt.Agent.isTouchDevice())
   {
-    if (dvt.Agent.isPlatformGecko())
+    if (dvt.Agent.browser === 'firefox')
       displayable.removeEvtListener(dvt.TimeComponentEventManager.GECKO_MOUSEWHEEL, this.OnMouseWheel, false, this);
     else
       displayable.removeEvtListener(dvt.MouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
@@ -1362,7 +1401,7 @@ dvt.TimeComponentEventManager.prototype._onMouseDragStart = function(event)
       // Hide any tooltip (from keyboard move) and put up a glass pane (for cursor change). Note that these are only relevant for mouse dragging.
       this.hideTooltip();
       this._comp.registerAndConstructGlassPane();
-      
+
       this._comp.setPanCursorDown();
       this._comp.beginDragPan(relPos.x, relPos.y);
       this._isDragPanning = true;
@@ -1450,6 +1489,7 @@ dvt.TimeComponentEventManager.prototype._onTouchDragStart = function(event)
     if (bounds.containsPoint(relPos.x, relPos.y))
     {
       this._comp.beginDragPan(relPos.x, relPos.y);
+      dvt.EventManager.consumeEvent(event);
       return true;
     }
   }

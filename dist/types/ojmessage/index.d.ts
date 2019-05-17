@@ -11,12 +11,6 @@ export interface ojMessage extends JetElement<ojMessageSettableProperties> {
         };
         labelCloseIcon?: string;
     };
-    onDisplayOptionsChanged: ((event: JetElementCustomEvent<ojMessage["displayOptions"]>) => any) | null;
-    onMessageChanged: ((event: JetElementCustomEvent<ojMessage["message"]>) => any) | null;
-    onTranslationsChanged: ((event: JetElementCustomEvent<ojMessage["translations"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojMessage.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojMessage.ojAnimateStart) => any) | null;
-    onOjClose: ((event: ojMessage.ojClose) => any) | null;
     addEventListener<T extends keyof ojMessageEventMap>(type: T, listener: (this: HTMLElement, ev: ojMessageEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojMessageSettableProperties>(property: T): ojMessage[T];
@@ -27,24 +21,17 @@ export interface ojMessage extends JetElement<ojMessageSettableProperties> {
     close(): void;
 }
 export namespace ojMessage {
-    interface ojAnimateEnd extends CustomEvent<{
-        element: Element;
-        action: 'open' | 'close';
-        [propName: string]: any;
-    }> {
-    }
-    interface ojAnimateStart extends CustomEvent<{
-        element: Element;
-        action: 'open' | 'close';
-        endCallback: (() => void);
-        [propName: string]: any;
-    }> {
-    }
     interface ojClose extends CustomEvent<{
         message: Message;
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojMessage["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messageChanged = JetElementCustomEvent<ojMessage["message"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type translationsChanged = JetElementCustomEvent<ojMessage["translations"]>;
     // tslint:disable-next-line interface-over-type-literal
     type DisplayOptions = {
         category?: 'header' | 'none' | 'auto';
@@ -63,8 +50,6 @@ export namespace ojMessage {
     };
 }
 export interface ojMessageEventMap extends HTMLElementEventMap {
-    'ojAnimateEnd': ojMessage.ojAnimateEnd;
-    'ojAnimateStart': ojMessage.ojAnimateStart;
     'ojClose': ojMessage.ojClose;
     'displayOptionsChanged': JetElementCustomEvent<ojMessage["displayOptions"]>;
     'messageChanged': JetElementCustomEvent<ojMessage["message"]>;

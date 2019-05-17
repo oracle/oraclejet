@@ -234,8 +234,8 @@ $labelPosition: $radioCheckboxLabelPosition) {
     .oj-checkbox-nocomp[disabled] + .oj-checkbox-label-nocomp {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        color: var(--oj-form-control-value-color-disabled);
-        opacity: var(--oj-form-control-opacity-disabled);        
+        color: var(--oj-text-field-value-color-disabled);
+        opacity: var(--oj-text-field-opacity-disabled);        
       }
       @else {
         color: $formControlValueColorDisabled;
@@ -289,7 +289,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
         border-color: var(--oj-radio-checkbox-set-border-color);
         border-style: solid;
         border-width: var(--oj-radio-checkbox-set-border-width);
-        border-radius: var(--oj-form-control-border-radius);
+        border-radius: var(--oj-text-field-border-radius);
       }
 
       // no chrome
@@ -447,9 +447,9 @@ $labelPosition: $radioCheckboxLabelPosition) {
     // editable datagrid cells and editable table cells
     // -----------------------------------------------------------------------------------------
 
-    .oj-form-control-inherit .oj-checkboxset-single.oj-choice-direction-column .oj-choice-item,
-    .oj-form-control-inherit .oj-checkboxset-single .oj-checkboxset-wrapper,
-    .oj-form-control-inherit .oj-checkboxset-single .oj-choice-row {
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single.oj-choice-direction-column .oj-choice-item,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single .oj-checkboxset-wrapper,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single .oj-choice-row {
       margin-bottom: 0; 
       height:100%;
       min-height:100%;
@@ -589,7 +589,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
       .oj-choice-item.oj-focus-highlight .oj-radiocheckbox-icon,
       .oj-choice-row.oj-focus-highlight .oj-radiocheckbox-icon,
       .oj-choice-row-inline.oj-focus-highlight .oj-radiocheckbox-icon {
-        @include oj-browser-focus-outline-approximation-css-vars(var(--oj-primary-text-color));
+        @include oj-browser-focus-outline-approximation-css-vars(var(--oj-text-color-primary));
       }
 
       .oj-radio-label,
@@ -647,7 +647,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
         }   
       }
 
-      .oj-form-control-inherit .oj-checkbox-label {
+      .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkbox-label {
         @include oj-ltr() {
           text-align: inherit;
         }
@@ -937,16 +937,16 @@ $labelPosition: $radioCheckboxLabelPosition) {
         
       .oj-radioset.oj-invalid .oj-radioset-wrapper,
       .oj-checkboxset.oj-invalid .oj-checkboxset-wrapper {
-        border-width: var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width);
+        border-width: var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width);
         border-style: solid;
-        border-color: var(--oj-form-control-border-color-invalid);
+        border-color: var(--oj-text-field-border-color-invalid);
       }
 
       .oj-radioset.oj-warning .oj-radioset-wrapper,
       .oj-checkboxset.oj-warning .oj-checkboxset-wrapper {
-        border-width: var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width);
+        border-width: var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width);
         border-style: solid;
-        border-color: var(--oj-form-control-border-color-warning);
+        border-color: var(--oj-text-field-border-color-warning);
       }
       
       // TODO
@@ -1113,7 +1113,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
           }   
         }
 
-        .oj-form-control-inherit .oj-checkbox-label {
+        .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkbox-label {
           @include oj-ltr() {
             text-align: inherit;
           }

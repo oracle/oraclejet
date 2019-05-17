@@ -71,7 +71,7 @@
     @include oj-media-query-as-text($selector: ".oj-mq-xl-down", $query: $responsiveQueryXlargeDown);
 
     .oj-mq-high-resolution {
-      font-family: "/#{oj-icon-hi-res-media-query-string()}/";
+        font-family: "/(-webkit-min-device-pixel-ratio: #{$highResolutionDevicePixelRatio}), (min-resolution: #{$highResolutionDevicePixelRatio*96}dpi), (min-resolution: #{$highResolutionDevicePixelRatio}dppx)/";
     }
 
   }

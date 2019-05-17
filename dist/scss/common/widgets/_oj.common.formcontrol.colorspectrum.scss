@@ -49,6 +49,7 @@
       margin-right: 15px;
       box-sizing: border-box;
       display: inline-block;
+      position: relative;
    }
 
    .oj-colorspectrum-container {
@@ -73,7 +74,7 @@
        width: var(--oj-color-spectrum-size);
      }
      @else {
-       width: $colorSpectrumSize;       
+       width: $colorSpectrumSize;
      }
    }
 
@@ -84,7 +85,7 @@
        height: var(--oj-color-spectrum-size);
      }
      @else {
-       height: $colorSpectrumSize;       
+       height: $colorSpectrumSize;
      }
    }
 
@@ -103,7 +104,7 @@
        border-radius: var(--oj-color-spectrum-thumb-size);
        border-width: var(--oj-color-spectrum-thumb-border-width);
        border-color: var(--oj-color-spectrum-thumb-border-color);
-       box-shadow: var(--oj-color-spectrum-thumb-box-shadow);           
+       box-shadow: var(--oj-color-spectrum-thumb-box-shadow);
      }
      @else {
        width: $colorSpectrumThumbSize;
@@ -111,13 +112,14 @@
        border-radius: $colorSpectrumThumbSize;
        border-width: $colorSpectrumThumbBorderWidth;
        border-color: $colorSpectrumThumbBorderColor;
-       box-shadow: $colorSpectrumThumbBoxShadow;       
+       box-shadow: $colorSpectrumThumbBoxShadow;
      }
 
       border-style: solid;
       background-color: transparent;
       cursor: pointer;
       box-sizing: border-box;
+      position: absolute;
    }
 
    .oj-colorspectrum-thumb:not(.oj-focus-highlight):focus {
@@ -127,38 +129,38 @@
    .oj-colorspectrum.oj-disabled .oj-colorspectrum-thumb {
      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
      {
-       border-color: var(--oj-color-spectrum-thumb-border-color-disabled);       
+       border-color: var(--oj-color-spectrum-thumb-border-color-disabled);
      }
      @else {
-       border-color: $colorspectrumThumbBorderColorDisabled;       
+       border-color: $colorspectrumThumbBorderColorDisabled;
      }
    }
 
    .oj-colorspectrum.oj-warning .oj-colorspectrum-container {
      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
      {
-       border-width: var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width);
+       border-width: var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width);
        border-style: solid;
-       border-color: var(--oj-form-control-border-color-warning);
+       border-color: var(--oj-text-field-border-color-warning);
      }
      @else {
        border-width: $formControlMessagingBorderWidth;
        border-style: solid;
-       border-color: $borderColorWarning;      
+       border-color: $borderColorWarning;
      }
    }
 
    .oj-colorspectrum.oj-invalid .oj-colorspectrum-container {
      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
      {
-       border-width: var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width);
+       border-width: var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width);
        border-style: solid;
-       border-color: var(--oj-form-control-border-color-invalid);
+       border-color: var(--oj-text-field-border-color-invalid);
      }
      @else {
        border-width: $formControlMessagingBorderWidth;
        border-style: solid;
-       border-color: $borderColorError;      
+       border-color: $borderColorError;
      }
    }
 

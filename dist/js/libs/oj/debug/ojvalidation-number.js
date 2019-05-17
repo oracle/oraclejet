@@ -3,10 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojtranslation', 'ojL10n!ojtranslations/nls/localeElements', 'ojs/ojlocaledata', 'ojs/ojvalidation-base', 'ojs/ojlogger'], 
 function(oj, $, Config, Translations, ojld, LocaleData, __ValidationBase, Logger)
 {
+  "use strict";
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -18,7 +18,7 @@ function(oj, $, Config, Translations, ojld, LocaleData, __ValidationBase, Logger
 
 /**
  * In most use cases you will use the ConverterFactory to get an instance of a
- * NumberConverter.
+ * NumberConverter or you will use new oj.IntlNumberConverter.
  * @export
  * @constructor
  * @augments oj.Converter
@@ -30,6 +30,7 @@ function(oj, $, Config, Translations, ojld, LocaleData, __ValidationBase, Logger
  * @abstract
  * @since 0.6
  * @see oj.ConverterFactory
+ * @see oj.IntlNumberConverter
  */
 oj.NumberConverter = function () {
   this.Init();
@@ -799,7 +800,7 @@ oj.IntlNumberConverter = function (options) {
  * <br/>Example: {style: 'percent', pattern: "#,##0"}. <p>
  *
  * &nbsp;&nbsp;- A decimal pattern or exponent pattern is specified in the pattern using the CLDR
- * conventions. <br/>Example: {pattern: "#,##0.00"} or {pattern: "0.##E+0"}. <p>
+ * conventions. <br/>Example: {pattern: "#,##0.00"} or {pattern: "0.##E0"}. <p>
  *
  * NOTE: 'pattern' is provided for backwards compatibility with existing apps that may want the
  * convenience of specifying an explicit format mask. Setting a pattern will override the default
@@ -1272,7 +1273,7 @@ oj.IntlNumberConverter.prototype._getHintValue = function () {
  * <br/>Example: {style: 'percent', pattern: "#,##0"}. <p>
  *
  * &nbsp;&nbsp;- A decimal pattern or exponent pattern is specified in the pattern using the CLDR
- * conventions. <br/>Example: {pattern: "#,##0.00"} or {pattern: "0.##E+0"}. <p>
+ * conventions. <br/>Example: {pattern: "#,##0.00"} or {pattern: "0.##E0"}. <p>
  *
  * NOTE: 'pattern' is provided for backwards compatibility with existing apps that may want the
  * convenience of specifying an explicit format mask. Setting a pattern will override the default
@@ -1466,7 +1467,6 @@ var OraNumberConverter = (function () {
   var _DIGITAL_MEGA = 1024 * 1024;
   var _DIGITAL_GIGA = 1024 * 1024 * 1024;
   var _DIGITAL_TERA = 1024 * 1024 * 1024 * 1024;
-
 
   // prepend or append count zeros to a string.
   function _zeroPad(str, count, left) {
@@ -2936,7 +2936,132 @@ var OraNumberConverter = (function () {
     if (sep !== undefined) {
       resOptions.separators = sep;
     }
+    resOptions.virtualKeyboardHint = _getVirtualKeyboardHint(numberSettings, options);
     return resOptions;
+  }
+
+  /*
+  * Checks through the converter options.
+  * Based on the options the appropriate virtualKeyboardHint is returned.
+  * @return {string} virtual keyboard hint type - 'number' or 'text'
+  */
+  function _getVirtualKeyboardHint(numberSettings, options) {
+    var virtualKeyboardHint = 'text';
+    var converterStyle = options.style;
+    switch (converterStyle) {
+      case 'unit':
+        virtualKeyboardHint = 'text';
+        break;
+
+      case 'currency':
+      case 'percent':
+        if (options.pattern === undefined) {
+          virtualKeyboardHint = 'text';
+        } else {
+          virtualKeyboardHint = _parsePatternOption(numberSettings, options);
+        }
+        break;
+
+      default:
+        if (options.pattern === undefined) {
+          if (options.decimalFormat === 'short' || options.decimalFormat === 'long') {
+            virtualKeyboardHint = 'text';
+          } else {
+            virtualKeyboardHint = _parseUseGrouping(numberSettings, options);
+          }
+        } else {
+          virtualKeyboardHint = _parsePatternOption(numberSettings, options);
+        }
+        break;
+    }
+
+    return virtualKeyboardHint;
+  }
+
+  /*
+  * Based on converter's options.useGrouping the virtualKeyboardHint is decided.
+  * @return {string} virtualKeyboardHint value
+  */
+  function _parseUseGrouping(numberSettings, options) {
+    if (options.useGrouping === undefined || options.useGrouping) {
+      if (numberSettings.decimalSeparator === '.' && numberSettings.groupingSeparator === '') {
+        return 'number';
+      }
+    } else if (numberSettings.decimalSeparator === '.') {
+      return 'number';
+    }
+    return 'text';
+  }
+
+  /*
+  * Based on converter's options.pattern the virtualKeyboardHint is decided.
+  * @return {string} virtualKeyboardHint value
+  */
+  function _parsePatternOption(numberSettings, options) {
+    var patternHasNonNumericChar = _checkPatternForNonNumericChar(options.pattern);
+    if (patternHasNonNumericChar) {
+      return 'text';
+    }
+
+    var patternHasGroupSeparator = _checkPatternForGroupSeparator(options.pattern);
+    var patternHasDecimalSeparator = _checkPatternForDecimalSeparator(options.pattern);
+
+    if (patternHasGroupSeparator && patternHasDecimalSeparator) {
+      if (numberSettings.groupingSeparator !== '' || numberSettings.decimalSeparator !== '.') {
+        return 'text';
+      } else if (numberSettings.groupingSeparator === numberSettings.decimalSeparator) {
+        return 'text';
+      }
+    }
+
+    if (patternHasDecimalSeparator && !patternHasGroupSeparator) {
+      if (numberSettings.decimalSeparator !== '.') {
+        return 'text';
+      }
+    }
+
+    if (!patternHasDecimalSeparator && patternHasGroupSeparator) {
+      if (numberSettings.groupingSeparator !== '') {
+        return 'text';
+      }
+    }
+    return 'number';
+  }
+
+  /*
+  * Checks if the converter's options.pattern has non-numeric characters
+  * that cannot be rendered by input type 'number'.
+  * @return {boolean} indicates whether pattern has non-numeric characters or not.
+  */
+
+  function _checkPatternForNonNumericChar(pattern) {
+    var nonNumericPattern = /[^0-9.#]/i;
+    return nonNumericPattern.test(pattern);
+  }
+
+  /*
+  * Checks if the converter's options.pattern has group separator symbol
+  * that cannot be rendered by input type 'number'.
+  * @return {boolean} indicates whether pattern has group separator symbol or not.
+  */
+  function _checkPatternForGroupSeparator(pattern) {
+    if (pattern.indexOf(',') !== -1) {
+      return true;
+    }
+    return false;
+  }
+
+  /*
+  * Checks if the converter's options.pattern has decimal separator symbol
+  * that cannot be rendered by input type 'number'.
+  * @return {boolean} indicates whether pattern has
+  *  decimal separator symbol or not.
+  */
+  function _checkPatternForDecimalSeparator(pattern) {
+    if (pattern.indexOf('.') !== -1) {
+      return true;
+    }
+    return false;
   }
 
   function _init() {

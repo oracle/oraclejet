@@ -3,9 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojmodel', 'ojs/ojdatasource-common'], function(oj, $, Model)
 {
+  "use strict";
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -704,9 +704,14 @@ oj.CollectionTreeDataSource.prototype._getModelForId = function (
       // Check each model in collection now for key
       function getNextCollection(index, models, tds) {
         if (index < models.length) {
-          // Return an object containing the child collection of the current collection + whether its cached
-          var childColl = tds.GetChildCollection(models[index]);
-          if (!childColl.collection) {
+          var childColl;
+          // if the model is declared a leaf in the metadata don't bother checking for children
+          if (!self.parseMetadata(models[index]).leaf) {
+            // Return an object containing the child collection of the current collection + whether its cached
+            childColl = tds.GetChildCollection(models[index]);
+          }
+
+          if (!childColl || !childColl.collection) {
             // No child collection found: move on to the next model in the current collection
             // eslint-disable-next-line no-param-reassign
             index += 1;
@@ -737,8 +742,39 @@ oj.CollectionTreeDataSource.prototype._getModelForId = function (
           resolve(null);
         }
       }
-      // Start checking the collection at the 0th model
-      getNextCollection(0, obj.models, self);
+
+      function getNextCachedCollection(index, models, tds) {
+        if (index < models.length) {
+          // do this to avoid calling getChildCollection on unfetched collections.
+          var childColl = self.__getParentsChildCollectionFromCache(models[index]);
+          if (childColl) {
+            tds._fetch({ collection: childColl, cached: true }, start, count,
+            // eslint-disable-next-line no-unused-vars
+            function (fetchColl, nextModels) {
+              tds._getModelForId(fetchColl, start, count, key, depth + 1)
+                .then(function (childModel) {
+                  if (childModel) {
+                    resolve(childModel);
+                  } else {
+                    // eslint-disable-next-line no-param-reassign
+                    index += 1;
+                    getNextCachedCollection(index, models, tds);
+                  }
+                });
+            }, null);
+          } else {
+            // eslint-disable-next-line no-param-reassign
+            index += 1;
+            getNextCachedCollection(index, models, tds);
+          }
+        } else {
+          // Not in cache so try all collections instead
+          getNextCollection(0, obj.models, self);
+        }
+      }
+
+      // Start checking the cached collections at the 0th model
+      getNextCachedCollection(0, obj.models, self);
     });
   });
 };
@@ -1023,4 +1059,5 @@ oj.CollectionTreeDataSource.prototype.getCapability = function (feature) {
   return null;
 };
 
+  return oj.CollectionTreeDataSource;
 });

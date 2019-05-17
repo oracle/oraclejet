@@ -3,15 +3,14 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'], 
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        */
-       function(oj, $)
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+*/
+function(oj, $)
 {
-
+  "use strict";
 var __oj_progress_metadata = 
 {
   "properties": {
@@ -69,7 +68,7 @@ var __oj_progress_metadata =
  * @ojstatus preview
  * @since 1.0.0
  * @augments oj.baseComponent
- * @ojshortdesc Displays progress of an operation in a rectangular horizontal meter or in a circular meter.
+ * @ojshortdesc A progress allows the user to visualize the progression of an extended computer operation.
  * @classdesc
  * <h3 id="progressOverview-section">
  *   JET Progress
@@ -243,7 +242,7 @@ var __oj_progress_metadata =
       this.element.attr({
         // Only set static values, aria-valuenow and aria-valuemax are
         // set inside _refreshValue()
-        role: 'progress',
+        role: 'progressbar',
         'aria-valuemin': this.min
       });
       this.element.addClass('oj-component');
@@ -375,8 +374,8 @@ var __oj_progress_metadata =
         circle.setAttribute('class', 'oj-progress-circle-base oj-progress-circle-value');
         var circumference = 2 * radius * 0.9 * Math.PI;
         var offset = circumference - ((this._percentage() / 100) * circumference);
-        circle.setAttribute('style', 'stroke-dasharray:' + circumference.toString()
-                            + ';stroke-dashoffset:' + offset);
+        circle.style.strokeDasharray = circumference.toString();
+        circle.style.strokeDashoffset = offset;
 
         svg.appendChild(bgCircle);
         svg.appendChild(circle);

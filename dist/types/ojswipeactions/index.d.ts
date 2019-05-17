@@ -5,7 +5,6 @@ export interface ojSwipeActions extends baseComponent<ojSwipeActionsSettableProp
         ariaShowEndActionsDescription?: string;
         ariaShowStartActionsDescription?: string;
     };
-    onOjAction: ((event: ojSwipeActions.ojAction) => any) | null;
     addEventListener<T extends keyof ojSwipeActionsEventMap>(type: T, listener: (this: HTMLElement, ev: ojSwipeActionsEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojSwipeActionsSettableProperties>(property: T): ojSwipeActions[T];

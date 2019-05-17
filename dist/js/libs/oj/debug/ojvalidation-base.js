@@ -3,9 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojtranslation', 'ojs/ojmessaging', 'ojs/ojlocaledata', 'ojs/ojlogger'], function(oj, $, Translations, Message, LocaleData, Logger)
 {
+  "use strict";
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -37,13 +37,13 @@ oj.OraI18nUtils.regexTrimNumber = /\s+|\u200f|\u200e/g;
 oj.OraI18nUtils.regexTrimRightZeros = /0+$/g;
 oj.OraI18nUtils.zeros = ['0', '00', '000'];
 // ISO 8601 string accepted values:
-// date only: YYYY or YYYY-MM or YYYY-MM-dd or YYYYMM or YYYYMMdd
-// time only without timezone: Thh:mm or Thh:mm:ss or Thh:mm:ss.SSS or Thhmm or Thhmmss or Thhmmss.SSS
-// time only with timezone: any of the time values above followed by any of the following: Z or +/-hh:mm or extended timezone like @America/Los_Angeles
-// date time: any of the date values followed by any of the time values
+// -date only: YYYY or YYYY-MM or YYYY-MM-dd
+// -time only without timezone: Thh:mm or Thh:mm:ss or Thh:mm:ss.SSS
+// -time only with timezone: any of the time values above followed by any of the following:
+// Z or +/-hh:mm or +/-hhmm or +/-hh
+// -date time: any of the date values followed by any of the time values
 oj.OraI18nUtils._ISO_DATE_REGEXP =
-  /^[+-]?\d{4}(?:-?\d{2}(?:-?\d{2})?)?(?:T\d{2}:?\d{2}(?::?\d{2}(?:\.\d{1,3})?)?(Z|[+-]\d{2}:\d{2})?)?$|^T\d{2}:?\d{2}(?::?\d{2}(?:\.\d{1,3})?)?(Z|[+-]\d{2}:\d{2})?$/;
-
+  /^[+-]?\d{4}(?:-\d{2}(?:-\d{2})?)?(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(Z|[+-]\d{2}(?::?\d{2})?)?)?$|^T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(Z|[+-]\d{2}(?::?\d{2})?)?$/;
 /**
  * Returns the timezone offset between UTC and the local time in Etc/GMT[+-]hh:mm syntax.
  * The offset is positive if the local timezone is behind UTC and negative if
@@ -131,6 +131,10 @@ oj.OraI18nUtils._isoToLocalDateIgnoreTimezone = function (isoString) {
 };
 
 oj.OraI18nUtils._IsoStrParts = function (isoString) {
+  var tst = oj.OraI18nUtils._ISO_DATE_REGEXP.test(isoString);
+  if (tst === false) {
+    oj.OraI18nUtils._throwInvalidISOStringSyntax(isoString);
+  }
   var splitted = isoString.split('T');
   var tIndex = isoString.indexOf('T');
   var today = new Date();
@@ -147,7 +151,21 @@ oj.OraI18nUtils._IsoStrParts = function (isoString) {
     }
     var dateSplitted = splitted[0].split('-');
     for (i = 0; i < dateSplitted.length; i++) {
-      datetime[i] = parseInt(dateSplitted[i], 10);
+      var val = parseInt(dateSplitted[i], 10);
+      // validate month
+      if (i === 1) {
+        if (val < 1 || val > 12) {
+          oj.OraI18nUtils._throwInvalidISOStringRange(isoString, 'month', val, 1, 12);
+        }
+      }
+      // validate day
+      if (i === 2) {
+        var nbDays = oj.OraI18nUtils._getDaysInMonth(datetime[0], datetime[1] - 1);
+        if (val < 1 || val > nbDays) {
+          oj.OraI18nUtils._throwInvalidISOStringRange(isoString, 'day', val, 1, nbDays);
+        }
+      }
+      datetime[i] = val;
     }
     if (isBC) {
       datetime[0] = -datetime[0];
@@ -159,7 +177,26 @@ oj.OraI18nUtils._IsoStrParts = function (isoString) {
     var timeSplitted = milliSecSplitted[0].split(':'); // contain hours, minutes, seconds
 
     for (i = 0; i < timeSplitted.length; i++) {
-      datetime[3 + i] = parseInt(timeSplitted[i], 10);
+      var tVal = parseInt(timeSplitted[i], 10);
+      // validate hour
+      if (i === 0) {
+        if (tVal < 0 || tVal > 24) {
+          oj.OraI18nUtils._throwInvalidISOStringRange(isoString, 'hour', tVal, 0, 24);
+        }
+      }
+      // validate minute
+      if (i === 1) {
+        if (tVal < 0 || tVal > 59) {
+          oj.OraI18nUtils._throwInvalidISOStringRange(isoString, 'minute', tVal, 0, 59);
+        }
+      }
+      // validate second
+      if (i === 2) {
+        if (tVal < 0 || tVal > 59) {
+          oj.OraI18nUtils._throwInvalidISOStringRange(isoString, 'second', tVal, 0, 59);
+        }
+      }
+      datetime[3 + i] = tVal;
     }
 
     if (milliSecSplitted.length === 2 && milliSecSplitted[1]) {
@@ -179,7 +216,7 @@ oj.OraI18nUtils.getISOStrFormatInfo = function (isoStr) {
   var exe = oj.OraI18nUtils._ISO_DATE_REGEXP.exec(isoStr);
 
   if (exe === null) {
-    oj.OraI18nUtils._throwInvalidISOString(isoStr);
+    oj.OraI18nUtils._throwInvalidISOStringSyntax(isoStr);
   }
   if (exe[1] === undefined && exe[2] === undefined) {
     res.format = 'local';
@@ -193,7 +230,9 @@ oj.OraI18nUtils.getISOStrFormatInfo = function (isoStr) {
   } else {
     res.format = 'offset';
   }
-  res.dateTime = isoStr.substring(0, isoStr.indexOf(res.timeZone));
+  var isoStrLen = isoStr.length;
+  var timeZoneLen = res.timeZone.length;
+  res.dateTime = isoStr.substring(0, isoStrLen - timeZoneLen);
   res.isoStrParts = oj.OraI18nUtils._IsoStrParts(res.dateTime);
   return res;
 };
@@ -210,8 +249,59 @@ oj.OraI18nUtils.getISOStrFormatInfo = function (isoStr) {
 //  throw error;
 // };
 
-oj.OraI18nUtils._throwInvalidISOString = function (str) {
-  var msg = 'The string ' + str + ' is not a valid ISO 8601 string.';
+oj.OraI18nUtils._isLeapYear = function (y) {
+  if (y % 400 === 0) {
+    return true;
+  } else if (y % 100 === 0) {
+    return false;
+  } else if (y % 4 === 0) {
+    return true;
+  }
+  return false;
+};
+
+// Get days in month depending on month and leap year
+oj.OraI18nUtils._getDaysInMonth = function (y, m) {
+  switch (m) {
+    case 0 :
+    case 2 :
+    case 4 :
+    case 6 :
+    case 7 :
+    case 9 :
+    case 11 :
+      return 31;
+    case 1:
+      if (oj.OraI18nUtils._isLeapYear(y)) {
+        return 29;
+      }
+      return 28;
+    default:
+      return 30;
+  }
+};
+oj.OraI18nUtils._throwInvalidISOStringRange = function (isoStr, name, displayValue,
+  displayLow, displayHigh) {
+  var msg = 'The string ' + isoStr + ' is not a valid ISO 8601 string: ' + displayValue +
+          ' is out of range.  Enter a value between ' + displayLow +
+          ' and ' + displayHigh + ' for ' + name;
+  var rangeError = new RangeError(msg);
+  var errorInfo = {
+    errorCode: 'isoStringOutOfRange',
+    parameterMap: {
+      isoString: isoStr,
+      value: displayValue,
+      minValue: displayLow,
+      maxValue: displayHigh,
+      propertyName: name
+    }
+  };
+  rangeError.errorInfo = errorInfo;
+  throw rangeError;
+};
+
+oj.OraI18nUtils._throwInvalidISOStringSyntax = function (str) {
+  var msg = 'The string ' + str + ' is not a valid ISO 8601 string syntax.';
   var error = new Error(msg);
   var errorInfo = {
     errorCode: 'invalidISOString',
@@ -1254,7 +1344,7 @@ oj.ConverterFactory =
    * @param {(Object|null)} options an object literal containing properties required by the converter
    * for its initialization. The properties provided in the options is implementation specific.
    *
-   * @return {Object} a converter instance.
+   * @return {oj.Converter} a converter instance.
    * @ojsignature { target: "Type",
    *                value: "oj.Converter<V>",
    *                for: "returns"}
@@ -1797,7 +1887,7 @@ oj.Validator.prototype.Init = function (options) {
  *  validators="{{[weekendDateValidator, endDateValidator]}}">&lt;/oj-input-date>
  * @param {any} value to be validated
  * @return {void}
- * @ojdeprecated {since: '6.2.0', description: 'This currently returns any type
+ * @ojdeprecated {since: '6.2.0', target: "returnType", value: ["any"], description: 'This currently returns any type
  * if successful, like boolean, original value, or nothing.
  * In v8.0 it will return nothing if successful.'}
  * @throws {Error} if validation fails
@@ -2014,7 +2104,7 @@ oj.RegExpValidator.prototype.Init = function (options) {
  * then the application should chain in the required validator (e.g., set required on the input).
  *
  * @param {string|number} value that is being validated
- * @ojdeprecated {since: '6.2.0', description: 'This currently returns true
+ * @ojdeprecated {since: '6.2.0', target: "returnType", value: ["boolean"], description: 'This currently returns true
  * if successful. In v8.0 it will return nothing if successful.'}
  * @returns {void}
  * @ojsignature {target: "Type", for: "returns",
@@ -2179,7 +2269,7 @@ oj.RequiredValidator.prototype.Init = function (options) {
  *
  * @param {Object|string|number} value that is being validated
  * @returns {void}
- * @ojdeprecated {since: '6.2.0', description: 'This currently returns true
+ * @ojdeprecated {since: '6.2.0', target: "returnType", value: ["boolean"], description: 'This currently returns true
  * if successful. In v8.0 it will return nothing if successful.'}
  * @throws {Error} when fails required-ness check
  * @ojsignature {target: "Type", for: "returns",
@@ -2281,7 +2371,7 @@ oj.RequiredValidator.prototype._getDetailKey = function () {
  *    });
  *  };
  *  -- HTML --
- *  &lt;oj-input-text value="{{value}}"
+ *  &lt;oj-input-text value="{{value1}}"
  *  async-validators="[[[asyncValidator1]]]">&lt;/oj-input-text>
  * @interface oj.AsyncValidator
  * @ojsignature {target: "Type", value: "interface AsyncValidator<V>",
@@ -2332,8 +2422,6 @@ oj.RequiredValidator.prototype._getDetailKey = function () {
  * @param {any} value to be validated
  * @return {Promise<void>} A Promise that resolves to nothing if validation passes or
  *  rejects with an Error if validation fails.
- * @ojdeprecated {since: '6.2.0', description: 'This currently resolves to a boolean
- * if successful. In v8.0 it will resolve to nothing.'}
  * @method validate
  * @export
  * @expose
@@ -2853,7 +2941,7 @@ oj.RequiredValidator.prototype._getDetailKey = function () {
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/* global Logger:false, Translations:false */
+/* global Logger:false, Translations:false, Promise:false */
 
 /**
  * @export
@@ -2928,7 +3016,6 @@ oj.IntlConverterUtils.getLocalTimeZoneOffset = function () {
  * converter instance of type oj.Converter, this method returns the converter instance.
  * You can also pass in a string. In this case, it will return you an instance of a converter
  * registered with that type.
- *
  * @param {string| Object} converterOption
  * @returns {Object|null} converterInstance or null if a converter cannot be determined
  * @ojsignature {
@@ -2968,7 +3055,7 @@ oj.IntlConverterUtils.getConverterInstance = function (converterOption) {
               ' cannot be found. Make sure the correct converter/validation module is included.'
           );
         }
-        converterInstance = cf.createConverter(cOptions);
+        return cf.createConverter(cOptions);
       }
     }
   }
@@ -3442,13 +3529,13 @@ oj.LengthValidator.prototype.getHint = function () {
 
 /**
  * Validates the length of value is greater than minimum and/or less than maximum.
- * @ojdeprecated {since: '6.2.0', description: 'This currently returns the original value
- * in string form if successful. In v8.0 it will return nothing if successful.'}
  * @param {string|number} value that is being validated
  * @returns {void}
  * @ojsignature {target: "Type", for: "returns",
  *                value: "void"}
  * @throws {Error} when the length is out of range.
+ * @ojdeprecated [{since: '6.2.0', target: "returnType", value: ["string"], description: 'This currently returns the original value
+ * in string form if successful. In v8.0 it will return nothing if successful.'}]
  * @export
  */
 oj.LengthValidator.prototype.validate = function (value) {

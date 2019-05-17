@@ -3,14 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-
-/**
- * Copyright (c) 2014, 2015 Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojlogger', 'promise'], function(oj, $, Config, Logger)
 {
+  "use strict";
 /**
  * Copyright (c) 2014, 2015 Oracle and/or its affiliates.
  * All rights reserved.
@@ -97,7 +92,7 @@ oj.Events = oj.Events = // eslint-disable-line no-multi-assign
     /**
      * Add an event handler for an event type to a second model or collection object ("otherObj"), but track it on
      * the called object.
-     * @param {Object} otherObj Model or collection object on which to add this event handler.
+     * @param {oj.Model|oj.Collection} otherObj Model or collection object on which to add this event handler.
      * @param {string} eventType Types of event handlers to add (may be a single event type or a space-delimited
      * set of event types).
      * @param {function(string, Object)} callback User's event handler callback function (called with the
@@ -151,7 +146,7 @@ oj.Events = oj.Events = // eslint-disable-line no-multi-assign
     /**
      * Add an event handler for an event type to a second model or collection object ("otherObj"), but track it on
      * the called object.  Only fire once.
-     * @param {Object} otherObj Model or collection object on which to add this event handler.
+     * @param {oj.Model|oj.Collection} otherObj Model or collection object on which to add this event handler.
      * @param {string} eventType Types of event handlers to add (may be a single event type or a space-delimited
      * set of event types).
      * @param {function(string, Object)} callback User's event handler callback function (called with the
@@ -205,7 +200,7 @@ oj.Events = oj.Events = // eslint-disable-line no-multi-assign
     /**
      * Remove event handlers from a model or collection object. If the arguments are omitted, removes all event
      * handlers from the model or collection.
-     * @param {Object=} otherObj If specified, remove event handlers that target otherObj from this model or
+     * @param {oj.Model|oj.Collection=} otherObj If specified, remove event handlers that target otherObj from this model or
      * collection.
      * @param {string=} eventType If specified, remove the event handlers for the given event types from this
      * model or collection
@@ -895,7 +890,7 @@ oj.Object.createSubclass(oj.Collection, oj.Object, 'oj.Collection');
 /**
  * @desc Property specifying the [model]{@link oj.Model} class object used by the collection
  * @memberof oj.Collection
- * @type Object
+ * @type oj.Model
  * @export
  */
 oj.Collection.prototype.model = null;
@@ -1005,10 +1000,29 @@ oj.Collection.prototype.changes = [];
  * <p>
  * @type {function(string,oj.Collection,Object):(string|Object|null)|null}
  * @memberof oj.Collection
+ * @ojsignature  {target: "Type", value: "function(string,oj.Collection,oj.Collection.CustomURLCallbackOptions):(string|Object|null)|null", for: "returns"}
+ *
  * @export
  * @since 1.0.0
  */
 oj.Collection.prototype.customURL = null;
+
+/**
+ * @typedef {Object} oj.Collection.CustomURLCallbackOptions
+ * @property {string=} recordID id of the record involved, if relevant
+ * @property {number=} fetchSize how many records to return.  If not set, return all
+ * @property {number=} startIndex Starting record number of the set to return
+ * @property {string=} startID Retrieve records starting with the record with the given unique ID
+ * @property {string=} since Retrieve records with timestamps after the given timestamp
+ * @property {string=} until Retrieve records with timestamps up to the given timestamp. Default is "until"
+ * @property {string=} sort field(s) by which to sort, if set
+ * @property {string=} sortDir sort ascending or descending (asc/dsc)
+ * @property {Object=} query a set of attributes indicating filtering that should be done on the server.  See
+ * [where]{@link oj.Collection#where} for complete documentation of query values
+ * @property {boolean=} all true (along with 'query', above) indicates that this is a findWhere or where type
+ * call that is expecting all models meeting the query condition to be returned
+*/
+
 
 /**
  * A callback function allowing users to extract their own paging/virtualization
@@ -2393,7 +2407,7 @@ oj.Collection._compareKeys = function (keyA, keyB, sortDirection) {
 /**
  * Add the given model to the front of the collection<br>
  * For events that may be fired, see [add]{@link oj.Collection#add}.<br>
- * @param {Object} m model (or set of attribute/value pairs) to add to the beginning of the collection
+ * @param {oj.Model|Object} m model (or set of attribute/value pairs) to add to the beginning of the collection
  * @param {Object=} options See [add]{@link oj.Collection#add}
  * @returns {Promise.<Array>|Array.<oj.Model>} The model or models added to the collection.  If
  * deferred or virtual, return the model or models added in a promise when the set has completed
@@ -2747,7 +2761,7 @@ oj.Collection.prototype.setFetchSize = function (n) {
  * @param {number=} n index at which to start the returned array of models.  Defaults to 1.
  * @param {Object=} options
  * @property {boolean=} deferred if true, return a promise as though this collection were virtual whether it is or not
- * @return {Array.<Object>|Promise} array of models from the collection.  If this is a virtual collection, or
+ * @return {Array.<oj.Model>|Promise} array of models from the collection.  If this is a virtual collection, or
  *                  if deferred is passed as true, return a promise which resolves passing the array of models.
  * @memberof oj.Collection
  * @since 1.0.0
@@ -2785,7 +2799,7 @@ oj.Collection.prototype.rest = function (n, options) {
  * @param {oj.Model|Array.<oj.Model>} m model object or array of models to remove.
  * @param {Object=} options
  * @property {boolean=} silent if set, do not fire events
- * @return {Array.<oj.Model>|Object} an array of models or single model removed
+ * @return {Array.<oj.Model>|oj.Model} an array of models or single model removed
  * @memberof oj.Collection
  * @since 1.0.0
  * @export
@@ -3531,19 +3545,20 @@ oj.Collection.prototype._checkActual = function (start, count, actual) {
  *
  * @param {number} start starting index to make local
  * @param {number} count number of elements to make local
+ * @param {Object=} options Options to control whether events are fired by this call (silent: true)
  * @return {Promise} a promise Object that resolves upon completion.  The promise will be passed an Object
  * containing start and count properties that represent the *actual* starting position (start), count (count),
  * and array (models) of the Models fetched, which may be fewer than what was requested.  The promise will be
  * rejected on an error and will pass the ajax status, xhr object, error, and collection, if relevant.
  * @memberof oj.Collection
- * @ojsignature  {target: "Type", value: "Promise<oj.Collection.SetRangeLocalPromise>", for: "returns"}
+ * @ojsignature  [{target: "Type", value:"{silent?: boolean}", for: "options"}, {target: "Type", value: "Promise<oj.Collection.SetRangeLocalPromise>", for: "returns"}]
  * @since 1.0.0
  * @export
  */
-oj.Collection.prototype.setRangeLocal = function (start, count) {
+oj.Collection.prototype.setRangeLocal = function (start, count, options) {
   var self = this;
   return this._addPromise(function () {
-    return self._setRangeLocalInternal(start, count);
+    return self._setRangeLocalInternal(start, count, options);
   });
 };
 
@@ -3558,7 +3573,7 @@ oj.Collection.prototype.setRangeLocal = function (start, count) {
 /**
  * @private
  */
-oj.Collection.prototype._setRangeLocalInternal = function (start, count) {
+oj.Collection.prototype._setRangeLocalInternal = function (start, count, options) {
   if (this.IsVirtual()) {
         // make sure we reconcile the length to what we think the totalresults are--if there have been any non
         // fetched changes in length we don't want to be placing things wrong
@@ -3579,7 +3594,7 @@ oj.Collection.prototype._setRangeLocalInternal = function (start, count) {
   }
   return new Promise(function (resolve, reject) {
     self._setRangeLocalFetch(start, count, -1, { start: start, count: count }, resolve,
-                             reject, true);
+                             reject, true, options);
   });
 };
 
@@ -3587,7 +3602,7 @@ oj.Collection.prototype._setRangeLocalInternal = function (start, count) {
  * @private
  */
 oj.Collection.prototype._setRangeLocalFetch = function (start, count, placement, original,
-  resolve, reject, fill) {
+  resolve, reject, fill, options) {
   var self = this;
   var localStart = start;
   var resp = function () {
@@ -3598,7 +3613,8 @@ oj.Collection.prototype._setRangeLocalFetch = function (start, count, placement,
       // Try the next block...don't repeat the request
       var newStart = localStart + (self.lastFetchCount ? self.lastFetchCount : count);
       if (newStart < self.totalResults) {
-        self._setRangeLocalFetch(newStart, count, newPlacement, original, resolve, reject, fill);
+        self._setRangeLocalFetch(newStart, count, newPlacement, original, resolve, reject,
+          fill, options);
       } else {
         // Can't go any further
         resolve(actual);
@@ -3639,6 +3655,9 @@ oj.Collection.prototype._setRangeLocalFetch = function (start, count, placement,
   opts.success = function () {
     resp();
   };
+  if (options && options.silent) {
+    opts.silent = options.silent;
+  }
 
   try {
     this._fetchInternal(opts, placement, placement > -1);
@@ -4675,7 +4694,7 @@ oj.Collection.prototype.size = function () {
  * Return the models sorted determined by the iterator function (or property, if a string value).  If a function,
  * the function should return the attribute by which to sort.
  *
- * @param {string|function(oj.Model):Object} iterator method called or property used to get the attribute to sort by.
+ * @param {string|function(oj.Model):string} iterator method called or property used to get the attribute to sort by.
  * @param {Object=} context context with which to make the calls on iterator
  * @returns {Array.<oj.Model>} models sorted using iterator
  * @throws {Error} when called on a virtual collection
@@ -4781,9 +4800,9 @@ oj.Collection.prototype.indexBy = function (iterator, context) {
  * Return the "minimum" model in the collection, as determined by calls to iterator.  The return value of
  * iterator (called with a model passed in) will be compared against the current minimum
  *
- * @param {function(Object)} iterator function to determine a model's value for checking for the minimum
+ * @param {function(oj.Model):Object} iterator function to determine a model's value for checking for the minimum
  * @param {Object=} context context with which to make the calls on iterator
- * @returns {Object} "Minimum" model in the collection
+ * @returns {oj.Model} "Minimum" model in the collection
  *
  * @throws {Error} when called on a virtual Collection
  * @memberof oj.Collection
@@ -4822,7 +4841,7 @@ oj.Collection.prototype.min = function (iterator, context) {
  *
  * @param {function(oj.Model):Object} iterator function to determine a model's value for checking for the maximum
  * @param {Object=} context context with which to make the calls on iterator
- * @returns {Object} "Maximum" model in the collection
+ * @returns {oj.Model} "Maximum" model in the collection
  *
  * @throws {Error} when called on a virtual collection
  * @memberof oj.Collection
@@ -5018,7 +5037,8 @@ oj.Collection.prototype.any = function (iterator, context) {
  * @memberof oj.Collection
  * @param {Object|Array.<Object>} attrs attribute/value pairs to find.
  * See [where]{@link oj.Collection#where} for more details and examples.
- * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual
+ * @param {Object=} options
+ * @property {boolean=} deferred if true, return a promise as though this collection were virtual
  * whether it is or not<p>
  *
  * @returns {oj.Model|Promise.<oj.Model>} first model found with the attribute/value pairs.  If virtual or deferred, a promise
@@ -5394,7 +5414,7 @@ oj.Collection.prototype.first = function (n, options) {
 /**
  * Return the array index location of the given model object.<br>
  * For events that may be fired if the collection is virtual, see [fetch]{@link oj.Collection#fetch}.<br>
- * @param {Object} model Model object (or Model id) to locate
+ * @param {oj.Model|string} model Model object (or Model id) to locate
  * @param {Object=} options
  * @property {boolean=} deferred if true, return a promise as though this collection were virtual
  * whether it is or not
@@ -5739,13 +5759,13 @@ oj.Collection.prototype._getSortDirStr = function () {
  * @param {string} method "read"
  * @param {oj.Collection} collection the collection to be read (fetched)
  * @param {Object=} options to control sync<br>
- * <b>success</b>: called if sync succeeds.  Called with the array of JSON data being fetched<br>
+ * <b>success</b>: called if sync succeeds.  Called with the data being fetched<br>
  * <b>error</b>: called if sync fails.  Called with xhr, status, and error info, per jQuery Ajax (all if
  * available)<br>
  * @return {Object} xhr response from ajax by default
  * @memberof oj.Collection
  * @since 1.0.0
- * @ojsignature {target: "Type", value:"{success?: (json?: Array<any>)=> void,
+ * @ojsignature {target: "Type", value:"{success?: (response?: any)=> void,
  *                                                  error?: (xhr: any, status: any, error: any)=> void, [propName: string]: any}", for: "options"}
  * @alias oj.Collection.prototype.sync
  */
@@ -5876,9 +5896,15 @@ oj.Model.prototype.urlRoot = null;
  *
  * @memberof oj.Model
  * @type {function(string,oj.Model,Object):(string|Object|null)|null}
+ * @ojsignature  {target: "Type", value: "function(string,oj.Model,oj.Model.CustomURLCallbackOptions):(string|Object|null)|null", for: "returns"}
  * @since 1.0.0
  */
 oj.Model.prototype.customURL = null;
+
+/**
+ * @typedef {Object} oj.Model.CustomURLCallbackOptions
+ * @property {string=} recordID id of the record involved, if relevant
+*/
 
 
 /**
@@ -6628,7 +6654,7 @@ oj.Model.prototype._unsetInternal = function (property, opts, clear) {
 /**
  * Returns the value of a property from the model.
  * @param {string} property Property to get from model
- * @return {Object} value of property
+ * @return {any} value of property
  * @memberof oj.Model
  * @since 1.0.0
  * @export
@@ -6802,7 +6828,7 @@ oj.Model.prototype.values = function () {
 /**
  * Return an array of attributes/value pairs found in the model
  *
- * @returns {Object} returns the model's attribute/value pairs as an array
+ * @returns {Array.<Object>} returns the model's attribute/value pairs as an array
  * @memberof oj.Model
  * @since 1.0.0
  * @export
@@ -6862,7 +6888,7 @@ oj.Model.prototype.omit = function (keys) {
  *
  * @param {Array.<Object>|Object} keys keys for which to return attribute/value pairs
  *
- * @returns {Object} array of the model's attribute/value pairs filtered by keys
+ * @returns {Array.<Object>} array of the model's attribute/value pairs filtered by keys
  * @memberof oj.Model
  * @since 1.0.0
  * @export
@@ -8408,7 +8434,6 @@ oj.URLError = function () {
 oj.URLError.prototype = new Error();
 oj.URLError.constructor = oj.URLError;
 
-/* global Collection:false, Event:false, Model:false, OAuth:false, URLError:false */
 // Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
 
 var Model = {};

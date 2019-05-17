@@ -3,15 +3,14 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojindexer', 'ojs/ojdatasource-common'],
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        */
-       function(oj, $)
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+*/
+function(oj, $)
 {
-
+  "use strict";
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
@@ -21,6 +20,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojindexer', 'ojs/ojdatasource-common'],
  * Implementation of the IndexerModel and TreeDataSource based on an array of data set.
  * This should be used with the Indexer and its associated ListView.
  * By default, this adapter groups the data based on the first letter of the data and the alphabet of the current locale.
+ * @ojdeprecated {since: '7.0.0', description: 'Use IndexerModelTreeDataProvider instead.'}
  * @class oj.IndexerModelTreeDataSource
  * @classdesc TreeDataSource and IndexerModel implementation that represents hierachical data available from an array of JSON objects.  This data source can be used by [Indexer]{@link oj.ojIndexer} and
  *            associated [ListView]{@link oj.ojListView}.<br><br>
@@ -330,6 +330,23 @@ oj.IndexerModelTreeDataSource.prototype.fetchChildren = function (
   if (callbacks != null && callbacks.success != null) {
     callbacks.success.call(null, nodeSet);
   }
+};
+
+/**
+ * Returns the current sort criteria of the tree data.
+ * @return {Object} the current sort criteria.  It should contain the following properties: key, direction where
+ *         criteria.key the key identifying the attribute (column) to sort on.  Value is null if it's not sorted.
+ *         criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
+ * @ojsignature {target: "Type",
+ *               value: "{key: any, direction: 'ascending'|'descending'|'none'}",
+ *               for: "returns"}
+ * @export
+ * @expose
+ * @memberof oj.IndexerModelTreeDataSource
+ * @instance
+ */
+oj.IndexerModelTreeDataSource.prototype.getSortCriteria = function () {
+  return { key: null, direction: 'none' };
 };
 
 });

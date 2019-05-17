@@ -26,7 +26,8 @@
       align-items: center;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
         height: var(--oj-message-header-height);
-      } @else {
+      }
+      @else {
         height: $messageHeaderHeight;  
       }      
     }
@@ -50,9 +51,12 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
         color: var(--oj-message-category-text-color);
         font-size: var(--oj-message-category-font-size);
-      } @else {
+        font-weight: var(--oj-message-category-font-weight);
+      }
+      @else {
         color: $messageCategoryTextColor;
         font-size: $messageCategoryFontSize;
+        font-weight: $messageCategoryFontWeight;
       }
 
       // category text is expected to be single word, but it could be long, like "CONFIRMATION"
@@ -62,16 +66,14 @@
     }
     
     .oj-message-category h1 {
+      // Supress general h1 overrides, and use what is in oj-message-category
       color: inherit;
       font-size: inherit;
+      font-weight: inherit;
       
       // Supress the undesirable 8px margin and 2px bottom padding in generic h1
       margin: 0px;
       padding: 0px;
-      
-      // Supress the undesirable variance in font-weight across themes in generic h1, we want it
-      //  to be normal in all themes in the messages
-      font-weight: 400;
     }
     
     .oj-message-body {
@@ -88,7 +90,8 @@
         color: var(--oj-message-summary-text-color);
         font-size: var(--oj-message-summary-font-size);
         line-height: var(--oj-message-summary-line-height);
-      } @else {
+      }
+      @else {
         font-weight: $messageSummaryFontWeight;
         color: $messageSummaryTextColor;
         font-size: $messageSummaryFontSize;
@@ -105,7 +108,8 @@
         color: var(--oj-message-detail-text-color);
         font-size: var(--oj-message-detail-font-size);
         line-height: var(--oj-message-detail-line-height);
-      } @else {
+      }
+      @else {
         color: $messageDetailTextColor;
         font-size: $messageDetailFontSize;
         line-height: $messageDetailLineHeight;
@@ -120,11 +124,16 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
         color: var(--oj-message-time-text-color);
         font-size: var(--oj-message-time-font-size);
-      } @else {
+        text-align: right;
+        html[dir="rtl"] & {
+          text-align: left;
+        }
+      }
+      @else {
         color: $messageTimeTextColor;
         font-size: $messageTimeFontSize;
+        @include oj-bidi-property($property: 'text-align', $startOrEnd: end);
       }
-      @include oj-bidi-property($property: 'text-align', $startOrEnd: end);
       flex-grow: 9;
       
       // in worst case let it wrap at word ends so as to not overlap with category text
@@ -132,10 +141,15 @@
     }
     
     .oj-message-close {
-      @include oj-bidi-property($property: 'float', $startOrEnd: end);
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        float: right;
         display: var(--oj-message-close-icon-display);
-      } @else {
+        html[dir="rtl"] & {
+          float: left;
+        }
+      }
+      @else {
+        @include oj-bidi-property($property: 'float', $startOrEnd: end);
         display: $messageCloseIconDisplay;
       }
     }

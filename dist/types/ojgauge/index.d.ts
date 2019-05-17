@@ -61,7 +61,7 @@ export interface ojLedGauge extends dvtBaseGauge<ojLedGaugeSettableProperties> {
     borderColor: string;
     color: string;
     label: {
-        style?: object;
+        style?: CSSStyleDeclaration;
         text?: string;
     };
     max: number;
@@ -69,7 +69,7 @@ export interface ojLedGauge extends dvtBaseGauge<ojLedGaugeSettableProperties> {
         converter?: Converter<string>;
         rendered?: 'on' | 'off';
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-        style?: object;
+        style?: CSSStyleDeclaration;
         text?: string;
         textType?: 'percent' | 'number';
     };
@@ -77,7 +77,7 @@ export interface ojLedGauge extends dvtBaseGauge<ojLedGaugeSettableProperties> {
     rotation: 90 | 180 | 270 | 0;
     size: number;
     svgClassName: string;
-    svgStyle: object;
+    svgStyle: CSSStyleDeclaration;
     thresholds: ojLedGauge.Threshold[];
     tooltip: {
         renderer: ((context: ojLedGauge.TooltipContext) => ({
@@ -89,21 +89,6 @@ export interface ojLedGauge extends dvtBaseGauge<ojLedGaugeSettableProperties> {
     type: 'arrow' | 'diamond' | 'square' | 'rectangle' | 'triangle' | 'star' | 'human' | 'circle';
     value: number | null;
     visualEffects: 'none' | 'auto';
-    onBorderColorChanged: ((event: JetElementCustomEvent<ojLedGauge["borderColor"]>) => any) | null;
-    onColorChanged: ((event: JetElementCustomEvent<ojLedGauge["color"]>) => any) | null;
-    onLabelChanged: ((event: JetElementCustomEvent<ojLedGauge["label"]>) => any) | null;
-    onMaxChanged: ((event: JetElementCustomEvent<ojLedGauge["max"]>) => any) | null;
-    onMetricLabelChanged: ((event: JetElementCustomEvent<ojLedGauge["metricLabel"]>) => any) | null;
-    onMinChanged: ((event: JetElementCustomEvent<ojLedGauge["min"]>) => any) | null;
-    onRotationChanged: ((event: JetElementCustomEvent<ojLedGauge["rotation"]>) => any) | null;
-    onSizeChanged: ((event: JetElementCustomEvent<ojLedGauge["size"]>) => any) | null;
-    onSvgClassNameChanged: ((event: JetElementCustomEvent<ojLedGauge["svgClassName"]>) => any) | null;
-    onSvgStyleChanged: ((event: JetElementCustomEvent<ojLedGauge["svgStyle"]>) => any) | null;
-    onThresholdsChanged: ((event: JetElementCustomEvent<ojLedGauge["thresholds"]>) => any) | null;
-    onTooltipChanged: ((event: JetElementCustomEvent<ojLedGauge["tooltip"]>) => any) | null;
-    onTypeChanged: ((event: JetElementCustomEvent<ojLedGauge["type"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojLedGauge["value"]>) => any) | null;
-    onVisualEffectsChanged: ((event: JetElementCustomEvent<ojLedGauge["visualEffects"]>) => any) | null;
     addEventListener<T extends keyof ojLedGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojLedGaugeEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojLedGaugeSettableProperties>(property: T): ojLedGauge[T];
@@ -111,7 +96,52 @@ export interface ojLedGauge extends dvtBaseGauge<ojLedGaugeSettableProperties> {
     setProperty<T extends keyof ojLedGaugeSettableProperties>(property: T, value: ojLedGaugeSettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojLedGaugeSettableProperties>): void;
     setProperties(properties: ojLedGaugeSettablePropertiesLenient): void;
-    getMetricLabel(): string;
+}
+export namespace ojLedGauge {
+    // tslint:disable-next-line interface-over-type-literal
+    type borderColorChanged = JetElementCustomEvent<ojLedGauge["borderColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojLedGauge["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojLedGauge["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojLedGauge["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type metricLabelChanged = JetElementCustomEvent<ojLedGauge["metricLabel"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged = JetElementCustomEvent<ojLedGauge["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rotationChanged = JetElementCustomEvent<ojLedGauge["rotation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sizeChanged = JetElementCustomEvent<ojLedGauge["size"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojLedGauge["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojLedGauge["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type thresholdsChanged = JetElementCustomEvent<ojLedGauge["thresholds"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipChanged = JetElementCustomEvent<ojLedGauge["tooltip"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type typeChanged = JetElementCustomEvent<ojLedGauge["type"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojLedGauge["value"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type visualEffectsChanged = JetElementCustomEvent<ojLedGauge["visualEffects"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Threshold = {
+        borderColor?: string;
+        color?: string;
+        max?: number;
+        shortDesc?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext = {
+        color: string;
+        componentElement: Element;
+        label: string;
+        parentElement: Element;
+    };
 }
 export interface ojLedGaugeEventMap extends dvtBaseGaugeEventMap<ojLedGaugeSettableProperties> {
     'borderColorChanged': JetElementCustomEvent<ojLedGauge["borderColor"]>;
@@ -134,7 +164,7 @@ export interface ojLedGaugeSettableProperties extends dvtBaseGaugeSettableProper
     borderColor: string;
     color: string;
     label: {
-        style?: object;
+        style?: CSSStyleDeclaration;
         text?: string;
     };
     max: number;
@@ -142,7 +172,7 @@ export interface ojLedGaugeSettableProperties extends dvtBaseGaugeSettableProper
         converter?: Converter<string>;
         rendered?: 'on' | 'off';
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-        style?: object;
+        style?: CSSStyleDeclaration;
         text?: string;
         textType?: 'percent' | 'number';
     };
@@ -150,7 +180,7 @@ export interface ojLedGaugeSettableProperties extends dvtBaseGaugeSettableProper
     rotation: 90 | 180 | 270 | 0;
     size: number;
     svgClassName: string;
-    svgStyle: object;
+    svgStyle: CSSStyleDeclaration;
     thresholds: ojLedGauge.Threshold[];
     tooltip: {
         renderer: ((context: ojLedGauge.TooltipContext) => ({
@@ -166,22 +196,6 @@ export interface ojLedGaugeSettableProperties extends dvtBaseGaugeSettableProper
 export interface ojLedGaugeSettablePropertiesLenient extends Partial<ojLedGaugeSettableProperties> {
     [key: string]: any;
 }
-export namespace ojLedGauge {
-    // tslint:disable-next-line interface-over-type-literal
-    type Threshold = {
-        borderColor?: string;
-        color?: string;
-        max?: number;
-        shortDesc?: string;
-    };
-    // tslint:disable-next-line interface-over-type-literal
-    type TooltipContext = {
-        color: string;
-        componentElement: Element;
-        label: string;
-        parentElement: Element;
-    };
-}
 export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettableProperties> {
     changed: boolean;
     changedState: {
@@ -190,7 +204,7 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: object;
+        svgStyle?: CSSStyleDeclaration;
     };
     hoverState: {
         borderColor?: string;
@@ -198,7 +212,7 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: object;
+        svgStyle?: CSSStyleDeclaration;
     };
     max: number;
     min: number;
@@ -211,7 +225,7 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: object;
+        svgStyle?: CSSStyleDeclaration;
     };
     step: 0.5 | 1;
     thresholds: ojRatingGauge.Threshold[];
@@ -229,26 +243,10 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: object;
+        svgStyle?: CSSStyleDeclaration;
     };
     value: number | null;
     visualEffects: 'none' | 'auto';
-    onChangedChanged: ((event: JetElementCustomEvent<ojRatingGauge["changed"]>) => any) | null;
-    onChangedStateChanged: ((event: JetElementCustomEvent<ojRatingGauge["changedState"]>) => any) | null;
-    onHoverStateChanged: ((event: JetElementCustomEvent<ojRatingGauge["hoverState"]>) => any) | null;
-    onMaxChanged: ((event: JetElementCustomEvent<ojRatingGauge["max"]>) => any) | null;
-    onMinChanged: ((event: JetElementCustomEvent<ojRatingGauge["min"]>) => any) | null;
-    onOrientationChanged: ((event: JetElementCustomEvent<ojRatingGauge["orientation"]>) => any) | null;
-    onPreserveAspectRatioChanged: ((event: JetElementCustomEvent<ojRatingGauge["preserveAspectRatio"]>) => any) | null;
-    onReadonlyChanged: ((event: JetElementCustomEvent<ojRatingGauge["readonly"]>) => any) | null;
-    onSelectedStateChanged: ((event: JetElementCustomEvent<ojRatingGauge["selectedState"]>) => any) | null;
-    onStepChanged: ((event: JetElementCustomEvent<ojRatingGauge["step"]>) => any) | null;
-    onThresholdsChanged: ((event: JetElementCustomEvent<ojRatingGauge["thresholds"]>) => any) | null;
-    onTooltipChanged: ((event: JetElementCustomEvent<ojRatingGauge["tooltip"]>) => any) | null;
-    onTransientValueChanged: ((event: JetElementCustomEvent<ojRatingGauge["transientValue"]>) => any) | null;
-    onUnselectedStateChanged: ((event: JetElementCustomEvent<ojRatingGauge["unselectedState"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojRatingGauge["value"]>) => any) | null;
-    onVisualEffectsChanged: ((event: JetElementCustomEvent<ojRatingGauge["visualEffects"]>) => any) | null;
     addEventListener<T extends keyof ojRatingGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojRatingGaugeEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojRatingGaugeSettableProperties>(property: T): ojRatingGauge[T];
@@ -256,6 +254,54 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
     setProperty<T extends keyof ojRatingGaugeSettableProperties>(property: T, value: ojRatingGaugeSettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojRatingGaugeSettableProperties>): void;
     setProperties(properties: ojRatingGaugeSettablePropertiesLenient): void;
+}
+export namespace ojRatingGauge {
+    // tslint:disable-next-line interface-over-type-literal
+    type changedChanged = JetElementCustomEvent<ojRatingGauge["changed"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type changedStateChanged = JetElementCustomEvent<ojRatingGauge["changedState"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverStateChanged = JetElementCustomEvent<ojRatingGauge["hoverState"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojRatingGauge["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged = JetElementCustomEvent<ojRatingGauge["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type orientationChanged = JetElementCustomEvent<ojRatingGauge["orientation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type preserveAspectRatioChanged = JetElementCustomEvent<ojRatingGauge["preserveAspectRatio"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyChanged = JetElementCustomEvent<ojRatingGauge["readonly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectedStateChanged = JetElementCustomEvent<ojRatingGauge["selectedState"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type stepChanged = JetElementCustomEvent<ojRatingGauge["step"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type thresholdsChanged = JetElementCustomEvent<ojRatingGauge["thresholds"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipChanged = JetElementCustomEvent<ojRatingGauge["tooltip"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type transientValueChanged = JetElementCustomEvent<ojRatingGauge["transientValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type unselectedStateChanged = JetElementCustomEvent<ojRatingGauge["unselectedState"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojRatingGauge["value"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type visualEffectsChanged = JetElementCustomEvent<ojRatingGauge["visualEffects"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Threshold = {
+        borderColor?: string;
+        color?: string;
+        max?: number;
+        shortDesc?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext = {
+        color: string;
+        componentElement: Element;
+        label: string;
+        parentElement: Element;
+    };
 }
 export interface ojRatingGaugeEventMap extends dvtBaseGaugeEventMap<ojRatingGaugeSettableProperties> {
     'changedChanged': JetElementCustomEvent<ojRatingGauge["changed"]>;
@@ -283,7 +329,7 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: object;
+        svgStyle?: CSSStyleDeclaration;
     };
     hoverState: {
         borderColor?: string;
@@ -291,7 +337,7 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: object;
+        svgStyle?: CSSStyleDeclaration;
     };
     max: number;
     min: number;
@@ -304,7 +350,7 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: object;
+        svgStyle?: CSSStyleDeclaration;
     };
     step: 0.5 | 1;
     thresholds: ojRatingGauge.Threshold[];
@@ -322,29 +368,13 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: object;
+        svgStyle?: CSSStyleDeclaration;
     };
     value: number | null;
     visualEffects: 'none' | 'auto';
 }
 export interface ojRatingGaugeSettablePropertiesLenient extends Partial<ojRatingGaugeSettableProperties> {
     [key: string]: any;
-}
-export namespace ojRatingGauge {
-    // tslint:disable-next-line interface-over-type-literal
-    type Threshold = {
-        borderColor?: string;
-        color?: string;
-        max?: number;
-        shortDesc?: string;
-    };
-    // tslint:disable-next-line interface-over-type-literal
-    type TooltipContext = {
-        color: string;
-        componentElement: Element;
-        label: string;
-        parentElement: Element;
-    };
 }
 export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSettableProperties> {
     angleExtent: number;
@@ -365,7 +395,7 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
     innerRadius: number;
     label: {
         position?: 'center' | 'start' | 'auto';
-        style?: object;
+        style?: CSSStyleDeclaration;
         text?: string;
     };
     max: number;
@@ -374,7 +404,7 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
         position?: 'center' | 'insideIndicatorEdge' | 'outsideIndicatorEdge' | 'outsidePlotArea' | 'withLabel' | 'auto';
         rendered?: 'on' | 'off' | 'auto';
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-        style?: object;
+        style?: CSSStyleDeclaration;
         text?: string;
         textType?: 'percent' | 'number';
     };
@@ -386,14 +416,14 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
         color?: string;
         rendered?: 'on' | 'off' | 'auto';
         svgClassName?: string;
-        svgStyle?: object;
+        svgStyle?: CSSStyleDeclaration;
     };
     readonly: boolean;
     referenceLines: ojStatusMeterGauge.ReferenceLine[];
     startAngle: number;
     step: number | null;
     svgClassName: string;
-    svgStyle: object;
+    svgStyle: CSSStyleDeclaration;
     thresholdDisplay: 'currentOnly' | 'all' | 'onIndicator';
     thresholds: ojStatusMeterGauge.Threshold[];
     tooltip: {
@@ -406,34 +436,6 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
     readonly transientValue: number | null;
     value: number | null;
     visualEffects: 'none' | 'auto';
-    onAngleExtentChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["angleExtent"]>) => any) | null;
-    onAnimationDurationChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["animationDuration"]>) => any) | null;
-    onAnimationOnDataChangeChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["animationOnDataChange"]>) => any) | null;
-    onAnimationOnDisplayChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["animationOnDisplay"]>) => any) | null;
-    onBorderColorChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["borderColor"]>) => any) | null;
-    onBorderRadiusChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["borderRadius"]>) => any) | null;
-    onCenterChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["center"]>) => any) | null;
-    onColorChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["color"]>) => any) | null;
-    onIndicatorSizeChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["indicatorSize"]>) => any) | null;
-    onInnerRadiusChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["innerRadius"]>) => any) | null;
-    onLabelChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["label"]>) => any) | null;
-    onMaxChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["max"]>) => any) | null;
-    onMetricLabelChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["metricLabel"]>) => any) | null;
-    onMinChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["min"]>) => any) | null;
-    onOrientationChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["orientation"]>) => any) | null;
-    onPlotAreaChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["plotArea"]>) => any) | null;
-    onReadonlyChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["readonly"]>) => any) | null;
-    onReferenceLinesChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["referenceLines"]>) => any) | null;
-    onStartAngleChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["startAngle"]>) => any) | null;
-    onStepChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["step"]>) => any) | null;
-    onSvgClassNameChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["svgClassName"]>) => any) | null;
-    onSvgStyleChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["svgStyle"]>) => any) | null;
-    onThresholdDisplayChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["thresholdDisplay"]>) => any) | null;
-    onThresholdsChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["thresholds"]>) => any) | null;
-    onTooltipChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["tooltip"]>) => any) | null;
-    onTransientValueChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["transientValue"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["value"]>) => any) | null;
-    onVisualEffectsChanged: ((event: JetElementCustomEvent<ojStatusMeterGauge["visualEffects"]>) => any) | null;
     addEventListener<T extends keyof ojStatusMeterGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojStatusMeterGaugeEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojStatusMeterGaugeSettableProperties>(property: T): ojStatusMeterGauge[T];
@@ -441,7 +443,99 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
     setProperty<T extends keyof ojStatusMeterGaugeSettableProperties>(property: T, value: ojStatusMeterGaugeSettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojStatusMeterGaugeSettableProperties>): void;
     setProperties(properties: ojStatusMeterGaugeSettablePropertiesLenient): void;
-    getMetricLabel(): string;
+}
+export namespace ojStatusMeterGauge {
+    // tslint:disable-next-line interface-over-type-literal
+    type angleExtentChanged = JetElementCustomEvent<ojStatusMeterGauge["angleExtent"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationDurationChanged = JetElementCustomEvent<ojStatusMeterGauge["animationDuration"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDataChangeChanged = JetElementCustomEvent<ojStatusMeterGauge["animationOnDataChange"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDisplayChanged = JetElementCustomEvent<ojStatusMeterGauge["animationOnDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type borderColorChanged = JetElementCustomEvent<ojStatusMeterGauge["borderColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type borderRadiusChanged = JetElementCustomEvent<ojStatusMeterGauge["borderRadius"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type centerChanged = JetElementCustomEvent<ojStatusMeterGauge["center"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojStatusMeterGauge["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type indicatorSizeChanged = JetElementCustomEvent<ojStatusMeterGauge["indicatorSize"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type innerRadiusChanged = JetElementCustomEvent<ojStatusMeterGauge["innerRadius"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojStatusMeterGauge["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojStatusMeterGauge["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type metricLabelChanged = JetElementCustomEvent<ojStatusMeterGauge["metricLabel"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged = JetElementCustomEvent<ojStatusMeterGauge["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type orientationChanged = JetElementCustomEvent<ojStatusMeterGauge["orientation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type plotAreaChanged = JetElementCustomEvent<ojStatusMeterGauge["plotArea"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyChanged = JetElementCustomEvent<ojStatusMeterGauge["readonly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type referenceLinesChanged = JetElementCustomEvent<ojStatusMeterGauge["referenceLines"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type startAngleChanged = JetElementCustomEvent<ojStatusMeterGauge["startAngle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type stepChanged = JetElementCustomEvent<ojStatusMeterGauge["step"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojStatusMeterGauge["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojStatusMeterGauge["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type thresholdDisplayChanged = JetElementCustomEvent<ojStatusMeterGauge["thresholdDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type thresholdsChanged = JetElementCustomEvent<ojStatusMeterGauge["thresholds"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipChanged = JetElementCustomEvent<ojStatusMeterGauge["tooltip"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type transientValueChanged = JetElementCustomEvent<ojStatusMeterGauge["transientValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojStatusMeterGauge["value"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type visualEffectsChanged = JetElementCustomEvent<ojStatusMeterGauge["visualEffects"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Bounds = {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type CenterContext = {
+        componentElement: Element;
+        innerBounds: Bounds;
+        metricLabel: string;
+        outerBounds: Bounds;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ReferenceLine = {
+        color?: string;
+        value?: number;
+        lineWidth?: number;
+        lineStyle?: 'dashed' | 'dotted' | 'solid';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Threshold = {
+        borderColor?: string;
+        color?: string;
+        max?: number;
+        shortDesc?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext = {
+        color: string;
+        componentElement: Element;
+        label: string;
+        parentElement: Element;
+    };
 }
 export interface ojStatusMeterGaugeEventMap extends dvtBaseGaugeEventMap<ojStatusMeterGaugeSettableProperties> {
     'angleExtentChanged': JetElementCustomEvent<ojStatusMeterGauge["angleExtent"]>;
@@ -492,7 +586,7 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
     innerRadius: number;
     label: {
         position?: 'center' | 'start' | 'auto';
-        style?: object;
+        style?: CSSStyleDeclaration;
         text?: string;
     };
     max: number;
@@ -501,7 +595,7 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
         position?: 'center' | 'insideIndicatorEdge' | 'outsideIndicatorEdge' | 'outsidePlotArea' | 'withLabel' | 'auto';
         rendered?: 'on' | 'off' | 'auto';
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-        style?: object;
+        style?: CSSStyleDeclaration;
         text?: string;
         textType?: 'percent' | 'number';
     };
@@ -513,14 +607,14 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
         color?: string;
         rendered?: 'on' | 'off' | 'auto';
         svgClassName?: string;
-        svgStyle?: object;
+        svgStyle?: CSSStyleDeclaration;
     };
     readonly: boolean;
     referenceLines: ojStatusMeterGauge.ReferenceLine[];
     startAngle: number;
     step: number | null;
     svgClassName: string;
-    svgStyle: object;
+    svgStyle: CSSStyleDeclaration;
     thresholdDisplay: 'currentOnly' | 'all' | 'onIndicator';
     thresholds: ojStatusMeterGauge.Threshold[];
     tooltip: {
@@ -536,41 +630,4 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
 }
 export interface ojStatusMeterGaugeSettablePropertiesLenient extends Partial<ojStatusMeterGaugeSettableProperties> {
     [key: string]: any;
-}
-export namespace ojStatusMeterGauge {
-    // tslint:disable-next-line interface-over-type-literal
-    type Bounds = {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-    };
-    // tslint:disable-next-line interface-over-type-literal
-    type CenterContext = {
-        componentElement: Element;
-        innerBounds: Bounds;
-        metricLabel: string;
-        outerBounds: Bounds;
-    };
-    // tslint:disable-next-line interface-over-type-literal
-    type ReferenceLine = {
-        color?: string;
-        value?: number;
-        lineWidth?: number;
-        lineStyle?: 'dashed' | 'dotted' | 'solid';
-    };
-    // tslint:disable-next-line interface-over-type-literal
-    type Threshold = {
-        borderColor?: string;
-        color?: string;
-        max?: number;
-        shortDesc?: string;
-    };
-    // tslint:disable-next-line interface-over-type-literal
-    type TooltipContext = {
-        color: string;
-        componentElement: Element;
-        label: string;
-        parentElement: Element;
-    };
 }

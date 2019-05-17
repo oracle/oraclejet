@@ -59,7 +59,7 @@
     .oj-select-native .oj-select-select[multiple] option {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        padding: 0.5rem var(--oj-form-control-padding-horizontal);
+        padding: 0.5rem var(--oj-text-field-padding-horizontal);
       }
       @else {
         padding: 0.5rem $formControlPaddingHorizontal;        

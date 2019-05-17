@@ -3,10 +3,11 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'], 
-       function(oj, $)
+function(oj, $)
 {
+"use strict";
 //%COMPONENT_METADATA%
 var __oj_option_metadata = 
 {
@@ -104,7 +105,7 @@ function ojOption(context) {
 /**
  * @ojcomponent oj.ojOption
  * @since 4.0.0
- * @ojshortdesc Declare values for JET elements that display a list of values.
+ * @ojshortdesc An option represents a value for JET elements that display a list of values.
  * @ojrole option
  * @ojstatus preview
  * @ojsignature class ojOption extends JetElement<ojOptionSettableProperties>
@@ -230,6 +231,7 @@ function ojOption(context) {
  * of the change, triggering a [property]Changed event.
  *
  * @function setProperty
+ * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
  * @param {any} value - The new value to set the property to.
  * @return {void}

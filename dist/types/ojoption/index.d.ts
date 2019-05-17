@@ -2,8 +2,6 @@ import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropert
 export interface ojOption extends JetElement<ojOptionSettableProperties> {
     disabled: boolean;
     value: any;
-    onDisabledChanged: ((event: JetElementCustomEvent<ojOption["disabled"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojOption["value"]>) => any) | null;
     addEventListener<T extends keyof ojOptionEventMap>(type: T, listener: (this: HTMLElement, ev: ojOptionEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojOptionSettableProperties>(property: T): ojOption[T];
@@ -12,6 +10,12 @@ export interface ojOption extends JetElement<ojOptionSettableProperties> {
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojOptionSettableProperties>): void;
     setProperties(properties: ojOptionSettablePropertiesLenient): void;
     refresh(): void;
+}
+export namespace ojOption {
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojOption["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojOption["value"]>;
 }
 export interface ojOptionEventMap extends HTMLElementEventMap {
     'disabledChanged': JetElementCustomEvent<ojOption["disabled"]>;

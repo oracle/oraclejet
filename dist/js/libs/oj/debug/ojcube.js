@@ -3,14 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojdatasource-common'], function(oj, $)
 {
+  "use strict";
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
@@ -2478,7 +2473,6 @@ oj.DataValueAttributeCube.prototype._buildAggTypeLookup = function () {
   }
 };
 
-/* global Cube:false, CubeAggType:false, CubeAxis:false, CubeAxisValue:false, CubeCellSet:false, CubeDataGridDataSource:false, CubeDataValue:false, CubeHeaderSet:false, CubeLevel:false, DataColumnCube:false, DataValueAttributeCube:false */
 // Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
 
 var Cube = {};

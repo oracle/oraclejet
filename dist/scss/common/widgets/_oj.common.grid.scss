@@ -12,7 +12,6 @@ $gridTotalColumns: 12 !default;
 @mixin oj-grid-column($column)
 {
   $colPercentage: percentage($column/$gridTotalColumns);
-  $colPercentage: oj-round-float($colPercentage, 5);
   flex: 0 1 $colPercentage;
   // max-width is required to work around an IE11 bug where the padding is 
   // not getting included in the flex-basis percentage even though 

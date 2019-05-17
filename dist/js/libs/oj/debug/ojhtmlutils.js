@@ -3,10 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'knockout'], function(oj, ko)
 {
-
+  "use strict";
 /**
  * Utility class with functions for preprocessing HTML content.
  * @namespace

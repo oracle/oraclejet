@@ -3,12 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtDiagram', 'ojs/ojdiagram-utils', 'ojs/ojlogger', 'ojs/ojdatasource-common', 'ojs/ojkeyset'], 
-function(oj, $, Config, Components, DvtAttributeUtils, dvt, DiagramUtils, Logger)
+define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtDiagram', 'ojs/ojdiagram-utils', 'ojs/ojlogger', 'ojs/ojkeyset', 'ojs/ojdatasource-common'], 
+function(oj, $, Config, Components, DvtAttributeUtils, dvt, DiagramUtils, Logger, KeySet)
 {
-
-
+  "use strict";
 var __oj_diagram_metadata = 
 {
   "properties": {
@@ -176,93 +174,10 @@ var __oj_diagram_metadata =
     "expanded": {
       "type": "KeySet",
       "writeback": true,
-      "value": "new ExpandedKeySet()"
+      "value": "new KeySetImpl()"
     },
     "focusRenderer": {
-      "type": "function",
-      "properties": {
-        "parentElement": {
-          "type": "Element"
-        },
-        "componentElement": {
-          "type": "Element"
-        },
-        "data": {
-          "type": "object"
-        },
-        "itemData": {
-          "type": "object"
-        },
-        "content": {
-          "type": "object",
-          "properties": {
-            "element": {
-              "type": "Element"
-            },
-            "width": {
-              "type": "number"
-            },
-            "height": {
-              "type": "number"
-            }
-          }
-        },
-        "state": {
-          "type": "object",
-          "properties": {
-            "hovered": {
-              "type": "boolean"
-            },
-            "selected": {
-              "type": "boolean"
-            },
-            "focused": {
-              "type": "boolean"
-            },
-            "expanded": {
-              "type": "boolean"
-            },
-            "zoom": {
-              "type": "number"
-            }
-          }
-        },
-        "previousState": {
-          "type": "object",
-          "properties": {
-            "hovered": {
-              "type": "boolean"
-            },
-            "selected": {
-              "type": "boolean"
-            },
-            "focused": {
-              "type": "boolean"
-            },
-            "expanded": {
-              "type": "boolean"
-            },
-            "zoom": {
-              "type": "number"
-            }
-          }
-        },
-        "id": {
-          "type": "any"
-        },
-        "type": {
-          "type": "string"
-        },
-        "renderDefaultFocus": {
-          "type": "function"
-        },
-        "renderDefaultHover": {
-          "type": "function"
-        },
-        "renderDefaultSelection": {
-          "type": "function"
-        }
-      }
+      "type": "function"
     },
     "hiddenCategories": {
       "type": "Array<string>",
@@ -291,96 +206,13 @@ var __oj_diagram_metadata =
       "value": "none"
     },
     "hoverRenderer": {
-      "type": "function",
-      "properties": {
-        "parentElement": {
-          "type": "Element"
-        },
-        "componentElement": {
-          "type": "Element"
-        },
-        "data": {
-          "type": "object"
-        },
-        "itemData": {
-          "type": "object"
-        },
-        "content": {
-          "type": "object",
-          "properties": {
-            "element": {
-              "type": "Element"
-            },
-            "width": {
-              "type": "number"
-            },
-            "height": {
-              "type": "number"
-            }
-          }
-        },
-        "state": {
-          "type": "object",
-          "properties": {
-            "hovered": {
-              "type": "boolean"
-            },
-            "selected": {
-              "type": "boolean"
-            },
-            "focused": {
-              "type": "boolean"
-            },
-            "expanded": {
-              "type": "boolean"
-            },
-            "zoom": {
-              "type": "number"
-            }
-          }
-        },
-        "previousState": {
-          "type": "object",
-          "properties": {
-            "hovered": {
-              "type": "boolean"
-            },
-            "selected": {
-              "type": "boolean"
-            },
-            "focused": {
-              "type": "boolean"
-            },
-            "expanded": {
-              "type": "boolean"
-            },
-            "zoom": {
-              "type": "number"
-            }
-          }
-        },
-        "id": {
-          "type": "any"
-        },
-        "type": {
-          "type": "string"
-        },
-        "renderDefaultFocus": {
-          "type": "function"
-        },
-        "renderDefaultHover": {
-          "type": "function"
-        },
-        "renderDefaultSelection": {
-          "type": "function"
-        }
-      }
+      "type": "function"
     },
     "layout": {
       "type": "function"
     },
     "linkData": {
-      "type": "oj.DataProvider"
+      "type": "object"
     },
     "linkHighlightMode": {
       "type": "string",
@@ -391,30 +223,7 @@ var __oj_diagram_metadata =
       "value": "link"
     },
     "linkProperties": {
-      "type": "function",
-      "properties": {
-        "labelStyle": {
-          "type": "object"
-        },
-        "color": {
-          "type": "string"
-        },
-        "svgStyle": {
-          "type": "object"
-        },
-        "svgClassName": {
-          "type": "string"
-        },
-        "width": {
-          "type": "number"
-        },
-        "startConnectorType": {
-          "type": "string"
-        },
-        "endConnectorType": {
-          "type": "string"
-        }
-      }
+      "type": "function"
     },
     "maxZoom": {
       "type": "number",
@@ -425,7 +234,7 @@ var __oj_diagram_metadata =
       "value": 0
     },
     "nodeData": {
-      "type": "oj.DataProvider"
+      "type": "object"
     },
     "nodeHighlightMode": {
       "type": "string",
@@ -438,84 +247,7 @@ var __oj_diagram_metadata =
       "value": "node"
     },
     "nodeProperties": {
-      "type": "function",
-      "properties": {
-        "showDisclosure": {
-          "type": "string"
-        },
-        "labelStyle": {
-          "type": "object"
-        },
-        "icon": {
-          "type": "object",
-          "properties": {
-            "borderColor": {
-              "type": "string"
-            },
-            "borderRadius": {
-              "type": "string"
-            },
-            "borderWidth": {
-              "type": "number"
-            },
-            "color": {
-              "type": "string"
-            },
-            "pattern": {
-              "type": "string"
-            },
-            "opacity": {
-              "type": "number"
-            },
-            "shape": {
-              "type": "string"
-            },
-            "source": {
-              "type": "string"
-            },
-            "sourceHover": {
-              "type": "string"
-            },
-            "sourceHoverSelected": {
-              "type": "string"
-            },
-            "sourceSelected": {
-              "type": "string"
-            },
-            "width": {
-              "type": "number"
-            },
-            "height": {
-              "type": "number"
-            },
-            "svgStyle": {
-              "type": "object"
-            },
-            "svgClassName": {
-              "type": "string"
-            }
-          }
-        },
-        "overview": {
-          "type": "object",
-          "properties": {
-            "icon": {
-              "type": "object",
-              "properties": {
-                "shape": {
-                  "type": "string"
-                },
-                "svgStyle": {
-                  "type": "object"
-                },
-                "svgClassName": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
+      "type": "function"
     },
     "overview": {
       "type": "object",
@@ -583,90 +315,7 @@ var __oj_diagram_metadata =
       "value": "lazy"
     },
     "renderer": {
-      "type": "function",
-      "properties": {
-        "parentElement": {
-          "type": "Element"
-        },
-        "componentElement": {
-          "type": "Element"
-        },
-        "data": {
-          "type": "object"
-        },
-        "itemData": {
-          "type": "object"
-        },
-        "content": {
-          "type": "object",
-          "properties": {
-            "element": {
-              "type": "Element"
-            },
-            "width": {
-              "type": "number"
-            },
-            "height": {
-              "type": "number"
-            }
-          }
-        },
-        "state": {
-          "type": "object",
-          "properties": {
-            "hovered": {
-              "type": "boolean"
-            },
-            "selected": {
-              "type": "boolean"
-            },
-            "focused": {
-              "type": "boolean"
-            },
-            "expanded": {
-              "type": "boolean"
-            },
-            "zoom": {
-              "type": "number"
-            }
-          }
-        },
-        "previousState": {
-          "type": "object",
-          "properties": {
-            "hovered": {
-              "type": "boolean"
-            },
-            "selected": {
-              "type": "boolean"
-            },
-            "focused": {
-              "type": "boolean"
-            },
-            "expanded": {
-              "type": "boolean"
-            },
-            "zoom": {
-              "type": "number"
-            }
-          }
-        },
-        "id": {
-          "type": "any"
-        },
-        "type": {
-          "type": "string"
-        },
-        "renderDefaultFocus": {
-          "type": "function"
-        },
-        "renderDefaultHover": {
-          "type": "function"
-        },
-        "renderDefaultSelection": {
-          "type": "function"
-        }
-      }
+      "type": "function"
     },
     "selection": {
       "type": "Array<any>",
@@ -683,90 +332,7 @@ var __oj_diagram_metadata =
       "value": "none"
     },
     "selectionRenderer": {
-      "type": "function",
-      "properties": {
-        "parentElement": {
-          "type": "Element"
-        },
-        "componentElement": {
-          "type": "Element"
-        },
-        "data": {
-          "type": "object"
-        },
-        "itemData": {
-          "type": "object"
-        },
-        "content": {
-          "type": "object",
-          "properties": {
-            "element": {
-              "type": "Element"
-            },
-            "width": {
-              "type": "number"
-            },
-            "height": {
-              "type": "number"
-            }
-          }
-        },
-        "state": {
-          "type": "object",
-          "properties": {
-            "hovered": {
-              "type": "boolean"
-            },
-            "selected": {
-              "type": "boolean"
-            },
-            "focused": {
-              "type": "boolean"
-            },
-            "expanded": {
-              "type": "boolean"
-            },
-            "zoom": {
-              "type": "number"
-            }
-          }
-        },
-        "previousState": {
-          "type": "object",
-          "properties": {
-            "hovered": {
-              "type": "boolean"
-            },
-            "selected": {
-              "type": "boolean"
-            },
-            "focused": {
-              "type": "boolean"
-            },
-            "expanded": {
-              "type": "boolean"
-            },
-            "zoom": {
-              "type": "number"
-            }
-          }
-        },
-        "id": {
-          "type": "any"
-        },
-        "type": {
-          "type": "string"
-        },
-        "renderDefaultFocus": {
-          "type": "function"
-        },
-        "renderDefaultHover": {
-          "type": "function"
-        },
-        "renderDefaultSelection": {
-          "type": "function"
-        }
-      }
+      "type": "function"
     },
     "styleDefaults": {
       "type": "object",
@@ -869,7 +435,7 @@ var __oj_diagram_metadata =
                   "value": "none"
                 },
                 "shape": {
-                  "type": "\"circle\"|\"diamond\"|\"ellipse\"|\"human\"|\"plus\"|\"rectangle\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|string",
+                  "type": "string",
                   "value": "circle"
                 },
                 "source": {
@@ -964,30 +530,7 @@ var __oj_diagram_metadata =
       "type": "object",
       "properties": {
         "renderer": {
-          "type": "function",
-          "properties": {
-            "parentElement": {
-              "type": "Element"
-            },
-            "componentElement": {
-              "type": "Element"
-            },
-            "id": {
-              "type": "any"
-            },
-            "type": {
-              "type": "string"
-            },
-            "label": {
-              "type": "string"
-            },
-            "data": {
-              "type": "object|Array<Object>"
-            },
-            "itemData": {
-              "type": "object|Array<Object>"
-            }
-          }
+          "type": "function"
         }
       }
     },
@@ -1074,90 +617,7 @@ var __oj_diagram_metadata =
       }
     },
     "zoomRenderer": {
-      "type": "function",
-      "properties": {
-        "parentElement": {
-          "type": "Element"
-        },
-        "componentElement": {
-          "type": "Element"
-        },
-        "data": {
-          "type": "object"
-        },
-        "itemData": {
-          "type": "object"
-        },
-        "content": {
-          "type": "object",
-          "properties": {
-            "element": {
-              "type": "Element"
-            },
-            "width": {
-              "type": "number"
-            },
-            "height": {
-              "type": "number"
-            }
-          }
-        },
-        "state": {
-          "type": "object",
-          "properties": {
-            "hovered": {
-              "type": "boolean"
-            },
-            "selected": {
-              "type": "boolean"
-            },
-            "focused": {
-              "type": "boolean"
-            },
-            "expanded": {
-              "type": "boolean"
-            },
-            "zoom": {
-              "type": "number"
-            }
-          }
-        },
-        "previousState": {
-          "type": "object",
-          "properties": {
-            "hovered": {
-              "type": "boolean"
-            },
-            "selected": {
-              "type": "boolean"
-            },
-            "focused": {
-              "type": "boolean"
-            },
-            "expanded": {
-              "type": "boolean"
-            },
-            "zoom": {
-              "type": "number"
-            }
-          }
-        },
-        "id": {
-          "type": "any"
-        },
-        "type": {
-          "type": "string"
-        },
-        "renderDefaultFocus": {
-          "type": "function"
-        },
-        "renderDefaultHover": {
-          "type": "function"
-        },
-        "renderDefaultSelection": {
-          "type": "function"
-        }
-      }
+      "type": "function"
     },
     "zooming": {
       "type": "string",
@@ -1194,8 +654,7 @@ var __oj_diagram_link_metadata =
 {
   "properties": {
     "categories": {
-      "type": "Array<string>",
-      "value": []
+      "type": "Array<string>"
     },
     "color": {
       "type": "string"
@@ -1210,8 +669,7 @@ var __oj_diagram_link_metadata =
         "none",
         "rectangle",
         "rectangleRounded"
-      ],
-      "value": "none"
+      ]
     },
     "endNode": {
       "type": "any"
@@ -1245,8 +703,7 @@ var __oj_diagram_link_metadata =
         "none",
         "rectangle",
         "rectangleRounded"
-      ],
-      "value": "none"
+      ]
     },
     "startNode": {
       "type": "any"
@@ -1260,8 +717,7 @@ var __oj_diagram_link_metadata =
       "value": {}
     },
     "width": {
-      "type": "number",
-      "value": 1
+      "type": "number"
     }
   },
   "extension": {}
@@ -1270,8 +726,7 @@ var __oj_diagram_node_metadata =
 {
   "properties": {
     "categories": {
-      "type": "Array<string>",
-      "value": []
+      "type": "Array<string>"
     },
     "descendantsConnectivity": {
       "type": "string",
@@ -1305,25 +760,10 @@ var __oj_diagram_node_metadata =
           "type": "number"
         },
         "pattern": {
-          "type": "string",
-          "enumValues": [
-            "largeChecker",
-            "largeCrosshatch",
-            "largeDiagonalLeft",
-            "largeDiagonalRight",
-            "largeDiamond",
-            "largeTriangle",
-            "mallChecker",
-            "none",
-            "smallCrosshatch",
-            "smallDiagonalLeft",
-            "smallDiagonalRight",
-            "smallDiamond",
-            "smallTriangle"
-          ]
+          "type": "string"
         },
         "shape": {
-          "type": "\"circle\"|\"diamond\"|\"ellipse\"|\"human\"|\"plus\"|\"rectangle\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|string"
+          "type": "string"
         },
         "source": {
           "type": "string"
@@ -1392,8 +832,7 @@ var __oj_diagram_node_metadata =
       "enumValues": [
         "off",
         "on"
-      ],
-      "value": "on"
+      ]
     }
   },
   "extension": {}
@@ -2330,7 +1769,7 @@ oj.DiagramUtils = DiagramUtils;
  * All rights reserved.
  */
 
-/* global dvt:false, Components:false, Promise:false, Map:false, KeySetImpl:false, Logger:false, Config:false */
+/* global dvt:false, Components:false, Promise:false, Logger:false, Config:false, KeySet:false */
 
  /**
  * @ojcomponent oj.ojDiagram
@@ -2338,18 +1777,18 @@ oj.DiagramUtils = DiagramUtils;
  * @since 1.1.0
  * @ojstatus preview
  * @ojrole application
- * @ojshortdesc Displays a set of nodes and the links between them. The node positions and link paths are specified by an application-provided layout function.
+ * @ojshortdesc A diagram displays a set of nodes and the links between them. The node positions and link paths are specified by an application-provided layout function.
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojtsimport {module: "ojkeyset", type: "AMD", imported: ["KeySet"]}
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojDiagram<K1, K2, D1, D2> extends dvtBaseComponent<ojDiagramSettableProperties<K1, K2, D1, D2>>",
+ *                value: "class ojDiagram<K1, K2, D1 extends oj.ojDiagram.Node<K1>|any, D2 extends oj.ojDiagram.Link<K2, K1>|any> extends dvtBaseComponent<ojDiagramSettableProperties<K1, K2, D1, D2>>",
  *                genericParameters: [{"name": "K1", "description": "Type of key of the nodeData dataprovider"}, {"name": "K2", "description": "Type of key of the linkData dataprovider"},
  *                 {"name": "D1", "description": "Type of data from the nodeData dataprovider"}, {"name": "D2", "description": "Type of data from the linkData dataprovider"}]
  *               },
  *               {
  *                target: "Type",
- *                value: "ojDiagramSettableProperties<K1, K2, D1, D2> extends dvtBaseComponentSettableProperties",
+ *                value: "ojDiagramSettableProperties<K1, K2, D1 extends oj.ojDiagram.Node<K1>|any, D2 extends oj.ojDiagram.Link<K2, K1>|any> extends dvtBaseComponentSettableProperties",
  *                for: "SettableProperties"
  *               }
  *              ]
@@ -2971,25 +2410,25 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
 
       /**
        * Specifies the key set containing the ids of diagram nodes that should be expanded on initial render.
-       * Use the <a href="ExpandedKeySet.html">ExpandedKeySet</a> class to specify nodes to expand.
-       * Use the <a href="ExpandAllKeySet.html">ExpandAllKeySet</a> class to expand all nodes.
+       * Use the <a href="KeySetImpl.html">KeySetImpl</a> class to specify nodes to expand.
+       * Use the <a href="AllKeySetImpl.html">AllKeySetImpl</a> class to expand all nodes.
        * @ojshortdesc Specifies the key set of ids for expanded diagram nodes.
        * @expose
        * @name expanded
        * @memberof oj.ojDiagram
        * @instance
        * @type {KeySet}
-       * @default new ExpandedKeySet()
+       * @default new KeySetImpl()
        * @ojsignature {target:"Type", value:"oj.KeySet<K1>"}
        * @ojwriteback
        *
        * @example <caption>Initialize the diagram with specific items expanded:</caption>
-       * myDiagram.expanded = new ExpandedKeySet(['N0', 'N00']);
+       * myDiagram.expanded = new KeySetImpl(['N0', 'N00']);
        *
        * @example <caption>Initialize the diagram with all items expanded:</caption>
-       * myDiagram.expanded = new ExpandAllKeySet();
+       * myDiagram.expanded = new AllKeySetImpl();
        */
-      expanded: new oj.ExpandedKeySet(),
+      expanded: new oj.KeySetImpl(),
       /**
        * An array containing the ids of the selected nodes and links.
        * @expose
@@ -3520,7 +2959,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
       zoomRenderer: null,
       /**
        * The data source for the Diagram element. See <a href="oj.DiagramDataSource.html">oj.DiagramDataSource</a for details>
-       * @ojshortdesc Specifies data source for the component.
+       * @ojshortdesc Specifies the data for the component.
        * @ojdeprecated {since: '6.0.0', description: 'Use nodeData and linkData instead.'}
        * @ojtsignore
        * @expose
@@ -3546,12 +2985,15 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * The oj.DataProvider for the diagram links. It should provide rows where each row corresponds to a single diagram link.
        * The row key will be used as the id for diagram links. Note that when
        * using this attribute, a template for the <a href="#linkTemplate">linkTemplate</a> slot should be provided.
+       * The oj.DataProvider can either have an arbitrary data shape, in which case an <oj-diagram-link> element must be specified
+       * in the linkTemplate slot or it can have oj.ojDiagram.Link{@link oj.ojDiagram#Link} as its data shape, in which case no template is required.
        * @expose
        * @name linkData
+       * @ojshortdesc Specifies the DataProvider for the diagram links. See the Help documentation for more information.
        * @memberof oj.ojDiagram
        * @instance
-       * @type {oj.DataProvider|null}
-       * @ojsignature {target: "Type", value: "oj.DataProvider<K2, D2>|null"}
+       * @type {Object|null}
+       * @ojsignature {target: "Type", value: "oj.DataProvider<K2, D2>|null", jsdocOverride:true}
        * @default null
        * @example <caption>Initialize the diagram with the
        * <code class="prettyprint">link-data</code> attribute specified:</caption>
@@ -3570,12 +3012,15 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * The oj.DataProvider for the diagram nodes. It should provide rows where each row corresponds to a single diagram node.
        * The row key will be used as the id for diagram nodes. Note that when
        * using this attribute, a template for the <a href="#nodeTemplate">nodeTemplate</a> slot should be provided.
+       * The oj.DataProvider can either have an arbitrary data shape, in which case an <oj-diagram-node> element must be specified
+       * in the nodeTemplate slot or it can have oj.ojDiagram.Node{@link oj.ojDiagram#Node} as its data shape, in which case no template is required.
        * @expose
        * @name nodeData
+       * @ojshortdesc Specifies the DataProvider for the diagram nodes. See the Help documentation for more information.
        * @memberof oj.ojDiagram
        * @instance
-       * @type {oj.DataProvider|null}
-       * @ojsignature {target: "Type", value: "oj.DataProvider<K1, D1>|null"}
+       * @type {Object|null}
+       * @ojsignature {target: "Type", value: "oj.DataProvider<K1, D1>|null", jsdocOverride:true}
        * @default null
        * @example <caption>Initialize the diagram with the
        * <code class="prettyprint">node-data</code> attribute specified:</caption>
@@ -3595,6 +3040,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
       * @expose
       * @name as
       * @memberof oj.ojDiagram
+      * @ojshortdesc An alias for the '$current' context variable passed to slot content for the nodeTemplate or linkTemplate slots.
       * @instance
       * @type {string}
       * @default ""
@@ -3605,19 +3051,21 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * Optional callback that provides a way to customize an appearance of the specific link, the function maps link data into link styles.
        * The function takes a data object for the link provided by the diagram.
        * The following properties are supported on the return object:
-       * @property {object} labelStyle The CSS style object defining the style of the link label. The CSS max-width property can be used to truncate labels.
-       * @property {string} color Link color.
-       * @property {object} svgStyle The SVG CSS style object defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.
-       * @property {string} svgClassName The SVG CSS style class defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.
-       * @property {number} width Link width in pixels.
-       * @property {string} startConnectorType Specifies the type of start connector on the link. <br/>Supported values are "arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none". <br/>Default value is <code class="prettyprint">"none"</code>.
-       * @property {string} endConnectorType Specifies the type of end connector on the link. <br/>Supported values are "arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none". <br/>Default value is <code class="prettyprint">"none"</code>.
+       * <ul>
+       *  <li>labelStyle {Object}: The CSS style object defining the style of the link label. The CSS max-width property can be used to truncate labels.</li>
+       *  <li>color {string}: Link color.</li>
+       *  <li>svgStyle {Object}: The SVG CSS style object defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.</li>
+       *  <li>svgClassName {string}: The SVG CSS style class defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.</li>
+       *  <li>width {number}: Link width in pixels.</li>
+       *  <li>startConnectorType {string}: Specifies the type of start connector on the link. <br/>Supported values are "arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none". <br/>Default value is <code class="prettyprint">"none"</code>.</li>
+       *  <li>endConnectorType {string}: Specifies the type of end connector on the link. <br/>Supported values are "arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none". <br/>Default value is <code class="prettyprint">"none"</code>.</li>
+       * </ul>
        *
        * @example <caption>Customizing link color using <code class="prettyprint">customColor</code> property defined on the link data object</caption>
        * &lt;oj-diagram
        *    layout = '{{layoutFunc}}'
        *    data = '{{dataSource}}'
-       *    node-properties = '[[function(data){return {color:data.customColor};}]]'>
+       *    link-properties = '[[function(data){return {color:data.customColor};}]]'>
        * &lt;/oj-diagram>
        *
        * @ojshortdesc Optional callback for customizing link appearance based on link data.
@@ -3633,31 +3081,41 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
       linkProperties: null,
       /**
        * Optional callback that provides a way to customize an appearance of the specific node, the function maps node data into node styles.
-       * The function takes a data object for the node provided by the diagram.
-       * The following properties are supported on the return object:
-       * @property {string} showDisclosure Determines when to display the expand/collapse button.<br/>Supported values are "on", "off". <br/>Default value is <code class="prettyprint">"on"</code>.
-       * @property {object} labelStyle The CSS style object defining the style of the node label.
-       * @property {object} icon Specifies an icon to be used as a graphical element for the node
-       * @property {string} icon.borderColor The border color of the icon.
-       * @property {string} icon.borderRadius The border radius of the icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.
-       * @property {number} icon.borderWidth The border width in pixels.
-       * @property {string} icon.color The fill color of the icon.
-       * @property {string} icon.pattern The fill pattern of the icon.<br/>Supported values are "smallChecker", "smallCrosshatch", "smallDiagonalLeft", "smallDiagonalRight", "smallDiamond", "smallTriangle", "largeChecker", "largeCrosshatch", "largeDiagonalLeft", "largeDiagonalRight", "largeDiamond", "largeTriangle", "none".<br/>Default value is <code class="prettyprint">"none"</code>.
-       * @property {number} icon.opacity The opacity of the icon.
-       * @property {string} icon.shape The shape of the icon. Can take the name of a built-in shape or the svg path commands for a custom shape.<br/>Supported built-in shapes:"ellipse", "square", "plus", "diamond", "triangleUp", "triangleDown", "human", "rectangle", "star", "circle".<br/>Default value is <code class="prettyprint">"circle"</code>.
-       * @property {string} icon.source The URI of the node image.
-       * @property {string} icon.sourceHover The optional URI of the node hover image. If not defined, the source image will be used.
-       * @property {string} icon.sourceHoverSelected The optional URI of the selected image on hover. If not defined, the sourceSelected image will be used. If the sourceSelected image is not defined, the source image will be used.
-       * @property {string} icon.sourceSelected The optional URI of the selected image. If not defined, the source image will be used.
-       * @property {number} icon.width The width of the icon.
-       * @property {number} icon.height The height of the icon.
-       * @property {object} icon.svgStyle The CSS style object defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.
-       * @property {string} icon.svgClassName The CSS style class defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.
-       * @property {object} overview Specifies overview node shape.
-       * @property {object} overview.icon Specifies an icon for the node in the overview window. The following properties can be used to customize the overview node. The width and height of the overview node is determined from the rendered node in the diagram.
-       * @property {string} overview.icon.shape The shape of the icon in the overview window. Can take one of the following values for the shape name or the svg path commands for a custom shape.<br/>Supported built-in shapes:"inherit", "ellipse", "square", "plus", "diamond", "triangleUp", "triangleDown", "human", "rectangle", "star", "circle".<br/> The default value is always "inherit", but that means different things for custom nodes and default nodes. When "inherit" value is specified for a default node, the shape is determined from the node in the diagram. When "inherit" value is specified for a custom node, "rectangle" shape will be used.<br>This property doesn't apply at all to containers (custom or default).
-       * @property {object} overview.icon.svgStyle The CSS style object defining the style of the node icon in the overview.
-       * @property {string} overview.icon.svgClassName The CSS style class defining the style of the node icon in the overview.
+       * The function takes a data object for the node provided by the diagram. The following properties are supported on the return object:
+       * <ul>
+       *  <li>showDisclosure {string}: Determines when to display the expand/collapse button.<br/>Supported values are "on", "off". <br/>Default value is <code class="prettyprint">"on"</code>.</li>
+       *  <li>labelStyle {Object}: The CSS style object defining the style of the node label.</li>
+       *  <li>icon {Object}: Object specfiying an icon to be used as a graphical element for the node. Its properties are:
+       *    <ul>
+       *      <li>borderColor {string}: The border color of the icon.</li>
+       *      <li>borderRadius {string}: The border radius of the icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.</li>
+       *      <li>borderWidth {number}: The border width in pixels.</li>
+       *      <li>color {string}: The fill color of the icon.</li>
+       *      <li>pattern {string}: The fill pattern of the icon.<br/>Supported values are "smallChecker", "smallCrosshatch", "smallDiagonalLeft", "smallDiagonalRight", "smallDiamond", "smallTriangle", "largeChecker", "largeCrosshatch", "largeDiagonalLeft", "largeDiagonalRight", "largeDiamond", "largeTriangle", "none".<br/>Default value is <code class="prettyprint">"none"</code>.</li>
+       *      <li>opacity {number}: The opacity of the icon.</li>
+       *      <li>shape {string}: The shape of the icon. Can take the name of a built-in shape or the svg path commands for a custom shape.<br/>Supported built-in shapes:"ellipse", "square", "plus", "diamond", "triangleUp", "triangleDown", "human", "rectangle", "star", "circle".<br/>Default value is <code class="prettyprint">"circle"</code>.</li>
+       *      <li>source {string}: The URI of the node image.</li>
+       *      <li>sourceHover {string}: The optional URI of the node hover image. If not defined, the source image will be used.</li>
+       *      <li>sourceHoverSelected {string}: The optional URI of the selected image on hover. If not defined, the sourceSelected image will be used. If the sourceSelected image is not defined, the source image will be used.</li>
+       *      <li>sourceSelected {string}: The optional URI of the selected image. If not defined, the source image will be used.</li>
+       *      <li>width {number}: The width of the icon.</li>
+       *      <li>height {number}: The height of the icon.</li>
+       *      <li>svgStyle {Object}: The CSS style object defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.</li>
+       *      <li>svgClassName {string}: The CSS style class defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.</li>
+       *    </ul>
+       *  </li>
+       *  <li>overview {Object}: Object specfiying the overview node shape. Its properties are:
+       *    <ul>
+       *      <li>icon {Object}: Object specifying an icon for the node in the overview window. The width and height of the overview node is determined from the rendered node in the diagram. The following properties can be used to customize the overview node:
+       *        <ul>
+       *          <li>shape {string}: The shape of the icon in the overview window. Can take one of the following values for the shape name or the svg path commands for a custom shape.<br/>Supported built-in shapes:"inherit", "ellipse", "square", "plus", "diamond", "triangleUp", "triangleDown", "human", "rectangle", "star", "circle".<br/> The default value is always "inherit", but that means different things for custom nodes and default nodes. When "inherit" value is specified for a default node, the shape is determined from the node in the diagram. When "inherit" value is specified for a custom node, "rectangle" shape will be used.<br>This property doesn't apply at all to containers (custom or default).</li>
+       *          <li>svgStyle {Object}: The CSS style object defining the style of the node icon in the overview.</li>
+       *          <li>svgClassName {string}: The CSS style class defining the style of the node icon in the overview.</li>
+       *        </ul>
+       *      </li>
+       *    </ul>
+       *  </li>
+       * </ul>
        *
        * @example <caption>Customizing node icon color using <code class="prettyprint">customColor</code> property defined on the node data object</caption>
        * &lt;oj-diagram
@@ -3741,6 +3199,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * <br></br>See the <a href="#overview">overview</a> attribute for usage examples.
          * @expose
          * @name overview.rendered
+         * @ojshortdesc Specifies whether the overview scrollbar is rendered.
          * @memberof! oj.ojDiagram
          * @instance
          * @type {string}
@@ -3840,6 +3299,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * Specifies initial hover delay in ms for highlighting data items.
          * @expose
          * @name styleDefaults.hoverBehaviorDelay
+         * @ojshortdesc Specifies initial hover delay in milliseconds for highlighting data items.
          * @memberof! oj.ojDiagram
          * @instance
          * @type {number}
@@ -3866,6 +3326,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
            * @memberof! oj.ojDiagram
            * @instance
            * @type {Object}
+           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
            * @default {}
            */
           labelStyle: {},
@@ -4024,6 +3485,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
              * @memberof! oj.ojDiagram
              * @instance
              * @type {Object}
+             * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
              * @default {}
              */
             /**
@@ -4051,6 +3513,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
            * Default link color. The default value comes from the CSS and varies based on theme.
            * @expose
            * @name styleDefaults.linkDefaults.color
+           * @ojshortdesc Default link color.
            * @memberof! oj.ojDiagram
            * @instance
            * @type {string}
@@ -4064,6 +3527,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
            * @memberof! oj.ojDiagram
            * @instance
            * @type {Object}
+           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
            * @default {}
            */
           /**
@@ -4097,6 +3561,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
            * @memberof! oj.ojDiagram
            * @instance
            * @type {Object}
+           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
            */
           labelStyle: {},
           /**
@@ -4160,6 +3625,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
            * @memberof! oj.ojDiagram
            * @instance
            * @type {Object}
+           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
            * @default {}
            */
           /**
@@ -4327,7 +3793,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
         this.options._contextHandler = this._getContextHandler();
       }
       if (this.options.nodeData) {
-        this.options._fetchDataHandler = this._GetFetchDataHandler('nodeData');
+        this.options._fetchDataHandler = this._getFetchDataHandler('nodeData');
       }
       // convert nodes, links and childNodes options to DiagramDataSource
       if (this.options.nodes) {
@@ -4346,7 +3812,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
       }
       // if expanded not declared, pass default empty expanded key set to the toolkit
       if (!this.options.expanded) {
-        this.options.expanded = new oj.ExpandedKeySet();
+        this.options.expanded = new oj.KeySetImpl();
       }
       if (!this.options.dnd.drag) {
         this.options.dnd.drag = {
@@ -4369,7 +3835,12 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
 
     //* * @inheritdoc */
     _GetComponentRendererOptions: function () {
-      return ['tooltip/renderer', 'renderer', 'focusRenderer', 'hoverRenderer', 'selectionRenderer', 'zoomRenderer'];
+      return [{ path: 'tooltip/renderer', slot: 'tooltipTemplate' },
+              { path: 'renderer' },
+              { path: 'focusRenderer' },
+              { path: 'hoverRenderer' },
+              { path: 'selectionRenderer' },
+              { path: 'zoomRenderer' }];
     },
 
     //* * @inheritdoc */
@@ -4398,19 +3869,20 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
     _getContextHandler: function () {
       var thisRef = this;
       var contextHandlerFunc = function (
-        parentElement, rootElement, childContent, data, state, previousState
+        parentElement, rootElement, childContent, nodeDataContext, state, previousState
       ) {
         var context = {
           component: Components.__GetWidgetConstructor(thisRef.element),
           parentElement: parentElement,
           rootElement: rootElement,
           content: childContent,
-          data: data,
+          data: nodeDataContext.data,
+          itemData: nodeDataContext.itemData,
           state: state,
           previousState: previousState,
-          id: data.id,
+          id: nodeDataContext.id,
           type: 'node',
-          label: data.label
+          label: nodeDataContext.label
         };
         if (thisRef._IsCustomElement()) {
           context.renderDefaultHover = thisRef.renderDefaultHover.bind(thisRef, context);
@@ -4599,19 +4071,6 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
     },
 
     //* * @inheritdoc */
-    _GetTranslationMap: function () {
-      // The translations are stored on the options object.
-      var translations = this.options.translations;
-      // Safe to modify super's map because function guarentees a new map is returned
-      var ret = this._super();
-      ret['DvtDiagramBundle.PROMOTED_LINK'] = translations.promotedLink;
-      ret['DvtDiagramBundle.PROMOTED_LINKS'] = translations.promotedLinks;
-      ret['DvtDiagramBundle.PROMOTED_LINK_ARIA_DESC'] = translations.promotedLinkAriaDesc;
-      ret['DvtUtilBundle.DIAGRAM'] = translations.componentName;
-      return ret;
-    },
-
-    //* * @inheritdoc */
     _LoadResources: function () {
       // Ensure the resources object exists
       if (this.options._resources == null) {
@@ -4705,10 +4164,16 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
 
     //* * @inheritdoc */
     _GetSimpleDataProviderConfigs: function () {
-      return {
-        nodeData: { templateName: 'nodeTemplate', templateElementName: 'oj-diagram-node', resultPath: 'nodes', expandedKeySet: this.options.expanded },
+      var configs = {
+        nodeData: { templateName: 'nodeTemplate', templateElementName: 'oj-diagram-node', resultPath: 'nodes' },
         linkData: { templateName: 'linkTemplate', templateElementName: 'oj-diagram-link', resultPath: 'links' }
       };
+      Object.defineProperty(configs.nodeData, 'expandedKeySet', {
+        get: function () {
+          return this.options.expanded;
+        }.bind(this)
+      });
+      return configs;
     },
 
     //* * @inheritdoc */
@@ -4764,6 +4229,8 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
      * @return {number} The number of nodes
      * @expose
      * @instance
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @memberof oj.ojDiagram
      *
      * @example <caption>Invoke the <code class="prettyprint">getNodeCount</code> method:</caption>
@@ -4788,7 +4255,10 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
      * @return {Object|null} An object containing properties for the node at the given index, or null if none exists.
      * @expose
      * @instance
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @memberof oj.ojDiagram
+     * @ojshortdesc Returns an object for automation testing verification of the specified diagram node. See the Help documentation for more information.
      *
      * @example <caption>Invoke the <code class="prettyprint">getNode</code> method:</caption>
      * var node = myDiagram.getNode(3);
@@ -4803,6 +4273,8 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
      * @return {number} The number of links
      * @expose
      * @instance
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @memberof oj.ojDiagram
      *
      * @example <caption>Invoke the <code class="prettyprint">getLinkCount</code> method:</caption>
@@ -4831,7 +4303,10 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
      * @return {Object|null} An object containing properties for the link at the given index, or null if none exists.
      * @expose
      * @instance
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @memberof oj.ojDiagram
+     * @ojshortdesc Returns an object for automation testing verification of the specified diagram link. See the Help documentation for more information.
      *
      * @example <caption>Invoke the <code class="prettyprint">getLink</code> method:</caption>
      * var link = myDiagram.getLink(3);
@@ -4860,7 +4335,10 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
      * @return {Object|null} An object containing properties for the link at the given index, or null if none exists.
      * @expose
      * @instance
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
      * @memberof oj.ojDiagram
+     * @ojshortdesc Returns an object for automation testing verification of the promoted link between the specified nodes. See the Help documentation for more information.
      */
     getPromotedLink: function (startNodeIndex, endNodeIndex) {
       var auto = this._component.getAutomation();
@@ -4877,6 +4355,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
      * @expose
      * @instance
      * @memberof oj.ojDiagram
+     * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
      */
     getContextByNode: function (node) {
       // context objects are documented with @ojnodecontext
@@ -5090,6 +4569,24 @@ Components.setDefaultOptions({
   */
 
 // TYPEDEFS
+/**
+ * @typedef {Object} oj.ojDiagram.Node
+ * @ojimportmembers oj.ojDiagramNodeProperties
+ * @property {any=} id The id of the node. For the DataProvider case, the key for the node will be used as the id.
+ * @ojsignature [{target: "Type", value: "K", for: "id"},
+ *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+ */
+
+/**
+ * @typedef {Object} oj.ojDiagram.Link
+ * @ojimportmembers oj.ojDiagramLinkProperties
+ * @property {any=} id The id of the node. For the DataProvider case, the key for the node will be used as the id.
+ * @ojsignature [{target: "Type", value: "K1", for: "id"},
+ *               {target: "Type", value: "K2", for: "endNode"},
+ *               {target: "Type", value: "K2", for: "startNode"},
+ *               {target: "Type", value: "<K1, K2>", for: "genericTypeParameters"}]
+ */
+
 /**
  * @typedef {Object} oj.ojDiagram.TooltipContext
  * @property {Element} parentElement The tooltip element. The function can directly modify or append content to this element.
@@ -5808,6 +5305,7 @@ Components.setDefaultOptions({
  *
  * @ojstatus preview
  * @ojslot linkTemplate
+ * @ojshortdesc The linkTemplate slot is used to specify the template for creating each diagram link. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojDiagram
  * @property {Element} componentElement The &lt;oj-diagram> custom element.
@@ -5841,6 +5339,7 @@ Components.setDefaultOptions({
  *
  * @ojstatus preview
  * @ojslot nodeTemplate
+ * @ojshortdesc The nodeTemplate slot is used to specify the template for creating each diagram node. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojDiagram
  * @property {Element} componentElement The &lt;oj-diagram> custom element.
@@ -5859,8 +5358,31 @@ Components.setDefaultOptions({
  * &lt;/oj-diagram>
  */
 
+ /**
+ * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
+ * This slot takes precedence over the tooltip.renderer property if specified.
+ * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
+ * <ul>
+ *   <li>$current - an object that contains information for the current node or link. (See [oj.ojDiagram.TooltipContext]{@link oj.ojDiagram.TooltipContext} for a list of properties available on $current) </li>
+ * </ul>
+ *
+ * @ojstatus preview
+ * @ojslot tooltipTemplate
+ * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
+ * @ojslotitemprops oj.ojDiagram.TooltipContext
+ * @memberof oj.ojDiagram
+ *
+ * @example <caption>Initialize the Diagram with a tooltip template specified:</caption>
+ * &lt;oj-diagram>
+ *  &lt;template slot="tooltipTemplate">
+ *    &lt;span class="label">&lt;oj-bind-text value="[[$current.label]]">&lt;/oj-bind-text>&lt;/span>
+ *  &lt;/template>
+ * &lt;/oj-diagram>
+ */
+
 /**
  * @ojcomponent oj.ojDiagramLink
+ * @ojimportmembers oj.ojDiagramLinkProperties
  * @ojsignature {target: "Type", value:"class ojDiagramLink extends JetElement<ojDiagramLinkSettableProperties>"}
  * @ojslotcomponent
  * @since 6.0.0
@@ -5868,7 +5390,7 @@ Components.setDefaultOptions({
  *
  * @classdesc
  * <h3 id="overview">
- *   JET Daigram Link
+ *   JET Diagram Link
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview"></a>
  * </h3>
  *
@@ -5889,194 +5411,10 @@ Components.setDefaultOptions({
  * </code>
  * </pre>
  */
-/**
- * An array of category strings corresponding to this link. This allows highlighting and filtering of links.
- * By default, the label is used as the link category.
- * @expose
- * @name categories
- * @memberof! oj.ojDiagramLink
- * @instance
- * @type {Array.<string>}
- * @default []
- *
- * @example <caption>Initialize the diagram link with the
- * <code class="prettyprint">categories</code> attribute specified:</caption>
- * &lt;oj-diagram-link categories='[[$current.data.categories]]'>&lt;/oj-diagram-link>
- */
-/**
- * The link color.
- * @expose
- * @name color
- * @memberof! oj.ojDiagramLink
- * @instance
- * @type {string=}
- * @ojformat color
- *
- * @example <caption>Initialize the diagram link with the
- * <code class="prettyprint">color</code> attribute specified:</caption>
- * &lt;oj-diagram-link color='[[$current.data.color]]'>&lt;/oj-diagram-link>
- */
-/**
- * Text used for the link label.
- * @expose
- * @name label
- * @memberof! oj.ojDiagramLink
- * @instance
- * @type {string=}
- * @default ""
- *
- * @example <caption>Initialize the diagram link with the
- * <code class="prettyprint">label</code> attribute specified:</caption>
- * &lt;oj-diagram-link label='[[$current.data.label]]'>&lt;/oj-diagram-link>
- */
-/**
- * The CSS style object defining the style of the diagram link label. The default values come from the CSS classes and varies based on theme.
- * @expose
- * @name labelStyle
- * @memberof! oj.ojDiagramLink
- * @instance
- * @type {(Object|null)=}
- *
- * @example <caption>Initialize the diagram link with the
- * <code class="prettyprint">label-style</code> attribute specified:</caption>
- * &lt;oj-diagram-link label-style='{"color":"black","fontSize":"12px"}'>&lt;/oj-diagram-link>
- */
-/**
- * Specifies whether or not the link will be selectable.
- * @expose
- * @name selectable
- * @memberof! oj.ojDiagramLink
- * @instance
- * @type {string=}
- * @ojvalue {string} "auto"
- * @ojvalue {string} "off"
- * @default "auto"
- *
- * @example <caption>Initialize the diagram link with the
- * <code class="prettyprint">selectable</code> attribute specified:</caption>
- * &lt;oj-diagram-link selectable='off'>&lt;/oj-diagram-link>
- */
-/**
- * The text that displays in the link's tooltip.
- * @expose
- * @name shortDesc
- * @memberof! oj.ojDiagramLink
- * @instance
- * @type {string=}
- * @default ""
- *
- * @example <caption>Initialize the diagram link with the
- * <code class="prettyprint">short-desc</code> attribute specified:</caption>
- * &lt;oj-diagram-link short-desc='[[$current.data.shortDesc]]'>&lt;/oj-diagram-link>
- */
-/**
- * The CSS style class defining the style of the link.
- * @expose
- * @name svgClassName
- * @memberof! oj.ojDiagramLink
- * @instance
- * @type {string=}
- * @default ""
- *
- * @example <caption>Initialize the diagram link with the
- * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
- * &lt;oj-diagram-link svg-class-name='linkStyle'>&lt;/oj-diagram-link>
- */
-/**
- * The CSS style object defining the style of the link.
- * @expose
- * @name svgStyle
- * @memberof! oj.ojDiagramLink
- * @instance
- * @type {Object=}
- * @default {}
- *
- * @example <caption>Initialize the diagram link with the
- * <code class="prettyprint">svg-style</code> attribute specified:</caption>
- * &lt;oj-diagram-link svg-style='{"color": "red"}'>&lt;/oj-diagram-link>
- */
-/**
- * The link width in pixels.
- * @expose
- * @name width
- * @memberof! oj.ojDiagramLink
- * @instance
- * @type {number=}
- * @ojunits "pixels"
- * @default 1
- *
- * @example <caption>Initialize the diagram link with the
- * <code class="prettyprint">width</code> attribute specified:</caption>
- * &lt;oj-diagram-link width='3'>&lt;/oj-diagram-link>
- */
-
-/**
- * Specifies the start node id.
- * @expose
- * @name startNode
- * @memberof! oj.ojDiagramLink
- * @instance
- * @type {any}
- *
- * @example <caption>Initialize the diagram link with the
- * <code class="prettyprint">start-node</code> attribute specified:</caption>
- * &lt;oj-diagram-link start-node='[[$current.data.startNode]]'>&lt;/oj-diagram-link>
- */
-/**
- * Specifies the end node id.
- * @expose
- * @name endNode
- * @memberof! oj.ojDiagramLink
- * @instance
- * @type {any}
- *
- * @example <caption>Initialize the diagram link with the
- * <code class="prettyprint">start-node</code> attribute specified:</caption>
- * &lt;oj-diagram-link start-node='[[$current.data.endNode]]'>&lt;/oj-diagram-link>
- */
-/**
- * Specifies the type of start connector on the link. Can take the name of a built-in shape.
- * @expose
- * @name startConnectorType
- * @memberof! oj.ojDiagramLink
- * @instance
- * @type {string=}
- * @ojvalue {string} "arrow"
- * @ojvalue {string} "arrowConcave"
- * @ojvalue {string} "arrowOpen"
- * @ojvalue {string} "circle"
- * @ojvalue {string} "none"
- * @ojvalue {string} "rectangle"
- * @ojvalue {string} "rectangleRounded"
- * @default "none"
- *
- * @example <caption>Initialize the diagram link with the
- * <code class="prettyprint">start-connector-type</code> attribute specified:</caption>
- * &lt;oj-diagram-link start-connector-type='circle'>&lt;/oj-diagram-link>
- */
-/**
- * Specifies the type of end connector on the link. Can take the name of a built-in shape.
- * @expose
- * @name endConnectorType
- * @memberof! oj.ojDiagramLink
- * @instance
- * @type {string=}
- * @ojvalue {string} "arrow"
- * @ojvalue {string} "arrowConcave"
- * @ojvalue {string} "arrowOpen"
- * @ojvalue {string} "circle"
- * @ojvalue {string} "none"
- * @ojvalue {string} "rectangle"
- * @ojvalue {string} "rectangleRounded"
- * @default "none"
- *
- * @example <caption>Initialize the diagram link with the
- * <code class="prettyprint">start-connector-type</code> attribute specified:</caption>
- * &lt;oj-diagram-link start-connector-type='arrow'>&lt;/oj-diagram-link>
- */
 
 /**
  * @ojcomponent oj.ojDiagramNode
+ * @ojimportmembers oj.ojDiagramNodeProperties
  * @ojsignature {target: "Type", value:"class ojDiagramNode extends JetElement<ojDiagramNodeSettableProperties>"}
  * @ojslotcomponent
  * @since 6.0.0
@@ -6084,7 +5422,7 @@ Components.setDefaultOptions({
  *
  * @classdesc
  * <h3 id="overview">
- *   JET Daigram Node
+ *   JET Diagram Node
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview"></a>
  * </h3>
  *
@@ -6104,343 +5442,6 @@ Components.setDefaultOptions({
  * &lt;/oj-diagram>
  * </code>
  * </pre>
- */
-/**
- * An array of category strings corresponding to this node. This allows highlighting and filtering of nodes.
- * By default, the label is used as the node category.
- * @expose
- * @name categories
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {Array.<string>=}
- * @default []
- *
- * @example <caption>Initialize the diagram node with the
- * <code class="prettyprint">categories</code> attribute specified:</caption>
- * &lt;oj-diagram-node categories='[[$current.data.categories]]'>&lt;/oj-diagram-node>
- */
-/**
- * Specifies an icon to be used as a graphical element for the node
- * @expose
- * @name icon
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {Object=}
- * @default {}
- *
- * @example <caption>Initialize the diagram node with the
- * <code class="prettyprint">icon</code> attribute specified:</caption>
- * <!-- Using dot notation -->
- * &lt;oj-diagram-node icon.shape='[[$current.data.shape]]' icon.color='[[$current.data.color]]'>&lt;/oj-diagram-node>
- *
- * &lt;oj-diagram-node icon='[[$current.data.iconData]]>&lt;/oj-diagram-node>
- */
-/**
- * The border color of the icon.
- * @expose
- * @name icon.borderColor
- * @memberof! oj.ojDiagramNode
- * @instance
- * @ojformat color
- * @type {string=}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * The border radius of the icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.
- * @expose
- * @name icon.borderRadius
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {string=}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * The border width in pixels.
- * @expose
- * @name icon.borderWidth
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {number=}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * The fill color of the icon.
- * @expose
- * @name icon.color
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {string=}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * The fill pattern of the icon.
- * @expose
- * @name icon.pattern
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {string=}
- * @ojvalue {string} "largeChecker"
- * @ojvalue {string} "largeCrosshatch"
- * @ojvalue {string} "largeDiagonalLeft"
- * @ojvalue {string} "largeDiagonalRight"
- * @ojvalue {string} "largeDiamond"
- * @ojvalue {string} "largeTriangle"
- * @ojvalue {string} "none"
- * @ojvalue {string} "mallChecker"
- * @ojvalue {string} "smallCrosshatch"
- * @ojvalue {string} "smallDiagonalLeft"
- * @ojvalue {string} "smallDiagonalRight"
- * @ojvalue {string} "smallDiamond"
- * @ojvalue {string} "smallTriangle"
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * The opacity of the icon.
- * @expose
- * @name icon.opacity
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {number=}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * The shape of the icon. Can take the name of a built-in shape or the svg path commands for a custom shape.
- * @expose
- * @name icon.shape
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {("circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string)=}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * The URI of the node image.
- * @expose
- * @name icon.source
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {string=}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * The optional URI of the node hover image. If not defined, the source image will be used.
- * @expose
- * @name icon.sourceHover
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {string=}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * The optional URI of the selected image on hover. If not defined, the sourceSelected image will be used. If the sourceSelected image is not defined, the source image will be used.
- * @expose
- * @name icon.sourceHoverSelected
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {string=}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * The optional URI of the selected image. If not defined, the source image will be used.
- * @expose
- * @name icon.sourceSelected
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {string=}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * The width of the icon.
- * @expose
- * @name icon.width
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {number=}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * The height of the icon.
- * @expose
- * @name icon.height
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {number=}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * The CSS style object defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.
- * @expose
- * @name icon.svgStyle
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {Object=}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * The CSS style class defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.
- * @expose
- * @name icon.svgClassName
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {string=}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * Text used for the node label.
- * @expose
- * @name label
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {string=}
- * @default ''
- *
- * @example <caption>Initialize the diagram node with the
- * <code class="prettyprint">label</code> attribute specified:</caption>
- * &lt;oj-diagram-node label='[[$current.data.label]]'>&lt;/oj-diagram-node>
- */
-/**
- * The CSS style object defining the style of the diagram node label. The default values come from the CSS classes and varies based on theme.
- * @expose
- * @name labelStyle
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {(Object|null)=}
- *
- * @example <caption>Initialize the diagram node with the
- * <code class="prettyprint">label-style</code> attribute specified:</caption>
- * &lt;oj-diagram-node label-style='{"color":"black","fontSize":"12px"}'>&lt;/oj-diagram-node>
- */
-/**
- * Specifies overview node shape.
- * @expose
- * @name overview
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {Object=}
- * @default {}
- *
- * @example <caption>Initialize the diagram node with the
- * <code class="prettyprint">overview</code> attribute specified:</caption>
- * <!-- Using dot notation -->
- * &lt;oj-diagram-node overview.shape='[[$current.data.shape]]' overview.svgClassName='[[$current.data.svgClassName]]'>&lt;/oj-diagram-node>
- *
- * &lt;oj-diagram-node overview='[[$current.data.overviewData]]>&lt;/oj-diagram-node>
- */
-/**
- * Specifies overview node shape.
- * @expose
- * @name overview.icon
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {Object=}
- */
-/**
- * The shape of the icon in the overview window. Can take one of the following values for the shape name or the svg path commands for a custom shape.
- * The default value is always "inherit", but that means different things for custom nodes and default nodes.
- * When "inherit" value is specified for a default node, the shape is determined from the node in the diagram.
- * When "inherit" value is specified for a custom node, "rectangle" shape will be used.
- * This property doesn't apply at all to containers (custom or default).
- * @expose
- * @name overview.icon.shape
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {string=}
- * @ojsignature {target: "Type", value: "?'inherit'|'circle'|'diamond'|'ellipse'|'human'|'plus'|'rectangle'|'square'|'star'|'triangleDown'|'triangleUp'|string"}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * The CSS style object defining the style of the node icon in the overview.
- * @expose
- * @name overview.icon.svgStyle
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {Object=}
- *
- * @example <caption>See the <a href="#icon">overview</a> attribute for usage examples.</caption>
- */
-/**
- * The CSS style class defining the style of the node icon in the overview.
- * @expose
- * @name overview.icon.svgClassName
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {string=}
- *
- * @example <caption>See the <a href="#icon">icon</a> attribute for usage examples.</caption>
- */
-/**
- * Specifies whether or not the node will be selectable.
- * @expose
- * @name selectable
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {string=}
- * @ojvalue {string} "auto"
- * @ojvalue {string} "off"
- * @default "auto"
- *
- * @example <caption>Initialize the diagram node with the
- * <code class="prettyprint">selectable</code> attribute specified:</caption>
- * &lt;oj-diagram-node selectable='[[$current.data.selectable]]'>&lt;/oj-diagram-node>
- */
-/**
- * The text that displays in the node's tooltip.
- * @expose
- * @name shortDesc
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {string=}
- * @default ""
- *
- * @example <caption>Initialize the diagram node with the
- * <code class="prettyprint">short-desc</code> attribute specified:</caption>
- * &lt;oj-diagram-node short-desc='[[$current.data.shortDesc]]'>&lt;/oj-diagram-node>
- */
-/**
- * Determines when to display the expand/collapse button.
- * @expose
- * @name showDisclosure
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {string=}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @default "on"
- *
- * @example <caption>Initialize the diagram node with the
- * <code class="prettyprint">show-disclosure</code> attribute specified:</caption>
- * &lt;oj-diagram-node show-disclosure='[[$current.data.showDisclosure]]'>&lt;/oj-diagram-node>
- */
-/**
- * Indicates whether the specified object contains links that should be discovered in order to display promoted links.
- * @expose
- * @name descendantsConnectivity
- * @memberof! oj.ojDiagramNode
- * @instance
- * @type {string=}
- * @ojvalue {string} "connected"
- * @ojvalue {string} "disjoint"
- * @ojvalue {string} "unknown"
- * @default "unknown"
- *
- * @example <caption>Initialize the diagram node with the
- * <code class="prettyprint">descendants-connectivity</code> attribute specified:</caption>
- * &lt;oj-diagram-node descendants-connectivity='[[$current.data.descendantsConnectivity]]'>&lt;/oj-diagram-node>
  */
 
 /* global __oj_diagram_metadata:false */

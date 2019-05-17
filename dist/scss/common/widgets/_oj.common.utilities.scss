@@ -39,7 +39,7 @@
     .oj-text-primary-color {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        color: var(--oj-primary-text-color);
+        color: var(--oj-text-color-primary);
       }
       @else {
         color: $primaryTextColor;
@@ -49,7 +49,7 @@
     .oj-text-secondary-color {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        color: var(--oj-secondary-text-color);
+        color: var(--oj-text-color-secondary);
       }
       @else {
         color: $secondaryTextColor;
@@ -59,7 +59,7 @@
     .oj-text-tertiary-color {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        color: var(--oj-tertiary-text-color);
+        color: var(--oj-text-color-tertiary);
       }
       @else {
         color: $tertiaryTextColor;
@@ -82,7 +82,7 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         background-color: var(--oj-contrast-background-1-color);
-        color: var(--oj-contrast-text-color)
+        color: var(--oj-text-color-contrast)
       }
       @else {
         background-color: $contrastBackground1Color;

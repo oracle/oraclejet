@@ -124,7 +124,9 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         accessibleActionableMode?: string;
         accessibleColumnContext?: string;
         accessibleColumnEndHeaderContext?: string;
+        accessibleColumnEndHeaderLabelContext?: string;
         accessibleColumnHeaderContext?: string;
+        accessibleColumnHeaderLabelContext?: string;
         accessibleColumnSelected?: string;
         accessibleColumnSpanContext?: string;
         accessibleFirstColumn?: string;
@@ -139,8 +141,10 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         accessibleRowCollapsed?: string;
         accessibleRowContext?: string;
         accessibleRowEndHeaderContext?: string;
+        accessibleRowEndHeaderLabelContext?: string;
         accessibleRowExpanded?: string;
         accessibleRowHeaderContext?: string;
+        accessibleRowHeaderLabelContext?: string;
         accessibleRowSelected?: string;
         accessibleRowSpanContext?: string;
         accessibleSelectionAffordanceBottom?: string;
@@ -168,25 +172,6 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         msgFetchingData?: string;
         msgNoData?: string;
     };
-    onBandingIntervalChanged: ((event: JetElementCustomEvent<ojDataGrid<K, D>["bandingInterval"]>) => any) | null;
-    onCellChanged: ((event: JetElementCustomEvent<ojDataGrid<K, D>["cell"]>) => any) | null;
-    onCurrentCellChanged: ((event: JetElementCustomEvent<ojDataGrid<K, D>["currentCell"]>) => any) | null;
-    onDataChanged: ((event: JetElementCustomEvent<ojDataGrid<K, D>["data"]>) => any) | null;
-    onDndChanged: ((event: JetElementCustomEvent<ojDataGrid<K, D>["dnd"]>) => any) | null;
-    onEditModeChanged: ((event: JetElementCustomEvent<ojDataGrid<K, D>["editMode"]>) => any) | null;
-    onGridlinesChanged: ((event: JetElementCustomEvent<ojDataGrid<K, D>["gridlines"]>) => any) | null;
-    onHeaderChanged: ((event: JetElementCustomEvent<ojDataGrid<K, D>["header"]>) => any) | null;
-    onScrollPolicyChanged: ((event: JetElementCustomEvent<ojDataGrid<K, D>["scrollPolicy"]>) => any) | null;
-    onScrollPolicyOptionsChanged: ((event: JetElementCustomEvent<ojDataGrid<K, D>["scrollPolicyOptions"]>) => any) | null;
-    onScrollPositionChanged: ((event: JetElementCustomEvent<ojDataGrid<K, D>["scrollPosition"]>) => any) | null;
-    onSelectionChanged: ((event: JetElementCustomEvent<ojDataGrid<K, D>["selection"]>) => any) | null;
-    onSelectionModeChanged: ((event: JetElementCustomEvent<ojDataGrid<K, D>["selectionMode"]>) => any) | null;
-    onOjBeforeCurrentCell: ((event: ojDataGrid.ojBeforeCurrentCell<K>) => any) | null;
-    onOjBeforeEdit: ((event: ojDataGrid.ojBeforeEdit<K, D>) => any) | null;
-    onOjBeforeEditEnd: ((event: ojDataGrid.ojBeforeEditEnd<K, D>) => any) | null;
-    onOjResize: ((event: ojDataGrid.ojResize) => any) | null;
-    onOjScroll: ((event: ojDataGrid.ojScroll) => any) | null;
-    onOjSort: ((event: ojDataGrid.ojSort) => any) | null;
     addEventListener<T extends keyof ojDataGridEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojDataGridEventMap<K, D>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojDataGridSettableProperties<K, D>>(property: T): ojDataGrid<K, D>[T];
@@ -247,6 +232,32 @@ export namespace ojDataGrid {
     }> {
     }
     // tslint:disable-next-line interface-over-type-literal
+    type bandingIntervalChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["bandingInterval"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type cellChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["cell"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type currentCellChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["currentCell"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dndChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["dnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type editModeChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["editMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type gridlinesChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["gridlines"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type headerChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["header"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPolicyChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["scrollPolicy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPolicyOptionsChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["scrollPolicyOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPositionChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["scrollPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type CellContext<K, D> = {
         componentElement: Element;
         parentElement: Element;
@@ -265,7 +276,10 @@ export namespace ojDataGrid {
             row: number;
             column: number;
         };
-        mode: 'edit' | 'navigation';
+        indexFromParent: number;
+        parentKey: K;
+        treeDepth: number;
+        isLeaf: boolean;
     };
     // tslint:disable-next-line interface-over-type-literal
     type CurrentCell<K> = {
@@ -295,6 +309,10 @@ export namespace ojDataGrid {
         level: number;
         extent: number;
         depth: number;
+        indexFromParent: number;
+        parentKey: K;
+        treeDepth: number;
+        isLeaf: boolean;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LabelContext<K, D> = {
@@ -470,7 +488,9 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         accessibleActionableMode?: string;
         accessibleColumnContext?: string;
         accessibleColumnEndHeaderContext?: string;
+        accessibleColumnEndHeaderLabelContext?: string;
         accessibleColumnHeaderContext?: string;
+        accessibleColumnHeaderLabelContext?: string;
         accessibleColumnSelected?: string;
         accessibleColumnSpanContext?: string;
         accessibleFirstColumn?: string;
@@ -485,8 +505,10 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         accessibleRowCollapsed?: string;
         accessibleRowContext?: string;
         accessibleRowEndHeaderContext?: string;
+        accessibleRowEndHeaderLabelContext?: string;
         accessibleRowExpanded?: string;
         accessibleRowHeaderContext?: string;
+        accessibleRowHeaderLabelContext?: string;
         accessibleRowSelected?: string;
         accessibleRowSpanContext?: string;
         accessibleSelectionAffordanceBottom?: string;

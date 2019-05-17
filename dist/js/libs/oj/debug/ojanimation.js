@@ -3,10 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojlogger', 'promise', 'ojs/ojcomponentcore'], function(oj, $, ThemeUtils, Logger)
 {
-
+  "use strict";
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
@@ -55,7 +54,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojlogger', 'promise', '
  *    specify the new animation in one of several ways:</p>
  * <ul>
  *   <li>Call one of the animation effect methods in oj.AnimationUtils.</li>
- *   <li>Call a 3rd-party animation function with a Javascript API, such as jQuery, GreenSock, Velocity.js, etc.</li>
+ *   <li>Call a 3rd-party animation function with a Javascript API, such as GreenSock, Velocity.js, etc.</li>
  *   <li>Define action-specific CSS style classes on the animated item.  When an action triggers animation, a marker class of the form "oj-animate-&lt;action&gt;"
  *       (e.g. "oj-animate-open") is added to the animated element.  After a slight delay, a second marker class of the form "oj-animate-&lt;action&gt;-active"
  *       (e.g. "oj-animate-open-active") is added.  This allows application to define CSS transition on the element.</li>
@@ -79,16 +78,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojlogger', 'promise', '
  *   if (event.detail.action == "open") {
  *     event.preventDefault();
  *     oj.AnimationUtils.slideIn(event.detail.element).then(event.detail.endCallback);
- *   }
- * });
- * </code></pre>
- * <br>
- * <i>Customize a default "close" animation with jQuery method:</i>
- * <pre class="prettyprint"><code>
- * myComponent.addEventListener( "ojAnimateStart", function( event ) {
- *   if (event.detail.action == "close") {
- *     event.preventDefault();
- *     $(event.detail.element).fadeOut(event.detail.endCallback);
  *   }
  * });
  * </code></pre>
@@ -1418,7 +1407,7 @@ oj.AnimationUtils.ripple = function (element, options) {
   // The rippler need its own container since setting overflow on the target
   // element may not work if the element has no explicit height, which can be
   // the case on buton, listitem, etc.
-  var container = $("<div style='position:absolute; overflow:hidden'>");
+  var container = $('<div>').css({ position: 'absolute', overflow: 'hidden' });
   var rippler = $("<div class='oj-animation-effect-ripple oj-animation-rippler'>");
 
   // prepend the rippler instead of append so that it doesn't obscure other children

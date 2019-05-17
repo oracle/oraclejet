@@ -3,12 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcolor', 'ojs/ojvalidation-base', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojarraytabledatasource', 'ojs/ojlistview', 'ojs/ojeditablevalue'],
        function(oj, $, Components, Color, __ValidationBase, Logger, Context)
 {
-  
-
+  "use strict";
 var __oj_color_palette_metadata = 
 {
   "properties": {
@@ -53,7 +51,8 @@ var __oj_color_palette_metadata =
       "type": "object",
       "properties": {
         "instruction": {
-          "type": "string"
+          "type": "string",
+          "value": ""
         }
       }
     },
@@ -104,9 +103,9 @@ var __oj_color_palette_metadata =
     "swatchSize": {
       "type": "string",
       "enumValues": [
-        "lg",
+        "xs",
         "sm",
-        "xs"
+        "lg"
       ],
       "value": "lg"
     },
@@ -131,7 +130,7 @@ var __oj_color_palette_metadata =
       "readOnly": true
     },
     "value": {
-      "type": "oj.Color",
+      "type": "object",
       "writeback": true
     }
   },
@@ -198,7 +197,7 @@ var __oj_color_palette_metadata =
    * @ojstatus preview
    * @class oj.ojColorPalette
    * @ojtsimport {module: "ojcolor", type: "AMD", importName: "Color"}
-   * @ojshortdesc Displays a set of pre-defined colors from which a specific color can be selected.
+   * @ojshortdesc A color palette displays a set of predefined colors from which a specific color can be selected.
    * @ojsignature [{
    *                target: "Type",
    *                value: "class ojColorPalette extends editableValue<oj.Color, ojColorPaletteSettableProperties>"
@@ -278,10 +277,11 @@ var __oj_color_palette_metadata =
         /**
          * Specify an array of objects defining the palette's color set, and optionally, descriptive labels for the colors.
          * Each object has the following structure:
-         * @property {oj.Color} color the color definition
+         * @property {Object} color the color definition
          * @property {string} [label] optional descriptive string (refer to attribute <em>label-display</em>).
          *                                         If omitted, <em>label</em> defaults to the color's hex string format.
          *
+         * @ojsignature {target:"Type", value:"oj.Color", for:"color", jsdocOverride:true}
          * @member
          * @type {Array.<Object>}
          * @ojsignature  {target: "Type", value: "Array<{color: oj.Color, label?: string}>"}
@@ -315,9 +315,10 @@ var __oj_color_palette_metadata =
          * @type {string}
          * @default "lg"
          * @ojshortdesc Specifies the swatch size.
-         * @ojvalue {string} "xs" extra small swatch
-         * @ojvalue {string} "sm" small swatch
-         * @ojvalue {string} "lg" large swatch
+         * @ojvalue {string} "xs" {"description": "extra small swatch", "displayName": "Extra Small"}
+         * @ojvalue {string} "sm" {"description": "small swatch", "displayName": "Small"}
+         * @ojvalue {string} "lg" {"description": "large swatch", "displayName": "Large"}
+         * @ojvalueskeeporder
          *
          * @example <caption>Initialize the color palette with the <code class="prettyprint">swatch-size</code> attribute specified:</caption>
          * &ltoj-color-palette swatch-size="lg">&lt;/oj-color-palette>
@@ -382,13 +383,14 @@ var __oj_color_palette_metadata =
         /**
          * The current value of the palette element.
          * @member
-         * @type {oj.Color}
+         * @type {Object}
          * @ojformat color
          * @default null
          * @ojshortdesc The current value of the palette element.
          * @ojwriteback
          * @expose
          * @instance
+         * @ojsignature {target:"Type", value:"oj.Color", jsdocOverride:true}
          * @memberof oj.ojColorPalette
          * @example <caption>Initialize the color palette with the <code class="prettyprint">value</code> attribute specified:</caption>
          * &ltoj-color-palette value='{{myColor}}'>&lt;/oj-color-palette>
@@ -624,7 +626,7 @@ var __oj_color_palette_metadata =
 
         this._super();
 
-        this._updateLabelledBy(null, this.options.labelledBy, this._$LV);
+        this._updateLabelledBy(this.element[0], null, this.options.labelledBy, this._$LV);
 
         // custom element's use oj-label.
         if (!this._IsCustomElement()) {
@@ -685,7 +687,7 @@ var __oj_color_palette_metadata =
           case 'disabled': this._setOptDisabled(newval, true);
             break;
           case 'labelledBy':     // remove the old one and add the new one
-            this._updateLabelledBy(originalValue, newval, this._$LV);
+            this._updateLabelledBy(this.element[0], originalValue, newval, this._$LV);
             break;
           default:
             break;
@@ -1040,22 +1042,18 @@ var __oj_color_palette_metadata =
        * @private
        */
       _renderStandard: function (color, showLabels, label, tooltip, swatchClass, selectedClass) {
-        var raw;
-
-        raw = "<div class='oj-colorpalette-swatch-entry " + swatchClass +
-          (showLabels ? ' oj-colorpalette-swatch-showlabel' : '') + "'>" +
-          "<div class='oj-colorpalette-swatch-container'>" +
-          "<div class='oj-colorpalette-swatch " + selectedClass +
-          "' style='background-color:" + color.toString() + "'" +
-          ((!label) ? " title='" + tooltip + "'" : '') + '>' +
-          '</div>' +
-          '</div>';
+        var entry = $("<div class='oj-colorpalette-swatch-entry'></div>")
+          .addClass(swatchClass + (showLabels ? ' oj-colorpalette-swatch-showlabel' : ''))
+          .append($("<div class='oj-colorpalette-swatch-container'></div>")
+            .append($("<div class='oj-colorpalette-swatch'></div>")
+              .attr('title', (!label) ? tooltip : null)
+              .addClass(selectedClass)
+              .css('backgroundColor', color.toString())));
 
         if (label) {
-          raw += "<span class='oj-colorpalette-swatch-text'>" + label + '</span>';
+          entry.append($("<span class='oj-colorpalette-swatch-text'>" + label + '</span>')[0]);
         }
-        raw += '</div>';
-        return $(raw)[0];
+        return entry[0];
       },
 
       /**
@@ -1643,16 +1641,21 @@ var __oj_color_palette_metadata =
        * @private
        */
       _getScrollbarWidth: function () {
-        var div = $(
-          "<div style='overflow: scroll; width: 100px; height: 100px; " +
-            "position: absolute; visibility: hidden;'>" +
-            "<div style='width: 100%; height: 100%;'></div>" +
-            '</div>'
-        );
-        this.element.append(div);             // @HTMLUpdateOK (strings are all code constants)
-        var outerWidth = div[0].offsetWidth;
-        var innerWidth = div.children()[0].offsetWidth;
-        div.remove();
+        var div = document.createElement('div');
+        div.style.overflow = 'scroll';
+        div.style.width = '100px';
+        div.style.height = '100px';
+        div.style.position = 'absolute';
+        div.style.visibility = 'hidden';
+        var innerDiv = document.createElement('div');
+        innerDiv.style.width = '100%';
+        innerDiv.style.height = '100%';
+        div.appendChild(innerDiv);
+
+        this.element.append(div);
+        var outerWidth = div.offsetWidth;
+        var innerWidth = innerDiv.offsetWidth;
+        $(div).remove();
         return (outerWidth - innerWidth);
       },
 
@@ -1762,6 +1765,7 @@ var __oj_color_palette_metadata =
        *
        * @expose
        * @memberof oj.ojColorPalette
+       * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
        * @instance
        *
        * @example <caption>Set a single subproperty of a complex property:</caption>

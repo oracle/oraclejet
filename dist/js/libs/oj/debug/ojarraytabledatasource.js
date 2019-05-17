@@ -3,14 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'ojs/ojtranslation', 'jquery', 'ojs/ojlogger', 'ojs/ojdatasource-common'], function(oj, Translations, $, Logger)
 {
+  "use strict";
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -64,12 +59,8 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'jquery', 'ojs/ojlogger', 'ojs/ojdata
 oj.ArrayTableDataSource = function (data, options) {
   // Initialize
   this.data = data || {};   // This was put in to keep closure happy...
-  if (!(data instanceof Array) &&
-      (typeof (data) !== 'function' &&
-       typeof (data.subscribe) !== 'function')) {
-    // we only support Array or ko.observableArray. To
-    // check for observableArray, we can't do instanceof check because it's
-    // a function. So we just check if it contains a subscribe function.
+  if (!(data instanceof Array) && !this._isObservableArray(data)) {
+    // we only support Array or ko.observableArray.
     var errSummary = oj.TableDataSource._LOGGER_MSG._ERR_DATA_INVALID_TYPE_SUMMARY;
     var errDetail = oj.TableDataSource._LOGGER_MSG._ERR_DATA_INVALID_TYPE_DETAIL;
     throw new Error(errSummary + '\n' + errDetail);
@@ -89,9 +80,6 @@ oj.ArrayTableDataSource = function (data, options) {
     if (options != null && options.idAttribute != null) {
       this._idAttribute = options.idAttribute;
     }
-    this._data = (data instanceof Array) ? data : (/** @type {Function} */(data))();
-    this._totalSize = this._data.length;
-    this._subscribeObservableArray(data);
   }
 
   if ((options != null && (options.startFetch === 'enabled' || options.startFetch == null))
@@ -396,12 +384,17 @@ oj.ArrayTableDataSource.prototype.reset = function (data, options) {
   var silent = options.silent;
 
   if (data != null) {
-    this._data = data;
-    this._subscribeObservableArray(data);
     this.data = data;
   }
   this._rows = {};
   this._totalSize = 0;
+
+  // clear any change subscription even if no new data is provided
+  // a new subscription will be created on the next data fetch
+  if (this._arrayChangeSubscription) {
+    this._arrayChangeSubscription.dispose();
+    this._arrayChangeSubscription = null;
+  }
 
   if (!silent) {
     oj.TableDataSource.superclass.handleEvent.call(this, oj.TableDataSource.EventType.RESET, null);
@@ -454,6 +447,7 @@ oj.ArrayTableDataSource.prototype.sort = function (criteria) {
  * @instance
  */
 oj.ArrayTableDataSource.prototype.totalSize = function () {
+  this._checkDataLoaded();
   return this._totalSize;
 };
 
@@ -523,14 +517,15 @@ oj.ArrayTableDataSource.prototype._addToRowSet = function (m, index, options) {
 
 oj.ArrayTableDataSource.prototype._checkDataLoaded = function () {
   if (!this._isDataLoaded()) {
-    if (!(this.data instanceof Array) &&
-        typeof (this.data) === 'function' &&
-        typeof (this.data.subscribe) === 'function') {
-      // if we have an observableArray, reload just in case it was changed
-      this._data = (/** @type {Function} */(this.data))();
+    var dataArray = [];
+    if (this.data instanceof Array) {
+      dataArray = this.data;
+    } else if (this._isObservableArray(this.data)) {
+      dataArray = (/** @type {Function} */(this.data)).peek();
+      this._subscribeObservableArray(this.data);
     }
-    this._rows = this._getRowArray(this._data);
-    this._totalSize = this._data.length;
+    this._rows = this._getRowArray(dataArray);
+    this._totalSize = dataArray.length;
   }
 };
 
@@ -937,14 +932,8 @@ oj.ArrayTableDataSource.prototype._subscribeObservableArray = function (data) {
   if (!(data instanceof Array)) {
     var self = this;
     // subscribe to observableArray arrayChange event to get individual updates
-    (/** @type {{subscribe: Function}} */(data)).subscribe(
+    this._arrayChangeSubscription = (/** @type {{subscribe: Function}} */(data)).subscribe(
         function (changes) {
-          if (!self._isDataLoaded()) {
-            // don't bother with data change notifications
-            // if the data hasn't even been loaded yet (e.g. initial
-            // fetch hasn't happened
-            return;
-          }
           var updatedIndexes = [];
           var removeDuplicate = [];
           var i;
@@ -1018,6 +1007,12 @@ oj.ArrayTableDataSource.prototype._wrapWritableValue = function (m) {
   }
 
   return returnObj;
+};
+
+// To check for observableArray, we can't do instanceof check because it's
+// a function. So we just check if it contains a subscribe function.
+oj.ArrayTableDataSource.prototype._isObservableArray = function (obj) {
+  return (typeof (obj) === 'function' && typeof (obj.subscribe) === 'function');
 };
 
 oj.ArrayTableDataSource._defineProperty = function (row, m, prop) {

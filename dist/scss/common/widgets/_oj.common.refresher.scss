@@ -48,7 +48,7 @@
      */
     .oj-pulltorefresh-primary-text {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        color: var(--oj-primary-text-color);
+        color: var(--oj-text-color-primary);
       } @else {
         color: $primaryTextColor;
       }
@@ -61,7 +61,7 @@
      */
     .oj-pulltorefresh-secondary-text {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        color: var(--oj-secondary-text-color);
+        color: var(--oj-text-color-secondary);
         font-size: var(--oj-font-size-sm);
       } @else {
         color: $secondaryTextColor;

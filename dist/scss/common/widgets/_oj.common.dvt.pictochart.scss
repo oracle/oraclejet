@@ -21,7 +21,14 @@
     }
 
     .oj-pictochart {
-      @include oj-user-select-property(none);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        user-select: none;
+      }
+      @else 
+      {
+        @include oj-user-select-property(none);
+      }
       display: inline-block;
     }
 

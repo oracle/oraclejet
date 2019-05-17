@@ -3,15 +3,14 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojoption'], 
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        */
-       function(oj, $, ThemeUtils, Components)
+define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojchildmutationobserver', 'ojs/ojoption'], 
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+*/
+function(oj, $, ThemeUtils, Components, ChildMutationObserver)
 {
-
+  "use strict";
 var __oj_button_metadata = 
 {
   "properties": {
@@ -199,6 +198,7 @@ var __oj_menu_button_metadata =
  * All rights reserved.
  */
 /* global ThemeUtils:false */
+/* global ChildMutationObserver:false */
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
@@ -242,7 +242,7 @@ var __oj_menu_button_metadata =
  * @augments oj.baseComponent
  * @since 0.6
  * @ojstatus preview
- * @ojshortdesc A clickable button.
+ * @ojshortdesc Buttons direct users to initiate or take actions and work with a single tap, click, or keystroke.
  * @ojrole button
  * @ojsignature [{
  *                target: "Type",
@@ -688,6 +688,7 @@ var __oj_menu_button_metadata =
          * @expose
          * @event
          * @memberof oj.ojButton
+         * @ojshortdesc Triggered when a button is clicked, whether by keyboard, mouse, or touch events.  To meet accessibility requirements, the only supported way to react to the click of a button is to listen for this event.
          * @instance
          * @ojcancelable
          * @ojbubbles
@@ -1063,70 +1064,6 @@ var __oj_menu_button_metadata =
           return;
         }
 
-        function ChildMutationObserver(element, handler) {
-          var _element = element;
-          var _handler = handler;
-          var _trackOption = oj.BaseCustomElementBridge.getRegistered(element.tagName) ?
-                          'nearestCustomElement' : 'none';
-          /**
-           * Filter DOM mutations.
-           * @param {Array} mutations all DOM mutations for the element
-           * @return {Array} filtered DOM mutaions
-           */
-          var _filterMutations = function (mutations) {
-            var filteredMutations = [];
-
-            for (var i = 0; i < mutations.length; i++) {
-              var mutation = mutations[i];
-              var testElement = mutation.type === 'childList' ? mutation.target : mutation.target.parentNode;
-              while (testElement) {
-                if (testElement === _element) {
-                  // the mutation is relevant - push it to the array and stop the search
-                  filteredMutations.push(mutation);
-                  testElement = null;
-                } else if (_trackOption === 'nearestCustomElement'
-                  && !oj.BaseCustomElementBridge.isValidCustomElementName(testElement.localName)) {
-                  // we search for the nearest custom element, the mutation might be relevant, walk the DOM up to find out
-                  testElement = testElement.parentNode;
-                } else {
-                  // the mutation is not relevant - skip it
-                  testElement = null;
-                }
-              }
-            }
-            return filteredMutations;
-          };
-
-          var _mutationObserver = new MutationObserver(function (mutations) {
-            var filteredMutations = _filterMutations(mutations);
-            if (filteredMutations.length > 0) {
-              _handler(filteredMutations);
-            }
-          });
-
-          return {
-            /**
-             * Start watching for DOM mutations for a JET custom element. The mutation handler will be called
-             * when a relevant mutation is detected - any relevant mutations should meet
-             * the criteria provided by the metadata.extension._TRACK_CHILDREN option on the element.
-             * @ignore
-             */
-            observe: function () {
-              if (_trackOption !== 'none') {
-                _mutationObserver.observe(_element,
-                  { attributes: true, childList: true, subtree: true, characterData: true });
-              }
-            },
-            /**
-             * Stop watching for DOM mutations.
-             * @ignore
-             */
-            disconnect: function () {
-              _mutationObserver.disconnect();
-            }
-          };
-        }
-
         var self = this;
         this._childMutationObserver = new ChildMutationObserver(this.rootElement,
           function (mutations) {
@@ -1401,6 +1338,9 @@ var __oj_menu_button_metadata =
         if (_lastToggleActive === this.buttonElement[0]) {
           _lastToggleActive = null; // clear _lastToggleActive flag, while destroying the button.
         }
+
+        //  - blur event needs to be explicitly removed
+        this.buttonElement.off('blur');
 
         this._removeMutationObserver();
       },
@@ -2232,6 +2172,7 @@ var __oj_menu_button_metadata =
      *
      * @ojchild Default
      * @memberof oj.ojButton
+     * @ojshortdesc The default slot is the button's text label. The oj-button element accepts plain text or DOM nodes as children for the default slot.
      *
      * @example <caption>Initialize the Button with child content specified:</caption>
      * &lt;oj-button>
@@ -2240,12 +2181,14 @@ var __oj_menu_button_metadata =
      *
      * @example <caption>Initialize the Button with data-bound child content specified in a span:</caption>
      * &lt;oj-button>
-     *   &lt;span data-bind='text: myText'>&lt;/span>
+     *   &lt;span>
+     *     &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
+     *   &lt;/span>
      * &lt;/oj-button>
      *
      * @example <caption>Initialize the Button with data-bound child content specified without a container element:</caption>
      * &lt;oj-button>
-     *   &lt;!-- ko text: myText -->&lt;!--/ko-->
+     *   &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
      * &lt;/oj-button>
      */
 
@@ -2257,6 +2200,7 @@ var __oj_menu_button_metadata =
      *
      * @ojchild Default
      * @memberof oj.ojMenuButton
+     * @ojshortdesc The default slot is the button's text label. The oj-menu-button element accepts plain text or DOM nodes as children for the default slot.
      *
      * @example <caption>Initialize the Menu Button with child content specified:</caption>
      * &lt;oj-menu-button>
@@ -2265,12 +2209,14 @@ var __oj_menu_button_metadata =
      *
      * @example <caption>Initialize the Menu Button with data-bound child content specified in a span:</caption>
      * &lt;oj-menu-button>
-     *   &lt;span data-bind='text: myText'>&lt;/span>
+     *   &lt;span>
+     *     &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
+     *   &lt;/span>
      * &lt;/oj-menu-button>
      *
      * @example <caption>Initialize the Menu Button with data-bound child content specified without a container element:</caption>
      * &lt;oj-menu-button>
-     *   &lt;!-- ko text: myText -->&lt;!--/ko-->
+     *   &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
      * &lt;/oj-menu-button>
      */
 
@@ -2279,6 +2225,7 @@ var __oj_menu_button_metadata =
      *
      * @ojslot startIcon
      * @memberof oj.ojButton
+     * @ojshortdesc The startIcon slot is the button's start icon. The oj-button element accepts DOM nodes as children with the startIcon slot.
      *
      * @example <caption>Initialize the Button with child content specified for the startIcon:</caption>
      * &lt;oj-button>
@@ -2292,6 +2239,7 @@ var __oj_menu_button_metadata =
      *
      * @ojslot startIcon
      * @memberof oj.ojMenuButton
+     * @ojshortdesc The startIcon slot is the button's start icon. The oj-menu-button element accepts DOM nodes as children with the startIcon slot.
      *
      * @example <caption>Initialize the Menu Button with child content specified for the startIcon:</caption>
      * &lt;oj-menu-button>
@@ -2305,6 +2253,7 @@ var __oj_menu_button_metadata =
      *
      * @ojslot endIcon
      * @memberof oj.ojButton
+     * @ojshortdesc The endIcon slot is the button's end icon. The oj-button element accepts DOM nodes as children with the endIcon slot.
      *
      * @example <caption>Initialize the Button with child content specified for the endIcon:</caption>
      * &lt;oj-button>
@@ -2318,6 +2267,7 @@ var __oj_menu_button_metadata =
      *
      * @ojslot endIcon
      * @memberof oj.ojMenuButton
+     * @ojshortdesc The endIcon slot is the button's end icon. The oj-menu button element accepts DOM nodes as children with the endIcon slot.
      *
      * @example <caption>Initialize the Menu Button with child content specified for the endIcon:</caption>
      * &lt;oj-menu-button>
@@ -2332,6 +2282,7 @@ var __oj_menu_button_metadata =
      * @ojslot menu
      * @ojmaxitems 1
      * @memberof oj.ojMenuButton
+     * @ojshortdesc The menu associatied with the menu button. The oj-menu-button element accepts a single oj-menu element as a child with the menu slot.
      *
      * @example <caption>Initialize the Menu Button with child content specified for the menu:</caption>
      * &lt;oj-menu-button>
@@ -2500,7 +2451,7 @@ var __oj_menu_button_metadata =
  * @since 4.0
  * @ojstatus preview
  * @augments oj.ojButton
- * @ojshortdesc A button that launches a menu when clicked.
+ * @ojshortdesc A menu button launches a menu when clicked.
  * @ojrole button
  *
  * @classdesc
@@ -2584,7 +2535,7 @@ var __oj_menu_button_metadata =
  * @since 0.6
  * @ojstatus preview
  * @augments oj.ojButtonset
- * @ojshortdesc A grouping of related buttons where only one button may be selected.
+ * @ojshortdesc A buttonset one is a grouping of related buttons where only one button may be selected.
  * @ojrole button
  * @ojrole radiogroup
  *
@@ -2615,11 +2566,15 @@ var __oj_menu_button_metadata =
  *
  * <pre class="prettyprint">
  * <code>&lt;oj-buttonset-one id="drinkset">
- *       &lt;!-- ko foreach: drinkValues -->
- *       &lt;oj-option value="[[id]]">
- *           &lt;span data-bind="text: label">&lt;/span>
- *       &lt;/oj-option>
- *       &lt;!-- /ko -->
+ *       &lt;oj-bind-for-each data="[[drinkValues]]">
+ *         &lt;template>
+ *           &lt;oj-option value="[[$current.data.id]]">
+ *             &lt;span>
+ *               &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
+ *             &lt;/span>
+ *           &lt;/oj-option>
+ *         &lt;/template>
+ *       &lt;/oj-bind-for-each>
  *   &lt;/oj-buttonset-one>
  * </code></pre>
  */
@@ -2629,7 +2584,7 @@ var __oj_menu_button_metadata =
  * @since 0.6
  * @ojstatus preview
  * @augments oj.ojButtonset
- * @ojshortdesc A grouping of related buttons where any number of buttons may be selected.
+ * @ojshortdesc A buttonset many is a grouping of related buttons where any number of buttons may be selected.
  * @ojrole button
  * @ojrole group
  *
@@ -2660,11 +2615,15 @@ var __oj_menu_button_metadata =
  *
  * <pre class="prettyprint">
  * <code>&lt;oj-buttonset-many id="drinkset">
- *       &lt;!-- ko foreach: drinkValues -->
- *       &lt;oj-option value="[[id]]">
- *           &lt;span data-bind="text: label">&lt;/span>
- *       &lt;/oj-option>
- *       &lt;!-- /ko -->
+ *       &lt;oj-bind-for-each data="[[drinkValues]]">
+ *         &lt;template>
+ *           &lt;oj-option value="[[$current.data.id]]">
+ *             &lt;span>
+ *               &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
+ *             &lt;/span>
+ *           &lt;/oj-option>
+ *         &lt;/template>
+ *       &lt;/oj-bind-for-each>
  *   &lt;/oj-buttonset-many>
  * </code></pre>
  */
@@ -2752,9 +2711,8 @@ var __oj_menu_button_metadata =
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
  * </h3>
  *
- * <p>For components like Buttonset and Menu that contain a number of like items, applications may wish to use a <code class="prettyprint">foreach</code> Knockout binding
- * to stamp out the contents.  This binding cannot live on the same node as the <code class="prettyprint">ojComponent</code> binding, and must instead live on a nested
- * virtual element as follows:
+ * <p>For components like Buttonset and Menu that contain a number of like items, applications may wish to use an <code class="prettyprint">oj-bind-for-each</code>
+ * to stamp out the contents as follows:
  *
  * @ojfragment buttonsetCommon
  * @memberof oj.ojButtonset
@@ -4177,6 +4135,7 @@ var __oj_menu_button_metadata =
 /* global __oj_button_metadata */
 (function () {
   __oj_button_metadata.extension._WIDGET_NAME = 'ojButton';
+  __oj_button_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
   __oj_button_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['href'];
   oj.CustomElementBridge.register('oj-button', {
     metadata: __oj_button_metadata,
@@ -4189,6 +4148,7 @@ var __oj_menu_button_metadata =
 /* global __oj_menu_button_metadata */
 (function () {
   __oj_menu_button_metadata.extension._WIDGET_NAME = 'ojButton';
+  __oj_menu_button_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
   __oj_menu_button_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['href'];
   oj.CustomElementBridge.register('oj-menu-button', {
     metadata: __oj_menu_button_metadata,

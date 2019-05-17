@@ -2,6 +2,7 @@ import { editableValue, editableValueEventMap, editableValueSettableProperties }
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojSlider extends editableValue<number | null, ojSliderSettableProperties> {
     disabled: boolean;
+    labelledBy: string | null;
     max: number | null;
     min: number | null;
     orientation: 'horizontal' | 'vertical';
@@ -16,16 +17,6 @@ export interface ojSlider extends editableValue<number | null, ojSliderSettableP
         optionNum?: string;
         valueRange?: string;
     };
-    onDisabledChanged: ((event: JetElementCustomEvent<ojSlider["disabled"]>) => any) | null;
-    onMaxChanged: ((event: JetElementCustomEvent<ojSlider["max"]>) => any) | null;
-    onMinChanged: ((event: JetElementCustomEvent<ojSlider["min"]>) => any) | null;
-    onOrientationChanged: ((event: JetElementCustomEvent<ojSlider["orientation"]>) => any) | null;
-    onStepChanged: ((event: JetElementCustomEvent<ojSlider["step"]>) => any) | null;
-    onTransientValueChanged: ((event: JetElementCustomEvent<ojSlider["transientValue"]>) => any) | null;
-    onTypeChanged: ((event: JetElementCustomEvent<ojSlider["type"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojSlider["value"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojSlider.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojSlider.ojAnimateStart) => any) | null;
     addEventListener<T extends keyof ojSliderEventMap>(type: T, listener: (this: HTMLElement, ev: ojSliderEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojSliderSettableProperties>(property: T): ojSlider[T];
@@ -48,11 +39,30 @@ export namespace ojSlider {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojSlider["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojSlider["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojSlider["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged = JetElementCustomEvent<ojSlider["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type orientationChanged = JetElementCustomEvent<ojSlider["orientation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type stepChanged = JetElementCustomEvent<ojSlider["step"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type transientValueChanged = JetElementCustomEvent<ojSlider["transientValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type typeChanged = JetElementCustomEvent<ojSlider["type"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojSlider["value"]>;
 }
 export interface ojSliderEventMap extends editableValueEventMap<number | null, ojSliderSettableProperties> {
     'ojAnimateEnd': ojSlider.ojAnimateEnd;
     'ojAnimateStart': ojSlider.ojAnimateStart;
     'disabledChanged': JetElementCustomEvent<ojSlider["disabled"]>;
+    'labelledByChanged': JetElementCustomEvent<ojSlider["labelledBy"]>;
     'maxChanged': JetElementCustomEvent<ojSlider["max"]>;
     'minChanged': JetElementCustomEvent<ojSlider["min"]>;
     'orientationChanged': JetElementCustomEvent<ojSlider["orientation"]>;
@@ -63,6 +73,7 @@ export interface ojSliderEventMap extends editableValueEventMap<number | null, o
 }
 export interface ojSliderSettableProperties extends editableValueSettableProperties<number | null> {
     disabled: boolean;
+    labelledBy: string | null;
     max: number | null;
     min: number | null;
     orientation: 'horizontal' | 'vertical';

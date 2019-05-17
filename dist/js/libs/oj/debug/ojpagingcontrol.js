@@ -8,20 +8,21 @@
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojlogger', 'ojs/ojpagingtabledatasource', 'ojs/ojinputtext', 'ojs/ojvalidation-number','ojs/ojjquery-hammer'], 
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojlogger', 'ojs/ojinputtext', 'ojs/ojvalidation-number','ojs/ojjquery-hammer', 'ojs/ojpagingmodel'], 
 /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        * @param {Object} compCore
-        * @param {Object} Hammer
-        */
-       function(oj, $, Context, compCore, Hammer, Logger)
+  * @param {Object} oj 
+  * @param {jQuery} $
+  * @param {Object} compCore
+  * @param {Object} Hammer
+  */
+function(oj, $, Context, compCore, Hammer, Logger)
 {
+  "use strict";
 var __oj_paging_control_metadata = 
 {
   "properties": {
     "data": {
-      "type": "oj.PagingModel"
+      "type": "object"
     },
     "loadMoreOptions": {
       "type": "object",
@@ -52,7 +53,7 @@ var __oj_paging_control_metadata =
       "type": "object",
       "properties": {
         "layout": {
-          "type": "Array",
+          "type": "Array<string>",
           "enumValues": [
             "all",
             "auto",
@@ -95,6 +96,24 @@ var __oj_paging_control_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "fullMsgItem": {
+          "type": "string"
+        },
+        "fullMsgItemApprox": {
+          "type": "string"
+        },
+        "fullMsgItemAtLeast": {
+          "type": "string"
+        },
+        "fullMsgItemRange": {
+          "type": "string"
+        },
+        "fullMsgItemRangeApprox": {
+          "type": "string"
+        },
+        "fullMsgItemRangeAtLeast": {
+          "type": "string"
+        },
         "labelAccNavFirstPage": {
           "type": "string"
         },
@@ -108,6 +127,9 @@ var __oj_paging_control_metadata =
           "type": "string"
         },
         "labelAccNavPreviousPage": {
+          "type": "string"
+        },
+        "labelAccPageNumber": {
           "type": "string"
         },
         "labelAccPaging": {
@@ -128,6 +150,9 @@ var __oj_paging_control_metadata =
         "maxPageLinksInvalid": {
           "type": "string"
         },
+        "msgItemNoTotal": {
+          "type": "string"
+        },
         "msgItemRangeCurrent": {
           "type": "string"
         },
@@ -135,6 +160,9 @@ var __oj_paging_control_metadata =
           "type": "string"
         },
         "msgItemRangeItems": {
+          "type": "string"
+        },
+        "msgItemRangeNoTotal": {
           "type": "string"
         },
         "msgItemRangeOf": {
@@ -198,11 +226,10 @@ var __oj_paging_control_metadata =
  * @augments oj.baseComponent
  * @ojstatus preview
  * @since 0.7
- * @ojshortdesc Provides paging functionality for data collections.
+ * @ojshortdesc A paging control provides paging functionality for data collections.
  * @ojrole navigation
  * @ojrole button
- * @ojtsimport ojpagingtabledatasource
- * @ojtsignore
+ * @ojtsimport {module: "ojpagingmodel", type: "AMD", imported: ["PagingModel"]}
  *
  * @classdesc
  * <h3 id="pagingcontrolOverview-section">
@@ -249,7 +276,9 @@ var __oj_paging_control_metadata =
          * @public
          * @instance
          * @memberof! oj.ojPagingControl
-         * @type {oj.PagingModel}
+         * @ojshortdesc Specifies the data bound to the Paging Control. See the Help documentation for more information.
+         * @type {Object}
+         * @ojsignature {target:"Type", value:"oj.PagingModel", jsdocOverride:true}
          * @default null
          *
          * @example <caption>Initialize the PagingControl with the <code class="prettyprint">data</code> attribute specified:</caption>
@@ -269,6 +298,7 @@ var __oj_paging_control_metadata =
          * @public
          * @instance
          * @memberof! oj.ojPagingControl
+         * @ojshortdesc Specifies the options for when the Paging Control width is too narrow.
          * @type {string}
          * @ojvalue {string} "fit" Display as many controls as can fit in the PagingControl width.
          * @ojvalue {string} "none" Display all controls. Controls which cannot fit will be truncated.
@@ -346,10 +376,11 @@ var __oj_paging_control_metadata =
            * <p>See the <a href="#pageOptions">page-options</a> attribute for usage examples.</p>
            * @expose
            * @name pageOptions.layout
+           * @ojshortdesc An array of values specifying the navigation controls to display for numeric page links.
            * @public
            * @memberof! oj.ojPagingControl
            * @instance
-           * @type {Array}
+           * @type {Array.<string>}
            * @ojvalue {string} 'auto' The PagingControl decides which controls to display
            * @ojvalue {string} 'all' Display all controls
            * @ojvalue {string} 'input' Display the page input control
@@ -366,6 +397,7 @@ var __oj_paging_control_metadata =
            * <p>See the <a href="#pageOptions">page-options</a> attribute for usage examples.</p>
            * @expose
            * @name pageOptions.type
+           * @ojshortdesc Specifies the type of page links.
            * @public
            * @memberof! oj.ojPagingControl
            * @instance
@@ -384,6 +416,7 @@ var __oj_paging_control_metadata =
            * <p>See the <a href="#pageOptions">page-options</a> attribute for usage examples.</p>
            * @expose
            * @name pageOptions.maxPageLinks
+           * @ojshortdesc Specifies the maximum number of numeric page links to display.
            * @public
            * @memberof! oj.ojPagingControl
            * @instance
@@ -399,6 +432,7 @@ var __oj_paging_control_metadata =
            * <p>See the <a href="#pageOptions">page-options</a> attribute for usage examples.</p>
            * @expose
            * @name pageOptions.orientation
+           * @ojshortdesc Specifies the orientation of the page links.
            * @public
            * @memberof! oj.ojPagingControl
            * @instance
@@ -418,6 +452,9 @@ var __oj_paging_control_metadata =
          * @instance
          * @memberof! oj.ojPagingControl
          * @type {Object}
+         * @ojdeprecated {since: '7.0.0', description: 'This option is deprecated and will not get feature updates or support going forward.
+         *                         Please use native component high-water mark scrolling API instead (see Table, ListView, DataGrid).
+         *                         In addition, "loadMore" is not compatible with Table, Listview, DataGrid default scroll-policy "loadMoreOnScroll".'}
          *
          * @example <caption>Initialize the PagingControl, overriding load-more-options value:</caption>
          * &lt;!-- Using dot notation -->
@@ -448,9 +485,13 @@ var __oj_paging_control_metadata =
            * <p>See the <a href="#loadMoreOptions">load-more-options</a> attribute for usage examples.</p>
            * @expose
            * @name loadMoreOptions.maxCount
+           * @ojshortdesc The maximum number of items to display.
            * @memberof! oj.ojPagingControl
            * @instance
            * @type {number}
+           * @ojdeprecated {since: '7.0.0', description: 'This option is deprecated and will not get feature updates or support going forward.
+           *                         Please use native component high-water mark scrolling API instead (see Table, ListView, DataGrid).'}
+           *
            * @default 500
            * @ojmin 0
            */
@@ -462,9 +503,13 @@ var __oj_paging_control_metadata =
          * @public
          * @instance
          * @memberof! oj.ojPagingControl
+         * @ojshortdesc Specifies the paging mode.
          * @type {string}
          * @ojvalue {string} "page" Display paging control in pagination mode.
-         * @ojvalue {string} "loadMore" Display paging control in high-water mark mode.
+         * @ojvalue {string} "loadMore" <span class="important">Deprecated: This option is deprecated and will not get feature updates or support going forward.
+         *                            Please use native component high-water mark scrolling API instead (see Table, ListView, DataGrid).
+         *                            In addition, "loadMore" is not compatible with Table, Listview, DataGrid default scroll-policy "loadMoreOnScroll".
+         *                            </span><br><br>Display paging control in high-water mark mode.
          * @default "page"
          *
          * @example <caption>Initialize the PagingControl with the <code class="prettyprint">mode</code> attribute specified:</caption>
@@ -504,6 +549,7 @@ var __oj_paging_control_metadata =
       _BUNDLE_KEY:
       {
         _LABEL_ACC_PAGING: 'labelAccPaging',
+        _LABEL_ACC_PAGE_NUMBER: 'labelAccPageNumber',
         _LABEL_ACC_NAV_FIRST_PAGE: 'labelAccNavFirstPage',
         _LABEL_ACC_NAV_LAST_PAGE: 'labelAccNavLastPage',
         _LABEL_ACC_NAV_NEXT_PAGE: 'labelAccNavNextPage',
@@ -520,6 +566,14 @@ var __oj_paging_control_metadata =
         _MSG_ITEM_RANGE_ATLEAST: 'msgItemRangeOfAtLeast',
         _MSG_ITEM_RANGE_APPROX: 'msgItemRangeOfApprox',
         _MSG_ITEM_RANGE_OF: 'msgItemRangeOf',
+        _MSG_ITEM_RANGE_NO_TOTAL: 'msgItemRangeNoTotal',
+        _FULL_MSG_ITEM_RANGE_ATLEAST: 'fullMsgItemRangeAtLeast',
+        _FULL_MSG_ITEM_RANGE_APPROX: 'fullMsgItemRangeApprox',
+        _FULL_MSG_ITEM_RANGE: 'fullMsgItemRange',
+        _MSG_ITEM_NO_TOTAL: 'msgItemNoTotal',
+        _FULL_MSG_ITEM_ATLEAST: 'fullMsgItemAtLeast',
+        _FULL_MSG_ITEM_APPROX: 'fullMsgItemApprox',
+        _FULL_MSG_ITEM: 'fullMsgItem',
         _TIP_NAV_INPUT_PAGE: 'tipNavInputPage',
         _TIP_NAV_PAGE_LINK: 'tipNavPageLink',
         _TIP_NAV_NEXT_PAGE: 'tipNavNextPage',
@@ -555,6 +609,7 @@ var __oj_paging_control_metadata =
       {
         _PAGING_CONTROL_CLASS: 'oj-pagingcontrol',
         _PAGING_CONTROL_ACC_LABEL_CLASS: 'oj-pagingcontrol-acc-label',
+        _PAGING_CONTROL_ACC_PAGE_LABEL_CLASS: 'oj-pagingcontrol-acc-page-label',
         _PAGING_CONTROL_CONTENT_CLASS: 'oj-pagingcontrol-content',
         _PAGING_CONTROL_LOAD_MORE_CLASS: 'oj-pagingcontrol-loadmore',
         _PAGING_CONTROL_LOAD_MORE_LINK_CLASS: 'oj-pagingcontrol-loadmore-link',
@@ -637,6 +692,18 @@ var __oj_paging_control_metadata =
         _RANGE_TEXT: 'rangeText',
         _PAGES: 'pages',
         _NAV: 'nav'
+      },
+      /**
+       * @private
+       */
+      _PAGING_TABLE_DATA_SOURCE_EVENT_TYPE:
+      {
+        _ADD: 'add',
+        _REMOVE: 'remove',
+        _RESET: 'reset',
+        _REFRESH: 'refresh',
+        _SYNC: 'sync',
+        _SORT: 'sort'
       },
       /**
        * @private
@@ -865,37 +932,48 @@ var __oj_paging_control_metadata =
       getSubIdByNode: function (node) {
         if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS)) {
           return { subId: 'oj-pagingcontrol-nav-input' };
-        } else if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_MAX_CLASS)) {
+        }
+        if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_MAX_CLASS)) {
           return { subId: 'oj-pagingcontrol-nav-input-max' };
-        } else if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_SUMMARY_CLASS)) {
+        }
+        if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_SUMMARY_CLASS)) {
           return { subId: 'oj-pagingcontrol-nav-input-summary' };
-        } else if ($(node)
-                   .hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_SUMMARY_CURRENT_CLASS)) {
+        }
+        if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_SUMMARY_CURRENT_CLASS)) {
           return { subId: 'oj-pagingcontrol-nav-input-summary-current' };
-        } else if ($(node)
-                   .hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_SUMMARY_MAX_CLASS)) {
+        }
+        if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_SUMMARY_MAX_CLASS)) {
           return { subId: 'oj-pagingcontrol-nav-input-summary-max' };
-        } else if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_FIRST_CLASS)) {
+        }
+        if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_FIRST_CLASS)) {
           return { subId: 'oj-pagingcontrol-nav-first' };
-        } else if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_NEXT_CLASS)) {
+        }
+        if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_NEXT_CLASS)) {
           return { subId: 'oj-pagingcontrol-nav-next' };
-        } else if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_PREVIOUS_CLASS)) {
+        }
+        if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_PREVIOUS_CLASS)) {
           return { subId: 'oj-pagingcontrol-nav-previous' };
-        } else if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_LAST_CLASS)) {
+        }
+        if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_LAST_CLASS)) {
           return { subId: 'oj-pagingcontrol-nav-last' };
-        } else if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_PAGE_CLASS)) {
+        }
+        if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_PAGE_CLASS)) {
           return { subId: 'oj-pagingcontrol-nav-page',
             index: $(node).attr(this._DATA_ATTR_PAGE_NUM) };
-        } else if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_LOAD_MORE_LINK_CLASS)) {
+        }
+        if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_LOAD_MORE_LINK_CLASS)) {
           return { subId: 'oj-pagingcontrol-load-more-link' };
-        } else if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_LOAD_MORE_RANGE_CLASS)) {
+        }
+        if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_LOAD_MORE_RANGE_CLASS)) {
           return { subId: 'oj-pagingcontrol-load-more-range' };
-        } else if ($(node)
-                   .hasClass(this._CSS_CLASSES._PAGING_CONTROL_LOAD_MORE_RANGE_CURRENT_CLASS)) {
+        }
+        if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_LOAD_MORE_RANGE_CURRENT_CLASS)) {
           return { subId: 'oj-pagingcontrol-load-more-range-current' };
-        } else if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_LOAD_MORE_RANGE_MAX_CLASS)) {
+        }
+        if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_LOAD_MORE_RANGE_MAX_CLASS)) {
           return { subId: 'oj-pagingcontrol-load-more-range-max' };
-        } else if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_LOAD_MORE_MAX_ROWS_CLASS)) {
+        }
+        if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_LOAD_MORE_MAX_ROWS_CLASS)) {
           return { subId: 'oj-pagingcontrol-load-more-max-rows' };
         }
 
@@ -944,6 +1022,8 @@ var __oj_paging_control_metadata =
         } else {
           this._refresh();
         }
+        // in case component is destroyed then revived.
+        this._componentDestroyed = false;
       },
       /**
        * Releases resources for paging control.
@@ -956,6 +1036,19 @@ var __oj_paging_control_metadata =
         // unregister the listeners on the datasource
         this._unregisterDataSourceEventListeners();
         this._unregisterResizeListener();
+
+        // Remove any pending busy states
+        if (this._busyStateResolvers) {
+          var resolver = this._busyStateResolvers.pop();
+          while (resolver) {
+            resolver();
+            resolver = this._busyStateResolvers.pop();
+          }
+          this._busyStateResolvers = null;
+        }
+
+        // invalidate our refresh/fetch queue
+        this._componentDestroyed = true;
       },
       /**
        * Called by component to add a busy state and return the resolve function
@@ -1027,6 +1120,7 @@ var __oj_paging_control_metadata =
         this.element.addClass(this._CSS_CLASSES._PAGING_CONTROL_CLASS);
         this.element.addClass(this._MARKER_STYLE_CLASSES._WIDGET);
 
+        this._createAccPageLabel();
         this._createPagingControlAccLabel();
         this._createPagingControlContent();
         this._mode = options.mode;
@@ -1412,6 +1506,7 @@ var __oj_paging_control_metadata =
         if (!this._data && this.options.data != null) {
           this._data = this.options.data;
           this._dataMetadata = this.options.data;
+
           // In case we get a delayed setting of the data property--check to rebind the listeners
           this._registerDataSourceEventListeners();
         }
@@ -1438,12 +1533,66 @@ var __oj_paging_control_metadata =
         }
         itemRangeSpan.append(itemRangeCurrentSpan); // @HTMLUpdateOK
         var data = this._getData();
-        if (data != null && data.totalSize() != null && size != null) {
-          var itemRangeCurrentText =
-              this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_CURRENT_SINGLE,
-                                       { pageFrom: pageFrom });
+        var itemRangeCurrentText;
+        var pageTo;
 
-          var pageTo = parseInt(startIndex, 10) + parseInt(size, 10);
+        // If the single line translations exist, use those
+        // otherwise default to previous method.
+        if (this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_NO_TOTAL,
+          { pageTo: pageTo, pageFrom: 0 }) !== null) {
+          if (data != null && data.totalSize() != null && size != null) {
+            pageTo = parseInt(startIndex, 10) + parseInt(size, 10);
+            pageFrom = pageTo > 0 ? pageFrom + 1 : 0;
+            var isRange = true;
+            if (data.totalSize() !== -1) {
+              pageTo = pageTo > data.totalSize() ? data.totalSize() : pageTo;
+              if (pageFrom === pageTo) {
+                isRange = false;
+              } else if (pageFrom > pageTo) {
+                // this can happen if we go from unknown to known row count and the last page has no rows. In that case don't return anything
+                return itemRangeSpan;
+              }
+
+              var keyString;
+              if (isRange) {
+                if (data.totalSizeConfidence() === 'atLeast') {
+                  keyString = this._BUNDLE_KEY._FULL_MSG_ITEM_RANGE_ATLEAST;
+                } else if (data.totalSizeConfidence() === 'estimate') {
+                  keyString = this._BUNDLE_KEY._FULL_MSG_ITEM_RANGE_APPROX;
+                } else {
+                  keyString = this._BUNDLE_KEY._FULL_MSG_ITEM_RANGE;
+                }
+                itemRangeCurrentText =
+                  this.getTranslatedString(keyString,
+                    { pageFrom: pageFrom, pageTo: pageTo, pageMax: data.totalSize() });
+              } else {
+                if (data.totalSizeConfidence() === 'atLeast') {
+                  keyString = this._BUNDLE_KEY._FULL_MSG_ITEM_ATLEAST;
+                } else if (data.totalSizeConfidence() === 'estimate') {
+                  keyString = this._BUNDLE_KEY._FULL_MSG_ITEM_APPROX;
+                } else {
+                  keyString = this._BUNDLE_KEY._FULL_MSG_ITEM;
+                }
+                itemRangeCurrentText =
+                  this.getTranslatedString(keyString,
+                    { pageTo: pageTo, pageMax: data.totalSize() });
+              }
+            } else if (size === 0) {
+              itemRangeCurrentText =
+                this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_NO_TOTAL,
+                  { pageFrom: 0 });
+            } else if (size !== 0) {
+              itemRangeCurrentText =
+                this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_NO_TOTAL,
+                  { pageFrom: pageFrom, pageTo: pageTo });
+            }
+          }
+        } else if (data != null && data.totalSize() != null && size != null) {
+          itemRangeCurrentText =
+              this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_CURRENT_SINGLE,
+                                      { pageFrom: pageFrom });
+
+          pageTo = parseInt(startIndex, 10) + parseInt(size, 10);
           pageFrom = pageTo > 0 ? pageFrom + 1 : 0;
 
           var itemRangeItemsText;
@@ -1453,14 +1602,14 @@ var __oj_paging_control_metadata =
             if (pageFrom === pageTo) {
               itemRangeCurrentText =
                 this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_CURRENT_SINGLE,
-                                         { pageFrom: pageFrom });
+                                        { pageFrom: pageFrom });
             } else if (pageFrom > pageTo) {
               // this can happen if we go from unknown to known row count and the last page has no rows. In that case don't return anything
               return itemRangeSpan;
             } else {
               itemRangeCurrentText =
                 this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_CURRENT,
-                                         { pageFrom: pageFrom, pageTo: pageTo });
+                                        { pageFrom: pageFrom, pageTo: pageTo });
             }
             var itemRangeOfText = this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_OF);
             var itemRangeConf = null;
@@ -1497,11 +1646,11 @@ var __oj_paging_control_metadata =
             if (size === 0) {
               itemRangeCurrentText =
                 this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_CURRENT_SINGLE,
-                                         { pageFrom: 0 });
+                                        { pageFrom: 0 });
             } else {
               itemRangeCurrentText =
                 this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_CURRENT,
-                                         { pageFrom: pageFrom, pageTo: pageTo });
+                                        { pageFrom: pageFrom, pageTo: pageTo });
             }
             itemRangeItemsText =
               this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_ITEMS);
@@ -1509,8 +1658,8 @@ var __oj_paging_control_metadata =
             itemRangeItemsSpan.text(' ' + itemRangeItemsText);
             itemRangeSpan.append(itemRangeItemsSpan); // @HTMLUpdateOK
           }
-          itemRangeCurrentSpan.text(itemRangeCurrentText);
         }
+        itemRangeCurrentSpan.text(itemRangeCurrentText);
         return itemRangeSpan;
       },
       /**
@@ -1704,8 +1853,9 @@ var __oj_paging_control_metadata =
        * @private
        */
       _handleDataPage: function (event) {
-        var page = event.page;
-        var previousPage = event.previousPage;
+        var pageData = event.detail != null ? event.detail : event;
+        var page = pageData.page;
+        var previousPage = pageData.previousPage;
 
         // only refresh if page has changed
         if (page !== previousPage) {
@@ -1854,6 +2004,12 @@ var __oj_paging_control_metadata =
           if (data != null) {
             var resolveBusyState = self._addComponentBusyState('is setting page.');
             data.setPage(page, { pageSize: self.options.pageSize }).then(function () {
+              // update the page label with the new page number
+              var accPageLabel = self._getPagingControlAccPageLabel();
+              accPageLabel.childNodes[0].nodeValue =
+                self.getTranslatedString(self._BUNDLE_KEY._LABEL_ACC_PAGE_NUMBER,
+                                        { pageNum: (page + 1) }); // @htmlupdatereview
+
               self._removeComponentBusyState(resolveBusyState);
               self = null;
               resolveBusyState = null;
@@ -1900,6 +2056,26 @@ var __oj_paging_control_metadata =
             (data.totalSize() > this._currentStartIndex &&
              this._isTotalSizeConfidenceActual())) {
           var self = this;
+          // If is dataproviderview, do a setpage with large fetch size instead
+          // this should be depreciated for loadmore, so leave it as is for now
+          if (data != null && oj.DataProviderFeatureChecker.isDataProvider(data)) {
+            return new Promise(function (resolve, reject) {
+              var resolveBusyState = self._addComponentBusyState('is setting page.');
+              var totalSize = options.pageSize + options.startIndex;
+              data.setPage(0, { pageSize: totalSize }).then(function () {
+                self._removeComponentBusyState(resolveBusyState);
+                self = null;
+                resolveBusyState = null;
+                resolve(null);
+              }, function (error) {
+                self._removeComponentBusyState(resolveBusyState);
+                self = null;
+                resolveBusyState = null;
+                reject(error);
+              });
+              data = null;
+            });
+          }
           return new Promise(function (resolve, reject) {
             var resolveBusyState = self._addComponentBusyState('is fetching data.');
             data.fetch(options).then(function (result) {
@@ -1907,11 +2083,11 @@ var __oj_paging_control_metadata =
               self = null;
               resolveBusyState = null;
               resolve(result);
-            }, function () {
+            }, function (err) {
               self._removeComponentBusyState(resolveBusyState);
               self = null;
               resolveBusyState = null;
-              reject(null);
+              reject(err);
             });
             data = null;
           });
@@ -2085,11 +2261,14 @@ var __oj_paging_control_metadata =
             rowCount = startIndex + size;
           }
 
-          if (rowCount < 0 || rowCount < this.options.loadMoreOptions.maxCount) {
-            this._createPagingControlLoadMoreLink();
-            this._createPagingControlLoadMoreRange(size, startIndex);
-          } else {
-            this._createPagingControlLoadMoreMaxRows();
+          // Hide the load more details when no data is available
+          if (size > 0) {
+            if (rowCount < 0 || rowCount < this.options.loadMoreOptions.maxCount) {
+              this._createPagingControlLoadMoreLink();
+              this._createPagingControlLoadMoreRange(size, startIndex);
+            } else {
+              this._createPagingControlLoadMoreMaxRows();
+            }
           }
         }
 
@@ -2376,7 +2555,26 @@ var __oj_paging_control_metadata =
       _registerDataSourceEventListeners: function () {
         // register the listeners on the datasource
         var data = this._getData();
-        if (data != null) {
+        if (data != null && oj.DataProviderFeatureChecker.isDataProvider(data)) {
+          this._unregisterDataSourceEventListeners();
+          this._dataSourceEventHandlers = [];
+          this._dataSourceEventHandlers.push({
+            eventType: oj.PagingModel.EventType.PAGE,
+            eventHandler: this._handleDataPage.bind(this)
+          });
+          this._dataSourceEventHandlers.push({
+            eventType: oj.PagingModel.EventType.PAGECOUNT,
+            eventHandler: this._handleDataRefresh.bind(this)
+          });
+          this._dataSourceEventHandlers.push({
+            eventType: 'totalsize',
+            eventHandler: this._handleDataRefresh.bind(this)
+          });
+
+          this._dataSourceEventHandlers.forEach(function (eventDetail) {
+            data.addEventListener(eventDetail.eventType, eventDetail.eventHandler);
+          });
+        } else if (data != null) {
           this._unregisterDataSourceEventListeners();
 
           this._dataSourceEventHandlers = [];
@@ -2389,27 +2587,27 @@ var __oj_paging_control_metadata =
             eventHandler: this._handleDataRefresh.bind(this)
           });
           this._dataSourceEventHandlers.push({
-            eventType: oj.PagingTableDataSource.EventType.ADD,
+            eventType: this._PAGING_TABLE_DATA_SOURCE_EVENT_TYPE._ADD,
             eventHandler: this._handleDataRowAdd.bind(this)
           });
           this._dataSourceEventHandlers.push({
-            eventType: oj.PagingTableDataSource.EventType.REMOVE,
+            eventType: this._PAGING_TABLE_DATA_SOURCE_EVENT_TYPE._REMOVE,
             eventHandler: this._handleDataRowRemove.bind(this)
           });
           this._dataSourceEventHandlers.push({
-            eventType: oj.PagingTableDataSource.EventType.RESET,
+            eventType: this._PAGING_TABLE_DATA_SOURCE_EVENT_TYPE._RESET,
             eventHandler: this._handleDataReset.bind(this)
           });
           this._dataSourceEventHandlers.push({
-            eventType: oj.PagingTableDataSource.EventType.REFRESH,
+            eventType: this._PAGING_TABLE_DATA_SOURCE_EVENT_TYPE._REFRESH,
             eventHandler: this._handleDataRefresh.bind(this)
           });
           this._dataSourceEventHandlers.push({
-            eventType: oj.PagingTableDataSource.EventType.SYNC,
+            eventType: this._PAGING_TABLE_DATA_SOURCE_EVENT_TYPE._SYNC,
             eventHandler: this._handleDataFetchEnd.bind(this)
           });
           this._dataSourceEventHandlers.push({
-            eventType: oj.PagingTableDataSource.EventType.SORT,
+            eventType: this._PAGING_TABLE_DATA_SOURCE_EVENT_TYPE._SORT,
             eventHandler: this._handleDataSort.bind(this)
           });
 
@@ -2550,11 +2748,23 @@ var __oj_paging_control_metadata =
        */
       _unregisterDataSourceEventListeners: function () {
         var data = this._getData();
-        // unregister the listeners on the datasource
-        if (this._dataSourceEventHandlers != null && data != null) {
-          for (var i = 0; i < this._dataSourceEventHandlers.length; i++) {
+        var i;
+        if (data != null && oj.DataProviderFeatureChecker.isDataProvider(data)
+           && this._dataSourceEventHandlers != null) {
+          for (i = 0; i < this._dataSourceEventHandlers.length; i++) {
+            if (this._dataSourceEventHandlers[i].eventType === 'pageCount') {
+              data.removeEventListener('pagecount',
+                this._dataSourceEventHandlers[i].eventHandler);
+            } else {
+              data.removeEventListener(this._dataSourceEventHandlers[i].eventType,
+                this._dataSourceEventHandlers[i].eventHandler);
+            }
+          }
+        } else if (this._dataSourceEventHandlers != null && data != null) {
+          // unregister the listeners on the datasource
+          for (i = 0; i < this._dataSourceEventHandlers.length; i++) {
             data.off(this._dataSourceEventHandlers[i].eventType,
-                     this._dataSourceEventHandlers[i].eventHandler);
+              this._dataSourceEventHandlers[i].eventHandler);
           }
         }
       },
@@ -2626,6 +2836,33 @@ var __oj_paging_control_metadata =
         return accLabel;
       },
       /** ** start internal DOM functions ****/
+      /**
+       * Create the helper acc paging control page label to announce page changes
+       * @return {jQuery} jQuery div DOM element
+       * @private
+       */
+      _createAccPageLabel: function () {
+        var pagingControlContainer = this._getPagingControlContainer();
+        var pagingControlAccPageSpan = document.createElement('span');
+        var pagingControlAccText = document.createTextNode(
+          this.getTranslatedString(this._BUNDLE_KEY._LABEL_ACC_PAGE_NUMBER,
+                                  { pageNum: this._getCurrentPage() }));
+        pagingControlAccPageSpan.appendChild(pagingControlAccText);
+        pagingControlAccPageSpan.setAttribute('id', this.element.attr('id') + '_acc_page_label');
+        pagingControlAccPageSpan.setAttribute('class', this._CSS_CLASSES._PAGING_CONTROL_ACC_PAGE_LABEL_CLASS);
+        pagingControlAccPageSpan.setAttribute('aria-live', 'assertive');
+        pagingControlAccPageSpan.setAttribute('role', 'status');
+
+        // workaround for csp violation
+        pagingControlAccPageSpan.style.height = '1px';
+        pagingControlAccPageSpan.style.width = '1px';
+        pagingControlAccPageSpan.style.overflow = 'hidden';
+        pagingControlAccPageSpan.style.position = 'absolute';
+        pagingControlAccPageSpan.style.whiteSpace = 'nowrap';
+        pagingControlAccPageSpan.style.clip = 'rect(1px, 1px, 1px, 1px)';
+
+        pagingControlContainer.append(pagingControlAccPageSpan); // @htmlupdatereview
+      },
       /**
        * Create the acc paging control label
        * @return {jQuery} jQuery div DOM element
@@ -2985,6 +3222,11 @@ var __oj_paging_control_metadata =
               } else {
                 numPagesToAdd = 0;
               }
+            } else if (!this._isTotalSizeConfidenceActual()) {
+              // partial row mode
+              // restrict numPagesToAdd to be max(totalPages - pageAfterCurrent, 1)
+              // don't want to go above totalPages because no guarantee data exists
+              numPagesToAdd = Math.max(totalPages - pageAfterCurrent, 1);
             }
             while (numPagesToAdd > 0 && (pageAfterCurrent <= totalPages || totalPages === -1)) {
               pageList.push(pageAfterCurrent);
@@ -3094,6 +3336,22 @@ var __oj_paging_control_metadata =
           parentDiv.append(pagingControlNavPage); // @HTMLUpdateOK
         }
         return pagingControlNavPage;
+      },
+      /**
+       * Return the paging content acc page label
+       * @return {jQuery|null} jQuery div DOM element
+       * @private
+       */
+      _getPagingControlAccPageLabel: function () {
+        var pagingControlContainer = this._getPagingControlContainer();
+        var pagingControlAccPageLabel = null;
+
+        if (pagingControlContainer) {
+          pagingControlAccPageLabel =
+            this.element[0].querySelector('.' + this._CSS_CLASSES._PAGING_CONTROL_ACC_PAGE_LABEL_CLASS);
+        }
+
+        return pagingControlAccPageLabel;
       },
       /**
        * Return the paging content acc label
@@ -3467,6 +3725,8 @@ var __oj_paging_control_metadata =
      *
      * @ojsubid oj-pagingcontrol-load-more-link
      * @memberof oj.ojPagingControl
+     * @ojdeprecated {since: '7.0.0', description: 'this option is deprecated and will be removed in the future.
+     *                         Please use native component high-water mark scrolling API instead (see Table, ListView, DataGrid).'}
      *
      * @example <caption>Get the Show More link:</caption>
      * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-link'} );

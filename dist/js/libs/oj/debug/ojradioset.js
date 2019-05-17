@@ -3,12 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojs/ojcomponentcore', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'ojs/ojoption', 'ojs/ojdataprovider'],
-       function(oj, $, Logger, Components)
+define(['ojs/ojcore', 'jquery', 'ojs/ojlogger',  'ojs/ojcomponentcore', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'ojs/ojoption', 'ojs/ojdataprovider'],
+function(oj, $, Logger, Components)
 {
- 
-
+  "use strict";
 var __oj_radioset_metadata = 
 {
   "properties": {
@@ -53,7 +51,8 @@ var __oj_radioset_metadata =
       "type": "object",
       "properties": {
         "instruction": {
-          "type": "string"
+          "type": "string",
+          "value": ""
         }
       }
     },
@@ -83,21 +82,10 @@ var __oj_radioset_metadata =
       "value": []
     },
     "optionRenderer": {
-      "type": "function",
-      "properties": {
-        "component": {
-          "type": "Element"
-        },
-        "index": {
-          "type": "number"
-        },
-        "data": {
-          "type": "object"
-        }
-      }
+      "type": "function"
     },
     "options": {
-      "type": "oj.DataProvider"
+      "type": "object"
     },
     "optionsKeys": {
       "type": "object",
@@ -200,16 +188,18 @@ var __oj_radioset_metadata =
  * @augments oj.editableValue
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojRadioset<K, D> extends editableValue<any, ojRadiosetSettableProperties<K, D>>"
+ *                value: "class ojRadioset<K, D, V=any> extends editableValue<V, ojRadiosetSettableProperties<K, D, V>>",
+ *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"},
+ *                , {"name": "V", "description": "Type of value of the component"}]
  *               },
  *               {
  *                target: "Type",
- *                value: "ojRadiosetSettableProperties<K, D> extends editableValueSettableProperties<any>",
+ *                value: "ojRadiosetSettableProperties<K, D, V> extends editableValueSettableProperties<V>",
  *                for: "SettableProperties"
  *               }
  *              ]
  * @since 0.6
- * @ojshortdesc A grouping of related radio buttons.
+ * @ojshortdesc A radio set allows the user to select one option from a set of mutually exclusive options.
  * @ojrole radio
  * @ojrole radiogroup
  * @ojrole option
@@ -302,27 +292,15 @@ var __oj_radioset_metadata =
  * &lt;/oj-radioset>
  *
  * @example <caption>Initialize component and an associated oj-label component</caption>
- * &lt;label id="grouplabel">Greetings&lt;/label>
- * &lt;oj-radioset id="radioset" aria-labelledby="grouplabel" value="{{currentGreeting}}">
- *   &lt;input id="helloid" value="hello" type="radio" name="greetings"/&gt;
- *   &lt;label for="helloid"/&gt;Hello&lt;/label>
- *   &lt;input id="bonjourid" value="bonjour" type="radio" name="greetings"/&gt;
- *   &lt;label for="bonjourid"/&gt;Bonjour&lt;/label>
- *   &lt;input id="ciaoid" value="ciao" type="radio" name="greetings"/&gt;
- *   &lt;label for="ciaoid"/&gt;Ciao&lt;/label>
+ * &lt;oj-label id="grouplabel">Greetings&lt;/oj-label>
+ * &lt;oj-radioset id="radioset" labelle-dby="grouplabel" value="{{currentGreeting}}">
+ *   &lt;oj-option id="helloid" value="hello">Hello&lt;/oj-option>
+ *   &lt;oj-option id="bonjourid" value="bonjour"/>Bonjour&lt;/oj-option>
+ *   &lt;oj-option id="ciaoid" value="ciao"/>Ciao&lt;/oj-option>
  * &lt;oj-radioset>
  * <br/>
  * // set the value to "ciao". (The 'ciao' radio will be selected)
  * myComp.value = "ciao";
- *
- * @example <caption>Initialize a radioset via the JET component binding:</caption>
- * &lt;oj-label id="grouplabel">Time&lt;/oj-label>
- * &lt;oj-radioset id="radioset" value="{{radiosetValue}}"
- *                 labelled-by="grouplabel">
- *   &lt;oj-option id="morningid" value="morning">Morning&lt;/oj-option>
- *   &lt;oj-option id="nightid" value="night">Night&lt;/oj-option>
- * &lt;/oj-radioset>
- * <br/>
  */
   oj.__registerWidget('oj.ojRadioset', $.oj.editableValue,
     {
@@ -357,6 +335,7 @@ var __oj_radioset_metadata =
          * @public
          * @instance
          * @memberof oj.ojRadioset
+         * @ojshortdesc Specifies if the component is disabled. If true, then all of its inputs and labels are also disabled. See the Help documentation for more information.
          */
         disabled: false,
         /**
@@ -376,6 +355,7 @@ var __oj_radioset_metadata =
          *
          * @default false
          * @name readOnly
+         * @ojshortdesc Specifies whether the component is read-only. A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
          * @access public
          * @expose
          * @type {?boolean}
@@ -408,6 +388,7 @@ var __oj_radioset_metadata =
          * @public
          * @instance
          * @memberof oj.ojRadioset
+         * @ojshortdesc Establishes a relationship between this component and another element, typically an oj-label custom element. See the Help documenation for more information.
          */
         labelledBy: null,
 
@@ -494,7 +475,7 @@ var __oj_radioset_metadata =
          * @expose
          * @access public
          * @instance
-         * @type {oj.DataProvider|null}
+         * @type {Object|null}
          * @ojsignature { target: "Type",
          *                value: "oj.DataProvider<K, D>|null",
          *                jsdocOverride: true}
@@ -696,6 +677,7 @@ var __oj_radioset_metadata =
          * @access public
          * @instance
          * @memberof oj.ojRadioset
+         * @ojshortdesc Specifies whether the component is required or optional. See the Help documentation for more information.
          * @type {boolean}
          * @default false
          * @since 0.7
@@ -743,7 +725,9 @@ var __oj_radioset_metadata =
          * @ojwriteback
          * @default null
          * @memberof oj.ojRadioset
+         * @ojshortdesc The value of the component. See the Help documentation for more information.
          * @type {any}
+         * @ojsignature [{target: "Type", value: "V|null"}]
          */
         value: undefined
       },
@@ -762,6 +746,7 @@ var __oj_radioset_metadata =
        *
        * @expose
        * @memberof oj.ojRadioset
+       * @ojshortdesc Refreshes the radioset. A refresh is required after a radioset is programmatically changed. See the Help documentation for more information.
        * @public
        * @return {void}
        * @instance
@@ -823,6 +808,7 @@ var __oj_radioset_metadata =
        * @expose
        * @instance
        * @memberof oj.ojRadioset
+       * @ojshortdesc Validates the component's display value using all validators registered on the component. If there are no validation errors, then the value is updated. See the Help documentation for more information.
        * @since 4.0.0
        * @ojstatus preview
        */
@@ -1083,7 +1069,7 @@ var __oj_radioset_metadata =
           if (noRadioSelected !== null) {
             span.textContent = noRadioSelected;
           }
-          elem.parentElement.insertBefore(span, elem);
+          elem.parentElement.insertBefore(span, elem); // @HTMLUpdateOK
         } else if (selectedOption === optionValue) {
           elem.classList.remove('oj-helper-hidden');
           this._initReadonlyLabelFromOjOption(elem, parentSpan);
@@ -1317,8 +1303,9 @@ var __oj_radioset_metadata =
           this.element.addClass('oj-choice-direction-column');
         }
         this._refreshRequired(this.options.required);
-
-        this._updateLabelledBy(null, this.options.labelledBy, this.widget());
+        // copy labelledBy to aria-labelledBy
+        var widget = this.widget();
+        this._updateLabelledBy(widget[0], null, this.options.labelledBy, widget);
       },
       _events:
       {
@@ -1588,7 +1575,8 @@ var __oj_radioset_metadata =
             break;
           case 'labelledBy':
             // remove the old one and add the new one
-            this._updateLabelledBy(originalValue, value, this.widget());
+            var widget = this.widget();
+            this._updateLabelledBy(widget[0], originalValue, value, widget);
             break;
           case 'options':
             oj.RadioCheckboxUtils.generateOptionsFromData.call(this);

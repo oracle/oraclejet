@@ -15,7 +15,7 @@
 
     .oj-component-popup {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        z-index: var(--oj-default-zindex);
+        z-index: var(--oj-default-z-index);
       } @else {
         z-index: $defaultZindex;        
       }
@@ -42,11 +42,12 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
 			   background: var(--oj-overlay-bg-color);
 			   opacity:var(--oj-overlay-opacity);
+         user-select: none;
 			} @else {
 			   background: $overlayBgColor;
 			   opacity: $overlayOpacity;
-			}
-      @include oj-user-select-property(none);
+         @include oj-user-select-property(none);
+			} 
       -webkit-tap-highlight-color: transparent;
     }
   }

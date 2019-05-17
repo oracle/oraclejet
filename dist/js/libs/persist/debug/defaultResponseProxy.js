@@ -168,10 +168,10 @@ define(['./persistenceManager', './persistenceUtils', './fetchStrategies',
           logger.log("Offline Persistence Toolkit DefaultResponseProxy: Insert Response in syncManager after error for request with enpointKey: " + endpointKey);
           _insertSyncManagerRequest(requestClone, null, true).then(function() {
             cacheHandler.unregisterEndpointOptions(endpointKey);
-            reject(err); 
+            reject(err);
           }, function() {
             cacheHandler.unregisterEndpointOptions(endpointKey);
-            reject(err); 
+            reject(err);
           });
         });
       });
@@ -249,7 +249,7 @@ define(['./persistenceManager', './persistenceUtils', './fetchStrategies',
 
       return fetchStrategy(request, self._options);
     };
-    
+
     /**
      * The default HEAD request handler.
      * Processes the HEAD Request using the default logic. Can be overrided to provide
@@ -266,7 +266,7 @@ define(['./persistenceManager', './persistenceUtils', './fetchStrategies',
       logger.log("Offline Persistence Toolkit DefaultResponseProxy: Processing Request with default HEAD Handler");
       return _handleGetWithFetchStrategy(this, request);
     };
-    
+
     /**
      * The default OPTIONS request handler.
      * The default implementation when offline will return a Response with
@@ -338,7 +338,7 @@ define(['./persistenceManager', './persistenceUtils', './fetchStrategies',
 
         if (ifMatch || ifNoneMatch) {
           logger.log("Offline Persistence Toolkit DefaultResponseProxy: Generating ETag for offline Response for default PUT Handler");
-          var randomInt = Math.floor(Math.random() * 1000000);
+          var randomInt = Math.floor(Math.random() * 1000000); // @randomNumberOk - Only used to generate ETag while offline
           requestData.headers['etag'] = (Date.now() + randomInt).toString();
           requestData.headers['x-oracle-jscpt-etag-generated'] = requestData.headers['etag'];
           delete requestData.headers['if-match'];

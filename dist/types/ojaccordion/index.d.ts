@@ -5,12 +5,6 @@ export interface ojAccordion extends baseComponent<ojAccordionSettableProperties
         index?: number;
     }> | null;
     multiple: boolean;
-    onExpandedChanged: ((event: JetElementCustomEvent<ojAccordion["expanded"]>) => any) | null;
-    onMultipleChanged: ((event: JetElementCustomEvent<ojAccordion["multiple"]>) => any) | null;
-    onOjBeforeCollapse: ((event: ojAccordion.ojBeforeCollapse) => any) | null;
-    onOjBeforeExpand: ((event: ojAccordion.ojBeforeExpand) => any) | null;
-    onOjCollapse: ((event: ojAccordion.ojCollapse) => any) | null;
-    onOjExpand: ((event: ojAccordion.ojExpand) => any) | null;
     addEventListener<T extends keyof ojAccordionEventMap>(type: T, listener: (this: HTMLElement, ev: ojAccordionEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojAccordionSettableProperties>(property: T): ojAccordion[T];
@@ -45,6 +39,10 @@ export namespace ojAccordion {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type expandedChanged = JetElementCustomEvent<ojAccordion["expanded"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type multipleChanged = JetElementCustomEvent<ojAccordion["multiple"]>;
 }
 export interface ojAccordionEventMap extends baseComponentEventMap<ojAccordionSettableProperties> {
     'ojBeforeCollapse': ojAccordion.ojBeforeCollapse;

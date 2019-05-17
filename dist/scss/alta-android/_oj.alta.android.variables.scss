@@ -142,7 +142,7 @@ $messagesNotificationOverlayMaxWidth:     768px !default;
 $messageNotificationOverlayHeaderBgColor: $neutralColor4 !default;
 $messageNotificationOverlayBodyBgColor:   $neutralColor4 !default;
 
-$messageCategoryFontSize:                 0.75rem;
+$messageCategoryFontSize:                 oj-px-to-rem(12px, $baseFontSize: 16px) !default;
 $messageTimeFontSize:                     oj-px-to-rem(12px, $baseFontSize: 16px) !default;
 $messageSummaryFontSize:                  oj-px-to-rem(14px, $baseFontSize: 16px) !default;
 $messageSummaryFontWeight:                400 !default;
@@ -160,6 +160,7 @@ $popupTailBoxShadow: $smallBoxShadow !default;
 // HEADERS
 //----------------------------------------------------------------
 $header5FontSize:       $smallFontSize   !default;
+$header6FontSize:       $smallFontSize   !default;
 $headerFontWeight:      500 !default;
 $headerBgColor:         $neutralColor6 !default;
 

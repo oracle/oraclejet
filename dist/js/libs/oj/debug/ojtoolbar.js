@@ -3,13 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojlogger'], 
-      
-       function(oj, $, ThemeUtils, Components, Logger)
+function(oj, $, ThemeUtils, Components, Logger)
 {
- 
-
+  "use strict";
 var __oj_toolbar_metadata = 
 {
   "properties": {
@@ -49,7 +46,7 @@ var __oj_toolbar_metadata =
  * @augments oj.baseComponent
  * @ojrole toolbar
  * @since 0.6
- * @ojshortdesc Displays a strip of control elements (icons, buttons, separators, etc.) with support for touch, mouse, and keyboard interactions.
+ * @ojshortdesc A toolbar displays a strip of control elements such as buttons and menu buttons, often grouped by separators.
  * @ojstatus preview
  *
  * @classdesc
@@ -153,16 +150,20 @@ var __oj_toolbar_metadata =
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
  * </h3>
  *
- * <p>For elements like Toolbar and Menu that contain a number of like items, applications may wish to use a <code class="prettyprint">foreach</code> Knockout binding
- * to stamp out the contents.  This binding cannot live on the same node as the JET <code class="prettyprint">ojComponent</code> binding, and must instead live on a nested
- * virtual element as follows:
+ * <p>For elements like Toolbar and Menu that contain a number of like items, applications may wish to use <code class="prettyprint">oj-bind-for-each</code>
+ * to stamp out the contents as follows:
  *
  * <pre class="prettyprint">
  * <code>&lt;oj-toolbar id="myToolbar">
- *     &lt;!-- ko foreach: myButtons -->
- *         &lt;oj-button data-bind="attr: {id: id, label: label}">
- *         &lt;/oj-buton>
- *     &lt;!-- /ko -->
+ *     &lt;oj-bind-for-each data="[[myButtons]]">
+ *         &lt;template>
+ *             &lt;oj-button :id="[[$current.data.id]]">
+ *                 &lt;span>
+ *                     &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
+ *                 &lt;/span>
+ *             &lt;/oj-button>
+ *         &lt;/template>
+ *     &lt;/oj-bind-for-each>
  * &lt;/oj-toolbar>
  * </code></pre>
  *
@@ -189,6 +190,7 @@ var __oj_toolbar_metadata =
          *
          * @expose
          * @memberof oj.ojToolbar
+         * @ojshortdesc Indicates in what states the toolbar's buttons and buttonsets has chrome (background and border).
          * @instance
          * @since 1.2.0
          *
@@ -316,6 +318,7 @@ var __oj_toolbar_metadata =
      *
      * @expose
      * @memberof oj.ojToolbar
+     * @ojshortdesc Refreshes the toolbar.
      * @return {void}
      * @instance
      *

@@ -628,6 +628,7 @@ $focusHighlightPolicy: nonPointer !default;
 // Currently this is used by collection components such as datagrid, table, listview
 // but is generally applicable in places where loading indicator is used
 $loadingIndicatorDelayDuration: "250" !default;
+$loadingBgImage: linear-gradient(90deg, $neutralColor6 0%, $neutralColor3 10%, $neutralColor6 20%) !default;
 
 
 //-----------------------------------------------------------------------------
@@ -843,6 +844,7 @@ $header2FontWeight:     $headerFontWeight   !default;
 $header3FontWeight:     $headerFontWeight   !default;
 $header4FontWeight:     $headerFontWeight   !default;
 $header5FontWeight:     $headerFontWeight   !default;
+$header6FontWeight:     $headerFontWeight   !default;
 
 
 // $header[1|2|3|4|5]FontSize vars are
@@ -852,6 +854,7 @@ $header2FontSize:       $largeFontSize     !default;
 $header3FontSize:       $mediumFontSize    !default;
 $header4FontSize:       $fontSize          !default;
 $header5FontSize:       $smallFontSize     !default;
+$header6FontSize:       $smallFontSize     !default;
 
 // the background variables below are for a header "container",
 // like the title bar of a dialog or an accordion header
@@ -878,6 +881,11 @@ $popupTailBoxShadow:        $mediumBoxShadow !default;
 $popupTailSimpleWidth:  14px !default;
 $popupTailSimpleHeight: 14px !default;
 
+// To avoid strip unit function these 3 raw values added for popup svg calc.
+$popupTailBorderWidthRawValue: oj-strip-unit($popupTailBorderWidth) !default;
+$popupTailSimpleWidthRawValue:  oj-strip-unit($popupTailSimpleWidth) !default;
+$popupTailSimpleHeightRawValue: oj-strip-unit($popupTailSimpleHeight) !default;
+
 // animation theme defaults
 $popupTailOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition") !default;
 $popupTailCloseAnimation: (effect: "none") !default;
@@ -896,7 +904,7 @@ $popupModalityOptionDefault: null !default;
 
 // animation theme defaults
 $popupOpenAnimation: ((effect: "zoomIn", transformOrigin: "#myPosition"), "fadeIn") !default;
-$popupCloseAnimation: ((effect: "zoomOut", persist: "all", transformOrigin: "#myPosition"), "fadeOut") !default;
+$popupCloseAnimation: ((effect: "zoomOut", transformOrigin: "#myPosition"), "fadeOut") !default;
 
 
 // MESSAGES / MESSAGE
@@ -1000,6 +1008,7 @@ $messageCloseIconDisplay:                               block !default;
 $messageAutoTimeoutCloseIconDisplay:                    none !default;
 $messageCategoryTextColor:                              $secondaryTextColor !default;
 $messageCategoryFontSize:                               inherit !default;
+$messageCategoryFontWeight:                             700 !default;
 $messageTimeTextColor:                                  $secondaryTextColor !default;
 $messageTimeFontSize:                                   inherit !default;
 $messageSummaryTextColor:                               $primaryTextColor !default;
@@ -1474,7 +1483,7 @@ $buttonsetEqualWidthOverallWidth: 100% !default; // default width of equal width
 
 // animation theme defaults
 $dialogOpenAnimation: ((effect: "zoomIn"), "fadeIn") !default;
-$dialogCloseAnimation: ((effect: "zoomOut", persist: "all"), "fadeOut") !default;
+$dialogCloseAnimation: ((effect: "zoomOut"), "fadeOut") !default;
 
 // ojDialog resizeBehavior, cancelBehavior, and dragAffordance options
 // default to the programmatic settings.
@@ -2100,7 +2109,7 @@ $trainBgColorVisited:                     $brandColor !default;
 $trainBorderColorVisited:                 $trainBgColorVisited !default;
 $trainLabelColorVisited:                  $secondaryTextColor !default;
 $trainButtonTextColorVisited:             $contrastTextColor !default;
-$trainVisitedIconDisplay:                 inherit !default;
+$trainVisitedIconDisplay:                 none !default;
 $trainButtonTextVisitedDisplay:           inherit !default;
 
 // selected state

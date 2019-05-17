@@ -52,11 +52,12 @@
     .oj-offcanvas-transition {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
         transition: transform var(--oj-animation-duration-medium);
+        backface-visibility: hidden;
       } @else {
         transition: transform $animationDurationMedium;
+        @include oj-backface-visibility-property (hidden);
       }
       transition-timing-function: ease-in-out;
-      @include oj-backface-visibility-property (hidden);
     }
 
     /*
@@ -78,11 +79,12 @@
        min-width: 0;
        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
          transition: min-width var(--oj-animation-duration-medium);
+         backface-visibility: hidden;
        } @else {
          transition: min-width $animationDurationMedium;
+         @include oj-backface-visibility-property (hidden);
        }
        transition-timing-function: ease-in-out;
-       @include oj-backface-visibility-property (hidden);
     }
 
     // common to all edges
@@ -200,7 +202,7 @@
     .oj-offcanvas-overlay.oj-offcanvas-start {
       //need to set z-index otherwise the start area is covered by the main content
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        z-index: var(--oj-offcanvas-zindex);
+        z-index: var(--oj-off-canvas-z-index);
       } @else {
         z-index: $offcanvasZindex;
       }

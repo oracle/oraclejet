@@ -3,9 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojkoshared', 'customElements'], function(oj, $, ko, BindingProviderImpl)
 {
+  "use strict";
 var __oj_defer_metadata = 
 {
   "extension": {}
@@ -87,7 +87,7 @@ ko.bindingHandlers._ojDefer_ =
  * @ojstatus preview
  * @since 4.0.0
  * @ojcomponent oj.ojDefer
- * @ojshortdesc Used to delay applying bindings to its children until it is activated. Child elements are disconnected from the DOM tree until the parent component activates its subtree.
+ * @ojshortdesc Defer is used to delay applying bindings to its children until it is activated. Child elements are disconnected from the DOM tree until the parent component activates its subtree.
  * @ojsignature {target: "Type", value:"class ojDefer extends JetElement<ojDeferSettableProperties>"}
  * @classdesc
  * The oj-defer custom element delays applying bindings to its children until it is activated.

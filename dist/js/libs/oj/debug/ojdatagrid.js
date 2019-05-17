@@ -3,11 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojthemeutils', 'promise', 'ojs/ojdatasource-common', 'ojs/ojdatacollection-utils', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojpopup', 'touchr'], function(oj, $, Components, Logger, Context, ThemeUtils)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdatacollection-common', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojthemeutils', 'promise', 'ojs/ojdatasource-common', 'ojs/ojdatacollection-utils', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojpopup', 'touchr'], function(oj, $, Components, DataCollectionUtils, Logger, Context, ThemeUtils)
 {
-  
-
+  "use strict";
 var __oj_data_grid_metadata = 
 {
   "properties": {
@@ -31,60 +29,7 @@ var __oj_data_grid_metadata =
           "type": "function|string"
         },
         "renderer": {
-          "type": "function",
-          "properties": {
-            "componentElement": {
-              "type": "Element"
-            },
-            "parentElement": {
-              "type": "Element"
-            },
-            "cell": {
-              "type": "D"
-            },
-            "data": {
-              "type": "D"
-            },
-            "datasource": {
-              "type": "oj.DataProvider<K, D>"
-            },
-            "indexes": {
-              "type": "object",
-              "properties": {
-                "row": {
-                  "type": "number"
-                },
-                "column": {
-                  "type": "number"
-                }
-              }
-            },
-            "keys": {
-              "type": "object",
-              "properties": {
-                "row": {
-                  "type": "K"
-                },
-                "column": {
-                  "type": "K"
-                }
-              }
-            },
-            "extents": {
-              "type": "object",
-              "properties": {
-                "row": {
-                  "type": "number"
-                },
-                "column": {
-                  "type": "number"
-                }
-              }
-            },
-            "mode": {
-              "type": "\"edit\"|\"navigation\""
-            }
-          }
+          "type": "function"
         },
         "style": {
           "type": "function|string"
@@ -96,7 +41,7 @@ var __oj_data_grid_metadata =
       "writeback": true
     },
     "data": {
-      "type": "oj.DataGridDataSource|oj.DataProvider"
+      "type": "object"
     },
     "dnd": {
       "type": "object",
@@ -163,27 +108,7 @@ var __oj_data_grid_metadata =
                   "type": "function|string"
                 },
                 "renderer": {
-                  "type": "function",
-                  "properties": {
-                    "componentElement": {
-                      "type": "Element"
-                    },
-                    "parentElement": {
-                      "type": "Element"
-                    },
-                    "datasource": {
-                      "type": "oj.DataProvider<K, D>"
-                    },
-                    "axis": {
-                      "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
-                    },
-                    "key": {
-                      "type": "K"
-                    },
-                    "level": {
-                      "type": "number"
-                    }
-                  }
+                  "type": "function"
                 },
                 "style": {
                   "type": "function|string"
@@ -191,39 +116,7 @@ var __oj_data_grid_metadata =
               }
             },
             "renderer": {
-              "type": "function",
-              "properties": {
-                "componentElement": {
-                  "type": "Element"
-                },
-                "parentElement": {
-                  "type": "Element"
-                },
-                "data": {
-                  "type": "D"
-                },
-                "datasource": {
-                  "type": "oj.DataProvider<K, D>"
-                },
-                "axis": {
-                  "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
-                },
-                "index": {
-                  "type": "number"
-                },
-                "key": {
-                  "type": "K"
-                },
-                "level": {
-                  "type": "number"
-                },
-                "extent": {
-                  "type": "number"
-                },
-                "depth": {
-                  "type": "number"
-                }
-              }
+              "type": "function"
             },
             "resizable": {
               "type": "object",
@@ -273,27 +166,7 @@ var __oj_data_grid_metadata =
                   "type": "function|string"
                 },
                 "renderer": {
-                  "type": "function",
-                  "properties": {
-                    "componentElement": {
-                      "type": "Element"
-                    },
-                    "parentElement": {
-                      "type": "Element"
-                    },
-                    "datasource": {
-                      "type": "oj.DataProvider<K, D>"
-                    },
-                    "axis": {
-                      "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
-                    },
-                    "key": {
-                      "type": "K"
-                    },
-                    "level": {
-                      "type": "number"
-                    }
-                  }
+                  "type": "function"
                 },
                 "style": {
                   "type": "function|string"
@@ -301,39 +174,7 @@ var __oj_data_grid_metadata =
               }
             },
             "renderer": {
-              "type": "function",
-              "properties": {
-                "componentElement": {
-                  "type": "Element"
-                },
-                "parentElement": {
-                  "type": "Element"
-                },
-                "data": {
-                  "type": "D"
-                },
-                "datasource": {
-                  "type": "oj.DataProvider<K, D>"
-                },
-                "axis": {
-                  "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
-                },
-                "index": {
-                  "type": "number"
-                },
-                "key": {
-                  "type": "K"
-                },
-                "level": {
-                  "type": "number"
-                },
-                "extent": {
-                  "type": "number"
-                },
-                "depth": {
-                  "type": "number"
-                }
-              }
+              "type": "function"
             },
             "resizable": {
               "type": "object",
@@ -374,27 +215,7 @@ var __oj_data_grid_metadata =
                   "type": "function|string"
                 },
                 "renderer": {
-                  "type": "function",
-                  "properties": {
-                    "componentElement": {
-                      "type": "Element"
-                    },
-                    "parentElement": {
-                      "type": "Element"
-                    },
-                    "datasource": {
-                      "type": "oj.DataProvider<K, D>"
-                    },
-                    "axis": {
-                      "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
-                    },
-                    "key": {
-                      "type": "K"
-                    },
-                    "level": {
-                      "type": "number"
-                    }
-                  }
+                  "type": "function"
                 },
                 "style": {
                   "type": "function|string"
@@ -402,39 +223,7 @@ var __oj_data_grid_metadata =
               }
             },
             "renderer": {
-              "type": "function",
-              "properties": {
-                "componentElement": {
-                  "type": "Element"
-                },
-                "parentElement": {
-                  "type": "Element"
-                },
-                "data": {
-                  "type": "D"
-                },
-                "datasource": {
-                  "type": "oj.DataProvider<K, D>"
-                },
-                "axis": {
-                  "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
-                },
-                "index": {
-                  "type": "number"
-                },
-                "key": {
-                  "type": "K"
-                },
-                "level": {
-                  "type": "number"
-                },
-                "extent": {
-                  "type": "number"
-                },
-                "depth": {
-                  "type": "number"
-                }
-              }
+              "type": "function"
             },
             "resizable": {
               "type": "object",
@@ -484,27 +273,7 @@ var __oj_data_grid_metadata =
                   "type": "function|string"
                 },
                 "renderer": {
-                  "type": "function",
-                  "properties": {
-                    "componentElement": {
-                      "type": "Element"
-                    },
-                    "parentElement": {
-                      "type": "Element"
-                    },
-                    "datasource": {
-                      "type": "oj.DataProvider<K, D>"
-                    },
-                    "axis": {
-                      "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
-                    },
-                    "key": {
-                      "type": "K"
-                    },
-                    "level": {
-                      "type": "number"
-                    }
-                  }
+                  "type": "function"
                 },
                 "style": {
                   "type": "function|string"
@@ -512,39 +281,7 @@ var __oj_data_grid_metadata =
               }
             },
             "renderer": {
-              "type": "function",
-              "properties": {
-                "componentElement": {
-                  "type": "Element"
-                },
-                "parentElement": {
-                  "type": "Element"
-                },
-                "data": {
-                  "type": "D"
-                },
-                "datasource": {
-                  "type": "oj.DataProvider<K, D>"
-                },
-                "axis": {
-                  "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
-                },
-                "index": {
-                  "type": "number"
-                },
-                "key": {
-                  "type": "K"
-                },
-                "level": {
-                  "type": "number"
-                },
-                "extent": {
-                  "type": "number"
-                },
-                "depth": {
-                  "type": "number"
-                }
-              }
+              "type": "function"
             },
             "resizable": {
               "type": "object",
@@ -671,7 +408,13 @@ var __oj_data_grid_metadata =
         "accessibleColumnEndHeaderContext": {
           "type": "string"
         },
+        "accessibleColumnEndHeaderLabelContext": {
+          "type": "string"
+        },
         "accessibleColumnHeaderContext": {
+          "type": "string"
+        },
+        "accessibleColumnHeaderLabelContext": {
           "type": "string"
         },
         "accessibleColumnSelected": {
@@ -716,10 +459,16 @@ var __oj_data_grid_metadata =
         "accessibleRowEndHeaderContext": {
           "type": "string"
         },
+        "accessibleRowEndHeaderLabelContext": {
+          "type": "string"
+        },
         "accessibleRowExpanded": {
           "type": "string"
         },
         "accessibleRowHeaderContext": {
+          "type": "string"
+        },
+        "accessibleRowHeaderLabelContext": {
           "type": "string"
         },
         "accessibleRowSelected": {
@@ -943,7 +692,15 @@ oj.DataGridResources = function (rtlMode, translationFunction, defaultOptions, w
   this.attributes.start = 'data-oj-start';
   this.attributes.depth = 'data-oj-depth';
   this.attributes.level = 'data-oj-level';
-  this.attributes.tabMod = 'data-oj-tabmod';
+};
+
+/**
+ * Set whether the reading direction is right to left.
+ * @param {boolean} rtl true if reading direction is right to left, false otherwise.
+ * @export
+ */
+oj.DataGridResources.prototype.setRTLMode = function (rtl) {
+  this.rtlMode = rtl;
 };
 
 /**
@@ -973,10 +730,7 @@ oj.DataGridResources.prototype.getTranslatedText = function (key, args) {
  * @export
  */
 oj.DataGridResources.prototype.getDefaultOption = function (key) {
-  if (this.defaultOptions) {
-    return this.defaultOptions[key];
-  }
-  return null;
+  return this.defaultOptions[key];
 };
 
 /**
@@ -1019,7 +773,8 @@ oj.DataGridResources.prototype.getMappedAttribute = function (key) {
 };
 
 /* global Map:false, DvtDataGridKeyboardHandler:false, DvtDataGridOptions:false,
-          DvtDataGridSizingManager:false, DvtDataGridUtils:false, Promise:false */
+          DvtDataGridSizingManager:false, DvtDataGridUtils:false, Promise:false,
+          DataCollectionUtils:false, DataProviderDataGridDataSource:false */
 
 /**
  * Creates a new DataGrid
@@ -1344,15 +1099,17 @@ DvtDataGrid.prototype._updateGridlines = function () {
       if (cell != null) {
         if (verticalGridlines === 'hidden' ||
             (this._isLastColumn(j) &&
-            this.getRowHeaderWidth() + this.getElementDir(cell, dir) +
-            this.calculateColumnWidth(cell) >= this.getWidth())) {
+            ((this.getRowHeaderWidth() + this.getElementDir(cell, dir) +
+            this.calculateColumnWidth(cell) >= this.getWidth()) ||
+            this.m_endRowEndHeader > -1))) {
           this.m_utils.addCSSClassName(cell, this.getMappedStyle('borderVerticalNone'));
         } else {
           this.m_utils.removeCSSClassName(cell, this.getMappedStyle('borderVerticalNone'));
         }
 
         if (horizontalGridlines === 'hidden' ||
-            (this._isLastRow(i) && this.getRowBottom(cell, null) >= this.getHeight())) {
+            (this._isLastRow(i) && ((this.getRowBottom(cell, null) >= this.getHeight()) ||
+            this.m_endColEndHeader > -1))) {
           this.m_utils.addCSSClassName(cell, this.getMappedStyle('borderHorizontalNone'));
         } else {
           this.m_utils.removeCSSClassName(cell, this.getMappedStyle('borderHorizontalNone'));
@@ -1553,13 +1310,8 @@ DvtDataGrid.prototype.SetUpdateScrollPostionOnRefreshCallback = function (callba
 DvtDataGrid.prototype._remove = function (element) {
   this._uniqueIdCallback(element, true);
 
-  // check if there is a callback set for remove
   // callback allows jQuery to clean the node on a remove
-  if (this.m_removeCallback != null) {
-    this.m_removeCallback.call(null, element);
-  } else {
-    element.parentNode.removeChild(element);
-  }
+  this.m_removeCallback.call(null, element);
 };
 
 /**
@@ -1995,8 +1747,13 @@ DvtDataGrid.prototype.setDefaultDimensions = function () {
     resources.getMappedStyle('headercell');
   this.m_root.appendChild(div); // @HTMLUpdateOK
   // Not using offsetWidth/Height due to
-  this.m_defaultColumnWidth = Math.round(div.getBoundingClientRect().width);
-  this.m_defaultRowHeight = Math.round(div.getBoundingClientRect().height);
+  var rect = div.getBoundingClientRect();
+  this.m_defaultColumnWidth = Math.round(rect.width);
+  this.m_defaultRowHeight = Math.round(rect.height);
+
+  // minimize reflows
+  this.getViewportWidth();
+  this.getViewportHeight();
 
   this.m_root.removeChild(div);
 };
@@ -2067,12 +1824,8 @@ DvtDataGrid.prototype._getHeaderDimension = function (elem, key, axis, dimension
  * @return {string} the subId to append to the root element id
  */
 DvtDataGrid.prototype.createSubId = function (subId) {
+  // id empty string if not set, enver null
   var id = this.getRootElement().id;
-  if (id == null) {
-    // root id should be specified
-    id = '';
-  }
-
   return [id, subId].join(':');
 };
 
@@ -2406,12 +2159,6 @@ DvtDataGrid.prototype._runModelEventQueue = function () {
  * @param {Element} root - the root dom element for the DataGrid.
  */
 DvtDataGrid.prototype.render = function (root) {
-  // if this is the same instance and state wasn't clear out from last time
-  if (this.m_databody != null) {
-    this.destroy();
-    this.resetInternal();
-  }
-
   this.m_timingStart = new Date();
   this.m_fetching = {
   };
@@ -2475,6 +2222,8 @@ DvtDataGrid.prototype.buildGrid = function (root) {
     this.m_utils.addCSSClassName(this.m_root, this.getMappedStyle('readOnly'));
   }
   // this.m_root.setAttribute("aria-describedby", this.createSubId("summary"));
+
+  this.setDefaultDimensions();
 
   // set a tab index so it can be focus and keyboard navigation to work
   // eslint-disable-next-line no-param-reassign
@@ -2935,10 +2684,10 @@ DvtDataGrid.prototype._adjustHeaderBorders = function () {
   var height = this.getHeight();
   var colHeaderHeight = this.getColumnHeaderHeight();
   var colHeaderWidth = this.getElementWidth(this.m_colHeader);
-  var colEndHeaderHeight = this.getElementHeight(this.m_colEndHeader);
+  var colEndHeaderHeight = this.getColumnEndHeaderHeight();
   var rowHeaderWidth = this.getRowHeaderWidth();
   var rowHeaderHeight = this.getElementHeight(this.m_rowHeader);
-  var rowEndHeaderWidth = this.getElementWidth(this.m_rowEndHeader);
+  var rowEndHeaderWidth = this.getRowEndHeaderWidth();
 
   var widthCheck = rowHeaderWidth + colHeaderWidth + rowEndHeaderWidth +
     (this.m_hasVerticalScroller ? scrollbarSize : 0) < width;
@@ -3039,6 +2788,14 @@ DvtDataGrid.prototype._adjustHeaderBorders = function () {
 };
 
 /**
+ * @private
+ */
+DvtDataGrid.prototype._isHeaderLabelCollision = function () {
+  return this.m_headerLabels.column[this.m_columnHeaderLevelCount - 1] &&
+    this.m_headerLabels.row[this.m_rowHeaderLevelCount - 1];
+};
+
+/**
  * Build the corners of the grid. If they exist, removes them and rebuilds them.
  * @private
  */
@@ -3092,20 +2849,23 @@ DvtDataGrid.prototype.buildCorners = function () {
         this.m_columnHeaderLevelHeights[this.m_columnHeaderLevelCount - 1] : this.m_colHeaderHeight;
       for (i = 0; i < this.m_headerLabels.row.length; i++) {
         label = this.m_headerLabels.row[i];
-        this.setElementHeight(label, dimension);
-        corner.appendChild(label); // @HTMLUpdateOK
+        if (label != null) {
+          this.setElementHeight(label, dimension);
+          corner.appendChild(label); // @HTMLUpdateOK
+        }
       }
 
       dimension = this.m_headerLabels.row.length ?
         this.m_rowHeaderLevelWidths[this.m_rowHeaderLevelCount - 1] : this.m_rowHeaderWidth;
       for (i = 0; i < this.m_headerLabels.column.length; i++) {
         label = this.m_headerLabels.column[i];
-        this.setElementWidth(label, dimension);
-        corner.appendChild(label); // @HTMLUpdateOK
+        if (label != null) {
+          this.setElementWidth(label, dimension);
+          corner.appendChild(label); // @HTMLUpdateOK
+        }
       }
 
-      if (this.m_headerLabels.column[this.m_columnHeaderLevelCount - 1] &&
-         this.m_headerLabels.row[this.m_rowHeaderLevelCount - 1]) {
+      if (this._isHeaderLabelCollision()) {
         var item = this._getHeaderByIndex(this.m_startColHeader,
                                           this.m_columnHeaderLevelCount - 1,
                                           this.m_colHeader, this.m_columnHeaderLevelCount,
@@ -3172,7 +2932,9 @@ DvtDataGrid.prototype.buildCorners = function () {
 
         for (i = 0; i < this.m_headerLabels.columnEnd.length; i++) {
           label = this.m_headerLabels.columnEnd[i];
-          rowHeaderScrollbarSpacer.appendChild(label); // @HTMLUpdateOK
+          if (label != null) {
+            rowHeaderScrollbarSpacer.appendChild(label); // @HTMLUpdateOK
+          }
         }
       }
     } else {
@@ -3227,7 +2989,9 @@ DvtDataGrid.prototype.buildCorners = function () {
 
         for (i = 0; i < this.m_headerLabels.rowEnd.length; i++) {
           label = this.m_headerLabels.rowEnd[i];
-          columnHeaderScrollbarSpacer.appendChild(label); // @HTMLUpdateOK
+          if (label != null) {
+            columnHeaderScrollbarSpacer.appendChild(label); // @HTMLUpdateOK
+          }
         }
       }
     } else {
@@ -3375,6 +3139,45 @@ DvtDataGrid.prototype._getCellAtPixel = function (x, y) {
   return null;
 };
 
+DvtDataGrid.prototype._getAxisInnerMostHeaders = function (axis) {
+  var className = this.getMappedStyle('headercell');
+  var root;
+  var levelCount;
+
+  switch (axis) {
+    case 'row':
+      root = this.m_rowHeader;
+      levelCount = this.m_rowHeaderLevelCount;
+      break;
+    case 'column':
+      root = this.m_colHeader;
+      levelCount = this.m_columnHeaderLevelCount;
+      break;
+    case 'rowEnd':
+      root = this.m_rowEndHeader;
+      levelCount = this.m_rowEndHeaderLevelCount;
+      break;
+    case 'columnEnd':
+      root = this.m_colEndHeader;
+      levelCount = this.m_columnEndHeaderLevelCount;
+      break;
+    default:
+      break;
+  }
+
+  var headers = root.getElementsByClassName(className);
+  var returnArr = [];
+  for (var i = 0; i < headers.length; i++) {
+    var header = headers[i];
+    var context = header[this.getResources().getMappedAttribute('context')];
+    if (context.level + context.depth === levelCount) {
+      returnArr.push(header);
+    }
+  }
+
+  return returnArr;
+};
+
 /**
  * Get a header at a given coordinate and axis
  * @private
@@ -3386,14 +3189,13 @@ DvtDataGrid.prototype._getHeaderAtPixel = function (pixel, axis) {
   var dir;
   var dimension;
 
+  headers = this._getAxisInnerMostHeaders(axis);
+  endheaders = this._getAxisInnerMostHeaders(axis + 'End');
+
   if (axis === 'row') {
-    headers = this.m_rowHeader.firstChild.childNodes;
-    endheaders = this.m_rowEndHeader.firstChild.childNodes;
     dir = 'top';
     dimension = 'height';
   } else if (axis === 'column') {
-    headers = this.m_colHeader.firstChild.childNodes;
-    endheaders = this.m_colEndHeader.firstChild.childNodes;
     dir = this.getResources().isRTLMode() ? 'right' : 'left';
     dimension = 'width';
   }
@@ -3458,6 +3260,7 @@ DvtDataGrid.prototype._scrollToScrollPositionObject = function (scrollPositionOb
   });
 
   indexFromKeyPromise.then(function (returnObj) {
+    // scrollTop and s
     var newScrollX = Math.floor(self._getPositionEstimate('column', dir, columnKey,
                                                returnObj.columnIndexFromKey,
                                                columnIndex,
@@ -3543,21 +3346,13 @@ DvtDataGrid.prototype._getPositionEstimate =
 
 /**
  * Determine if horizontal scrollbar is needed
- * @param {number|null=} expectedWidth - databody width
+ * @param {number} expectedWidth - databody width
  * @return {boolean} true if horizontal scrollbar required
  */
 DvtDataGrid.prototype.isDatabodyHorizontalScrollbarRequired = function (expectedWidth) {
-  // if expected width of the databody is not specified, extract from style
   var databody = this.m_databody;
-  var expected;
-  if (expectedWidth == null) {
-    expected = this.getElementWidth(databody);
-  } else {
-    expected = expectedWidth;
-  }
-
   var scroller = databody.firstChild;
-  if (this.getElementWidth(scroller) > expected) {
+  if (this.getElementWidth(scroller) > expectedWidth) {
     return true;
   }
   return false;
@@ -3565,22 +3360,14 @@ DvtDataGrid.prototype.isDatabodyHorizontalScrollbarRequired = function (expected
 
 /**
  * Determine if vertical scrollbar is needed
- * @param {number|null=} expectedHeight - databody height
+ * @param {number} expectedHeight - databody height
  * @return {boolean} true if vertical scrollbar required
  * @private
  */
 DvtDataGrid.prototype.isDatabodyVerticalScrollbarRequired = function (expectedHeight) {
-  // if expected height of the databody is not specified, extract from style
   var databody = this.m_databody;
-  var expected;
-  if (expectedHeight == null) {
-    expected = this.getElementHeight(databody);
-  } else {
-    expected = expectedHeight;
-  }
-
   var scroller = databody.firstChild;
-  if (this.getElementHeight(scroller) > expected) {
+  if (this.getElementHeight(scroller) > expectedHeight) {
     return true;
   }
   return false;
@@ -3782,7 +3569,6 @@ DvtDataGrid.prototype._updateStateInfo = function (items) {
 DvtDataGrid.prototype._updateContextInfo = function (context, skip) {
   var row;
   var column;
-  var text;
 
   if (context.indexes) {
     row = context.indexes.row;
@@ -3794,78 +3580,66 @@ DvtDataGrid.prototype._updateContextInfo = function (context, skip) {
   var rowEndHeader = context.rowEndHeader;
   var columnHeader = context.columnHeader;
   var columnEndHeader = context.columnEndHeader;
+  var rowHeaderLabel = context.rowHeaderLabel;
+  var rowEndHeaderLabel = context.rowEndHeaderLabel;
+  var columnHeaderLabel = context.columnHeaderLabel;
+  var columnEndHeaderLabel = context.columnEndHeaderLabel;
   var info = '';
-  var spacerText = ', ';
   var endContextText = '. ';
 
   // row context.  Skip if there is an outstanding accessible row context
   if (this.m_accessibleContext == null && !isNaN(row) && skip !== 'row') {
-    text = this.getResources().getTranslatedText('accessibleRowContext', {
-      index: row + 1
-    });
-    if (text != null) {
-      info = text;
-    }
+    info = this._updateAccessibleInfoString(info, 'accessibleRowContext', { index: row + 1 });
   }
 
   // column context
   if (!isNaN(column) && skip !== 'column') {
-    text = this.getResources().getTranslatedText('accessibleColumnContext', {
-      index: column + 1
-    });
-    if (text != null) {
-      info = info.length === 0 ? text : info + spacerText + text;
-    }
+    info = this._updateAccessibleInfoString(info, 'accessibleColumnContext', { index: column + 1 });
   }
 
   // rowHeader context
-  if (!isNaN(rowHeader) && skip !== 'rowHeader') {
-    text = this.getResources().getTranslatedText('accessibleRowHeaderContext', {
-      index: rowHeader + 1
-    });
-    if (text != null) {
-      info = info.length === 0 ? text : info + spacerText + text;
-    }
+  if (!isNaN(rowHeader)) {
+    info = this._updateAccessibleInfoString(info, 'accessibleRowHeaderContext', { index: rowHeader + 1 });
   }
 
-  // columHeader context
-  if (!isNaN(columnHeader) && skip !== 'columnHeader') {
-    text = this.getResources().getTranslatedText('accessibleColumnHeaderContext', {
-      index: columnHeader + 1
-    });
-    if (text != null) {
-      info = info.length === 0 ? text : info + spacerText + text;
-    }
+  // columnHeader context
+  if (!isNaN(columnHeader)) {
+    info = this._updateAccessibleInfoString(info, 'accessibleColumnHeaderContext', { index: columnHeader + 1 });
   }
 
-  // rowHeader context
-  if (!isNaN(rowEndHeader) && skip !== 'rowEndHeader') {
-    text = this.getResources().getTranslatedText('accessibleRowEndHeaderContext', {
-      index: rowEndHeader + 1
-    });
-    if (text != null) {
-      info = info.length === 0 ? text : info + spacerText + text;
-    }
+  // rowEndHeader context
+  if (!isNaN(rowEndHeader)) {
+    info = this._updateAccessibleInfoString(info, 'accessibleRowEndHeaderContext', { index: rowEndHeader + 1 });
   }
 
-  // columHeader context
-  if (!isNaN(columnEndHeader) && skip !== 'columnEndHeader') {
-    text = this.getResources().getTranslatedText('accessibleColumnEndHeaderContext', {
-      index: columnEndHeader + 1
-    });
-    if (text != null) {
-      info = info.length === 0 ? text : info + spacerText + text;
-    }
+  // columnEndHeader context
+  if (!isNaN(columnEndHeader)) {
+    info = this._updateAccessibleInfoString(info, 'accessibleColumnEndHeaderContext', { index: columnEndHeader + 1 });
+  }
+
+  // rowHeaderLabel context
+  if (!isNaN(rowHeaderLabel)) {
+    info = this._updateAccessibleInfoString(info, 'accessibleRowHeaderLabelContext', { level: rowHeaderLabel + 1 });
+  }
+
+  // columnHeaderLabel context
+  if (!isNaN(columnHeaderLabel)) {
+    info = this._updateAccessibleInfoString(info, 'accessibleColumnHeaderLabelContext', { level: columnHeaderLabel + 1 });
+  }
+
+  // rowEndHeaderLabel context
+  if (!isNaN(rowEndHeaderLabel)) {
+    info = this._updateAccessibleInfoString(info, 'accessibleRowEndHeaderLabelContext', { level: rowEndHeaderLabel + 1 });
+  }
+
+  // columnEndHeaderLabel context
+  if (!isNaN(columnEndHeaderLabel)) {
+    info = this._updateAccessibleInfoString(info, 'accessibleColumnEndHeaderLabelContext', { level: columnEndHeaderLabel + 1 });
   }
 
   // level context
-  if (!isNaN(level) && skip !== 'level') {
-    text = this.getResources().getTranslatedText('accessibleLevelContext', {
-      level: level + 1
-    });
-    if (text != null) {
-      info = info.length === 0 ? text : info + spacerText + text;
-    }
+  if (!isNaN(level)) {
+    info = this._updateAccessibleInfoString(info, 'accessibleLevelContext', { level: level + 1 });
   }
 
   // Put a period at the end of the context readout
@@ -3879,6 +3653,19 @@ DvtDataGrid.prototype._updateContextInfo = function (context, skip) {
   }
 
   this.m_contextInfo.textContent = info;
+};
+
+/**
+ * @private
+ */
+DvtDataGrid.prototype._updateAccessibleInfoString = function (info, translation,
+  translationParams) {
+  var spacerText = ', ';
+  var text = this.getResources().getTranslatedText(translation, translationParams);
+  if (text != null) {
+    return info.length === 0 ? text : info + spacerText + text;
+  }
+  return info;
 };
 
 /**
@@ -4269,7 +4056,9 @@ DvtDataGrid.prototype.createHeaderContext =
     headerContext.index = index;
     headerContext.data = data;
     headerContext.component = this;
-    headerContext.datasource = this.getDataSource();
+    var ds = this.getDataSource();
+    headerContext.datasource = ds instanceof DataProviderDataGridDataSource
+      ? ds.dataprovider : ds;
     headerContext.level = level;
     headerContext.depth = depth;
     headerContext.extent = extent;
@@ -4387,7 +4176,7 @@ DvtDataGrid.prototype._buildHeaderLabels = function (axis, headerSet) {
             var renderer = this.m_options.getRenderer(axis, true);
             this._renderContent(renderer, labelContext, label, labelData);
 
-            this.m_headerLabels[axis].push(label);
+            this.m_headerLabels[axis][i] = label;
           }
           dirValue += dimension;
         }
@@ -4483,6 +4272,7 @@ DvtDataGrid.prototype.buildColumnHeaders =
                                              this.m_startColHeaderPixel * -1,
                                              this.getResources().isRTLMode() ? 'right' : 'left',
                                              this.getMappedStyle('colheadercell'));
+      this.m_endColHeaderPixel -= this.m_startColHeaderPixel;
       this.m_startColHeaderPixel = 0;
     }
 
@@ -4586,6 +4376,7 @@ DvtDataGrid.prototype.buildColumnEndHeaders =
                                              this.m_startColEndHeaderPixel * -1,
                                              this.getResources().isRTLMode() ? 'right' : 'left',
                                              this.getMappedStyle('colendheadercell'));
+      this.m_endColEndHeaderPixel -= this.m_startColEndHeaderPixel;
       this.m_startColEndHeaderPixel = 0;
     }
 
@@ -4710,6 +4501,7 @@ DvtDataGrid.prototype.buildRowHeaders =
       this._shiftHeadersAlongAxisInContainer(headerRoot.firstChild, 0,
                                              this.m_startRowHeaderPixel * -1, 'top',
                                              this.getMappedStyle('rowheadercell'));
+      this.m_endRowHeaderPixel -= this.m_startRowHeaderPixel;
       this.m_startRowHeaderPixel = 0;
     }
 
@@ -4837,6 +4629,7 @@ DvtDataGrid.prototype.buildRowEndHeaders =
       this._shiftHeadersAlongAxisInContainer(headerRoot.firstChild, 0,
                                              this.m_startRowEndHeaderPixel * -1, 'top',
                                              this.getMappedStyle('rowendheadercell'));
+      this.m_endRowEndHeaderPixel -= this.m_startRowEndHeaderPixel;
       this.m_startRowEndHeaderPixel = 0;
     }
 
@@ -4975,11 +4768,12 @@ DvtDataGrid.prototype._renderContent = function (renderer, context, cell, data) 
     }
 
     // make all focusable elements non-focusable, since we want to manage tab stops
-    var busyContext = this.m_contextCallback(cell).getBusyContext();
-    var self = this;
-    busyContext.whenReady().then(function () {
-      self._disableAllFocusableElements(cell);
-    });
+    if (context.mode !== 'edit') {
+      var busyContext = this.m_contextCallback(cell).getBusyContext();
+      busyContext.whenReady().then(function () {
+        DataCollectionUtils.disableAllFocusableElements(cell);
+      });
+    }
   } else {
     if (data != null && typeof data === 'object' &&
         Object.prototype.hasOwnProperty.call(data, 'data')) {
@@ -5202,13 +4996,15 @@ DvtDataGrid.prototype.buildLevelHeaders = function (
     this.setElementDir(header, dimensionSecondValue, dimensionSecond);
     this.setElementDir(header, dimensionToAdjustValue, dimensionToAdjust);
 
-    levelDimensionValue = this._getHeaderLevelDimension(level, header, levelDimensionCache,
-                                                        levelDimension, headerDepth);
+    var dimensions = this._getHeaderDimensions(header, headerDimension, levelDimension,
+       levelDimensionCache, level, dimensionAxis, headerContext.key, headerDepth);
+
+    levelDimensionValue = dimensions[levelDimension];
     this.setElementDir(header, levelDimensionValue, levelDimension);
 
     // find the size in case it depends on the classes, will be set in the appropriate case
-    var headerDimensionValue = this._getHeaderDimension(header, headerContext.key, dimensionAxis,
-                                                    headerDimension);
+    var headerDimensionValue = dimensions[headerDimension];
+
     this._setAttribute(header, 'depth', headerDepth);
 
     // if this is an outer level then add a groupingContainer around it
@@ -5356,6 +5152,64 @@ DvtDataGrid.prototype.buildLevelHeaders = function (
   returnObj.totalHeaderDimension = totalHeaderDimensionValue;
   returnObj.count = headerCount;
   return returnObj;
+};
+
+DvtDataGrid.prototype._getHeaderDimensions = function (header, dimension, levelDimension,
+  levelCache, level, axis, key, depth) {
+  var value = {};
+  var levelDimensionValue = 0;
+  for (var i = 0; i < depth; i++) {
+    var cachedLevelDimension = levelCache[level + i];
+    if (cachedLevelDimension == null) {
+      levelDimensionValue = null;
+      break;
+    }
+    levelDimensionValue += cachedLevelDimension;
+  }
+
+  if (levelDimensionValue == null) {
+    value = this._computeElementWidthAndHeight(header);
+  } else {
+    value[levelDimension] = levelDimensionValue;
+  }
+
+  if (depth === 1) {
+    // eslint-disable-next-line no-param-reassign
+    levelCache[level] = value[levelDimension];
+  }
+
+  var dimensionValue = this.m_sizingManager.getSize(axis, key);
+  if (dimensionValue != null) {
+    value[dimension] = dimensionValue;
+    return value;
+  }
+
+  // check if inline style set on element
+  if (header.style[dimension] !== '') {
+    if (value[dimension] == null) {
+      value[dimension] = this.getElementDir(header, dimension);
+    }
+    // in the event that row height is set via an additional style only on row header store the value
+    this.m_sizingManager.setSize(axis, key, value[dimension]);
+    return value;
+  }
+
+  // check style class mapping, mapping prevents multiple offsetHeight calls on headers with the same class name
+  var className = header.className;
+  if (value[dimension] == null) {
+    value[dimension] = this.m_styleClassDimensionMap[dimension][className];
+    if (value[dimension] == null) {
+      // exhausted all options, use offsetHeight then, remove element in the case of shim element
+      value[dimension] = this.getElementDir(header, dimension);
+    }
+  }
+
+  // the value isn't the default the cell will use meaning it's from an external
+  // class, so store it in the sizing manager cell can pick it up, header and cell dimension can vary on em
+  this.m_sizingManager.setSize(axis, key, value[dimension]);
+
+  this.m_styleClassDimensionMap[dimension][className] = value[dimension];
+  return value;
 };
 
 /**
@@ -5943,12 +5797,12 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function (cellSet, cellRange, ro
   // if virtual scrolling we may need to adjust when the user hits the beginning
   if (this.m_startCol === 0 && this.m_startColPixel !== 0) {
     this._shiftCellsAlongAxis('column', -this.m_startColPixel, 0, true);
-    this.m_endColPixel += this.m_startColPixel;
+    this.m_endColPixel -= this.m_startColPixel;
     this.m_startColPixel = 0;
   }
   if (this.m_startRow === 0 && this.m_startRowPixel !== 0) {
     this._shiftCellsAlongAxis('row', -this.m_startRowPixel, 0, true);
-    this.m_endRowPixel += this.m_startRowPixel;
+    this.m_endRowPixel -= this.m_startRowPixel;
     this.m_startRowPixel = 0;
   }
 
@@ -6721,7 +6575,9 @@ DvtDataGrid.prototype._getCellDimension = function (cell, index, key, axis, dime
     var inlineStyle = this.m_options.getInlineStyle(axis, shimHeaderContext);
     var styleClass = this.m_options.getStyleClass(axis, shimHeaderContext);
     dimensionOf = document.createElement('div');
-    dimensionOf.style.cssText = inlineStyle;
+    if (inlineStyle != null) {
+      dimensionOf.style.cssText = inlineStyle;
+    }
     dimensionOf.className = headerClassName + ' ' + styleClass;
   } else {
     dimensionOf = cell;
@@ -6805,7 +6661,8 @@ DvtDataGrid.prototype.createCellContext = function (indexes, data, metadata, ele
   cellContext.data = (data != null && typeof data === 'object' &&
                       Object.prototype.hasOwnProperty.call(data, 'data')) ? data.data : data;
   cellContext.component = this;
-  cellContext.datasource = this.getDataSource();
+  var ds = this.getDataSource();
+  cellContext.datasource = ds instanceof DataProviderDataGridDataSource ? ds.dataprovider : ds;
   cellContext.mode = 'navigation';
   cellContext.extents = extents;
 
@@ -6995,115 +6852,7 @@ DvtDataGrid.prototype.hideStatusText = function () {
 };
 
 /** ******************* focusable/editable element related methods *****************/
-/**
- * Finds all the focusable elements in a node
- * @param {Element|undefined|null} node
- * @param {boolean=} skipTabIndexCheck
- * @return {Array} An array of all of the focusable elements in a node
- */
-DvtDataGrid.prototype.getFocusableElementsInNode = function (node, skipTabIndexCheck) {
-  var nodes;
-  var elem;
-  var inputElems = [];
-  var attr = this.getResources().getMappedAttribute('tabMod');
 
-  if (document.evaluate) {
-    // FF and IE are not case sensitive with x-path, but webkit browser are (GoogleChrome and Safari only recognize lower case)
-    // to be safe, we check for both lower and upper case
-    nodes = document.evaluate('.//*[@tabindex>=0]|.//*[@' + attr +
-                              '>=0]|.//input|.//select|.//textarea|.//button|.//a|.//INPUT|.//SELECT|.//TEXTAREA|.//BUTTON|.//A',
-                              node, null, XPathResult.ANY_TYPE, null);
-    elem = nodes.iterateNext();
-    while (elem) {
-      if (!elem.disabled && elem.style.display !== 'none' &&
-          (skipTabIndexCheck || !elem.tabIndex || elem.tabIndex > 0 ||
-           parseInt(elem.getAttribute(attr), 10) >= 0)) {
-        inputElems.push(elem);
-      }
-
-      elem = nodes.iterateNext();
-    }
-  } else {
-    // use the same query as above which has proven to work on non-ie browsers
-    // only difference being that tabIndex check can't be greater than or less than so do not -1 for most common case
-    nodes = node.querySelectorAll(
-      "input, select, button, a, textarea, [tabIndex]:not([tabIndex='-1']), [" + attr +
-        ']:not([' + attr + "='-1'])");
-    var nodeCount = nodes.length;
-    // we don't want to use AdfDhtmlPivotTablePeer._INPUT_REGEXP because it has OPTION in the regexp
-    // in IE, each 'option' after 'select' elem will be counted as an input element(and cause duplicate input elems returned)
-    // this will cause problem with TAB/Shift-TAB (recognizing whether to go to next cell or to tab within the current cell
-    for (var i = 0; i < nodeCount; i += 1) {
-      elem = nodes[i];
-      if (!elem.disabled && elem.style.display !== 'none' &&
-          (skipTabIndexCheck || !elem.tabIndex || elem.tabIndex >= 0 ||
-           parseInt(elem.getAttribute(attr), 10) >= 0)) {
-        inputElems.push(elem);
-      }
-    }
-  }
-  return inputElems;
-};
-
-/**
- * Make all focusable elements within the specified cell unfocusable
- * @param {Element} cell
- * @private
- */
-DvtDataGrid.prototype._disableAllFocusableElements = function (cell) {
-  var attr = this.getResources().getMappedAttribute('tabMod');
-
-  // make all focusable elements non-focusable, since we want to manage tab stops
-  var focusElems = this.getFocusableElementsInNode(cell);
-  for (var i = 0; i < focusElems.length; i++) {
-    var tabIndex = parseInt(focusElems[i].tabIndex, 10);
-    if (isNaN(tabIndex) || tabIndex >= 0) {
-      // store the tabindex as an attribute
-      focusElems[i].setAttribute(attr, isNaN(tabIndex) ? -1 : tabIndex);
-      focusElems[i].setAttribute('tabIndex', -1);
-    }
-  }
-};
-
-/**
- * Make all focusable elements within the specified cell that were made unfocusable before focusable again
- * @param {Element|undefined|null} cell
- * @private
- */
-DvtDataGrid.prototype._enableAllFocusableElements = function (cell) {
-  var attr = this.getResources().getMappedAttribute('tabMod');
-
-  // make all non-focusable elements focusable again
-  var focusElems = this.getFocusableElementsInNode(cell, false);
-  for (var i = 0; i < focusElems.length; i++) {
-    var tabIndex = parseInt(focusElems[i].getAttribute(attr), 10);
-    focusElems[i].removeAttribute(attr);
-    // restore tabIndex as needed
-    if (tabIndex === -1) {
-      focusElems[i].removeAttribute('tabIndex');
-    } else {
-      focusElems[i].setAttribute('tabIndex', tabIndex);
-    }
-  }
-};
-
-/**
- * Determine whether the element is a focusable element.
- * @param {Element} elem the element to check
- * @return {boolean} true if element is a focusable element, false otherwise.
- * @private
- */
-DvtDataGrid.prototype._isFocusableElement = function (elem) {
-  var tagName = elem.tagName;
-  return (tagName === 'INPUT' ||
-          tagName === 'TEXTAREA' ||
-          tagName === 'SELECT' ||
-          tagName === 'BUTTON' ||
-          tagName === 'A' ||
-          (elem.getAttribute('tabIndex') != null &&
-           parseInt(elem.getAttribute('tabIndex'), 10) >= 0 &&
-           this.findCell(elem) !== elem));
-};
 
 DvtDataGrid.prototype._isFocusableElementBeforeCell = function (elem) {
   // if element is null or if we reach the root of DataGrid or if it is the cell
@@ -7128,12 +6877,14 @@ DvtDataGrid.prototype._isFocusableElementBeforeCell = function (elem) {
 };
 
 /**
- * Sets focus on first focusable element contained by an element
- * @param {Element|undefined|null} elem
+ * Enables all focusable elements contained by the element, and sets focus to the first
+ * @param {Element} elem
  * @return {boolean} true if focus is set successfully, false otherwise
  */
 DvtDataGrid.prototype._setFocusToFirstFocusableElement = function (elem) {
-  var elems = this.getFocusableElementsInNode(elem, true);
+  // enable all focusable elements
+  DataCollectionUtils.enableAllFocusableElements(elem);
+  var elems = DataCollectionUtils.getFocusableElementsInNode(elem);
   if (elems.length > 0) {
     var firstElement = elems[0];
     firstElement.focus();
@@ -7347,14 +7098,10 @@ DvtDataGrid.prototype._shouldLongScroll = function (scrollLeft, scrollTop) {
  * @param {number} scrollTop - the position the scroller top should be
  */
 DvtDataGrid.prototype.scrollTo = function (scrollLeft, scrollTop) {
-  if (scrollLeft !== this.m_currentScrollLeft) {
-    this.m_prevScrollLeft = this.m_currentScrollLeft;
-    this.m_currentScrollLeft = scrollLeft;
-  }
-  if (scrollTop !== this.m_currentScrollTop) {
-    this.m_prevScrollTop = this.m_currentScrollTop;
-    this.m_currentScrollTop = scrollTop;
-  }
+  this.m_prevScrollLeft = this.m_currentScrollLeft;
+  this.m_currentScrollLeft = scrollLeft;
+  this.m_prevScrollTop = this.m_currentScrollTop;
+  this.m_currentScrollTop = scrollTop;
 
   // checkSCroll and isFetchComplete below handle the fact that the fetchCells can return sync or async
   // and we want the last time it happens to actually update the value.
@@ -9343,8 +9090,10 @@ DvtDataGrid.prototype.getElementTranslationXYZ = function (element) {
  * @param {Event} event - mousewheel event on the databody
  */
 DvtDataGrid.prototype.handleDatabodyMouseWheel = function (event) {
-  // prevent scrolling of the page
-  event.preventDefault();
+  // prevent scrolling of the page, unless there are no more rows, consistant with table/listview
+  if (!this.m_stopRowHeaderFetch || !this.m_stopRowEndHeaderFetch || !this.m_stopRowFetch) {
+    event.preventDefault();
+  }
 
   // prevent scroll if animating sort
   if (this.m_animating) {
@@ -9990,6 +9739,34 @@ DvtDataGrid.prototype.getElementDir = function (elem, dir) {
   return value;
 };
 
+DvtDataGrid.prototype._computeElementWidthAndHeight = function (elem) {
+  var value = {};
+  if (elem.style.width.indexOf('px') > -1 && elem.style.width.indexOf('e') === -1) {
+    // parseFloat does better with big numbers
+    value.width = parseFloat(elem.style.width);
+  }
+  if (elem.style.height.indexOf('px') > -1 && elem.style.height.indexOf('e') === -1) {
+    // parseFloat does better with big numbers
+    value.height = parseFloat(elem.style.height);
+  }
+  if (value.width == null || value.height == null) {
+    if (!document.body.contains(elem)) {
+      // eslint-disable-next-line no-param-reassign
+      elem.style.visibility = 'hidden';
+      this.m_root.appendChild(elem); // @HTMLUpdateOK
+      value.width = Math.round(elem.offsetWidth);
+      value.height = Math.round(elem.offsetHeight);
+      this.m_root.removeChild(elem);
+      // eslint-disable-next-line no-param-reassign
+      elem.style.visibility = '';
+    } else {
+      value.width = Math.round(elem.offsetWidth);
+      value.height = Math.round(elem.offsetHeight);
+    }
+  }
+  return value;
+};
+
 /** *********************** Model change event *****************************************/
 /**
  * @private
@@ -10116,7 +9893,6 @@ DvtDataGrid.prototype.handleModelEvent = function (event, fromQueue) {
 
   var operation = event.operation;
   var keys = event.keys;
-  var source = event.source;
   var indexes = event.indexes;
   var cellSet = event.result;
   var headerSet = event.header;
@@ -10149,11 +9925,15 @@ DvtDataGrid.prototype.handleModelEvent = function (event, fromQueue) {
     this._adjustActive(operation, indexes);
     this._adjustSelectionOnModelChange(operation, keys, indexes);
 
-    if (source && oj.FlattenedTreeDataGridDataSource &&
-        source instanceof oj.FlattenedTreeDataGridDataSource &&
-        this.m_utils.supportsTransitions()) {
+    if (this.m_utils.supportsTransitions()) {
+      if (!Array.isArray(keys)) {
+        // eslint-disable-next-line no-param-reassign
+        keys = new Array(keys);
+      }
       this._handleModelDeleteEventWithAnimation(keys);
-      requiresAnimation = true;
+      if (keys.length > 0) {
+        requiresAnimation = true;
+      }
     } else {
       this._handleModelDeleteEvent(indexes, keys, silent);
     }
@@ -10692,15 +10472,6 @@ DvtDataGrid.prototype._handleCellUpdatesFetchSuccess = function (cellSet, cellRa
 
   // end fetch
   this._signalTaskEnd();
-};
-
-/**
- * Retrieves the type of update animation to use.
- * @return {number} the type of update animation.  See constants.
- * @private
- */
-DvtDataGrid.prototype._getUpdateAnimation = function () {
-  return DvtDataGrid.UPDATE_ANIMATION_SLIDE_INOUT;
 };
 
 /**
@@ -11711,14 +11482,16 @@ DvtDataGrid.prototype._isDatabodyCellActive = function () {
  * @param {Object} prevActiveObject
  */
 DvtDataGrid.prototype._updateActiveContext = function (activeObject, prevActiveObject) {
+  var axis;
+  var level;
   var skip;
+  var contextObj = {};
 
   if (activeObject.type === 'header') {
-    var axis = activeObject.axis;
+    axis = activeObject.axis;
     var index = activeObject.index;
-    var level = activeObject.level;
+    level = activeObject.level;
 
-    var contextObj = {};
     if (activeObject.axis === 'row') {
       if (this.m_rowHeaderLevelCount > 1) {
         if (prevActiveObject == null ? true : !(level === prevActiveObject.level &&
@@ -11778,6 +11551,24 @@ DvtDataGrid.prototype._updateActiveContext = function (activeObject, prevActiveO
     }
     // update context info
     this._updateContextInfo(activeObject, skip);
+  } else if (activeObject.type === 'label') {
+    axis = activeObject.axis;
+    level = activeObject.level;
+
+    if (prevActiveObject == null || prevActiveObject.type !== 'label' ||
+      (prevActiveObject.type === 'label' && prevActiveObject.axis !== axis) || this.m_externalFocus) {
+      if (axis === 'column') {
+        contextObj.columnHeaderLabel = level;
+      } else if (axis === 'row') {
+        contextObj.rowHeaderLabel = level;
+      } else if (axis === 'rowEnd') {
+        contextObj.rowEndHeaderLabel = level;
+      } else if (axis === 'columnEnd') {
+        contextObj.columnEndHeaderLabel = level;
+      }
+    }
+
+    this._updateContextInfo(contextObj, skip);
   }
 };
 
@@ -12793,9 +12584,6 @@ DvtDataGrid.prototype.readCurrentContent = function () {
  * @returns {boolean} false
  */
 DvtDataGrid.prototype._enterActionableMode = function (element) {
-  // enable all focusable elements
-  this._enableAllFocusableElements(element);
-
   // focus on first focusable item in the cell
   if (this._setFocusToFirstFocusableElement(element)) {
     this.m_focusOutHandler(element);
@@ -12811,7 +12599,7 @@ DvtDataGrid.prototype._exitActionableMode = function () {
   if (this.isActionableMode()) {
     var elem = this._getActiveElement();
     this.setActionableMode(false);
-    this._disableAllFocusableElements(elem);
+    DataCollectionUtils.disableAllFocusableElements(elem);
     this.m_focusInHandler(elem);
   }
 };
@@ -12866,19 +12654,6 @@ DvtDataGrid.prototype._setEditableClone = function (element) {
     clone[this.getResources().getMappedAttribute('context')].parentElement = element;
     this.m_editableClone = clone;
   }
-};
-
-/**
- *
- * @param {number} keyCode
- * @return {boolean}
- */
-DvtDataGrid.prototype.isNavigationKey = function (keyCode) {
-  return (this.isArrowKey(keyCode) ||
-          keyCode === DvtDataGrid.keyCodes.HOME_KEY ||
-          keyCode === DvtDataGrid.keyCodes.END_KEY ||
-          keyCode === DvtDataGrid.keyCodes.PAGEUP_KEY ||
-          keyCode === DvtDataGrid.keyCodes.PAGEDOWN_KEY);
 };
 
 /**
@@ -15328,18 +15103,6 @@ DvtDataGrid.prototype._addNodesToDatabodyMap = function (nodes) {
 };
 
 /**
- * Removes an array of nodes from the databody map
- * @param {Array} nodes
- * @private
- */
-DvtDataGrid.prototype._removeNodesFromDatabodyMap = function (nodes) {
-  for (var i = 0; i < nodes.length; i++) {
-    var indexes = this.getCellIndexes(nodes[i]);
-    this._removeIndexFromDatabodyMap(indexes);
-  }
-};
-
-/**
  * Adds an index, id pair to the databody map along with its extents
  * @param {Object} indexes
  * @param {string} id
@@ -15549,16 +15312,6 @@ DvtDataGrid.prototype._getAxisCellsByKey = function (key, axis, breakOnFirstFind
 /* global DvtDataGrid:false */
 
 /**
- * Checks whether there are any focusable element inside a cell
- * @param {Element|undefined|null} elem the element to check focus inside
- * @return {boolean}
- */
-DvtDataGrid.prototype._isContainFocusableElement = function (elem) {
-  var elems = this.getFocusableElementsInNode(elem);
-  return (elems.length > 0);
-};
-
-/**
  * Unhighlights the selection.  Does not change selection, focus cell, anchor, or frontier
  */
 DvtDataGrid.prototype.unhighlightSelection = function () {
@@ -15700,75 +15453,6 @@ DvtDataGrid.prototype.handleDatabodySelectionDrag = function (event) {
       var index = this.getCellIndexes(cell);
       this.extendSelection(index, event);
     }
-  }
-};
-
-/**
- * Checks whether a cell is selected.  This is used in touch logic in handleDatabodyClickSelection.
- * @param {Element} cell the cell element
- * @return {boolean} true if the cell is selected, false otherwise.
- * @private
- */
-DvtDataGrid.prototype._isSelected = function (cell) {
-  var selectedClassName = this.getMappedStyle('selected');
-  if (selectedClassName != null) {
-    return this.m_utils.containsCSSClassName(cell, selectedClassName);
-  }
-
-  // should not end up here
-  return false;
-};
-
-/**
- * Deselect a cell/row.  This is used in touch logic in handleDatabodyClickSelection.
- * @param {Object} index the cell index of the cell/row to deselect
- * @private
- */
-DvtDataGrid.prototype._deselect = function (index) {
-  if (this.m_options.getSelectionMode() === 'row') {
-    // drop the column index
-    // eslint-disable-next-line no-param-reassign
-    index = this.createIndex(index.row);
-  }
-
-  var rowIndex = index.row;
-  var columnIndex = index.column;
-
-  // find the range in current selection
-  var indexToRemove = -1;
-  var ranges = this.GetSelection();
-
-  for (var i = 0; i < ranges.length; i += 1) {
-    var range = ranges[i];
-    var startIndex = range.startIndex;
-    var endIndex = this.getEndIndex(range);
-
-    var rangeStartRow = startIndex.row;
-    var rangeEndRow = endIndex.row;
-
-    if (rangeStartRow === rowIndex && rangeEndRow === rowIndex) {
-      var rangeStartColumn = startIndex.column;
-      var rangeEndColumn = endIndex.column;
-
-      if (!isNaN(rangeStartColumn) && !isNaN(rangeEndColumn)) {
-        if (rangeStartColumn === columnIndex && rangeEndColumn === columnIndex) {
-          // both row and column index matches, we are done
-          indexToRemove = i;
-          break;
-        }
-      } else if (isNaN(columnIndex)) {
-        // if column index not is defined in index
-        // no column index, and row matches
-        indexToRemove = i;
-        break;
-      }
-    }
-  }
-
-  // unhighlight index and remove from selection
-  if (indexToRemove !== -1) {
-    this.unhighlightRange(ranges[indexToRemove]);
-    ranges.splice(indexToRemove, 1);
   }
 };
 
@@ -18668,11 +18352,13 @@ DvtDataGrid.prototype.resizeRowHeight = function (oldElementHeight, newElementHe
  */
 DvtDataGrid.prototype.resizeColHeight = function (newElementHeight, heightChange, end) {
   if (heightChange !== 0) {
+    var oldHeight;
     var level = this.getHeaderCellLevel(this.m_resizingElement) +
       (this.getHeaderCellDepth(this.m_resizingElement) - 1);
     if (end) {
       this.m_columnEndHeaderLevelHeights[level] += heightChange;
     } else {
+      oldHeight = this.m_columnHeaderLevelHeights[level];
       this.m_columnHeaderLevelHeights[level] += heightChange;
     }
     this.resizeColumnHeightsAndShift(heightChange, level, end, true);
@@ -18683,15 +18369,22 @@ DvtDataGrid.prototype.resizeColHeight = function (newElementHeight, heightChange
       if (this.m_headerLabels.column.length === 0) {
         this._resizeHeaderLabelDirs(level, heightChange, ['row'], 'height');
       } else if (level === this.m_columnHeaderLevelCount - 1 && this.m_headerLabels.row.length) {
-        var splitHeight = newElementHeight / 2;
-        var rowHeaderLabelZero = this._getLabel('row', this.m_rowHeaderLevelCount - 1);
+        var rowHeightChange;
+        var colHeight;
+        if (this._isHeaderLabelCollision()) {
+          rowHeightChange = Math.floor(newElementHeight / 2) - Math.floor(oldHeight / 2);
+          colHeight = Math.ceil(newElementHeight / 2);
+        } else {
+          rowHeightChange = heightChange;
+          colHeight = newElementHeight;
+        }
+
         var columnHeaderLabelZero = this._getLabel('column', this.m_columnHeaderLevelCount - 1);
-
-
-        this.setElementHeight(columnHeaderLabelZero, Math.ceil(splitHeight));
+        if (columnHeaderLabelZero) {
+          this.setElementHeight(columnHeaderLabelZero, colHeight);
+        }
         this._resizeHeaderLabelDirs(this.m_rowHeaderLevelCount - 1,
-                                    Math.floor(splitHeight) -
-                                    this.getElementHeight(rowHeaderLabelZero),
+                                    rowHeightChange,
                                     ['row'], 'height');
       }
     } else {
@@ -18740,8 +18433,10 @@ DvtDataGrid.prototype._resizeHeaderLabelDirs = function (level, dimensionChange,
     var axis = axes[j];
     for (var i = 0; i < this.m_headerLabels[axis].length; i++) {
       var label = this.m_headerLabels[axis][i];
-      var newDir = this.getElementDir(label, dir) + dimensionChange;
-      this.setElementDir(label, newDir, dir);
+      if (label != null) {
+        var newDir = this.getElementDir(label, dir) + dimensionChange;
+        this.setElementDir(label, newDir, dir);
+      }
     }
   }
 };
@@ -18806,7 +18501,7 @@ DvtDataGrid.prototype.getNewElementHeight = function (axis, oldElementHeight, en
   if (axis === 'column' && !end &&
       this.getHeaderCellLevel(this.m_resizingElement) +
       this.getHeaderCellDepth(this.m_resizingElement) === this.m_columnHeaderLevelCount &&
-      this.m_headerLabels.row.length && this.m_headerLabels.column.length) {
+      this._isHeaderLabelCollision()) {
     minHeight += this.getElementHeight(this.m_headerLabels.row[this.m_headerLabels.row.length - 1]);
   }
   if (deltaHeight == null) {
@@ -18960,6 +18655,7 @@ DvtDataGrid.prototype.manageResizeScrollbars = function () {
       this.m_root.appendChild(empty); // @HTMLUpdateOK
     } else {
       empty = this.m_empty;
+      this.setElementDir(empty, this.m_endColHeader >= 0 ? colHeaderHeight : 0, 'top');
     }
     var emptyHeight = this.getElementHeight(empty);
     var emptyWidth = this.getElementWidth(empty);
@@ -19508,7 +19204,7 @@ DvtDataGrid.prototype.handleContextMenuResize = function (event, id, val, target
   this.m_overResizeRight = 0;
   this.m_overResizeBottom = 0;
 
-  var value = parseInt(val, 10);
+  var value = parseFloat(val, 10);
 
   var deltaWidth = value - this.getElementWidth(target);
   var deltaHeight = value - this.getElementHeight(target);
@@ -19738,7 +19434,9 @@ DvtDataGridUtils.prototype._setMaxValuesForScrolling = function () {
   }
 
   var div = document.createElement('div');
-  div.style.cssText = 'width:1000000000px;height:1000000000px;display:none;';
+  div.style.width = '1000000000px';
+  div.style.height = '1000000000px';
+  div.style.display = 'none';
   document.body.appendChild(div); // @HTMLUpdateOK
   // for some reason chrome stops rendering absolutely positioned content at half the value on osx
   this.m_maxDivHeightForScrolling =
@@ -19751,8 +19449,11 @@ DvtDataGridUtils.prototype._setMaxValuesForScrolling = function () {
 DvtDataGridUtils.prototype.calculateScrollbarSize = function () {
   // Create the measurement node
   var scrollDiv = document.createElement('div');
-  scrollDiv.style.cssText =
-    'width:100px;height:100px;overflow:scroll;position:absolute;top:-9999px;';
+  scrollDiv.style.width = '100px';
+  scrollDiv.style.height = '100px';
+  scrollDiv.style.overflow = 'scroll';
+  scrollDiv.style.position = 'absolute';
+  scrollDiv.style.top = '-9999px';
   document.body.appendChild(scrollDiv); // @HTMLUpdateOK
 
   // Get the scrollbar width/height
@@ -20537,7 +20238,7 @@ DvtDataGridOptions.prototype.getScrollPolicyOptions = function () {
  * @ojstatus preview
  * @ojrole application
  * @ojrole grid
- * @ojshortdesc Displays data in a cell oriented grid.
+ * @ojshortdesc A data grid displays data in a cell oriented grid.
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojsignature [{
  *                target: "Type",
@@ -20881,46 +20582,63 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      * @typedef {Object} oj.ojDataGrid.CellContext context object used by cell callbacks.
      * @property {Element} componentElement a reference to the DataGrid root Element
      * @property {Element} parentElement empty rendered cell element
-     * @property {D} cell the container data object for the header
-     * @property {D} data the data object for the header
-     * @property {oj.DataProvider<K, D>|null} datasource a reference to the data source object
+     * @property {Object} cell the container data object for the header
+     * @property {any} data the data object for the header
+     * @property {Object|null} datasource a reference to the data source object
      * @property {Object} indexes the object that contains both the zero based row index and column index in which the cell is bound to
      * @property {number} indexes.row the zero based absolute row index
      * @property {number} indexes.column the zero based absolute column index
      * @property {Object} keys the object that contains both the row key and column key which identifies the cell
-     * @property {K} keys.row the row key
-     * @property {K} keys.column the column key
+     * @property {any} keys.row the row key
+     * @property {any} keys.column the column key
      * @property {Object} extents the object that contains both the row extent and column extent of the cell
      * @property {number} extents.row the row extent
      * @property {number} extents.column the column extent
-     * @property {"edit"|"navigation"} mode the mode the cell is rendered in
-     * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
+     * @property {number?} indexFromParent if flattened tree data provider, the offset from the parent key
+     * @property {K?} parentKey  if flattened tree data provider, the parent row key
+     * @property {number?} treeDepth  if flattened tree data provider, the depth of the node
+     * @property {boolean?} isLeaf if flattened tree data provider, true if it is a leaf node
+     * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"},
+     *               {target:"Type", value:"D", for:"cell", jsdocOverride:true},
+     *               {target:"Type", value:"D", for:"data", jsdocOverride:true},
+     *               {target:"Type", value:"oj.DataProvider<K, D>|null", for:"datasource", jsdocOverride:true},
+     *               {target:"Type", value:"K", for:"keys.row", jsdocOverride:true},
+     *               {target:"Type", value:"K", for:"keys.column", jsdocOverride:true}]
      */
 
     /**
      * @typedef {Object} oj.ojDataGrid.HeaderContext context object used by header callbacks.
      * @property {Element} componentElement a reference to the DataGrid root Element
      * @property {Element} parentElement empty rendered header element
-     * @property {D} data the data object for the header
-     * @property {oj.DataProvider<K, D>|null} datasource a reference to the data source object
+     * @property {any} data the data object for the header
+     * @property {Object|null} datasource a reference to the data source object
      * @property {"column"|"columnEnd"|"row"|"rowEnd"} axis the axis of the header
      * @property {number} index the index of the header, where 0 is the index of the first header
-     * @property {K} key the key of the header
+     * @property {any} key the key of the header
      * @property {number} level the level of the header. The outermost header is level zero
      * @property {number} extent the number of indexes the header spans
      * @property {number} depth the number of levels the header spans
-     * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
+     * @property {number?} indexFromParent if flattened tree data provider and row axis, the offset from the parent key
+     * @property {K?} parentKey  if flattened tree data provider and row axis, the parent row key
+     * @property {number?} treeDepth  if flattened tree data provider and row axis, the depth of the node
+     * @property {boolean?} isLeaf if flattened tree data provider and row axis, true if it is a leaf node
+     * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"},
+     *               {target:"Type", value:"D", for:"data", jsdocOverride:true},
+     *               {target:"Type", value:"oj.DataProvider<K, D>|null", for:"datasource", jsdocOverride:true},
+     *               {target:"Type", value:"K", for:"key", jsdocOverride:true}]
      */
 
     /**
      * @typedef {Object} oj.ojDataGrid.LabelContext context object used by header label callbacks.
      * @property {Element} componentElement a reference to the DataGrid root Element
      * @property {Element} parentElement empty rendered label element
-     * @property {oj.DataProvider<K, D>|null} datasource a reference to the data source object
+     * @property {Object|null} datasource a reference to the data source object
      * @property {"column"|"columnEnd"|"row"|"rowEnd"} axis the axis of the label
-     * @property {K} key the key of the label
+     * @property {any} key the key of the label
      * @property {number} level the level of the label
-     * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
+     * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"},
+     *               {target:"Type", value:"oj.DataProvider<K, D>|null", for:"datasource", jsdocOverride:true},
+     *               {target:"Type", value:"K", for:"key", jsdocOverride:true}]
      */
 
     /**
@@ -20934,9 +20652,11 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      * @property {number} indexes.row cell row index
      * @property {number} indexes.column cell column index
      * @property {Object=} keys cell keys, available if type is cell
-     * @property {K} keys.row cell row key
-     * @property {K} keys.column cell column key
-     * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"}]
+     * @property {any} keys.row cell row key
+     * @property {any} keys.column cell column key
+     * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"},
+     *               {target:"Type", value:"K", for:"keys.row", jsdocOverride:true},
+     *               {target:"Type", value:"K", for:"keys.column", jsdocOverride:true}]
      */
 
     /**
@@ -21061,11 +20781,12 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      *
      * @expose
      * @memberof oj.ojDataGrid
+     * @ojshortdesc Specifies the data for the grid. See the Help documentation for more information.
      * @instance
-     * @type {oj.DataGridDataSource|oj.DataProvider|null}
+     * @type {Object|null}
      * @default null
-     * @ojsignature {target: "Accessor", value: {GetterType: "oj.DataProvider<K, D>", SetterType: "oj.DataProvider<K, D>|null"}}
-     * @ojshortdesc Specifies the grid data source.
+     * @ojsignature [{target: "Accessor", value: {GetterType: "oj.DataProvider<K, D>", SetterType: "oj.DataProvider<K, D>|null"}},
+     *               {target:"Type", value:"oj.DataGridDataSource|oj.DataProvider|null", consumedBy:"js"}]
      *
      * @example <caption>Initialize the DataGrid with the <code class="prettyprint">data</code> attribute specified:</caption>
      * &lt;oj-data-grid data='{{myDataSource}}'>&lt;/oj-data-grid>
@@ -21119,7 +20840,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
        * @default "visible"
        * @ojvalue {string} "visible" show horizontal gridlines
        * @ojvalue {string} "hidden" hide horizontal gridlines
-       * @ojshortdesc Specifies the visibility of the grid body vertical and horizontal gridlines.
+       * @ojshortdesc Specifies the visibility of the horizontal gridlines.
        *
        * @example <caption>Initialize the DataGrid with the <code class="prettyprint">gridlines</code> attribute specified:</caption>
        * &lt;!-- Using dot notation -->
@@ -21157,7 +20878,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
        * @default "visible"
        * @ojvalue {string} "visible" show vertical gridlines
        * @ojvalue {string} "hidden" hide vertical gridlines
-       * @ojshortdesc Specifies the visibility of the grid body vertical and vertical gridlines.
+       * @ojshortdesc Specifies the visibility of the vertical gridlines.
        *
        * @example <caption>Initialize the DataGrid with the <code class="prettyprint">gridlines</code> attribute specified:</caption>
        * &lt;!-- Using dot notation -->
@@ -21236,7 +20957,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      * or the end of the axis is reached and there's no more items to fetch.
      * @property {number=} offsetX the horizontal offset in pixel relative to the cell identified by key/index.
      * @property {number=} offsetY the vertical offset in pixel relative to the cell identified by key/index.
-     * @ojshortdesc Gets and sets the scroll position of the data grid.
+     * @ojshortdesc Specifies the current scroll position of the data grid. See the Help documentation for more information.
      *
      * @ojsignature [{target:"Type", value:"K", for:"rowKey"},
      *               {target:"type", value:"K", for:"columnKey"}]
@@ -21278,7 +20999,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      * @memberof oj.ojDataGrid
      * @instance
      * @type {Object}
-     * @ojshortdesc Specifies row or cell selection.
+     * @ojshortdesc Specifies the row and cell selection modes. See the Help documentation for more information.
      *
      * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectionMode</code> attribute specified:</caption>
      * &lt;!-- Using dot notation -->
@@ -21321,7 +21042,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
        * @ojvalue {string} "none" no cell selection
        * @ojvalue {string} "single" at most one cell selected at a time
        * @ojvalue {string} "multiple" any number of cells selected at a time
-       * @ojshortdesc Specifies cell selection.
+       * @ojshortdesc Specifies the cell selection mode. By default, cell selection is disabled.
        *
        * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectionMode.cell</code> attribute specified:</caption>
        * &lt;!-- Using dot notation -->
@@ -21353,7 +21074,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
        * @ojvalue {string} "none" no row selection
        * @ojvalue {string} "single" at most one row selected at a time
        * @ojvalue {string} "multiple" any number of rows selected at a time
-       * @ojshortdesc Specifies row selection.
+       * @ojshortdesc Specifies the row selection mode. By default, row selection is disabled.
        *
        * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectionMode.row</code> attribute specified:</caption>
        * &lt;!-- Using dot notation -->
@@ -21376,7 +21097,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      * @expose
      * @instance
      * @memberof oj.ojDataGrid
-     * @ojshortdesc Specifies the drag and drop features.
+     * @ojshortdesc Specifies drag and drop features.
      */
     dnd: {
       /**
@@ -21387,7 +21108,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
        * @expose
        * @instance
        * @memberof! oj.ojDataGrid
-       * @ojshortdesc Specifies the drag and drop reordering.
+       * @ojshortdesc Specifies drag and drop reordering features.
        */
       reorder: {
         /**
@@ -21403,7 +21124,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @expose
          * @instance
          * @memberof! oj.ojDataGrid
-         * @ojshortdesc Specifies the drag and drop row reordering.
+         * @ojshortdesc Specifies whether drag and drop row reordering is enabled.
          *
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">dnd</code> attribute specified:</caption>
          * &lt;!-- Using dot notation -->
@@ -21442,9 +21163,11 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      * @type {string|null}
      * @default 'auto'
      * @ojvalue {string} "auto" the DataGrid will decide the scroll policy
-     * @ojvalue {string} "loadMoreOnScroll" additional data are fetched when the user scrolls to the bottom of the DataGrid and all previous data are kept in the DOM
+     * @ojvalue {string} "loadMoreOnScroll" additional data are fetched when the user scrolls to the bottom of the DataGrid and all previous data are kept in the DOM.
+     * <br/>If you are using Paging Control with the DataGrid, please note that "loadMoreOnScroll" scroll-policy is not compatible with
+     * Paging Control "loadMore" mode.
      * @ojvalue {string} "scroll" virtual scrolling is used meaning only rows/columns visible in the viewport are fetched and kept in the DOM
-     * @ojshortdesc Specifies the grid scroll mechanism.
+     * @ojshortdesc Specifies how data are fetched as user scrolls through the data grid.
      *
      * @example <caption>Initialize the DataGrid with the <code class="prettyprint">scrollPolicy</code> attribute specified:</caption>
      * &lt;oj-data-grid scroll-policy='scroll'>&lt;/oj-data-grid>
@@ -21465,7 +21188,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      *   <li>maxColumnCount: Maximum columns which will be displayed before fetching more will be stopped. Only applies when scrollPolicy is 'loadMoreOnScroll'.</li>
      * </ul>
      *
-     * @ojshortdesc Gets and sets the fetch options for scrolling behaviors that triggers data fetches.
+     * @ojshortdesc Specifies fetch options for scrolling behaviors that trigger data fetches.
      * @expose
      * @instance
      * @memberof! oj.ojDataGrid
@@ -21495,6 +21218,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
        *
        * @expose
        * @name scrollPolicyOptions.maxRowCount
+       * @ojshortdesc The maximum number of rows to display before fetching more data rows will be stopped.
        * @memberof! oj.ojDataGrid
        * @instance
        * @type {number}
@@ -21509,6 +21233,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
        *
        * @expose
        * @name scrollPolicyOptions.maxColumnCount
+       * @ojshortdesc The maximum number of columns to display before fetching more data rows will be stopped.
        * @memberof! oj.ojDataGrid
        * @instance
        * @type {number}
@@ -21659,15 +21384,15 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
     currentCell: null,
 
     /**
-     * <p>Determine if the DataGrid is read only or editable.
-     * <p>Use <code class="prettyprint">none</code> if the DataGrid is strictly read only.
+     * <p>Determine if the DataGrid is read-only or editable.
+     * <p>Use <code class="prettyprint">none</code> if the DataGrid is strictly read-only.
      *
      * <p>The DataGrid <code class="prettyprint">editMode</code> is designed to support fast editing and requires that the input controls render fast and near synchronously
      * to be stamped inside an editable cell. The DataGrid supports overwrite behavior for all of JET's input components. Custom components that render synchronously or
      * components that only render asynchronously due to Promises that resolve immediately will also be stampable. The modules for the stamped component loaded/required when the DataGrid is
      * loaded/required. Components that must go back to a server to render are not supported.
      *
-     * <p>Use <code class="prettyprint">cellNavigation</code> to allow editable cells, but the DataGrid is currently read only and a single tab stop on the page.
+     * <p>Use <code class="prettyprint">cellNavigation</code> to allow editable cells, but the DataGrid is currently read-only and a single tab stop on the page.
      * Pressing F2 or double click while in this mode will switch the DataGrid to <code class="prettyprint">cellEdit</code> mode.
      *
      * <p>Use <code class="prettyprint">cellEdit</code> to allow editable cells, and tab navigates to the next cell behavior.
@@ -21679,8 +21404,8 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      * @type {string}
      * @default 'none'
      * @ojwriteback
-     * @ojvalue {string} "none" the DataGrid is read only
-     * @ojvalue {string} "cellNavigation" the DataGrid is a single tab stop and editable at the cell level, but currently read only
+     * @ojvalue {string} "none" the DataGrid is read-only
+     * @ojvalue {string} "cellNavigation" the DataGrid is a single tab stop and editable at the cell level, but currently read-only
      * @ojvalue {string} "cellEdit" the DataGrid cells are individually tabbable and editable
      * @ojshortdesc Specifies if the grid is read-only or editable.
      *
@@ -21778,7 +21503,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @ojsignature { target: "Type",
          *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => string | void | null) | string | null",
          *                jsDocOverride: true }
-         * @ojshortdesc CSS class names to apply to row headers.
+         * @ojshortdesc Specifies CSS class names to apply to row headers. See the Help documentation for more information.
          *
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">className</code> attribute specified:</caption>
          * &lt;oj-data-grid header.row.class-name='myClassName'>&lt;/oj-data-grid>
@@ -21827,7 +21552,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.LabelContext<K,D>) => {insert: HTMLElement | string} | void | null) | null",
            *                jsdocOverride: true}
-           * @ojshortdesc Specifies what renders is the row header labels.
+           * @ojshortdesc A function that returns row header label content. The function takes a context argument, provided by the datagrid. See the Help documentation for more information.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">renderer</code> attribute specified:</caption>
            * &lt;oj-data-grid header.row.label.renderer='{{myRendererFunction}}'>&lt;/oj-data-grid>
@@ -21855,7 +21580,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.LabelContext<K,D>) => string | void | null) | string | null",
            *                jsDocOverride: true }
-           * @ojshortdesc CSS class names to apply to row header labels.
+           * @ojshortdesc Specifies CSS class names to apply to row header labels. See the Help documentation for more information.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">className</code> attribute specified:</caption>
            * &lt;oj-data-grid header.row.label.class-name='myClassName'>&lt;/oj-data-grid>
@@ -21883,7 +21608,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.LabelContext<K,D>) => string | void | null) | string | null",
            *                jsDocOverride: true }
-           * @ojshortdesc Inline style to apply to row header labels.
+           * @ojshortdesc Specifies inline style to apply to row header labels. See the Help documentation for more information.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">style</code> attribute specified:</caption>
            * &lt;oj-data-grid header.row.label.style='myStyle'>&lt;/oj-data-grid>
@@ -21919,7 +21644,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @ojsignature { target: "Type",
          *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => {insert: HTMLElement | string} | void | null) | null",
          *                jsdocOverride: true}
-         * @ojshortdesc Specifies what renders is the row headers.
+         * @ojshortdesc A function that returns row header content. The function takes a context argument, provided by the datagrid. See the Help documentation for more information.
          *
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">renderer</code> attribute specified:</caption>
          * &lt;oj-data-grid header.row.renderer='{{myRendererFunction}}'>&lt;/oj-data-grid>
@@ -21934,7 +21659,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
         renderer: null,
 
         /**
-         * <p>Enable or disable width or height resize along the row headers. Note
+         * <p>Enable or disable width or height resizing along the row headers. Note
          * that for row header, a function cannot be used with the <code class="prettyprint">width</code> subproperty.
          * If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
          * <code class="prettyprint">enable</code> or <code class="prettyprint">disable</code>.
@@ -21944,11 +21669,11 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @memberof! oj.ojDataGrid
          * @instance
          * @type {Object}
-         * @ojshortdesc Specifies resizing width or height on the row headers.
+         * @ojshortdesc Specifies resizing options on the row headers.
          */
         resizable: {
           /**
-           * <p>Enable or disable width resize along the row headers.
+           * <p>Enable or disable width resizing along the row headers.
            *
            * @expose
            * @alias header.row.resizable.width
@@ -21956,9 +21681,9 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @instance
            * @type {string}
            * @default "disable"
-           * @ojvalue {string} "enable" enable width resize on row headers
-           * @ojvalue {string} "disable" disable width resize on row headers
-           * @ojshortdesc Specifies resizing width on the row headers.
+           * @ojvalue {string} "enable" enable width resizing on row headers
+           * @ojvalue {string} "disable" disable width resizing on row headers
+           * @ojshortdesc Enable or disable width resizing along the row headers.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
            * &lt;!-- Using dot notation -->
@@ -21989,7 +21714,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
           width: 'disable',
 
           /**
-           * <p>Enable or disable height resize along the row headers. If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
+           * <p>Enable or disable height resizing along the row headers. If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
            * <code class="prettyprint">enable</code> or <code class="prettyprint">disable</code>.
            *
            * @expose
@@ -21998,12 +21723,12 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @instance
            * @type {string|function(Object)}
            * @default "disable"
-           * @ojvalue {string} "enable" enable height resize on row headers
-           * @ojvalue {string} "disable" disable height resize on row headers
+           * @ojvalue {string} "enable" enable height resizing on row headers
+           * @ojvalue {string} "disable" disable height resizing on row headers
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => string ) | string | null",
            *                jsDocOverride: true }
-           * @ojshortdesc Specifies resizing height on the row headers.
+           * @ojshortdesc Enable or disable height resizing along the row headers.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
            * &lt;!-- Using dot notation -->
@@ -22052,7 +21777,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @ojsignature { target: "Type",
          *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => string ) | string | null",
          *                jsDocOverride: true }
-         * @ojshortdesc Specifies whether sorting is enabled on the row headers.
+         * @ojshortdesc Specifies whether sorting is enabled on the row headers. See the Help documentation for more information.
          *
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">sortable</code> attribute specified:</caption>
          * &lt;oj-data-grid header.row.class-name='disable'>&lt;/oj-data-grid>
@@ -22080,7 +21805,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @ojsignature { target: "Type",
          *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => string | void | null) | string | null",
          *                jsDocOverride: true }
-         * @ojshortdesc Inline style to add to the row headers.
+         * @ojshortdesc Specifies inline style to add to the row headers. See the Help documentation for more information.
          *
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">style</code> attribute specified:</caption>
          * &lt;oj-data-grid header.row.style='myStyle'>&lt;/oj-data-grid>
@@ -22143,7 +21868,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @ojsignature { target: "Type",
          *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => string | void | null) | string | null",
          *                jsDocOverride: true }
-         * @ojshortdesc CSS class names to apply to column headers.
+         * @ojshortdesc Specifies CSS class names to apply to column headers. See the Help documentation for more information.
          *
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">className</code> attribute specified:</caption>
          * &lt;oj-data-grid header.column.class-name='myClassName'>&lt;/oj-data-grid>
@@ -22192,7 +21917,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.LabelContext<K,D>) => {insert: HTMLElement | string} | void | null) | null",
            *                jsdocOverride: true}
-           * @ojshortdesc Specifies what renders is the column header labels.
+           * @ojshortdesc A function that returns column header label content. The function takes a context argument, provided by the datagrid. See the Help documentation for more information.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">renderer</code> attribute specified:</caption>
            * &lt;oj-data-grid header.column.label.renderer='{{myRendererFunction}}'>&lt;/oj-data-grid>
@@ -22220,7 +21945,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.LabelContext<K,D>) => string | void | null) | string | null",
            *                jsDocOverride: true }
-           * @ojshortdesc CSS class names to apply to column header labels.
+           * @ojshortdesc Specifies CSS class names to apply to column header labels. See the Help documentation for more information.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">className</code> attribute specified:</caption>
            * &lt;oj-data-grid header.column.label.class-name='myClassName'>&lt;/oj-data-grid>
@@ -22248,7 +21973,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.LabelContext<K,D>) => string | void | null) | string | null",
            *                jsDocOverride: true }
-           * @ojshortdesc Inline style to apply to column header labels.
+           * @ojshortdesc Specifies inline style to apply to column header labels. See the Help documentation for more information.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">style</code> attribute specified:</caption>
            * &lt;oj-data-grid header.column.label.style='myStyle'>&lt;/oj-data-grid>
@@ -22284,7 +22009,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @ojsignature { target: "Type",
          *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => {insert: HTMLElement | string} | void | null) | null",
          *                jsdocOverride: true}
-         * @ojshortdesc Specifies what renders is the column headers.
+         * @ojshortdesc A function that returns column header content. The function takes a context argument, provided by the datagrid. See the Help documentation for more information.
          *
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">renderer</code> attribute specified:</caption>
          * &lt;oj-data-grid header.column.renderer='{{myRendererFunction}}'>&lt;/oj-data-grid>
@@ -22299,7 +22024,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
         renderer: null,
 
         /**
-         * <p>Enable or disable width or height resize along the column headers. Note
+         * <p>Enable or disable width or height resizing along the column headers. Note
          * that for column header, a function cannot be used with the <code class="prettyprint">height</code> subproperty.
          * If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
          * <code class="prettyprint">enable</code> or <code class="prettyprint">disable</code>.
@@ -22309,11 +22034,11 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @memberof! oj.ojDataGrid
          * @instance
          * @type {Object}
-         * @ojshortdesc Specifies resizing width or height on the column headers.
+         * @ojshortdesc Specifies resizing options along the column headers.
          */
         resizable: {
           /**
-           * <p>Enable or disable width resize along the column headers. If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
+           * <p>Enable or disable width resizing along the column headers. If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
            * <code class="prettyprint">enable</code> or <code class="prettyprint">disable</code>.
            *
            * @expose
@@ -22322,12 +22047,12 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @instance
            * @type {string|function(Object)}
            * @default "disable"
-           * @ojvalue {string} "enable" enable width resize on column headers
-           * @ojvalue {string} "disable" disable width resize on column headers
+           * @ojvalue {string} "enable" enable width resizing on column headers
+           * @ojvalue {string} "disable" disable width resizing on column headers
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => string ) | string | null",
            *                jsDocOverride: true }
-           * @ojshortdesc Specifies resizing width on the column headers.
+           * @ojshortdesc Enable or disable width resizing along the column headers.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
            * &lt;!-- Using dot notation -->
@@ -22358,7 +22083,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
           width: 'disable',
 
           /**
-           * <p>Enable or disable height resize along the column headers.
+           * <p>Enable or disable height resizing along the column headers.
            *
            * @expose
            * @alias header.column.resizable.height
@@ -22366,9 +22091,9 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @instance
            * @type {string}
            * @default "disable"
-           * @ojvalue {string} "enable" enable height resize on column headers
-           * @ojvalue {string} "disable" disable height resize on column headers
-           * @ojshortdesc Specifies resizing height on the column headers.
+           * @ojvalue {string} "enable" enable height resizing on column headers
+           * @ojvalue {string} "disable" disable height resizing on column headers
+           * @ojshortdesc Enable or disable height resizing along the column headers.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
            * &lt;!-- Using dot notation -->
@@ -22416,7 +22141,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @ojsignature { target: "Type",
          *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => string ) | string | null",
          *                jsDocOverride: true }
-         * @ojshortdesc Specifies whether sorting is enabled on the column headers.
+         * @ojshortdesc Specifies whether sorting is enabled on the column headers. See the Help documentation for more information.
          *
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">sortable</code> attribute specified:</caption>
          * &lt;oj-data-grid header.column.class-name='disable'>&lt;/oj-data-grid>
@@ -22444,7 +22169,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @ojsignature { target: "Type",
          *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => string | void | null) | string | null",
          *                jsDocOverride: true }
-         * @ojshortdesc Inline style to add to the column headers.
+         * @ojshortdesc Specifies inline style to add to the column headers. See the Help documentation for more information.
          *
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">style</code> attribute specified:</caption>
          * &lt;oj-data-grid header.column.style='myStyle'>&lt;/oj-data-grid>
@@ -22507,7 +22232,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @ojsignature { target: "Type",
          *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => string | void | null) | string | null",
          *                jsDocOverride: true }
-         * @ojshortdesc CSS class names to apply to column end headers.
+         * @ojshortdesc Specifies CSS class names to apply to column end headers. See the Help documentation for more information.
          *
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">className</code> attribute specified:</caption>
          * &lt;oj-data-grid header.column-end.class-name='myClassName'>&lt;/oj-data-grid>
@@ -22532,7 +22257,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @alias header.columnEnd.label
          * @memberof! oj.ojDataGrid
          * @instance
-         * @ojshortdesc Specifies attributes on the columnEnd header labels.
+         * @ojshortdesc Specifies attributes on the column end header labels.
          */
         label: {
           /**
@@ -22556,7 +22281,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.LabelContext<K,D>) => {insert: HTMLElement | string} | void | null) | null",
            *                jsdocOverride: true}
-           * @ojshortdesc Specifies what renders is the columnEnd header labels.
+           * @ojshortdesc A function that returns column end header label content. The function takes a context argument, provided by the datagrid. See the Help documentation for more information.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">renderer</code> attribute specified:</caption>
            * &lt;oj-data-grid header.column-end.label.renderer='{{myRendererFunction}}'>&lt;/oj-data-grid>
@@ -22584,7 +22309,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.LabelContext<K,D>) => string | void | null) | string | null",
            *                jsDocOverride: true }
-           * @ojshortdesc CSS class names to apply to columnEnd header labels.
+           * @ojshortdesc Specifies CSS class names to apply to column end header labels. See the Help documentation for more information.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">className</code> attribute specified:</caption>
            * &lt;oj-data-grid header.column-end.label.class-name='myClassName'>&lt;/oj-data-grid>
@@ -22612,7 +22337,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => string | void | null) | string | null",
            *                jsDocOverride: true }
-           * @ojshortdesc Inline style to apply to columnEnd header labels.
+           * @ojshortdesc Specifies inline style to apply to column end header labels. See the Help documentation for more information.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">style</code> attribute specified:</caption>
            * &lt;oj-data-grid header.column-end.label.style='myStyle'>&lt;/oj-data-grid>
@@ -22648,7 +22373,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @ojsignature { target: "Type",
          *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => {insert: HTMLElement | string} | void | null) | null",
          *                jsdocOverride: true}
-         * @ojshortdesc Specifies what renders is the column end headers.
+         * @ojshortdesc A function that returns column end header content. The function takes a context argument, provided by the datagrid. See the Help documentation for more information.
          *
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">renderer</code> attribute specified:</caption>
          * &lt;oj-data-grid header.column-end.renderer='{{myRendererFunction}}'>&lt;/oj-data-grid>
@@ -22663,7 +22388,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
         renderer: null,
 
         /**
-         * <p>Enable or disable width or height resize along the columnEnd headers. Note
+         * <p>Enable or disable width or height resizing along the columnEnd headers. Note
          * that for columnEnd header, a function cannot be used with the <code class="prettyprint">height</code> subproperty.
          * If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
          * <code class="prettyprint">enable</code> or <code class="prettyprint">disable</code>.
@@ -22673,11 +22398,11 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @memberof! oj.ojDataGrid
          * @instance
          * @type {Object}
-         * @ojshortdesc Specifies resizing width or height on the column end headers.
+         * @ojshortdesc Specifies resizing options along the column end headers.
          */
         resizable: {
           /**
-           * <p>Enable or disable width resize along the columnEnd headers. If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
+           * <p>Enable or disable width resizing along the columnEnd headers. If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
            * <code class="prettyprint">enable</code> or <code class="prettyprint">disable</code>.
            *
            * @expose
@@ -22686,12 +22411,12 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @instance
            * @type {string|function(Object)}
            * @default "disable"
-           * @ojvalue {string} "enable" enable width resize on columnEnd headers
-           * @ojvalue {string} "disable" disable width resize on columnEnd headers
+           * @ojvalue {string} "enable" enable width resizing on columnEnd headers
+           * @ojvalue {string} "disable" disable width resizing on columnEnd headers
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => string ) | string | null",
            *                jsDocOverride: true }
-           * @ojshortdesc Specifies resizing width on the columnEnd headers.
+           * @ojshortdesc Enable or disable width resizing along the column end headers.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
            * &lt;!-- Using dot notation -->
@@ -22722,7 +22447,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
           width: 'disable',
 
           /**
-           * <p>Enable or disable height resize along the columnEnd headers.
+           * <p>Enable or disable height resizing along the columnEnd headers.
            *
            * @expose
            * @alias header.columnEnd.resizable.height
@@ -22730,9 +22455,9 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @instance
            * @type {string}
            * @default "disable"
-           * @ojvalue {string} "enable" enable height resize on columnEnd headers
-           * @ojvalue {string} "disable" disable height resize on columnEnd headers
-           * @ojshortdesc Specifies resizing height on the columnEnd headers.
+           * @ojvalue {string} "enable" enable height resizing on columnEnd headers
+           * @ojvalue {string} "disable" disable height resizing on columnEnd headers
+           * @ojshortdesc Enable or disable height resizing along the column end headers.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
            * &lt;!-- Using dot notation -->
@@ -22777,7 +22502,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @ojsignature { target: "Type",
          *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => string | void | null) | string | null",
          *                jsDocOverride: true }
-         * @ojshortdesc Inline style to add to the column end headers.
+         * @ojshortdesc Specifies inline style to add to the column end headers. See the Help documentation for more information.
          *
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">style</code> attribute specified:</caption>
          * &lt;oj-data-grid header.column-end.style='myStyle'>&lt;/oj-data-grid>
@@ -22840,7 +22565,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @ojsignature { target: "Type",
          *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => string | void | null) | string | null",
          *                jsDocOverride: true }
-         * @ojshortdesc CSS class names to apply to row end headers.
+         * @ojshortdesc Specifies CSS class names to apply to row end headers. See the Help documentation for more information.
          *
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">className</code> attribute specified:</caption>
          * &lt;oj-data-grid header.row-end.class-name='myClassName'>&lt;/oj-data-grid>
@@ -22865,7 +22590,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @alias header.rowEnd.label
          * @memberof! oj.ojDataGrid
          * @instance
-         * @ojshortdesc Specifies attributes on the rowEnd header labels.
+         * @ojshortdesc Specifies attributes on the row end header labels.
          */
         label: {
           /**
@@ -22889,7 +22614,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.LabelContext<K,D>) => {insert: HTMLElement | string} | void | null) | null",
            *                jsdocOverride: true}
-           * @ojshortdesc Specifies what renders is the rowEnd header labels.
+           * @ojshortdesc A function that returns row end header label content. The function takes a context argument, provided by the datagrid. See the Help documentation for more information.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">renderer</code> attribute specified:</caption>
            * &lt;oj-data-grid header.row-end.label.renderer='{{myRendererFunction}}'>&lt;/oj-data-grid>
@@ -22917,7 +22642,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.LabelContext<K,D>) => string | void | null) | string | null",
            *                jsDocOverride: true }
-           * @ojshortdesc CSS class names to apply to rowEnd header labels.
+           * @ojshortdesc Specifies CSS class names to apply to row end header labels. See the Help documentation for more information.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">className</code> attribute specified:</caption>
            * &lt;oj-data-grid header.row-end.label.class-name='myClassName'>&lt;/oj-data-grid>
@@ -22945,7 +22670,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.LabelContext<K,D>) => string | void | null) | string | null",
            *                jsDocOverride: true }
-           * @ojshortdesc Inline style to apply to rowEnd header labels.
+           * @ojshortdesc Specifies inline style to apply to row end header labels. See the Help documentation for more information.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">style</code> attribute specified:</caption>
            * &lt;oj-data-grid header.row-end.label.style='myStyle'>&lt;/oj-data-grid>
@@ -22981,7 +22706,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @ojsignature { target: "Type",
          *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => {insert: HTMLElement | string} | void | null) | null",
          *                jsdocOverride: true}
-         * @ojshortdesc Specifies what renders is the row end headers.
+         * @ojshortdesc A function that returns row end header content. The function takes a context argument, provided by the datagrid. See the Help documentation for more information.
          *
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">renderer</code> attribute specified:</caption>
          * &lt;oj-data-grid header.row-end.renderer='{{myRendererFunction}}'>&lt;/oj-data-grid>
@@ -22996,7 +22721,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
         renderer: null,
 
         /**
-         * <p>Enable or disable width or height resize along the rowEnd headers. Note
+         * <p>Enable or disable width or height resizing along the rowEnd headers. Note
          * that for rowEnd header, a function cannot be used with the <code class="prettyprint">width</code> subproperty.
          * If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
          * <code class="prettyprint">enable</code> or <code class="prettyprint">disable</code>.
@@ -23006,21 +22731,22 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @memberof! oj.ojDataGrid
          * @instance
          * @type {Object}
-         * @ojshortdesc Specifies resizing width or height on the row end headers.
+         * @ojshortdesc Specifies resizing options along the row end headers.
          */
         resizable: {
           /**
-           * <p>Enable or disable width resize along the rowEnd headers.
+           * <p>Enable or disable width resizing along the rowEnd headers.
            *
            * @expose
            * @alias header.rowEnd.resizable.width
+           * @ojshortdesc Enable or disable width resizing along the row end headers.
            * @memberof! oj.ojDataGrid
            * @instance
            * @type {string}
            * @default "disable"
-           * @ojvalue {string} "enable" enable width resize on rowEnd headers
-           * @ojvalue {string} "disable" disable width resize on rowEnd headers
-           * @ojshortdesc Specifies resizing width on the rowEnd headers.
+           * @ojvalue {string} "enable" enable width resizing on rowEnd headers
+           * @ojvalue {string} "disable" disable width resizing on rowEnd headers
+           * @ojshortdesc Enable or disable width resizing along the row end headers.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
            * &lt;!-- Using dot notation -->
@@ -23051,7 +22777,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
           width: 'disable',
 
           /**
-           * <p>Enable or disable height resize along the rowEnd headers. If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
+           * <p>Enable or disable height resizing along the rowEnd headers. If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
            * <code class="prettyprint">enable</code> or <code class="prettyprint">disable</code>.
            *
            * @expose
@@ -23060,12 +22786,12 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * @instance
            * @type {string|function(Object)}
            * @default "disable"
-           * @ojvalue {string} "enable" enable height resize on rowEnd headers
-           * @ojvalue {string} "disable" disable height resize on rowEnd headers
+           * @ojvalue {string} "enable" enable height resizing on rowEnd headers
+           * @ojvalue {string} "disable" disable height resizing on rowEnd headers
            * @ojsignature { target: "Type",
            *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => string ) | string | null",
            *                jsDocOverride: true }
-           * @ojshortdesc Specifies resizing height on the rowEnd headers.
+           * @ojshortdesc Enable or disable height resizing along the row end headers.
            *
            * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
            * &lt;!-- Using dot notation -->
@@ -23110,7 +22836,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @ojsignature { target: "Type",
          *                value: "?((context: oj.ojDataGrid.HeaderContext<K,D>) => string | void | null) | string | null",
          *                jsDocOverride: true }
-         * @ojshortdesc Inline style to add to the row end headers.
+         * @ojshortdesc Specifies inline style to add to the row end headers. See the Help documentation for more information.
          *
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">style</code> attribute specified:</caption>
          * &lt;oj-data-grid header.row-end.style='myStyle'>&lt;/oj-data-grid>
@@ -23173,7 +22899,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
        * @ojsignature { target: "Type",
        *                value: "?((context: oj.ojDataGrid.CellContext<K,D>) => string | void | null) | string | null",
        *                jsDocOverride: true }
-       * @ojshortdesc CSS class names to apply to cells.
+       * @ojshortdesc Specifies CSS class names to apply to cells. See the Help documentation for more information.
        *
        * @example <caption>Initialize the DataGrid with the <code class="prettyprint">className</code> attribute specified:</caption>
        * &lt;oj-data-grid cell.class-name='myClassName'>&lt;/oj-data-grid>
@@ -23208,7 +22934,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
        * @ojsignature { target: "Type",
        *                value: "?((context: oj.ojDataGrid.CellContext<K,D>) => {insert: HTMLElement | string} | void | null) | null",
        *                jsdocOverride: true}
-       * @ojshortdesc Specifies what renders is the cell.
+       * @ojshortdesc A function that returns cell content. The function takes a context argument, provided by the datagrid. See the Help documentation for more information.
        *
        * @example <caption>Initialize the DataGrid with the <code class="prettyprint">renderer</code> attribute specified:</caption>
        * &lt;oj-data-grid cell.renderer='{{myRendererFunction}}'>&lt;/oj-data-grid>
@@ -23236,7 +22962,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
        * @ojsignature { target: "Type",
        *                value: "?((context: oj.ojDataGrid.CellContext<K,D>) => string | void | null) | string | null",
        *                jsDocOverride: true }
-       * @ojshortdesc Inline style to add to the cells.
+       * @ojshortdesc Specifies inline style to add to the cells. See the Help documentation for more information.
        *
        * @example <caption>Initialize the DataGrid with the <code class="prettyprint">style</code> attribute specified:</caption>
        * &lt;oj-data-grid cell.style='myStyle'>&lt;/oj-data-grid>
@@ -23252,7 +22978,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
     },
 
     /**
-     * Triggered when a portion of the DataGrid is resized
+     * Triggered when a portion of the DataGrid is resized.
      *
      * @expose
      * @event
@@ -23269,7 +22995,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
     resize: null,
 
     /**
-     * Triggered when a sort is performed on the DataGrid
+     * Triggered when a sort is performed on the DataGrid.
      *
      * @expose
      * @event
@@ -23313,6 +23039,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      * @expose
      * @event
      * @memberof oj.ojDataGrid
+     * @ojshortdesc Triggered after the DataGrid has been scrolled.
      * @instance
      * @property {number} scrollX the x position in pixels of the scrollable region calculated from the origin of the DataGrid. In RTL this would be the right of the grid.
      * @property {number} scrollY the y position in pixels of the scrollable region
@@ -23325,10 +23052,13 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      * @expose
      * @event
      * @memberof oj.ojDataGrid
+     * @ojshortdesc Triggered before the current cell is changed.
      * @instance
-     * @property {oj.ojDataGrid.CurrentCell<K>} currentCell the new current cell, see <code class="prettyprint">currentCell</code> for the object information
-     * @property {oj.ojDataGrid.CurrentCell<K>} previousCurrentCell the previous current cell, see <code class="prettyprint">currentCell</code> for the object information
-     * @ojsignature {target:"Type", value:"<K>", for:"genericTypeParameters"}
+     * @property {Object} currentCell the new current cell, see <code class="prettyprint">currentCell</code> for the object information
+     * @property {Object} previousCurrentCell the previous current cell, see <code class="prettyprint">currentCell</code> for the object information
+     * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"},
+     *               {target:"Type", value:"oj.ojDataGrid.CurrentCell<K>", for:"currentCell", jsdocOverride:true},
+     *               {target:"Type", value:"oj.ojDataGrid.CurrentCell<K>", for:"previousCurrentCell", jsdocOverride:true}]
      */
     beforeCurrentCell: null,
 
@@ -23338,9 +23068,11 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      * @expose
      * @event
      * @memberof oj.ojDataGrid
+     * @ojshortdesc Triggered before the DataGrid is going to enter edit mode.
      * @instance
-     * @property {oj.ojDataGrid.CellContext<K,D>} cellContext the cellContext of the cell that editing is going to be performed on
-     * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
+     * @property {Object} cellContext the cellContext of the cell that editing is going to be performed on
+     * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"},
+     *               {target:"Type", value:"oj.ojDataGrid.CellContext<K,D>", for:"cellContext", jsdocOverride:true}]
      */
     beforeEdit: null,
 
@@ -23352,10 +23084,12 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      * @expose
      * @event
      * @memberof oj.ojDataGrid
+     * @ojshortdesc Triggered before the DataGrid is going to exit edit mode. See the Help documentation for more information.
      * @instance
-     * @property {oj.ojDataGrid.CellContext<K,D>} cellContext the cellContext of the cell that editing is going to be performed on
+     * @property {Object} cellContext the cellContext of the cell that editing is going to be performed on
      * @property {boolean} cancelEdit true if the edit should be negated based on actions (i.e. escape key)
-     * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
+     * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"},
+     *               {target:"Type", value:"oj.ojDataGrid.CellContext<K,D>", for:"cellContext", jsdocOverride:true}]
      */
     beforeEditEnd: null
   },
@@ -23562,6 +23296,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
    * @memberof oj.ojDataGrid
    * @instance
    * @return {void}
+   * @ojshortdesc Refresh the data grid.
    *
    * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
    * myDataGrid.refresh();
@@ -23595,6 +23330,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
       this._addContextMenu();
     }
     this.grid.SetOptions(this.options, this._WrapCustomElementRenderer.bind(this));
+    this.resources.setRTLMode(this._GetReadingDirection());
     this.grid.SetResources(this.resources);
 
     // addListeners back in before rendering, including context menu
@@ -24493,19 +24229,19 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
 
       if (axis === 'column') {
         header = this._getHeaderByIndex(index, level,
-                                        $('#' + this.rootId + '\\:columnHeader'),
+                                        $(document.getElementById(this.rootId + ':columnHeader')),
                                         this.grid.getStartColumnHeader());
       } else if (axis === 'row') {
         header = this._getHeaderByIndex(index, level,
-                                        $('#' + this.rootId + '\\:rowHeader'),
+                                        $(document.getElementById(this.rootId + ':rowHeader')),
                                         this.grid.getStartRowHeader());
       } else if (axis === 'columnEnd') {
         header = this._getHeaderByIndex(index, level,
-                                        $('#' + this.rootId + '\\:columnEndHeader'),
+                                        $(document.getElementById(this.rootId + ':columnEndHeader')),
                                         this.grid.getStartColumnEndHeader());
       } else if (axis === 'rowEnd') {
         header = this._getHeaderByIndex(index, level,
-                                        $('#' + this.rootId + '\\:rowEndHeader'),
+                                        $(document.getElementById(this.rootId + ':rowEndHeader')),
                                         this.grid.getStartRowEndHeader());
       }
       if (header == null) {
@@ -24591,6 +24327,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
    *
    * @param {!Element} node the child DOM node
    * @returns {Object|null} the context for the DOM node, or null when none is found.
+   * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
    * @ojsignature { target:"Type",
    *                value:"oj.ojDataGrid.CellContext<K,D> & {subId: 'oj-datagrid-cell'} | oj.ojDataGrid.HeaderContext<K,D> & {subId: 'oj-datagrid-header'} | oj.ojDataGrid.LabelContext<K,D> & {subId: 'oj-datagrid-header-label'}",
    *                for:"returns" }
@@ -24969,7 +24706,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
       this._readyPromiseResolve = null;
     }
     this._ready = true;
-    this._promise = null;
+    this._readyPromise = null;
 
     // For page level BusyContext
     if (this._readyResolveFunc) {
@@ -25452,7 +25189,11 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
 
 /* global Symbol:false, Promise: false */
 
-function DataProviderDataGridDataSource(dataprovider) {
+/**
+ * @constructor
+ * @private
+ */
+var DataProviderDataGridDataSource = function (dataprovider) {
   this.dataprovider = dataprovider;
 
   this.pendingHeaderCallback = {};
@@ -25471,7 +25212,7 @@ function DataProviderDataGridDataSource(dataprovider) {
   this._registerEventListeners();
 
   DataProviderDataGridDataSource.superclass.constructor.call(this);
-}
+};
 
 oj.Object.createSubclass(DataProviderDataGridDataSource, oj.DataGridDataSource, 'DataProviderDataGridDataSource');
 
@@ -25488,28 +25229,48 @@ DataProviderDataGridDataSource.prototype._handlDataProviderMutationEvent = funct
   var adds = eventDetail.add;
   var i;
   if (adds != null) {
+    var addEvent = {};
+    addEvent.indexes = [];
+    addEvent.keys = [];
+    var dataArray = [];
+    var metadataArray = [];
+    var indexesArray = [];
     for (i = 0; i < adds.data.length; i++) {
-      var addEvent = {};
       addEvent.source = this;
       addEvent.operation = 'insert';
-      addEvent.keys = { row: adds.metadata[i].key, column: null };
-      addEvent.indexes = { row: adds.indexes[i], column: -1 };
-      addEvent.result = new SingleCellSet(adds.indexes[i], adds.metadata[i].key,
-        adds.data[i], this.columns);
-      this.handleEvent('change', addEvent);
+      addEvent.keys.push({ row: adds.metadata[i].key, column: null });
+      addEvent.indexes.push({ row: adds.indexes[i], column: -1 });
+
+      indexesArray.push(adds.indexes[i]);
+      dataArray.push(adds.data[i]);
+      metadataArray.push(adds.metadata[i]);
+
+      if (i === adds.data.length - 1 || adds.indexes[i + 1] !== adds.indexes[i] + 1) {
+        addEvent.result = new SingleCellSet(indexesArray, metadataArray,
+          dataArray, this.columns);
+        this.handleEvent('change', addEvent);
+        addEvent = {};
+        addEvent.indexes = [];
+        addEvent.keys = [];
+        dataArray = [];
+        metadataArray = [];
+        indexesArray = [];
+      }
     }
   }
 
   var removes = event.detail.remove;
   if (removes != null) {
+    var removeEvent = {};
+    removeEvent.source = this;
+    removeEvent.operation = 'delete';
+    removeEvent.keys = [];
+    removeEvent.indexes = [];
     for (i = 0; i < removes.data.length; i++) {
-      var removeEvent = {};
-      removeEvent.source = this;
-      removeEvent.operation = 'delete';
-      removeEvent.keys = { row: removes.metadata[i].key, column: null };
-      removeEvent.indexes = { row: removes.indexes[i], column: -1 };
-      this.handleEvent('change', removeEvent);
+      removeEvent.keys.push({ row: removes.metadata[i].key, column: null });
+      removeEvent.indexes.push({ row: removes.indexes[i], column: -1 });
     }
+    this.handleEvent('change', removeEvent);
   }
 
   var updates = event.detail.update;
@@ -25520,17 +25281,17 @@ DataProviderDataGridDataSource.prototype._handlDataProviderMutationEvent = funct
       updateEvent.operation = 'update';
       updateEvent.keys = { row: updates.metadata[i].key, column: null };
       updateEvent.indexes = { row: updates.indexes[i], column: -1 };
-      updateEvent.result = new SingleCellSet(updates.indexes[i], updates.metadata[i].key,
-        updates.data[i], this.columns);
+      updateEvent.result = new SingleCellSet([updates.indexes[i]], [updates.metadata[i]],
+        [updates.data[i]], this.columns);
       this.handleEvent('change', updateEvent);
     }
   }
 };
 
-function SingleCellSet(index, key, data, columns) {
-  this.index = index;
+function SingleCellSet(indexes, metadata, data, columns) {
+  this.indexes = indexes;
   this.data = data;
-  this.key = key;
+  this.metadata = metadata;
   this.columns = columns;
 }
 
@@ -25540,30 +25301,32 @@ SingleCellSet.prototype.getData = function (indexes) {
   Object.defineProperty(returnObj, 'data', {
     enumerable: true,
     get: function () {
-      return self.data[self.columns[indexes.column]];
+      return self.data[indexes.row - self.getStart('row')][self.columns[indexes.column]];
     },
     set: function (newValue) {
-      self.data[self.columns[indexes.column]] = newValue;
+      self.data[indexes.row - self.getStart('row')][self.columns[indexes.column]] = newValue;
     }
   });
   return returnObj;
 };
 
 SingleCellSet.prototype.getMetadata = function (indexes) {
-  var keys = { row: this.key, column: this.columns[indexes.column] };
-  return { keys: keys };
+  var self = this;
+  var metadata = self.metadata[indexes.row - self.getStart('row')];
+  metadata.keys = { row: metadata.key, column: self.columns[indexes.column] };
+  return metadata;
 };
 
 SingleCellSet.prototype.getStart = function (axis) {
   if (axis === 'row') {
-    return this.index;
+    return this.indexes[0];
   }
   return 0;
 };
 
 SingleCellSet.prototype.getCount = function (axis) {
   if (axis === 'row') {
-    return 1;
+    return this.data.length;
   } else if (axis === 'column') {
     return this.columns.length;
   }
@@ -25666,10 +25429,13 @@ DataProviderCellSet.prototype.getData = function (indexes) {
 };
 
 DataProviderCellSet.prototype.getMetadata = function (indexes) {
-  var keys = { row: this.results[indexes.row - this.rowStart].metadata.key,
+  var self = this;
+  var metadata = self.results[indexes.row - self.rowStart].metadata;
+  metadata.keys = { row: this.results[indexes.row - this.rowStart].metadata.key,
     column: this.columns[indexes.column] };
-  return { keys: keys };
+  return metadata;
 };
+
 
 DataProviderCellSet.prototype.getCount = function (axis) {
   if (axis === 'row') {
@@ -25889,7 +25655,7 @@ DataProviderHeaderSet.prototype.getCount = function () {
   return Math.max(0, this.end - this.start);
 };
 
-/* global DvtDataGrid:false, Context:false */
+/* global DvtDataGrid:false, Context:false, DataCollectionUtils:false */
 
 /**
  * Build the actions object which maps actions to the methods to invoke because of them
@@ -25898,8 +25664,8 @@ DvtDataGrid.prototype._setupActions = function () {
   this.actions = {
     ACTIONABLE: this._handleActionable,
     EXIT_ACTIONABLE: this._handleExitActionable,
-    TAB_NEXT_IN_CELL: this._handleActionableTab,
-    TAB_PREV_IN_CELL: this._handleActionablePrevTab,
+    TAB_NEXT_IN_CELL: DataCollectionUtils.handleActionableTab,
+    TAB_PREV_IN_CELL: DataCollectionUtils.handleActionablePrevTab,
     EDITABLE: this._handleEditable, // if editable go into edit, if not go into actionable
     EXIT_EDITABLE: this._handleExitEditable,
     DATA_ENTRY: this._handleDataEntry,
@@ -25908,7 +25674,6 @@ DvtDataGrid.prototype._setupActions = function () {
     EXIT_EDIT: this._handleExitEdit,
     CANCEL_EDIT: this._handleCancelEdit,
     NO_OP: this._handleNoOp,
-    EAT: this._handleEat, // eat event
     FOCUS_LEFT: this._handleFocusLeft,
     FOCUS_RIGHT: this._handleFocusRight,
     FOCUS_UP: this._handleFocusUp,
@@ -26008,40 +25773,6 @@ DvtDataGrid.prototype._handleActionable = function (event, element) {
 DvtDataGrid.prototype._handleExitActionable = function (event, element) {
   this._exitActionableMode();
   this._highlightActive();
-  return false;
-};
-
-/**
- * Handle a tab that is pressed when in actionable mode
- * @param {Event} event the event causing the actionable tab
- * @param {Element|undefined|null} element to unset actionable
- * @returns {boolean} true if we have shifted focus within the actionable cell
- */
-DvtDataGrid.prototype._handleActionableTab = function (event, element) {
-  var focusElems = this.getFocusableElementsInNode(element);
-  if (focusElems.length > 0 && event.target === focusElems[focusElems.length - 1]) {
-    // recycle to first focusable element in the cell
-    focusElems[0].focus();
-    return true;
-  }
-  // let the tab go to the next item in the cell on its own
-  return false;
-};
-
-/**
- * Handle a tab that is pressed when in actionable mode
- * @param {Event} event the event causing the actionable tab
- * @param {Element|undefined|null} element to unset actionable
- * @returns {boolean} true if we have shifted focus within the actionable cell
- */
-DvtDataGrid.prototype._handleActionablePrevTab = function (event, element) {
-  var focusElems = this.getFocusableElementsInNode(element);
-  if (focusElems.length > 0 && event.target === focusElems[0]) {
-    // recycle to last focusable element in the cell
-    focusElems[focusElems.length - 1].focus();
-    return true;
-  }
-  // let the tab go to the previous item in the cell on its own
   return false;
 };
 
@@ -26171,7 +25902,6 @@ DvtDataGrid.prototype._handleDataEntry = function (event, element) {
   var rerender = this.fireEvent('beforeEdit', details);
   if (rerender) {
     this._reRenderCell(element, 'edit', this.getMappedStyle('cellEdit'), this.m_editableClone);
-    this._enableAllFocusableElements(element);
     // focus on first focusable item in the cell
     this._overwriteFlag = true;
     if (this._setFocusToFirstFocusableElement(element)) {
@@ -26216,9 +25946,6 @@ DvtDataGrid.prototype._handleEdit = function (event, element) {
     var self = this;
     var busyContext = Context.getContext(element).getBusyContext();
     busyContext.whenReady().then(function () {
-      // enable all focusable elements
-      self._enableAllFocusableElements(element);
-
       // focus on first focusable item in the cell
       if (self._setFocusToFirstFocusableElement(element)) {
         self.m_currentMode = 'edit';
@@ -26274,20 +26001,19 @@ DvtDataGrid.prototype._leaveEditing = function (event, element, cancel) {
     }
   };
   if (!cancel) {
-    this._disableAllFocusableElements(element);
+    DataCollectionUtils.disableAllFocusableElements(element);
     this._highlightActive();
   }
   var rerender = this.fireEvent('beforeEditEnd', details);
   if (rerender) {
     this.m_currentMode = 'navigation';
-    this._disableAllFocusableElements(element);
+    DataCollectionUtils.disableAllFocusableElements(element);
     this._highlightActive();
     this._reRenderCell(element, 'navigation',
                        this.getMappedStyle('cellEdit'), this.m_editableClone);
   } else {
     rerender = false;
     this._scrollToActive(this.m_active);
-    this._enableAllFocusableElements(element);
     // focus on first focusable item in the cell
     this._setFocusToFirstFocusableElement(element);
   }
@@ -26660,17 +26386,6 @@ DvtDataGrid.prototype._handleNoOp = function (event, element) {
   return false;
 };
 
-/**
- * Enter editable mode
- * @param {Event} event the event triggering actionable mode
- * @param {Element} element to set actionable
- * @returns {boolean} false
- */
-// eslint-disable-next-line no-unused-vars
-DvtDataGrid.prototype._handleEat = function (event, element) {
-  return true;
-};
-
 /* global DvtDataGrid:false */
 
 /**
@@ -26713,7 +26428,8 @@ DvtDataGridKeyboardHandler.prototype.getAction = function (event, capabilities) 
           return 'TAB_PREV_IN_CELL';
         }
         return 'TAB_NEXT_IN_CELL';
-      } else if (!readOnly) {
+      }
+      if (!readOnly) {
         if (shiftKey) {
           return 'FOCUS_LEFT';
         }
@@ -26723,18 +26439,22 @@ DvtDataGridKeyboardHandler.prototype.getAction = function (event, capabilities) 
     case keyCodes.ENTER_KEY:
       if (cellOrHeader === 'column' && columnSort) {
         return 'SORT';
-      } else if ((!altKey && readOnly && currentMode === 'navigation') ||
-                 cellOrHeader !== 'cell') {
+      }
+      if ((!altKey && readOnly && currentMode === 'navigation') ||
+          cellOrHeader !== 'cell') {
         // enter actionable mode on headers since they cannot be edited
         return 'ACTIONABLE';
-      } else if (!readOnly && !altKey) {
+      }
+      if (!readOnly && !altKey) {
         if (shiftKey) {
           return 'FOCUS_UP';
         }
         return 'FOCUS_DOWN';
-      } else if (altKey && readOnly && currentMode === 'navigation') {
+      }
+      if (altKey && readOnly && currentMode === 'navigation') {
         return 'EDITABLE';
-      } else if (!readOnly) {
+      }
+      if (!readOnly) {
         if (currentMode === 'navigation' || currentMode === 'edit') {
           return 'EDIT';
         }
@@ -26743,12 +26463,15 @@ DvtDataGridKeyboardHandler.prototype.getAction = function (event, capabilities) 
     case keyCodes.ESC_KEY:
       if (currentMode === 'actionable') {
         return 'EXIT_ACTIONABLE';
-      } else if (activeMove) {
+      }
+      if (activeMove) {
         return 'CANCEL_REORDER';
-      } else if (!readOnly) {
+      }
+      if (!readOnly) {
         if (currentMode === 'navigation') {
           return 'EXIT_EDITABLE';
-        } else if (currentMode === 'edit') {
+        }
+        if (currentMode === 'edit') {
           return 'CANCEL_EDIT';
         }
       } else if (this.grid.m_discontiguousSelection) {
@@ -26759,16 +26482,19 @@ DvtDataGridKeyboardHandler.prototype.getAction = function (event, capabilities) 
       if (cellOrHeader.indexOf('row') !== -1 && selection &&
           ((selectionMode === 'cell' && multipleSelection) || selectionMode === 'row')) {
         return 'SELECT_ROW';
-      } else if (cellOrHeader.indexOf('column') !== -1 && selection &&
-                 selectionMode === 'cell' && multipleSelection) {
+      }
+      if (cellOrHeader.indexOf('column') !== -1 && selection &&
+          selectionMode === 'cell' && multipleSelection) {
         return 'SELECT_COLUMN';
-      } else if (cellOrHeader === 'cell') {
+      }
+      if (cellOrHeader === 'cell') {
         if (readOnly && currentMode === 'navigation') {
           if (ctrlKey && selection && selectionMode === 'cell' && multipleSelection) {
             return 'SELECT_COLUMN';
-          } else if (shiftKey && selection &&
-                     ((selectionMode === 'cell' && multipleSelection) ||
-                      selectionMode === 'row')) {
+          }
+          if (shiftKey && selection &&
+              ((selectionMode === 'cell' && multipleSelection) ||
+               selectionMode === 'row')) {
             return 'SELECT_ROW';
           }
         } else if (currentMode === 'navigation') {
@@ -26799,7 +26525,8 @@ DvtDataGridKeyboardHandler.prototype.getAction = function (event, capabilities) 
     case keyCodes.LEFT_KEY:
       if (currentMode === 'actionable') {
         return 'NO_OP';
-      } else if (currentMode !== 'edit') {
+      }
+      if (currentMode !== 'edit') {
         if (shiftKey && selection && selectionMode === 'cell' && multipleSelection) {
           return 'SELECT_EXTEND_LEFT';
         }
@@ -26812,7 +26539,8 @@ DvtDataGridKeyboardHandler.prototype.getAction = function (event, capabilities) 
     case keyCodes.UP_KEY:
       if (currentMode === 'actionable') {
         return 'NO_OP';
-      } else if (currentMode !== 'edit') {
+      }
+      if (currentMode !== 'edit') {
         if (shiftKey && selection && multipleSelection) {
           return 'SELECT_EXTEND_UP';
         }
@@ -26825,7 +26553,8 @@ DvtDataGridKeyboardHandler.prototype.getAction = function (event, capabilities) 
     case keyCodes.RIGHT_KEY:
       if (currentMode === 'actionable') {
         return 'NO_OP';
-      } else if (currentMode !== 'edit') {
+      }
+      if (currentMode !== 'edit') {
         if (shiftKey && selection && selectionMode === 'cell' && multipleSelection) {
           return 'SELECT_EXTEND_RIGHT';
         }
@@ -26838,7 +26567,8 @@ DvtDataGridKeyboardHandler.prototype.getAction = function (event, capabilities) 
     case keyCodes.DOWN_KEY:
       if (currentMode === 'actionable') {
         return 'NO_OP';
-      } else if (currentMode !== 'edit') {
+      }
+      if (currentMode !== 'edit') {
         if (shiftKey && selection && multipleSelection) {
           return 'SELECT_EXTEND_DOWN';
         }
@@ -26851,9 +26581,11 @@ DvtDataGridKeyboardHandler.prototype.getAction = function (event, capabilities) 
     case keyCodes.F2_KEY:
       if (cellOrHeader !== 'cell') {
         return 'ACTIONABLE';
-      } else if (readOnly && currentMode === 'navigation') {
+      }
+      if (readOnly && currentMode === 'navigation') {
         return 'EDITABLE';
-      } else if (!readOnly && currentMode === 'navigation') {
+      }
+      if (!readOnly && currentMode === 'navigation') {
         return 'EDIT';
       }
       break;
@@ -26901,7 +26633,8 @@ DvtDataGridKeyboardHandler.prototype.getAction = function (event, capabilities) 
       // eslint-disable-next-line no-fallthrough
     default:
       if ((keyCode < keyCodes.F1_KEY || keyCode > keyCodes.F15_KEY) &&
-          !readOnly && currentMode === 'navigation' && cellOrHeader === 'cell') {
+          !readOnly && currentMode === 'navigation' && cellOrHeader === 'cell' &&
+          !ctrlKey) {
         return 'DATA_ENTRY';
       }
       break;

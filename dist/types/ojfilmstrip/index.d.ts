@@ -16,12 +16,6 @@ export interface ojFilmStrip extends baseComponent<ojFilmStripSettableProperties
         tipArrowNextPage?: string;
         tipArrowPreviousPage?: string;
     };
-    onArrowPlacementChanged: ((event: JetElementCustomEvent<ojFilmStrip["arrowPlacement"]>) => any) | null;
-    onArrowVisibilityChanged: ((event: JetElementCustomEvent<ojFilmStrip["arrowVisibility"]>) => any) | null;
-    onCurrentItemChanged: ((event: JetElementCustomEvent<ojFilmStrip["currentItem"]>) => any) | null;
-    onLoopingChanged: ((event: JetElementCustomEvent<ojFilmStrip["looping"]>) => any) | null;
-    onMaxItemsPerPageChanged: ((event: JetElementCustomEvent<ojFilmStrip["maxItemsPerPage"]>) => any) | null;
-    onOrientationChanged: ((event: JetElementCustomEvent<ojFilmStrip["orientation"]>) => any) | null;
     addEventListener<T extends keyof ojFilmStripEventMap>(type: T, listener: (this: HTMLElement, ev: ojFilmStripEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojFilmStripSettableProperties>(property: T): ojFilmStrip[T];
@@ -31,6 +25,20 @@ export interface ojFilmStrip extends baseComponent<ojFilmStripSettableProperties
     setProperties(properties: ojFilmStripSettablePropertiesLenient): void;
     getItemsPerPage(): number;
     refresh(): void;
+}
+export namespace ojFilmStrip {
+    // tslint:disable-next-line interface-over-type-literal
+    type arrowPlacementChanged = JetElementCustomEvent<ojFilmStrip["arrowPlacement"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type arrowVisibilityChanged = JetElementCustomEvent<ojFilmStrip["arrowVisibility"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type currentItemChanged = JetElementCustomEvent<ojFilmStrip["currentItem"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type loopingChanged = JetElementCustomEvent<ojFilmStrip["looping"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxItemsPerPageChanged = JetElementCustomEvent<ojFilmStrip["maxItemsPerPage"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type orientationChanged = JetElementCustomEvent<ojFilmStrip["orientation"]>;
 }
 export interface ojFilmStripEventMap extends baseComponentEventMap<ojFilmStripSettableProperties> {
     'arrowPlacementChanged': JetElementCustomEvent<ojFilmStrip["arrowPlacement"]>;

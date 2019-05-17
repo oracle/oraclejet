@@ -3,14 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojdatasource-common'], function(oj, $, ko)
 {
+  "use strict";
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -168,7 +163,7 @@ oj.ArrayPagingDataSource.prototype.setPage = function (value, options) {
     handleEvent.call(this, oj.PagingModel.EventType.BEFOREPAGE,
                      { page: value, previousPage: this._page });
   } catch (err) {
-    return Promise.reject(null);
+    return Promise.reject(err);
   }
   this.pageSize = options.pageSize != null ? options.pageSize : this.pageSize;
   // eslint-disable-next-line no-param-reassign
@@ -183,11 +178,11 @@ oj.ArrayPagingDataSource.prototype.setPage = function (value, options) {
       handleEvent.call(self, oj.PagingModel.EventType.PAGE,
                        { page: self._page, previousPage: previousPage });
       resolve(null);
-    }, function () {
+    }, function (err) {
       // restore old page
       self._page = previousPage;
       self._startIndex = self._page * self.pageSize;
-      reject(null);
+      reject(err);
     });
   });
 };

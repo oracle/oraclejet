@@ -3,16 +3,532 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojattributegrouphandler', 'ojs/ojlocaledata', 'ojs/ojvalidation-base', 'ojs/ojvalidation-number', 'ojs/internal-deps/dvt/DvtToolkit', 'ojs/ojkeysetimpl', 'ojs/ojmap', 'ojs/ojlogger', 'ojdnd', 'promise'], 
-  function(oj, $, Context, Config, Components, attributeGroupHandler, LocaleData, __ValidationBase, val, dvt, KeySetImpl, ojMap, Logger)
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojattributegrouphandler', 'ojs/ojlocaledata', 'ojs/internal-deps/dvt/DvtToolkit', 'ojs/ojkeysetimpl', 'ojs/ojmap', 'ojs/ojlogger', 'ojdnd', 'promise'], 
+function(oj, $, Context, Config, Components, attributeGroupHandler, LocaleData, dvt, KeySetImpl, ojMap, Logger)
 {
-  
+  "use strict";
 /* global attributeGroupHandler:false */
 // bleed the 3 AttributeGroupHandler classes into the oj namespace for brackward compatibility
 oj.AttributeGroupHandler = attributeGroupHandler.AttributeGroupHandler;
 oj.ColorAttributeGroupHandler = attributeGroupHandler.ColorAttributeGroupHandler;
 oj.ShapeAttributeGroupHandler = attributeGroupHandler.ShapeAttributeGroupHandler;
+
+/**
+ * Copyright (c) 2018, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/* global Promise:false, Map:false, Symbol:false, KeySetImpl:false, ojMap:false */
+
+ /**
+ * Handler for DataProvider generated content for chart
+ * @constructor
+ * @ignore
+ */
+var DataProviderHandler = function (component, configs) {
+  this._component = component;
+  this._configMap = configs;
+  this._init();
+};
+
+// Subclass from oj.Object
+oj.Object.createSubclass(DataProviderHandler, oj.Object, 'DataProviderHandler');
+
+/**
+ * Initializes the instance.
+ * @private
+ */
+DataProviderHandler.prototype._init = function () {
+  this._dataProviderEventListeners = {};
+  this._keyDataMap = {};
+  this._fetchedData = {};
+  this._eventListeners = [];
+};
+
+/**
+ * Returns a promise that resolves into the fully fetched data from the data provider.
+ * This handles the use case where fetch parameter -1 doesn't return all the data
+ * @param {object} dataProvider The data provider
+ * @param {object} postprocessor The call back functon that should return a promise that resolves into row data of the shape {data: , key: }
+ * @param {string} dataProperty The property name of the data API
+ * @param {object} parentKey The parent key if the dataProvider is a child dataProvider
+ * @param {number} fetchDepth The current fetch depth
+ * @param {number} maxFetchDepth The maximum fetch depth
+ * @return {Promise} Returns a promise that resolves into the fully fetched data from the data provider.
+ * @private
+ * @instance
+ * @memberof oj.dvtBaseComponent
+ */
+DataProviderHandler.prototype._fetchCollection = function (dataProvider, postprocessor,
+  dataProperty, parentKey, fetchDepth, maxFetchDepth) {
+  var self = this;
+  var finalData = { data: [], keys: [] };
+
+  if (maxFetchDepth <= -1) {
+    return Promise.resolve(finalData);
+  }
+
+  var iterator = dataProvider.fetchFirst({ size: -1 })[Symbol.asyncIterator]();
+  var isTreeDataProvider = this.isTreeDataProvider(dataProvider);
+
+  // Helper function to handle case where fetch parameter -1 doesn�t return all the data
+  var chunkDataFetch = function (result) {
+    var nodePromises = [];
+    for (var i = 0; i < result.value.data.length; i++) {
+      var nodePromise = postprocessor({ data: result.value.data[i],
+        key: result.value.metadata[i].key }, fetchDepth);
+      nodePromises.push(nodePromise);
+    }
+    var chunkPromise = Promise.all(nodePromises).then(function (values) {
+      for (var ii = 0; ii < values.length; ii++) {
+        var data = values[ii].data;
+        var key = values[ii].key;
+        finalData.data.push(data);
+        finalData.keys.push(key);
+        self._keyDataMap[dataProperty].set(isTreeDataProvider ? key.value : key,
+          { data: data, key: key, parentKey: parentKey, depth: fetchDepth });
+      }
+    });
+    return chunkPromise.then(function () {
+      if (!result.done) {
+        return iterator.next().then(chunkDataFetch);
+      }
+
+      return Promise.resolve(finalData);
+    });
+  };
+
+  // create a Promise that will resolve to the fetched data
+  return iterator.next().then(chunkDataFetch);
+};
+
+/**
+ * Returns a function that returns a promise that resolves into row data of the shape {data: , key: }
+ * For tree data providers, data and keys will have children information
+ * @param {object} dataProvider The data provider
+ * @param {string} dataProperty The property name of the data API
+ * @param {oj.KeySet} expandedKeySet The key set with the expanded keys
+ * @param {number} maxFetchDepth The maximum fetch depth
+ * @return {object} Returns a function that returns a promise that resolves into row data of the shape {data: , key: }
+ * @private
+ * @instance
+ * @memberof oj.dvtBaseComponent
+ */
+DataProviderHandler.prototype._getDPPostProcessor = function (dataProvider, dataProperty,
+  expandedKeySet, maxFetchDepth) {
+  var self = this;
+  var isTreeDataProvider = this.isTreeDataProvider(dataProvider);
+  // eslint-disable-next-line no-param-reassign
+  maxFetchDepth = maxFetchDepth == null ? Number.MAX_VALUE : maxFetchDepth;
+
+  var treeDPPostProcessor = function (row, fetchDepth) {
+    var data = { value: row.data };
+    var key = { value: row.key };
+    if (fetchDepth < maxFetchDepth && expandedKeySet && expandedKeySet.has(key.value)) {
+      var childDataProvider = dataProvider.getChildDataProvider(key.value);
+      if (childDataProvider) {
+        return self._fetchCollection(childDataProvider, treeDPPostProcessor,
+          dataProperty, key.value, fetchDepth + 1).then(function (children) {
+            data.children = children.data;
+            key.children = children.keys;
+            return { data: data, key: key };
+          }
+        );
+      }
+    }
+    return Promise.resolve({ data: data, key: key });
+  };
+  var flatDPPostProcessor = function (value) {
+    return Promise.resolve(value);
+  };
+
+  return isTreeDataProvider ? treeDPPostProcessor : flatDPPostProcessor;
+};
+
+/**
+ * Returns a promise that resolves into all the fetched data from the data provider of the shape {data: [], keys: []}
+ * For non tree data providers, the data array will have all the data fetched in the shape that was returned by the data provider. This will be the same for the keys array.
+ * For tree data providers, the objects in the data and key arrays will have a value attribute and a childrenData/childrenKeys attribute. The value property will have the data returned by the data provider.
+ * @param {object} dataProvider The data provider
+ * @param {string} dataProperty The property name of the data API
+ * @param {boolean} isRoot If true, a cache for the data is used.
+ * @return {Promise} Returns a promise that resolves into the results of the data fetch with the shape {data: [], keys: []}
+ * @public
+ * @instance
+ * @memberof oj.dvtBaseComponent
+ */
+DataProviderHandler.prototype.fetchAllData = function (dataProvider, dataProperty, isRoot) {
+  if (isRoot && this._fetchedData[dataProperty]) {
+    return Promise.resolve(this._fetchedData[dataProperty]);
+  }
+
+  var configs = this._configMap[dataProperty];
+  this.clear(dataProperty, true);
+
+  var fetchedDataPromise = this._fetchCollection(dataProvider,
+    this._getDPPostProcessor(dataProvider, dataProperty, configs.expandedKeySet,
+      configs.maxFetchDepth),
+    dataProperty, null, 0, configs.maxFetchDepth).then(function (fetchedData) {
+      if (isRoot) {
+        this._fetchedData[dataProperty] = fetchedData;
+        this._addDPEventListeners(dataProvider, dataProperty);
+      }
+      return fetchedData;
+    }.bind(this));
+  return fetchedDataPromise;
+};
+
+/**
+ * Returns a function that will handle events triggered on the component's
+ * dataProvider(s) and update the component
+ * @private
+ * @instance
+ * @memberof oj.dvtBaseComponent
+ * @return {function(Event):void} A function that takes an event and updates a component
+ * using the data from the data provider it is binded to.
+ */
+DataProviderHandler.prototype._getDataProviderEventHandler = function (dataProperty) {
+  var self = this;
+
+  // returns indices corresponding to the data with the given keys
+  var keysToIndices = function (fullData, keys, isTreeDataProvider) {
+    if (!keys) {
+      return [];
+    }
+
+    var keySet = new KeySetImpl(keys);
+    var keyIndexMap = new Map();
+
+    var addToKeyIndexMap = function (dataKeys) {
+      for (var i = 0; i < dataKeys.length; i++) {
+        var key = isTreeDataProvider ? dataKeys[i].value : dataKeys[i];
+        var eventKey = keySet.get(key);
+        if (eventKey !== keySet.NOT_A_KEY) {
+          keyIndexMap.set(eventKey, i);
+        }
+
+        if (isTreeDataProvider && dataKeys[i].children) {
+          addToKeyIndexMap(dataKeys[i].children);
+        }
+      }
+    };
+
+    addToKeyIndexMap(fullData.keys);
+    var matchingIndices = [];
+    keys.forEach(function (keyValue) {
+      matchingIndices.push(keyIndexMap.get(keyValue));
+    });
+
+    return matchingIndices;
+  };
+
+  // rerenders the component with updated data
+  var renderUpdatedData = function (dataPromise) {
+    Promise.all([dataPromise]).then(function (values) {
+      // Reset cached data so that the templates would be reprocessed for the new data
+      self._fireEvent('clearState', { dataProperty: dataProperty });
+      self._fetchedData[dataProperty] = values[0];
+
+      // Rerender component
+      self._fireEvent('dataUpdated', { data: values[0] });
+    });
+  };
+
+  return function (event) {
+    self._fireEvent('notReady', { event: event });
+    // create a Promise that will resolve to the newly modified data
+    var dataProvider = this;
+    var isTreeDataProvider = self.isTreeDataProvider(dataProvider);
+    var keyDataMap = self._keyDataMap[dataProperty];
+    if (event.type === 'refresh') {
+      renderUpdatedData(self.fetchAllData(dataProvider, dataProperty));
+    } else if (event.type === 'mutate') {
+      var updateDetail = event.detail.update;
+      var removeDetail = event.detail.remove;
+      var addDetail = event.detail.add;
+      var componentData = self._fetchedData[dataProperty];
+
+      // used by add, update and delete to update the component's data
+      var updateComponentData = function (indices, detail, deleteCount, isDelete) {
+        var index = 0;
+        var promises = [];
+        var isUpdate = deleteCount === 1 && !isDelete;
+
+        detail.keys.forEach(function (keyValue) {
+          var dataPromise;
+          var dataValue = isDelete ? null : detail.data[index];
+          if (isTreeDataProvider) {
+            if (isUpdate) {
+              // update operation
+              var mappedData = keyDataMap.get(keyValue);
+              if (mappedData) { // only update data that has been previously fetched
+                mappedData.data.value = dataValue;
+                dataPromise = Promise.resolve({ data: mappedData.data,
+                  key: keyDataMap.get(keyValue).key });
+              }
+            } else {
+              // add or delete operation
+              var data = { value: dataValue };
+              var key = { value: keyValue };
+              var childDataProvider = dataProvider.getChildDataProvider(keyValue);
+              // fetch children data for add operations
+              if (childDataProvider && !isDelete) {
+                var childDataPromise = self.fetchAllData(childDataProvider,
+                  dataProperty);
+                dataPromise = childDataPromise.then(function (result) {
+                  data.children = result.data;
+                  key.children = result.keys;
+                  return { data: data, key: key };
+                });
+              } else {
+                dataPromise = Promise.resolve({ data: data, key: key });
+              }
+
+              if (!isDelete) {
+                var parentKey = detail.parentKeys ? detail.parentKeys[index] : null;
+                keyDataMap.set(key.value,
+                  { data: data, key: key, parentKey: parentKey });
+              }
+            }
+          } else {
+            dataPromise = Promise.resolve({ data: dataValue, key: keyValue });
+            keyDataMap.set(keyValue, { data: dataValue, key: keyValue });
+          }
+
+          promises.push(dataPromise);
+          index += 1;
+        });
+
+        return Promise.all(promises).then(function (values) {
+          for (var i = 0; i < values.length; i++) {
+            var key = isTreeDataProvider ? values[i].key.value : values[i].key;
+            var parentKey = keyDataMap.get(key).parentKey;
+            var data;
+            var keys;
+            if (parentKey) {
+              var mappedData = keyDataMap.get(parentKey);
+              // if node is a new parent
+              if (!mappedData.data.children && !isUpdate) {
+                mappedData.data.children = [];
+                mappedData.key.children = [];
+              }
+              data = mappedData.data.children;
+              keys = mappedData.key.children;
+            } else {
+              // top level operation
+              data = componentData.data;
+              keys = componentData.keys;
+            }
+
+            var _index;
+            if (isDelete) {
+              _index = indices[i] - i; // "- i" accounts for previously processed operations
+              data.splice(_index, deleteCount);
+              keys.splice(_index, deleteCount);
+            } else {
+              if (!isUpdate) { // Add Operation
+                // if no indices add to the end
+                var noIndex = indices.length === 0 || indices[i] == null;
+                _index = noIndex ? data.length : indices[i];
+              } else {
+                _index = indices[i];
+              }
+              data.splice(_index, deleteCount, values[i].data);
+              keys.splice(_index, deleteCount, values[i].key);
+            }
+          }
+          return componentData;
+        });
+      };
+
+      var getData = function (keys) {
+        return dataProvider.fetchByKeys({ keys: keys }).then(function (keyResult) {
+          var fetchedData = [];
+          if (keyResult.results.size > 0) {
+            keys.forEach(function (keyValue) {
+              fetchedData.push(keyResult.results.get(keyValue).data);
+            });
+          }
+          return fetchedData;
+        });
+      };
+
+      var indices;
+      var updatePromise = Promise.resolve();
+      if (updateDetail) {
+        indices = updateDetail.indexes || keysToIndices(componentData,
+          updateDetail.keys, isTreeDataProvider);
+
+        if (!Array.isArray(updateDetail.data)) { // data was not sent and should be fetched
+          updatePromise = getData(updateDetail.keys).then(function (fetchedData) {
+            var detail = Object.create(updateDetail, { data: { value: fetchedData } }); // add fetched data
+            return updateComponentData(indices, detail, 1);
+          });
+        } else {
+          updatePromise = updateComponentData(indices, updateDetail, 1);
+        }
+      }
+
+      var removePromise = updatePromise.then(function () {
+        if (removeDetail) {
+          indices = removeDetail.indexes || keysToIndices(componentData,
+            removeDetail.keys, isTreeDataProvider);
+          return updateComponentData(indices, removeDetail, 1, true);
+        }
+        return Promise.resolve();
+      });
+
+      var addPromise = removePromise.then(function () {
+        if (addDetail) {
+          // afterKeys is deprecated, but continue to support it until we can remove it.
+          // keysToIndices can take either array or set as its argument.
+          indices = addDetail.indexes || keysToIndices(componentData,
+            addDetail.addBeforeKeys ? addDetail.addBeforeKeys : addDetail.afterKeys,
+            isTreeDataProvider);
+
+          if (!Array.isArray(addDetail.data)) { // data was not sent and should be fetched
+            return getData(addDetail.keys).then(function (fetchedData) {
+              var detail = Object.create(addDetail, { data: { value: fetchedData } }); // add fetched data
+              return updateComponentData(indices, detail, 0);
+            });
+          }
+          return updateComponentData(indices, addDetail, 0);
+        }
+        return Promise.resolve();
+      });
+
+      addPromise.then(function () {
+        renderUpdatedData(Promise.resolve(componentData));
+      });
+    }
+  };
+};
+
+/**
+ * Checks for all potential dataProviders on the component and attaches event listeners
+ * @private
+ * @instance
+ * @memberof oj.dvtBaseComponent
+ */
+DataProviderHandler.prototype._addDPEventListeners = function (dataProvider, dataProperty) {
+  if (this._dataProviderEventListeners[dataProperty]) {
+    return;
+  }
+
+  var dataProviderEventHandler = this._getDataProviderEventHandler(dataProperty);
+  dataProvider.addEventListener('mutate', dataProviderEventHandler);
+  dataProvider.addEventListener('refresh', dataProviderEventHandler);
+  this._dataProviderEventListeners[dataProperty] = {
+    dataProvider: dataProvider,
+    listener: dataProviderEventHandler
+  };
+};
+
+/**
+ * Checks for all potential dataProviders on the component and removes event listeners
+ * and clears stored data in caches
+ * @private
+ * @instance
+ * @memberof oj.dvtBaseComponent
+ */
+DataProviderHandler.prototype.release = function (dataProperty) {
+  var clearListeners = function (dpProp) {
+    var info = this._dataProviderEventListeners[dpProp];
+    if (info) {
+      var dataProvider = info.dataProvider;
+      var dataProviderEventHandler = info.listener;
+      dataProvider.removeEventListener('mutate', dataProviderEventHandler);
+      dataProvider.removeEventListener('refresh', dataProviderEventHandler);
+      this._dataProviderEventListeners[dpProp] = null;
+    }
+  }.bind(this);
+
+  if (dataProperty) {
+    clearListeners(dataProperty);
+    this.clear(dataProperty);
+  } else {
+    var dataProperties = Object.keys(this._dataProviderEventListeners);
+    for (var i = 0; i < dataProperties.length; i++) {
+      clearListeners(dataProperties[i]);
+    }
+    this.clear();
+  }
+};
+
+/**
+ * Creates a callback function that will be used to fetch additional data from data provider
+ * Any sub class implementation of this should call this._super
+ * @param {string} dataProperty The property name of the data API
+ * @param {object} rootDataProvider The root data provider to fetch from
+ * @param {object} nodeKey The parent key
+ * @param {oj.KeySet} expandedKeySet The key set with the expanded keys
+ * @return {Function} fetch data callback that uses root data provider, expanded key set, node data and node key
+ * to retrieve child nodes for the specified parent node
+ * @public
+ * @instance
+ * @memberof oj.dvtBaseComponent
+ */
+DataProviderHandler.prototype.fetchChildrenData = function (dataProperty, rootDataProvider,
+  nodeKey, expandedKeySet) {
+  // Updates cached the data provider state
+  var updateDataProviderState = function (parentKey, data, keys) {
+    this._keyDataMap[dataProperty].get(parentKey).data.children = data;
+    this._keyDataMap[dataProperty].get(parentKey).key.children = keys;
+  }.bind(this);
+
+  var childDataProvider = rootDataProvider.getChildDataProvider(nodeKey);
+  if (childDataProvider) {
+    var maxFetchDepth = this._configMap[dataProperty].maxFetchDepth;
+    var fetchLevel = this._keyDataMap[dataProperty].get(nodeKey).depth;
+    var treeDPPostProcessor = this._getDPPostProcessor(rootDataProvider, dataProperty,
+      expandedKeySet, maxFetchDepth);
+    var childInfoPromise = this._fetchCollection(childDataProvider,
+      treeDPPostProcessor, dataProperty, nodeKey, fetchLevel, maxFetchDepth);
+    return childInfoPromise.then(function (values) {
+      // update cached data provider state
+      updateDataProviderState(nodeKey, values.data, values.keys);
+      return values;
+    });
+  }
+  return Promise.resolve({ data: [], keys: [] });
+};
+
+// todo: function description
+DataProviderHandler.prototype.clear = function (dataProperty, isReset) {
+  if (dataProperty && isReset) {
+    // eslint-disable-next-line new-cap
+    this._keyDataMap[dataProperty] = this._keyDataMap[dataProperty] || new ojMap();
+    this._fireEvent('reset', { dataProperty: dataProperty });
+  } else if (dataProperty) {
+    this._fetchedData[dataProperty] = null;
+  } else {
+    this._fetchedData = {};
+    this._keyDataMap = {};
+  }
+};
+
+// todo: function description
+DataProviderHandler.prototype.isDataProvider = function (dataprovider) {
+  return oj.DataProviderFeatureChecker.isDataProvider(dataprovider);
+};
+
+// todo: function description
+DataProviderHandler.prototype.isTreeDataProvider = function (dataprovider) {
+  return oj.DataProviderFeatureChecker.isTreeDataProvider(dataprovider);
+};
+
+// todo: function description
+DataProviderHandler.prototype.addEventListener = function (listener) {
+  this._eventListeners.push(listener);
+};
+
+// todo: function description
+DataProviderHandler.prototype._fireEvent = function (type, detail) {
+  for (var i = 0; i < this._eventListeners.length; i++) {
+    this._eventListeners[i]({ type: type, detail: detail });
+  }
+};
 
 /**
  * Utility class with functions for parsing common DVT attributes.
@@ -293,7 +809,7 @@ DvtStyleProcessor.processStyles = function (element, options, componentClasses, 
     if (!innerDummyDiv && !outerDummyDiv && hasUncachedProperty) {
       // Add the component style classes to a hidden dummy div
       outerDummyDiv = $(document.createElement('div'));
-      outerDummyDiv.attr('style', 'display:none;');
+      outerDummyDiv.css('display', 'none');
       element.append(outerDummyDiv); // @HTMLUpdateOK
       outerDummyDiv.attr('class', styleClasses);
       $(document.body).append(outerDummyDiv); // @HTMLUpdateOK
@@ -462,11 +978,421 @@ DvtStyleProcessor._hasUncachedProperty = function (styleClass, definitions) {
 };
 
 /**
+ * Copyright (c) 2018, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/* global Config:false, Promise:false, ojMap:false, Logger:false */
+
+ /**
+ * Handler for DataProvider generated content for chart
+ * @constructor
+ * @ignore
+ */
+var TemplateHandler = function (component, configs) {
+  this._component = component;
+  this._configMap = configs;
+  this._init();
+};
+
+// Subclass from oj.Object
+oj.Object.createSubclass(TemplateHandler, oj.Object, 'TemplateHandler');
+
+/**
+ * Initializes the instance.
+ * @private
+ */
+TemplateHandler.prototype._init = function () {
+  this._templateEnginePromise = null;
+  this.getTemplateEngine();
+  this._templates = this.getTemplates();
+  this._templateResults = {};
+  this._templateNodeData = {};
+  this._componentResults = {}; // this is for components that also do their own processing
+  this._eventListeners = [];
+  this._queueNextEvent = true;
+  this._eventUpdates = [];
+  this._templatePropertyMap = {};
+  this._propertyValidatorMap = {};
+};
+
+
+/**
+ * Returns a promise that resolves into a template engine
+ * @return {Promise} Returns a promise that resoves into a template engine
+ * @public
+ * @instance
+ * @memberof oj.dvtBaseComponent
+ */
+TemplateHandler.prototype.getTemplateEngine = function () {
+  if (this._templateEnginePromise) {
+    return this._templateEnginePromise;
+  }
+
+  this._templateEnginePromise = new Promise(function (resolve) {
+    Config.__getTemplateEngine().then(
+        function (engine) {
+          resolve(engine);
+        },
+        function (reason) {
+          throw new Error('Error loading template engine: ' + reason);
+        }
+    );
+  });
+
+  return this._templateEnginePromise;
+};
+
+/**
+ * Gets the inline template elements of the component
+ * @return {Object} Returns an object containing the inline template elements of the custom element component.
+ * @public
+ * @ignore
+ * @instance
+ * @memberof oj.dvtBaseComponent
+ */
+TemplateHandler.prototype.getTemplates = function () {
+  return oj.BaseCustomElementBridge.getSlotMap(this._component.element[0]);
+};
+
+/**
+ * Returns a function that validates the value for a property for a given element.
+ * @param {node} element The template element name
+ * @param {string} elementName The custom element name
+ * @return {Function} A function that validates the value for a property. It takes in the property path and the value of the topmost property
+ * @private
+ * @ignore
+ * @instance
+ * @memberof oj.dvtBaseComponent
+ */
+TemplateHandler.prototype._getPropertyValidator = function (element, elementName) {
+  if (!element) {
+    return null;
+  }
+
+  var propertyValidator = this._propertyValidatorMap[elementName];
+  if (propertyValidator) {
+    return propertyValidator;
+  }
+
+  var propsMetadata = oj.CustomElementBridge.getMetadata(elementName);
+  var templateElement = element.content ? element.content.children[0] : element.childNodes[1];
+  var metadataCache = {};
+  propertyValidator = function (propertyPath, value) {
+    var property = propertyPath.join('.');
+    var metadata = metadataCache[property];
+    if (!metadata) {
+      metadata = propsMetadata;
+      // Get sub property metadata if needed
+      for (var i = 0; i < propertyPath.length; i++) {
+        metadata = metadata.properties[propertyPath[i]];
+      }
+      metadataCache[property] = metadata;
+    }
+
+    oj.BaseCustomElementBridge.checkEnumValues(templateElement, property,
+      value, metadata);
+
+    // TODO support checking for null values once we generate metadata from jsDoc and have accurate info
+    // about component support for undefined/null
+    if (value != null) {
+      oj.BaseCustomElementBridge.checkType(templateElement, property,
+        value, metadata);
+    }
+  };
+  this._propertyValidatorMap[elementName] = propertyValidator;
+  return propertyValidator;
+};
+
+// todo: function description
+TemplateHandler.prototype._processAliasedPropertyNames = function (dataProperty,
+  templateElementName, data) {
+  var getAliasedPropertyNames = this._configMap[dataProperty].getAliasedPropertyNames;
+  if (getAliasedPropertyNames) {
+    var aliasedPropertyMap = getAliasedPropertyNames(templateElementName); // todo: maybe cache this for perfomance
+    var aliasedProperties = Object.keys(aliasedPropertyMap);
+    for (var i = 0; i < aliasedProperties.length; i++) {
+      var elementProp = aliasedProperties[i];
+      var dataProp = aliasedPropertyMap[elementProp];
+      // eslint-disable-next-line no-param-reassign
+      data[dataProp] = data[elementProp];
+      // eslint-disable-next-line no-param-reassign
+      data[elementProp] = undefined;
+    }
+  }
+  return data;
+};
+
+// todo: function description
+TemplateHandler.prototype._getTemplateElementProperties = function (templateElementName) {
+  var templateTopProperties = this._templatePropertyMap[templateElementName];
+  if (!templateTopProperties) {
+    templateTopProperties = this._component.getElementPropertyNames(templateElementName);
+    this._templatePropertyMap[templateElementName] = templateTopProperties;
+  }
+  return templateTopProperties;
+};
+
+// todo: function description
+TemplateHandler.prototype.processNodeTemplate = function (dataProperty,
+  templateEngine, template, templateElementName, context, nodeKey) {
+  var config = this._configMap[dataProperty];
+  var currentTemplate = template.getAttribute('slot');
+  var alias = this._component.options.as;
+  var parentElement = this._component.element[0];
+  var properties = this._getTemplateElementProperties(templateElementName);
+  var getTemplateName = typeof config.templateName === 'string' ? function () { return config.templateName; } : config.templateName;
+  var validator = this._getPropertyValidator(template, templateElementName);
+  var isMainTemplate = currentTemplate === getTemplateName(); // Check if this is the main template for the data property
+  var cacheKey = isMainTemplate ? dataProperty : currentTemplate;
+  // Set up for template event listeners
+  var getTemplateEventHandler = function (_nodeKey) {
+    return function (value) {
+      var aliasedValue = this._processAliasedPropertyNames(dataProperty, templateElementName,
+        value);
+      var nodeData = this._templateNodeData[cacheKey];
+      oj.CollectionUtils.copyInto(nodeData.get(_nodeKey).data, aliasedValue);
+      this._eventUpdates.push({ key: nodeKey, data: aliasedValue });
+
+      if (this._queueNextEvent) {
+        this._fireEvent('notReady');
+        templateEngine.getThrottlePromise().then(function () {
+          // Rerender component
+          this._fireEvent('dataUpdated', {
+            dataProperty: dataProperty,
+            templateName: currentTemplate,
+            data: this._eventUpdates.slice(0)
+          });
+          this._queueNextEvent = true;
+          this._eventUpdates = [];
+        }.bind(this));
+      }
+      this._queueNextEvent = false;
+    }.bind(this);
+  }.bind(this);
+
+  var resolvedNode = templateEngine.resolveProperties(parentElement, template,
+    templateElementName, properties, context, alias, validator);
+  resolvedNode.subscribe(getTemplateEventHandler(nodeKey));
+  var aliasedData = this._processAliasedPropertyNames(dataProperty, templateElementName,
+    resolvedNode.peek());
+  var processedDataObj = {
+    data: aliasedData,
+    node: resolvedNode,
+    context: context
+  };
+
+  if (!this._templateNodeData[cacheKey]) {
+    // eslint-disable-next-line new-cap
+    this._templateNodeData[cacheKey] = new ojMap();
+  }
+  this._templateNodeData[cacheKey].set(nodeKey, processedDataObj);
+  return processedDataObj.data;
+};
+
+/**
+ * Processes the templates using the data provider's data and returns a map of values to options to be updated.
+ * To use the default behaviour the component should override the _GetSimpleDataProviderConfigs.
+ * Any sub class implementation of this should call this._super
+ * The return's data has a _itemData that has the data for that item from the data provider.
+ * @param {string} dataProperty The property name of the data API to lookup templates for
+ * @param {Object} data The fetch results of the data provider. Contains the data and keys
+ * @param {Object} templateEngine The template engine to be used to process templates
+ * @param {boolean=} isTreeData True is the data has a tree structure, false if otherwise
+ * @param {Object=} parentKey Parent key to be used for template context
+ * @param {boolean} isRoot If true, a cache for the results is used.
+ * @return {Object} An object with paths of components options to be updated and
+ *                   their corresponding values.eg: {paths: [], values: []}
+ * @public
+ * @instance
+ * @memberof oj.dvtBaseComponent
+ */
+TemplateHandler.prototype.processTemplates = function (dataProperty, data, templateEngine,
+  isTreeData, parentKey, isRoot, updateChildren) {
+  if (isRoot && this._templateResults[dataProperty]) {
+    return this._templateResults[dataProperty];
+  }
+
+  var config = this._configMap[dataProperty];
+  var self = this;
+  var paths;
+  var pathValues;
+
+  if (config) {
+    paths = [];
+    pathValues = [];
+    var getTemplateName = typeof config.templateName === 'string' ? function () { return config.templateName; } : config.templateName;
+    var getTemplateElementName = typeof config.templateElementName === 'string' ? function () { return config.templateElementName; } : config.templateElementName;
+    var resultPath = config.resultPath;
+    var parentElement = this._component.element[0];
+    var processChildrenData = config.processChildrenData;
+    var processOptionData = config.processOptionData ||
+      function (optionData) { return optionData; };
+    var nodeDataMap = self._templateNodeData[dataProperty];
+
+    if (getTemplateName && getTemplateElementName && resultPath) {
+      // read attributes off nodes corresponding to the nodeKey
+      var processDatum = function (nodeData, nodeKey, context, template,
+        templateElementName) {
+        var processedDatum;
+        try {
+          if (template) {
+            processedDatum = self.processNodeTemplate(dataProperty, templateEngine,
+              template[0], templateElementName, context, nodeKey);
+          } else {
+            processedDatum = Object.create(nodeData);
+            processedDatum._noTemplate = true;
+            processedDatum._dvtNoClone = true;
+            nodeDataMap.set(nodeKey, { data: processedDatum, context: context });
+          }
+          processedDatum.id = nodeKey;
+          processedDatum._itemData = nodeData;
+        } catch (error) {
+          Logger.error(error);
+        }
+        return processedDatum;
+      };
+
+      var processData = function (collection, parentData, _parentKey) {
+        var _data = collection.data;
+        var _keys = collection.keys;
+        var processedData = [];
+        for (var i = 0; i < _data.length; i++) {
+          var nodeData = isTreeData ? _data[i].value : _data[i];
+          var nodeKey = isTreeData ? _keys[i].value : _keys[i];
+          var context = {
+            data: nodeData,
+            key: nodeKey,
+            index: i,
+            componentElement: parentElement
+          };
+          if (isTreeData) {
+            context.parentData = parentData;
+            context.parentKey = _parentKey;
+          }
+
+          var templateName = getTemplateName(_data[i]);
+          var templateElementName = getTemplateElementName(_data[i]);
+          var template = self._templates[templateName];
+
+          var processedDatum = processDatum(nodeData, nodeKey, context,
+            template, templateElementName);
+          if (isTreeData && _data[i].children) { // more complex for legend need to mutate the data itself
+            var newParentData = parentData.slice(0);
+            newParentData.push(nodeData);
+            var childCollection = { data: _data[i].children, keys: _keys[i].children };
+            var processedChildren = processData(childCollection, newParentData, nodeKey);
+            if (processChildrenData) {
+              processChildrenData(processedDatum, _data[i], processedChildren);
+            } else {
+              processedDatum[resultPath] = processedChildren;
+            }
+          }
+          processedData.push(processedDatum);
+        }
+        return processedData;
+      };
+
+      paths.push(resultPath);
+
+      var parentData;
+      if (parentKey && nodeDataMap.has(parentKey)) {
+        parentData = nodeDataMap.get(parentKey).context.parentData
+          .concat(nodeDataMap.get(parentKey).context.data);
+      }
+      var optionData = processData(data, parentData || [], parentKey);
+      pathValues.push(processOptionData(optionData));
+    }
+
+    if (updateChildren) {
+      nodeDataMap.get(parentKey).data[resultPath] = pathValues[0];
+    }
+  }
+
+  var templateResults = { paths: paths, values: pathValues };
+  if (isRoot) {
+    this._templateResults[dataProperty] = templateResults;
+  }
+  return templateResults;
+};
+
+/**
+ * Checks for all potential dataProvider templates on the component and removes event listeners
+ * and clears stored data in caches
+ * @public
+ * @instance
+ * @memberof oj.dvtBaseComponent
+ */
+TemplateHandler.prototype.release = function (dataProperty) {
+  // Remove data provider template event listeners
+  var clearListeners = function (prop) {
+    var valueMap = this._templateNodeData[prop];
+    if (valueMap) {
+      valueMap.forEach(function (value) {
+        if (value.node) {
+          value.node.dispose();
+        }
+      });
+      // eslint-disable-next-line new-cap
+      this._templateNodeData[prop] = new ojMap();
+    }
+  }.bind(this);
+
+  if (dataProperty) {
+    clearListeners(dataProperty);
+    this.clear(dataProperty);
+  } else {
+    var dataProperties = Object.keys(this._templateNodeData);
+    for (var i = 0; i < dataProperties.length; i++) {
+      clearListeners(dataProperties[i]);
+    }
+    this.clear();
+  }
+};
+
+// todo: function description
+TemplateHandler.prototype.clear = function (dataProperty, isReset) {
+  if (dataProperty && isReset) {
+    // eslint-disable-next-line new-cap
+    this._templateNodeData[dataProperty] = this._templateNodeData[dataProperty] || new ojMap();
+  } else if (dataProperty) {
+    this._templateResults[dataProperty] = null;
+    this._componentResults[dataProperty] = null;
+  } else {
+    this._templateResults = {};
+    this._componentResults = {};
+    this._templateNodeData = {};
+  }
+};
+
+// todo: function description
+TemplateHandler.prototype.getComponentResults = function (dataProperty) {
+  return this._componentResults[dataProperty];
+};
+
+// todo: function description
+TemplateHandler.prototype.setComponentResults = function (dataProperty, results) {
+  this._componentResults[dataProperty] = results;
+};
+
+// todo: function description
+TemplateHandler.prototype.addEventListener = function (listener) {
+  this._eventListeners.push(listener);
+};
+
+// todo: function description
+TemplateHandler.prototype._fireEvent = function (type, detail) {
+  for (var i = 0; i < this._eventListeners.length; i++) {
+    this._eventListeners[i]({ type: type, detail: detail });
+  }
+};
+
+/**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
 
-/* global Config:false, Context:false, Promise:false, Map:false, Symbol:false, dvt:false, DvtJsonPath:false, DvtStyleProcessor:false, KeySetImpl:false, ojMap:false, Components:false, Set:false, LocaleData:false, __ValidationBase:false, Logger:false */
+/* global Config:false, Context:false, Promise:false, Map:false, Symbol:false, dvt:false, DvtJsonPath:false, DvtStyleProcessor:false, KeySetImpl:false, ojMap:false, Components:false, Set:false, LocaleData:false, __ValidationBase:false, Logger:false, TemplateHandler:false , DataProviderHandler:false*/
 
 /**
  * @ojcomponent oj.dvtBaseComponent
@@ -484,6 +1410,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
      * to render the element at the new size.
      * @expose
      * @name trackResize
+     * @ojshortdesc Defines whether the element will automatically render in response to changes in size. See the Help documentation for more information.
      * @memberof oj.dvtBaseComponent
      * @instance
      * @type {string}
@@ -512,12 +1439,15 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     this._renderCount = 0;
     this._numDeferredObjs = 0;
     this._optionsCopy = null;
-    this._templateMap = {};
-    this._dataProviderState = {};
-    this._treeKeyDataMap = {};
-    this._dpNodeContextData = {};
-    this._dpNodeValueData = {};
     this._dataValuePromise = {};
+    this._templateMap = {};
+    this._TemplateHandler = new TemplateHandler(this, this._GetSimpleDataProviderConfigs());
+    this._DataProviderHandler = new DataProviderHandler(this,
+      this._GetSimpleDataProviderConfigs());
+
+    // Set up data provider event handlers
+    this._DataProviderHandler.addEventListener(this._GetDPEventHandler());
+    this._TemplateHandler.addEventListener(this._GetDPEventHandler());
 
     // Append the component style classes to the element
     var componentStyles = this._GetComponentStyleClasses();
@@ -527,8 +1457,10 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
 
     // Create a reference div within the element to be used for computing relative event coords.
     this._referenceDiv = $(document.createElement('div'));
-    this._referenceDiv.attr('style', 'visibility:hidden;');
+    this._referenceDiv.css('visibility', 'hidden');
     this.element.append(this._referenceDiv); // @HTMLUpdateOK
+
+    dvt.Agent.setAgentInfo(oj.AgentUtils.getAgentInfo());
 
     // Create the dvt.Context, which creates the svg element and adds it to the DOM.
     var parentElement = this.element[0].parentElement;
@@ -542,6 +1474,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     this._context.oj = oj;
     this._context.KeySetImpl = KeySetImpl;
     this._context.ojMap = ojMap;
+    this._context.LocaleData = LocaleData;
     this._context.dataProviderProps = Object.keys(this._GetSimpleDataProviderConfigs());
 
     // Set the reading direction on the context
@@ -550,8 +1483,6 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     // Set the tooltip and datatip callbacks and div style classes
     this._context.setTooltipAttachedCallback(Components.subtreeAttached);
     this._context.setOverlayAttachedCallback(Components.subtreeAttached);
-    this._context.setTooltipStyleClass('oj-dvt-tooltip');
-    this._context.setDatatipStyleClass('oj-dvt-datatip');
 
     // Pass back method for cleaning up renderer context
     this._context.setFixContextCallback(this._FixRendererContext.bind(this));
@@ -569,20 +1500,8 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     // Add the component to the display tree of the rendering context.
     this._context.getStage().addChild(this._component);
 
-    // If requireJS is not used, can't rely on internationalization modules.
-    if (dvt.requireJS !== false) {
-      // Set the helpers for locale support
-      this._setLocaleHelpers();
-
-      // Retrieve and apply the translated strings onto the component bundle
-      this._processTranslations();
-    }
-
     // Load component resources
     this._LoadResources();
-
-    // Initialize array to store data provider listeners
-    this._dataProviderEventListeners = [];
 
     // Pass the environment and widget constructor through the options for JET specific behavior
     this.options._environment = 'jet';
@@ -604,6 +1523,51 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     // Render the component
     this._Render();
   },
+  /**
+   * The function sets Locale helpers (various converter instances for Numeric, Date or TimeZone data types) on the DvtContext object.
+   * @protected
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   * @param {Object} validationBase - The return value of the ojvalidation-base module
+   * @return {null}
+   */
+  _SetLocaleHelpers: function (validationBase) {
+    // If requireJS is not used, can't rely on internationalization modules.
+    if (dvt.requireJS !== false) {
+      var helpers = {};
+
+      // Number converter factory for use in formatting default strings
+      helpers.numberConverterFactory = validationBase.Validation.getDefaultConverterFactory('number');
+
+      // Iso to date converter to be called for JS that requires Dates
+      helpers.isoToDateConverter = function (input) {
+        if (typeof (input) === 'string') {
+          var dateWithTimeZone = validationBase.IntlConverterUtils.isoToDate(input);
+          var localIsoTime = dateWithTimeZone.toJSON() ?
+          validationBase.IntlConverterUtils.dateToLocalIso(dateWithTimeZone) : input;
+          return validationBase.IntlConverterUtils.isoToLocalDate(localIsoTime);
+        }
+        return input;
+      };
+
+      // Date to iso converter to be called before passing to the date time converter
+      helpers.dateToIsoWithTimeZoneConverter = function (input) {
+        if (input instanceof Date) {
+          var timeZoneOffest = -1 * input.getTimezoneOffset();
+          var offsetSign = (timeZoneOffest >= 0 ? '+' : '-');
+          var offsetHour = Math.floor(Math.abs(timeZoneOffest) / 60);
+          var offsetMinutes = Math.abs(timeZoneOffest) % 60;
+          var isoTimeZone = offsetSign +
+            (offsetHour.toString().length !== 2 ? '0' + offsetHour : offsetHour) + ':' +
+            (offsetMinutes.toString().length !== 2 ? offsetMinutes + '0' : offsetMinutes);
+          return validationBase.IntlConverterUtils.dateToLocalIso(input) + isoTimeZone;
+        }
+        return input;
+      };
+
+      this._context.setLocaleHelpers(helpers);
+    }
+  },
 
   //* * @inheritdoc */
   refresh: function () {
@@ -611,9 +1575,6 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
 
     // Update the reading direction on the context
     this._context.setReadingDirection(this._GetReadingDirection());
-
-    // Retrieve and apply the translated strings onto the component bundle
-    this._processTranslations();
 
     // Render the component with any changes
     this._Render();
@@ -721,78 +1682,9 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     return [];
   },
 
-  /**
-   * Returns a map containing keys corresponding to the string ids in ojtranslations.js and values corresponding to the
-   * toolkit constants for the DvtBundle objects.  This map must be guaranteed to be a new instance so that subclasses can
-   * add their translations to it.
-   * @return {Object}
-   * @protected
-   * @instance
-   * @memberof oj.dvtBaseComponent
-   */
-  _GetTranslationMap: function () {
-    // The translations are stored on the options object.
-    var translations = this.options.translations;
-
-    // Create the mapping to return.
-    var ret = {
-      'DvtUtilBundle.CLEAR_SELECTION': translations.labelClearSelection,
-      'DvtUtilBundle.COLON_SEP_LIST': translations.labelAndValue,
-      'DvtUtilBundle.INVALID_DATA': translations.labelInvalidData,
-      'DvtUtilBundle.NO_DATA': translations.labelNoData,
-
-      // Accessibility
-      'DvtUtilBundle.DATA_VISUALIZATION': translations.labelDataVisualization,
-      'DvtUtilBundle.STATE_SELECTED': translations.stateSelected,
-      'DvtUtilBundle.STATE_UNSELECTED': translations.stateUnselected,
-      'DvtUtilBundle.STATE_MAXIMIZED': translations.stateMaximized,
-      'DvtUtilBundle.STATE_MINIMIZED': translations.stateMinimized,
-      'DvtUtilBundle.STATE_EXPANDED': translations.stateExpanded,
-      'DvtUtilBundle.STATE_COLLAPSED': translations.stateCollapsed,
-      'DvtUtilBundle.STATE_ISOLATED': translations.stateIsolated,
-      'DvtUtilBundle.STATE_HIDDEN': translations.stateHidden,
-      'DvtUtilBundle.STATE_VISIBLE': translations.stateVisible,
-
-      'DvtUtilBundle.SCALING_SUFFIX_THOUSAND': translations.labelScalingSuffixThousand,
-      'DvtUtilBundle.SCALING_SUFFIX_MILLION': translations.labelScalingSuffixMillion,
-      'DvtUtilBundle.SCALING_SUFFIX_BILLION': translations.labelScalingSuffixBillion,
-      'DvtUtilBundle.SCALING_SUFFIX_TRILLION': translations.labelScalingSuffixTrillion,
-      'DvtUtilBundle.SCALING_SUFFIX_QUADRILLION': translations.labelScalingSuffixQuadrillion
-    };
-
-    // Add abbreviated month strings
-    var monthNames = LocaleData.getMonthNames('abbreviated');
-    ret['DvtUtilBundle.MONTH_SHORT_JANUARY'] = monthNames[0];
-    ret['DvtUtilBundle.MONTH_SHORT_FEBRUARY'] = monthNames[1];
-    ret['DvtUtilBundle.MONTH_SHORT_MARCH'] = monthNames[2];
-    ret['DvtUtilBundle.MONTH_SHORT_APRIL'] = monthNames[3];
-    ret['DvtUtilBundle.MONTH_SHORT_MAY'] = monthNames[4];
-    ret['DvtUtilBundle.MONTH_SHORT_JUNE'] = monthNames[5];
-    ret['DvtUtilBundle.MONTH_SHORT_JULY'] = monthNames[6];
-    ret['DvtUtilBundle.MONTH_SHORT_AUGUST'] = monthNames[7];
-    ret['DvtUtilBundle.MONTH_SHORT_SEPTEMBER'] = monthNames[8];
-    ret['DvtUtilBundle.MONTH_SHORT_OCTOBER'] = monthNames[9];
-    ret['DvtUtilBundle.MONTH_SHORT_NOVEMBER'] = monthNames[10];
-    ret['DvtUtilBundle.MONTH_SHORT_DECEMBER'] = monthNames[11];
-
-    return ret;
-  },
-
   //* * @inheritdoc */
   _VerifyConnectedForSetup: function () {
     return true;
-  },
-
-  /**
-   * Sets up resources needed by the component
-   * @instance
-   * @override
-   * @protected
-   * @memberof oj.dvtBaseComponent
-   */
-  _SetupResources: function () {
-    this._super();
-    this._addDataProviderEventListeners();
   },
 
   /**
@@ -804,59 +1696,11 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
    */
   _ReleaseResources: function () {
     this._super();
-    this._removeDataProviderEventListeners();
-  },
-
-  /**
-   * Called to process the translated strings for this widget.
-   * @private
-   */
-  _processTranslations: function () {
-    // Retrieve the map of translation keys + DvtBundle identifiers
-    var translationMap = this._GetTranslationMap();
-
-    // Register with the DvtBundle
-    dvt.Bundle.addLocalizedStrings(translationMap);
-  },
-
-  /**
-   * @private
-   * @instance
-   * @memberof! oj.dvtBaseComponent
-   */
-  _setLocaleHelpers: function () {
-    var helpers = {};
-
-    // Number converter factory for use in formatting default strings
-    helpers.numberConverterFactory = __ValidationBase.Validation.getDefaultConverterFactory('number');
-
-    // Iso to date converter to be called for JS that requires Dates
-    helpers.isoToDateConverter = function (input) {
-      if (typeof (input) === 'string') {
-        var dateWithTimeZone = __ValidationBase.IntlConverterUtils.isoToDate(input);
-        var localIsoTime = dateWithTimeZone.toJSON() ?
-            __ValidationBase.IntlConverterUtils.dateToLocalIso(dateWithTimeZone) : input;
-        return __ValidationBase.IntlConverterUtils.isoToLocalDate(localIsoTime);
-      }
-      return input;
-    };
-
-    // Date to iso converter to be called before passing to the date time converter
-    helpers.dateToIsoWithTimeZoneConverter = function (input) {
-      if (input instanceof Date) {
-        var timeZoneOffest = -1 * input.getTimezoneOffset();
-        var offsetSign = (timeZoneOffest >= 0 ? '+' : '-');
-        var offsetHour = Math.floor(Math.abs(timeZoneOffest) / 60);
-        var offsetMinutes = Math.abs(timeZoneOffest) % 60;
-        var isoTimeZone = offsetSign +
-            (offsetHour.toString().length !== 2 ? '0' + offsetHour : offsetHour) + ':' +
-            (offsetMinutes.toString().length !== 2 ? offsetMinutes + '0' : offsetMinutes);
-        return __ValidationBase.IntlConverterUtils.dateToLocalIso(input) + isoTimeZone;
-      }
-      return input;
-    };
-
-    this._context.setLocaleHelpers(helpers);
+    this._renderNeeded = true;
+    // Reset data provider state
+    this._DataProviderHandler.release();
+    this._TemplateHandler.release();
+    this._dataValuePromise = {};
   },
 
   //* * @inheritdoc */
@@ -896,10 +1740,8 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     this._MakeReady();
 
     // Clear data provider states
-    this._dataProviderState = {};
-    this._treeKeyDataMap = {};
-    this._dpNodeContextData = {};
-    this._dpNodeValueData = {};
+    this._TemplateHandler.release();
+    this._DataProviderHandler.release();
     this._dataValuePromise = {};
 
     // Call super last for destroy
@@ -999,6 +1841,8 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       this._UserOptionChange(event.key, event.value, event.optionMetadata);
     } else if (type === 'touchHoldRelease' && this._GetContextMenu()) {
       this._OpenContextMenu($.Event(event.nativeEvent), 'touch');
+    } else if (type === 'dvtRender') {
+      this._Render();
     } else if (type === 'ready') {
       // Handles case where two option sets occur and the second set
       // containing deferred data. We don't want to prematurely resolve
@@ -1194,7 +2038,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
   /**
    * Sets an option change that was driven by user gesture.  Used in conjunction with _setOption to ensure that the
    * correct optionMetadata flag for writeback is set.
-   * @param {string} key The name of the option to set.
+   * @param {string} key The name of the option to set.  Events will be suppressed for private keys (_foo)
    * @param {Object} value The value to set for the option.
    * @param {Object} optionMetadata The optionMetadata for the optionChange event
    * @memberof oj.dvtBaseComponent
@@ -1205,7 +2049,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     this._bUserDrivenChange = true;
 
     this.option(key, value, {
-      _context: { writeback: true, optionMetadata: optionMetadata, internalSet: true }
+      _context: { writeback: true, optionMetadata: optionMetadata, internalSet: true, skipEvent: key.charAt(0) === '_' }
     });
 
     this._bUserDrivenChange = false;
@@ -1365,8 +2209,11 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     // Make a copy of options except for data options with the noClone parameter on DvtJsonUtils.
     // Cloning shouldn't be expensive if we're skipping data.
     this._optionsCopy = dvt.JsonUtils.clone(this.options, null, this._GetComponentNoClonePaths());
-    this._FixCustomRenderers(this._optionsCopy);
     this._numDeferredObjs = 0;
+
+    // Fixing custom renderers will increment _numDeferredObjs if there are template slots
+    // because the corresponding render functions cannot be created until the templateEnginePromise has resolved
+    this._FixCustomRenderers(this._optionsCopy);
 
     var self = this;
     var paths = this._GetComponentDeferredDataPaths();
@@ -1424,24 +2271,20 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       optionPath.setValue(optionValue, true);
     }
 
-    if (optionValue && oj.DataProviderFeatureChecker.isDataProvider(optionValue)) {
-      var isTreeDataProvider = oj.DataProviderFeatureChecker.isTreeDataProvider(optionValue);
+    if (optionValue && this._DataProviderHandler.isDataProvider(optionValue)) {
+      var isTreeDataProvider = this._DataProviderHandler.isTreeDataProvider(optionValue);
       optionValue = self._dataValuePromise[path] || new Promise(function (resolve) {
-        var templateEnginePromise = self._getTemplateEngine();
-        // Fetch the data, unless cached data exists
-        var dataPathsValues = self._dataProviderState[path] || {};
-        var dataProviderPromise = dataPathsValues.data ?
-            Promise.resolve(dataPathsValues.data) : self._fetchAllData(optionValue, path);
+        var templateEnginePromise = self._TemplateHandler.getTemplateEngine();
+        var dataProviderPromise = self._DataProviderHandler.fetchAllData(optionValue, path, true); // use cached results if available
         Promise.all([templateEnginePromise, dataProviderPromise]).then(function (values) {
-          var templateEngine = values[0];
-          var data = values[1];
-          dataPathsValues.data = data;
-          self._dataProviderState[path] = dataPathsValues;
-          // If cached templates processing results exist, skip processing templates
-          var pathsValuesMap = dataPathsValues.pathsValuesMap ? dataPathsValues.pathsValuesMap :
-              self._ProcessTemplates(path, data, templateEngine, isTreeDataProvider);
-          self._dataValuePromise[path] = null;
-          resolve(pathsValuesMap);
+          if (optionValue === self._dataValuePromise[path]) { // make sure only the most recent data fetch is processed
+            var templateEngine = values[0];
+            var data = values[1];
+            var pathsValuesMap = self._ProcessTemplates(path, data,
+              templateEngine, isTreeDataProvider, null, true); // use cached results if available
+            self._dataValuePromise[path] = null;
+            resolve(pathsValuesMap);
+          }
         }, function () {
           self._dataValuePromise[path] = null;
         });
@@ -1460,7 +2303,6 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
           if (value.paths) {
             paths = value.paths;
             values = value.values;
-            self._dataProviderState[path].pathsValuesMap = value;
           }
           self._renderDeferredData(renderCount, optionsTo, paths, values);
         },
@@ -1505,7 +2347,8 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
    * @memberof oj.dvtBaseComponent
    */
   _ClearDataProviderState: function (dataProperty) {
-    this._dataProviderState[dataProperty] = {};
+    this._DataProviderHandler.clear(dataProperty);
+    this._TemplateHandler.release(dataProperty);
     this._dataValuePromise[dataProperty] = null;
   },
 
@@ -1521,175 +2364,13 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     // If new data provider(s) were set, clear the corresponding data provider states.
     // Note that the options argument contains only options deemed to be new by the framework,
     // so any data provider values that are present in options are definitely new, and we don't need to check.
-    var dataProperties = Object.keys(this._dataProviderState);
+    var dataProperties = Object.keys(this._GetSimpleDataProviderConfigs());
     for (var i = 0; i < dataProperties.length; i++) {
       var dataProperty = dataProperties[i];
       if (Object.prototype.hasOwnProperty.call(options, dataProperty)) {
         this._ClearDataProviderState(dataProperty);
       }
     }
-  },
-
-  /**
-   * Returns a promise that resolves into the fully fetched data from the data provider.
-   * This handles the use case where fetch parameter -1 doesn't return all the data
-   * @param {object} dataProvider The data provider
-   * @param {object} postprocessor The call back functon that should return a promise that resolves into row data of the shape {data: , key: }
-   * @param {string} dataProperty The property name of the data API
-   * @param {object} parentKey The parent key if the dataProvider is a child dataProvider
-   * @param {number} fetchDepth The current fetch depth
-   * @param {number} maxFetchDepth The maximum fetch depth
-   * @return {Promise} Returns a promise that resolves into the fully fetched data from the data provider.
-   * @private
-   * @instance
-   * @memberof oj.dvtBaseComponent
-   */
-  _fetchCollection: function (dataProvider, postprocessor, dataProperty, parentKey,
-    fetchDepth, maxFetchDepth) {
-    var self = this;
-    var finalData = { data: [], keys: [] };
-
-    if (maxFetchDepth <= -1) {
-      return Promise.resolve(finalData);
-    }
-
-    var iterator = dataProvider.fetchFirst({ size: -1 })[Symbol.asyncIterator]();
-    var isTreeDataProvider = oj.DataProviderFeatureChecker.isTreeDataProvider(dataProvider);
-
-    // Helper function to handle case where fetch parameter -1 doesn�t return all the data
-    var chunkDataFetch = function (result) {
-      var nodePromises = [];
-      for (var i = 0; i < result.value.data.length; i++) {
-        var nodePromise = postprocessor({ data: result.value.data[i],
-          key: result.value.metadata[i].key }, fetchDepth);
-        nodePromises.push(nodePromise);
-      }
-      var chunkPromise = Promise.all(nodePromises).then(function (values) {
-        for (var ii = 0; ii < values.length; ii++) {
-          var data = values[ii].data;
-          var key = values[ii].key;
-          finalData.data.push(data);
-          finalData.keys.push(key);
-          self._treeKeyDataMap[dataProperty].set(isTreeDataProvider ? key.value : key,
-            { data: data, key: key, parentKey: parentKey });
-        }
-      });
-      return chunkPromise.then(function () {
-        if (!result.done) {
-          return iterator.next().then(chunkDataFetch);
-        }
-
-        return Promise.resolve(finalData);
-      });
-    };
-
-    // create a Promise that will resolve to the fetched data
-    return iterator.next().then(chunkDataFetch);
-  },
-
-  /**
-   * Returns a function that returns a promise that resolves into row data of the shape {data: , key: }
-   * For tree data providers, data and keys will have children information
-   * @param {object} dataProvider The data provider
-   * @param {string} dataProperty The property name of the data API
-   * @param {oj.KeySet} expandedKeySet The key set with the expanded keys
-   * @param {number} maxFetchDepth The maximum fetch depth
-   * @return {object} Returns a function that returns a promise that resolves into row data of the shape {data: , key: }
-   * @private
-   * @instance
-   * @memberof oj.dvtBaseComponent
-   */
-  _getDPPostProcessor: function (dataProvider, dataProperty, expandedKeySet, maxFetchDepth) {
-    var self = this;
-    var isTreeDataProvider = oj.DataProviderFeatureChecker.isTreeDataProvider(dataProvider);
-    // eslint-disable-next-line no-param-reassign
-    maxFetchDepth = maxFetchDepth == null ? Number.MAX_VALUE : maxFetchDepth;
-
-    var treeDPPostProcessor = function (row, fetchDepth) {
-      var data = { value: row.data };
-      var key = { value: row.key };
-      if (fetchDepth < maxFetchDepth && expandedKeySet && expandedKeySet.has(key.value)) {
-        var childDataProvider = dataProvider.getChildDataProvider(key.value);
-        if (childDataProvider) {
-          return self._fetchCollection(childDataProvider, treeDPPostProcessor,
-            dataProperty, key.value, fetchDepth + 1).then(function (children) {
-              data.children = children.data;
-              key.children = children.keys;
-              return { data: data, key: key };
-            }
-          );
-        }
-      }
-      return Promise.resolve({ data: data, key: key });
-    };
-    var flatDPPostProcessor = function (value) {
-      return Promise.resolve(value);
-    };
-
-    return isTreeDataProvider ? treeDPPostProcessor : flatDPPostProcessor;
-  },
-
-  /**
-   * Returns a promise that resolves into all the fetched data from the data provider of the shape {data: [], keys: []}
-   * For non tree data providers, the data array will have all the data fetched in the shape that was returned by the data provider. This will be the same for the keys array.
-   * For tree data providers, the objects in the data and key arrays will have a value attribute and a childrenData/childrenKeys attribute. The value property will have the data returned by the data provider.
-   * @param {object} dataProvider The data provider
-   * @param {string} dataProperty The property name of the data API
-   * @return {Promise} Returns a promise that resolves into the results of the data fetch with the shape {data: [], keys: []}
-   * @private
-   * @instance
-   * @memberof oj.dvtBaseComponent
-   */
-  _fetchAllData: function (dataProvider, dataProperty) {
-    var configs = this._GetSimpleDataProviderConfigs()[dataProperty];
-    // eslint-disable-next-line new-cap
-    this._treeKeyDataMap[dataProperty] = this._treeKeyDataMap[dataProperty] || new ojMap();
-    // eslint-disable-next-line new-cap
-    this._dpNodeContextData[dataProperty] = this._dpNodeContextData[dataProperty] || new ojMap();
-    // eslint-disable-next-line new-cap
-    this._dpNodeValueData[dataProperty] = this._dpNodeValueData[dataProperty] || new ojMap();
-    return this._fetchCollection(dataProvider,
-      this._getDPPostProcessor(dataProvider, dataProperty, configs.expandedKeySet,
-        configs.maxFetchDepth),
-      dataProperty, null, 0, configs.maxFetchDepth);
-  },
-
-  /**
-   * Returns a promise that resolves into a template engine
-   * @return {Promise} Returns a promise that resoves into a template engine
-   * @private
-   * @instance
-   * @memberof oj.dvtBaseComponent
-   */
-  _getTemplateEngine: function () {
-    if (this._templateEnginePromise) {
-      return this._templateEnginePromise;
-    }
-
-    this._templateEnginePromise = new Promise(function (resolve) {
-      Config.__getTemplateEngine().then(
-          function (engine) {
-            resolve(engine);
-          },
-          function (reason) {
-            throw new Error('Error loading template engine: ' + reason);
-          }
-      );
-    });
-
-    return this._templateEnginePromise;
-  },
-
-  /**
-   * Gets the inline template elements of the component
-   * @return {Object} Returns an object containing the inline template elements of the custom element component.
-   * @public
-   * @ignore
-   * @instance
-   * @memberof oj.dvtBaseComponent
-   */
-  getTemplates: function () {
-    return oj.BaseCustomElementBridge.getSlotMap(this.element[0]);
   },
 
   /**
@@ -1714,48 +2395,6 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
   },
 
   /**
-   * Returns a function that validates the value for a property for a given element.
-   * @param {node} element The template element name
-   * @param {string} elementName The custom element name
-   * @return {Function} A function that validates the value for a property. It takes in the property path and the value of the topmost property
-   * @public
-   * @ignore
-   * @instance
-   * @memberof oj.dvtBaseComponent
-   */
-  getPropertyValidator: function (element, elementName) {
-    if (!element) {
-      return null;
-    }
-
-    var propsMetadata = oj.CustomElementBridge.getMetadata(elementName);
-    var templateElement = element.content ? element.content.children[0] : element.childNodes[1];
-    var metadataCache = {};
-    return function (propertyPath, value) {
-      var property = propertyPath.join('.');
-      var metadata = metadataCache[property];
-      if (!metadata) {
-        metadata = propsMetadata;
-        // Get sub property metadata if needed
-        for (var i = 0; i < propertyPath.length; i++) {
-          metadata = metadata.properties[propertyPath[i]];
-        }
-        metadataCache[property] = metadata;
-      }
-
-      oj.BaseCustomElementBridge.checkEnumValues(templateElement, property,
-        value, metadata);
-
-      // TODO support checking for null values once we generate metadata from jsDoc and have accurate info
-      // about component support for undefined/null
-      if (value != null) {
-        oj.BaseCustomElementBridge.checkType(templateElement, property,
-          value, metadata);
-      }
-    };
-  },
-
-  /**
    * Processes the templates using the data provider's data and returns a map of values to options to be updated.
    * To use the default behaviour the component should override the _GetSimpleDataProviderConfigs.
    * Any sub class implementation of this should call this._super
@@ -1765,185 +2404,17 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
    * @param {Object} templateEngine The template engine to be used to process templates
    * @param {boolean=} isTreeData True is the data has a tree structure, false if otherwise
    * @param {Object=} parentKey Parent key to be used for template context
+   * @param {boolean} isRoot If true, a cache for the results is used.
    * @return {Object} An object with paths of components options to be updated and
    *                   their corresponding values.eg: {paths: [], values: []}
    * @protected
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  _ProcessTemplates: function (dataProperty, data, templateEngine, isTreeData, parentKey) {
-    var config = this._GetSimpleDataProviderConfigs()[dataProperty];
-    var self = this;
-    var paths;
-    var pathValues;
-    if (config) {
-      paths = [];
-      pathValues = [];
-      var getTemplateName = typeof config.templateName === 'string' ? function () { return config.templateName; } : config.templateName;
-      var getTemplateElementName = typeof config.templateElementName === 'string' ? function () { return config.templateElementName; } : config.templateElementName;
-      var resultPath = config.resultPath;
-      var alias = this.options.as;
-      var templates = this.getTemplates();
-      var parentElement = this.element[0];
-      var getAliasedPropertyNames = config.getAliasedPropertyNames;
-      var processChildrenData = config.processChildrenData;
-      var processOptionData = config.processOptionData ||
-        function (optionData) { return optionData; };
-      var dataValueValidatorMap = {};
-      var nodeContextData = self._dpNodeContextData[dataProperty];
-
-      if (getTemplateName && getTemplateElementName && resultPath) {
-        // read attributes off nodes corresponding to the nodeKey
-        var templatePropertyMap = {};
-
-        var processDatum = function (nodeData, nodeKey, context, template,
-          templateElementName, dataValueValidator) {
-          var templateTopProperties = templatePropertyMap[templateElementName];
-          if (!templateTopProperties) {
-            templateTopProperties = self.getElementPropertyNames(templateElementName);
-            templatePropertyMap[templateElementName] = templateTopProperties;
-          }
-          var processedDatum;
-          try {
-            if (template) {
-              processedDatum = templateEngine.resolveProperties(parentElement, template[0],
-                templateElementName, templateTopProperties, context, alias, dataValueValidator);
-              if (getAliasedPropertyNames) {
-                var aliasedPropertyMap = getAliasedPropertyNames(templateElementName);
-                var aliasedProperties = Object.keys(aliasedPropertyMap);
-                for (var i = 0; i < aliasedProperties.length; i++) {
-                  var elementProp = aliasedProperties[i];
-                  var dataProp = aliasedPropertyMap[elementProp];
-                  processedDatum[dataProp] = processedDatum[elementProp];
-                  processedDatum[elementProp] = undefined;
-                }
-              }
-            } else {
-              processedDatum = {};
-            }
-            processedDatum.id = nodeKey;
-            processedDatum._itemData = nodeData;
-          } catch (error) {
-            Logger.error(error);
-          }
-          return processedDatum;
-        };
-
-        var processData = function (collection, parentData, _parentKey) {
-          var _data = collection.data;
-          var _keys = collection.keys;
-          var processedData = [];
-          for (var i = 0; i < _data.length; i++) {
-            var nodeData = isTreeData ? _data[i].value : _data[i];
-            var nodeKey = isTreeData ? _keys[i].value : _keys[i];
-            var context = {
-              data: nodeData,
-              key: nodeKey,
-              index: i,
-              componentElement: parentElement
-            };
-            if (isTreeData) {
-              context.parentData = parentData;
-              context.parentKey = _parentKey;
-            }
-            nodeContextData.set(nodeKey, context);
-
-            var templateName = getTemplateName(_data[i]);
-            var templateElementName = getTemplateElementName(_data[i]);
-            var template = templates[templateName];
-            var dataValueValidator = dataValueValidatorMap[templateElementName];
-            if (!dataValueValidator && template) {
-              dataValueValidator = self.getPropertyValidator(template[0], templateElementName);
-              dataValueValidatorMap[templateElementName] = dataValueValidator;
-            }
-
-            var processedDatum = processDatum(nodeData, nodeKey, context,
-              template, templateElementName, dataValueValidator);
-            if (_data[i].children) { // more complex for legend need to mutate the data itself
-              var newParentData = parentData.slice(0);
-              newParentData.push(nodeData);
-              var childCollection = { data: _data[i].children, keys: _keys[i].children };
-              var processedChildren = processData(childCollection, newParentData, nodeKey);
-              if (processChildrenData) {
-                processChildrenData(processedDatum, _data[i], processedChildren);
-              } else {
-                processedDatum[resultPath] = processedChildren;
-              }
-            }
-            self._dpNodeValueData[dataProperty].set(nodeKey, processedDatum);
-            processedData.push(processedDatum);
-          }
-          return processedData;
-        };
-
-        paths.push(resultPath);
-
-        var parentData;
-        if (parentKey && nodeContextData.has(parentKey)) {
-          parentData = nodeContextData.get(parentKey).parentData
-            .concat(nodeContextData.get(parentKey).data);
-        }
-        var optionData = processData(data, parentData || [], parentKey);
-        pathValues.push(processOptionData(optionData));
-      }
-    }
-    return { paths: paths, values: pathValues };
-  },
-
-  /**
-   * Creates a callback function that will be used to fetch additional data from data provider
-   * Any sub class implementation of this should call this._super
-   * @param {string} dataProperty The property name of the data API
-   * @return {Function} fetch data callback that uses root data provider, expanded key set, node data and node key
-   * to retrieve child nodes for the specified parent node
-   * @protected
-   * @instance
-   * @memberof oj.dvtBaseComponent
-   */
-  _GetFetchDataHandler: function (dataProperty) {
-    var self = this;
-    var resultPath = self._GetSimpleDataProviderConfigs()[dataProperty].resultPath;
-
-    // Updates cached the data provider state
-    var updateDataProviderState = function (parentKey, data, key, value) {
-      self._treeKeyDataMap[dataProperty].get(parentKey).data.children = data;
-      self._treeKeyDataMap[dataProperty].get(parentKey).key.children = key;
-      self._dpNodeValueData[dataProperty].get(parentKey)[resultPath] = value;
-    };
-
-    var fetchDataHandlerFunc = function (rootDataProvider, expandedKeySet, nodeData, nodeKey) {
-      var childDataProvider = rootDataProvider.getChildDataProvider(nodeKey);
-      if (childDataProvider) {
-        var maxFetchDepth = self._GetSimpleDataProviderConfigs()[dataProperty].maxFetchDepth;
-        var fetchLevel = self._dpNodeContextData[dataProperty].get(nodeKey).parentData.length;
-        var treeDPPostProcessor = self._getDPPostProcessor(rootDataProvider, dataProperty,
-          expandedKeySet, maxFetchDepth);
-        var childInfoPromise = self._fetchCollection(childDataProvider,
-          treeDPPostProcessor, dataProperty, nodeKey, fetchLevel, maxFetchDepth);
-        var templateEnginePromise = self._getTemplateEngine();
-        return Promise
-                .all([templateEnginePromise, childInfoPromise])
-                .then(function (values) {
-                  var templateEngine = values[0];
-                  var childrenData = values[1].data;
-                  var childrenKeys = values[1].keys;
-                  var processedTemplates = self._ProcessTemplates(dataProperty,
-                    { data: childrenData, keys: childrenKeys }, templateEngine, true, nodeKey);
-                  var childrenNodes = processedTemplates.values[0];
-
-                  // update cached data provider state
-                  updateDataProviderState(nodeKey, childrenData, childrenKeys, childrenNodes);
-
-                  if (nodeData) { // update parent data
-                    // eslint-disable-next-line no-param-reassign
-                    nodeData[resultPath] = childrenNodes;
-                  }
-                  return childrenNodes;
-                });
-      }
-      return Promise.resolve();
-    };
-    return fetchDataHandlerFunc;
+  _ProcessTemplates: function (dataProperty, data, templateEngine, isTreeData,
+    parentKey, isRoot, updateChildren) {
+    return this._TemplateHandler.processTemplates(dataProperty, data,
+      templateEngine, isTreeData, parentKey, isRoot, updateChildren);
   },
 
   /**
@@ -1957,6 +2428,61 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
    */
   _GetSimpleDataProviderConfigs: function () {
     return {};
+  },
+
+  /**
+   * Handles events from templateHandler and dataProviderHandler
+   * Can be overriden but the sub class must call super
+   * @protected
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _GetDPEventHandler: function () {
+    return function (event) {
+      if (event.type === 'notReady') {
+        this._NotReady();
+      } else if (event.type === 'dataUpdated') {
+        this._Render();
+      } else if (event.type === 'clearState') {
+        this._ClearDataProviderState(event.detail.dataProperty);
+      } else if (event.type === 'reset') {
+        this._TemplateHandler.clear(event.detail.dataProperty, true);
+      }
+    }.bind(this);
+  },
+
+  /**
+   * Creates a callback function that will be used to fetch additional data from data provider
+   * Any sub class implementation of this should call this._super
+   * @param {string} dataProperty The property name of the data API
+   * @return {Function} fetch data callback that uses root data provider, expanded key set, node data and node key
+   * to retrieve child nodes for the specified parent node
+   * @private
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   * @ignore
+   */
+  _getFetchDataHandler: function (dataProperty) {
+    var resultPath = this._GetSimpleDataProviderConfigs()[dataProperty].resultPath;
+
+    var fetchDataHandlerFunc = function (rootDataProvider, expandedKeySet, nodeData, nodeKey) {
+      // Get new data
+      var dataPromise = this._DataProviderHandler.fetchChildrenData(dataProperty, rootDataProvider,
+        nodeKey, expandedKeySet);
+      var templateEnginePromise = this._TemplateHandler.getTemplateEngine();
+      return Promise.all([dataPromise, templateEnginePromise]).then(function (values) {
+        // Get templatized data
+        var processedTemplates = this._ProcessTemplates(dataProperty,
+          { data: values[0].data, keys: values[0].keys }, values[1], true, nodeKey, false, true);
+        var childrenNodes = processedTemplates.values[0];
+
+        if (nodeData) { // update parent data
+          // eslint-disable-next-line no-param-reassign
+          nodeData[resultPath] = childrenNodes;
+        }
+      }.bind(this));
+    }.bind(this);
+    return fetchDataHandlerFunc;
   },
 
   /**
@@ -2004,288 +2530,6 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       }
     }
   },
-
-  /**
-   * Returns a function that will handle events triggered on the component's
-   * dataProvider(s) and update the component
-   * @private
-   * @instance
-   * @memberof oj.dvtBaseComponent
-   * @return {function(Event):void} A function that takes an event and updates a component
-   * using the data from the data provider it is binded to.
-   */
-  _getDataProviderEventHandler: function (component, optionPath) {
-    var self = this;
-    // Current use cases, data provider properties are always at the root (optionPath[0] is 'root', and optionPath[1] is the property)
-    var dataProperty = optionPath[1];
-    // subclasses may override
-
-    // returns indices corresponding to the data with the given keys
-    var keysToIndices = function (fullData, keys, isTreeDataProvider) {
-      if (!keys) {
-        return [];
-      }
-
-      var keySet = new KeySetImpl(keys);
-      var keyIndexMap = new Map();
-
-      var addToKeyIndexMap = function (dataKeys) {
-        for (var i = 0; i < dataKeys.length; i++) {
-          var key = isTreeDataProvider ? dataKeys[i].value : dataKeys[i];
-          var eventKey = keySet.get(key);
-          if (eventKey !== keySet.NOT_A_KEY) {
-            keyIndexMap.set(eventKey, i);
-          }
-
-          if (isTreeDataProvider && dataKeys[i].children) {
-            addToKeyIndexMap(dataKeys[i].children);
-          }
-        }
-      };
-
-      addToKeyIndexMap(fullData.keys);
-      var matchingIndices = [];
-      keys.forEach(function (keyValue) {
-        matchingIndices.push(keyIndexMap.get(keyValue));
-      });
-
-      return matchingIndices;
-    };
-
-    // rerenders the component with updated data
-    var renderUpdatedData = function (dataPromise) {
-      Promise.all([dataPromise, self._getTemplateEngine()]).then(function (values) {
-        // Update cached data
-        self._dataProviderState[dataProperty].data = values[0];
-        // Null out the stored templates processing results
-        // so that the templates would be reprocessed for the new data
-        self._dataProviderState[dataProperty].pathsValuesMap = null;
-
-        // Rerender component
-        self._Render();
-      });
-    };
-
-    return function (event) {
-      // create a Promise that will resolve to the newly modified data
-      var dataProvider = this;
-      var isTreeDataProvider = oj.DataProviderFeatureChecker.isTreeDataProvider(dataProvider);
-      var keyDataMap = self._treeKeyDataMap[dataProperty];
-      if (event.type === 'refresh') {
-        renderUpdatedData(self._fetchAllData(dataProvider, optionPath[1]));
-      } else if (event.type === 'mutate') {
-        var updateDetail = event.detail.update;
-        var removeDetail = event.detail.remove;
-        var addDetail = event.detail.add;
-        var componentData = self._dataProviderState[optionPath[1]].data;
-
-        // used by add, update and delete to update the component's data
-        var updateComponentData = function (indices, detail, deleteCount, isDelete) {
-          var index = 0;
-          var promises = [];
-          var isUpdate = deleteCount === 1 && !isDelete;
-
-          detail.keys.forEach(function (keyValue) {
-            var dataPromise;
-            var dataValue = isDelete ? null : detail.data[index];
-            if (isTreeDataProvider) {
-              if (isUpdate) {
-                // update operation
-                var mappedData = keyDataMap.get(keyValue);
-                if (mappedData) { // only update data that has been previously fetched
-                  mappedData.data.value = dataValue;
-                  dataPromise = Promise.resolve({ data: mappedData.data,
-                    key: keyDataMap.get(keyValue).key });
-                }
-              } else {
-                // add or delete operation
-                var data = { value: dataValue };
-                var key = { value: keyValue };
-                var childDataProvider = dataProvider.getChildDataProvider(keyValue);
-                // fetch children data for add operations
-                if (childDataProvider && !isDelete) {
-                  var childDataPromise = self._fetchAllData(childDataProvider, optionPath[1]);
-                  dataPromise = childDataPromise.then(function (result) {
-                    data.children = result.data;
-                    key.children = result.keys;
-                    return { data: data, key: key };
-                  });
-                } else {
-                  dataPromise = Promise.resolve({ data: data, key: key });
-                }
-
-                if (!isDelete) {
-                  var parentKey = detail.parentKeys ? detail.parentKeys[index] : null;
-                  keyDataMap.set(key.value,
-                    { data: data, key: key, parentKey: parentKey });
-                }
-              }
-            } else {
-              dataPromise = Promise.resolve({ data: dataValue, key: keyValue });
-              keyDataMap.set(keyValue, { data: dataValue, key: keyValue });
-            }
-
-            promises.push(dataPromise);
-            index += 1;
-          });
-
-          return Promise.all(promises).then(function (values) {
-            // Processing values backwards so operations don't shift indices of other operations yet to be done
-            for (var i = values.length - 1; i >= 0; i--) {
-              var key = isTreeDataProvider ? values[i].key.value : values[i].key;
-              var parentKey = keyDataMap.get(key).parentKey;
-              var data;
-              var keys;
-              if (parentKey) {
-                var mappedData = keyDataMap.get(parentKey);
-                // if node is a new parent
-                if (!mappedData.data.children && !isUpdate) {
-                  mappedData.data.children = [];
-                  mappedData.key.children = [];
-                }
-                data = mappedData.data.children;
-                keys = mappedData.key.children;
-              } else {
-                // top level operation
-                data = componentData.data;
-                keys = componentData.keys;
-              }
-
-              if (isDelete) {
-                data.splice(indices[i], deleteCount);
-                keys.splice(indices[i], deleteCount);
-              } else {
-                // if no indices add to the end
-                var _index = !isUpdate && indices.length === 0 ? data.length : indices[i];
-                data.splice(_index, deleteCount, values[i].data);
-                keys.splice(_index, deleteCount, values[i].key);
-              }
-            }
-            return componentData;
-          });
-        };
-
-        var getData = function (keys) {
-          return dataProvider.fetchByKeys({ keys: keys }).then(function (keyResult) {
-            var fetchedData = [];
-            if (keyResult.results.size > 0) {
-              keys.forEach(function (keyValue) {
-                fetchedData.push(keyResult.results.get(keyValue).data);
-              });
-            }
-            return fetchedData;
-          });
-        };
-
-        var indices;
-        var updatePromise = Promise.resolve();
-        if (updateDetail) {
-          indices = updateDetail.indexes || keysToIndices(componentData,
-            updateDetail.keys, isTreeDataProvider);
-
-          if (!Array.isArray(updateDetail.data)) { // data was not sent and should be fetched
-            updatePromise = getData(updateDetail.keys).then(function (fetchedData) {
-              var detail = Object.create(updateDetail, { data: { value: fetchedData } }); // add fetched data
-              return updateComponentData(indices, detail, 1);
-            });
-          } else {
-            updatePromise = updateComponentData(indices, updateDetail, 1);
-          }
-        }
-
-        var removePromise = updatePromise.then(function () {
-          if (removeDetail) {
-            indices = removeDetail.indexes || keysToIndices(componentData,
-              removeDetail.keys, isTreeDataProvider);
-            return updateComponentData(indices, removeDetail, 1, true);
-          }
-          return Promise.resolve();
-        });
-
-        var addPromise = removePromise.then(function () {
-          if (addDetail) {
-            // afterKeys is deprecated, but continue to support it until we can remove it.
-            // keysToIndices can take either array or set as its argument.
-            indices = addDetail.indexes || keysToIndices(componentData,
-              addDetail.addBeforeKeys ? addDetail.addBeforeKeys : addDetail.afterKeys,
-              isTreeDataProvider);
-
-            if (!Array.isArray(addDetail.data)) { // data was not sent and should be fetched
-              return getData(addDetail.keys).then(function (fetchedData) {
-                var detail = Object.create(addDetail, { data: { value: fetchedData } }); // add fetched data
-                return updateComponentData(indices, detail, 0);
-              });
-            }
-            return updateComponentData(indices, addDetail, 0);
-          }
-          return Promise.resolve();
-        });
-
-        addPromise.then(function () {
-          renderUpdatedData(Promise.resolve(componentData));
-        });
-      }
-    };
-  },
-
-  /**
-   * Checks for all potential dataProviders on the component and attaches event listeners
-   * @private
-   * @instance
-   * @memberof oj.dvtBaseComponent
-   */
-  _addDataProviderEventListeners: function () {
-    var component = this;
-    var paths = this._GetComponentDeferredDataPaths();
-    var pathKeys = Object.keys(paths);
-
-    for (var i = 0; i < pathKeys.length; i++) {
-      var path = pathKeys[i];
-      var subpathArray = paths[path];
-      for (var j = 0; j < subpathArray.length; j++) {
-        var subpath = subpathArray[j];
-        var optionValue;
-        if (path === 'root') {
-          optionValue = component.options[subpath];
-        } else if (component.options[path]) {
-          optionValue = component.options[path][subpath];
-        } else {
-          optionValue = null;
-        }
-
-        if (optionValue && oj.DataProviderFeatureChecker.isDataProvider(optionValue)) {
-          var dataProviderEventHandler =
-              component._getDataProviderEventHandler(component, [path, subpath]);
-          optionValue.addEventListener('mutate', dataProviderEventHandler);
-          optionValue.addEventListener('refresh', dataProviderEventHandler);
-
-          component._dataProviderEventListeners.push({
-            dataProvider: optionValue,
-            listener: dataProviderEventHandler
-          });
-        }
-      }
-    }
-  },
-
-
-  /**
-   * Checks for all potential dataProviders on the component and removes event listeners
-   * @private
-   * @instance
-   * @memberof oj.dvtBaseComponent
-   */
-  _removeDataProviderEventListeners: function () {
-    for (var i = 0; i < this._dataProviderEventListeners.length; i++) {
-      var info = this._dataProviderEventListeners[i];
-      var dataProvider = info.dataProvider;
-      var dataProviderEventHandler = info.listener;
-      dataProvider.removeEventListener('mutate', dataProviderEventHandler);
-      dataProvider.removeEventListener('refresh', dataProviderEventHandler);
-    }
-    this._dataProviderEventListeners = [];
-  },
-
 
   /**
    * Returns the data context passed to data function callbacks.
@@ -2449,11 +2693,18 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     if (this._IsCustomElement()) {
       var renderers = this._GetComponentRendererOptions();
       for (var i = 0; i < renderers.length; i++) {
-        var optionPath = renderers[i];
-        var path = new DvtJsonPath(options, optionPath);
-        var value = path.getValue();
-        if (value) {
-          path.setValue(this._WrapCustomElementRenderer(value), true);
+        var optionPath = renderers[i].path;
+        var slot = renderers[i].slot;
+        var templates = this._TemplateHandler.getTemplates();
+        if (slot && templates[slot] && templates[slot][0]) {
+          this._ProcessInlineTemplateRenderer(options, optionPath,
+            templates[slot][0], slot);
+        } else {
+          var path = new DvtJsonPath(options, optionPath);
+          var value = path.getValue();
+          if (value) {
+            path.setValue(this._WrapCustomElementRenderer(value), true);
+          }
         }
       }
     }
@@ -2467,7 +2718,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
    * @memberof oj.dvtBaseComponent
    */
   _GetComponentRendererOptions: function () {
-    return ['tooltip/renderer'];
+    return [{ path: 'tooltip/renderer', slot: 'tooltipTemplate' }];
   },
 
   /**
@@ -2548,6 +2799,45 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       return null;
     };
     return templateRenderer;
+  },
+
+  /**
+   * Creates a callback function that will be used as a custom renderer for an inline template slot.
+   * @param {Object} options Options for rendering the component
+   * @param {string} optionPath The path to set the generated renderer function
+   * @param {Element} templateElement The <template> element
+   * @param {string} templateName The name of the template
+   * @return {Function} A function that will be used as a custom renderer
+   * @protected
+   * @memberof oj.dvtBaseComponent
+   */
+  _ProcessInlineTemplateRenderer: function (options, optionPath,
+    templateElement, templateName) {
+    var renderCount = this._renderCount;
+    this._numDeferredObjs += 1;
+    var templateEnginePromise = this._TemplateHandler.getTemplateEngine();
+    templateEnginePromise.then(function (templateEngine) {
+      var templateRenderer = function (context) {
+        var nodes = templateEngine.execute(this.element[0], templateElement,
+          context);
+        if (nodes && nodes.length > 0) {
+          Object.defineProperty(context, '_templateCleanup', {
+            value: function () {
+              nodes.forEach(function (node) { templateEngine.clean(node); });
+            },
+            enumerable: false
+          });
+          Object.defineProperty(context, '_templateName', {
+            value: templateName,
+            enumerable: false
+          });
+          return { insert: nodes };
+        }
+        return { preventDefault: true };
+      }.bind(this);
+      this._renderDeferredData(renderCount, options, [optionPath],
+        [this._WrapCustomElementRenderer(templateRenderer)]);
+    }.bind(this));
   },
 
   /**

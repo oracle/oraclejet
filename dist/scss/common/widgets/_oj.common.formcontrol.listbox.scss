@@ -1,7 +1,7 @@
 // Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// WARNING: do not directly import this file, instead import the 
-//          version in your base theme's directory, 
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
 //          for example alta/widgets/_oj.alta.formcontrol.listbox.scss
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -14,23 +14,23 @@
 
     /* listbox */
     /* --------------------------------------------------------------- */
-    
+
     /*
      * applied to the dropdown
      */
-    
+
     /* defines the stacking context for the listbox */
     .oj-listbox-drop-layer {
       @extend .oj-component-layer;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        z-index: var(--oj-popup-zindex);
+        z-index: var(--oj-popup-z-index);
       }
       @else {
-        z-index: $popupZindex;        
+        z-index: $popupZindex;
       }
     }
-    
+
     .oj-listbox-drop {
       @extend .oj-component-popup;
       box-sizing: border-box;
@@ -39,12 +39,12 @@
       {
         background: var(--oj-popup-bg-color);
         border: 1px solid var(--oj-popup-border-color);
-        box-shadow: var(--oj-box-shadow-sm); 
+        box-shadow: var(--oj-box-shadow-sm);
       }
       @else {
         background: $popupBgColor;
         border: 1px solid $popupBorderColor;
-        @include oj-box-shadow($smallBoxShadow);        
+        @include oj-box-shadow($smallBoxShadow);
       }
       border-top: 0;
     }
@@ -58,9 +58,11 @@
         border-top: 1px solid var(--oj-popup-border-color);
       }
       @else {
-        border-top: 1px solid $popupBorderColor;        
+        border-top: 1px solid $popupBorderColor;
       }
       border-bottom: 0;
+      // top border moves the div down 1 px when the listbox is displayed above
+      margin-top: -1px;
     }
 
     /*
@@ -69,14 +71,14 @@
     .oj-listbox-placeholder {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        color: var(--oj-form-control-placeholder-color);
+        color: var(--oj-text-field-placeholder-color);
       }
       @else {
-        color: $formControlPlaceholderColor;        
+        color: $formControlPlaceholderColor;
       }
     }
 
-    /* 
+    /*
      * applied to results
      */
     .oj-listbox-results {
@@ -86,10 +88,10 @@
       position: relative;
       overflow-x: hidden;
       overflow-y: auto;
-      -webkit-tap-highlight-color: rgba(0, 0, 0, 0); 
+      -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
     }
 
-    /* 
+    /*
      * applied to nested option groups
      */
     .oj-listbox-result-sub {
@@ -97,7 +99,7 @@
       padding: 0;
     }
 
-    /* 
+    /*
      * applied to result labels
      */
     .oj-listbox-result-label {
@@ -107,9 +109,9 @@
       min-height: 2rem;
       word-wrap: break-word;
       -webkit-touch-callout: none;
-      @include oj-user-select-property(none);
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
+        user-select: none;
         html:not([dir="rtl"]) & {
           padding-left: var(--oj-listbox-item-padding);
         }
@@ -118,16 +120,17 @@
         }
       }
       @else {
+        @include oj-user-select-property(none);
         @include oj-ltr() {
           padding-left: $listboxItemPadding;
         }
         @include oj-rtl() {
           padding-right: $listboxItemPadding;
-        }      
+        }
       }
     }
 
-    /* 
+    /*
      * applied to result labels in different nested levels of option groups.
      * Padding is used instead of margins because the background color for states
      * like hover need to span across the entire box.
@@ -147,7 +150,7 @@
         }
         @include oj-rtl() {
           padding-right: calc(#{$listboxIndentWidth} + #{$listboxItemPadding});
-        }        
+        }
       }
     }
 
@@ -265,24 +268,24 @@
       }
     }
 
-    /* 
-     * applied to the nested option group labels, 
+    /*
+     * applied to the nested option group labels,
      * they are direct children of li.oj-listbox-result-with-children
      */
     .oj-listbox-result-with-children > .oj-listbox-result-label {
-      font-weight: bold; 
+      font-weight: bold;
     }
 
-    /* 
+    /*
      * applied to choices in the dropdown
      */
     .oj-listbox-results li {
       list-style: none;
       display: list-item;
-      background-image: none; 
+      background-image: none;
     }
 
-    /* 
+    /*
      * applied to the hovered choices in the dropdown
      */
     .oj-listbox-results .oj-hover {
@@ -291,7 +294,7 @@
         background: var(--oj-listbox-bg-color-focus);
       }
       @else {
-        background: $listboxBgColorFocus;        
+        background: $listboxBgColorFocus;
       }
     }
 
@@ -304,17 +307,17 @@
         color: var(--oj-text-color-disabled);
       }
       @else {
-        color: $textColorDisabled;        
+        color: $textColorDisabled;
       }
       display: list-item;
-      cursor: default; 
+      cursor: default;
     }
 
     /*
      * applied to selected choice in the dropdown
      */
     .oj-listbox-results .oj-selected {
-      display: none; 
+      display: none;
     }
 
     /*
@@ -325,7 +328,7 @@
       top: -10000px;
       width: 100px;
       height: 100px;
-      overflow: scroll; 
+      overflow: scroll;
       @include oj-ltr() {
         left: -10000px;
       }
@@ -338,7 +341,7 @@
     /* icons */
     /* -----------------------------*/
 
-    /* 
+    /*
      * Applied to the search icon
      */
     .oj-listbox-search-icon {
@@ -348,11 +351,11 @@
         color: var(--oj-button-icon-color);
       }
       @else {
-        color: $buttonIconColor;        
+        color: $buttonIconColor;
       }
     }
 
-    /* 
+    /*
      * Applied to the spyglass (search icon) container
      */
     .oj-listbox-spyglass-box {
@@ -382,11 +385,11 @@
         @include oj-rtl() {
           left: 0;
           padding-left: $listboxItemPadding;
-        }      
+        }
       }
     }
 
-    /* 
+    /*
      * Applied to the search box which includes the search text and the spyglass icon
      */
     .oj-listbox-search {
@@ -395,10 +398,10 @@
       display: inline-table;
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        background-color: var(--oj-form-control-bg-color);
-        border-color: var(--oj-form-control-border-color);
-        border-width: var(--oj-form-control-border-top-width) var(--oj-form-control-border-right-width) var(--oj-form-control-border-bottom-width) var(--oj-form-control-border-left-width);
-        border-radius: var(--oj-form-control-border-radius);        
+        background-color: var(--oj-text-field-bg-color);
+        border-color: var(--oj-text-field-border-color);
+        border-width: var(--oj-text-field-border-top-width) var(--oj-text-field-border-right-width) var(--oj-text-field-border-bottom-width) var(--oj-text-field-border-left-width);
+        border-radius: var(--oj-text-field-border-radius);
       }
       @else {
         background-color: $formControlBgColor;
@@ -409,7 +412,7 @@
       border-style: solid;
     }
 
-    /* 
+    /*
      * Applied to the search text
      */
     .oj-listbox-input {
@@ -418,15 +421,15 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         color: var(--oj-text-color);
-        border-radius: var(--oj-form-control-border-radius);
+        border-radius: var(--oj-text-field-border-radius);
         box-shadow: none;
         html:not([dir="rtl"]) & {
           padding-right: 2rem;
-          padding-left: var(--oj-form-control-padding-horizontal);
+          padding-left: var(--oj-text-field-padding-horizontal);
         }
         html[dir="rtl"] & {
           padding-left: 2rem;
-          padding-right: var(--oj-form-control-padding-horizontal);
+          padding-right: var(--oj-text-field-padding-horizontal);
         }
       }
       @else {
@@ -445,8 +448,8 @@
       outline: none;
       border: 0;
       // even if the border is 0, we still need to set border radius here otherwise
-      // the inputbox background color bleeds thru the container's corner 
-      // (see oj-listbox-search), which makes the container border radius 
+      // the inputbox background color bleeds thru the container's corner
+      // (see oj-listbox-search), which makes the container border radius
       // look disconnected.
       background-color: inherit;
       padding-top: 6px;
@@ -454,7 +457,7 @@
 
      }
 
-    /* 
+    /*
      * Used to cover the border bottom of the select box when the dropdown is open
      */
     .oj-listbox-search-wrapper {
@@ -462,15 +465,15 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         padding: var(--oj-listbox-item-padding);
-        background-color: var(--oj-form-control-bg-color);     
+        background-color: var(--oj-text-field-bg-color);
       }
       @else {
         padding: $listboxItemPadding;
-        background-color: $formControlBgColor;        
+        background-color: $formControlBgColor;
       }
     }
 
-    /* 
+    /*
      * Applied to the "No matches found" result entry
      */
    .oj-listbox-no-results {
@@ -489,12 +492,12 @@
        }
        @include oj-rtl() {
          padding-right: $listboxItemPadding;
-       }       
+       }
      }
 
    }
 
-    /* 
+    /*
      * Applied to the filter message container
      */
     .oj-listbox-filter-message-box {
@@ -504,11 +507,11 @@
         padding-right: var(--oj-listbox-item-padding);
       } @else {
         padding-left: $listboxItemPadding;
-        padding-right: $listboxItemPadding;       
+        padding-right: $listboxItemPadding;
       }
     }
 
-    /* 
+    /*
      * Applied to the filter message text
      */
     .oj-listbox-filter-message-text {
@@ -523,11 +526,11 @@
         color: $listboxMessageTextColor;
         font-size: $smallFontSize;
         padding-top: $listboxItemPadding;
-        padding-bottom: $listboxItemPadding;     
+        padding-bottom: $listboxItemPadding;
       }
     }
 
-    /* 
+    /*
      * Applied to the filter message separator
      */
     .oj-listbox-filter-message-separator {
@@ -562,7 +565,7 @@
       border-style: none;
     }
 
-    /* 
+    /*
      * Applied to the data fetching indicator icon
      */
     .oj-listbox-loading-icon {
@@ -584,10 +587,10 @@
     .oj-hicontrast .oj-listbox-results .oj-hover {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        border: 1px solid var(--oj-form-control-border-color);
+        border: 1px solid var(--oj-text-field-border-color);
       }
       @else {
-        border: 1px solid $formControlBorderColor;        
+        border: 1px solid $formControlBorderColor;
       }
     }
 
@@ -595,21 +598,21 @@
     .oj-hicontrast .oj-listbox-results .oj-disabled {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        border: 1px dotted var(--oj-form-control-border-color);
+        border: 1px dotted var(--oj-text-field-border-color);
       }
       @else {
-        border: 1px dotted $formControlBorderColor;        
+        border: 1px dotted $formControlBorderColor;
       }
     }
-    
-    /* 
+
+    /*
      * Applied to the search icon
      */
     .oj-listbox-search-icon {
         padding: 0.31rem;
     }
 
-    /* 
+    /*
      * Applied to the spyglass (search icon) container
      */
     .oj-listbox-spyglass-box {
@@ -623,7 +626,7 @@
       }
     }
 
-    /* 
+    /*
      * Applied to the listbox results if it has custonm header.
      */
     .oj-listbox-results-with-header {
@@ -631,7 +634,7 @@
       margin: 0;
     }
 
-    /* 
+    /*
      * Applied to the listbox custonm header options.
      */
     .oj-listbox-results-with-header li {
@@ -639,7 +642,7 @@
       list-style: outside none none;
     }
 
-    /* 
+    /*
      * Applied to the listbox custonm header.
      */
     .oj-listbox-result-header {
@@ -648,7 +651,7 @@
         padding: var(--oj-listbox-item-padding) var(--oj-listbox-item-padding) 0 var(--oj-listbox-item-padding);
       }
       @else {
-        padding: $listboxItemPadding $listboxItemPadding 0 $listboxItemPadding;        
+        padding: $listboxItemPadding $listboxItemPadding 0 $listboxItemPadding;
       }
     }
 
@@ -663,19 +666,19 @@
         @include oj-browser-focus-outline-approximation-css-vars(var(--oj-button-text-color));
       }
       @else {
-        @include oj-browser-focus-outline-approximation($buttonTextColor);        
+        @include oj-browser-focus-outline-approximation($buttonTextColor);
       }
     }
 
-    /* 
+    /*
      * Applied to the matching text in the dropdown options
      */
     .oj-listbox-highlighter {
       font-weight: bold;
     }
-    
-    .oj-form-control-inherit .oj-listbox-input {
-      @include oj-form-control-inherit(); 
+
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
+      @include oj-form-control-inherit();
     }
 
   }

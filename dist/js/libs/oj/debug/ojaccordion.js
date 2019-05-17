@@ -3,11 +3,10 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'], 
        function(oj, $, Logger)
 {
-
+  "use strict";
 var __oj_accordion_metadata = 
 {
   "properties": {
@@ -57,7 +56,7 @@ var __oj_accordion_metadata =
  * @augments oj.baseComponent
  * @since 0.6
  * @ojstatus preview
- * @ojshortdesc Displays a set of Collapsible child elements.
+ * @ojshortdesc An accordion displays a set of collapsible child elements.
  * @ojrole group
  * @class oj.ojAccordion
  *
@@ -342,6 +341,7 @@ var __oj_accordion_metadata =
      * <p>This method does not accept any arguments.
      *
      * @expose
+     * @ojshortdesc Refreshes the visual state of the accordion.
      * @memberof oj.ojAccordion
      * @instance
      * @return {void}

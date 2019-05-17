@@ -3,19 +3,14 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-/**
- * Copyright (c) 2014-2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'], 
-       
-       /*
-        * @param {Object} oj 
-        * @param {jQuery} $
-        */
-       function(oj, $)
+define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],        
+/*
+* @param {Object} oj 
+* @param {jQuery} $
+*/
+function(oj, $)
 {
+  "use strict";
 //%COMPONENT_METADATA%
 var __oj_switch_metadata = 
 {
@@ -61,7 +56,8 @@ var __oj_switch_metadata =
       "type": "object",
       "properties": {
         "instruction": {
-          "type": "string"
+          "type": "string",
+          "value": ""
         }
       }
     },
@@ -81,6 +77,9 @@ var __oj_switch_metadata =
     "labelHint": {
       "type": "string",
       "value": ""
+    },
+    "labelledBy": {
+      "type": "string"
     },
     "messagesCustom": {
       "type": "Array<Object>",
@@ -158,12 +157,12 @@ var __oj_switch_metadata =
    *               }
    *              ]
    * @since 0.7
-   * @ojshortdesc Provides basic support for toggling a boolean value.
+   * @ojshortdesc A switch toggles between two mutually exclusive states — on and off.
    * @ojstatus preview
    *
    * @classdesc
    * <p>
-   * the oj-switch component enhances <code class="prettyprint">input</code>
+   * The oj-switch component enhances <code class="prettyprint">input</code>
    * element and manages the selection of Boolean values.
    * </p>
    * {@ojinclude "name":"validationAndMessagingDoc"}
@@ -258,6 +257,7 @@ var __oj_switch_metadata =
        * myComponent.disabled = true;
        *
        * @expose
+       * @ojshortdesc Specifies whether the component is disabled. The default is false.
        * @type {boolean}
        * @default false
        * @public
@@ -265,14 +265,51 @@ var __oj_switch_metadata =
        * @memberof oj.ojSwitch
        */
       disabled: false,
-
       /**
-       * Whether the component is readOnly. The element's
-       * <code class="prettyprint">readOnly</code>
-       *  property is used as its initial
-       * value if it exists, when the attribute is not explicitly set. When neither is set,
-       * <code class="prettyprint">readOnly </code>
-       * defaults to false.
+       * <p>
+       * The oj-label sets the labelledBy property programmatically on the form component
+       * to make it easy for the form component to find its oj-label component (a
+       * document.getElementById call.)
+       * </p>
+       * <p>
+       * The application developer should use the 'for'/'id api
+       * to link the oj-label with the form component;
+       * the 'for' on the oj-label to point to the 'id' on the input form component.
+       * This is the most performant way for the oj-label to find its form component.
+       * </p>
+       *
+       * @example <caption>Initialize component with <code class="prettyprint">for</code> attribute:</caption>
+       * &lt;oj-label for="switchId">Name:&lt;/oj-label>
+       * &lt;oj-switch id="switchId">
+       * &lt;/oj-switch>
+       * // ojLabel then writes the labelled-by attribute on the oj-switch.
+       * &lt;oj-label id="labelId" for="switchId">Name:&lt;/oj-label>
+       * &lt;oj-switch id="switchId" labelled-by"labelId">
+       * &lt;/oj-switch>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
+       * // getter
+       * var labelledBy = myComp.labelledBy;
+       *
+       * // setter
+       * myComp.labelledBy = "labelId";
+       * @ojshortdesc The oj-label sets the labelledBy property
+       * programmatically on the form component.
+       * @expose
+       * @type {string|null}
+       * @default null
+       * @public
+       * @instance
+       * @since 7.0.0
+       * @memberof oj.ojSwitch
+       */
+      labelledBy: null,
+      /**
+       * Whether the component is readonly. The readOnly property sets or returns whether an element is readOnly, or not.
+       * A readOnly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
+       * If you want to prevent the user from interacting with the element, use the disabled property instead. The element's
+       * <code class="prettyprint">readOnly</code> property is used as its initial value if it exists, when the attribute is not explicitly set.
+       *  When neither is set, <code class="prettyprint">readOnly </code> defaults to false.
        *
        * @example <caption>Initialize the switch with
        * <code class="prettyprint">readOnly</code> attribute:</caption>
@@ -286,6 +323,7 @@ var __oj_switch_metadata =
        *
        *
        * @expose
+       * @ojshortdesc Specifies whether the component is read-only. A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
        * @type {boolean}
        * @alias readonly
        * @default false
@@ -295,7 +333,7 @@ var __oj_switch_metadata =
       readOnly: false,
 
       /**
-       * The state of the switch component (true/false).
+       * The boolean state of the switch component.
        *
        * @example <caption>Initialize component (switch is ON) with
        * <code class="prettyprint">value</code> attribute:</caption>
@@ -506,8 +544,12 @@ var __oj_switch_metadata =
       var labelElementId;
       if (this._IsCustomElement()) {
         // Custom element case
-        var defaultLabelId = this.uuid + '_Label';
-        labelElementId = oj.EditableValueUtils.getOjLabelId(this.widget(), defaultLabelId);
+        if (this.options.labelledBy) {
+          var defaultLabelId = this.uuid + '_Label';
+          labelElementId =
+          oj.EditableValueUtils._getOjLabelAriaLabelledBy(
+            this.options.labelledBy, defaultLabelId);
+        }
       } else {
         // Non custom element case
         var label = this._GetLabelElement();
@@ -631,8 +673,9 @@ var __oj_switch_metadata =
         }
       },
       mouseup: function (event) {
-        // LEFT MOUSE BUTTON will change the switch
-        if (event.which === 1) {
+        // LEFT MOUSE BUTTON will change the switch and we want to ignore touch events here
+        // so we don't toggle the value twice.
+        if (event.which === 1 && this._isRealMouseEvent(event)) {
           this._SetValue(!this.option('value'), event);
         }
       },
@@ -767,9 +810,26 @@ var __oj_switch_metadata =
         default:
           coercedValue = value;
       }
+      // need to coerceValues first
       this._super(key, coercedValue, flags);
+
+      switch (key) {
+        case 'labelledBy':
+          this._SetAriaInfo(this.switchThumb);
+          break;
+        default:
+          break;
+      }
     },
 
+    /**
+     * @private
+     * @memberof oj.ojSwitch
+     * @return {boolean} true if there is no touch detected within the last 500 ms
+     */
+    _isRealMouseEvent: function () {
+      return !oj.DomUtils.recentTouchEnd();
+    },
     /**
      * Used for explicit cases where the component needs to be refreshed
      * (e.g., when the value option changes or other UI gestures).

@@ -3,18 +3,17 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtToolkit', 'ojs/ojlocaledata', 'ojs/ojlogger', 'ojs/ojvalidation-datetime'], 
-  function(oj, $, Config, comp, base, dvt, LocaleData, Logger)
+define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtToolkit', 'ojs/ojlocaledata', 'ojs/ojlogger', 'ojs/ojvalidation-base', 'ojs/ojvalidation-datetime'], 
+function(oj, $, Config, comp, base, dvt, LocaleData, Logger, __ValidationBase)
 {
-
+  "use strict";
 /** This file is generated. Do not edit directly. Actual file located in 3rdparty/dvt/prebuild.**/
 /**
  * Copyright (c) 2016, Oracle and/or its affiliates.
  * All rights reserved.
  */
 
-/* global Promise:true, LocaleData:false, Logger:false, Config:false */
+/* global LocaleData:false, Logger:false, Config:false, __ValidationBase:false */
 
 /**
  * @ojcomponent oj.dvtTimeComponent
@@ -25,50 +24,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdv
  */
 oj.__registerWidget('oj.dvtTimeComponent', $.oj.dvtBaseComponent,
   {
+    /**
+     * @override
+     * @memberof oj.dvtTimeComponent
+     * @protected
+     */
+    _ComponentCreate: function () {
+      this._super();
+      this._SetLocaleHelpers(__ValidationBase);
+    },
     //* * @inheritdoc */
     _GetEventTypes: function () {
       return ['optionChange', 'viewportChange'];
-    },
-
-    //* * @inheritdoc */
-    _GetTranslationMap: function () {
-      var ret = this._super();
-      // Add full month strings
-      var monthNames = LocaleData.getMonthNames('wide');
-      ret['DvtUtilBundle.MONTH_JANUARY'] = monthNames[0];
-      ret['DvtUtilBundle.MONTH_FEBRUARY'] = monthNames[1];
-      ret['DvtUtilBundle.MONTH_MARCH'] = monthNames[2];
-      ret['DvtUtilBundle.MONTH_APRIL'] = monthNames[3];
-      ret['DvtUtilBundle.MONTH_MAY'] = monthNames[4];
-      ret['DvtUtilBundle.MONTH_JUNE'] = monthNames[5];
-      ret['DvtUtilBundle.MONTH_JULY'] = monthNames[6];
-      ret['DvtUtilBundle.MONTH_AUGUST'] = monthNames[7];
-      ret['DvtUtilBundle.MONTH_SEPTEMBER'] = monthNames[8];
-      ret['DvtUtilBundle.MONTH_OCTOBER'] = monthNames[9];
-      ret['DvtUtilBundle.MONTH_NOVEMBER'] = monthNames[10];
-      ret['DvtUtilBundle.MONTH_DECEMBER'] = monthNames[11];
-
-      // Add full day strings
-      var dayNames = LocaleData.getDayNames('wide');
-      ret['DvtUtilBundle.DAY_SUNDAY'] = dayNames[0];
-      ret['DvtUtilBundle.DAY_MONDAY'] = dayNames[1];
-      ret['DvtUtilBundle.DAY_TUESDAY'] = dayNames[2];
-      ret['DvtUtilBundle.DAY_WEDNESDAY'] = dayNames[3];
-      ret['DvtUtilBundle.DAY_THURSDAY'] = dayNames[4];
-      ret['DvtUtilBundle.DAY_FRIDAY'] = dayNames[5];
-      ret['DvtUtilBundle.DAY_SATURDAY'] = dayNames[6];
-
-      // Add abbreviated day strings
-      var dayShortNames = LocaleData.getDayNames('abbreviated');
-      ret['DvtUtilBundle.DAY_SHORT_SUNDAY'] = dayShortNames[0];
-      ret['DvtUtilBundle.DAY_SHORT_MONDAY'] = dayShortNames[1];
-      ret['DvtUtilBundle.DAY_SHORT_TUESDAY'] = dayShortNames[2];
-      ret['DvtUtilBundle.DAY_SHORT_WEDNESDAY'] = dayShortNames[3];
-      ret['DvtUtilBundle.DAY_SHORT_THURSDAY'] = dayShortNames[4];
-      ret['DvtUtilBundle.DAY_SHORT_FRIDAY'] = dayShortNames[5];
-      ret['DvtUtilBundle.DAY_SHORT_SATURDAY'] = dayShortNames[6];
-
-      return ret;
     },
 
     //* * @inheritdoc */
@@ -148,83 +115,101 @@ oj.__registerWidget('oj.dvtTimeComponent', $.oj.dvtBaseComponent,
     },
 
     //* * @inheritdoc */
-    _ProcessTemplates: function (dataProperty, data, templateEngine) {
-      var self = this;
-      var seriesConfig = this._GetDataProviderSeriesConfig();
-      var parentElement = this.element[0];
-      var pathValues = this._super(dataProperty, data, templateEngine);
-      if (seriesConfig && dataProperty === seriesConfig.dataProperty) {
-        var seriesArray = []; // The final series array
-        var seriesObj;
+    _ProcessTemplates: function (dataProperty, data, templateEngine, isTreeData,
+      parentKey, isRoot, updateChildren) {
+      var results = isRoot ? this._TemplateHandler.getComponentResults(dataProperty) : null;
+      if (!results) {
+        var self = this;
+        var seriesConfig = this._GetDataProviderSeriesConfig();
+        var parentElement = this.element[0];
+        var pathValues = this._super(dataProperty, data, templateEngine, isTreeData,
+          parentKey, isRoot, updateChildren);
+        if (seriesConfig && dataProperty === seriesConfig.dataProperty && !isTreeData) {
+          var seriesArray = []; // The final series array
+          var seriesObj;
 
-        // derive series contexts for series templates, and populate barebones series array
-        var seriesContexts = {};
-        var seriesContext;
-        var items = pathValues.values[0];
-        var seriesIndex = 0;
-        var idAttribute = seriesConfig.idAttribute;
-        var itemsKey = seriesConfig.itemsKey;
-        var i;
-        for (i = 0; i < items.length; i++) {
-          var itemObj = items[i];
-          var itemContext = {
-            data: itemObj._itemData,
-            key: itemObj.id,
-            index: i,
-            componentElement: parentElement
-          };
-          // For Timeline, series id is required and so is always available
-          // For Gantt, if no row id specified, then it's assumed to be one task per row; use task id as row id
-          var seriesId = itemObj[idAttribute] != null ? itemObj[idAttribute] : itemObj.id;
-          if (!seriesContexts[seriesId]) {
-            seriesContext = {
-              componentElement: parentElement,
-              id: seriesId,
-              index: seriesIndex
+          // derive series contexts for series templates, and populate barebones series array
+          var seriesContexts = {};
+          var seriesContext;
+          var items = pathValues.values[0];
+          var seriesIndex = 0;
+          var defaultSingleSeries = seriesConfig.defaultSingleSeries;
+          var idAttribute = seriesConfig.idAttribute;
+          var itemsKey = seriesConfig.itemsKey;
+          var i;
+
+          for (i = 0; i < items.length; i++) {
+            var seriesId;
+            var itemObj = items[i];
+            var itemContext = {
+              data: itemObj._itemData,
+              key: itemObj.id,
+              index: i
             };
-            seriesContext[itemsKey] = [itemContext];
 
-            seriesContexts[seriesId] = seriesContext;
-            seriesIndex += 1;
+            // For Timeline, if no series id specified, then group all items into a single series with no id
+            // For Gantt, if no row id specified, then it's assumed to be one task per row; use task id as row id
+            if (itemObj[idAttribute] != null) {
+              seriesId = itemObj[idAttribute];
+            } else if (defaultSingleSeries) {
+              seriesId = '';
+            } else {
+              seriesId = itemObj.id;
+            }
 
-            seriesObj = { id: seriesId };
-            seriesObj[itemsKey] = [itemObj];
-            seriesArray.push(seriesObj);
-          } else {
-            seriesContexts[seriesId][itemsKey].push(itemContext);
-            seriesArray[seriesContexts[seriesId].index][itemsKey].push(itemObj);
-          }
-        }
+            if (!seriesContexts[seriesId]) {
+              seriesContext = {
+                componentElement: parentElement,
+                id: seriesId,
+                index: seriesIndex
+              };
+              seriesContext[itemsKey] = [itemContext];
 
-        var seriesTemplateName = seriesConfig.templateName;
-        var seriesTemplateElementName = seriesConfig.templateElementName;
-        var seriesTemplate = self.getTemplates()[seriesTemplateName];
+              seriesContexts[seriesId] = seriesContext;
+              seriesIndex += 1;
 
-        // If provided, augment each series in the array with template evaluated properties
-        if (seriesTemplate) {
-          var alias = self.options.as;
-          var seriesTemplateTopProperties = self.getElementPropertyNames(seriesTemplateElementName);
-          var seriesPropertyValidator = this.getPropertyValidator(seriesTemplate[0],
-            seriesTemplateElementName);
-          for (i = 0; i < seriesArray.length; i++) {
-            seriesObj = seriesArray[i];
-            seriesContext = seriesContexts[seriesObj.id];
-            try {
-              var resolvedSeriesObj = templateEngine.resolveProperties(parentElement,
-                seriesTemplate[0], seriesTemplateElementName, seriesTemplateTopProperties,
-                seriesContext, alias, seriesPropertyValidator);
-              resolvedSeriesObj.id = seriesObj.id;
-              resolvedSeriesObj[itemsKey] = seriesObj[itemsKey];
-              seriesArray[i] = resolvedSeriesObj;
-            } catch (error) {
-              Logger.error(error);
+              seriesObj = { id: seriesId };
+              seriesObj[itemsKey] = [itemObj];
+              seriesArray.push(seriesObj);
+            } else {
+              seriesContexts[seriesId][itemsKey].push(itemContext);
+              seriesArray[seriesContexts[seriesId].index][itemsKey].push(itemObj);
             }
           }
+
+          var seriesTemplateName = seriesConfig.templateName;
+          var seriesTemplateElementName = seriesConfig.templateElementName;
+          var seriesTemplate = self._TemplateHandler.getTemplates()[seriesTemplateName];
+
+          // If provided, augment each series in the array with template evaluated properties
+          if (seriesTemplate) {
+            seriesTemplate = seriesTemplate[0];
+            for (i = 0; i < seriesArray.length; i++) {
+              seriesObj = seriesArray[i];
+              seriesContext = seriesContexts[seriesObj.id];
+              try {
+                var resolvedSeriesObj = this._TemplateHandler.processNodeTemplate(dataProperty,
+                  templateEngine, seriesTemplate, seriesTemplateElementName,
+                  seriesContext, seriesObj.id);
+                resolvedSeriesObj.id = seriesObj.id;
+                resolvedSeriesObj[itemsKey] = seriesObj[itemsKey];
+                seriesArray[i] = resolvedSeriesObj;
+              } catch (error) {
+                Logger.error(error);
+              }
+            }
+          }
+
+          results = { paths: pathValues.paths, values: [seriesArray] };
+        } else {
+          results = pathValues;
         }
 
-        return { paths: pathValues.paths, values: [seriesArray] };
+        if (isRoot) {
+          this._TemplateHandler.setComponentResults(dataProperty, results);
+        }
       }
-      return pathValues;
+      return results;
     },
 
     /**

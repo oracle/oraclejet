@@ -39,7 +39,7 @@
     .oj-combobox-search-field {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        line-height: var(--oj-form-control-trigger-height);
+        line-height: var(--oj-text-field-trigger-height);
       } @else {
         line-height: $formControlTriggerHeight;
       }

@@ -23,11 +23,12 @@
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
           font-size: var(--oj-font-size-sm);
           color: var(--oj-text-color);
+          user-select: none;
       } @else {
           font-size: $smallFontSize;
           color: $textColor;
+          @include oj-user-select-property(none);
       }
-      @include oj-user-select-property(none);
       width:400px;
       height:400px;
     }

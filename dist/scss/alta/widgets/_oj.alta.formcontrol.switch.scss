@@ -28,7 +28,7 @@
 	.oj-switch.oj-selected.oj-read-only .oj-switch-thumb {
     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
     {
-      font-size: var(--oj-form-control-font-size-read-only);
+      font-size: var(--oj-text-field-font-size-read-only);
       margin-top: -0.5rem;
     } @else {
       font-size: $formControlFontSizeReadOnly;

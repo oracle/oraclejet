@@ -3,9 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'knockout', 'ojs/ojtemplateengine', 'ojs/ojlogger', 'ojs/ojkoshared'], function(oj, ko, templateEngine, Logger, BindingProviderImpl)
 {
+  "use strict";
 /* global BindingProviderImpl:false */
 /**
  * @protected
@@ -88,7 +88,7 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojtemplateengine', 'ojs/ojlogger', 'ojs/o
   }
 }());
 
-/* global ko:false */
+/* global ko:false, Logger: false */
 
 /**
  * @ignore
@@ -108,7 +108,10 @@ oj.CompositeTemplateRenderer.renderTemplate = function (params, element, view) {
 
   // Attached is deprecated in 4.2.0 for connected which is called when the view is first attached to the DOM
   // and then each time the component is connected to the DOM after a disconnect
-  oj.CompositeTemplateRenderer.invokeViewModelMethod(params.viewModel, 'attached', [params.viewModelContext]);
+  var deprecationMessageFunction = function () {
+    return oj.BaseCustomElementBridge.getElementInfo(element) + ": The ViewModel 'attached' callback is scheduled for removal.  Use the 'connected' callback instead.";
+  };
+  oj.CompositeTemplateRenderer.invokeViewModelMethod(params.viewModel, 'attached', [params.viewModelContext], deprecationMessageFunction);
   oj.CompositeTemplateRenderer.invokeViewModelMethod(params.viewModel, 'connected', [params.viewModelContext]);
 
   var bindingContext = oj.CompositeTemplateRenderer._getKoBindingContext();
@@ -160,16 +163,20 @@ oj.CompositeTemplateRenderer.createTracker = function () {
 /**
  * @ignore
  */
-oj.CompositeTemplateRenderer.invokeViewModelMethod = function (model, name, args) {
-  if (model == null) {
+oj.CompositeTemplateRenderer.invokeViewModelMethod =
+  function (model, name, args, deprecationMessageFunction) {
+    if (model == null) {
+      return undefined;
+    }
+    var handler = model[name];
+    if (typeof handler === 'function') {
+      if (deprecationMessageFunction) {
+        Logger.error(deprecationMessageFunction());
+      }
+      return ko.ignoreDependencies(handler, model, args);
+    }
     return undefined;
-  }
-  var handler = model[name];
-  if (typeof handler === 'function') {
-    return ko.ignoreDependencies(handler, model, args);
-  }
-  return undefined;
-};
+  };
 
 /**
  * @ignore
@@ -185,7 +192,7 @@ oj.CompositeTemplateRenderer._storeNodes = function (element, view) {
     var assignableNodes = [];
     for (var i = 0; i < childNodes.length; i++) {
       var node = childNodes[i];
-      if (oj.BaseCustomElementBridge.isSlotAssignable(node)) {
+      if (oj.BaseCustomElementBridge.isSlotable(node)) {
         assignableNodes.push(node);
       }
     }
@@ -264,7 +271,10 @@ ko.bindingHandlers._ojBindSlot_ =
       // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
       if (oj.Components) {
         for (i = 0; i < assignedNodes.length; i++) {
-          oj.Components.subtreeShown(assignedNodes[i]);
+          var assignedNode = assignedNodes[i];
+          if (assignedNode.nodeType === 1) {
+            oj.Components.subtreeShown(assignedNode);
+          }
         }
       }
       return { controlsDescendantBindings: true };
@@ -395,7 +405,7 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
 /**
  * @ojstatus preview
  * @ojcomponent oj.ojBindSlot
- * @ojshortdesc A placeholder for child DOM to appear in a specified slot.
+ * @ojshortdesc An oj-bind-slot acts as a placeholder for child DOM to appear in a specified slot.
  * @ojbindingelement
  * @ojmodule ojcomposite
  * @since 4.1.0
@@ -686,6 +696,7 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  * @ojstatus preview
  * @ojchild Default
  * @memberof oj.ojBindSlot
+ * @ojshortdesc The oj-bind-slot default slot is used to specify fallback content which will be used in the DOM if the slot has no assigned nodes.
  * @instance
  * @expose
  */
@@ -693,7 +704,7 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
 /**
  * @ojstatus preview
  * @ojcomponent oj.ojBindTemplateSlot
- * @ojshortdesc A placeholder for stamped child DOM to appear in a specified slot.
+ * @ojshortdesc An oj-bind-template-slot acts as a placeholder for stamped child DOM to appear in a specified slot.
  * @ojbindingelement
  * @ojmodule ojcomposite
  * @since 5.1.0
@@ -756,7 +767,7 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  *  bindings are applied and are resolved in the application's binding context extended with additional
  *  properties provided by the composite. These additional properties are available on the $current
  *  variable in the application provided template node and should be documented in the composite's
- *  <a href="MetadataOverview.html#slots>slot metadata</a>.
+ *  <a href="MetadataOverview.html#slots">slot metadata</a>.
  * </p>
  *
  * <h3 id="example1-section">
@@ -819,6 +830,7 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  * @expose
  * @name as
  * @memberof oj.ojBindTemplateSlot
+ * @ojshortdesc An optional component-level alias for the context variable that can be referenced inside the default template DOM.
  * @instance
  * @type {string}
  * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
@@ -839,6 +851,7 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  * @expose
  * @name data
  * @memberof oj.ojBindTemplateSlot
+ * @ojshortdesc The object containing additional context variables to extend the stamped template nodes's binding context.
  * @instance
  * @type {Object}
  * @example <caption>Define a slot within a composite View with the name "foo":</caption>
@@ -882,6 +895,7 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  * @ojchild Default
  * @ojmaxitems 1
  * @memberof oj.ojBindTemplateSlot
+ * @ojshortdesc The oj-bind-template-slot default slot is used to specify a fallback template that will be used to stamp child DOM if the slot has no assigned template nodes.
  * @instance
  * @expose
  */

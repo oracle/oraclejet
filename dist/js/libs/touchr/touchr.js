@@ -16,7 +16,7 @@
 		IE_11_PLUS	= (!!window.navigator.pointerEnabled || !!window.PointerEvent);
 
 	// Only pointer enabled browsers without touch capability.
-	if (!!window.navigator.maxTouchPoints > 0 && (IE_10 || (IE_11_PLUS && !('ontouchstart' in window)))) {
+	if (!!window.navigator.maxTouchPoints > 0 && (IE_10 || (IE_11_PLUS && !window.TouchEvent))) {
 		var document = window.document,
 			POINTER_DOWN		= IE_11_PLUS ? "pointerdown"	: "MSPointerDown",
 			POINTER_UP 			= IE_11_PLUS ? "pointerup"		: "MSPointerUp",

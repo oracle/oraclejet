@@ -1,7 +1,6 @@
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojSwitcher extends JetElement<ojSwitcherSettableProperties> {
     value: string;
-    onValueChanged: ((event: JetElementCustomEvent<ojSwitcher["value"]>) => any) | null;
     addEventListener<T extends keyof ojSwitcherEventMap>(type: T, listener: (this: HTMLElement, ev: ojSwitcherEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojSwitcherSettableProperties>(property: T): ojSwitcher[T];
@@ -10,6 +9,10 @@ export interface ojSwitcher extends JetElement<ojSwitcherSettableProperties> {
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojSwitcherSettableProperties>): void;
     setProperties(properties: ojSwitcherSettablePropertiesLenient): void;
     refresh(): void;
+}
+export namespace ojSwitcher {
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojSwitcher["value"]>;
 }
 export interface ojSwitcherEventMap extends HTMLElementEventMap {
     'valueChanged': JetElementCustomEvent<ojSwitcher["value"]>;

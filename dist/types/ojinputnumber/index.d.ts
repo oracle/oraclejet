@@ -5,7 +5,8 @@ export interface ojInputNumber extends editableValue<number | null, ojInputNumbe
     asyncValidators: Array<AsyncValidator<number>>;
     autocomplete: 'on' | 'off' | string;
     autofocus: boolean;
-    converter: Converter<number> | Validation.RegisteredConverter;
+    converter: Promise<Converter<number>> | Converter<number> | Validation.RegisteredConverter;
+    labelledBy: string | null;
     max: number | null;
     min: number | null;
     placeholder: string | null;
@@ -43,23 +44,6 @@ export interface ojInputNumber extends editableValue<number | null, ojInputNumbe
         tooltipDecrement?: string;
         tooltipIncrement?: string;
     };
-    onAsyncValidatorsChanged: ((event: JetElementCustomEvent<ojInputNumber["asyncValidators"]>) => any) | null;
-    onAutocompleteChanged: ((event: JetElementCustomEvent<ojInputNumber["autocomplete"]>) => any) | null;
-    onAutofocusChanged: ((event: JetElementCustomEvent<ojInputNumber["autofocus"]>) => any) | null;
-    onConverterChanged: ((event: JetElementCustomEvent<ojInputNumber["converter"]>) => any) | null;
-    onMaxChanged: ((event: JetElementCustomEvent<ojInputNumber["max"]>) => any) | null;
-    onMinChanged: ((event: JetElementCustomEvent<ojInputNumber["min"]>) => any) | null;
-    onPlaceholderChanged: ((event: JetElementCustomEvent<ojInputNumber["placeholder"]>) => any) | null;
-    onRawValueChanged: ((event: JetElementCustomEvent<ojInputNumber["rawValue"]>) => any) | null;
-    onReadonlyChanged: ((event: JetElementCustomEvent<ojInputNumber["readonly"]>) => any) | null;
-    onRequiredChanged: ((event: JetElementCustomEvent<ojInputNumber["required"]>) => any) | null;
-    onStepChanged: ((event: JetElementCustomEvent<ojInputNumber["step"]>) => any) | null;
-    onTransientValueChanged: ((event: JetElementCustomEvent<ojInputNumber["transientValue"]>) => any) | null;
-    onValidatorsChanged: ((event: JetElementCustomEvent<ojInputNumber["validators"]>) => any) | null;
-    onValueChanged: ((event: JetElementCustomEvent<ojInputNumber["value"]>) => any) | null;
-    onVirtualKeyboardChanged: ((event: JetElementCustomEvent<ojInputNumber["virtualKeyboard"]>) => any) | null;
-    onOjAnimateEnd: ((event: ojInputNumber.ojAnimateEnd) => any) | null;
-    onOjAnimateStart: ((event: ojInputNumber.ojAnimateStart) => any) | null;
     addEventListener<T extends keyof ojInputNumberEventMap>(type: T, listener: (this: HTMLElement, ev: ojInputNumberEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojInputNumberSettableProperties>(property: T): ojInputNumber[T];
@@ -86,6 +70,38 @@ export namespace ojInputNumber {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type asyncValidatorsChanged = JetElementCustomEvent<ojInputNumber["asyncValidators"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type autocompleteChanged = JetElementCustomEvent<ojInputNumber["autocomplete"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type autofocusChanged = JetElementCustomEvent<ojInputNumber["autofocus"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type converterChanged = JetElementCustomEvent<ojInputNumber["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojInputNumber["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojInputNumber["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged = JetElementCustomEvent<ojInputNumber["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type placeholderChanged = JetElementCustomEvent<ojInputNumber["placeholder"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rawValueChanged = JetElementCustomEvent<ojInputNumber["rawValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyChanged = JetElementCustomEvent<ojInputNumber["readonly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type requiredChanged = JetElementCustomEvent<ojInputNumber["required"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type stepChanged = JetElementCustomEvent<ojInputNumber["step"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type transientValueChanged = JetElementCustomEvent<ojInputNumber["transientValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validatorsChanged = JetElementCustomEvent<ojInputNumber["validators"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojInputNumber["value"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type virtualKeyboardChanged = JetElementCustomEvent<ojInputNumber["virtualKeyboard"]>;
 }
 export interface ojInputNumberEventMap extends editableValueEventMap<number | null, ojInputNumberSettableProperties, number | null, string> {
     'ojAnimateEnd': ojInputNumber.ojAnimateEnd;
@@ -94,6 +110,7 @@ export interface ojInputNumberEventMap extends editableValueEventMap<number | nu
     'autocompleteChanged': JetElementCustomEvent<ojInputNumber["autocomplete"]>;
     'autofocusChanged': JetElementCustomEvent<ojInputNumber["autofocus"]>;
     'converterChanged': JetElementCustomEvent<ojInputNumber["converter"]>;
+    'labelledByChanged': JetElementCustomEvent<ojInputNumber["labelledBy"]>;
     'maxChanged': JetElementCustomEvent<ojInputNumber["max"]>;
     'minChanged': JetElementCustomEvent<ojInputNumber["min"]>;
     'placeholderChanged': JetElementCustomEvent<ojInputNumber["placeholder"]>;
@@ -110,7 +127,8 @@ export interface ojInputNumberSettableProperties extends editableValueSettablePr
     asyncValidators: Array<AsyncValidator<number>>;
     autocomplete: 'on' | 'off' | string;
     autofocus: boolean;
-    converter: Converter<number> | Validation.RegisteredConverter;
+    converter: Promise<Converter<number>> | Converter<number> | Validation.RegisteredConverter;
+    labelledBy: string | null;
     max: number | null;
     min: number | null;
     placeholder: string | null;

@@ -3,9 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'ojL10n!ojtranslations/nls/localeElements'], function(oj, ojld)
 {
+  "use strict";
 /*
 ** Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 **

@@ -3,10 +3,9 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
 define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojthemeutils', 'ojs/ojanimation', 'promise'], function(oj, ko, $, ThemeUtils, AnimationUtils)
 {
-
+  "use strict";
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
@@ -26,7 +25,7 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojthemeutils', 'ojs/ojanimation
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#module-layout-section"></a>
  * </h3>
  *
- * Guidelines on laying out ojModule views to acheive smoother animation:
+ * Guidelines on laying out ojModule views to achieve smoother animation:
  * <ul>
  * <li>The ojModule binding should be placed on a container div that has a dimension
  * independent of its children.  During view switch, new view is inserted and old view
