@@ -10702,7 +10702,16 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
   _CompareOptionValues: function (option, value1, value2) {
     switch (option) {
       case 'currentItem':
+        return oj.Object.compareValues(value1, value2);
       case 'selection':
+        if (value1 && value1.inverted === undefined) {
+          // eslint-disable-next-line no-param-reassign
+          value1.inverted = false;
+        }
+        if (value2 && value2.inverted === undefined) {
+          // eslint-disable-next-line no-param-reassign
+          value2.inverted = false;
+        }
         if (value1 && value2 && value1.inverted !== value2.inverted) {
           return false;
         }

@@ -3351,9 +3351,12 @@ var __oj_select_one_metadata =
                       parent: resultsParent,
                       data: contextData,
                       component: opts.ojContext,
-                      componentElement: self.container[0],
                       parentElement: labelNode.get(0)
                     };
+
+                    if (opts.ojContext._FixRendererContext) {
+                      context = opts.ojContext._FixRendererContext(context);
+                    }
 
                     // if an element is returned from the renderer and
                     // the parent of that element is null, we will append
@@ -8667,7 +8670,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
 
       /**
        * @typedef {Object} oj.ojCombobox.OptionContext
-       * @property {Element} component A reference to the combobox element.
+       * @property {Element} componentElement A reference to the combobox element.
        * @property {?Element} parent The parent of the data item. The parent is null for root node.
        * @property {number} index The index of the option, where 0 is the index of the first option. In the hierarchical case the index is relative to its parent.
        * @property {number } depth The depth of the option. The depth of the first level children under the invisible root is 0.
@@ -8750,7 +8753,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        *   </thead>
        *   <tbody>
        *     <tr>
-       *       <td><kbd>component</kbd></td>
+       *       <td><kbd>componentElement</kbd></td>
        *       <td>A reference to the Combobox element.</td>
        *     </tr>
        *     <tr>
@@ -12351,7 +12354,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
 
       /**
        * @typedef {Object} oj.ojSelect.OptionContext
-       * @property {Element} component A reference to the Select element.
+       * @property {Element} componentElement A reference to the Select element.
        * @property {?Element} parent The parent of the data item. The parent is null for root node.
        * @property {number} index The index of the option, where 0 is the index of the first option. In the hierarchical case the index is relative to its parent.
        * @property {number } depth The depth of the option. The depth of the first level children under the invisible root is 0.
@@ -12434,7 +12437,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        *   </thead>
        *   <tbody>
        *     <tr>
-       *       <td><kbd>component</kbd></td>
+       *       <td><kbd>componentElement</kbd></td>
        *       <td>A reference to the Select element.</td>
        *     </tr>
        *     <tr>

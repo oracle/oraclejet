@@ -325,7 +325,7 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       _createIcons: function () {
         var options = this.options;
         var icon = (options.expanded ? OPEN_ICON : CLOSE_ICON);
-        var iconTag = this._isDisabled() ? $('<span>') : $('<a>');
+        var iconTag = this._isDisabled() ? $('<span>') : $('<a href="#">');
 
         iconTag.addClass('oj-component-icon oj-clickable-icon-nocontext oj-collapsible-header-icon ' + icon)
         .attr('aria-labelledby', this.header.attr('id'))

@@ -925,6 +925,9 @@ var __oj_tree_view_metadata =
 
         this._dropLineRect = this._dropLine[0].getBoundingClientRect();
         this._dropLine.hide();
+
+        this._refreshId = 0;
+        this._uiExpanded = new oj.ExpandedKeySet();
       },
 
       /**
@@ -989,9 +992,16 @@ var __oj_tree_view_metadata =
         var self = this;
         var dataProviderPromiseBusyResolve = self._addBusyState('getting data provider');
         var dataProviderPromise = self._getDataProvider();
+        var refreshing = this._refreshId;
+
         dataProviderPromise.then(function (dataProvider) {
-          self.m_dataSource = dataProvider;
           dataProviderPromiseBusyResolve();
+
+          // bail out of the fetch if the component was refreshed
+          if (self._refreshId !== refreshing) {
+            return;
+          }
+          self.m_dataSource = dataProvider;
 
           var childDataProvider = parentKey === null ? dataProvider :
             dataProvider.getChildDataProvider(parentKey);
@@ -1012,6 +1022,10 @@ var __oj_tree_view_metadata =
               }
               var nextPromise = dataProviderAsyncIterator.next();
               var fetchMoreData = nextPromise.then(function (value) {
+                // bail out of the fetch if the component was refreshed
+                if (self._refreshId !== refreshing) {
+                  return null;
+                }
                 // eslint-disable-next-line no-param-reassign
                 values[0].done = value.done;
                 // eslint-disable-next-line no-param-reassign
@@ -1027,11 +1041,20 @@ var __oj_tree_view_metadata =
             };
 
             Promise.all([promise, enginePromise]).then(function (values) {
+              // bail out of the fetch if the component was refreshed
+              if (self._refreshId !== refreshing) {
+                return null;
+              }
               return helperFunction(values);
             }, function (reason) {
               Logger.error('Error fetching data: ' + reason);
               busyResolve();
             }).then(function (values) {
+              // bail out of the fetch if the component was refreshed
+              if (self._refreshId !== refreshing) {
+                busyResolve();
+                return;
+              }
               successFunc(values);
               busyResolve();
             });
@@ -1461,9 +1484,9 @@ var __oj_tree_view_metadata =
        * @return {boolean}
        * @private
        */
-      _isInitExpanded: function (item) {
+      _isInitExpanded: function (item, uiExpanded) {
         var key = this._getKey(item);
-        var expanded = this.options.expanded;
+        var expanded = uiExpanded != null ? uiExpanded : this.options.expanded;
         return (expanded && expanded.has) ? expanded.has(key) : false;
       },
 
@@ -1479,6 +1502,47 @@ var __oj_tree_view_metadata =
       },
 
       /**
+       * Whether the group item is currently in the middle of expanding/collapsing
+       * @param {Object} key the key of the group item
+       * @return {boolean} true if it's expanding/collapsing, false otherwise
+       * @private
+       */
+      _isDisclosing: function (key) {
+        if (key && this.m_disclosing) {
+          return (this.m_disclosing.indexOf(key) > -1);
+        }
+
+        return false;
+      },
+
+      /**
+       * Marks a group item as currently in the middle of expanding/collapsing
+       * @param {Object} key the key of the group item
+       * @param {boolean} flag true or false
+       * @private
+       */
+      _setDisclosing: function (key, flag) {
+        if (key == null) {
+          return;
+        }
+
+        if (this.m_disclosing == null) {
+          this.m_disclosing = [];
+        }
+
+        if (flag) {
+          this.m_disclosing.push(key);
+        } else {
+          // there should be at most one entry, but just in case remove all occurrences
+          var index = this.m_disclosing.indexOf(key);
+          while (index > -1) {
+            this.m_disclosing.splice(index, 1);
+            index = this.m_disclosing.indexOf(key);
+          }
+        }
+      },
+
+      /**
        * Expands an item.
        * @param {jQuery} item The TreeView item element.
        * @param {boolean} animate Whether the expand should be animated.
@@ -1489,7 +1553,8 @@ var __oj_tree_view_metadata =
       _expand: function (item, animate, event, vetoable) {
         var self = this;
 
-        if (this._isExpanded(item) || this._isLeaf(item)) {
+        if (this._isExpanded(item) || this._isLeaf(item) ||
+          (animate && this._isDisclosing(this._getKey(item)))) {
           return;
         }
 
@@ -1504,7 +1569,16 @@ var __oj_tree_view_metadata =
 
         var subtree = this._getSubtree(item);
         if (subtree.length === 0) {
+          this._uiExpanded = this._uiExpanded.add([self._getKey(item)]);
           this._fetchChildren(self._getKey(item), function (response) {
+            // if the item is already expanded or is no longer in the expanded option bail early
+            // no need to check refreshId because is handled at fetchChildren layer
+            // uiExpanded is used because on ui gesture the expanded is not set until
+            // fetch/animation completes, so we need an internal expanded option to track that
+            if (self._isExpanded(item) || (!self._isInitExpanded(item) &&
+             !self._isInitExpanded(item, self._uiExpanded))) {
+              return;
+            }
             var fetchListResult = response[0];
             self._renderItems(fetchListResult.value, item);
             self._expandAfterFetch(item, animate, event);
@@ -1533,8 +1607,10 @@ var __oj_tree_view_metadata =
         if (animate) {
           var busyResolve = this._addBusyState('animating expand');
           item.addClass('oj-treeview-animated'); // animation flag
+          self._setDisclosing(self._getKey(item), true);
 
           this._startAnimation(subtree, 'expand').then(function () {
+            self._setDisclosing(self._getKey(item), false);
             item.removeClass('oj-treeview-animated');
             self._trigger('expand', event, self._getEventPayload(item));
 
@@ -1559,7 +1635,8 @@ var __oj_tree_view_metadata =
       _collapse: function (item, animate, event, vetoable) {
         var self = this;
 
-        if (item.hasClass('oj-collapsed') || this._isLeaf(item)) {
+        if (item.hasClass('oj-collapsed') || this._isLeaf(item) ||
+          (animate && this._isDisclosing(this._getKey(item)))) {
           return;
         }
 
@@ -1568,6 +1645,7 @@ var __oj_tree_view_metadata =
           if (cancelled && vetoable !== false) {
             return;
           }
+          this._setDisclosing(this._getKey(item), true);
         }
 
         item.removeClass('oj-expanded').addClass('oj-collapsed').attr('aria-expanded', 'false');
@@ -1579,7 +1657,11 @@ var __oj_tree_view_metadata =
           var busyResolve = this._addBusyState('animating collapse');
           item.addClass('oj-treeview-animated'); // animation flag
 
+          this._uiExpanded = this._uiExpanded.delete([this._getKey(item)]);
+
           this._startAnimation(subtree, 'collapse').then(function () {
+            self._setDisclosing(self._getKey(item), false);
+
             subtree.css('display', 'none');
             item.removeClass('oj-treeview-animated');
             self._trigger('collapse', event, self._getEventPayload(item));
@@ -2396,6 +2478,7 @@ var __oj_tree_view_metadata =
       // @inheritdoc
       refresh: function () {
         this._super();
+        this._refreshId += 1;
 
         delete this.m_template;
         delete this.m_engine;
@@ -2509,6 +2592,7 @@ var __oj_tree_view_metadata =
         this._superApply(arguments);
 
         if (key === 'expanded') {
+          this._uiExpanded = self._uiExpanded.clear();
           this._getItems().each(function () {
             var item = $(this);
             if (self._isInitExpanded(item)) {
@@ -2598,6 +2682,7 @@ var __oj_tree_view_metadata =
         var expanded = this.options.expanded;
         if (expanded != null) {
           var newExpanded = expanded.delete(removedKeys);
+          this._uiExpanded.delete(removedKeys);
           // update selection option if it did changed
           if (expanded !== newExpanded) {
             this._userOptionChange('expanded', newExpanded, null);

@@ -3313,16 +3313,20 @@ var __oj_table_metadata =
           }
 
           tableBodyRow = self._getTableDomUtils().getTableBodyRow(rowIdx);
-          return self._waitForAllElementsToResolve([tableBodyRow]).then(function () {
-            // return if this row is in editable mode, otherwise disable all focusable content
-            if (self._hasEditableRow()) {
-              if (oj.Object.compareValues(rowKey, self._getEditableRowKey())) {
-                return Promise.resolve(true);
+          if (tableBodyRow) {
+            return self._waitForAllElementsToResolve([tableBodyRow]).then(function () {
+              // return if this row is in editable mode, otherwise disable all focusable content
+              if (self._hasEditableRow()) {
+                if (oj.Object.compareValues(rowKey, self._getEditableRowKey())) {
+                  return Promise.resolve(true);
+                }
               }
-            }
-            DataCollectionUtils.disableAllFocusableElements(tableBodyRow);
-            return Promise.resolve(true);
-          });
+              DataCollectionUtils.disableAllFocusableElements(tableBodyRow);
+              return Promise.resolve(true);
+            });
+          }
+          // in case of null row, just resolve promise as there is no element to wait on
+          return Promise.resolve(true);
         });
       });
     },
@@ -4652,7 +4656,7 @@ var __oj_table_metadata =
         this._clearSelectedRows();
         this._clearSelectedHeaderColumns();
         if (key === 'selection') {
-          this._setSelection(value);
+          this._setSelection(value, true);
         } else {
           this._setSelected(value, (flag == null || !flag.skipSelectionUpdate));
         }
@@ -4698,6 +4702,12 @@ var __oj_table_metadata =
      */
     _invalidateRangeSelection: function () {
       var selection = this.option('selection');
+
+      if (selection == null) {
+        // we should no longer need to do any range selection processing (until someone sets a range on us again)
+        this._processRangeSelection = false;
+        return;
+      }
       for (var i = 0; i < selection.length; i++) {
         var startRowKey;
         var endRowKey;
@@ -5878,8 +5888,10 @@ var __oj_table_metadata =
 
         for (var i = 0; i < rowsCount; i++) {
           var tableBodyRow = self._refreshTableBodyRow(rows[i].rowIdx, rows[i].row);
-          updatedTableBodyRows.push(tableBodyRow);
-          rowIdxArray.push(rows[i].rowIdx);
+          if (tableBodyRow) {
+            updatedTableBodyRows.push(tableBodyRow);
+            rowIdxArray.push(rows[i].rowIdx);
+          }
         }
         // row values may have changed so refresh the footer
         self._refreshTableFooter();
@@ -10179,14 +10191,14 @@ var __oj_table_metadata =
         var accSelectCheckbox = domUtils.getTableElementsByClassName(accSelectionColumn,
           oj.TableDomUtils.CSS_CLASSES._CHECKBOX_ACC_SELECT_COLUMN_CLASS)[0];
         accSelectCheckbox.checked = selected;
-      }
-      if (updateSelection) {
-        this._updateColumnSelectionState(columnIdx, selected);
 
-        if (selected) {
-          this.option('firstSelectedRow', { key: null, data: null },
-                      { _context: { writeback: true, internalSet: true } });
+        if (updateSelection) {
+          this._updateColumnSelectionState(columnIdx, selected);
         }
+      }
+      if (updateSelection && selected) {
+        this.option('firstSelectedRow', { key: null, data: null },
+                    { _context: { writeback: true, internalSet: true } });
       }
     },
 
@@ -10775,12 +10787,14 @@ var __oj_table_metadata =
         if (rangeObj.startKey != null && rangeObj.startKey[this._CONST_ROW] != null) {
           var startRowKey = rangeObj.startKey[this._CONST_ROW];
           var startRowIndex = this._getDataSourceRowIndexForRowKey(startRowKey);
+          rangeObj.startIndex = {};
           rangeObj.startIndex[this._CONST_ROW] = startRowIndex;
         }
 
         if (rangeObj.endKey != null && rangeObj.endKey[this._CONST_ROW] != null) {
           var endRowKey = rangeObj.endKey[this._CONST_ROW];
           var endRowIndex = this._getDataSourceRowIndexForRowKey(endRowKey);
+          rangeObj.endIndex = {};
           rangeObj.endIndex[this._CONST_ROW] = endRowIndex;
         }
       }
@@ -10790,8 +10804,13 @@ var __oj_table_metadata =
      * Apply selection ranges to table.  Sync up with selected KeySet as we process the ranges.
      * @private
      */
-    _applyRangeSelection: function (selection) {
-      var currentKeySet = this.option('selected');
+    _applyRangeSelection: function (selection, overrideSelected) {
+      var currentKeySet;
+      if (overrideSelected) {
+        currentKeySet = { row: new oj.KeySetImpl(), column: new oj.KeySetImpl() };
+      } else {
+        currentKeySet = this.option('selected');
+      }
       var rowKeySet = currentKeySet.row;
       var columnKeySet = currentKeySet.column;
 
@@ -10803,10 +10822,14 @@ var __oj_table_metadata =
         selection = this.option('selection');
       }
 
-      if (selection == null) {
+      if (selection == null || selection.length === 0) {
         // pass true since we do want to fire optionchange event
-        this._clearSelectedRows(true);
-        this._clearSelectedHeaderColumns(true);
+        if (!rowKeySet.isAddAll()) {
+          this._clearSelectedRows(true);
+        }
+        if (!columnKeySet.isAddAll()) {
+          this._clearSelectedHeaderColumns(true);
+        }
         return;
       }
 
@@ -10914,13 +10937,15 @@ var __oj_table_metadata =
      * Apply current selection to table
      * @private
      */
-    _applySelection: function (selection) {
+    _applySelection: function (selection, overrideSelected) {
       // apply keyset first
-      this._applySelected(this.option('selected'));
+      if (!overrideSelected) {
+        this._applySelected(this.option('selected'));
+      }
 
       // legacy range selection is used, convert to keyset if possible
       if (this._processRangeSelection || this._processRangeSelection === undefined) {
-        this._applyRangeSelection(selection);
+        this._applyRangeSelection(selection, overrideSelected);
       } else {
         // update indexes
         this._syncRangeSelection(selection);
@@ -10932,7 +10957,7 @@ var __oj_table_metadata =
      * @param {Object} selection
      * @private
      */
-    _setSelection: function (selection) {
+    _setSelection: function (selection, overrideSelected) {
       if (selection == null) {
         // pass true since we do want to fire optionchange event
         this._clearSelectedRows(true);
@@ -10940,7 +10965,7 @@ var __oj_table_metadata =
         return;
       }
 
-      this._applySelection(selection);
+      this._applySelection(selection, overrideSelected);
     },
 
     /**
@@ -11497,7 +11522,10 @@ var __oj_table_metadata =
         var busyContextPromiseArray = [];
 
         elements.forEach(function (element) {
-          busyContextPromiseArray.push(Context.getContext(element).getBusyContext().whenReady());
+          // Only wait on busyContext of non-null row elements. Othwerise, busy state lock can occur
+          if (element) {
+            busyContextPromiseArray.push(Context.getContext(element).getBusyContext().whenReady());
+          }
         });
         return Promise.all(busyContextPromiseArray);
       }
@@ -11564,7 +11592,16 @@ var __oj_table_metadata =
       switch (option) {
         case 'columns':
         case 'currentRow':
+          return oj.Object.compareValues(value1, value2);
         case 'selection':
+          if (value1 && value1.inverted === undefined) {
+            // eslint-disable-next-line no-param-reassign
+            value1.inverted = false;
+          }
+          if (value2 && value2.inverted === undefined) {
+            // eslint-disable-next-line no-param-reassign
+            value2.inverted = false;
+          }
           if (value1 && value2 && value1.inverted !== value2.inverted) {
             return false;
           }

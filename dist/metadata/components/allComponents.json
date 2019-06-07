@@ -2,8 +2,8 @@
   "components": {
     "oj-accordion": {
       "name": "oj-accordion",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Accordion",
       "type": "core",
       "extension": {
@@ -161,8 +161,8 @@
     },
     "oj-avatar": {
       "name": "oj-avatar",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Avatar",
       "type": "core",
       "extension": {
@@ -289,8 +289,8 @@
     },
     "oj-bind-dom": {
       "name": "oj-bind-dom",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Bind Dom",
       "type": "core",
       "extension": {
@@ -325,8 +325,8 @@
     },
     "oj-bind-for-each": {
       "name": "oj-bind-for-each",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Bind For Each",
       "type": "core",
       "extension": {
@@ -375,8 +375,8 @@
     },
     "oj-bind-if": {
       "name": "oj-bind-if",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Bind If",
       "type": "core",
       "extension": {
@@ -404,8 +404,8 @@
     },
     "oj-bind-slot": {
       "name": "oj-bind-slot",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Bind Slot",
       "type": "core",
       "extension": {
@@ -439,8 +439,8 @@
     },
     "oj-bind-template-slot": {
       "name": "oj-bind-template-slot",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Bind Template Slot",
       "type": "core",
       "extension": {
@@ -481,8 +481,8 @@
     },
     "oj-bind-text": {
       "name": "oj-bind-text",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Bind Text",
       "type": "core",
       "extension": {
@@ -504,8 +504,8 @@
     },
     "oj-button": {
       "name": "oj-button",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Button",
       "type": "core",
       "extension": {
@@ -685,8 +685,8 @@
     },
     "oj-buttonset-many": {
       "name": "oj-buttonset-many",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Buttonset Many",
       "type": "core",
       "extension": {
@@ -865,8 +865,8 @@
     },
     "oj-buttonset-one": {
       "name": "oj-buttonset-one",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Buttonset One",
       "type": "core",
       "extension": {
@@ -1045,8 +1045,8 @@
     },
     "oj-chart": {
       "name": "oj-chart",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Chart",
       "type": "core",
       "extension": {
@@ -10342,8 +10342,8 @@
     },
     "oj-chart-group": {
       "name": "oj-chart-group",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Chart Group",
       "type": "core",
       "extension": {
@@ -10400,8 +10400,8 @@
     },
     "oj-chart-item": {
       "name": "oj-chart-item",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Chart Item",
       "type": "core",
       "extension": {
@@ -11135,8 +11135,8 @@
     },
     "oj-chart-series": {
       "name": "oj-chart-series",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Chart Series",
       "type": "core",
       "extension": {
@@ -11651,8 +11651,8 @@
     },
     "oj-checkboxset": {
       "name": "oj-checkboxset",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Checkbox Set",
       "type": "core",
       "extension": {
@@ -12058,8 +12058,8 @@
     },
     "oj-collapsible": {
       "name": "oj-collapsible",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Collapsible",
       "type": "core",
       "extension": {
@@ -12250,8 +12250,8 @@
     },
     "oj-color-palette": {
       "name": "oj-color-palette",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Color Palette",
       "type": "core",
       "extension": {
@@ -12633,8 +12633,8 @@
     },
     "oj-color-spectrum": {
       "name": "oj-color-spectrum",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Color Spectrum",
       "type": "core",
       "extension": {
@@ -12950,8 +12950,8 @@
     },
     "oj-combobox-many": {
       "name": "oj-combobox-many",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Multi-select Combobox",
       "type": "core",
       "extension": {
@@ -13530,8 +13530,8 @@
     },
     "oj-combobox-one": {
       "name": "oj-combobox-one",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Single-select Combobox",
       "type": "core",
       "extension": {
@@ -14145,8 +14145,8 @@
     },
     "oj-conveyor-belt": {
       "name": "oj-conveyor-belt",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Conveyor Belt",
       "type": "core",
       "extension": {
@@ -14257,8 +14257,8 @@
     },
     "oj-data-grid": {
       "name": "oj-data-grid",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Data Grid",
       "type": "core",
       "extension": {
@@ -15841,8 +15841,8 @@
     },
     "oj-date-picker": {
       "name": "oj-date-picker",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Inline Date Picker",
       "type": "core",
       "extension": {
@@ -16678,8 +16678,8 @@
     },
     "oj-date-time-picker": {
       "name": "oj-date-time-picker",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Inline Date Time Picker",
       "type": "core",
       "extension": {
@@ -17591,8 +17591,8 @@
     },
     "oj-defer": {
       "name": "oj-defer",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Defer",
       "type": "core",
       "extension": {
@@ -17605,8 +17605,8 @@
     },
     "oj-diagram": {
       "name": "oj-diagram",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Diagram",
       "type": "core",
       "extension": {
@@ -19260,8 +19260,8 @@
     },
     "oj-diagram-link": {
       "name": "oj-diagram-link",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Diagram Link",
       "type": "core",
       "extension": {
@@ -19437,8 +19437,8 @@
     },
     "oj-diagram-node": {
       "name": "oj-diagram-node",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Diagram Node",
       "type": "core",
       "extension": {
@@ -19706,8 +19706,8 @@
     },
     "oj-dialog": {
       "name": "oj-dialog",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Dialog",
       "type": "core",
       "extension": {
@@ -20341,8 +20341,8 @@
     },
     "oj-file-picker": {
       "name": "oj-file-picker",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "File Picker",
       "type": "core",
       "extension": {
@@ -20497,8 +20497,8 @@
     },
     "oj-film-strip": {
       "name": "oj-film-strip",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Film Strip",
       "type": "core",
       "extension": {
@@ -20741,8 +20741,8 @@
     },
     "oj-form-layout": {
       "name": "oj-form-layout",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Form Layout",
       "type": "core",
       "extension": {
@@ -20890,8 +20890,8 @@
     },
     "oj-gantt": {
       "name": "oj-gantt",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Gantt",
       "type": "core",
       "extension": {
@@ -24184,8 +24184,8 @@
     },
     "oj-gantt-dependency": {
       "name": "oj-gantt-dependency",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Gantt Dependency",
       "type": "core",
       "extension": {
@@ -24264,8 +24264,8 @@
     },
     "oj-gantt-row": {
       "name": "oj-gantt-row",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Gantt Row",
       "type": "core",
       "extension": {
@@ -24294,8 +24294,8 @@
     },
     "oj-gantt-task": {
       "name": "oj-gantt-task",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Gantt Task",
       "type": "core",
       "extension": {
@@ -24560,8 +24560,8 @@
     },
     "oj-indexer": {
       "name": "oj-indexer",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Indexer",
       "type": "core",
       "extension": {
@@ -24683,8 +24683,8 @@
     },
     "oj-input-date": {
       "name": "oj-input-date",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Input Date",
       "type": "core",
       "extension": {
@@ -25535,8 +25535,8 @@
     },
     "oj-input-date-time": {
       "name": "oj-input-date-time",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Input Date Time",
       "type": "core",
       "extension": {
@@ -26464,8 +26464,8 @@
     },
     "oj-input-number": {
       "name": "oj-input-number",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Input Number",
       "type": "core",
       "extension": {
@@ -27064,8 +27064,8 @@
     },
     "oj-input-password": {
       "name": "oj-input-password",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Input Password",
       "type": "core",
       "extension": {
@@ -27474,8 +27474,8 @@
     },
     "oj-input-text": {
       "name": "oj-input-text",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Input Text",
       "type": "core",
       "extension": {
@@ -28005,8 +28005,8 @@
     },
     "oj-input-time": {
       "name": "oj-input-time",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Input Time",
       "type": "core",
       "extension": {
@@ -28701,8 +28701,8 @@
     },
     "oj-label": {
       "name": "oj-label",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Label",
       "type": "core",
       "extension": {
@@ -28865,8 +28865,8 @@
     },
     "oj-label-value": {
       "name": "oj-label-value",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Label Value",
       "type": "core",
       "extension": {
@@ -28979,8 +28979,8 @@
     },
     "oj-led-gauge": {
       "name": "oj-led-gauge",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Led Gauge",
       "type": "core",
       "extension": {
@@ -29513,8 +29513,8 @@
     },
     "oj-legend": {
       "name": "oj-legend",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Legend",
       "type": "core",
       "extension": {
@@ -30245,8 +30245,8 @@
     },
     "oj-legend-item": {
       "name": "oj-legend-item",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Legend Item",
       "type": "core",
       "extension": {
@@ -30537,8 +30537,8 @@
     },
     "oj-legend-section": {
       "name": "oj-legend-section",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Legend Section",
       "type": "core",
       "extension": {
@@ -30609,8 +30609,8 @@
     },
     "oj-list-view": {
       "name": "oj-list-view",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "List View",
       "type": "core",
       "extension": {
@@ -31425,8 +31425,8 @@
     },
     "oj-masonry-layout": {
       "name": "oj-masonry-layout",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Masonry Layout",
       "type": "core",
       "extension": {
@@ -31784,8 +31784,8 @@
     },
     "oj-menu": {
       "name": "oj-menu",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Menu",
       "type": "core",
       "extension": {
@@ -32325,8 +32325,8 @@
     },
     "oj-menu-button": {
       "name": "oj-menu-button",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Menu Button",
       "type": "core",
       "extension": {
@@ -32511,8 +32511,8 @@
     },
     "oj-menu-select-many": {
       "name": "oj-menu-select-many",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Menu Multi Select",
       "type": "core",
       "extension": {
@@ -32621,8 +32621,8 @@
     },
     "oj-message": {
       "name": "oj-message",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Message",
       "type": "core",
       "extension": {
@@ -32934,8 +32934,8 @@
     },
     "oj-messages": {
       "name": "oj-messages",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Messages",
       "type": "core",
       "extension": {
@@ -33430,8 +33430,8 @@
     },
     "oj-module": {
       "name": "oj-module",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "ojModule Element",
       "type": "core",
       "extension": {
@@ -33542,8 +33542,8 @@
     },
     "oj-navigation-list": {
       "name": "oj-navigation-list",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Navigation List",
       "type": "core",
       "extension": {
@@ -34052,8 +34052,8 @@
     },
     "oj-n-box": {
       "name": "oj-n-box",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "N Box",
       "type": "core",
       "extension": {
@@ -35691,8 +35691,8 @@
     },
     "oj-n-box-node": {
       "name": "oj-n-box-node",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "N Box Node",
       "type": "core",
       "extension": {
@@ -36152,8 +36152,8 @@
     },
     "oj-optgroup": {
       "name": "oj-optgroup",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Option Group",
       "type": "core",
       "extension": {
@@ -36238,8 +36238,8 @@
     },
     "oj-option": {
       "name": "oj-option",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Option",
       "type": "core",
       "extension": {
@@ -36331,8 +36331,8 @@
     },
     "oj-paging-control": {
       "name": "oj-paging-control",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Paging Control",
       "type": "core",
       "extension": {
@@ -36786,8 +36786,8 @@
     },
     "oj-picto-chart": {
       "name": "oj-picto-chart",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Picto Chart",
       "type": "core",
       "extension": {
@@ -37466,8 +37466,8 @@
     },
     "oj-picto-chart-item": {
       "name": "oj-picto-chart-item",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Picto Chart Item",
       "type": "core",
       "extension": {
@@ -37653,8 +37653,8 @@
     },
     "oj-popup": {
       "name": "oj-popup",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Popup",
       "type": "core",
       "extension": {
@@ -38179,8 +38179,8 @@
     },
     "oj-progress": {
       "name": "oj-progress",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Progress",
       "type": "core",
       "extension": {
@@ -38323,8 +38323,8 @@
     },
     "oj-progress-list": {
       "name": "oj-progress-list",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Progress List",
       "type": "core",
       "extension": {
@@ -38389,8 +38389,8 @@
     },
     "oj-radioset": {
       "name": "oj-radioset",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Radioset",
       "type": "core",
       "extension": {
@@ -38797,8 +38797,8 @@
     },
     "oj-rating-gauge": {
       "name": "oj-rating-gauge",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Rating Gauge",
       "type": "core",
       "extension": {
@@ -39379,8 +39379,8 @@
     },
     "oj-refresher": {
       "name": "oj-refresher",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Refresher",
       "type": "core",
       "extension": {
@@ -39505,8 +39505,8 @@
     },
     "oj-row-expander": {
       "name": "oj-row-expander",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Row Expander",
       "type": "core",
       "extension": {
@@ -39689,8 +39689,8 @@
     },
     "oj-select-many": {
       "name": "oj-select-many",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Multi Select",
       "type": "core",
       "extension": {
@@ -40217,8 +40217,8 @@
     },
     "oj-select-one": {
       "name": "oj-select-one",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Single Select",
       "type": "core",
       "extension": {
@@ -40740,8 +40740,8 @@
     },
     "oj-slider": {
       "name": "oj-slider",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Slider",
       "type": "core",
       "extension": {
@@ -41144,8 +41144,8 @@
     },
     "oj-spark-chart": {
       "name": "oj-spark-chart",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Spark Chart",
       "type": "core",
       "extension": {
@@ -41878,8 +41878,8 @@
     },
     "oj-spark-chart-item": {
       "name": "oj-spark-chart-item",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Spark Chart Item",
       "type": "core",
       "extension": {
@@ -42012,8 +42012,8 @@
     },
     "oj-status-meter-gauge": {
       "name": "oj-status-meter-gauge",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Status Meter Gauge",
       "type": "core",
       "extension": {
@@ -42861,8 +42861,8 @@
     },
     "oj-sunburst": {
       "name": "oj-sunburst",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Sunburst",
       "type": "core",
       "extension": {
@@ -43923,8 +43923,8 @@
     },
     "oj-sunburst-node": {
       "name": "oj-sunburst-node",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Sunburst Node",
       "type": "core",
       "extension": {
@@ -44190,8 +44190,8 @@
     },
     "oj-swipe-actions": {
       "name": "oj-swipe-actions",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Swipe Actions",
       "type": "core",
       "extension": {
@@ -44337,8 +44337,8 @@
     },
     "oj-switch": {
       "name": "oj-switch",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Switch",
       "type": "core",
       "extension": {
@@ -44645,8 +44645,8 @@
     },
     "oj-switcher": {
       "name": "oj-switcher",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Switcher",
       "type": "core",
       "extension": {
@@ -44716,8 +44716,8 @@
     },
     "oj-tab-bar": {
       "name": "oj-tab-bar",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Tab Bar",
       "type": "core",
       "extension": {
@@ -45309,8 +45309,8 @@
     },
     "oj-table": {
       "name": "oj-table",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Table",
       "type": "core",
       "extension": {
@@ -46608,8 +46608,8 @@
     },
     "oj-tag-cloud": {
       "name": "oj-tag-cloud",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Tag Cloud",
       "type": "core",
       "extension": {
@@ -47144,8 +47144,8 @@
     },
     "oj-tag-cloud-item": {
       "name": "oj-tag-cloud-item",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Tag Cloud Item",
       "type": "core",
       "extension": {
@@ -47218,8 +47218,8 @@
     },
     "oj-text-area": {
       "name": "oj-text-area",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Text Area",
       "type": "core",
       "extension": {
@@ -47708,8 +47708,8 @@
     },
     "oj-thematic-map": {
       "name": "oj-thematic-map",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Thematic Map",
       "type": "core",
       "extension": {
@@ -48985,8 +48985,8 @@
     },
     "oj-thematic-map-area": {
       "name": "oj-thematic-map-area",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Thematic Map Area",
       "type": "core",
       "extension": {
@@ -49086,8 +49086,8 @@
     },
     "oj-thematic-map-link": {
       "name": "oj-thematic-map-link",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Thematic Map Link",
       "type": "core",
       "extension": {
@@ -49231,8 +49231,8 @@
     },
     "oj-thematic-map-marker": {
       "name": "oj-thematic-map-marker",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Thematic Map Marker",
       "type": "core",
       "extension": {
@@ -49464,8 +49464,8 @@
     },
     "oj-time-axis": {
       "name": "oj-time-axis",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Time Axis",
       "type": "core",
       "extension": {
@@ -49761,8 +49761,8 @@
     },
     "oj-timeline": {
       "name": "oj-timeline",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Timeline",
       "type": "core",
       "extension": {
@@ -51244,8 +51244,8 @@
     },
     "oj-timeline-item": {
       "name": "oj-timeline-item",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Timeline Item",
       "type": "core",
       "extension": {
@@ -51323,8 +51323,8 @@
     },
     "oj-timeline-series": {
       "name": "oj-timeline-series",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Timeline Series",
       "type": "core",
       "extension": {
@@ -51382,8 +51382,8 @@
     },
     "oj-toolbar": {
       "name": "oj-toolbar",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Toolbar",
       "type": "core",
       "extension": {
@@ -51524,8 +51524,8 @@
     },
     "oj-train": {
       "name": "oj-train",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Train",
       "type": "core",
       "extension": {
@@ -51756,8 +51756,8 @@
     },
     "oj-treemap": {
       "name": "oj-treemap",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Treemap",
       "type": "core",
       "extension": {
@@ -52909,8 +52909,8 @@
     },
     "oj-treemap-node": {
       "name": "oj-treemap-node",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Treemap Node",
       "type": "core",
       "extension": {
@@ -53242,8 +53242,8 @@
     },
     "oj-tree-view": {
       "name": "oj-tree-view",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Tree View",
       "type": "core",
       "extension": {
@@ -53657,8 +53657,8 @@
     },
     "oj-validation-group": {
       "name": "oj-validation-group",
-      "version": "7.0.0",
-      "jetVersion": "7.0.0",
+      "version": "7.0.1",
+      "jetVersion": "7.0.1",
       "displayName": "Validation Group",
       "type": "core",
       "extension": {

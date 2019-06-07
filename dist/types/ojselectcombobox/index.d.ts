@@ -41,7 +41,7 @@ export namespace ojCombobox {
     };
     // tslint:disable-next-line interface-over-type-literal
     type OptionContext = {
-        component: Element;
+        componentElement: Element;
         parent: Element;
         index: number;
         depth: number;
@@ -406,7 +406,7 @@ export namespace ojSelect {
     };
     // tslint:disable-next-line interface-over-type-literal
     type OptionContext = {
-        component: Element;
+        componentElement: Element;
         parent: Element;
         index: number;
         depth: number;
