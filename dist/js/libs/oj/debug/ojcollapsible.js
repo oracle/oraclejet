@@ -67,7 +67,7 @@ var __oj_collapsible_metadata =
 /**
  * @ojcomponent oj.ojCollapsible
  * @augments oj.baseComponent
- * @since 0.6
+ * @since 0.6.0
  * @ojstatus preview
  * @class oj.ojCollapsible
  * @ojshortdesc A collapsible displays a header that can be expanded to show its content.
@@ -79,7 +79,7 @@ var __oj_collapsible_metadata =
  * </h3>
  *
  * <p>Description: A JET Collapsible displays a header that can be expanded to show additional content beneath it.
-The child element of the oj-collapsible in the named <a href="#header">header</a> slot is displayed in the header, while the child element in the <a href="#Default">default</a> slot is displayed as the content
+ * The child element of the oj-collapsible in the named <a href="#header">header</a> slot is displayed in the header, while the child element in the <a href="#Default">default</a> slot is displayed as the content.
  *
  * <p>Note for performance reasons, if the collapsible content is expensive to render, you should wrap it in an <code class="prettyprint">oj-defer</code> element (API doc {@link oj.ojDefer}) to defer the rendering of that content.<br/>
  * See the <a href="../jetCookbook.html?component=collapsible&demo=deferredRendering">Collapsible - Deferred Rendering</a> demo for an example.</p>
@@ -98,7 +98,6 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
  *
  * {@ojinclude "name":"touchDoc"}
  *
- *
  * <h3 id="keyboard-section">
  *   Keyboard End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
@@ -106,6 +105,12 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
  *
  * {@ojinclude "name":"keyboardDoc"}
  *
+ * <h3 id="styling-section">
+ *   Styling
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"stylingDoc"}
  *
  * <h3 id="rtl-section">
  *   Reading direction
@@ -325,7 +330,7 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
       _createIcons: function () {
         var options = this.options;
         var icon = (options.expanded ? OPEN_ICON : CLOSE_ICON);
-        var iconTag = this._isDisabled() ? $('<span>') : $('<a href="#">');
+        var iconTag = this._isDisabled() ? $('<span>') : $('<a>');
 
         iconTag.addClass('oj-component-icon oj-clickable-icon-nocontext oj-collapsible-header-icon ' + icon)
         .attr('aria-labelledby', this.header.attr('id'))

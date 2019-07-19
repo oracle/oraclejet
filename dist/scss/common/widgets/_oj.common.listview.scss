@@ -307,6 +307,7 @@
             position: -webkit-sticky;
             position: sticky;
             top: 0;
+            z-index: 1;
         }
 
         /* Styling for group item element that is pinned when scrolled */

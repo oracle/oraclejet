@@ -15,6 +15,39 @@
     /* select */
     /* --------------------------------------------------------------- */
 
+
+    /************************* oj-form-control-inherit OVERRIDES *************************/
+    // DO NOT ADD SELECTOR DEFINITIONS BEFORE THESE OVERRIDES AS SPECIFICITY ISSUES CAN ARISE
+
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+
+    // remove borders, inherit colors and stretch the height
+    // need extra specificity since base selector has direction selectors
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {
+      @include oj-form-control-inherit();
+    }
+
+    // Styling on form control dom which doesn't require text-align, padding, or color
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select-chosen {
+      background-color:inherit;
+      border-width: 0;
+    }
+
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select {
+      height:100%;
+    }
+
+    // TODO: single select when height is large, it doesn't vertically center align
+    // TODO: multi select's color inherit does not work. the color does not get inherited. (same with combobox)
+
+    /************************* END OF oj-form-control-inherit OVERRIDES *************************/
+
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-select:not(.oj-complete) {
@@ -811,31 +844,5 @@
         color: $selectArrowColor;
       }
     }
-
-    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
-    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
-    // editable datagrid cells and editable table cells
-    // -----------------------------------------------------------------------------------------
-
-    // remove borders, inherit colors and stretch the height
-    // need extra specificity since base selector has direction selectors
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice,
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {    
-      @include oj-form-control-inherit();
-    }
-
-    // Styling on form control dom which doesn't require text-align, padding, or color
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select,
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select-chosen {
-      background-color:inherit;
-      border-width: 0;
-    }
-    
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select {
-      height:100%;
-    }
-    
-    // TODO: single select when height is large, it doesn't vertically center align
-    // TODO: multi select's color inherit does not work. the color does not get inherited. (same with combobox)
   }
 }

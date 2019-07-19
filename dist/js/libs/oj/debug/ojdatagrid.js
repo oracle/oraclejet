@@ -5827,9 +5827,25 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function (cellSet, cellRange, ro
   if (this.isFetchComplete()) {
     this.hideStatusText();
 
-    this._syncScroller();
-
     if (!this.m_initialized) {
+      // force bitmap (to GPU) to be generated now rather than when doing actual 3d translation to minimize
+      // the delay, this should only be done once
+      if (this.m_utils.isTouchDevice() &&
+        Object.prototype.hasOwnProperty.call(window, 'WebKitCSSMatrix')) {
+        databodyContent.style.transform = 'translate3d(0, 0, 0)';
+        if (this.m_rowHeader != null) {
+          this.m_rowHeader.firstChild.style.transform = 'translate3d(0, 0, 0)';
+        }
+        if (this.m_colHeader != null) {
+          this.m_colHeader.firstChild.style.transform = 'translate3d(0, 0, 0)';
+        }
+        if (this.m_rowEndHeader != null) {
+          this.m_rowEndHeader.firstChild.style.transform = 'translate3d(0, 0, 0)';
+        }
+        if (this.m_colEndHeader != null) {
+          this.m_colEndHeader.firstChild.style.transform = 'translate3d(0, 0, 0)';
+        }
+      }
       this._updateScrollPosition(this.m_options.getScrollPosition());
     } else if (this._checkScroll) {
       this._checkScrollPosition();
@@ -5863,25 +5879,6 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function (cellSet, cellRange, ro
 
     // update accessibility info
     this.populateAccInfo();
-
-    // force bitmap (to GPU) to be generated now rather than when doing actual 3d translation to minimize
-    // the delay
-    if (this.m_utils.isTouchDevice() &&
-        Object.prototype.hasOwnProperty.call(window, 'WebKitCSSMatrix')) {
-      databody.style.webkitTransform = 'translate3d(0, 0, 0)';
-      if (this.m_rowHeader != null) {
-        this.m_rowHeader.style.webkitTransform = 'translate3d(0, 0, 0)';
-      }
-      if (this.m_colHeader != null) {
-        this.m_colHeader.style.webkitTransform = 'translate3d(0, 0, 0)';
-      }
-      if (this.m_rowEndHeader != null) {
-        this.m_rowEndHeader.style.webkitTransform = 'translate3d(0, 0, 0)';
-      }
-      if (this.m_colEndHeader != null) {
-        this.m_colEndHeader.style.webkitTransform = 'translate3d(0, 0, 0)';
-      }
-    }
 
     // initialize/resize/fillViewport/trigger ready event
     if (this._shouldInitialize()) {
@@ -7066,11 +7063,11 @@ DvtDataGrid.prototype._initiateScroll = function (scrollLeft, scrollTop) {
  * @private
  */
 DvtDataGrid.prototype._disableTouchScrollAnimation = function () {
-  this.m_databody.firstChild.style.webkitTransitionDuration = '0ms';
-  this.m_rowHeader.firstChild.style.webkitTransitionDuration = '0ms';
-  this.m_colHeader.firstChild.style.webkitTransitionDuration = '0ms';
-  this.m_rowEndHeader.firstChild.style.webkitTransitionDuration = '0ms';
-  this.m_colEndHeader.firstChild.style.webkitTransitionDuration = '0ms';
+  this.m_databody.firstChild.style.transitionDuration = '0ms';
+  this.m_rowHeader.firstChild.style.transitionDuration = '0ms';
+  this.m_colHeader.firstChild.style.transitionDuration = '0ms';
+  this.m_rowEndHeader.firstChild.style.transitionDuration = '0ms';
+  this.m_colEndHeader.firstChild.style.transitionDuration = '0ms';
 };
 
 /**
@@ -7116,9 +7113,8 @@ DvtDataGrid.prototype.scrollTo = function (scrollLeft, scrollTop) {
     } else {
       this.fillViewport();
     }
+    this._checkScroll = true;
   }
-
-  this._checkScroll = true;
 
   // update header and databody scroll position
   this._syncScroller();
@@ -7164,7 +7160,7 @@ DvtDataGrid.prototype.scrollTo = function (scrollLeft, scrollTop) {
       this.fireEvent('scroll', { event: null, ui: { scrollX: scrollLeft, scrollY: scrollTop } });
     }
   }
-  if (this.isFetchComplete()) {
+  if (!this.m_utils.isTouchDevice() && this.isFetchComplete()) {
     this._checkScrollPosition();
   }
 };
@@ -7174,15 +7170,6 @@ DvtDataGrid.prototype.scrollTo = function (scrollLeft, scrollTop) {
  * @private
  */
 DvtDataGrid.prototype._scrollTransitionEnd = function () {
-  var databody;
-
-  if (this.m_scrollTransitionEnd != null) {
-    databody = this.m_databody.firstChild;
-
-    // remove existing listener
-    databody.removeEventListener('webkitTransitionEnd', this.m_scrollTransitionEnd);
-  }
-
   // center touch affordances if row selection multiple
   if (this._isSelectionEnabled()) {
     this._scrollTouchSelectionAffordance();
@@ -7204,6 +7191,12 @@ DvtDataGrid.prototype._scrollTransitionEnd = function () {
   } else {
     this.fillViewport();
   }
+
+  this._checkScroll = true;
+
+  if (this.isFetchComplete()) {
+    this._checkScrollPosition();
+  }
 };
 
 /**
@@ -7220,35 +7213,33 @@ DvtDataGrid.prototype._bounceBack = function () {
   var colEndHeader = this.m_colEndHeader.firstChild;
   var rowEndHeader = this.m_rowEndHeader.firstChild;
 
-  // remove existing listener
-  databody.removeEventListener('webkitTransitionEnd', this.m_bounceBack);
-
-  databody.style.webkitTransitionDuration = DvtDataGrid.BOUNCE_ANIMATION_DURATION + 'ms';
-  rowHeader.style.webkitTransitionDuration = DvtDataGrid.BOUNCE_ANIMATION_DURATION + 'ms';
-  rowEndHeader.style.webkitTransitionDuration = DvtDataGrid.BOUNCE_ANIMATION_DURATION + 'ms';
-  colHeader.style.webkitTransitionDuration = DvtDataGrid.BOUNCE_ANIMATION_DURATION + 'ms';
-  colEndHeader.style.webkitTransitionDuration = DvtDataGrid.BOUNCE_ANIMATION_DURATION + 'ms';
+  databody.style.transitionDuration = DvtDataGrid.BOUNCE_ANIMATION_DURATION + 'ms';
+  rowHeader.style.transitionDuration = DvtDataGrid.BOUNCE_ANIMATION_DURATION + 'ms';
+  rowEndHeader.style.transitionDuration = DvtDataGrid.BOUNCE_ANIMATION_DURATION + 'ms';
+  colHeader.style.transitionDuration = DvtDataGrid.BOUNCE_ANIMATION_DURATION + 'ms';
+  colEndHeader.style.transitionDuration = DvtDataGrid.BOUNCE_ANIMATION_DURATION + 'ms';
 
   // process to run after bounce back animation ends
   if (this.m_scrollTransitionEnd == null) {
     this.m_scrollTransitionEnd = this._scrollTransitionEnd.bind(this);
   }
-  databody.addEventListener('webkitTransitionEnd', this.m_scrollTransitionEnd);
+  this._onTransitionEnd(databody, this.m_scrollTransitionEnd,
+    DvtDataGrid.BOUNCE_ANIMATION_DURATION);
 
   // scroll back to actual scrollLeft/scrollTop positions
   if (this.getResources().isRTLMode()) {
-    databody.style.webkitTransform =
+    databody.style.transform =
       'translate3d(' + scrollLeft + 'px, ' + (-scrollTop) + 'px, 0)';
-    colHeader.style.webkitTransform = 'translate3d(' + scrollLeft + 'px, 0, 0)';
-    colEndHeader.style.webkitTransform = 'translate3d(' + scrollLeft + 'px, 0, 0)';
+    colHeader.style.transform = 'translate3d(' + scrollLeft + 'px, 0, 0)';
+    colEndHeader.style.transform = 'translate3d(' + scrollLeft + 'px, 0, 0)';
   } else {
-    databody.style.webkitTransform =
+    databody.style.transform =
       'translate3d(' + (-scrollLeft) + 'px, ' + (-scrollTop) + 'px, 0)';
-    colHeader.style.webkitTransform = 'translate3d(' + (-scrollLeft) + 'px, 0, 0)';
-    colEndHeader.style.webkitTransform = 'translate3d(' + (-scrollLeft) + 'px, 0, 0)';
+    colHeader.style.transform = 'translate3d(' + (-scrollLeft) + 'px, 0, 0)';
+    colEndHeader.style.transform = 'translate3d(' + (-scrollLeft) + 'px, 0, 0)';
   }
-  rowHeader.style.webkitTransform = 'translate3d(0, ' + (-scrollTop) + 'px, 0)';
-  rowEndHeader.style.webkitTransform = 'translate3d(0, ' + (-scrollTop) + 'px, 0)';
+  rowHeader.style.transform = 'translate3d(0, ' + (-scrollTop) + 'px, 0)';
+  rowEndHeader.style.transform = 'translate3d(0, ' + (-scrollTop) + 'px, 0)';
 
   // reset
   this.m_extraScrollOverX = null;
@@ -7274,6 +7265,8 @@ DvtDataGrid.prototype._syncScroller = function () {
   // this checks determine whether this is webkit and translated3d is supported
   if (this.m_utils.isTouchDevice() &&
       Object.prototype.hasOwnProperty.call(window, 'WebKitCSSMatrix')) {
+    this._checkScroll = false;
+
     // check if the swipe gesture causes over scrolling of scrollable area
     if (this.m_extraScrollOverX != null || this.m_extraScrollOverY != null) {
       // swipe horizontal or vertical
@@ -7288,31 +7281,32 @@ DvtDataGrid.prototype._syncScroller = function () {
         this.m_bounceBack = this._bounceBack.bind(this);
       }
 
-      databody.addEventListener('webkitTransitionEnd', this.m_bounceBack);
-    } else if (databody.style.webkitTransitionDuration === '0ms') {
+      this._onTransitionEnd(databody, this.m_bounceBack, 500);
+    } else if (databody.style.transitionDuration === '0ms') {
       // no transition, just call the handler directly
       this._scrollTransitionEnd();
     } else {
       if (this.m_scrollTransitionEnd == null) {
         this.m_scrollTransitionEnd = this._scrollTransitionEnd.bind(this);
       }
-      databody.addEventListener('webkitTransitionEnd', this.m_scrollTransitionEnd);
+      this._onTransitionEnd(databody, this.m_scrollTransitionEnd,
+        databody.style.transitionDuration);
     }
 
     // actual scrolling of databody and headers
     if (this.getResources().isRTLMode()) {
-      databody.style.webkitTransform =
+      databody.style.transform =
         'translate3d(' + scrollLeft + 'px, ' + (-scrollTop) + 'px, 0)';
-      colHeader.style.webkitTransform = 'translate3d(' + scrollLeft + 'px, 0, 0)';
-      colEndHeader.style.webkitTransform = 'translate3d(' + scrollLeft + 'px, 0, 0)';
+      colHeader.style.transform = 'translate3d(' + scrollLeft + 'px, 0, 0)';
+      colEndHeader.style.transform = 'translate3d(' + scrollLeft + 'px, 0, 0)';
     } else {
-      databody.style.webkitTransform =
+      databody.style.transform =
         'translate3d(' + (-scrollLeft) + 'px, ' + (-scrollTop) + 'px, 0)';
-      colHeader.style.webkitTransform = 'translate3d(' + (-scrollLeft) + 'px, 0, 0)';
-      colEndHeader.style.webkitTransform = 'translate3d(' + (-scrollLeft) + 'px, 0, 0)';
+      colHeader.style.transform = 'translate3d(' + (-scrollLeft) + 'px, 0, 0)';
+      colEndHeader.style.transform = 'translate3d(' + (-scrollLeft) + 'px, 0, 0)';
     }
-    rowHeader.style.webkitTransform = 'translate3d(0, ' + (-scrollTop) + 'px, 0)';
-    rowEndHeader.style.webkitTransform = 'translate3d(0, ' + (-scrollTop) + 'px, 0)';
+    rowHeader.style.transform = 'translate3d(0, ' + (-scrollTop) + 'px, 0)';
+    rowEndHeader.style.transform = 'translate3d(0, ' + (-scrollTop) + 'px, 0)';
   } else {
     var dir = this.getResources().isRTLMode() ? 'right' : 'left';
     this.setElementDir(colHeader, -scrollLeft, dir);
@@ -7629,8 +7623,8 @@ DvtDataGrid.prototype.fillViewport = function () {
       }
     }
 
-    if (this._getMaxTopPixel() > viewportTop ||
-      (this.m_currentScrollTop === 0 && this._getMaxTop() > 0)) {
+    if ((this._getMaxTopPixel() > viewportTop || this.m_currentScrollTop === 0) &&
+      this._getMaxTop() > 0) {
       fetchStart = Math.max(0, this._getMaxTop() - this.getFetchSize('row'));
       fetchSize = Math.max(0, this._getMaxTop() - fetchStart);
       this.fetchHeaders('row', fetchStart, this.m_rowHeader, this.m_rowEndHeader, fetchSize);
@@ -7652,8 +7646,8 @@ DvtDataGrid.prototype.fillViewport = function () {
       }
     }
 
-    if (this._getMaxLeftPixel() > viewportLeft ||
-      (this.m_currentScrollLeft === 0 && this._getMaxLeft() > 0)) {
+    if ((this._getMaxLeftPixel() > viewportLeft || this.m_currentScrollLeft === 0)
+      && this._getMaxLeft() > 0) {
       fetchStart = Math.max(0, this._getMaxLeft() - this.getFetchSize('column'));
       fetchSize = Math.max(0, this._getMaxLeft() - fetchStart);
       this.fetchHeaders('column', fetchStart, this.m_colHeader, this.m_colEndHeader, fetchSize);
@@ -9614,11 +9608,11 @@ DvtDataGrid.prototype._handleSwipe = function (event, axis) {
     }
 
     var transitionDuration = Math.max(momentumX.duration, momentumY.duration);
-    this.m_databody.firstChild.style.webkitTransitionDuration = transitionDuration + 'ms';
-    this.m_rowHeader.firstChild.style.webkitTransitionDuration = transitionDuration + 'ms';
-    this.m_colHeader.firstChild.style.webkitTransitionDuration = transitionDuration + 'ms';
-    this.m_rowEndHeader.firstChild.style.webkitTransitionDuration = transitionDuration + 'ms';
-    this.m_colEndHeader.firstChild.style.webkitTransitionDuration = transitionDuration + 'ms';
+    this.m_databody.firstChild.style.transitionDuration = transitionDuration + 'ms';
+    this.m_rowHeader.firstChild.style.transitionDuration = transitionDuration + 'ms';
+    this.m_colHeader.firstChild.style.transitionDuration = transitionDuration + 'ms';
+    this.m_rowEndHeader.firstChild.style.transitionDuration = transitionDuration + 'ms';
+    this.m_colEndHeader.firstChild.style.transitionDuration = transitionDuration + 'ms';
 
     diffX += momentumX.destination;
     diffY += momentumY.destination;
@@ -15464,8 +15458,8 @@ DvtDataGrid.prototype.handleHeaderClickSelection = function (event) {
   var target = /** @type {Element} */ (event.target);
   var header = this.findHeader(target);
   var shiftKey = event.shiftKey;
-
-  if (!shiftKey && header) {
+  var multi = this.isMultipleSelection();
+  if (!(shiftKey && multi) && header) {
     this._setActive(header, this._createActiveObject(header), event);
   }
 
@@ -15488,9 +15482,7 @@ DvtDataGrid.prototype.handleHeaderClickSelection = function (event) {
     // remove the touch affordance on a new tap, unhighlight the active cell, and select the new one
     this._removeTouchSelectionAffordance();
     this._selectHeader(axis, index, level, event);
-  } else if (!shiftKey) {
-    this._selectHeader(axis, index, level, event);
-  } else if (shiftKey) {
+  } else if (shiftKey && multi) {
     var headerContext = header[this.getResources().getMappedAttribute('context')];
     // check if cell anchor, if so inherit row/column axis from target
     if (axis == null) {
@@ -15501,6 +15493,8 @@ DvtDataGrid.prototype.handleHeaderClickSelection = function (event) {
         (axis.indexOf('column') !== -1 && headerContext.axis.indexOf('column') !== -1)) {
       this.extendSelectionHeader(header, event);
     }
+  } else {
+    this._selectHeader(axis, index, level, event);
   }
 
   return undefined;
@@ -15848,7 +15842,8 @@ DvtDataGrid.prototype._selectRangeCallback = function (event, newRange) {
   // reference, create a brand new selection
   var previous = this.GetSelection();
   if (!this.m_discontiguousSelection && event &&
-      !(this.m_utils.ctrlEquivalent(event) && event.button === 0)) {
+      !(this.m_utils.ctrlEquivalent(event) &&
+        this.isMultipleSelection() && event.button === 0)) {
     selection = [];
   } else {
     selection = previous.slice(0);
@@ -20234,7 +20229,7 @@ DvtDataGridOptions.prototype.getScrollPolicyOptions = function () {
 /**
  * @ojcomponent oj.ojDataGrid
  * @augments oj.baseComponent
- * @since 0.6
+ * @since 0.6.0
  * @ojstatus preview
  * @ojrole application
  * @ojrole grid
@@ -25341,6 +25336,7 @@ SingleCellSet.prototype.getExtent = function () {
 };
 
 DataProviderDataGridDataSource.prototype._handlDataProviderRefreshEvent = function () {
+  this._asyncIterator = null;
   this.handleEvent('change', { operation: 'refresh' });
 };
 

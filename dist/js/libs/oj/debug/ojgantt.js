@@ -1444,7 +1444,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        */
       minorAxis: {
       /**
-       * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the minor axis for all 'scale' values, or
+       * A converter (an instance that duck types {@link oj.Converter}) used to format the labels of the minor axis for all 'scale' values, or
        * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see {@link oj.ojTimeAxis.Converters}).
        * See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
        * <br></br>See the <a href="#minorAxis">minor-axis</a> attribute for usage examples.
@@ -1570,7 +1570,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        */
       majorAxis: {
         /**
-         * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the major axis for all 'scale' values, or
+         * A converter (an instance that duck types {@link oj.Converter}) used to format the labels of the major axis for all 'scale' values, or
          * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see {@link oj.ojTimeAxis.Converters}).
          * See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
          * <br></br>See the <a href="#majorAxis">major-axis</a> attribute for usage examples.
@@ -2558,7 +2558,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          */
         start: {
           /**
-           * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.start.converter
@@ -2612,7 +2612,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          */
         end: {
           /**
-           * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.end.converter
@@ -2666,7 +2666,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          */
         date: {
           /**
-           * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.date.converter
@@ -2761,7 +2761,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          */
         progress: {
           /**
-           * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. See {@link oj.NumberConverterFactory} for details on creating built-in number converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. See {@link oj.NumberConverterFactory} for details on creating built-in number converters.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.progress.converter
@@ -2815,7 +2815,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          */
         baselineStart: {
           /**
-           * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.baselineStart.converter
@@ -2869,7 +2869,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          */
         baselineEnd: {
           /**
-           * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.baselineEnd.converter
@@ -2923,7 +2923,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          */
         baselineDate: {
           /**
-           * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.baselineDate.converter

@@ -1081,8 +1081,8 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  */
 
 /**
- * Optional set of keys for items located after the items involved in the operation. If null and
- * index not specified then insert at the end.
+ * Optional set of keys for items located after the items involved in the operation. They are relative to after the
+ * operation was completed and not the original array. If null and index not specified then insert at the end.
  *
  * @ojstatus preview
  * @since 4.2.0
@@ -1098,8 +1098,8 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  */
 
 /**
- * Optional array of keys for items located after the items involved in the operation. If null and
- * index not specified then insert at the end.
+ * Optional array of keys for items located after the items involved in the operation. They are relative to after the
+ * operation was completed and not the original array.If null and index not specified then insert at the end.
  *
  * @ojstatus preview
  * @since 6.0.0
@@ -1619,7 +1619,8 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  */
 
 /**
- * Optional indexes of items involved in the operation
+ * Optional indexes of items involved in the operation. They are relative to after the
+ * operation was completed and not the original array.
  *
  * @ojstatus preview
  * @since 4.2.0

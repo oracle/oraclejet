@@ -85,7 +85,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'knockout', 'ojs/ojmessaging', 
  * @constructor
  * @class
  * @export
- * @since 0.7
+ * @since 0.7.0
  * @ignore
  */
 oj.InvalidComponentTracker = function () {
@@ -582,7 +582,7 @@ oj.InvalidComponentTracker._hasInvalidMessages = function (messages) {
  * @constructor oj.ValueBinding
  * @see oj.ComponentBinding
  * @see oj.editableValue
- * @since 0.6
+ * @since 0.6.0
  */
 oj.ValueBinding = function () {};
 
@@ -663,7 +663,7 @@ oj.ValueBinding = function () {};
  * @instance
  * @type {oj.InvalidComponentTracker}
  * @default <code class="prettyprint">null</code>
- * @since 0.7
+ * @since 0.7.0
  * @ignore
  */
 /** prevent preceding jsdoc from applying to following line of code */

@@ -3336,7 +3336,7 @@ oj.ChartDataProviderHandler.prototype._sortGroups = function (groupsArray) {
 /**
  * @ojcomponent oj.ojChart
  * @augments oj.dvtBaseComponent
- * @since 0.7
+ * @since 0.7.0
  * @ojstatus preview
  * @ojshortdesc A chart displays information graphically, making relationships among the data easier to understand.
  * @ojrole application
@@ -3633,7 +3633,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @ojmax 1
        */
       /**
-       * The type of time axis to display in the chart. Time axis is only supported for Cartesian bar, line, area, stock, box plot, and combo charts. If the type is "enabled" or "skipGaps", the time values must be provided through the "groups" attribute and stacking is supported. If the type is "skipGaps", the groups will be rendered at a regular interval regardless of any time gaps that may exist in the data. If the type is "mixedFrequency", the time values must be provided through the "x" attribute of the the data items and stacking is not supported.
+       * The type of time axis to display in the chart. Time axis is only supported for Cartesian bar, line, area, stock, box plot, and combo charts. If the value is "enabled" or "skipGaps", the time values must be provided through the "group-id" attribute of the oj-chart-item element. In this case stacking is supported. If the value is "skipGaps", the groups will be rendered at a regular interval regardless of any time gaps that may exist in the data. If the value is "mixedFrequency", the time values must be provided through the "x" attribute of the oj-chart-item element. In this case stacking is not supported.
        * @expose
        * @name timeAxisType
        * @memberof oj.ojChart
@@ -4059,7 +4059,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the label if it is numeric. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label if it is numeric. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name pieCenter.converter
        * @memberof! oj.ojChart
@@ -4498,7 +4498,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default "auto"
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the labels. When using a time axis, this attribute also takes an array of two converters, which apply respectively to the first and second label levels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the labels. When using a time axis, this attribute also takes an array of two converters, which apply respectively to the first and second label levels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name xAxis.tickLabel.converter
        * @memberof! oj.ojChart
@@ -5169,7 +5169,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default "auto"
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name yAxis.tickLabel.converter
        * @memberof! oj.ojChart
@@ -5821,7 +5821,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       * @default "auto"
       */
       /**
-      * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+      * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
       * @expose
       * @name y2Axis.tickLabel.converter
       * @memberof! oj.ojChart
@@ -7027,7 +7027,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name valueFormats.x.converter
        * @memberof! oj.ojChart
@@ -7083,7 +7083,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name valueFormats.y.converter
        * @memberof! oj.ojChart
@@ -7139,7 +7139,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name valueFormats.y2.converter
        * @memberof! oj.ojChart
@@ -7195,7 +7195,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name valueFormats.z.converter
        * @memberof! oj.ojChart
@@ -7251,7 +7251,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name valueFormats.value.converter
        * @memberof! oj.ojChart
@@ -7307,7 +7307,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name valueFormats.targetValue.converter
        * @memberof! oj.ojChart
@@ -7363,7 +7363,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name valueFormats.low.converter
        * @memberof! oj.ojChart
@@ -7419,7 +7419,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name valueFormats.high.converter
        * @memberof! oj.ojChart
@@ -7475,7 +7475,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name valueFormats.open.converter
        * @memberof! oj.ojChart
@@ -7531,7 +7531,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name valueFormats.close.converter
        * @memberof! oj.ojChart
@@ -7587,7 +7587,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name valueFormats.volume.converter
        * @memberof! oj.ojChart
@@ -7643,7 +7643,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name valueFormats.q1.converter
        * @memberof! oj.ojChart
@@ -7699,7 +7699,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name valueFormats.q2.converter
        * @memberof! oj.ojChart
@@ -7755,7 +7755,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name valueFormats.q3.converter
        * @memberof! oj.ojChart
@@ -7811,7 +7811,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object}
        */
       /**
-       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The converter (an instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
        * @expose
        * @name valueFormats.label.converter
        * @memberof! oj.ojChart
@@ -9191,7 +9191,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * Object type that defines a chart group.
  * @typedef {Object} oj.ojChart.Group
  * @ojimportmembers oj.ojChartGroupProperties
- * @property {(string|number)=} id The id of the group. Defaults to the name if not specified.
+ * @property {(string|number)=} id The id of the group. Defaults to the name if not specified. This is also used to specify the date for non mixed frequency time axes.
  * @property {Array.<Object>=} groups An array of nested group objects.
  * @ojsignature {target: "Type", value: "Array.<oj.ojChart.Group>=", for: "groups", jsdocOverride: true}
  */
@@ -9816,7 +9816,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  *
  */
  /**
- * The array of id(s) for the group(s) the item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids.
+ * The array of id(s) for the group(s) the item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids. This is also used to specify the date for non mixed frequency time axes.
  * @expose
  * @ojrequired
  * @name groupId
@@ -9872,7 +9872,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  * @ojcomponent oj.ojSparkChart
  * @augments oj.dvtBaseComponent
- * @since 0.7
+ * @since 0.7.0
  * @ojshortdesc A spark chart displays information graphically, typically highlighting the trend of a data set in a compact form factor.
  * @ojstatus preview
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}

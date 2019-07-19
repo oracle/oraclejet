@@ -124,13 +124,17 @@ var DiagramUtils = function () {
  * @property {number} obj.viewport.w width
  * @property {number} obj.viewport.h height
  * @returns {Function} layout callback function
- * @ojsignature {target: "Type", value: "oj.DiagramUtils.LabelLayout", for: "obj.nodes.labelLayout"}
- * @ojsignature {target: "Type", value: "oj.DiagramUtils.LabelLayout", for: "obj.links.labelLayout"}
- * @ojsignature {target: "Type", value: "oj.DiagramUtils.LabelLayout|((context: DvtDiagramLayoutContext, node: DvtDiagramLayoutContextNode) => oj.DiagramUtils.LabelLayout)", for: "obj.nodeDefaults.labelLayout"}
- * @ojsignature {target: "Type", value: "(context: DvtDiagramLayoutContext, link: DvtDiagramLayoutContextLink) => string", for: "obj.linkDefaults.path"}
- * @ojsignature {target: "Type", value: "(context: DvtDiagramLayoutContext, link: DvtDiagramLayoutContextLink) => oj.DiagramUtils.LabelLayout", for: "obj.linkDefaults.labelLayout"}
- * @ojsignature {target: "Type", value: "{x: number, y: number, w: number, h: number} |((context: DvtDiagramLayoutContext) => {x: number, y: number, w: number, h: number})", for: "obj.viewport"}
- * @ojsignature {target: "Type", value: "(context: DvtDiagramLayoutContext) => void", for: "returns"}
+ * @ojsignature [{target:"Type", value:"<K1, K2, D1, D2>", for:"genericTypeParameters"},
+ *               {target: "Type", value: "K1", for: "obj.nodes.id"},
+ *               {target: "Type", value: "oj.DiagramUtils.LabelLayout", for: "obj.nodes.labelLayout"},
+ *               {target: "Type", value: "K2", for: "obj.links.id"},
+ *               {target: "Type", value: "K1", for: "obj.links.coordinateSpace"},
+ *               {target: "Type", value: "oj.DiagramUtils.LabelLayout", for: "obj.links.labelLayout"},
+ *               {target: "Type", value: "oj.DiagramUtils.LabelLayout|((context: DvtDiagramLayoutContext<K1, K2, D1, D2>, node: DvtDiagramLayoutContextNode<K1, D1>) => oj.DiagramUtils.LabelLayout)", for: "obj.nodeDefaults.labelLayout"},
+ *               {target: "Type", value: "(context: DvtDiagramLayoutContext<K1, K2, D1, D2>, link: DvtDiagramLayoutContextLink<K1, K2, D2>) => string", for: "obj.linkDefaults.path"},
+ *               {target: "Type", value: "(context: DvtDiagramLayoutContext<K1, K2, D1, D2>, link: DvtDiagramLayoutContextLink<K1, K2, D2>) => oj.DiagramUtils.LabelLayout", for: "obj.linkDefaults.labelLayout"},
+ *               {target: "Type", value: "{x: number, y: number, w: number, h: number} |((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => {x: number, y: number, w: number, h: number})", for: "obj.viewport"},
+ *               {target: "Type", value: "(context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => void", for: "returns"}]
  * @export
  * @method getLayout
  * @memberof oj.DiagramUtils

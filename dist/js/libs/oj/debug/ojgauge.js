@@ -794,7 +794,7 @@ var __oj_status_meter_gauge_metadata =
  * @ojcomponent oj.dvtBaseGauge
  * @augments oj.dvtBaseComponent
  * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter"]}
- * @since 0.7
+ * @since 0.7.0
  * @abstract
  */
 oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent,
@@ -911,7 +911,7 @@ oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent,
  * @ojcomponent oj.ojDialGauge
  * @ignore
  * @augments oj.dvtBaseGauge
- * @since 0.7
+ * @since 0.7.0
  *
  * @classdesc
  * <h3 id="dialGaugeOverview-section">
@@ -1762,7 +1762,7 @@ oj.__registerWidget('oj.ojDialGauge', $.oj.dvtBaseGauge,
 /**
  * @ojcomponent oj.ojLedGauge
  * @augments oj.dvtBaseGauge
- * @since 0.7
+ * @since 0.7.0
  * @ojstatus preview
  * @ojshortdesc A LED gauge displays information graphically, highlighting a specific metric value in relation to its thresholds.
  * @ojrole img
@@ -2263,7 +2263,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
 /**
  * @ojcomponent oj.ojRatingGauge
  * @augments oj.dvtBaseGauge
- * @since 0.7
+ * @since 0.7.0
  * @ojstatus preview
  * @ojshortdesc A rating gauge displays information graphically, typically displaying or accepting user feedback on a product or service.
  * @ojrole img
@@ -3051,7 +3051,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
  * @ojcomponent oj.ojStatusMeterGauge
  * @augments oj.dvtBaseGauge
  * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter"]}
- * @since 0.7
+ * @since 0.7.0
  * @ojstatus preview
  * @ojshortdesc A status meter gauge displays information graphically, highlighting a specific metric value's progress in relation to its thresholds.  Horizontal, vertical, and circular formats are supported.
  * @ojrole img

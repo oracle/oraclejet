@@ -1044,6 +1044,47 @@ TemplateHandler.prototype.getTemplateEngine = function () {
 };
 
 /**
+ * Returns the data set attributes of a template
+ * @param {string} templateName The name of the template whose data set attributes is to be returned
+ * @return {Object} The data set attributes of the specified template
+ * @public
+ * @instance
+ * @memberof oj.dvtBaseComponent
+ */
+TemplateHandler.prototype.getDataSet = function (templateName) {
+  var template = this.getTemplate(templateName);
+  return template && template.dataset;
+};
+
+/**
+ * Returns the template corresponding to the given name
+ * @param {string} templateName The name of the template
+ * @return {Element|null} The template element if the handler has it, null if otherwise
+ * @public
+ * @instance
+ * @memberof oj.dvtBaseComponent
+ */
+TemplateHandler.prototype.getTemplate = function (templateName) {
+  return this._templates[templateName] && this._templates[templateName][0];
+};
+
+/**
+ * Returns the boolean value of the data set attribute given. It is read off the template corresponding to the given template name.
+ * @param {string} templateName The name of the template
+ * @return {boolean} The data set attribute's boolean value
+ * @public
+ * @instance
+ * @memberof oj.dvtBaseComponent
+ */
+TemplateHandler.prototype.getDataSetBoolean = function (templateName, attr) {
+  var templateDataSet = this.getDataSet(templateName);
+  var prop = oj.__AttributeUtils.attributeToPropertyName(attr);
+  var propValue = templateDataSet && templateDataSet[prop];
+  return propValue != null && oj.__AttributeUtils.coerceBooleanValue(this.getTemplate(templateName),
+    attr, propValue, 'Boolean');
+};
+
+/**
  * Gets the inline template elements of the component
  * @return {Object} Returns an object containing the inline template elements of the custom element component.
  * @public
@@ -1238,7 +1279,7 @@ TemplateHandler.prototype.processTemplates = function (dataProperty, data, templ
         try {
           if (template) {
             processedDatum = self.processNodeTemplate(dataProperty, templateEngine,
-              template[0], templateElementName, context, nodeKey);
+              template, templateElementName, context, nodeKey);
           } else {
             processedDatum = Object.create(nodeData);
             processedDatum._noTemplate = true;
@@ -1273,7 +1314,7 @@ TemplateHandler.prototype.processTemplates = function (dataProperty, data, templ
 
           var templateName = getTemplateName(_data[i]);
           var templateElementName = getTemplateElementName(_data[i]);
-          var template = self._templates[templateName];
+          var template = self.getTemplate(templateName);
 
           var processedDatum = processDatum(nodeData, nodeKey, context,
             template, templateElementName);
@@ -1397,7 +1438,7 @@ TemplateHandler.prototype._fireEvent = function (type, detail) {
 /**
  * @ojcomponent oj.dvtBaseComponent
  * @augments oj.baseComponent
- * @since 0.7
+ * @since 0.7.0
  * @abstract
  * @hideconstructor
  */
@@ -2679,7 +2720,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
 
       return null;
     };
-    return customRenderer;
+    return origRenderer ? customRenderer : null;
   },
 
   /**
@@ -2802,6 +2843,21 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
   },
 
   /**
+   * Returns a wrapper funtion used to render inline templates
+   * @param {Object} origRenderer The original template renderer.
+   * @param {string} templateName The name of the template
+   * @param {string} option The option name
+   * @return {Function} Returns a wrapper funtion used to render inline templates
+   * @protected
+   * @memberof oj.dvtBaseComponent
+   */
+  // eslint-disable-next-line no-unused-vars
+  _WrapInlineTemplateRenderer: function (origRenderer, templateName, option) {
+    // default implementation does nothing.
+    return origRenderer;
+  },
+
+  /**
    * Creates a callback function that will be used as a custom renderer for an inline template slot.
    * @param {Object} options Options for rendering the component
    * @param {string} optionPath The path to set the generated renderer function
@@ -2835,6 +2891,8 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
         }
         return { preventDefault: true };
       }.bind(this);
+      templateRenderer = this._WrapInlineTemplateRenderer(templateRenderer,
+        templateName, optionPath);
       this._renderDeferredData(renderCount, options, [optionPath],
         [this._WrapCustomElementRenderer(templateRenderer)]);
     }.bind(this));

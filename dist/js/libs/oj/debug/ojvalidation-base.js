@@ -2465,7 +2465,7 @@ oj.RequiredValidator.prototype._getDetailKey = function () {
  * @memberof oj.AsyncValidator
  * @instance
  * @name hint
- * @type {Promise<string|null>}
+ * @type {Promise<string|null>=}
  * @ojstatus preview
  */
 

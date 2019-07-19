@@ -245,8 +245,7 @@ var ListDataProviderView = /** @class */ (function () {
         // If fetchByOffset is supported by the underlying dataprovider then that is used for offset.
         // Otherwise, fetches are made in chunks until from and offset are fulfilled.
         var cachedData = {};
-        cachedData[ListDataProviderView._DATA] = [];
-        cachedData[ListDataProviderView._KEYS] = [];
+        cachedData[ListDataProviderView._ITEMS] = [];
         cachedData[ListDataProviderView._DONE] = false;
         cachedData[ListDataProviderView._STARTINDEX] = 0;
         var size = params != null ? params[ListDataProviderView._SIZE] : null;
@@ -273,19 +272,16 @@ var ListDataProviderView = /** @class */ (function () {
                     var updatedParams = new self.FetchByOffsetParameters(self, offset_1, size, mappedSortCriteria, mappedFilterCriterion, fetchAttributes);
                     return self.dataProvider[ListDataProviderView._FETCHBYOFFSET](updatedParams).then(function (result) {
                         var results = result['results'];
-                        var data = results.map(function (value) {
+                        offset_1 = offset_1 + results.length;
+                        var mappedResult = self._getMappedItems(results);
+                        self._cacheResult(cachedData, mappedResult);
+                        cachedData[ListDataProviderView._DONE] = result[ListDataProviderView._DONE];
+                        var data = mappedResult.map(function (value) {
                             return value[ListDataProviderView._DATA];
                         });
-                        var metadata = results.map(function (value) {
+                        var metadata = mappedResult.map(function (value) {
                             return value[ListDataProviderView._METADATA];
                         });
-                        var keys = results.map(function (value) {
-                            return value[ListDataProviderView._METADATA][ListDataProviderView._KEY];
-                        });
-                        offset_1 = offset_1 + keys.length;
-                        var mappedResult = self._getMappedDataAndKeys(keys, data);
-                        self._cacheResult(cachedData, mappedResult[ListDataProviderView._DATA], mappedResult[ListDataProviderView._KEYS]);
-                        cachedData[ListDataProviderView._DONE] = result[ListDataProviderView._DONE];
                         var resultFetchParams = result[ListDataProviderView._FETCHPARAMETERS];
                         var resultSortCriteria = resultFetchParams != null ? resultFetchParams[ListDataProviderView._SORTCRITERIA] : null;
                         var resultFilterCriterion = resultFetchParams != null ? resultFetchParams[ListDataProviderView._FILTERCRITERION] : null;
@@ -293,7 +289,7 @@ var ListDataProviderView = /** @class */ (function () {
                         var unmappedResultFilterCriterion = self._getUnmappedFilterCriterion(resultFilterCriterion);
                         var resultParams = new self.FetchByOffsetParameters(self, self[ListDataProviderView._OFFSET], size, unmappedResultSortCriteria, unmappedResultFilterCriterion);
                         // if the dataprovider supports fetchByOffset then we use that to do an offset based fetch
-                        return Promise.resolve(new self.AsyncIteratorResult(self, new self.FetchListResult(self, resultParams, mappedResult[ListDataProviderView._DATA], mappedResult[ListDataProviderView._METADATA]), cachedData[ListDataProviderView._DONE]));
+                        return Promise.resolve(new self.AsyncIteratorResult(self, new self.FetchListResult(self, resultParams, data, metadata), cachedData[ListDataProviderView._DONE]));
                     });
                 };
             }(cachedData), params));
@@ -306,18 +302,15 @@ var ListDataProviderView = /** @class */ (function () {
                     return cachedAsyncIterator.next().then(function (result) {
                         var data = result[ListDataProviderView._VALUE][ListDataProviderView._DATA];
                         var metadata = result[ListDataProviderView._VALUE][ListDataProviderView._METADATA];
-                        var keys = metadata.map(function (value) {
-                            return value[ListDataProviderView._KEY];
-                        });
-                        if (self._noFilterSupport) {
-                            self._filterResult(mappedFilterCriterion, data, keys, metadata);
-                        }
                         var items = data.map(function (value, index) {
                             return new self.Item(self, metadata[index], data[index]);
                         });
+                        if (self._noFilterSupport) {
+                            self._filterResult(mappedFilterCriterion, items);
+                        }
                         // apply any mapping defined in the DataMapping parameter
-                        var mappedResult = self._getMappedDataAndKeys(keys, data);
-                        self._cacheResult(cachedData, mappedResult[ListDataProviderView._DATA], mappedResult[ListDataProviderView._KEYS]);
+                        var mappedResult = self._getMappedItems(items);
+                        self._cacheResult(cachedData, mappedResult);
                         cachedData[ListDataProviderView._DONE] = result[ListDataProviderView._DONE];
                         var size = params != null ? params[ListDataProviderView._SIZE] : null;
                         var offset = params != null ? params[ListDataProviderView._OFFSET] : null;
@@ -384,34 +377,33 @@ var ListDataProviderView = /** @class */ (function () {
         var self = this;
         if (key != null) {
             // first check if the key is in our cache
-            var resultKeys = cachedData[ListDataProviderView._KEYS].filter(function (resultKey) {
-                if (key == resultKey) {
+            var resultItems = cachedData[ListDataProviderView._ITEMS].filter(function (resultItem) {
+                if (oj.KeyUtils.equals(resultItem[ListDataProviderView._METADATA][ListDataProviderView._KEY], key)) {
                     return true;
                 }
             });
-            if (resultKeys.length > 0) {
+            if (resultItems.length > 0) {
                 // if the key is in our cache, then trim the cache so that it starts from the key
-                var keyIndex = cachedData[ListDataProviderView._KEYS].indexOf(resultKeys[0]);
-                cachedData[ListDataProviderView._KEYS] = cachedData[ListDataProviderView._KEYS].slice(keyIndex, cachedData[ListDataProviderView._KEYS].length);
-                cachedData[ListDataProviderView._DATA] = cachedData[ListDataProviderView._DATA].slice(keyIndex, cachedData[ListDataProviderView._DATA].length);
+                var itemIndex = cachedData[ListDataProviderView._ITEMS].indexOf(resultItems[0]);
+                cachedData[ListDataProviderView._ITEMS] = cachedData[ListDataProviderView._ITEMS].slice(itemIndex, cachedData[ListDataProviderView._ITEMS].length);
             }
             else if (!cachedData[ListDataProviderView._DONE]) {
                 // if the key is not in our cache and we are not done then fetch the next block and call _fetchUntilKey again.
                 return cachedAsyncIterator.next().then(function (nextResult) {
                     var data = nextResult[ListDataProviderView._VALUE][ListDataProviderView._DATA];
-                    var keys = nextResult[ListDataProviderView._VALUE][ListDataProviderView._METADATA].map(function (value) {
-                        return value[ListDataProviderView._KEY];
+                    var metadata = nextResult[ListDataProviderView._VALUE][ListDataProviderView._METADATA];
+                    var items = data.map(function (value, index) {
+                        return new self.Item(self, metadata[index], data[index]);
                     });
-                    var mappedResult = self._getMappedDataAndKeys(keys, data);
-                    self._cacheResult(cachedData, mappedResult[ListDataProviderView._DATA], mappedResult[ListDataProviderView._KEYS]);
+                    var mappedResult = self._getMappedItems(items);
+                    self._cacheResult(cachedData, mappedResult);
                     cachedData[ListDataProviderView._DONE] = nextResult[ListDataProviderView._DONE];
                     return self._fetchUntilKey(nextResult[ListDataProviderView._FETCHPARAMETERS], mappedResult[ListDataProviderView._KEYS], cachedData, cachedAsyncIterator);
                 });
             }
             else {
                 // if we are done then this means that the key is not in the entire data set
-                cachedData[ListDataProviderView._DATA] = [];
-                cachedData[ListDataProviderView._KEYS] = [];
+                cachedData[ListDataProviderView._ITEMS] = [];
             }
         }
         return Promise.resolve(null);
@@ -423,70 +415,70 @@ var ListDataProviderView = /** @class */ (function () {
         var self = this;
         var fetchSize = params != null ? params[ListDataProviderView._SIZE] > 0 ? params[ListDataProviderView._SIZE] : resultSize : resultSize;
         offset = offset > 0 ? offset : 0;
-        var keys = cachedData[ListDataProviderView._KEYS].slice(offset, offset + fetchSize);
-        var data = cachedData[ListDataProviderView._DATA].slice(offset, offset + fetchSize);
+        var cachedItems = cachedData[ListDataProviderView._ITEMS].slice(offset, offset + fetchSize);
         if (this._noFilterSupport) {
             var mappedFilterCriterion = this._getMappedFilterCriterion(params[ListDataProviderView._FILTERCRITERION]);
-            this._filterResult(mappedFilterCriterion, data, keys, null);
+            this._filterResult(mappedFilterCriterion, cachedItems);
         }
-        var metadata = keys.map(function (value) {
-            return new self.ItemMetadata(self, value);
-        });
-        if (data.length < fetchSize) {
+        if (cachedItems.length < fetchSize) {
             if (!cachedData[ListDataProviderView._DONE]) {
                 return cachedAsyncIterator.next().then(function (nextResult) {
                     var data = nextResult[ListDataProviderView._VALUE][ListDataProviderView._DATA];
-                    var keys = nextResult[ListDataProviderView._VALUE][ListDataProviderView._METADATA].map(function (value) {
-                        return value[ListDataProviderView._KEY];
+                    var metadata = nextResult[ListDataProviderView._VALUE][ListDataProviderView._METADATA];
+                    var items = data.map(function (value, index) {
+                        return new self.Item(self, metadata[index], data[index]);
                     });
                     if (self._noFilterSupport) {
                         var mappedFilterCriterion = self._getMappedFilterCriterion(params[ListDataProviderView._FILTERCRITERION]);
-                        self._filterResult(mappedFilterCriterion, data, keys, null);
+                        self._filterResult(mappedFilterCriterion, items);
                     }
-                    var mappedResult = self._getMappedDataAndKeys(keys, data);
-                    self._cacheResult(cachedData, mappedResult[ListDataProviderView._DATA], mappedResult[ListDataProviderView._KEYS]);
+                    var mappedResult = self._getMappedItems(items);
+                    self._cacheResult(cachedData, mappedResult);
                     cachedData[ListDataProviderView._DONE] = nextResult[ListDataProviderView._DONE];
                     return self._fetchUntilOffset(nextResult[ListDataProviderView._VALUE][ListDataProviderView._FETCHPARAMETERS], offset, data.length, cachedData, cachedAsyncIterator);
                 });
             }
             else {
-                cachedData[ListDataProviderView._STARTINDEX] = cachedData[ListDataProviderView._STARTINDEX] + data.length;
+                cachedData[ListDataProviderView._STARTINDEX] = cachedData[ListDataProviderView._STARTINDEX] + cachedItems.length;
+                var data = cachedItems.map(function (item) {
+                    return item[ListDataProviderView._DATA];
+                });
+                var metadata = cachedItems.map(function (item) {
+                    return item[ListDataProviderView._METADATA];
+                });
                 return Promise.resolve(new self.AsyncIteratorResult(self, new self.FetchListResult(self, params, data, metadata), true));
             }
         }
         else {
-            cachedData[ListDataProviderView._STARTINDEX] = cachedData[ListDataProviderView._STARTINDEX] + data.length;
+            cachedData[ListDataProviderView._STARTINDEX] = cachedData[ListDataProviderView._STARTINDEX] + cachedItems.length;
+            var data = cachedItems.map(function (item) {
+                return item[ListDataProviderView._DATA];
+            });
+            var metadata = cachedItems.map(function (item) {
+                return item[ListDataProviderView._METADATA];
+            });
             return Promise.resolve(new self.AsyncIteratorResult(self, new self.FetchListResult(self, params, data, metadata), cachedData[ListDataProviderView._DONE]));
         }
     };
     /**
      * Cache the data and keys
      */
-    ListDataProviderView.prototype._cacheResult = function (cachedData, data, keys) {
+    ListDataProviderView.prototype._cacheResult = function (cachedData, items) {
         var self = this;
-        data.map(function (value) {
-            cachedData[ListDataProviderView._DATA].push(value);
-        });
-        keys.map(function (value) {
-            cachedData[ListDataProviderView._KEYS].push(value);
+        items.map(function (value) {
+            cachedData[ListDataProviderView._ITEMS].push(value);
         });
     };
-    ListDataProviderView.prototype._filterResult = function (filterCriterion, data, keys, metadata) {
+    ListDataProviderView.prototype._filterResult = function (filterCriterion, items) {
         var filter;
         if (filterCriterion) {
             if (!filterCriterion.filter) {
                 filterCriterion = __DataProvider.FilterFactory.getFilter({ filterDef: filterCriterion });
             }
-            var i = data.length - 1;
+            var i = items.length - 1;
             while (i >= 0) {
-                if (!filterCriterion.filter(data[i])) {
-                    data.splice(i, 1);
-                    if (keys) {
-                        keys.splice(i, 1);
-                    }
-                    if (metadata) {
-                        metadata.splice(i, 1);
-                    }
+                if (!filterCriterion.filter(items[i][ListDataProviderView._DATA])) {
+                    items.splice(i, 1);
                 }
                 i--;
             }
@@ -510,30 +502,6 @@ var ListDataProviderView = /** @class */ (function () {
             }
         }
         return items;
-    };
-    /**
-     * Apply DataMapping to the keys and data
-     */
-    ListDataProviderView.prototype._getMappedDataAndKeys = function (keys, data) {
-        var self = this;
-        var items = data.map(function (value, index) {
-            return new self.Item(self, new self.ItemMetadata(self, keys[index]), data[index]);
-        });
-        var mappedItems = this._getMappedItems(items);
-        var mappedData = mappedItems.map(function (value) {
-            return value[ListDataProviderView._DATA];
-        });
-        var mappedKeys = mappedItems.map(function (value) {
-            return value[ListDataProviderView._METADATA][ListDataProviderView._KEY];
-        });
-        var mappedMetadata = mappedItems.map(function (value) {
-            return value[ListDataProviderView._METADATA];
-        });
-        var result = {};
-        result[ListDataProviderView._DATA] = mappedData;
-        result[ListDataProviderView._KEYS] = mappedKeys;
-        result[ListDataProviderView._METADATA] = mappedMetadata;
-        return result;
     };
     /**
      * Apply mapping to the filterCriterion
@@ -611,6 +579,7 @@ var ListDataProviderView = /** @class */ (function () {
     ListDataProviderView._SORTCRITERIA = 'sortCriteria';
     ListDataProviderView._FILTERCRITERION = 'filterCriterion';
     ListDataProviderView._METADATA = 'metadata';
+    ListDataProviderView._ITEMS = 'items';
     ListDataProviderView._FROM = 'from';
     ListDataProviderView._OFFSET = 'offset';
     ListDataProviderView._REFRESH = 'refresh';

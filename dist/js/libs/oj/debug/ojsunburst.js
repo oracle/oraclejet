@@ -430,7 +430,7 @@ var __oj_sunburst_node_metadata =
 /**
  * @ojcomponent oj.ojSunburst
  * @augments oj.dvtBaseComponent
- * @since 0.7
+ * @since 0.7.0
  * @ojstatus preview
  * @ojrole application
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}

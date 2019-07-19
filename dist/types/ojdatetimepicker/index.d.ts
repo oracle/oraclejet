@@ -108,17 +108,17 @@ export interface ojDateTimePickerSettablePropertiesLenient extends Partial<ojDat
 export interface ojInputDate<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> extends inputBase<string, SP> {
     converter: Promise<Converter<string>> | Converter<string> | Validation.RegisteredConverter;
     datePicker: {
-        changeMonth: 'select' | 'none';
-        changeYear: 'select' | 'none';
-        currentMonthPos: number;
-        daysOutsideMonth: 'hidden' | 'visible' | 'selectable';
-        footerLayout: '' | 'today';
-        numberOfMonths: number;
-        showOn: 'focus' | 'image';
-        stepBigMonths: number;
-        stepMonths: 'numberOfMonths' | number;
-        weekDisplay: 'number' | 'none';
-        yearRange: string;
+        changeMonth?: string;
+        changeYear?: string;
+        currentMonthPos?: number;
+        daysOutsideMonth?: string;
+        footerLayout?: string;
+        numberOfMonths?: number;
+        showOn?: string;
+        stepBigMonths?: number;
+        stepMonths?: 'numberOfMonths' | number;
+        weekDisplay?: string;
+        yearRange?: string;
     };
     dayFormatter: (param: ojInputDate.DayFormatterInput) => (null | 'all' | ojInputDate.DayFormatterOutput);
     dayMetaData: {
@@ -259,17 +259,17 @@ export interface ojInputDateEventMap<SP extends ojInputDateSettableProperties = 
 export interface ojInputDateSettableProperties extends inputBaseSettableProperties<string> {
     converter: Promise<Converter<string>> | Converter<string> | Validation.RegisteredConverter;
     datePicker: {
-        changeMonth: 'select' | 'none';
-        changeYear: 'select' | 'none';
-        currentMonthPos: number;
-        daysOutsideMonth: 'hidden' | 'visible' | 'selectable';
-        footerLayout: '' | 'today';
-        numberOfMonths: number;
-        showOn: 'focus' | 'image';
-        stepBigMonths: number;
-        stepMonths: 'numberOfMonths' | number;
-        weekDisplay: 'number' | 'none';
-        yearRange: string;
+        changeMonth?: string;
+        changeYear?: string;
+        currentMonthPos?: number;
+        daysOutsideMonth?: string;
+        footerLayout?: string;
+        numberOfMonths?: number;
+        showOn?: string;
+        stepBigMonths?: number;
+        stepMonths?: 'numberOfMonths' | number;
+        weekDisplay?: string;
+        yearRange?: string;
     };
     dayFormatter: (param: ojInputDate.DayFormatterInput) => (null | 'all' | ojInputDate.DayFormatterOutput);
     dayMetaData: {

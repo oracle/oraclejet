@@ -741,7 +741,7 @@ oj.ComponentBinding._writeValueToProperty = function (
     var func = cachedWriterFunctionEvaluators[name];
 
     if (func) {
-      var writer = func(bindingContext);
+      var writer = oj.__ExpressionUtils.getWriter(func(bindingContext));
       writer(oj.ComponentBinding.__cloneIfArray(value));
     }
   } else if (ko.isWriteableObservable(target)) {
@@ -1677,6 +1677,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
 (function () {
   var _ASSIGNMENT_TARGET_EXP = /^(?:[$_a-z][$\w]*|(.+)(\.\s*[$_a-z][$\w]*|\[.+\]))$/i;
+  var _KO_WRITER_KEY = '_ko_property_writers';
 
   /**
    * @ignore
@@ -1707,7 +1708,11 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
     var target = match[1] ? ('Object(' + match[1] + ')' + match[2]) : expression;
 
-    return 'function(v){' + target + '=v;}';
+    return '{' + _KO_WRITER_KEY + ': function(v){' + target + '=v;}}';
+  };
+
+  oj.__ExpressionUtils.getWriter = function (evaluator) {
+    return evaluator[_KO_WRITER_KEY];
   };
 }());
 
@@ -2268,7 +2273,8 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
               if (writerExpr != null) {
                 var wrirerEvaluator =
                       BindingProviderImpl.createEvaluator(writerExpr, bindingContext);
-                wrirerEvaluator(bindingContext)(oj.ComponentBinding.__cloneIfArray(value));
+                var func = oj.__ExpressionUtils.getWriter(wrirerEvaluator(bindingContext));
+                func(oj.ComponentBinding.__cloneIfArray(value));
                 written = true;
               } else {
                 reason = 'the expression is not a valid update target';

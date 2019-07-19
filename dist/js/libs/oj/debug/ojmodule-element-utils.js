@@ -194,7 +194,7 @@ ModuleElementUtils.createConfig = function (options) {
       viewModelPath: modelPath,
       require: options.require,
       params: options.params,
-      create: 'always'
+      initialize: 'always'
     })
   ])
   .then(

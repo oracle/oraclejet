@@ -153,6 +153,7 @@
         background-color: var(--oj-diagram-overview-bg-color);
       } @else {
         background-color:$dvtDiagramOverviewBgColor;
+        padding:$dvtDiagramOverviewPadding;
       }
     }
     .oj-diagram-overview-viewport {
@@ -179,5 +180,5 @@
       }
       fill-opacity:.25;
     }
-  }
+}
 }

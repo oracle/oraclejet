@@ -26,7 +26,7 @@ define(['ojs/ojcore', 'jquery'], function(oj, $)
  * @constructor
  * @ojtsmodule
  * @export
- * @since 0.6
+ * @since 0.6.0
  * @example <caption>Set application messages using the
  * <code class="prettyprint">messages-custom</code> attribute. This example creates messages
  * the recommended way, by creating an Object that duck-types oj.Message.</caption>
@@ -316,7 +316,7 @@ var Message = oj.Message;
  * shown {display: 'immediate', context: ''}. </p>
  * @private
  * @constructor
- * @since 0.7
+ * @since 0.7.0
  */
 oj.ComponentMessage = function (summary, detail, severity, options) {
   this.Init(summary, detail, severity, options);

@@ -26,6 +26,28 @@
     /* form-control classes */
     
     /* --------------------------------------------------------------- */
+
+
+    /************************* oj-form-control-inherit OVERRIDES *************************/
+    // DO NOT ADD SELECTOR DEFINITIONS BEFORE THESE OVERRIDES AS SPECIFICITY ISSUES CAN ARISE
+
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+    // inherit the height of the container and remove margin-bottom
+    // form controls have min-width/max-width set on their root dom element. 
+    // Allow that to be inherited as well.
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control  {
+      height:100%;
+      min-height:100%;
+      margin-bottom: 0;
+      max-width: 100%;
+      min-width: 100%;
+    }
+
+    /************************* END OF oj-form-control-inherit OVERRIDES *************************/
+
     
     // bumping up the specificity with the html because 
     // when $includeNormalize is false (compatibility mode) the input will get 
@@ -56,20 +78,6 @@
       } @else {
         color: $textColor;        
       }
-    }
-    
-    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
-    // inherit styles, like width/height/borders/colors/text-alignment
-    // -----------------------------------------------------------------------------------------
-    // inherit the height of the container and remove margin-bottom
-    // form controls have min-width/max-width set on their root dom element. 
-    // Allow that to be inherited as well.
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control  {
-      height:100%;
-      min-height:100%;
-      margin-bottom: 0;
-      max-width: 100%;
-      min-width: 100%;
     }
 
     // suppress the native clear icons in IE

@@ -294,12 +294,12 @@ var __oj_table_metadata =
         "column": {
           "type": "KeySet",
           "writeback": true,
-          "value": "new SelectedKeySet();"
+          "value": "new oj.KeySetImpl();"
         },
         "row": {
           "type": "KeySet",
           "writeback": true,
-          "value": "new SelectedKeySet();"
+          "value": "new oj.KeySetImpl();"
         }
       }
     },
@@ -447,7 +447,7 @@ var __oj_table_metadata =
  * @ojcomponent oj.ojTable
  * @augments oj.baseComponent
  * @ojstatus preview
- * @since 0.6
+ * @since 0.6.0
  * @ojshortdesc A table displays data items in a tabular format with highly interactive features.
  * @ojrole grid
  * @ojrole gridcell
@@ -1434,9 +1434,9 @@ var __oj_table_metadata =
       /**
        * Specifies the current selected rows and/or columns in the table.
        * Note that property change event for the deprecated selection property will still be fired when
-       * selected property has changed. In addition, in the case where <a href="AllKeySetImpl">AllKeySetImpl</a> is set,
-       * the value for selection would have an 'inverted' property set to true, and would contain index/key of the rows
-       * that are not selected.
+       * selected property has changed. In addition, <a href="AllKeySetImpl.html">AllKeySetImpl</a> set can be used to represent
+       * select all state. In this case, the value for selection would have an 'inverted' property set to true,
+       * and would contain index/key of the rows that are not selected.
        *
        * @expose
        * @public
@@ -3287,7 +3287,7 @@ var __oj_table_metadata =
       var rowKey = this._getRowKeyForRowIdx(rowIdx);
       var self = this;
       return self._queueTask(function () {
-        return dataprovider.fetchByKeys({ keys: [rowKey] }).then(function (keyResult) {
+        return dataprovider.fetchByKeys({ keys: new Set([rowKey]) }).then(function (keyResult) {
           if (keyResult == null ||
               keyResult.results == null ||
               keyResult.results.size === 0) {
@@ -4851,13 +4851,7 @@ var __oj_table_metadata =
       var dataProvider = this._getData();
       if (dataProvider && dataProvider.containsKeys) {
         return new Promise(function (resolve) {
-          // IE 11 does not support specifying value in constructor
-          var set = new Set();
-          keys.forEach(function (key) {
-            set.add(key);
-          });
-
-          dataProvider.containsKeys({ keys: set }).then(function (value) {
+          dataProvider.containsKeys({ keys: new Set(keys) }).then(function (value) {
             resolve(value.results.size > 0);
           }, function () {
             resolve(false);
@@ -5853,6 +5847,17 @@ var __oj_table_metadata =
         self._getTableDomUtils().clearCachedDomRowData();
         // row values may have changed so refresh the footer
         self._refreshTableFooter();
+
+        // for high watermark scrolling, we need to reset the domscroller in case there are more rows to fetch
+        if (self._isLoadMoreOnScroll() && self._dataProviderAsyncIterator == null) {
+          var dataprovider = self._getData();
+          if (dataprovider) {
+            var options = self._initializeFetchFirstOptions();
+            self._dataProviderAsyncIterator =
+              dataprovider.fetchFirst(options)[Symbol.asyncIterator]();
+            self._registerDomScroller();
+          }
+        }
         if (self._IsCustomElement()) {
           return self._animateVisibleRows(addedTableBodyRows, rowIdxArray, 'add').then(function () {
             return self._finalizeRowRendering(addedTableBodyRows);
@@ -6973,8 +6978,7 @@ var __oj_table_metadata =
         this._queueTask(function () {
           self._beforeDataRefresh();
 
-          var options = {};
-          var fetchPromise = self._invokeDataFetchRows(options);
+          var fetchPromise = self._invokeDataFetchRows();
           self = null;
           return fetchPromise;
         });
@@ -7066,6 +7070,10 @@ var __oj_table_metadata =
       var i;
       var eventDataCount = eventData.length;
 
+      // only used for high watermark scrolling
+      var fetchSize = this.options.scrollPolicyOptions.fetchSize;
+      var maxRowIndex = Math.max(fetchSize, rowCount);
+
       // if specified, afterKeys takes precendence over indexes
       for (i = 0; i < eventDataCount; i++) {
         eventAfterKey = eventAfterKeys != null ? eventAfterKeys[i] : '';
@@ -7090,6 +7098,13 @@ var __oj_table_metadata =
 
         if (!isNaN(eventIndex)) {
           rowIdx = eventIndex - offset;
+          // for high watermark scrolling, we only care about rows in our current viewport
+          if (this._isLoadMoreOnScroll()) {
+            if (rowIdx > maxRowIndex) {
+              // eslint-disable-next-line no-continue
+              continue;
+            }
+          }
           if (metadataSource && metadataSource._getMetadata) {
             metadata = metadataSource._getMetadata(rowIdx);
           } else {
@@ -8017,6 +8032,24 @@ var __oj_table_metadata =
     },
 
     /**
+     * Creates an updated options object used when calling fetchFirst on the data provider.
+     * @param {Object=} options initial options for the fetch.
+     * @return {Object} updated options for the fetch.
+     * @private
+     */
+    _initializeFetchFirstOptions: function (options) {
+      var updatedOptions = options || {};
+      if (!updatedOptions[this._CONST_PAGESIZE] && this._isLoadMoreOnScroll()) {
+        updatedOptions[this._CONST_PAGESIZE] = this.options.scrollPolicyOptions.fetchSize;
+      } else {
+        updatedOptions[this._CONST_PAGESIZE] = -1;
+      }
+      // explicitly silence events to keep backward compatibility
+      updatedOptions[this._CONST_SILENT] = true;
+      return updatedOptions;
+    },
+
+    /**
      * Fetch rows
      * @param {Object} options options for the fetch
      * @param {boolean} init initial fetch
@@ -8025,17 +8058,7 @@ var __oj_table_metadata =
      */
     _invokeDataFetchRows: function (options, init) {
       // eslint-disable-next-line no-param-reassign
-      options = options || {};
-      if (!options[this._CONST_PAGESIZE] && this._isLoadMoreOnScroll()) {
-        // eslint-disable-next-line no-param-reassign
-        options[this._CONST_PAGESIZE] = this.options.scrollPolicyOptions.fetchSize;
-      } else {
-        // eslint-disable-next-line no-param-reassign
-        options[this._CONST_PAGESIZE] = -1;
-      }
-      // explicitly silence events to keep backward compatibility
-      // eslint-disable-next-line no-param-reassign
-      options[this._CONST_SILENT] = true;
+      options = this._initializeFetchFirstOptions(options);
       var dataprovider = this._getData();
       if (dataprovider != null) {
         var self = this;
@@ -10196,6 +10219,7 @@ var __oj_table_metadata =
           this._updateColumnSelectionState(columnIdx, selected);
         }
       }
+
       if (updateSelection && selected) {
         this.option('firstSelectedRow', { key: null, data: null },
                     { _context: { writeback: true, internalSet: true } });
@@ -11863,7 +11887,6 @@ oj.TableDndContext.prototype._cloneTableContainer = function (tableContainer) {
     oj.TableDomUtils.DOM_ELEMENT._TBODY)[0];
 
   var scrollLeft = $(tableBody).scrollLeft();
-  var scrollTop = $(tableBody).scrollTop();
 
   tableContainerClone = tableContainer.cloneNode(true);
   var tableBodyClone = domUtils.getTableElementsByTagName(tableContainerClone,
@@ -11871,6 +11894,17 @@ oj.TableDndContext.prototype._cloneTableContainer = function (tableContainer) {
 
   // Use absolute positioning with a large negative top to put it off the screen without
   // affecting the scrollbar.  Fixed positioning does not work on Safari.
+  tableContainerClone.style[oj.TableDomUtils.CSS_PROP._BACKGROUND_COLOR] =
+    oj.TableDomUtils.CSS_VAL._TRANSPARENT;
+  tableContainerClone.style[oj.TableDomUtils.CSS_PROP._BORDER_COLOR] =
+    oj.TableDomUtils.CSS_VAL._TRANSPARENT;
+  tableContainerClone.style[oj.TableDomUtils.CSS_PROP._POSITION] =
+    oj.TableDomUtils.CSS_VAL._ABSOLUTE;
+  tableContainerClone.style[oj.TableDomUtils.CSS_PROP._HEIGHT] =
+    tableBody.scrollHeight + oj.TableDomUtils.CSS_VAL._PX;
+  tableContainerClone.style[oj.TableDomUtils.CSS_PROP._TOP] =
+    -10000 + oj.TableDomUtils.CSS_VAL._PX;
+
   // Set both overflow and overflow-x/y because on IE, setting overflow does not
   // affect overflow-x/y that have been explicitly set.
   tableBodyClone.style[oj.TableDomUtils.CSS_PROP._OVERFLOW] = oj.TableDomUtils.CSS_VAL._HIDDEN;
@@ -11878,18 +11912,17 @@ oj.TableDndContext.prototype._cloneTableContainer = function (tableContainer) {
   tableBodyClone.style[oj.TableDomUtils.CSS_PROP._OVERFLOW_Y] = oj.TableDomUtils.CSS_VAL._HIDDEN;
   tableBodyClone.style[oj.TableDomUtils.CSS_PROP._BACKGROUND_COLOR] =
     oj.TableDomUtils.CSS_VAL._TRANSPARENT;
+  tableBodyClone.style[oj.TableDomUtils.CSS_PROP._BORDER_COLOR] =
+    oj.TableDomUtils.CSS_VAL._TRANSPARENT;
   tableBodyClone.style[oj.TableDomUtils.CSS_PROP._WIDTH] =
     $(tableBody).width() + oj.TableDomUtils.CSS_VAL._PX;
   tableBodyClone.style[oj.TableDomUtils.CSS_PROP._HEIGHT] =
-    $(tableBody).height() + oj.TableDomUtils.CSS_VAL._PX;
-  tableContainerClone.style[oj.TableDomUtils.CSS_PROP._POSITION] =
-    oj.TableDomUtils.CSS_VAL._ABSOLUTE;
-  tableContainerClone.style[oj.TableDomUtils.CSS_PROP._TOP] =
-    -10000 + oj.TableDomUtils.CSS_VAL._PX;
-  $(tableBodyClone).scrollLeft(scrollLeft * 1.0);
-  $(tableBodyClone).scrollTop(scrollTop * 1.0);
+    tableBody.scrollHeight + oj.TableDomUtils.CSS_VAL._PX;
 
   document.body.appendChild(tableContainerClone); // @HTMLUpdateOK
+
+  // scrollLeft must be set after element is appended, or it does not take effect
+  $(tableBodyClone).scrollLeft(scrollLeft * 1.0);
 
   return tableContainerClone;
 };
@@ -12276,6 +12309,8 @@ oj.TableDndContext.prototype.handleRowDragLeave = function (event) {
 oj.TableDndContext.prototype.handleRowDrop = function (event) {
   var dropRowIndex = this._dropRowIndex;
 
+  // Perform any cleanup
+  this._destroyDragImage();
   this._getTableDomUtils().removeDragOverIndicatorRow();
   this._dropRowIndex = null;
 
@@ -12292,14 +12327,22 @@ oj.TableDndContext.prototype.handleRowDrop = function (event) {
  * @memberof oj.TableDndContext
  */
 oj.TableDndContext.prototype._hideUnselectedRows = function (tableContainerClone, selArray) {
+  var i;
+  var j;
   var firstRow = null;
   var domUtils = this._getTableDomUtils();
   var tableBodyRows = domUtils.getTableElementsByClassName(tableContainerClone,
      oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS, true);
-  for (var i = tableBodyRows.length - 1; i >= 0; i--) {
+  for (i = tableBodyRows.length - 1; i >= 0; i--) {
     if (selArray.indexOf(i) === -1) {
-      tableBodyRows[i].style[oj.TableDomUtils.CSS_PROP._VISIBILITY] =
-        oj.TableDomUtils.CSS_VAL._HIDDEN;
+      var row = tableBodyRows[i];
+      row.style[oj.TableDomUtils.CSS_PROP._VISIBILITY] = oj.TableDomUtils.CSS_VAL._HIDDEN;
+      row.style[oj.TableDomUtils.CSS_PROP._BORDER_COLOR] = oj.TableDomUtils.CSS_VAL._TRANSPARENT;
+      var cells = row.childNodes;
+      for (j = 0; j < cells.length; j++) {
+        cells[j].style[oj.TableDomUtils.CSS_PROP._BORDER_COLOR] =
+          oj.TableDomUtils.CSS_VAL._TRANSPARENT;
+      }
     } else {
       firstRow = i;
     }
@@ -12311,6 +12354,16 @@ oj.TableDndContext.prototype._hideUnselectedRows = function (tableContainerClone
 
   if (tableHeader != null && tableHeader.length > 0) {
     tableHeader[0].style[oj.TableDomUtils.CSS_PROP._VISIBILITY] = oj.TableDomUtils.CSS_VAL._HIDDEN;
+    tableHeader[0].style[oj.TableDomUtils.CSS_PROP._BORDER_COLOR] =
+      oj.TableDomUtils.CSS_VAL._TRANSPARENT;
+    var headerRow = tableHeader[0].childNodes[0];
+    if (headerRow != null) {
+      var headerCells = headerRow.childNodes;
+      for (i = 0; i < headerCells.length; i++) {
+        headerCells[i].style[oj.TableDomUtils.CSS_PROP._BORDER_COLOR] =
+          oj.TableDomUtils.CSS_VAL._TRANSPARENT;
+      }
+    }
   }
 
   var tableFooter = domUtils.getTableElementsByTagName(tableContainerClone,
@@ -16681,6 +16734,7 @@ oj.TableDomUtils.CSS_PROP =
   _BORDER_BOTTOM_WIDTH: 'border-bottom-width',
   _BORDER_LEFT_WIDTH: 'border-left-width',
   _BORDER_RIGHT_WIDTH: 'border-right-width',
+  _BORDER_COLOR: 'border-color',
   _MARGIN_BOTTOM: 'margin-bottom',
   _VERTICAL_ALIGN: 'vertical-align',
   _CURSOR: 'cursor',
@@ -18047,27 +18101,25 @@ oj.TableResizeUtils.CSS_CLASSES =
  */
 
 /**
- * Specifies the current selected rows in the table.  Note that currently
- * <a href="SelectAllKeySet">SelectAllKeySet</a> is not supported.
+ * Specifies the current selected rows in the table.
  * @expose
  * @name selected.row
  * @memberof! oj.ojTable
  * @instance
  * @type {KeySet}
- * @default new SelectedKeySet();
+ * @default new oj.KeySetImpl();
  * @ojsignature {target:"Type", value:"oj.KeySet<K>"}
  * @ojwriteback
  */
 
 /**
- * Specifies the current selected columns in the table.  Note that currently
- * <a href="SelectAllKeySet">SelectAllKeySet</a> is not supported.
+ * Specifies the current selected columns in the table.
  * @expose
  * @name selected.column
  * @memberof! oj.ojTable
  * @instance
  * @type {KeySet}
- * @default new SelectedKeySet();
+ * @default new oj.KeySetImpl();
  * @ojsignature {target:"Type", value:"oj.KeySet<K>"}
  * @ojwriteback
  */

@@ -3665,7 +3665,7 @@ DvtChartObjPeer.prototype._findNextUpSeries = function(chart, seriesIndex, group
   var nextValue = null;
   var nextSeriesIndex = null;
   for (var i = 0; i < seriesCount; i++) {
-    if (!DvtChartStyleUtils.isSeriesRendered(chart, i))
+    if (!DvtChartStyleUtils.isSeriesRendered(chart, i) || DvtChartDataUtils.getValue(chart, i, groupIndex) == null)
       continue;
     var itemValue = DvtChartDataUtils.getCumulativeValue(chart, i, groupIndex);
     if (itemValue > currentValue || (itemValue == currentValue && i > seriesIndex)) {
@@ -3693,7 +3693,7 @@ DvtChartObjPeer.prototype._findNextDownSeries = function(chart, seriesIndex, gro
   var nextValue = null;
   var nextSeriesIndex = null;
   for (var i = seriesCount - 1; i >= 0; i--) {
-    if (!DvtChartStyleUtils.isSeriesRendered(chart, i))
+    if (!DvtChartStyleUtils.isSeriesRendered(chart, i) || DvtChartDataUtils.getValue(chart, i, groupIndex) == null)
       continue;
     var itemValue = DvtChartDataUtils.getCumulativeValue(chart, i, groupIndex);
     if (itemValue < currentValue || (itemValue == currentValue && i < seriesIndex)) {
@@ -12081,6 +12081,8 @@ DvtChartOverview.prototype._renderChart = function(options, width, height) {
   // Set the user options override
   var userOptions = this._parentChart.getOptions()['overview']['content'];
   options = dvt.JsonUtils.merge(userOptions, options);
+  var isYAxisRendered = options.yAxis.rendered === "on";
+  var isY2AxisRendered = options.y2Axis.rendered === "on";
 
   // Turn off zoomAndScroll to prevent scrollbar/overview from appearing inside the overview
   // This has to be done after setting userOptions to prevent users from overriding it
@@ -12091,16 +12093,36 @@ DvtChartOverview.prototype._renderChart = function(options, width, height) {
     this._chart = dvt.Chart.newInstance(this.getCtx());
     this._chart.setId(this._id); // Set the id to prevent randomly generated one from breaking tests
   }
+  
+  var chartWidth = width;
+  var parentChartPlotAreaXCoord = this._parentChart.__getPlotAreaSpace().x;
+  // Specify y-axis and y2-axis space for alignment
+  if (isYAxisRendered) {
+    chartWidth = parentChartPlotAreaXCoord + width;
+    options.yAxis.size = parentChartPlotAreaXCoord;
+  }
+  if (isY2AxisRendered) {
+    chartWidth = this._parentChart.getWidth() - (isYAxisRendered ? 0 : parentChartPlotAreaXCoord);
+    options.y2Axis.size = this._parentChart.getWidth() - (parentChartPlotAreaXCoord + width);
+  }
+  
   this._chartContainer.addChild(this._chart);
-  this._chart.render(options, width, height);
+  this._chart.render(options, chartWidth, height);
 
   // Cover the chart with a glass pane and remove the keyboard handler to prevent interaction
-  var glassPane = new dvt.Rect(this.getCtx(), 0, 0, width, height);
+  var glassPane = new dvt.Rect(this.getCtx(), 0, 0, chartWidth, height);
   glassPane.setInvisibleFill();
   this._chartContainer.addChild(glassPane);
   this._chart.getEventManager().setKeyboardHandler(null);
+  var chartPlotAreaDims = this._chart.__getPlotAreaSpace();
 
-  return this._chart.__getPlotAreaSpace().h;
+  if (isYAxisRendered) {
+    // Shift the  overview chart so its plot area and the parent chart's plot area align
+    var newX = this._chartContainer.getTranslateX() - chartPlotAreaDims.x;
+    this._chartContainer.setTranslateX(newX);
+  }
+
+  return new dvt.Dimension(width, chartPlotAreaDims.h + chartPlotAreaDims.y);
 };
 
 
@@ -12126,10 +12148,10 @@ DvtChartOverview.prototype.render = function(options, width, height) {
   };
   options['animationOnClick'] = 'off';
 
-  var windowHeight = this._renderChart(options['chart'], width, height);
+  var windowDims = this._renderChart(options['chart'], width, height);
 
   // now call super to render the scrollbar
-  DvtChartOverview.superclass.render.call(this, options, width, windowHeight);
+  DvtChartOverview.superclass.render.call(this, options, windowDims.w, windowDims.h);
 };
 
 /**
@@ -22677,7 +22699,7 @@ DvtChartStyleUtils._setBoxPlotDefaultLineColor = function(boxPlotOptions, prefix
   boxPlotOptions[prefix + 'Style'] = null; // nullify so *Style will not be applied
 
   // Set the default line color if the stroke is not set in the svgStyle, and if svgClassName is not set.
-  if (!lineSvgStyle['stroke'] && !boxPlotOptions[prefix + 'ClassName'] && !boxPlotOptions[prefix + 'SvgClassName'])
+  if (lineSvgStyle && !lineSvgStyle['stroke'] && !boxPlotOptions[prefix + 'ClassName'] && !boxPlotOptions[prefix + 'SvgClassName'])
     boxPlotOptions[prefix + 'SvgStyle']['stroke'] = defaultLineColor;
 };
 

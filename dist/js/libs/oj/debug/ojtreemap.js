@@ -523,7 +523,7 @@ var __oj_treemap_node_metadata =
 /**
  * @ojcomponent oj.ojTreemap
  * @augments oj.dvtBaseComponent
- * @since 0.7
+ * @since 0.7.0
  * @ojstatus preview
  * @ojshortdesc A tree map is an interactive data visualization in which hierarchical data is represented across two dimensions by the size and color of nested rectangular nodes.
  * @ojrole application

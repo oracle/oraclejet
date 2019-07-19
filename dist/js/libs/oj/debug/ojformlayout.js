@@ -719,7 +719,8 @@ function ojFormLayout(context) {
   function _addLabelFromHint(child) {
     var ojLabel = null;
 
-    if (child instanceof Element && 'labelHint' in child) {
+    if (child instanceof Element && 'labelHint' in child
+         && child.labelHint !== '') {
       _ensureUniqueId(child);
       ojLabel = _createOjLabelAndInitialize(child);
 
@@ -1258,6 +1259,7 @@ function ojFormLayout(context) {
   function _ignoreMutations(mutations) {
     var ignore = true;
     var mutationsLength = mutations.length;
+    var dontIgnoreAttribute = ['colspan', 'label-hint'];
 
     for (var i = 0; i < mutationsLength; i++) {
       var mutation = mutations[i];
@@ -1267,8 +1269,8 @@ function ojFormLayout(context) {
         ignore = false;
         break;
       }
-      // If the colspan changes on a child, we don't ignore the mutation
-      if (mutation.type === 'attributes' && mutation.attributeName === 'colspan') {
+      // If an attribute we care changes on a child, we don't ignore the mutation
+      if (mutation.type === 'attributes' && dontIgnoreAttribute.indexOf(mutation.attributeName) !== -1) {
         ignore = false;
         break;
       }

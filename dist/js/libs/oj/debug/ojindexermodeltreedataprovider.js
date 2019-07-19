@@ -40,17 +40,32 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojarraytreedataprovider', 'ojs/ojindexer'],
  *                   then the default grouping strategy based on the first letter of the data is used.
  * @param {oj.SortComparators=} options.sortComparators a comparator function that is used to sort data within a section.
  * @param {Array.<oj.SortCriterion>=} options.implicitSort array of oj.SortCriterion used to specify sort information when the data loaded into the DataProvider is already sorted.
- * @ojsignature {target: "Type",
+ * @ojsignature [{target: "Type",
+ *               value: "class IndexerModelTreeDataProvider<K, D> implements IndexerModel, TreeDataProvider<K, D>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]},
+ *             {target: "Type",
  *               value: "(section: string|object)=> Promise<string|object>",
- *               for: "options.sectionChangeHandler"}
- * @ojsignature {target: "Type",
+ *               for: "options.sectionChangeHandler"},
+ *             {target: "Type",
  *               value: "(data: any)=> string|object",
- *               for: "options.groupingStrategy"}
+ *               for: "options.groupingStrategy"},
+ *             {target: "Type",
+ *               value: "ArrayDataProvider.SortComparators<D>",
+ *               for: "options.sortComparators"},
+ *             {target: "Type",
+ *               value: "Array.<SortCriterion<D>>",
+ *               for: "options.implicitSort"}]
+ *
  * @constructor
  * @since 7.0
  * @export
  * @implements oj.IndexerModel
  * @implements oj.TreeDataProvider
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["FetchByKeysParameters", "SortCriterion", "ContainsKeysResults", "FetchByKeysResults",
+ * "FetchByOffsetParameters", "FetchByOffsetResults", "FetchListParameters", "FetchListResult"]}
+ * @ojtsimport {module: "ojtreedataprovider", type: "AMD", importName: "TreeDataProvider"}
+ * @ojtsimport {module: "ojindexer", type: "AMD", imported: ["IndexerModel"]}
+ * @ojtsimport {module: "ojarraydataprovider", type: "AMD", importName: "ArrayDataProvider"}
  */
 var IndexerModelTreeDataProvider = function (data, options) {
   this.data = data;
@@ -427,15 +442,57 @@ IndexerModelTreeDataProvider.prototype.fetchFirst = function (params) {
 IndexerModelTreeDataProvider.prototype.isEmpty = function () {
   return this.baseDataProvider.isEmpty();
 };
-
+/**
+ * Add a callback function to listen for a specific event type.
+ *
+ *
+ * @export
+ * @expose
+ * @memberof IndexerModelTreeDataProvider
+ * @instance
+ * @method
+ * @name addEventListener
+ * @param {string} eventType The event type to listen for.
+ * @param {EventListener} listener The callback function that receives the event notification.
+ * @ojsignature {target: "Type",
+ *               value: "(eventType: string, listener: EventListener): void"}
+ */
 IndexerModelTreeDataProvider.prototype.addEventListener = function (type, listener) {
   this.baseDataProvider.addEventListener(type, listener);
 };
-
+/**
+ * Remove a listener previously registered with addEventListener.
+ *
+ *
+ * @export
+ * @expose
+ * @memberof IndexerModelTreeDataProvider
+ * @instance
+ * @method
+ * @name removeEventListener
+ * @param {string} eventType The event type that the listener was registered for.
+ * @param {EventListener} listener The callback function that was registered.
+ * @ojsignature {target: "Type",
+ *               value: "(eventType: string, listener: EventListener): void"}
+ */
 IndexerModelTreeDataProvider.prototype.removeEventListener = function (type, listener) {
   this.baseDataProvider.removeEventListener(type, listener);
 };
-
+/**
+ * Dispatch an event and invoke any registered listeners.
+ *
+ *
+ * @export
+ * @expose
+ * @memberof IndexerModelTreeDataProvider
+ * @instance
+ * @method
+ * @name dispatchEvent
+ * @param {Event} event The event object to dispatch.
+ * @return {boolean} Return false if a registered listener has cancelled the event. Return true otherwise.
+ * @ojsignature {target: "Type",
+ *               value: "(evt: Event): boolean"}
+ */
 IndexerModelTreeDataProvider.prototype.dispatchEvent = function (event) {
   return this.baseDataProvider.dispatchEvent(event);
 };

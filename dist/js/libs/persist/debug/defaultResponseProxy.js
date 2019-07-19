@@ -535,6 +535,10 @@ define(['./persistenceManager', './persistenceUtils', './fetchStrategies',
     function _updateShreddedDataStoreForItem(request, storename, shreddedDataItem) {
       return _getUndoRedoDataForShreddedDataItem(request, storename, shreddedDataItem).then(function (undoRedoArray) {
         if (request.method === 'DELETE') {
+          if (!shreddedDataItem || shreddedDataItem.length === 0) {
+            var deletedItemId = _getRequestUrlId(request);
+            shreddedDataItem = [{key: deletedItemId}];
+          }
           return _updateShreddedDataStoreForDeleteRequest(storename, shreddedDataItem, undoRedoArray);
         } else {
           return _updateShreddedDataStoreForNonDeleteRequest(storename, shreddedDataItem, undoRedoArray);
@@ -542,6 +546,14 @@ define(['./persistenceManager', './persistenceUtils', './fetchStrategies',
       });
     };
 
+    function _getRequestUrlId(request) {
+      var urlTokens = request.url.split('/');
+      if (urlTokens.length > 1) {
+        return urlTokens[urlTokens.length - 1].split('?')[0];
+      }
+      return null;
+    };
+      
     function _getUndoRedoDataForShreddedDataItem(request, storename, shreddedDataItem) {
       var undoRedoArray = [];
       var key;

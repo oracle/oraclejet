@@ -287,7 +287,7 @@ var __oj_dialog_metadata =
   /**
    * @ojcomponent oj.ojDialog
    * @augments oj.baseComponent
-   * @since 0.6
+   * @since 0.6.0
    * @ojrole dialog
    * @ojdisplayname Dialog
    * @ojshortdesc A dialog displays a popup window that provides information and gathers input from the application user.

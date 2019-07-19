@@ -11,6 +11,31 @@
 @if $includeInputDateTimeClasses != false {
   @include module-include-once("common.inputdatetime") {
 
+
+    /************************* oj-form-control-inherit OVERRIDES *************************/
+    // DO NOT ADD SELECTOR DEFINITIONS BEFORE THESE OVERRIDES AS SPECIFICITY ISSUES CAN ARISE
+
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+
+    // remove borders, inherit colors and stretch the height
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
+      @include oj-form-control-inherit();
+    }
+
+    // Styling on form control dom which doesn't require text-align, padding, or color
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime-input-container,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input-trigger {
+      height:100%;
+      background-color:inherit;
+      border-width: 0;
+    }
+
+    /************************* END OF oj-form-control-inherit OVERRIDES *************************/
+
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-input-time:not(.oj-complete) {
@@ -1365,26 +1390,6 @@
       top: -24px;
       visibility: hidden;
     }
-
-
-    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
-    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
-    // editable datagrid cells and editable table cells
-    // -----------------------------------------------------------------------------------------
-
-    // remove borders, inherit colors and stretch the height
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
-      @include oj-form-control-inherit();
-    }
-
-    // Styling on form control dom which doesn't require text-align, padding, or color
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime-input-container,
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input-trigger {
-      height:100%;
-      background-color:inherit;
-      border-width: 0;
-    }
-
 
     /* Override default options*/
     $inputDateTimeDefaultOptions: ();

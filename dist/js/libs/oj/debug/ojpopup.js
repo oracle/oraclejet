@@ -1209,9 +1209,9 @@ var __oj_popup_metadata =
 
         this._intialFocus();
 
-        this._on(element, { keydown: this._keyHandler, keyup: this._keyHandler });
+        this._on(element, { keydown: this._keyHandler });
         if (launcher && launcher.length > 0) {
-          this._on(launcher, { keydown: this._keyHandler, keyup: this._keyHandler });
+          this._on(launcher, { keydown: this._keyHandler });
         }
       },
       /**
@@ -1276,9 +1276,9 @@ var __oj_popup_metadata =
         this._setWhenReady('close');
 
         var launcher = this._launcher;
-        this._off(element, 'keydown keyup');
+        this._off(element, 'keydown');
         if (launcher && launcher.length > 0) {
-          this._off(launcher, 'keydown keyup');
+          this._off(launcher, 'keydown');
         }
 
         // if the content has focus, restore the the launcher
@@ -2029,18 +2029,17 @@ var __oj_popup_metadata =
           return;
         }
 
-        var eventType = event.type;
         var content = this._content;
         var options;
         var launcher;
 
         /** @type {?} */
         var target = event.target;
-        if (eventType === 'keyup' && event.keyCode === $.ui.keyCode.ESCAPE &&
+        if (event.keyCode === $.ui.keyCode.ESCAPE &&
           (this._isFocusInPopup(target) || this._isFocusInLauncher(target))) {
           event.preventDefault();
           this.close();
-        } else if (eventType === 'keydown' && event.keyCode === 117) {
+        } else if (event.keyCode === 117) {
           // F6 - toggle focus to launcher or popup
           if (this._isFocusInPopup(target)) {
             // If this is a modeless popup, toggle focus to the launcher;
@@ -2058,7 +2057,7 @@ var __oj_popup_metadata =
             event.preventDefault();
             this._intialFocus(true);
           }
-        } else if (eventType === 'keydown' && event.keyCode === $.ui.keyCode.TAB &&
+        } else if (event.keyCode === $.ui.keyCode.TAB &&
           this._isFocusInPopup(target)) {
           // TAB within popup
           var nodes = content.find(':tabbable');

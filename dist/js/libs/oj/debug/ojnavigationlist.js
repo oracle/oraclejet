@@ -1753,7 +1753,7 @@ oj.SlidingNavListHandler.prototype.Collapse = function (target, key, animate, ev
     animationResolve(null);
   }
 
-  this._removeItemFromHviewMenu();
+  this._removeItemFromHviewMenu(key);
 
   return animationPromise;
 };
@@ -2049,19 +2049,30 @@ oj.SlidingNavListHandler.prototype._showOrHideHierarchyMenu =
  * otherwise return the emptyText set in the options
  * @private
  */
-oj.SlidingNavListHandler.prototype._removeItemFromHviewMenu = function () {
+oj.SlidingNavListHandler.prototype._removeItemFromHviewMenu = function (key) {
   if (this._hviewBtn) {
-    var removed = this._hviewMenu.find('li').last().remove();
+    var menuItems = this._hviewMenu.find('li');
+    var removeAfter;
+    var restoreLabel;
+    menuItems.each(function (index, item) {
+      var $item = $(item);
+      if ($item.data('key') === key) {
+        $item.remove();
+        restoreLabel = $item.children('a').text();
+        removeAfter = true;
+      } else if (removeAfter) {
+        $item.remove();
+      }
+    });
     this._hviewMenu.ojMenu('refresh');
     this._showOrHideHierarchyMenu(this.m_widget.GetOption('hierarchyMenuDisplayThresholdLevel'));
     if (this._hviewMenu.children('li').length === 0) {
       this._hviewBtn.ojButton('option', 'disabled', true);
       this._prevButton.css('visibility', 'hidden');
-      // this._previousLink.attr('tabindex', '-1');
       this._prevButton.attr('tabindex', '-1');// @HTMLUpdateOK
       this._headerLabel.text(this.m_widget.getRootLabel());
     } else {
-      this._headerLabel.text(removed.children('a').text());
+      this._headerLabel.text(restoreLabel);
     }
   }
 };
@@ -4023,7 +4034,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * <p><b>oj.CollectionTreeDataSource</b> - Use this when oj.Collection is the model for each group of data.  See the documentation for <a href="oj.CollectionTreeDataSource.html">oj.CollectionTreeDataSource</a>
    * for more details on the available options.</p>
    *
-   * <p>Finally, Navigation List also supports static HTML content as data.  The structure of the content can be either flat or hierarhical.</p>
+   * <p>Finally, Navigation List also supports static HTML content as data.  The structure of the content can be either flat or hierarhical. Note: <code class="prettyprint">data</code> attribute should not be set when static HTML content is used.</p>
    *
    * <p>Example of flat static content</p>
    * <pre class="prettyprint">
@@ -4431,7 +4442,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       truncation: 'none',
       /**
        * The position of the Navigation List. Valid Values: top and start.
-       * <p> NOTE: when value is <code class="prettyprint">top</code>,<code class="prettyprint">"none"</code> is the only supported drillMode and it also does't support hierarchical items.
+       * <p> NOTE: when value is <code class="prettyprint">top</code>,<code class="prettyprint">"none"</code> is the only supported drillMode and it also does't support hierarchical items. That means TreeDataProvider/TreeDataSource are not supported as data source.
        * @ojshortdesc Specifies the edge position of the Navigation List.
        * @expose
        * @name edge

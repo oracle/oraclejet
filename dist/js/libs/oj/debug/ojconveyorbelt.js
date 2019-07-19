@@ -1568,7 +1568,7 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
 /**
  * @ojcomponent oj.ojConveyorBelt
  * @augments oj.baseComponent
- * @since 0.6
+ * @since 0.6.0
  * @ojstatus preview
  * @ojshortdesc A conveyor belt manages overflow for its child elements and allows scrolling among them.
  * @class oj.ojConveyorBelt

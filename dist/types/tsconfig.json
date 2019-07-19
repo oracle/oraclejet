@@ -7,13 +7,12 @@
         "noImplicitThis": true,
         "strictNullChecks": true,
         "strictFunctionTypes": true,
-        "types": [],
         "forceConsistentCasingInFileNames": true,
         "noEmit": true,
         "target": "es5",
         "baseUrl": "../",
         "typeRoots": [
-            "../"
+            "../../../build/scripts/grunt/node_modules/@types"
         ],
         "paths": {
             "@oracle/oraclejet": [
@@ -25,7 +24,6 @@
         } 
     },
     "files": [
-        "oracle__oraclejet-tests.ts",
         "index.d.ts",
         "ojaccordion/index.d.ts",
         "ojanimation/index.d.ts",
@@ -48,6 +46,7 @@
         "ojconfig/index.d.ts",
         "ojcontext/index.d.ts",
         "ojconveyorbelt/index.d.ts",
+        "ojcspexpressionevaluator/index.d.ts",
         "ojdatagrid/index.d.ts",
         "ojdataprovider/index.d.ts",
         "ojdatetimepicker/index.d.ts",

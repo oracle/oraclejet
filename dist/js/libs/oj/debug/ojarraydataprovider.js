@@ -383,6 +383,7 @@ var ArrayDataProvider = /** @class */ (function () {
                 var operationUpdateEventDetail = null;
                 var operationAddEventDetail = null;
                 var operationRemoveEventDetail = null;
+                var generatedKeys = self_1._generateKeysIfNeeded();
                 if (!onlyAdds && !onlyDeletes) {
                     // squash deletes and adds into updates
                     for (i = 0; i < changes.length; i++) {
@@ -460,7 +461,6 @@ var ArrayDataProvider = /** @class */ (function () {
                 }
                 dataArray = [], keyArray = [], indexArray = [];
                 if (!onlyDeletes) {
-                    var generatedKeys = self_1._generateKeysIfNeeded();
                     var isInitiallyEmpty = self_1._getKeys() != null ? self_1._getKeys().length > 0 ? false : true : true;
                     for (i = 0; i < changes.length; i++) {
                         if (changes[i]['status'] === 'added' &&
@@ -478,11 +478,19 @@ var ArrayDataProvider = /** @class */ (function () {
                                 self_1._keys.splice(changes[i].index, 0, id);
                             }
                             keyArray.push(id);
+                            dataArray.push(changes[i].value);
+                            indexArray.push(changes[i].index);
+                        }
+                    }
+                    for (i = 0; i < changes.length; i++) {
+                        if (changes[i]['status'] === 'added' &&
+                            updatedIndexes.indexOf(i) < 0 &&
+                            removeDuplicate.indexOf(i) < 0) {
+                            // afterKeys can only be calculated after all keys
+                            // have been added to the internal keys cache
                             var afterKey = self_1._getKeys()[changes[i].index + 1];
                             afterKey = afterKey == null ? null : afterKey;
                             afterKeyArray.push(afterKey);
-                            dataArray.push(changes[i].value);
-                            indexArray.push(changes[i].index);
                         }
                     }
                     if (keyArray.length > 0) {

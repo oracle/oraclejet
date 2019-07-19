@@ -2161,7 +2161,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
   /**
    * @ojcomponent oj.ojTree
    * @augments oj.baseComponent
-   * @since 0.6
+   * @since 0.6.0
    * @ignore
    * @deprecated  4.2.0 Use oj.ojTreeView instead.
    *

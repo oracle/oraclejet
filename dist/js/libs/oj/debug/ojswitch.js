@@ -156,7 +156,7 @@ var __oj_switch_metadata =
    *                for: "SettableProperties"
    *               }
    *              ]
-   * @since 0.7
+   * @since 0.7.0
    * @ojshortdesc A switch toggles between two mutually exclusive states — on and off.
    * @ojstatus preview
    *

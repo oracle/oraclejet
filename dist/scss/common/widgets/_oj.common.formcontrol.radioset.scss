@@ -122,8 +122,6 @@ $labelPosition: $radioCheckboxLabelPosition) {
     /* this styles the radio, checkbox, and their labels */
     /* --------------------------------------------------------------- */
 
-
-
     // this file includes classes for ojRadioset and ojCheckboxset,
     // but you will also see classes to use checkbox html/css without a component, classes are: 
     //   .oj-checkbox-nocomp,
@@ -133,6 +131,35 @@ $labelPosition: $radioCheckboxLabelPosition) {
     //     <input id="checkcontrol" type="checkbox" class="oj-checkbox-nocomp"/>
     //     <label for="checkcontrol" class="oj-checkbox-label-nocomp">checkbox no component</label>
     //  </div>
+
+
+    /************************* oj-form-control-inherit OVERRIDES *************************/
+    // DO NOT ADD SELECTOR DEFINITIONS BEFORE THESE OVERRIDES AS SPECIFICITY ISSUES CAN ARISE
+
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single.oj-choice-direction-column .oj-choice-item,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single .oj-checkboxset-wrapper,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single .oj-choice-row {
+      margin-bottom: 0;
+      height:100%;
+      min-height:100%;
+    }
+
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkbox-label {
+      @include oj-ltr() {
+        text-align: inherit;
+      }
+      @include oj-rtl() {
+        text-align: inherit;
+      }
+    }
+
+    /************************* END OF oj-form-control-inherit OVERRIDES *************************/
+
 
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     // Note: It is intentional that the oj-radioset and oj-checkboxset below do not have the '.' before it.
@@ -441,19 +468,6 @@ $labelPosition: $radioCheckboxLabelPosition) {
       }
      
     }
-
-    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
-    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
-    // editable datagrid cells and editable table cells
-    // -----------------------------------------------------------------------------------------
-
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single.oj-choice-direction-column .oj-choice-item,
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single .oj-checkboxset-wrapper,
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single .oj-choice-row {
-      margin-bottom: 0; 
-      height:100%;
-      min-height:100%;
-    }
     
     .oj-radiocheckbox-label-text,
     .oj-checkbox-label-nocomp { 
@@ -646,15 +660,6 @@ $labelPosition: $radioCheckboxLabelPosition) {
           margin-right: var(--oj-radio-checkbox-direction-row-inline-padding);
         }   
       }
-
-      .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkbox-label {
-        @include oj-ltr() {
-          text-align: inherit;
-        }
-        @include oj-rtl() {
-          text-align: inherit;
-        }
-      }    
 
       .oj-choice-direction-row .oj-choice-item,
       .oj-choice-row-inline {
@@ -1113,15 +1118,6 @@ $labelPosition: $radioCheckboxLabelPosition) {
           }   
         }
 
-        .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkbox-label {
-          @include oj-ltr() {
-            text-align: inherit;
-          }
-          @include oj-rtl() {
-            text-align: inherit;
-          }
-        }    
-  
         .oj-choice-direction-row .oj-choice-item,
         .oj-choice-row-inline {
           border-top-width: 0;

@@ -1004,7 +1004,7 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *  The following JET component types can assist both JET Web Component producers and consumers with managing these complex use cases:
  *  <ul>
  *    <li><b>JET Component Packs, or JET Packs</b>, define versioned sets of JET Web Components that can be managed, packaged, and delivered as a whole.  JET Packs
- *      consist of metadata and additional artifacts that allow downstream consumers, such as Oracle Visual Builder Cloud Service (VBCS) or the JET Command Line interface,
+ *      consist of metadata and additional artifacts that allow downstream consumers, such as Oracle Visual Builder or the JET Command Line interface,
  *      to automate the configuration and initialization of deployed applications that are built with these Components, including shared resources (e.g., CSS resources,
  *      utility JavaScript files, base JavaScript classes extended by multiple Web Components, etc.), and information about 3rd party packages.</li>
  *    <li><b>JET Reference Components</b> define a versioned external 3rd party library dependency – JET Packs, JET Resource Components, and individual JET Web Components can include
@@ -1044,24 +1044,26 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *           The component name must meet the following requirements (based upon the <a href="https://www.w3.org/TR/custom-elements/#custom-elements-core-concepts">W3C Custom Element spec</a>):
  *           <ul>
  *             <li>The name can include only letters, digits, '-', and '_'.</li>
- *             <li>The letters in the name should be all lowercase.
- *             <li>The name cannot be one of the following reserved names:
+ *             <li>The letters in the name should be all lowercase.</li>
+ *             <li>The name must start with a lowercase letter.</li>
+ *             <li>The name cannot be one of the following reserved names:</li>
  *             <ul>
- *               <li>annotation-xml
- *               <li>color-profile
- *               <li>font-face
- *               <li>font-face-src
- *               <li>font-face-uri
- *               <li>font-face-format
- *               <li>font-face-name
- *               <li>missing-glyph
+ *               <li>annotation-xml</li>
+ *               <li>color-profile</li>
+ *               <li>font-face</li>
+ *               <li>font-face-src</li>
+ *               <li>font-face-uri</li>
+ *               <li>font-face-format</li>
+ *               <li>font-face-name</li>
+ *               <li>missing-glyph</li>
  *             </ul>
  *           </ul>
  *           <h6>Note:</h6>
  *           The <b>full name</b> of a component consists of its <code>pack</code> metadata value and its <code>name</code> metadata value, appended
- *           together with a hyphen separating them:&nbsp;&nbsp;<code><i>[pack_value]</i>-<i>[name_value]</i></code>.  For both JET Core
- *           Components and for JET Custom Components, <b>this full name corresponds to the Component's custom element tag name</b>.  The names of
- *           standalone JET Components that are <b>not</b> members of a JET Pack have the following additional requirements:
+ *           together with a hyphen separating them:&nbsp;&nbsp;<code><i>[pack_value]</i>-<i>[name_value]</i></code>. For both JET Core
+ *           Components and for JET Custom Components, <b>this full name corresponds to the Component's custom element tag name</b>. The names of
+ *           standalone custom JET Web Components (i.e., custom components that are not members of a JET Pack, nor are JET Packs themselves) have
+ *           the following additional requirements:
  *           <ul>
  *             <li>At least one hyphen is required.</li>
  *             <li>The first segment (up to the first hyphen) is a namespace prefix. <b>The namespace prefix 'oj' is reserved for components that are
@@ -1074,8 +1076,8 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *       <td class="rt">version</td>
  *       <td>yes</td>
  *       <td>{string}</td>
- *       <td>The component version. Note that changes to the metadata even for minor updates like updating the
- *         jetVersion should result in at least a minor component version change, e.g. 1.0.0 -> 1.0.1.</td>
+ *       <td>The component version (following <a href="http://semver.org/">semantic version</a> rules). Note that changes to the metadata even for minor updates
+ *         like updating the jetVersion should result in at least a minor component version change, e.g. 1.0.0 -> 1.0.1.</td>
  *     </tr>
  *     <tr>
  *       <td class="name">jetVersion</td>
@@ -1085,7 +1087,8 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *         JET Component authors should not specify a semantic version range that includes unreleased JET major versions
  *         as major releases may contain non backwards compatible changes.  Authors should instead recertify components
  *         with each major release and update the metadata or release a new version that is compatible with the new
- *         release changes.</td>
+ *         release changes.
+ *         <p><b>NOTE:</b>  Only valid for JET Packs and JET Resource Components.</p></td>
  *     </tr>
  *     <tr>
  *       <td class="name">bundles</td>
@@ -1143,13 +1146,15 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *       <td>{Object}</td>
  *       <td>Dependency to semantic version mapping for JET Component dependencies.
  *         <h6>Example:</h6>
- *         <pre class="prettyprint"><code>dependencies:  {"oj-foo-composite1": "1.2.0", "oj-foo-composite2": "^2.1.0"}</code></pre>
+ *         <pre class="prettyprint"><code>dependencies:  {"oj-foo-composite1": "1.2.0", "oj-foo-composite2": "2.1.0"}</code></pre>
  *         <h6>Note:</h6>
  *           <ul>
  *             <li>Always use the <b>full name</b> of the component when declaring a dependency upon it.</li>
  *             <li>JET Packs use their <code>dependencies</code> metadata to specify the <b>exact</b> semantic versions of the JET Custom Components, JET Reference Components,
  *               and JET Resource Components that constitute the JET Pack – consequently, semantic version ranges are <b><i>not</i></b> permitted in JET Packs.</li>
  *             <li>JET Packs do not support nesting – in other words a JET Pack may not declare a dependency upon another JET Pack.</li>
+ *             <li>JET Reference Components and JET Resource Components may use semantic version range syntax to specify the range of versions that are acceptable to fulfill
+ *               their dependency requirements.</li>
  *           </ul>
  *       </td>
  *     </tr>
@@ -1181,9 +1186,9 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *           </thead>
  *           <tbody>
  *             <tr>
- *               <td class="name">vbcs</td>
+ *               <td class="name">vbdt</td>
  *               <td>{string}</td>
- *               <td>Indentifies an object with VBCS-specific metadata</td>
+ *               <td>Indentifies an object with Visual Builder design time metadata</td>
  *             </tr>
  *           </tbody>
  *         </table>
@@ -1402,7 +1407,8 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  * </h2>
  * <p>
  * <b>JET Core Components</b> are Web Components that are packaged and delivered with a particular release of JET.  These include standard
- * <a href="CustomElementOverview.html">custom element</a> widgets like buttons, input controls, data collection controls, data visualization controls, etc.
+ * <a href="CustomElementOverview.html">custom element</a> widgets like buttons, input controls, data collection controls, data visualization controls,
+ * declarative binding controls, etc.
  * </p>
  * <p>
  * See <a href="MetadataOverview.html">JET Metadata</a> for a discussion of the metadata structures that describe JET Web Components.
@@ -1778,10 +1784,10 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview"></a>
  * </h2>
  * <p>
- *  Metadata for a JET Web Component consists of a JSON formatted object which defines the properties, methods, slots, and events fired by the
- *  Web Component. <b>The names of the Web Component's properties, event listeners, and methods should avoid collision with the existing
- *  <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a> properties, event listeners, and methods.
- *  Additionally, the Web Component should not re-define any
+ *  Metadata for a <a href="CustomElementOverview.html">JET Web Component</a> consists of a JSON formatted object which defines the
+ *  properties, methods, slots, and events fired by that component. <b>The names of the JET Web Component's properties, events,
+ *  and methods should avoid collision with the existing <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a>
+ *  properties, events, and methods. Additionally, the JET Web Component should not re-define any
  *  <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes">global attributes</a> or events.</b>
  * </p>
  *
@@ -1795,7 +1801,7 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  * <p>
  *  Keys defined in the "properties" top level object should map to the JET Web Component's properties following
  *  the same naming convention described in the <a href="CustomElementOverview.html#ce-proptoattr-section">Property-to-Attribute mapping</a> section.
- *  Non expression bound Web Component attributes will be correctly evaluated only if they are a primitive JavaScript type (boolean, number, string)
+ *  Non expression bound JET Web Component attributes will be correctly evaluated only if they are a primitive JavaScript type (boolean, number, string)
  *  or a JSON object. Note that JSON syntax requires that strings use double quotes. Attributes evaluating to any other types must be bound via expression syntax.
  *  Boolean attributes are considered true if set to the case-insensitive attribute name, the empty string or have no value assignment.
  *  JET Web Components will also evalute boolean attributes set explicitly to 'true' or 'false' to their respective boolean values. All other values are invalid.
@@ -1809,10 +1815,10 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  * </p>
  *
  * <p>
- *  Note that every release of JET includes a <code>'metadata/components'</code> directory with JSON files for each Web Component that is bundled
- *  as part of that release.  Web Components that are bundled as part of a JET release are also referred to as <b>JET Core Components</b>.  These
- *  JSON files use the exact same metadata structure as those that are packaged with <b>JET Custom Components</b> (also known as
- *  <a href="CompositeOverview.html">composite components</a>), such that design time tools and property editors can leverage the same metadata
+ *  Note that the JET release includes a <code>'metadata/components'</code> directory with metadata for each JET Web Component that is bundled
+ *  as part of that release.  JET Web Components that are bundled as part of a JET release are also referred to as <b>JET Core Components</b>. The
+ *  JSON for each JET Core Component uses the exact same format as the metadata packaged with <b>JET Custom Components</b> (also known as
+ *  <a href="CompositeOverview.html">composite components</a>), such that design time tools and property editors can leverage a common metadata format
  *  when integrating any JET Web Component into their environments.
  * </p>
  *

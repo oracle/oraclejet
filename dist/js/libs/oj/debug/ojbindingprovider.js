@@ -50,7 +50,6 @@ BindingProvider.createBindingExpressionEvaluator = function (expressionText, bin
   return BindingProviderImpl.createBindingExpressionEvaluator(expressionText, bindingContext);
 };
 
-
 return BindingProvider;
 
 });

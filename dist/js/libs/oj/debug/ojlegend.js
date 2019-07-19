@@ -345,7 +345,7 @@ var __oj_legend_section_metadata =
 /**
  * @ojcomponent oj.ojLegend
  * @augments oj.dvtBaseComponent
- * @since 0.7
+ * @since 0.7.0
  * @ojstatus preview
  * @ojshortdesc A legend displays an interactive description of symbols, colors, etc., used in graphical information representations.
  * @ojrole application

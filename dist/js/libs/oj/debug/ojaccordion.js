@@ -54,7 +54,7 @@ var __oj_accordion_metadata =
 /**
  * @ojcomponent oj.ojAccordion
  * @augments oj.baseComponent
- * @since 0.6
+ * @since 0.6.0
  * @ojstatus preview
  * @ojshortdesc An accordion displays a set of collapsible child elements.
  * @ojrole group

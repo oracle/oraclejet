@@ -225,7 +225,7 @@ var __oj_paging_control_metadata =
  * @ojcomponent oj.ojPagingControl
  * @augments oj.baseComponent
  * @ojstatus preview
- * @since 0.7
+ * @since 0.7.0
  * @ojshortdesc A paging control provides paging functionality for data collections.
  * @ojrole navigation
  * @ojrole button
@@ -734,7 +734,7 @@ var __oj_paging_control_metadata =
       firstPage: function () {
         var data = this._getData();
         if (data != null) {
-          return this._invokeDataPage(0, false);
+          return this._invokeUserDataPageFetch(0);
         }
         return this._getRejectPromise();
       },
@@ -756,7 +756,7 @@ var __oj_paging_control_metadata =
           var page = this._getCurrentPage();
           // can only go to previous page if on 2nd page or greater
           if (page > 0) {
-            return this._invokeDataPage(page - 1, false);
+            return this._invokeUserDataPageFetch(page - 1);
           }
         }
         return this._getRejectPromise();
@@ -780,7 +780,7 @@ var __oj_paging_control_metadata =
           if ((this._isTotalSizeConfidenceActual() && page + 1 <= this._getTotalPages() - 1) ||
               this._getTotalPages() < 0 ||
               !this._isTotalSizeConfidenceActual()) {
-            return this._invokeDataPage(page + 1, false);
+            return this._invokeUserDataPageFetch(page + 1);
           }
         }
         return this._getRejectPromise();
@@ -801,7 +801,7 @@ var __oj_paging_control_metadata =
         var data = this._getData();
         if (data != null) {
           if (this._getTotalPages() > 0) {
-            return this._invokeDataPage(this._getTotalPages() - 1, false);
+            return this._invokeUserDataPageFetch(this._getTotalPages() - 1);
           }
         }
         return this._getRejectPromise();
@@ -825,7 +825,7 @@ var __oj_paging_control_metadata =
           if ((this._isTotalSizeConfidenceActual() && page <= this._getTotalPages() - 1) ||
                this._getTotalPages() < 0 ||
                !this._isTotalSizeConfidenceActual()) {
-            return this._invokeDataPage(page, false);
+            return this._invokeUserDataPageFetch(page);
           }
         }
         return this._getRejectPromise();
@@ -1962,6 +1962,19 @@ var __oj_paging_control_metadata =
         }
       },
       /**
+       * User triggered Set page
+       * @param {number} page Page
+       * @return (Promise} Page Promise
+       * @private
+       */
+      _invokeUserDataPageFetch: function (page) {
+        if (this._userDataPageFetching) {
+          return Promise.reject('Another user page fetch is ongoing');
+        }
+        this._userDataPageFetching = true;
+        return this._invokeDataPage(page, false);
+      },
+      /**
        * Set page
        * @param {number} page Page
        * @param {boolean} async Asynchronous
@@ -1973,6 +1986,7 @@ var __oj_paging_control_metadata =
           // eslint-disable-next-line no-param-reassign
           page = parseInt(page, 10);
         } catch (e) {
+          this._userDataPageFetching = false;
           return Promise.reject(e);
         }
 
@@ -2011,17 +2025,20 @@ var __oj_paging_control_metadata =
                                         { pageNum: (page + 1) }); // @htmlupdatereview
 
               self._removeComponentBusyState(resolveBusyState);
+              self._userDataPageFetching = false;
               self = null;
               resolveBusyState = null;
               resolve(null);
             }, function (error) {
               self._removeComponentBusyState(resolveBusyState);
+              self._userDataPageFetching = false;
               self = null;
               resolveBusyState = null;
               reject(error);
             });
             data = null;
           } else {
+            self._userDataPageFetching = false;
             self = null;
             resolve(null);
           }
@@ -3172,7 +3189,7 @@ var __oj_paging_control_metadata =
         var numPagesToAdd = numLinks;
         // this will hold our page list
         var pageList = [];
-
+        var data = this._getData();
         if (currentPage >= 0) {
           var i;
           if (this._isTotalSizeConfidenceActual() &&
@@ -3222,11 +3239,21 @@ var __oj_paging_control_metadata =
               } else {
                 numPagesToAdd = 0;
               }
-            } else if (!this._isTotalSizeConfidenceActual()) {
-              // partial row mode
-              // restrict numPagesToAdd to be max(totalPages - pageAfterCurrent, 1)
-              // don't want to go above totalPages because no guarantee data exists
-              numPagesToAdd = Math.max(totalPages - pageAfterCurrent, 1);
+            } else if (data != null) {
+              if (data.totalSizeConfidence() === 'atLeast') {
+                // partial row mode
+                // if we are at the last page, provide the next page as possible data
+                // if we are not at the last page, provide up to the last page.
+                if (totalPages <= pageAfterCurrent) {
+                  numPagesToAdd = 1;
+                } else {
+                  numPagesToAdd = Math.min(numPagesToAdd, totalPages - pageAfterCurrent);
+                }
+              } else if (data.totalSizeConfidence() === 'unknown') {
+                // we only have totalPages for unknown row count when
+                // we are at the end.
+                numPagesToAdd = 0;
+              }
             }
             while (numPagesToAdd > 0 && (pageAfterCurrent <= totalPages || totalPages === -1)) {
               pageList.push(pageAfterCurrent);

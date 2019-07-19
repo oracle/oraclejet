@@ -2,8 +2,8 @@ import { KeySet } from '../ojkeyset';
 import { DataProvider } from '../ojdataprovider';
 import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettableProperties } from '../ojdvt-base';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
-export interface DvtDiagramLayoutContext {
-    getCommonContainer(nodeId1: any, nodeId2: any): any;
+export interface DvtDiagramLayoutContext<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> {
+    getCommonContainer(nodeId1: K1, nodeId2: K1): K1 | null;
     getComponentSize(): {
         x: number;
         y: number;
@@ -16,12 +16,11 @@ export interface DvtDiagramLayoutContext {
         w: number;
         h: number;
     };
-    getEventData(): object;
-    getLinkById(id: any): DvtDiagramLayoutContextLink;
-    getLinkByIndex(index: number): DvtDiagramLayoutContextLink;
+    getLinkById(id: K1): DvtDiagramLayoutContextLink<K1, K2, D2>;
+    getLinkByIndex(index: number): DvtDiagramLayoutContextLink<K1, K2, D2>;
     getLinkCount(): number;
-    getNodeById(id: any): DvtDiagramLayoutContextNode;
-    getNodeByIndex(index: number): DvtDiagramLayoutContextNode;
+    getNodeById(id: K1): DvtDiagramLayoutContextNode<K1, D1>;
+    getNodeByIndex(index: number): DvtDiagramLayoutContextNode<K1, D1>;
     getNodeCount(): number;
     getViewport(): {
         x: number;
@@ -37,12 +36,12 @@ export interface DvtDiagramLayoutContext {
         h: number;
     }): void;
 }
-export interface DvtDiagramLayoutContextLink {
-    getCoordinateSpace(): any;
-    getData(): object | any[];
+export interface DvtDiagramLayoutContextLink<K1, K2, D2 extends ojDiagram.Link<K2, K1> | any> {
+    getCoordinateSpace(): K1;
+    getData(): D2 | D2[];
     getEndConnectorOffset(): number;
-    getEndId(): any;
-    getId(): any;
+    getEndId(): K1;
+    getId(): K2;
     getLabelBounds(): {
         x: number;
         y: number;
@@ -64,9 +63,9 @@ export interface DvtDiagramLayoutContextLink {
     getPoints(): any[];
     getSelected(): boolean;
     getStartConnectorOffset(): number;
-    getStartId(): any;
+    getStartId(): K1;
     isPromoted(): boolean;
-    setCoordinateSpace(containerId: any): void;
+    setCoordinateSpace(containerId: K1): void;
     setLabelHalign(halign: 'left' | 'center' | 'right'): void;
     setLabelPosition(pos: {
         x: number;
@@ -80,22 +79,22 @@ export interface DvtDiagramLayoutContextLink {
     setLabelValign(valign: 'top' | 'middle' | 'bottom' | 'baseline'): void;
     setPoints(points: any[]): void;
 }
-export interface DvtDiagramLayoutContextNode {
+export interface DvtDiagramLayoutContextNode<K1, D1 extends ojDiagram.Node<K1> | any> {
     getBounds(): {
         x: number;
         y: number;
         w: number;
         h: number;
     };
-    getChildNodes(): any[];
+    getChildNodes(): DvtDiagramLayoutContextNode<K1, D1>[];
     getContentBounds(): {
         x: number;
         y: number;
         w: number;
         h: number;
     };
-    getData(): object;
-    getId(): any;
+    getData(): D1;
+    getId(): K1;
     getLabelBounds(): {
         x: number;
         y: number;
@@ -117,7 +116,7 @@ export interface DvtDiagramLayoutContextNode {
         x: number;
         y: number;
     };
-    getRelativePosition(containerId: any): {
+    getRelativePosition(containerId: K1): {
         x: number;
         y: number;
     };
@@ -149,45 +148,138 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
                 dataTypes: string | string[];
                 drag: ((param0: Event) => void);
                 dragEnd: ((param0: Event) => void);
-                dragStart: ((param0: Event, param1: object) => void);
+                dragStart: ((event: Event, context: {
+                    nodes: ojDiagram.DndNodeContext<K1, D1>[];
+                }) => void);
             };
             ports: {
                 dataTypes: string | string[];
                 drag: ((param0: Event) => void);
                 dragEnd: ((param0: Event) => void);
-                dragStart: ((param0: Event, param1: object) => void);
-                linkStyle: ((param0: object) => void);
+                dragStart: ((event: Event, context: {
+                    ports: {
+                        portElement: Element;
+                        dataContext: ojDiagram.NodeItemContext<K1, D1>;
+                    };
+                }) => void);
+                linkStyle: ((context: {
+                    portElement: Element;
+                    dataContext: ojDiagram.NodeItemContext<K1, D1>;
+                }) => ({
+                    svgStyle?: CSSStyleDeclaration;
+                    svgClassName?: string;
+                } | null));
                 selector: string;
             };
         };
         drop: {
             background: {
                 dataTypes: string | string[];
-                dragEnter: ((param0: Event, param1: object) => void);
-                dragLeave: ((param0: Event, param1: object) => void);
-                dragOver: ((param0: Event, param1: object) => void);
-                drop: ((param0: Event, param1: object) => void);
+                dragEnter: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                }) => void);
+                dragLeave: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                }) => void);
+                dragOver: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                }) => void);
+                drop: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                }) => void);
             };
             links: {
                 dataTypes: string | string[];
-                dragEnter: ((param0: Event, param1: object) => void);
-                dragLeave: ((param0: Event, param1: object) => void);
-                dragOver: ((param0: Event, param1: object) => void);
-                drop: ((param0: Event, param1: object) => void);
+                dragEnter: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
+                }) => void);
+                dragLeave: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
+                }) => void);
+                dragOver: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
+                }) => void);
+                drop: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
+                }) => void);
             };
             nodes: {
                 dataTypes: string | string[];
-                dragEnter: ((param0: Event, param1: object) => void);
-                dragLeave: ((param0: Event, param1: object) => void);
-                dragOver: ((param0: Event, param1: object) => void);
-                drop: ((param0: Event, param1: object) => void);
+                dragEnter: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    nodeContext: ojDiagram.NodeItemContext<K1, D1>;
+                }) => void);
+                dragLeave: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    nodeContext: ojDiagram.NodeItemContext<K1, D1>;
+                }) => void);
+                dragOver: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    nodeContext: ojDiagram.NodeItemContext<K1, D1>;
+                }) => void);
+                drop: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    nodeContext: ojDiagram.NodeItemContext<K1, D1>;
+                }) => void);
             };
             ports: {
                 dataTypes: string | string[];
-                dragEnter: ((param0: Event, param1: object) => void);
-                dragLeave: ((param0: Event, param1: object) => void);
-                dragOver: ((param0: Event, param1: object) => void);
-                drop: ((param0: Event, param1: object) => void);
+                dragEnter: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    dataContext: ojDiagram.NodeItemContext<K1, D1>;
+                    portElement: Element;
+                }) => void);
+                dragLeave: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    dataContext: ojDiagram.NodeItemContext<K1, D1>;
+                    portElement: Element;
+                }) => void);
+                dragOver: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    dataContext: ojDiagram.NodeItemContext<K1, D1>;
+                    portElement: Element;
+                }) => void);
+                drop: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    dataContext: ojDiagram.NodeItemContext<K1, D1>;
+                    portElement: Element;
+                }) => void);
                 selector: string;
             };
         };
@@ -203,7 +295,7 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
     hoverRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
-    layout: ((param0: DvtDiagramLayoutContext) => void);
+    layout: ((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => void);
     linkData: DataProvider<K2, D2> | null;
     linkHighlightMode: 'linkAndNodes' | 'link';
     maxZoom: number;
@@ -311,26 +403,26 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
     setProperty<T extends keyof ojDiagramSettableProperties<K1, K2, D1, D2>>(property: T, value: ojDiagramSettableProperties<K1, K2, D1, D2>[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojDiagramSettableProperties<K1, K2, D1, D2>>): void;
     setProperties(properties: ojDiagramSettablePropertiesLenient<K1, K2, D1, D2>): void;
-    getContextByNode(node: Element): object | null;
+    getContextByNode(node: Element): ojDiagram.NodeContext | null;
 }
 export namespace ojDiagram {
-    interface ojBeforeCollapse extends CustomEvent<{
-        nodeId: any;
+    interface ojBeforeCollapse<K1> extends CustomEvent<{
+        nodeId: K1;
         [propName: string]: any;
     }> {
     }
-    interface ojBeforeExpand extends CustomEvent<{
-        nodeId: any;
+    interface ojBeforeExpand<K1> extends CustomEvent<{
+        nodeId: K1;
         [propName: string]: any;
     }> {
     }
-    interface ojCollapse extends CustomEvent<{
-        nodeId: any;
+    interface ojCollapse<K1> extends CustomEvent<{
+        nodeId: K1;
         [propName: string]: any;
     }> {
     }
-    interface ojExpand extends CustomEvent<{
-        nodeId: any;
+    interface ojExpand<K1> extends CustomEvent<{
+        nodeId: K1;
         [propName: string]: any;
     }> {
     }
@@ -397,7 +489,20 @@ export namespace ojDiagram {
     // tslint:disable-next-line interface-over-type-literal
     type zoomingChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zooming"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type Link<K1, K2> = {
+    type DndNodeContext<K1, D1> = {
+        nodeOffset: {
+            x: number;
+            y: number;
+        };
+        componentElement: Element;
+        id: K1;
+        type: 'node';
+        label: string;
+        data: Node<K1>;
+        itemData: D1;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Link<K2, K1> = {
         id?: K1;
         categories: string[];
         color?: string;
@@ -414,8 +519,17 @@ export namespace ojDiagram {
         endConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
     };
     // tslint:disable-next-line interface-over-type-literal
-    type Node<K> = {
-        id?: K;
+    type LinkItemContext<K1, K2, D2> = {
+        componentElement: Element;
+        id: K2;
+        type: 'link';
+        label: string;
+        data: Link<K2, K1>;
+        itemData: D2;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Node<K1> = {
+        id?: K1;
         categories?: string[];
         icon?: {
             borderColor?: string;
@@ -450,10 +564,33 @@ export namespace ojDiagram {
         descendantsConnectivity?: 'connected' | 'disjoint' | 'unknown';
     };
     // tslint:disable-next-line interface-over-type-literal
+    type NodeContext = {
+        subId: 'oj-diagram-link' | 'oj-diagram-node';
+        index: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeItemContext<K1, D1> = {
+        componentElement: Element;
+        id: K1;
+        type: 'node';
+        label: string;
+        data: Node<K1>;
+        itemData: D1;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type PromotedLinkItemContext<K1, K2, D2> = {
+        componentElement: Element;
+        id: K2;
+        type: 'promotedLink';
+        label: string;
+        data: Link<K2, K1>[];
+        itemData: D2[];
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type RendererContext<K1, D1> = {
         parentElement: Element;
         componentElement: Element;
-        data: object;
+        data: Node<K1>;
         itemData: D1;
         content: {
             element: Element;
@@ -485,17 +622,17 @@ export namespace ojDiagram {
         parentElement: Element;
         componentElement: Element;
         id: K1 | K2;
-        type: string;
+        type: 'node' | 'link' | 'promotedLink';
         label: string;
-        data: object | object[];
+        data: Node<K1> | Link<K2, K1> | Link<K2, K1>[];
         itemData: D1 | D2 | D2[];
     };
 }
 export interface ojDiagramEventMap<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> extends dvtBaseComponentEventMap<ojDiagramSettableProperties<K1, K2, D1, D2>> {
-    'ojBeforeCollapse': ojDiagram.ojBeforeCollapse;
-    'ojBeforeExpand': ojDiagram.ojBeforeExpand;
-    'ojCollapse': ojDiagram.ojCollapse;
-    'ojExpand': ojDiagram.ojExpand;
+    'ojBeforeCollapse': ojDiagram.ojBeforeCollapse<K1>;
+    'ojBeforeExpand': ojDiagram.ojBeforeExpand<K1>;
+    'ojCollapse': ojDiagram.ojCollapse<K1>;
+    'ojExpand': ojDiagram.ojExpand<K1>;
     'animationOnDataChangeChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["animationOnDataChange"]>;
     'animationOnDisplayChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["animationOnDisplay"]>;
     'asChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["as"]>;
@@ -538,45 +675,138 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
                 dataTypes: string | string[];
                 drag: ((param0: Event) => void);
                 dragEnd: ((param0: Event) => void);
-                dragStart: ((param0: Event, param1: object) => void);
+                dragStart: ((event: Event, context: {
+                    nodes: ojDiagram.DndNodeContext<K1, D1>[];
+                }) => void);
             };
             ports: {
                 dataTypes: string | string[];
                 drag: ((param0: Event) => void);
                 dragEnd: ((param0: Event) => void);
-                dragStart: ((param0: Event, param1: object) => void);
-                linkStyle: ((param0: object) => void);
+                dragStart: ((event: Event, context: {
+                    ports: {
+                        portElement: Element;
+                        dataContext: ojDiagram.NodeItemContext<K1, D1>;
+                    };
+                }) => void);
+                linkStyle: ((context: {
+                    portElement: Element;
+                    dataContext: ojDiagram.NodeItemContext<K1, D1>;
+                }) => ({
+                    svgStyle?: CSSStyleDeclaration;
+                    svgClassName?: string;
+                } | null));
                 selector: string;
             };
         };
         drop: {
             background: {
                 dataTypes: string | string[];
-                dragEnter: ((param0: Event, param1: object) => void);
-                dragLeave: ((param0: Event, param1: object) => void);
-                dragOver: ((param0: Event, param1: object) => void);
-                drop: ((param0: Event, param1: object) => void);
+                dragEnter: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                }) => void);
+                dragLeave: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                }) => void);
+                dragOver: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                }) => void);
+                drop: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                }) => void);
             };
             links: {
                 dataTypes: string | string[];
-                dragEnter: ((param0: Event, param1: object) => void);
-                dragLeave: ((param0: Event, param1: object) => void);
-                dragOver: ((param0: Event, param1: object) => void);
-                drop: ((param0: Event, param1: object) => void);
+                dragEnter: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
+                }) => void);
+                dragLeave: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
+                }) => void);
+                dragOver: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
+                }) => void);
+                drop: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
+                }) => void);
             };
             nodes: {
                 dataTypes: string | string[];
-                dragEnter: ((param0: Event, param1: object) => void);
-                dragLeave: ((param0: Event, param1: object) => void);
-                dragOver: ((param0: Event, param1: object) => void);
-                drop: ((param0: Event, param1: object) => void);
+                dragEnter: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    nodeContext: ojDiagram.NodeItemContext<K1, D1>;
+                }) => void);
+                dragLeave: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    nodeContext: ojDiagram.NodeItemContext<K1, D1>;
+                }) => void);
+                dragOver: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    nodeContext: ojDiagram.NodeItemContext<K1, D1>;
+                }) => void);
+                drop: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    nodeContext: ojDiagram.NodeItemContext<K1, D1>;
+                }) => void);
             };
             ports: {
                 dataTypes: string | string[];
-                dragEnter: ((param0: Event, param1: object) => void);
-                dragLeave: ((param0: Event, param1: object) => void);
-                dragOver: ((param0: Event, param1: object) => void);
-                drop: ((param0: Event, param1: object) => void);
+                dragEnter: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    dataContext: ojDiagram.NodeItemContext<K1, D1>;
+                    portElement: Element;
+                }) => void);
+                dragLeave: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    dataContext: ojDiagram.NodeItemContext<K1, D1>;
+                    portElement: Element;
+                }) => void);
+                dragOver: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    dataContext: ojDiagram.NodeItemContext<K1, D1>;
+                    portElement: Element;
+                }) => void);
+                drop: ((event: Event, context: {
+                    x: number;
+                    y: number;
+                    nodeX: number;
+                    nodeY: number;
+                    dataContext: ojDiagram.NodeItemContext<K1, D1>;
+                    portElement: Element;
+                }) => void);
                 selector: string;
             };
         };
@@ -592,7 +822,7 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
     hoverRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
-    layout: ((param0: DvtDiagramLayoutContext) => void);
+    layout: ((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => void);
     linkData: DataProvider<K2, D2> | null;
     linkHighlightMode: 'linkAndNodes' | 'link';
     maxZoom: number;

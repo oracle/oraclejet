@@ -23,7 +23,7 @@ function(oj, $, Components)
  * @ojcomponent oj.ojTabs
  * @ignore
  * @augments oj.baseComponent
- * @since 0.6
+ * @since 0.6.0
  *
  * @classdesc
  * <h3 id="tabsOverview-section">

@@ -15,6 +15,22 @@
     /* listbox */
     /* --------------------------------------------------------------- */
 
+
+    /************************* oj-form-control-inherit OVERRIDES *************************/
+    // DO NOT ADD SELECTOR DEFINITIONS BEFORE THESE OVERRIDES AS SPECIFICITY ISSUES CAN ARISE
+
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
+      @include oj-form-control-inherit();
+    }
+
+    /************************* END OF oj-form-control-inherit OVERRIDES *************************/
+
+
     /*
      * applied to the dropdown
      */
@@ -676,10 +692,5 @@
     .oj-listbox-highlighter {
       font-weight: bold;
     }
-
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
-      @include oj-form-control-inherit();
-    }
-
   }
 }

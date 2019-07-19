@@ -14,6 +14,39 @@
     /* InputSearch */
     /* --------------------------------------------------------------- */
 
+
+    /************************* oj-form-control-inherit OVERRIDES *************************/
+    // DO NOT ADD SELECTOR DEFINITIONS BEFORE THESE OVERRIDES AS SPECIFICITY ISSUES CAN ARISE
+
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+
+    // remove borders, inherit colors and stretch the height
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-choice,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input {
+      @include oj-form-control-inherit();
+    }
+
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+      .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus .oj-inputsearch-choice  {
+        border-width: 0;
+      }
+    }
+    @else {
+      // if a focus border width is set reset it back to 0
+      @if ($formControlInputBorderWidthFocus != null) {
+        .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus .oj-inputsearch-choice  {
+          border-width:0;
+        }
+      }
+    }
+
+    /************************* END OF oj-form-control-inherit OVERRIDES *************************/
+
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-input-search:not(.oj-complete) {
@@ -267,33 +300,5 @@
     .oj-inputsearch.oj-disabled .oj-inputsearch-search-button { 
       cursor: default;
     }
-
-    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
-    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
-    // editable datagrid cells and editable table cells
-    // -----------------------------------------------------------------------------------------
-
-    // remove borders, inherit colors and stretch the height
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-choice,
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input {
-      @include oj-form-control-inherit();
-    }
-
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-    {
-      // TODO
-      .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus .oj-inputsearch-choice  {
-        border-width: 0;        
-      }
-    }
-    @else {
-      // if a focus border width is set reset it back to 0
-      @if ($formControlInputBorderWidthFocus != null) {                      
-        .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus .oj-inputsearch-choice  {
-          border-width:0;
-        }
-      }
-    }
-
   }
 }

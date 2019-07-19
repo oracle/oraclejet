@@ -13,7 +13,33 @@
   @include module-include-once("common.combobox") {
     /* combobox */
     /* --------------------------------------------------------------- */
-            
+
+
+    /************************* oj-form-control-inherit OVERRIDES *************************/
+    // DO NOT ADD SELECTOR DEFINITIONS BEFORE THESE OVERRIDES AS SPECIFICITY ISSUES CAN ARISE
+
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+
+    // remove borders, inherit colors and stretch the height
+    // need extra specificity since base selector has direction selectors
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
+      @include oj-form-control-inherit();
+    }
+
+    // TODO: multi combobox's color inherit does not work. the color does not get inherited. (same with select))
+    // TODO: multi combobox when it is in a narrow box, and multiple items are selected, it doesn't
+    // show all the items.
+    // TODO: single combobox's text-align: right makes the text overlap the icon
+    // TODO: single combobox's height stretches for choice, but the icon no longer lines up
+
+    /************************* END OF oj-form-control-inherit OVERRIDES *************************/
+
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-combobox:not(.oj-complete) {
@@ -627,25 +653,5 @@
     .oj-combobox .oj-button {
       margin-bottom: 0;
     }
-    
-    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
-    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
-    // editable datagrid cells and editable table cells
-    // -----------------------------------------------------------------------------------------
-
-    // remove borders, inherit colors and stretch the height
-    // need extra specificity since base selector has direction selectors
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {    
-      @include oj-form-control-inherit();  
-    }
-
-    // TODO: multi combobox's color inherit does not work. the color does not get inherited. (same with select))
-    // TODO: multi combobox when it is in a narrow box, and multiple items are selected, it doesn't
-    // show all the items.
-    // TODO: single combobox's text-align: right makes the text overlap the icon 
-    // TODO: single combobox's height stretches for choice, but the icon no longer lines up
-
   }
 }

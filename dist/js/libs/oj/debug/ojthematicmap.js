@@ -620,7 +620,7 @@ var __oj_thematic_map_marker_metadata =
 /**
  * @ojcomponent oj.ojThematicMap
  * @augments oj.dvtBaseComponent
- * @since 0.7
+ * @since 0.7.0
  * @ojstatus preview
  * @ojrole application
  * @ojshortdesc A thematic map is an interactive data visualization that displays data corresponding to geographic locations or regions.
@@ -2178,10 +2178,10 @@ oj.__registerWidget('oj.ojThematicMap', $.oj.dvtBaseComponent,
     _GetComponentRendererOptions: function () {
       return [{ path: 'tooltip/renderer', slot: 'tooltipTemplate' },
               { path: '_tooltip/renderer' },
-              { path: 'renderer' },
-              { path: 'focusRenderer' },
-              { path: 'hoverRenderer' },
-              { path: 'selectionRenderer' }];
+              { path: 'renderer', slot: 'markerContentTemplate' },
+              { path: 'focusRenderer', slot: 'markerContentTemplate' },
+              { path: 'hoverRenderer', slot: 'markerContentTemplate' },
+              { path: 'selectionRenderer', slot: 'markerContentTemplate' }];
     },
 
     //* * @inheritdoc */
@@ -2933,6 +2933,27 @@ oj.__registerWidget('oj.ojThematicMap', $.oj.dvtBaseComponent,
         linkData: { templateName: 'linkTemplate', templateElementName: 'oj-thematic-map-link', resultPath: 'links' },
         markerData: { templateName: 'markerTemplate', templateElementName: 'oj-thematic-map-marker', resultPath: 'markers' }
       };
+    },
+
+    //* * @inheritdoc */
+    _WrapInlineTemplateRenderer: function (origRenderer, templateName, option) {
+      var getDefaultWrapperFunction = function (defaultFunc) {
+        return function (context) {
+          context[defaultFunc]();
+          return origRenderer(context);
+        };
+      };
+      if (option === 'focusRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-focus')) {
+        return getDefaultWrapperFunction('renderDefaultFocus');
+      }
+      if (option === 'hoverRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-hover')) {
+        return getDefaultWrapperFunction('renderDefaultHover');
+      }
+      if (option === 'selectionRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-selection')) {
+        return getDefaultWrapperFunction('renderDefaultSelection');
+      }
+
+      return origRenderer;
     }
   });
 
@@ -3477,6 +3498,30 @@ Components.setDefaultOptions({
  * &lt;oj-thematic-map>
  *  &lt;template slot="tooltipTemplate">
  *    &lt;span>&lt;oj-bind-text value="[[$current.locationName + ': ' + $current.label]]">&lt;/oj-bind-text>&lt;/span>
+ *  &lt;/template>
+ * &lt;/oj-thematic-map>
+ */
+
+ /**
+ * <p>The <code class="prettyprint">markerContentTemplate</code> slot is used to specify custom marker content.</p>
+ * This slot takes precedence over the renderer/focusRenderer/hoverRenderer/selectionRenderer properties if specified.
+ * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
+ * <ul>
+ *   <li>$current - an object that contains information for the current marker. (See [oj.ojThematicMap.RendererContext]{@link oj.ojThematicMap.RendererContext} for a list of properties available on $current) </li>
+ * </ul>
+ * <p>Additionally, add data-oj-default-focus, data-oj-default-hover and/or data-oj-default-selection attributes to the template to also render the default focus, hover and/or selection effect for the data item.</p>
+ *
+ * @ojslot markerContentTemplate
+ * @ojslotitemprops oj.ojThematicMap.RendererContext
+ * @memberof oj.ojThematicMap
+ * @since 7.1.0
+ *
+ * @example <caption>Initialize the ThematicMap with a marker content template specified:</caption>
+ * &lt;oj-thematic-map>
+ *  &lt;template slot="markerContentTemplate" data-oj-default-focus data-oj-default-hover data-oj-default-selection>
+ *   &lt;svg width="100" height="100">
+ *    &lt;text>&lt;oj-bind-text value="[[$current.label]]">&lt;/oj-bind-text>&lt;/text>
+ *   &lt;/svg>
  *  &lt;/template>
  * &lt;/oj-thematic-map>
  */

@@ -4694,15 +4694,22 @@ var __oj_select_one_metadata =
             }
           }
         }
+
+        // Fix  - CUSTOM MESSAGES ARE BEING CLEARED WHEN THE VALUE DOESN'T CHANGE
+        // If the value has not changed, bypass the call to _SetValue method in EditableValue.
+        // Because we don't have to set the value again in EditableValue.
+        var previousVal = this.getVal();
         if (!Array.isArray(val) && !this.ojContext._IsCustomElement()) {
           //  - select needs implementation fixes...
           // 1. _SetValue() compares the value passed in to the last saved display value. This is
-          // from ADF and is useful for comapring display values for inputs but since combo sets an
+          // from ADF and is useful for comparing display values for inputs but since combo sets an
           // array, this check is not needed.
           // 2. To bypass the check call this method when the value has changed and with the
           // additional parameter.
-          this.ojContext._SetValue([val], event, options);
-        } else {
+          if (!oj.Object.compareValues(previousVal, [val])) {
+            this.ojContext._SetValue([val], event, options);
+          }
+        } else if (!oj.Object.compareValues(previousVal, val)) {
           //  - select needs implementation fixes...
           this.ojContext._SetValue(val, event, options);
         }
@@ -4974,6 +4981,10 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice,
           return;
 
         case _ComboUtils.KEY.ENTER:
+          // Fix :  PRESSING 'ENTER' WITHIN DROPDOWN SHOULD NOT PROPAGATE
+          if (this._opened()) {
+            e.stopPropagation();
+          }
           this._selectHighlighted(null, e);
           //  - select and combobox stop keyboard event propegation
           e.preventDefault();
@@ -6652,6 +6663,8 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
           case _ComboUtils.KEY.ENTER:
             this._selectHighlighted(null, e);
             e.preventDefault();
+            // Fix :  PRESSING 'ENTER' WITHIN DROPDOWN SHOULD NOT PROPAGATE
+            e.stopPropagation();
             return;
           case _ComboUtils.KEY.TAB:
             this.close(e);
@@ -7091,7 +7104,15 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
           _ComboUtils.setValueOptions(this.ojContext, match);
         }
       }
-      this.ojContext._SetValue(unique, event, options);
+
+      // Fix  - CUSTOM MESSAGES ARE BEING CLEARED WHEN THE VALUE DOESN'T CHANGE
+      // If the value has not changed, bypass the call to _SetValue method in EditableValue.
+      // Because we don't have to set the same value again in EditableValue.
+      var previousVal = this.getVal();
+      if (!oj.Object.compareValues(previousVal, unique)) {
+        this.ojContext._SetValue(unique, event, options);
+      }
+
       if (this.ojContext.isValid() || unique.length === 0) {
         this.currentValue = unique;
       }
@@ -7653,7 +7674,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
   /**
    * @ojcomponent oj.ojComboboxOne
    * @augments oj.ojCombobox
-   * @since 0.6
+   * @since 0.6.0
    * @ojdisplayname Single-select Combobox
    * @ojshortdesc A combobox one is a dropdown list that supports single selection, text input, and search filtering.
    * @ojrole combobox
@@ -7728,7 +7749,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    /**
    * @ojcomponent oj.ojComboboxMany
    * @augments oj.ojCombobox
-   * @since 0.6
+   * @since 0.6.0
    * @ojdisplayname Multi-select Combobox
    * @ojshortdesc A combobox many is a dropdown list that supports multiple selections, text input, and search filtering.
    * @ojrole combobox
@@ -7803,7 +7824,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
   /**
    * @ojcomponent oj.ojCombobox
    * @augments oj.editableValue
-   * @since 0.6
+   * @since 0.6.0
    * @abstract
    * @ojsignature [{
    *                target: "Type",
@@ -8920,7 +8941,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       * @memberof oj.ojComboboxOne
       * @type {boolean}
       * @default false
-      * @since 0.7
+      * @since 0.7.0
       * @see #translations
       */
      /**
@@ -8944,7 +8965,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       * @memberof oj.ojComboboxMany
       * @type {boolean}
       * @default false
-      * @since 0.7
+      * @since 0.7.0
       * @see #translations
       */
      /**
@@ -9000,7 +9021,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       * @access public
       * @instance
       * @memberof oj.ojCombobox
-      * @since 0.7
+      * @since 0.7.0
       * @see #translations
       * @ojfragment comboboxCommonRequired
       */
@@ -10060,10 +10081,13 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       },
 
       _getDisplayValueForSetValue: function () {
-        var displayValue = this.combobox.search.val();
+        var displayValue = null;
         var newValue = null;
 
         if (this.multiple !== true) {
+          // Fix  - oj-combobox data provider options validate label copied to value
+          // getValOpts returns the current value option of the ojComboboxOne
+          displayValue = this.combobox.getValOpts() ? this.combobox.getValOpts().value : null;
           if (!this._IsCustomElement()) {
             if (displayValue === undefined || displayValue === null || displayValue === '') {
               newValue = [];
@@ -10074,10 +10098,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
             newValue = displayValue;
           }
         } else {
-          var existingValue = [];
-          if (this.isValid()) {
-            existingValue = this.combobox.getVal();
-          }
+          var existingValue = this.combobox.getVal() ? this.combobox.getVal() : [];
+          displayValue = this.combobox.search.val();
 
           if (displayValue === undefined || displayValue === null || displayValue === '') {
             newValue = existingValue;
@@ -10805,7 +10827,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
         * @memberof! oj.ojInputSearch
         * @type {boolean}
         * @default false
-        * @since 0.7
+        * @since 0.7.0
         * @see #translations
         */
         required: false,
@@ -11934,7 +11956,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
   /**
    * @ojcomponent oj.ojSelectOne
    * @augments oj.ojSelect
-   * @since 0.6
+   * @since 0.6.0
    * @ojdisplayname Single Select
    * @ojshortdesc A select one is a dropdown list that supports single selection and search filtering.
    * @ojrole combobox
@@ -12011,7 +12033,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
   /**
    * @ojcomponent oj.ojSelectMany
    * @augments oj.ojSelect
-   * @since 0.6
+   * @since 0.6.0
    * @ojdisplayname Multi Select
    * @ojshortdesc A select many is a dropdown list that supports multiple selections and search filtering.
    * @ojrole combobox
@@ -12086,7 +12108,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
   /**
    * @ojcomponent oj.ojSelect
    * @augments oj.editableValue
-   * @since 0.6
+   * @since 0.6.0
    * @abstract
    * @ojsignature [{
    *                target: "Type",
@@ -12853,7 +12875,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       * @memberof oj.ojSelectOne
       * @type {boolean}
       * @default false
-      * @since 0.7
+      * @since 0.7.0
       * @see #translations
       */
      /**
@@ -12877,7 +12899,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       * @memberof oj.ojSelectMany
       * @type {boolean}
       * @default false
-      * @since 0.7
+      * @since 0.7.0
       * @see #translations
       */
       /**
@@ -12933,7 +12955,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @access public
        * @instance
        * @memberof oj.ojSelect
-       * @since 0.7
+       * @since 0.7.0
        * @see #translations
        * @ojfragment selectCommonRequired
        */
@@ -13902,11 +13924,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
 
         if (this.multiple === true) {
           var displayValue = this.select.search.val();
-          var existingValue = [];
+          var existingValue = this.select.getVal() ? this.select.getVal() : [];
           var newValue = null;
-          if (this.isValid()) {
-            existingValue = this.select.getVal();
-          }
 
           if (displayValue === undefined || displayValue === null || displayValue === '') {
             newValue = existingValue;

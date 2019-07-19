@@ -77,7 +77,13 @@ define(["./keyValuePersistenceStore", "./logger"],
       var insertKey = this._createRawKey(key);
       var storeageData = localStorage.getItem(insertKey);
       if (storeageData) {
-        return Promise.resolve(JSON.parse(storeageData));
+        try {
+          var item = JSON.parse(storeageData);
+          item.key = key;
+          return Promise.resolve(item);
+        } catch (err) {
+          return Promise.resolve();
+        }
       } else {
         return Promise.resolve();
       }

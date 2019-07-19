@@ -16,6 +16,37 @@
     /* inputnumber */
     /* --------------------------------------------------------------- */
 
+
+    /************************* oj-form-control-inherit OVERRIDES *************************/
+    // DO NOT ADD SELECTOR DEFINITIONS BEFORE THESE OVERRIDES AS SPECIFICITY ISSUES CAN ARISE
+
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+    // TODO: redo the comments, make mixins for the common properties
+
+    // remove borders, inherit colors and stretch the height
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input {
+      @include oj-form-control-inherit();
+    }
+
+    // stretch the height
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-wrapper {
+      height: 100%;
+    }
+
+    // if a focus border width is set reset it back to 0
+    // TODO
+    @if ($formControlInputBorderWidthFocus != null) {
+      .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber:not(.oj-read-only).oj-focus .oj-inputnumber-input {
+        border-width:0;
+      }
+    }
+
+    /************************* END OF oj-form-control-inherit OVERRIDES *************************/
+
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-input-number:not(.oj-complete) {
@@ -748,30 +779,6 @@
         @include oj-rtl() {
           border-right-width: 0;
         }
-      }
-    }
-
-    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
-    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
-    // editable datagrid cells and editable table cells
-    // -----------------------------------------------------------------------------------------
-    // TODO: redo the comments, make mixins for the common properties
-
-    // remove borders, inherit colors and stretch the height
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input {
-      @include oj-form-control-inherit(); 
-    }
-    
-    // stretch the height
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-wrapper {
-      height: 100%;
-    }
-
-    // if a focus border width is set reset it back to 0
-    // TODO
-    @if ($formControlInputBorderWidthFocus != null) {                      
-      .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber:not(.oj-read-only).oj-focus .oj-inputnumber-input {
-        border-width:0;
       }
     }
   }

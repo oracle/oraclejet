@@ -5486,6 +5486,7 @@ DvtDiagramOverviewUtils._positionOverviewNode = function(node, ovNode) {
 DvtDiagramOverviewUtils._positionOverviewWindow = function(diagram, overview) {
   var halign = diagram.Options['overview']['halign'];
   var valign = diagram.Options['overview']['valign'];
+  var padding = dvt.CSSStyle.toNumber(diagram.Options.styleDefaults._overviewStyles.overview.padding);
   var overviewWidth = overview.getOverviewWidth();
   var overviewHeight = overview.getOverviewHeight();
   var availableWidth = diagram.Width;
@@ -5500,13 +5501,13 @@ DvtDiagramOverviewUtils._positionOverviewWindow = function(diagram, overview) {
       break;
     default: break;
   }
-  
+
   var positionX = halign == 'center' ? (availableWidth - overviewWidth)/2 :
-                  halign == 'right' ? availableWidth - overviewWidth :
-                  0;
+                  halign == 'right' ? availableWidth - overviewWidth - padding:
+                  padding;
   var positionY = valign == 'middle' ? (availableHeight - overviewHeight)/2 :
-                  valign == 'bottom' ? availableHeight - overviewHeight :
-                  0;
+                  valign == 'bottom' ? availableHeight - overviewHeight - padding:
+                  padding;
   var ovContainer = overview.getParent();
   ovContainer.setTranslate(positionX, positionY);
 };
@@ -10403,6 +10404,9 @@ DvtDiagramNode.prototype._applyCustomNodeContent = function(renderer, state, pre
     if (this._customNodeContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
       this.getContainerElem().removeChild(this._customNodeContent);
     }
+    else if (Array.isArray(this._customNodeContent)) {
+      this._customNodeContent.forEach(function(node) {this.getContainerElem().removeChild(node);}.bind(this));
+    }
     else {
       this.removeChild(nodeContent);
     }
@@ -10412,6 +10416,12 @@ DvtDiagramNode.prototype._applyCustomNodeContent = function(renderer, state, pre
   if (nodeContent && nodeContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
     if (!this._customNodeContent) {
       dvt.ToolkitUtils.appendChildElem(this.getContainerElem(), nodeContent);
+      this._customNodeContent = nodeContent;
+    }
+  }
+  else if (nodeContent && Array.isArray(nodeContent)) {
+    if (!this._customNodeContent) {
+      nodeContent.forEach(function(node) {dvt.ToolkitUtils.appendChildElem(this.getContainerElem(), node);}.bind(this));
       this._customNodeContent = nodeContent;
     }
   }
@@ -10992,7 +11002,16 @@ DvtDiagramNode.prototype._calcContentDims = function() {
       }
     }
     else {
-      bbox = this._customNodeContent.getBBox();
+      var customNode = this._customNodeContent;
+      if (Array.isArray(customNode)) {
+        for (var i = 0; i < customNode.length; i++) { // get the svg elmeent to measure
+          if (customNode[i].namespaceURI === dvt.ToolkitUtils.SVG_NS) {
+            customNode = customNode[i];
+            break;
+          }
+        }
+      }
+      bbox = customNode.getBBox();
       if (bbox) {
         dims = new dvt.Rectangle(bbox.x, bbox.y, bbox.width, bbox.height);
       }
@@ -11738,6 +11757,12 @@ DvtDiagramNode.prototype._cleanUp = function(saveContainer) {
     if (this._customNodeContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
       this.getContainerElem().removeChild(this._customNodeContent);
       saveContainer && dvt.ToolkitUtils.appendChildElem(saveContainer.getContainerElem(), this._customNodeContent);
+    }
+    else if (Array.isArray(this._customNodeContent)) {
+      for (var i = 0; i < this._customNodeContent.length; i++) {
+        this.getContainerElem().removeChild(this._customNodeContent[i]);
+        saveContainer && dvt.ToolkitUtils.appendChildElem(saveContainer.getContainerElem(), this._customNodeContent[i]);
+      }
     }
     else if (this._customNodeContent instanceof dvt.BaseComponent) {
       this.removeChild(this._customNodeContent);

@@ -759,7 +759,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
   /**
    * @ojcomponent oj.baseComponent
    * @abstract
-   * @since 0.6
+   * @since 0.6.0
    */
   $.widget('oj.' + _BASE_COMPONENT, {
     options: {
@@ -3980,7 +3980,7 @@ function _returnTrue() {
  * @param {Object} component instance
  * @protected
  * @constructor
- * @since 0.6
+ * @since 0.6.0
  * @ignore
  */
 oj.ComponentMessaging = function (component) {

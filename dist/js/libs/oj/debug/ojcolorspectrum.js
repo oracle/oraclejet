@@ -3,8 +3,8 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcolor', 'ojs/ojlogger', 'ojs/ojslider', 'jqueryui-amd/widgets/draggable', 'ojs/ojtouchproxy', 'ojs/ojeditablevalue'],
-       function(oj, $, Components, Color, Logger)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcolor', 'ojs/ojlogger', 'ojs/ojlabelledbyutils', 'ojs/ojslider', 'jqueryui-amd/widgets/draggable', 'ojs/ojtouchproxy', 'ojs/ojeditablevalue'],
+       function(oj, $, Components, Color, Logger, LabelledByUtils)
 {
   "use strict";
 var __oj_color_spectrum_metadata = 
@@ -141,7 +141,7 @@ var __oj_color_spectrum_metadata =
    Depends:   jquery.ui.core.js
               jquery.ui.widget.js
 ------------------------------------------------------------------*/
-/* global Color:false, Logger:false */
+/* global Color:false, Logger:false, LabelledByUtils:false */
 
 (function () {
   /*
@@ -289,9 +289,9 @@ var __oj_color_spectrum_metadata =
 
         /**
          * Labelled-by is used to establish a relationship between this and another element.
-         * A common use is to tie the oj-label and the oj-color-spectrum together.
+         * A common use is to tie the oj-label and the oj-color-spectrum together for accessibility.
          * The oj-label custom element has an id, and you use the labelled-by attribute
-         * to tie the two elements together.
+         * to tie the two elements together to facilitate correct screen reader behavior.
          *
          * @ojshortdesc Used to establish a relationship between this element and another element.
          *
@@ -596,7 +596,7 @@ var __oj_color_spectrum_metadata =
        * @instance
        * @private
        */
-      _updateLabelledBy: oj.EditableValueUtils._updateLabelledBy,
+      _updateLabelledBy: LabelledByUtils._updateLabelledBy,
 
       /**
        * @memberof oj.ojColorSpectrum

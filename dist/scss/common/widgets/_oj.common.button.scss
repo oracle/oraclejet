@@ -23,6 +23,7 @@
     input#{$selector}.oj-button[type="button"], // doesn't support icons
     input#{$selector}.oj-button[type="submit"], // doesn't support icons
     input#{$selector}.oj-button[type="reset"], // doesn't support icons
+    #{$selector}.oj-button-nocomp.oj-button-text-only, // nocomp button text-only
     #{$selector}.oj-buttonset .oj-button-text-only .oj-button-text, // toggle button custom element case
     #{$selector}.oj-button-text-only .oj-button-text { // button types that do support icons but don't have any
         padding: 0 $buttonTextToEdgePadding;
@@ -116,6 +117,7 @@
 
     /* The icon of buttons with with 1 icon (whether start or end) and no text */
     #{$selector}.oj-buttonset .oj-button-icon-only .oj-button-icon,   // toggle button custom element case
+    #{$selector}.oj-button-nocomp .oj-button-icon-only, // nocomp button icon-only
     #{$selector}.oj-button-icon-only .oj-button-icon { 
         // because this is a contextual selector it has a higher specificity,
         // so using margin-right: and margin-left: instead of margin: so that
@@ -219,11 +221,13 @@
     }
 
     // do not overwrite hidden display properties
-    [hidden].oj-button {
+    [hidden].oj-button,
+    [hidden].oj-button-nocomp {
         display: none;
     }
 
-    .oj-button {  // root element jqui/button or custom element/oj-button
+    .oj-button, // root element jqui/button or custom element/oj-button
+    .oj-button-nocomp {  // nocomp button
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         height: var(--oj-button-height);
@@ -255,6 +259,7 @@
     }
 
     .oj-button-jqui,     // jqui only
+    .oj-button-nocomp,   // nocomp button only
     .oj-button-button {  // custom element only
         justify-content: center;
         min-width: 0; // By default, flex items won't shrink below their minimum content size unless min-width specified
@@ -292,6 +297,7 @@
 
     // specificity needed to override this Normalize rule:  html input[type="button"] {cursor: pointer} 
     html body .oj-button-jqui,                // jqui only
+    html body .oj-button-nocomp,   // nocomp button only
     html body .oj-button-button {  // custom element only
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -343,7 +349,8 @@
     }
 
     // Since buttons can have variable widths ensure button text truncates with ellipsis if button gets too small
-    .oj-button .oj-button-text {
+    .oj-button .oj-button-text,
+    .oj-button-nocomp {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -354,6 +361,7 @@
     //----------------------------------
     
     .oj-button.oj-button-sm,
+    .oj-button-nocomp.oj-button-sm, 
     .oj-buttonset.oj-button-sm .oj-button-jqui    {  // custom element buttonset    
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -369,6 +377,7 @@
     }
         
     .oj-button.oj-button-lg,
+    .oj-button-nocomp.oj-button-lg,
     .oj-buttonset.oj-button-lg .oj-button-jqui    {  // custom element buttonset
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -384,6 +393,7 @@
     }
     
     .oj-button.oj-button-xl,
+    .oj-button-nocomp.oj-button-xl,
     .oj-buttonset.oj-button-xl .oj-button-jqui    {  // custom element buttonset
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -405,18 +415,24 @@
 
     .oj-button-jqui,            // jqui only
     .oj-button-button,          // custom element only
+    .oj-button-nocomp,          // nocomp button only
     .oj-button-jqui:link,       // jqui only
     .oj-button-button:link,     // custom element only
+    .oj-button-nocomp:link,     // nocomp button only
     .oj-button-jqui:visited,    // jqui only
     .oj-button-button:visited,  // custom element only
+    .oj-button-nocomp:visited,  // nocomp button only
     .oj-button-jqui:hover,      // jqui only
     .oj-button-button:hover,    // custom element only
+    .oj-button-nocomp:hover,    // nocomp button only
     .oj-button-jqui:active,     // jqui only
-    .oj-button-button:active {  // custom element only
+    .oj-button-button:active,   // custom element only
+    .oj-button-nocomp:active {  // nocomp button only
         text-decoration: none; 
     }
 
     .oj-button-jqui:not(.oj-focus-highlight):focus,                // jqui only
+    .oj-button-nocomp:not(.oj-focus-highlight):focus,              // nocomp button only
     .oj-button:not(.oj-focus-highlight) .oj-button-button:focus {  // custom element only
         outline: none;
     }
@@ -428,6 +444,7 @@
     // See also the $focusHighlightPolicy variable, which controls when this 
     // class is set.  That variable affects multiple components, not just Button.
     .oj-button-jqui.oj-focus-highlight,                // jqui only
+    .oj-button-nocomp.oj-focus-highlight,              // nocomp button only
     .oj-button.oj-focus-highlight .oj-button-button {  // custom element only
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -439,6 +456,7 @@
     }
 
     .oj-button-jqui.oj-disabled,                // jqui only
+    .oj-button-nocomp:disabled,                 // nocomp button only
     .oj-button.oj-disabled .oj-button-button {  // custom element only
         cursor: default; // in case a themer sets clickable "hand" cursor on buttons, override it if disabled
     }
@@ -457,6 +475,11 @@
     .oj-button-jqui.oj-button-full-chrome:visited,               // jqui only
     .oj-button-jqui.oj-button-full-chrome:hover,                 // jqui only
     .oj-button-jqui.oj-button-full-chrome:active,                // jqui only
+    .oj-button-nocomp.oj-button-full-chrome,                     // nocomp button only
+    .oj-button-nocomp.oj-button-full-chrome:link,                // nocomp button only
+    .oj-button-nocomp.oj-button-full-chrome:visited,             // nocomp button only
+    .oj-button-nocomp.oj-button-full-chrome:hover,               // nocomp button only
+    .oj-button-nocomp.oj-button-full-chrome:active,              // nocomp button only
     .oj-button.oj-button-full-chrome .oj-button-button,          // custom element only
     .oj-button.oj-button-full-chrome .oj-button-button:link,     // custom element only
     .oj-button.oj-button-full-chrome .oj-button-button:visited,  // custom element only
@@ -478,6 +501,7 @@
        oj-focus-only is applied iff the button has oj-focus but not any of the other 4 states listed above.*/
     .oj-button-jqui.oj-default.oj-button-full-chrome,                   // jqui only
     .oj-button-jqui.oj-focus-only.oj-button-full-chrome,                // jqui only
+    .oj-button-nocomp.oj-button-full-chrome,                            // nocomp button only
     .oj-button.oj-default.oj-button-full-chrome .oj-button-button,      // custom element only
     .oj-button.oj-focus-only.oj-button-full-chrome .oj-button-button {  // custom element only
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
@@ -504,6 +528,7 @@
     }
     
     .oj-button.oj-default.oj-button-full-chrome .oj-button-icon,
+    .oj-button-nocomp.oj-button-full-chrome .oj-button-icon,
     .oj-button.oj-focus-only.oj-button-full-chrome .oj-button-icon {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -515,6 +540,7 @@
     }
 
     .oj-button-jqui.oj-hover.oj-button-full-chrome,                // jqui only
+    .oj-button-nocomp.oj-button-full-chrome:hover,                 // nocomp button only
     .oj-button.oj-hover.oj-button-full-chrome .oj-button-button {  // custom element only
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -539,7 +565,8 @@
       }
     }
 
-    .oj-button.oj-hover.oj-button-full-chrome .oj-button-icon {
+    .oj-button.oj-hover.oj-button-full-chrome .oj-button-icon,
+    .oj-button-nocomp.oj-button-full-chrome:hover .oj-button-icon {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         color: var(--oj-button-icon-color-hover); 
@@ -553,6 +580,8 @@
     /* oj-active is applied to a push button when it is actively being held down 
        by the mouse button or Enter or Spacebar. */
     .oj-button-jqui.oj-active.oj-button-full-chrome,                // jqui only
+    .oj-button-nocomp.oj-button-full-chrome:active,                 // nocomp button only
+    .oj-button-nocomp.oj-active.oj-button-full-chrome,                 // nocomp button only (enter key)
     .oj-button.oj-active.oj-button-full-chrome .oj-button-button {  // custom element only
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -580,7 +609,9 @@
     }
 
     // active should trump hover
-    .oj-button.oj-active.oj-button-full-chrome .oj-button-icon {
+    .oj-button.oj-active.oj-button-full-chrome .oj-button-icon,
+    .oj-button-nocomp.oj-button-full-chrome:active .oj-button-icon,
+    .oj-button-nocomp.oj-active.oj-button-full-chrome .oj-button-icon {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         color: var(--oj-button-icon-color-active); 
@@ -653,6 +684,7 @@
     }
 
     .oj-button-jqui.oj-disabled.oj-button-full-chrome,                // jqui only
+    .oj-button-nocomp.oj-button-full-chrome:disabled,                 // nocomp button only
     .oj-button.oj-disabled.oj-button-full-chrome .oj-button-button {  // custom element only
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -673,7 +705,8 @@
       }
     }
 
-    .oj-button.oj-disabled.oj-button-full-chrome .oj-button-icon  {
+    .oj-button.oj-disabled.oj-button-full-chrome .oj-button-icon,
+    .oj-button-nocomp.oj-button-full-chrome:disabled .oj-button-icon  {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         color: var(--oj-button-icon-color-disabled); 
@@ -731,6 +764,8 @@
     .oj-button-jqui.oj-default.oj-button-half-chrome,                 // jqui only
     .oj-button-jqui.oj-focus-only.oj-button-half-chrome,              // jqui only
     .oj-button-jqui.oj-disabled.oj-button-half-chrome,                // jqui only
+    .oj-button-nocomp.oj-button-half-chrome,                          // nocomp button only
+    .oj-button-nocomp.oj-button-half-chrome:disabled,                 // nocomp button only
     .oj-button.oj-default.oj-button-half-chrome .oj-button-button,    // custom element only
     .oj-button.oj-focus-only.oj-button-half-chrome .oj-button-button, // custom element only
     .oj-button.oj-disabled.oj-button-half-chrome .oj-button-button {  // custom element only
@@ -749,6 +784,7 @@
     // half-chrome and (default or focus-only)
     .oj-button-jqui.oj-default.oj-button-half-chrome,                   // jqui only
     .oj-button-jqui.oj-focus-only.oj-button-half-chrome,                // jqui only
+    .oj-button-nocomp.oj-button-half-chrome,                            // LV nocomp
     .oj-button.oj-default.oj-button-half-chrome .oj-button-button,      // custom element only
     .oj-button.oj-focus-only.oj-button-half-chrome .oj-button-button {  // custom element only
         text-shadow: none;
@@ -763,6 +799,7 @@
 
     // half-chrome hover
     .oj-button-jqui.oj-hover.oj-button-half-chrome,                // jqui only
+    .oj-button-nocomp.oj-button-half-chrome:hover,                 // nocomp button only
     .oj-button.oj-hover.oj-button-half-chrome .oj-button-button {  // custom element only
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -781,6 +818,8 @@
 
     // half-chrome active: should trump half-chrome hover
     .oj-button-jqui.oj-active.oj-button-half-chrome,                // jqui only
+    .oj-button-nocomp.oj-button-half-chrome:active,                 // nocomp button only
+    .oj-button-nocomp.oj-active.oj-button-half-chrome,              // nocomp button only (enter key)
     .oj-button.oj-active.oj-button-half-chrome .oj-button-button {  // custom element only
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -836,6 +875,7 @@
 
     // half-chrome disabled
     .oj-button-jqui.oj-disabled.oj-button-half-chrome,                // jqui only
+    .oj-button-nocomp.oj-button-half-chrome:disabled,                 // nocomp button only
     .oj-button.oj-disabled.oj-button-half-chrome .oj-button-button {  // custom element only
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -874,6 +914,11 @@
     .oj-button-jqui.oj-button-half-chrome:visited,               // jqui only
     .oj-button-jqui.oj-button-half-chrome:hover,                 // jqui only
     .oj-button-jqui.oj-button-half-chrome:active,                // jqui only
+    .oj-button-nocomp.oj-button-half-chrome,                     // nocomp button only
+    .oj-button-nocomp.oj-button-half-chrome:link,                // nocomp button only
+    .oj-button-nocomp.oj-button-half-chrome:visited,             // nocomp button only
+    .oj-button-nocomp.oj-button-half-chrome:hover,               // nocomp button only
+    .oj-button-nocomp.oj-button-half-chrome:active,              // nocomp button only
     .oj-button.oj-button-half-chrome .oj-button-button,          // custom element only
     .oj-button.oj-button-half-chrome .oj-button-button:link,     // custom element only
     .oj-button.oj-button-half-chrome .oj-button-button:visited,  // custom element only
@@ -891,7 +936,8 @@
     }
 
     // half-chrome and (default or focus-only) icons
-    .oj-button.oj-default.oj-button-half-chrome .oj-button-icon,
+    .oj-button.oj-default.oj-button-half-chrome .oj-button-icon,    
+    .oj-button-nocomp.oj-button-half-chrome .oj-button-icon,
     .oj-button.oj-focus-only.oj-button-half-chrome .oj-button-icon {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -903,7 +949,8 @@
     }
 
     // half-chrome hover icons
-    .oj-button.oj-hover.oj-button-half-chrome .oj-button-icon {
+    .oj-button.oj-hover.oj-button-half-chrome .oj-button-icon,
+    .oj-button-nocomp.oj-button-half-chrome:hover .oj-button-icon {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         color: var(--oj-button-half-chrome-icon-color-hover); 
@@ -914,7 +961,8 @@
     }
 
     // half-chrome active icons
-    .oj-button.oj-active.oj-button-half-chrome .oj-button-icon {
+    .oj-button.oj-active.oj-button-half-chrome .oj-button-icon,
+    .oj-button-nocomp.oj-button-half-chrome:active .oj-button-icon {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         color: var(--oj-button-half-chrome-icon-color-active); 
@@ -947,7 +995,8 @@
     }
 
     // half-chrome disabled icons
-    .oj-button.oj-disabled.oj-button-half-chrome .oj-button-icon {
+    .oj-button.oj-disabled.oj-button-half-chrome .oj-button-icon,
+    .oj-button-nocomp.oj-button-half-chrome:disabled .oj-button-icon {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         color: var(--oj-button-half-chrome-icon-color-disabled); 
@@ -981,6 +1030,8 @@
     .oj-button-jqui.oj-default.oj-button-outlined-chrome,                 // jqui only
     .oj-button-jqui.oj-focus-only.oj-button-outlined-chrome,              // jqui only
     .oj-button-jqui.oj-disabled.oj-button-outlined-chrome,                // jqui only
+    .oj-button-nocomp.oj-button-outlined-chrome,                          // nocomp button only
+    .oj-button-nocomp.oj-button-outlined-chrome:disabled,                 // nocomp button only
     .oj-button.oj-default.oj-button-outlined-chrome .oj-button-button,    // custom element only
     .oj-button.oj-focus-only.oj-button-outlined-chrome .oj-button-button, // custom element only
     .oj-button.oj-disabled.oj-button-outlined-chrome .oj-button-button {  // custom element only
@@ -1002,6 +1053,7 @@
     // outlined and (default or focus-only)
     .oj-button-jqui.oj-default.oj-button-outlined-chrome,                   // jqui only
     .oj-button-jqui.oj-focus-only.oj-button-outlined-chrome,                // jqui only
+    .oj-button-nocomp.oj-button-outlined-chrome,                            // nocomp button only
     .oj-button.oj-default.oj-button-outlined-chrome .oj-button-button,      // custom element only
     .oj-button.oj-focus-only.oj-button-outlined-chrome .oj-button-button {  // custom element only
         text-shadow: none;
@@ -1016,6 +1068,7 @@
 
     // outlined hover
     .oj-button-jqui.oj-hover.oj-button-outlined-chrome,                // jqui only
+    .oj-button-nocomp.oj-button-outlined-chrome:hover,                 // nocomp button only
     .oj-button.oj-hover.oj-button-outlined-chrome .oj-button-button {  // custom element only
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -1036,6 +1089,8 @@
 
     // outlined active: should trump outlined hover
     .oj-button-jqui.oj-active.oj-button-outlined-chrome,                // jqui only
+    .oj-button-nocomp.oj-button-outlined-chrome:active,                 // nocomp button only
+    .oj-button-nocomp.oj-active.oj-button-outlined-chrome,              // nocomp button only (enter key)
     .oj-button.oj-active.oj-button-outlined-chrome .oj-button-button {  // custom element only
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -1091,6 +1146,7 @@
 
     // outlined disabled
     .oj-button-jqui.oj-disabled.oj-button-outlined-chrome,                // jqui only
+    .oj-button-nocomp.oj-button-outlined-chrome:disabled,                 // nocomp button only
     .oj-button.oj-disabled.oj-button-outlined-chrome .oj-button-button {  // custom element only
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -1132,6 +1188,11 @@
     .oj-button-jqui.oj-button-outlined-chrome:visited,               // jqui only
     .oj-button-jqui.oj-button-outlined-chrome:hover,                 // jqui only
     .oj-button-jqui.oj-button-outlined-chrome:active,                // jqui only
+    .oj-button-nocomp.oj-button-outlined-chrome,                     // nocomp button only
+    .oj-button-nocomp.oj-button-outlined-chrome:link,                // nocomp button only
+    .oj-button-nocomp.oj-button-outlined-chrome:visited,             // nocomp button only
+    .oj-button-nocomp.oj-button-outlined-chrome:hover,               // nocomp button only
+    .oj-button-nocomp.oj-button-outlined-chrome:active,              // nocomp button only
     .oj-button.oj-button-outlined-chrome .oj-button-button,          // custom element only
     .oj-button.oj-button-outlined-chrome .oj-button-button:link,     // custom element only
     .oj-button.oj-button-outlined-chrome .oj-button-button:visited,  // custom element only
@@ -1149,7 +1210,8 @@
     }
 
     // outlined and (default or focus-only) icons
-    .oj-button.oj-default.oj-button-outlined-chrome .oj-button-icon,
+    .oj-button.oj-default.oj-button-outlined-chrome .oj-button-icon,    
+    .oj-button-nocomp.oj-button-outlined-chrome .oj-button-icon,
     .oj-button.oj-focus-only.oj-button-outlined-chrome .oj-button-icon {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
@@ -1161,7 +1223,8 @@
     }
 
     // outlined hover icons
-    .oj-button.oj-hover.oj-button-outlined-chrome .oj-button-icon {
+    .oj-button.oj-hover.oj-button-outlined-chrome .oj-button-icon,
+    .oj-button-nocomp.oj-button-outlined-chrome:hover .oj-button-icon {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         color: var(--oj-button-outlined-chrome-icon-color-hover); 
@@ -1172,7 +1235,8 @@
     }
 
     // outlined active icons
-    .oj-button.oj-active.oj-button-outlined-chrome .oj-button-icon {
+    .oj-button.oj-active.oj-button-outlined-chrome .oj-button-icon,
+    .oj-button-nocomp.oj-button-outlined-chrome:active .oj-button-icon {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         color: var(--oj-button-outlined-chrome-icon-color-active); 
@@ -1205,7 +1269,8 @@
     }
 
     // outlined disabled icons
-    .oj-button.oj-disabled.oj-button-outlined-chrome .oj-button-icon {
+    .oj-button.oj-disabled.oj-button-outlined-chrome .oj-button-icon,
+    .oj-button-nocomp.oj-button-outlined-chrome:disabled .oj-button-icon {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
         color: var(--oj-button-outlined-chrome-icon-color-disabled); 

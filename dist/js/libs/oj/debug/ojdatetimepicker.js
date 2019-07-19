@@ -2217,7 +2217,7 @@ var yearDisplay = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_T
  *                for: "SettableProperties"
  *               }
  *              ]
- * @since 0.6
+ * @since 0.6.0
  * @ojstatus preview
  * @ojshortdesc An input date allows the user to enter or select a date value.
  * @ojrole combobox
@@ -2439,6 +2439,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @ojvalue {string} '' Do not show anything
        * @ojvalue {string} 'today' Show the today button
        * @default "today"
+       * @ojsignature { target: "Type", value: "?string"}
        */
       footerLayout: '',
 
@@ -2456,6 +2457,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @ojvalue {string} 'select' month is rendered as a button
        * @ojvalue {string} 'none' month is rendered as a text
        * @default "select"
+       * @ojsignature { target: "Type", value: "?string"}
        */
       changeMonth: 'select',
 
@@ -2473,6 +2475,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @ojvalue {string} 'select' As a button
        * @ojvalue {string} 'none' As text
        * @default "select"
+       * @ojsignature { target: "Type", value: "?string"}
        */
       changeYear: 'select',
 
@@ -2490,6 +2493,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @default 0
        * @ojmin 0
        * @ojmax 12
+       * @ojsignature { target: "Type", value: "?number"}
        */
       currentMonthPos: 0,
 
@@ -2508,6 +2512,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @ojvalue {string} 'visible' Days outside the current viewing month will be visible
        * @ojvalue {string} 'selectable' Days outside the current viewing month will be visible + selectable
        * @default "hidden"
+       * @ojsignature { target: "Type", value: "?string"}
        */
       daysOutsideMonth: 'hidden',
 
@@ -2528,6 +2533,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @type {number}
        * @default 1
        * @ojmin 1
+       * @ojsignature { target: "Type", value: "?number"}
        */
       numberOfMonths: 1,
 
@@ -2546,6 +2552,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        *   clicked. When the picker is closed, the field regains focus and is editable.
        * @ojvalue {string} 'image' when the trigger calendar image is clicked
        * @default "focus"
+       * @ojsignature { target: "Type", value: "?string"}
        *
        */
       showOn: 'focus',
@@ -2570,8 +2577,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @memberof! oj.ojInputDate
        * @instance
        * @type {string|number}
-       * @ojsignature {target: "Type", value:"'numberOfMonths'|number"}
        * @default "numberOfMonths"
+       * @ojsignature { target: "Type", value: "?'numberOfMonths'|number"}
        */
       stepMonths: 'numberOfMonths',
 
@@ -2587,6 +2594,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @instance
        * @type {number}
        * @default 12
+       * @ojsignature { target: "Type", value: "?number"}
        */
       stepBigMonths: 12,
 
@@ -2604,6 +2612,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @ojvalue {string} 'number' Will show the week of the year as a number
        * @ojvalue {string} 'none' Nothing will be shown
        * @default "none"
+       * @ojsignature { target: "Type", value: "?string"}
        */
       weekDisplay: 'none', // "number" to show week of the year, "none" to not show it
 
@@ -2622,6 +2631,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @instance
        * @type {string}
        * @default "c-10:c+10"
+       * @ojsignature { target: "Type", value: "?string"}
        */
       yearRange: 'c-10:c+10' // Range of years to display in drop-down,
       // either relative to today's year (-nn:+nn), relative to currently displayed year
@@ -4146,8 +4156,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
 
   _placeFocusOnCalendar: function () {
     var calendar = this._dpDiv.find('.oj-datepicker-calendar');
-    if (calendar[0] !== document.activeElement) {
-      $(calendar[0]).focus();
+    if (calendar[0] && calendar[0] !== document.activeElement) {
+      calendar[0].focus();
     }
   },
 
@@ -6626,7 +6636,7 @@ function _getTimePickerConverter(converter, addOpts) {
  *                for: "SettableProperties"
  *               }
  *              ]
- * @since 0.6
+ * @since 0.6.0
  * @ojstatus preview
  * @ojshortdesc An input time allows the user to enter or select a time value.
  * @ojrole combobox
@@ -7584,7 +7594,8 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
           switch (event.keyCode) {
             case kc.UP:
             case kc.DOWN:
-              this._SetValue(this._GetDisplayValue(), event);
+              var parsedValue = this._GetConverter().parse(this._GetDisplayValue());
+              this._SetValue(parsedValue, event);
               this.show();
               handled = true;
               break;
@@ -8013,23 +8024,33 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
           } else {
             converter = this._GetConverter();
           }
-
-          var parsedNewValue = converter.parse(newValue);
+          var date = new Date();
           var converterUtils = __ValidationBase.IntlConverterUtils;
           var dateTimeValue = datePickerCompWidget.getValueForInputTime() ||
-              converterUtils.dateToLocalIso(new Date());
+              converterUtils.dateToLocalIso(date);
+          var isoValue = newValue;
+          // check if time is an isostring and if it is not an isostring then parse it.
+          try {
+            converterUtils._dateTime(newValue, {
+              month: date.getMonth(),
+              date: date.getDate(),
+              fullYear: date.getFullYear(),
+              hours: date.getHours(),
+              minutes: date.getMinutes(),
+              seconds: date.getSeconds() });
+          } catch (e) {
+            isoValue = converter.parse(newValue);
+          }
+          var isoDateString = converterUtils._copyTimeOver(isoValue, dateTimeValue);
+          var parsedNewValue = converter.parse(isoDateString);
 
           if (parsedNewValue && timeSwitcherConverter.compareISODates(dateTimeValue,
-                parsedNewValue) === 0) {
-          // need to kick out if _SetValue happened due to Blur w/o changing of value
+            parsedNewValue) === 0) {
+            // need to kick out if _SetValue happened due to Blur w/o changing of value
             return false;
           }
 
-          var isoString = converterUtils._copyTimeOver(parsedNewValue ||
-                                                       converterUtils.dateToLocalIso(new Date()),
-                                                       dateTimeValue);
-
-          datePickerCompWidget.timeSelected(isoString, event);
+          datePickerCompWidget.timeSelected(parsedNewValue, event);
           if (this._isDatePickerInline()) {
             // need to update the input element, reason one can't when of the same input is
             // b/c the wheelpicker apparently doesn't update minute for some odd reason
@@ -10463,7 +10484,7 @@ var timeSwitcherConverter = $.oj.ojInputTime.prototype.options.converter;
 /**
  * @ojcomponent oj.ojInputDateTime
  * @augments oj.ojInputDate
- * @since 0.6
+ * @since 0.6.0
  * @ojstatus preview
  * @ojshortdesc An input date time allows the user to enter or select a date and time value.
  * @ojrole combobox

@@ -124,11 +124,11 @@ var __oj_file_picker_metadata =
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#filePickerOverview-section"></a>
  * </h3>
  * <p>Description:</p>
- * <p>By default the file picker shows a clickable dropzone for selecting files for upload. However, it can be replaced with any clickable element like a button. After the files are selected, the FilePicker fires a "select" event with the selected files. Application has to specify the listener in order to do the actual upload</p>
+ * <p>By default the file picker shows a clickable dropzone for selecting files for upload. However, it can be replaced with any clickable element like a button. After the files are selected, the FilePicker fires a "select" event with the selected files. Application has to specify the listener in order to do the actual upload.  The types of files accepted are controlled by the accept attribute.</p>
  *
  * <pre class="prettyprint">
  * <code>
- * &lt;oj-file-picker on-oj-select='[[listener]]'>
+ * &lt;oj-file-picker on-oj-select='[[listener]]' accept='["image/*", "video/*"]'>
  * &lt;/oj-file-picker>
  * </code>
  * </pre>
@@ -157,7 +157,7 @@ var __oj_file_picker_metadata =
  */
 
 /**
- * An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types
+ * An array of strings of allowed MIME types or file extensions that can be uploaded; this is unlike the accept attribute of the html &lt;input> element that accepts a simple comma-delimited string. If not specified, accept all file types.
 <p>Note: If accept is specified, files with empty string type will be rejected if no match found in the "accept" value.
  * @member
  * @name accept
@@ -167,15 +167,19 @@ var __oj_file_picker_metadata =
  * @default null
  * @ojshortdesc An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types
  *
- * @example <caption>Initialize the file picker with the <code class="prettyprint">accept</code> attribute specified:</caption>
- * &lt;oj-file-picker accept='image/*'>&lt;/oj-file-picker>
  *
- * @example <caption>Get or set the <code class="prettyprint">accept</code> property after initialization:</caption>
+ * @example <caption>Get or set the <code class="prettyprint">accept</code> property:</caption>
+ * let elem = document.getElementById('filepicker') as ojFilePicker;
+ * //set accept to an array of strings
+ * elem.accept = ["image/*", "video/*"];
+ * //or
+ * elem.set('accept', ["image/*", "video/*"]);
+ *
  * // getter
  * var acceptValue = myFilePicker.accept;
  *
  * // setter
- * myFilePicker.accept = 'image/*';
+ * myFilePicker.accept = ['image/*', "video/*"];
  */
 
 /**

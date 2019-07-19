@@ -20,6 +20,52 @@
     //   <input class="oj-inputtext-nocomp oj-form-control">
 
 
+    /************************* oj-form-control-inherit OVERRIDES *************************/
+    // DO NOT ADD SELECTOR DEFINITIONS BEFORE THESE OVERRIDES AS SPECIFICITY ISSUES CAN ARISE
+
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+
+    // remove borders, inherit colors and stretch the height
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp {
+      @include oj-form-control-inherit();
+    }
+
+    // if a focus border width is set reset it back to 0
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+      .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext:not(.oj-disabled):not(.oj-read-only) .oj-inputtext-input:focus,
+      .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword:not(.oj-disabled):not(.oj-read-only) .oj-inputpassword-input:focus,
+      .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea:not(.oj-disabled):not(.oj-read-only) .oj-textarea-input:focus,
+      .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus,
+      .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus,
+      .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp:not([disabled]):not([readonly]):focus {
+        border-width:0;
+      }
+    }
+    @else {
+      @if ($formControlInputBorderWidthFocus != null) {
+        .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext:not(.oj-disabled):not(.oj-read-only) .oj-inputtext-input:focus,
+        .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword:not(.oj-disabled):not(.oj-read-only) .oj-inputpassword-input:focus,
+        .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea:not(.oj-disabled):not(.oj-read-only) .oj-textarea-input:focus,
+        .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus,
+        .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus,
+        .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp:not([disabled]):not([readonly]):focus {
+          border-width:0;
+        }
+      }
+    }
+
+    /************************* END OF oj-form-control-inherit OVERRIDES *************************/
+
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-input-text:not(.oj-complete) {
@@ -395,78 +441,34 @@
 
     // Styling for focus state
     .oj-inputtext:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning) .oj-inputtext-input:focus,
-      .oj-inputpassword:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning) .oj-inputpassword-input:focus,
-      .oj-textarea:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning) .oj-textarea-input:focus,
-      .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus,
-      .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus,
-      .oj-textarea-nocomp:not([disabled]):not([readonly]):focus
+    .oj-inputpassword:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning) .oj-inputpassword-input:focus,
+    .oj-textarea:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning) .oj-textarea-input:focus,
+    .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus,
+    .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus,
+    .oj-textarea-nocomp:not([disabled]):not([readonly]):focus
+    {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
       {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          @include oj-form-control-content-focus($outputCssVars: true);
-        }
-        @else {
-          @include oj-form-control-content-focus;
-        }
+        @include oj-form-control-content-focus($outputCssVars: true);
+      }
+      @else {
+        @include oj-form-control-content-focus;
+      }
     }
 
     // Styling for focus state. only change padding for input, not textarea
     .oj-inputtext:not(.oj-disabled):not(.oj-read-only) .oj-inputtext-input:focus,
-      .oj-inputpassword:not(.oj-disabled):not(.oj-read-only) .oj-inputpassword-input:focus,
-      .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus,
-      .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus
-      {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          @include oj-form-control-content-focus-padding($outputCssVars: true);
-        }
-        @else {
-          @include oj-form-control-content-focus-padding;        
-        }
-
-    }
-
-    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
-    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
-    // editable datagrid cells and editable table cells
-    // -----------------------------------------------------------------------------------------
-
-    // remove borders, inherit colors and stretch the height
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input,
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp,
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input,
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp,    
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input,
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp {
-      @include oj-form-control-inherit(); 
-    }
-
-    // if a focus border width is set reset it back to 0
-    // TODO
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    .oj-inputpassword:not(.oj-disabled):not(.oj-read-only) .oj-inputpassword-input:focus,
+    .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus,
+    .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus
     {
-      .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext:not(.oj-disabled):not(.oj-read-only) .oj-inputtext-input:focus, 
-        .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword:not(.oj-disabled):not(.oj-read-only) .oj-inputpassword-input:focus, 
-        .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea:not(.oj-disabled):not(.oj-read-only) .oj-textarea-input:focus, 
-        .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus, 
-        .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus, 
-        .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp:not([disabled]):not([readonly]):focus {
-        border-width:0;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-content-focus-padding($outputCssVars: true);
+      }
+      @else {
+        @include oj-form-control-content-focus-padding;        
       }
     }
-    @else {
-      
-      @if ($formControlInputBorderWidthFocus != null) {                      
-        .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext:not(.oj-disabled):not(.oj-read-only) .oj-inputtext-input:focus, 
-          .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword:not(.oj-disabled):not(.oj-read-only) .oj-inputpassword-input:focus, 
-          .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea:not(.oj-disabled):not(.oj-read-only) .oj-textarea-input:focus, 
-          .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus, 
-          .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus, 
-          .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp:not([disabled]):not([readonly]):focus {
-          border-width:0;
-        }
-      }
-    }
-    
   }
 }

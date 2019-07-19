@@ -3895,10 +3895,12 @@ oj-train {
 oj-button:not(.oj-complete) {
   visibility: hidden; }
 
-[hidden].oj-button {
+[hidden].oj-button,
+[hidden].oj-button-nocomp {
   display: none; }
 
-.oj-button {
+.oj-button,
+.oj-button-nocomp {
   height: 2.28571rem;
   margin-bottom: 4px;
   font-size: 1rem;
@@ -3910,6 +3912,7 @@ oj-button:not(.oj-complete) {
   height: 100%; }
 
 .oj-button-jqui,
+.oj-button-nocomp,
 .oj-button-button {
   justify-content: center;
   min-width: 0;
@@ -3924,6 +3927,7 @@ oj-button:not(.oj-complete) {
   -webkit-tap-highlight-color: transparent; }
 
 html body .oj-button-jqui,
+html body .oj-button-nocomp,
 html body .oj-button-button {
   cursor: default; }
 
@@ -3957,24 +3961,28 @@ input.oj-button[type="reset"] {
   font-weight: normal;
   text-shadow: none; }
 
-.oj-button .oj-button-text {
+.oj-button .oj-button-text,
+.oj-button-nocomp {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis; }
 
 .oj-button.oj-button-sm,
+.oj-button-nocomp.oj-button-sm,
 .oj-buttonset.oj-button-sm .oj-button-jqui {
   height: 2rem;
   line-height: 2rem;
   font-size: 1rem; }
 
 .oj-button.oj-button-lg,
+.oj-button-nocomp.oj-button-lg,
 .oj-buttonset.oj-button-lg .oj-button-jqui {
   height: 3rem;
   line-height: 3rem;
   font-size: 1rem; }
 
 .oj-button.oj-button-xl,
+.oj-button-nocomp.oj-button-xl,
 .oj-buttonset.oj-button-xl .oj-button-jqui {
   height: 3.42857rem;
   line-height: 3.42857rem;
@@ -3982,26 +3990,34 @@ input.oj-button[type="reset"] {
 
 .oj-button-jqui,
 .oj-button-button,
+.oj-button-nocomp,
 .oj-button-jqui:link,
 .oj-button-button:link,
+.oj-button-nocomp:link,
 .oj-button-jqui:visited,
 .oj-button-button:visited,
+.oj-button-nocomp:visited,
 .oj-button-jqui:hover,
 .oj-button-button:hover,
+.oj-button-nocomp:hover,
 .oj-button-jqui:active,
-.oj-button-button:active {
+.oj-button-button:active,
+.oj-button-nocomp:active {
   text-decoration: none; }
 
 .oj-button-jqui:not(.oj-focus-highlight):focus,
+.oj-button-nocomp:not(.oj-focus-highlight):focus,
 .oj-button:not(.oj-focus-highlight) .oj-button-button:focus {
   outline: none; }
 
 .oj-button-jqui.oj-focus-highlight,
+.oj-button-nocomp.oj-focus-highlight,
 .oj-button.oj-focus-highlight .oj-button-button {
   outline: dotted 1px black;
   outline: -webkit-focus-ring-color auto; }
 
 .oj-button-jqui.oj-disabled,
+.oj-button-nocomp:disabled,
 .oj-button.oj-disabled .oj-button-button {
   cursor: default; }
 
@@ -4013,6 +4029,11 @@ input.oj-button[type="reset"] {
 .oj-button-jqui.oj-button-full-chrome:visited,
 .oj-button-jqui.oj-button-full-chrome:hover,
 .oj-button-jqui.oj-button-full-chrome:active,
+.oj-button-nocomp.oj-button-full-chrome,
+.oj-button-nocomp.oj-button-full-chrome:link,
+.oj-button-nocomp.oj-button-full-chrome:visited,
+.oj-button-nocomp.oj-button-full-chrome:hover,
+.oj-button-nocomp.oj-button-full-chrome:active,
 .oj-button.oj-button-full-chrome .oj-button-button,
 .oj-button.oj-button-full-chrome .oj-button-button:link,
 .oj-button.oj-button-full-chrome .oj-button-button:visited,
@@ -4025,6 +4046,7 @@ input.oj-button[type="reset"] {
        oj-focus-only is applied iff the button has oj-focus but not any of the other 4 states listed above.*/
 .oj-button-jqui.oj-default.oj-button-full-chrome,
 .oj-button-jqui.oj-focus-only.oj-button-full-chrome,
+.oj-button-nocomp.oj-button-full-chrome,
 .oj-button.oj-default.oj-button-full-chrome .oj-button-button,
 .oj-button.oj-focus-only.oj-button-full-chrome .oj-button-button {
   background-color: #ededee;
@@ -4035,10 +4057,12 @@ input.oj-button[type="reset"] {
   text-shadow: none; }
 
 .oj-button.oj-default.oj-button-full-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-full-chrome .oj-button-icon,
 .oj-button.oj-focus-only.oj-button-full-chrome .oj-button-icon {
   color: #8a8d8f; }
 
 .oj-button-jqui.oj-hover.oj-button-full-chrome,
+.oj-button-nocomp.oj-button-full-chrome:hover,
 .oj-button.oj-hover.oj-button-full-chrome .oj-button-button {
   background-color: #f7f7f8;
   background-image: none;
@@ -4047,12 +4071,15 @@ input.oj-button[type="reset"] {
   box-shadow: none;
   text-shadow: none; }
 
-.oj-button.oj-hover.oj-button-full-chrome .oj-button-icon {
+.oj-button.oj-hover.oj-button-full-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-full-chrome:hover .oj-button-icon {
   color: #76b8e1; }
 
 /* oj-active is applied to a push button when it is actively being held down 
        by the mouse button or Enter or Spacebar. */
 .oj-button-jqui.oj-active.oj-button-full-chrome,
+.oj-button-nocomp.oj-button-full-chrome:active,
+.oj-button-nocomp.oj-active.oj-button-full-chrome,
 .oj-button.oj-active.oj-button-full-chrome .oj-button-button {
   background-color: #027bc7;
   background-image: none;
@@ -4062,7 +4089,9 @@ input.oj-button[type="reset"] {
   text-shadow: none;
   opacity: 1; }
 
-.oj-button.oj-active.oj-button-full-chrome .oj-button-icon {
+.oj-button.oj-active.oj-button-full-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-full-chrome:active .oj-button-icon,
+.oj-button-nocomp.oj-active.oj-button-full-chrome .oj-button-icon {
   color: white; }
 
 .oj-button-jqui.oj-selected.oj-button-full-chrome,
@@ -4087,6 +4116,7 @@ input.oj-button[type="reset"] {
   color: #76b8e1; }
 
 .oj-button-jqui.oj-disabled.oj-button-full-chrome,
+.oj-button-nocomp.oj-button-full-chrome:disabled,
 .oj-button.oj-disabled.oj-button-full-chrome .oj-button-button {
   background-color: #f7f7f8;
   border-color: #e5e6e6;
@@ -4095,7 +4125,8 @@ input.oj-button[type="reset"] {
   opacity: 1;
   background-image: none; }
 
-.oj-button.oj-disabled.oj-button-full-chrome .oj-button-icon {
+.oj-button.oj-disabled.oj-button-full-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-full-chrome:disabled .oj-button-icon {
   color: #cbcccd; }
 
 .oj-button-jqui.oj-disabled.oj-selected.oj-button-full-chrome,
@@ -4120,6 +4151,8 @@ input.oj-button[type="reset"] {
 .oj-button-jqui.oj-default.oj-button-half-chrome,
 .oj-button-jqui.oj-focus-only.oj-button-half-chrome,
 .oj-button-jqui.oj-disabled.oj-button-half-chrome,
+.oj-button-nocomp.oj-button-half-chrome,
+.oj-button-nocomp.oj-button-half-chrome:disabled,
 .oj-button.oj-default.oj-button-half-chrome .oj-button-button,
 .oj-button.oj-focus-only.oj-button-half-chrome .oj-button-button,
 .oj-button.oj-disabled.oj-button-half-chrome .oj-button-button {
@@ -4130,12 +4163,14 @@ input.oj-button[type="reset"] {
 
 .oj-button-jqui.oj-default.oj-button-half-chrome,
 .oj-button-jqui.oj-focus-only.oj-button-half-chrome,
+.oj-button-nocomp.oj-button-half-chrome,
 .oj-button.oj-default.oj-button-half-chrome .oj-button-button,
 .oj-button.oj-focus-only.oj-button-half-chrome .oj-button-button {
   text-shadow: none;
   color: black; }
 
 .oj-button-jqui.oj-hover.oj-button-half-chrome,
+.oj-button-nocomp.oj-button-half-chrome:hover,
 .oj-button.oj-hover.oj-button-half-chrome .oj-button-button {
   color: #02629f;
   background-color: #f7f7f8;
@@ -4143,6 +4178,8 @@ input.oj-button[type="reset"] {
   box-shadow: none; }
 
 .oj-button-jqui.oj-active.oj-button-half-chrome,
+.oj-button-nocomp.oj-button-half-chrome:active,
+.oj-button-nocomp.oj-active.oj-button-half-chrome,
 .oj-button.oj-active.oj-button-half-chrome .oj-button-button {
   color: white;
   background-color: #027bc7;
@@ -4164,6 +4201,7 @@ input.oj-button[type="reset"] {
   border-color: #027bc7; }
 
 .oj-button-jqui.oj-disabled.oj-button-half-chrome,
+.oj-button-nocomp.oj-button-half-chrome:disabled,
 .oj-button.oj-disabled.oj-button-half-chrome .oj-button-button {
   color: rgba(0, 0, 0, 0.38);
   opacity: 1; }
@@ -4179,6 +4217,11 @@ input.oj-button[type="reset"] {
 .oj-button-jqui.oj-button-half-chrome:visited,
 .oj-button-jqui.oj-button-half-chrome:hover,
 .oj-button-jqui.oj-button-half-chrome:active,
+.oj-button-nocomp.oj-button-half-chrome,
+.oj-button-nocomp.oj-button-half-chrome:link,
+.oj-button-nocomp.oj-button-half-chrome:visited,
+.oj-button-nocomp.oj-button-half-chrome:hover,
+.oj-button-nocomp.oj-button-half-chrome:active,
 .oj-button.oj-button-half-chrome .oj-button-button,
 .oj-button.oj-button-half-chrome .oj-button-button:link,
 .oj-button.oj-button-half-chrome .oj-button-button:visited,
@@ -4187,13 +4230,16 @@ input.oj-button[type="reset"] {
   font-weight: normal; }
 
 .oj-button.oj-default.oj-button-half-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-half-chrome .oj-button-icon,
 .oj-button.oj-focus-only.oj-button-half-chrome .oj-button-icon {
   color: #8a8d8f; }
 
-.oj-button.oj-hover.oj-button-half-chrome .oj-button-icon {
+.oj-button.oj-hover.oj-button-half-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-half-chrome:hover .oj-button-icon {
   color: #76b8e1; }
 
-.oj-button.oj-active.oj-button-half-chrome .oj-button-icon {
+.oj-button.oj-active.oj-button-half-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-half-chrome:active .oj-button-icon {
   color: white; }
 
 .oj-button.oj-selected.oj-button-half-chrome .oj-button-icon {
@@ -4202,7 +4248,8 @@ input.oj-button[type="reset"] {
 .oj-button.oj-selected.oj-hover.oj-button-half-chrome .oj-button-icon {
   color: #76b8e1; }
 
-.oj-button.oj-disabled.oj-button-half-chrome .oj-button-icon {
+.oj-button.oj-disabled.oj-button-half-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-half-chrome:disabled .oj-button-icon {
   color: #cbcccd; }
 
 .oj-button.oj-disabled.oj-selected.oj-button-half-chrome .oj-button-icon {
@@ -4212,6 +4259,8 @@ input.oj-button[type="reset"] {
 .oj-button-jqui.oj-default.oj-button-outlined-chrome,
 .oj-button-jqui.oj-focus-only.oj-button-outlined-chrome,
 .oj-button-jqui.oj-disabled.oj-button-outlined-chrome,
+.oj-button-nocomp.oj-button-outlined-chrome,
+.oj-button-nocomp.oj-button-outlined-chrome:disabled,
 .oj-button.oj-default.oj-button-outlined-chrome .oj-button-button,
 .oj-button.oj-focus-only.oj-button-outlined-chrome .oj-button-button,
 .oj-button.oj-disabled.oj-button-outlined-chrome .oj-button-button {
@@ -4222,12 +4271,14 @@ input.oj-button[type="reset"] {
 
 .oj-button-jqui.oj-default.oj-button-outlined-chrome,
 .oj-button-jqui.oj-focus-only.oj-button-outlined-chrome,
+.oj-button-nocomp.oj-button-outlined-chrome,
 .oj-button.oj-default.oj-button-outlined-chrome .oj-button-button,
 .oj-button.oj-focus-only.oj-button-outlined-chrome .oj-button-button {
   text-shadow: none;
   color: black; }
 
 .oj-button-jqui.oj-hover.oj-button-outlined-chrome,
+.oj-button-nocomp.oj-button-outlined-chrome:hover,
 .oj-button.oj-hover.oj-button-outlined-chrome .oj-button-button {
   color: #02629f;
   background-color: #f7f7f8;
@@ -4235,6 +4286,8 @@ input.oj-button[type="reset"] {
   box-shadow: none; }
 
 .oj-button-jqui.oj-active.oj-button-outlined-chrome,
+.oj-button-nocomp.oj-button-outlined-chrome:active,
+.oj-button-nocomp.oj-active.oj-button-outlined-chrome,
 .oj-button.oj-active.oj-button-outlined-chrome .oj-button-button {
   color: white;
   background-color: #027bc7;
@@ -4256,6 +4309,7 @@ input.oj-button[type="reset"] {
   border-color: #027bc7; }
 
 .oj-button-jqui.oj-disabled.oj-button-outlined-chrome,
+.oj-button-nocomp.oj-button-outlined-chrome:disabled,
 .oj-button.oj-disabled.oj-button-outlined-chrome .oj-button-button {
   color: rgba(0, 0, 0, 0.38);
   border-color: #cbcccd;
@@ -4272,6 +4326,11 @@ input.oj-button[type="reset"] {
 .oj-button-jqui.oj-button-outlined-chrome:visited,
 .oj-button-jqui.oj-button-outlined-chrome:hover,
 .oj-button-jqui.oj-button-outlined-chrome:active,
+.oj-button-nocomp.oj-button-outlined-chrome,
+.oj-button-nocomp.oj-button-outlined-chrome:link,
+.oj-button-nocomp.oj-button-outlined-chrome:visited,
+.oj-button-nocomp.oj-button-outlined-chrome:hover,
+.oj-button-nocomp.oj-button-outlined-chrome:active,
 .oj-button.oj-button-outlined-chrome .oj-button-button,
 .oj-button.oj-button-outlined-chrome .oj-button-button:link,
 .oj-button.oj-button-outlined-chrome .oj-button-button:visited,
@@ -4280,13 +4339,16 @@ input.oj-button[type="reset"] {
   font-weight: normal; }
 
 .oj-button.oj-default.oj-button-outlined-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-outlined-chrome .oj-button-icon,
 .oj-button.oj-focus-only.oj-button-outlined-chrome .oj-button-icon {
   color: #8a8d8f; }
 
-.oj-button.oj-hover.oj-button-outlined-chrome .oj-button-icon {
+.oj-button.oj-hover.oj-button-outlined-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-outlined-chrome:hover .oj-button-icon {
   color: #76b8e1; }
 
-.oj-button.oj-active.oj-button-outlined-chrome .oj-button-icon {
+.oj-button.oj-active.oj-button-outlined-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-outlined-chrome:active .oj-button-icon {
   color: white; }
 
 .oj-button.oj-selected.oj-button-outlined-chrome .oj-button-icon {
@@ -4295,7 +4357,8 @@ input.oj-button[type="reset"] {
 .oj-button.oj-selected.oj-hover.oj-button-outlined-chrome .oj-button-icon {
   color: #76b8e1; }
 
-.oj-button.oj-disabled.oj-button-outlined-chrome .oj-button-icon {
+.oj-button.oj-disabled.oj-button-outlined-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-outlined-chrome:disabled .oj-button-icon {
   color: #cbcccd; }
 
 .oj-button.oj-disabled.oj-selected.oj-button-outlined-chrome .oj-button-icon {
@@ -4308,6 +4371,7 @@ input.oj-button[type="reset"] {
 input.oj-button[type="button"],
 input.oj-button[type="submit"],
 input.oj-button[type="reset"],
+.oj-button-nocomp.oj-button-text-only,
 .oj-buttonset .oj-button-text-only .oj-button-text,
 .oj-button-text-only .oj-button-text {
   padding: 0 0.92857rem; }
@@ -4363,6 +4427,7 @@ html[dir="rtl"] .oj-buttonset .oj-button-icons-only .oj-button-icon.oj-end, html
 
 /* The icon of buttons with with 1 icon (whether start or end) and no text */
 .oj-buttonset .oj-button-icon-only .oj-button-icon,
+.oj-button-nocomp .oj-button-icon-only,
 .oj-button-icon-only .oj-button-icon {
   margin-right: 0.57143rem;
   margin-left: 0.57143rem; }
@@ -4398,6 +4463,7 @@ html[dir="rtl"] .oj-buttonset .oj-button-icons-only .oj-button-icon.oj-start, ht
 input.oj-button-sm.oj-button[type="button"],
 input.oj-button-sm.oj-button[type="submit"],
 input.oj-button-sm.oj-button[type="reset"],
+.oj-button-sm.oj-button-nocomp.oj-button-text-only,
 .oj-button-sm.oj-buttonset .oj-button-text-only .oj-button-text,
 .oj-button-sm.oj-button-text-only .oj-button-text {
   padding: 0 0.78571rem; }
@@ -4453,6 +4519,7 @@ html[dir="rtl"] .oj-button-sm.oj-buttonset .oj-button-icons-only .oj-button-icon
 
 /* The icon of buttons with with 1 icon (whether start or end) and no text */
 .oj-button-sm.oj-buttonset .oj-button-icon-only .oj-button-icon,
+.oj-button-sm.oj-button-nocomp .oj-button-icon-only,
 .oj-button-sm.oj-button-icon-only .oj-button-icon {
   margin-right: 0.42857rem;
   margin-left: 0.42857rem; }
@@ -4488,6 +4555,7 @@ html[dir="rtl"] .oj-button-sm.oj-buttonset .oj-button-icons-only .oj-button-icon
 input.oj-button-lg.oj-button[type="button"],
 input.oj-button-lg.oj-button[type="submit"],
 input.oj-button-lg.oj-button[type="reset"],
+.oj-button-lg.oj-button-nocomp.oj-button-text-only,
 .oj-button-lg.oj-buttonset .oj-button-text-only .oj-button-text,
 .oj-button-lg.oj-button-text-only .oj-button-text {
   padding: 0 1.42857rem; }
@@ -4543,6 +4611,7 @@ html[dir="rtl"] .oj-button-lg.oj-buttonset .oj-button-icons-only .oj-button-icon
 
 /* The icon of buttons with with 1 icon (whether start or end) and no text */
 .oj-button-lg.oj-buttonset .oj-button-icon-only .oj-button-icon,
+.oj-button-lg.oj-button-nocomp .oj-button-icon-only,
 .oj-button-lg.oj-button-icon-only .oj-button-icon {
   margin-right: 0.85714rem;
   margin-left: 0.85714rem; }
@@ -4578,6 +4647,7 @@ html[dir="rtl"] .oj-button-lg.oj-buttonset .oj-button-icons-only .oj-button-icon
 input.oj-button-xl.oj-button[type="button"],
 input.oj-button-xl.oj-button[type="submit"],
 input.oj-button-xl.oj-button[type="reset"],
+.oj-button-xl.oj-button-nocomp.oj-button-text-only,
 .oj-button-xl.oj-buttonset .oj-button-text-only .oj-button-text,
 .oj-button-xl.oj-button-text-only .oj-button-text {
   padding: 0 1.42857rem; }
@@ -4633,6 +4703,7 @@ html[dir="rtl"] .oj-button-xl.oj-buttonset .oj-button-icons-only .oj-button-icon
 
 /* The icon of buttons with with 1 icon (whether start or end) and no text */
 .oj-button-xl.oj-buttonset .oj-button-icon-only .oj-button-icon,
+.oj-button-xl.oj-button-nocomp .oj-button-icon-only,
 .oj-button-xl.oj-button-icon-only .oj-button-icon {
   margin-right: 1rem;
   margin-left: 1rem; }
@@ -10402,7 +10473,8 @@ ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-hover 
 .oj-listview-group-item.oj-sticky {
   position: -webkit-sticky;
   position: sticky;
-  top: 0; }
+  top: 0;
+  z-index: 1; }
 
 /* Styling for group item element that is pinned when scrolled */
 .oj-listview-group-item.oj-pinned {
@@ -10913,7 +10985,8 @@ oj-diagram {
   cursor: no-drop; }
 
 .oj-diagram-overview {
-  background-color: #e5e6e6; }
+  background-color: #e5e6e6;
+  padding: 0px; }
 
 .oj-diagram-overview-viewport {
   background-color: white;
@@ -12009,6 +12082,15 @@ oj-label:not(.oj-complete) {
 
 /* form-control classes */
 /* --------------------------------------------------------------- */
+/************************* oj-form-control-inherit OVERRIDES *************************/
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control {
+  height: 100%;
+  min-height: 100%;
+  margin-bottom: 0;
+  max-width: 100%;
+  min-width: 100%; }
+
+/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 html .oj-form-control {
   margin-bottom: 4px;
   vertical-align: middle; }
@@ -12021,13 +12103,6 @@ html .oj-form-control {
 
 .oj-form-control-title {
   color: rgba(0, 0, 0, 0.8); }
-
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control {
-  height: 100%;
-  min-height: 100%;
-  margin-bottom: 0;
-  max-width: 100%;
-  min-width: 100%; }
 
 .oj-form-control input::-ms-clear {
   display: none;
@@ -12267,6 +12342,42 @@ html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-
 oj-form-layout:not(.oj-complete) {
   visibility: hidden; }
 
+/************************* oj-form-control-inherit OVERRIDES *************************/
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp {
+  color: inherit;
+  height: 100%;
+  width: 100%;
+  background-color: transparent;
+  border-width: 0; }
+  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp {
+    text-align: inherit; }
+  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp {
+    text-align: inherit; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext:not(.oj-disabled):not(.oj-read-only) .oj-inputtext-input:focus,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword:not(.oj-disabled):not(.oj-read-only) .oj-inputpassword-input:focus,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea:not(.oj-disabled):not(.oj-read-only) .oj-textarea-input:focus,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp:not([disabled]):not([readonly]):focus {
+  border-width: 0; }
+
+/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 oj-input-text:not(.oj-complete) {
   visibility: hidden; }
 
@@ -12541,42 +12652,27 @@ html[dir="rtl"] .oj-inputtext.oj-inputtext-clearicon-visible .oj-inputtext-input
 .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus {
   padding-bottom: 0; }
 
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp {
+/* inputnumber */
+/* --------------------------------------------------------------- */
+/************************* oj-form-control-inherit OVERRIDES *************************/
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input {
   color: inherit;
   height: 100%;
   width: 100%;
   background-color: transparent;
   border-width: 0; }
-  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp {
+  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input {
     text-align: inherit; }
-  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp {
+  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input {
     text-align: inherit; }
 
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext:not(.oj-disabled):not(.oj-read-only) .oj-inputtext-input:focus,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword:not(.oj-disabled):not(.oj-read-only) .oj-inputpassword-input:focus,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea:not(.oj-disabled):not(.oj-read-only) .oj-textarea-input:focus,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp:not([disabled]):not([readonly]):focus {
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-wrapper {
+  height: 100%; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber:not(.oj-read-only).oj-focus .oj-inputnumber-input {
   border-width: 0; }
 
-/* inputnumber */
-/* --------------------------------------------------------------- */
+/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 oj-input-number:not(.oj-complete) {
   visibility: hidden; }
 
@@ -12849,23 +12945,6 @@ html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-inputnumber-button
   html[dir="rtl"] .oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-buttonset {
     border-right-width: 0; }
 
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input {
-  color: inherit;
-  height: 100%;
-  width: 100%;
-  background-color: transparent;
-  border-width: 0; }
-  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input {
-    text-align: inherit; }
-  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input {
-    text-align: inherit; }
-
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-wrapper {
-  height: 100%; }
-
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber:not(.oj-read-only).oj-focus .oj-inputnumber-input {
-  border-width: 0; }
-
 .oj-inputnumber-up-icon {
   margin-bottom: 1px; }
 
@@ -12880,6 +12959,19 @@ html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-inputnumber-button
 
 /* listbox */
 /* --------------------------------------------------------------- */
+/************************* oj-form-control-inherit OVERRIDES *************************/
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
+  color: inherit;
+  height: 100%;
+  width: 100%;
+  background-color: transparent;
+  border-width: 0; }
+  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
+    text-align: inherit; }
+  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
+    text-align: inherit; }
+
+/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 /*
      * applied to the dropdown
      */
@@ -13228,17 +13320,6 @@ html[dir="rtl"] .oj-listbox-no-results {
 .oj-listbox-highlighter {
   font-weight: bold; }
 
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
-  color: inherit;
-  height: 100%;
-  width: 100%;
-  background-color: transparent;
-  border-width: 0; }
-  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
-    text-align: inherit; }
-  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
-    text-align: inherit; }
-
 /* 
      * applied to the nested option group labels, 
      * they are direct children of li.oj-listbox-result-with-children
@@ -13247,6 +13328,25 @@ html[dir="rtl"] .oj-listbox-no-results {
   font-weight: 500;
   color: rgba(0, 0, 0, 0.85); }
 
+/************************* oj-form-control-inherit OVERRIDES *************************/
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
+  color: inherit;
+  height: 100%;
+  width: 100%;
+  background-color: transparent;
+  border-width: 0; }
+  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
+    text-align: inherit; }
+  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
+    text-align: inherit; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime-input-container,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input-trigger {
+  height: 100%;
+  background-color: inherit;
+  border-width: 0; }
+
+/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 oj-input-time:not(.oj-complete) {
   visibility: hidden; }
 
@@ -13911,23 +14011,6 @@ html[dir="rtl"] .oj-datetimepicker-switcher-buttons a:first-child {
   top: -24px;
   visibility: hidden; }
 
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
-  color: inherit;
-  height: 100%;
-  width: 100%;
-  background-color: transparent;
-  border-width: 0; }
-  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
-    text-align: inherit; }
-  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
-    text-align: inherit; }
-
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime-input-container,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input-trigger {
-  height: 100%;
-  background-color: inherit;
-  border-width: 0; }
-
 /* Override default options*/
 .oj-inputdatetime-option-defaults {
   font-family: '{"renderMode":"jet","keyboardEdit":"enabled","datePicker":{"footerLayout":"today"}}'; }
@@ -13938,6 +14021,21 @@ html[dir="rtl"] .oj-datetimepicker-switcher-buttons a:first-child {
 /* radioset and checkboxset styles */
 /* this styles the radio, checkbox, and their labels */
 /* --------------------------------------------------------------- */
+/************************* oj-form-control-inherit OVERRIDES *************************/
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single.oj-choice-direction-column .oj-choice-item,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single .oj-checkboxset-wrapper,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single .oj-choice-row {
+  margin-bottom: 0;
+  height: 100%;
+  min-height: 100%; }
+
+html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkbox-label {
+  text-align: inherit; }
+
+html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkbox-label {
+  text-align: inherit; }
+
+/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 oj-radioset:not(.oj-complete) {
   visibility: hidden; }
 
@@ -14078,13 +14176,6 @@ oj-choice-row .oj-radio-label,
   visibility: hidden;
   min-height: 1.9rem; }
 
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single.oj-choice-direction-column .oj-choice-item,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single .oj-checkboxset-wrapper,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single .oj-choice-row {
-  margin-bottom: 0;
-  height: 100%;
-  min-height: 100%; }
-
 html:not([dir="rtl"]) .oj-radiocheckbox-label-text, html:not([dir="rtl"])
 .oj-checkbox-label-nocomp {
   padding: 0 0 0 0; }
@@ -14207,12 +14298,6 @@ html[dir="rtl"] .oj-choice-direction-row.oj-radioset-input-end .oj-choice-item:n
 .oj-choice-direction-row.oj-checkboxset-input-end .oj-choice-item:not(:first-child) > .oj-checkbox-label-nocomp {
   margin-right: 1.5rem; }
 
-html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkbox-label {
-  text-align: inherit; }
-
-html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkbox-label {
-  text-align: inherit; }
-
 .oj-choice-direction-row .oj-choice-item,
 .oj-choice-row-inline {
   border-top-width: 0; }
@@ -14316,6 +14401,25 @@ html[dir="rtl"] .oj-choice-direction-row.oj-radioset-input-end .oj-choice-item:n
 
 /* combobox */
 /* --------------------------------------------------------------- */
+/************************* oj-form-control-inherit OVERRIDES *************************/
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
+  color: inherit;
+  height: 100%;
+  width: 100%;
+  background-color: transparent;
+  border-width: 0; }
+  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
+    text-align: inherit; }
+  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
+    text-align: inherit; }
+
+/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 oj-combobox:not(.oj-complete) {
   visibility: hidden; }
 
@@ -14725,25 +14829,32 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-combobox-selected-choice {
 .oj-combobox .oj-button {
   margin-bottom: 0; }
 
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
+/* select */
+/* --------------------------------------------------------------- */
+/************************* oj-form-control-inherit OVERRIDES *************************/
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {
   color: inherit;
   height: 100%;
   width: 100%;
   background-color: transparent;
   border-width: 0; }
-  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
+  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {
     text-align: inherit; }
-  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
+  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {
     text-align: inherit; }
 
-/* select */
-/* --------------------------------------------------------------- */
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-chosen {
+  background-color: inherit;
+  border-width: 0; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select {
+  height: 100%; }
+
+/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 oj-select:not(.oj-complete) {
   visibility: hidden; }
 
@@ -15225,28 +15336,6 @@ select.oj-select-select.oj-select-default:not([multiple]) {
 .oj-select-jet .oj-select-arrow.oj-select-open-icon:not(.oj-disabled) {
   color: #8a8d8f; }
 
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {
-  color: inherit;
-  height: 100%;
-  width: 100%;
-  background-color: transparent;
-  border-width: 0; }
-  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {
-    text-align: inherit; }
-  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {
-    text-align: inherit; }
-
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-chosen {
-  background-color: inherit;
-  border-width: 0; }
-
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select {
-  height: 100%; }
-
 .oj-select-native .oj-select-arrow {
   display: none; }
 
@@ -15272,6 +15361,25 @@ select.oj-select-select.oj-select-default:not([multiple]) {
 
 /* InputSearch */
 /* --------------------------------------------------------------- */
+/************************* oj-form-control-inherit OVERRIDES *************************/
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-choice,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input {
+  color: inherit;
+  height: 100%;
+  width: 100%;
+  background-color: transparent;
+  border-width: 0; }
+  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-choice, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input {
+    text-align: inherit; }
+  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-choice, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input {
+    text-align: inherit; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus .oj-inputsearch-choice {
+  border-width: 0; }
+
+/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 oj-input-search:not(.oj-complete) {
   visibility: hidden; }
 
@@ -15436,23 +15544,6 @@ oj-input-search:not(.oj-complete) {
 
 .oj-inputsearch.oj-disabled .oj-inputsearch-search-button {
   cursor: default; }
-
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-choice,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input {
-  color: inherit;
-  height: 100%;
-  width: 100%;
-  background-color: transparent;
-  border-width: 0; }
-  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-choice, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input {
-    text-align: inherit; }
-  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-choice, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input {
-    text-align: inherit; }
-
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus .oj-inputsearch-choice {
-  border-width: 0; }
 
 /* switch */
 /* --------------------------------------------------------------- */

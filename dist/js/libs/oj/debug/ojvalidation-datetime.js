@@ -5669,7 +5669,12 @@ OraDateTimeConverter = (function () {
             date = matchInt;
             // try leneient parse for date style only
             if (date > 31 && lenientParse === 'full') {
-              return _parseLenient(value, format, options, localeElements);
+              try {
+                return _parseLenient(value, format, options, localeElements);
+              } catch (e) {
+                var MonthDays = oj.OraI18nUtils._getDaysInMonth(year, month);
+                _validateRange('day', date, 1, MonthDays, date, 1, MonthDays);
+              }
             }
             break;
           case 'monthIndex':
@@ -5677,7 +5682,11 @@ OraDateTimeConverter = (function () {
             month = matchInt - 1;
             // try leneient parse for date style only
             if (month > 11 && lenientParse === 'full') {
-              return _parseLenient(value, format, options, localeElements);
+              try {
+                return _parseLenient(value, format, options, localeElements);
+              } catch (e) {
+                _validateRange('month', month, 0, 11, month + 1, 1, 12);
+              }
             }
             break;
           case 'year':

@@ -3,7 +3,7 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-define(['ojs/ojcore', 'knockout', 'ojs/ojlogger'], function(oj, ko, Logger)
+define(['ojs/ojconfig', 'knockout', 'ojs/ojlogger'], function(Config, ko, Logger)
 {
   "use strict";
 
@@ -80,7 +80,7 @@ GlobalChangeQueue.prototype._resolveDelayPromise = function () {
   }
 };
 
-/* global ko:false, Logger:false, WeakMap: false, GlobalChangeQueue: false */
+/* global ko:false, Logger:false, WeakMap: false, GlobalChangeQueue: false, Config: false */
 
 /**
  * @ignore
@@ -90,6 +90,7 @@ function _KoCustomBindingProvider() {
   var _evaluatorCacheMap = new WeakMap();
   var _postprocessors = {};
   var _preprocessors = {};
+  var _KoBindingCache = {};
 
   var _OJ_EXTENDED = '_ojExtended';
   var _OJ_CACHE_SCOPE = '_ojCacheScope';
@@ -108,7 +109,7 @@ function _KoCustomBindingProvider() {
       return this;
     }
 
-    var custom = {};
+    var custom = { getWrapped: function () { return wrapped; } };
     provider[instanceName] = custom;
 
     var methodsToWrap = [];
@@ -136,6 +137,7 @@ function _KoCustomBindingProvider() {
     custom.preprocessNode = _wrapPreprocessNode(wrapped);
 
     _patchKoRenderTemplateSource(ko);
+    _patchKoEvaluatorForCSP(_KoBindingCache);
 
     return this;
   };
@@ -187,6 +189,13 @@ function _KoCustomBindingProvider() {
   this.createBindingExpressionEvaluator = function (expressionText, bindingContext) {
     if (bindingContext[_OJ_EXTENDED]) {
       return _createReplacementEvaluatorForExtend(expressionText);
+    }
+    var factory = Config.getExpressionEvaluator();
+    if (factory) {
+      var evaluate = factory.createEvaluator(expressionText).evaluate;
+      return function ($context) {
+        return evaluate([$context.$data || {}, $context]);
+      };
     }
     /* jslint evil:true */
     // eslint-disable-next-line no-new-func
@@ -360,6 +369,13 @@ function _KoCustomBindingProvider() {
     // in this evaluator. This is needed for allowing properties supplied in bindsingProvider.extend()
     // to obscure properties in the ViewModel, which is the behavior one would expect when .extend()
     // is used
+    var factory = Config.getExpressionEvaluator();
+    if (factory) {
+      var evaluate = factory.createEvaluator(expressionText).evaluate;
+      return function ($context, $element) {
+        return evaluate([$context, $context.$data || {}, { $element: $element }]);
+      };
+    }
     /* jslint evil:true */
     // eslint-disable-next-line no-new-func
     return new Function('$context', '$element', 'with($context.$data||{}){with($context){return ' +
@@ -408,6 +424,47 @@ function _KoCustomBindingProvider() {
         return null;
     }
   }
+}
+
+function _patchKoEvaluatorForCSP(cache) {
+  var instance = ko.bindingProvider.instance;
+  var patched;
+  var parseMethod = 'parseBindingsString';
+  while (instance && !patched) {
+    var original = instance[parseMethod];
+    if (original) {
+      patched = true;
+      instance[parseMethod] = _getParseBindingsReplacement(original.bind(instance), cache);
+    } else {
+      instance = instance.getWrapped ? instance.getWrapped() : null;
+    }
+  }
+  if (!patched) {
+    Logger.error('Unable to patch KO expression evaluation implementation. ' +
+    'If you have a custom binding provider, make sure it implements the getWrapped() method that returns the default binding provider instance.');
+  }
+}
+
+function _getParseBindingsReplacement(original, cache) {
+  return function (bindingsString, bindingContext, node, options) {
+    var factory = Config.getExpressionEvaluator();
+    if (!factory) {
+      return original(bindingsString, bindingContext, node, options);
+    }
+    var evaluate = _createKoEvaluatorViaCache(bindingsString, options, factory, cache);
+    return evaluate([bindingContext.$data || {}, bindingContext, { $element: node }]);
+  };
+}
+
+function _createKoEvaluatorViaCache(expression, options, factory, cache) {
+  var evaluate = cache[expression];
+  if (!evaluate) {
+    var rewrittenBindings = ko.expressionRewriting.preProcessBindings(expression, options);
+    evaluate = factory.createEvaluator('{' + rewrittenBindings + '}').evaluate;
+    // eslint-disable-next-line no-param-reassign
+    cache[expression] = evaluate;
+  }
+  return evaluate;
 }
 
 // eslint-disable-next-line no-unused-vars

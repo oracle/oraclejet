@@ -18,7 +18,7 @@ define(['ojs/ojcore', 'ojL10n!ojtranslations/nls/localeElements'], function(oj, 
  * @namespace oj.LocaleData
  * @classdesc Locale Data Services
  * @export
- * @since 0.6
+ * @since 0.6.0
  * @ojtsmodule
  * @hideconstructor
  */

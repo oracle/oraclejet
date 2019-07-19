@@ -484,11 +484,6 @@ __ValidationBase.Validation.__registerDefaultValidatorFactory(
   oj.NumberRangeValidatorFactory);
 
 
-var __ValidationNumber = {};
-__ValidationNumber.NumberConverter = oj.NumberConverter;
-__ValidationNumber.NumberRangeValidator = oj.NumberRangeValidator;
-__ValidationNumber.IntlNumberConverter = oj.IntlNumberConverter;
-
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -872,14 +867,32 @@ oj.IntlNumberConverter.prototype.format = function (value) {
   var locale = Config.getLocale();
   var localeElements = LocaleData.__getBundle();
   var resolvedOptions = this.resolvedOptions();
-
+  var converterError;
+  var formatValue;
 
   try {
-    return this._getWrapped().format(value, localeElements, resolvedOptions, locale);
+    formatValue =
+      this._getWrapped().format(value, localeElements, resolvedOptions, locale);
   } catch (e) {
-    var converterError = this._processConverterError(e, value);
+    converterError = this._processConverterError(e, value);
     throw converterError;
   }
+  // The base converter returns NaN if the value is a string. This
+  // is expected behavior and is also the same behavior of the
+  // browser's Intl.NumberFormat. So this converter takes that and
+  // logs an error. NOTE: it is
+  // an application error if the value option is not a valid number.
+  if (formatValue === 'NaN') {
+    var summary = Translations.getTranslatedString(
+      'oj-converter.number.invalidNumberFormat.summary',
+      { value: value }
+    );
+    var detail = Translations.getTranslatedString(
+      'oj-converter.number.invalidNumberFormat.detail'
+    );
+    Logger.error(summary + ' ' + detail);
+  }
+  return formatValue;
 };
 
 /**
@@ -1046,7 +1059,7 @@ oj.IntlNumberConverter.prototype._processConverterError = function (e, value) {
           errorCode, parameterMap);
         break;
       case 'decimalFormatMismatch':
-        // The '{value}' does not match the expected decimal format
+        // The '{value}' does not match the expected number format
         resourceKey = 'oj-converter.number.decimalFormatMismatch.summary';
         break;
       case 'currencyFormatMismatch':
@@ -2092,7 +2105,10 @@ var OraNumberConverter = (function () {
       if (value === -Infinity) {
         return localeElementsMainNode.numbers[numberSettings.numberingSystem].infinity;
       }
-      return localeElementsMainNode.numbers[numberSettings.numberingSystem].nan;
+      // return localeElementsMainNode.numbers[numberSettings.numberingSystem].nan;
+      // return a non-localized NaN so the IntlNumberConverter can throw
+      // an error based on it.
+      return 'NaN';
     }
     var number = Math.abs(value);
     if (numberSettings.isPercent === true ||
@@ -3286,6 +3302,11 @@ var OraNumberConverter = (function () {
     }
   };
 }());
+
+var __ValidationNumber = {};
+__ValidationNumber.NumberConverter = oj.NumberConverter;
+__ValidationNumber.NumberRangeValidator = oj.NumberRangeValidator;
+__ValidationNumber.IntlNumberConverter = oj.IntlNumberConverter;
 
   ;return __ValidationNumber;
 });

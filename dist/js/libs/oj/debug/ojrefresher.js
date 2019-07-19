@@ -79,7 +79,7 @@ var __oj_refresher_metadata =
 /**
  * @ojcomponent oj.ojRefresher
  * @augments oj.baseComponent
- * @since 5.1
+ * @since 5.1.0
  * @ojstatus preview
  * @ojshortdesc A refresher is a wrapper for attaching pull to refresh functionality to a DOM element.
  *

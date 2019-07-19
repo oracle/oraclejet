@@ -3,12 +3,12 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojchildmutationobserver', 'ojs/ojoption'], 
+define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojchildmutationobserver', 'ojs/ojlabelledbyutils', 'ojs/ojoption'], 
 /*
 * @param {Object} oj 
 * @param {jQuery} $
 */
-function(oj, $, ThemeUtils, Components, ChildMutationObserver)
+function(oj, $, ThemeUtils, Components, ChildMutationObserver, LabelledByUtils)
 {
   "use strict";
 var __oj_button_metadata = 
@@ -63,6 +63,9 @@ var __oj_buttonset_many_metadata =
         "outlined"
       ]
     },
+    "describedBy": {
+      "type": "string"
+    },
     "disabled": {
       "type": "boolean",
       "value": false
@@ -82,6 +85,9 @@ var __oj_buttonset_many_metadata =
         "oneTabstop"
       ],
       "value": "oneTabstop"
+    },
+    "labelledBy": {
+      "type": "string"
     },
     "translations": {
       "type": "object",
@@ -113,6 +119,9 @@ var __oj_buttonset_one_metadata =
         "outlined"
       ]
     },
+    "describedBy": {
+      "type": "string"
+    },
     "disabled": {
       "type": "boolean",
       "value": false
@@ -132,6 +141,9 @@ var __oj_buttonset_one_metadata =
         "oneTabstop"
       ],
       "value": "oneTabstop"
+    },
+    "labelledBy": {
+      "type": "string"
     },
     "translations": {
       "type": "object",
@@ -199,6 +211,7 @@ var __oj_menu_button_metadata =
  */
 /* global ThemeUtils:false */
 /* global ChildMutationObserver:false */
+/* global LabelledByUtils:false */
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
@@ -240,7 +253,7 @@ var __oj_menu_button_metadata =
 /**
  * @ojcomponent oj.ojButton
  * @augments oj.baseComponent
- * @since 0.6
+ * @since 0.6.0
  * @ojstatus preview
  * @ojshortdesc Buttons direct users to initiate or take actions and work with a single tap, click, or keystroke.
  * @ojrole button
@@ -2448,7 +2461,7 @@ var __oj_menu_button_metadata =
 /**
  * @ojcomponent oj.ojMenuButton
  * @ojdisplayname Menu Button
- * @since 4.0
+ * @since 4.0.0
  * @ojstatus preview
  * @augments oj.ojButton
  * @ojshortdesc A menu button launches a menu when clicked.
@@ -2532,7 +2545,7 @@ var __oj_menu_button_metadata =
 
 /**
  * @ojcomponent oj.ojButtonsetOne
- * @since 0.6
+ * @since 0.6.0
  * @ojstatus preview
  * @augments oj.ojButtonset
  * @ojshortdesc A buttonset one is a grouping of related buttons where only one button may be selected.
@@ -2581,7 +2594,7 @@ var __oj_menu_button_metadata =
 
 /**
  * @ojcomponent oj.ojButtonsetMany
- * @since 0.6
+ * @since 0.6.0
  * @ojstatus preview
  * @augments oj.ojButtonset
  * @ojshortdesc A buttonset many is a grouping of related buttons where any number of buttons may be selected.
@@ -2631,7 +2644,7 @@ var __oj_menu_button_metadata =
 /**
  * @ojcomponent oj.ojButtonset
  * @augments oj.baseComponent
- * @since 0.6
+ * @since 0.6.0
  * @abstract
  * @classdesc
  * @hideconstructor
@@ -3061,7 +3074,103 @@ var __oj_menu_button_metadata =
          * @instance
          * @ojfragment buttonsetCommonFocusManagement
          */
-        focusManagement: 'oneTabstop'
+        focusManagement: 'oneTabstop',
+
+        /**
+         * {@ojinclude "name":"buttonsetCommonLabelledBy"}
+         *
+         * @name labelledBy
+         * @memberof oj.ojButtonsetOne
+         * @public
+         * @instance
+         * @type {string|null}
+         * @ojshortdesc Establishes a relationship between this component and another element, typically an oj-label custom element. See the Help documenation for more information.
+         *
+         * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
+         * // getter
+         * var labelId = myButtonset.labelledBy;
+         *
+         * // setter
+         * myButtonset.labelledBy = "labelId";
+         */
+        /**
+         * {@ojinclude "name":"buttonsetCommonLabelledBy"}
+         *
+         * @name labelledBy
+         * @memberof oj.ojButtonsetMany
+         * @public
+         * @instance
+         * @type {string|null}
+         * @ojshortdesc Establishes a relationship between this component and another element, typically an oj-label custom element. See the Help documenation for more information.
+         *
+         * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
+         * // getter
+         * var labelId = myButtonset.labelledBy;
+         *
+         * // setter
+         * myButtonset.labelledBy = "labelId";
+         */
+        /**
+         * It is used to establish a relationship between this component and another element.
+         * A common use is to tie the oj-label and the oj-buttonset together for accessibility.
+         * The oj-label custom element has an id, and you use the labelled-by attribute
+         * to tie the two components together to facilitate correct screen reader behavior.
+         *
+         * @expose
+         * @memberof oj.ojButtonset
+         * @instance
+         * @ojfragment buttonsetCommonLabelledBy
+         */
+        labelledBy: null,
+
+        /**
+         * {@ojinclude "name":"buttonsetCommonDescribedBy"}
+         *
+         * @name describedBy
+         * @memberof oj.ojButtonsetOne
+         * @public
+         * @instance
+         * @type {?string}
+         * @ojshortdesc Specifies a relationship between this component and another element.
+         *
+         * @example <caption>Get or set the <code class="prettyprint">describedBy</code> property after initialization:</caption>
+         * // getter
+         * var descById = myComp.describedBy;
+         *
+         * // setter
+         * myComp.describedBy = "someId";
+         */
+        /**
+         * {@ojinclude "name":"buttonsetCommonDescribedBy"}
+         *
+         * @name describedBy
+         * @memberof oj.ojButtonsetMany
+         * @public
+         * @instance
+         * @type {?string}
+         * @ojshortdesc Specifies a relationship between this component and another element.
+         *
+         * @example <caption>Get or set the <code class="prettyprint">describedBy</code> property after initialization:</caption>
+         * // getter
+         * var descById = myComp.describedBy;
+         *
+         * // setter
+         * myComp.describedBy = "someId";
+         */
+        /**
+         * It is used to establish a relationship between this component and another element.
+         * Typically this is not used by the application developer, but by the oj-label custom element's
+         * code. One use case is where the oj-label custom element code writes described-by
+         * on its form component for accessibility reasons.
+         * To facilitate correct screen reader behavior, the described-by attribute is
+         * copied to the aria-describedby attribute on the component's dom element.
+         *
+         * @expose
+         * @memberof oj.ojButtonset
+         * @instance
+         * @ojfragment buttonsetCommonDescribedBy
+         */
+        describedBy: null
 
         // Events
       },
@@ -3515,6 +3624,8 @@ var __oj_menu_button_metadata =
 
       // eslint-disable-next-line no-unused-vars
       _setOption: function (key, value, flags) { // Override of protected base class method.  Method name needn't be quoted since is in externs.js.
+        var oldValue = this.options[key];
+
         // previously called super at end, so that optionChange (fired at end of super) is fired at very end, but now must call at start, so that
         // when the chroming case calls Button.refreshrefresh(), callee sees the new value of the option.
         this._superApply(arguments);
@@ -3543,6 +3654,12 @@ var __oj_menu_button_metadata =
           this.$buttons.ojButton('refresh');
         } else if (key === 'display') {
           this.$buttons.ojButton('option', key, value);
+        } else if (key === 'labelledBy') {
+          var $elem = this.element;
+          this._updateLabelledBy($elem[0], oldValue, value, $elem);
+        } else if (key === 'describedBy') {
+          // This sets the aria-describedby on the correct dom node
+          this._updateDescribedBy(oldValue, value);
         }
       },
 
@@ -3673,6 +3790,75 @@ var __oj_menu_button_metadata =
 
           this._initTabindexes(isCreate);
         }
+
+        // since oj-label depends on oj-buttonset having an ID, check if the element has an id
+        // and if not it will be generated and set on the oj-buttonset
+        this.element.uniqueId();
+
+        // copy labelledBy to aria-labelledBy
+        this._updateLabelledBy(elem, null, this.options.labelledBy, this.element);
+
+        // set describedby on the element as aria-describedby
+        var describedBy = this.options.describedBy;
+
+        if (describedBy) {
+          var eachIdArray = describedBy.split(/\s+/);
+          for (var j = 0; j < eachIdArray.length; j++) {
+            this._addAriaDescribedBy(eachIdArray[j]);
+          }
+        }
+      },
+
+      /**
+       * If custom element, get the labelledBy option, and set this
+       * onto the root dom element as aria-labelledby. We append "|label" so it matches the id that
+       * is on the oj-label's label element.
+       * @memberof oj.ojButtonset
+       * @instance
+       * @private
+       */
+      _updateLabelledBy: LabelledByUtils._updateLabelledBy,
+
+      /**
+       * Add the aria-describedby on the content element(s) if it isn't already there.
+       * @memberof oj.ojButtonset
+       * @instance
+       * @private
+       */
+      _addAriaDescribedBy: LabelledByUtils._addAriaDescribedBy,
+
+      /**
+       * When describedBy changes, we need to update the aria-described attribute.
+       * @memberof oj.ojButtonset
+       * @instance
+       * @private
+       */
+      _updateDescribedBy: LabelledByUtils._updateDescribedBy,
+
+      /**
+       * Remove the aria-describedby from the content element(s)
+       *
+       * @memberof oj.ojButtonset
+       * @instance
+       * @private
+       */
+      _removeAriaDescribedBy: LabelledByUtils._removeAriaDescribedBy,
+
+      /**
+       * Returns a jquery object of the elements representing the
+       * content nodes (oj-option). This is used in LabelledByUtils to add
+       * aria-describedby to the oj-option when there is a help icon
+       * @protected
+       * @override
+       * @memberof oj.ojButtonset
+       */
+      _GetContentElement: function () {
+        if (this.$buttons != null) {
+          return this.$buttons;
+        }
+
+        this.$buttons = this.element.find(this._items);
+        return this.$buttons;
       },
 
       // Update the current tabStop after _setOption("disabled")

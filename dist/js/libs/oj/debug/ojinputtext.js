@@ -647,7 +647,7 @@ var __oj_text_area_metadata =
  *                for: "SettableProperties"
  *               }
  *              ]
- * @since 0.6
+ * @since 0.6.0
  * @ojshortdesc Abstract InputBase element
  * @ojrole input
  * @hideconstructor
@@ -1040,7 +1040,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        * @alias name
        * @instance
        * @since 4.0.0
-       * @ojdeprecated {since: '6.0.0', description: 'JET does not use form submit, so this not needed'}
+       * @ojdeprecated {since: '6.0.0', description: 'JET does not use form submit, so this is not needed.'}
        * @ojtsignore
        * @memberof oj.inputBase
        * @ojextension {_COPY_TO_INNER_ELEM: true}
@@ -1193,7 +1193,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        * @ojshortdesc Specifies whether the component is required or optional. See the Help documentation for more information.
        * @type {boolean}
        * @default false
-       * @since 0.7
+       * @since 0.7.0
        * @see #translations
        */
       required: false,
@@ -2251,7 +2251,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
  *                for: "SettableProperties"
  *               }
  *              ]
- * @since 0.6
+ * @since 0.6.0
  * @ojshortdesc An input password allows the user to enter a password.
  * @ojrole textbox
  * @ojstatus preview
@@ -2547,7 +2547,7 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
  *                for: "SettableProperties"
  *               }
  *              ]
- * @since 0.6
+ * @since 0.6.0
  * @ojshortdesc An input text allows the user to enter a text value.
  * @ojrole textbox
  * @ojstatus preview
@@ -2886,6 +2886,8 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
           clearIconBtn.className =
             'oj-inputtext-clear-icon-btn oj-component-icon oj-clickable-icon-nocontext';
           clearIconBtn.setAttribute('tabindex', '-1');
+          // clear icon is hidden from screen reader users.
+          clearIconBtn.setAttribute('aria-hidden', 'true');
           clearIconBtn.setAttribute('target', '_blank');
           clearIcon = document.createElement('span');
           clearIcon.className =
@@ -3190,7 +3192,7 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
  *                for: "SettableProperties"
  *               }
  *              ]
- * @since 0.6
+ * @since 0.6.0
  * @ojshortdesc A text area allows the user to enter a multi-line text value.
  * @ojrole textbox
  * @ojstatus preview

@@ -25,6 +25,7 @@ define(['require','ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtranslations' 
  * @since 1.0
  * @ojtsmodule
  * @export
+ * @ojtsimport {module: "ojcspexpressionevaluator", type: "AMD", importName: "CspExpressionEvaluator"}
  */
 var Config = {};
 
@@ -304,6 +305,40 @@ Config.__getTemplateEngine = function () {
  */
 Config.getConfigBundle = function () {
   return ojt;
+};
+
+/**
+ * Returns expression evaluator
+ * @return {undefined | Object}
+ * @ignore
+ * @export
+ * @memberof oj.Config
+ * @since 7.1.0
+ */
+Config.getExpressionEvaluator = function () {
+  return Config._expressionEvaluator;
+};
+
+/**
+ * Sets an optional CSP-compliant expression evaluator for the JET binding provider and JET ExpressionUtils.
+ * This method can only be called once and must be called before applying
+ * knockout bindings in the application for the first time.
+ * @see <a href="oj.CspExpressionEvaluator.html">CspExpressionEvaluator</a>
+ * @method setExpressionEvaluator
+ * @param {Object} expressionEvaluator An instance of CspExpressionEvaluator class
+ * @return {undefined}
+ * @memberof oj.Config
+ * @ojshortdesc Sets a CSP-compliant expression evaluator.
+ * @export
+ * @ojsignature {target:"Type", value: "oj.CspExpressionEvaluator", for: "expressionEvaluator"}
+ * @since 7.1.0
+ */
+Config.setExpressionEvaluator = function (expressionEvaluator) {
+  if (Config._expressionEvaluator) {
+    throw new Error("JET Expression evaluator can't be set more than once.");
+  }
+
+  Config._expressionEvaluator = expressionEvaluator;
 };
 
 

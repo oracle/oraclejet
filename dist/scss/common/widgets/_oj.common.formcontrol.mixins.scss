@@ -279,7 +279,7 @@
 //
 // Usage Example:
 //
-//  .oj-datagrid-cell.oj-form-control-inherit {
+//  .oj-datagrid-cell.oj-form-control-inherit:not(oj-form-control-default) {
 //     @include oj-form-control-padding-override(
 //        $padding: "0 5px");
 //   }
@@ -311,7 +311,7 @@
 //
 // Usage Example:
 //
-//  .oj-datagrid-cell.oj-form-control-inherit {
+//  .oj-datagrid-cell.oj-form-control-inherit:not(oj-form-control-default) {
 //    @include oj-form-control-font-size-override(
 //      $fontSize: 16px);
 //   }
@@ -340,7 +340,7 @@
 
 // This allows the form control to inherit styles from the container.
 // Usage Example:
-//  .oj-form-control-inherit .oj-inputnumber-input { @include oj-form-control-inherit();}
+//  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input { @include oj-form-control-inherit();}
 @mixin oj-form-control-inherit() {
   color: inherit;
   height: 100%;

@@ -3,12 +3,12 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'ojs/ojoption'], 
+define(['ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/ojlabelledbyutils', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'ojs/ojoption'], 
 /*
 * @param {Object} oj 
 * @param {jQuery} $
 */
-function(oj, $, Logger, Translations)
+function(oj, $, Logger, Translations, LabelledByUtils)
 {
   "use strict";
 var __oj_checkboxset_metadata = 
@@ -182,12 +182,12 @@ var __oj_checkboxset_metadata =
    * do not do a value change check in _SetValue
    */
   var _sValueChangeCheckFalse = { doValueChangeCheck: false };
-/* global Logger:false, Translations:false*/
+/* global Logger:false, Translations:false, LabelledByUtils:false*/
 
 /**
  * @ojcomponent oj.ojCheckboxset
  * @augments oj.editableValue
- * @since 0.6
+ * @since 0.6.0
  * @ojshortdesc A checkbox set allows the user to select one or more options from a set.
  * @ojrole checkbox
  * @ojrole checkboxgroup
@@ -339,9 +339,9 @@ var __oj_checkboxset_metadata =
         disabled: false,
      /**
      * labelled-by is used to establish a relationship between this component and another element.
-     * A common use is to tie the oj-label and the oj-checkboxset together.
+     * A common use is to tie the oj-label and the oj-checkboxset together for accessibility.
      * The oj-label custom element has an id, and you use the labelled-by attribute
-     * to tie the two components together.
+     * to tie the two components together to facilitate correct screen reader behavior.
      *
      * @example <caption>Initialize component with <code class="prettyprint">labelled-by</code> attribute:</caption>
      * &lt;oj-label id="labelId">Name:&lt;/oj-label>
@@ -678,7 +678,7 @@ var __oj_checkboxset_metadata =
      * @type {boolean}
      * @ojshortdesc Specifies whether the component is required or optional. See the Help documentation for more information.
      * @default false
-     * @since 0.7
+     * @since 0.7.0
      * @see #translations
      */
         required: false,
@@ -1339,7 +1339,7 @@ var __oj_checkboxset_metadata =
    * @instance
    * @private
    */
-      _updateLabelledBy: oj.EditableValueUtils._updateLabelledBy,
+      _updateLabelledBy: LabelledByUtils._updateLabelledBy,
   /**
    * Returns a jquery object that is a set of elements that are input type checkbox
    * and have the name of the first checkbox found.

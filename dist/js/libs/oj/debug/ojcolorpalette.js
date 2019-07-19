@@ -3,8 +3,8 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcolor', 'ojs/ojvalidation-base', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojarraytabledatasource', 'ojs/ojlistview', 'ojs/ojeditablevalue'],
-       function(oj, $, Components, Color, __ValidationBase, Logger, Context)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcolor', 'ojs/ojvalidation-base', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojlabelledbyutils', 'ojs/ojarraytabledatasource', 'ojs/ojlistview', 'ojs/ojeditablevalue'],
+       function(oj, $, Components, Color, __ValidationBase, Logger, Context, LabelledByUtils)
 {
   "use strict";
 var __oj_color_palette_metadata = 
@@ -155,7 +155,7 @@ var __oj_color_palette_metadata =
  *  All rights reserved.
  */
 
-/* global Promise:false, Color:false, __ValidationBase: false, Logger:false, Context:false */
+/* global Promise:false, Color:false, __ValidationBase: false, Logger:false, Context:false, LabelledByUtils:false */
 
 /*---------------------------------------------------------
    ojColorPalette    Jet Color Palette element
@@ -250,9 +250,9 @@ var __oj_color_palette_metadata =
       options: {
         /**
          * Labelled-by is used to establish a relationship between this and another element.
-         * A common use is to tie the oj-label and the oj-color-palette together.
+         * A common use is to tie the oj-label and the oj-color-palette together for accessibility.
          * The oj-label custom element has an id, and you use the labelled-by attribute
-         * to tie the two elements together.
+         * to tie the two elements together to facilitate correct screen reader behavior.
          *
          * @ojshortdesc Used to establish a relationship between this element and another element.
          * @example <caption>Initialize the color palette with the <code class="prettyprint">labelled-by</code> attribute specified:</caption>
@@ -580,9 +580,75 @@ var __oj_color_palette_metadata =
         });
         return promise;
       },
+    /**
+       * Override to setup resources needed by this component.
+       * @memberof oj.ojColorPalette
+       * @override
+       * @protected
+       */
+      _SetupResources: function () {
+        this._super();
+        var self = this;
+        var LVResolve = Context.getContext(this._$LV[0]).getBusyContext();
+        LVResolve.whenReady().then(function () {
+          // Instantiate the ListView
+          self._$LV.ojListView({
+            data: self._palDataSource,
+            item: { renderer: self._renderer.bind(self) },
+            optionChange: self._onLVOptionChange.bind(self),
+            selectionMode: 'single',
+            selection: self._palInitSelected,
+            rootAttributes: { style: 'height:100%;width:100%' }
+          }).attr('data-oj-internal', ''); // for use in automation api
+          self._$LVWidget = self._$LV;
+          return LVResolve.whenReady();
+        }).then(function () {
+          // Don't want any listview text if palette is empty
+          self._$LV.ojListView('option', 'translations.msgNoData', '');
+
+          self._setOptDisabled(self._disabled);
+
+          // FIX : when there is a vertical scrollbar, add
+          // padding so that no horizontal scrollbar is needed and the
+          // text doesn't get cut off or truncated
+          if (self._$LV[0].scrollWidth > self._$LV[0].clientWidth) {
+            var scrollbarWidth = self._getScrollbarWidth();
+            var rtl = (self._GetReadingDirection() === 'rtl');
+            self._$LV.css(rtl ? 'padding-left' : 'padding-right', scrollbarWidth + 1);
+          }
+
+          self._resolvePaletteBusyContext();    // component is ready to use
+        });
+      },
+
+      /**
+       * Override to release resources held by this component.
+       * @memberof oj.ojColorPalette
+       * @override
+       * @protected
+       */
+      _ReleaseResources: function () {
+        this._super();
+        this._resolvePaletteBusyContext();
+
+        if (this._$LVWidget) {
+          this._$LVWidget.ojListView('destroy');
+          this._$LVWidget = null;
+        }
+      },
+      /**
+       * Override to do the delay connect/disconnect
+       * @memberof oj.ojColorPalette
+       * @override
+       * @protected
+       */
+      _VerifyConnectedForSetup: function () {
+        return true;
+      },
 
      /**
-      * Destroy the Color Palette
+      * Destroy the Color Palette. The base class#destroy
+      * calls _ReleaseResources.
       * @return {void}
       * @memberof oj.ojColorPalette
       * @instance
@@ -590,12 +656,6 @@ var __oj_color_palette_metadata =
       * @protected
       */
       _destroy: function () {
-        this._resolvePaletteBusyContext();
-
-        if (this._$LV) {
-          this._opStack = [];
-          this._$LV.ojListView('destroy');
-        }
         this._palDataSource = null;
         this._$paletteContainer.remove();          // remove our markup from dom
         this._$boundElem.removeClass('oj-colorpalette');
@@ -706,7 +766,7 @@ var __oj_color_palette_metadata =
        * @instance
        * @private
        */
-      _updateLabelledBy: oj.EditableValueUtils._updateLabelledBy,
+      _updateLabelledBy: LabelledByUtils._updateLabelledBy,
 
       /**
        * @param {Event} event the associated Event object.
@@ -1391,7 +1451,6 @@ var __oj_color_palette_metadata =
         this._$boundElem.addClass('oj-colorpalette');
         this._$paletteContainer = this._$boundElem.find('.oj-colorpalette-container');
         this._$LV = this._$paletteContainer.find(':first');  // Listview UL
-
         // Will be using a component context for the ListView
         this._$LV.attr('data-oj-context', '');
 
@@ -1402,36 +1461,6 @@ var __oj_color_palette_metadata =
 
         this._swatchId = 0;                   // use  _getNextSwatchId() to access
         this._setData(this._palette, this._initSelection, false);
-
-        //  Instantiate the ListView
-        this._$LV.ojListView({
-          data: this._palDataSource,
-          item: { renderer: this._renderer.bind(this) },
-          optionChange: this._onLVOptionChange.bind(this),
-          selectionMode: 'single',
-          selection: this._palInitSelected,
-          rootAttributes: { style: 'height:100%;width:100%' }
-        }).attr('data-oj-internal', ''); // for use in automation api
-
-        var self = this;
-        var LVResolve = Context.getContext(this._$LV[0]).getBusyContext();
-        LVResolve.whenReady().then(function () {
-          // Don't want any listview text if palette is empty
-          self._$LV.ojListView('option', 'translations.msgNoData', '');
-
-          self._setOptDisabled(self._disabled);
-
-          // FIX : when there is a vertical scrollbar, add
-          // padding so that no horizontal scrollbar is needed and the
-          // text doesn't get cut off or truncated
-          if (self._$LV[0].scrollWidth > self._$LV[0].clientWidth) {
-            var scrollbarWidth = self._getScrollbarWidth();
-            var rtl = (self._GetReadingDirection() === 'rtl');
-            self._$LV.css(rtl ? 'padding-left' : 'padding-right', scrollbarWidth + 1);
-          }
-
-          self._resolvePaletteBusyContext();    // component is ready to use
-        });
       },
 
       /**
@@ -1630,7 +1659,9 @@ var __oj_color_palette_metadata =
         this._converterFactory = null;
         this._convHex = null;
         this._markup = null;
+        this._$LVElem = null;
         this._$LV = null;
+        this._$LVWidget = null;
       },
 
       /**

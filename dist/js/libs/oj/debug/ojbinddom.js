@@ -100,14 +100,37 @@ ko.bindingHandlers._ojBindDom_ = {
       );
     }
 
+    function findNearestCustomParent(parentTrackingContext) {
+      var nearestCustomParent = element.parentNode;
+      while (nearestCustomParent &&
+        !oj.ElementUtils.isValidCustomElementName(nearestCustomParent.localName)) {
+        nearestCustomParent = nearestCustomParent.parentNode;
+      }
+      if (!nearestCustomParent) {
+        nearestCustomParent = parentTrackingContext ?
+          parentTrackingContext._nearestCustomParent : null;
+      }
+      return nearestCustomParent;
+    }
+
+    function findImmediateState(nearestCustomParent, parentTrackingContext) {
+      var isImmediate = false;
+      var nestedElement = parentTrackingContext &&
+        Object.prototype.hasOwnProperty.call(parentTrackingContext, '_immediate');
+      if (element.parentNode === nearestCustomParent) {
+        isImmediate = true;
+      } else if (nestedElement && !element.parentNode.parentNode) {
+        isImmediate = parentTrackingContext._immediate;
+      }
+      return isImmediate;
+    }
+
     function initChildrenBindingsAppliedPromise() {
       if (!_childrenBindingsPromiseResolver) {
-        var nearestCustomParent = element.parentNode;
-        while (nearestCustomParent &&
-          !oj.ElementUtils.isValidCustomElementName(nearestCustomParent.localName)) {
-          nearestCustomParent = nearestCustomParent.parentNode;
-        }
-        var isImmediate = element.parentNode === nearestCustomParent;
+        // when oj-bind-dom is inside of oj-bind-for-each template, the element will be rendered disconnected
+        // use bindingContext.$current to determine nearestCustomParent and isImmediate state
+        var nearestCustomParent = findNearestCustomParent(bindingContext.$current);
+        var isImmediate = findImmediateState(nearestCustomParent, bindingContext.$current);
         _childrenBindingsPromiseResolver = oj._KnockoutBindingProvider
           .getInstance()
           .__RegisterBindingAppliedPromiseForChildren(nearestCustomParent, isImmediate);

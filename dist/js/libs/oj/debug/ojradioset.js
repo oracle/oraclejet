@@ -3,8 +3,8 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojlogger',  'ojs/ojcomponentcore', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'ojs/ojoption', 'ojs/ojdataprovider'],
-function(oj, $, Logger, Components)
+define(['ojs/ojcore', 'jquery', 'ojs/ojlogger',  'ojs/ojcomponentcore', 'ojs/ojlabelledbyutils', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'ojs/ojoption', 'ojs/ojdataprovider'],
+function(oj, $, Logger, Components, LabelledByUtils)
 {
   "use strict";
 var __oj_radioset_metadata = 
@@ -169,6 +169,7 @@ var __oj_radioset_metadata =
 /* global Logger:false */
 /* global Components:false */
 /* global Symbol:false */
+/* global LabelledByUtils:false */
 
 (function () {
 /*!
@@ -198,7 +199,7 @@ var __oj_radioset_metadata =
  *                for: "SettableProperties"
  *               }
  *              ]
- * @since 0.6
+ * @since 0.6.0
  * @ojshortdesc A radio set allows the user to select one option from a set of mutually exclusive options.
  * @ojrole radio
  * @ojrole radiogroup
@@ -366,9 +367,9 @@ var __oj_radioset_metadata =
         readOnly: false,
         /**
          * It is used to establish a relationship between this component and another element.
-         * A common use is to tie the oj-label and the oj-radioset together.
+         * A common use is to tie the oj-label and the oj-radioset together for accessibility.
          * The oj-label custom element has an id, and you use the labelled-by attribute
-         * to tie the two components together.
+         * to tie the two components together to facilitate correct screen reader behavior.
          *
          * @example <caption>Initialize component with <code class="prettyprint">labelled-by</code> attribute:</caption>
          * &lt;oj-label id="labelId">Name:&lt;/oj-label>
@@ -680,7 +681,7 @@ var __oj_radioset_metadata =
          * @ojshortdesc Specifies whether the component is required or optional. See the Help documentation for more information.
          * @type {boolean}
          * @default false
-         * @since 0.7
+         * @since 0.7.0
          * @see #translations
          */
         required: false,
@@ -1230,7 +1231,7 @@ var __oj_radioset_metadata =
        * @instance
        * @private
        */
-      _updateLabelledBy: oj.EditableValueUtils._updateLabelledBy,
+      _updateLabelledBy: LabelledByUtils._updateLabelledBy,
       /**
        * Returns a jquery object that is a set of elements that are input type radio
        * and have the name of the first radio found.

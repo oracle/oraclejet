@@ -1549,7 +1549,7 @@ DvtSelectablePath.prototype.handleZoomEvent = function(pzcMatrix) {
   *  @extends {dvt.Container}
   *  @constructor
   *  @param {dvt.Context} context The rendering context
-  *  @param {SVGElement||dvt.BaseComponent} dataItem The custom data item which can be either an SVGElement or a dvt.BaseComponent
+  *  @param {SVGElement|dvt.BaseComponent|Array} dataItem The custom data item which can be either an SVGElement or a dvt.BaseComponent
   *  @param {object} styles The object containing interaction styling info
   */
 var DvtCustomDataItem = function(context, dataItem, styles) {
@@ -1561,7 +1561,7 @@ dvt.Obj.createSubclass(DvtCustomDataItem, dvt.Container);
 /**
  *  Object initializer.
  *  @param {dvt.Context} context The rendering context
- *  @param {SVGElement||dvt.BaseComponent} dataItem The custom data item which can be either an SVGElement or a dvt.BaseComponent
+ *  @param {SVGElement|dvt.BaseComponent|Array} dataItem The custom data item which can be either an SVGElement or a dvt.BaseComponent
  *  @param {object} styles The object containing interaction styling info
  *  @protected
  */
@@ -1574,7 +1574,12 @@ DvtCustomDataItem.prototype.Init = function(context, dataItem, styles) {
     this._height = dataItem.getHeight();
     this.addChild(dataItem);
   } else {
-    this.getElem().appendChild(dataItem);//dataItem is output of a custom renderer function or a knockout template @HtmlUpdateOk
+    if (Array.isArray(dataItem)) {
+      dataItem.forEach(function(node) {this.getElem().appendChild(node);}.bind(this)); // @HtmlUpdateOk
+    }
+    else {
+      this.getElem().appendChild(dataItem); //dataItem is output of a custom renderer function or a knockout template @HtmlUpdateOk
+    }
     // TODO make this more efficient by defering to render call
     var dim = dvt.DisplayableUtils.getDimensionsForced(context, this);
     this._width = dim.w;
@@ -1700,23 +1705,32 @@ DvtCustomDataItem.prototype.getRootElement = function() {
 /**
  * Updates the current root element representing this data item which can either be a custom svg element or a DvtBaseComopnent
  * with the new which is used to update interaction effects.
- * @param {SVGElement|dvt.BaseComponent} rootElement The new root element
+ * @param {SVGElement|dvt.BaseComponent|Array} rootContent The new root content
  */
-DvtCustomDataItem.prototype.updateRootElement = function(rootElement) {
-  if (this._dataItem === rootElement)
+DvtCustomDataItem.prototype.updateRootElement = function(rootContent) {
+  if (this._dataItem === rootContent)
     return;
 
-  if (this._dataItem)
-    this._dataItem instanceof dvt.BaseComponent ? this.removeChild(this._dataItem) : this.getElem().removeChild(this._dataItem);
+  if (this._dataItem) {
+    if (this._dataItem instanceof dvt.BaseComponent) {
+      this.removeChild(this._dataItem)
+    } else if (Array.isArray(this._dataItem)) {
+      this._dataItem.forEach(function(node) {this.getElem().removeChild(node);}.bind(this));
+    } else {
+      this.getElem().removeChild(this._dataItem);
+    }
+  }
 
   // NOTE: Not updating width/height in this method call because we're assuming
   // that the application wouldn't want to recenter based on increased dimensions
   // caused by selection effects.
-  if (rootElement instanceof dvt.BaseComponent)
-    this.addChild(rootElement);
+  if (rootContent instanceof dvt.BaseComponent)
+    this.addChild(rootContent);
+  else if (Array.isArray(rootContent))
+    rootContent.forEach(function(node) {this.getElem().appendChild(node);}.bind(this)); // @HtmlUpdateOk
   else
-    this.getElem().appendChild(rootElement);//rootElement is output of a custom renderer function or a knockout template @HtmlUpdateOk
-  this._dataItem = rootElement;
+    this.getElem().appendChild(rootContent);//rootContent is output of a custom renderer function or a knockout template @HtmlUpdateOk
+  this._dataItem = rootContent;
 };
 
 /**
@@ -4814,7 +4828,9 @@ DvtMapDataLayer.prototype.destroy = function() {
     var disp = dataObjs[i].getDisplayable();
     if (disp instanceof DvtCustomDataItem) {
       var rootObj = disp.getRootElement();
-      if (rootObj.destroy)
+      if (Array.isArray(rootObj)) {
+        rootObj.forEach(function(node) {rootObj.destroy && rootObj.destroy();}.bind(this));
+      } else if (rootObj.destroy)
         rootObj.destroy();
     }
   }
@@ -5538,8 +5554,8 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
           var itemData = markers[j]['_itemData'];
 
           var context = this._tmap.getOptions()['_contextHandler'](this._tmap.getElem(), null, data, itemData, initState, null);
-          var svgElem = renderer(context);
-          dataObj = this._createCustomDataItem(parentLayer, dataLayer, markers[j], svgElem, isAreaDataLayer);
+          var customContent = renderer(context);
+          dataObj = customContent && this._createCustomDataItem(parentLayer, dataLayer, markers[j], customContent, isAreaDataLayer);
         } else {
           dataObj = this._createMarker(parentLayer, dataLayer, markers[j], isAreaDataLayer);
         }
@@ -5866,12 +5882,12 @@ DvtThematicMapJsonParser.prototype._createImage = function(layer, dataLayer, dat
  * @param {DvtMapLayer} layer The map layer this data object belongs to
  * @param {DvtMapDataLayer} dataLayer The data layer this data object belongs to
  * @param {Object} data The JSON object containing data object attributes
- * @param {SVGElement} svgElem The custom svg DOM element
+ * @param {SVGElement|Array} customContent The custom svg DOM element or an array of svg Dom elements
  * @param {boolean} isParentAreaDataLayer True if the parent is an area data layer
  * @return {DvtMapObjPeer} The logical object
  * @private
  */
-DvtThematicMapJsonParser.prototype._createCustomDataItem = function(layer, dataLayer, data, svgElem, isParentAreaDataLayer) {
+DvtThematicMapJsonParser.prototype._createCustomDataItem = function(layer, dataLayer, data, customContent, isParentAreaDataLayer) {
   var center;
   // MapProvider coordinates are already projected, but need to flip the y coordinate for svg
   // because 0,0 is top left instead of bottom left
@@ -5887,7 +5903,7 @@ DvtThematicMapJsonParser.prototype._createCustomDataItem = function(layer, dataL
   if (isParentAreaDataLayer)
     layer.setLabelRendered(data['location'], false);
 
-  var dataItem = new DvtCustomDataItem(this._tmap.getCtx(), svgElem, this._tmap.getStyleDefaults()['dataAreaDefaults']);
+  var dataItem = new DvtCustomDataItem(this._tmap.getCtx(), customContent, this._tmap.getStyleDefaults()['dataAreaDefaults']);
   var locationName = DvtThematicMapJsonParser._getLocationName(this._tmap.getMapName(), dataLayer, data);
   return new DvtMapObjPeer(data, dataLayer, dataItem, null, center, locationName);
 };

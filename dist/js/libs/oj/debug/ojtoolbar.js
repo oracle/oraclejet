@@ -45,7 +45,7 @@ var __oj_toolbar_metadata =
  * @ojdisplayname Toolbar
  * @augments oj.baseComponent
  * @ojrole toolbar
- * @since 0.6
+ * @since 0.6.0
  * @ojshortdesc A toolbar displays a strip of control elements such as buttons and menu buttons, often grouped by separators.
  * @ojstatus preview
  *

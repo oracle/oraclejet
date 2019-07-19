@@ -198,6 +198,18 @@ var __oj_validation_group_metadata =
  * @example <caption>Set a batch of properties:</caption>
  * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
  */
+// Slots
+// //////
+
+/**
+ * <p>The <code class="prettyprint">&lt;oj-validation-group></code> accepts
+ * any DOM elements in its Default slot but only tracks the validity
+ * state of any JET custom element descendents that contain the valid property.
+ *
+ * @ojchild Default
+ * @memberof oj.ojValidationGroup
+ * @since 4.2.0
+ */
 
 /**
  * The _ojValidationGroup constructor function.

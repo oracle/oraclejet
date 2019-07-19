@@ -732,25 +732,33 @@ var PetitDom = (function () {
   function sortProps(props) {
     // store attribute, property, and event listener
     // sets separately
+    // special-case style handling
     var sets = {
       attrs: {},
       props: {},
-      listeners: {}
+      listeners: {},
+      style: {}
     };
     for (var key in props) {
       var value = props[key];
-      // Note: innerHTML is not currently supported
-      if (typeof value === 'string') {
-        // TODO Should we make this more efficient?
-        var attrName = propertyNameToAttribute(key);
-        sets.attrs[attrName] = value;
+      if (key === 'style') {
+        // To be compliant with CSP's unsafe-inline restrictions, we always want to set
+        // style properties individually vs. setting the entire style attribute
+        sets.style = value;
       } else {
-        // Event listeners will be added with addEventListener
-        var eventType = eventListenerPropertyToEventType(key);
-        if (eventType) {
-          sets.listeners[key] = {type: eventType, listener: value};
+        // Note: innerHTML is not currently supported
+        if (typeof value === 'string') {
+          // TODO Should we make this more efficient?
+          var attrName = propertyNameToAttribute(key);
+          sets.attrs[attrName] = value;
         } else {
-          sets.props[key] = value;
+          // Event listeners will be added with addEventListener
+          var eventType = eventListenerPropertyToEventType(key);
+          if (eventType) {
+            sets.listeners[key] = {type: eventType, listener: value};
+          } else {
+            sets.props[key] = value;
+          }
         }
       }
     }
@@ -758,9 +766,20 @@ var PetitDom = (function () {
   }
 
   function patchDOM(el, sets, oldSets) {
+    // We only set global attributes, everything else is set as property
+    // or is an event listener.  Style is special-cased
+    patchStyle(el, sets.style, oldSets ? oldSets.style : null);
     patchAttrs(el, sets.attrs, oldSets ? oldSets.attrs : null);
     patchListeners(el, sets.listeners, oldSets ? oldSets.listeners : null);
     patchProps(el, sets.props, oldSets ? oldSets.props : null);
+  }
+
+  function patchStyle(el, style, oldStyle) {
+    if (style !== oldStyle) {
+      // Unset style properties by setting them to empty string
+      // null is supposed to work as well, but doesn't in IE
+      _patchProperties(el.style, style || {}, oldStyle || {}, '');
+    }
   }
 
   function patchAttrs(el, attrs, oldAttrs) {
@@ -794,19 +813,21 @@ var PetitDom = (function () {
   }
 
   function patchProps(el, props, oldProps) {
+    // Unset component properties by setting them to undefined
+    _patchProperties(el, props || {}, oldProps || {}, undefined);
+  }
+
+  function _patchProperties(propertyHolder, props, oldProps, unsetValue) {
     for (var key in props) {
-      var oldv = oldProps != null ? oldProps[key] : null;
+      var oldv = oldProps[key];
       var newv = props[key];
       if (oldv !== newv) {
-        el[key] = newv;
+        propertyHolder[key] = newv;
       }
     }
     for (var key in oldProps) {
       if (!(key in props)) {
-        // This will reset property to default value for
-        // native HTMLElement properties and JET components
-        // that specify a default in their metadata
-        el[key] = undefined;
+        propertyHolder[key] = unsetValue;
       }
     }
   }

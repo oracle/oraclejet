@@ -1,36 +1,36 @@
 import { DvtDiagramLayoutContext, DvtDiagramLayoutContextNode, DvtDiagramLayoutContextLink } from '../ojdiagram';
-export function getLayout(obj: {
+export function getLayout<K1, K2, D1, D2>(obj: {
     nodes: Array<{
-        id: any;
+        id: K1;
         x: number;
         y: number;
         labelLayout?: LabelLayout;
     }>;
     links?: Array<{
-        id: any;
+        id: K2;
         path?: string;
-        coordinateSpace?: any;
+        coordinateSpace?: K1;
         labelLayout?: LabelLayout;
     }>;
     nodeDefaults?: {
-        labelLayout: LabelLayout | ((context: DvtDiagramLayoutContext, node: DvtDiagramLayoutContextNode) => LabelLayout);
+        labelLayout: LabelLayout | ((context: DvtDiagramLayoutContext<K1, K2, D1, D2>, node: DvtDiagramLayoutContextNode<K1, D1>) => LabelLayout);
     };
     linkDefaults?: {
-        path?: (context: DvtDiagramLayoutContext, link: DvtDiagramLayoutContextLink) => string;
-        labelLayout?: (context: DvtDiagramLayoutContext, link: DvtDiagramLayoutContextLink) => LabelLayout;
+        path?: (context: DvtDiagramLayoutContext<K1, K2, D1, D2>, link: DvtDiagramLayoutContextLink<K1, K2, D2>) => string;
+        labelLayout?: (context: DvtDiagramLayoutContext<K1, K2, D1, D2>, link: DvtDiagramLayoutContextLink<K1, K2, D2>) => LabelLayout;
     };
     viewport?: {
         x: number;
         y: number;
         w: number;
         h: number;
-    } | ((context: DvtDiagramLayoutContext) => {
+    } | ((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => {
         x: number;
         y: number;
         w: number;
         h: number;
     });
-}): (context: DvtDiagramLayoutContext) => void;
+}): (context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => void;
 // tslint:disable-next-line interface-over-type-literal
 export type LabelLayout = {
     x: number;

@@ -312,7 +312,7 @@ var __oj_menu_metadata =
    * @ojdisplayname Menu
    * @augments oj.baseComponent
    * @ojrole menu
-   * @since 0.6
+   * @since 0.6.0
    * @ojshortdesc A menu displays a list of options in a popup.
    * @ojstatus preview
    *
@@ -2866,203 +2866,215 @@ var __oj_menu_metadata =
         return;
       }
 
-      if (this._IsCustomElement()) {
-        this.refresh();
-      }
-      this.element.removeAttr('aria-activedescendant');
-      this.element.find('.oj-focus').removeClass('oj-focus');
-      this.focusHandled = false;
-      this._focusIsFromPointer = false;
-      this.mouseHandled = false;
-      this.activeMenu = this.element;
-      this.active = null;
-
-      //
-      // Important:  Merge [submenu]openOptions *before* calling _trigger(), and don't use the merged values until *after* the call.
-      // Reason:  Per doc on open() and beforeOpen event, we pass the merged openOptions to beforeOpen listeners as a "live" object,
-      // so the listener can both read and write the values used for this launch.  We may eventually pass submenuOpenOptions too, either to
-      // beforeOpen or to beforeSubmenuOpen, if we ever have that.
-      //
-      // Merge needs 2 steps:
-      // 1) Shallow merge (i.e. don't pass true as first arg to extend) of the 2 openOptions objects, into a new object.  Shallow so that the per-launch position object completely overrides the
-      // component option's position object rather than merging with it.
-      // 2) Then a deep copy of all object-valued fields in the merged object.  Position is the only such field, and it doesn't contain any objects of its own,
-      // so this is actually just a shallow copy of position.  This is so that if beforeOpen listener mutates the position object, the position object in the component option remains unchanged.
-      // Step 2 isn't needed for submenuOptions, since it isn't passed to beforeOpen.
-      // $.fn.position copies the object passed to it before modifying it, so Step 2 isn't needed for that reason.
-      // eslint-disable-next-line no-param-reassign
-      openOptions = $.extend({}, this.options.openOptions, openOptions);
-      // eslint-disable-next-line no-param-reassign
-      openOptions.position = $.extend({}, openOptions.position);
-      if (this._IsCustomElement()) {
-        this._setPosition(openOptions.position);
-      }
-
-      submenuOpenOptions = $.extend({}, this.options.submenuOpenOptions, submenuOpenOptions);
-
-      // getCurrentOpenOptions() returns a deep copy of this._currentOpenOptions if set.  Put the live copy in the ivar, and have that method make the copy, so that the method picks up
-      // beforeOpen listeners' changes to the live copy.  The old value of the ivar is non-null iff the menu is already open from a previous launch.  Grab the old value so we can restore it
-      // if this (new) launch is cancelled, in which case the old launch stays up and subsequent calls to the method should return the old value.
-      var oldOpenOptions = this._currentOpenOptions;
-      this._currentOpenOptions = openOptions;
-
-      oj.PositionUtils._normalizeEventForPosition(event); // see callee doc
-
-      // Hack:  __openingContextMenu is set and unset by baseComponent._OpenContextMenu(), since Menu needs to know whether the
-      // menu is open as a context menu vs. some other kind of menu including menu button,
-      // as this affects whether subsequent mousedown/touchstart on launcher should dismiss menu.  IIRC, the upcoming Popup Fmwk
-      // will address this need, but if not, fix it separately, perhaps by adding a new openOptions sub-option so it can be passed to menu.open().
-      this._launcherClickShouldDismiss = this.element[0].__openingContextMenu;
-
-      // TBD: if we ever pass submenuOpenOptions to a listener, must copy its position object first like we do for openOptions, above.
-      var beforeOpenResults = this._trigger2('beforeOpen', event, { openOptions: openOptions });
-
-      if (!beforeOpenResults.proceed) {
-        this._currentOpenOptions = oldOpenOptions; // see comment above
-        this._disableAnimation = false;
-        return;
-      }
-
-      // Close menu if already open
-      if (this.element.is(':visible')) {
-        // Disable animation since we'll be reopening the menu
-        this._disableAnimation = true;
-
-        // if getCurrentOpenOptions() is called during the close event marking the end of the previous launch,
-        // then it should return the details for the old launch
-        this._currentOpenOptions = oldOpenOptions;
-
-        // Use the beforeOpen event as the close event's originalEvent
-        this.__dismiss(beforeOpenResults.event); // sets this._currentOpenOptions to null
-
-        // In case the menu is being opened by a different launcher, we don't
-        // want the _clickAwayHandler for the old launcher to dismiss it.
-        this._dismissEvent = null;
-
-        this._currentOpenOptions = openOptions; // restore this launch's value
-      }
-
-      var launcher = openOptions.launcher;
-      if (!this._IsCustomElement()) {
-        launcher = $.type(launcher) === 'string'
-          ? $(launcher)
-          : launcher;
-      } else {
-        launcher = $.type(launcher) === 'string'
-          ? $(document.getElementById(launcher))
-          : $(launcher);
-      }
-
-      if (!launcher || !launcher.length) {
-            // need launcher so can return focus to it.
-        Logger.warn('When calling Menu.open(), must specify openOptions.launcher via the component option, method param, or beforeOpen listener.  Ignoring the call.');
-        this._currentOpenOptions = null;
-        this._disableAnimation = false;
-        return;
-      }
-
-      var isDropDown = this._isDropDown(openOptions.display);
-      this._toggleCancelDom(isDropDown);
-      var position;
-      var modality;
-
-      if (isDropDown) { // always true if there are submenus
-        // .oj-menu-dropdown already added to any submenus in _setup, since dropdown/sheet status can't
-        // vary by launch when there are submenus.
-        this.element.addClass('oj-menu-dropdown').removeClass('oj-menu-sheet');
-        modality = _DROPDOWN_MODALITY;
-
-        var openOptionsPosition =
-          oj.PositionUtils.normalizeHorizontalAlignment(openOptions.position, this.isRtl);
-        // convert the position option back to JQuery format if custom element menu or submenu
+      // The remaining menu open actions should proceed only when any autodismiss actions for the same menu have completed
+      var menuOpenActions = function (menuEvent, menuOpenOptions) {
         if (this._IsCustomElement()) {
-          // fixup the position option if custom element menu or submenu
-          // eslint-disable-next-line no-param-reassign
-          openOptionsPosition =
-            oj.PositionUtils.coerceToJet(openOptionsPosition, this.options.openOptions.position);
-          position = oj.PositionUtils.coerceToJqUi(openOptionsPosition);
+          this.refresh();
+        }
+        this.element.removeAttr('aria-activedescendant');
+        this.element.find('.oj-focus').removeClass('oj-focus');
+        this.focusHandled = false;
+        this._focusIsFromPointer = false;
+        this.mouseHandled = false;
+        this.activeMenu = this.element;
+        this.active = null;
+
+        //
+        // Important:  Merge [submenu]openOptions *before* calling _trigger(), and don't use the merged values until *after* the call.
+        // Reason:  Per doc on open() and beforeOpen event, we pass the merged openOptions to beforeOpen listeners as a "live" object,
+        // so the listener can both read and write the values used for this launch.  We may eventually pass submenuOpenOptions too, either to
+        // beforeOpen or to beforeSubmenuOpen, if we ever have that.
+        //
+        // Merge needs 2 steps:
+        // 1) Shallow merge (i.e. don't pass true as first arg to extend) of the 2 openOptions objects, into a new object.  Shallow so that the per-launch position object completely overrides the
+        // component option's position object rather than merging with it.
+        // 2) Then a deep copy of all object-valued fields in the merged object.  Position is the only such field, and it doesn't contain any objects of its own,
+        // so this is actually just a shallow copy of position.  This is so that if beforeOpen listener mutates the position object, the position object in the component option remains unchanged.
+        // Step 2 isn't needed for submenuOptions, since it isn't passed to beforeOpen.
+        // $.fn.position copies the object passed to it before modifying it, so Step 2 isn't needed for that reason.
+        // eslint-disable-next-line no-param-reassign
+        menuOpenOptions = $.extend({}, this.options.openOptions, menuOpenOptions);
+        // eslint-disable-next-line no-param-reassign
+        menuOpenOptions.position = $.extend({}, menuOpenOptions.position);
+        if (this._IsCustomElement()) {
+          this._setPosition(menuOpenOptions.position);
+        }
+
+        submenuOpenOptions = $.extend({}, this.options.submenuOpenOptions, submenuOpenOptions);
+
+        // getCurrentOpenOptions() returns a deep copy of this._currentOpenOptions if set.  Put the live copy in the ivar, and have that method make the copy, so that the method picks up
+        // beforeOpen listeners' changes to the live copy.  The old value of the ivar is non-null iff the menu is already open from a previous launch.  Grab the old value so we can restore it
+        // if this (new) launch is cancelled, in which case the old launch stays up and subsequent calls to the method should return the old value.
+        var oldOpenOptions = this._currentOpenOptions;
+        this._currentOpenOptions = menuOpenOptions;
+
+        oj.PositionUtils._normalizeEventForPosition(menuEvent); // see callee doc
+
+        // Hack:  __openingContextMenu is set and unset by baseComponent._OpenContextMenu(), since Menu needs to know whether the
+        // menu is open as a context menu vs. some other kind of menu including menu button,
+        // as this affects whether subsequent mousedown/touchstart on launcher should dismiss menu.  IIRC, the upcoming Popup Fmwk
+        // will address this need, but if not, fix it separately, perhaps by adding a new openOptions sub-option so it can be passed to menu.open().
+        this._launcherClickShouldDismiss = this.element[0].__openingContextMenu;
+
+        // TBD: if we ever pass submenuOpenOptions to a listener, must copy its position object first like we do for openOptions, above.
+        var beforeOpenResults = this._trigger2('beforeOpen', menuEvent, { openOptions: menuOpenOptions });
+
+        if (!beforeOpenResults.proceed) {
+          this._currentOpenOptions = oldOpenOptions; // see comment above
+          this._disableAnimation = false;
+          return;
+        }
+
+        // Close menu if already open
+        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+          // Disable animation since we'll be reopening the menu
+          this._disableAnimation = true;
+
+          // if getCurrentOpenOptions() is called during the close event marking the end of the previous launch,
+          // then it should return the details for the old launch
+          this._currentOpenOptions = oldOpenOptions;
+
+          // Use the beforeOpen event as the close event's originalEvent
+          this.__dismiss(beforeOpenResults.event); // sets this._currentOpenOptions to null
+
+          // In case the menu is being opened by a different launcher, we don't
+          // want the _clickAwayHandler for the old launcher to dismiss it.
+          this._dismissEvent = null;
+
+          this._currentOpenOptions = menuOpenOptions; // restore this launch's value
+        }
+
+        var launcher = menuOpenOptions.launcher;
+        if (!this._IsCustomElement()) {
+          launcher = $.type(launcher) === 'string'
+            ? $(launcher)
+            : launcher;
         } else {
-          position = openOptionsPosition;
+          launcher = $.type(launcher) === 'string'
+            ? $(document.getElementById(launcher))
+            : $(launcher);
         }
 
-        position.of = oj.PositionUtils.normalizePositionOf(position.of, launcher, event);
-      } else { // sheet menu, implying no submenus
-        this.element.addClass('oj-menu-sheet').removeClass('oj-menu-dropdown');
-        modality = _SHEET_MODALITY;
+        if (!launcher || !launcher.length) {
+          // need launcher so can return focus to it.
+          Logger.warn('When calling Menu.open(), must specify openOptions.launcher via the component option, method param, or beforeOpen listener.  Ignoring the call.');
+          this._currentOpenOptions = null;
+          this._disableAnimation = false;
+          return;
+        }
 
-        position = {
-          my: 'bottom',
-          at: _SHEET_POSITION_AT,
-          of: window,
-          collision: 'flipfit'
+        var isDropDown = this._isDropDown(menuOpenOptions.display);
+        this._toggleCancelDom(isDropDown);
+        var position;
+        var modality;
+
+        if (isDropDown) { // always true if there are submenus
+          // .oj-menu-dropdown already added to any submenus in _setup, since dropdown/sheet status can't
+          // vary by launch when there are submenus.
+          this.element.addClass('oj-menu-dropdown').removeClass('oj-menu-sheet');
+          modality = _DROPDOWN_MODALITY;
+
+          var openOptionsPosition =
+            oj.PositionUtils.normalizeHorizontalAlignment(menuOpenOptions.position, this.isRtl);
+          // convert the position option back to JQuery format if custom element menu or submenu
+          if (this._IsCustomElement()) {
+            // fixup the position option if custom element menu or submenu
+            // eslint-disable-next-line no-param-reassign
+            openOptionsPosition =
+              oj.PositionUtils.coerceToJet(openOptionsPosition, this.options.openOptions.position);
+            position = oj.PositionUtils.coerceToJqUi(openOptionsPosition);
+          } else {
+            position = openOptionsPosition;
+          }
+
+          position.of = oj.PositionUtils.normalizePositionOf(position.of, launcher, menuEvent);
+        } else { // sheet menu, implying no submenus
+          this.element.addClass('oj-menu-sheet').removeClass('oj-menu-dropdown');
+          modality = _SHEET_MODALITY;
+
+          position = {
+            my: 'bottom',
+            at: _SHEET_POSITION_AT,
+            of: window,
+            collision: 'flipfit'
+          };
+        }
+
+        // Close all other open menus
+        var currentMenu = this.element[0];
+        // Clone _openPopupMenus as __dismiss() will remove the open menu from _openPopupMenus list
+        var openPopupMenus = _openPopupMenus.slice(0, _openPopupMenus.length);
+        $.each(openPopupMenus, function (index, menu) {
+          if (menu.element[0] !== currentMenu) {
+            menu._collapse(menuEvent, 'eventSubtree'); // TBD: should this be "all"?
+            menu.__dismiss(menuEvent);
+          }
+        });
+
+        // cache the merged value for use while the (outer) menu is still open
+        this._submenuPosition =
+          oj.PositionUtils.normalizeHorizontalAlignment(submenuOpenOptions.position, this.isRtl);
+
+        var usingCallback = this._usingCallback;
+
+        // if they provided a using function that is not our callback, stash it
+        // away so that we can delegate to it in our proxy.
+        if ($.isFunction(position.using)) {
+          position.origUsing = position.using;
+        }
+
+        // override with our proxy to handle positioning of the tail
+        position.using = usingCallback;
+
+        this.element.data(_POSITION_DATA, position);
+
+        this._setWhenReady('open');
+
+        /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+        var psOptions = {};
+        psOptions[oj.PopupService.OPTION.POPUP] = this.element;
+        psOptions[oj.PopupService.OPTION.LAUNCHER] = launcher;
+        psOptions[oj.PopupService.OPTION.POSITION] = position;
+        psOptions[oj.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
+        psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = 'oj-menu-layer';
+        psOptions[oj.PopupService.OPTION.MODALITY] = modality;
+
+        // local variables passed to the before and after open callbacks.
+        psOptions[oj.PopupService.OPTION.CONTEXT] = {
+          event: menuEvent,
+          initialFocus: menuOpenOptions.initialFocus,
+          launcher: launcher,
+          isDropDown: isDropDown
         };
-      }
+        psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
 
-      // Close all other open menus
-      var currentMenu = this.element[0];
-      // Clone _openPopupMenus as __dismiss() will remove the open menu from _openPopupMenus list
-      var openPopupMenus = _openPopupMenus.slice(0, _openPopupMenus.length);
-      $.each(openPopupMenus, function (index, menu) {
-        if (menu.element[0] !== currentMenu) {
-          menu._collapse(event, 'eventSubtree'); // TBD: should this be "all"?
-          menu.__dismiss(event);
+        var popupService = oj.PopupService.getInstance();
+        var openCallback = popupService.open.bind(popupService, psOptions);
+        var deferredChild = this.element[0].querySelector('oj-defer');
+        if (deferredChild) {
+          // oj-defer was scoped as a dom level busy context in the component create.
+          // Wait until all components within oj-defer have been upgraded and rendered
+          // before trying to show and then position the popup. The busy state guarding
+          // open animation, created by _setWhenReady above, is scoped to an ancestor
+          // busy context. The oj-defer busy context and busy states associated with
+          // contained components will be tracked via this sub context.
+          var busyContext = oj.Context.getContext(deferredChild).getBusyContext();
+          busyContext.whenReady().then(openCallback);
+        } else {
+          openCallback();
         }
-      });
 
-      // cache the merged value for use while the (outer) menu is still open
-      this._submenuPosition =
-        oj.PositionUtils.normalizeHorizontalAlignment(submenuOpenOptions.position, this.isRtl);
+        this._disableAnimation = false;
+      }.bind(this, event, openOptions);
 
-      var usingCallback = this._usingCallback;
-
-      // if they provided a using function that is not our callback, stash it
-      // away so that we can delegate to it in our proxy.
-      if ($.isFunction(position.using)) {
-        position.origUsing = position.using;
-      }
-
-      // override with our proxy to handle positioning of the tail
-      position.using = usingCallback;
-
-      this.element.data(_POSITION_DATA, position);
-
-      this._setWhenReady('open');
-
-      /** @type {!Object.<oj.PopupService.OPTION, ?>} */
-      var psOptions = {};
-      psOptions[oj.PopupService.OPTION.POPUP] = this.element;
-      psOptions[oj.PopupService.OPTION.LAUNCHER] = launcher;
-      psOptions[oj.PopupService.OPTION.POSITION] = position;
-      psOptions[oj.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
-      psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = 'oj-menu-layer';
-      psOptions[oj.PopupService.OPTION.MODALITY] = modality;
-
-      // local variables passed to the before and after open callbacks.
-      psOptions[oj.PopupService.OPTION.CONTEXT] = {
-        event: event,
-        initialFocus: openOptions.initialFocus,
-        launcher: launcher,
-        isDropDown: isDropDown
-      };
-      psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
-
-      var popupService = oj.PopupService.getInstance();
-      var openCallback = popupService.open.bind(popupService, psOptions);
-      var deferredChild = this.element[0].querySelector('oj-defer');
-      if (deferredChild) {
-        // oj-defer was scoped as a dom level busy context in the component create.
-        // Wait until all components within oj-defer have been upgraded and rendered
-        // before trying to show and then position the popup. The busy state guarding
-        // open animation, created by _setWhenReady above, is scoped to an ancestor
-        // busy context. The oj-defer busy context and busy states associated with
-        // contained components will be tracked via this sub context.
-        var busyContext = oj.Context.getContext(deferredChild).getBusyContext();
-        busyContext.whenReady().then(openCallback);
+      // If autodismiss is in progress for this same menu
+      if (this._dismissEvent) {
+        // Wait for autoDismiss to complete before proceeding to open the menu
+        var busyContext = Context.getContext(this.element[0]).getBusyContext();
+        busyContext.whenReady().then(menuOpenActions);
       } else {
-        openCallback();
+        menuOpenActions();
       }
-
-      this._disableAnimation = false;
     },
 
     /**

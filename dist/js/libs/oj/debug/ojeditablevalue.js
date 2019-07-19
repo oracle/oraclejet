@@ -4,14 +4,14 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 
-define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojtranslation', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojmessaging', 'ojs/ojvalidation-base', 'ojs/ojlogger',
+define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojtranslation', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojmessaging', 'ojs/ojvalidation-base', 'ojs/ojlogger', 'ojs/ojlabelledbyutils',
 'ojs/ojjquery-hammer', 'promise', 'ojs/ojpopup', 'ojs/ojlabel'], 
   /*        
     * @param {Object} oj         
     * @param {jQuery} $        
     * @param {Object} Hammer        
   */
-function(oj, $, Hammer, Translations, Context, ThemeUtils, Components, AnimationUtils, Message, __ValidationBase, Logger)
+function(oj, $, Hammer, Translations, Context, ThemeUtils, Components, AnimationUtils, Message, __ValidationBase, Logger, LabelledByUtils)
 {
   "use strict";
 /**
@@ -25,7 +25,7 @@ function(oj, $, Hammer, Translations, Context, ThemeUtils, Components, Animation
  * @class oj.EditableValueUtils
  * @classdesc JET Editable Component Utils
  * @export
- * @since 0.6
+ * @since 0.6.0
  * @hideconstructor
  * @ignore
  *
@@ -113,14 +113,6 @@ oj.EditableValueUtils.validatorsOptionOptions = { doValueChangeCheck: false,
 * @type {string}
 */
 var _REQUIRED_ICON_ID = '_requiredIcon';
-
-/**
-* String used in the label element's id for custom &lt;oj-label>
-* @const
-* @ignore
-* @type {string}
-*/
-oj.EditableValueUtils.CUSTOM_LABEL_ELEMENT_ID = '|label';
 
 /**
 * Enum for validate() return values
@@ -665,150 +657,6 @@ oj.EditableValueUtils.setSubIdForCustomLabelFor = function (element, widgetId) {
 };
 
 /**
- * For custom element only. Only called from the 'set' components, like oj-radioset.
- * When labelledBy changes, we need to update the aria-labelledby attribute.
- * Note: If labelledBy changes from a value to null, we should still remove the oldValue from
- * aria-labelledby.
- * Note: This way isn't perfect since it assumes the internal label's id is oj-label id
- * + '|label'. Used by oj-radioset, oj-checkboxset, oj-color*
- * @param {Element} rootElement the root element, like oj-radioset. It must have an id.
- * @param {string|null} originalValue the old value of the labelledBy option
- * @param {string|null} value the new value of the labelledBy option.
- * @param {jQuery} $elems jquery Object containing the node(s) to add/remove aria-labelledby to.
- * @private
- * @ignore
- */
-oj.EditableValueUtils._updateLabelledBy = function (rootElement, originalValue, value, $elems) {
-  var suffix = oj.EditableValueUtils.CUSTOM_LABEL_ELEMENT_ID;
-  var byId;
-  var tokens;
-  var originalTokens;
-  var i;
-
-  if (!this._IsCustomElement()) {
-    return;
-  }
-
-  // originalValue is the 'old' value of labelledBy and value is the 'new' value of
-  // labelledBy. The most likely use case if originalValue is null. Check for that first.
-  if (!originalValue && value) {
-    // value can be a space-separated list of ids, so we need to split it and add the suffix
-    // to each one and put it back into a space-separated list.
-    // same thing as above, but for 'value'.
-    tokens = value.split(/\s+/);
-    for (i = 0; i < tokens.length; i++) {
-      byId = tokens[i];
-      // this adds one id at a time to aria-labelledBy attribute. It
-      // makes sure there are not duplicates.
-      oj.EditableValueUtils._addAriaLabelledBy($elems, byId + suffix);
-      // this sets data-oj-set-id on oj-label which in turn sets
-      // described-by on oj-radioset or other 'set' form component.
-      oj.EditableValueUtils._addSetIdOnLabel(byId, rootElement.id);
-    }
-  } else if (originalValue && !value) {
-    // if  original value has a value and value doesn't, remove all
-    // value can be a space-separated list of ids, so we need to split it and add the suffix
-    // to each one and put it back into a space-separated list.
-    // same thing as above, but for 'value'.
-    tokens = originalValue.split(/\s+/);
-    for (i = 0; i < tokens.length; i++) {
-      byId = tokens[i];
-      // this adds/removes one id at a time to aria-labelledBy attribute. It
-      // makes sure there are not duplicates.
-      oj.EditableValueUtils._removeAriaLabelledBy($elems, byId + suffix);
-      oj.EditableValueUtils._removeDescribedByWithPrefix(rootElement, byId + '|');
-    }
-  } else if (originalValue && value) {
-    // if both original value and value have values, then we should figure out which are the
-    // same and ignore them, and remove the ones from original value that are unique and
-    // add the ones for value that are unique.
-    tokens = value.split(/\s+/);
-    originalTokens = originalValue.split(/\s+/);
-    for (i = 0; i < originalTokens.length; i++) {
-      byId = originalTokens[i];
-      if (value.indexOf(byId) === -1) {
-        // not in both, so remove it (add the suffix)
-        oj.EditableValueUtils._removeAriaLabelledBy($elems, byId + suffix);
-        oj.EditableValueUtils._removeDescribedByWithPrefix(rootElement, byId + '|');
-      }
-    }
-    for (i = 0; i < tokens.length; i++) {
-      byId = tokens[i];
-      if (originalValue.indexOf(byId) === -1) {
-        // not in both, so add it (add the suffix)
-        oj.EditableValueUtils._addAriaLabelledBy($elems, byId + suffix);
-        oj.EditableValueUtils._addSetIdOnLabel(byId, rootElement.id);
-      }
-    }
-  }
-};
-
-/** For custom element only.
- * When describedBy changes, we need to update the aria-described attribute.
- * @param {string|null} originalValue the old value of the labelledBy option
- * @param {string|null} value the new value of the labelledBy option.
- * @private
- * @ignore
- */
-oj.EditableValueUtils._updateDescribedBy = function (originalValue, value) {
-  var byId;
-  var tokens;
-  var originalTokens;
-  var i;
-
-  if (!this._IsCustomElement()) {
-    return;
-  }
-
-  // originalValue is the 'old' value of describedBy and value is the 'new' value of
-  // describedBy. The most likely use case if originalValue is null. Check for that first.
-  if (!originalValue && value) {
-    // value can be a space-separated list of ids, so we need to split it
-    // to each one and put it back into a space-separated list.
-    // same thing as above, but for 'value'.
-    tokens = value.split(/\s+/);
-    for (i = 0; i < tokens.length; i++) {
-      byId = tokens[i];
-      // this adds one id at a time to aria-labelledBy attribute. It
-      // makes sure there are not duplicates.
-      this._addAriaDescribedBy(byId);
-    }
-  } else if (originalValue && !value) {
-    // if  original value has a value and value doesn't, remove all
-    // value can be a space-separated list of ids, so we need to split it
-    // to each one and put it back into a space-separated list.
-    // same thing as above, but for 'value'.
-    tokens = originalValue.split(/\s+/);
-    for (i = 0; i < tokens.length; i++) {
-      byId = tokens[i];
-      // this adds/removes one id at a time to aria-labelledBy attribute. It
-      // makes sure there are not duplicates.
-      this._removeAriaDescribedBy(byId);
-    }
-  } else if (originalValue && value) {
-    // if both original value and value have values, then we should figure out which are the
-    // same and ignore them, and remove the ones from original value that are unique and
-    // add the ones for value that are unique.
-    tokens = value.split(/\s+/);
-    originalTokens = originalValue.split(/\s+/);
-    for (i = 0; i < originalTokens.length; i++) {
-      byId = originalTokens[i];
-      if (value.indexOf(byId) === -1) {
-        // not in both, so remove it
-        this._removeAriaDescribedBy(byId);
-      }
-    }
-    for (i = 0; i < tokens.length; i++) {
-      byId = tokens[i];
-      if (originalValue.indexOf(byId) === -1) {
-        // not in both, so add it
-        this._addAriaDescribedBy(byId);
-      }
-    }
-  }
-};
-
-/**
  * Refresh everything that needs refreshing when the required option is toggled:
  * refreshes theming, aria-required, label.
  *
@@ -1007,6 +855,16 @@ oj.EditableValueUtils._AfterSetOptionConverter = function () {
  * @ignore
  */
 oj.EditableValueUtils._AfterCreateConverterCached = function () {
+  // we do this here for a couple reasons
+  // 1. because here we have the final value; an empty placeholder
+  // shows up if data changed after first binding. 
+  // 2. we do not want the placeholder displayed while the loading
+  // indication is showing.
+  if (this._HasPlaceholderSet()) {
+    // update element placeholder
+    this._SetPlaceholder(this.options.placeholder);
+    this._customPlaceholderSet = true;
+  }
   // can't show validator hints or converter hints until we have the converter
   // because some validators have the converter as an option.
   this._initComponentMessaging(this._MESSAGING_CONTENT_UPDATE_TYPE.ALL);
@@ -1284,20 +1142,6 @@ oj.EditableValueUtils._ClearBusyStateAsyncValidatorHint = function (counter) {
     }
   }
 };
-/** .
- * Add 'data-oj-set-id' on oj-label, which in turn will
- * set described-by back on the Form component.
- * @param {string} ojLabelId the oj-label element's id.
- * @param {string} formComponentId the id of the form component
- * @private
- * @ignore
- */
-oj.EditableValueUtils._addSetIdOnLabel = function (ojLabelId, formComponentId) {
-  var ojLabel = document.getElementById(ojLabelId);
-  if (ojLabel && !ojLabel.getAttribute('data-oj-set-id')) {
-    ojLabel.setAttribute('data-oj-set-id', formComponentId);
-  }
-};
 
 /**
  * Set busy state for component for async converter loading.
@@ -1349,96 +1193,6 @@ oj.EditableValueUtils._getShowLoadingDelay = function () {
   return isNaN(delay) ? 0 : delay;
 };
 
-/** .
- * Add the id to the widget's aria-labelledby attribute.
- * @param {jQuery} $elems the jquery element(s) that represents the node on which aria-labelledby is
- * @param {string} id id to add to aria-labelledby
- * @private
- * @ignore
- */
-oj.EditableValueUtils._addAriaLabelledBy = function ($elems, id) {
-  var index;
-
-  $elems.each(function () {
-    var labelledBy = this.getAttribute('aria-labelledby');
-    var tokens;
-
-    tokens = labelledBy ? labelledBy.split(/\s+/) : [];
-    // Get index that id is in the tokens, if at all.
-    index = tokens.indexOf(id);
-    // add id if it isn't already there
-    if (index === -1) {
-      tokens.push(id);
-    }
-    labelledBy = tokens.join(' ').trim();
-    if (labelledBy == null) {
-      this.removeAttribute('aria-labelledBy');
-    } else {
-      this.setAttribute('aria-labelledBy', labelledBy);
-    }
-  });
-};
-
-/**
- * Remove the id from the widget's aria-labelledby attribute.
- * @param {jQuery} $elems the jquery element(s) that represents the node on which aria-labelledby is
- * @param {string} id id to remove from aria-labelledby
- * @private
- * @ignore
- */
-oj.EditableValueUtils._removeAriaLabelledBy = function ($elems, id) {
-  var labelledBy;
-
-  $elems.each(function () {
-    var index;
-    var tokens;
-
-    // get aria-labelledby that is on the element(s)
-    labelledBy = this.getAttribute('aria-labelledby');
-    // split into tokens
-    tokens = labelledBy ? labelledBy.split(/\s+/) : [];
-    // Get index that id is in the tokens, if at all.
-    index = tokens.indexOf(id);
-    // remove that from the tokens array
-    if (index !== -1) {
-      tokens.splice(index, 1);
-    }
-    // join the tokens back together and trim whitespace
-    labelledBy = tokens.join(' ').trim();
-    if (labelledBy) {
-      this.setAttribute('aria-labelledby', labelledBy);
-    } else {
-      this.removeAttribute('aria-labelledby');
-    }
-  });
-};
-/**
- * Remove the id that starts with the prefix from the element's described-by attribute.
- * @param {Element} element the element, like oj-radioset
- * @param {string} prefix prefix of the described-by value to remove.
- * @private
- * @ignore
- */
-oj.EditableValueUtils._removeDescribedByWithPrefix = function (element, prefix) {
-  var describedBy;
-  var tokens;
-
-  describedBy = element.getAttribute('described-by');
-  // split into tokens
-  tokens = describedBy ? describedBy.split(/\s+/) : [];
-  tokens = tokens.filter(function (item) {
-    return item.indexOf(prefix) === -1;
-  });
-  // join the tokens back together and trim whitespace
-  describedBy = tokens.join(' ').trim();
-  // join the tokens back together and trim whitespace
-  describedBy = tokens.join(' ').trim();
-  if (describedBy) {
-    element.setAttribute('described-by', describedBy);
-  } else {
-    element.removeAttribute('described-by');
-  }
-};
 /**
  * Set the type of the input element based on virtualKeyboard option.
  *
@@ -1482,7 +1236,7 @@ oj.EditableValueUtils._SetInputType = function (allowedTypes) {
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/* global Promise:false, Components:false, Message:false, __ValidationBase:false, Logger:false, Translations:false */
+/* global Promise:false, Components:false, Message:false, __ValidationBase:false, Logger:false, Translations:false, LabelledByUtils:false */
 /**
  * The various validation modes
  * @ignore
@@ -1551,7 +1305,7 @@ var _PENDING = 'pending';
  *              ]
  * @ojtsimport {module: "ojmessaging", type:"AMD", importName: "Message"}
  * @abstract
- * @since 0.6
+ * @since 0.6.0
  * @ojshortdesc Abstract EditableValue element
  * @ojrole input
  * @hideconstructor
@@ -1702,7 +1456,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * @public
        * @instance
        * @memberof oj.editableValue
-       * @since 0.7
+       * @since 0.7.0
        */
       disabled: false,
       /**
@@ -1824,7 +1578,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * @instance
        * @public
        * @type {Object}
-       * @since 0.7
+       * @since 0.7.0
        */
       help: undefined,
       /**
@@ -2035,7 +1789,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * @default []
        * @type {Array.<Object>}
        * @ojsignature {target: "Type", value: "Array<oj.Message>"}
-       * @since 0.7
+       * @since 0.7.0
        * @ojwriteback
        */
       messagesCustom: [],
@@ -2065,7 +1819,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * @memberof oj.editableValue
        * @default []
        * @type {Array.<Object>|undefined}
-       * @since 0.7
+       * @since 0.7.0
        * @see #showMessages
        * @readonly
        * @ignore
@@ -2099,7 +1853,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * @memberof oj.editableValue
        * @default []
        * @type {Array.<Object>|undefined}
-       * @since 0.7
+       * @since 0.7.0
        * @readonly
        * @ignore
        * @ojwriteback
@@ -2118,14 +1872,18 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * </p>
        *
        * <p>
-       * JET takes the help instruction text and creates a notewindow with the text.
-       * The help instruction only shows up as a tooltip on mouse over, not on keyboard and not in a mobile
-       * device. So help instruction would only be for text that is not important enough to show all users, or
+       * JET takes the help instruction text and creates a notewindow with the text. The notewindow pops up
+       * when the field takes focus and closes when the field loses focus.
+       * </p>
+       * <p>
+       * How is help.instruction better than the html 'title' attribute?
+       * The html 'title' attribute only shows up as a tooltip on mouse over, not on keyboard and not in a mobile
+       * device. So the html 'title' would only be for text that is not important enough to show all users, or
        * for text that you show the users in another way as well, like in the label.
        * Also you cannot theme the native browser's title window like you can the JET
-       * notewindow, so low vision users may have a hard time seeing it.
-       * For these reasons, the JET EditableValue components do not use the HTML's title
-       * attribute.
+       * notewindow, so low vision users may have a hard time seeing the 'title' window.
+       * For these reasons, the JET EditableValue components do not use the HTML's 'title'
+       * attribute and instead use the help.instruction attribute.
        * </p>
        *
        * <p>
@@ -2273,7 +2031,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * @default null
        * @ojwriteback
        * @memberof oj.editableValue
-       * @since 0.6
+       * @since 0.6.0
        * @type {any}
        * @ojsignature {
        *                 target: "Accessor",
@@ -2524,7 +2282,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @return {void}
      * @memberof oj.editableValue
      * @ojshortdesc Called when the DOM underneath the component changes, requiring a re-render of the component.
-     * @since 0.7
+     * @since 0.7.0
      */
     refresh: function () {
       this._super();
@@ -2547,7 +2305,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @return {void}
      * @memberof oj.editableValue
      * @ojshortdesc Resets the component by clearing all messages and messages attributes, and updates the component's display value using the attribute value.
-     * @since 0.7
+     * @since 0.7.0
      */
     reset: function () {
       this._clearAllMessages();
@@ -2575,7 +2333,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @expose
      * @memberof oj.editableValue
      * @ojshortdesc Takes all deferred messages and shows them.
-     * @since 0.7
+     * @since 0.7.0
      */
     showMessages: function () {
       var clonedMsgs = [];
@@ -2721,14 +2479,6 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
 
       // update element DOM for disabled. TODO: say why
       this._SetDisabledDom(node);
-
-      // we do this here instead of in _InitOptions because here we have the final value.
-      //  - an empty placeholder shows up if data changed after first binding
-      if (this._HasPlaceholderSet()) {
-        // update element placeholder
-        this._SetPlaceholder(this.options.placeholder);
-        this._customPlaceholderSet = true;
-      }
 
       // remove html5 validation attributes; it's safe to remove these here because components should
       // have already initialized options based on DOM in _InitOptions().
@@ -4625,75 +4375,6 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
       }
       return id;
     },
-    /**
-     * Add the aria-describedby on the content element(s) if it isn't already there.
-     *
-     * @param {string} id the id for aria-describedby
-     * @private
-     * @memberof oj.editableValue
-     * @instance
-     *
-     */
-    _addAriaDescribedBy: function (id) {
-      var contentElements = this._GetContentElement();
-      var index;
-
-      contentElements.each(function () {
-        var describedby = this.getAttribute('aria-describedby');
-        var tokens;
-
-        tokens = describedby ? describedby.split(/\s+/) : [];
-        // Get index that id is in the tokens, if at all.
-        index = tokens.indexOf(id);
-        // add id if it isn't already there
-        if (index === -1) {
-          tokens.push(id);
-        }
-        describedby = tokens.join(' ').trim();
-
-        if (describedby == null) {
-          this.removeAttribute('aria-describedby');
-        } else {
-          this.setAttribute('aria-describedby', describedby);
-        }
-      });
-    },
-    /**
-     * Remove the aria-describedby from the content element(s).
-     *
-     * @param {string} id the id for aria-describedby
-     * @private
-     * @memberof oj.editableValue
-     * @instance
-     *
-     */
-    _removeAriaDescribedBy: function (id) {
-      var contentElements = this._GetContentElement();
-
-      contentElements.each(function () {
-        var describedby;
-        var index;
-        var tokens;
-
-        // get aria-describedby that is on the content element(s)
-        describedby = this.getAttribute('aria-describedby');
-        // split into tokens
-        tokens = describedby ? describedby.split(/\s+/) : [];
-        // Get index that id is in the tokens, if at all.
-        index = tokens.indexOf(id);
-        // remove that from the tokens array
-        if (index !== -1) {
-          tokens.splice(index, 1);
-        }
-        // join the tokens back together and trim whitespace
-        describedby = tokens.join(' ').trim();
-        if (describedby) {
-          this.setAttribute('aria-describedby', describedby);
-        } else {
-          this.removeAttribute('aria-describedby');
-        }
-      });
-    },
 
     /**
      * Returns a concat of messagesShown and messagesHidden.
@@ -5983,7 +5664,23 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @instance
      * @private
      */
-    _updateDescribedBy: oj.EditableValueUtils._updateDescribedBy,
+    _updateDescribedBy: LabelledByUtils._updateDescribedBy,
+    /**
+     * Add the aria-describedby on the content element(s) if it isn't already there.
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @private
+     */
+    _addAriaDescribedBy: LabelledByUtils._addAriaDescribedBy,
+    /**
+     * Remove the aria-describedby from the content element(s)
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @private
+     */
+    _removeAriaDescribedBy: LabelledByUtils._removeAriaDescribedBy,
     /**
      * Set busy state for async validators
      *

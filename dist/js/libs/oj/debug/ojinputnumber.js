@@ -312,7 +312,7 @@ var __oj_input_number_metadata =
  *                for: "SettableProperties"
  *               }
  *              ]
- * @since 0.6
+ * @since 0.6.0
  * @ojshortdesc An input number allows the user to enter a number value.
  * @ojrole textbox
  * @ojrole spinbutton
@@ -361,12 +361,6 @@ var __oj_input_number_metadata =
  * The component is accessible; it sets and maintains the appropriate aria- attributes,
  * like aria-valuenow, aria-valuemax, aria-valuemin and aria-valuetext.
  * </p>
- * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
- * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
- * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
- * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
- * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
- * required of enabled content, it cannot be used to convey meaningful information.<p>
  * <p>
  * If there is no oj-label for the oj-input-number, add aria-label on oj-input-number
  * to make it accessible.
@@ -829,7 +823,7 @@ var __oj_input_number_metadata =
          * @access public
          * @instance
          * @default ""
-         * @ojdeprecated {since: '6.0.0', description: 'JET does not use form submit, so this not needed'}
+         * @ojdeprecated {since: '6.0.0', description: 'JET does not use form submit, so this is not needed.'}
          * @ojtsignore
          * @memberof oj.ojInputNumber
          * @ojextension {_COPY_TO_INNER_ELEM: true}
@@ -981,7 +975,7 @@ var __oj_input_number_metadata =
          * @ojshortdesc Specifies whether the component is required or optional. See the Help documentation for more information.
          * @type {boolean}
          * @default false
-         * @since 0.7
+         * @since 0.7.0
          * @see #translations
          */
         required: false,

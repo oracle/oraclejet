@@ -3086,7 +3086,14 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
     var bodyAbstract = shreddedPayload.map(function (element) {
       return {
         name: element.name,
-        keys: element.keys,
+        keys: element.keys ? element.keys.reduce(function(processedKeys, key) {
+          if (key) {
+            processedKeys.push(key.toString());
+          } else {
+            logger.warn("should not have undefined key in the shredded data");
+          }
+          return processedKeys;
+        }, []) : element.keys,
         resourceType: element.resourceType
       };
     });

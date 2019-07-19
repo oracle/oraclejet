@@ -1001,6 +1001,12 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @interface DvtDiagramLayoutContext
  * @since 3.0
  * @memberof oj
+ * @ojsignature {target: "Type",
+ *               value: "interface DvtDiagramLayoutContext<K1, K2, D1 extends oj.ojDiagram.Node<K1>|any, D2 extends oj.ojDiagram.Link<K2, K1>|any>",
+ *               genericParameters: [{"name": "K1", "description": "Type of key of the nodeData dataprovider"},
+ *                                   {"name": "K2", "description": "Type of key of the linkData dataprovider"},
+ *                                   {"name": "D1", "description": "Type of data from the nodeData dataprovider"},
+ *                                   {"name": "D2", "description": "Type of data from the linkData dataprovider"}]}
  */
 
 /**
@@ -1011,6 +1017,8 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @return {oj.DvtDiagramLayoutContextNode}
  * @memberof oj.DvtDiagramLayoutContext
  * @export
+ * @ojsignature {target: "Type", value: "K1", for: "id"}
+ * @ojsignature {target: "Type", value: "DvtDiagramLayoutContextNode<K1,D1>", for: "returns"}
  */
 
 /**
@@ -1021,6 +1029,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @return {oj.DvtDiagramLayoutContextNode}
  * @memberof oj.DvtDiagramLayoutContext
  * @export
+ * @ojsignature {target: "Type", value: "DvtDiagramLayoutContextNode<K1,D1>", for: "returns"}
  */
 
 /**
@@ -1040,6 +1049,8 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @return {oj.DvtDiagramLayoutContextLink}
  * @memberof oj.DvtDiagramLayoutContext
  * @export
+ * @ojsignature {target: "Type", value: "K1", for: "id"}
+ * @ojsignature {target: "Type", value: "DvtDiagramLayoutContextLink<K1, K2, D2>", for: "returns"}
  */
 
 /**
@@ -1049,6 +1060,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @param {number} index index of link context to get
  * @return {oj.DvtDiagramLayoutContextLink}
  * @memberof oj.DvtDiagramLayoutContext
+ * @ojsignature {target: "Type", value: "DvtDiagramLayoutContextLink<K1, K2, D2>", for: "returns"}
  * @export
  */
 
@@ -1135,6 +1147,9 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @param {any} nodeId1 first node id
  * @param {any} nodeId2 second node id
  * @memberof oj.DvtDiagramLayoutContext
+ * @ojsignature {target: "Type", value: "K1", for: "nodeId1"}
+ * @ojsignature {target: "Type", value: "K1", for: "nodeId2"}
+ * @ojsignature {target: "Type", value: "K1|null", for: "returns"}
  * @export
  */
 
@@ -1149,6 +1164,8 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @memberof oj.DvtDiagramLayoutContext
  * @since 4.0.0
  * @export
+ * @ojdeprecated {since: '7.1.0', description: 'The function is supported with DiagramDataSource. Use data providers instead.'}
+ * @ojtsignore
  */
 
 // Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
@@ -1159,6 +1176,9 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @interface DvtDiagramLayoutContextLink
  * @since 3.0
  * @memberof oj
+ * @ojsignature {target: "Type",
+ *               value: "interface DvtDiagramLayoutContextLink<K1, K2, D2 extends oj.ojDiagram.Link<K2, K1>|any>",
+ *               genericParameters: [{"name": "D2", "description": "Type of data from the linkData dataprovider"}]}
  */
 
 /**
@@ -1168,6 +1188,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @return {any}
  * @memberof oj.DvtDiagramLayoutContextLink
  * @export
+ * @ojsignature {target: "Type", value: "K2", for: "returns"}
  */
 
 /**
@@ -1176,6 +1197,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @instance
  * @return {any}
  * @memberof oj.DvtDiagramLayoutContextLink
+ * @ojsignature {target: "Type", value: "K1", for: "returns"}
  * @export
  */
 
@@ -1185,6 +1207,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @instance
  * @return {any}
  * @memberof oj.DvtDiagramLayoutContextLink
+ * @ojsignature {target: "Type", value: "K1", for: "returns"}
  * @export
  */
 
@@ -1432,6 +1455,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @param {any} containerId  coordinate container id for the link
  * @return {void}
  * @memberof oj.DvtDiagramLayoutContextLink
+ * @ojsignature {target: "Type", value: "K1", for: "containerId"}
  * @export
  */
 
@@ -1445,6 +1469,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @instance
  * @return {any} coordinate container id for the link
  * @memberof oj.DvtDiagramLayoutContextLink
+ * @ojsignature {target: "Type", value: "K1", for: "returns"}
  * @export
  */
 
@@ -1456,6 +1481,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * an array of data objects for each link that is represented by the promoted link if the link is promoted
  * @memberof oj.DvtDiagramLayoutContextLink
  * @export
+ * @ojsignature {target: "Type", value: "D2|D2[]", for: "returns"}
  */
 
 /**
@@ -1475,6 +1501,9 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @interface DvtDiagramLayoutContextNode
  * @since 3.0
  * @memberof oj
+ * @ojsignature {target: "Type",
+ *               value: "interface DvtDiagramLayoutContextNode<K1, D1 extends oj.ojDiagram.Node<K1>|any>",
+ *               genericParameters: [{"name": "D1", "description": "Type of data from the nodeData dataprovider"}]}
  */
 
 /**
@@ -1483,6 +1512,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @instance
  * @return {any}
  * @memberof oj.DvtDiagramLayoutContextNode
+ * @ojsignature {target: "Type", value: "K1", for: "returns"}
  * @export
  */
 
@@ -1733,6 +1763,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @instance
  * @return {array} array of DvtDiagramLayoutContextNode objects
  * @memberof oj.DvtDiagramLayoutContextNode
+ * @ojsignature {target: "Type", value: "DvtDiagramLayoutContextNode<K1, D1>[]", for: "returns"}
  * @export
  */
 
@@ -1747,6 +1778,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} x x-coordinate
  * @property {number} y y-coordinate
  * @memberof oj.DvtDiagramLayoutContextNode
+ * @ojsignature {target: "Type", value: "K1", for: "containerId"}
  * @ojsignature {target: "Type", value: "{ x: number, y: number }", for: "returns"}
  * @export
  */
@@ -1758,6 +1790,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @return {object} a data object for the node
  * @memberof oj.DvtDiagramLayoutContextNode
  * @export
+ * @ojsignature {target: "Type", value: "D1", for: "returns"}
  */
 
 /* global DiagramUtils:false */
@@ -2012,13 +2045,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * An optional callback function that receives the "dragstart" event and context information as arguments.
          * The context information is as follows:
          * <ul>
-         *   <li>nodes {Array.(object)}: An array of dataContexts of the dragged data nodes.
-         *      The dataContext for the node has the following properties:
-         *      <ul>
-         *        {@ojinclude "name":"dataContext"}
-         *        <li>nodeOffset: An object with x,y properties, that reflects node offset from the upper left corner of the bounding box for the dragged content.</li>
-         *      </ul>
-         *   </li>
+         *   <li>nodes {Array.(object)}: An array of data contexts of the dragged data nodes.</li>
          * </ul>
          * This function can set its own data and drag image as needed. When this function is called, event.dataTransfer is already populated with the default data and drag image.
          * @ojshortdesc Optional handler for dragstart event.
@@ -2028,6 +2055,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: Event, context: {nodes: oj.ojDiagram.DndNodeContext<K1,D1>[]}) => void)", jsdocOverride: true}
          */
         /**
          * If this object is specified, the diagram will initiate link creation when the user starts dragging from a port.
@@ -2043,16 +2071,14 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * If the function is not specified the link feedback will use default link styles.
          * The function will take a single parameter - a context object with the following properties:
          * <ul>
-         *   <li>dataContext The dataContext object of the link start node.
-         *    <ul>{@ojinclude "name":"dataContext"}</ul>
-         *   </li>
          *   <li>portElement DOM element recognized as a port that received drag event.</li>
+         *   <li>dataContext The dataContext object of the link start node.</li>
          * </ul>
          * The function should return one of the following:
          * <ul>
          *   <li>an object with the following properties:
          *     <ul>
-         *       <li> svgStyle : Inline stlye object to be applied on the link feedback </li>
+         *       <li> svgStyle : Inline style object to be applied on the link feedback </li>
          *       <li> svgClassName : A name of a style class to be applied on the link </li>
          *     </ul>
          *   </li>
@@ -2065,6 +2091,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Object)}
          * @default null
+         * @ojsignature {target: "Type", value: "((context: {portElement: Element, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => ({svgStyle?: CSSStyleDeclaration, svgClassName?: string} | null))", jsdocOverride: true}
          */
         /**
          * A string, containing a selector expression, that will be used to identify the descendant DOM element in a diagram node that can be used for link creation. This property is requred.
@@ -2112,10 +2139,8 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * <ul>
          *   <li> ports {object}: An object with the following properties:
          *     <ul>
-         *       <li> dataContext : The dataContext object of the link start node with the following properties:
-         *        <ul>{@ojinclude "name":"dataContext"}<ul>
-         *       </li>
          *       <li> portElement : DOM element recognized as a port that received drag event. </li>
+         *       <li> dataContext : The dataContext object of the link start node</li>
          *     </ul>
          *   </li>
          * </ul>
@@ -2126,6 +2151,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: Event, context: {ports: {portElement: Element, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>}}) => void)", jsdocOverride: true}
          */
         /**
          * An object that describes drop functionality.
@@ -2165,6 +2191,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragover" event and context information as arguments.
@@ -2177,6 +2204,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragleave" event and context information as arguments.
@@ -2188,6 +2216,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
          */
         /**
          * A callback function that receives the "drop" event and context information as arguments.
@@ -2200,6 +2229,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
          */
         /**
          * Allows dropping on diagram nodes.
@@ -2230,6 +2260,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragover" event and context information as arguments.
@@ -2242,6 +2273,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragleave" event and context information as arguments.
@@ -2253,6 +2285,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
          */
         /**
          * A callback function that receives the "drop" event and context information as arguments.
@@ -2265,6 +2298,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
          */
         /**
          * Allows dropping on diagram links.
@@ -2295,6 +2329,10 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {
+         *  target: "Type",
+         *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
+         *  jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragover" event and context information as arguments.
@@ -2307,6 +2345,10 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {
+         *  target: "Type",
+         *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
+         *  jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragleave" event and context information as arguments.
@@ -2318,6 +2360,10 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {
+         *  target: "Type",
+         *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
+         *  jsdocOverride: true}
          */
         /**
          * A callback function that receives the "drop" event and context information as arguments.
@@ -2330,6 +2376,10 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {
+         *  target: "Type",
+         *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
+         *  jsdocOverride: true}
          */
         /**
          * Allows dropping a link end on a port.
@@ -2370,6 +2420,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragover" event and context information as arguments.
@@ -2382,6 +2433,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragleave" event and context information as arguments.
@@ -2393,6 +2445,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
          */
         /**
          * A callback function that receives the "drop" event and context information as arguments.
@@ -2405,6 +2458,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Event, Object)}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
          */
       },
 
@@ -3722,6 +3776,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * @see <a href="oj.DvtDiagramLayoutContext.html">DvtDiagramLayoutContext</a>
        * @see <a href="oj.DvtDiagramLayoutContextLink.html">DvtDiagramLayoutContextLink</a>
        * @see <a href="oj.DvtDiagramLayoutContextNode.html">DvtDiagramLayoutContextNode</a>
+       * @ojsignature {target: "Type", value: "((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => void)", jsdocOverride: true}
        */
       /**
        * Triggered immediately before any container node in the diagram is expanded.
@@ -3733,6 +3788,8 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * @event
        * @memberof oj.ojDiagram
        * @instance
+       * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
+       *               {target:"Type", value:"K1", for:"nodeId"}]
        */
       beforeExpand: null,
       /**
@@ -3744,6 +3801,8 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * @event
        * @memberof oj.ojDiagram
        * @instance
+       * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
+       *               {target:"Type", value:"K1", for:"nodeId"}]
        */
       expand: null,
       /**
@@ -3752,10 +3811,12 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * @ojshortdesc Event handler for when a node is about to collapse.
        * @ojcancelable
        * @expose
-       * @property {any} data.nodeId the id of the collapsing object
+       * @property {any} nodeId the id of the collapsing object
        * @event
        * @memberof oj.ojDiagram
        * @instance
+       * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
+       *               {target:"Type", value:"K1", for:"nodeId"}]
        */
       beforeCollapse: null,
       /**
@@ -3763,10 +3824,12 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        *
        * @ojshortdesc Event handler for after a node has collapsed.
        * @expose
-       * @property {any} data.nodeId the id of the collapsed object
+       * @property {any} nodeId the id of the collapsed object
        * @event
        * @memberof oj.ojDiagram
        * @instance
+       * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
+       *               {target:"Type", value:"K1", for:"nodeId"}]
        */
       collapse: null
     },
@@ -3789,7 +3852,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
       if (this.options._templateFunction) {
         this.options.renderer = this._GetTemplateDataRenderer(this.options._templateFunction, 'node');
       }
-      if (this.options.renderer) {
+      if (this.options.renderer || this._TemplateHandler.getTemplates().nodeContentTemplate) {
         this.options._contextHandler = this._getContextHandler();
       }
       if (this.options.nodeData) {
@@ -3836,11 +3899,11 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
     //* * @inheritdoc */
     _GetComponentRendererOptions: function () {
       return [{ path: 'tooltip/renderer', slot: 'tooltipTemplate' },
-              { path: 'renderer' },
-              { path: 'focusRenderer' },
-              { path: 'hoverRenderer' },
-              { path: 'selectionRenderer' },
-              { path: 'zoomRenderer' }];
+              { path: 'renderer', slot: 'nodeContentTemplate' },
+              { path: 'focusRenderer', slot: 'nodeContentTemplate' },
+              { path: 'hoverRenderer', slot: 'nodeContentTemplate' },
+              { path: 'selectionRenderer', slot: 'nodeContentTemplate' },
+              { path: 'zoomRenderer', slot: 'nodeContentTemplate' }];
     },
 
     //* * @inheritdoc */
@@ -4043,7 +4106,10 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
         { path: 'styleDefaults/linkDefaults/hoverOuterColor', property: 'border-top-color' },
         { path: 'styleDefaults/linkDefaults/hoverInnerColor', property: 'border-bottom-color' }
       ];
-      styleClasses['oj-diagram-overview'] = { path: 'styleDefaults/_overviewStyles/overview/backgroundColor', property: 'background-color' };
+      styleClasses['oj-diagram-overview'] = [
+        { path: 'styleDefaults/_overviewStyles/overview/backgroundColor', property: 'background-color' },
+        { path: 'styleDefaults/_overviewStyles/overview/padding', property: 'padding' }
+      ];
       styleClasses['oj-diagram-overview-viewport'] = [
         { path: 'styleDefaults/_overviewStyles/viewport/borderColor', property: 'border-color' },
         { path: 'styleDefaults/_overviewStyles/viewport/backgroundColor', property: 'background-color' }
@@ -4174,6 +4240,60 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
         }.bind(this)
       });
       return configs;
+    },
+
+    //* * @inheritdoc */
+    _WrapInlineTemplateRenderer: function (origRenderer, templateName, option) {
+      var templateDataSet = this._TemplateHandler.getDataSet(templateName);
+
+      // get the index of the interval that the zoom value is in.
+      var getInterval = function (zoom, thresholds) {
+        for (var i = 0; i < thresholds.length; i++) {
+          if (zoom < thresholds[i]) {
+            return i;
+          }
+        }
+        return thresholds.length;
+      };
+
+      var hasZoomThresholdChange = function (state, prevState, thresholds) {
+        return getInterval(state, thresholds) !== getInterval(prevState, thresholds);
+      };
+
+      var getDefaultWrapperFunction = function (defaultFunc) {
+        return function (context) {
+          context[defaultFunc]();
+          return origRenderer(context);
+        };
+      };
+      if (option === 'focusRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-focus')) {
+        return getDefaultWrapperFunction('renderDefaultFocus');
+      }
+      if (option === 'hoverRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-hover')) {
+        return getDefaultWrapperFunction('renderDefaultHover');
+      }
+      if (option === 'selectionRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-selection')) {
+        return getDefaultWrapperFunction('renderDefaultSelection');
+      }
+      if (option === 'zoomRenderer') {
+        if (templateDataSet.ojZoomThresholds) {
+          try {
+            var thresholds = JSON.parse(templateDataSet.ojZoomThresholds);
+            return function (context) {
+              if (hasZoomThresholdChange(context.state.zoom,
+                context.previousState.zoom, thresholds)) {
+                return origRenderer(context);
+              }
+              return undefined;
+            };
+          } catch (error) {
+            Logger.error(error);
+          }
+        }
+        return null;
+      }
+
+      return origRenderer;
     },
 
     //* * @inheritdoc */
@@ -4349,6 +4469,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
      * {@ojinclude "name":"nodeContextDoc"}
      * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
      * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
+     * @ojsignature {target: "Type", value: "oj.ojDiagram.NodeContext|null", jsdocOverride: true, for: "returns"}
      *
      * @example {@ojinclude "name":"nodeContextExample"}
      *
@@ -4508,23 +4629,6 @@ Components.setDefaultOptions({
  */
 
 // COMMONLY USED FRAGMENTS, that might be converted into TS typedefs
-
-/**
- * <li>componentElement {Element}: The diagram element.</li>
- * <li>id {string}: The id of the diagram object</li>
- * <li>type {string}: The type of the diagram object - "link", "promotedLink" or "node".</li>
- * <li>label {string}: The label of the diagram object.</li>
- * <li>data {Object}: Relevant data for the object
- *   <ul>
- *     <li>data object for the node, if the object type is "node"</li>
- *     <li>data object for the link, if the object type is "link"</li>
- *     <li>an array of data objects that correspond to links represented by the promoted link</li>
- *   </ul>
- * </li>
- * @ojfragment dataContext - data context object
- * @memberof oj.ojDiagram
- */
-
  /**
   * <ul>
   *   <li>x {number}: x-coordinate value of the drop in the component coordinate system.</li>
@@ -4561,6 +4665,10 @@ Components.setDefaultOptions({
 
  /**
   * <ul>
+  *   <li>x {number}: x-coordinate value of the drop in the component coordinate system.</li>
+  *   <li>y {number}: y-coordinate value of the drop in the component coordinate system.</li>
+  *   <li>nodeX {number}: x-coordinate value of the drop in the target node coordinate system.</li>
+  *   <li>nodeY {number}: y-coordinate value of the drop in the target node coordinate system.</li>
   *   <li>dataContext {Object}: the JSON version of the data context for the link end node.</li>
   *   <li>portElement {Element}: DOM element that represents a port that received drop event.</li>
   * </ul>
@@ -4573,8 +4681,8 @@ Components.setDefaultOptions({
  * @typedef {Object} oj.ojDiagram.Node
  * @ojimportmembers oj.ojDiagramNodeProperties
  * @property {any=} id The id of the node. For the DataProvider case, the key for the node will be used as the id.
- * @ojsignature [{target: "Type", value: "K", for: "id"},
- *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+ * @ojsignature [{target: "Type", value: "K1", for: "id"},
+ *               {target: "Type", value: "<K1>", for: "genericTypeParameters"}]
  */
 
 /**
@@ -4584,26 +4692,68 @@ Components.setDefaultOptions({
  * @ojsignature [{target: "Type", value: "K1", for: "id"},
  *               {target: "Type", value: "K2", for: "endNode"},
  *               {target: "Type", value: "K2", for: "startNode"},
- *               {target: "Type", value: "<K1, K2>", for: "genericTypeParameters"}]
+ *               {target: "Type", value: "<K2, K1>", for: "genericTypeParameters"}]
  */
 
 /**
  * @typedef {Object} oj.ojDiagram.TooltipContext
+ * @ojimportmembers oj.ojDiagramItemContextProperties
  * @property {Element} parentElement The tooltip element. The function can directly modify or append content to this element.
- * @property {Element} componentElement The diagram element.
- * @property {any} id The id of the diagram object - node or link
- * @property {string} type The type of the diagram object - "link", "promotedLink" or "node".
- * @property {string} label The label of the diagram object.
- * @property {Object|Array.<Object>} data Relevant data for the object.
- *                      1) data object for the node, if the object type is "node",
- *                      2) data object for the link, if the object type is "link"
- *                      3) an array of data objects that correspond to links represented by the promoted link
- *           If oj.DataProvider is being used, this property contains template processed data.
- * @property {Object|Array.<Object>} itemData The row data object for the object. This will only be set if an oj.DataProvider is being used.
- * @ojsignature [{target: "Type", value: "K1|K2", for: "id"},
- *               {target: "Type", value: "object|object[]", for: "data"},
+ * @ojsignature [{target: "Type", value: "'node'|'link'|'promotedLink'", for: "type"},
+ *               {target: "Type", value: "K1|K2", for: "id"},
  *               {target: "Type", value: "D1|D2|D2[]", for: "itemData"},
+ *               {target: "Type", value: "oj.ojDiagram.Node<K1>|oj.ojDiagram.Link<K2, K1>|oj.ojDiagram.Link<K2, K1>[]", for: "data"},
  *               {target: "Type", value: "<K1,K2,D1,D2>", for: "genericTypeParameters"}]
+ */
+
+/**
+ * @typedef {Object} oj.ojDiagram.NodeItemContext
+ * @ojimportmembers oj.ojDiagramItemContextProperties
+ * @ojsignature [{target: "Type", value: "'node'", for: "type"},
+ *               {target: "Type", value: "K1", for: "id"},
+ *               {target: "Type", value: "D1", for: "itemData"},
+ *               {target: "Type", value: "oj.ojDiagram.Node<K1>", for: "data"},
+ *               {target: "Type", value: "<K1,D1>", for: "genericTypeParameters"}]
+ */
+
+/**
+ * @typedef {Object} oj.ojDiagram.LinkItemContext
+ * @ojimportmembers oj.ojDiagramItemContextProperties
+ * @ojsignature [{target: "Type", value: "'link'", for: "type"},
+ *               {target: "Type", value: "K2", for: "id"},
+ *               {target: "Type", value: "D2", for: "itemData"},
+ *               {target: "Type", value: "oj.ojDiagram.Link<K2, K1>", for: "data"},
+ *               {target: "Type", value: "<K1,K2,D2>", for: "genericTypeParameters"}]
+ */
+
+/**
+ * @typedef {Object} oj.ojDiagram.PromotedLinkItemContext
+ * @ojimportmembers oj.ojDiagramItemContextProperties
+ * @ojsignature [{target: "Type", value: "'promotedLink'", for: "type"},
+ *               {target: "Type", value: "K2", for: "id"},
+ *               {target: "Type", value: "D2[]", for: "itemData"},
+ *               {target: "Type", value: "oj.ojDiagram.Link<K2, K1>[]", for: "data"},
+ *               {target: "Type", value: "<K1,K2,D2>", for: "genericTypeParameters"}]
+ */
+
+/**
+ * @typedef {Object} oj.ojDiagram.DndNodeContext
+ * @ojimportmembers oj.ojDiagramItemContextProperties
+ * @property {Object} nodeOffset An object with x,y properties, that reflects node offset from the upper left corner of the bounding box for the dragged content.
+ * @property {number} nodeOffset.x node An offset from the left side of the bounding box for the dragged content.
+ * @property {number} nodeOffset.y An offset from the upper side of the bounding box for the dragged content.
+ * @ojsignature [{target: "Type", value: "'node'", for: "type"},
+ *               {target: "Type", value: "K1", for: "id"},
+ *               {target: "Type", value: "D1", for: "itemData"},
+ *               {target: "Type", value: "oj.ojDiagram.Node<K1>", for: "data"},
+ *               {target: "Type", value: "<K1,D1>", for: "genericTypeParameters"}]
+ */
+
+/**
+ * @typedef {Object} oj.ojDiagram.NodeContext
+ * @property {string} subId The subId string identify the particular DOM node.
+ * @property {number} index The zero based index of the diagram item.
+ * @ojsignature {target: "Type", value: "'oj-diagram-link'|'oj-diagram-node'", for: "subId"}
  */
 
 /**
@@ -4622,7 +4772,7 @@ Components.setDefaultOptions({
  * @property {boolean}  state.focused True if the node is currently selected.
  * @property {boolean}  state.expanded True if the node is expanded.
  * @property {number}   state.zoom Current zoom state.
- * @property {Object}   previousState An object that reflects the current state of the data item.
+ * @property {Object}   previousState An object that reflects the previous state of the data item.
  * @property {boolean}  previousState.hovered True if the node was previously hovered.
  * @property {boolean}  previousState.selected True if the node was previously selected.
  * @property {boolean}  previousState.focused True if the node was previously selected.
@@ -4634,8 +4784,9 @@ Components.setDefaultOptions({
  * @property {function():void} renderDefaultHover Function for rendering default hover effect for the node
  * @property {function():void} renderDefaultSelection Function for rendering default selection effect for the node
  * @ojsignature [{target: "Type", value: "K1", for: "id"},
- *               {target: "Type", value: "D1", for: "itemData"},
- *               {target: "Type", value: "<K1,D1>", for: "genericTypeParameters"}]
+ *            {target: "Type", value: "oj.ojDiagram.Node<K1>", for: "data"},
+ *            {target: "Type", value: "D1", for: "itemData"},
+ *            {target: "Type", value: "<K1,D1>", for: "genericTypeParameters"}]
  */
 
 // KEEP FOR WIDGET SYNTAX
@@ -5376,6 +5527,31 @@ Components.setDefaultOptions({
  * &lt;oj-diagram>
  *  &lt;template slot="tooltipTemplate">
  *    &lt;span class="label">&lt;oj-bind-text value="[[$current.label]]">&lt;/oj-bind-text>&lt;/span>
+ *  &lt;/template>
+ * &lt;/oj-diagram>
+ */
+
+ /**
+ * <p>The <code class="prettyprint">nodeContentTemplate</code> slot is used to specify custom node content.</p>
+ * This slot takes precedence over the renderer/focusRenderer/hoverRenderer/selectionRenderer/zoomRenderer properties if specified.
+ * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
+ * <ul>
+ *   <li>$current - an object that contains information for the current node. (See [oj.ojDiagram.RendererContext]{@link oj.ojDiagram.RendererContext} for a list of properties available on $current) </li>
+ * </ul>
+ * <p>Add data-oj-default-focus, data-oj-default-hover and/or data-oj-default-selection attributes to the template to also render the default focus, hover and/or selection effect for the data item.</p>
+ * <p>Similarly, add oj-data-zoom-thresholds attribute to the template to set thresholds that will trigger a rerender when crossed. This should be a JSON array containing values between the <i><b>min-zoom</b></i> and <i><b>max-zoom</b></i></p>
+ *
+ * @ojslot nodeContentTemplate
+ * @ojslotitemprops oj.ojDiagram.RendererContext
+ * @memberof oj.ojDiagram
+ * @since 7.1.0
+ *
+ * @example <caption>Initialize the Diagram with a node content template specified:</caption>
+ * &lt;oj-diagram>
+ *  &lt;template slot="nodeContentTemplate" data-oj-default-focus data-oj-default-hover data-oj-default-selection data-oj-zoom-thresholds="[0.25, 0.5, 0.75]">
+ *   &lt;svg width="100" height="100">
+ *    &lt;text>&lt;oj-bind-text value="[[$current.id]]">&lt;/oj-bind-text>&lt;/text>
+ *   &lt;/svg>
  *  &lt;/template>
  * &lt;/oj-diagram>
  */

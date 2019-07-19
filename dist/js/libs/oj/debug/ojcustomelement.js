@@ -1277,7 +1277,7 @@ oj.BaseCustomElementBridge._consolidateDefaults = function (metadata) {
     // to modify in place for the object case
     if (Array.isArray(defaultValue)) {
       return defaultValue.slice();
-    } else if (typeof defaultValue === 'object') {
+    } else if (defaultValue !== null && typeof defaultValue === 'object') {
       return oj.CollectionUtils.copyInto({}, defaultValue, undefined, true);
     }
     return defaultValue;

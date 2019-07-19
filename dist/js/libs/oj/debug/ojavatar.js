@@ -64,7 +64,9 @@ function (_super) {
     if (props.src) {
       innerContent = VComponent.h("div", {
         "class": "oj-avatar-background-image",
-        style: "background-image: url(\"" + props.src + "\")"
+        style: {
+          backgroundImage: "url(\"" + props.src + "\")"
+        }
       });
     } else if (props.initials) {
       innerContent = VComponent.h("div", {

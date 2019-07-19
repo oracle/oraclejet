@@ -45,12 +45,12 @@ var oj = {
    * @global
    * @member {string} version JET version numberr
    */
-  version: '7.0.1',
+  version: '7.1.0',
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  revision: '2019-06-06_04-56-24',
+  revision: '2019-07-11_18-01-01',
 
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -1853,18 +1853,7 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
                         ' to a JSON Object. Check the value for correct JSON syntax, e.g. double quoted strings. ' + ex);
       }
     } else if (typeLwr === 'boolean') {
-      // Boolean attributes are considered true if the attribute is:
-      // 1) Set to the empty string
-      // 2) Present in the DOM without a value assignment
-      // 3) Set to the 'true' string
-      // 4) Set to the case-insensitive attribute name
-      // Boolean values are considered false if set to the false string.
-      // An error is thrown for all other values and the attribute value will not be set.
-      if (value == null || value === 'true' || value === '' || value.toLowerCase() === attr) {
-        return true;
-      } else if (value === 'false') {
-        return false;
-      }
+      return oj.__AttributeUtils.coerceBooleanValue(elem, attr, value, type);
     } else if (typeLwr === 'number') {
       if (!isNaN(value)) {
         return Number(value);
@@ -1875,6 +1864,35 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
       if (typeAr.indexOf('string') !== -1 || typeLwr === 'any') {
         return value;
       }
+    }
+
+    throw new Error('Unable to parse ' + attr + "='" + value + "' for " +
+                    elem + ' with id ' + elem.id + ' to a ' + type + '.');
+  };
+
+  /**
+   * Parses boolean attribute values. Throws
+   * an error if the value cannot be parsed.
+   * @ignore
+   * @param {Element} elem The element whose value we are parsing
+   * @param {string} attr attribute
+   * @param {string} value attribute value
+   * @param {string} type property type
+   * @return {boolean} coerced value
+   * @private
+   */
+  oj.__AttributeUtils.coerceBooleanValue = function (elem, attr, value, type) {
+    // Boolean attributes are considered true if the attribute is:
+    // 1) Set to the empty string
+    // 2) Present in the DOM without a value assignment
+    // 3) Set to the 'true' string
+    // 4) Set to the case-insensitive attribute name
+    // Boolean values are considered false if set to the false string.
+    // An error is thrown for all other values and the attribute value will not be set.
+    if (value == null || value === 'true' || value === '' || value.toLowerCase() === attr) {
+      return true;
+    } else if (value === 'false') {
+      return false;
     }
 
     throw new Error('Unable to parse ' + attr + "='" + value + "' for " +

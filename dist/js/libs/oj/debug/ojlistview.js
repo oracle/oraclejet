@@ -513,6 +513,23 @@ oj.DataSourceContentHandler.prototype.fetchRows = function (forceFetch) {
 };
 
 /**
+ * Returns the insert before element given the index, or null if insert at the end.
+ * @return {Element|null} the reference element.
+ * @protected
+ */
+oj.DataSourceContentHandler.prototype.GetReferenceNode = function (parentElement, index) {
+  if (index === -1) {
+    return null;
+  }
+
+  var childElements =
+      $(parentElement).children('.' + this.m_widget.getItemElementStyleClass() +
+                                ', .' + this.m_widget.getEmptyTextStyleClass() +
+                                ', .oj-listview-temp-item');
+  return (index === childElements.length) ? null : childElements[index];
+};
+
+/**
  * Create a list item and add it to the list
  * @param {Element|DocumentFragment} parentElement the element to add the list items to
  * @param {number} index the index of the item
@@ -525,19 +542,10 @@ oj.DataSourceContentHandler.prototype.fetchRows = function (forceFetch) {
  */
 oj.DataSourceContentHandler.prototype.addItem =
   function (parentElement, index, data, metadata, templateEngine, callback) {
-    var referenceNode;
     var item = document.createElement('li');
 
     $(item).uniqueId();
-    if (index === -1) {
-      referenceNode = null;
-    } else {
-      var childElements =
-          $(parentElement).children('.' + this.m_widget.getItemElementStyleClass() +
-                                    ', .' + this.m_widget.getEmptyTextStyleClass() +
-                                    ', .oj-listview-temp-item');
-      referenceNode = (index === childElements.length) ? null : childElements[index];
-    }
+    var referenceNode = this.GetReferenceNode(parentElement, index);
     this.m_widget.BeforeInsertItem();
     parentElement.insertBefore(item, referenceNode); // @HTMLUpdateOK
     var position = $(parentElement).children().index(item);
@@ -1342,10 +1350,10 @@ oj.IteratingDataProviderContentHandler.prototype.HandleResize = function (width,
     return;
   }
 
-  this.m_height = height;
-
-  // check viewport
-  this.checkViewport();
+  // check viewport if the height increased
+  if (height > this.m_height) {
+    this.checkViewport();
+  }
 };
 
 /**
@@ -1943,16 +1951,49 @@ oj.IteratingDataProviderContentHandler.prototype._getIndex = function (keys, ind
 };
 
 /**
+ * Returns the insert before element given the index, or null if insert at the end.
+ * @return {Element|null} the reference element.
+ * @protected
+ * @override
+ */
+oj.IteratingDataProviderContentHandler.prototype.GetReferenceNode =
+  function (parentElement, index) {
+    var referenceNode = oj.IteratingDataProviderContentHandler.superclass.GetReferenceNode.call(
+      this, parentElement, index);
+    if (referenceNode == null && this.m_loadingIndicator != null) {
+      return this.m_loadingIndicator.get(0);
+    }
+    return referenceNode;
+  };
+
+/**
+ * Gets the maximum index for insert event
+ * @private
+ */
+oj.IteratingDataProviderContentHandler.prototype._getMaxIndexForInsert = function () {
+  var max = Number.MAX_VALUE;
+  // only care about child count if there's more to fetch
+  if (this._isLoadMoreOnScroll() && this.hasMoreToFetch()) {
+    max = $(this.m_root).children('li.' + this.m_widget.getItemElementStyleClass()).length;
+    var fetchSize = this._getFetchSize();
+    var min = fetchSize;
+    if (this.m_widget.getMinimumCountForViewport) {
+      min = Math.ceil(this.m_widget.getMinimumCountForViewport() / fetchSize) * fetchSize;
+    }
+    max = Math.max(max, min);
+  }
+
+  return max;
+};
+
+/**
  * Do the actual adding items to DOM based on model insert event
  * @protected
  */
 oj.IteratingDataProviderContentHandler.prototype.addItemsForModelInsert =
   function (data, indexes, keys, parentKeys, afterKeys) {
-    var childCount = Number.MAX_VALUE;
-    // only care about child count if there's more to fetch
-    if (this._isLoadMoreOnScroll() && this.hasMoreToFetch()) {
-      childCount = $(this.m_root).children('li.' + this.m_widget.getItemElementStyleClass()).length;
-    }
+    // index to determine whether it's outside of range of not
+    var max = this._getMaxIndexForInsert();
 
     // template engine should have already been loaded
     var templateEngine = this.getTemplateEngine();
@@ -1962,7 +2003,7 @@ oj.IteratingDataProviderContentHandler.prototype.addItemsForModelInsert =
       // indexes takes precedence
       var index = (indexes == null) ? this._getIndex(afterKeys, i) + 1 : indexes[i];
       // we skip any insert/append outside of range if there's still more to fetch
-      if (index < childCount) {
+      if (index < max) {
         this.addItem(this.m_root, index, data[i],
                      this.getMetadata(index, keys[i], data[i]),
                      templateEngine,
@@ -2055,6 +2096,11 @@ oj.IteratingDataProviderContentHandler.prototype._handleFetchedData =
           if (!skipPostProcessing && !dataObj.maxCountLimit) {
             if (this.m_domScroller == null) {
               this._registerDomScroller();
+
+              // handleResize might not get invoked with the initial width/height
+              if (isNaN(this.m_height)) {
+                this.m_height = this.m_widget.GetRootElement()[0].offsetHeight;
+              }
             }
             this._appendLoadingIndicator();
           }
@@ -5309,6 +5355,20 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
   },
 
   /**
+   * Determine the minimum number of items needed to fill the viewport
+   * @protected
+   */
+  getMinimumCountForViewport: function () {
+    var itemHeight = this._getItemHeight();
+    var clientHeight = this._getClientHeight();
+    if (!isNaN(itemHeight) && itemHeight > 0) {
+      var numOfItems = Math.ceil(clientHeight / itemHeight);
+      return numOfItems;
+    }
+    return 1;
+  },
+
+  /**
    * Checks whether the specified element is within the viewport
    * @private
    */
@@ -5924,7 +5984,9 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     this._makeFocusable(item);
     // checks whether focus is already inside some in item, if it is don't try to steal focus away from it (combobox)
     // if target is focusable by itself, don't try to steal focus either
-    if (!item.get(0).contains(document.activeElement) && !this._isNodeFocusable(target[0])) {
+    // if active element is outside of the list, as in the case of things inside popup, don't try to steal focus
+    if (this.element[0].contains(document.activeElement) &&
+      !item.get(0).contains(document.activeElement) && !this._isNodeFocusable(target[0])) {
       this._focusItem(item);
     }
 
@@ -7995,43 +8057,46 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     });
 
     if (animate) {
-      this.signalTaskStart('Animate expand of group item'); // signal task start
-
-      // reset max height to 100% first so we can get the correct outerHeight
-      groupItem.css('maxHeight', '100%');
-      groupItem.children().each(function () {
-        totalHeight += $(this).outerHeight(true);
-      });
-
-      // for touch we'll need to re-adjust the max height of parent nodes since max height doesn't get remove
-      if (this._isTouchSupport()) {
-        this._adjustAncestorsMaxHeight(groupItem, totalHeight);
-      }
-
-      groupItem.css('maxHeight', totalHeight + 'px');
-
-      this.signalTaskStart('Kick off expand animation'); // signal expand animation started. Ends in _handleExpandTransitionEnd()
-
-      // now show it
       var elem = /** @type {Element} */ (groupItem.get(0));
-      var promise = this.StartAnimation(elem, action);
-      promise.then(function () {
-        self._handleExpandTransitionEnd(groupItem, animationResolve);
-      });
+      elem.setAttribute('data-oj-context', '');
 
-      this.signalTaskEnd(); // signal task end
-    } else {
-      // for touch it will need max height set initially in order for it to animate correctly
-      if (this._isTouchSupport()) {
+      // we have to wait for the items content to finish rendering before we calculate the height
+      var busyContext = Context.getContext(elem).getBusyContext();
+      busyContext.whenReady().then(function () {
+        if (!self.isAvailable()) {
+          return;
+        }
+
+        elem.removeAttribute('data-oj-context');
+
+        self.signalTaskStart('Animate expand of group item'); // signal task start
+
+        // reset max height to 100% first so we can get the correct outerHeight
+        groupItem.css('maxHeight', '100%');
         groupItem.children().each(function () {
           totalHeight += $(this).outerHeight(true);
         });
+
+        // for touch we'll need to re-adjust the max height of parent nodes since max height doesn't get remove
+        if (self._isNonWindowTouch()) {
+          self._adjustAncestorsMaxHeight(groupItem, totalHeight);
+        }
+
         groupItem.css('maxHeight', totalHeight + 'px');
 
-        this._adjustAncestorsMaxHeight(groupItem, totalHeight);
-      } else {
-        groupItem.css('maxHeight', '');
-      }
+        self.signalTaskStart('Kick off expand animation'); // signal expand animation started. Ends in _handleExpandTransitionEnd()
+
+        // now show it
+        var promise = self.StartAnimation(elem, action);
+        promise.then(function () {
+          self._handleExpandTransitionEnd(groupItem, animationResolve);
+        });
+
+        self.signalTaskEnd(); // signal task end
+      });
+    } else {
+      // if we are not animating, then we don't really care about setting max height
+      groupItem.css('maxHeight', '');
 
       this.AnimateExpandComplete(groupItem);
       animationResolve(null); // resolve animationPromise
@@ -8041,7 +8106,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
 
   _handleExpandTransitionEnd: function (groupItem, animationResolve) {
     // on ios removing max-height will cause double animation
-    if (!this._isTouchSupport()) {
+    if (!this._isNonWindowTouch()) {
       groupItem.css('maxHeight', '');
     }
 
@@ -9982,9 +10047,9 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
     /**
      * The current selected items in the ListView. An empty KeySet indicates nothing is selected.
      * Note that property change event for the deprecated selection property will still be fire when
-     * selected property has changed.  In addition, in the case where <a href="AllKeySetImpl">AllKeySetImpl</a> is set,
-     * the value for selection would have an 'inverted' property set to true, and would contain the keys of the items
-     * that are not selected.
+     * selected property has changed. In addition, <a href="AllKeySetImpl.html">AllKeySetImpl</a> set
+     * can be used to represent select all state. In this case, the value for selection would have an
+     * 'inverted' property set to true, and would contain the keys of the items that are not selected.
      *
      * @ojshortdesc Specifies the keys of the current selected items. See the Help documentation for more information.
      * @expose

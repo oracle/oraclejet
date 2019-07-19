@@ -26,18 +26,34 @@ js/libs/jquery/jqueryui-amd-1.12.1/sortable.js           MIT
 js/libs/jquery/jqueryui-amd-1.12.1/widget.js             MIT
 js/libs/knockout/knockout-3.5.0.js                      MIT
 js/libs/knockout/knockout-mapping-latest.js                             MIT
-js/libs/oj/v7.0.1/min/ojknockout.js (knockout-fast-foreach.js)   MIT
-js/libs/oj/v7.0.1/min/ojselectcombobox.js (Select2.js)           Apache 2.0
-js/libs/oj/v7.0.1/min/ojtree.js (jsTree.js)                      MIT
-js/libs/oj/v7.0.1/ojL10n.js (requireJS i18n)                     MIT
+js/libs/oj/v7.1.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
+js/libs/oj/v7.1.0/min/ojexpparser.js (expparser.js)              MIT
+js/libs/oj/v7.1.0/min/ojknockout.js (knockout-fast-foreach.js)   MIT
+js/libs/oj/v7.1.0/min/ojselectcombobox.js (Select2.js)           Apache 2.0
+js/libs/oj/v7.1.0/min/ojtree.js (jsTree.js)                      MIT
+js/libs/oj/v7.1.0/ojL10n.js (requireJS i18n)                     MIT
 js/libs/proj4js/dist/proj4.js                                                   Proj4js
 js/libs/require/require.js                                                    MIT
 js/libs/require/text.js                                                    MIT
 js/libs/require-css/css.min.js (require-css)                                MIT
 js/libs/webcomponents/custom-elements.min.js                            custom-elements
-scss/oj/v7.0.1/3rdparty/normalize/normalize.scss                 MIT
+scss/oj/v7.1.0/3rdparty/normalize/normalize.scss                 MIT
 js/libs/touchr/touchr.js                                                  MIT
-js/libs/oj/v7.0.1/min/ojvcomponent.js (petit-dom.js)             MIT
+js/libs/oj/v7.1.0/min/ojvcomponent.js (petit-dom.js)             MIT
+
+/*
+ * expression-eval - v2.0.0
+ * https://github.com/donmccurdy/expression-eval
+ * Copyright (c) 2017 Don McCurdy
+ * Licensed under the MIT license
+ */
+
+/*
+ * jsep - v0.3.4
+ * https://github.com/soney/jsep
+ * Copyright (c) 2013 Stephen Oney, http://jsep.from.so/
+ * Licensed under the MIT license
+ */
 
 /*!
   Knockout Fast Foreach v0.6.0 (2016-07-28T11:02:54.197Z)

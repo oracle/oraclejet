@@ -889,7 +889,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
      */
       minorAxis: {
       /**
-       * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the minor axis for all 'scale' values, or
+       * A converter (an instance that duck types {@link oj.Converter}) used to format the labels of the minor axis for all 'scale' values, or
        * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see {@link oj.ojTimeAxis.Converters}).
        * See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
        * <br></br>See the <a href="#minorAxis">minor-axis</a> attribute for usage examples.
@@ -1010,7 +1010,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
      */
       majorAxis: {
       /**
-       * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the major axis for all 'scale' values, or
+       * A converter (an instance that duck types {@link oj.Converter}) used to format the labels of the major axis for all 'scale' values, or
        * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see {@link oj.ojTimeAxis.Converters}).
        * See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
        * <br></br>See the <a href="#majorAxis">major-axis</a> attribute for usage examples.
@@ -1978,7 +1978,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
          */
         start: {
           /**
-           * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.start.converter
@@ -2032,7 +2032,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
          */
         end: {
           /**
-           * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.end.converter
@@ -2086,7 +2086,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
          */
         date: {
           /**
-           * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.date.converter

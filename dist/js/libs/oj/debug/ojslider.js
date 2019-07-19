@@ -207,7 +207,7 @@ var __oj_slider_metadata =
    *              ]
    *
    * @ojrole slider
-   * @since 0.7
+   * @since 0.7.0
    * @ojshortdesc A slider allows a user to set a value by moving an indicator.
    * @ojstatus preview
    *
@@ -392,7 +392,7 @@ var __oj_slider_metadata =
        * @instance
        * @type {?number}
        * @default null
-       * @since 0.7
+       * @since 0.7.0
        * @example <caption>Initialize the slider with the
        * <code class="prettyprint">max</code> attribute:</caption>
        * &lt;oj-slider max=100>&lt;/oj-slider>
@@ -416,7 +416,7 @@ var __oj_slider_metadata =
        * @instance
        * @type {?number}
        * @default null
-       * @since 0.7
+       * @since 0.7.0
        * @example <caption>Initialize the slider with the
        * <code class="prettyprint">min</code> attribute:</caption>
        * &lt;oj-slider min=0>&lt;/oj-slider>
@@ -441,7 +441,7 @@ var __oj_slider_metadata =
        * @ojvalue {string} "horizontal" Orient the slider horizontally.
        * @ojvalue {string} "vertical" Orient the slider vertically.
        * @default "horizontal"
-       * @since 0.7
+       * @since 0.7.0
        *
        * @example <caption>Initialize the slider with the
        * <code class="prettyprint">orientation</code> attribute:</caption>
@@ -507,7 +507,7 @@ var __oj_slider_metadata =
        * @expose
        * @type {boolean}
        * @default false
-       * @since 0.7
+       * @since 0.7.0
        * @instance
        * @memberof oj.ojSlider
        */
@@ -522,7 +522,7 @@ var __oj_slider_metadata =
        * @instance
        * @type {?number}
        * @default 1
-       * @since 0.7
+       * @since 0.7.0
        * @memberof oj.ojSlider
        * @ojshortdesc Specifies the amount to increase or decrease the value when moving in step increments. See the Help documentation for more information.
        *
@@ -551,7 +551,7 @@ var __oj_slider_metadata =
        * @ojvalue {string} "single" A single-thumb slider where the value bar has no
        * additional styling.
        * @default "fromMin"
-       * @since 0.7
+       * @since 0.7.0
        * @instance
        * @memberof oj.ojSlider
        * @ojshortdesc The slider type specifies how the slider value is represented.
@@ -592,7 +592,7 @@ var __oj_slider_metadata =
        * @access public
        * @instance
        * @default 0
-       * @since 0.7
+       * @since 0.7.0
        * @ojwriteback
        * @memberof oj.ojSlider
        * @ojshortdesc The numerical value of the slider.
@@ -670,6 +670,7 @@ var __oj_slider_metadata =
       // use 'transientValue' for custom elements,
       // and use 'rawValue' for widget syntax.
       this._transientValueName = this._IsCustomElement() ? 'transientValue' : 'rawValue';
+      this._componentCreateStyling();
       this._componentSetup();
     },
 
@@ -690,30 +691,39 @@ var __oj_slider_metadata =
         this.option(this._transientValueName, val, flags);
       }
     },
+    // Setup the component's styling during component creation.
+    _componentCreateStyling: function () {
+      var elementWrapped = this._elementWrapped[0];
+      elementWrapped.classList.add(
+        'oj-slider', 'oj-component', 'oj-form-control');
+      this._setOrientationStyles(true);
+    },
+    // sets the styling for vertical or horizontal orientation.
+    // if init is true, then it doesn't try to remove the orientation
+    // styling.
+    _setOrientationStyles: function (init) {
+      var elementWrapped = this._elementWrapped[0];
 
+      if (this._isVertical()) {
+        if (!init) {
+          elementWrapped.classList.remove('oj-slider-horizontal');
+        }
+        elementWrapped.classList.add('oj-slider-vertical');
+      } else {
+        if (!init) {
+          elementWrapped.classList.remove('oj-slider-vertical');
+        }
+        elementWrapped.classList.add('oj-slider-horizontal');
+      }
+    },
     //
     // Setup the component based on the current options.
     // Also create DOM elements for thumbs and bars.
+    // Called during component creation and on option changes.
     //
     _componentSetup: function () {
       this._newMultiValue = [];
       this._thumbIndex = null;
-
-      var classes = 'oj-slider ';
-
-      if (this._isVertical()) {
-        classes += 'oj-slider-vertical';
-      } else {
-        classes += 'oj-slider-horizontal';
-      }
-
-      classes += ' oj-component oj-form-control';
-
-      if (this.options.readonly) classes += ' oj-read-only';
-      if (this.options.disabled) classes += ' oj-disabled';
-
-      this._elementWrapped.removeClass();
-      this._elementWrapped.addClass(classes);
 
       if (this.options.type === 'range') {
         this._multipleThumbs = true;
@@ -1796,6 +1806,9 @@ var __oj_slider_metadata =
           break;
 
         case 'orientation':
+          this._setOrientationStyles();
+          this._reCreate();
+          break;
         case 'readonly':
         case 'step':
         case 'type':

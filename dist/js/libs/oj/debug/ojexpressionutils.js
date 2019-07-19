@@ -3,13 +3,15 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-define(['ojs/ojcore'], function(oj)
+define(['ojs/ojcore', 'ojs/ojconfig'], function(oj, Config)
 {
   "use strict";
 /**
  * Copyright (c) 2018, Oracle and/or its affiliates.
  * All rights reserved.
  */
+
+/* global Config: false */
 
 /**
  * @namespace
@@ -45,8 +47,15 @@ ExpressionUtils.getExpressionInfo = function (expression) {
  * @static
  */
 ExpressionUtils.createGenericExpressionEvaluator = function (expressionText) {
-    /* jslint evil:true */
-    // eslint-disable-next-line no-new-func
+  var factory = Config.getExpressionEvaluator();
+  if (factory) {
+    var evaluate = factory.createEvaluator(expressionText).evaluate;
+    return function (context) {
+      return evaluate([context]);
+    };
+  }
+  /* jslint evil:true */
+  // eslint-disable-next-line no-new-func
   return new Function('context', 'with(context){return '
               + expressionText + ';}'); // @HTMLUpdateOK; binding expression evaluation
 };
