@@ -46,10 +46,10 @@
     .oj-gantt-no-data-message {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
         fill: var(--oj-gantt-empty-text-color);
-        font-size: var(--oj-font-size-sm);
+        font-size: var(--oj-dvt-no-data-message-font-size);
       } @else {
         fill: $dvtGanttEmptyTextColor;
-        font-size:$smallFontSize;
+        font-size:$dvtNoDataMessageFontSize;
       }
     }
 

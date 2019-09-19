@@ -2828,13 +2828,15 @@ DvtChartEventManager.prototype.GetDragSourceType = function(event) {
 /**
  * @override
  */
-DvtChartEventManager.prototype.GetDragDataContexts = function() {
+DvtChartEventManager.prototype.GetDragDataContexts = function(bSanitize) {
   // If more than one object is selected, return the contexts of all selected objects
   if (this._chart.isSelectionSupported() && this._chart.getSelectionHandler().getSelectedCount() > 1) {
     var selection = this._chart.getSelectionHandler().getSelection();
     var contexts = [];
     for (var i = 0; i < selection.length; i++) {
       var context = DvtChartDataUtils.getDataContext(this._chart, selection[i].getSeriesIndex(), selection[i].getGroupIndex(), selection[i].getNestedDataItemIndex());
+      if (bSanitize)
+        dvt.ToolkitUtils.cleanDragDataContext(context);
       contexts.push(context);
     }
     return contexts;
@@ -2842,11 +2844,14 @@ DvtChartEventManager.prototype.GetDragDataContexts = function() {
 
   // Otherwise, return the context of the current drag object
   var obj = this.DragSource.getDragObject();
+  var dataContext = null;
   if (obj instanceof DvtChartObjPeer)
-    return [DvtChartDataUtils.getDataContext(this._chart, obj.getSeriesIndex(), obj.getGroupIndex(), obj.getNestedDataItemIndex())];
+    dataContext = DvtChartDataUtils.getDataContext(this._chart, obj.getSeriesIndex(), obj.getGroupIndex(), obj.getNestedDataItemIndex());
   if (obj instanceof DvtChartPieSlice)
-    return [DvtChartDataUtils.getDataContext(this._chart, obj.getSeriesIndex(), 0)];
-  return null;
+    dataContext = DvtChartDataUtils.getDataContext(this._chart, obj.getSeriesIndex(), 0);
+  if (dataContext && bSanitize)
+      dvt.ToolkitUtils.cleanDragDataContext(dataContext);
+  return dataContext ? [dataContext] : null;
 };
 
 /**
@@ -4844,14 +4849,18 @@ DvtAxisEventManager.prototype.GetDragSourceType = function(event) {
 /**
  * @override
  */
-DvtAxisEventManager.prototype.GetDragDataContexts = function() {
+DvtAxisEventManager.prototype.GetDragDataContexts = function(bSanitize) {
   var obj = this.DragSource.getDragObject();
   if (obj instanceof DvtAxisObjPeer) {
-    return [{
+    var dataContext = {
       'id': obj.getId(),
       'group': obj.getGroup(),
       'label': obj.getLabel().getTextString()
-    }];
+    };
+    if (bSanitize)
+      dvt.ToolkitUtils.cleanDragDataContext(dataContext);
+
+    return [dataContext];
   }
   return [];
 };
@@ -6077,10 +6086,11 @@ DvtAxisInfo.prototype.CreateLabel = function(context, label, coord, style, bMult
  * Checks all the labels for the axis and returns whether they overlap.
  * @param {Array} labelDims An array of dvt.Rectangle objects that describe the x, y, height, width of the axis labels.
  * @param {number} skippedLabels The number of labels to skip. If skippedLabels is 1 then every other label will be skipped.
- * @return {boolean} True if any labels overlap.
+ * @param {Array=} maxWidths An array of max sizes for for each label.
+ * @return {boolean} True if any labels overlap or are greater than their corresponding max width.
  * @protected
  */
-DvtAxisInfo.prototype.IsOverlapping = function(labelDims, skippedLabels) {
+DvtAxisInfo.prototype.IsOverlapping = function(labelDims, skippedLabels, maxWidths) {
   // If there are no labels, return
   if (!labelDims || labelDims.length <= 0)
     return false;
@@ -6093,6 +6103,9 @@ DvtAxisInfo.prototype.IsOverlapping = function(labelDims, skippedLabels) {
   for (var j = 0; j < labelDims.length; j += skippedLabels + 1) {
     if (labelDims[j] == null)
       continue;
+
+    if (maxWidths != null && labelDims[j].w > maxWidths[j]) 
+      return true;
 
     if (pointA1 == null || pointA2 == null) {
       // Set the first points
@@ -7187,6 +7200,7 @@ DvtGroupAxisInfo.prototype._generateLabels = function(context) {
   var gapName = isHoriz ? 'hierarchicalLabelGapHeight' : 'hierarchicalLabelGapWidth';
   var gap = isHierarchical ? DvtAxisDefaults.getGapSize(context, this.Options, this.Options['layout'][gapName]) : 0;
   var rotationEnabled = this.Options['tickLabel']['rotation'] == 'auto' && isHoriz;
+  var groupSpansMap = {};
 
   // autoRotate used to enhance performance
   var autoRotate = this.isAutoRotate();
@@ -7207,6 +7221,7 @@ DvtGroupAxisInfo.prototype._generateLabels = function(context) {
     var levels = this._levelsArray[level];
     // if autoRotate, increase performance by only generating a subset of labels to begin with, as majority will be skipped.
     var increment = autoRotate ? this.getSkipIncrement() : 1;
+    groupSpansMap[level] = [];
 
     for (var i = 0; i < levels.length; i += increment) {
       if (levels[i]) {
@@ -7225,6 +7240,7 @@ DvtGroupAxisInfo.prototype._generateLabels = function(context) {
           text = this.CreateLabel(context, label, coord, cssStyle, bMultiline);
 
           var groupSpan = groupWidth * (this.getEndIndex(i, level) - this.getStartIndex(i, level) + 1);
+          groupSpansMap[level].push(groupSpan);
           var bWrappedLabel = bMultiline && this._isTextWrapNeeded(context, label, cssStyle, rotationEnabled, isHoriz ? groupSpan : availSize);
           // wrap text in the width available for each group
           if (bWrappedLabel && availSize > 0) {
@@ -7310,7 +7326,7 @@ DvtGroupAxisInfo.prototype._generateLabels = function(context) {
     else {
       labelDims = this.GetLabelDims(labels, container, level);      // maximum estimate
 
-      var labelsOverlapping = this.IsOverlapping(labelDims, 0);
+      var labelsOverlapping = this.IsOverlapping(labelDims, 0, groupSpansMap[level]);
       if (!labelsOverlapping)
         this._labels[level] = labels; // all labels can fit
 
@@ -19861,7 +19877,7 @@ DvtChartDataUtils.getDataContext = function(chart, seriesIndex, groupIndex, item
      }
      else {
       delete rawData['_itemData'];
-    }      
+    }
     dataContext = {
       'id': DvtChartDataUtils.getNestedDataItemId(chart, seriesIndex, groupIndex, itemIndex),
       'data' : [rawData, rawData['items'][itemIndex]],
@@ -19922,6 +19938,8 @@ DvtChartDataUtils.getDataContext = function(chart, seriesIndex, groupIndex, item
     var barDimensions = chart.getOptionsCache().getFromCachedMap2D('barDims', seriesIndex, groupIndex);
     if (barDimensions)
       dataContext['dimensions'] = barDimensions;
+
+    dataContext = chart.getCtx().fixRendererContext(dataContext);
   }
 
   return dataContext || {};
@@ -19973,7 +19991,7 @@ DvtChartDataUtils._getNestedGroupsData = function(groups) {
 };
 
 /**
- * Populates a cache map indicating if a data item is the outermost bar.
+ * Populates a cache map indicating if a data item is the outermost bar. Null items are ignored.
  * @param {dvt.Chart} chart
  * @private
  */
@@ -20013,7 +20031,10 @@ DvtChartDataUtils._computeOutermostBarMap = function(chart) {
             continue;
 
           var value = DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex);
-          if (!hasPositiveOutermost && value >= 0) {
+          if (value == null) {
+            chart.getOptionsCache().putToCachedMap2D('outermostBar', seriesIndex, groupIndex, false);
+          }
+          else if (!hasPositiveOutermost && value >= 0) {
             hasPositiveOutermost = true;
             chart.getOptionsCache().putToCachedMap2D('outermostBar', seriesIndex, groupIndex, true);
           }

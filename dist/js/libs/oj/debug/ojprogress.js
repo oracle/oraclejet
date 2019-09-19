@@ -69,6 +69,12 @@ var __oj_progress_metadata =
  * @since 1.0.0
  * @augments oj.baseComponent
  * @ojshortdesc A progress allows the user to visualize the progression of an extended computer operation.
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["type", "max"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+ * @ojvbdefaultcolumns 4
+ * @ojvbmincolumns 1
+ *
  * @classdesc
  * <h3 id="progressOverview-section">
  *   JET Progress
@@ -161,6 +167,7 @@ var __oj_progress_metadata =
        * @default 0
        * @ojmin -1
        * @ojwriteback
+       * @ojeventgroup common
        * @example <caption>Initialize the Progress with the <code class="prettyprint">value</code> attribute specified</caption>
        * &lt;oj-progress value='{{progressVal}}'>&lt;/oj-progress>
        * @example <caption>Get or set the <code class="prettyprint">value</code> property after initialization</caption>

@@ -184,6 +184,11 @@ ko.virtualElements.allowedBindings._ojBindDom_ = true;
  * @since 6.1.0
  * @ojtsignore
  *
+ * @ojpropertylayout [ {propertyGroup: "common", items: ["config.view"]},
+ *                     {propertyGroup: "data", items: ["config.data"]} ]
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 1
+ *
  * @classdesc
  * <h3 id="overview-section">
  *   Dom Binding

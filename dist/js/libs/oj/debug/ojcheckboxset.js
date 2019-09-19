@@ -208,6 +208,11 @@ var __oj_checkboxset_metadata =
  *               }
  *              ]
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "required", "disabled", "labelledBy", "describedBy"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+ * @ojvbdefaultcolumns 6
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="checkboxsetOverview-section">
  *   JET Checkboxset
@@ -725,6 +730,7 @@ var __oj_checkboxset_metadata =
      * @type {Array.<any>}
      * @ojsignature [{target: "Type", value: "Array<V>|null"}]
      * @ojshortdesc An array that represents the value of the component. See the Help documentation for more information.
+     * @ojeventgroup common
      */
         value: []
       },

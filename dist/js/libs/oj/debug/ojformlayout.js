@@ -69,6 +69,10 @@ var __oj_form_layout_metadata =
  * @ojstatus preview
  * @ojsignature {target: "Type", value:"class ojFormLayout extends JetElement<ojFormLayoutSettableProperties>"}
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["maxColumns", "labelEdge", "labelWidth"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="optionOverview-section">
  *   JET FormLayout
@@ -1028,7 +1032,7 @@ function ojFormLayout(context) {
           // if the child element supports colspan, we need to calculate that actual
           // colspan based on the available columns left in this row.
           // Issue a warning if colspan is used, but direction is not set to row
-          if ('colspan' in label && label.colspan) {
+          if ('colspan' in label && label.colspan !== '') {
             if (directionIsColumn) {
               // We only need to issue this error once
               if (!directionColspanError) {
@@ -1191,6 +1195,12 @@ function ojFormLayout(context) {
       // remaining space left over by "label" flex items equally.
       elementOjFlexItem.style.webkitFlex = '1 1 0';
       elementOjFlexItem.style.flex = '1 1 0';
+      if (elem.tagName === 'OJ-FORM-LAYOUT') {
+        // For the nested form layout case, we need to have a way to apply styles to the
+        // flex item element that is the parent of the oj-form-layout so that we can
+        // make padding adjustments, etc.
+        elementOjFlexItem.classList.add('oj-formlayout-nested-formlayout');
+      }
     } else {
       // for the case where there is an empty label flex item with 0px width, we need to add this class
       // so that we get the correct padding on the flex items
@@ -1198,8 +1208,15 @@ function ojFormLayout(context) {
       labelOjFlexItem.classList.add('oj-formlayout-no-label-flex-item'); // This is actually the element
       // we need to tell the oj-label-value child how many actual columns are being spanned.
       if (label.tagName === 'OJ-LABEL-VALUE') {
+        emptyLabelFlexItem.classList.add('oj-formlayout-nested-labelvalue');
+        labelOjFlexItem.classList.add('oj-formlayout-nested-labelvalue'); // This is actually the element
         label.setAttribute('data-oj-colspan', colspan);
         label.refresh();
+      } else if (label.tagName === 'OJ-FORM-LAYOUT') {
+        // For the nested form layout case, we need to have a way to apply styles to the
+        // flex item element that is the parent of the oj-form-layout so that we can
+        // make padding adjustments, etc.
+        labelOjFlexItem.classList.add('oj-formlayout-nested-formlayout');
       }
     }
 
@@ -1354,6 +1371,7 @@ function ojFormLayout(context) {
 /* global ojFormLayout */
 (function () {
   __oj_form_layout_metadata.extension._CONSTRUCTOR = ojFormLayout;
+  __oj_form_layout_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
   oj.CustomElementBridge.register('oj-form-layout', { metadata: __oj_form_layout_metadata });
 }());
 

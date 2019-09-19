@@ -21,9 +21,50 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
   PouchDBPersistenceStore.prototype.Init = function (options) {
     this._version = (options && options.version) || '0';
     var dbname = this._name + this._version;
-    this._db = new PouchDB(dbname);
+    var adapter = options ? options.adapter : null;
+    var dbOptions = this._extractDBOptions(options);
+    if (adapter) {
+      try {
+        if (adapter.plugin) {
+          PouchDB.plugin(adapter.plugin);
+        }
+        dbOptions = dbOptions ? dbOptions : {};
+        dbOptions['adapter'] = adapter.name;
+        this._db = new PouchDB(dbname, dbOptions);
+      } catch (exp) {
+        logger.log("Error creating PouchDB instance with adapter " + adapter + ": ", exp.message);
+        logger.log("Please make sure the needed plugin and adapter are installed.");
+        return Promise.reject(exp);
+      }
+    } else if (dbOptions) {
+      this._db = new PouchDB(dbname, dbOptions);
+    } else {
+      this._db = new PouchDB(dbname);
+    }
     this._index = (options && options.index) ? options.index : null;
     return this._createIndex();
+  };
+
+  // extract the option keys that will be passed to pouchDB.
+  // ignore the ones that's for PouchDBPersistenceStore itself.
+  PouchDBPersistenceStore.prototype._extractDBOptions = function(options) {
+    var dbOptions = null;
+    if (options) {
+      var self = this;
+      Object.keys(options).forEach(function(optionKey) {
+        if (!self._isPersistenceStoreKey(optionKey)) {
+          if (!dbOptions) {
+            dbOptions = {};
+          }
+          dbOptions[optionKey] = options[optionKey];
+        }
+      });
+    }
+    return dbOptions;
+  };
+
+  PouchDBPersistenceStore.prototype._isPersistenceStoreKey = function(keyName) {
+    return keyName === 'version' || keyName === 'adapter' || keyName === 'index';
   };
 
   PouchDBPersistenceStore.prototype._createIndex = function () {

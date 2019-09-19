@@ -9,9 +9,6 @@ export namespace oj {
     let revision: string;
     let version: string;
     function ajax(settings?: object): object;
-    function assembleObject(value: object, fields: any[]): object;
-    function defineTrackableProperty(target: object, name: string, optional?: any): any;
-    function getThrottlePromise(): Promise<any>;
     function sync(method: string, model: Model | Collection, options?: object): object;
 }
 export interface baseComponent<SP extends baseComponentSettableProperties = baseComponentSettableProperties> extends JetElement<SP> {

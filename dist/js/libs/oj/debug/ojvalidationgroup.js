@@ -48,6 +48,10 @@ var __oj_validation_group_metadata =
  * @ojshortdesc A validation group tracks and summarizes the current validity state of a group of components.
  * @ojsignature class ojValidationGroup extends JetElement<ojValidationGroupSettableProperties>
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["valid"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="optionOverview-section">
  *   JET ValidationGroup
@@ -76,6 +80,7 @@ var __oj_validation_group_metadata =
  * When any of the tracked component's valid value changes, oj-validation-group will
  * be notified and will update its own valid value if it has changed.
  * </p>
+ * <p>The oj-validation-group does not perform its own validation</p>
  * <p>This is an example of the oj-validation-group wrapping the JET form components.
  * All the JET form components have the <code class="prettyprint">valid</code> property.
  * It is not shown in the HTML markup

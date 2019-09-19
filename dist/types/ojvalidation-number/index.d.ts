@@ -21,7 +21,7 @@ export namespace IntlNumberConverter {
         maximumFractionDigits?: number;
         useGrouping?: boolean;
         pattern?: string;
-        roundingMode?: 'HALF_UP' | 'HALF_DOWN' | 'HALF_EVEN';
+        roundingMode?: 'HALF_UP' | 'HALF_DOWN' | 'HALF_EVEN' | 'UP' | 'DOWN' | 'CEILING' | 'FLOOR';
         roundDuringParse?: boolean;
         separators?: Separators;
         lenientParse?: 'full' | 'none';
@@ -32,7 +32,7 @@ export namespace IntlNumberConverter {
         group?: string;
     };
 }
-export class NumberConverter implements Converter<number> {
+export abstract class NumberConverter implements Converter<number> {
     format(value: number): string | null;
     parse(value: string): number | null;
 }

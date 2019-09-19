@@ -59,6 +59,10 @@ var __oj_accordion_metadata =
  * @ojshortdesc An accordion displays a set of collapsible child elements.
  * @ojrole group
  * @class oj.ojAccordion
+ * @ojpropertylayout [ {propertyGroup: "common", items: ["multiple"]},
+ *                     {propertyGroup: "data", items: ["expanded"]} ]
+ * @ojvbdefaultcolumns 3
+ * @ojvbmincolumns 1
  *
  * @classdesc
  * <h3 id="accordionOverview-section">
@@ -701,7 +705,7 @@ var __oj_accordion_metadata =
         this.collapsibles.each(function (index) {
           var bExpanded = false;
           if (this.tagName.toLowerCase() === 'oj-collapsible') {
-            bExpanded = this.getAttribute('expanded') === 'true';
+            bExpanded = this.expanded;
           } else {
             bExpanded = $(this).ojCollapsible('option', 'expanded');
           }
@@ -719,8 +723,9 @@ var __oj_accordion_metadata =
           }
         });
 
-      //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
-        if (!oj.Object._compareArrayIdIndexObject(result, this.options.expanded)) {
+        //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
+        if (!this.options.expanded ||
+            !oj.Object._compareArrayIdIndexObject(result, this.options.expanded)) {
           this.option('expanded', result, { _context: { internalSet: true, writeback: true } });
         }
       },
@@ -817,9 +822,7 @@ var __oj_accordion_metadata =
             // 1) log a warning
             // 2) set child's expanded option with the writeback flag.
             var isCustomElement = this.tagName.toLowerCase() === 'oj-collapsible';
-            var childExp = isCustomElement ?
-            (this.getAttribute('expanded') === 'true' || this.getAttribute('expanded') === '') :
-            child.ojCollapsible('option', 'expanded');
+            var childExp = isCustomElement ? this.expanded : child.ojCollapsible('option', 'expanded');
 
             if (childExp !== parentExp) {
               Logger.warn('JET Accordion: override collapsible ' + index + ' expanded setting');
@@ -827,7 +830,7 @@ var __oj_accordion_metadata =
             // don't fire accordion "exanded" optionChange event here
               self._duringSetExpandedOption = true;
               if (isCustomElement) {
-                this.setAttribute('expanded', parentExp);
+                this.expanded = parentExp;
               } else {
                 child.ojCollapsible('option', 'expanded', parentExp);
               }
@@ -1040,6 +1043,7 @@ var __oj_accordion_metadata =
 /* global __oj_accordion_metadata:false */
 (function () {
   __oj_accordion_metadata.extension._WIDGET_NAME = 'ojAccordion';
+  __oj_accordion_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
   oj.CustomElementBridge.register('oj-accordion', { metadata: __oj_accordion_metadata });
 }());
 

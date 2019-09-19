@@ -83,6 +83,10 @@ var __oj_refresher_metadata =
  * @ojstatus preview
  * @ojshortdesc A refresher is a wrapper for attaching pull to refresh functionality to a DOM element.
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["text", "threshold"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 12
+ *
  * @classdesc
  * <h3 id="refresherOverview-section">
  *   JET Refresher

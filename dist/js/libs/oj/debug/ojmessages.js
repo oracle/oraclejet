@@ -164,6 +164,13 @@ var __oj_messages_metadata =
  * @ojtsimport {module: "ojmessage", type: "AMD", imported: ["ojMessage"]}
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["display", "position.at.horizontal", "position.at.vertical", "position.collision",
+ *                                                     "position.my.horizontal", "position.my.vertical", "position.of",
+ *                                                     "position.offset.x", "position.offset.y"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["messages"]}
+ * @ojvbdefaultcolumns 2
+ * @ojvbmincolumns 1
+ *
  * @classdesc
  * <h3 id="messageOverview-section">
  *   JET Messages

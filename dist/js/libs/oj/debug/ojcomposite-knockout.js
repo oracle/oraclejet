@@ -411,6 +411,10 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  * @since 4.1.0
  * @ojtsignore
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["index", "name"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 1
+ *
  * @classdesc
  * <h3 id="overview-section">
  *   Slot Binding
@@ -709,6 +713,11 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  * @ojmodule ojcomposite
  * @since 5.1.0
  * @ojtsignore
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["name"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 1
  *
  * @classdesc
  * <h3 id="overview-section">

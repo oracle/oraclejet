@@ -49,6 +49,10 @@ var __oj_toolbar_metadata =
  * @ojshortdesc A toolbar displays a strip of control elements such as buttons and menu buttons, often grouped by separators.
  * @ojstatus preview
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["chroming"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="toolbarOverview-section">
  *   JET Toolbar

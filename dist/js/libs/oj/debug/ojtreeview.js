@@ -150,6 +150,11 @@ var __oj_tree_view_metadata =
  *                for: "SettableProperties"
  *               }]
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["selectionMode"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data", "expanded", "selection"]}
+ * @ojvbdefaultcolumns 6
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="treeViewOverview-section">
  *   JET TreeView
@@ -671,6 +676,8 @@ var __oj_tree_view_metadata =
          * @type {Array.<any>}
          * @default []
          * @ojwriteback
+         * @ojeventgroup common
+         *
          * @ojsignature {target:"Type", value:"Array<K>"}
          *
          * @example <caption>Initialize the TreeView with the <code class="prettyprint">selection</code> attribute specified:</caption>
@@ -1087,6 +1094,7 @@ var __oj_tree_view_metadata =
        * @param {jQuery} ulElem The <ul> to attach the item to.
        * @param {oj.FetchListResult} fetchListResult The array of item data returned by the data source.
        * @param {number} index The index of the item.
+       * @param {boolean} replace Coming from change mutation event.
        * @private
        */
       _renderItem: function (ulElem, fetchListResult, index, insertIndex, replace) {
@@ -1113,9 +1121,14 @@ var __oj_tree_view_metadata =
 
         if (replace) {
           var oldElem = this._getItemByKey(key)[0];
-          // eslint-disable-next-line no-param-reassign
-          ulElem = $(oldElem.parentNode);
-          oldElem.parentNode.replaceChild(liElem[0], oldElem); // @HTMLUpdateOK
+          if (oldElem) {
+            // eslint-disable-next-line no-param-reassign
+            ulElem = $(oldElem.parentNode);
+            var oldSubtree = this._getSubtree($(oldElem))[0];
+            oldElem.parentNode.replaceChild(liElem[0], oldElem); // @HTMLUpdateOK
+          } else {
+            return; // nothing to replace
+          }
         } else if (insertIndex == null || insertIndex >= ulElem.children().length) {
           liElem.appendTo(ulElem);  // @HTMLUpdateOK
         } else {
@@ -1183,6 +1196,12 @@ var __oj_tree_view_metadata =
           liElem.append(textWrapper); // @HTMLUpdateOK
         }
 
+        // eslint-disable-next-line block-scoped-var
+        if (replace && oldSubtree) {
+          // eslint-disable-next-line block-scoped-var
+          liElem[0].appendChild(oldSubtree);
+        }
+
         // Get the item from root again as template replaces the item element
         liElem = ulElem.children().eq(insertIndex != null ? insertIndex : index);
         context.parentElement = liElem;
@@ -1195,7 +1214,7 @@ var __oj_tree_view_metadata =
         // Cache data and metadata for lookup
         liElem.data('data', data).data('metadata', metadata);
 
-        self._decorateItem(liElem);
+        self._decorateItem(liElem, replace);
       },
 
       /**
@@ -1316,15 +1335,16 @@ var __oj_tree_view_metadata =
       /**
        * Adds the necessary attributes to a TreeView item element.
        * @param {jQuery} item The item element to decorate.
+       * @param {boolean} replace If method is called from change mutation.
        * @private
        */
-      _decorateItem: function (item) {
+      _decorateItem: function (item, replace) {
         var self = this;
         item.addClass('oj-treeview-item').attr('role', 'treeitem');
 
         // Create wrapper for item icon and text
         var itemContent = this._getItemContent(item);
-        if (itemContent.length === 0) {
+        if (itemContent.length === 0 || replace) {
           // Wrap everything except the subtree
           // Use item.contents() to include text and comment nodes as well
           itemContent = $(document.createElement('div'))
@@ -2656,6 +2676,43 @@ var __oj_tree_view_metadata =
           this.handleModelChangeEvent(event);
         }
       },
+      _changeNodeToLeaf: function (item, subtree) {
+        item.removeChild(subtree);
+        item.classList.add('oj-treeview-leaf');
+        item.classList.remove('oj-expanded');
+        item.removeAttribute('aria-expanded');
+        item.classList.remove('oj-collapsed');
+
+        var key = item.getAttribute('id');
+        var keys = [];
+        keys.push(key);
+        var expanded = this.options.expanded;
+        if (expanded != null) {
+          var newExpanded = expanded.delete(keys);
+          this._uiExpanded.delete(keys);
+          // update selection option if it did changed
+          if (expanded !== newExpanded) {
+            this._userOptionChange('expanded', newExpanded, null);
+          }
+        }
+
+        var disclosureIcon = item.getElementsByClassName('oj-treeview-spacer')[0];
+        disclosureIcon.classList.remove('oj-treeview-disclosure-icon');
+        disclosureIcon.classList.remove('oj-component-icon');
+        disclosureIcon.classList.remove('oj-clickable-icon-nocontext');
+        disclosureIcon.classList.remove('oj-default');
+      },
+      _changeNodeToParent: function (item) {
+        item.classList.remove('oj-treeview-leaf');
+        item.classList.add('oj-collapsed');
+        item.setAttribute('aria-expanded', false);
+
+        var disclosureIcon = item.getElementsByClassName('oj-treeview-spacer')[0];
+        disclosureIcon.classList.add('oj-treeview-disclosure-icon');
+        disclosureIcon.classList.add('oj-component-icon');
+        disclosureIcon.classList.add('oj-clickable-icon-nocontext');
+        disclosureIcon.classList.add('oj-default');
+      },
       handleModelRemoveEvent: function (event) {
         var self = this;
         var keys = event.detail.remove.keys;
@@ -2695,16 +2752,26 @@ var __oj_tree_view_metadata =
         var self = this;
         var removedKeys = [];
         var elem = this._getItemByKey(key);
-        var children = this._getChildItems(elem);
-        children.each(function (index, child) {
-          var childkey = self._getKey($(child));
-          var childKeys = self._removeAllChildrenOfParentKey(childkey);
-          removedKeys = removedKeys.concat(childKeys);
-        });
-        elem[0].parentNode.removeChild(elem[0]);
-        this._keyList.delete(key);
-        removedKeys.push(key);
+        if (elem[0]) {
+          var children = this._getChildItems(elem);
+          children.each(function (index, child) {
+            var childkey = self._getKey($(child));
+            var childKeys = self._removeAllChildrenOfParentKey(childkey);
+            removedKeys = removedKeys.concat(childKeys);
+          });
+          var subtree = elem[0].parentNode;
+          subtree.removeChild(elem[0]);
+
+          this._keyList.delete(key);
+          removedKeys.push(key);
+          if (subtree.getElementsByTagName('li').length === 0) {
+            self._changeNodeToLeaf(subtree.parentNode, subtree);
+          }
+        }
         return removedKeys;
+      },
+      _isLeafIcon: function (item) {
+        return item.classList.contains('oj-treeview-leaf');
       },
       handleModelAddEvent: function (event) {
         var addEvent = event.detail.add;
@@ -2714,8 +2781,15 @@ var __oj_tree_view_metadata =
         var afterKeys;
         var parentKeys = addEvent.parentKeys;
         var indexes = addEvent.indexes;
+        var self = this;
         addEvent.keys.forEach(function (key) {
           keys.push(key);
+        });
+        parentKeys.forEach(function (key) {
+          var parentItem = self._getItemByKey(key)[0];
+          if (parentItem && self._isLeafIcon(parentItem)) {
+            self._changeNodeToParent(parentItem);
+          }
         });
         // afterKeys is deprecated, but continue to support it until we can remove it.
         // forEach can be called on both array and set.
@@ -2732,20 +2806,22 @@ var __oj_tree_view_metadata =
           for (var i = 0; i < data.length; i++) {
             var index = (indexes == null) ? this._getIndex(afterKeys, i) + 1 : indexes[i];
             var parentKey = parentKeys[i];
+            var parentItem = this._getItemByKey(parentKey);
             var subtree;
             if (parentKey == null) {
               subtree = this._getRoot();
               this._renderItem(subtree, { data: [data[i]], metadata: [metadata[i]] }, 0, index);
-            } else if (this._isInitExpanded(parentKey)) {
-              var parentItem = this._getItemByKey(parentKey);
-              subtree = this._getSubtree();
-              if (subtree.length === 0) {
+            } else if (parentItem.length !== 0) {
+              subtree = this._getSubtree(parentItem);
+              if (subtree.length === 0 && self._isInitExpanded(parentItem)) {
                 subtree = $(document.createElement('ul'))
                 .addClass('oj-treeview-list')
                 .attr('role', 'group')
                 .appendTo(parentItem);
               }
-              this._renderItem(subtree, { data: [data[i]], metadata: [metadata[i]] }, 0, index);
+              if (subtree.length !== 0) {
+                this._renderItem(subtree, { data: [data[i]], metadata: [metadata[i]] }, 0, index);
+              }
             }
           }
         }
@@ -2754,16 +2830,30 @@ var __oj_tree_view_metadata =
         var changeEvent = event.detail.update;
         var data = changeEvent.data;
         var metadata = changeEvent.metadata;
-        var keys = changeEvent.keys;
+        var keys = [];
+        changeEvent.keys.forEach(function (key) {
+          keys.push(key);
+        });
 
         for (var i = 0; i < data.length; i++) {
           var elem = this._getItemByKey(keys[i]);
           if (elem != null) {
-            this._renderItem(null, { data: [data[i]], metadata: [metadata[i]] }, 0, null, true);
+            var insertIndex = this._indexToParent(elem[0]);
+            this._renderItem(null, { data: [data[i]], metadata: [metadata[i]] },
+              0, insertIndex, true);
           }
         }
-
         this._resetFocus();
+      },
+      _indexToParent: function (elem) {
+        var index = 0;
+        for (var i = 0; i < elem.parentNode.children.length; i++) {
+          if (elem.parentNode.children[i] === elem) {
+            index = i;
+            break;
+          }
+        }
+        return index;
       },
       handleModelRefreshEvent: function () {
         this.refresh();
@@ -2814,6 +2904,7 @@ var __oj_tree_view_metadata =
  *   </thead>
  *   <tbody>
  *     <tr>
+ *       <td rowspan = "12" nowrap>Item</td>
  *       <td><kbd>Tab</kbd></td>
  *       <td>Navigates to next focusable element on page.</td>
  *     </tr>
@@ -2835,7 +2926,7 @@ var __oj_tree_view_metadata =
  *     </tr>
  *     <tr>
  *       <td><kbd>RightArrow</kbd></td>
- *       <td>On a collapsed item, expands the item. Otherwise, move focus to the item above. The action is swapped with <kbd>LeftArrow</kbd> in RTL locales.</td>
+ *       <td>On a collapsed item, expands the item. Otherwise, move focus to the item below. The action is swapped with <kbd>LeftArrow</kbd> in RTL locales.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Shift+DownArrow</kbd></td>

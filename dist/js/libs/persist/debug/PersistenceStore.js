@@ -12,7 +12,7 @@ define([], function () {
    * @classdesc Abstract class that all Persistence Store implmenetation extends
    *            from. Defines the basic operations every persistence store should
    *            support.
-   * @constructor
+   * @hideconstructor
    */
   var PersistenceStore = function (name) {
     this._name = name;
@@ -50,7 +50,7 @@ define([], function () {
    * @name Init
    * @memberof! PersistenceStore
    * @instance
-   * @param {{index: Array, version: Object}} options Optional options to tune the store. 
+   * @param {{index: Array, version: string}} options Optional options to tune the store. 
    * <ul>
    * <li>options.index   array of fields to create index for</li>
    * <li>options.version The version of the store.</li>

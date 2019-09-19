@@ -98,6 +98,11 @@ VComponent.register(_tagName, __oj_avatar_metadata, Avatar);
  * @ojstatus preview
  * @ojshortdesc An avatar represents a person or entity as initials or an image.
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["size"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["src", "initials"]}
+ * @ojvbdefaultcolumns 2
+ * @ojvbmincolumns 1
+ *
  * @classdesc
  * <h3 id="avatarOverview-section">
  *   JET Avatar

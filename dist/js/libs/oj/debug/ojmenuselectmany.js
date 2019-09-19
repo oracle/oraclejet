@@ -49,6 +49,11 @@ var __oj_menu_select_many_metadata =
    * @ojstatus preview
    * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
    *
+   * @ojpropertylayout {propertyGroup: "common", items: ["disabled"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
+   * @ojvbdefaultcolumns 2
+   * @ojvbmincolumns 1
+   *
    * @classdesc
    * <h3 id="selectOverview-section">
    *   JET Menu Select Many
@@ -150,6 +155,7 @@ var __oj_menu_select_many_metadata =
  * @ojwriteback
  * @memberof oj.ojMenuSelectMany
  * @type {Array.<any>}
+ * @ojeventgroup common
  */
 
 /**

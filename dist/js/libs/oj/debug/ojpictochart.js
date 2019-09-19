@@ -318,6 +318,11 @@ var __oj_picto_chart_item_metadata =
  *               }
  *              ]
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["columnCount", "rowCount", "layout", "layoutOrigin", "hoverBehavior", "animationOnDataChange", "animationOnDisplay", "style"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data"]}
+ * @ojvbdefaultcolumns 6
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="pictoChartOverview-section">
  *   JET PictoChart
@@ -667,6 +672,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
        * @ojsignature [{target: "Type", value: "Array<K>"}]
        * @default []
        * @ojwriteback
+       * @ojeventgroup common
        */
       selection: [],
 

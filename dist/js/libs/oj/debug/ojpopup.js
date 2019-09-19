@@ -296,6 +296,14 @@ var __oj_popup_metadata =
    * @ojrole dialog
    * @ojrole alertdialog
    *
+   * @ojpropertylayout {propertyGroup: "common", items: ["initalFocus", "modality", "autoDismiss", "tail",
+   *                                                     "position.at.horizontal", "position.at.vertical",
+   *                                                     "position.collision", "position.my.horizontal",
+   *                                                     "position.my.vertical", "position.of",
+   *                                                     "position.offset.x", "position.offset.y", "style"]}
+   * @ojvbdefaultcolumns 2
+   * @ojvbmincolumns 1
+   *
    * @classdesc
    * <h3 id="popupOverview-section">
    *   JET Popup Component

@@ -2128,7 +2128,10 @@ var __oj_select_one_metadata =
           if (data) {
             // skip filter locally if it is already done thru data provider
             if (fetchListParms.filterCriterion) {
-              results = data;
+              if (data.length > 0 && results.length < maxItems) {
+                var dataToAppend = data.slice(0, maxItems - results.length);
+                results = results.concat(dataToAppend);
+              }
             } else {
               for (var item, i = 0; i < data.length && results.length < maxItems; i++) {
                 item = data[i];
@@ -3449,12 +3452,23 @@ var __oj_select_one_metadata =
                     }
                     node.attr('role', 'presentation');
 
+                    var labelId = 'oj-listbox-result-label-' + _ComboUtils.nextUid();
                     label = $(document.createElement('div'));
                     label.addClass('oj-listbox-result-label');
-                    label.attr('id', 'oj-listbox-result-label-' + _ComboUtils.nextUid());
+                    label.attr('id', labelId);
                     label.attr('role', 'option');
                     if (disabled) {
                       label.attr('aria-disabled', 'true');
+                    }
+
+                    //  - grouping header accessibility issue for jaws
+                    // build the full path of aria-label ids, which will be referred by the leaf nodes
+                    // 'ariaLabelledById' property is later used by _processAriaLabelForHierarchy
+                    // to set 'aria-labelledby' attribute in leaf nodes
+                    if (resultsParent && resultsParent.ariaLabelledById) {
+                      result.ariaLabelledById = resultsParent.ariaLabelledById + ' ' + labelId;
+                    } else {
+                      result.ariaLabelledById = labelId;
                     }
 
                     // append label to node
@@ -4187,9 +4201,6 @@ var __oj_select_one_metadata =
         var choices = this._findHighlightableChoices();
         var choice;
 
-        var searchBox = this.dropdown.find('.oj-listbox-search');
-        var searchVisible = (searchBox && !searchBox.attr('aria-hidden'));
-
         if (arguments.length === 0) {
           // If no argumnets passed then currently highlighted
           // option will be returned.
@@ -4199,9 +4210,7 @@ var __oj_select_one_metadata =
               .closest('.oj-listbox-result');
           }
           //  - acc: screenreader not reading ojselect items
-          if (searchVisible) {
-            this._updateMatchesCount(curSelected.text());
-          }
+          this._updateMatchesCount(curSelected.text());
           return choices.get().indexOf(curSelected[0]);
         }
 
@@ -4220,15 +4229,11 @@ var __oj_select_one_metadata =
           var sels = choice.children('.oj-listbox-result-label');
           sels.addClass('oj-hover');
           //  - acc: screenreader not reading ojselect items
-          if (searchVisible) {
-            this._updateMatchesCount(sels.text());
-          }
+          this._updateMatchesCount(sels.text());
         } else {
           choice.addClass('oj-hover');
           //  - acc: screenreader not reading ojselect items
-          if (searchVisible) {
-            this._updateMatchesCount(choice.text());
-          }
+          this._updateMatchesCount(choice.text());
         }
 
         // ensure assistive technology can determine the active choice
@@ -4460,6 +4465,42 @@ var __oj_select_one_metadata =
         } else {
           results.empty();
         }
+      },
+
+      // _AbstractOjChoice
+      _processAriaLabelForHierarchy: function () {
+        //  - grouping header accessibility issue for jaws
+        // For Hierarchical data, screen reader should read:
+        // 1. the label full-path for the first and last node at the leaf level
+        // 2. the label for the nodes between first and last node at the leaf level
+        var compound = this.results.find('.oj-listbox-result-with-children');
+        if (compound.length === 0) {
+          return;
+        }
+
+        var self = this;
+        var setAriaLabelledBy = function (node) {
+          var nodeLabel = node.find('.oj-listbox-result-label');
+          var ariaLabelledById = node.data(self._elemNm).ariaLabelledById;
+          if (ariaLabelledById && nodeLabel) {
+            nodeLabel.attr('aria-labelledby', ariaLabelledById);
+          }
+        };
+        _ComboUtils.each2(compound, function (i, choice) {
+          // process aria-labelledby attribute for the selectable and visible leaf nodes
+          var leafNodes = choice.find('.oj-listbox-result-selectable:visible');
+          // first and last node at the leaf level should have the
+          // aria-labelledby pointing to the full-path of labelIds
+          if (leafNodes && leafNodes.length > 0) {
+            // first leaf node
+            setAriaLabelledBy($(leafNodes[0]));
+            // last leaf node
+            if (leafNodes.length > 1) {
+              setAriaLabelledBy($(leafNodes[leafNodes.length - 1]));
+            }
+          }
+        }
+        );
       },
 
       // _AbstractOjChoice
@@ -5480,6 +5521,9 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice,
           this._highlight(selected);
         }
       }
+
+      //  - grouping header accessibility issue for jaws
+      this._processAriaLabelForHierarchy();
     },
 
     // _AbstractSingleChoice
@@ -6433,15 +6477,22 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
 
     _selectChoice: function (choice) {
       var selected = this.container.find('.' + this._classNm + '-selected-choice.oj-focus');
-      if (!selected.length || (choice && choice[0] !== selected[0])) {
-        if (selected.length) {
+      var hasSelected = selected && selected.length > 0;
+      var hasChoice = choice && choice.length > 0;
+      // Condition 1: Nothing is selected and we need select an item (selected == null && choice == item1)
+      // Condition 2: An item is selected and we need to unselect that item (selected == item1 && choice == null)
+      // Condition 3: An item is selected and we need to select another item (selected == item1 && choice == item2)
+      // Condition 4: An item is selected and we need to select same item (selected == item1 && choice == item1)
+      // Make sure Condition 4 is no-op and we don't trigger choice-selected / choice-deselected event
+      if ((!hasSelected && hasChoice) ||
+          (hasSelected && !hasChoice) ||
+          (hasSelected && hasChoice && choice[0] !== selected[0])) {
+        if (hasSelected) {
           this.opts.element.trigger('choice-deselected', selected);
+          selected.removeClass('oj-focus');
         }
-        selected.removeClass('oj-focus');
-        if (choice && choice.length) {
-          if (this._elemNm === 'ojcombobox') {
-            this.close();
-          }
+        if (hasChoice) {
+          this.close();
           choice.addClass('oj-focus');
           this.container.find('.' + this._classNm + '-description')
             .text(choice.attr('valueText') + '. Press back space to delete.')
@@ -6467,15 +6518,22 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
       var selection = this.container.find(selector);
       this.selection = selection;
 
-      var _this = this;
+      var self = this;
       this.selection.on('click',
                         '.' + this._classNm + '-selected-choice:not(.' + this._classNm + '-locked)',
                         function () {
-                          if (this._elemNm === 'ojcombobox') {
-                            _this.search[0].focus();
+                          if (self._elemNm === 'ojcombobox') {
+                            self.search[0].focus();
                           } // Fixed??
-                          _this._selectChoice($(this));
+                          self._selectChoice($(this));
                         });
+
+      // only ojSelectMany triggers the selection blur event.
+      if (this._elemNm === 'ojselect') {
+        this.selection.on('blur', function () {
+          self._selectChoice(null);
+        });
+      }
 
       this._contentElement = (this._elemNm === 'ojcombobox') ? this.search : this.selection;
 
@@ -6643,8 +6701,9 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
           this.open(e);
         }
         return;
-      } else if (((e.which === _ComboUtils.KEY.BACKSPACE && this.keydowns === 1)
-           || e.which === _ComboUtils.KEY.LEFT) && (pos.offset === 0 && !pos.length)) {
+      } else if (this._isBackNavAllowed() && (pos.offset === 0 && !pos.length) &&
+          ((e.which === _ComboUtils.KEY.BACKSPACE && this.keydowns === 1) ||
+            e.which === _ComboUtils.KEY.LEFT)) {
         this._selectChoice(this.selection.find('.' + this._classNm + '-selected-choice:not(.' + this._classNm + '-locked)').last());
         e.preventDefault();
         return;
@@ -6718,6 +6777,14 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
 
       // ojselect: used by select
       this._userTyping = true;
+    },
+
+    _isBackNavAllowed: function () {
+      // For ojSelectMany: Backspace / Left navigation is not allowed if the search is focused
+      if (this._elemNm === 'ojselect') {
+        return document.activeElement !== this.search[0];
+      }
+      return true;
     },
 
     _enableInterface: function () {
@@ -7039,6 +7106,8 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
         }
       }
       );
+      //  - grouping header accessibility issue for jaws
+      this._processAriaLabelForHierarchy();
 
       if (!choices.filter('.oj-listbox-result:not(.oj-selected)').length > 0 && this._classNm !== 'oj-select') {
         this.close();
@@ -7309,6 +7378,7 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
           "<ul class='oj-select-choices' tabindex='0' role='combobox' ",
           "  aria-autocomplete='none' aria-expanded='false'>",
           '</ul>',
+          "<div class='oj-select-description oj-helper-hidden-accessible'/>",
           "<div class='oj-listbox-drop' role='dialog'>",
 
           "  <div class='oj-listbox-search-wrapper'>",
@@ -7692,6 +7762,11 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    *              ]
    * @ojstatus preview
    *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled", "describedBy"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
+   * @ojvbdefaultcolumns 6
+   * @ojvbmincolumns 2
+   *
    * @classdesc
    * <h3 id="comboboxOneOverview-section">
    *   JET Combobox One
@@ -7766,6 +7841,11 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    *               }
    *              ]
    * @ojstatus preview
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled", "describedBy"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
+   * @ojvbdefaultcolumns 6
+   * @ojvbmincolumns 2
    *
    * @classdesc
    * <h3 id="comboboxManyOverview-section">
@@ -8296,6 +8376,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @memberof oj.ojComboboxOne
        * @type {string|null}
        * @default null
+       * @ojtranslatable
        */
       /**
        * The placeholder text to set on the element. The placeholder specifies a short hint that can be displayed before user
@@ -8319,6 +8400,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @memberof oj.ojComboboxMany
        * @type {string|null}
        * @default null
+       * @ojtranslatable
        */
         placeholder: null,
 
@@ -9343,6 +9425,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @ojshortdesc The value of the element.
        * @access public
        * @instance
+       * @ojeventgroup common
        * @memberof oj.ojComboboxOne
        * @type {any}
        * @ojsignature { target: "Type",
@@ -9369,6 +9452,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @ojshortdesc The value of the element.
        * @access public
        * @instance
+       * @ojeventgroup common
        * @memberof oj.ojComboboxMany
        * @type {Array.<any>|null}
        * @ojsignature { target: "Type",
@@ -11976,6 +12060,11 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter", "Validator", "Validation", "AsyncValidator"]}
    * @ojstatus preview
    *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled", "describedBy"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
+   * @ojvbdefaultcolumns 6
+   * @ojvbmincolumns 2
+   *
    * @classdesc
    * <h3 id="selectOverview-section">
    *   JET Select One
@@ -12050,6 +12139,11 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    *               }
    *              ]
    * @ojstatus preview
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled", "describedBy"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
+   * @ojvbdefaultcolumns 6
+   * @ojvbmincolumns 2
    *
    * @classdesc
    * <h3 id="selectOverview-section">
@@ -12348,6 +12442,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @memberof oj.ojSelectOne
        * @type {string|null}
        * @default null
+       * @ojtranslatable
        */
       /**
        * The placeholder text to set on the element. The placeholder specifies a short hint that can be displayed before user
@@ -12371,6 +12466,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @memberof oj.ojSelectMany
        * @type {string|null}
        * @default null
+       * @ojtranslatable
        */
         placeholder: null,
 
@@ -13192,6 +13288,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @ojsignature { target: "Type",
        *                value: "V|null"}
        * @ojwriteback
+       * @ojeventgroup common
        */
       /**
        * The value of the element. The value is an array with any type of items.
@@ -13218,6 +13315,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        *                value: "Array<V>|null"}
        * @default null
        * @ojwriteback
+       * @ojeventgroup common
        */
       },
 

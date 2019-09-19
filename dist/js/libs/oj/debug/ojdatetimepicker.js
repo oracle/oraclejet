@@ -777,7 +777,8 @@ var __oj_date_time_picker_metadata =
       "value": []
     },
     "value": {
-      "type": "string"
+      "type": "string",
+      "writeback": true
     }
   },
   "methods": {
@@ -2156,6 +2157,11 @@ var yearDisplay = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_T
  * @ojdisplayname Inline Date Picker
  * @ojrole combobox
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "required", "disabled", "readonly", "min", "max"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+ * @ojvbdefaultcolumns 4
+ * @ojvbmincolumns 4
+ *
  * @classdesc
  * <h3 id="inputDateOverview-section">
  *   JET DatePicker (Inline mode)
@@ -2222,6 +2228,11 @@ var yearDisplay = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_T
  * @ojshortdesc An input date allows the user to enter or select a date value.
  * @ojrole combobox
  * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter", "Validator", "Validation"]}
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled", "readonly", "min", "max", "converter"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+ * @ojvbdefaultcolumns 6
+ * @ojvbmincolumns 2
  *
  * @classdesc
  * <h3 id="inputDateOverview-section">
@@ -2437,7 +2448,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @instance
        * @type {string}
        * @ojvalue {string} '' Do not show anything
-       * @ojvalue {string} 'today' Show the today button
+       * @ojvalue {string} 'today' Show the today button. When user clicks on the Today button, it will highlight the current day in the calendar.
        * @default "today"
        * @ojsignature { target: "Type", value: "?string"}
        */
@@ -2648,7 +2659,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * by creating one using the datetime converter factory
      * and providing custom options -
      * oj.Validation.converterFactory('datetime').createConverter(customOptions).
-     *
+     * <p>If the timezone option is provided in the converter, the Today button will highlight the current day based on the timezone specified in the converter.
      * {@ojinclude "name":"inputBaseConverterOptionDoc"}
      *
      * @property {string} type - the converter type registered with the oj.ConverterFactory.
@@ -3093,6 +3104,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * @type {string}
      * @ojformat date
      * @ojwriteback
+     * @ojeventgroup common
      */
     /**
      * The value of the InputDate element which should be an ISOString.
@@ -3119,6 +3131,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * @type {string}
      * @ojformat date
      * @ojwriteback
+     * @ojeventgroup common
      */
 
     // Events
@@ -4196,6 +4209,12 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    */
   _gotoToday: function () {
     var date = new Date();
+    var converter = this._GetConverter();
+    var converterOptions = converter.resolvedOptions();
+    if (converterOptions.timeZone !== undefined && converterOptions.isoStrFormat !== 'local') {
+      var parsedDate = converter.parse(date.toISOString());
+      date = __ValidationBase.IntlConverterUtils.isoToLocalDate(parsedDate);
+    }
 
     this._currentDay = date.getDate();
     this._currentMonth = date.getMonth();
@@ -4653,6 +4672,14 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     var dateParams = ['date', 'month', 'fullYear'];
     var converter = this._GetConverter();
     var tempDate = new Date();
+    var converterOptions;
+    if (!(converter instanceof Promise)) {
+      converterOptions = converter.resolvedOptions();
+      if (converterOptions.timeZone !== undefined && converterOptions.isoStrFormat !== 'local') {
+        var parsedDate = converter.parse(tempDate.toISOString());
+        tempDate = __ValidationBase.IntlConverterUtils.isoToLocalDate(parsedDate);
+      }
+    }
     var today = new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate()); // clear time
     var isRTL = this._IsRTL();
     var footerLayoutDisplay = this.options.datePicker.footerLayout;
@@ -6641,6 +6668,11 @@ function _getTimePickerConverter(converter, addOpts) {
  * @ojshortdesc An input time allows the user to enter or select a time value.
  * @ojrole combobox
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled", "readonly", "min", "max", "converter"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+ * @ojvbdefaultcolumns 6
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="inputTimeOverview-section">
  *   JET InputTime
@@ -6739,6 +6771,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
      *
      * If one wishes to provide a custom converter for the InputTime override the factory returned for
      * oj.Validation.converterFactory('datetime')
+     * <p>If the timezone option is provided in the converter, the Now button will highlight the current time based on the timezone specified in the converter.
      * {@ojinclude "name":"inputBaseConverterOptionDoc"}
      * @expose
      * @memberof! oj.ojInputTime
@@ -6971,7 +7004,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
        * @instance
        * @type {string}
        * @ojvalue {string} '' Do not show anything
-       * @ojvalue {string} 'now' Show the now button
+       * @ojvalue {string} 'now' Show the Now button. When user clicks on the Now button, it will highlight the current time in the timepicker.
        * @default ""
        */
         footerLayout: '',
@@ -7129,6 +7162,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
      * @ojwriteback
      * @memberof! oj.ojInputTime
      * @ojshortdesc The value of the input time element, which must be an ISOString. See the Help documentation for more information.
+     * @ojeventgroup common
      */
 
     // Events
@@ -8504,8 +8538,16 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
 
       this._wheelPicker.find('.oj-timepicker-now').on('click',
       function (event) {
-        var value = __ValidationBase.IntlConverterUtils.dateToLocalIso(new Date());
-        value = self._GetConverter().parse(value);  // Convert to proper timezone
+        var date = new Date();
+        var value;
+        var converter = self._GetConverter();
+        var converterOptions = converter.resolvedOptions();
+        if (converterOptions.timeZone !== undefined &&
+              converterOptions.isoStrFormat !== 'local') {
+          value = date.toISOString();
+        } else {
+          value = __ValidationBase.IntlConverterUtils.dateToLocalIso(date);
+        }
         self._timePickerModel.isoValue = value;
         if (!self._isIndependentInput()) {
           // when is not an independent component (i.e. part of switcher)
@@ -10430,6 +10472,11 @@ var timeSwitcherConverter = $.oj.ojInputTime.prototype.options.converter;
  * @ojdisplayname Inline Date Time Picker
  * @ojrole combobox
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "required", "disabled", "readonly", "min", "max"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+ * @ojvbdefaultcolumns 4
+ * @ojvbmincolumns 4
+ *
  * @classdesc
  * <h3 id="inputDateTimeOverview-section">
  *   JET DateTimePicker (Inline mode)
@@ -10493,6 +10540,11 @@ var timeSwitcherConverter = $.oj.ojInputTime.prototype.options.converter;
  *                value: "class ojInputDateTime<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> extends ojInputDate<SP>"
  *               }
  *              ]
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled", "readonly", "min", "max", "converter"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+ * @ojvbdefaultcolumns 6
+ * @ojvbmincolumns 2
  *
  * @classdesc
  * <h3 id="inputDateTimeOverview-section">
@@ -10572,6 +10624,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      *
      * If one wishes to provide a custom converter for the InputDateTime override the factory returned for
      * oj.Validation.converterFactory('datetime')
+     * <p>If the timezone option is provided in the converter, the Today button will highlight the current day based on the timezone specified in the converter.
      * {@ojinclude "name":"inputBaseConverterOptionDoc"}
      * @expose
      * @instance
@@ -10789,7 +10842,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
        * @instance
        * @type {string}
        * @ojvalue {string} '' Do not show anything
-       * @ojvalue {string} 'now' Show the now button
+       * @ojvalue {string} 'now' Show the Now button. When user clicks on the Now button, it will highlight the current time in the timepicker.
        * @default ""
        */
       footerLayout: '',
@@ -11027,9 +11080,11 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * @name value
      * @ojshortdesc The value of the datetime picker element, which must be an ISOString. See the Help documentation for more information.
      * @instance
+     * @ojwriteback
      * @memberof! oj.ojDateTimePicker
      * @type {string}
      * @ojformat date-time
+     * @ojeventgroup common
      */
     /**
      * The value of the InputDateTime element which should be an ISOString
@@ -11053,6 +11108,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * @ojshortdesc The value of the input datetime element, which must be an ISOString. See the Help documentation for more information.
      * @type {string}
      * @ojformat date-time
+     * @ojeventgroup common
      */
 
     // Events

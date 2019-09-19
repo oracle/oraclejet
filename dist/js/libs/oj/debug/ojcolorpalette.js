@@ -209,6 +209,11 @@ var __oj_color_palette_metadata =
    *               }
    *              ]
    *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "layout", "swatchSize", "labelDisplay", "disabled"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["palette", "value"]}
+   * @ojvbdefaultcolumns 4
+   * @ojvbmincolumns 4
+   *
    * @classdesc
    * <h3 id="colorPaletteOverview-section">
    *   JET Color Palette
@@ -390,6 +395,7 @@ var __oj_color_palette_metadata =
          * @ojwriteback
          * @expose
          * @instance
+         * @ojeventgroup common
          * @ojsignature {target:"Type", value:"oj.Color", jsdocOverride:true}
          * @memberof oj.ojColorPalette
          * @example <caption>Initialize the color palette with the <code class="prettyprint">value</code> attribute specified:</caption>

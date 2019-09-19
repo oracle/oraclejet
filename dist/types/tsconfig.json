@@ -12,16 +12,9 @@
         "target": "es5",
         "baseUrl": "../",
         "typeRoots": [
-            "../../../build/scripts/grunt/node_modules/@types"
-        ],
-        "paths": {
-            "@oracle/oraclejet": [
-                "oracle__oraclejet"
-            ],
-            "@oracle/oraclejet/*": [
-                "oracle__oraclejet/*"
-            ]
-        } 
+            "../../../build/scripts/grunt/node_modules/@types",
+            "../../../built/tmpdefinitions"
+        ]
     },
     "files": [
         "index.d.ts",

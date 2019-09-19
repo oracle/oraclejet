@@ -448,6 +448,11 @@ var __oj_sunburst_node_metadata =
  *               }
  *              ]
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["colorLabel", "sizeLabel", "nodeDefaults.labelDisplay", "nodeDefaults.labelHalign", "animationOnDataChange", "animationOnDisplay", "startAngle", "style"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data", "selection"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 6
+ *
  * @classdesc
  * <h3 id="sunburstOverview-section">
  *   JET Sunburst
@@ -1030,6 +1035,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @type {Array.<any>}
      * @default []
      * @ojwriteback
+     * @ojeventgroup common
      */
       selection: [],
 

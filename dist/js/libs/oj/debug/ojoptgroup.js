@@ -62,6 +62,8 @@ function ojOptGroup(context) {
  * @ojstatus preview
  * @ojsignature class ojOptgroup extends JetElement<ojOptgroupSettableProperties>
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["label", "disabled"]}
+ *
  * @classdesc
  * <h3 id="optgroupOverview-section">
  *   JET Optgroup

@@ -363,6 +363,11 @@ var __oj_legend_section_metadata =
  *               }
  *              ]
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["orientation", "halign", "valign", "hoverBehavior", "hoverBehaviorDelay", "style"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data"]}
+ * @ojvbdefaultcolumns 2
+ * @ojvbmincolumns 1
+ *
  * @classdesc
  * <h3 id="legendOverview-section">
  *   JET Legend

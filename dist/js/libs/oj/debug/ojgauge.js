@@ -1768,6 +1768,11 @@ oj.__registerWidget('oj.ojDialGauge', $.oj.dvtBaseGauge,
  * @ojrole img
  * @ojrole application
  *
+ * @ojpropertylayout [ {propertyGroup: "common", items: ["type", "rotation", "metricLabel.rendered", "metricLabel.textType", "color", "style"]},
+ *                     {propertyGroup: "data", items: ["value", "thresholds"]} ]
+ * @ojvbdefaultcolumns 2
+ * @ojvbmincolumns 1
+ *
  * @classdesc
  * <h3 id="ledGaugeOverview-section">
  *   JET LED Gauge
@@ -2114,6 +2119,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @instance
        * @type {number|null}
        * @ojwriteback
+       * @ojeventgroup common
        */
       value: null,
 
@@ -2268,6 +2274,11 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
  * @ojshortdesc A rating gauge displays information graphically, typically displaying or accepting user feedback on a product or service.
  * @ojrole img
  * @ojrole application
+ *
+ * @ojpropertylayout [ {propertyGroup: "common", items: ["selectedState.shape", "unselectedState.shape", "hoverState.shape", "changedState.shape", "style"]},
+ *                     {propertyGroup: "data", items: ["value", "min", "max", "step"]} ]
+ * @ojvbdefaultcolumns 4
+ * @ojvbmincolumns 1
  *
  * @classdesc
  * <h3 id="ratingGaugeOverview-section">
@@ -2823,6 +2834,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @type {number|null}
        * @ojwriteback
        * @ojmin 0
+       * @ojeventgroup common
        */
       value: null,
 
@@ -3056,6 +3068,12 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
  * @ojshortdesc A status meter gauge displays information graphically, highlighting a specific metric value's progress in relation to its thresholds.  Horizontal, vertical, and circular formats are supported.
  * @ojrole img
  * @ojrole application
+ *
+ * @ojpropertylayout [ {propertyGroup: "common", items: ["orientation", "metricLabel.rendered", "metricLabel.textType", "metricLabel.text", "thresholdDisplay",
+ *                                                       "animationOnDataChange", "animationOnDisplay", "plotArea.rendered", "color", "style"]},
+ *                     {propertyGroup: "data", items: ["value", "min", "max", "step", "thresholds", "referenceLines"]} ]
+ * @ojvbdefaultcolumns 4
+ * @ojvbmincolumns 1
  *
  * @classdesc
  * <h3 id="statusMeterGaugeOverview-section">
@@ -3697,6 +3715,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @instance
        * @type {number|null}
        * @ojwriteback
+       * @ojeventgroup common
        */
       value: null,
 

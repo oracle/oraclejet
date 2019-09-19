@@ -3981,6 +3981,10 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * @since 4.1.0
  * @ojtsignore
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["data"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 1
+ *
  * @classdesc
  * <h3 id="oj-for-each-overview-section">
  *   ForEach Binding
@@ -4071,6 +4075,10 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * @since 4.1.0
  * @ojtsignore
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["test"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 1
+ *
  * @classdesc
  * <h3 id="overview-section">
  *   If Binding
@@ -4121,6 +4129,10 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * @ojbindingelement
  * @since 4.1.0
  * @ojtsignore
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["value"]}
+ * @ojvbdefaultcolumns 2
+ * @ojvbmincolumns 1
  *
  * @classdesc
  * <h3 id="overview-section">

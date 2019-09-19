@@ -435,22 +435,58 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "./logger"], func
     }
     var self = this;
 
-    return self.keys(request, options).then(function (keysArray) {
+    if (cacheHandler.hasShredder(request)) {
+      // shredder is configured for this request, needs to delete both 
+      // the cache entries and the shredded data entries.
+      var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
+      searchCriteria.fields = ['key', 'value'];
+      var ignoreVary = (options && options.ignoreVary);
+
+      var cacheStore;
       return self._getStore().then(function(store) {
-        if (keysArray && keysArray.length) {
-          var promisesArray = keysArray.map(store.removeByKey, store);
-          return Promise.all(promisesArray);
+        cacheStore = store;
+        return cacheStore.find(searchCriteria);
+      }).then(function (dataArray) {
+        if (dataArray && dataArray.length) {
+          var filteredEntries = dataArray.filter(_filterByVary(ignoreVary, request, 'value'));
+          var promises = [];
+          filteredEntries.forEach(function(entry) {
+            promises.push(cacheStore.removeByKey(entry.key));
+            if (entry.value.responseData.bodyAbstract && entry.value.responseData.bodyAbstract.length) {
+              promises.push(cacheHandler.deleteShreddedData(JSON.parse(entry.value.responseData.bodyAbstract)));
+            }
+          });
+          return Promise.all(promises).then(function() {
+            logger.log("Offline Persistence Toolkit OfflineCache: all matching entries are deleted from both the cache store and the shredded store.");
+            return true;
+          }).catch(function(error) {
+            logger.log("Offline Persistence Toolkit OfflineCache: error occurred when deleting matched cache entries.");
+            return false;
+          });
+        } else {
+          logger.log("Offline Persistence Toolkit OfflineCache: no matching entries are found from the cache.");
+          return false;
+        }
+      });
+    } else {
+      // no shredder, deleting cache entries is sufficient.
+      return self.keys(request, options).then(function (keysArray) {
+        return self._getStore().then(function(store) {
+          if (keysArray && keysArray.length) {
+            var promisesArray = keysArray.map(store.removeByKey, store);
+            return Promise.all(promisesArray);
+          } else {
+            return false;
+          }
+        });
+      }).then(function (result) {
+        if (result && result.length) {
+          return true;
         } else {
           return false;
         }
       });
-    }).then(function (result) {
-      if (result && result.length) {
-        return true;
-      } else {
-        return false;
-      }
-    });
+    }
   };
 
   /**

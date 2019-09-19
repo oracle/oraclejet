@@ -274,6 +274,7 @@ define(['../persistenceUtils', './logger'], function (persistenceUtils, logger) 
    Duplicates the behavior of native XMLHttpRequest's send function
    */
   PersistenceXMLHttpRequest.prototype.send = function (data) {
+    var self = this;
     logger.log('Offline Persistence Toolkit PersistenceXMLHttpRequest: send()');
     if (this._passthroughXHR) {
       if (this.responseType != null) {
@@ -287,11 +288,15 @@ define(['../persistenceUtils', './logger'], function (persistenceUtils, logger) 
       var requestInit = _getRequestInit(this, data);
       var request = new Request(this._url, requestInit);
       var self = this;
-      fetch(request).then(function (response) {
-        _processResponse(self, request, response);
-      }, function (error) {
-        logger.error(error);
-      });
+      try {
+        fetch(request).then(function (response) {
+          _processResponse(self, request, response);
+        }, function (error) {
+          self.dispatchEvent(new PersistenceXMLHttpRequestEvent('error', false, false, self));
+        });
+      } catch (err) {
+        throw err;
+      }
       this.dispatchEvent(new PersistenceXMLHttpRequestEvent('loadstart', false, false, this));
     }
   };

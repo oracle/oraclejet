@@ -231,6 +231,11 @@ var __oj_paging_control_metadata =
  * @ojrole button
  * @ojtsimport {module: "ojpagingmodel", type: "AMD", imported: ["PagingModel"]}
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["pageOptions.layout", "pageOptions.orientation", "pageOptions.type", "pageOptions.maxPageLinks", "overflow", "pageSize"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="pagingcontrolOverview-section">
  *   JET PagingControl
@@ -1002,7 +1007,6 @@ var __oj_paging_control_metadata =
        */
       _AfterCreate: function () {
         this._super();
-        this._registerSwipeHandler();
         this._isInitFetch = true;
       },
       /**
@@ -1014,6 +1018,7 @@ var __oj_paging_control_metadata =
        */
       _SetupResources: function () {
         this._super();
+        this._registerSwipeHandler();
         this._registerResizeListener(this._getPagingControlContainer());
         this._registerDataSourceEventListeners();
         if (this._isInitFetch) {
@@ -1036,6 +1041,7 @@ var __oj_paging_control_metadata =
         // unregister the listeners on the datasource
         this._unregisterDataSourceEventListeners();
         this._unregisterResizeListener();
+        this._unregisterSwipeHandler();
 
         // Remove any pending busy states
         if (this._busyStateResolvers) {
@@ -2663,47 +2669,39 @@ var __oj_paging_control_metadata =
         if (oj.DomUtils.isTouchSupported()) {
           if (this.options.mode === this._MODE._PAGE) {
             var pagingControlNav = this._getPagingControlNav();
-            var options;
-
             if (pagingControlNav != null) {
-              var isVertical = this.options.pageOptions.orientation === 'vertical';
+              var hammerDir;
               var self = this;
 
-              if (isVertical) {
-                options = {
-                  recognizers: [
-                    [Hammer.Swipe, { direction: Hammer.DIRECTION_VERTICAL }]
-                  ] };
-
-                this._hammerSwipeUp =
-                  pagingControlNav.ojHammer(options).on('swipeup', function (event) {
-                    event.preventDefault();
-                    self.nextPage();
-                  });
-
-                this._hammerSwipeDown =
-                  pagingControlNav.ojHammer(options).on('swipedown', function (event) {
-                    event.preventDefault();
-                    self.previousPage();
-                  });
+              if (this.options.pageOptions.orientation === 'vertical') {
+                hammerDir = Hammer.DIRECTION_VERTICAL;
+                this._hammerNextPageDir = 'swipeup';
+                this._hammerPrevPageDir = 'swipedown';
               } else {
-                options = {
-                  recognizers: [
-                    [Hammer.Swipe, { direction: Hammer.DIRECTION_HORIZONTAL }]
-                  ] };
-
-                this._hammerSwipeLeft =
-                  pagingControlNav.ojHammer(options).on('swipeleft', function (event) {
-                    event.preventDefault();
-                    self.nextPage();
-                  });
-
-                this._hammerSwipeRight =
-                  pagingControlNav.ojHammer(options).on('swiperight', function (event) {
-                    event.preventDefault();
-                    self.previousPage();
-                  });
+                hammerDir = Hammer.DIRECTION_HORIZONTAL;
+                this._hammerNextPageDir = 'swipeleft';
+                this._hammerPrevPageDir = 'swiperight';
               }
+
+              // initialize Hammer Manager instance
+              if (this._hammerManager == null) {
+                var options = {
+                  recognizers: [
+                    [Hammer.Swipe, { direction: hammerDir }]
+                  ]
+                };
+                this._hammerManager = new Hammer.Manager(pagingControlNav[0], options);
+              }
+
+              // setup directional swipe handlers
+              pagingControlNav.on(this._hammerNextPageDir, function (event) {
+                event.preventDefault();
+                self.nextPage();
+              });
+              pagingControlNav.on(this._hammerPrevPageDir, function (event) {
+                event.preventDefault();
+                self.previousPage();
+              });
             }
           }
         }
@@ -2813,25 +2811,20 @@ var __oj_paging_control_metadata =
        */
       _unregisterSwipeHandler: function () {
         if (oj.DomUtils.isTouchSupported()) {
-          var isVertical = this.options.pageOptions.orientation === 'vertical';
-
-          if (isVertical) {
-            if (this._hammerSwipeUp != null) {
-              this._hammerSwipeUp.off('swipeup');
-              this._hammerSwipeUp = null;
+          var pagingControlNav = this._getPagingControlNav();
+          if (pagingControlNav != null) {
+            if (this._hammerNextPageDir != null) {
+              pagingControlNav.off(this._hammerNextPageDir);
+              this._hammerNextPageDir = null;
             }
-            if (this._hammerSwipeDown != null) {
-              this._hammerSwipeDown.off('swipedown');
-              this._hammerSwipeDown = null;
+            if (this._hammerPrevPageDir != null) {
+              pagingControlNav.off(this._hammerPrevPageDir);
+              this._hammerPrevPageDir = null;
             }
-          } else {
-            if (this._hammerSwipeLeft != null) {
-              this._hammerSwipeLeft.off('swipeleft');
-              this._hammerSwipeLeft = null;
-            }
-            if (this._hammerSwipeRight != null) {
-              this._hammerSwipeRight.off('swiperight');
-              this._hammerSwipeRight = null;
+            // ensure Hammer Manager instance is destroyed
+            if (this._hammerManager != null) {
+              this._hammerManager.destroy();
+              this._hammerManager = null;
             }
           }
         }

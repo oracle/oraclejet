@@ -323,6 +323,11 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
  * @ojrole region
  * @class oj.ojFilmStrip
  *
+ * @ojpropertylayout [ {propertyGroup: "common", items: ["orientation", "maxItemsPerPage", "arrowPlacement", "arrowVisibility", "looping"]},
+ *                     {propertyGroup: "data", items: ["currentItem"]} ]
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 1
+ *
  * @classdesc
  * <h3 id="filmStripOverview-section">
  *   JET FilmStrip

@@ -1,0 +1,1 @@
+define(["./impl/pouchDBPersistenceStore"],function(a){"use strict";var b=function(a){this._options=a};return b.prototype.createPersistenceStore=function(b,c){var d=new a(b),e=this._options;if(c)if(e){e=Object.create(e);for(var f in c)Object.prototype.hasOwnProperty.call(c,f)&&(e[f]=c[f])}else e=c;return d.Init(e).then(function(){return Promise.resolve(d)})},b});

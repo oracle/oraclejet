@@ -3159,7 +3159,16 @@ oj.ChartDataProviderHandler.prototype._addItemsToSeries = function (
 
     var groupKeys = [];
     for (var _i = 0; _i < group.groups.length; _i++) {
-      groupKeys.push([group.id].concat(getGroupKeys(group.groups[_i])));
+      var subGroups = getGroupKeys(group.groups[_i]);
+      for (var _j = 0; _j < subGroups.length; _j++) {
+        var groupsArray = [group.id];
+        if (Array.isArray(subGroups[_j])) {
+          groupsArray = groupsArray.concat(subGroups[_j]);
+        } else {
+          groupsArray.push(subGroups[_j]);
+        }
+        groupKeys.push(groupsArray);
+      }
     }
     return groupKeys;
   };
@@ -3353,6 +3362,15 @@ oj.ChartDataProviderHandler.prototype._sortGroups = function (groupsArray) {
  *                for: "SettableProperties"
  *               }
  *              ]
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["type", "orientation", "legend.title", "legend.position", "legend.rendered",
+ *                                                     "styleDefaults.lineType", "styleDefaults.markerDisplayed", "styleDefaults.markerShape", "styleDefaults.threeDEffect",
+ *                                                     "stack", "pieCenter.label", "xAxis.title", "yAxis.title", "animationOnDataChange", "animationOnDisplay",
+ *                                                     "styleDefaults.pieInnerRadius", "coordinateSystem", "style"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data"]}
+ * @ojvbdefaultcolumns 6
+ * @ojvbmincolumns 1
+ *
  * @classdesc
  * <h3 id="chartOverview-section">
  *   JET Chart
@@ -3428,7 +3446,6 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
     options: {
       /**
        * An object defining the series and groups, when using a DataProvider to provide data to the chart.
-       * Also accepts a Promise for deferred data rendering.
        * The oj.DataProvider can either have an arbitrary data shape, in which case an <oj-chart-item>
        * element must be specified in the itemTemplate slot or it can have <a href="#DataItem">ojChart.DataItem</a>
        * as its data shape, in which case no template is required.
@@ -4049,6 +4066,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @ojsignature {target:"Type", value:"Array<K>"}
        * @default []
        * @ojwriteback
+       * @ojeventgroup common
        */
       /**
        * An object defining the center content of a pie chart. Either a label can be displayed at the center of the pie chart or custom HTML content.
@@ -4212,7 +4230,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @ojtranslatable
        */
       /**
-       * The type of reference object being shown.
+       * The type of reference object being shown. If the value is set to "area", use the <a href="#xAxis.referenceObjects[].low">low</a> and <a href="#xAxis.referenceObjects[].high">high</a> properties of the reference object. Otherwise, use the <a href="#xAxis.referenceObjects[].value">value</a> property.
        * @expose
        * @name xAxis.referenceObjects[].type
        * @memberof! oj.ojChart
@@ -4244,7 +4262,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default null
        */
       /**
-       * The width of the reference line.
+       * The width of the line reference object. Does not apply to area reference objects.
        * @expose
        * @name xAxis.referenceObjects[].lineWidth
        * @memberof! oj.ojChart
@@ -4255,7 +4273,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @ojmin 0
        */
       /**
-       * The line style of the reference line.
+       * The line style of the line reference object. Does not apply to area reference objects.
        * @expose
        * @name xAxis.referenceObjects[].lineStyle
        * @memberof! oj.ojChart
@@ -4265,22 +4283,6 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @ojvalue {string} "dashed"
        * @ojvalue {string} "solid"
        * @default "solid"
-       */
-      /**
-       * The line type of the reference line. Only applies if the line value is not constant. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
-       * @expose
-       * @name xAxis.referenceObjects[].lineType
-       * @ojshortdesc The line type of the reference line. See the Help documentation for more information.
-       * @memberof! oj.ojChart
-       * @instance
-       * @type {string}
-       * @ojvalue {string} "curved"
-       * @ojvalue {string} "stepped"
-       * @ojvalue {string} "centeredStepped"
-       * @ojvalue {string} "segmented"
-       * @ojvalue {string} "centeredSegmented"
-       * @ojvalue {string} "straight"
-       * @default "straight"
        */
       /**
        * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
@@ -4304,30 +4306,30 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default null
        */
       /**
-       * The value of a reference line. For categorical axes, the value represents the group index. For example, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
+       * The value of a line reference object. This property defines a constant value across the entire reference object. For categorical axes, the value represents the group id(string) or group index(number). For example, when using group indices, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group. See <a href="#xAxis.referenceObjects[].type">xAxis.referenceObjects[].type</a> for more details.
        * @expose
        * @name xAxis.referenceObjects[].value
        * @memberof! oj.ojChart
        * @instance
-       * @type {number}
+       * @type {number|string}
        * @default null
        */
       /**
-       * The low value of a reference area. For categorical axes, the value represents the group index. For example, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
+       * The low value of an area reference object. For categorical axes, the value represents the group id(string) or group index(number). For example, when using group indices, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group. See <a href="#xAxis.referenceObjects[].type">xAxis.referenceObjects[].type</a> for more details.
        * @expose
        * @name xAxis.referenceObjects[].low
        * @memberof! oj.ojChart
        * @instance
-       * @type {number}
+       * @type {number|string}
        * @default null
        */
       /**
-       * The high value of a reference area. For categorical axes, the value represents the group index. For example, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
+       * The high value of an area reference object. For categorical axes, the value represents the group id(string) or group index(number). For example, when using group indices, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group. See <a href="#xAxis.referenceObjects[].type">xAxis.referenceObjects[].type</a> for more details.
        * @expose
        * @name xAxis.referenceObjects[].high
        * @memberof! oj.ojChart
        * @instance
-       * @type {number}
+       * @type {number|string}
        * @default null
        */
       /**
@@ -4836,7 +4838,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @ojtranslatable
        */
       /**
-       * The type of reference object being shown.
+       * The type of reference object being shown. If the value is set to "area", use the <a href="#yAxis.referenceObjects[].low">low</a> and <a href="#yAxis.referenceObjects[].high">high</a> properties of the reference object. Otherwise, use the <a href="#yAxis.referenceObjects[].value">value</a> property. See <a href="#yAxis.referenceObjects[].items">yAxis.referenceObjects[].items</a> for how to create a varying reference object.
        * @expose
        * @name yAxis.referenceObjects[].type
        * @memberof! oj.ojChart
@@ -4868,7 +4870,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default null
        */
       /**
-       * The width of the reference line.
+       * The width of the line reference object. Does not apply to area reference objects.
        * @expose
        * @name yAxis.referenceObjects[].lineWidth
        * @memberof! oj.ojChart
@@ -4879,7 +4881,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @ojmin 0
        */
       /**
-       * The line style of the reference line.
+       * The line style of the line reference area. Does not apply to area reference objects.
        * @expose
        * @name yAxis.referenceObjects[].lineStyle
        * @memberof! oj.ojChart
@@ -4891,10 +4893,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default "solid"
        */
       /**
-       * The line type of the reference line. Only applies if the line value is not constant. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
+       * The line type of the varying reference object. "centeredStepped" and "centeredSegmented" are not supported for polar, scatter, and bubble charts. See <a href="#yAxis.referenceObjects[].items">yAxis.referenceObjects[].items</a> for more details about varying reference objects.
        * @expose
        * @name yAxis.referenceObjects[].lineType
-       * @ojshortdesc The line type of the reference line. See the Help documentation for more information.
+       * @ojshortdesc The line type of the varying reference object. See the Help documentation for more information.
        * @memberof! oj.ojChart
        * @instance
        * @type {string}
@@ -4928,7 +4930,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default null
        */
       /**
-       * The value of a reference line. This property defines a constant value across the entire reference line and is ignored if the items array is specified.
+       * The value of a line reference object. This property defines a constant value across the entire reference object and is ignored if the <a href="#yAxis.referenceObjects[].items">items</a> property is specified. See <a href="#yAxis.referenceObjects[].type">yAxis.referenceObjects[].type</a> for more details.
        * @expose
        * @name yAxis.referenceObjects[].value
        * @memberof! oj.ojChart
@@ -4937,7 +4939,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default null
        */
       /**
-       * The low value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
+       * The low value of a area reference object. This property defines a constant value across the entire reference area and is ignored if the <a href="#yAxis.referenceObjects[].items">items</a> property is specified. See <a href="#yAxis.referenceObjects[].type">yAxis.referenceObjects[].type</a> for more details.
        * @expose
        * @name yAxis.referenceObjects[].low
        * @memberof! oj.ojChart
@@ -4946,7 +4948,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default null
        */
       /**
-       * The high value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
+       * The high value of a area reference object. This property defines a constant value across the entire reference area and is ignored if the <a href="#yAxis.referenceObjects[].items">items</a> property is specified.  See <a href="#yAxis.referenceObjects[].type">yAxis.referenceObjects[].type</a> for more details.
        * @expose
        * @name yAxis.referenceObjects[].high
        * @memberof! oj.ojChart
@@ -4985,7 +4987,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default null
        */
       /**
-       * The low value of this point of a reference area.
+       * The low value of this point of a varying area reference object.
        * @expose
        * @name yAxis.referenceObjects[].items[].low
        * @memberof! oj.ojChart
@@ -4994,7 +4996,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default null
        */
       /**
-       * The high value of this point of a reference area.
+       * The high value of this point of a varying area reference object.
        * @expose
        * @name yAxis.referenceObjects[].items[].high
        * @memberof! oj.ojChart
@@ -5003,7 +5005,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default null
        */
       /**
-       * The value of this point of a line object. Null can be specified to skip a data point.
+       * The value of this point of a varying line reference object. Null can be specified to skip a data point.
        * @expose
        * @name yAxis.referenceObjects[].items[].value
        * @memberof! oj.ojChart
@@ -5488,7 +5490,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @ojtranslatable
        */
       /**
-       * The type of reference object being shown.
+       * The type of reference object being shown.  If the value is set to "area", use the <a href="#y2Axis.referenceObjects[].low">low</a> and <a href="#y2Axis.referenceObjects[].high">high</a> properties of the reference object. Otherwise, use the <a href="#y2Axis.referenceObjects[].value">value</a> property. See <a href="#y2Axis.referenceObjects[].items">y2Axis.referenceObjects[].items</a> for how to create a varying reference object.
        * @expose
        * @name y2Axis.referenceObjects[].type
        * @memberof! oj.ojChart
@@ -5520,7 +5522,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default null
        */
       /**
-       * The width of the reference line.
+       * The width of the line reference object. Does not apply to area reference objects.
        * @expose
        * @name y2Axis.referenceObjects[].lineWidth
        * @memberof! oj.ojChart
@@ -5531,7 +5533,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @ojmin 0
        */
       /**
-       * The line style of the reference line.
+       * The line style of the line reference object. Does not apply to area reference objects.
        * @expose
        * @name y2Axis.referenceObjects[].lineStyle
        * @memberof! oj.ojChart
@@ -5543,10 +5545,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default "solid"
        */
       /**
-       * The line type of the reference line. Only applies if the line value is not constant. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
+       * The line type of the varying reference object. "centeredStepped" and "centeredSegmented" are not supported for polar, scatter, and bubble charts.  See <a href="#y2Axis.referenceObjects[].items">y2Axis.referenceObjects[].items</a> for more details about varying reference objects.
        * @expose
        * @name y2Axis.referenceObjects[].lineType
-       * @ojshortdesc The line type of the reference line. See the Help documentation for more information.
+       * @ojshortdesc The line type of the varying reference object. See the Help documentation for more information.
        * @memberof! oj.ojChart
        * @instance
        * @type {string}
@@ -5580,7 +5582,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default null
        */
       /**
-       * The value of a reference line. This property defines a constant value across the entire reference line and is ignored if the items array is specified.
+       * The value of a line reference object. This property defines a constant value across the entire reference line and is ignored if the <a href="#y2Axis.referenceObjects[].items">items</a> property is specified. See <a href="#y2Axis.referenceObjects[].type">y2Axis.referenceObjects[].type</a> for more details.
        * @expose
        * @name y2Axis.referenceObjects[].value
        * @memberof! oj.ojChart
@@ -5589,7 +5591,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default null
        */
       /**
-       * The low value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
+       * The low value of an area reference object. This property defines a constant value across the entire reference area and is ignored if the <a href="#y2Axis.referenceObjects[].items">items</a> property is specified. See <a href="#y2Axis.referenceObjects[].type">y2Axis.referenceObjects[].type</a> for more details.
        * @expose
        * @name y2Axis.referenceObjects[].low
        * @memberof! oj.ojChart
@@ -5598,7 +5600,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default null
        */
       /**
-       * The high value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
+       * The high value of an area reference object. This property defines a constant value across the entire reference area and is ignored if the <a href="#y2Axis.referenceObjects[].items">items</a> property is specified. See <a href="#y2Axis.referenceObjects[].type">y2Axis.referenceObjects[].type</a> for more details.
        * @expose
        * @name y2Axis.referenceObjects[].high
        * @memberof! oj.ojChart
@@ -5637,7 +5639,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default null
        */
       /**
-      * The low value of this point of a reference area.
+      * The low value of this point of a varying area reference object.
       * @expose
       * @name y2Axis.referenceObjects[].items[].low
       * @memberof! oj.ojChart
@@ -5646,7 +5648,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       * @default null
       */
       /**
-      * The high value of this point of a reference area.
+      * The high value of this point of a varying area reference object.
       * @expose
       * @name y2Axis.referenceObjects[].items[].high
       * @memberof! oj.ojChart
@@ -5655,7 +5657,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       * @default null
       */
       /**
-      * The value of this point of a line object. Null can be specified to skip a data point.
+      * The value of this point of a varying line reference object. Null can be specified to skip a data point.
       * @expose
       * @name y2Axis.referenceObjects[].items[].value
       * @memberof! oj.ojChart
@@ -9368,7 +9370,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @typedef {Object} oj.ojChart.DndSeries
  * @property {string|number} id The id of the series.
  * @property {string} color The color of the series.
- * @property {any} component The chart element.
+ * @property {any} componentElement The chart element.
  * @property {string|number} series The id of the series.
  * @property {Object} seriesData The data for the series.
  * @ojsignature [{target: "Type", value: "oj.ojChart.Series<K, I>", for: "seriesData", jsdocOverride: true},
@@ -9888,6 +9890,11 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  *                for: "SettableProperties"
  *               }
  *              ]
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["type", "title", "barGapRatio", "lineStyle", "lineType", "lineWidth", "animationOnDataChange", "animationOnDisplay", "style"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data", "items"]}
+ * @ojvbdefaultcolumns 2
+ * @ojvbmincolumns 1
  *
  * @classdesc
  * <h3 id="sparkChartOverview-section">

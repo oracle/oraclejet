@@ -723,6 +723,7 @@
   $colorList: _oj-theming-add-var($colorList, '$dvtPanelBorderColor', $dvtPanelBorderColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtIconBgColorActive', $dvtIconBgColorActive);
   $colorList: _oj-theming-add-var($colorList, '$dvtIconBorderColorActive', $dvtIconBorderColorActive);
+  $colorList: _oj-theming-add-var($colorList, '$dvtNoDataMessageColor', $dvtNoDataMessageColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtAxisTitleTextColor', $dvtAxisTitleTextColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtNBoxCellBgColor', $dvtNBoxCellBgColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtNBoxCellBgColorMinimized', $dvtNBoxCellBgColorMinimized);
@@ -820,6 +821,8 @@
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$formControlLabelColor', $formControlLabelColor);
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$contrastTextColor', $contrastTextColor);
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$textColorDisabled', $textColorDisabled);
+
+  $componentVarsList: _oj-theming-add-var($colorList, '$dvtNoDataMessageColor', $dvtNoDataMessageColor);
 
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$linkTextColor', $linkTextColor);
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$linkTextColorActive', $linkTextColorActive);
@@ -1127,6 +1130,8 @@
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$formControlLabelColor', $formControlLabelColor);
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$contrastTextColor', $contrastTextColor);
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$textColorDisabled', $textColorDisabled);
+
+  $componentVarsList: _oj-theming-add-var($colorList, '$dvtNoDataMessageColor', $dvtNoDataMessageColor);
 
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$linkTextColor', $linkTextColor);
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$linkTextColorActive', $linkTextColorActive);

@@ -7116,10 +7116,11 @@ DvtGanttEventManager.prototype.GetDragSourceType = function(event) {
 /**
  * Gets the drag data contexts given the drag source object
  * @param {object} obj The drag source object
+ * @param {boolean} bSanitize if true, the data contexts return should be sanitized so they can safely be stringified
  * @return {array} array of data contexts
  * @private
  */
-DvtGanttEventManager.prototype._getDragDataContexts = function(obj)
+DvtGanttEventManager.prototype._getDragDataContexts = function(obj, bSanitize)
 {
   if (obj instanceof DvtGanttTaskNode)
   {
@@ -7129,14 +7130,17 @@ DvtGanttEventManager.prototype._getDragDataContexts = function(obj)
     if (sourceType != null)
     {
       var getDragContext = function(obj) {
+        var dataContext = obj.getDataContext();
+        if (bSanitize)
+          dvt.ToolkitUtils.cleanDragDataContext(dataContext);
         switch (taskShapeType)
         {
           case 'mainResizeHandleStart':
-            return {'dataContext': obj.getDataContext(), 'type': 'start'};
+            return {'dataContext': dataContext, 'type': 'start'};
           case 'mainResizeHandleEnd':
-            return {'dataContext': obj.getDataContext(), 'type': 'end'};
+            return {'dataContext': dataContext, 'type': 'end'};
         }
-        return obj.getDataContext();
+        return dataContext;
       };
 
       var contexts = [getDragContext(obj)];
@@ -7161,9 +7165,9 @@ DvtGanttEventManager.prototype._getDragDataContexts = function(obj)
 /**
  * @override
  */
-DvtGanttEventManager.prototype.GetDragDataContexts = function() {
+DvtGanttEventManager.prototype.GetDragDataContexts = function(bSanitize) {
   var obj = this.DragSource.getDragObject();
-  return this._getDragDataContexts(obj);
+  return this._getDragDataContexts(obj, bSanitize);
 };
 
 /**

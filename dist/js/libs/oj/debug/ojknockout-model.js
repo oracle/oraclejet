@@ -40,7 +40,7 @@ oj.KnockoutUtils.updatingCollectionFunc = 'oj.collectionUpdatingFunc';
  * @param {boolean=} array Should function return an observable array if m is an oj.Collection, vs. an array of observables?
  *
  * @return {Object|undefined} array of Knockout observables or an observable array
- * @ojsignature {target: "Type", for: "returns", value: "Array<KnockoutObservable<any>>|KnockoutObservableArray<any>"}
+ * @ojsignature {target: "Type", for: "returns", value: "Array<ko.Observable<any>>|ko.ObservableArray<any>"}
  * @export
  */
 oj.KnockoutUtils.map = function (m, callback, array) {

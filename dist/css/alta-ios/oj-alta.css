@@ -10709,6 +10709,10 @@ html[dir="rtl"] .oj-legend-section-close-icon.oj-active {
 .oj-legend-section-title {
   color: rgba(0, 0, 0, 0.6); }
 
+.oj-dvt-no-data-message {
+  color: black;
+  font-size: 0.875rem; }
+
 oj-chart:not(.oj-complete) {
   visibility: hidden; }
 
@@ -12075,8 +12079,8 @@ oj-form-layout {
   html[dir="rtl"] .oj-form > .oj-flex > .oj-flex-item > .oj-form {
     text-align: right; }
 
-.oj-form > .oj-flex > .oj-flex-item:nth-child(even),
-.oj-form > .oj-flex > .oj-flex-item:last-child {
+.oj-form > .oj-flex > .oj-flex-item:not(.oj-formlayout-nested-formlayout):nth-child(even),
+.oj-form > .oj-flex > .oj-flex-item:not(.oj-formlayout-nested-formlayout):last-child {
   margin: 0 0 6px 0; }
 
 .oj-form > .oj-flex > .oj-flex-item > .oj-form-non-control {
@@ -12087,6 +12091,9 @@ oj-form-layout {
   border-style: solid;
   border-width: 1px 0 0; }
 
+.oj-flex-item.oj-formlayout-nested-formlayout > .oj-form-layout {
+  border-width: 0; }
+
 .oj-form-layout-inset {
   margin: 12px;
   border-width: 1px; }
@@ -12096,6 +12103,9 @@ oj-form-layout {
   border-color: #e5e6e6;
   border-width: 0 0 1px 0;
   padding: 10px 0 0; }
+
+.oj-flex-item.oj-formlayout-nested-formlayout > .oj-form-layout > .oj-form > .oj-flex {
+  padding: 0; }
 
 .oj-form-layout > .oj-form[class*="oj-form-cols-"] > .oj-flex:last-child {
   border-width: 0 0 1px 0; }
@@ -12110,7 +12120,8 @@ oj-form-layout {
 
 .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-formlayout-label-nowrap,
 .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
-.oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+.oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
+.oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis; }
@@ -12219,10 +12230,23 @@ html[dir="rtl"] .oj-form.oj-formlayout-form-across > .oj-flex {
 .oj-formlayout-labels-inline > .oj-flex {
   flex-wrap: nowrap; }
 
+.oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-labelvalue.oj-flex-item {
+  padding-left: 0px;
+  padding-right: 0px; }
+
 html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item:nth-child(odd) {
   padding-left: 0px; }
 
 html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item:nth-child(odd) {
+  padding-right: 0px; }
+
+.oj-form-layout > .oj-form > .oj-flex > .oj-formlayout-nested-formlayout > .oj-form-layout > .oj-form,
+.oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item {
+  padding-left: 0px;
+  padding-right: 0px; }
+
+.oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across {
+  padding-left: 0px;
   padding-right: 0px; }
 
 html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item {
@@ -12261,6 +12285,12 @@ html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-
 
 .oj-label-value.oj-form > .oj-flex {
   padding-top: 0; }
+
+.oj-form.oj-label-value > .oj-flex > .oj-flex-item:nth-child(even),
+.oj-form.oj-label-value > .oj-flex > .oj-flex-item:last-child,
+.oj-form > .oj-flex > .oj-flex-item.oj-formlayout-nested-formlayout:nth-child(even),
+.oj-form > .oj-flex > .oj-flex-item.oj-formlayout-nested-formlayout:last-child {
+  margin: 0; }
 
 oj-form-layout:not(.oj-complete) {
   visibility: hidden; }
@@ -18871,7 +18901,8 @@ html[dir="rtl"] .oj-flex-bar-end {
 @media print, screen {
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-sm-label-nowrap,
   .oj-sm-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
-  .oj-sm-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+  .oj-sm-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
+  .oj-sm-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis; }
@@ -19011,7 +19042,8 @@ html[dir="rtl"] .oj-flex-bar-end {
 @media print, screen and (min-width: 768px) {
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-md-label-nowrap,
   .oj-md-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
-  .oj-md-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+  .oj-md-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
+  .oj-md-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis; }
@@ -19151,7 +19183,8 @@ html[dir="rtl"] .oj-flex-bar-end {
 @media print and (orientation: landscape), screen and (min-width: 1024px) {
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-lg-label-nowrap,
   .oj-lg-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
-  .oj-lg-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+  .oj-lg-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
+  .oj-lg-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis; }
@@ -19291,7 +19324,8 @@ html[dir="rtl"] .oj-flex-bar-end {
 @media screen and (min-width: 1281px) {
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-xl-label-nowrap,
   .oj-xl-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
-  .oj-xl-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+  .oj-xl-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
+  .oj-xl-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis; }

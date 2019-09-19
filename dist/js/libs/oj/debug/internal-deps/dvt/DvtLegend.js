@@ -1074,10 +1074,16 @@ DvtLegendEventManager.prototype.GetDragSourceType = function(event) {
 /**
  * @override
  */
-DvtLegendEventManager.prototype.GetDragDataContexts = function() {
+DvtLegendEventManager.prototype.GetDragDataContexts = function(bSanitize) {
   var obj = this.DragSource.getDragObject();
-  if (obj instanceof DvtLegendObjPeer)
-    return [obj.getData()['_dataContext']];
+  if (obj instanceof DvtLegendObjPeer) {
+    var dataContext = obj.getData()['_dataContext'];
+    if (bSanitize) {
+      dataContext = dvt.JsonUtils.clone(dataContext, null, {component: true, componentElement: true});
+      dvt.ToolkitUtils.cleanDragDataContext(dataContext);
+    }
+    return [dataContext];
+  }
   return [];
 };
 

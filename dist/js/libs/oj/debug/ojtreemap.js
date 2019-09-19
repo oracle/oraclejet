@@ -540,6 +540,11 @@ var __oj_treemap_node_metadata =
  *               }
  *              ]
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["colorLabel", "sizeLabel", "nodeSeparators", "groupGaps", "nodeDefaults.groupLabelDisplay", "nodeDefaults.labelDisplay", "nodeDefaults.labelHalign", "nodeDefaults.labelValign", "layout", "sorting", "animationOnDataChange", "animationOnDisplay", "style"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data", "selection"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 6
+ *
  * @classdesc
  * <h3 id="treemapOverview-section">
  *   JET Treemap
@@ -1271,6 +1276,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent,
        * @type {Array.<any>}
        * @default []
        * @ojwriteback
+       * @ojeventgroup common
        */
       selection: [],
 

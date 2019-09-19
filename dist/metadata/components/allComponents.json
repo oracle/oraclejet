@@ -2,18 +2,34 @@
   "components": {
     "oj-accordion": {
       "name": "oj-accordion",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Accordion",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojaccordion"
+          "module": "ojs/ojaccordion",
+          "defaultColumns": "3",
+          "minColumns": "1"
         }
       },
       "description": "An accordion displays a set of collapsible child elements.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojAccordion.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojAccordion.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "multiple"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "expanded"
+          ]
+        }
+      ],
       "properties": {
         "expanded": {
           "description": "A list of expanded child collapsibles.",
@@ -162,14 +178,16 @@
     },
     "oj-avatar": {
       "name": "oj-avatar",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Avatar",
       "type": "core",
       "since": "4.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojavatar"
+          "module": "ojs/ojavatar",
+          "defaultColumns": "2",
+          "minColumns": "1"
         }
       },
       "styleClasses": [
@@ -181,7 +199,22 @@
         }
       ],
       "description": "An avatar represents a person or entity as initials or an image.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojAvatar.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojAvatar.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "size"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "src",
+            "initials"
+          ]
+        }
+      ],
       "properties": {
         "initials": {
           "description": "Specifies the initials of the avatar.",
@@ -291,18 +324,34 @@
     },
     "oj-bind-dom": {
       "name": "oj-bind-dom",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Bind Dom",
       "type": "core",
       "since": "6.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojbinddom"
+          "module": "ojs/ojbinddom",
+          "defaultColumns": "12",
+          "minColumns": "1"
         }
       },
       "description": "An oj-bind-dom element renders HTML content with access to passed in data properties.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojBindDom.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojBindDom.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "config.view"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "config.data"
+          ]
+        }
+      ],
       "properties": {
         "config": {
           "description": "Configuration object that defines a view and data available to the oj-bind-dom element. The configuration object can be specified directly or via a Promise.",
@@ -328,18 +377,28 @@
     },
     "oj-bind-for-each": {
       "name": "oj-bind-for-each",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Bind For Each",
       "type": "core",
       "since": "4.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojknockout"
+          "module": "ojs/ojknockout",
+          "defaultColumns": "12",
+          "minColumns": "1"
         }
       },
       "description": "An oj-bind-for-each binds items of an array to the specified markup section. The markup section is duplicated for each array item when element is rendered.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojBindForEach.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojBindForEach.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "data"
+          ]
+        }
+      ],
       "properties": {
         "as": {
           "status": [
@@ -386,18 +445,28 @@
     },
     "oj-bind-if": {
       "name": "oj-bind-if",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Bind If",
       "type": "core",
       "since": "4.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojknockout"
+          "module": "ojs/ojknockout",
+          "defaultColumns": "12",
+          "minColumns": "1"
         }
       },
       "description": "An oj-bind-if renders its contents only if a provided test returns true.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojBindIf.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojBindIf.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "test"
+          ]
+        }
+      ],
       "properties": {
         "test": {
           "description": "The test condition for the if clause. The children of the element will only be rendered if the test is true.",
@@ -416,18 +485,29 @@
     },
     "oj-bind-slot": {
       "name": "oj-bind-slot",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Bind Slot",
       "type": "core",
       "since": "4.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojcomposite"
+          "module": "ojs/ojcomposite",
+          "defaultColumns": "12",
+          "minColumns": "1"
         }
       },
       "description": "An oj-bind-slot acts as a placeholder for child DOM to appear in a specified slot.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojBindSlot.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojBindSlot.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "index",
+            "name"
+          ]
+        }
+      ],
       "properties": {
         "index": {
           "description": "An index value allowing the slot children to be individually slotted. This is useful when the composite needs to add additional DOM around slotted children.",
@@ -452,18 +532,34 @@
     },
     "oj-bind-template-slot": {
       "name": "oj-bind-template-slot",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Bind Template Slot",
       "type": "core",
       "since": "5.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojcomposite"
+          "module": "ojs/ojcomposite",
+          "defaultColumns": "12",
+          "minColumns": "1"
         }
       },
       "description": "An oj-bind-template-slot acts as a placeholder for stamped child DOM to appear in a specified slot.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojBindTemplateSlot.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojBindTemplateSlot.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "name"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data"
+          ]
+        }
+      ],
       "properties": {
         "as": {
           "status": [
@@ -502,18 +598,28 @@
     },
     "oj-bind-text": {
       "name": "oj-bind-text",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Bind Text",
       "type": "core",
       "since": "4.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojknockout"
+          "module": "ojs/ojknockout",
+          "defaultColumns": "2",
+          "minColumns": "1"
         }
       },
       "description": "An oj-bind-text binds a text node to an expression.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojBindText.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojBindText.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "value": {
           "description": "The value of the text node.",
@@ -526,14 +632,16 @@
     },
     "oj-button": {
       "name": "oj-button",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Button",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojbutton"
+          "module": "ojs/ojbutton",
+          "defaultColumns": "2",
+          "minColumns": "1"
         }
       },
       "styleClasses": [
@@ -565,7 +673,17 @@
         }
       ],
       "description": "Buttons direct users to initiate or take actions and work with a single tap, click, or keystroke.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojButton.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojButton.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "display",
+            "chroming",
+            "disabled"
+          ]
+        }
+      ],
       "properties": {
         "chroming": {
           "description": "Indicates in what states the button has chrome (background and border).",
@@ -680,6 +798,7 @@
       "events": {
         "ojAction": {
           "description": "Triggered when a button is clicked, whether by keyboard, mouse, or touch events. To meet accessibility requirements, the only supported way to react to the click of a button is to listen for this event.",
+          "eventGroup": "common",
           "bubbles": true,
           "cancelable": true,
           "help": "action"
@@ -708,14 +827,16 @@
     },
     "oj-buttonset-many": {
       "name": "oj-buttonset-many",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Buttonset Many",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojbutton"
+          "module": "ojs/ojbutton",
+          "defaultColumns": "12",
+          "minColumns": "1"
         }
       },
       "styleClasses": [
@@ -733,7 +854,23 @@
         }
       ],
       "description": "A buttonset many is a grouping of related buttons where any number of buttons may be selected.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojButtonsetMany.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojButtonsetMany.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "display",
+            "chroming",
+            "disabled"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "chroming": {
           "description": "Indicates in what states the buttonset has chrome (background and border).",
@@ -833,6 +970,7 @@
           "description": "Indicates which oj-options in the buttonset are selected.",
           "type": "Array<any>|null",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": null,
           "writeback": true,
           "help": "value"
@@ -901,14 +1039,16 @@
     },
     "oj-buttonset-one": {
       "name": "oj-buttonset-one",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Buttonset One",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojbutton"
+          "module": "ojs/ojbutton",
+          "defaultColumns": "12",
+          "minColumns": "1"
         }
       },
       "styleClasses": [
@@ -926,7 +1066,23 @@
         }
       ],
       "description": "A buttonset one is a grouping of related buttons where only one button may be selected.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojButtonsetOne.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojButtonsetOne.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "display",
+            "chroming",
+            "disabled"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "chroming": {
           "description": "Indicates in what states the buttonset has chrome (background and border).",
@@ -1026,6 +1182,7 @@
           "description": "Indicates which oj-option in the buttonset is selected.",
           "type": "any",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": null,
           "writeback": true,
           "help": "value"
@@ -1094,18 +1251,51 @@
     },
     "oj-chart": {
       "name": "oj-chart",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Chart",
       "type": "core",
       "since": "0.7.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojchart"
+          "module": "ojs/ojchart",
+          "defaultColumns": "6",
+          "minColumns": "1"
         }
       },
       "description": "A chart displays information graphically, making relationships among the data easier to understand.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojChart.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojChart.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "type",
+            "orientation",
+            "legend.title",
+            "legend.position",
+            "legend.rendered",
+            "styleDefaults.lineType",
+            "styleDefaults.markerDisplayed",
+            "styleDefaults.markerShape",
+            "styleDefaults.threeDEffect",
+            "stack",
+            "pieCenter.label",
+            "xAxis.title",
+            "yAxis.title",
+            "animationOnDataChange",
+            "animationOnDisplay",
+            "styleDefaults.pieInnerRadius",
+            "coordinateSystem",
+            "style"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data"
+          ]
+        }
+      ],
       "properties": {
         "animationOnDataChange": {
           "description": "Defines the animation that is applied on data changes. Animation is automatically disabled when there are a large number of data items.",
@@ -2487,6 +2677,7 @@
           "description": "An array used to define the ids of the initially selected objects. See the Help documentation for more information.",
           "type": "Array<any>",
           "displayName": "Selection",
+          "eventGroup": "common",
           "value": [],
           "writeback": true,
           "help": "selection"
@@ -2679,7 +2870,7 @@
                       "units": "pixels"
                     },
                     "source": {
-                      "description": "The URI of the custom image. If specified, it takes precedence over shape.",
+                      "description": "The URI of the custom image. If specified, it takes precedence over marker-shape.",
                       "type": "string"
                     },
                     "sourceHover": {
@@ -5844,8 +6035,8 @@
                       }
                     },
                     "high": {
-                      "description": "The high value of a reference area. For categorical axes, the value represents the group index. For example, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group.",
-                      "type": "number",
+                      "description": "The high value of an area reference object. For categorical axes, the value represents the group id(string) or group index(number). For example, when using group indices, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group. See xAxis.referenceObjects[].type for more details.",
+                      "type": "number|string",
                       "displayName": "High",
                       "value": null,
                       "help": "xAxis.referenceObjects[].high"
@@ -5858,7 +6049,7 @@
                       "help": "xAxis.referenceObjects[].id"
                     },
                     "lineStyle": {
-                      "description": "The line style of the reference line.",
+                      "description": "The line style of the line reference object. Does not apply to area reference objects.",
                       "type": "string",
                       "displayName": "Line Style",
                       "value": "solid",
@@ -5880,43 +6071,8 @@
                         }
                       }
                     },
-                    "lineType": {
-                      "description": "The line type of the reference line. See the Help documentation for more information.",
-                      "type": "string",
-                      "displayName": "Line Type",
-                      "value": "straight",
-                      "help": "xAxis.referenceObjects[].lineType",
-                      "enumValues": [
-                        "centeredSegmented",
-                        "centeredStepped",
-                        "curved",
-                        "segmented",
-                        "stepped",
-                        "straight"
-                      ],
-                      "propertyEditorValues": {
-                        "centeredSegmented": {
-                          "displayName": "Centered Segmented"
-                        },
-                        "centeredStepped": {
-                          "displayName": "Centered Stepped"
-                        },
-                        "curved": {
-                          "displayName": "Curved"
-                        },
-                        "segmented": {
-                          "displayName": "Segmented"
-                        },
-                        "stepped": {
-                          "displayName": "Stepped"
-                        },
-                        "straight": {
-                          "displayName": "Straight"
-                        }
-                      }
-                    },
                     "lineWidth": {
-                      "description": "The width of the reference line.",
+                      "description": "The width of the line reference object. Does not apply to area reference objects.",
                       "type": "number",
                       "displayName": "Line Width",
                       "value": null,
@@ -5944,8 +6100,8 @@
                       }
                     },
                     "low": {
-                      "description": "The low value of a reference area. For categorical axes, the value represents the group index. For example, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group.",
-                      "type": "number",
+                      "description": "The low value of an area reference object. For categorical axes, the value represents the group id(string) or group index(number). For example, when using group indices, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group. See xAxis.referenceObjects[].type for more details.",
+                      "type": "number|string",
                       "displayName": "Low",
                       "value": null,
                       "help": "xAxis.referenceObjects[].low"
@@ -5980,7 +6136,7 @@
                       "help": "xAxis.referenceObjects[].text"
                     },
                     "type": {
-                      "description": "The type of reference object being shown.",
+                      "description": "The type of reference object being shown. If the value is set to \"area\", use the low and high properties of the reference object. Otherwise, use the value property.",
                       "type": "string",
                       "displayName": "Type",
                       "value": "line",
@@ -5999,8 +6155,8 @@
                       }
                     },
                     "value": {
-                      "description": "The value of a reference line. For categorical axes, the value represents the group index. For example, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group.",
-                      "type": "number",
+                      "description": "The value of a line reference object. This property defines a constant value across the entire reference object. For categorical axes, the value represents the group id(string) or group index(number). For example, when using group indices, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group. See xAxis.referenceObjects[].type for more details.",
+                      "type": "number|string",
                       "displayName": "Value",
                       "value": null,
                       "help": "xAxis.referenceObjects[].value"
@@ -6617,7 +6773,7 @@
                       }
                     },
                     "high": {
-                      "description": "The high value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.",
+                      "description": "The high value of an area reference object. This property defines a constant value across the entire reference area and is ignored if the items property is specified. See y2Axis.referenceObjects[].type for more details.",
                       "type": "number",
                       "displayName": "High",
                       "value": null,
@@ -6638,21 +6794,21 @@
                       "help": "y2Axis.referenceObjects[].items",
                       "properties": {
                         "high": {
-                          "description": "The high value of this point of a reference area.",
+                          "description": "The high value of this point of a varying area reference object.",
                           "type": "number",
                           "displayName": "High",
                           "value": null,
                           "help": "y2Axis.referenceObjects[].items[].high"
                         },
                         "low": {
-                          "description": "The low value of this point of a reference area.",
+                          "description": "The low value of this point of a varying area reference object.",
                           "type": "number",
                           "displayName": "Low",
                           "value": null,
                           "help": "y2Axis.referenceObjects[].items[].low"
                         },
                         "value": {
-                          "description": "The value of this point of a line object. Null can be specified to skip a data point.",
+                          "description": "The value of this point of a varying line reference object. Null can be specified to skip a data point.",
                           "type": "number",
                           "displayName": "Value",
                           "value": null,
@@ -6668,7 +6824,7 @@
                       }
                     },
                     "lineStyle": {
-                      "description": "The line style of the reference line.",
+                      "description": "The line style of the line reference object. Does not apply to area reference objects.",
                       "type": "string",
                       "displayName": "Line Style",
                       "value": "solid",
@@ -6691,7 +6847,7 @@
                       }
                     },
                     "lineType": {
-                      "description": "The line type of the reference line. See the Help documentation for more information.",
+                      "description": "The line type of the varying reference object. See the Help documentation for more information.",
                       "type": "string",
                       "displayName": "Line Type",
                       "value": "straight",
@@ -6726,7 +6882,7 @@
                       }
                     },
                     "lineWidth": {
-                      "description": "The width of the reference line.",
+                      "description": "The width of the line reference object. Does not apply to area reference objects.",
                       "type": "number",
                       "displayName": "Line Width",
                       "value": null,
@@ -6754,7 +6910,7 @@
                       }
                     },
                     "low": {
-                      "description": "The low value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.",
+                      "description": "The low value of an area reference object. This property defines a constant value across the entire reference area and is ignored if the items property is specified. See y2Axis.referenceObjects[].type for more details.",
                       "type": "number",
                       "displayName": "Low",
                       "value": null,
@@ -6790,7 +6946,7 @@
                       "help": "y2Axis.referenceObjects[].text"
                     },
                     "type": {
-                      "description": "The type of reference object being shown.",
+                      "description": "The type of reference object being shown. If the value is set to \"area\", use the low and high properties of the reference object. Otherwise, use the value property. See y2Axis.referenceObjects[].items for how to create a varying reference object.",
                       "type": "string",
                       "displayName": "Type",
                       "value": "line",
@@ -6809,7 +6965,7 @@
                       }
                     },
                     "value": {
-                      "description": "The value of a reference line. This property defines a constant value across the entire reference line and is ignored if the items array is specified.",
+                      "description": "The value of a line reference object. This property defines a constant value across the entire reference line and is ignored if the items property is specified. See y2Axis.referenceObjects[].type for more details.",
                       "type": "number",
                       "displayName": "Value",
                       "value": null,
@@ -7380,7 +7536,7 @@
                       }
                     },
                     "high": {
-                      "description": "The high value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.",
+                      "description": "The high value of a area reference object. This property defines a constant value across the entire reference area and is ignored if the items property is specified. See yAxis.referenceObjects[].type for more details.",
                       "type": "number",
                       "displayName": "High",
                       "value": null,
@@ -7401,21 +7557,21 @@
                       "help": "yAxis.referenceObjects[].items",
                       "properties": {
                         "high": {
-                          "description": "The high value of this point of a reference area.",
+                          "description": "The high value of this point of a varying area reference object.",
                           "type": "number",
                           "displayName": "High",
                           "value": null,
                           "help": "yAxis.referenceObjects[].items[].high"
                         },
                         "low": {
-                          "description": "The low value of this point of a reference area.",
+                          "description": "The low value of this point of a varying area reference object.",
                           "type": "number",
                           "displayName": "Low",
                           "value": null,
                           "help": "yAxis.referenceObjects[].items[].low"
                         },
                         "value": {
-                          "description": "The value of this point of a line object. Null can be specified to skip a data point.",
+                          "description": "The value of this point of a varying line reference object. Null can be specified to skip a data point.",
                           "type": "number",
                           "displayName": "Value",
                           "value": null,
@@ -7431,7 +7587,7 @@
                       }
                     },
                     "lineStyle": {
-                      "description": "The line style of the reference line.",
+                      "description": "The line style of the line reference area. Does not apply to area reference objects.",
                       "type": "string",
                       "displayName": "Line Style",
                       "value": "solid",
@@ -7454,7 +7610,7 @@
                       }
                     },
                     "lineType": {
-                      "description": "The line type of the reference line. See the Help documentation for more information.",
+                      "description": "The line type of the varying reference object. See the Help documentation for more information.",
                       "type": "string",
                       "displayName": "Line Type",
                       "value": "straight",
@@ -7489,7 +7645,7 @@
                       }
                     },
                     "lineWidth": {
-                      "description": "The width of the reference line.",
+                      "description": "The width of the line reference object. Does not apply to area reference objects.",
                       "type": "number",
                       "displayName": "Line Width",
                       "value": null,
@@ -7517,7 +7673,7 @@
                       }
                     },
                     "low": {
-                      "description": "The low value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.",
+                      "description": "The low value of a area reference object. This property defines a constant value across the entire reference area and is ignored if the items property is specified. See yAxis.referenceObjects[].type for more details.",
                       "type": "number",
                       "displayName": "Low",
                       "value": null,
@@ -7553,7 +7709,7 @@
                       "help": "yAxis.referenceObjects[].text"
                     },
                     "type": {
-                      "description": "The type of reference object being shown.",
+                      "description": "The type of reference object being shown. If the value is set to \"area\", use the low and high properties of the reference object. Otherwise, use the value property. See yAxis.referenceObjects[].items for how to create a varying reference object.",
                       "type": "string",
                       "displayName": "Type",
                       "value": "line",
@@ -7572,7 +7728,7 @@
                       }
                     },
                     "value": {
-                      "description": "The value of a reference line. This property defines a constant value across the entire reference line and is ignored if the items array is specified.",
+                      "description": "The value of a line reference object. This property defines a constant value across the entire reference object and is ignored if the items property is specified. See yAxis.referenceObjects[].type for more details.",
                       "type": "number",
                       "displayName": "Value",
                       "value": null,
@@ -8162,7 +8318,7 @@
                           "units": "pixels"
                         },
                         "source": {
-                          "description": "The URI of the custom image. If specified, it takes precedence over shape.",
+                          "description": "The URI of the custom image. If specified, it takes precedence over marker-shape.",
                           "type": "string"
                         },
                         "sourceHover": {
@@ -8416,7 +8572,7 @@
                               "units": "pixels"
                             },
                             "source": {
-                              "description": "The URI of the custom image. If specified, it takes precedence over shape.",
+                              "description": "The URI of the custom image. If specified, it takes precedence over marker-shape.",
                               "type": "string"
                             },
                             "sourceHover": {
@@ -8944,7 +9100,7 @@
                   "units": "pixels"
                 },
                 "source": {
-                  "description": "The URI of the custom image. If specified, it takes precedence over shape.",
+                  "description": "The URI of the custom image. If specified, it takes precedence over marker-shape.",
                   "type": "string"
                 },
                 "sourceHover": {
@@ -9168,7 +9324,7 @@
                           "units": "pixels"
                         },
                         "source": {
-                          "description": "The URI of the custom image. If specified, it takes precedence over shape.",
+                          "description": "The URI of the custom image. If specified, it takes precedence over marker-shape.",
                           "type": "string"
                         },
                         "sourceHover": {
@@ -9877,7 +10033,7 @@
                   "units": "pixels"
                 },
                 "source": {
-                  "description": "The URI of the custom image. If specified, it takes precedence over shape.",
+                  "description": "The URI of the custom image. If specified, it takes precedence over marker-shape.",
                   "type": "string"
                 },
                 "sourceHover": {
@@ -10101,7 +10257,7 @@
                           "units": "pixels"
                         },
                         "source": {
-                          "description": "The URI of the custom image. If specified, it takes precedence over shape.",
+                          "description": "The URI of the custom image. If specified, it takes precedence over marker-shape.",
                           "type": "string"
                         },
                         "sourceHover": {
@@ -10469,8 +10625,8 @@
     },
     "oj-chart-group": {
       "name": "oj-chart-group",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Chart Group",
       "type": "core",
       "since": "5.1.0",
@@ -10480,7 +10636,7 @@
         }
       },
       "description": "ojChartGroup",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojChartGroup.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojChartGroup.html",
       "properties": {
         "drilling": {
           "description": "Whether drilling is enabled on the group label. See the Help documentation for more information.",
@@ -10528,8 +10684,8 @@
     },
     "oj-chart-item": {
       "name": "oj-chart-item",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Chart Item",
       "type": "core",
       "since": "5.1.0",
@@ -10539,7 +10695,7 @@
         }
       },
       "description": "ojChartItem",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojChartItem.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojChartItem.html",
       "properties": {
         "borderColor": {
           "description": "The border color of the data item. For funnel and pyramid charts, it is used for the slice border.",
@@ -10828,7 +10984,7 @@
                   "units": "pixels"
                 },
                 "source": {
-                  "description": "The URI of the custom image. If specified, it takes precedence over shape.",
+                  "description": "The URI of the custom image. If specified, it takes precedence over marker-shape.",
                   "type": "string"
                 },
                 "sourceHover": {
@@ -11189,7 +11345,7 @@
           "help": "shortDesc"
         },
         "source": {
-          "description": "The URI of the custom image. If specified, it takes precedence over shape.",
+          "description": "The URI of the custom image. If specified, it takes precedence over marker-shape.",
           "type": "string",
           "displayName": "Source",
           "help": "source"
@@ -11264,8 +11420,8 @@
     },
     "oj-chart-series": {
       "name": "oj-chart-series",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Chart Series",
       "type": "core",
       "since": "5.1.0",
@@ -11275,7 +11431,7 @@
         }
       },
       "description": "ojChartSeries",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojChartSeries.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojChartSeries.html",
       "properties": {
         "areaColor": {
           "description": "The area color of the series. Only applies if series type is area or lineWithArea.",
@@ -11781,14 +11937,16 @@
     },
     "oj-checkboxset": {
       "name": "oj-checkboxset",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Checkbox Set",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojcheckboxset"
+          "module": "ojs/ojcheckboxset",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -11824,7 +11982,25 @@
         }
       ],
       "description": "A checkbox set allows the user to select one or more options from a set.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojCheckboxset.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojCheckboxset.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "required",
+            "disabled",
+            "labelledBy",
+            "describedBy"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "describedBy": {
           "description": "Specifies a relationship between this component and another element.",
@@ -12069,6 +12245,7 @@
           "description": "An array that represents the value of the component. See the Help documentation for more information.",
           "type": "Array<any>",
           "displayName": "Value",
+          "eventGroup": "common",
           "writeback": true,
           "help": "value"
         }
@@ -12189,14 +12366,16 @@
     },
     "oj-collapsible": {
       "name": "oj-collapsible",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Collapsible",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojcollapsible"
+          "module": "ojs/ojcollapsible",
+          "defaultColumns": "12",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -12208,7 +12387,17 @@
         }
       ],
       "description": "A collapsible displays a header that can be expanded to show its content.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojCollapsible.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojCollapsible.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "expandArea",
+            "expanded",
+            "disabled"
+          ]
+        }
+      ],
       "properties": {
         "disabled": {
           "description": "Disables the collapsible if set to true.",
@@ -12242,6 +12431,7 @@
           "description": "Specifies if the content is expanded.",
           "type": "boolean",
           "displayName": "Expanded",
+          "eventGroup": "common",
           "value": false,
           "writeback": true,
           "help": "expanded"
@@ -12382,18 +12572,39 @@
     },
     "oj-color-palette": {
       "name": "oj-color-palette",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Color Palette",
       "type": "core",
       "since": "3.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojcolorpalette"
+          "module": "ojs/ojcolorpalette",
+          "defaultColumns": "4",
+          "minColumns": "4"
         }
       },
       "description": "A color palette displays a set of predefined colors from which a specific color can be selected.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojColorPalette.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojColorPalette.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "layout",
+            "swatchSize",
+            "labelDisplay",
+            "disabled"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "palette",
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "describedBy": {
           "description": "Specifies a relationship between this component and another element.",
@@ -12656,6 +12867,7 @@
           "description": "The current value of the palette element.",
           "type": "object",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": null,
           "writeback": true,
           "format": "color",
@@ -12766,18 +12978,35 @@
     },
     "oj-color-spectrum": {
       "name": "oj-color-spectrum",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Color Spectrum",
       "type": "core",
       "since": "3.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojcolorspectrum"
+          "module": "ojs/ojcolorspectrum",
+          "defaultColumns": "4",
+          "minColumns": "4"
         }
       },
       "description": "A color spectrum allows a custom color value to be specified from a display containing a saturation/luminosity spectrum, plus hue and opacity sliders.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojColorSpectrum.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojColorSpectrum.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "disabled"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "describedBy": {
           "description": "Specifies a relationship between this component and another element.",
@@ -12974,6 +13203,7 @@
           "description": "Specifies the value of the element representing the current color.",
           "type": "object",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": null,
           "writeback": true,
           "format": "color",
@@ -13084,14 +13314,16 @@
     },
     "oj-combobox-many": {
       "name": "oj-combobox-many",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Multi-select Combobox",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojselectcombobox"
+          "module": "ojs/ojselectcombobox",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -13121,7 +13353,26 @@
         }
       ],
       "description": "A combobox many is a dropdown list that supports multiple selections, text input, and search filtering.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojComboboxMany.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojComboboxMany.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "placeholder",
+            "required",
+            "disabled",
+            "describedBy"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value",
+            "options"
+          ]
+        }
+      ],
       "properties": {
         "asyncValidators": {
           "description": "Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.",
@@ -13388,6 +13639,7 @@
           "type": "string|null",
           "displayName": "Placeholder",
           "value": null,
+          "translatable": true,
           "help": "placeholder"
         },
         "rawValue": {
@@ -13522,6 +13774,7 @@
           "description": "The value of the element.",
           "type": "Array<any>|null",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": null,
           "writeback": true,
           "help": "value"
@@ -13665,14 +13918,16 @@
     },
     "oj-combobox-one": {
       "name": "oj-combobox-one",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Single-select Combobox",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojselectcombobox"
+          "module": "ojs/ojselectcombobox",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -13702,7 +13957,26 @@
         }
       ],
       "description": "A combobox one is a dropdown list that supports single selection, text input, and search filtering.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojComboboxOne.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojComboboxOne.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "placeholder",
+            "required",
+            "disabled",
+            "describedBy"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value",
+            "options"
+          ]
+        }
+      ],
       "properties": {
         "asyncValidators": {
           "description": "Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.",
@@ -13990,6 +14264,7 @@
           "type": "string|null",
           "displayName": "Placeholder",
           "value": null,
+          "translatable": true,
           "help": "placeholder"
         },
         "rawValue": {
@@ -14124,6 +14399,7 @@
           "description": "The value of the element.",
           "type": "any",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": null,
           "writeback": true,
           "help": "value"
@@ -14281,18 +14557,28 @@
     },
     "oj-conveyor-belt": {
       "name": "oj-conveyor-belt",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Conveyor Belt",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojconveyorbelt"
+          "module": "ojs/ojconveyorbelt",
+          "defaultColumns": "12",
+          "minColumns": "2"
         }
       },
       "description": "A conveyor belt manages overflow for its child elements and allows scrolling among them.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojConveyorBelt.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojConveyorBelt.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "orientation"
+          ]
+        }
+      ],
       "properties": {
         "contentParent": {
           "description": "Specify the selector of the descendant DOM element in the conveyorBelt that directly contains the items to scroll among.",
@@ -14394,14 +14680,16 @@
     },
     "oj-data-grid": {
       "name": "oj-data-grid",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Data Grid",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojdatagrid"
+          "module": "ojs/ojdatagrid",
+          "defaultColumns": "12",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -14443,7 +14731,24 @@
         }
       ],
       "description": "A data grid displays data in a cell oriented grid.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojDataGrid.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojDataGrid.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "editMode",
+            "gridlines.horizontal",
+            "gridlines.vertical"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data",
+            "selection"
+          ]
+        }
+      ],
       "properties": {
         "bandingInterval": {
           "description": "Specifies the data body row and column banding intervals.",
@@ -15979,14 +16284,16 @@
     },
     "oj-date-picker": {
       "name": "oj-date-picker",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Inline Date Picker",
       "type": "core",
       "since": "4.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojdatetimepicker"
+          "module": "ojs/ojdatetimepicker",
+          "defaultColumns": "4",
+          "minColumns": "4"
         }
       },
       "styleClasses": [
@@ -16016,7 +16323,26 @@
         }
       ],
       "description": "A date picker is an inline element for picking a date value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojDatePicker.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojDatePicker.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "required",
+            "disabled",
+            "readonly",
+            "min",
+            "max"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "asyncValidators": {
           "description": "Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.",
@@ -16148,7 +16474,7 @@
                   "displayName": ""
                 },
                 "today": {
-                  "description": "Show the today button",
+                  "description": "Show the today button. When user clicks on the Today button, it will highlight the current day in the calendar.",
                   "displayName": "Today"
                 }
               }
@@ -16427,6 +16753,7 @@
           "description": "The placeholder text to set on the element.",
           "type": "string",
           "displayName": "Placeholder",
+          "translatable": true,
           "help": "placeholder"
         },
         "rawValue": {
@@ -16698,6 +17025,7 @@
           "description": "The value of the date picker element, which must be an ISOString. See the Help documentation for more information.",
           "type": "string",
           "displayName": "Value",
+          "eventGroup": "common",
           "writeback": true,
           "format": "date",
           "help": "value"
@@ -16824,14 +17152,16 @@
     },
     "oj-date-time-picker": {
       "name": "oj-date-time-picker",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Inline Date Time Picker",
       "type": "core",
       "since": "4.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojdatetimepicker"
+          "module": "ojs/ojdatetimepicker",
+          "defaultColumns": "4",
+          "minColumns": "4"
         }
       },
       "styleClasses": [
@@ -16861,7 +17191,26 @@
         }
       ],
       "description": "A date time picker is an inline element for picking a date and time value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojDateTimePicker.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojDateTimePicker.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "required",
+            "disabled",
+            "readonly",
+            "min",
+            "max"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "asyncValidators": {
           "description": "Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.",
@@ -16993,7 +17342,7 @@
                   "displayName": ""
                 },
                 "today": {
-                  "description": "Show the today button",
+                  "description": "Show the today button. When user clicks on the Today button, it will highlight the current day in the calendar.",
                   "displayName": "Today"
                 }
               }
@@ -17272,6 +17621,7 @@
           "description": "The placeholder text to set on the element.",
           "type": "string",
           "displayName": "Placeholder",
+          "translatable": true,
           "help": "placeholder"
         },
         "rawValue": {
@@ -17334,7 +17684,7 @@
                   "displayName": ""
                 },
                 "now": {
-                  "description": "Show the now button",
+                  "description": "Show the Now button. When user clicks on the Now button, it will highlight the current time in the timepicker.",
                   "displayName": "Now"
                 }
               }
@@ -17610,6 +17960,8 @@
           "description": "The value of the datetime picker element, which must be an ISOString. See the Help documentation for more information.",
           "type": "string",
           "displayName": "Value",
+          "eventGroup": "common",
+          "writeback": true,
           "format": "date-time",
           "help": "value"
         }
@@ -17745,8 +18097,8 @@
     },
     "oj-defer": {
       "name": "oj-defer",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Defer",
       "type": "core",
       "since": "4.0.0",
@@ -17756,22 +18108,48 @@
         }
       },
       "description": "Defer is used to delay applying bindings to its children until it is activated. Child elements are disconnected from the DOM tree until the parent component activates its subtree.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojDefer.html"
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojDefer.html"
     },
     "oj-diagram": {
       "name": "oj-diagram",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Diagram",
       "type": "core",
       "since": "1.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojdiagram"
+          "module": "ojs/ojdiagram",
+          "defaultColumns": "12",
+          "minColumns": "6"
         }
       },
       "description": "A diagram displays a set of nodes and the links between them. The node positions and link paths are specified by an application-provided layout function.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojDiagram.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojDiagram.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "panning",
+            "panDirection",
+            "zooming",
+            "minZoom",
+            "maxZoom",
+            "animationOnDataChange",
+            "animationOnDisplay",
+            "style"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "nodeData",
+            "linkData",
+            "layout",
+            "selection"
+          ]
+        }
+      ],
       "properties": {
         "animationOnDataChange": {
           "description": "Specifies the animation that is applied on data changes.",
@@ -18475,6 +18853,7 @@
           "description": "An array containing the ids of the selected nodes and links.",
           "type": "Array<any>",
           "displayName": "Selection",
+          "eventGroup": "common",
           "value": [],
           "writeback": true,
           "help": "selection"
@@ -19583,8 +19962,8 @@
     },
     "oj-diagram-link": {
       "name": "oj-diagram-link",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Diagram Link",
       "type": "core",
       "since": "6.0.0",
@@ -19594,7 +19973,7 @@
         }
       },
       "description": "ojDiagramLink",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojDiagramLink.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojDiagramLink.html",
       "properties": {
         "categories": {
           "description": "An array of category strings corresponding to this link. This allows highlighting and filtering of links. By default, the label is used as the link category.",
@@ -19761,8 +20140,8 @@
     },
     "oj-diagram-node": {
       "name": "oj-diagram-node",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Diagram Node",
       "type": "core",
       "since": "6.0.0",
@@ -19772,7 +20151,7 @@
         }
       },
       "description": "ojDiagramNode",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojDiagramNode.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojDiagramNode.html",
       "properties": {
         "categories": {
           "description": "An array of category strings corresponding to this node. This allows highlighting and filtering of nodes. By default, the label is used as the node category.",
@@ -20031,14 +20410,16 @@
     },
     "oj-dialog": {
       "name": "oj-dialog",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Dialog",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojdialog"
+          "module": "ojs/ojdialog",
+          "defaultColumns": "12",
+          "minColumns": "12"
         }
       },
       "styleClasses": [
@@ -20068,7 +20449,21 @@
         }
       ],
       "description": "A dialog displays a popup window that provides information and gathers input from the application user.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojDialog.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojDialog.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "dialogTitle",
+            "initialVisibility",
+            "style",
+            "modality",
+            "dragAffordance",
+            "cancelBehavior",
+            "resizeBehavior"
+          ]
+        }
+      ],
       "properties": {
         "cancelBehavior": {
           "description": "Specifies the cancel behavior of the dialog. See the Help documentation for more information.",
@@ -20667,14 +21062,16 @@
     },
     "oj-file-picker": {
       "name": "oj-file-picker",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "File Picker",
       "type": "core",
       "since": "4.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojfilepicker"
+          "module": "ojs/ojfilepicker",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -20698,7 +21095,17 @@
         }
       ],
       "description": "A file picker displays a clickable dropzone for selecting files from the device storage.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojFilePicker.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojFilePicker.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "accept",
+            "selectOn",
+            "selectionMode"
+          ]
+        }
+      ],
       "properties": {
         "accept": {
           "description": "An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types",
@@ -20824,18 +21231,38 @@
     },
     "oj-film-strip": {
       "name": "oj-film-strip",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Film Strip",
       "type": "core",
       "since": "1.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojfilmstrip"
+          "module": "ojs/ojfilmstrip",
+          "defaultColumns": "12",
+          "minColumns": "1"
         }
       },
       "description": "A filmstrip lays out its children in a single row or column across logical pages and allows navigating through them.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojFilmStrip.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojFilmStrip.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "orientation",
+            "maxItemsPerPage",
+            "arrowPlacement",
+            "arrowVisibility",
+            "looping"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "currentItem"
+          ]
+        }
+      ],
       "properties": {
         "arrowPlacement": {
           "description": "Specifies the placement of the navigation arrows.",
@@ -21069,18 +21496,30 @@
     },
     "oj-form-layout": {
       "name": "oj-form-layout",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Form Layout",
       "type": "core",
       "since": "4.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojformlayout"
+          "module": "ojs/ojformlayout",
+          "defaultColumns": "12",
+          "minColumns": "2"
         }
       },
       "description": "A form layout manages the layout of labels and fields in a form.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojFormLayout.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojFormLayout.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "maxColumns",
+            "labelEdge",
+            "labelWidth"
+          ]
+        }
+      ],
       "properties": {
         "direction": {
           "description": "Specifies the layout direction of the form layout children.",
@@ -21219,18 +21658,43 @@
     },
     "oj-gantt": {
       "name": "oj-gantt",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Gantt",
       "type": "core",
       "since": "2.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojgantt"
+          "module": "ojs/ojgantt",
+          "defaultColumns": "12",
+          "minColumns": "12"
         }
       },
       "description": "A gantt displays scheduling information graphically, making it easier to plan, coordinate, and track various tasks and resources.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojGantt.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojGantt.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "start",
+            "end",
+            "gridlines.horizontal",
+            "gridlines.veritcal",
+            "majorAxis.scale",
+            "majorAxis.zoomOrder",
+            "minorAxis.scale",
+            "minorAxis.zoomOrder",
+            "style"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "taskData",
+            "selection"
+          ]
+        }
+      ],
       "properties": {
         "animationOnDataChange": {
           "description": "Defines the animation that is applied on data changes.",
@@ -22023,6 +22487,7 @@
           "description": "An array of strings containing the ids of the initially selected tasks.",
           "type": "Array<any>",
           "displayName": "Selection",
+          "eventGroup": "common",
           "value": [],
           "writeback": true,
           "help": "selection"
@@ -24521,8 +24986,8 @@
     },
     "oj-gantt-dependency": {
       "name": "oj-gantt-dependency",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Gantt Dependency",
       "type": "core",
       "since": "5.2.0",
@@ -24532,7 +24997,7 @@
         }
       },
       "description": "ojGanttDependency",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojGanttDependency.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojGanttDependency.html",
       "properties": {
         "predecessorTaskId": {
           "description": "The identifier for the predecessor task. This must reference a task in Gantt.",
@@ -24602,8 +25067,8 @@
     },
     "oj-gantt-row": {
       "name": "oj-gantt-row",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Gantt Row",
       "type": "core",
       "since": "5.2.0",
@@ -24613,7 +25078,7 @@
         }
       },
       "description": "ojGanttRow",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojGanttRow.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojGanttRow.html",
       "properties": {
         "label": {
           "description": "The label associated with the row.",
@@ -24633,8 +25098,8 @@
     },
     "oj-gantt-task": {
       "name": "oj-gantt-task",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Gantt Task",
       "type": "core",
       "since": "5.2.0",
@@ -24644,7 +25109,7 @@
         }
       },
       "description": "ojGanttTask",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojGanttTask.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojGanttTask.html",
       "properties": {
         "baseline": {
           "description": "Specifies the baseline of the task. When only one of 'start' or 'end' value is specified, or when 'start' and 'end' values are equal, the baseline is considered a milestone baseline.",
@@ -24900,8 +25365,8 @@
     },
     "oj-indexer": {
       "name": "oj-indexer",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Indexer",
       "type": "core",
       "since": "1.2.0",
@@ -24911,7 +25376,7 @@
         }
       },
       "description": "An indexer displays a list of sections that corresponds to group headers of a list.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojIndexer.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojIndexer.html",
       "properties": {
         "data": {
           "description": "The data provider for the Indexer.",
@@ -25024,14 +25489,16 @@
     },
     "oj-input-date": {
       "name": "oj-input-date",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Input Date",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojdatetimepicker"
+          "module": "ojs/ojdatetimepicker",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -25061,7 +25528,28 @@
         }
       ],
       "description": "An input date allows the user to enter or select a date value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojInputDate.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojInputDate.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "placeholder",
+            "required",
+            "disabled",
+            "readonly",
+            "min",
+            "max",
+            "converter"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "asyncValidators": {
           "description": "Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.",
@@ -25200,7 +25688,7 @@
                   "displayName": ""
                 },
                 "today": {
-                  "description": "Show the today button",
+                  "description": "Show the today button. When user clicks on the Today button, it will highlight the current day in the calendar.",
                   "displayName": "Today"
                 }
               }
@@ -25483,6 +25971,7 @@
           "description": "The placeholder text to set on the element.",
           "type": "string",
           "displayName": "Placeholder",
+          "translatable": true,
           "help": "placeholder"
         },
         "rawValue": {
@@ -25758,6 +26247,7 @@
           "description": "The value of the input date element, which must be an ISOString. See the Help documentation for more information.",
           "type": "string",
           "displayName": "Value",
+          "eventGroup": "common",
           "writeback": true,
           "format": "date",
           "help": "value"
@@ -25884,14 +26374,16 @@
     },
     "oj-input-date-time": {
       "name": "oj-input-date-time",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Input Date Time",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojdatetimepicker"
+          "module": "ojs/ojdatetimepicker",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -25921,7 +26413,28 @@
         }
       ],
       "description": "An input date time allows the user to enter or select a date and time value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojInputDateTime.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojInputDateTime.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "placeholder",
+            "required",
+            "disabled",
+            "readonly",
+            "min",
+            "max",
+            "converter"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "asyncValidators": {
           "description": "Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.",
@@ -26060,7 +26573,7 @@
                   "displayName": ""
                 },
                 "today": {
-                  "description": "Show the today button",
+                  "description": "Show the today button. When user clicks on the Today button, it will highlight the current day in the calendar.",
                   "displayName": "Today"
                 }
               }
@@ -26343,6 +26856,7 @@
           "description": "The placeholder text to set on the element.",
           "type": "string",
           "displayName": "Placeholder",
+          "translatable": true,
           "help": "placeholder"
         },
         "rawValue": {
@@ -26409,7 +26923,7 @@
                   "displayName": ""
                 },
                 "now": {
-                  "description": "Show the now button",
+                  "description": "Show the Now button. When user clicks on the Now button, it will highlight the current time in the timepicker.",
                   "displayName": "Now"
                 }
               }
@@ -26685,6 +27199,7 @@
           "description": "The value of the input datetime element, which must be an ISOString. See the Help documentation for more information.",
           "type": "string",
           "displayName": "Value",
+          "eventGroup": "common",
           "writeback": true,
           "format": "date-time",
           "help": "value"
@@ -26821,14 +27336,16 @@
     },
     "oj-input-number": {
       "name": "oj-input-number",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Input Number",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojinputnumber"
+          "module": "ojs/ojinputnumber",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -26858,7 +27375,30 @@
         }
       ],
       "description": "An input number allows the user to enter a number value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojInputNumber.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojInputNumber.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "placeholder",
+            "min",
+            "max",
+            "step",
+            "required",
+            "disabled",
+            "readonly",
+            "virtualKeyboard",
+            "converter"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "asyncValidators": {
           "description": "Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.",
@@ -27051,6 +27591,7 @@
           "type": "string|null",
           "displayName": "Placeholder",
           "value": "",
+          "translatable": true,
           "help": "placeholder"
         },
         "rawValue": {
@@ -27263,6 +27804,7 @@
           "description": "The value of the component, which must be either a number or null. See the Help documentation for more information.",
           "type": "number",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": null,
           "writeback": true,
           "help": "value"
@@ -27429,18 +27971,38 @@
     },
     "oj-input-password": {
       "name": "oj-input-password",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Input Password",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojinputtext"
+          "module": "ojs/ojinputtext",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "description": "An input password allows the user to enter a password.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojInputPassword.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojInputPassword.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "placeholder",
+            "required",
+            "disabled",
+            "readonly"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "asyncValidators": {
           "description": "Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.",
@@ -27601,6 +28163,7 @@
           "description": "The placeholder text to set on the element.",
           "type": "string",
           "displayName": "Placeholder",
+          "translatable": true,
           "help": "placeholder"
         },
         "rawValue": {
@@ -27731,6 +28294,7 @@
           "description": "The value of the component. Value must be a string or null. When value property changes due to programmatic intervention, the component always clears all messages including messagesCustom, runs deferred validation, and always refreshes UI display value. Running Validation component always runs deferred validation; if there is a validation error the valid property is updated. ",
           "type": "string|null",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": null,
           "writeback": true,
           "help": "value"
@@ -27847,14 +28411,16 @@
     },
     "oj-input-text": {
       "name": "oj-input-text",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Input Text",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojinputtext"
+          "module": "ojs/ojinputtext",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -27884,7 +28450,27 @@
         }
       ],
       "description": "An input text allows the user to enter a text value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojInputText.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojInputText.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "placeholder",
+            "required",
+            "disabled",
+            "readonly",
+            "clearIcon",
+            "virtualKeyboard"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "asyncValidators": {
           "description": "Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.",
@@ -28094,6 +28680,7 @@
           "description": "The placeholder text to set on the element.",
           "type": "string",
           "displayName": "Placeholder",
+          "translatable": true,
           "help": "placeholder"
         },
         "rawValue": {
@@ -28224,6 +28811,7 @@
           "description": "The value of the component.",
           "type": "any",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": null,
           "writeback": true,
           "help": "value"
@@ -28386,14 +28974,16 @@
     },
     "oj-input-time": {
       "name": "oj-input-time",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Input Time",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojdatetimepicker"
+          "module": "ojs/ojdatetimepicker",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -28423,7 +29013,28 @@
         }
       ],
       "description": "An input time allows the user to enter or select a time value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojInputTime.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojInputTime.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "placeholder",
+            "required",
+            "disabled",
+            "readonly",
+            "min",
+            "max",
+            "converter"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "asyncValidators": {
           "description": "Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.",
@@ -28654,6 +29265,7 @@
           "description": "The placeholder text to set on the element.",
           "type": "string",
           "displayName": "Placeholder",
+          "translatable": true,
           "help": "placeholder"
         },
         "rawValue": {
@@ -28720,7 +29332,7 @@
                   "displayName": ""
                 },
                 "now": {
-                  "description": "Show the now button",
+                  "description": "Show the Now button. When user clicks on the Now button, it will highlight the current time in the timepicker.",
                   "displayName": "Now"
                 }
               }
@@ -28964,6 +29576,7 @@
           "description": "The value of the input time element, which must be an ISOString. See the Help documentation for more information.",
           "type": "string",
           "displayName": "Value",
+          "eventGroup": "common",
           "writeback": true,
           "format": "time",
           "help": "value"
@@ -29090,14 +29703,16 @@
     },
     "oj-label": {
       "name": "oj-label",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Label",
       "type": "core",
       "since": "4.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojlabel"
+          "module": "ojs/ojlabel",
+          "defaultColumns": "3",
+          "minColumns": "1"
         }
       },
       "styleClasses": [
@@ -29133,7 +29748,16 @@
         }
       ],
       "description": "A label is a short description of requested input.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojLabel.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojLabel.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "for",
+            "showRequired"
+          ]
+        }
+      ],
       "properties": {
         "for": {
           "description": "Specifies the form element associated with this label. See the Help documentation for more information.",
@@ -29255,18 +29879,30 @@
     },
     "oj-label-value": {
       "name": "oj-label-value",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Label Value",
       "type": "core",
       "since": "5.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojlabelvalue"
+          "module": "ojs/ojlabelvalue",
+          "defaultColumns": "12",
+          "minColumns": "2"
         }
       },
       "description": "A label value is used to lay out a label and value, it is most commonly used in a form layout.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojLabelValue.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojLabelValue.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelEdge",
+            "labelWidth",
+            "colspan"
+          ]
+        }
+      ],
       "properties": {
         "colspan": {
           "description": "Specifies how many columns this label/value pair will occupy in the parent form layout. See the Help documentation for more information.",
@@ -29370,18 +30006,40 @@
     },
     "oj-led-gauge": {
       "name": "oj-led-gauge",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Led Gauge",
       "type": "core",
       "since": "0.7.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojgauge"
+          "module": "ojs/ojgauge",
+          "defaultColumns": "2",
+          "minColumns": "1"
         }
       },
       "description": "A LED gauge displays information graphically, highlighting a specific metric value in relation to its thresholds.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojLedGauge.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojLedGauge.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "type",
+            "rotation",
+            "metricLabel.rendered",
+            "metricLabel.textType",
+            "color",
+            "style"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value",
+            "thresholds"
+          ]
+        }
+      ],
       "properties": {
         "borderColor": {
           "description": "The border color of the gauge. Only applies when thresholds are not defined. The default value varies based on theme.",
@@ -29797,6 +30455,7 @@
           "description": "The metric value.",
           "type": "number|null",
           "displayName": "Value",
+          "eventGroup": "common",
           "writeback": true,
           "help": "value"
         },
@@ -29912,18 +30571,39 @@
     },
     "oj-legend": {
       "name": "oj-legend",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Legend",
       "type": "core",
       "since": "0.7.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojlegend"
+          "module": "ojs/ojlegend",
+          "defaultColumns": "2",
+          "minColumns": "1"
         }
       },
       "description": "A legend displays an interactive description of symbols, colors, etc., used in graphical information representations.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojLegend.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojLegend.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "orientation",
+            "halign",
+            "valign",
+            "hoverBehavior",
+            "hoverBehaviorDelay",
+            "style"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data"
+          ]
+        }
+      ],
       "properties": {
         "as": {
           "status": [
@@ -30666,8 +31346,8 @@
     },
     "oj-legend-item": {
       "name": "oj-legend-item",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Legend Item",
       "type": "core",
       "since": "6.0.0",
@@ -30677,7 +31357,7 @@
         }
       },
       "description": "ojLegendItem",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojLegendItem.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojLegendItem.html",
       "properties": {
         "borderColor": {
           "description": "The border color of the marker. Only applies if symbolType is \"marker\" or \"lineWithMarker\".",
@@ -30959,8 +31639,8 @@
     },
     "oj-legend-section": {
       "name": "oj-legend-section",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Legend Section",
       "type": "core",
       "since": "6.0.0",
@@ -30970,7 +31650,7 @@
         }
       },
       "description": "ojLegendSection",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojLegendSection.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojLegendSection.html",
       "properties": {
         "collapsible": {
           "description": "Whether the section is collapsible. Only applies if the legend orientation is vertical.",
@@ -31032,14 +31712,16 @@
     },
     "oj-list-view": {
       "name": "oj-list-view",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "List View",
       "type": "core",
       "since": "1.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojlistview"
+          "module": "ojs/ojlistview",
+          "defaultColumns": "12",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -31069,7 +31751,22 @@
         }
       ],
       "description": "A list view displays data items as a list or a grid with highly interactive features.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojListView.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojListView.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "selectionMode"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data",
+            "selected"
+          ]
+        }
+      ],
       "properties": {
         "as": {
           "status": [
@@ -31433,6 +32130,7 @@
           "description": "Specifies the keys of the current selected items. See the Help documentation for more information.",
           "type": "KeySet",
           "displayName": "Selected",
+          "eventGroup": "common",
           "value": "new KeySetImpl();",
           "writeback": true,
           "help": "selected"
@@ -31870,14 +32568,16 @@
     },
     "oj-masonry-layout": {
       "name": "oj-masonry-layout",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Masonry Layout",
       "type": "core",
       "since": "1.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojmasonrylayout"
+          "module": "ojs/ojmasonrylayout",
+          "defaultColumns": "12",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -31931,7 +32631,7 @@
         }
       ],
       "description": "A masonry layout lays out its children in a grid of tiles.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojMasonryLayout.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojMasonryLayout.html",
       "properties": {
         "reorderHandle": {
           "description": "Specifies the selector of the child DOM element that can be used to reorder the child.",
@@ -32230,18 +32930,30 @@
     },
     "oj-menu": {
       "name": "oj-menu",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Menu",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojmenu"
+          "module": "ojs/ojmenu",
+          "defaultColumns": "2",
+          "minColumns": "1"
         }
       },
       "description": "A menu displays a list of options in a popup.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojMenu.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojMenu.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "openOptions.display",
+            "openOptions.initialFocus",
+            "disabled"
+          ]
+        }
+      ],
       "properties": {
         "disabled": {
           "description": "Disables the menu if set to true.",
@@ -32757,6 +33469,7 @@
         },
         "ojAction": {
           "description": "Triggered when a menu item is selected. To ensure keyboard accessibility, the only correct, supported way to react to the selection of a menu item is to listen for this event. See the Help documentation for more information.",
+          "eventGroup": "common",
           "bubbles": true,
           "cancelable": true,
           "help": "action"
@@ -32772,14 +33485,16 @@
     },
     "oj-menu-button": {
       "name": "oj-menu-button",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Menu Button",
       "type": "core",
       "since": "4.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojbutton"
+          "module": "ojs/ojbutton",
+          "defaultColumns": "2",
+          "minColumns": "1"
         }
       },
       "styleClasses": [
@@ -32811,7 +33526,17 @@
         }
       ],
       "description": "A menu button launches a menu when clicked.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojMenuButton.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojMenuButton.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "display",
+            "chroming",
+            "disabled"
+          ]
+        }
+      ],
       "properties": {
         "chroming": {
           "description": "Indicates in what states the button has chrome (background and border).",
@@ -32926,6 +33651,7 @@
       "events": {
         "ojAction": {
           "description": "Triggered when a button is clicked, whether by keyboard, mouse, or touch events. To meet accessibility requirements, the only supported way to react to the click of a button is to listen for this event.",
+          "eventGroup": "common",
           "bubbles": true,
           "cancelable": true,
           "help": "action"
@@ -32959,18 +33685,35 @@
     },
     "oj-menu-select-many": {
       "name": "oj-menu-select-many",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Menu Multi Select",
       "type": "core",
       "since": "6.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojmenuselectmany"
+          "module": "ojs/ojmenuselectmany",
+          "defaultColumns": "2",
+          "minColumns": "1"
         }
       },
       "description": "A menu select many allows the user to select one or more menu items from a set.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojMenuSelectMany.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojMenuSelectMany.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "disabled"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value",
+            "options"
+          ]
+        }
+      ],
       "properties": {
         "disabled": {
           "description": "Disables all the checkable menu items if set to true.",
@@ -33012,6 +33755,7 @@
           "description": "The value of the element.",
           "type": "Array<any>",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": [],
           "writeback": true,
           "help": "value"
@@ -33070,8 +33814,8 @@
     },
     "oj-message": {
       "name": "oj-message",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Message",
       "type": "core",
       "since": "5.0.0",
@@ -33081,7 +33825,7 @@
         }
       },
       "description": "A message conveys categorized information to the user, often regarding errors.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojMessage.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojMessage.html",
       "properties": {
         "displayOptions": {
           "description": "Specifies the display options for contents of the message.",
@@ -33384,14 +34128,16 @@
     },
     "oj-messages": {
       "name": "oj-messages",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Messages",
       "type": "core",
       "since": "5.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojmessages"
+          "module": "ojs/ojmessages",
+          "defaultColumns": "2",
+          "minColumns": "1"
         }
       },
       "styleClasses": [
@@ -33403,7 +34149,29 @@
         }
       ],
       "description": "Messages manages the layout and display of child messages.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojMessages.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojMessages.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "display",
+            "position.at.horizontal",
+            "position.at.vertical",
+            "position.collision",
+            "position.my.horizontal",
+            "position.my.vertical",
+            "position.of",
+            "position.offset.x",
+            "position.offset.y"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "messages"
+          ]
+        }
+      ],
       "properties": {
         "display": {
           "description": "Specifies the display purpose of the messages. See the Help documentation for more information.",
@@ -33881,8 +34649,8 @@
     },
     "oj-module": {
       "name": "oj-module",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "ojModule Element",
       "type": "core",
       "since": "4.2.0",
@@ -33892,7 +34660,7 @@
         }
       },
       "description": "A module is a navigational element that manages content replacement within a particular region of the page.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojModule.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojModule.html",
       "properties": {
         "animation": {
           "description": "Specifies an animation object used for view transitions. See the Help documentation for more information.",
@@ -33994,14 +34762,16 @@
     },
     "oj-navigation-list": {
       "name": "oj-navigation-list",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Navigation List",
       "type": "core",
       "since": "1.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojnavigationlist"
+          "module": "ojs/ojnavigationlist",
+          "defaultColumns": "2",
+          "minColumns": "1"
         }
       },
       "styleClasses": [
@@ -34079,7 +34849,26 @@
         }
       ],
       "description": "A navigation list allows navigation between different content sections.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojNavigationList.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojNavigationList.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "display",
+            "edge",
+            "drillMode",
+            "overflow",
+            "rootLabel"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data",
+            "selection"
+          ]
+        }
+      ],
       "properties": {
         "as": {
           "status": [
@@ -34247,6 +35036,7 @@
           "description": "Specifies the key of the selected item. See the Help documentation for more information.",
           "type": "any",
           "displayName": "Selection",
+          "eventGroup": "common",
           "value": null,
           "writeback": true,
           "help": "selection"
@@ -34512,18 +35302,41 @@
     },
     "oj-n-box": {
       "name": "oj-n-box",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "N Box",
       "type": "core",
       "since": "1.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojnbox"
+          "module": "ojs/ojnbox",
+          "defaultColumns": "12",
+          "minColumns": "12"
         }
       },
       "description": "NBox is an interactive data visualization (typically found in Human Capital Management applications) in which employees are grouped and compared across two dimensions.  Each dimension can be split into multiple ranges.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojNBox.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojNBox.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "rowsTitle",
+            "columnsTitle",
+            "animationOnDataChange",
+            "animationOnDisplay",
+            "style"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data",
+            "rows",
+            "columns",
+            "cells"
+          ]
+        }
+      ],
       "properties": {
         "animationOnDataChange": {
           "description": "Specifies the animation that is applied on data changes.",
@@ -35210,6 +36023,7 @@
           "description": "Specifies the ids of the selected nodes.",
           "type": "Array<any>",
           "displayName": "Selection",
+          "eventGroup": "common",
           "value": [],
           "writeback": true,
           "help": "selection"
@@ -36229,8 +37043,8 @@
     },
     "oj-n-box-node": {
       "name": "oj-n-box-node",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "N Box Node",
       "type": "core",
       "since": "6.0.0",
@@ -36240,7 +37054,7 @@
         }
       },
       "description": "ojNBoxNode",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojNBoxNode.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojNBoxNode.html",
       "properties": {
         "borderColor": {
           "description": "The color of the node border.",
@@ -36691,8 +37505,8 @@
     },
     "oj-optgroup": {
       "name": "oj-optgroup",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Option Group",
       "type": "core",
       "since": "4.0.0",
@@ -36702,7 +37516,16 @@
         }
       },
       "description": "An optgroup supports grouping of child oj-option elements.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojOptgroup.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojOptgroup.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "label",
+            "disabled"
+          ]
+        }
+      ],
       "properties": {
         "disabled": {
           "description": "Disables the group if set to true.",
@@ -36778,8 +37601,8 @@
     },
     "oj-option": {
       "name": "oj-option",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Option",
       "type": "core",
       "since": "4.0.0",
@@ -36789,7 +37612,16 @@
         }
       },
       "description": "An option represents a value for JET elements that display a list of values.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojOption.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojOption.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "value",
+            "disabled"
+          ]
+        }
+      ],
       "properties": {
         "disabled": {
           "description": "Disables the option if set to true.",
@@ -36872,18 +37704,39 @@
     },
     "oj-paging-control": {
       "name": "oj-paging-control",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Paging Control",
       "type": "core",
       "since": "0.7.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojpagingcontrol"
+          "module": "ojs/ojpagingcontrol",
+          "defaultColumns": "12",
+          "minColumns": "2"
         }
       },
       "description": "A paging control provides paging functionality for data collections.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojPagingControl.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojPagingControl.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "pageOptions.layout",
+            "pageOptions.orientation",
+            "pageOptions.type",
+            "pageOptions.maxPageLinks",
+            "overflow",
+            "pageSize"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data"
+          ]
+        }
+      ],
       "properties": {
         "data": {
           "description": "Specifies the data bound to the Paging Control. See the Help documentation for more information.",
@@ -37356,18 +38209,41 @@
     },
     "oj-picto-chart": {
       "name": "oj-picto-chart",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Picto Chart",
       "type": "core",
       "since": "1.2.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojpictochart"
+          "module": "ojs/ojpictochart",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "description": "A picto chart displays information using icons to visualize an absolute number or the relative sizes of the different parts of a population.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojPictoChart.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojPictoChart.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "columnCount",
+            "rowCount",
+            "layout",
+            "layoutOrigin",
+            "hoverBehavior",
+            "animationOnDataChange",
+            "animationOnDisplay",
+            "style"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data"
+          ]
+        }
+      ],
       "properties": {
         "animationDuration": {
           "description": "The duration of the animations in milliseconds.",
@@ -37735,6 +38611,7 @@
           "description": "An array of id strings, used to define the selected objects.",
           "type": "Array<any>",
           "displayName": "Selection",
+          "eventGroup": "common",
           "value": [],
           "writeback": true,
           "help": "selection"
@@ -38058,8 +38935,8 @@
     },
     "oj-picto-chart-item": {
       "name": "oj-picto-chart-item",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Picto Chart Item",
       "type": "core",
       "since": "5.2.0",
@@ -38069,7 +38946,7 @@
         }
       },
       "description": "ojPictoChartItem",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojPictoChartItem.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojPictoChartItem.html",
       "properties": {
         "borderColor": {
           "description": "The border color of the item. Does not apply if custom image is specified.",
@@ -38246,14 +39123,16 @@
     },
     "oj-popup": {
       "name": "oj-popup",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Popup",
       "type": "core",
       "since": "1.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojpopup"
+          "module": "ojs/ojpopup",
+          "defaultColumns": "2",
+          "minColumns": "1"
         }
       },
       "styleClasses": [
@@ -38265,7 +39144,27 @@
         }
       ],
       "description": "A popup temporarily 'pops up' content in the foreground.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojPopup.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojPopup.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "initalFocus",
+            "modality",
+            "autoDismiss",
+            "tail",
+            "position.at.horizontal",
+            "position.at.vertical",
+            "position.collision",
+            "position.my.horizontal",
+            "position.my.vertical",
+            "position.of",
+            "position.offset.x",
+            "position.offset.y",
+            "style"
+          ]
+        }
+      ],
       "properties": {
         "autoDismiss": {
           "description": "Specifies the auto dismissal behavior.",
@@ -38773,14 +39672,16 @@
     },
     "oj-progress": {
       "name": "oj-progress",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Progress",
       "type": "core",
       "since": "1.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojprogress"
+          "module": "ojs/ojprogress",
+          "defaultColumns": "4",
+          "minColumns": "1"
         }
       },
       "styleClasses": [
@@ -38804,7 +39705,22 @@
         }
       ],
       "description": "A progress allows the user to visualize the progression of an extended computer operation.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojProgress.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojProgress.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "type",
+            "max"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "max": {
           "description": "The maximum allowed value.",
@@ -38854,6 +39770,7 @@
           "description": "The value of the Progress.",
           "type": "number",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": 0,
           "writeback": true,
           "minimum": -1,
@@ -38918,18 +39835,28 @@
     },
     "oj-progress-list": {
       "name": "oj-progress-list",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Progress List",
       "type": "core",
       "since": "4.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojprogresslist"
+          "module": "ojs/ojprogresslist",
+          "defaultColumns": "4",
+          "minColumns": "1"
         }
       },
       "description": "A progress list displays a list of items and their progress, it is most commonly used in conjunction with a file picker to display file upload progress.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojProgressList.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojProgressList.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data"
+          ]
+        }
+      ],
       "properties": {
         "data": {
           "description": "Data used by the ProgressList.",
@@ -38985,14 +39912,16 @@
     },
     "oj-radioset": {
       "name": "oj-radioset",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Radioset",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojradioset"
+          "module": "ojs/ojradioset",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -39028,7 +39957,25 @@
         }
       ],
       "description": "A radio set allows the user to select one option from a set of mutually exclusive options.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojRadioset.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojRadioset.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "required",
+            "disabled",
+            "labelledBy",
+            "describedBy"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "describedBy": {
           "description": "Specifies a relationship between this component and another element.",
@@ -39273,6 +40220,7 @@
           "description": "The value of the component. See the Help documentation for more information.",
           "type": "any",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": null,
           "writeback": true,
           "help": "value"
@@ -39394,18 +40342,41 @@
     },
     "oj-rating-gauge": {
       "name": "oj-rating-gauge",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Rating Gauge",
       "type": "core",
       "since": "0.7.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojgauge"
+          "module": "ojs/ojgauge",
+          "defaultColumns": "4",
+          "minColumns": "1"
         }
       },
       "description": "A rating gauge displays information graphically, typically displaying or accepting user feedback on a product or service.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojRatingGauge.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojRatingGauge.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "selectedState.shape",
+            "unselectedState.shape",
+            "hoverState.shape",
+            "changedState.shape",
+            "style"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value",
+            "min",
+            "max",
+            "step"
+          ]
+        }
+      ],
       "properties": {
         "changed": {
           "description": "Whether there has been a value entered by the user.",
@@ -39873,6 +40844,7 @@
           "description": "The value set on the gauge.",
           "type": "number|null",
           "displayName": "Value",
+          "eventGroup": "common",
           "writeback": true,
           "minimum": "0",
           "help": "value"
@@ -39977,14 +40949,16 @@
     },
     "oj-refresher": {
       "name": "oj-refresher",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Refresher",
       "type": "core",
       "since": "5.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojrefresher"
+          "module": "ojs/ojrefresher",
+          "defaultColumns": "12",
+          "minColumns": "12"
         }
       },
       "styleClasses": [
@@ -39996,7 +40970,16 @@
         }
       ],
       "description": "A refresher is a wrapper for attaching pull to refresh functionality to a DOM element.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojRefresher.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojRefresher.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "text",
+            "threshold"
+          ]
+        }
+      ],
       "properties": {
         "refreshContent": {
           "description": "Specifies the function to invoke when pull-to-refresh operation is triggered. See the Help documentation for more information.",
@@ -40104,8 +41087,8 @@
     },
     "oj-row-expander": {
       "name": "oj-row-expander",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Row Expander",
       "type": "core",
       "since": "1.0.0",
@@ -40115,7 +41098,7 @@
         }
       },
       "description": "Enable hierarchical data to be displayed in a JET Table and JET DataGrid.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojRowExpander.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojRowExpander.html",
       "properties": {
         "context": {
           "description": "The context object obtained from the column renderer (Table) or cell renderer (DataGrid)",
@@ -40296,14 +41279,16 @@
     },
     "oj-select-many": {
       "name": "oj-select-many",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Multi Select",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojselectcombobox"
+          "module": "ojs/ojselectcombobox",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -40333,7 +41318,26 @@
         }
       ],
       "description": "A select many is a dropdown list that supports multiple selections and search filtering.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojSelectMany.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojSelectMany.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "placeholder",
+            "required",
+            "disabled",
+            "describedBy"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value",
+            "options"
+          ]
+        }
+      ],
       "properties": {
         "describedBy": {
           "description": "Specifies a relationship between this component and another element.",
@@ -40553,6 +41557,7 @@
           "type": "string|null",
           "displayName": "Placeholder",
           "value": null,
+          "translatable": true,
           "help": "placeholder"
         },
         "readonly": {
@@ -40682,6 +41687,7 @@
           "description": "The value of the element.",
           "type": "Array<any>|null",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": null,
           "writeback": true,
           "help": "value"
@@ -40825,14 +41831,16 @@
     },
     "oj-select-one": {
       "name": "oj-select-one",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Single Select",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojselectcombobox"
+          "module": "ojs/ojselectcombobox",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -40862,7 +41870,26 @@
         }
       ],
       "description": "A select one is a dropdown list that supports single selection and search filtering.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojSelectOne.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojSelectOne.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "placeholder",
+            "required",
+            "disabled",
+            "describedBy"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value",
+            "options"
+          ]
+        }
+      ],
       "properties": {
         "describedBy": {
           "description": "Specifies a relationship between this component and another element.",
@@ -41082,6 +42109,7 @@
           "type": "string|null",
           "displayName": "Placeholder",
           "value": null,
+          "translatable": true,
           "help": "placeholder"
         },
         "readonly": {
@@ -41211,6 +42239,7 @@
           "description": "The value of the element.",
           "type": "any",
           "displayName": "Value",
+          "eventGroup": "common",
           "writeback": true,
           "help": "value"
         },
@@ -41349,14 +42378,16 @@
     },
     "oj-slider": {
       "name": "oj-slider",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Slider",
       "type": "core",
       "since": "0.7.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojslider"
+          "module": "ojs/ojslider",
+          "defaultColumns": "3",
+          "minColumns": "3"
         }
       },
       "styleClasses": [
@@ -41374,7 +42405,27 @@
         }
       ],
       "description": "A slider allows a user to set a value by moving an indicator.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojSlider.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojSlider.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "type",
+            "orientation",
+            "min",
+            "max",
+            "step",
+            "disabled"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "describedBy": {
           "description": "Specifies a relationship between this component and another element.",
@@ -41643,6 +42694,7 @@
           "description": "The numerical value of the slider.",
           "type": "number",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": 0,
           "writeback": true,
           "help": "value"
@@ -41754,18 +42806,43 @@
     },
     "oj-spark-chart": {
       "name": "oj-spark-chart",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Spark Chart",
       "type": "core",
       "since": "0.7.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojchart"
+          "module": "ojs/ojchart",
+          "defaultColumns": "2",
+          "minColumns": "1"
         }
       },
       "description": "A spark chart displays information graphically, typically highlighting the trend of a data set in a compact form factor.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojSparkChart.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojSparkChart.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "type",
+            "title",
+            "barGapRatio",
+            "lineStyle",
+            "lineType",
+            "lineWidth",
+            "animationOnDataChange",
+            "animationOnDisplay",
+            "style"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data",
+            "items"
+          ]
+        }
+      ],
       "properties": {
         "animationDuration": {
           "description": "The duration of the animations in milliseconds.",
@@ -42503,8 +43580,8 @@
     },
     "oj-spark-chart-item": {
       "name": "oj-spark-chart-item",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Spark Chart Item",
       "type": "core",
       "since": "5.2.0",
@@ -42514,7 +43591,7 @@
         }
       },
       "description": "ojSparkChartItem",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojSparkChartItem.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojSparkChartItem.html",
       "properties": {
         "borderColor": {
           "description": "The default border color for the data items.",
@@ -42638,18 +43715,48 @@
     },
     "oj-status-meter-gauge": {
       "name": "oj-status-meter-gauge",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Status Meter Gauge",
       "type": "core",
       "since": "0.7.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojgauge"
+          "module": "ojs/ojgauge",
+          "defaultColumns": "4",
+          "minColumns": "1"
         }
       },
       "description": "A status meter gauge displays information graphically, highlighting a specific metric value's progress in relation to its thresholds.  Horizontal, vertical, and circular formats are supported.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojStatusMeterGauge.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojStatusMeterGauge.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "orientation",
+            "metricLabel.rendered",
+            "metricLabel.textType",
+            "metricLabel.text",
+            "thresholdDisplay",
+            "animationOnDataChange",
+            "animationOnDisplay",
+            "plotArea.rendered",
+            "color",
+            "style"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value",
+            "min",
+            "max",
+            "step",
+            "thresholds",
+            "referenceLines"
+          ]
+        }
+      ],
       "properties": {
         "angleExtent": {
           "description": "Specifies the angle extent of a gauge with circular orientation. Value should be provided in degrees.",
@@ -43322,6 +44429,7 @@
           "description": "The metric value.",
           "type": "number|null",
           "displayName": "Value",
+          "eventGroup": "common",
           "writeback": true,
           "help": "value"
         },
@@ -43495,18 +44603,42 @@
     },
     "oj-sunburst": {
       "name": "oj-sunburst",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Sunburst",
       "type": "core",
       "since": "0.7.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojsunburst"
+          "module": "ojs/ojsunburst",
+          "defaultColumns": "12",
+          "minColumns": "6"
         }
       },
       "description": "A sunburst is an interactive data visualization in which hierarchical data is represented in concentric rings.  Each ring segment is proportionally sized relative to the other segments at a given level.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojSunburst.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojSunburst.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "colorLabel",
+            "sizeLabel",
+            "nodeDefaults.labelDisplay",
+            "nodeDefaults.labelHalign",
+            "animationOnDataChange",
+            "animationOnDisplay",
+            "startAngle",
+            "style"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data",
+            "selection"
+          ]
+        }
+      ],
       "properties": {
         "animationDuration": {
           "description": "Specifies the animation duration in milliseconds. For data change animations with multiple stages, the value specifies the duration of each stage.",
@@ -43991,6 +45123,7 @@
           "description": "An array containing the ids of the initially selected nodes.",
           "type": "Array<any>",
           "displayName": "Selection",
+          "eventGroup": "common",
           "value": [],
           "writeback": true,
           "help": "selection"
@@ -44572,8 +45705,8 @@
     },
     "oj-sunburst-node": {
       "name": "oj-sunburst-node",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Sunburst Node",
       "type": "core",
       "since": "6.0.0",
@@ -44583,7 +45716,7 @@
         }
       },
       "description": "ojSunburstNode",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojSunburstNode.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojSunburstNode.html",
       "properties": {
         "borderColor": {
           "description": "The border color of the node.",
@@ -44840,14 +45973,16 @@
     },
     "oj-swipe-actions": {
       "name": "oj-swipe-actions",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Swipe Actions",
       "type": "core",
       "since": "5.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojswipeactions"
+          "module": "ojs/ojswipeactions",
+          "defaultColumns": "12",
+          "minColumns": "12"
         }
       },
       "styleClasses": [
@@ -44883,7 +46018,7 @@
         }
       ],
       "description": "A swipe actions component adds swipe-to-reveal functionality to elements such as items in ListView.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojSwipeActions.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojSwipeActions.html",
       "properties": {
         "translations": {
           "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
@@ -44988,14 +46123,16 @@
     },
     "oj-switch": {
       "name": "oj-switch",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Switch",
       "type": "core",
       "since": "0.7.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojswitch"
+          "module": "ojs/ojswitch",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -45013,7 +46150,24 @@
         }
       ],
       "description": "A switch toggles between two mutually exclusive states — on and off.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojSwitch.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojSwitch.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "disabled",
+            "readonly",
+            "describedBy"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "describedBy": {
           "description": "Specifies a relationship between this component and another element.",
@@ -45186,6 +46340,7 @@
           "description": "The boolean state of the switch component.",
           "type": "boolean",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": false,
           "writeback": true,
           "help": "value"
@@ -45297,23 +46452,34 @@
     },
     "oj-switcher": {
       "name": "oj-switcher",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Switcher",
       "type": "core",
       "since": "4.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojswitcher"
+          "module": "ojs/ojswitcher",
+          "defaultColumns": "12",
+          "minColumns": "2"
         }
       },
       "description": "A switcher dynamically decides which child element should be made visible.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojSwitcher.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojSwitcher.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "value": {
           "description": "Specifies the value for this switcher.",
           "type": "string",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": "",
           "help": "value"
         }
@@ -45369,14 +46535,16 @@
     },
     "oj-tab-bar": {
       "name": "oj-tab-bar",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Tab Bar",
       "type": "core",
       "since": "4.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojnavigationlist"
+          "module": "ojs/ojnavigationlist",
+          "defaultColumns": "12",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -45466,7 +46634,25 @@
         }
       ],
       "description": "A tab bar allows navigation between different content sections.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojTabBar.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojTabBar.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "selection",
+            "edge",
+            "display",
+            "truncation",
+            "overflow"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data"
+          ]
+        }
+      ],
       "properties": {
         "as": {
           "status": [
@@ -45617,6 +46803,7 @@
           "description": "Specifies the key of the selected item. See the Help documentation for more information.",
           "type": "any",
           "displayName": "Selection",
+          "eventGroup": "common",
           "value": null,
           "writeback": true,
           "help": "selection"
@@ -45970,14 +47157,16 @@
     },
     "oj-table": {
       "name": "oj-table",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Table",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojtable"
+          "module": "ojs/ojtable",
+          "defaultColumns": "12",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -46001,7 +47190,29 @@
         }
       ],
       "description": "A table displays data items in a tabular format with highly interactive features.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojTable.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojTable.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "selectionMode.row",
+            "selectionMode.column",
+            "display",
+            "horizontalGridVisible",
+            "verticalGridVisible"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data",
+            "columns",
+            "selected.row",
+            "selected.column",
+            "firstSelectedRow"
+          ]
+        }
+      ],
       "properties": {
         "accessibility": {
           "description": "Accessibility attributes.",
@@ -46716,6 +47927,7 @@
           "description": "Read-only property used for retrieving the key and data of the first selected row. See the Help documentation for more information.",
           "type": "object",
           "displayName": "First Selected Row",
+          "eventGroup": "common",
           "value": {
             "key": null,
             "data": null
@@ -46856,6 +48068,7 @@
           "description": "Specifies the current selected rows and/or columns in the table. See the Help documentation for more information.",
           "type": "object",
           "displayName": "Selected",
+          "eventGroup": "common",
           "value": "{row: new KeySetImpl(), column: new KeySetImpl()};",
           "writeback": true,
           "help": "selected",
@@ -47302,18 +48515,38 @@
     },
     "oj-tag-cloud": {
       "name": "oj-tag-cloud",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Tag Cloud",
       "type": "core",
       "since": "1.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojtagcloud"
+          "module": "ojs/ojtagcloud",
+          "defaultColumns": "12",
+          "minColumns": "6"
         }
       },
       "description": "A tag cloud is an interactive data visualization of textual data, where the importance of each tagged word or phrase is represented by font size or color.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojTagCloud.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojTagCloud.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "layout",
+            "animationOnDataChange",
+            "animationOnDisplay",
+            "style"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data",
+            "selection"
+          ]
+        }
+      ],
       "properties": {
         "animationOnDataChange": {
           "description": "Specifies the animation that is applied on data changes.",
@@ -47500,6 +48733,7 @@
           "description": "An array containing the ids of the initially selected data items.",
           "type": "Array<any>",
           "displayName": "Selection",
+          "eventGroup": "common",
           "value": [],
           "writeback": true,
           "help": "selection"
@@ -47860,8 +49094,8 @@
     },
     "oj-tag-cloud-item": {
       "name": "oj-tag-cloud-item",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Tag Cloud Item",
       "type": "core",
       "since": "5.2.0",
@@ -47871,7 +49105,7 @@
         }
       },
       "description": "ojTagCloudItem",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojTagCloudItem.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojTagCloudItem.html",
       "properties": {
         "categories": {
           "description": "An array of category strings corresponding to the tag cloud items. This allows highlighting and filtering of items.",
@@ -47935,14 +49169,16 @@
     },
     "oj-text-area": {
       "name": "oj-text-area",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Text Area",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojinputtext"
+          "module": "ojs/ojinputtext",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -47972,7 +49208,26 @@
         }
       ],
       "description": "A text area allows the user to enter a multi-line text value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojTextArea.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojTextArea.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "labelHint",
+            "placeholder",
+            "rows",
+            "disabled",
+            "required",
+            "readonly"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "value"
+          ]
+        }
+      ],
       "properties": {
         "asyncValidators": {
           "description": "Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.",
@@ -48150,6 +49405,7 @@
           "description": "The placeholder text to set on the element.",
           "type": "string",
           "displayName": "Placeholder",
+          "translatable": true,
           "help": "placeholder"
         },
         "rawValue": {
@@ -48317,6 +49573,7 @@
           "description": "The value of the component.",
           "type": "any",
           "displayName": "Value",
+          "eventGroup": "common",
           "value": null,
           "writeback": true,
           "help": "value"
@@ -48433,18 +49690,46 @@
     },
     "oj-thematic-map": {
       "name": "oj-thematic-map",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Thematic Map",
       "type": "core",
       "since": "0.7.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojthematicmap"
+          "module": "ojs/ojthematicmap",
+          "defaultColumns": "12",
+          "minColumns": "6"
         }
       },
       "description": "A thematic map is an interactive data visualization that displays data corresponding to geographic locations or regions.\r             Applications are required to supply a mapProvider for a valid thematic map.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojThematicMap.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojThematicMap.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "initialZooming",
+            "labelDisplay",
+            "panning",
+            "zooming",
+            "maxZoom",
+            "animationOnDisplay",
+            "style"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "mapProvider.geo",
+            "mapProvider.propertiesKeys",
+            "areaData",
+            "markerData",
+            "linkData",
+            "isolatedItem",
+            "selection"
+          ]
+        }
+      ],
       "properties": {
         "animationDuration": {
           "description": "The duration of the animations in milliseconds. See the Help documentation for more information.",
@@ -49067,6 +50352,7 @@
           "description": "An array of strings containing the ids of the selected data items.",
           "type": "Array<any>",
           "displayName": "Selection",
+          "eventGroup": "common",
           "value": [],
           "writeback": true,
           "help": "selection"
@@ -49837,8 +51123,8 @@
     },
     "oj-thematic-map-area": {
       "name": "oj-thematic-map-area",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Thematic Map Area",
       "type": "core",
       "since": "5.2.0",
@@ -49848,7 +51134,7 @@
         }
       },
       "description": "ojThematicMapArea",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojThematicMapArea.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojThematicMapArea.html",
       "properties": {
         "categories": {
           "description": "An array of category strings corresponding to this area. This allows highlighting and filtering of areas. By default, the label is used as the area category.",
@@ -49939,8 +51225,8 @@
     },
     "oj-thematic-map-link": {
       "name": "oj-thematic-map-link",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Thematic Map Link",
       "type": "core",
       "since": "5.2.0",
@@ -49950,7 +51236,7 @@
         }
       },
       "description": "ojThematicMapLink",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojThematicMapLink.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojThematicMapLink.html",
       "properties": {
         "categories": {
           "description": "An array of category strings corresponding to this link. This allows highlighting and filtering of links. By default, the label is used as the link category.",
@@ -50085,8 +51371,8 @@
     },
     "oj-thematic-map-marker": {
       "name": "oj-thematic-map-marker",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Thematic Map Marker",
       "type": "core",
       "since": "5.2.0",
@@ -50096,7 +51382,7 @@
         }
       },
       "description": "ojThematicMapMarker",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojThematicMapMarker.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojThematicMapMarker.html",
       "properties": {
         "borderColor": {
           "description": "The marker border color.",
@@ -50319,18 +51605,31 @@
     },
     "oj-time-axis": {
       "name": "oj-time-axis",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Time Axis",
       "type": "core",
       "since": "2.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojtimeaxis"
+          "module": "ojs/ojtimeaxis",
+          "defaultColumns": "12",
+          "minColumns": "6"
         }
       },
       "description": "A time axis displays a range of dates based on specified start and end dates and a time scale.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojTimeAxis.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojTimeAxis.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "start",
+            "end",
+            "scale",
+            "style"
+          ]
+        }
+      ],
       "properties": {
         "converter": {
           "description": "An object that converts the labels of the time axis for all 'scale' values'. See the Help documentation for more information.",
@@ -50617,18 +51916,41 @@
     },
     "oj-timeline": {
       "name": "oj-timeline",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Timeline",
       "type": "core",
       "since": "1.1.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojtimeline"
+          "module": "ojs/ojtimeline",
+          "defaultColumns": "12",
+          "minColumns": "6"
         }
       },
       "description": "A timeline is an interactive data visualization that displays a series of events in chronological order.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojTimeline.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojTimeline.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "start",
+            "end",
+            "orientation",
+            "majorAxis.scale",
+            "minorAxis.scale",
+            "minorAxis.zoomOrder",
+            "style"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data",
+            "selection"
+          ]
+        }
+      ],
       "properties": {
         "animationOnDataChange": {
           "description": "Specifies the animation that is applied on data changes.",
@@ -50986,6 +52308,7 @@
           "description": "An array of strings containing the ids of the initially selected items.",
           "type": "Array<any>",
           "displayName": "Selection",
+          "eventGroup": "common",
           "value": [],
           "writeback": true,
           "help": "selection"
@@ -52101,8 +53424,8 @@
     },
     "oj-timeline-item": {
       "name": "oj-timeline-item",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Timeline Item",
       "type": "core",
       "since": "7.0.0",
@@ -52112,7 +53435,7 @@
         }
       },
       "description": "ojTimelineItem",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojTimelineItem.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojTimelineItem.html",
       "properties": {
         "description": {
           "description": "The description text displayed on the timeline item. If not specified, no description will be shown.",
@@ -52181,8 +53504,8 @@
     },
     "oj-timeline-series": {
       "name": "oj-timeline-series",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Timeline Series",
       "type": "core",
       "since": "7.0.0",
@@ -52192,7 +53515,7 @@
         }
       },
       "description": "ojTimelineSeries",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojTimelineSeries.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojTimelineSeries.html",
       "properties": {
         "emptyText": {
           "description": "The text of an empty timeline series.",
@@ -52241,14 +53564,16 @@
     },
     "oj-toolbar": {
       "name": "oj-toolbar",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Toolbar",
       "type": "core",
       "since": "0.6.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojtoolbar"
+          "module": "ojs/ojtoolbar",
+          "defaultColumns": "12",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -52290,7 +53615,15 @@
         }
       ],
       "description": "A toolbar displays a strip of control elements such as buttons and menu buttons, often grouped by separators.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojToolbar.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojToolbar.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "chroming"
+          ]
+        }
+      ],
       "properties": {
         "chroming": {
           "description": "Indicates in what states the toolbar's buttons and buttonsets has chrome (background and border).",
@@ -52384,14 +53717,16 @@
     },
     "oj-train": {
       "name": "oj-train",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Train",
       "type": "core",
       "since": "1.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojtrain"
+          "module": "ojs/ojtrain",
+          "defaultColumns": "12",
+          "minColumns": "6"
         }
       },
       "styleClasses": [
@@ -52403,7 +53738,16 @@
         }
       ],
       "description": "A train allows a user to navigate between different steps of a process.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojTrain.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojTrain.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "selectedStep",
+            "steps"
+          ]
+        }
+      ],
       "properties": {
         "selectedStep": {
           "description": "Specifies the id of the current selected step.",
@@ -52617,18 +53961,47 @@
     },
     "oj-treemap": {
       "name": "oj-treemap",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Treemap",
       "type": "core",
       "since": "0.7.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojtreemap"
+          "module": "ojs/ojtreemap",
+          "defaultColumns": "12",
+          "minColumns": "6"
         }
       },
       "description": "A tree map is an interactive data visualization in which hierarchical data is represented across two dimensions by the size and color of nested rectangular nodes.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojTreemap.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojTreemap.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "colorLabel",
+            "sizeLabel",
+            "nodeSeparators",
+            "groupGaps",
+            "nodeDefaults.groupLabelDisplay",
+            "nodeDefaults.labelDisplay",
+            "nodeDefaults.labelHalign",
+            "nodeDefaults.labelValign",
+            "layout",
+            "sorting",
+            "animationOnDataChange",
+            "animationOnDisplay",
+            "style"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data",
+            "selection"
+          ]
+        }
+      ],
       "properties": {
         "animationDuration": {
           "description": "Specifies the animation duration in milliseconds. For data change animations with multiple stages, the value specifies the duration of each stage.",
@@ -53323,6 +54696,7 @@
           "description": "An array containing the ids of the initially selected nodes.",
           "type": "Array<any>",
           "displayName": "Selection",
+          "eventGroup": "common",
           "value": [],
           "writeback": true,
           "help": "selection"
@@ -53785,8 +55159,8 @@
     },
     "oj-treemap-node": {
       "name": "oj-treemap-node",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Treemap Node",
       "type": "core",
       "since": "6.0.0",
@@ -53796,7 +55170,7 @@
         }
       },
       "description": "ojTreemapNode",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojTreemapNode.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojTreemapNode.html",
       "properties": {
         "categories": {
           "description": "An optional array of category strings corresponding to this data item. See the Help documentation for more information.",
@@ -54119,14 +55493,16 @@
     },
     "oj-tree-view": {
       "name": "oj-tree-view",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Tree View",
       "type": "core",
       "since": "4.0.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojtreeview"
+          "module": "ojs/ojtreeview",
+          "defaultColumns": "6",
+          "minColumns": "2"
         }
       },
       "styleClasses": [
@@ -54144,7 +55520,23 @@
         }
       ],
       "description": "A tree view displays hierarchical relationships between items.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojTreeView.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojTreeView.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "selectionMode"
+          ]
+        },
+        {
+          "propertyGroup": "data",
+          "items": [
+            "data",
+            "expanded",
+            "selection"
+          ]
+        }
+      ],
       "properties": {
         "currentItem": {
           "description": "Read-only property used for retrieving the key of the item that currently has focus.",
@@ -54276,6 +55668,7 @@
           "description": "Specifies the current selections in the tree. An empty array indicates nothing is selected.",
           "type": "Array<any>",
           "displayName": "Selection",
+          "eventGroup": "common",
           "value": [],
           "writeback": true,
           "help": "selection"
@@ -54535,18 +55928,28 @@
     },
     "oj-validation-group": {
       "name": "oj-validation-group",
-      "version": "7.1.0",
-      "jetVersion": "7.1.0",
+      "version": "7.2.0",
+      "jetVersion": "7.2.0",
       "displayName": "Validation Group",
       "type": "core",
       "since": "4.2.0",
       "extension": {
         "vbdt": {
-          "module": "ojs/ojvalidationgroup"
+          "module": "ojs/ojvalidationgroup",
+          "defaultColumns": "12",
+          "minColumns": "2"
         }
       },
       "description": "A validation group tracks and summarizes the current validity state of a group of components.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.1/reference-api/oj.ojValidationGroup.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/7.2/reference-api/oj.ojValidationGroup.html",
+      "propertyLayout": [
+        {
+          "propertyGroup": "common",
+          "items": [
+            "valid"
+          ]
+        }
+      ],
       "properties": {
         "valid": {
           "description": "Read-only property used for retrieving the current validity state of the group of components being tracked. See the Help documentation for more information.",

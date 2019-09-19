@@ -996,6 +996,11 @@ var __oj_gantt_task_metadata =
  *               }
  *              ]
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["start", "end", "gridlines.horizontal", "gridlines.veritcal", "majorAxis.scale", "majorAxis.zoomOrder", "minorAxis.scale", "minorAxis.zoomOrder", "style"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["taskData", "selection"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 12
+ *
  * @classdesc
  * <h3 id="GanttOverview-section">
  *   JET Gantt
@@ -2001,6 +2006,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        * @ojsignature {target:"Type", value:"K2[]"}
        * @ojwriteback
        * @default []
+       * @ojeventgroup common
        *
        * @example <caption>Initialize the Gantt with the <code class="prettyprint">selection</code> attribute specified:</caption>
        * &lt;oj-gantt selection='["taskID1", "taskID2", "taskID3"]'>&lt;/oj-gantt>

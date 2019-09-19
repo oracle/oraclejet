@@ -15,6 +15,7 @@ define([], function () {
    * {@link persistenceStoreManager.openStore}. A default factory is provided
    * that implements this contract. Customers can register custom store factory
    * for creating persistence stores of their choice. 
+   * @hideconstructor
    */
 
   var PersistenceStoreFactory = {
@@ -25,7 +26,10 @@ define([], function () {
      * @memberof! PersistenceStoreFactory
      * @export
      * @instance
-     * @return {Promise} returns a Promise that is resolved to a PersistenceStore
+     * @param {string} name The name to be associated with the store.
+     * @param {object} [options] The configratuion options to be applied to the store.
+     * @param {string} [options.version] The version of the store.
+     * @return {Promise<PersistenceStore>} returns a Promise that is resolved to a PersistenceStore
      *                   instance.
      */
     createPersistenceStore: function (name, options) {}

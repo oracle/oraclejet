@@ -110,6 +110,8 @@ function ojOption(context) {
  * @ojstatus preview
  * @ojsignature class ojOption extends JetElement<ojOptionSettableProperties>
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["value", "disabled"]}
+ *
  * @classdesc
  * <h3 id="optionOverview-section">
  *   JET Option

@@ -195,10 +195,10 @@
     .oj-timeline-series-empty-text {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
         color: var(--oj-timeline-series-empty-text-color);
-        font-size: var(--oj-font-size-sm);
+        font-size: var(--oj-dvt-no-data-message-font-size);
       } @else {
         color:$dvtTimelineSeriesEmptyTextColor;
-        font-size:$smallFontSize;
+        font-size:$dvtNoDataMessageFontSize;
       }
       white-space:nowrap;
     }

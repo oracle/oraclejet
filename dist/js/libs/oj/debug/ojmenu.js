@@ -316,6 +316,10 @@ var __oj_menu_metadata =
    * @ojshortdesc A menu displays a list of options in a popup.
    * @ojstatus preview
    *
+   * @ojpropertylayout {propertyGroup: "common", items: ["openOptions.display", "openOptions.initialFocus", "disabled"]}
+   * @ojvbdefaultcolumns 2
+   * @ojvbmincolumns 1
+   *
    * @classdesc
    * <h3 id="menuOverview-section">
    *   JET Menu
@@ -1258,6 +1262,7 @@ var __oj_menu_metadata =
        * @instance
        * @ojcancelable
        * @ojbubbles
+       * @ojeventgroup common
        * @since 4.0.0
        * @example <caption>Find the value of the selected menu item:</caption>
        *   myMenu.addEventListener("ojAction", function( event )

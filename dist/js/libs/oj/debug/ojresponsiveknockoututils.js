@@ -49,7 +49,7 @@ var ResponsiveKnockoutUtils = {};
  * @param {string} queryString media query string, for example '(min-width: 400px)'
  * @return a knockout observable  that
  *              returns true or false based on a media query string.
- * @ojsignature {target: "Type", for: "returns", value: "KnockoutObservable<boolean>"}
+ * @ojsignature {target: "Type", for: "returns", value: "ko.Observable<boolean>"}
  * @export
  * @static
  * @method createMediaQueryObservable
@@ -146,7 +146,7 @@ ResponsiveKnockoutUtils.createMediaQueryObservable = function (queryString) {
  *
  * @return a knockout observable the value of which is one of the
  *  screen range constants, for example oj.ResponsiveUtils.SCREEN_RANGE.MD
- * @ojsignature {target: "Type", for: "returns", value: "KnockoutObservable<string>"}
+ * @ojsignature {target: "Type", for: "returns", value: "ko.Observable<string>"}
  * @export
  * @static
  * @memberof oj.ResponsiveKnockoutUtils

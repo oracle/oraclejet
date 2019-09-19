@@ -1547,6 +1547,7 @@ oj.CollapsibleNavListHandler.prototype.HandleExpandAndCollapseKeys =
  */
 oj.SlidingNavListHandler = function (widget, root, component) {
   oj.SlidingNavListHandler.superclass.constructor.call(this, widget, root, component);
+  // this keeps a stack of expanded items in top to bottom order
   this.m_expanded = [];
 };
 
@@ -1656,35 +1657,7 @@ oj.SlidingNavListHandler.prototype.Expand = function (groupItem, animate, event)
     currentListRoot.removeClass(this.m_widget.SLIDING_NAVLIST_CURRENT_STYLE_CLASS);
     target.addClass(this.m_widget.SLIDING_NAVLIST_CURRENT_STYLE_CLASS);
     nextFocusableItem = sublist.find('.' + this.m_widget.getItemElementStyleClass() + ':eq(0)');
-    var listOfParents = target.parentsUntil(currentListRoot, 'ul');
-    if (currentListRoot.is(this.m_widget.element)) {
-      listOfParents = listOfParents.get().concat(currentListRoot.get());
-    } else {
-      listOfParents = listOfParents.get();
-    }
-
-    var self = this;
-
-    listOfParents = $(listOfParents.reverse());
-    listOfParents.each(function (i, parentList) {
-      var parentLabel;
-      if ($(parentList).is(self.m_widget.element)) {
-        parentLabel = self.m_widget.getRootLabel();
-      } else {
-        parentLabel = self.m_widget.getItemLabel($(parentList).parent());
-      }
-      var itemNode;
-      if (i === listOfParents.length - 1) {
-        itemNode = target;
-      } else {
-        itemNode = $(listOfParents.get(i + 1)).parent();
-      }
-      self._addItemToHviewMenu(self.m_widget.GetKey(itemNode[0]),
-                               self.m_widget.getItemLabel(itemNode),
-                               parentLabel);
-      // this var keeps a stack of expanded items
-      self.m_expanded.push(itemNode);
-    });
+    this._updateHMenuOnExpand(target);
   }
 
   if (animate) {
@@ -1707,6 +1680,31 @@ oj.SlidingNavListHandler.prototype.Expand = function (groupItem, animate, event)
   target.addClass('oj-skipfocus');
 
   return animationPromise;
+};
+
+oj.SlidingNavListHandler.prototype._updateHMenuOnExpand = function (target) {
+  var listOfParents = target.parentsUntil(this.m_widget.element, '.' + this.m_widget.getItemElementStyleClass());
+  listOfParents = listOfParents.get().reverse();// get list of parent nodes from top to bottom order
+  listOfParents = $(listOfParents.concat(target));
+
+  // clear the hierarchical menu items
+  this.m_expanded = [];
+  this._emptyHviewMenu();
+
+  listOfParents.each((function (i, parentItem) {
+    var parentLabel;
+    if (i === 0) {
+      // Use root label for the first item
+      parentLabel = this.m_widget.getRootLabel();
+    } else {
+      parentLabel = this.m_widget.getItemLabel(this.m_expanded[i - 1]);
+    }
+    var itemNode = $(parentItem);
+    this._addItemToHviewMenu(this.m_widget.GetKey(itemNode[0]),
+                             this.m_widget.getItemLabel(itemNode),
+                             parentLabel);
+    this.m_expanded.push(itemNode);
+  }).bind(this));
 };
 
 /**
@@ -1753,9 +1751,25 @@ oj.SlidingNavListHandler.prototype.Collapse = function (target, key, animate, ev
     animationResolve(null);
   }
 
-  this._removeItemFromHviewMenu(key);
+  this._updateHMenuOnCollapse(key);
 
   return animationPromise;
+};
+
+oj.SlidingNavListHandler.prototype._updateHMenuOnCollapse = function (key) {
+  var collapsingItemIndex = -1;
+  this.m_expanded.forEach((function (item, index) {
+    var itemKey = this.m_widget.GetKey(item[0]);
+    if (key === itemKey) {
+      collapsingItemIndex = index;
+    }
+  }).bind(this));
+  // Remove all items under/after the collapsing item
+  if (collapsingItemIndex > -1) {
+    this.m_expanded.splice(collapsingItemIndex);
+  }
+
+  this._removeItemFromHviewMenu(key);
 };
 
 oj.SlidingNavListHandler.prototype.UpdateAriaPropertiesOnSelectedItem = function (elem, highlight) {
@@ -1907,7 +1921,7 @@ oj.SlidingNavListHandler.prototype._buildSlidingNavListHeader = function (opts) 
  */
 oj.SlidingNavListHandler.prototype.CollapseCurrentList = function (event) {
   // pop the expanded item stack
-  var current = this.m_expanded.pop();
+  var current = this.m_expanded[this.m_expanded.length - 1];
   if (current) {
     this.m_widget.CollapseItem(current, event, true, null, true, true);
   }
@@ -1937,7 +1951,7 @@ oj.SlidingNavListHandler.prototype._initializeHierarchicalView = function () {
       self.m_widget.signalTaskStart(); // signal method task start
       // collapse all child lists untill target list is visible
       while (expandedItems.length > 0) {
-        var item = expandedItems.pop(); // remove item from list
+        var item = expandedItems[expandedItems.length - 1]; // remove item from list
         var currentKey = self.m_widget.GetKey(item[0]);
         self.m_widget.CollapseItem($(item), event, true, currentKey, true, true);
         if (self.m_widget.compareValues(targetItemKey, currentKey)) {
@@ -1968,6 +1982,17 @@ oj.SlidingNavListHandler.prototype._initializeHierarchicalView = function () {
     },
     chroming: 'half'
   });
+};
+
+/**
+ * Empty hierarchical menu items.
+ * @private
+ */
+oj.SlidingNavListHandler.prototype._emptyHviewMenu = function () {
+  if (this._hviewMenu) {
+    var menuItems = this._hviewMenu.find('li');
+    menuItems.remove();
+  }
 };
 
 /**
@@ -3995,6 +4020,12 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *               }
    *              ]
    * @ojshortdesc A navigation list allows navigation between different content sections.
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["display", "edge", "drillMode", "overflow", "rootLabel"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["data", "selection"]}
+   * @ojvbdefaultcolumns 2
+   * @ojvbmincolumns 1
+   *
    * @classdesc
    * <h3 id="navlistOverview-section">
    *   JET Navigation List
@@ -4538,6 +4569,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @default null
        * @expose
        * @instance
+       * @ojeventgroup common
        * @memberof oj.ojNavigationList
        * @ojwriteback
        * @example <caption>Initialize the Navigation List with the <code class="prettyprint">selection</code> attribute specified:</caption>
@@ -5759,6 +5791,12 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *               }
    *              ]
    * @ojshortdesc A tab bar allows navigation between different content sections.
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["selection", "edge", "display", "truncation", "overflow"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["data"]}
+   * @ojvbdefaultcolumns 12
+   * @ojvbmincolumns 2
+   *
    * @classdesc
    * <h3 id="navlistOverview-section">
    *   JET Tab Bar
@@ -6133,6 +6171,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojwriteback
    * @expose
    * @instance
+   * @ojeventgroup common
    * @memberof oj.ojTabBar
    * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">selection</code> attribute specified:</caption>
    *  &lt;oj-tab-bar selection='settings'> ... &lt;/oj-tab-bar>

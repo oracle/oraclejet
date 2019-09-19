@@ -211,6 +211,11 @@ var __oj_slider_metadata =
    * @ojshortdesc A slider allows a user to set a value by moving an indicator.
    * @ojstatus preview
    *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "type", "orientation", "min", "max", "step", "disabled"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+   * @ojvbdefaultcolumns 3
+   * @ojvbmincolumns 3
+   *
    * @classdesc
    * <h3 id="sliderOverview-section">
    *   JET Slider Component
@@ -594,6 +599,7 @@ var __oj_slider_metadata =
        * @default 0
        * @since 0.7.0
        * @ojwriteback
+       * @ojeventgroup common
        * @memberof oj.ojSlider
        * @ojshortdesc The numerical value of the slider.
        * @type {?number}

@@ -82,6 +82,7 @@ function JetTemplateEngine() {
    * @param {Object} target an object where the property is defined
    * @param {string} name property name
    * @param {*=} optional initial value
+   * @ignore
    */
   this.defineTrackableProperty = function (target, name, value) {
     _createPropertyBackedByObservable(target, name, value);
@@ -91,6 +92,7 @@ function JetTemplateEngine() {
     * Provides a promise for JET's Knockout throttling timeout
     * @return {Promise} a promise for JET's Knockout throttling timeout completing or a promise that will be resolved immediately for the case
     * when there is no outstanding throttling timeout
+    * @ignore
     */
   this.getThrottlePromise = function () {
     return BindingProviderImpl.getThrottlePromise();

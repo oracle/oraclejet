@@ -297,7 +297,14 @@
       }
     }
 
-    .oj-dvt-no-data-message{
+    .oj-dvt-no-data-message {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-dvt-no-data-message-color);
+        font-size: var(--oj-dvt-no-data-message-font-size);
+      } @else {
+        color: $dvtNoDataMessageColor;
+        font-size: $dvtNoDataMessageFontSize;
+      }
     }
   }
 }

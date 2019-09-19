@@ -23,14 +23,15 @@ function(oj, $, Config, Translations, ojld, LocaleData, __ValidationBase, Logger
  * @constructor
  * @augments oj.Converter
  * @ojsignature {target: "Type",
- *                value: "class NumberConverter implements Converter<number>"}
+ *                value: "abstract class NumberConverter implements Converter<number>"}
  *
  * @name oj.NumberConverter
  * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter", "Validator", "Validation"]}
  * @abstract
  * @since 0.6
  * @see oj.ConverterFactory
- * @see oj.IntlNumberConverter
+ * @see oj.IntlNumberConverter JET's implementation of the NumberConverter
+
  */
 oj.NumberConverter = function () {
   this.Init();
@@ -509,7 +510,7 @@ __ValidationBase.Validation.__registerDefaultValidatorFactory(
  * <li>Using a custom decimal, currency or percent format pattern. specified using the 'pattern' property</li>
  * <li>Using the decimalFormat option to define a compact pattern, such as "1M" and "1 million".</li>
  * <li>Using the currencyFormat option to define a compact pattern, such as "$1M" and "$1 million".</li>
- * <li>Using the roundingMode and roundDuringParse options to round the number HALF_UP, HALF_DOWN, or HALF_EVEN.</li>
+ * <li><li>Using the roundingMode and roundDuringParse options to round the number UP, DOWN, CEILING, FLOOR, HALF_UP, HALF_DOWN or HALF_EVEN.</li>
  * </ul>
  * <p>
  *
@@ -611,6 +612,30 @@ __ValidationBase.Validation.__registerDefaultValidatorFactory(
  * converter = converterFactory.createConverter(options);
  * converter.format(12345);--> 12,345<br/>
  *
+ * @example <caption>decimal round UP:</caption>
+ * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'UP'};
+ * converter = new IntlNumberConverter(options);
+ * converter.format(0.221);--> 0.23
+ * converter.parse(0.221);-->0.221 //doesn't round during parse by default<br/>
+ *
+ * @example <caption>decimal round DOWN:</caption>
+ * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'DOWN'};
+ * converter = new IntlNumberConverter(options);
+ * converter.format(0.229);--> 0.22
+ * converter.parse(0.229);-->0.229 //doesn't round during parse by default<br/>
+ *
+ * @example <caption>decimal round CEILING:</caption>
+ * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'CEILING'};
+ * converter = new IntlNumberConverter(options);
+ * converter.format(0.221);--> 0.23
+ * converter.parse(0.221);-->0.221 //doesn't round during parse by default<br/>
+ *
+ * @example <caption>decimal round FLOOR:</caption>
+ * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'FLOOR'};
+ * converter = new IntlNumberConverter(options);
+ * converter.format(0.229);--> 0.22
+ * converter.parse(0.229);-->0.229 //doesn't round during parse by default<br/>
+ *
  * @example <caption>decimal round HALF_DOWN:</caption>
  * options = { style:’decimal’,  maximumFractionDigits:2, roundingMode:'HALF_DOWN'};
  * converter = converterFactory.createConverter(options);
@@ -630,6 +655,34 @@ __ValidationBase.Validation.__registerDefaultValidatorFactory(
  * converter.format(0.235);--> 0.24
  * converter.parse(0.225);--> 0.225 //doesn't round during parse by default
  * converter.parse(0.235);--> 0.235 //doesn't round during parse by default<br/>
+ *
+ * @example <caption>decimal round UP and roundDuringParse:</caption>
+ * options = { style:'decimal', maximumFractionDigits:2,
+ *             roundingMode:'UP', roundDuringParse: true};
+ * converter = new IntlNumberConverter(options);
+ * converter.format(0.221);--> 0.23
+ * converter.parse(0.221);-->0.23<br/>
+ *
+ * @example <caption>decimal round DOWN and roundDuringParse:</caption>
+ * options = { style:'decimal', maximumFractionDigits:2,
+ *             roundingMode:'DOWN', roundDuringParse: true};
+ * converter = new IntlNumberConverter(options);
+ * converter.format(0.229);--> 0.22
+ * converter.parse(0.229);-->0.22<br/>
+ *
+ * @example <caption>decimal round CEILING and roundDuringParse:</caption>
+ * options = { style:'decimal', maximumFractionDigits:2,
+ *             roundingMode:'CEILING', roundDuringParse: true};
+ * converter = new IntlNumberConverter(options);
+ * converter.format(0.221);--> 0.23
+ * converter.parse(0.221);-->0.23<br/>
+ *
+ * @example <caption>decimal round FLOOR and roundDuringParse:</caption>
+ * options = { style:'decimal', maximumFractionDigits:2,
+ *             roundingMode:'FLOOR', roundDuringParse: true};
+ * converter = new IntlNumberConverter(options);
+ * converter.format(0.229);--> 0.22
+ * converter.parse(0.229);-->0.22<br/>
  *
  * @example <caption>decimal round HALF_DOWN and roundDuringParse:</caption>
  * options = { style:’decimal’, maximumFractionDigits:2,
@@ -801,9 +854,8 @@ oj.IntlNumberConverter = function (options) {
  * convenience of specifying an explicit format mask. Setting a pattern will override the default
  * locale specific format. <br/>
  *
- * @property {('HALF_UP'|'HALF_DOWN'|'HALF_EVEN')=} roundingMode - specifies the rounding behavior.
- * This follows the Java.Math.RoundingMode behavior.
- * Currently we support the options: HALF_UP, HALF_DOWN, and HALF_EVEN
+ * @property {('HALF_UP'|'HALF_DOWN'|'HALF_EVEN'|'UP'|'DOWN'|'CEILING'|'FLOOR')=} roundingMode - specifies the rounding behavior.
+ * This follows the Java.Math.RoundingMode behavior. https://docs.oracle.com/javase/7/docs/api/java/math/RoundingMode.html
  *
  * @property {boolean=} roundDuringParse - Specifies whether or not to round during
  * parse. Defaults to false; the number converter rounds during format but not during parse.
@@ -1164,7 +1216,7 @@ oj.IntlNumberConverter.prototype._getHintValue = function () {
  * <li>Using a custom decimal, currency or percent format pattern. specified using the 'pattern' property</li>
  * <li>Using the decimalFormat option to define a compact pattern, such as "1M" and "1 million".</li>
  * <li>Using the currencyFormat option to define a compact pattern, such as "$1M" and "$1 million".</li>
- * <li>Using the roundingMode and roundDuringParse options to round the number HALF_UP, HALF_DOWN, or HALF_EVEN.</li>
+ * <li>Using the roundingMode and roundDuringParse options to round the number UP, DOWN, CEILING, FLOOR, HALF_UP, HALF_DOWN or HALF_EVEN.</li>
  * </ul>
  * <p>
  *
@@ -1293,8 +1345,9 @@ oj.IntlNumberConverter.prototype._getHintValue = function () {
  * locale specific format. <br/>
  *
  * @property {string=} options.roundingMode - specifies the rounding behavior.
- * This follows the Java.Math.RoundingMode behavior.
- * Currently we support the options: HALF_UP, HALF_DOWN, and HALF_EVEN
+ * We support the options: UP, DOWN, CEILING, FLOOR, HALF_UP, HALF_DOWN and HALF_EVEN.
+ * The rounding modes can be used in conjunction with decimal (including short format), currency and percent styles.
+ * We follow the Java.Math.RoundingMode behavior : https://docs.oracle.com/javase/7/docs/api/java/math/RoundingMode.html
  *
  * @property {boolean=} options.roundDuringParse - Specifies whether or not to round during
  * parse. Defaults to false; the number converter rounds during format but not during parse.
@@ -1321,7 +1374,7 @@ oj.IntlNumberConverter.prototype._getHintValue = function () {
  *
  * @example <caption>Options for percent values using a custom (CLDR) pattern</caption>
  * var options = {pattern: '#,##0%'};
- *converter = converterFactory.createConverter(options);<br/>
+ * converter = converterFactory.createConverter(options);<br/>
  *
  * @example <caption>To parse a value as percent but format it without displaying the percent character</caption>
  * var options = {style: 'percent', pattern: '#,##0'};<br/>
@@ -1377,6 +1430,34 @@ oj.IntlNumberConverter.prototype._getHintValue = function () {
  * var nb = 12345;
  * converter.format(nb, localeElements, options);--> 12,345<br/>
  *
+ * @example <caption>decimal round UP:</caption>
+ * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'UP'};
+ * var nb = 0.221;
+ * converter.format(nb, localeElements, options);--> 0.23
+ * var str = "0.221";
+ * converter.parse(str, localeElements, options);-->0.221 //doesn't round during parse by default<br/>
+ *
+ * @example <caption>decimal round DOWN:</caption>
+ * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'DOWN'};
+ * var nb = 0.229;
+ * converter.format(nb, localeElements, options);--> 0.22
+ * var str = "0.229";
+ * converter.parse(str, localeElements, options);-->0.229 //doesn't round during parse by default<br/>
+ *
+ * @example <caption>decimal round CEILING:</caption>
+ * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'CEILING'};
+ * var nb = 0.221;
+ * converter.format(nb, localeElements, options);--> 0.23
+ * var str = "0.221";
+ * converter.parse(str, localeElements, options);-->0.221 //doesn't round during parse by default<br/>
+ *
+ * @example <caption>decimal round FLOOR:</caption>
+ * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'FLOOR'};
+ * var nb = 0.228;
+ * converter.format(nb, localeElements, options);--> 0.22
+ * var str = "0.228";
+ * converter.parse(str, localeElements, options);-->0.228 //doesn't round during parse by default<br/>
+ *
  * @example <caption>decimal round HALF_DOWN:</caption>
  * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'HALF_DOWN'};
  * var nb = 0.225;
@@ -1397,6 +1478,38 @@ oj.IntlNumberConverter.prototype._getHintValue = function () {
  * converter.format(0.235, localeElements, options);--> 0.24
  * converter.parse("0.225", localeElements, options);--> 0.225 //doesn't round during parse by default
  * converter.parse("0.235", localeElements, options);--> 0.235 //doesn't round during parse by default<br/>
+ *
+ * @example <caption>decimal round UP and roundDuringParse:</caption>
+ * options = { style:'decimal', maximumFractionDigits:2,
+ *             roundingMode:'UP', roundDuringParse: true};
+ * var nb = 0.221;
+ * converter.format(nb, localeElements, options);--> 0.23
+ * var str = "0.221";
+ * converter.parse(str, localeElements, options);-->0.23<br/>
+ *
+ * @example <caption>decimal round DOWN and roundDuringParse:</caption>
+ * options = { style:'decimal', maximumFractionDigits:2,
+ *             roundingMode:'DOWN', roundDuringParse: true};
+ * var nb = 0.229;
+ * converter.format(nb, localeElements, options);--> 0.22
+ * var str = "0.229";
+ * converter.parse(str, localeElements, options);-->0.22<br/>
+ *
+ * @example <caption>decimal round CEILING and roundDuringParse:</caption>
+ * options = { style:'decimal', maximumFractionDigits:2,
+ *             roundingMode:'CEILING', roundDuringParse: true};
+ * var nb = 0.221;
+ * converter.format(nb, localeElements, options);--> 0.23
+ * var str = "0.221";
+ * converter.parse(str, localeElements, options);-->0.23<br/>
+ *
+ * @example <caption>decimal round FLOOR and roundDuringParse:</caption>
+ * options = { style:'decimal', maximumFractionDigits:2,
+ *             roundingMode:'FLOOR', roundDuringParse: true};
+ * var nb = 0.228;
+ * converter.format(nb, localeElements, options);--> 0.22
+ * var str = "0.228";
+ * converter.parse(str, localeElements, options);-->0.22<br/>
  *
  * @example <caption>decimal round HALF_DOWN and roundDuringParse:</caption>
  * options = { style:'decimal', maximumFractionDigits:2,
@@ -1472,7 +1585,11 @@ var OraNumberConverter = (function () {
   // maps roundingMode attributes to Math rounding modes.
   var _roundingModeMap = {
     HALF_UP: 'ceil',
+    CEILING: 'ceil',
+    UP: 'ceil',
     HALF_DOWN: 'floor',
+    FLOOR: 'floor',
+    DOWN: 'floor',
     DEFAULT: 'round'
   };
 
@@ -1751,28 +1868,30 @@ var OraNumberConverter = (function () {
     if (s === 'unit' && c === undefined) {
       _throwMissingUnit('style');
     }
+    s = getOption('roundingMode', 'string',
+            ['UP', 'DOWN', 'FLOOR', 'CEILING', 'HALF_UP', 'HALF_DOWN', 'HALF_EVEN']);
   }
 
   // _toDigitalByte does compact formatting like 300MB, 300Mb
   function _toDigitalByte(number, options, numberSettings, localeElements) {
     var scale;
     var count;
-
-    if (number >= _DIGITAL_TERA) {
+    var absVal = Math.abs(number);
+    if (absVal >= _DIGITAL_TERA) {
       scale = 'digital-tera';
-      count = number / _DIGITAL_TERA;
-    } else if (number >= _DIGITAL_GIGA) {
+      count = absVal / _DIGITAL_TERA;
+    } else if (absVal >= _DIGITAL_GIGA) {
       scale = 'digital-giga';
-      count = number / _DIGITAL_GIGA;
-    } else if (number >= _DIGITAL_MEGA) {
+      count = absVal / _DIGITAL_GIGA;
+    } else if (absVal >= _DIGITAL_MEGA) {
       scale = 'digital-mega';
-      count = number / _DIGITAL_MEGA;
-    } else if (number >= _DIGITAL_KILO) {
+      count = absVal / _DIGITAL_MEGA;
+    } else if (absVal >= _DIGITAL_KILO) {
       scale = 'digital-kilo';
-      count = number / _DIGITAL_KILO;
+      count = absVal / _DIGITAL_KILO;
     } else {
       scale = 'digital-';
-      count = number;
+      count = absVal;
     }
     // Find the corresponding entry in resource budle under units section
     // scale -> 'digital-kilo-bit' or 'digital-kilo-byte'
@@ -1783,6 +1902,9 @@ var OraNumberConverter = (function () {
     // plural -> 'unitPattern-count-one' or 'unitPattern-count-many'
     plural = 'unitPattern-count-' + plural;
     // format the number
+    if (number < 0) {
+      count = -count;
+    }
     var fmt = _toRawFixed(count, options, numberSettings);
     // format the number based on plural rule: "{0} Gb", etc..
     var entry = localeElements.units.narrow[scale][plural];
@@ -1838,8 +1960,8 @@ var OraNumberConverter = (function () {
       }
       return [n, null];
     }
-
-    var typeVal = _matchTypeValue(number);
+    var absVal = Math.abs(number);
+    var typeVal = _matchTypeValue(absVal);
     var prefix = '';
     var decimalFormatType;
     var tokens;
@@ -1847,7 +1969,7 @@ var OraNumberConverter = (function () {
     if (typeVal[1] !== null) {
       var lang = numberSettings.lang;
       var plural =
-          numberSettings.plurals[lang](Math.floor(number / _decimalTypeValuesMap[typeVal[0]]));
+          numberSettings.plurals[lang](Math.floor(absVal / _decimalTypeValuesMap[typeVal[0]]));
       decimalFormatType = '' + typeVal[1] + '-count-' + plural;
       decimalFormatType = numberSettings.shortDecimalFormat[decimalFormatType];
       if (decimalFormatType === undefined) {
@@ -1862,7 +1984,7 @@ var OraNumberConverter = (function () {
         var i = (1 * Math.pow(10, zeros));
         i = (typeVal[1] / i) * 10;
         // eslint-disable-next-line no-param-reassign
-        number /= i;
+        absVal /= i;
       }
     }
     var s = '';
@@ -1870,7 +1992,10 @@ var OraNumberConverter = (function () {
     if (decimalFormatType !== undefined) {
       s = decimalFormatType.substr(zeros + tokens[0].length);
     }
-    fmt = _toRawFixed(number, options, numberSettings);
+    if (number < 0) {
+      absVal = -absVal;
+    }
+    fmt = _toRawFixed(absVal, options, numberSettings);
     var regExp = /'\.'/g;
     s = s.replace(regExp, '.');
     s = prefix + fmt + s;
@@ -1947,7 +2072,7 @@ var OraNumberConverter = (function () {
       number = _roundNumber(number, precision, mode);
     }
     // split the number into integer, fraction and exponent parts.
-    numberString = number + '';
+    numberString = Math.abs(number) + '';
     split = numberString.split(/e/i);
     exponent = split.length > 1 ? parseInt(split[1], 10) : 0;
     numberString = split[0];
@@ -2009,39 +2134,51 @@ var OraNumberConverter = (function () {
     return rets;
   }
 
-  // HALF_DOWN behaves as HALF_UP if the discarded fraction is > 0.5
-  function _adjustRoundingMode(value, maxDigits, mode) {
-    if (mode === 'HALF_DOWN' || mode === 'HALF_EVEN') {
-      var n = value.substr(maxDigits);
-      n = parseInt(n, 10);
-      if (n > 5) {
-        // eslint-disable-next-line no-param-reassign
-        mode = 'HALF_UP';
-      }
-    }
-    return mode;
-  }
 
+  /* rounds the number based on the following rules:
+   * CEILING: Rounding mode to round towards positive infinity.
+   * DOWN: Rounding mode to round towards zero.
+   * FLOOR: Rounding mode to round towards negative infinity.
+   * HALF_DOWN: Rounding mode to round towards "nearest neighbor" unless both neighbors are equidistant, in which case round down.
+   * HALF_EVEN: Rounding mode to round towards the "nearest neighbor" unless both neighbors are equidistant, in which case, round towards the even neighbor.
+   * HALF_UP: Rounding mode to round towards "nearest neighbor" unless both neighbors are equidistant, in which case round up.
+   * UP: Rounding mode to round away from zero.
+   */
   function _roundNumber(value, scale, mode) {
+    var rounded;
+    var adjustedMode = mode;
     var parts = value.toString().split('.');
     if (parts[1] === undefined) {
-      return value;
+      return Math.abs(value);
     }
-    if (parts[1][scale] === '5' && mode !== 'DEFAULT') {
-      var adjustedMode = _adjustRoundingMode(parts[1], scale, mode);
-      adjustedMode = _getRoundingMode(parts, adjustedMode, scale);
-      return _decimalAdjust(value, -scale, adjustedMode, parts);
+    if (mode !== 'DEFAULT') {
+      // HALF_DOWN behaves as HALF_UP if the discarded fraction is > 0.5
+      if (mode === 'HALF_UP' || mode === 'HALF_EVEN' || mode === 'HALF_DOWN') {
+        if (parts[1][scale] === '5') {
+          var n = parts[1].substr(scale);
+          n = parseInt(n, 10);
+          if (n > 5) {
+            adjustedMode = 'HALF_UP';
+          }
+        } else {
+          adjustedMode = 'DEFAULT';
+        }
+        // eslint-disable-next-line no-param-reassign
+        value = Math.abs(value);
+      }
+      adjustedMode = _getRoundingMode(parts, adjustedMode, scale, value);
+      rounded = _decimalAdjust(value, -scale, adjustedMode);
+    } else {
+      var factor = Math.pow(10, scale);
+      rounded = Math.round(value * factor) / factor;
+      if (!isFinite(rounded)) {
+        return value;
+      }
     }
-
-    var factor = Math.pow(10, scale);
-    var rounded = Math.round(value * factor) / factor;
-    if (!isFinite(rounded)) {
-      return value;
-    }
-    return rounded;
+    return Math.abs(rounded);
   }
 
-  function _getRoundingMode(parts, rMode, scale) {
+  function _getRoundingMode(parts, rMode, scale, value) {
     var mode = _roundingModeMap[rMode];
     if (rMode === 'HALF_EVEN') {
       var c;
@@ -2056,6 +2193,10 @@ var OraNumberConverter = (function () {
       } else {
         mode = _roundingModeMap.HALF_UP;
       }
+    } else if (rMode === 'UP' && value < 0) {
+      mode = _roundingModeMap.DOWN;
+    } else if (rMode === 'DOWN' && value < 0) {
+      mode = _roundingModeMap.UP;
     }
     return mode;
   }
@@ -2066,14 +2207,10 @@ var OraNumberConverter = (function () {
    * value is the number to be rounded.
    * scale is the maximumFractionDigits.
    * mode is the rounding mode: ceil, floor, round.
-   * parts is the integer and fraction parts of the value.
    */
-  function _decimalAdjust(value, scale, mode, parts) {
+  function _decimalAdjust(value, scale, mode) {
     if (scale === 0) {
-      if (parts[1][0] === '5') {
-        return Math[mode](value);
-      }
-      return Math.round(value);
+      return Math[mode](value);
     }
     var strValue = value.toString().split('e');
     var v0 = strValue[0];
@@ -2084,7 +2221,7 @@ var OraNumberConverter = (function () {
     var num = parseFloat(s);
     var _value = Math[mode](num);
     strValue = _value.toString().split('e');
-    // need to extract v0 and v1 again because value has chnaged after applying Math[mode].
+    // need to extract v0 and v1 again because value has changed after applying Math[mode].
     v0 = strValue[0];
     v1 = strValue[1];
     // shift the decimal point back to its original position
@@ -2097,7 +2234,8 @@ var OraNumberConverter = (function () {
   // number using native digits based on the numbering system
   function _formatNumberImpl(value, options, localeElements,
     numberSettings, locale) {
-    var localeElementsMainNode = oj.OraI18nUtils.getLocaleElementsMainNode(localeElements);
+    var localeElementsMainNode =
+    oj.OraI18nUtils.getLocaleElementsMainNode(localeElements);
     if (!isFinite(value)) {
       if (value === Infinity) {
         return localeElementsMainNode.numbers[numberSettings.numberingSystem].infinity;
@@ -2110,7 +2248,7 @@ var OraNumberConverter = (function () {
       // an error based on it.
       return 'NaN';
     }
-    var number = Math.abs(value);
+    var number = value;
     if (numberSettings.isPercent === true ||
         numberSettings.style === 'percent') {
       number *= 100;
@@ -2154,7 +2292,8 @@ var OraNumberConverter = (function () {
       var nativeRet = [];
       for (idx = 0; idx < ret.length; idx++) {
         if (ret[idx] >= '0' && ret[idx] <= '9') {
-          nativeRet.push(oj.OraI18nUtils.numeringSystems[numberingSystemKey][ret[idx]]);
+          nativeRet.push(
+            oj.OraI18nUtils.numeringSystems[numberingSystemKey][ret[idx]]);
         } else {
           nativeRet.push(ret[idx]);
         }
@@ -2175,10 +2314,14 @@ var OraNumberConverter = (function () {
     var posSign = localeElements.numbers[numberSettings.numberingSystem].plusSign;
     var posSignRegExp = new RegExp('^' + posSign.replace(_ESCAPE_REGEXP, '\\$1'));
     num = num.replace(posSignRegExp, '');
-    var nbSettingPosPrefix = oj.OraI18nUtils.trimNumber(numberSettings.positivePrefix);
-    var nbSettingPosSuffix = oj.OraI18nUtils.trimNumber(numberSettings.positiveSuffix);
-    var nbSettingNegPrefix = oj.OraI18nUtils.trimNumber(numberSettings.negativePrefix);
-    var nbSettingNegSuffix = oj.OraI18nUtils.trimNumber(numberSettings.negativeSuffix);
+    var nbSettingPosPrefix =
+    oj.OraI18nUtils.trimNumber(numberSettings.positivePrefix);
+    var nbSettingPosSuffix =
+    oj.OraI18nUtils.trimNumber(numberSettings.positiveSuffix);
+    var nbSettingNegPrefix =
+    oj.OraI18nUtils.trimNumber(numberSettings.negativePrefix);
+    var nbSettingNegSuffix =
+    oj.OraI18nUtils.trimNumber(numberSettings.negativeSuffix);
     // try exact match of negative prefix and suffix
     var posPrefRegexp = new RegExp('^' + (nbSettingPosPrefix || '')
                                    .replace(_ESCAPE_REGEXP, '\\$1'));
@@ -2311,7 +2454,8 @@ var OraNumberConverter = (function () {
     pos = oj.OraI18nUtils.trimNumber(pos);
     if (oj.OraI18nUtils.startsWith(value, neg)) {
       ret = ['-', value.substr(neg.length)];
-    } else if (oj.OraI18nUtils.startsWith(value, oj.OraI18nUtils.trimNumber(pos))) {
+    } else if (oj.OraI18nUtils.startsWith(value,
+      oj.OraI18nUtils.trimNumber(pos))) {
       ret = ['+', value.substr(pos.length)];
     }
     return ret || ['', value];
@@ -2325,7 +2469,8 @@ var OraNumberConverter = (function () {
     var idx;
     var latnStr = [];
     for (idx = 0; idx < str.length; idx++) {
-      var pos = oj.OraI18nUtils.numeringSystems[numberingSystemKey].indexOf(str[idx]);
+      var pos =
+      oj.OraI18nUtils.numeringSystems[numberingSystemKey].indexOf(str[idx]);
       if (pos !== -1) {
         latnStr.push(pos);
       } else {
@@ -2427,7 +2572,8 @@ var OraNumberConverter = (function () {
   }
 
   function _parseNumberImpl(str, localeElements, options, locale) {
-    var localeElementsMainNode = oj.OraI18nUtils.getLocaleElementsMainNode(localeElements);
+    var localeElementsMainNode =
+    oj.OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var numberSettings = {};
     var numStr = _getLatnDigits(str, locale);
     _getNumberSettings(localeElements, numberSettings, options, locale);
@@ -2894,7 +3040,7 @@ var OraNumberConverter = (function () {
     var precision = numberSettings.maximumFractionDigits;
     var isNegative = ret < 0;
     var mode = options.roundingMode || 'DEFAULT';
-    var roundedNumber = _roundNumber(Math.abs(ret), precision, mode);
+    var roundedNumber = _roundNumber(ret, precision, mode);
     return isNegative ? -roundedNumber : roundedNumber;
   }
 
@@ -2903,7 +3049,8 @@ var OraNumberConverter = (function () {
     _validateNumberOptions(options, 'OraNumberConverter.resolvedOptions');
     _getNumberSettings(localeElements, numberSettings, options, locale);
     numberSettings.numberingSystemKey = _getNumberingExtension(locale);
-    if (oj.OraI18nUtils.numeringSystems[numberSettings.numberingSystemKey] === undefined) {
+    if (oj.OraI18nUtils.numeringSystems[numberSettings.numberingSystemKey] ===
+      undefined) {
       numberSettings.numberingSystemKey = 'latn';
     }
     return numberSettings;
@@ -3084,7 +3231,7 @@ var OraNumberConverter = (function () {
     return {
       /**
        * Format a number.
-       * @memberOf OraNumberConverter
+       * @memberof OraNumberConverter
        * @param {number} value - Number object to be formatted.
        * @param {Object} localeElements - the instance of LocaleElements
        * bundle
@@ -3153,7 +3300,7 @@ var OraNumberConverter = (function () {
       },
       /**
        * Parse a number.
-       * @memberOf OraNumberConverter
+       * @memberof OraNumberConverter
        * @param {string|number} str - string to be parsed.
        * @param {Object} localeElements - the instance of LocaleElements
        * bundle
@@ -3215,7 +3362,7 @@ var OraNumberConverter = (function () {
        * options computed based on the options parameter.
        * If options is not provided, the properties will be derived from the
        * locale defaults.
-       * @memberOf OraNumberConverter
+       * @memberof OraNumberConverter
        * @param {Object} localeElements - the instance of LocaleElements
        * bundle
        * @param {Object=} options containing the following properties:<br>
@@ -3291,7 +3438,7 @@ var OraNumberConverter = (function () {
     /**
      * getInstance.
      * Returns the singleton instance of OraNumberConverter class.
-     * @memberOf OraNumberConverter
+     * @memberof OraNumberConverter
      * @return {Object} The singleton OraNumberConverter instance.
      */
     getInstance: function () {

@@ -293,6 +293,10 @@ var __oj_dialog_metadata =
    * @ojshortdesc A dialog displays a popup window that provides information and gathers input from the application user.
    * @ojstatus preview
    *
+   * @ojpropertylayout {propertyGroup: "common", items: ["dialogTitle", "initialVisibility", "style", "modality", "dragAffordance", "cancelBehavior", "resizeBehavior"]}
+   * @ojvbdefaultcolumns 12
+   * @ojvbmincolumns 12
+   *
    * @classdesc
    * <h3 id="dialogOverview-section">
    *   JET Dialog Component

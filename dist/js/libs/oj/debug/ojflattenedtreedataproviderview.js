@@ -1067,62 +1067,9 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
  *               value: "():{ subscribe( subscriber : ((expanded: {value: KeySet<K>, completionPromise: Promise<any>}) => void) ): {unsubscribe(): void, closed(): boolean}}"}
  */
 
- /**
- * Return an empty Set which is optimized to store keys
- * <p>
- * Optionally provided by certain DataProvider implementations for storing
- * keys from the DataProvider in a performant fashion. Sometimes components will
- * need to temporarily store a Set of keys provided by the DataProvider, for
- * example, in the case of maintaining a Set of selected keys. Only the DataProvider
- * is aware of the internal structure of keys such as whether they are primitives, Strings,
- * or objects and how to do identity comparisons. Therefore, the DataProvider can optionally
- * provide a Set implementation which can performantly store keys surfaced by the
- * DataProvider.
- * </p>
- *
- * @ojstatus preview
- * @param {Set.<any>=} Optionally specify an initial set of keys for the Set. If not specified, then return an empty Set.
- * @return {Set.<any>} Returns a Set optimized for handling keys from the DataProvider.
- * @export
- * @expose
- * @memberof oj.DataProvider
- * @instance
- * @method
- * @name createOptimizedKeySet
- * @ojsignature {target: "Type",
- *               value: "?(initialSet?: Set<K>): Set<K>"}
- * @example <caption>create empty key Set</caption>
- * var keySet = dataprovider.createOptimizedKeySet();
- */
 
 /**
- * Return an empty Map which is optimized to store key value pairs
- * <p>
- * Optionally provided by certain DataProvider implementations for storing
- * key/value pairs from the DataProvider in a performant fashion. Sometimes components will
- * need to temporarily store a Map of keys provided by the DataProvider, for
- * example, in the case of maintaining a Map of selected keys. Only the DataProvider
- * is aware of the internal structure of keys such as whether they are primitives, Strings,
- * or objects and how to do identity comparisons. Therefore, the DataProvider can optionally
- * provide a Map implementation which can performantly store key/value pairs surfaced by the
- * DataProvider.
- * </p>
- *
- * @ojstatus preview
- * @param {Map.<any>=} Optionally specify an initial map of key/values for the Map. If not specified, then return an empty Map.
- * @return {Map.<any>} Returns a Map optimized for handling keys from the DataProvider.
- * @export
- * @expose
- * @memberof oj.DataProvider
- * @instance
- * @method
- * @name createOptimizedKeyMap
- * @ojsignature {target: "Type",
- *               value: "?(initialMap?: Map<K, D>): Map<K, D>"}
- * @example <caption>create empty key Map</caption>
- * var keyMap = dataprovider.createOptimizedKeyMap();
- */
-/**
+
  * End of jsdoc
  */
 

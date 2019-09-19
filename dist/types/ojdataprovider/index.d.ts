@@ -46,8 +46,6 @@ export interface DataMapping<K, D, Kin, Din> {
 export interface DataProvider<K, D> extends EventTarget {
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;
-    createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;
-    createOptimizedKeySet?(initialSet?: Set<K>): Set<K>;
     createOptimizedKeySet?(initialSet?: Set<K>): Set<K>;
     fetchByKeys(parameters: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>;
     fetchByOffset(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>;
@@ -115,7 +113,7 @@ export interface FetchCapability {
 export interface FetchListParameters<D> {
     attributes?: Array<string | FetchAttribute>;
     filterCriterion?: AttributeFilter<D> | CompoundFilter<D> | FilterOperator<D>;
-    size: number;
+    size?: number;
     sortCriteria?: Array<SortCriterion<D>>;
 }
 export interface FetchListResult<K, D> {

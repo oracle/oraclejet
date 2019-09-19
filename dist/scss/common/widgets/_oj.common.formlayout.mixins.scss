@@ -149,7 +149,8 @@
   // nowrap label support
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .#{$selectorPrefix}-label-nowrap,
   .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
-  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
+  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -580,8 +581,12 @@
     //
     // See the form layout demo titled "inline responsive across" 
     // before checking in any changes to where the margin is placed.
-    .oj-form > .oj-flex > .oj-flex-item:nth-child(even),
-    .oj-form > .oj-flex > .oj-flex-item:last-child {
+    // 
+    // For the nested form layout case, the padding is coming from the form layout and is not
+    // possible to remove due to column direction case, so we don't want the margin applied here
+    // for that case.
+    .oj-form > .oj-flex > .oj-flex-item:not(.oj-formlayout-nested-formlayout):nth-child(even),
+    .oj-form > .oj-flex > .oj-flex-item:not(.oj-formlayout-nested-formlayout):last-child {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
         margin: 0 0 calc(var(--oj-form-layout-margin-bottom) - var(--oj-wrappable-margin-bottom)) 0;
       }
@@ -621,6 +626,11 @@
           border-color: $formLayoutBorderColor;
           border-style: solid;
           border-width: 1px 0 0;
+        }
+
+        // we really don't want nested form layouts to have a border as it looks funky
+        .oj-flex-item.oj-formlayout-nested-formlayout > .oj-form-layout {
+          border-width: 0;
         }
 
         .oj-form-layout-inset {
@@ -664,6 +674,11 @@
           border-color: $formLayoutDividerColor;
           border-width: 0 0 1px 0;
           padding: $formLayoutMarginBottom 0 0;
+        }
+
+        // for nested form-layout, we don't want the margin onthe first .oj-flex
+        .oj-flex-item.oj-formlayout-nested-formlayout > .oj-form-layout > .oj-form > .oj-flex {
+          padding: 0;
         }
 
         // Ideally when you have multiple columns there wouldn't be 

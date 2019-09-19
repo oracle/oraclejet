@@ -1513,7 +1513,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
      * @name oj.Router#moduleConfig
      * @type {Object}
      * @readonly
-     * @property {KnockoutObservable<string>} name
+     * @property {ko.Observable<string>} name
      * @property {Object} params
      * @property {Object} params.ojRouter
      * @property {oj.Router} params.ojRouter.parentRouter
@@ -1591,7 +1591,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
 
     /**
      * @typedef {object} oj.Router.ModuleConfigType
-     * @property {KnockoutObservable<string>} name The value of the current state.  See {@link oj.Router#currentValue}
+     * @property {ko.Observable<string>} name The value of the current state.  See {@link oj.Router#currentValue}
      * @property {Object} params
      * @property {Object} params.ojRouter
      * @property {oj.Router} params.ojRouter.parentRouter A reference to the current router
@@ -1638,7 +1638,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
      * @since 4.2.0
      * @readonly
      * @ojstatus preview
-     * @ojsignature {target: "Type", value: "KnockoutObservable<oj.Router.ModuleConfigType>", jsdocOverride: true}
+     * @ojsignature {target: "Type", value: "ko.Observable<oj.Router.ModuleConfigType>", jsdocOverride: true}
      */
     this._getObservableModuleConfig = function () {
       if (!this._observableModuleConfig) {
@@ -2049,6 +2049,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
       this._stateFromIdCallback = option;
     } else {
       this._states = [];
+      this._stateFromIdCallback = undefined;
 
       Object.keys(option).forEach(function (key) {
         var rsOptions = option[key];

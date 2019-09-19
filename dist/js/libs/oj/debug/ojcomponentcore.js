@@ -6813,7 +6813,7 @@ oj.DomUtils.isLogicalAncestorOrSelf = function (ancestorNode, node) {
 /**
  * Checks whether the href represents a safe URL
  * @param {!string} href - HREF to test
- * @param {Array=} whitelist - optional list of the allowed protocols. Protocol name has to use lowercase latters and
+ * @param {Array=} whitelist - optional list of the allowed protocols. Protocol name has to use lowercase letters and
  * be followed by a ':'. If the parameter is ommitted, ['http:', 'https:'] will be used
  * @throws {Exception} an error if the HREF represents an invalid URL
  * @ignore
@@ -6828,8 +6828,10 @@ oj.DomUtils.validateURL = function (href, whitelist) {
   if (protocol != null) {
     protocol = protocol.toLowerCase();
   }
-
-  if (allowed.indexOf(protocol) < 0) {
+  // if it isn't on the allowed list and it isn't '', throw an error.
+  // IE11 returns '' for hrefs like 'abc', other browsers return 'https'
+  // and we want to allow hrefs like 'abc' since those are relative urls.
+  if ((allowed.indexOf(protocol) < 0) && (protocol !== '')) {
     throw new Error(protocol + ' is not a valid URL protocol');
   }
 };

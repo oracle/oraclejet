@@ -1004,7 +1004,6 @@ oj.Object.createSubclass(TemplateHandler, oj.Object, 'TemplateHandler');
  */
 TemplateHandler.prototype._init = function () {
   this._templateEnginePromise = null;
-  this.getTemplateEngine();
   this._templates = this.getTemplates();
   this._templateResults = {};
   this._templateNodeData = {};

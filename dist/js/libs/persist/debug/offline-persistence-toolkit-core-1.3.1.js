@@ -1067,6 +1067,7 @@ define('persist/impl/PersistenceXMLHttpRequest',['../persistenceUtils', './logge
    Duplicates the behavior of native XMLHttpRequest's send function
    */
   PersistenceXMLHttpRequest.prototype.send = function (data) {
+    var self = this;
     logger.log('Offline Persistence Toolkit PersistenceXMLHttpRequest: send()');
     if (this._passthroughXHR) {
       if (this.responseType != null) {
@@ -1080,11 +1081,15 @@ define('persist/impl/PersistenceXMLHttpRequest',['../persistenceUtils', './logge
       var requestInit = _getRequestInit(this, data);
       var request = new Request(this._url, requestInit);
       var self = this;
-      fetch(request).then(function (response) {
-        _processResponse(self, request, response);
-      }, function (error) {
-        logger.error(error);
-      });
+      try {
+        fetch(request).then(function (response) {
+          _processResponse(self, request, response);
+        }, function (error) {
+          self.dispatchEvent(new PersistenceXMLHttpRequestEvent('error', false, false, self));
+        });
+      } catch (err) {
+        throw err;
+      }
       this.dispatchEvent(new PersistenceXMLHttpRequestEvent('loadstart', false, false, this));
     }
   };
@@ -1745,7 +1750,7 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
       dataField.requestData = requestJSONData;
       // cache the body-less response if shredder/unshreder is configured
       // for this request. cache the full response otherwise.
-      var excludeBody = self._excludeBody(request);
+      var excludeBody = self.hasShredder(request);
       return persistenceUtils.responseToJSON(response, {excludeBody: excludeBody});
     }).then(function (responseJSONData) {
       dataField.responseData = responseJSONData;
@@ -2051,7 +2056,7 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
     delete this._endpointToOptionsMap[endpointKey];
   };
 
-  DefaultCacheHandler.prototype._excludeBody = function (request) {
+  DefaultCacheHandler.prototype.hasShredder = function (request) {
      return (this._getShredder(request) !== null);
   };
 
@@ -2151,6 +2156,41 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
     });
   };
 
+  /**
+   * Utility method that deletes the shredded data identified by
+   * the body-less resonse.
+   * @method
+   * @name deleteShreddedData
+   * @memberof! DefaultCacheHandler
+   * @instance
+   * @param {bodyAbstract} request The body abstract from the cached body-less
+   *                               response.
+   * @return {Promise} returns a Promise that resolve when all the shredded 
+   *                   data is deleted.
+   */
+  DefaultCacheHandler.prototype.deleteShreddedData = function (bodyAbstract) {
+    var promises = [];
+    bodyAbstract.forEach(function(item) {
+      var storeName = item.name;
+      var keys = item.keys;
+      if (storeName && keys && keys.length) {
+        var storeDeletionTask = persistenceStoreManager.openStore(storeName).then(function(store) {
+          var transformedKeys = keys.map(function (keyValue) {
+            return {key: {$eq: keyValue}};
+          });
+          var findExpression = {
+            selector: {
+              $or: transformedKeys
+            }
+          };
+          return store.delete(findExpression);
+        });
+        promises.push(storeDeletionTask);
+      }
+    });
+    return Promise.all(promises);
+  };
+  
   var escapeRegExp = function(str) {
     return String(str).replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
   };
@@ -3138,22 +3178,58 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
     }
     var self = this;
 
-    return self.keys(request, options).then(function (keysArray) {
+    if (cacheHandler.hasShredder(request)) {
+      // shredder is configured for this request, needs to delete both 
+      // the cache entries and the shredded data entries.
+      var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
+      searchCriteria.fields = ['key', 'value'];
+      var ignoreVary = (options && options.ignoreVary);
+
+      var cacheStore;
       return self._getStore().then(function(store) {
-        if (keysArray && keysArray.length) {
-          var promisesArray = keysArray.map(store.removeByKey, store);
-          return Promise.all(promisesArray);
+        cacheStore = store;
+        return cacheStore.find(searchCriteria);
+      }).then(function (dataArray) {
+        if (dataArray && dataArray.length) {
+          var filteredEntries = dataArray.filter(_filterByVary(ignoreVary, request, 'value'));
+          var promises = [];
+          filteredEntries.forEach(function(entry) {
+            promises.push(cacheStore.removeByKey(entry.key));
+            if (entry.value.responseData.bodyAbstract && entry.value.responseData.bodyAbstract.length) {
+              promises.push(cacheHandler.deleteShreddedData(JSON.parse(entry.value.responseData.bodyAbstract)));
+            }
+          });
+          return Promise.all(promises).then(function() {
+            logger.log("Offline Persistence Toolkit OfflineCache: all matching entries are deleted from both the cache store and the shredded store.");
+            return true;
+          }).catch(function(error) {
+            logger.log("Offline Persistence Toolkit OfflineCache: error occurred when deleting matched cache entries.");
+            return false;
+          });
+        } else {
+          logger.log("Offline Persistence Toolkit OfflineCache: no matching entries are found from the cache.");
+          return false;
+        }
+      });
+    } else {
+      // no shredder, deleting cache entries is sufficient.
+      return self.keys(request, options).then(function (keysArray) {
+        return self._getStore().then(function(store) {
+          if (keysArray && keysArray.length) {
+            var promisesArray = keysArray.map(store.removeByKey, store);
+            return Promise.all(promisesArray);
+          } else {
+            return false;
+          }
+        });
+      }).then(function (result) {
+        if (result && result.length) {
+          return true;
         } else {
           return false;
         }
       });
-    }).then(function (result) {
-      if (result && result.length) {
-        return true;
-      } else {
-        return false;
-      }
-    });
+    }
   };
 
   /**

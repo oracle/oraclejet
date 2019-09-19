@@ -54,6 +54,10 @@ var __oj_label_value_metadata =
  * @ojstatus preview
  * @ojsignature {target: "Type", value:"class ojLabelValue extends JetElement<ojLabelValueSettableProperties>"}
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["labelEdge", "labelWidth", "colspan"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="optionOverview-section">
  *   JET LabelValue

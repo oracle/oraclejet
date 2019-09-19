@@ -118,6 +118,10 @@ var __oj_file_picker_metadata =
  * @class oj.ojFilePicker
  * @ojsignature {target: "Type", value:"class ojFilePicker extends JetElement<ojFilePickerSettableProperties>"}
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["accept", "selectOn", "selectionMode"]}
+ * @ojvbdefaultcolumns 6
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="filePickerOverview-section">
  *   JET FilePicker

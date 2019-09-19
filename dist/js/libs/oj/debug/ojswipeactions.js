@@ -70,6 +70,10 @@ var __oj_swipe_actions_metadata =
  * @ojstatus preview
  *
  * @ojshortdesc A swipe actions component adds swipe-to-reveal functionality to elements such as items in ListView.
+ *
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 12
+ *
  * @classdesc
  * <h3 id="swipeActionsOverview-section">
  *   JET SwipeActions Component

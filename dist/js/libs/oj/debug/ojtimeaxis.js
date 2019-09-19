@@ -165,6 +165,10 @@ var __oj_time_axis_metadata =
  * @ojrole application
  * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter"]}
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["start", "end", "scale", "style"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 6
+ *
  * @classdesc
  * <h3 id="TimeAxisOverview-section">
  *   JET Time Axis

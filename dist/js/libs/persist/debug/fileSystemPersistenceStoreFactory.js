@@ -15,6 +15,7 @@ define(["./impl/fileSystemPersistenceStore"], function (FileSystemPersistenceSto
    *            saved as a directory and each entry in that store will be a file
    *            in the directory. Please configure the location where the directories
    *            will be stored in the cordova-file-plugin.
+   * @hideconstructor
    */
   var FileSystemPersistenceStoreFactory = (function () {
 
@@ -24,7 +25,10 @@ define(["./impl/fileSystemPersistenceStore"], function (FileSystemPersistenceSto
      * @memberof! FileSystemPersistenceStoreFactory
      * @export
      * @instance
-     * @return {Promise} returns a Promise that is resolved to a filesystem
+     * @param {string} name The name to be associated with the store.
+     * @param {object} [options] The configratuion options to be applied to the store.
+     * @param {string} [options.version] The version of the store.
+     * @return {Promise<FileSystemPersistenceStore>} returns a Promise that is resolved to a filesystem
      * backed PersistenceStore instance.
      */
     

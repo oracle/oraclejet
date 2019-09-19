@@ -11,6 +11,7 @@ define(["./impl/arrayPersistenceStore"], function (ArrayPersistenceStore) {
    * @class ArrayPersistenceStoreFactory
    * @classdesc PersistenceStoreFactory that creates an in-memory array backed 
    *            PersisteneStore instance.
+   * @hideconstructor
    */
 
   var ArrayPersistenceStoreFactory = (function () {
@@ -21,7 +22,10 @@ define(["./impl/arrayPersistenceStore"], function (ArrayPersistenceStore) {
      * @memberof! ArrayPersistenceStoreFactory
      * @export
      * @instance
-     * @return {Promise} returns a Promise that is resolved to an array
+     * @param {string} name The name to be associated with the store.
+     * @param {object} [options] The configratuion options to be applied to the store.
+     * @param {string} [options.version] The version of the store.
+     * @return {Promise<ArrayPersistenceStore>} returns a Promise that is resolved to an array
      * backed PersistenceStore instance.
      */
 

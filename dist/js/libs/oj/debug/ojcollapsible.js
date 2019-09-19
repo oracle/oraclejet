@@ -72,6 +72,10 @@ var __oj_collapsible_metadata =
  * @class oj.ojCollapsible
  * @ojshortdesc A collapsible displays a header that can be expanded to show its content.
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["expandArea", "expanded", "disabled"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="collapsibleOverview-section">
  *   JET Collapsible
@@ -140,6 +144,7 @@ var __oj_collapsible_metadata =
        * @type {boolean}
        * @default false
        * @ojwriteback
+       * @ojeventgroup common
        *
        * @example <caption>Initialize the collapsible with the <code class="prettyprint">expanded</code> attribute specified:</caption>
        * &lt;oj-collapsible expanded='true'>&lt;/oj-collapsible>

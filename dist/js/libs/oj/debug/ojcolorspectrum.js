@@ -247,8 +247,13 @@ var __oj_color_spectrum_metadata =
    * @class oj.ojColorSpectrum
    * @ojtsimport {module: "ojcolor", type: "AMD", importName: "Color"}
    * @ojshortdesc A color spectrum allows a custom color value to be specified from a display containing a saturation/luminosity spectrum, plus hue and opacity sliders.
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "disabled"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+   * @ojvbdefaultcolumns 4
+   * @ojvbmincolumns 4
+   *
    * @classdesc
-
    * <h3 id="colorSpectrumOverview-section">
    *   JET Color Spectrum
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#colorSpectrumOverview-section"></a>
@@ -324,6 +329,7 @@ var __oj_color_spectrum_metadata =
          * @ojwriteback
          * @expose
          * @instance
+         * @ojeventgroup common
          * @memberof oj.ojColorSpectrum
          * @ojshortdesc Specifies the value of the element representing the current color.
          * @example <caption>Initialize the color spectrum with the <code class="prettyprint">value</code> attribute specified:</caption>

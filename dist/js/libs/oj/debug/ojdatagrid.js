@@ -20246,6 +20246,12 @@ DvtDataGridOptions.prototype.getScrollPolicyOptions = function () {
  *                for: "SettableProperties"
  *               }
  *              ]
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["editMode", "gridlines.horizontal", "gridlines.vertical"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data", "selection"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="datagridOverview-section">
  *   JET DataGrid

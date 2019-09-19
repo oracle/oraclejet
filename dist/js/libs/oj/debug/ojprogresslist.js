@@ -301,6 +301,10 @@ Composite.register('oj-progress-item',
  * @class oj.ojProgressList
  * @ojsignature {target: "Type", value:"class ojProgressList extends JetElement<ojProgressListSettableProperties>"}
  *
+ * @ojpropertylayout {propertyGroup: "data", items: ["data"]}
+ * @ojvbdefaultcolumns 4
+ * @ojvbmincolumns 1
+ *
  * @classdesc
  * <h3 id="progressListOverview-section">
  *   JET ProgressList

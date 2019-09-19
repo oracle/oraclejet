@@ -258,6 +258,12 @@ var __oj_tag_cloud_item_metadata =
  *                for: "SettableProperties"
  *               }
  *              ]
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["layout", "animationOnDataChange", "animationOnDisplay", "style"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data", "selection"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 6
+ *
  * @classdesc
  * <h3 id="tagCloudOverview-section">
  *   JET Tag Cloud
@@ -593,6 +599,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        * @ojsignature [{target: "Type", value: "Array<K>"}]
        * @default []
        * @ojwriteback
+       * @ojeventgroup common
        *
        * @example <caption>Initialize the tag cloud with the
        * <code class="prettyprint">selection</code> attribute specified:</caption>

@@ -11,6 +11,7 @@ define(["./impl/localPersistenceStore"], function (LocalPersistenceStore) {
    * @class LocalPersistenceStoreFactory
    * @classdesc PersistenceStoreFactory that creates localStorage backed 
    *            PersisteneStore instance.
+   * @hideconstructor
    */
 
   var LocalPersistenceStoreFactory = (function () {
@@ -21,7 +22,10 @@ define(["./impl/localPersistenceStore"], function (LocalPersistenceStore) {
      * @memberof! LocalPersistenceStoreFactory
      * @export
      * @instance
-     * @return {Promise} returns a Promise that is resolved to a localStorage
+     * @param {string} name The name to be associated with the store.
+     * @param {object} [options] The configratuion options to be applied to the store.
+     * @param {string} [options.version] The version of the store.
+     * @return {Promise<LocalPersistenceStore>} returns a Promise that is resolved to a localStorage
      * backed PersistenceStore instance.
      */
 

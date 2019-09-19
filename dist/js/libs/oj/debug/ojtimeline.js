@@ -667,6 +667,11 @@ var __oj_timeline_series_metadata =
  *               }
  *              ]
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["start", "end", "orientation", "majorAxis.scale", "minorAxis.scale", "minorAxis.zoomOrder", "style"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data", "selection"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 6
+ *
  * @classdesc
  * <h3 id="timelineOverview-section">
  * JET Timeline
@@ -1203,6 +1208,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
      * @ojsignature {target:"Type", value:"K[]"}
      * @ojwriteback
      * @default []
+     * @ojeventgroup common
      *
      * @example <caption>Initialize the Timeline with the <code class="prettyprint">selection</code> attribute specified:</caption>
      * &lt;oj-timeline selection='["itemID1", "itemID2", "itemID3"]'>&lt;/oj-timeline>

@@ -1573,6 +1573,10 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
  * @ojshortdesc A conveyor belt manages overflow for its child elements and allows scrolling among them.
  * @class oj.ojConveyorBelt
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["orientation"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="conveyorBeltOverview-section">
  *   JET ConveyorBelt

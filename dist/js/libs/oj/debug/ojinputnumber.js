@@ -318,6 +318,12 @@ var __oj_input_number_metadata =
  * @ojrole spinbutton
  * @ojstatus preview
  * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter", "Validator", "Validation", "AsyncValidator"]}
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "min", "max", "step", "required", "disabled", "readonly", "virtualKeyboard", "converter"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+ * @ojvbdefaultcolumns 6
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="inputNumberOverview-section">
  *   JET InputNumber Component
@@ -850,6 +856,7 @@ var __oj_input_number_metadata =
          * @default ""
          * @memberof oj.ojInputNumber
          * @type {string|null}
+         * @ojtranslatable
          */
         placeholder: '',
         /**
@@ -1187,6 +1194,7 @@ var __oj_input_number_metadata =
          * @instance
          * @default null
          * @ojwriteback
+         * @ojeventgroup common
          * @memberof oj.ojInputNumber
          * @ojshortdesc The value of the component, which must be either a number or null. See the Help documentation for more information.
          * @type {?number}

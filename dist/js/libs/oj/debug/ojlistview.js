@@ -961,7 +961,8 @@ oj.DataSourceContentHandler.prototype.afterRenderItemForInsertEvent =
 oj.DataSourceContentHandler.prototype._handleAddTransitionEnd =
   function (context, elem) {
     // this could have been called after listview is destroyed
-    if (this.m_widget == null) {
+    // or it could have been removed immediately
+    if (this.m_widget == null || elem.parentNode == null) {
       this.signalTaskEnd();
       return;
     }
@@ -1003,6 +1004,10 @@ oj.DataSourceContentHandler.prototype.handleModelRemoveEvent = function (event) 
     var elem = self.FindElementByKey(key);
     if (elem != null) {
       self.signalTaskStart('handling model remove event for item: ' + key); // signal removeItem start
+      // item remove might have been just added (in insert animation phase)
+      if (elem.parentNode.classList.contains('oj-listview-temp-item')) {
+        elem = elem.parentNode;
+      }
       self._removeItem(elem);
       self.signalTaskEnd(); // signal removeItem end
     }
@@ -1321,6 +1326,7 @@ oj.IteratingDataProviderContentHandler.prototype.Destroy = function (completelyD
   this._cancelIdleCallback();
 
   this.m_loadingIndicator = null;
+  this.m_viewportCheckPromise = null;
 };
 
 /**
@@ -1919,6 +1925,7 @@ oj.IteratingDataProviderContentHandler.prototype._registerDomScroller = function
       return false;
     },
     beforeFetch: function () {
+      self.m_viewportCheckPromise = null;
       if (self.m_idleCallback != null) {
         return false;
       }
@@ -2141,7 +2148,24 @@ oj.IteratingDataProviderContentHandler.prototype._afterItemsInserted = function 
     this._processEventQueue();
 
     // check viewport
-    this.checkViewport();
+    var self = this;
+    var promise = this.checkViewport();
+    if (promise && this._isLoadMoreOnScroll()) {
+      promise.then(function (result) {
+        // the height of the stamp could be contracted and if that's the case we could
+        // potentially have an underflow
+        if (self.m_root != null && result == null) {
+          var busyContext = Context.getContext(self.m_root).getBusyContext();
+          var viewportCheckPromise = busyContext.whenReady();
+          viewportCheckPromise.then(function () {
+            if (self.m_viewportCheckPromise != null) {
+              self.checkViewport();
+            }
+          });
+          self.m_viewportCheckPromise = viewportCheckPromise;
+        }
+      });
+    }
   }
 };
 
@@ -2170,8 +2194,9 @@ oj.IteratingDataProviderContentHandler.prototype.checkViewport = function () {
   this.signalTaskStart('checking viewport'); // signal method task start
 
   // if loadMoreOnScroll then check if we have underflow and do a fetch if we do
+  var fetchPromise;
   if (this.m_domScroller != null && this.IsReady()) {
-    var fetchPromise = this.m_domScroller.checkViewport();
+    fetchPromise = this.m_domScroller.checkViewport();
     if (fetchPromise != null) {
       this.signalTaskStart('got promise from checking viewport'); // signal fetchPromise started. Ends in promise resolution below
       fetchPromise.then(function (result) {
@@ -2184,6 +2209,8 @@ oj.IteratingDataProviderContentHandler.prototype.checkViewport = function () {
   }
 
   this.signalTaskEnd(); // signal method task end
+
+  return fetchPromise;
 };
 
 oj.IteratingDataProviderContentHandler.prototype.createKeyMap = function (initialMap) {
@@ -8754,7 +8781,12 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         index = Math.floor(scrollTop / itemHeight);
       }
 
-      var result = this._findClosestElementToTop(items, index, scrollTop);
+      // Sanitize index/scrollTop values for negative values.
+      // This is to address Safari negative scrollTop when scroll "bounces" at the top
+      index = Math.max(index, 0);
+      var scrollTopValue = Math.max(scrollTop, 0);
+
+      var result = this._findClosestElementToTop(items, index, scrollTopValue);
       if (result != null) {
         elem = result.elem;
         if (isHierData) {
@@ -9247,6 +9279,12 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
  *              ]
  * @ojshortdesc A list view displays data items as a list or a grid with highly interactive features.
  * @ojrole grid
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["selectionMode"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data", "selected"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="listViewOverview-section">
  *   JET ListView Component
@@ -10059,6 +10097,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      * @type {KeySet}
      * @ojsignature {target:"Type", value:"oj.KeySet<K>"}
      * @ojwriteback
+     * @ojeventgroup common
      *
      * @example <caption>Initialize the ListView with the <code class="prettyprint">selected</code> attribute specified:</caption>
      * &lt;oj-list-view selected='{{mySelectedItemsKeySet}}'>&lt;/oj-list-view>

@@ -38,6 +38,14 @@
       flex-wrap: nowrap;
     }
 
+    // This is the oj-label-value child case
+    // We need to remove the padding here, or oj-label-value can't properly align its content
+    // to the parent oj-form-layout
+    .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-labelvalue.oj-flex-item {
+      padding-left: 0px;
+      padding-right: 0px;
+    }
+
     // this is an oj-form-layout specific case, where the label flex item is set to 0px and the oj-label and
     // the component share the same
     // In this case, we need to apply the padding-left to the even (element/value) flex item (beyond the first)
@@ -61,6 +69,19 @@
       }
     }
 
+    // Nested form layout need some horizontal margin/column gutter love as well
+    // Get rid of the horizontal marging/column gutter on the parent form layout
+    .oj-form-layout > .oj-form > .oj-flex > .oj-formlayout-nested-formlayout > .oj-form-layout > .oj-form,
+    .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item {
+      padding-left: 0px;
+      padding-right: 0px;
+    }
+
+    // direction == row
+    .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across {
+      padding-left: 0px;
+      padding-right: 0px;
+    }
     .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
         html:not([dir="rtl"]) & {
@@ -169,6 +190,17 @@
     .oj-label-value.oj-form > .oj-flex {
       padding-top: 0;
     }
+
+    // When the components are placed inside a oj-lable-value, it adds a margin from the flex selector.
+    // Form layout always adds a margin for its own flex children. This was causing
+    // double margin for label-value.
+    // Also, nested oj-form-layout has a similar issue
+    .oj-form.oj-label-value > .oj-flex > .oj-flex-item:nth-child(even),
+    .oj-form.oj-label-value > .oj-flex > .oj-flex-item:last-child,
+    .oj-form > .oj-flex > .oj-flex-item.oj-formlayout-nested-formlayout:nth-child(even),
+    .oj-form > .oj-flex > .oj-flex-item.oj-formlayout-nested-formlayout:last-child {
+        margin: 0;
+    }
   }
 
 // This is to prevent the flash of unstyled content before the html becomes JET components.
@@ -178,4 +210,3 @@
     }
   }
 }
-    

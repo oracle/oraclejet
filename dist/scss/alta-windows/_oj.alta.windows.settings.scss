@@ -2778,6 +2778,11 @@
 //$dvtBorder2Color: $neutralColor1 !default;
 //$dvtPanelBorderColor: $neutralColor7 !default;
 
+// no data message
+//----------------------------------
+//$dvtNoDataMessageColor: $textColor !default;
+//$dvtNoDataMessageFontSize: $smallFontSize !default;
+
 // charts
 //----------------------------------
 //$dvtChartStockFallingBgColor:     $dvtThreshold1Color !default;
@@ -2841,7 +2846,7 @@
 
 //$dvtTimelineSeriesBgColor:             $neutralColor3 !default;
 //$dvtTimelineSeriesLabelColor:          $headerTextColor !default;
-//$dvtTimelineSeriesEmptyTextColor:      $textColor !default;
+//$dvtTimelineSeriesEmptyTextColor:      $dvtNoDataMessageColor !default;
 
 //$dvtTimelineReferenceObjectColor:      $accentColorDvt4 !default;
 
@@ -2871,7 +2876,7 @@
 //$dvtGanttBorderColor:             $collectionBorderColor !default;
 //$dvtGanttHorizontalGridlineColor: $collectionCellBorderColor !default;
 //$dvtGanttVerticalGridlineColor:   $neutralColor10 !default;
-//$dvtGanttEmptyTextColor:          $textColor !default;
+//$dvtGanttEmptyTextColor:          $dvtNoDataMessageColor !default;
 //$dvtGanttDependencyLineColor:     $neutralColor14 !default;
 
 //$dvtGanttRowBgColor:              $collectionCellBgColor !default;

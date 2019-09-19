@@ -1614,6 +1614,9 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
  * @ojshortdesc A masonry layout lays out its children in a grid of tiles.
  * @class oj.ojMasonryLayout
  *
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="masonryLayoutOverview-section">
  *   JET MasonryLayout

@@ -641,6 +641,11 @@ var __oj_thematic_map_marker_metadata =
  *               }
  *              ]
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["initialZooming", "labelDisplay", "panning", "zooming", "maxZoom", "animationOnDisplay", "style"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["mapProvider.geo", "mapProvider.propertiesKeys", "areaData", "markerData", "linkData", "isolatedItem", "selection"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 6
+ *
  * @classdesc
  * <h3 id="thematicMapOverview-section">
  *   JET Thematic Map
@@ -1413,6 +1418,7 @@ oj.__registerWidget('oj.ojThematicMap', $.oj.dvtBaseComponent,
        * @ojsignature {target:"Type", value:"Array<K1|K2|K3>"}
        * @default []
        * @ojwriteback
+       * @ojeventgroup common
        *
        * @example <caption>Initialize the thematic map with the
        * <code class="prettyprint">selection</code> attribute specified:</caption>

@@ -6,6 +6,8 @@
 define(function()
 {
   "use strict";
+/* global Map:false */
+
 /* eslint-disable no-use-before-define */
 /* eslint-disable one-var-declaration-per-line */
 /* eslint-disable no-plusplus */
@@ -395,10 +397,10 @@ function ExpParser() {
       };
     }
 
-    if (identifier in _literals) {
+    if (_literals.has(identifier)) {
       return {
         type: 3, // 'Literal'
-        value: _literals[identifier],
+        value: _literals.get(identifier),
         raw: identifier
       };
     }
@@ -731,18 +733,17 @@ function ExpParser() {
       '%': 11
     },
     // Get return the longest key length of any object
-
     _max_unop_len = _getMaxKeyLen(_unary_ops),
-    _max_binop_len = _getMaxKeyLen(_binary_ops),
-    // Literals
-    // ----------
-    // Store the values to return for the various literals we may encounter
-    _literals = {
-      true: true,
-      false: false,
-      null: null,
-      undefined: undefined
-    };
+    _max_binop_len = _getMaxKeyLen(_binary_ops);
+
+  // Literals
+  // ----------
+  // Store the values to return for the various literals we may encounter
+  var _literals = new Map();
+  _literals.set('true', true);
+  _literals.set('false', false);
+  _literals.set('null', null);
+  _literals.set('undefined', undefined);
 
   // Returns the precedence of a binary operator or `0` if it isn't a binary operator
   function _binaryPrecedence(op_val) {

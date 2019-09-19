@@ -365,7 +365,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @memberof oj.FetchListParameters
  * @instance
  * @name size
- * @type {number}
+ * @type {number=}
  */
 
 /**
@@ -587,7 +587,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @name attribute
  * @type {string=}
  * @ojdeprecated {since: '7.0.0', description: 'Use attribute pair values in the value property instead. e.g. value: {DepartmentId: 10}'}
- * @example <caption>Attribute filter definition which filters on DepartmentId value 10</caption>
+ * @ojtsexample <caption>Attribute filter definition which filters on DepartmentId value 10</caption>
  * {op: '$eq', attribute: 'DepartmentId', value: 10}
  */
 
@@ -631,13 +631,13 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @instance
  * @name value
  * @type {any}
- * @example
+ * @ojtsexample
  * <caption>Filter definition which filters on DepartmentId value 10</caption>
  * {op: '$eq', value: {DepartmentId: 10}}
- * @example
+ * @ojtsexample
  * <caption>Filter definition which filters on DepartmentId value 10 and DepartmentName is Hello</caption>
  * {op: '$eq', value: {DepartmentId: 10, DepartmentName: 'Hello'}}
- * @example
+ * @ojtsexample
  * <caption>Filter definition which filters on subobject Location State is California and DepartmentName is Hello</caption>
  * {op: '$eq', value: {DepartmentName: 'Hello', Location: {State: 'California'}}}
  */
@@ -2000,7 +2000,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * </p>
  *
  * <i>Example of implementation firing an oj.DataProviderMutationEvent for removed items:</i>
- * <pre class="prettyprint"><code>var removeDetail = {data: removedDataArray,
+ * <pre class="prettyprint"><code>let removeDetail = {data: removedDataArray,
  *                     indexes: removedIndexArray,
  *                     keys: removedKeySet,
  *                     metadata: removedMetadataArray};
@@ -2008,9 +2008,9 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * </code></pre>
  *
  * <i>Example of consumer listening for the "mutate" event type:</i>
- * <pre class="prettyprint"><code>var listener = function(event) {
+ * <pre class="prettyprint"><code>let listener = function(event) {
  *   if (event.detail.remove) {
- *     var removeDetail = event.detail.remove;
+ *     let removeDetail = event.detail.remove;
  *     // Handle removed items
  *   }
  * };
@@ -2036,12 +2036,12 @@ oj.DataProvider = function () {
  * @name fetchFirst
  * @ojsignature {target: "Type",
  *               value: "(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
- * @example <caption>Get an asyncIterator and then fetch first block of data by executing next() on the iterator. Subsequent blocks can be fetched by executing next() again.</caption>
- * var asyncIterator = dataprovider.fetchFirst(options)[Symbol.asyncIterator]();
+ * @ojtsexample <caption>Get an asyncIterator and then fetch first block of data by executing next() on the iterator. Subsequent blocks can be fetched by executing next() again.</caption>
+ * let asyncIterator = dataprovider.fetchFirst(options)[Symbol.asyncIterator]();
  * asyncIterator.next().then(function(result) {
- *   var value = result.value;
- *   var data = value.data;
- *   var keys = value.metadata.map(function(val) {
+ *   let value = result.value;
+ *   let data = value.data;
+ *   let keys = value.metadata.map(function(val) {
  *     return val.key;
  * });
  */
@@ -2069,8 +2069,8 @@ oj.DataProvider = function () {
  * @name getCapability
  * @ojsignature {target: "Type",
  *               value: "(capabilityName: string): any"}
- * @example <caption>Check what kind of fetchByKeys is supported.</caption>
- * var capabilityInfo = dataprovider.getCapability('fetchByKeys');
+ * @ojtsexample <caption>Check what kind of fetchByKeys is defined.</caption>
+ * let capabilityInfo = dataprovider.getCapability('fetchByKeys');
  * if (capabilityInfo.implementation == 'iteration') {
  *   // the DataProvider supports iteration for fetchByKeys
  *   ...
@@ -2087,7 +2087,7 @@ oj.DataProvider = function () {
  * @instance
  * @method
  * @name getTotalSize
- * @example <caption>Get the total rows</caption>
+ * @ojtsexample <caption>Get the total rows</caption>
  * dataprovider.getTotalSize().then(function(value) {
  *   if (value == -1) {
  *     // we don't know the total row count
@@ -2117,8 +2117,8 @@ oj.DataProvider = function () {
  * @name fetchByKeys
  * @ojsignature {target: "Type",
  *               value: "(parameters : FetchByKeysParameters<K>) : Promise<FetchByKeysResults<K, D>>"}
- * @example <caption>Fetch for keys 1001 and 556</caption>
- * var fetchKeys = [1001, 556];
+ * @ojtsexample <caption>Fetch for keys 1001 and 556</caption>
+ * let fetchKeys = [1001, 556];
  * dataprovider.fetchByKeys({keys: fetchKeys}).then(function(value) {
  *   // get the data for key 1001
  *   console.log(value.results.get(1001).data);
@@ -2145,10 +2145,10 @@ oj.DataProvider = function () {
  * @name containsKeys
  * @ojsignature {target: "Type",
  *               value: "(parameters : FetchByKeysParameters<K>) : Promise<ContainsKeysResults<K>>"}
- * @example <caption>Check if keys 1001 and 556 are contained</caption>
- * var containsKeys = [1001, 556];
+ * @ojtsexample <caption>Check if keys 1001 and 556 are contained</caption>
+ * let containsKeys = [1001, 556];
  * dataprovider.containsKeys({keys: containsKeys}).then(function(value) {
- *   var results = value['results'];
+ *   let results = value['results'];
  *   if (results.has(1001)) {
  *     console.log('Has key 1001');
  *   } else if (results.has(556){
@@ -2177,13 +2177,13 @@ oj.DataProvider = function () {
  * @name fetchByOffset
  * @ojsignature {target: "Type",
  *               value: "(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
- * @example <caption>Fetch by offset 5 rows starting at index 2</caption>
+ * @ojtsexample <caption>Fetch by offset 5 rows starting at index 2</caption>
  * dataprovider.fetchByOffset({size: 5, offset: 2}).then(function(value) {
- *   var results = result['results'];
- *   var data = results.map(function(value) {
+ *   let results = result['results'];
+ *   let data = results.map(function(value) {
  *     return value['data'];
  *   });
- *   var keys = results.map(function(value) {
+ *   let keys = results.map(function(value) {
  *     return value['metadata']['key'];
  *   });
  * });
@@ -2208,8 +2208,8 @@ oj.DataProvider = function () {
  * @name isEmpty
  * @ojsignature {target: "Type",
  *               value: "(): 'yes' | 'no' | 'unknown'"}
- * @example <caption>Check if empty</caption>
- * var isEmpty = dataprovider.isEmpty();
+ * @ojtsexample <caption>Check if empty</caption>
+ * let isEmpty = dataprovider.isEmpty();
  * console.log('DataProvider is empty: ' + isEmpty);
  */
 
@@ -2238,8 +2238,8 @@ oj.DataProvider = function () {
  * @name createOptimizedKeySet
  * @ojsignature {target: "Type",
  *               value: "?(initialSet?: Set<K>): Set<K>"}
- * @example <caption>create empty key Set</caption>
- * var keySet = dataprovider.createOptimizedKeySet();
+ * @ojtsexample <caption>create empty key Set</caption>
+ * let keySet = dataprovider.createOptimizedKeySet();
  */
 
 /**
@@ -2267,8 +2267,8 @@ oj.DataProvider = function () {
  * @name createOptimizedKeyMap
  * @ojsignature {target: "Type",
  *               value: "?(initialMap?: Map<K, D>): Map<K, D>"}
- * @example <caption>create empty key Map</caption>
- * var keyMap = dataprovider.createOptimizedKeyMap();
+ * @ojtsexample <caption>create empty key Map</caption>
+ * let keyMap = dataprovider.createOptimizedKeyMap();
  */
 
 /**
@@ -2564,7 +2564,7 @@ oj['FetchByKeysMixin']['applyMixin'] = FetchByKeysMixin.applyMixin;
  * @memberof oj.FetchByKeysMixin
  * @method
  * @name applyMixin
- * @example <caption>Apply the mixin in Typescript:</caption>
+ * @ojtsexample <caption>Apply the mixin in Typescript:</caption>
  * class CustomDataProvider&lt;K, D> implements DataProvider&lt;K, D> {
  *   // Add stand-in properties to satisfy the compiler
  *   containsKeys: (parameters: FetchByKeysParameters&lt;K>) => Promise&lt;ContainsKeysResults&lt;K>>;
@@ -2577,7 +2577,7 @@ oj['FetchByKeysMixin']['applyMixin'] = FetchByKeysMixin.applyMixin;
  *
  * oj.FetchByKeysMixin.applyMixin(CustomDataProvider);
  *
- * @example <caption>Apply the mixin in Javascript:</caption>
+ * @ojtsexample <caption>Apply the mixin in Javascript:</caption>
  * function CustomDataProvider() {
  *   // Constructor implementation
  * }
@@ -2790,7 +2790,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * @memberof oj.FetchByOffsetMixin
  * @method
  * @name applyMixin
- * @example <caption>Apply the mixin in Typescript:</caption>
+ * @ojtsexample <caption>Apply the mixin in Typescript:</caption>
  * class CustomDataProvider&lt;K, D> implements DataProvider&lt;K, D> {
  *   // Add a stand-in property to satisfy the compiler
  *   fetchByOffset: (parameters: FetchByOffsetParameters&lt;D>) => Promise&lt;FetchByOffsetResults&lt;K, D>>;
@@ -2802,7 +2802,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  *
  * oj.FetchByOffsetMixin.applyMixin(CustomDataProvider);
  *
- * @example <caption>Apply the mixin in Javascript:</caption>
+ * @ojtsexample <caption>Apply the mixin in Javascript:</caption>
  * function CustomDataProvider() {
  *   // Constructor implementation
  * }
@@ -3691,6 +3691,8 @@ oj.FilterUtils = function () {
    * @returns {object} the object that contains all the properties defined
    *                   in fields array, the corresponding property
    *                   value is obtained from value.
+   * @memberof oj.FilterUtils
+   * @ignore
    */
   function assembleObject (value, fields) {
     var returnObject;

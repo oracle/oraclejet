@@ -1068,6 +1068,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        * @instance
        * @memberof! oj.inputBase
        * @type {string}
+       * @ojtranslatable
        */
       placeholder: '',
       /**
@@ -2256,6 +2257,11 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
  * @ojrole textbox
  * @ojstatus preview
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled", "readonly"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+ * @ojvbdefaultcolumns 6
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="inputPasswordOverview-section">
  *   JET InputPassword Component
@@ -2406,6 +2412,7 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
        * @instance
        * @default null
        * @ojwriteback
+       * @ojeventgroup common
        * @memberof oj.ojInputPassword
        * @type {string|null}
        * @ojsignature { target: "Type",
@@ -2551,6 +2558,11 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
  * @ojshortdesc An input text allows the user to enter a text value.
  * @ojrole textbox
  * @ojstatus preview
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled", "readonly", "clearIcon", "virtualKeyboard"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+ * @ojvbdefaultcolumns 6
+ * @ojvbmincolumns 2
  *
  * @classdesc
  * <h3 id="inputTextOverview-section">
@@ -3196,6 +3208,11 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
  * @ojshortdesc A text area allows the user to enter a multi-line text value.
  * @ojrole textbox
  * @ojstatus preview
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "rows", "disabled", "required", "readonly"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+ * @ojvbdefaultcolumns 6
+ * @ojvbmincolumns 2
  *
  * @classdesc
  * <h3 id="textAreaOverview-section">

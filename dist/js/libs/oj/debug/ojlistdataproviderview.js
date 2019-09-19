@@ -637,7 +637,7 @@ oj.EventTargetMixin.applyMixin(ListDataProviderView);
  * @param {Array.<oj.SortCriterion>=} options.sortCriteria {@link oj.sortCriteria} to apply to the data.
  * @param {oj.DataMapping=} options.dataMapping mapping to apply to the data.
  * @param {Array<string | FetchAttribute>=} options.attributes fetch attributes to apply
- * @param {oj.AttributeFilter | oj.CompoundFilter} options.filterCriterion filter criterion to apply. If the DataProvider does not support filtering then
+ * @param {(oj.AttributeFilter | oj.CompoundFilter)=} options.filterCriterion filter criterion to apply. If the DataProvider does not support filtering then
  *        ListDataProviderView will do local filtering of the data.
  * @ojsignature [{target: "Type",
  *               value: "class ListDataProviderView<K, D, Kin, Din> implements DataProvider<K, D>",

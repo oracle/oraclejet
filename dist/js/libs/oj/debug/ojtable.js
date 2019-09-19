@@ -467,6 +467,11 @@ var __oj_table_metadata =
  *               }
  *              ]
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["selectionMode.row", "selectionMode.column", "display", "horizontalGridVisible", "verticalGridVisible"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data", "columns", "selected.row", "selected.column", "firstSelectedRow"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="tableOverview-section">
  *   JET Table
@@ -1361,6 +1366,7 @@ var __oj_table_metadata =
        * @instance
        * @default {'key': null, 'data': null}
        * @type {Object}
+       * @ojeventgroup common
        *
        * @ojwriteback
        * @readonly
@@ -1447,6 +1453,7 @@ var __oj_table_metadata =
        * @ojsignature {target:"Type", value:"{row: oj.KeySet<K>, column: oj.KeySet<K>}"}
        * @default {row: new KeySetImpl(), column: new KeySetImpl()};
        * @ojwriteback
+       * @ojeventgroup common
        *
        * @example <caption>Initialize the table with the specific rows selected:</caption>
        * myTable.selected.row = new KeySetImpl(['row1', 'row2', 'row3']);
@@ -3423,6 +3430,9 @@ var __oj_table_metadata =
       // unregister the listeners on the datasource
       this._unregisterDataSourceEventListeners();
       this._unregisterResizeListener();
+
+      // clear any existing DomScroller references
+      this._unregisterDomScroller();
     },
 
     /**
@@ -3613,6 +3623,9 @@ var __oj_table_metadata =
       oj.DomUtils.unwrap(this.element, $(this._getTableDomUtils().getTableContainer()));
 
       this.element[0].classList.remove(oj.TableDomUtils.CSS_CLASSES._TABLE_CLASS);
+
+      // clear any existing DomScroller references
+      this._unregisterDomScroller();
 
       // Remove any pending busy states
       if (this._readyResolveFunc) {
@@ -8094,9 +8107,7 @@ var __oj_table_metadata =
 
             // Need to clear DOM scroller before refreshAll potentially triggers
             // additional data fetches when syncing scroll position
-            if (self._domScroller != null) {
-              self._domScroller.destroy();
-            }
+            self._unregisterDomScroller();
 
             if (result.done) {
               self._dataProviderAsyncIterator = null;
@@ -9501,9 +9512,8 @@ var __oj_table_metadata =
       var i;
       var self = this;
 
-      if (this._domScroller != null) {
-        this._domScroller.destroy();
-      }
+      // clear any existing DomScroller references
+      this._unregisterDomScroller();
 
       this._domScrollerSuccessFunc = function (result) {
         self._clearDataWaitingState();
@@ -9581,6 +9591,16 @@ var __oj_table_metadata =
           },
           fetchTrigger: 1
         });
+    },
+
+    /**
+     * @private
+     */
+    _unregisterDomScroller: function () {
+      if (this._domScroller != null) {
+        this._domScroller.destroy();
+        this._domScroller = null;
+      }
     },
 
     /**
@@ -12895,7 +12915,7 @@ oj.TableDomUtils.prototype.createContextMenuItem = function (command, useOjOptio
   } else if (command === 'resize') {
     // create the resize popup too
     this.createContextMenuResizePopup(0);
-    return this.createContextMenuListItem(command);
+    return this.createContextMenuListItem(command, useOjOption);
   }
   return null;
 };

@@ -160,6 +160,11 @@ var __oj_switch_metadata =
    * @ojshortdesc A switch toggles between two mutually exclusive states — on and off.
    * @ojstatus preview
    *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "disabled", "readonly", "describedBy"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+   * @ojvbdefaultcolumns 6
+   * @ojvbmincolumns 2
+   *
    * @classdesc
    * <p>
    * The oj-switch component enhances <code class="prettyprint">input</code>
@@ -352,6 +357,7 @@ var __oj_switch_metadata =
        * @public
        * @instance
        * @memberof oj.ojSwitch
+       * @ojeventgroup common
        */
       value: false
     },

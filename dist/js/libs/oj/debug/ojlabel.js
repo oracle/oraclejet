@@ -179,6 +179,10 @@ var __oj_label_metadata =
    * @ojshortdesc A label is a short description of requested input.
    * @since 4.0.0
    * @augments oj.baseComponent
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["for", "showRequired"]}
+   * @ojvbdefaultcolumns 3
+   * @ojvbmincolumns 1
    */
   oj.__registerWidget('oj.ojLabel', $.oj.baseComponent,
     {

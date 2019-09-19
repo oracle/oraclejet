@@ -13,7 +13,7 @@ declare class ListDataProviderView<K, D, Kin, Din> implements DataProvider<K, D>
         sortCriteria?: Array<SortCriterion<D>>;
         dataMapping?: DataMapping<K, D, Kin, Din>;
         attributes?: Array<string | FetchAttribute>;
-        filterCriterion: AttributeFilter<D> | CompoundFilter<D> | FilterOperator<D>;
+        filterCriterion?: AttributeFilter<D> | CompoundFilter<D> | FilterOperator<D>;
     });
     addEventListener(eventType: string, listener: EventListener): void;
     containsKeys(params: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;

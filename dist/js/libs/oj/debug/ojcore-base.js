@@ -45,12 +45,12 @@ var oj = {
    * @global
    * @member {string} version JET version numberr
    */
-  version: '7.1.0',
+  version: '7.2.0',
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  revision: '2019-07-11_18-01-01',
+  revision: '2019-09-12_18-05-50',
 
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate

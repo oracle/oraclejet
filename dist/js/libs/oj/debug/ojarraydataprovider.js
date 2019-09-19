@@ -212,7 +212,9 @@ var ArrayDataProvider = /** @class */ (function () {
                     findKeyIndex >= 0) {
                     var row = rowData_1[findKeyIndex];
                     if (fetchAttributes && fetchAttributes.length > 0) {
-                        row = self._filterRowAttributes(fetchAttributes, row);
+                        var updatedData = {};
+                        self._filterRowAttributes(fetchAttributes, row, updatedData);
+                        row = updatedData;
                     }
                     results.set(searchKey, new self.Item(self, new self.ItemMetadata(self, searchKey), row));
                 }
@@ -672,7 +674,9 @@ var ArrayDataProvider = /** @class */ (function () {
         var mappedData = indexMap.map(function (index) {
             var row = rowData[index];
             if (fetchAttributes && fetchAttributes.length > 0) {
-                row = self._filterRowAttributes(fetchAttributes, row);
+                var updatedData = {};
+                self._filterRowAttributes(fetchAttributes, row, updatedData);
+                row = updatedData;
             }
             return row;
         });
@@ -820,11 +824,9 @@ var ArrayDataProvider = /** @class */ (function () {
             return sortCriteria;
         }
     };
-    ArrayDataProvider.prototype._filterRowAttributes = function (fetchAttribute, data) {
+    ArrayDataProvider.prototype._filterRowAttributes = function (fetchAttribute, data, updatedData) {
         var self = this;
-        var updatedData = null;
         if (Array.isArray(fetchAttribute)) {
-            updatedData = {};
             // first see if we want all attributes
             var fetchAllAttributes_1 = false;
             fetchAttribute.forEach(function (key) {
@@ -860,7 +862,7 @@ var ArrayDataProvider = /** @class */ (function () {
                         }
                     }
                     if (!excludeAttribute) {
-                        updatedData[dataAttr] = self._filterRowAttributes(fetchAttr, data);
+                        self._filterRowAttributes(fetchAttr, data, updatedData);
                     }
                 }
                 else {
@@ -874,7 +876,7 @@ var ArrayDataProvider = /** @class */ (function () {
                         }
                         if (!attribute.startsWith('!') &&
                             attribute == dataAttr) {
-                            updatedData[attribute] = self._filterRowAttributes(fetchAttr, data);
+                            self._filterRowAttributes(fetchAttr, data, updatedData);
                         }
                     });
                 }
@@ -886,23 +888,41 @@ var ArrayDataProvider = /** @class */ (function () {
             if (name_1 && !name_1.startsWith('!')) {
                 if (data[name_1] instanceof Object &&
                     !Array.isArray(data[name_1])) {
-                    updatedData = self._filterRowAttributes(attributes_1, data[name_1]);
+                    var updatedDataSubObj = {};
+                    self._filterRowAttributes(attributes_1, data[name_1], updatedDataSubObj);
+                    updatedData[name_1] = updatedDataSubObj;
                 }
                 else if (Array.isArray(data[name_1])) {
-                    updatedData = [];
+                    updatedData[name_1] = [];
+                    var updatedDataArrayItem_1;
                     data[name_1].forEach(function (arrVal, index) {
-                        updatedData[index] = self._filterRowAttributes(attributes_1, arrVal);
+                        updatedDataArrayItem_1 = {};
+                        self._filterRowAttributes(attributes_1, arrVal, updatedDataArrayItem_1);
+                        updatedData[name_1][index] = updatedDataArrayItem_1;
                     });
                 }
                 else {
-                    updatedData = data[name_1];
+                    self._proxyAttribute(updatedData, data, name_1);
                 }
             }
         }
         else {
-            updatedData = data[fetchAttribute];
+            self._proxyAttribute(updatedData, data, fetchAttribute);
         }
-        return updatedData;
+    };
+    ArrayDataProvider.prototype._proxyAttribute = function (updatedData, data, attribute) {
+        if (!updatedData || !data) {
+            return;
+        }
+        Object.defineProperty(updatedData, attribute, {
+            get: function () {
+                return data[attribute];
+            },
+            set: function (val) {
+                data[attribute] = val;
+            },
+            enumerable: true
+        });
     };
     ArrayDataProvider._KEY = 'key';
     ArrayDataProvider._KEYS = 'keys';

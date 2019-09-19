@@ -63,6 +63,11 @@ var __oj_train_metadata =
  * @ojstatus preview
  * @ojshortdesc A train allows a user to navigate between different steps of a process.
  * @since 1.0.0
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["selectedStep", "steps"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 6
+ *
  * @classdesc
  * <h3 id="trainOverview-section">
  *   JET Train

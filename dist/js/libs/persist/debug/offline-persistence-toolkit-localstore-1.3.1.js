@@ -12,7 +12,7 @@ define('persist/PersistenceStore',[], function () {
    * @classdesc Abstract class that all Persistence Store implmenetation extends
    *            from. Defines the basic operations every persistence store should
    *            support.
-   * @constructor
+   * @hideconstructor
    */
   var PersistenceStore = function (name) {
     this._name = name;
@@ -50,7 +50,7 @@ define('persist/PersistenceStore',[], function () {
    * @name Init
    * @memberof! PersistenceStore
    * @instance
-   * @param {{index: Array, version: Object}} options Optional options to tune the store. 
+   * @param {{index: Array, version: string}} options Optional options to tune the store. 
    * <ul>
    * <li>options.index   array of fields to create index for</li>
    * <li>options.version The version of the store.</li>
@@ -960,6 +960,7 @@ define('persist/localPersistenceStoreFactory',["./impl/localPersistenceStore"], 
    * @class LocalPersistenceStoreFactory
    * @classdesc PersistenceStoreFactory that creates localStorage backed 
    *            PersisteneStore instance.
+   * @hideconstructor
    */
 
   var LocalPersistenceStoreFactory = (function () {
@@ -970,7 +971,10 @@ define('persist/localPersistenceStoreFactory',["./impl/localPersistenceStore"], 
      * @memberof! LocalPersistenceStoreFactory
      * @export
      * @instance
-     * @return {Promise} returns a Promise that is resolved to a localStorage
+     * @param {string} name The name to be associated with the store.
+     * @param {object} [options] The configratuion options to be applied to the store.
+     * @param {string} [options.version] The version of the store.
+     * @return {Promise<LocalPersistenceStore>} returns a Promise that is resolved to a localStorage
      * backed PersistenceStore instance.
      */
 
@@ -1007,6 +1011,7 @@ define('persist/persistenceStoreFactory',[], function () {
    * {@link persistenceStoreManager.openStore}. A default factory is provided
    * that implements this contract. Customers can register custom store factory
    * for creating persistence stores of their choice. 
+   * @hideconstructor
    */
 
   var PersistenceStoreFactory = {
@@ -1017,7 +1022,10 @@ define('persist/persistenceStoreFactory',[], function () {
      * @memberof! PersistenceStoreFactory
      * @export
      * @instance
-     * @return {Promise} returns a Promise that is resolved to a PersistenceStore
+     * @param {string} name The name to be associated with the store.
+     * @param {object} [options] The configratuion options to be applied to the store.
+     * @param {string} [options.version] The version of the store.
+     * @return {Promise<PersistenceStore>} returns a Promise that is resolved to a PersistenceStore
      *                   instance.
      */
     createPersistenceStore: function (name, options) {}

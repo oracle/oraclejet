@@ -12,6 +12,7 @@ define(["./impl/pouchDBPersistenceStore"],
    * @class PouchDBPersistenceStoreFactory
    * @classdesc PersistenceStoreFactory that creates PouchDB backed 
    *            PersisteneStore instance.
+   * @hideconstructor
    */
   var PouchDBPersistenceStoreFactory = (function () {
 
@@ -21,7 +22,10 @@ define(["./impl/pouchDBPersistenceStore"],
      * @memberof! PouchDBPersistenceStoreFactory
      * @export
      * @instance
-     * @return {Promise} returns a Promise that is resolved to a PouchDB backed
+     * @param {string} name The name to be associated with the store.
+     * @param {object} [options] The configratuion options to be applied to the store.
+     * @param {string} [options.version] The version of the store.
+     * @return {Promise<PouchDBPersistenceStore>} returns a Promise that is resolved to a PouchDB backed
      * PersistenceStore instance.
      */
      

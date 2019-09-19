@@ -52,7 +52,7 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
       dataField.requestData = requestJSONData;
       // cache the body-less response if shredder/unshreder is configured
       // for this request. cache the full response otherwise.
-      var excludeBody = self._excludeBody(request);
+      var excludeBody = self.hasShredder(request);
       return persistenceUtils.responseToJSON(response, {excludeBody: excludeBody});
     }).then(function (responseJSONData) {
       dataField.responseData = responseJSONData;
@@ -358,7 +358,7 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
     delete this._endpointToOptionsMap[endpointKey];
   };
 
-  DefaultCacheHandler.prototype._excludeBody = function (request) {
+  DefaultCacheHandler.prototype.hasShredder = function (request) {
      return (this._getShredder(request) !== null);
   };
 
@@ -458,6 +458,41 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
     });
   };
 
+  /**
+   * Utility method that deletes the shredded data identified by
+   * the body-less resonse.
+   * @method
+   * @name deleteShreddedData
+   * @memberof! DefaultCacheHandler
+   * @instance
+   * @param {bodyAbstract} request The body abstract from the cached body-less
+   *                               response.
+   * @return {Promise} returns a Promise that resolve when all the shredded 
+   *                   data is deleted.
+   */
+  DefaultCacheHandler.prototype.deleteShreddedData = function (bodyAbstract) {
+    var promises = [];
+    bodyAbstract.forEach(function(item) {
+      var storeName = item.name;
+      var keys = item.keys;
+      if (storeName && keys && keys.length) {
+        var storeDeletionTask = persistenceStoreManager.openStore(storeName).then(function(store) {
+          var transformedKeys = keys.map(function (keyValue) {
+            return {key: {$eq: keyValue}};
+          });
+          var findExpression = {
+            selector: {
+              $or: transformedKeys
+            }
+          };
+          return store.delete(findExpression);
+        });
+        promises.push(storeDeletionTask);
+      }
+    });
+    return Promise.all(promises);
+  };
+  
   var escapeRegExp = function(str) {
     return String(str).replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
   };

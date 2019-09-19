@@ -31,7 +31,7 @@ function(oj, $, Config, Translations, ojld, LocaleData, __ValidationBase, Logger
  * @export
  * @since 0.6
  * @see oj.ConverterFactory
- * @see oj.IntlDateTimeConverter
+ * @see oj.IntlDateTimeConverter JET's implementation of the DateTimeConverter
  */
 oj.DateTimeConverter = function (options) {
   this.Init(options);

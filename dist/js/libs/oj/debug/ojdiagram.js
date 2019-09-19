@@ -1826,6 +1826,11 @@ oj.DiagramUtils = DiagramUtils;
  *               }
  *              ]
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["panning", "panDirection", "zooming", "minZoom", "maxZoom", "animationOnDataChange", "animationOnDisplay", "style"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["nodeData", "linkData", "layout", "selection"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 6
+ *
  * @classdesc
  * <h3 id="diagramOverview-section">
  *   JET Diagram
@@ -2493,6 +2498,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * @ojsignature {target:"Type", value:"Array<K1|K2>"}
        * @default []
        * @ojwriteback
+       * @ojeventgroup common
        *
        * @example <caption>Initialize the diagram with the
        * <code class="prettyprint">selection</code> attribute specified:</caption>

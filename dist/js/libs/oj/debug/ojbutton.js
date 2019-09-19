@@ -263,6 +263,10 @@ var __oj_menu_button_metadata =
  *               }
  *              ]
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["display", "chroming", "disabled"]}
+ * @ojvbdefaultcolumns 2
+ * @ojvbmincolumns 1
+ *
  * @classdesc
  * <h3 id="buttonOverview-section">
  *   JET Button
@@ -705,6 +709,7 @@ var __oj_menu_button_metadata =
          * @instance
          * @ojcancelable
          * @ojbubbles
+         * @ojeventgroup common
          * @since 5.0.0
          */
         action: null
@@ -2467,6 +2472,10 @@ var __oj_menu_button_metadata =
  * @ojshortdesc A menu button launches a menu when clicked.
  * @ojrole button
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["display", "chroming", "disabled"]}
+ * @ojvbdefaultcolumns 2
+ * @ojvbmincolumns 1
+ *
  * @classdesc
  * <h3 id="menubuttonOverview-section">
  *   JET Menu Button
@@ -2552,6 +2561,11 @@ var __oj_menu_button_metadata =
  * @ojrole button
  * @ojrole radiogroup
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["display", "chroming", "disabled"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 1
+ *
  * @classdesc
  * <h3 id="buttonsetOverview-section">
  *   JET Buttonset One
@@ -2600,6 +2614,11 @@ var __oj_menu_button_metadata =
  * @ojshortdesc A buttonset many is a grouping of related buttons where any number of buttons may be selected.
  * @ojrole button
  * @ojrole group
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["display", "chroming", "disabled"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 1
  *
  * @classdesc
  * <h3 id="buttonsetOverview-section">
@@ -2758,6 +2777,7 @@ var __oj_menu_button_metadata =
          * @default null
          * @ojwriteback
          * @ojshortdesc Indicates which oj-option in the buttonset is selected.
+         * @ojeventgroup common
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">value</code> attribute specified:</caption>
          * &lt;oj-buttonset-one value='bold'>&lt;/oj-buttonset-one>
@@ -2786,6 +2806,7 @@ var __oj_menu_button_metadata =
          * @default null
          * @ojwriteback
          * @ojshortdesc Indicates which oj-options in the buttonset are selected.
+         * @ojeventgroup common
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">value</code> attribute specified:</caption>
          * &lt;oj-buttonset-many value='{{["bold", "italic"]}}'>&lt;/oj-buttonset-many>

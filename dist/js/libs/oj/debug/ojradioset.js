@@ -206,6 +206,12 @@ var __oj_radioset_metadata =
  * @ojrole option
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojstatus preview
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "required", "disabled", "labelledBy", "describedBy"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+ * @ojvbdefaultcolumns 6
+ * @ojvbmincolumns 2
+ *
  * @classdesc
  * <h3 id="radiosetOverview-section">
  *   JET Radioset
@@ -726,6 +732,7 @@ var __oj_radioset_metadata =
          * @ojwriteback
          * @default null
          * @memberof oj.ojRadioset
+         * @ojeventgroup common
          * @ojshortdesc The value of the component. See the Help documentation for more information.
          * @type {any}
          * @ojsignature [{target: "Type", value: "V|null"}]

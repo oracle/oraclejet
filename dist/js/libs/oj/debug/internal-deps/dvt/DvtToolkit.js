@@ -9136,6 +9136,16 @@ dvt.ToolkitUtils.removeClassName = function(elem, className) {
   }
 };
 
+/**
+ * Cleans up the dataContext for drag events. Removes the component and componentElement properties
+ * @param {object} context
+ * @return {object} 
+ */
+dvt.ToolkitUtils.cleanDragDataContext = function(context) {
+  delete context.componentElement;
+  delete context.component;
+  return context;
+};
 
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
@@ -20017,12 +20027,26 @@ dvt.MultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, b
   else {
     var currentLine = this._textInstance;
     var currentString = null;
+    var lastTruncatedLine = null;
+    var lastTruncatedString = null;
         
     // Split the string into parts.  Reverse the array so that we can use like a queue.
     var splits = this.getTextString().split(/\s+/);
     splits.reverse();
 
-    // Loop and add each part into the current line.  Create a new line once the current is full.
+    var moveToNewLine = function () {
+      var newLine = currentLine.copyShape();
+      newLine.setY(currentLine.getY() + lineSpace + lineHeight);
+      this.addChild(newLine);
+      this._additionalLines.push(newLine);
+
+      // Update the pointers to the line and the availHeight
+      currentLine = newLine;
+      currentString = null;
+      availHeight -= (lineSpace + lineHeight);
+    }.bind(this);
+
+    // Loop and add each split into the current line.  Create a new line once the current one is full.
     var isInitialSplit = true;
     while (splits.length > 0) {
       // Try adding the next split into the current line.
@@ -20032,10 +20056,35 @@ dvt.MultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, b
       currentLine.setUntruncatedTextString(null);
 
       if (!dvt.TextUtils.fitText(currentLine, maxWidth, Infinity, this, minChars, true)) {
-        if (isInitialSplit) // First piece of text does not fit at all. Returns false because no part of the text object will fit.
+        // If we are not at the beginning of the line,
+        // continue with current split on new line
+        if (currentString != null) {
+          splits.push(split);
+          moveToNewLine();
+        }
+
+        // 1. If first split does not fit at all, return false because none of the others will fit.
+        // 2. If none of the previous lines were truncated and none of the other splits will fit, return false because
+        //    it is better to drop the text than have a line with no ellipsis(that would indicate dropped lines).
+        else if (isInitialSplit || !lastTruncatedLine) {
+          this._textInstance.setTextString(null);
+          this._removeAdditionalLines();
           return false;
-        else // Subsequent piece of text doesn't fit at all.  Returns true because previous pieces of text had fit.
+        }
+
+        // Subsequent piece of text doesn't fit at all. Return true because previous pieces of text had fit.
+        else { 
+          // Reset the last truncated line to it's truncated form to show that lines were dropped.
+          lastTruncatedLine.setTextString(lastTruncatedString);
+          // Roll back to the last successful truncated line
+          var droppedLine = this._additionalLines.pop();
+          while (droppedLine && droppedLine !== lastTruncatedLine) {
+            this.removeChild(droppedLine);
+            droppedLine = this._additionalLines.pop();
+          }
+          droppedLine ? this._additionalLines.push(droppedLine) : null;
           return true;
+        }
       }
       else if (currentLine.isTruncated()) {
         // If there's no more space to add lines, we're done
@@ -20044,14 +20093,18 @@ dvt.MultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, b
           return true;
         }
 
+        // Update pointers to last truncated line 
+        lastTruncatedString = currentLine.getTextString();
+        lastTruncatedLine = currentLine;
+
         // Decide whether to keep this split in the current line or push to the next
-        if (currentString) {
+        if (currentString) { // If we are not at the beginning of a line
           // Always push the split to the next line if it didn't fit with the current one.
           currentLine.setTextString(currentString);
           splits.push(split);
         }
         else {
-          // This means that we are keeping a truncated text line, because we're not pushing the split back onto the stack
+          // This means that we are keeping a truncated text line, because we're not pushing the split back onto the stack to be processed
           if (breakOnTruncation) {
             this._textInstance.setTextString(this.getTextString());
             this._removeAdditionalLines();
@@ -20062,16 +20115,8 @@ dvt.MultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, b
         }
 
         // Text partially fit, create a new line for the next split
-        if (splits.length > 0) {
-          var newLine = currentLine.copyShape();
-          newLine.setY(currentLine.getY() + lineSpace + lineHeight);
-          this.addChild(newLine);
-          this._additionalLines.push(newLine);
-
-          // Update the pointers to the line and the availHeight
-          currentLine = newLine;
-          currentString = null;
-          availHeight -= (lineSpace + lineHeight);
+        if (splits.length > 0) { // If there are more splits to process
+          moveToNewLine();
         }
       }
       else // Text completely fit, continue using this line
@@ -28464,11 +28509,12 @@ dvt.EventManager.prototype.GetDragSourceType = function(event) {
 };
 
 /**
- * Returns the array of the data contexts of the current drag source.
- * @return {Array}
+ * Returns the data context of the current drag source or an array of data contexts.
+ * @param {boolean} bSanitize if true, the data contexts return should be sanitized so they can safely be stringified
+ * @return {Array|object}
  * @protected
  */
-dvt.EventManager.prototype.GetDragDataContexts = function() {
+dvt.EventManager.prototype.GetDragDataContexts = function(bSanitize) {
   // subclasses should override
   return [];
 };
@@ -28516,13 +28562,8 @@ dvt.EventManager.prototype._getDragEventPayload = function(event) {
  * @private
  */
 dvt.EventManager.prototype._getDragData = function(event) {
-  // Remove widget constructors from the data contexts because they can't be stringified
-  var dataContexts = this.GetDragDataContexts();
-  for (var i = 0; i < dataContexts.length; i++) {
-    dataContexts[i]['component'] = undefined;
-  }
-
-  return JSON.stringify(dataContexts);
+  // Stringify data contexts, ignoring component and componentElemment
+  return JSON.stringify(this.GetDragDataContexts(true));
 };
 
 /**

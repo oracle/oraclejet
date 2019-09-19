@@ -679,6 +679,11 @@ var __oj_n_box_node_metadata =
  *               }
  *              ]
  *
+ * @ojpropertylayout {propertyGroup: "common", items: ["rowsTitle", "columnsTitle", "animationOnDataChange", "animationOnDisplay", "style"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data", "rows", "columns", "cells"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 12
+ *
  * @classdesc
  * <h3 id="nBoxOverview-section">
  *   JET NBox
@@ -1150,6 +1155,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * @ojsignature [{target: "Type", value: "Array<K>"}]
        * @default []
        * @ojwriteback
+       * @ojeventgroup common
        */
       selection: [],
 

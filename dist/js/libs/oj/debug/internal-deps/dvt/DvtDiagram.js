@@ -8875,7 +8875,7 @@ DvtDiagramEventManager.prototype.GetDragSourceType = function(event) {
 /**
  * @override
  */
-DvtDiagramEventManager.prototype.GetDragDataContexts = function() {
+DvtDiagramEventManager.prototype.GetDragDataContexts = function(bSanitize) {
   var obj = this.DragSource.getDragObject();
   if (this._diagram.isSelectionSupported() && this._diagram.getSelectionHandler().getSelectedCount() > 1) {
     var selection = this._diagram.getSelectionHandler().getSelection();
@@ -8887,16 +8887,20 @@ DvtDiagramEventManager.prototype.GetDragDataContexts = function() {
         var context = selection[i].getDataContext();
         var bounds = selection[i].getDimensions(this._context.getStage());
         context['nodeOffset'] = new dvt.Point((bounds.x - contentPosition.x) / zoom, (bounds.y - contentPosition.y) / zoom);
+        if (bSanitize)
+          dvt.ToolkitUtils.cleanDragDataContext(context);
         contexts.push(context);
       }
     }
     return contexts;
   }
   if (obj instanceof DvtDiagramNode) {
-    if (obj.__dragType === 'ports' && obj.__dragPort) {
-      return {'dataContext': obj.getDataContext(), 'portElement': obj.__dragPort};
-    }
     var context = obj.getDataContext();
+    if (bSanitize)
+      dvt.ToolkitUtils.cleanDragDataContext(context);
+    if (obj.__dragType === 'ports' && obj.__dragPort) {
+      return bSanitize ? {'dataContext': context} : {'dataContext': context, 'portElement': obj.__dragPort};
+    }
     context['nodeOffset'] = new dvt.Point(0, 0);
     return [context];
   }
@@ -9779,7 +9783,7 @@ DvtDiagramLink.prototype.getDataContext = function() {
   } else {
     data = this.isPromoted() ? this.getData()['_links'] : this.getData()['_itemData'];  
   }
-  return {
+  var dataContext = {
     'id': this.getId(),
     'type': this.isPromoted() ? 'promotedLink' : 'link',
     'label': this.getData()['label'],
@@ -9787,6 +9791,8 @@ DvtDiagramLink.prototype.getDataContext = function() {
     'itemData' : itemData,
     'component': this.GetDiagram().getOptions()['_widgetConstructor']
   };
+
+  return this.getCtx().fixRendererContext(dataContext);
 };
 
 /**
@@ -10804,7 +10810,7 @@ DvtDiagramNode.prototype.getShortDesc = function() {
  */
 DvtDiagramNode.prototype.getDataContext = function() {
   var data = this.getData();
-  return {
+  var dataContext = {
     'id': this.getId(),
     'type': 'node',
     'label': data['label'],
@@ -10812,6 +10818,8 @@ DvtDiagramNode.prototype.getDataContext = function() {
     'itemData': this.GetDiagram().isDataProviderMode() ? data['_itemData'] : null,
     'component': this.GetDiagram().getOptions()['_widgetConstructor']
   };
+
+  return this.getCtx().fixRendererContext(dataContext);
 };
 
 /**

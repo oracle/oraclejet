@@ -2030,6 +2030,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * @instance
        * @default null
        * @ojwriteback
+       * @ojeventgroup common
        * @memberof oj.editableValue
        * @since 0.6.0
        * @type {any}
@@ -2514,6 +2515,10 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
 
       this._refreshTheming('disabled', this.options.disabled);
       this.widget()[0].classList.add('oj-form-control');
+      // We need to make sure the form component has an id since oj-form-layout
+      // creates the label and associates them via for/id. Adding an id from ojformlayout
+      // after the component is created does not create the form component's internal id.
+      this.widget().uniqueId();
 
       // create an ojLabel only if this isn't a custom element. For example, ojInputText will
       // create an ojLabel, but <oj-input-text> will not. Instead the app dev uses <oj-label>.
@@ -2776,7 +2781,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
 
       this._clearAllMessages(null, true);
       this._getComponentMessaging().deactivate();
-
+      this.widget().removeUniqueId();
       // make sure the label is still "alive". Otherwise we could get error when we try to
       // destroy it if the dom was removed first and ojLabel was destroyed directly.
       // also make sure to check if there is more than one label and destroy them individually.
