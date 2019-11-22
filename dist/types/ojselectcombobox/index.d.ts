@@ -1,8 +1,25 @@
-import { Converter, Validator, Validation, AsyncValidator } from '../ojvalidation-base';
+import AsyncValidator = require('../ojvalidator-async');
+import Validator = require('../ojvalidator');
+import Converter = require('../ojconverter');
+import { Validation } from '../ojvalidationfactory-base';
 import { DataProvider } from '../ojdataprovider';
+import RequiredValidator = require('../ojvalidator-required');
+import RegExpValidator = require('../ojvalidator-regexp');
+import NumberRangeValidator = require('../ojvalidator-numberrange');
+import LengthValidator = require('../ojvalidator-length');
+import DateTimeRangeValidator = require('../ojvalidator-datetimerange');
+import DateRestrictionValidator = require('../ojvalidator-daterestriction');
+import { IntlDateTimeConverter, DateTimeConverter } from '../ojconverter-datetime';
+import { IntlNumberConverter, NumberConverter } from '../ojconverter-number';
 import { editableValue, editableValueEventMap, editableValueSettableProperties } from '../ojeditablevalue';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojCombobox<V, SP extends ojComboboxSettableProperties<V, SV, RV>, SV = V, RV = V> extends editableValue<V, SP, SV, RV> {
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     addEventListener<T extends keyof ojComboboxEventMap<V, SP, SV, RV>>(type: T, listener: (this: HTMLElement, ev: ojComboboxEventMap<V, SP, SV, RV>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojComboboxSettableProperties<V, SV, RV>>(property: T): ojCombobox<V, SP, SV, RV>[T];
@@ -27,6 +44,8 @@ export namespace ojCombobox {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged<V, SP extends ojComboboxSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<ojCombobox<V, SP, SV, RV>["displayOptions"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Optgroup = {
         disabled?: boolean;
@@ -60,18 +79,24 @@ export namespace ojCombobox {
 export interface ojComboboxEventMap<V, SP extends ojComboboxSettableProperties<V, SV, RV>, SV = V, RV = V> extends editableValueEventMap<V, SP, SV, RV> {
     'ojAnimateEnd': ojCombobox.ojAnimateEnd;
     'ojAnimateStart': ojCombobox.ojAnimateStart;
+    'displayOptionsChanged': JetElementCustomEvent<ojCombobox<V, SP, SV, RV>["displayOptions"]>;
 }
-// These interfaces are empty but required to keep the component chain intact. Avoid lint-rule
-// tslint:disable-next-line no-empty-interface
 export interface ojComboboxSettableProperties<V, SV = V, RV = V> extends editableValueSettableProperties<V, SV, RV> {
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
 }
 export interface ojComboboxSettablePropertiesLenient<V, SV = V, RV = V> extends Partial<ojComboboxSettableProperties<V, SV, RV>> {
     [key: string]: any;
 }
 export interface ojComboboxMany<K, D, V = any> extends ojCombobox<V[], ojComboboxManySettableProperties<K, D, V>, V[], string[]> {
     asyncValidators: Array<AsyncValidator<V[]>>;
-    converter: Promise<Converter<V>> | Converter<V> | Validation.RegisteredConverter | null;
+    converter: Promise<Converter<V>> | Converter<V> | null;
     labelledBy: string | null;
+    maximumResultCount: number;
     minLength: number;
     optionRenderer?: ((param0: ojCombobox.OptionContext) => Element) | null;
     options: Array<ojCombobox.Option | ojCombobox.Optgroup> | DataProvider<K, D> | null;
@@ -84,7 +109,7 @@ export interface ojComboboxMany<K, D, V = any> extends ojCombobox<V[], ojCombobo
     readonly rawValue: string | null;
     readOnly: boolean;
     required: boolean;
-    validators: Array<Validator<V> | Validation.RegisteredValidator> | null;
+    validators: Array<Validator<V> | AsyncValidator<V>> | null;
     value: V[] | null;
     valueOptions: Array<{
         value: V;
@@ -130,6 +155,8 @@ export namespace ojComboboxMany {
     // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxMany<K, D, V>["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type maximumResultCountChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxMany<K, D, V>["maximumResultCount"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type minLengthChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxMany<K, D, V>["minLength"]>;
     // tslint:disable-next-line interface-over-type-literal
     type optionRendererChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxMany<K, D, V>["optionRenderer"]>;
@@ -160,6 +187,7 @@ export interface ojComboboxManyEventMap<K, D, V = any> extends ojComboboxEventMa
     'asyncValidatorsChanged': JetElementCustomEvent<ojComboboxMany<K, D, V>["asyncValidators"]>;
     'converterChanged': JetElementCustomEvent<ojComboboxMany<K, D, V>["converter"]>;
     'labelledByChanged': JetElementCustomEvent<ojComboboxMany<K, D, V>["labelledBy"]>;
+    'maximumResultCountChanged': JetElementCustomEvent<ojComboboxMany<K, D, V>["maximumResultCount"]>;
     'minLengthChanged': JetElementCustomEvent<ojComboboxMany<K, D, V>["minLength"]>;
     'optionRendererChanged': JetElementCustomEvent<ojComboboxMany<K, D, V>["optionRenderer"]>;
     'optionsChanged': JetElementCustomEvent<ojComboboxMany<K, D, V>["options"]>;
@@ -175,8 +203,9 @@ export interface ojComboboxManyEventMap<K, D, V = any> extends ojComboboxEventMa
 }
 export interface ojComboboxManySettableProperties<K, D, V = any> extends ojComboboxSettableProperties<V[]> {
     asyncValidators: Array<AsyncValidator<V[]>>;
-    converter: Promise<Converter<V>> | Converter<V> | Validation.RegisteredConverter | null;
+    converter: Promise<Converter<V>> | Converter<V> | null;
     labelledBy: string | null;
+    maximumResultCount: number;
     minLength: number;
     optionRenderer?: ((param0: ojCombobox.OptionContext) => Element) | null;
     options: Array<ojCombobox.Option | ojCombobox.Optgroup> | DataProvider<K, D> | null;
@@ -189,7 +218,7 @@ export interface ojComboboxManySettableProperties<K, D, V = any> extends ojCombo
     readonly rawValue: string | null;
     readOnly: boolean;
     required: boolean;
-    validators: Array<Validator<V> | Validation.RegisteredValidator> | null;
+    validators: Array<Validator<V> | AsyncValidator<V>> | null;
     value: V[] | null;
     valueOptions: Array<{
         value: V;
@@ -212,9 +241,10 @@ export interface ojComboboxManySettablePropertiesLenient<K, D, V = any> extends 
 }
 export interface ojComboboxOne<K, D, V = any> extends ojCombobox<V, ojComboboxOneSettableProperties<K, D, V>, V, string> {
     asyncValidators: Array<AsyncValidator<V>>;
-    converter: Promise<Converter<V>> | Converter<V> | Validation.RegisteredConverter | null;
+    converter: Promise<Converter<V>> | Converter<V> | null;
     filterOnOpen: 'none' | 'rawValue';
     labelledBy: string | null;
+    maximumResultCount: number;
     minLength: number;
     optionRenderer?: ((param0: ojCombobox.OptionContext) => Element) | null;
     options: Array<ojCombobox.Option | ojCombobox.Optgroup> | DataProvider<K, D> | null;
@@ -227,7 +257,7 @@ export interface ojComboboxOne<K, D, V = any> extends ojCombobox<V, ojComboboxOn
     readonly rawValue: string | null;
     readOnly: boolean;
     required: boolean;
-    validators: Array<Validator<V> | Validation.RegisteredValidator> | null;
+    validators: Array<Validator<V> | AsyncValidator<V>> | null;
     value: V | null;
     valueOption: {
         value: V | null;
@@ -281,6 +311,8 @@ export namespace ojComboboxOne {
     // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxOne<K, D, V>["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type maximumResultCountChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxOne<K, D, V>["maximumResultCount"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type minLengthChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxOne<K, D, V>["minLength"]>;
     // tslint:disable-next-line interface-over-type-literal
     type optionRendererChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxOne<K, D, V>["optionRenderer"]>;
@@ -313,6 +345,7 @@ export interface ojComboboxOneEventMap<K, D, V = any> extends ojComboboxEventMap
     'converterChanged': JetElementCustomEvent<ojComboboxOne<K, D, V>["converter"]>;
     'filterOnOpenChanged': JetElementCustomEvent<ojComboboxOne<K, D, V>["filterOnOpen"]>;
     'labelledByChanged': JetElementCustomEvent<ojComboboxOne<K, D, V>["labelledBy"]>;
+    'maximumResultCountChanged': JetElementCustomEvent<ojComboboxOne<K, D, V>["maximumResultCount"]>;
     'minLengthChanged': JetElementCustomEvent<ojComboboxOne<K, D, V>["minLength"]>;
     'optionRendererChanged': JetElementCustomEvent<ojComboboxOne<K, D, V>["optionRenderer"]>;
     'optionsChanged': JetElementCustomEvent<ojComboboxOne<K, D, V>["options"]>;
@@ -328,9 +361,10 @@ export interface ojComboboxOneEventMap<K, D, V = any> extends ojComboboxEventMap
 }
 export interface ojComboboxOneSettableProperties<K, D, V = any> extends ojComboboxSettableProperties<V> {
     asyncValidators: Array<AsyncValidator<V>>;
-    converter: Promise<Converter<V>> | Converter<V> | Validation.RegisteredConverter | null;
+    converter: Promise<Converter<V>> | Converter<V> | null;
     filterOnOpen: 'none' | 'rawValue';
     labelledBy: string | null;
+    maximumResultCount: number;
     minLength: number;
     optionRenderer?: ((param0: ojCombobox.OptionContext) => Element) | null;
     options: Array<ojCombobox.Option | ojCombobox.Optgroup> | DataProvider<K, D> | null;
@@ -343,7 +377,7 @@ export interface ojComboboxOneSettableProperties<K, D, V = any> extends ojCombob
     readonly rawValue: string | null;
     readOnly: boolean;
     required: boolean;
-    validators: Array<Validator<V> | Validation.RegisteredValidator> | null;
+    validators: Array<Validator<V> | AsyncValidator<V>> | null;
     value: V | null;
     valueOption: {
         value: V | null;
@@ -365,6 +399,12 @@ export interface ojComboboxOneSettablePropertiesLenient<K, D, V = any> extends P
     [key: string]: any;
 }
 export interface ojSelect<V, SP extends ojSelectSettableProperties<V, SV>, SV = V> extends editableValue<V, SP, SV> {
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelledBy: string | null;
     addEventListener<T extends keyof ojSelectEventMap<V, SP, SV>>(type: T, listener: (this: HTMLElement, ev: ojSelectEventMap<V, SP, SV>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
@@ -390,6 +430,8 @@ export namespace ojSelect {
         [propName: string]: any;
     }> {
     }
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged<V, SP extends ojSelectSettableProperties<V, SV>, SV = V> = JetElementCustomEvent<ojSelect<V, SP, SV>["displayOptions"]>;
     // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged<V, SP extends ojSelectSettableProperties<V, SV>, SV = V> = JetElementCustomEvent<ojSelect<V, SP, SV>["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -425,9 +467,16 @@ export namespace ojSelect {
 export interface ojSelectEventMap<V, SP extends ojSelectSettableProperties<V, SV>, SV = V> extends editableValueEventMap<V, SP, SV> {
     'ojAnimateEnd': ojSelect.ojAnimateEnd;
     'ojAnimateStart': ojSelect.ojAnimateStart;
+    'displayOptionsChanged': JetElementCustomEvent<ojSelect<V, SP, SV>["displayOptions"]>;
     'labelledByChanged': JetElementCustomEvent<ojSelect<V, SP, SV>["labelledBy"]>;
 }
 export interface ojSelectSettableProperties<V, SV = V> extends editableValueSettableProperties<V, SV> {
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelledBy: string | null;
 }
 export interface ojSelectSettablePropertiesLenient<V, SV = V> extends Partial<ojSelectSettableProperties<V, SV>> {
@@ -435,6 +484,7 @@ export interface ojSelectSettablePropertiesLenient<V, SV = V> extends Partial<oj
 }
 export interface ojSelectMany<K, D, V = any> extends ojSelect<V[], ojSelectManySettableProperties<K, D, V>> {
     labelledBy: string | null;
+    maximumResultCount: number;
     minimumResultsForSearch: number;
     optionRenderer?: ((param0: ojSelect.OptionContext) => Element) | null;
     options: Array<ojSelect.Option | ojSelect.Optgroup> | DataProvider<K, D> | null;
@@ -489,6 +539,8 @@ export namespace ojSelectMany {
     // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged<K, D, V = any> = JetElementCustomEvent<ojSelectMany<K, D, V>["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type maximumResultCountChanged<K, D, V = any> = JetElementCustomEvent<ojSelectMany<K, D, V>["maximumResultCount"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type minimumResultsForSearchChanged<K, D, V = any> = JetElementCustomEvent<ojSelectMany<K, D, V>["minimumResultsForSearch"]>;
     // tslint:disable-next-line interface-over-type-literal
     type optionRendererChanged<K, D, V = any> = JetElementCustomEvent<ojSelectMany<K, D, V>["optionRenderer"]>;
@@ -515,6 +567,7 @@ export interface ojSelectManyEventMap<K, D, V = any> extends ojSelectEventMap<V[
     'ojAnimateEnd': ojSelectMany.ojAnimateEnd;
     'ojAnimateStart': ojSelectMany.ojAnimateStart;
     'labelledByChanged': JetElementCustomEvent<ojSelectMany<K, D, V>["labelledBy"]>;
+    'maximumResultCountChanged': JetElementCustomEvent<ojSelectMany<K, D, V>["maximumResultCount"]>;
     'minimumResultsForSearchChanged': JetElementCustomEvent<ojSelectMany<K, D, V>["minimumResultsForSearch"]>;
     'optionRendererChanged': JetElementCustomEvent<ojSelectMany<K, D, V>["optionRenderer"]>;
     'optionsChanged': JetElementCustomEvent<ojSelectMany<K, D, V>["options"]>;
@@ -529,6 +582,7 @@ export interface ojSelectManyEventMap<K, D, V = any> extends ojSelectEventMap<V[
 }
 export interface ojSelectManySettableProperties<K, D, V = any[]> extends ojSelectSettableProperties<V[]> {
     labelledBy: string | null;
+    maximumResultCount: number;
     minimumResultsForSearch: number;
     optionRenderer?: ((param0: ojSelect.OptionContext) => Element) | null;
     options: Array<ojSelect.Option | ojSelect.Optgroup> | DataProvider<K, D> | null;
@@ -564,6 +618,7 @@ export interface ojSelectManySettablePropertiesLenient<K, D, V = any[]> extends 
 }
 export interface ojSelectOne<K, D, V = any> extends ojSelect<V, ojSelectOneSettableProperties<K, D, V>> {
     labelledBy: string | null;
+    maximumResultCount: number;
     minimumResultsForSearch: number;
     optionRenderer?: ((param0: ojSelect.OptionContext) => Element) | null;
     options: Array<ojSelect.Option | ojSelect.Optgroup> | DataProvider<K, D> | null;
@@ -618,6 +673,8 @@ export namespace ojSelectOne {
     // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged<K, D, V = any> = JetElementCustomEvent<ojSelectOne<K, D, V>["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type maximumResultCountChanged<K, D, V = any> = JetElementCustomEvent<ojSelectOne<K, D, V>["maximumResultCount"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type minimumResultsForSearchChanged<K, D, V = any> = JetElementCustomEvent<ojSelectOne<K, D, V>["minimumResultsForSearch"]>;
     // tslint:disable-next-line interface-over-type-literal
     type optionRendererChanged<K, D, V = any> = JetElementCustomEvent<ojSelectOne<K, D, V>["optionRenderer"]>;
@@ -644,6 +701,7 @@ export interface ojSelectOneEventMap<K, D, V = any> extends ojSelectEventMap<V, 
     'ojAnimateEnd': ojSelectOne.ojAnimateEnd;
     'ojAnimateStart': ojSelectOne.ojAnimateStart;
     'labelledByChanged': JetElementCustomEvent<ojSelectOne<K, D, V>["labelledBy"]>;
+    'maximumResultCountChanged': JetElementCustomEvent<ojSelectOne<K, D, V>["maximumResultCount"]>;
     'minimumResultsForSearchChanged': JetElementCustomEvent<ojSelectOne<K, D, V>["minimumResultsForSearch"]>;
     'optionRendererChanged': JetElementCustomEvent<ojSelectOne<K, D, V>["optionRenderer"]>;
     'optionsChanged': JetElementCustomEvent<ojSelectOne<K, D, V>["options"]>;
@@ -658,6 +716,7 @@ export interface ojSelectOneEventMap<K, D, V = any> extends ojSelectEventMap<V, 
 }
 export interface ojSelectOneSettableProperties<K, D, V = any> extends ojSelectSettableProperties<V> {
     labelledBy: string | null;
+    maximumResultCount: number;
     minimumResultsForSearch: number;
     optionRenderer?: ((param0: ojSelect.OptionContext) => Element) | null;
     options: Array<ojSelect.Option | ojSelect.Optgroup> | DataProvider<K, D> | null;

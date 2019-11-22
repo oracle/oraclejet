@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdatasource-common'], 
 /*
 * @param {Object} oj 
@@ -88,16 +90,14 @@ var __oj_row_expander_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * Convenient class that represents an empty node set
  * @param {any} parent the parent key
  * @param {number} start the start index
  * @constructor
+ * @final
  * @since 1.0
  * @ojtsignore
  * @export
@@ -162,10 +162,7 @@ oj.EmptyNodeSet.prototype.getMetadata = function (index) {
   return null;
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * Flattens a hierarchical node set, which can happen in node set returned from
@@ -175,6 +172,7 @@ oj.EmptyNodeSet.prototype.getMetadata = function (index) {
  *        be a subset of the node set.  This param gives the exact start index in the
  *        wrapped node set where the result should start.
  * @constructor
+ * @final
  * @since 1.0
  * @ojtsignore
  * @export
@@ -343,10 +341,7 @@ oj.FlattenedNodeSet.prototype._getDataOrMetadata = function (nodeSet, index, cur
   return null;
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * Combines two NodeSets together into one.
@@ -354,6 +349,7 @@ oj.FlattenedNodeSet.prototype._getDataOrMetadata = function (nodeSet, index, cur
  * @param {Object} nodeSet2 the second node set
  * @param {any} mergeAt the row key on the first node set where the second node set is merge to
  * @constructor
+ * @final
  * @since 1.0
  * @ojtsignore
  * @export
@@ -473,10 +469,6 @@ oj.MergedNodeSet.prototype._getRelativeIndex = function (index) {
   };
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /**
  * Wraps around the NodeSet to provide additional metadata
@@ -612,16 +604,14 @@ oj.NodeSetWrapper.prototype._getRelativeIndex = function (index) {
   return (index - this.m_range.start) + this.m_nodeSet.getStart();
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * Base class for FlattenedTreeDataGridDataSource and FlattenedTreeTableDataSource
  * @param {Object} treeDataSource the instance of TreeDataSource to flattened
  * @param {Object=} options the options set on the FlattenedDataSource
  * @constructor
+ * @final
  * @since 1.0
  * @export
  * @ojtsignore
@@ -2239,16 +2229,13 @@ oj.FlattenedTreeDataSource.prototype.getCapability = function (feature) {
   return this.m_wrapped.getCapability(feature);
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global Components:false */
 /**
  * @ojcomponent oj.ojRowExpander
  * @augments oj.baseComponent
  * @since 1.0.0
- * @ojstatus preview
+ *
  * @ojrole button
  * @ojshortdesc Enable hierarchical data to be displayed in a JET Table and JET DataGrid.
  * @ojsignature [{
@@ -2316,6 +2303,7 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
        * The context object obtained from the column renderer (Table) or cell renderer (DataGrid)
        *
        * @expose
+       * @ojrequired
        * @memberof oj.ojRowExpander
        * @instance
        * @type {Object}
@@ -2550,6 +2538,22 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
       return this.datasource.dataProvider;
     },
     /**
+     * @private
+     */
+    _getChildCount: function (parentKey) {
+      if (oj.DataProviderFeatureChecker.isDataProvider(this.datasource)) {
+        var dataprovider;
+        if (parentKey != null) {
+          dataprovider = this._getFlattenedDataProvider().dataProvider.getChildDataProvider(
+            this.parentKey);
+        } else {
+          dataprovider = this._getFlattenedDataProvider().dataProvider;
+        }
+        return dataprovider.getTotalSize();
+      }
+      return this.datasource.getWrappedDataSource().getChildCount(this.parentKey);
+    },
+    /**
      * Redraw the RowExpander element.
      *
      * @expose
@@ -2734,8 +2738,9 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
     _addIcon: function () {
       var iconSpacer = $(document.createElement('div')).addClass(this.classNames.iconspacer);
       this.toucharea = $(document.createElement('div')).addClass(this.classNames.toucharea);
+      // if icon is a leaf do not add # because that will trigger navigation if entered in JAWS
       this.icon = $(document.createElement('a'))
-        .attr('href', '#')
+        .attr('href', this.iconState === 'leaf' ? '' : '#')
         .attr('aria-labelledby', this._getLabelledBy())
         .addClass(this.classNames.icon)
         .addClass(this.classNames.clickable)
@@ -2853,10 +2858,7 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
             var context = this.getTranslatedString('accessibleRowDescription', {
               level: this.depth,
               num: this.index + 1,
-              total: oj.DataProviderFeatureChecker.isDataProvider(this.datasource) ?
-                this._getFlattenedDataProvider().dataProvider.getChildDataProvider(
-                  this.parentKey).getTotalSize() :
-                this.datasource.getWrappedDataSource().getChildCount(this.parentKey)
+              total: this._getChildCount(this.parentKey)
             });
             // state of row expander for screen reader
             var state;
@@ -2927,10 +2929,7 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
               var context = this.getTranslatedString('accessibleRowDescription', {
                 level: this.depth,
                 num: this.index + 1,
-                total: oj.DataProviderFeatureChecker.isDataProvider(this.datasource) ?
-                this._getFlattenedDataProvider().dataProvider.getChildDataProvider(
-                  this.parentKey).getTotalSize() :
-                  this.datasource.getWrappedDataSource().getChildCount(this.parentKey)
+                total: this._getChildCount(this.parentKey)
               });
               this.component._setAccessibleContext({
                 context: context,
@@ -3177,6 +3176,7 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
      * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
      */
   });
+
 
 /* global __oj_row_expander_metadata:false */
 

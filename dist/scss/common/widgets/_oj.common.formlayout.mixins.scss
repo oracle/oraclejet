@@ -21,16 +21,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
 
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-    text-align: var(#{$labelInlineAlign});
-    html[dir="rtl"] & {
-      text-align: var(#{$labelInlineAlign}-rtl);
-    }
-  }
-  @else {
+
+
     @include oj-bidi-property($property: 'text-align', 
                               $startOrEnd: $labelInlineAlign);
-  }
+
 }
 
 // This inline label mixin is applied to the all elements
@@ -42,25 +37,15 @@
 {
   display: inline-block;
   vertical-align: top;
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-    margin-top: var(#{$labelInlineMarginTop});
-  }
-  @else {
+
     margin-top: $labelInlineMarginTop;
-  }
-  // box sizing required for firefox or the 
+
+  // box sizing required for firefox or the
   // gutter padding  doesn't work
   box-sizing: border-box;
 
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-    html:not([dir="rtl"]) & {
-      padding-right: var(#{$labelInlineGutter});
-    }
-    html[dir="rtl"] & {
-      padding-left: var(#{$labelInlineGutter});
-    }
-  }
-  @else {
+
+
     @include oj-ltr {
       padding-right: $labelInlineGutter; 
     }
@@ -68,24 +53,14 @@
     @include oj-rtl(){
       padding-left: $labelInlineGutter;
     }
-  }
+
 }
 
 // when we don't float, then the order of the dom is the order of what
 // you see, so we want spacing after the icons, not before.
 @mixin oj-inline-label-support-non-float-spacing()
 {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-    html:not([dir="rtl"]) & {
-      margin-left: 0;
-      margin-right: 6px;
-    }
-    html[dir="rtl"] & {
-      margin-right: 0;
-      margin-left: 6px;
-    }
-  }
-  @else {
+
     @include oj-ltr {
       margin-left: 0;
       margin-right: 6px;
@@ -94,17 +69,14 @@
       margin-right: 0;
       margin-left: 6px;
     }
-  }
+
 }
 
 // TODO: This function seems totally bogus.  How can stripping the units and checking the value
 // be correct here?
 @mixin oj-inline-label-support-radio-checkbox()
 {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-    margin-top: var(--oj-form-layout-label-inline-radio-checkbox-margin-top);
-  }
-  @else {
+
     @if (oj-strip-unit($radioCheckboxRowHeight) > 2.6) {
       // radioset/checkboxset are inline-top aligned, but they need to be
       // a couple pixels higher than other input components to have the label
@@ -117,7 +89,7 @@
       // line up with the first radio's label
       margin-top: $radioCheckboxRowHeight/10;
     }
-  }
+
   margin-bottom: 0;
 }
 
@@ -150,6 +122,7 @@
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .#{$selectorPrefix}-label-nowrap,
   .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
   .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
+  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item > .oj-form-control-label-top .oj-label,
   .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
     white-space: nowrap;
     overflow: hidden;
@@ -168,19 +141,13 @@
 
   // inline field suport
   .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(even) {
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-      text-align: var(#{$fieldInlineAlign});
-      html[dir="rtl"] & {
-        text-align: var(#{$fieldInlineAlign}-rtl);
-      }
-    }
-    @else {
+
       @include oj-bidi-property($property: 'text-align', 
                                 $startOrEnd: $fieldInlineAlign);
-    }
+
   }
 
-  // without this, the required icon is chopped off at top in Chrome. 
+  // without this, the required icon is chopped off at top in Chrome.
   .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon {
      margin-top: 1px;
   }
@@ -249,43 +216,47 @@
 
   // in the 'across' case where you have multiple fields in the same row you need padding between the first field and the second label
 
-  .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:nth-child(odd) {
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-      html:not([dir="rtl"]) & {
-        padding-left: var(#{$labelInlineGutter});
-      }
-      html[dir="rtl"] & {
-        padding-right: var(#{$labelInlineGutter});
-      }
+  .#{$selectorPrefix}-form-across.#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) {
+    @include oj-ltr {
+      padding-left: calc(#{$formLayoutColumnGutter} / 2);
     }
-    @else {
-      @include oj-ltr {
-        padding-left: $labelInlineGutter;
-      }
-      @include oj-rtl(){
-        padding-right: $labelInlineGutter;
-      }
+    @include oj-rtl(){
+      padding-right: calc(#{$formLayoutColumnGutter} / 2);
     }
   }
 
   // Add padding to every even flex item, except the last one.
   .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-      html:not([dir="rtl"]) & {
-        padding-right: var(#{$labelInlineGutter});
-      }
-      html[dir="rtl"] & {
-        padding-left: var(#{$labelInlineGutter});
-      }
-    }
-    @else {
+
       @include oj-ltr {
-        padding-right: $labelInlineGutter;
+        padding-right: calc(#{$formLayoutColumnGutter} / 2);
       }
       @include oj-rtl(){
-        padding-left: $labelInlineGutter;
+        padding-left: calc(#{$formLayoutColumnGutter} / 2);
       }
+
+  }
+  // For alta/redwood
+  .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:first-child {
+
+    @include oj-ltr {
+      padding-left: 0;
     }
+    @include oj-rtl(){
+      padding-right: 0;
+    }
+
+  }
+
+  .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:last-child {
+
+    @include oj-ltr {
+      padding-right: 0;
+    }
+    @include oj-rtl(){
+      padding-left: 0;
+    }
+
   }
   // For the form across, we need to remove the left/right padding from the .oj-flex div as the padding is
   // on the even/odd .oj-flex-item divs (see above)
@@ -338,22 +309,14 @@
   // when there are multiple columns put a gutter between the columns
   .oj-form-layout:not(.#{$selectorPrefix}-only-flex-direction-column) > .oj-flex-item:not(:first-child) {
      // todo: temporarily using $labelInlineGutter
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-      html:not([dir="rtl"]) & {
-        margin-left: var(#{$labelInlineGutter});
-      }
-      html[dir="rtl"] & {
-        margin-right: var(#{$labelInlineGutter});
-      }
-    }
-    @else {
+
       @include oj-ltr {
         margin-left: $labelInlineGutter;
       }
       @include oj-rtl(){
         margin-right: $labelInlineGutter;
       }
-    }
+
   }
 
   // declare the *-label-inline selector for inline label support
@@ -411,22 +374,14 @@
   // .oj-label label selector in common.formcontrol.label.scss which has rtl/ltr, otherwise
   // we get that float:right if we have .oj-md-labels-inline on the label in rtl mode.
   .#{$selectorPrefix}-label-inline.oj-label label {
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-      html:not([dir="rtl"]) & {
-        float: none;
-      }
-      html[dir="rtl"] & {
-        float: none;
-      }
-    }
-    @else {
+
       @include oj-ltr {
         float: none;
       }
       @include oj-rtl(){
         float: none;
       }
-    }
+
   }
 }
 
@@ -435,10 +390,7 @@
                        $labelInlineGutter: $formControlLabelInlineGutter)
 {
   .oj-form-layout.#{$selectorPrefix}-flex-direction-column > .oj-flex-item:not(:last-child) > .oj-form > .oj-flex:last-child {
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-      border-width: 0 0 var(--oj-form-layout-divider-width) 0;
-    }
-    @else {
+
     // when there is only one column add back the divider except on the last form
       @if $formLayoutDividerColor != null and $formLayoutDividerColor != transparent {
         border-width: 0 0 1px 0;
@@ -446,7 +398,7 @@
       @else {
         border-width: 0 0 0 0;
       }
-    }
+
   }
 }
 
@@ -459,26 +411,18 @@
     // With this layout the columns should automatically be 
     // approximately the same heights.
     .oj-form-cols-labels-inline { 
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        column-width: var('--oj-form-layout-labels-inline-column-width');
-        column-gap: var('--oj-form-layout-labels-inline-column-gap');
-      }
-      @else {
+
         column-width: $formLayoutLabelsInlineColumnWidth;
         column-gap: $formLayoutLabelsInlineColumnGap;
-      }
-    } 
+
+    }
 
     .oj-form-cols { 
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        column-width: var('--oj-form-layout-column-width');
-        column-gap: var('--oj-form-layout-column-gap');
-      }
-      @else {
+
         column-width: $formLayoutColumnWidth;
         column-gap: $formLayoutColumnGap;
-      }
-    } 
+
+    }
 
     // set the max number of columns to 2
     .oj-form-cols-max2 { 
@@ -510,12 +454,9 @@
       // the margins above and below are 15px, but there's
       // already the formlayout margin bottom above, so subtract that
       // from the top
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        margin: calc(15px - var(--oj-form-layout-margin-bottom)) 0 15px 0;
-      }
-      @else {
+
         margin: calc(15px - #{$formLayoutMarginBottom}) 0 15px 0;
-      }
+
     }
 
 
@@ -525,24 +466,18 @@
 
     .oj-form > .oj-form-control,
     .oj-form > .oj-form-non-control {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        margin-bottom: var(--oj-form-layout-margin-bottom);
-      }
-      @else {
+
         margin-bottom: $formLayoutMarginBottom;
-      }
+
     }
 
     // in some cases form controls are grouped together with the 
     // oj-form-control-group class, in that case you need
     // to subtract wrappableMarginBottom
     .oj-form > .oj-form-control-group {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        margin-bottom: calc(var(--oj-form-layout-margin-bottom) - var(--oj-wrappable-margin-bottom));
-      }
-      @else {
+
         margin-bottom: calc(#{$formLayoutMarginBottom} - #{$wrappableMarginBottom});
-      }
+
     }
 
     // This keeps the form controls lined up in case one has an inline message.
@@ -554,17 +489,11 @@
     // when a form is nested reset the text align to start, otherwise the field's
     // text-align property will be inherited
     .oj-form > .oj-flex > .oj-flex-item > .oj-form{
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        text-align: left;
-        html[dir="rtl"] & {
-          text-align: right;
-        }
-      }
-      @else {
+
         @include oj-bidi-property(
            $property: 'text-align', 
            $startOrEnd: start);
-      }
+
     }
 
 
@@ -581,46 +510,27 @@
     //
     // See the form layout demo titled "inline responsive across" 
     // before checking in any changes to where the margin is placed.
-    // 
+    //
     // For the nested form layout case, the padding is coming from the form layout and is not
     // possible to remove due to column direction case, so we don't want the margin applied here
     // for that case.
     .oj-form > .oj-flex > .oj-flex-item:not(.oj-formlayout-nested-formlayout):nth-child(even),
     .oj-form > .oj-flex > .oj-flex-item:not(.oj-formlayout-nested-formlayout):last-child {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        margin: 0 0 calc(var(--oj-form-layout-margin-bottom) - var(--oj-wrappable-margin-bottom)) 0;
-      }
-      @else {
+
         margin: 0 0 calc(#{$formLayoutMarginBottom} - #{$wrappableMarginBottom}) 0;
-      }
+
     }
 
     .oj-form > .oj-flex > .oj-flex-item > .oj-form-non-control {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        margin-bottom: var(--oj-wrappable-margin-bottom);
-      }
-      @else {
+
         margin-bottom: $wrappableMarginBottom;
-      }
+
     }
 
 
 
     // borders around the form
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-      .oj-form-layout {
-        border-color: var(--oj-form-layout-border-color);
-        border-style: solid;
-        border-width: var(--oj-form-layout-border-width) 0 0;
-      }
 
-      .oj-form-layout-inset {
-        // todo: use vars from Amy's padding classes?
-        margin: var(--oj-form-layout-inset-margin);
-        border-width: var(--oj-form-layout-border-width);
-      }
-    }
-    @else {
       @if $formLayoutBorderColor != null and $formLayoutBorderColor != transparent {
         .oj-form-layout {
           border-color: $formLayoutBorderColor;
@@ -652,22 +562,10 @@
           border-width: 0;
         }
       }
-    }
+
 
     // dividers between rows
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-      .oj-form > .oj-flex {
-        border-style: solid;
-        border-color: var(--oj-form-layout-divider-color);
-        border-width: 0 0 var(--oj-form-layout-divider-width) 0;
-        padding: var(--oj-form-layout-divider-margin) 0 0;
-      }
-
-      .oj-form-layout > .oj-form[class*="oj-form-cols-"] > .oj-flex:last-child {
-        border-width: 0 0 var(--oj-form-layout-divider-width) 0;
-      }
-  }
-    @else {
+  
       @if  $formLayoutDividerColor != null and $formLayoutDividerColor != transparent {
         .oj-form > .oj-flex {
           border-style: solid;
@@ -703,7 +601,7 @@
           border-width: 0 0 0 0;
         }
       }
-    }
+
 
     // no border on the last row
     .oj-form > .oj-flex:last-child{

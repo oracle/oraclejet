@@ -2,15 +2,16 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'ojs/ojtranslation', 'jquery', 'ojs/ojmessaging', 'ojs/ojlogger', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-amd/keycode', 'jqueryui-amd/focusable', 'jqueryui-amd/tabbable', 'ojs/ojcustomelement'], function(oj, Translations, $, Message, Logger)
+
+define(['ojs/ojcore', 'ojs/ojtranslation', 'jquery', 'ojs/ojmessaging', 'ojs/ojlogger', 'ojs/ojmetadatautils',
+        'ojs/ojdefaultsutils', 'ojs/ojcustomelement', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-amd/keycode', 'jqueryui-amd/focusable', 
+        'jqueryui-amd/tabbable'], 
+  function(oj, Translations, $, Message, Logger, MetadataUtils, DefaultsUtils)
 {
   "use strict";
-/*
-** Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
-**
-**34567890123456789012345678901234567890123456789012345678901234567890123456789
-*/
+
 
 /**
  * @namespace oj.Components
@@ -705,10 +706,7 @@ function _isComponentElement(node) {
   return (_isCompositeOrCustom(node) || _isJQueryUI(node));
 }
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Promise:false, _OJ_COMPONENT_NODE_CLASS:false, _OJ_WIDGET_NAMES_DATA:false,
           __ojDynamicGetter:false, Translations:false, Logger: false*/
@@ -2697,11 +2695,20 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
       var markerClass = 'oj-active';
 
       if (oj.DomUtils.isTouchSupported()) {
-        element.on('touchstart' + this.activeableEventNamespace,
-                   this._activeStartHandler.bind(this, afterToggle))
-          .on('touchend' + this.activeableEventNamespace + ' ' +
-              'touchcancel' + this.activeableEventNamespace,
-              this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle));
+        // make sure native element exists
+        if (element[0]) {
+          // register touchstart with passive option
+          this._touchstartListener = this._activeStartHandler.bind(this, afterToggle);
+          element[0].addEventListener('touchstart', this._touchstartListener, { passive: true });
+        }
+        element.on(
+          'touchend'
+          + this.activeableEventNamespace
+          + ' '
+          + 'touchcancel'
+          + this.activeableEventNamespace,
+          this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle)
+        );
       }
 
       element.on('mousedown' + this.activeableEventNamespace,
@@ -2728,6 +2735,12 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
      */
     _RemoveActiveable: function (element) {
       if (element) {
+        // make sure native element exists
+        if (element[0]) {
+          // remove touchstart registered with passive option
+          element[0].removeEventListener('touchstart', this._touchstartListener, { passive: true });
+          delete this._touchstartListener;
+        }
         element.off(this.activeableEventNamespace);
         _lastActiveElement = null;
       }
@@ -3190,6 +3203,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
         c.containers = _getSpecialContainerNames(element);
         c.element = element;
         c.isCustomElement = this._IsCustomElement();
+        if (c.isCustomElement) c.customElement = this._getRootElement();
       }
       return this._propertyContext;
     },
@@ -3969,14 +3983,15 @@ function _returnTrue() {
  * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
  */
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global Message:false */
 
 /**
- * Component Messaging Utilities.
+ * This picks a strategy for where to put each piece of information
+ * that is on a component. It started out being messaging pieces: like
+ * placeholder, converter hints, validator hints, error messages. In v8.0
+ * we added labelEdge which could be top or inside the text field or inside
+ * a non-text-field (like a radioset).
  * @param {Object} component instance
  * @protected
  * @constructor
@@ -3991,17 +4006,22 @@ oj.ComponentMessaging = function (component) {
 oj.Object.createSubclass(oj.ComponentMessaging, oj.Object, 'oj.ComponentMessaging');
 
 /**
- * Default display types supported for component messaging.
+ * Default strategy types supported for component messaging.
+ * Think of these as places in the dom you want things.
+ * Labels are the only things you put into the 'label-edge' positions,
+ * so you will have only one of these at a time.
  * @memberof! oj.ComponentMessaging
  * @const
  * @protected
  * @ignore
  */
-oj.ComponentMessaging._DISPLAY_TYPE = {
+oj.ComponentMessaging._STRATEGY_TYPE = {
   NONE: 'none',
   NOTEWINDOW: 'notewindow',
   PLACEHOLDER: 'placeholder',
-  INLINE: 'inline'
+  INLINE: 'inline',
+  LABEL_EDGE_INSIDE: 'inside',
+  LABEL_EDGE_INSIDE_FORM_CNTRL: 'insideformcontrol'
 };
 
 /**
@@ -4012,7 +4032,7 @@ oj.ComponentMessaging._DISPLAY_TYPE = {
  * @protected
  * @ignore
  */
-oj.ComponentMessaging._DISPLAY_TYPE_TO_CALLBACK = {};
+oj.ComponentMessaging._STRATEGY_TYPE_TO_CALLBACK = {};
 
 /**
  * Stores the constructor function callback object used to constuct a strategy object for the
@@ -4025,7 +4045,7 @@ oj.ComponentMessaging._DISPLAY_TYPE_TO_CALLBACK = {};
  */
 oj.ComponentMessaging.registerMessagingStrategy = function (type, strategyConstructorCallback) {
   if (type && typeof strategyConstructorCallback === 'function') {
-    oj.ComponentMessaging._DISPLAY_TYPE_TO_CALLBACK[type] = strategyConstructorCallback;
+    oj.ComponentMessaging._STRATEGY_TYPE_TO_CALLBACK[type] = strategyConstructorCallback;
   }
 };
 
@@ -4064,7 +4084,8 @@ oj.ComponentMessaging.prototype.activate = function (launcher, contentElement, c
 
   this._messagingContent = oj.CollectionUtils.copyInto(this._messagingContent || {}, content);
 
-  // if already active, reinitialize strategies based on new messagingDisplay preferences.
+  // if already active, reinitialize strategies based on new messagingDisplay
+  // and labelEdge preferences.
   if (!this._isActive()) {
     // for each 'messaging strategy' (e.g., inline == InlineMessagingStrategy,
     // notewindow == PopupMessagingStrategy, etc), call .activate which initializes
@@ -4132,23 +4153,23 @@ oj.ComponentMessaging.prototype.close = function () {
 
 /**
  * Creates a messaging strategy for the specified type, initializing it with the options provided.
- * @param {string|number} type defined by oj.ComponentMessaging._DISPLAY_TYPE. For example,
- * a displayType of 'notewindow' creates a PopupComponentMessaging strategy. See
+ * @param {string|number} type defined by oj.ComponentMessaging._STRATEGY_TYPE. For example,
+ * a strategyType of 'notewindow' creates a PopupComponentMessaging strategy. See
  * registerMessagingStrategy where we register the type and the callback to call for a given type.
  * We currently have PopupMessagingStrategy, DefaultMessagingStrategy, PlaceholderMessagingStrategy,
  * and InlineComponentStrategy.
  * e.g., In PopupComponentMessaging.js:
- *  oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._DISPLAY_TYPE.NOTEWINDOW,
+ *  oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW,
  *                              oj.PopupMessagingStrategy
  * @param {Array.<string>|undefined} artifactsForType (e.g., 'messages', 'title', 'validatorHints')
  *
  * @private
  * @instance
- * @memberOf !oj.ComponentMessaging
+ * @memberof !oj.ComponentMessaging
  */
 oj.ComponentMessaging.prototype._createMessagingStrategy = function (type, artifactsForType) {
-  var Callback = oj.ComponentMessaging._DISPLAY_TYPE_TO_CALLBACK[type] ||
-      oj.ComponentMessaging._DISPLAY_TYPE_TO_CALLBACK[oj.ComponentMessaging._DISPLAY_TYPE.NONE];
+  var Callback = oj.ComponentMessaging._STRATEGY_TYPE_TO_CALLBACK[type] ||
+      oj.ComponentMessaging._STRATEGY_TYPE_TO_CALLBACK[oj.ComponentMessaging._STRATEGY_TYPE.NONE];
 
   // dynamically instantiate the strategy objects.
   return new Callback(artifactsForType);
@@ -4160,7 +4181,7 @@ oj.ComponentMessaging.prototype._createMessagingStrategy = function (type, artif
  * @return {Object|null}
  * @private
  * @instance
- * @memberOf !oj.ComponentMessaging
+ * @memberof !oj.ComponentMessaging
  */
 oj.ComponentMessaging.prototype._getComponent = function () {
   return this._component || null;
@@ -4173,7 +4194,7 @@ oj.ComponentMessaging.prototype._getComponent = function () {
  * @return {Object|null} null if messaging is not activated.
  * @private
  * @instance
- * @memberOf !oj.ComponentMessaging
+ * @memberof !oj.ComponentMessaging
  */
 oj.ComponentMessaging.prototype._getLauncher = function () {
   return this._launcher || null;
@@ -4193,7 +4214,7 @@ oj.ComponentMessaging.prototype._getLauncher = function () {
  * @return {Object|null} null if launcher is null
  * @private
  * @instance
- * @memberOf !oj.ComponentMessaging
+ * @memberof !oj.ComponentMessaging
  */
 oj.ComponentMessaging.prototype._getContentElement = function () {
   return this._contentElement || null;
@@ -4205,7 +4226,7 @@ oj.ComponentMessaging.prototype._getContentElement = function () {
  * @return {Object}
  * @private
  * @instance
- * @memberOf !oj.ComponentMessaging
+ * @memberof !oj.ComponentMessaging
  */
 oj.ComponentMessaging.prototype._getMessagingContent = function () {
   return this._messagingContent || {};
@@ -4221,11 +4242,11 @@ oj.ComponentMessaging.prototype._isActive = function () {
 };
 
 /**
- * Returns a key/value array: displayTypes -> array of artifacts using that displayType.
+ * Returns a key/value array: strategyTypes -> array of artifacts using that strategyType.
  * where artifacts is 'messages', 'converterHint', 'validatorHint', 'title';
  * e.g.,
- * artifactsByDisplayType[oj.ComponentMessaging._DISPLAY_TYPE.NOTEWINDOW] = ['messages', 'converterHints']
- * artifactsByDisplayType[oj.ComponentMessaging._DISPLAY_TYPE.NONE] = ['validatorHints']
+ * artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW] = ['messages', 'converterHints']
+ * artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.NONE] = ['validatorHints']
  * The types of messaging content for which displayOptions can be configured include
  * messages, converterHint, validatorHint and title.
  * The displayOptions for each type is specified either as an array of strings or a string.
@@ -4235,7 +4256,7 @@ oj.ComponentMessaging.prototype._isActive = function () {
 oj.ComponentMessaging.prototype._getResolvedMessagingDisplayOptions = function () {
   var artifactsByDisplayType = {};
   var artifactDisplayTypeResolved = false;
-  var compPH = this._component.options.placeholder;
+  var options = this._component.options;
   var messagingPreferences = this._component.options.displayOptions || {};
   var $messagingPreferences = {};
   var self = this;
@@ -4246,57 +4267,86 @@ oj.ComponentMessaging.prototype._getResolvedMessagingDisplayOptions = function (
   var keys = Object.keys(messagingPreferences);
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
-    var displayTypes = messagingPreferences[key];
-    // loop over array of displayTypes preferred for artifact.
+    var strategyTypes = messagingPreferences[key];
+    // loop over array of strategyTypes preferred for artifact.
     // artifacts are 'messages', 'converterHint', 'validatorHint', 'title'
     artifactDisplayTypeResolved = false;
     var artifact = key + '';
       // we take either array or string values for displayOptions.
-    if (Array.isArray(displayTypes)) {
-      for (var j = 0; j < displayTypes.length; j++) {
-        var displayType = displayTypes[j];
+    if (Array.isArray(strategyTypes)) {
+      for (var j = 0; j < strategyTypes.length; j++) {
+        var strategyType = strategyTypes[j];
         if (!artifactDisplayTypeResolved) {
           artifactDisplayTypeResolved =
-            self._resolveDisplayTypeForArtifact(artifact, displayType, compPH,
+            self._resolveDisplayTypeForArtifact(artifact, strategyType, options,
                                                 $messagingPreferences);
         }
       }
-    } else if (typeof displayTypes === 'string') {
+    } else if (typeof strategyTypes === 'string') {
       if (!artifactDisplayTypeResolved) {
         artifactDisplayTypeResolved =
-          self._resolveDisplayTypeForArtifact(artifact, displayTypes, compPH,
+          self._resolveDisplayTypeForArtifact(artifact, strategyTypes, options,
                                               $messagingPreferences);
       }
     }
 
     // if we couldn't resolve then use "none". E.g., validationHint: ['none']
     if (!artifactDisplayTypeResolved) {
-      $messagingPreferences[artifact] = oj.ComponentMessaging._DISPLAY_TYPE.NONE;
+      $messagingPreferences[artifact] = oj.ComponentMessaging._STRATEGY_TYPE.NONE;
     }
   }
 
-  // collate by displayType -> artifact. but first reset
-  $.each(oj.ComponentMessaging._DISPLAY_TYPE, function (type, name) {
+  // update the label creation strategy
+  // at this point, $messagingPreferences may have an Object like:
+  // {converterHint:'notewindow',
+  // helpInstruction:'notewindow', messages:'inline', validatorHint:'notewindow}
+  // After the call to _addLabelStrategy, it might be added
+  // labelEdge:'top'
+  self._addLabelStrategy($messagingPreferences);
+
+  // collate by strategyType -> artifact. but first reset
+  $.each(oj.ComponentMessaging._STRATEGY_TYPE, function (type, name) {
     artifactsByDisplayType[name] = [];
   });
 
-  $.each($messagingPreferences, function (_artifact, _displayType) {
-    // an artifact eventually resolves to one displayType.
-    artifactsByDisplayType[_displayType].push(_artifact);
+  $.each($messagingPreferences, function (_artifact, _strategyType) {
+    // an artifact eventually resolves to one strategyType.
+    artifactsByDisplayType[_strategyType].push(_artifact);
   });
-
+  // The keys to the object is the DisplayType, like inline, inside,
+  // insideFormControl, none, notewindow, placeholder.
+  // The artifacts are things like converterHint, label.
   return artifactsByDisplayType;
+};
+
+// Note:
+// Each LabelStrategy is self-registering., e.g., InsideFormControlLabelStrategy registers itself
+// by calling oj.ComponentMessaging.registerMessagingStrategy.
+// this adds the label strategy for the component by the same type.
+oj.ComponentMessaging.prototype._addLabelStrategy = function ($messagingPreferences) {
+  var self = this;
+  var artifactKey = 'labelEdge';
+  // The strategyTypeLabelEdge will be one of these: oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE*
+  var strategyTypeLabelEdge = this._component._ResolveLabelEdgeStrategyType();
+  var artifactDisplayTypeResolved = self._resolveDisplayTypeForArtifact(artifactKey,
+    strategyTypeLabelEdge, this._component.options, $messagingPreferences);
+
+  if (!artifactDisplayTypeResolved) {
+    // eslint-disable-next-line no-param-reassign
+    $messagingPreferences[artifactKey] = oj.ComponentMessaging._STRATEGY_TYPE.NONE;
+  }
 };
 
 oj.ComponentMessaging.prototype._resolveDisplayTypeForArtifact = function (
   artifact,
-  displayType,
-  compPH,
+  strategyType,
+  options,
   $messagingPreferences) {
   var artifactDisplayTypeResolved = false;
-  switch (displayType) {
+  var compPH = options.placeholder;
+  switch (strategyType) {
     // placeholder display is special in that it's only supported on 'converterHint'.
-    case oj.ComponentMessaging._DISPLAY_TYPE.PLACEHOLDER :
+    case oj.ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER :
 
       if (artifact === 'converterHint') {
         // if placeholder is the first preference for converterHint, it's used under certain
@@ -4304,8 +4354,8 @@ oj.ComponentMessaging.prototype._resolveDisplayTypeForArtifact = function (
         // if options.placeholder is not set then use 'converterHint' as the default
         // 'placeholder'
         // alternately if (options.placeholder), i.e., a custom placeholder is set, then
-        // ignore the placeholder displayType and use the next display type as the default
-        // for the artifact. We may have a fallback displayType in which case we use it,
+        // ignore the placeholder strategyType and use the next display type as the default
+        // for the artifact. We may have a fallback strategyType in which case we use it,
         // otherwise we use 'none'. E.g.,
         // {'converterHint': ['placeholder', 'notewindow']} // use notewindow
         // {'converterHint': ['placeholder']}               // use none
@@ -4313,12 +4363,12 @@ oj.ComponentMessaging.prototype._resolveDisplayTypeForArtifact = function (
         if (!artifactDisplayTypeResolved) {
           if (!compPH) {
             // eslint-disable-next-line no-param-reassign
-            $messagingPreferences[artifact] = displayType;
+            $messagingPreferences[artifact] = strategyType;
             artifactDisplayTypeResolved = true;
           }
         }
       } else {
-        // displayType 'placeholder' is not supported on other artifacts
+        // strategyType 'placeholder' is not supported on other artifacts
         // ignore if present
         // TODO: In the future we may want to support configuring validatorHint ot title as
         // placeholder as well.
@@ -4326,25 +4376,36 @@ oj.ComponentMessaging.prototype._resolveDisplayTypeForArtifact = function (
 
       break;
     // inline display is special in that it's only supported on 'messages'.
-    case oj.ComponentMessaging._DISPLAY_TYPE.INLINE :
+    case oj.ComponentMessaging._STRATEGY_TYPE.INLINE :
 
       if (artifact === 'messages') {
         if (!artifactDisplayTypeResolved) {
           // eslint-disable-next-line no-param-reassign
-          $messagingPreferences[artifact] = displayType;
+          $messagingPreferences[artifact] = strategyType;
           artifactDisplayTypeResolved = true;
         }
       } else {
-        // displayType 'inline' is not supported on other artifacts
+        // strategyType 'inline' is not supported on other artifacts
         // ignore if present
       }
 
       break;
 
-    default:
-      if (!artifactDisplayTypeResolved) {
+    case oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE :
+    case oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL :
+      if (artifact === 'labelEdge' && !artifactDisplayTypeResolved
+        && !oj.StringUtils.isEmptyOrUndefined(options.labelHint)) {
         // eslint-disable-next-line no-param-reassign
-        $messagingPreferences[artifact] = displayType;
+        $messagingPreferences[artifact] = strategyType;
+        artifactDisplayTypeResolved = true;
+      }
+
+      break;
+
+    default:
+      if (!artifactDisplayTypeResolved && artifact !== 'labelEdge') {
+        // eslint-disable-next-line no-param-reassign
+        $messagingPreferences[artifact] = strategyType;
         artifactDisplayTypeResolved = true;
       }
       break;
@@ -4359,38 +4420,58 @@ oj.ComponentMessaging.prototype._resolveDisplayTypeForArtifact = function (
  */
 oj.ComponentMessaging.prototype._initializeMessagingStrategies = function () {
   var artifactsByDisplayType = this._getResolvedMessagingDisplayOptions();
-  var displayInNoteWindow = artifactsByDisplayType[oj.ComponentMessaging._DISPLAY_TYPE.NOTEWINDOW];
-  var displayNone = artifactsByDisplayType[oj.ComponentMessaging._DISPLAY_TYPE.NONE];
+  var displayInNoteWindow = artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW];
+  var displayNone = artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.NONE];
   var displayInPlaceholder =
-      artifactsByDisplayType[oj.ComponentMessaging._DISPLAY_TYPE.PLACEHOLDER];
-  var displayInline = artifactsByDisplayType[oj.ComponentMessaging._DISPLAY_TYPE.INLINE];
+      artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER];
+  var displayInline = artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.INLINE];
+  // these are input components
+  var displayLabelEdgeInsideTextField =
+    artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE];
+  // these are form controls that aren't inputs, like radioset
+  var displayLabelEdgeInsideFormControl =
+    artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL];
+
   var messagingStrategies = {};
 
   if (displayInNoteWindow.length > 0) {
     // displayInNoteWindow is an array of the artifacts that want to be displayed in the note window
     // e.g., 'messages', 'converterHints', etc.
-    messagingStrategies[oj.ComponentMessaging._DISPLAY_TYPE.NOTEWINDOW] =
-      this._createMessagingStrategy(oj.ComponentMessaging._DISPLAY_TYPE.NOTEWINDOW,
+    messagingStrategies[oj.ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW] =
+      this._createMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW,
                                     displayInNoteWindow);
   }
 
-  if (displayInPlaceholder.length > 0) {
+  if (displayInPlaceholder.length > 0 && displayLabelEdgeInsideTextField.length === 0) {
     // displayInPlaceholder is an array of the artifacts that want to be displayed in placeholder
     // e.g., 'converterHints'
-    messagingStrategies[oj.ComponentMessaging._DISPLAY_TYPE.PLACEHOLDER] =
-      this._createMessagingStrategy(oj.ComponentMessaging._DISPLAY_TYPE.PLACEHOLDER,
+    messagingStrategies[oj.ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER] =
+      this._createMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER,
                                     displayInPlaceholder);
   }
 
   if (displayInline.length > 0) {
     // displayInPlaceholder is an array of the artifacts that want to be displayed in placeholder
     // e.g., 'converterHints'
-    messagingStrategies[oj.ComponentMessaging._DISPLAY_TYPE.INLINE] =
-      this._createMessagingStrategy(oj.ComponentMessaging._DISPLAY_TYPE.INLINE, displayInline);
+    messagingStrategies[oj.ComponentMessaging._STRATEGY_TYPE.INLINE] =
+      this._createMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.INLINE, displayInline);
   }
 
-  messagingStrategies[oj.ComponentMessaging._DISPLAY_TYPE.NONE] =
-    this._createMessagingStrategy(oj.ComponentMessaging._DISPLAY_TYPE.NONE, displayNone);
+  // Create one of these strategies for whatever labelEdge we are using currently
+  if (displayLabelEdgeInsideTextField.length > 0) {
+    messagingStrategies[oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE] =
+      this._createMessagingStrategy(
+        oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE,
+        displayLabelEdgeInsideTextField);
+  } else if (displayLabelEdgeInsideFormControl.length > 0) {
+    messagingStrategies[oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL] =
+      this._createMessagingStrategy(
+        oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL,
+        displayLabelEdgeInsideFormControl);
+  }
+
+  messagingStrategies[oj.ComponentMessaging._STRATEGY_TYPE.NONE] =
+    this._createMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.NONE, displayNone);
 
   this._strategies = messagingStrategies;
 };
@@ -4405,7 +4486,7 @@ oj.ComponentMessaging.prototype._reactivate = function () {
   var strategy;
   var cm = this;
 
-  // for every displayType being requested either create the messaging strategy for the type or
+  // for every strategyType being requested either create the messaging strategy for the type or
   // reuse existing strategy if it has already been created.
   $.each(artifactsByDisplayType, function (type, artifactsForType) {
     // eslint-disable-next-line no-param-reassign
@@ -4422,7 +4503,7 @@ oj.ComponentMessaging.prototype._reactivate = function () {
         // want to remove it once activated.
         strategy.reactivate(artifactsForType);
       }
-    } else if (strategy && oj.ComponentMessaging._DISPLAY_TYPE.NONE !== type) {
+    } else if (strategy && oj.ComponentMessaging._STRATEGY_TYPE.NONE !== type) {
       // if we have no artifacts to show for a type, then remove the strategy.
       // only if its other than the DefaultMessagingStrategy as it's always needed to theme
       // component.
@@ -4542,6 +4623,23 @@ oj.MessagingStrategy.prototype.GetContentElement = function () {
  */
 oj.MessagingStrategy.prototype.GetComponent = function () {
   return this._componentMessaging._getComponent();
+};
+
+/**
+ * Generates a unique id if the element doesn't have one already assigned.
+ * @param {Element} element requiring an id
+ * @private
+ */
+oj.MessagingStrategy.prototype.GenerateIdIfNeeded = function (element) {
+  if (isNaN(oj.MessagingStrategy._uidCounter)) {
+    oj.MessagingStrategy._uidCounter = 0;
+  }
+
+  var e = element;
+  if (!e.id) {
+    e.id = 'ojms_' + oj.MessagingStrategy._uidCounter;
+    oj.MessagingStrategy._uidCounter += 1;
+  }
 };
 
 /**
@@ -4671,7 +4769,7 @@ oj.DefaultMessagingStrategy = function (displayOptions) {
   this.Init(displayOptions);
 };
 
-oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._DISPLAY_TYPE.NONE,
+oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.NONE,
                                                 oj.DefaultMessagingStrategy);
 
 // TODO: Need to retrieve style selectors from a Style Manager
@@ -4753,7 +4851,7 @@ oj.PlaceholderMessagingStrategy = function (displayOptions) {
   this.Init(displayOptions);
 };
 
-oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._DISPLAY_TYPE.PLACEHOLDER,
+oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER,
                                                 oj.PlaceholderMessagingStrategy);
 
 // Subclass from oj.MessagingStrategy
@@ -4815,6 +4913,10 @@ oj.PlaceholderMessagingStrategy.prototype._refreshPlaceholder = function () {
   if (this.ShowPlaceholderContent() && launcher) {
     var hints = this.GetConverterHint();
     var content = hints.length ? hints[0] : '';
+
+    // don't override the placeholder with the converter hint if it's empty
+    if (oj.StringUtils.isEmptyOrUndefined(content)) return;
+
     var context = {};
     context.internalMessagingSet = true; // to indicate to component that placeholder is being
     // set from messaging module
@@ -4940,6 +5042,7 @@ oj.ComponentValidity.prototype._getImmediateMessages = function () {
   return immediateMsgs;
 };
 
+
 /**
  * JET component custom element bridge.
  *
@@ -4957,7 +5060,7 @@ oj.ComponentValidity.prototype._getImmediateMessages = function () {
  */
 oj.CustomElementBridge = {};
 
-/* global Logger:false */
+/* global Logger:false, MetadataUtils:false */
 
 /**
  * Prototype for the JET component custom element bridge instance
@@ -4975,7 +5078,7 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
             !bridge._validateAndSetCopyProperty(this, prop, value, null)) {
           // If not an event or copy property, check to see if it's a component specific property
           var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(
-            prop, oj.BaseCustomElementBridge.getProperties(bridge, this)
+            prop, oj.BaseCustomElementBridge.getProperties(bridge)
           );
           // For non component specific properties, just set directly on the element instead.
           if (!meta) {
@@ -4990,7 +5093,7 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
     proto.getProperty = function (prop) {
       var bridge = oj.BaseCustomElementBridge.getInstance(this);
       var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(
-        prop, oj.BaseCustomElementBridge.getProperties(bridge, this)
+        prop, oj.BaseCustomElementBridge.getProperties(bridge)
       );
       var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
 
@@ -5113,12 +5216,6 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
       this._WIDGET_INSTANCE.__saveWritebackOptions(this._WRITEBACK_PROPS);
     }
 
-    // After parsing the DOM attribute values and initializing properties, remove the disabled
-    // property if it exists due to 
-    if (element.hasAttribute('disabled') && !this._disabledProcessed) {
-      oj.CustomElementBridge._removeDisabledAttribute(element);
-    }
-
     // Setup blur/focus listeners on inner element so we can trigger on the root custom element for 
     var getFocusEventPropagator = function (type) {
       return function () {
@@ -5184,7 +5281,7 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
             if (value === undefined) {
               flags = { _context: { skipEvent: true } };
               // eslint-disable-next-line no-param-reassign
-              value = bridge.GetDefaultValue(propertyMeta);
+              value = MetadataUtils.getDefaultValue(propertyMeta);
               // Usually the widget logic fires the property changed events, but in this case
               // the app has set undefined, but we're setting the default value on the widget so
               // we'll handle firing the property changed from the bridge code for this case
@@ -5287,11 +5384,10 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
     }
   },
 
-  InitializeBridge: function (element) {
+  InitializeBridge: function (element, descriptor) {
     // Invoke callback on the superclass
-    oj.BaseCustomElementBridge.proto.InitializeBridge.call(this, element);
+    oj.BaseCustomElementBridge.proto.InitializeBridge.call(this, element, descriptor);
 
-    var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName);
     this._INNER_DOM_FUNCTION = descriptor.innerDomFunction;
 
     this._EXTENSION = this.METADATA.extension || {};
@@ -5301,28 +5397,7 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
     this._setupPropertyAccumulator(element, this._PROPS);
 
     // Checks metadata for copy and writeback properties
-    this._processProperties(element);
-  },
-
-  _attributeChangedCallback: function (attr, oldValue, newValue) {
-    var bridge = oj.BaseCustomElementBridge.getInstance(this);
-
-    // Due to  where IE11 disables child inputs for a parent with the disabled attribute,
-    // we will remove the disabled attribute after we save the value and will ignore all disabled
-    // attribute sets after component initialization when the application can just as easily use the property
-    // setter instead. Expressions will be handled in the CustomElementBinding.
-    if (attr === 'disabled' && bridge._disabledProcessed) {
-      // Always remove the disabled attribute even after component initialization and log warning.
-      // A null value indicates that the value was removed already.
-      if (newValue != null) {
-        Logger.warn("Ignoring 'disabled' attribute change after component initialization. Use element property setter instead.");
-        oj.CustomElementBridge._removeDisabledAttribute(this);
-      }
-      return;
-    }
-
-    // Invoke callback on the superclass
-    oj.BaseCustomElementBridge.proto._attributeChangedCallback.call(this, attr, oldValue, newValue);
+    this._processProperties();
   },
 
   _copyProperties: function () {
@@ -5362,8 +5437,8 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
     return this._WIDGET_ELEM[prop];
   },
 
-  _processProperties: function (elem) {
-    var props = oj.BaseCustomElementBridge.getProperties(this, elem);
+  _processProperties: function () {
+    var props = oj.BaseCustomElementBridge.getProperties(this);
     if (props) {
       var propKeys = Object.keys(props);
       for (var i = 0; i < propKeys.length; i++) {
@@ -5430,7 +5505,7 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
         if (!propMeta) {
           // eslint-disable-next-line no-param-reassign
           propMeta = oj.BaseCustomElementBridge.__GetPropertyMetadata(
-            prop, oj.BaseCustomElementBridge.getProperties(this, elem)
+            prop, oj.BaseCustomElementBridge.getProperties(this)
           );
         }
 
@@ -5622,7 +5697,7 @@ oj.CustomElementBridge._getWidgetElement = function (element, innerTagName) {
         children.push(nodeList[i]);
       }
 
-      element.appendChild(widgetElem); // @HtmlUpdateOk
+      element.appendChild(widgetElem); // @HTMLUpdateOK
       // If we create the inner child element, check to see if there are any children
       // to move like for <oj-button> which can have a child elements that should be moved to
       // the newly created inner <button> element.
@@ -5644,50 +5719,29 @@ oj.CustomElementBridge._getWidgetElement = function (element, innerTagName) {
 };
 
 /**
- * Removes the disabled attribute from an element and marks the bridge as having
- * processed the value to prevent evaluation of additional attribute sets.
- * @param  {Element} element The custom element
- * @private
- */
-oj.CustomElementBridge._removeDisabledAttribute = function (element) {
-  var bridge = oj.BaseCustomElementBridge.getInstance(element);
-  bridge._disabledProcessed = true;
-  element.removeAttribute('disabled');
-};
-
-/**
  * Map of registered custom element names
  * @private
  */
 oj.CustomElementBridge._METADATA_MAP = {};
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-var DataProviderFeatureChecker = /** @class */ (function () {
-    function DataProviderFeatureChecker() {
-    }
-    DataProviderFeatureChecker.isDataProvider = function (dataprovider) {
+
+class DataProviderFeatureChecker {
+    static isDataProvider(dataprovider) {
         if (dataprovider['fetchFirst']) {
             return true;
         }
         return false;
-    };
-    DataProviderFeatureChecker.isTreeDataProvider = function (dataprovider) {
+    }
+    static isTreeDataProvider(dataprovider) {
         if (dataprovider['getChildDataProvider']) {
             return true;
         }
         return false;
-    };
-    return DataProviderFeatureChecker;
-}());
+    }
+}
 oj.DataProviderFeatureChecker = DataProviderFeatureChecker;
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -5705,7 +5759,8 @@ oj.DataProviderFeatureChecker = DataProviderFeatureChecker;
  * End of jsdoc
  */
 
-/* global Logger:false */
+
+/* global Logger:false, MetadataUtils:false, DefaultsUtils:false */
 
 /**
  * A bridge for a custom element that renders using a constructor
@@ -5720,6 +5775,10 @@ oj.DataProviderFeatureChecker = DataProviderFeatureChecker;
  * handlePropertyChanged - (optional) Called when properties change and should return true if
  * the component has handled the property change and does not need to do a full render. If
  * false is returned, updateDOM will be called to do a full render.
+ * static getDynamicDefaults - (optional) An optional method that can return an object with
+ * non JSON compatible default values or getters for properties with dynamic default values,
+ * e.g. theme dependent properties. If a default for a property is also found in metadata,
+ * the dynamic value will be ignored.
  *
  * When the constructor function is called, the bridge will pass a context object
  * with the following keys:
@@ -5803,12 +5862,13 @@ oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto, {
       // to rely on refresh being called to be alerted of new children so any cached slotMap
       // can become out of sync. We should add this once we build in support to auto detect
       // added/removed children to custom elements.
+      var unique = oj.__AttributeUtils.getUniqueId();
       this._CONTEXT = {
         element: element,
         props: this._PROPS_PROXY,
-        unique: oj.BaseCustomElementBridge.__GetUnique(),
+        unique: unique,
       };
-      this._CONTEXT.uniqueId = element.id ? element.id : this._CONTEXT.unique;
+      this._CONTEXT.uniqueId = element.id ? element.id : unique;
       this._INSTANCE = new this._EXTENSION._CONSTRUCTOR(this._CONTEXT);
       // Let the component initialize any additional DOM and then do a full render
       if (this._INSTANCE.createDOM) {
@@ -5881,7 +5941,7 @@ oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto, {
       var value = this._BRIDGE._PROPS[property];
       // If the attribute has not been set, return the default value
       if (value === undefined) {
-        value = this._BRIDGE.GetDefaultValue(propertyMeta);
+        value = this._BRIDGE._getDefaultValue(property, propertyMeta);
         this._BRIDGE._PROPS[property] = value;
       }
       return value;
@@ -5923,9 +5983,9 @@ oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto, {
     Object.defineProperty(proto, '_propsProto', { value: {} });
   },
 
-  InitializeBridge: function (element) {
+  InitializeBridge: function (element, descriptor) {
     // Invoke callback on the superclass
-    oj.BaseCustomElementBridge.proto.InitializeBridge.call(this, element);
+    oj.BaseCustomElementBridge.proto.InitializeBridge.call(this, element, descriptor);
 
     this._EXTENSION = this.METADATA.extension || {};
 
@@ -5938,6 +5998,11 @@ oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto, {
       this._PROPS_PROXY._BRIDGE = this;
       this._PROPS_PROXY._ELEMENT = element;
     }
+  },
+
+  ShouldRemoveDisabled: function () {
+    // Definitional components can opt in to have their disabled attribute removed.
+    return this._EXTENSION._SHOULD_REMOVE_DISABLED === true;
   },
 
   // eslint-disable-next-line no-unused-vars
@@ -5957,14 +6022,20 @@ oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto, {
         this._INSTANCE.updateDOM();
       }
     }
-  }
+  },
 
+  _getDefaultValue: function (property, propertyMeta) {
+    if (this._EXTENSION._CONSTRUCTOR) {
+      // The defaults object contains metadata and dynamic defaults
+      var defaults = DefaultsUtils.getDefaults(this._EXTENSION._CONSTRUCTOR, this.METADATA, false);
+      return defaults[property];
+    }
+    return MetadataUtils.getDefaultValue(propertyMeta);
+  }
 });
 
 /* jslint browser: true*/
-/*
-** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
-*/
+
 
 /**
  * DOM utilities.
@@ -6123,7 +6194,6 @@ oj.DomUtils.removeResizeListener = function (elem, listener) {
   }
 };
 
-
 /**
  * Fixes resize listeners after a subtree has been connected to the DOM or after
  * its display:none stayle has been removed
@@ -6260,11 +6330,11 @@ oj.DomUtils._ResizeTracker = function (div) {
       _detectExpansion = document.createElement('div');
       _detectExpansion.className = 'oj-helper-detect-expansion';
       var expansionChild = document.createElement('div');
-      _detectExpansion.appendChild(expansionChild); // @HTMLUpdateOK; expansionChild constructed by the code above
+      _detectExpansion.appendChild(expansionChild); // @HTMLUpdateOK expansionChild constructed by the code above
       if (firstChild != null) {
-        div.insertBefore(_detectExpansion, firstChild);// @HTMLUpdateOK; _detectExpansion constructed by the code above
+        div.insertBefore(_detectExpansion, firstChild);// @HTMLUpdateOK _detectExpansion constructed by the code above
       } else {
-        div.appendChild(_detectExpansion);// @HTMLUpdateOK; _detectExpansion constructed by the code above
+        div.appendChild(_detectExpansion);// @HTMLUpdateOK _detectExpansion constructed by the code above
       }
 
       _detectExpansion.addEventListener('scroll', _scrollListener, false);
@@ -6277,8 +6347,8 @@ oj.DomUtils._ResizeTracker = function (div) {
       var contractionChild = document.createElement('div');
       contractionChild.style.width = '200%';
       contractionChild.style.height = '200%';
-      _detectContraction.appendChild(contractionChild); // @HTMLUpdateOK; contractionChild constructed by the code above
-      div.insertBefore(_detectContraction, _detectExpansion); // @HTMLUpdateOK; _detectContraction constructed by the code above
+      _detectContraction.appendChild(contractionChild); // @HTMLUpdateOK contractionChild constructed by the code above
+      div.insertBefore(_detectContraction, _detectExpansion); // @HTMLUpdateOK _detectContraction constructed by the code above
 
       _detectContraction.addEventListener('scroll', _scrollListener, false);
 
@@ -6486,7 +6556,7 @@ oj.DomUtils.unwrap = function (locator, replaceLocator) {
   }
 
   if (replaceLocator) {
-    replaceLocator.replaceWith(locator); // @HtmlUpdateOk
+    replaceLocator.replaceWith(locator); // @HTMLUpdateOK
   } else {
     locator.unwrap();
   }
@@ -6601,7 +6671,7 @@ oj.DomUtils.getScrollBarWidth = function () {
 
   /** @type {jQuery} **/
   var scrollBarMeasure = $('<div />');
-  $(document.body).append(scrollBarMeasure); // @HTMLUpdateOK; scrollBarMeasure constructed by the code above
+  $(document.body).append(scrollBarMeasure); // @HTMLUpdateOK scrollBarMeasure constructed by the code above
   scrollBarMeasure.width(50).height(50)
     .css({
       overflow: 'scroll',
@@ -6612,7 +6682,7 @@ oj.DomUtils.getScrollBarWidth = function () {
   /** @type {jQuery} **/
   var scrollBarMeasureContent = $('<div />');
   scrollBarMeasureContent.height(1);
-  scrollBarMeasure.append(scrollBarMeasureContent);  // @HTMLUpdateOK; scrollBarMeasureContent constructed by the code above
+  scrollBarMeasure.append(scrollBarMeasureContent);  // @HTMLUpdateOK scrollBarMeasureContent constructed by the code above
 
   var insideWidth = scrollBarMeasureContent.width();
   var outsideWitdh = scrollBarMeasure.width();
@@ -6908,7 +6978,7 @@ oj.DomUtils.recentTouchStart = (function () {
   }
 
   // --- Document listeners ---
-  document.addEventListener('touchstart', _touchStartHandler, true);
+  document.addEventListener('touchstart', _touchStartHandler, { passive: true, capture: true });
 
   // --- The function assigned to oj.DomUtils.recentTouchStart ---
 
@@ -6994,7 +7064,7 @@ oj.DomUtils.recentPointer = (function () {
   document.addEventListener('touchstart', function () {
     pointerTimestamp = Date.now();
     pointerTimestampIsTouchStart = true;
-  }, true);
+  }, { passive: true, capture: true });
 
   document.addEventListener('mouseup', function () {
     pointerTimestamp = Date.now();
@@ -7144,13 +7214,19 @@ oj.DomUtils.makeFocusable = (function () {
       afterToggle('focusout');
     }
 
+    var hasFocus = false;
     var setupHandlers = options.setupHandlers || function (focusInHandler, focusOutHandler) {
       var component = options.component;
       var focusInListener = function (event) {
         focusInHandler($(event.currentTarget));
+        hasFocus = true;
       };
       var focusOutListener = function (event) {
-        focusOutHandler($(event.currentTarget));
+        // We should only do this once, even though this event may fire multiple times.
+        if (hasFocus) {
+          focusOutHandler($(event.currentTarget));
+          hasFocus = false;
+        }
       };
 
       if (component) {
@@ -7187,9 +7263,7 @@ oj.DomUtils.makeFocusable = (function () {
 }());
 
 /* jslint browser: true*/
-/*
-** Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
-*/
+
 
 /**
  * Focus utilities.
@@ -7374,9 +7448,7 @@ oj.FocusUtils.isFocusable = function (element) {
 };
 
 /* jslint browser: true*/
-/*
-** Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
-*/
+
 
 /**
  * Gesture utilities provided internally for JET components, currently only context menu gesture are available.
@@ -7408,6 +7480,16 @@ oj.GestureUtils.stopDetectContextMenuGesture = function (rootNode) {
     delete rootNode._clickListener;
     // eslint-disable-next-line no-param-reassign
     delete rootNode._contextMenuPressHoldTimer;
+  }
+  if (rootNode._touchStartAndMouseDownListener) {
+    rootNode.removeEventListener('touchstart', rootNode._touchStartAndMouseDownListener, { passive: false });
+    // eslint-disable-next-line no-param-reassign
+    delete rootNode._touchStartAndMouseDownListener;
+  }
+  if (rootNode._touchMoveListener) {
+    rootNode.removeEventListener('touchmove', rootNode._touchMoveListener, { passive: true });
+    // eslint-disable-next-line no-param-reassign
+    delete rootNode._touchMoveListener;
   }
 };
 
@@ -7512,16 +7594,24 @@ oj.GestureUtils.startDetectContextMenuGesture = function (rootNode, callback) {
     // This never seems to happen with right-click and Shift-F10 events.  Has nothing to do with the setTimeout: the events
     // received by the rootNode.on("touchstart"...) code are different (firstWrapper==secondWrapper returns false).
     // TODO: link to JQ bug once filed.
-    if (event.isDefaultPrevented() ||
-        (event.originalEvent && event.originalEvent.defaultPrevented)) {
+    if ((event.isDefaultPrevented && event.isDefaultPrevented()) ||
+        (event.originalEvent && event.originalEvent.defaultPrevented) ||
+        (event.defaultPrevented)) {
       return;
+    }
+
+    // for downstream modules still dependent on originalEvent that used
+    // to be added by JQuery
+    if (event.type === 'touchstart' || event.type === 'touchmove') {
+      // eslint-disable-next-line no-param-reassign
+      event.originalEvent = event;
     }
 
     callback(event, eventType);
 
     // if _NotifyContextMenuGesture() (or subclass override of it) actually opened the CM, and if that launch wasn't
     // cancelled by a beforeOpen listener...
-    if (event.isDefaultPrevented()) {
+    if ((event.isDefaultPrevented && event.isDefaultPrevented()) || event.defaultPrevented) {
       // see double-open comments above
       if (event.type === 'touchstart' || event.type === 'contextmenu' || event.type === 'keydown') {
         doubleOpenType = event.type;
@@ -7548,46 +7638,56 @@ oj.GestureUtils.startDetectContextMenuGesture = function (rootNode, callback) {
   // Use capture phase to make sure we cancel it before any regular bubble listeners hear it.
   rootNode.addEventListener('click', _clickListener, true);
 
+  var _touchStartAndMouseDownListener = function (event) {
+    // for mousedown-after-touchend Mobile Safari issue explained above where __contextMenuPressHoldJustEnded is set.
+    if (event.type === 'mousedown' && contextMenuPressHoldJustEnded) {
+      return undefined;
+    }
+
+    // reset isPressHold flag for all events that can start a click.
+    isPressHold = false;
+
+    // start a pressHold timer on touchstart.  If not cancelled before 750ms by touchend/etc., will launch the CM.
+    // isolate the context menu long tap to a single touch point.
+    if (event.type === 'touchstart' && event.touches.length === 1) {
+      // note starting position so touchmove handler can tell if touch moved too much
+      var firstTouch = event.touches[0];
+      touchPageX = firstTouch.pageX;
+      touchPageY = firstTouch.pageY;
+
+      touchInProgress = true;
+      contextMenuPressHoldTimer =
+        setTimeout(launch.bind(undefined, event, 'touch', true), pressHoldThreshold);
+      // eslint-disable-next-line no-param-reassign
+      rootNode._contextMenuPressHoldTimer = contextMenuPressHoldTimer;
+    }
+
+    return true;
+  };
+
+  // eslint-disable-next-line no-param-reassign
+  rootNode._touchStartAndMouseDownListener = _touchStartAndMouseDownListener;
+
+  rootNode.addEventListener('touchstart', _touchStartAndMouseDownListener, { passive: false });
+
+  var _touchMoveListener = function (event) {
+    var firstTouch = event.touches[0];
+    if (Math.abs(touchPageX - firstTouch.pageX) > maxAllowedMovement
+        || Math.abs(touchPageY - firstTouch.pageY) > maxAllowedMovement) {
+      touchInProgress = false;
+      clearTimeout(contextMenuPressHoldTimer);
+    }
+    return true;
+  };
+
+  // eslint-disable-next-line no-param-reassign
+  rootNode._touchMoveListener = _touchMoveListener;
+
+  rootNode.addEventListener('touchmove', _touchMoveListener, { passive: true });
+
   $(rootNode)
-    .on('touchstart' + namespace + ' ' +
-        'mousedown' + namespace, function (event) {
-          // for mousedown-after-touchend Mobile Safari issue explained above where __contextMenuPressHoldJustEnded is set.
-          if (event.type === 'mousedown' && contextMenuPressHoldJustEnded) {
-            return undefined;
-          }
-
-          // reset isPressHold flag for all events that can start a click.
-          isPressHold = false;
-
-          // start a pressHold timer on touchstart.  If not cancelled before 750ms by touchend/etc., will launch the CM.
-          // isolate the context menu long tap to a single touch point.
-          if (event.type === 'touchstart' && event.originalEvent.touches.length === 1) {
-            // note starting position so touchmove handler can tell if touch moved too much
-            var firstTouch = event.originalEvent.touches[0];
-            touchPageX = firstTouch.pageX;
-            touchPageY = firstTouch.pageY;
-
-            touchInProgress = true;
-            contextMenuPressHoldTimer =
-              setTimeout(launch.bind(undefined, event, 'touch', true), pressHoldThreshold);
-            // eslint-disable-next-line no-param-reassign
-            rootNode._contextMenuPressHoldTimer = contextMenuPressHoldTimer;
-          }
-
-          return true;
-        })
-
+    .on('mousedown' + namespace, _touchStartAndMouseDownListener)
   // if the touch moves too much, it's not a pressHold
-    .on('touchmove' + namespace, function (event) {
-      var firstTouch = event.originalEvent.touches[0];
-      if (Math.abs(touchPageX - firstTouch.pageX) > maxAllowedMovement
-          || Math.abs(touchPageY - firstTouch.pageY) > maxAllowedMovement) {
-        touchInProgress = false;
-        clearTimeout(contextMenuPressHoldTimer);
-      }
-      return true;
-    })
-
   // if the touch ends before the 750ms is up, it's not a long enough pressHold to show the CM
     .on('touchend' + namespace + ' ' +
         'touchcancel' + namespace, function () {
@@ -7626,6 +7726,7 @@ oj.GestureUtils.startDetectContextMenuGesture = function (rootNode, callback) {
     $(rootNode).addClass('oj-menu-context-menu-launcher');
   }
 };
+
 
 /* jslint browser: true*/
 /**
@@ -7674,8 +7775,7 @@ $(document).ready(function () {
   _ojHighContrast();
 });
 
-// Copyright (c) 2013, Oracle and/or its affiliates.
-// All rights reserved.
+
 
 /* jslint browser: true*/
 
@@ -7762,6 +7862,7 @@ oj.Test.findOpenPopups = function () {
 oj.Test.compareStackingContexts = function (el1, el2) {
   return oj.ZOrderUtils.compareStackingContexts(el1, el2);
 };
+
 
 // override jQuery's cleanData method to bypass cleanup of custom elements and composites
 $.cleanData = (function (orig) {

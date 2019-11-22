@@ -2,11 +2,14 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'knockout', 'ojs/ojkeysetimpl', 'ojs/ojknockouttemplateutils', 'ojs/ojresponsiveknockoututils', 'ojs/ojlogger',  'ojs/ojkoshared', 'ojs/ojtemplateengine', 'jqueryui-amd/widget'], 
 function(oj, $, Context, ko, KeySetImpl, KnockoutTemplateUtils, ResponsiveKnockoutUtils, Logger, BindingProviderImpl, templateEngine)
 {
   "use strict";
+
 /* jslint browser: true, devel: true */
 /* global ComponentChangeTracker:false, ko:false, GlobalChangeQueue:false, BindingProviderImpl: false, Logger:false */
 
@@ -885,6 +888,7 @@ oj.ComponentBinding._OPTION_MAP = '_ojOptions';
 oj.ComponentBinding._INSTANCE = oj.ComponentBinding.create(['ojComponent', 'jqueryUI']);
 
 
+
 /* global ko:false */
 
 /**
@@ -924,6 +928,7 @@ $.widget('oj._ojDetectCleanData',
   }
 );
 
+
 /* global _getDvtRenderer:false */
 
 /**
@@ -956,6 +961,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   },
   for: 'ojChart'
 });
+
 
 /* global ko:false */
 
@@ -1050,6 +1056,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
     use: 'ComboboxOptionRenderer'
   });
 
+
 /* global Logger:false */
 
 /**
@@ -1128,10 +1135,6 @@ ComponentChangeTracker.prototype._isSuspended = function (option) {
   return (count >= 1);
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /* global ko:false */
 /* jslint browser: true, devel: true*/
@@ -1168,6 +1171,9 @@ ko.bindingHandlers.ojContextMenu = {
       .removeClass('oj-menu-context-menu-launcher')[0]
       .removeEventListener('click', clickListener, true);
 
+    // remove touchstart listener registered with passive option
+    $element[0].removeEventListener('touchstart', touchstartMousedownKeydownListener, { passive: false });
+
     clearTimeout(pressHoldTimer);
 
     var oldMenuData = $element.data('_ojLastContextMenu');
@@ -1202,29 +1208,12 @@ ko.bindingHandlers.ojContextMenu = {
     // Use capture phase to make sure we cancel it before any regular bubble listeners hear it.
     element.addEventListener('click', clickListener, true);
 
+    // register touchstart with passive option
+    $element[0].addEventListener('touchstart', touchstartMousedownKeydownListener, { passive: false });
+
     $element
-      .on('touchstart' + eventNamespace + ' ' +
-          'mousedown' + eventNamespace + ' ' +
-          'keydown' + eventNamespace + ' ', function (event) {
-            // for mousedown-after-touchend Mobile Safari issue explained above where __contextMenuPressHoldJustEnded is set.
-            if (event.type === 'mousedown' &&
-                getContextMenu().__contextMenuPressHoldJustEnded()) {
-              return undefined;
-            }
-
-            // reset isPressHold flag for all events that can start a click.
-            isPressHold = false;
-
-            // start a pressHold timer on touchstart.  If not cancelled before 750ms by touchend/etc., will launch the CM.
-            if (event.type === 'touchstart') {
-              touchInProgress = true;
-              pressHoldTimer = setTimeout(launch.bind(undefined, event, 'touch', true),
-                                          pressHoldThreshold);// @HTMLUpdateOK; delaying our own callback
-            }
-
-            return true;
-          })
-
+      .on('mousedown' + eventNamespace + ' ' +
+          'keydown' + eventNamespace + ' ', touchstartMousedownKeydownListener)
     // if the touch ends before the 750ms is up, it's not a long enough tap-and-hold to show the CM
       .on('touchend' + eventNamespace + ' ' +
           'touchcancel' + eventNamespace, function () {
@@ -1346,7 +1335,7 @@ ko.bindingHandlers.ojContextMenu = {
           menu.__contextMenuPressHoldJustEnded(true);
           setTimeout(function () {
             menu.__contextMenuPressHoldJustEnded(false);
-          }, touchendMousedownThreshold); // @HTMLUpdateOK; delaying our own callback
+          }, touchendMousedownThreshold); // @HTMLUpdateOK delaying our own callback
         });
       }
 
@@ -1408,12 +1397,43 @@ ko.bindingHandlers.ojContextMenu = {
           doubleOpenType = event.type;
           doubleOpenTimer = setTimeout(function () {
             doubleOpenType = null;
-          }, doubleOpenThreshold); // @HTMLUpdateOK; delaying our own callback
+          }, doubleOpenThreshold); // @HTMLUpdateOK delaying our own callback
         }
       }
     }
+
+    function touchstartMousedownKeydownListener(event) {
+      // touchstart listener is not registered with jQuery
+      // so we have to make sure to convert the native event
+      // to a jQuery event which is what is being expected
+      // by the downstream code (calls to event.isDefaultPrevented() etc)
+      if (event.type === 'touchstart') {
+        // eslint-disable-next-line no-param-reassign
+        event = $.Event(event);
+      }
+      // for mousedown-after-touchend Mobile Safari issue explained above where __contextMenuPressHoldJustEnded is set.
+      if (event.type === 'mousedown' &&
+          getContextMenu().__contextMenuPressHoldJustEnded()) {
+        return undefined;
+      }
+
+      // reset isPressHold flag for all events that can start a click.
+      isPressHold = false;
+
+      // start a pressHold timer on touchstart.  If not cancelled before 750ms by touchend/etc., will launch the CM.
+      if (event.type === 'touchstart') {
+        touchInProgress = true;
+        pressHoldTimer = setTimeout(
+          launch.bind(undefined, event, 'touch', true),
+          pressHoldThreshold // @HTMLUpdateOK delaying our own callback
+        );
+      }
+
+      return true;
+    }
   }
 };
+
 
 /* global ko:false */
 
@@ -1515,8 +1535,8 @@ function _executeTemplate(context, template, parent, childContext, nodeStore) {
 function _getClonedNodeArray(useTemplate, nodeStore) {
   var nodesArray = nodeStore[useTemplate];
   if (nodesArray == null) {
-    nodesArray = ko.utils.parseHtmlFragment(document.getElementById(useTemplate).innerHTML,
-                                            document);
+    nodesArray = ko.utils.parseHtmlFragment(document.getElementById(useTemplate).innerHTML, // @HTMLUpdateOK
+                                            document); // @HTMLUpdateOK
     // eslint-disable-next-line no-param-reassign
     nodeStore[useTemplate] = nodesArray;
   }
@@ -1651,8 +1671,12 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
     for: 'ojDataGrid'
   });
 
+
 /* global _getDvtDataRenderer:false */
 
+/**
+ * @private
+ */
 function _handleManagedDiagramAttributes(name, value, bindingContext) {
   if (name === 'template') {
     return { _templateFunction: _getDvtDataRenderer(bindingContext, value) };
@@ -1674,6 +1698,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   },
   for: 'ojDiagram'
 });
+
 
 (function () {
   var _ASSIGNMENT_TARGET_EXP = /^(?:[$_a-z][$\w]*|(.+)(\.\s*[$_a-z][$\w]*|\[.+\]))$/i;
@@ -1717,11 +1742,13 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 }());
 
 
+
 /* global KnockoutTemplateUtils:false, ResponsiveKnockoutUtils: false */
 // bleed KnockoutTemplateUtils and ResponsiveKnockoutUtils back into oj to keep backward compatibility.
 
 oj.KnockoutTemplateUtils = KnockoutTemplateUtils;
 oj.ResponsiveKnockoutUtils = ResponsiveKnockoutUtils;
+
 
 /* global ko:false, BindingProviderImpl:false */
 
@@ -1930,6 +1957,7 @@ BindingProviderImpl.addPostprocessor(
   }
 );
 
+
 /* global ko:false */
 
 /**
@@ -1969,7 +1997,7 @@ BindingProviderImpl.addPostprocessor(
       }
 
       function setup(isComposite) {
-        var metadataProps = oj.BaseCustomElementBridge.getProperties(bridge, element);
+        var metadataProps = oj.BaseCustomElementBridge.getProperties(bridge);
         _expressionHandler =
           new oj.__ExpressionPropertyUpdater(element, bindingContext, isComposite);
 
@@ -2038,6 +2066,7 @@ BindingProviderImpl.addPostprocessor(
     }
   };
 }());
+
 
 
 /* global ko:false, ComponentChangeTracker:false, Logger:false, BindingProviderImpl:false */
@@ -2389,6 +2418,7 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
     return new ComponentChangeTracker(updater, BindingProviderImpl.getGlobalChangeQueue());
   }
 };
+
 
 /* global ko:false, BindingProviderImpl:false */
 
@@ -2783,6 +2813,7 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
   }
 }());
 
+
 /* global Promise:false */
 /**
  * @ignore
@@ -2862,6 +2893,7 @@ oj._KnockoutBindingProvider.getInstance = function () {
  * @ignore
  */
 oj._KnockoutBindingProvider._instance = new oj._KnockoutBindingProvider();
+
 
 /**
  * @ojoverviewdoc BindingOverview - [4]JET Binding Elements
@@ -2974,6 +3006,7 @@ oj._KnockoutBindingProvider._instance = new oj._KnockoutBindingProvider();
  * @memberof BindingOverview
  */
 
+
 /* global ko:false */
 
 /**
@@ -3061,15 +3094,18 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   }
 }());
 
-/*!
-  Knockout Fast Foreach v0.6.0 (2016-07-28T11:02:54.197Z)
-  By: Brian M Hunt (C) 2015 | License: MIT
 
-  Adds `fastForEach` to `ko.bindingHandlers`.
-
-  Modification notice: The code is obtained from https://github.com/brianmhunt/knockout-fast-foreach
-  and modified by Oracle JET team to be included into Oracle JET project.
-*/
+/**
+ * @license
+ * Knockout Fast Foreach v0.6.0 (2016-07-28T11:02:54.197Z)
+ * By: Brian M Hunt (C) 2015 | License: MIT
+ *
+ * Adds `fastForEach` to `ko.bindingHandlers`.
+ *
+ * Modification notice: The code is obtained from https://github.com/brianmhunt/knockout-fast-foreach
+ * and modified by Oracle JET team to be included into Oracle JET project.
+ * @ignore
+ */
 
 /* global ko:false, Symbol:false, Map:false, KeySetImpl:false, Context:false, BindingProviderImpl: false, Promise:false, templateEngine:false */
 
@@ -3777,6 +3813,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   ko.virtualElements.allowedBindings._ojBindForEach_ = true;
 }());
 
+
 /* global ko:false */
 
 //
@@ -3882,6 +3919,7 @@ oj.koStringTemplateEngine.install = function () {
 };
 
 
+
 /* global ko:false */
 
 /**
@@ -3972,14 +4010,19 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 });
 
 
+
 /**
- * @ojstatus preview
+ *
  * @ojcomponent oj.ojBindForEach
  * @ojshortdesc An oj-bind-for-each binds items of an array to the specified markup section. The markup section is duplicated for each array item when element is rendered.
  * @ojbindingelement
- * @ojsignature {target: "Type", value:"class ojBindForEach extends JetElement<ojBindForEachSettableProperties>"}
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
+ * @ojtsimport knockout
+ * @ojsignature {target: "Type",
+ *               value: "class ojBindForEach<K, D> extends HTMLElement",
+ *               genericParameters: [{"name": "K", "description": "Type of key when passing data via a DataProvider"},
+ *                                   {"name": "D", "description": "Type of row data being iterated"}]}
  * @since 4.1.0
- * @ojtsignore
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["data"]}
  * @ojvbdefaultcolumns 12
@@ -4027,7 +4070,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * @ojshortdesc The array or oj.DataProvider that you wish to iterate over. See  the Help documentation for more information.
  * @instance
  * @type {array|Object}
- * @ojsignature {target: "Type", value:"Array<any>|oj.DataProvider<any, any>", jsdocOverride:true}
+ * @ojsignature {target: "Type", value:"Array<D>|oj.DataProvider<K, D>", jsdocOverride:true}
  */
 
  /**
@@ -4040,12 +4083,13 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * @ojshortdesc An alias for the array item. This is useful if multiple oj-bind-for-each elements are nested to provide access to the data for each iteration level.
  * @instance
  * @type {string}
+ * @ojtsignore
  * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
  */
 // default slot
 /**
- * <p>The <code class="prettyprint">oj-bind-for-each</code> default slot is used to specify the template for binding items of an array if
- * no named slots were defined by the application. The slot must be a &lt;template> element.</p>
+ * <p>The <code class="prettyprint">oj-bind-for-each</code> default slot is used to specify the template for binding items of an array.
+ * The slot content must be a &lt;template> element.</p>
  * <p>When the template is executed for each item, it will have access to the same binding context that is applied to the &lt;oj-bind-for-each&gt; element.
  * In addition the binding context will contain the following properties:</p>
  * <ul>
@@ -4054,26 +4098,33 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  *               This can be especially useful if multiple oj-bind-for-each elements are nested to provide access to the data for each level of iteration.
  *   </li>
  * </ul>
- * @ojstatus preview
+ *
  * @ojchild Default
  * @ojmaxitems 1
  * @ojshortdesc The oj-bind-for-each default slot is used to specify the template for binding items of an array if no named slots were defined by the application.
  * @memberof oj.ojBindForEach
- * @property {Object} data The current array item being rendered.
- * @property {number} index Zero-based index of the current array item being rendered. The index value is not updated in response to array additions and removals and is only recommended for static arrays.
- * @property {number} observableIndex An observable that refers to the zero-based index of the current array item being rendered. The <code>observableIndex</code> value is updated in response to array additions and removals and can be used for both static and dynamic arrays.
+ * @ojslotitemprops oj.ojBindForEach.DefaultItemContext
  * @instance
  * @expose
  */
+/**
+ * @typedef {Object} oj.ojBindForEach.DefaultItemContext
+ * @property {Object} data The current array item being rendered.
+ * @property {number} index Zero-based index of the current array item being rendered. The index value is not updated in response to array additions and removals and is only recommended for static arrays.
+ * @property {number} observableIndex An observable that refers to the zero-based index of the current array item being rendered. The <code>observableIndex</code> value is updated in response to array additions and removals and can be used for both static and dynamic arrays.
+ * @ojsignature [{for: "data", target: "Type", value: "D"},
+ *               {for: "genericTypeParameters", target: "Type", value: "<D>"},
+ *               {for: "observableIndex", target: "Type", value: "ko.Observable<number>"}]
+ */
+
 
 /**
- * @ojstatus preview
+ *
  * @ojcomponent oj.ojBindIf
  * @ojshortdesc An oj-bind-if renders its contents only if a provided test returns true.
- * @ojsignature {target: "Type", value:"class ojBindIf extends JetElement<ojBindIfSettableProperties>"}
+ * @ojsignature {target: "Type", value: "class ojBindIf extends HTMLElement"}
  * @ojbindingelement
  * @since 4.1.0
- * @ojtsignore
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["test"]}
  * @ojvbdefaultcolumns 12
@@ -4114,21 +4165,21 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * <p>The <code class="prettyprint">oj-bind-if</code> default slot is used to
  * specify content that will be rendered when the test condition evaluates to
  * true.
- * @ojstatus preview
+ *
  * @ojchild Default
  * @memberof oj.ojBindIf
  * @instance
  * @expose
  */
 
+
 /**
- * @ojstatus preview
+ *
  * @ojcomponent oj.ojBindText
  * @ojshortdesc An oj-bind-text binds a text node to an expression.
- * @ojsignature {target: "Type", value:"class ojBindText extends JetElement<ojBindTextSettableProperties>"}
+ * @ojsignature {target: "Type", value: "class ojBindText extends HTMLElement"}
  * @ojbindingelement
  * @since 4.1.0
- * @ojtsignore
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["value"]}
  * @ojvbdefaultcolumns 2
@@ -4165,6 +4216,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * &lt;/span>
  */
 
+
 /* global _getDvtRenderer:false */
 
 /**
@@ -4198,6 +4250,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   for: 'ojStatusMeterGauge'
 });
 
+
 /* global _getDvtRenderer:false */
 
 /**
@@ -4230,6 +4283,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   },
   for: 'ojSunburst'
 });
+
 
 /* global ko:false */
 /* jslint browser: true, devel: true*/
@@ -4400,6 +4454,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
     for: 'ojTable'
   });
 
+
 /* global _getDvtDataRenderer:false */
 
 /**
@@ -4451,6 +4506,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   },
   for: 'ojThematicMap'
 });
+
 
 /* global _getDvtRenderer:false */
 

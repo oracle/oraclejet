@@ -41,14 +41,10 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          width: var(--oj-menu-icon-size);
-          height: var(--oj-menu-icon-size);
-        } @else {
+
           width: $menuIconSize;
           height: $menuIconSize;
-        }
+        
       }
   
       .oj-menucheckbox-icon::after {

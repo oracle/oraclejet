@@ -2,8 +2,10 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojcontext', 'ojs/ojtranslation', 'promise', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore'],
+
+define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojcontext', 'ojs/ojtranslation', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore'],
 /*
 * @param {Object} oj 
 * @param {jQuery} $
@@ -56,67 +58,7 @@ var __oj_indexer_metadata =
   },
   "extension": {}
 };
-/* jslint browser: true,devel:true*/
-/* global Translations:false */
-/**
- * The interface for oj.IndexerModel which should be implemented by all object instances
- * bound to the data parameter for ojIndexer.
- * @export
- * @since 1.2
- * @interface
- */
-oj.IndexerModel = function () {
-};
 
-// without the at-name tag, JSDoc tool prepends a "." to the field name for some reason, which messes up the QuickNav.
-/**
- * Constant for the section that represents all non-letters including numbers and symbols.
- * @export
- * @expose
- * @type {Object}
- * @property {string} id The id of this section
- * @property {string} label The label of this section
- * @name SECTION_OTHERS
- * @memberof oj.IndexerModel
- */
-oj.IndexerModel.SECTION_OTHERS = {
-  id: '__others__',
-  label: Translations.getTranslatedString('oj-ojIndexer.indexerOthers')
-};
-
-/**
- * Make a section current in the Indexer.  The implementation should scroll the associated ListView so that the section becomes visible.
- * @param {string|Object} section the current section
- * @return {Promise.<string>|Promise.<Object>} a Promise which when resolved will return the section that the associated ListView actually scrolls to.
- *                   For example, the implementation could choose to scroll to the next available section in ListView if no data
- *                   exists for that section.
- * @method
- * @name setSection
- * @memberof oj.IndexerModel
- * @instance
- */
-
-/**
- * Returns an array of objects each representing a section in the associated ListView.  The section object could either be
- * a String or an object containing at least a 'label' field.  For example, the implementation may return an array of Strings
- * representing letters of the alphabet. Or it may return an array of objects each containing a 'label' field for the section
- * titles.
- * @return {Array.<string>|Array.<Object>} an array of all indexable sections
- * @method
- * @name getIndexableSections
- * @memberof oj.IndexerModel
- * @instance
- */
-
-/**
- * Returns an array of objects each representing a section that does not have a corresponding section in the associated ListView.
- * It must be a subset of the return value of <code>getIndexableSections</code>.  Return null or undefined if there's nothing missing.
- * @return {Array.<string>|Array.<Object>} an array of missing sections
- * @method
- * @name getMissingSections
- * @memberof oj.IndexerModel
- * @instance
- */
 
 /* global Promise:false */
 
@@ -298,10 +240,7 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function (section) {
   return match;
 };
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
@@ -323,7 +262,6 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function (section) {
    * @ojcomponent oj.ojIndexer
    * @augments oj.baseComponent
    * @since 1.2.0
-   * @ojstatus preview
    *
    * @ojshortdesc An indexer displays a list of sections that corresponds to group headers of a list.
    * @ojrole slider
@@ -389,7 +327,7 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function (section) {
          * @memberof! oj.ojIndexer
          * @instance
          * @type {Object}
-         * @ojsignature {target:"Type", value:"oj.IndexerModel", jsdocOverride:true}
+         * @ojsignature {target:"Type", value:"IndexerModel", jsdocOverride:true}
          * @default null
          *
          * @example <caption>Initialize the Indexer with an IndexModel:</caption>
@@ -629,7 +567,7 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function (section) {
         text.addClass('oj-helper-hidden-accessible')
             .text(this.getTranslatedString(key));
 
-        this._getIndexerContainer().append(text); // @HtmlUpdateOK
+        this._getIndexerContainer().append(text); // @HTMLUpdateOK
       },
 
       /**
@@ -683,7 +621,7 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function (section) {
 
         // the first character is always present, use it to test height
         var first = this._createItem(sections[0], missingSections);
-        root.append(first); // @HtmlUpdateOK
+        root.append(first); // @HTMLUpdateOK
 
         var itemHeight = first.outerHeight();
         var max = Math.floor(height / itemHeight);
@@ -699,24 +637,24 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function (section) {
         for (var i = 1 + skip; i < sections.length; i = i + skip + 1) {
           if (skip > 1) {
             var separator = this._createSeparator(sections, i - skip, i - 1);
-            root.append(separator); // @HtmlUpdateOK
+            root.append(separator); // @HTMLUpdateOK
           } else {
             i -= 1;
           }
 
           var section = sections[i];
           var item = this._createItem(section, missingSections);
-          root.append(item); // @HtmlUpdateOK
+          root.append(item); // @HTMLUpdateOK
         }
 
         // the last character is always present
         var last = this._createItem(sections[sections.length - 1], missingSections);
-        root.append(last); // @HtmlUpdateOK
+        root.append(last); // @HTMLUpdateOK
 
         // the special others character is always present
         var others = this._createItem(sectionOthers);
         others.attr('data-others', 'true');
-        root.append(others); // @HtmlUpdateOK
+        root.append(others); // @HTMLUpdateOK
       },
 
       /**
@@ -1219,6 +1157,79 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function (section) {
 
     });
 }());
+
+
+/* jslint browser: true,devel:true*/
+/* global Translations:false */
+/**
+ * The interface for oj.IndexerModel which should be implemented by all object instances
+ * bound to the data parameter for ojIndexer.
+ * @export
+ * @since 1.2
+ * @interface oj.IndexerModel
+ */
+oj.IndexerModel = function () {
+};
+
+// without the at-name tag, JSDoc tool prepends a "." to the field name for some reason, which messes up the QuickNav.
+/**
+ * Constant for the section that represents all non-letters including numbers and symbols.
+ * @export
+ * @expose
+ * @type {Object}
+ * @property {string} id The id of this section
+ * @property {string} label The label of this section
+ * @name SECTION_OTHERS
+ * @memberof oj.IndexerModel
+ */
+oj.IndexerModel.SECTION_OTHERS = {
+  id: '__others__',
+  label: Translations.getTranslatedString('oj-ojIndexer.indexerOthers')
+};
+
+/**
+ * @typedef {string|Object} oj.IndexerModel.Section
+ * @ojsignature {target:"Type", value:"string|{label: string}"}
+ */
+
+/**
+ * Make a section current in the Indexer.  The implementation should scroll the associated ListView so that the section becomes visible.
+ * @param {string|Object} section the current section
+ * @return {Promise.<string>|Promise.<Object>} a Promise which when resolved will return the section that the associated ListView actually scrolls to.
+ *                   For example, the implementation could choose to scroll to the next available section in ListView if no data
+ *                   exists for that section.
+ * @method
+ * @name setSection
+ * @memberof oj.IndexerModel
+ * @instance
+ * @ojsignature {target: "Type",
+ *               value: "(section: oj.IndexerModel.Section): Promise<oj.IndexerModel.Section>"}
+ */
+
+/**
+ * Returns an array of objects each representing a section in the associated ListView.  The section object could either be
+ * a String or an object containing at least a 'label' field.  For example, the implementation may return an array of Strings
+ * representing letters of the alphabet. Or it may return an array of objects each containing a 'label' field for the section
+ * titles.
+ * @return {Array.<string>|Array.<Object>} an array of all indexable sections
+ * @method
+ * @name getIndexableSections
+ * @memberof oj.IndexerModel
+ * @instance
+ * @ojsignature {target: "Type", value: "(): oj.IndexerModel.Section[]"}
+ */
+
+/**
+ * Returns an array of objects each representing a section that does not have a corresponding section in the associated ListView.
+ * It must be a subset of the return value of <code>getIndexableSections</code>.  Return null or undefined if there's nothing missing.
+ * @return {Array.<string>|Array.<Object>} an array of missing sections
+ * @method
+ * @name getMissingSections
+ * @memberof oj.IndexerModel
+ * @instance
+ * @ojsignature {target: "Type", value: "(): oj.IndexerModel.Section[]"}
+ */
+
 
 /* global __oj_indexer_metadata:false */
 (function () {

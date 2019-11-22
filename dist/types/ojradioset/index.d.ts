@@ -3,6 +3,12 @@ import { editableValue, editableValueEventMap, editableValueSettableProperties }
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojRadioset<K, D, V = any> extends editableValue<V, ojRadiosetSettableProperties<K, D, V>> {
     disabled: boolean;
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelledBy: string | null;
     optionRenderer?: ((param0: ojRadioset.OptionContext<D>) => Element) | null;
     options: DataProvider<K, D> | null;
@@ -45,6 +51,8 @@ export namespace ojRadioset {
     // tslint:disable-next-line interface-over-type-literal
     type disabledChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["disabled"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
     type optionRendererChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["optionRenderer"]>;
@@ -80,6 +88,7 @@ export interface ojRadiosetEventMap<K, D, V = any> extends editableValueEventMap
     'ojAnimateEnd': ojRadioset.ojAnimateEnd;
     'ojAnimateStart': ojRadioset.ojAnimateStart;
     'disabledChanged': JetElementCustomEvent<ojRadioset<K, D, V>["disabled"]>;
+    'displayOptionsChanged': JetElementCustomEvent<ojRadioset<K, D, V>["displayOptions"]>;
     'labelledByChanged': JetElementCustomEvent<ojRadioset<K, D, V>["labelledBy"]>;
     'optionRendererChanged': JetElementCustomEvent<ojRadioset<K, D, V>["optionRenderer"]>;
     'optionsChanged': JetElementCustomEvent<ojRadioset<K, D, V>["options"]>;
@@ -90,6 +99,12 @@ export interface ojRadiosetEventMap<K, D, V = any> extends editableValueEventMap
 }
 export interface ojRadiosetSettableProperties<K, D, V> extends editableValueSettableProperties<V> {
     disabled: boolean;
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelledBy: string | null;
     optionRenderer?: ((param0: ojRadioset.OptionContext<D>) => Element) | null;
     options: DataProvider<K, D> | null;

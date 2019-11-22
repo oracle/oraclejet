@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcolor', 'ojs/ojlogger', 'ojs/ojlabelledbyutils', 'ojs/ojslider', 'jqueryui-amd/widgets/draggable', 'ojs/ojtouchproxy', 'ojs/ojeditablevalue'],
        function(oj, $, Components, Color, Logger, LabelledByUtils)
 {
@@ -41,6 +43,10 @@ var __oj_color_spectrum_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
+          "enumValues": [
+            "none",
+            "notewindow"
+          ],
           "value": [
             "notewindow"
           ]
@@ -68,6 +74,14 @@ var __oj_color_spectrum_metadata =
           "value": ""
         }
       }
+    },
+    "labelEdge": {
+      "type": "string",
+      "enumValues": [
+        "inside",
+        "none",
+        "provided"
+      ]
     },
     "labelHint": {
       "type": "string",
@@ -136,6 +150,7 @@ var __oj_color_spectrum_metadata =
   },
   "extension": {}
 };
+
 /*----------------------------------------------------------------
    ojColorSpectrum    JET Color (spectrum) element
    Depends:   jquery.ui.core.js
@@ -243,8 +258,9 @@ var __oj_color_spectrum_metadata =
    *               }
    *              ]
    * @since 3.0.0
-   * @ojstatus preview
+   *
    * @class oj.ojColorSpectrum
+   * @ojimportmembers oj.ojDisplayOptions
    * @ojtsimport {module: "ojcolor", type: "AMD", importName: "Color"}
    * @ojshortdesc A color spectrum allows a custom color value to be specified from a display containing a saturation/luminosity spectrum, plus hue and opacity sliders.
    *
@@ -291,7 +307,6 @@ var __oj_color_spectrum_metadata =
       defaultElement: '<input>',
 
       options: {
-
         /**
          * Labelled-by is used to establish a relationship between this and another element.
          * A common use is to tie the oj-label and the oj-color-spectrum together for accessibility.
@@ -367,7 +382,7 @@ var __oj_color_spectrum_metadata =
          * @readonly
          * @ojwriteback
          * @since 4.2.0
-         * @ojstatus preview
+         *
          */
         rawValue: null,
 
@@ -822,6 +837,7 @@ var __oj_color_spectrum_metadata =
             break;
           case oj.AgentUtils.BROWSER.CHROME :
           case oj.AgentUtils.BROWSER.SAFARI :
+          case oj.AgentUtils.BROWSER.EDGE_CHROMIUM :
           default : rep = 'webkit';
             break;
           case oj.AgentUtils.BROWSER.IE : rep = 'ms';
@@ -1144,8 +1160,10 @@ var __oj_color_spectrum_metadata =
         if (cy !== 0) {
           cy = (off1.top + this._spectrumThumbRadius) - off2.top;
         }
-
-        if (this._xThumb === cx && this._yThumb === cy) {
+        // Almost always when we get a 'dragstop' the position has not changed from
+        // the last 'drag', but we must update the value on 'dragstop',
+        // so do not return in that case.
+        if (e.type !== 'dragstop' && this._xThumb === cx && this._yThumb === cy) {
           return;
         }
 
@@ -1338,7 +1356,7 @@ var __oj_color_spectrum_metadata =
        */
       _setup: function () {
         // Add markup as a child of this component's DOM element
-        this._$boundElem.append(this._markup);      // @HTMLUpdateOk (contained strings are sanitized)
+        this._$boundElem.append(this._markup);      // @HTMLUpdateOK (contained strings are sanitized)
         this._$boundElem.addClass('oj-colorspectrum');
 
 //-------------------------------------------------------------------------------------
@@ -1374,7 +1392,7 @@ var __oj_color_spectrum_metadata =
 
         var fakeDiv = document.createElement('div');
         fakeDiv.className = 'oj-colorspectrum-alpha-bg';
-        this._$boundElem[0].appendChild(fakeDiv);// HTMLUpdateOk
+        this._$boundElem[0].appendChild(fakeDiv);// @HTMLUpdateOK
         this._alphaBgUrl = window.getComputedStyle(fakeDiv, null).getPropertyValue('background-image');
         this._$boundElem[0].removeChild(fakeDiv);
 
@@ -1496,7 +1514,7 @@ var __oj_color_spectrum_metadata =
         //  Create the markup
         this._markup = (function () {
           return [
-            "<div class='oj-colorspectrum-container'>",
+            "<div class='oj-colorspectrum-container oj-form-control-container'>",
             "<div class='oj-colorspectrum-spectrum' tabindex='-1'>",
             "<div class='oj-colorspectrum-thumb' role='slider' aria-describedby='' tabIndex='0'></div>",
             '</div>',
@@ -2024,6 +2042,7 @@ var __oj_color_spectrum_metadata =
 
     });    // end    $.widget("oj.ojColorSpectrum"
 }());
+
 
 /* global __oj_color_spectrum_metadata */
 (function () {

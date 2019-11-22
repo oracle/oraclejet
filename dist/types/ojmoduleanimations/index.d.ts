@@ -16,10 +16,10 @@ export let zoomOut: ModuleElementAnimation;
 export function createAnimation(oldViewEffect: {
     effect: AnimationUtils.AnimationMethods;
     [key: string]: any;
-} | AnimationUtils.AnimationMethods | null, newViewEffect: {
+} | AnimationUtils.AnimationMethods | ((param0: Element) => Promise<void>) | null, newViewEffect: {
     effect: AnimationUtils.AnimationMethods;
     [key: string]: any;
-} | AnimationUtils.AnimationMethods | null, newViewOnTop: boolean): ModuleElementAnimation;
+} | AnimationUtils.AnimationMethods | ((param0: Element) => Promise<void>) | null, newViewOnTop: boolean): ModuleElementAnimation;
 export function switcher(callback: (param0: SwitcherCallBackParam) => Animations): ModuleElementAnimation;
 // tslint:disable-next-line interface-over-type-literal
 export type Animations = 'coverStart' | 'coverUp' | 'fade' | 'navChild' | 'navParent' | 'navSiblingEarlier' | 'navSiblingLater' | 'pushEnd' | 'pushStart' | 'revealDown' | 'revealEnd' | 'zoomIn' |

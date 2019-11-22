@@ -2,22 +2,21 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'ojs/ojkoshared'], function(oj, BindingProviderImpl)
 {
   "use strict";
 /* global BindingProviderImpl:false */
-/**
- * Copyright (c) 2018, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * Utility class with functions for interacting with the JET binding provider.
  * @namespace
  * @hideconstructor
  * @ojtsmodule
- * @ojstatus preview
+ *
  * @since 6.1.0
  */
 function BindingProvider() { }

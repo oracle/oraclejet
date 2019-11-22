@@ -218,6 +218,15 @@ export namespace ojTreemap {
         indexPath: number[];
     };
     // tslint:disable-next-line interface-over-type-literal
+    type NodeTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+        parentData: any[];
+        parentKey: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K, D> = {
         parentElement: Element;
         id: K;

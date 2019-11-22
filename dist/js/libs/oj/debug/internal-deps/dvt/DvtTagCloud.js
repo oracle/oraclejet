@@ -6,7 +6,20 @@ define(['./DvtToolkit'], function(dvt) {
   "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * TagCloud component.  The component should never be instantiated directly.  Use the newInstance function instead
  * @param {dvt.Context} context The rendering context.
@@ -364,6 +377,12 @@ dvt.TagCloud.prototype.getDragFeedback = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Provides automation services for a DVT component.
  * @class  DvtTagCloudAutomation
  * @param {dvt.TagCloud} dvtComponent
@@ -452,6 +471,12 @@ DvtTagCloudAutomation.prototype.getItemCount = function() {
   return this._tagCloud.getObjects().length;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Creates an instance of DvtTagCloudItem which extends dvt.BackgroundOutputText with hover and selection feedback.
  * @extends {dvt.BackgroundOutputText}
@@ -728,6 +753,12 @@ DvtTagCloudItem._lightenColor = function(color, opacity) {
   return dvt.ColorUtils.makeRGB(Math.floor(lighterR), Math.floor(lighterG), Math.floor(lighterB));
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Logical object for tag cloud data object displayables.
  * @param {dvt.TagCloud} tagCloud The owning component
@@ -1021,6 +1052,12 @@ DvtTagCloudObjPeer.prototype.getDragFeedback = function(mouseX, mouseY) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -1057,6 +1094,12 @@ DvtTagCloudDefaults.VERSION_1 = {
   'touchResponse' : 'auto'
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Renderer for dvt.TagCloud.
  * @class
@@ -1262,6 +1305,12 @@ DvtTagCloudRenderer._adjustAvailSpace = function(availSpace) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Layout utility class for dvt.TagCloud
  */
 var DvtTagCloudLayoutUtils = function() {
@@ -1278,7 +1327,7 @@ dvt.Obj.createSubclass(DvtTagCloudLayoutUtils, dvt.Obj);
  */
 DvtTagCloudLayoutUtils.getFontSizeFunction = function(minValue, maxValue, range) {
   return function(value) {
-    return minValue === maxValue ? 12 : 
+    return minValue === maxValue ? 12 :
           12 + Math.ceil(((range - 1) * (value - minValue) / (maxValue - minValue)) * 12);
   }
 };
@@ -1493,6 +1542,12 @@ DvtTagCloudLayoutUtils._calculateLineBreaks = function(arDims, width) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Style related utility functions for DvtChartImpl.
  * @class
  */
@@ -1511,6 +1566,12 @@ DvtTagCloudStyleUtils.getAnimationDuration = function(tagCloud) {
   return tagCloud.getOptions()['styleDefaults']['animationDuration'] / 1000;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Event Manager for tree components.
  * @param {dvt.TagCloud} view
@@ -1599,6 +1660,12 @@ DvtTagCloudEventManager.prototype.GetTouchResponse = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * @param {dvt.EventManager} manager The owning dvt.EventManager
  * @class DvtTagCloudKeyboardHandler
  * @extends {dvt.KeyboardHandler}
@@ -1649,6 +1716,13 @@ DvtTagCloudKeyboardHandler.getNextNavigable = function(currentNavigable, event, 
     return null;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
   return dvt;
 });

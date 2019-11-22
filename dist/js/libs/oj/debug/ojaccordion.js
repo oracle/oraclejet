@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'], 
        function(oj, $, Logger)
 {
@@ -39,10 +41,7 @@ var __oj_accordion_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global Logger:false */
 
 /**
@@ -55,7 +54,7 @@ var __oj_accordion_metadata =
  * @ojcomponent oj.ojAccordion
  * @augments oj.baseComponent
  * @since 0.6.0
- * @ojstatus preview
+ *
  * @ojshortdesc An accordion displays a set of collapsible child elements.
  * @ojrole group
  * @class oj.ojAccordion
@@ -88,6 +87,12 @@ var __oj_accordion_metadata =
  *   &lt;/oj-collapsible>
  * &lt;/oj-accordion>
  * </code></pre>
+ *  <h3 id="a11y-section">
+ *   Accessibility
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+ *  </h3>
+ *
+ * <p>If a collapsible header contains non-textual content, the application must set the aria-label on the header slot."
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -126,7 +131,7 @@ var __oj_accordion_metadata =
        * @expose
        * @memberof oj.ojAccordion
        * @instance
-       * @ojshortdesc Specifies whether multiple collapsibles can be open at the same time.
+       * @ojshortdesc Specifies whether multiple collapsible items can be open at the same time.
        * @type {boolean}
        * @default false
        * @example <caption>Initialize the accordion with the <code class="prettyprint">multiple</code> attribute specified:</caption>
@@ -152,7 +157,7 @@ var __oj_accordion_metadata =
        * @expose
        * @memberof oj.ojAccordion
        * @instance
-       * @ojshortdesc A list of expanded child collapsibles.
+       * @ojshortdesc A list of expanded child collapsible items.
        * @type {Array.<string>|Array.<number>|Array.<Object>|null}
        * @ojsignature {target: "Accessor", value: {GetterType: "Array<{id?: string, index?: number}>|null", SetterType: "Array<string>|Array<number>|Array<{id?: string, index?: number}>|null"}, jsdocOverride: true}
        * @ojwriteback
@@ -274,7 +279,7 @@ var __oj_accordion_metadata =
         // aria
         .attr('role', 'group');
 
-      //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
+        //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
         this.options.expanded = this._expandedIndexToId(this.options.expanded);
         this._refresh();
       },
@@ -326,7 +331,7 @@ var __oj_accordion_metadata =
         // Transition multiple to single.
         // Keep the first expanded one expanded and collapse the rest.
           if (!value && this.options.multiple) {
-          //  - when "multiple" option value is changed to false, exception is displayed
+            //  - when "multiple" option value is changed to false, exception is displayed
             this.element.children('.oj-expanded')
             .first().siblings('.oj-collapsible')
             .ojCollapsible('collapse', false);
@@ -578,8 +583,8 @@ var __oj_accordion_metadata =
           this._collapsedCollapsible = null;
         }
 
-      //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
-      // don't handle event during setExpandedOption
+        //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
+        // don't handle event during setExpandedOption
         if (!this._isTargetMyCollapsible(event) || this._duringSetExpandedOption) {
           return;
         }
@@ -723,7 +728,7 @@ var __oj_accordion_metadata =
           }
         });
 
-        //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
+        // this.options.expanded == null means retrieve the status from collapsibles
         if (!this.options.expanded ||
             !oj.Object._compareArrayIdIndexObject(result, this.options.expanded)) {
           this.option('expanded', result, { _context: { internalSet: true, writeback: true } });
@@ -1039,6 +1044,7 @@ var __oj_accordion_metadata =
 
     });
 }());
+
 
 /* global __oj_accordion_metadata:false */
 (function () {

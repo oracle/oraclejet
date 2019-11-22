@@ -160,6 +160,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         labelEnableNonContiguous?: string;
         labelPaste?: string;
         labelResize?: string;
+        labelResizeDialogCancel?: string;
         labelResizeDialogSubmit?: string;
         labelResizeHeight?: string;
         labelResizeWidth?: string;
@@ -280,6 +281,7 @@ export namespace ojDataGrid {
         parentKey: K;
         treeDepth: number;
         isLeaf: boolean;
+        mode: 'edit' | 'navigation';
     };
     // tslint:disable-next-line interface-over-type-literal
     type CurrentCell<K> = {
@@ -524,6 +526,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         labelEnableNonContiguous?: string;
         labelPaste?: string;
         labelResize?: string;
+        labelResizeDialogCancel?: string;
         labelResizeDialogSubmit?: string;
         labelResizeHeight?: string;
         labelResizeWidth?: string;

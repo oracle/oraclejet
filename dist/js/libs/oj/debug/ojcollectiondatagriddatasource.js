@@ -2,14 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojmodel', 'ojs/ojlogger', 'ojs/ojdatasource-common'], function(oj, $, Model, Logger)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
  /**
  * @export
@@ -247,10 +246,7 @@ oj.CollectionCellSet.prototype.getColumns = function () {
 };
 
 
-/**
- * Copyright (c) 2014, 2015 Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Promise:false, Logger:false */
 
@@ -265,6 +261,7 @@ oj.CollectionCellSet.prototype.getColumns = function () {
  *        what order. These columns must be a subset of attributes from Model.
  * @export
  * @constructor
+ * @final
  * @since 1.0
  * @extends oj.DataGridDataSource
  * @ojtsignore
@@ -1318,10 +1315,7 @@ oj.CollectionDataGridDataSource.prototype.getData = function () {
   return this.data;
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * This class contains all utility methods used by the data grid collection model.
@@ -1346,10 +1340,7 @@ oj.CollectionDataGridUtils._getModelKey = function (model) {
   return key;
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @export
@@ -1592,6 +1583,7 @@ oj.CollectionHeaderSet.prototype.getHeaders = function () {
 oj.CollectionHeaderSet.prototype.getRowHeader = function () {
   return this.m_rowHeader;
 };
+
 
 // Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
 

@@ -2,11 +2,15 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockout'], function(oj, HtmlUtils, Logger)
+
+define(['ojs/ojcore', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/ojmetadatautils', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockout'], 
+  function(oj, HtmlUtils, Logger, MetadataUtils)
 {
   "use strict";
-/* global Promise:false , Logger:false */
+
+/* global Promise:false */
 
 /**
  * <p>
@@ -34,12 +38,9 @@ var Composite = oj.Composite;
  * @ojdeprecated {since: '5.0.0', description: 'Use Composite.getComponentMetadata instead.'}
  * @ojsignature {target: "Type", value: "Promise<oj.Composite.Metadata>|null", for: "returns", jsdocOverride: true}
  * @ignore
- * @export
  * @memberof oj.Composite
- *
  */
 oj.Composite.getMetadata = function (name) {
-  Logger.error('Composite.getMetadata(\'' + name + '\'): This method is scheduled for removal.  Call Composite.getComponentMetadata instead.');
   var metadata = oj.Composite.getComponentMetadata(name);
   return metadata ? Promise.resolve(metadata) : null;
 };
@@ -52,7 +53,7 @@ oj.Composite.getMetadata = function (name) {
  * @export
  * @memberof oj.Composite
  * @since 5.0.0
- * @ojstatus preview
+ *
  * @ojsignature {target: "Type", value: "MetadataTypes.ComponentMetadata|null", for: "returns", jsdocOverride: true}
  *
  */
@@ -72,8 +73,8 @@ oj.Composite.getComponentMetadata = function (name) {
 /**
  * Registers a composite component.
  * @param {string} name The component name, which should contain a dash '-' and not be a reserved tag name.
- * @param {Object} descriptor The registration descriptor. The descriptor will contain keys for Metadata, View, ViewModel
- * and CSS that are detailed below. At a minimum a composite must register Metadata and View files, but all others are optional.
+ * @param {Object} descriptor The registration descriptor. The descriptor will contain keys for Metadata, View, and ViewModel
+ * that are detailed below. At a minimum a composite must register Metadata and View files, but all others are optional.
  * The composite resources should be mapped directly to each descriptor key.
  * See the <a href="CompositeOverview.html#registration">registration section</a> above for a sample usage.
  * @param {Object} descriptor.metadata A JSON formatted object describing the composite APIs. See the <a href="CompositeOverview.html#metadata">metadata documentation</a> for more info.
@@ -240,7 +241,8 @@ oj.Composite.__BINDING_PROVIDER = '__oj_binding_prvdr';
  * @ojsignature [{target:"Type", value:"{[key:string] : any;}"}]
  */
 
-/* global Promise:false, HtmlUtils:false, Logger:false */
+
+/* global Promise:false, HtmlUtils:false, Logger:false, MetadataUtils:false */
 
 /**
  * JET component custom element bridge.
@@ -267,7 +269,7 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
     beforePropertyChangedEvent: function (element, property, detail) {
       var vmContext = { property: property };
       oj.CollectionUtils.copyInto(vmContext, detail);
-      oj.CompositeTemplateRenderer.invokeViewModelMethod(this._VIEW_MODEL,
+      oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL,
                                                          'propertyChanged',
                                                          [vmContext]);
     },
@@ -341,15 +343,16 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
         slotNodeCounts[slot] = slotMap[slot].length;
       }
       this._SLOT_MAP = slotMap;
+      var unique = oj.__AttributeUtils.getUniqueId();
       var vmContext = {
         element: element,
         props: Promise.resolve(this._PROPS),
         properties: this._PROPS,
         slotNodeCounts: Promise.resolve(slotNodeCounts),
         slotCounts: slotNodeCounts,
-        unique: oj.BaseCustomElementBridge.__GetUnique()
+        unique: unique
       };
-      vmContext.uniqueId = element.id ? element.id : vmContext.unique;
+      vmContext.uniqueId = element.id ? element.id : unique;
       this._VM_CONTEXT = vmContext;
 
       var model = oj.BaseCustomElementBridge
@@ -358,27 +361,15 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
         // eslint-disable-next-line new-cap
         model = new model(vmContext);
       } else {
-        var elementInfo = oj.BaseCustomElementBridge.getElementInfo(element);
-        if (model) {
-          Logger.error(elementInfo + ': ViewModel should be specified as a constructor function.  Support for all other types is scheduled for removal.');
-        }
         // The initialize callback is deprecated in 5.0.0. If the function returns a value, use it as the new model instance.
-        var deprecationMessageFunction = function () {
-          return elementInfo + ": The ViewModel 'initialize' callback is scheduled for removal.  ViewModel should be specified as a constructor function.";
-        };
-        model = oj.CompositeTemplateRenderer.invokeViewModelMethod(model,
-                                                                   'initialize',
-                                                                   [vmContext],
-                                                                   deprecationMessageFunction)
-          || model;
+        model = oj.CompositeTemplateRenderer.invokeViewModelMethod(element, model,
+        'initialize', [vmContext]) || model;
       }
       this._VIEW_MODEL = model;
 
       // This method can return a Promise which will delay additional lifecycle phases until it is resolved.
-      var activatedPromise = oj.CompositeTemplateRenderer.invokeViewModelMethod(model,
-                                                                                'activated',
-                                                                                [vmContext])
-          || Promise.resolve(true);
+      var activatedPromise = oj.CompositeTemplateRenderer.invokeViewModelMethod(element, model,
+        'activated', [vmContext]) || Promise.resolve(true);
 
       var bridge = this;
       activatedPromise.then(function () {
@@ -481,7 +472,7 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
         // Calling .peek() lets us check the propertyTracker value without creating a dependency
         var value = bOuterSet ? propertyTracker.peek() : propertyTracker();
         if (value === undefined) {
-          value = this._BRIDGE.GetDefaultValue(propertyMeta);
+          value = MetadataUtils.getDefaultValue(propertyMeta);
           propertyTracker(value);
         }
         return value;
@@ -523,23 +514,17 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       oj.BaseCustomElementBridge.proto.HandleDetached.call(this, element);
 
       // Detached is deprecated in 4.2.0 for disconnected
-      var deprecationMessageFunction = function () {
-        return oj.BaseCustomElementBridge.getElementInfo(element) + ": The ViewModel 'detached' callback is scheduled for removal.  Use the 'disconnected' callback instead.";
-      };
-      oj.CompositeTemplateRenderer.invokeViewModelMethod(this._VIEW_MODEL,
-                                                         'detached',
-                                                         [element],
-                                                         deprecationMessageFunction);
-      oj.CompositeTemplateRenderer.invokeViewModelMethod(this._VIEW_MODEL,
-                                                         'disconnected',
-                                                         [element]);
+      oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL,
+        'detached', [element]);
+      oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL,
+        'disconnected', [element]);
     },
 
     HandleReattached: function (element) {
       // Invoke callback on the superclass
       oj.BaseCustomElementBridge.proto.HandleReattached.call(this, element);
 
-      oj.CompositeTemplateRenderer.invokeViewModelMethod(this._VIEW_MODEL,
+      oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL,
                                                          'connected',
                                                          [this._VM_CONTEXT]);
     },
@@ -570,7 +555,6 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
           if (typeof (view) === 'string') {
             cache.view = oj.CompositeElementBridge._getDomNodes(view, element);
           } else {
-            Logger.error(oj.BaseCustomElementBridge.getElementInfo(element) + ': View should be passed as a string.  Support for all other types is scheduled for removal.');
             cache.view = view;
           }
         }
@@ -581,7 +565,6 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
         if (!descriptor) {
           descriptor = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName);
         }
-
         // The CSS Promise will be null if loaded by the require-css plugin
         var css = descriptor[oj.BaseCustomElementBridge.DESC_KEY_CSS];
         // CSS is optional so we need to check if it was provided
@@ -611,15 +594,21 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       Object.defineProperty(proto, '_propsProto', { value: {} });
     },
 
-    InitializeBridge: function (element) {
+    InitializeBridge: function (element, descriptor) {
       // Invoke callback on the superclass
-      oj.BaseCustomElementBridge.proto.InitializeBridge.call(this, element);
+      oj.BaseCustomElementBridge.proto.InitializeBridge.call(this, element, descriptor);
 
       if (element._propsProto) {
         this._PROPS = Object.create(element._propsProto);
         this._PROPS._BRIDGE = this;
         this._PROPS._ELEMENT = element;
       }
+    },
+
+    ShouldRemoveDisabled: function () {
+      // Composite components can opt in to have their disabled attribute removed.
+      var ext = this.METADATA.extension;
+      return ext ? ext._SHOULD_REMOVE_DISABLED === true : false;
     },
 
     _getNodeBySubId: function (locator) {
@@ -754,20 +743,19 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
  *
  */
 oj.CompositeElementBridge.register = function (tagName, descriptor) {
-  // Convert any descriptor objects using the deprecated inline keys to the new API
   var descrip = {};
   descrip[oj.BaseCustomElementBridge.DESC_KEY_META] =
-    oj.CompositeElementBridge._getResource(descriptor, oj.BaseCustomElementBridge.DESC_KEY_META);
+    oj.CompositeElementBridge._getResource(tagName, descriptor,
+      oj.BaseCustomElementBridge.DESC_KEY_META);
   descrip[oj.BaseCustomElementBridge.DESC_KEY_VIEW] =
-    oj.CompositeElementBridge._getResource(descriptor, oj.BaseCustomElementBridge.DESC_KEY_VIEW);
-  if (descriptor[oj.BaseCustomElementBridge.DESC_KEY_CSS]) {
-    Logger.error(tagName + ': Component CSS should be loaded using the require-css RequireJS CSS plugin');
-  }
+    oj.CompositeElementBridge._getResource(tagName, descriptor,
+      oj.BaseCustomElementBridge.DESC_KEY_VIEW);
   descrip[oj.BaseCustomElementBridge.DESC_KEY_CSS] =
-    oj.CompositeElementBridge._getResource(descriptor, oj.BaseCustomElementBridge.DESC_KEY_CSS);
+    oj.CompositeElementBridge._getResource(tagName, descriptor,
+      oj.BaseCustomElementBridge.DESC_KEY_CSS);
   descrip[oj.BaseCustomElementBridge.DESC_KEY_VIEW_MODEL] =
-    oj.CompositeElementBridge._getResource(descriptor,
-                                           oj.BaseCustomElementBridge.DESC_KEY_VIEW_MODEL);
+    oj.CompositeElementBridge._getResource(tagName, descriptor,
+      oj.BaseCustomElementBridge.DESC_KEY_VIEW_MODEL);
   descrip[oj.BaseCustomElementBridge.DESC_KEY_PARSE_FUN] =
     descriptor[oj.BaseCustomElementBridge.DESC_KEY_PARSE_FUN];
 
@@ -819,13 +807,10 @@ oj.CompositeElementBridge._getDomNodes = function (content, element) {
     }
     return clonedContent;
   }
-
   var bridge = oj.BaseCustomElementBridge.getInstance(element);
   // TODO update this error message once we remove support for Array of DOM nodes and DocumentFragment
-  bridge.throwError(
-    element,
+  bridge.throwError(element,
     'The composite View is not one of the following supported types: string, Array of DOM nodes, DocumentFragment');
-
   return undefined; // Not really reachable by ESLint doesn't know that
 };
 
@@ -949,29 +934,22 @@ oj.CompositeElementBridge._getPropertyTracker = function (bridge, property) {
 /**
  * @ignore
  */
-oj.CompositeElementBridge._getResource = function (descriptor, key) {
+oj.CompositeElementBridge._getResource = function (tagName, descriptor, key) {
   var resource = descriptor[key];
   if (resource != null) {
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     if (hasOwnProperty.call(resource, 'inline')) {
-      Logger.error(oj.CompositeElementBridge._getResourceErrorMessage(key, 'inline', 'scheduled for removal'));
       return resource.inline;
     } else if (hasOwnProperty.call(resource, 'promise')) {
-      throw new Error(oj.CompositeElementBridge._getResourceErrorMessage(key, 'promise', 'no longer supported'));
+      throw new Error('Error while registering ' + tagName +
+                      ". The resource type for descriptor key '" + key +
+                      "' is no longer supported." +
+                      ' The resource should be passed directly as the value instead.');
     } else {
       return resource;
     }
   }
   return undefined;
-};
-
-/**
- * @ignore
- */
-oj.CompositeElementBridge._getResourceErrorMessage = function (key, resourceType, desupportType) {
-  return "The '" + resourceType + "' resource type for descriptor key '" + key +
-  "' is " + desupportType + '.' +
-  ' The resource should be passed directly as the value instead.';
 };
 
 /**
@@ -984,6 +962,7 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
 
   return content && content.nodeType === 11;
 };
+
 
 /**
  * @ojoverviewdoc ComponentPackOverview - [7]JET Pack Metadata
@@ -1331,6 +1310,48 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *       </td>
  *     </tr>
  *     <tr>
+ *       <td class="name">publicModules</td>
+ *       <td>no</td>
+ *       <td>{Array&lt;{string}>}</td>
+ *       <td>This metadata property is only valid for JET Resource Components.
+ *         <p>JET Resource Components define and package resources shared by a set of JET Web Components, typically collected into a JET Pack.  By default,
+ *            these shared resources are considered private, but sometimes it makes sense for a JET Resource Component to provide public utility modules
+ *            that can be independently imported into a JET application.</p>
+ *         <p>The <code>publicModules</code> metadata property specifies an array of paths to public modules that can be imported into a JET application.
+ *            Oracle JET Tooling leverages this metadata to automatically build minified modules for these public utilities.</p>
+ *         <p>The full path to the public module to be imported takes the form:  <code><i>[pack]</i>/<i>[name]</i>/<i>[publicModules entry]</i></code></p>
+ *         <h6>Example:</h6>
+ *         Assuming an <code>oj-foo-utils</code> Resource Component, which is a dependency for an <code>oj-foo</code> JET Pack:
+ *  <pre class="prettyprint"><code>
+ *  {
+ *    "name": "utils",
+ *    "pack": "oj-foo",
+ *    "type": "resource",
+ *    "displayName": "oj-foo Utilities",
+ *    "publicModules": [
+ *      "validators/fooValidatorFactory",
+ *      "converters/fooConverterFactory"
+ *    ],
+ *    ...
+ *  }
+ *  </code></pre>
+ *
+ *         Importing <code>fooValidatorFactory</code> into a JET application written in JavaScript:
+ *  <pre class="prettyprint"><code>
+ *  define(['ojs/ojcore', ..., 'oj-foo/utils/validators/fooValidatorFactory'],
+ *    function(oj, ...) {
+ *      ...
+ *  }
+ *  </code></pre>
+ *
+ *         Importing <code>fooValidatorFactory</code> into a JET application written in TypeScript:
+ *  <pre class="prettyprint"><code>
+ *  import {fooValidatorFactory} from "oj-foo/utils/validators/fooValidatorFactory.js";
+ *  </code></pre>
+ *
+ *       </td>
+ *     </tr>
+ *     <tr>
  *       <td class="name">type</td>
  *       <td>no</td>
  *       <td>{"composite" | "core" | "pack" | "reference" | "resource"}
@@ -1385,6 +1406,7 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  * @ojfragment componentPackOverviewDoc
  * @memberof ComponentPackOverview
  */
+
 
 /**
  * @ojoverviewdoc ComponentTypeOverview - [1]JET Component Types
@@ -1465,6 +1487,7 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  * @ojfragment componentTypeOverviewDoc
  * @memberof ComponentTypeOverview
  */
+
 
 /**
  * @ojoverviewdoc CompositeOverview - [3]JET Custom Components
@@ -1773,6 +1796,7 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  * @memberof CompositeOverview
  */
 
+
 /**
  * @ojoverviewdoc MetadataOverview - [6]JET Metadata
  * @classdesc
@@ -1910,6 +1934,519 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *
  * @ojfragment metadataOverviewDoc
  * @memberof MetadataOverview
+ */
+
+
+/**
+ *
+ * @ojcomponent oj.ojBindSlot
+ * @ojshortdesc An oj-bind-slot acts as a placeholder for child DOM to appear in a specified slot.
+ * @ojbindingelement
+ * @ojsignature {target: "Type", value: "class ojBindSlot extends HTMLElement"}
+ * @ojmodule ojcomposite
+ * @since 4.1.0
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["index", "name"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 1
+ *
+ * @classdesc
+ * <h3 id="overview-section">
+ *   Slot Binding
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview-section"></a>
+ * </h3>
+ * <p>
+ * The oj-bind-slot element is used inside a composite View as a placeholder for child DOM and is
+ * a declarative way to define a <a href="CustomElementOverview.html#ce-slots-section">slot</a>.
+ * Default markup can be defined if no child DOM is assigned to that particular
+ * slot by adding the markup as children of the slot. An oj-bind-slot element with a name attribute
+ * whose value is not the empty string is referred to as a named slot. A slot without a name attribute or one
+ * whose name value is the empty string is referred to as the default slot where any composite
+ * children without a slot attribute will be moved to.
+ * </p>
+ *
+ * <h3 id="slotprops-section">
+ *   Slot Properties
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#slotprops-section"></a>
+ * </h3>
+ * <ul>
+ *  <li>A default slot is a slot element whose slot name is the empty string or missing.</li>
+ *  <li>More than one node can be assigned to the same slot.</li>
+ *  <li>A slot can also have a slot attribute and be assigned to another slot.</li>
+ *  <li>A slot can have fallback content which are its child nodes that will be used in the DOM in its place if it has no assigned nodes.</li>
+ *  <li>A slot can also also have an index attribute to allow the slot's assigned nodes
+ *    to be individually slotted (e.g. in conjunction with an oj-bind-for-each element).</li>
+ * </ul>
+ *
+ * <h3 id="nodeprops-section">
+ *   Assignable Node Properties
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#nodeprops-section"></a>
+ * </h3>
+ * <ul>
+ *  <li>Nodes with slot attributes will be assigned to the corresponding named slots (if
+ *    present) and all other assignable nodes (Text or Element) will be assigned to
+ *    the default slot (if present).</li>
+ *  <li>The slot attribute of a node is only applied once. If the View contains a
+ *    composite and the node's assigned slot is a child of that composite, the slot
+ *    attribute of the assigned slot is inherited for the slotting of that composite.</li>
+ *  <li>Nodes with slot attributes that reference slots not present in the View will not appear in the DOM.</li>
+ *  <li>If the View does not contain a default slot, nodes assigned to the default slot will not appear in the DOM.</li>
+ *  <li>Nodes that are not assigned to a slot will not appear in the DOM.</li>
+ * </ul>
+ *
+ * <h3 id="example1-section">
+ *   Example #1: Basic Usage
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#example1-section"></a>
+ * </h3>
+ * Note that the IDs are provided for sample purposes only.
+ * <h4>Initial DOM</h4>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;component-a>
+ *  &lt;div id="A" slot="foo">&lt;/div>
+ *  &lt;div id="B" slot="bar">&lt;/div>
+ *  &lt;div id="C">&lt;/div>
+ *  &lt;div id="D" slot="foo">&lt;/div>
+ *  &lt;div id="E" slot="cat">&lt;/div>
+ * &lt;/component-a>
+ * </code>
+ * </pre>
+ *
+ * <h4>View</h4>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;!-- component-a View -->
+ * &lt;div id="outerFoo">
+ *  &lt;oj-bind-slot name="foo">&lt;/oj-bind-slot>
+ * &lt;/div>
+ * &lt;div id="outerBar">
+ *  &lt;oj-bind-slot name="bar">&lt;/oj-bind-slot>
+ * &lt;/div>
+ * &lt;div id="outerBaz">
+ *  &lt;oj-bind-slot name="baz">
+ *    &lt;!-- Default Content -->
+ *    &lt;img id="F">&lt;/img>
+ *    &lt;div id="G">&lt;/div>
+ *  &lt;/oj-bind-slot>
+ * &lt;/div>
+ * &lt;div id="outerDefault">
+ *  &lt;oj-bind-slot>
+ *    &lt;!-- Default Content -->
+ *    &lt;div id="H">&lt;/div>
+ *  &lt;/oj-bind-slot>
+ * &lt;/div>
+ * </code>
+ * </pre>
+ *
+ * <h4>Final DOM</h4>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;component-a>
+ *  &lt;div id="outerFoo">
+ *      &lt;div id="A" slot="foo">&lt;/div>
+ *      &lt;div id="D" slot="foo">&lt;/div>
+ *  &lt;/div>
+ *  &lt;div id="outerBar">
+ *      &lt;div id="B" slot="bar">&lt;/div>
+ *   &lt;/div>
+ *  &lt;div id="outerBaz">
+ *      &lt;img id="F">&lt;/img>
+ *      &lt;div id="G">&lt;/div>
+ *  &lt;/div>
+ *  &lt;div id="outerDefault">
+ *      &lt;div id="C">&lt;/div>
+ *  &lt;/div>
+ * &lt;/component-a>
+ * </code>
+ * </pre>
+ *
+ * <h3 id="example2-section">
+ *   Example #2: Slot Attribute Evaluation
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#example2-section"></a>
+ * </h3>
+ * <p>When a node is assigned to a slot, its slot value is not used for subsequent
+ *  slot assignments when child bindings are applied. Instead that slot's slot attribute,
+ *  which by default is "", overrides the assigned node's slot attribute. No actual
+ *  DOM changes will be made to the assigned node's slot attribute, but its evaluated
+ *  slot value will be managed internally and used for applying subsequent child bindings.</p>
+ *
+ * <h4>Initial DOM</h4>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;component-a>
+ *  &lt;div id="A" slot="foo">&lt;/div>
+ * &lt;/component-a>
+ * </code>
+ * </pre>
+ *
+ * <h4>View</h4>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;!-- component-a View -->
+ * &lt;component-b>
+ *  &lt;oj-bind-slot name="foo">&lt;/oj-bind-slot>
+ * &lt;/component-b>
+ *
+ * &lt;!-- component-b View -->
+ * &lt;div id="outerFoo">
+ *  &lt;oj-bind-slot name="foo">&lt;/oj-bind-slot>
+ * &lt;/div>
+ * &lt;div id="outerDefault">
+ *  &lt;oj-bind-slot>&lt;/oj-bind-slot>
+ * &lt;/div>
+ * </code>
+ * </pre>
+ *
+ * <p>When applying bindings for the component-a View, the oj-bind-slot binding will replace
+ * slot foo with div A. Slot foo's slot attribute ("") overrides div A's ("foo")
+ * so that the evaluated slot value ("") will be used when applying subsequent child bindings.<p>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;!-- DOM -->
+ * &lt;component-a>
+ *  &lt;!-- Start component-a View -->
+ *  &lt;component-b>
+ *    &lt;!-- Evaluated slot value is "" -->
+ *    &lt;div id="A" slot="foo">&lt;/div>
+ *  &lt;/component-b>
+ *  &lt;!-- End component-a View -->
+ * &lt;/component-a>
+ * </code>
+ * </pre>
+ *
+ * <p>When applying bindings for the component-b View, the oj-bind-slot binding will replace
+ *  component-b's default slot with div A since it's evaluated slot value is "".</p>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;!-- DOM -->
+ * &lt;component-a>
+ *  &lt;!-- Start component-a View -->
+ *  &lt;component-b>
+ *    &lt;!-- Start component-b View -->
+ *    &lt;div id="outerFoo">
+ *    &lt;/div>
+ *    &lt;div id="outerDefault">
+ *      &lt;div id="A" slot="foo">&lt;/div>
+ *    &lt;/div>
+ *    &lt;!-- End component-b View -->
+ *  &lt;/component-b>
+ *  &lt;!-- End component-a View -->
+ * &lt;/component-a>
+ * </code>
+ * </pre>
+ *
+ * <h3 id="deferred-section">
+ *   Deferred Slots
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#deferred-section"></a>
+ * </h3>
+ * As a performance enhancement, the composite can participate in deferred slot
+ * rendering by conditionally rendering a slot element inside a conditional oj-bind-if element
+ * and document that certain slots will be lazily rendered. This gives the application the opportunity
+ * to wrap their slot content in an <a href="oj.ojDefer.html">oj-defer</a> element and have the
+ * bindings for that deferred content be delayed. oj.Components.subtreeHidden/Shown will automatically
+ * be called on the slot contents when they are added or removed from a slot. <b>Note that due to a current
+ * limitation, the slot element should be wrapped in an HTML element (e.g. &lt;div> or &lt;span>), when it is a child of an
+ * oj-bind-if element or a knockout if binding on a comment node.</b> It is not required to wrap when
+ * the slot element is a child of a knockout if binding on an HTML element.
+ *
+ * <h4>Initial DOM</h4>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;card-component>
+ *  &lt;oj-defer slot="front">
+ *    &lt;div>
+ *      ...
+ *    &lt;/div>
+ *  &lt;/oj-defer>
+ *  &lt;oj-defer slot="back">
+ *    &lt;div>
+ *      ...
+ *    &lt;/div>
+ *  &lt;/oj-defer>
+ * &lt;/card-component>
+ * </code>
+ * </pre>
+ *
+ * <h4>View</h4>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;oj-bind-if test="isFront">
+ *   &lt;div>
+ *     &lt;oj-bind-slot class="card-component-front">
+ *       ...
+ *     &lt;/oj-bind-slot>
+ *   &lt;/div>
+ * &lt;/oj-bind-if>
+ * &lt;oj-bind-if test="!isFront">
+ *   &lt;div>
+ *     &lt;oj-bind-slot class="card-component-back">
+ *       ...
+ *     &lt;/oj-bind-slot>
+ *   &lt;/div>
+ * &lt;/oj-bind-if>
+ * </code>
+ * </pre>
+ */
+
+/**
+ * An index value allowing the slot children to be individually slotted. This is useful
+ * when the composite needs to add additional DOM around slotted children.
+ * @expose
+ * @name index
+ * @memberof oj.ojBindSlot
+ * @instance
+ * @type {number}
+ * @example <caption>
+ *          Use an oj-bind-for-each element inside the composite View to stamp out
+ *          li wrapped oj-bind-slot elements that correspond to the number of slot children.
+ *          The oj-bind-slot elements should have the value for the name attribute, but different indices.
+ *          </caption>
+ * &lt;!-- Composite View -->
+ * &lt;ul>
+ *   &lt;oj-bind-for-each data="[[new Array($slotCounts.foo)]]">
+ *     &lt;template>
+ *       &lt;li>
+ *         &lt;oj-bind-slot name="foo" index="[[$current.index]]">&lt;/oj-bind-slot>
+ *       &lt;/li>
+ *     &lt;/template>
+ *   &lt;/oj-bind-for-each>
+ * &lt;/ul>
+ */
+
+/**
+ * The name of the slot.
+ * @expose
+ * @name name
+ * @memberof oj.ojBindSlot
+ * @instance
+ * @type {string}
+ * @example <caption>Define a slot within a composite View with the name "foo":</caption>
+ * &lt;oj-bind-slot name="foo">
+ *   &lt;div>My Contents&lt;/div>
+ * &lt;/oj-bind-slot>
+ */
+
+/**
+ * <p>The <code class="prettyprint">oj-bind-slot</code> default slot is used to
+ * specify fallback content which will be used in the DOM if the slot has no
+ * assigned nodes.  As with assigned nodes, the fallback content will inherit
+ * the slot attribute of the oj-bind-slot itself.
+ *
+ *
+ * @ojchild Default
+ * @memberof oj.ojBindSlot
+ * @ojshortdesc The oj-bind-slot default slot is used to specify fallback content which will be used in the DOM if the slot has no assigned nodes.
+ * @instance
+ * @expose
+ */
+
+
+/**
+ *
+ * @ojcomponent oj.ojBindTemplateSlot
+ * @ojshortdesc An oj-bind-template-slot acts as a placeholder for stamped child DOM to appear in a specified slot.
+ * @ojbindingelement
+ * @ojsignature {target: "Type",
+ *               value: "class ojBindTemplateSlot<D> extends HTMLElement",
+ *               genericParameters: [{"name": "D", "description": "Type of data to be provided to the template"}]}
+ * @ojmodule ojcomposite
+ * @since 5.1.0
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["name"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["data"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 1
+ *
+ * @classdesc
+ * <h3 id="overview-section">
+ *   Template Slot Binding
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview-section"></a>
+ * </h3>
+ * <p>
+ * The oj-bind-template-slot element is used inside a composite View as a placeholder for stamped child DOM and
+ * is a declarative way to define a <a href="CustomElementOverview.html#ce-slots-template-section">template slot</a>.
+ * Similar to oj-bind-slot-elements, the oj-bind-template-slot has fallback content
+ * which should be provided in a template node and will be used when the template has no assigned nodes.
+ * The 'name' attribute on an oj-bind-template-slot follows the same rules as an oj-bind-slot where a template slot
+ * with a name attribute whose value is not the empty string is referred to as a named slot and a template slot
+ * without a name attribute or one whose name value is the empty string is referred to as the default slot
+ * where any composite children without a slot attribute will be moved to.
+ * </p>
+ *
+ * <h3 id="slotprops-section">
+ *   Template Slot Properties
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#slotprops-section"></a>
+ * </h3>
+ * <ul>
+ *  <li>A default template slot is a slot element whose slot name is the empty string or missing.</li>
+ *  <li>More than one template node can be assigned to the same template slot, but only the last will be used for stamping.</li>
+ *  <li>A template slot can also have a slot attribute and be assigned to another template slot or slot.</li>
+ *  <li>A template slot can have a default template as its direct child node which will be used to stamp DOM content
+ *      if it has no assigned nodes. The binding context for the default template is the composite's binding context with the
+ *      additional data properties.</li>
+ * </ul>
+ *
+ * <h3 id="nodeprops-section">
+ *   Assignable Node Properties
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#nodeprops-section"></a>
+ * </h3>
+ * <ul>
+ *  <li>Template nodes are the only allowed children of template slots.</li>
+ *  <li>Nodes with slot attributes will be assigned to the corresponding named slots (if
+ *    present) and all other assignable nodes (Text or Element) will be assigned to
+ *    the default slot (if present).</li>
+ *  <li>The slot attribute of a node is only applied once. If the View contains a
+ *    composite and the node's assigned slot is a child of that composite, the slot
+ *    attribute of the assigned slot is inherited for the slotting of that composite.</li>
+ *  <li>Nodes with slot attributes that reference slots not present in the View will not appear in the DOM.</li>
+ *  <li>If the View does not contain a default slot, nodes assigned to the default slot will not appear in the DOM.</li>
+ *  <li>Nodes that are not assigned to a slot will not appear in the DOM.</li>
+ * </ul>
+ *
+ *
+ * <h3 id="bindingcontext-section">
+ *   Binding Context
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#bindingcontext-section"></a>
+ * </h3>
+ * <p>
+ *  Unlike oj-bind-slot nodes whose children's bindings are resolved in the application's binding
+ *  context before being slotted, oj-bind-template-slot children are resolved when the composite View
+ *  bindings are applied and are resolved in the application's binding context extended with additional
+ *  properties provided by the composite. These additional properties are available on the $current
+ *  variable in the application provided template node and should be documented in the composite's
+ *  <a href="MetadataOverview.html#slots">slot metadata</a>.
+ * </p>
+ *
+ * <h3 id="example1-section">
+ *   Example #1: Basic Usage
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#example1-section"></a>
+ * </h3>
+ * Note that the IDs are provided for sample purposes only.
+ * <h4>Initial DOM</h4>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;demo-list data="{{groceryList}}" header="Groceries">
+ *  &lt;template slot="item" data-oj-as="groceryItem">
+ *    &lt;oj-checkboxset>
+ *      &lt;oj-option value="bought">&lt;oj-bind-text value='[[groceryItem.value]]'>&lt;/oj-bind-text>&lt;oj-option>
+ *    &lt;/oj-checkboxset>
+ *  &lt;/template>
+ * &lt;/demo-list>
+ * </code>
+ * </pre>
+ *
+ * <h4>View</h4>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;table>
+ *   &lt;thead>
+ *     &lt;tr>
+ *       &lt;th>
+ *         &lt;oj-bind-text value="[[$properties.header]]">&lt;/oj-bind-text>
+ *       &lt;/th>
+ *     &lt;/tr>
+ *   &lt;/thead>
+ *   &lt;tbody>
+ *     &lt;oj-bind-for-each data="{{$properties.data}}">
+ *       &lt;template>
+ *         &lt;tr>
+ *           &lt;td>
+ *             &lt;!-- Template slot for list items with default template and alias -->
+ *             &lt;oj-bind-template-slot name="item" data={{$current.data}}>
+ *               &lt;!-- Default template -->
+ *               &lt;template data-oj-as="listItem">
+ *                 &lt;span>&lt;oj-bind-text value='[[listItem.value]]'>&lt;/oj-bind-text>&lt;/span>
+ *               &lt;/template>
+ *             &lt;/oj-bind-template-slot>
+ *           &lt;/td>
+ *         &lt;/tr>
+ *       &lt;/template>
+ *     &lt;/oj-bind-for-each>
+ *   &lt;/tbody>
+ * &lt;/table>
+ * </code>
+ * </pre>
+ */
+
+
+/**
+ * An optional alias for $current that can be referenced inside the default template DOM. Note
+ * that application $current aliasing should be done with the
+ * <a href="CustomElementOverview.html#ce-slots-template-section">data-oj-as</a> attribute on the
+ * template element.
+ * @expose
+ * @name as
+ * @memberof oj.ojBindTemplateSlot
+ * @ojshortdesc An optional component-level alias for the context variable that can be referenced inside the default template DOM.
+ * @instance
+ * @type {string}
+ * @ojtsignore
+ * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
+ * @example <caption>Define a slot within a composite View with the name "foo":</caption>
+ * &lt;oj-bind-template-slot name="foo" data="[[extraProperties]]" as="listItem">
+ *   &lt;!-- optional default template content -->
+ *   &lt;template>
+ *     ...
+ *     <oj-bind-text value="[[listItem.value]]"></oj-bind-text>
+ *     ...
+ *   &lt;/template>
+ * &lt;/oj-bind-template-slot>
+ */
+
+/**
+ * The object containing additional context variables to extend the stamped template nodes'
+ * binding context. These variables will be exposed as variables on $current and aliases.
+ * @expose
+ * @name data
+ * @memberof oj.ojBindTemplateSlot
+ * @ojshortdesc The object containing additional context variables to extend the stamped template nodes's binding context.
+ * @instance
+ * @type {Object}
+ * @example <caption>Define a slot within a composite View with the name "foo":</caption>
+ * &lt;oj-bind-template-slot name="foo" data="[[$properties.data]]">
+ *   &lt;!-- optional default template content -->
+ *   &lt;template>
+ *     ...
+ *     <oj-bind-text value="[[$current.value]]"></oj-bind-text>
+ *     ...
+ *   &lt;/template>
+ * &lt;/oj-bind-template-slot>
+ * @ojsignature {target: "Type", value: "D"}
+ */
+
+/**
+ * The name of the slot.
+ * @expose
+ * @name name
+ * @memberof oj.ojBindTemplateSlot
+ * @instance
+ * @type {string}
+ * @example <caption>Define a slot within a composite View with the name "foo":</caption>
+ * &lt;oj-bind-template-slot name="foo">
+ *   &lt;!-- optional default template content -->
+ *   &lt;template>
+ *     ...
+ *   &lt;/template>
+ * &lt;/oj-bind-template-slot>
+ */
+
+ /**
+ * <p>The <code class="prettyprint">oj-bind-template-slot</code> default slot
+ * is used to specify a fallback template that will be used to stamp child
+ * DOM if the slot has no assigned template nodes.  While assigned template
+ * nodes are executed in an extension of the composite element's binding
+ * context, the fallback template is executed in an extension of its own
+ * binding context (commonly the binding context of the composite view).  As
+ * with assigned templated nodes, the extension makes the value of the
+ * data attribute available through $current and alias keys.  The fallback
+ * content also inherits the slot attribute of the oj-bind-template-slot itself.
+ *
+ * @ojchild Default
+ * @ojmaxitems 1
+ * @memberof oj.ojBindTemplateSlot
+ * @ojshortdesc The oj-bind-template-slot default slot is used to specify a fallback template that will be used to stamp child DOM if the slot has no assigned template nodes.
+ * @instance
+ * @expose
  */
 
   return oj.Composite;

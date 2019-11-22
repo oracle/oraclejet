@@ -2,9 +2,11 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['require', 'ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojconfig', 'ojs/ojkeyset', 'ojdnd'],
-    function(localRequire, oj, $, Context, ThemeUtils, Components, AnimationUtils, Logger, Config)
+
+define(['require', 'ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojconfig', 'ojs/ojkeyset', 'ojdnd', 'ojs/ojdatacollection-common'],
+    function(localRequire, oj, $, Context, ThemeUtils, Components, AnimationUtils, Logger, Config, KeySet, DnD, DataCollectionUtils)
 {
   "use strict";
 var __oj_tree_view_metadata = 
@@ -72,8 +74,7 @@ var __oj_tree_view_metadata =
     },
     "expanded": {
       "type": "KeySet",
-      "writeback": true,
-      "value": "new ExpandedKeySet()"
+      "writeback": true
     },
     "item": {
       "type": "object",
@@ -88,6 +89,10 @@ var __oj_tree_view_metadata =
           "type": "function"
         }
       }
+    },
+    "selected": {
+      "type": "KeySet",
+      "writeback": true
     },
     "selection": {
       "type": "Array<any>",
@@ -128,13 +133,14 @@ var __oj_tree_view_metadata =
   },
   "extension": {}
 };
-/* global Set:false, Components:false, Logger:false, ThemeUtils:false, Context:false, Promise:false, Symbol:false, Config:false, localRequire:false*/
+
+/* global Set:false, Components:false, Logger:false, ThemeUtils:false, Context:false, Promise:false, Symbol:false, Config:false, localRequire:false, KeySet:false, DataCollectionUtils:false*/
 
 /**
  * @ojcomponent oj.ojTreeView
  * @augments oj.baseComponent
  * @since 4.0.0
- * @ojstatus preview
+ *
  * @ojshortdesc A tree view displays hierarchical relationships between items.
  * @ojrole tree
  * @ojtsimport {module: "ojtreedataprovider", type: "AMD", importName: "TreeDataProvider"}
@@ -532,25 +538,25 @@ var __oj_tree_view_metadata =
 
         /**
          * Specifies the key set containing the keys of the TreeView items that should be expanded.
-         * Use the <a href="ExpandedKeySet.html">ExpandedKeySet</a> class to specify items to expand.
-         * Use the <a href="ExpandAllKeySet.html">ExpandAllKeySet</a> class to expand all items.
+         * Use the <a href="KeySetImpl.html">KeySetImpl</a> class to specify items to expand.
+         * Use the <a href="AllKeySetImpl.html">AllKeySetImpl</a> class to expand all items.
          *
          * @expose
          * @memberof! oj.ojTreeView
          * @ojshortdesc Specifies the key set containing the keys of the items that should be expanded. See the Help documentation for more information.
          * @instance
          * @type {KeySet}
-         * @default new ExpandedKeySet()
+         * @default new KeySet()
          * @ojwriteback
          * @ojsignature {target:"Type", value:"KeySet<K>"}
          *
          * @example <caption>Initialize the TreeView with some expanded items:</caption>
-         * myTreeView.expanded = new keySet.ExpandedKeySet(['item1', 'item2']);
+         * myTreeView.expanded = new KeySet.KeySetImpl(['item1', 'item2']);
          *
          * @example <caption>Initialize the TreeView with all items expanded:</caption>
-         * myListView.expanded = new ExpandAllKeySet();
+         * myListView.expanded = new KeySet.AllKeySetImpl();
          */
-        expanded: new oj.ExpandedKeySet(),
+        expanded: new KeySet.KeySetImpl(),
 
         /**
          * The item attribute contains a subset of attributes for items.
@@ -665,7 +671,33 @@ var __oj_tree_view_metadata =
            */
           selectable: null
         },
-
+        /**
+         * The current selected items in the TreeView. An empty KeySet indicates nothing is selected.
+         * Note that property change event for the deprecated selection property will still be fire when
+         * selected property has changed. In addition, <a href="AllKeySetImpl.html">AllKeySetImpl</a> set
+         * can be used to represent select all state. In this case, the value for selection would have an
+         * 'inverted' property set to true, and would contain the keys of the items that are not selected.
+         *
+         * @ojshortdesc Specifies the keys of the current selected items. See the Help documentation for more information.
+         * @expose
+         * @memberof! oj.ojTreeView
+         * @instance
+         * @default new KeySetImpl();
+         * @type {KeySet}
+         * @ojsignature {target:"Type", value:"KeySet<K>"}
+         * @ojwriteback
+         *
+         * @example <caption>Initialize the TreeView with the <code class="prettyprint">selected</code> attribute specified:</caption>
+         * &lt;oj-tree-view selected='{{mySelectedItemsKeySet}}'>&lt;/oj-tree-view>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">selected</code> property after initialization:</caption>
+         * // getter
+         * var selectedValue = myTreeView.selected;
+         *
+         * // setter
+         * myTreeView.selected = ['item1', 'item2', 'item3'];
+         */
+        selected: new KeySet.KeySetImpl(),
         /**
          * The current selections in the TreeView. An empty array indicates nothing is selected.
          *
@@ -679,6 +711,7 @@ var __oj_tree_view_metadata =
          * @ojeventgroup common
          *
          * @ojsignature {target:"Type", value:"Array<K>"}
+         * @ojdeprecated {since: '8.0.0', description: 'Use selected attribute instead.'}
          *
          * @example <caption>Initialize the TreeView with the <code class="prettyprint">selection</code> attribute specified:</caption>
          * &lt;oj-tree-view selection='{{mySelection}}'>&lt;/oj-tree-view>
@@ -693,7 +726,12 @@ var __oj_tree_view_metadata =
         selection: [],
 
         /**
-         * Specifies whether selection can be made and the cardinality of selection in the TreeView.
+         * <p>The type of selection behavior that is enabled on the TreeView. This attribute controls the number of selections that can be made via selection gestures at any given time.
+         *
+         * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the TreeView's selection styling will be applied to all items specified by the <a href="#selection">selection</a> and <a href="#selected">selected</a> attributes.
+         * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the TreeView's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> and <a href="#selected">selected</a> attributes.
+         *
+         * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> or <a href="#selected">selected</a> attributes.
          *
          * @expose
          * @memberof! oj.ojTreeView
@@ -702,7 +740,7 @@ var __oj_tree_view_metadata =
          * @type {string}
          * @default "none"
          * @ojvalue {string} "none" Selection is disabled.
-         * @ojvalue {string} "single" Only one item can be selected at a time.
+         * @ojvalue {string} "single" Only a single item can be selected at a time.
          * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
          *
          * @example <caption>Initialize the TreeView with the <code class="prettyprint">selection-mode</code> attribute specified:</caption>
@@ -842,14 +880,35 @@ var __oj_tree_view_metadata =
         this._initRender();
         this._render();
       },
-
+      // @inheritdoc
+      _CompareOptionValues: function (option, value1, value2) {
+        switch (option) {
+          case 'selection':
+            if (value1 && value1.inverted === undefined) {
+              // eslint-disable-next-line no-param-reassign
+              value1.inverted = false;
+            }
+            if (value2 && value2.inverted === undefined) {
+              // eslint-disable-next-line no-param-reassign
+              value2.inverted = false;
+            }
+            if (value1 && value2 && value1.inverted !== value2.inverted) {
+              return false;
+            }
+            return oj.Object.compareValues(value1, value2);
+          case 'selected':
+            return DataCollectionUtils.areKeySetsEqual(value1, value2);
+          default:
+            return this._super(option, value1, value2);
+        }
+      },
       /**
        * Initializes the TreeView.
        * @private
        */
       _initRender: function () {
         var self = this;
-
+        // Event listeners
         // Event listeners
         this._on(this.element, {
           click: function (event) {
@@ -896,10 +955,19 @@ var __oj_tree_view_metadata =
         if (oj.DomUtils.isTouchSupported()) {
           this.element[0].addEventListener('touchstart', function (event) {
             self.touchStartEvent = event;
-          });
+          }, { passive: true });
+
+          this.element[0].addEventListener('touchmove', function () {
+            if (self.ojTreeViewDragEvent === true) {
+              document.body.style.touchAction = 'none';
+            } else {
+              document.body.style.touchAction = 'auto';
+            }
+          }, { passive: false });
 
           this.element[0].addEventListener('touchcancel', function () {
             self.touchStartEvent = null;
+            self.ojTreeViewDragEvent = false;
           });
 
           this.element[0].addEventListener('touchend', function (event) {
@@ -910,60 +978,87 @@ var __oj_tree_view_metadata =
                 self.touchStartEvent = null;
               }
             }
+            self.ojTreeViewDragEvent = false;
             self._handleMouseOut(event);
           });
         }
 
         // Drop marker
-        var dropMarkerIcon = $(document.createElement('span'))
-            .addClass('oj-treeview-drop-marker-icon oj-component-icon');
+        var dropMarkerIcon = document.createElement('span');
+        dropMarkerIcon.classList.add('oj-treeview-drop-marker-icon');
+        dropMarkerIcon.classList.add('oj-component-icon');
 
-        this._dropMarker = $(document.createElement('div'))
-          .addClass('oj-treeview-drop-marker')
-          .append(dropMarkerIcon) // @HTMLUpdateOK
-          .appendTo(this.element); // @HTMLUpdateOK
+        this._dropMarker = document.createElement('div');
+        this._dropMarker.classList.add('oj-treeview-drop-marker');
+        this._dropMarker.appendChild(dropMarkerIcon);  // HTMLUpdateOk
+        this.element[0].appendChild(this._dropMarker); // HTMLUpdateOk
 
-        this._dropMarkerRect = this._dropMarker[0].getBoundingClientRect();
-        this._dropMarker.hide();
+        this._dropMarkerRect = this._dropMarker.getBoundingClientRect();
+        this._dropMarker.style.display = 'none';
 
-        this._dropLine = $(document.createElement('div'))
-          .addClass('oj-treeview-drop-line')
-          .appendTo(this.element); // @HTMLUpdateOK
+        this._dropLine = document.createElement('div');
+        this._dropLine.classList.add('oj-treeview-drop-line');
+        this.element[0].appendChild(this._dropLine); // HTMLUpdateOk
 
-        this._dropLineRect = this._dropLine[0].getBoundingClientRect();
-        this._dropLine.hide();
+        this._dropLineRect = this._dropLine.getBoundingClientRect();
+        this._dropLine.style.display = 'none';
 
         this._refreshId = 0;
-        this._uiExpanded = new oj.ExpandedKeySet();
-      },
+        this._uiExpanded = new KeySet.KeySetImpl();
 
+        this._syncSelectionState();
+      },
+      /**
+      * Syncs inital selection state with selected being source of truth
+      * @private
+      */
+      _syncSelectionState: function () {
+        var selectedArray = KeySet.KeySetUtils.toArray(this.options.selected);
+        var selectionKeySet = KeySet.KeySetUtils.toKeySet(this.options.selection);
+
+        if (selectedArray.length > 0 || selectedArray.inverted) {
+          this._userOptionChange('selection', selectedArray, null);
+        } else if (this.options.selection.length > 0 || this.options.selection.inverted) {
+          this._userOptionChange('selected', selectionKeySet, null);
+        }
+      },
       /**
        * Renders the TreeView.
        * @private
        */
       _render: function () {
         var self = this;
-        this.element.removeClass('oj-complete');
+        this.element[0].classList.remove('oj-complete');
         this._keyList = new Set(); // list of existing node keys
-
+        var ulElementList = this.element[0].getElementsByTagName('ul');
+        var i;
         if (this.options.data) {
-          this.element.find('ul').remove();
+          for (i = 0; i < ulElementList.length; i++) {
+            ulElementList[i].parentNode.removeChild(ulElementList[i]);
+          }
           this._fetchChildren(null, function (response) {
             var fetchListResult = response[0];
-            self._renderItems(fetchListResult.value, self.element);
+            self._renderItems(fetchListResult.value, self.element[0]);
             self._resetFocus();
-            self.element.addClass('oj-complete');
+            self.element[0].classList.add('oj-complete');
             self._decorateTree();
             self._lastSelectedItem = null;
           });
         } else {
-          this.element.find('ul').addClass('oj-treeview-list').attr('role', 'group');
-          this.element.find('li').each(function () {
-            var item = $(this);
-            self._decorateItem(item);
-          });
+          for (i = 0; i < ulElementList.length; i++) {
+            ulElementList[i].classList.add('oj-treeview-list');
+            ulElementList[i].setAttribute('role', 'group');
+          }
+          var liElementList = this.element[0].getElementsByTagName('li');
+          for (i = 0; i < liElementList.length; i++) {
+            var disclosureIcon = liElementList[i].getElementsByClassName('oj-treeview-spacer')[0];
+            if (disclosureIcon) {
+              liElementList[i].removeChild(disclosureIcon);
+            }
+            self._decorateItem(liElementList[i]);
+          }
           this._resetFocus();
-          this.element.addClass('oj-complete');
+          this.element[0].classList.add('oj-complete');
           this._decorateTree();
           this._lastSelectedItem = null;
         }
@@ -1075,14 +1170,14 @@ var __oj_tree_view_metadata =
       /**
        * Render the TreeView items after the data is fetched.
        * @param {oj.FetchListResult} fetchListResult The array of item data returned by the data source.
-       * @param {jQuery} parentElem The parent element to append the items to.
+       * @param {Element} parentElem The parent element to append the items to.
        * @private
        */
       _renderItems: function (fetchListResult, parentElem) {
-        var ulElem = $(document.createElement('ul'))
-            .addClass('oj-treeview-list')
-            .attr('role', 'group')
-            .appendTo(parentElem); // @HTMLUpdateOK
+        var ulElem = document.createElement('ul');
+        ulElem.classList.add('oj-treeview-list');
+        ulElem.setAttribute('role', 'group');
+        parentElem.appendChild(ulElem); // @HTMLUpdateOK
 
         for (var i = 0; i < fetchListResult.data.length; i++) {
           this._renderItem(ulElem, fetchListResult, i);
@@ -1091,7 +1186,7 @@ var __oj_tree_view_metadata =
 
       /**
        * Render a TreeView item after the data is fetched.
-       * @param {jQuery} ulElem The <ul> to attach the item to.
+       * @param {Element} ulElem The <ul> to attach the item to.
        * @param {oj.FetchListResult} fetchListResult The array of item data returned by the data source.
        * @param {number} index The index of the item.
        * @param {boolean} replace Coming from change mutation event.
@@ -1116,27 +1211,27 @@ var __oj_tree_view_metadata =
           this._keyList.add(key);
         }
 
-        var liElem = $(document.createElement('li'))
-            .attr('id', key);
+        var liElem = document.createElement('li');
+        liElem.setAttribute('id', key);
 
         if (replace) {
-          var oldElem = this._getItemByKey(key)[0];
+          var oldElem = this._getItemByKey(key);
           if (oldElem) {
             // eslint-disable-next-line no-param-reassign
-            ulElem = $(oldElem.parentNode);
-            var oldSubtree = this._getSubtree($(oldElem))[0];
-            oldElem.parentNode.replaceChild(liElem[0], oldElem); // @HTMLUpdateOK
+            ulElem = oldElem.parentNode;
+            var oldSubtree = this._getSubtree(oldElem);
+            oldElem.parentNode.replaceChild(liElem, oldElem); // @HTMLUpdateOK
           } else {
             return; // nothing to replace
           }
-        } else if (insertIndex == null || insertIndex >= ulElem.children().length) {
-          liElem.appendTo(ulElem);  // @HTMLUpdateOK
+        } else if (insertIndex == null || insertIndex >= ulElem.children.length) {
+          ulElem.appendChild(liElem);  // @HTMLUpdateOK
         } else {
-          liElem.insertBefore(ulElem.children()[insertIndex]); // @HTMLUpdateOK
+          ulElem.insertBefore(liElem, ulElem.children[insertIndex]); // @HTMLUpdateOK
         }
 
         var context = {};
-        context.parentElement = liElem;
+        context.parentElement = $(liElem);
         context.index = index;
         context.data = data;
         context.datasource = self.options.data;
@@ -1151,7 +1246,7 @@ var __oj_tree_view_metadata =
         var childDataProvider = self.m_dataSource.getChildDataProvider(key);
         metadata.leaf = (childDataProvider === null ||
           childDataProvider.isEmpty() === 'yes');
-        metadata.depth = this._getDepth(liElem[0]);
+        metadata.depth = this._getDepth(liElem);
 
         // Merge properties from metadata into item context
         var props = Object.keys(metadata);
@@ -1170,13 +1265,13 @@ var __oj_tree_view_metadata =
           if (content != null) {
             // Allow return of document fragment from jQuery create or JS document.createDocumentFragment
             if (content.parentNode === null || content.parentNode instanceof DocumentFragment) {
-              liElem.append(content); // @HTMLUpdateOK
+              liElem.appendChild(content); // @HTMLUpdateOK
             } else if (content.parentNode != null) {
               // Parent node exists, do nothing
             } else if (content.toString) {
               textWrapper = document.createElement('span');
               textWrapper.appendChild(document.createTextNode(content.toString())); // @HTMLUpdateOK
-              liElem.append(textWrapper); // @HTMLUpdateOK
+              liElem.appendChild(textWrapper); // @HTMLUpdateOK
             }
           }
         } else if (templateElement != null && templateEngine != null) {
@@ -1184,39 +1279,38 @@ var __oj_tree_view_metadata =
           var nodes = templateEngine.execute(componentElement, templateElement, context, null);
           for (i = 0; i < nodes.length; i++) {
             if (nodes[i].tagName === 'LI') {
-              liElem.replaceWith(nodes[i]);
+              liElem.parentNode.replaceChild(nodes[i], liElem); // @HTMLUpdateOK
               break;
             } else {
-              liElem.append(nodes[i]);
+              liElem.appendChild(nodes[i]); // @HTMLUpdateOK
             }
           }
         } else {
           textWrapper = document.createElement('span');
           textWrapper.appendChild(document.createTextNode(data == null ? '' : data.toString())); // @HTMLUpdateOK
-          liElem.append(textWrapper); // @HTMLUpdateOK
+          liElem.appendChild(textWrapper); // @HTMLUpdateOK
         }
-
         // eslint-disable-next-line block-scoped-var
         if (replace && oldSubtree) {
           // eslint-disable-next-line block-scoped-var
-          liElem[0].appendChild(oldSubtree);
+          liElem.appendChild(oldSubtree);
         }
 
         // Get the item from root again as template replaces the item element
-        liElem = ulElem.children().eq(insertIndex != null ? insertIndex : index);
-        context.parentElement = liElem;
+        liElem = ulElem.children[(insertIndex != null ? insertIndex : index)];
+
+        context.parentElement = $(liElem);
 
         // Set id on the liElem if not set by the renderer
-        if (liElem.attr('id') == null) {
-          liElem.attr('id', key);
+        if (liElem.getAttribute('id') == null) {
+          liElem.setAttribute('id', key);
         }
 
-        // Cache data and metadata for lookup
-        liElem.data('data', data).data('metadata', metadata);
+        liElem['oj-item-data'] = data;
+        liElem['oj-item-metadata'] = metadata;
 
-        self._decorateItem(liElem, replace);
+        self._decorateItem(liElem);
       },
-
       /**
        * @param {Element} elem The li element to get depth of.
        * @return {number} depth from the li, 1 is top level
@@ -1232,7 +1326,6 @@ var __oj_tree_view_metadata =
         }
         return depth;
       },
-
       /**
        * Initiate loading of the template engine.  An error is thrown if the template engine failed to load.
        * @return {Promise} resolves to the template engine, or null if:
@@ -1305,58 +1398,70 @@ var __oj_tree_view_metadata =
 
         // Keyboard focus and ARIA attributes
         var root = this._getRoot();
-        this._focusable({
-          element: root,
-          applyHighlight: true,
-          setupHandlers: function (focusInHandler, focusOutHandler) {
-            self._focusInHandler = focusInHandler;
-            self._focusOutHandler = focusOutHandler;
+        if (root) {
+          this._focusable({
+            element: $(root),
+            applyHighlight: true,
+            setupHandlers: function (focusInHandler, focusOutHandler) {
+              self._focusInHandler = focusInHandler;
+              self._focusOutHandler = focusOutHandler;
+            }
+          });
+          root.setAttribute('tabIndex', 0);
+          $(root).on('focus', function () {
+            self._focusInHandler($(self._getItemContent(self._currentItem)));
+          })
+            .on('blur', function () {
+              self._focusOutHandler($(self._getItemContent(self._currentItem)));
+            });
+          root.setAttribute('role', 'tree');
+          root.setAttribute('aria-labelledby', this.element[0].getAttribute('id'));
+
+          var selectionMode = this.options.selectionMode;
+          if (selectionMode !== 'none') {
+            root.setAttribute('aria-multiselectable', selectionMode === 'multiple' ? 'true' : 'false');
+          } else {
+            root.removeAttribute('aria-multiselectable');
           }
-        });
-
-        root.attr('tabIndex', 0)
-          .on('focus', function () {
-            self._focusInHandler(self._getItemContent(self._currentItem));
-          })
-          .on('blur', function () {
-            self._focusOutHandler(self._getItemContent(self._currentItem));
-          })
-          .attr('role', 'tree')
-          .attr('aria-labelledby', this.element.attr('id'));
-
-        var selectionMode = this.options.selectionMode;
-        if (selectionMode !== 'none') {
-          root.attr('aria-multiselectable', selectionMode === 'multiple' ? 'true' : 'false');
-        } else {
-          root.removeAttr('aria-multiselectable');
         }
       },
-
       /**
        * Adds the necessary attributes to a TreeView item element.
-       * @param {jQuery} item The item element to decorate.
-       * @param {boolean} replace If method is called from change mutation.
+       * @param {Element} item The item element to decorate.
        * @private
        */
-      _decorateItem: function (item, replace) {
+      _decorateItem: function (item) {
         var self = this;
-        item.addClass('oj-treeview-item').attr('role', 'treeitem');
+        var i;
+
+        item.classList.add('oj-treeview-item');
+        item.setAttribute('role', 'treeitem');
 
         // Create wrapper for item icon and text
         var itemContent = this._getItemContent(item);
-        if (itemContent.length === 0 || replace) {
+        if (!itemContent) {
           // Wrap everything except the subtree
-          // Use item.contents() to include text and comment nodes as well
-          itemContent = $(document.createElement('div'))
-            .addClass('oj-treeview-item-content')
-            .append(item.contents()) // @HTMLUpdateOK
-            .appendTo(item); // @HTMLUpdateOK
+          // Use innerHTML to include text and comment nodes as well
+          itemContent = document.createElement('div');
+          itemContent.classList.add('oj-treeview-item-content');
 
+          if (item.firstChild) {
+            do {
+              itemContent.appendChild(item.firstChild); // @HTMLUpdateOK
+            } while (item.childNodes.length > 0);
+          }
+
+          item.appendChild(itemContent); // @HTMLUpdateOK
           // Take the subtree out of the itemContent wrapper
-          // Selector can't be used to exclude the ul when wrapping item.contents()
-          itemContent.children('ul').appendTo(item); // @HTMLUpdateOK
 
-          itemContent.find('.oj-treeview-item-icon').addClass('oj-treeview-icon');
+          var innerTree = itemContent.getElementsByTagName('ul')[0];
+          if (innerTree) {
+            item.appendChild(innerTree); // @HTMLUpdateOK
+          }
+          var treeViewItems = itemContent.getElementsByClassName('oj-treeview-item-icon');
+          for (i = 0; i < treeViewItems.length; i++) {
+            treeViewItems[i].classList.add('oj-treeview-icon');
+          }
         }
 
         // Initial selection
@@ -1364,18 +1469,20 @@ var __oj_tree_view_metadata =
 
         // DnD
         var dragOptions = this._getDragOptions();
-        itemContent.attr('draggable', Object.keys(dragOptions).length > 0 ? 'true' : 'false');
+        itemContent.setAttribute('draggable', Object.keys(dragOptions).length > 0 ? 'true' : 'false');
+
 
         // Create disclosure icon or spacer
-        var disclosureIcon = item.children('.oj-treeview-spacer');
-        if (disclosureIcon.length === 0) {
-          disclosureIcon = $(document.createElement('ins'))
-            .addClass('oj-treeview-icon oj-treeview-spacer')
-            .prependTo(item); // @HTMLUpdateOK
-        }
+        var disclosureIcon = itemContent.getElementsByClassName('oj-treeview-spacer');
 
+        if (disclosureIcon.length === 0) {
+          disclosureIcon = document.createElement('ins');
+          this._addTreeViewIconClass(disclosureIcon);
+          this._addTreeviewSpacerClass(disclosureIcon);
+          item.insertBefore(disclosureIcon, itemContent); // @HTMLUpdateOK
+        }
         if (self._isLeaf(item)) {
-          item.addClass('oj-treeview-leaf');
+          this._addTreeviewLeafClass(item);
         } else {
           // Expanded option
           if (self._isInitExpanded(item)) {
@@ -1383,124 +1490,183 @@ var __oj_tree_view_metadata =
           } else {
             self._collapse(item, false);
           }
-
-          disclosureIcon.addClass('oj-treeview-disclosure-icon oj-component-icon oj-clickable-icon-nocontext oj-default');
+          this._addDisclosureClasses(disclosureIcon);
         }
       },
-
+      _addTreeviewSpacerClass: function (item) {
+        item.classList.add('oj-treeview-spacer');
+      },
+      _addTreeViewIconClass: function (item) {
+        item.classList.add('oj-treeview-icon');
+      },
+      _addTreeviewLeafClass: function (item) {
+        item.classList.add('oj-treeview-leaf');
+      },
+      _removeTreeviewLeafClass: function (item) {
+        item.classList.remove('oj-treeview-leaf');
+      },
+      _addDisclosureClasses: function (item) {
+        item.classList.add('oj-treeview-disclosure-icon');
+        item.classList.add('oj-component-icon');
+        item.classList.add('oj-clickable-icon-nocontext');
+        item.classList.add('oj-default');
+      },
+      _removeDisclosureClasses: function (item) {
+        item.classList.remove('oj-treeview-disclosure-icon');
+        item.classList.remove('oj-component-icon');
+        item.classList.remove('oj-clickable-icon-nocontext');
+        item.classList.remove('oj-default');
+      },
+      /**
       /**
        * Returns all the item elements that belongs to the TreeView.
-       * @return {jQuery} All the item elements that belongs to the TreeView.
+       * @return {Element} All the item elements that belongs to the TreeView.
        * @private
        */
       _getItems: function () {
-        return this.element.find('.oj-treeview-item');
+        return this.element[0].getElementsByClassName('oj-treeview-item');
       },
 
       /**
        * Returns the key of the provided item.
-       * @param {jQuery} item The TreeView item element.
-       * @return {jQuery|string|undefined} The key.
+       * @param {Element} item The TreeView item element.
+       * @return {any} The key.
        * @private
        */
       _getKey: function (item) {
+        if (!item) {
+          return null;
+        }
         // Rely on the key in the metadata first. The DOM id stringifies the key,
         // so it won't return the correct key if the key isn't string.
-        var metadata = item.data('metadata');
+        var metadata = item['oj-item-metadata'];
         if (metadata) {
           return metadata.key;
         }
-        return item.attr('id');
+        return item.getAttribute('id');
       },
 
       /**
        * Returns the item element that is identified by the provided key.
        * @param {string} key The key.
-       * @return {jQuery} The item element.
+       * @return {Element} The item element.
        * @private
        */
       _getItemByKey: function (key) {
         // Rely on the key in the metadata first. The DOM id stringifies the key,
         // so it won't return the correct key if the key isn't string.
-        var item = this.element.find('li').filter(function () {
-          var metadata = $(this).data('metadata');
+        var itemList = this.element[0].getElementsByTagName('li');
+        var item;
+        for (var i = 0; i < itemList.length; i++) {
+          var metadata = itemList[i]['oj-item-metadata'];
           if (metadata) {
-            return oj.Object.compareValues(metadata.key, key);
+            if (oj.Object.compareValues(metadata.key, key)) {
+              item = itemList[i];
+              break;
+            }
           }
-          return false;
-        });
-
-        if (item.length > 0) {
+        }
+        if (item) {
           return item;
         }
-        return this.element.find('li#' + $.escapeSelector(key));
+        if (typeof key === 'string') {
+          var keyElement = document.getElementById(key);
+          var root = this._getRoot();
+          if (root) {
+            if (keyElement && root && root.contains(keyElement)) {
+              return keyElement;
+            }
+          }
+        }
+        return undefined;
       },
 
       /**
        * Returns the content element of the provided item element.
-       * @param {jQuery} item The TreeView item element.
-       * @return {jQuery} The item content element.
+       * @param {Element} item The TreeView item element.
+       * @return {Element} The item content element.
        * @private
        */
       _getItemContent: function (item) {
-        return item.children('.oj-treeview-item-content');
+        if (!item) {
+          return null;
+        }
+        // : _getItemContent can give you non direct children's content
+        var children = item.children;
+        for (var i = 0; i < children.length; i++) {
+          if (item.children[i].classList && item.children[i].classList.contains('oj-treeview-item-content')) {
+            return item.children[i];
+          }
+        }
+        return null;
       },
 
       /**
        * Returns the child items of the provided item element.
-       * @param {jQuery} item The TreeView item element.
-       * @return {jQuery} The child item elements.
+       * @param {Element} item The TreeView item element.
+       * @return {Element} The child item elements.
        * @private
        */
       _getChildItems: function (item) {
-        return item.children('.oj-treeview-list').children('.oj-treeview-item');
+        var listElements = [];
+        var firstSubList = item.getElementsByClassName('oj-treeview-list')[0];
+        if (firstSubList) {
+          var children = firstSubList.children;
+          for (var i = 0; i < children.length; i++) {
+            listElements.push(children[i]);
+          }
+        }
+        return listElements;
       },
-
       /**
        * Returns the parent item of the provided item element.
-       * @param {jQuery} item The TreeView item element.
-       * @return {jQuery} The parent item element.
+       * @param {Element} item The TreeView item element.
+       * @return {Element} The parent item element.
        * @private
        */
       _getParentItem: function (item) {
-        return item.parent('.oj-treeview-list').parent('.oj-treeview-item');
+        var parentListElement = this._getParents(item, '.oj-treeview-list')[0];
+        return this._getParents(parentListElement, '.oj-treeview-item')[0];
       },
 
       /**
        * Returns the subtree element (ul) of the provided item element.
-       * @param {jQuery} item The TreeView item element.
-       * @return {jQuery} The subtree element (ul).
+       * @param {Element} item The TreeView item element.
+       * @return {Element} The subtree element (ul).
        * @private
        */
       _getSubtree: function (item) {
-        return item.children('.oj-treeview-list');
+        return item.getElementsByClassName('oj-treeview-list')[0];
       },
 
       /**
        * Returns the root ul of the TreeView.
-       * @return {jQuery}
+       * @return {Element}
        * @private
        */
       _getRoot: function () {
-        return this.element.children('.oj-treeview-list');
+        return this.element[0].getElementsByClassName('oj-treeview-list')[0];
       },
 
       /**
        * Returns whether the item is a leaf item.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @return {boolean}
        * @private
        */
       _isLeaf: function (item) {
-        var metadata = item.data('metadata');
-        var hasChildren = metadata ? !metadata.leaf : this._getSubtree(item).length > 0;
+        if (!item) {
+          return null;
+        }
+        var metadata = item['oj-item-metadata'];
+        var hasChildren = metadata ? !metadata.leaf : this._getSubtree(item) !== undefined;
         return !hasChildren;
       },
 
       /**
        * Returns whether item element is initially expanded in the TreeView option.
        * Note that the expanded option is not kept in sync with the actual expanded state of the TreeView.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @return {boolean}
        * @private
        */
@@ -1513,12 +1679,12 @@ var __oj_tree_view_metadata =
       /**
        * Returns whether item element is currently expanded.
        * Note that the expanded option is not kept in sync with the actual expanded state of the TreeView.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @return {boolean}
        * @private
        */
       _isExpanded: function (item) {
-        return item.hasClass('oj-expanded');
+        return item.classList.contains('oj-expanded');
       },
 
       /**
@@ -1564,7 +1730,7 @@ var __oj_tree_view_metadata =
 
       /**
        * Expands an item.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @param {boolean} animate Whether the expand should be animated.
        * @param {Event} event The event that triggers the expand.
        * @param {boolean} vetoable Whether the expand can be vetoed by beforeExpand.
@@ -1588,7 +1754,7 @@ var __oj_tree_view_metadata =
         this._lastSelectedItem = null;
 
         var subtree = this._getSubtree(item);
-        if (subtree.length === 0) {
+        if (!subtree) {
           this._uiExpanded = this._uiExpanded.add([self._getKey(item)]);
           this._fetchChildren(self._getKey(item), function (response) {
             // if the item is already expanded or is no longer in the expanded option bail early
@@ -1596,7 +1762,7 @@ var __oj_tree_view_metadata =
             // uiExpanded is used because on ui gesture the expanded is not set until
             // fetch/animation completes, so we need an internal expanded option to track that
             if (self._isExpanded(item) || (!self._isInitExpanded(item) &&
-             !self._isInitExpanded(item, self._uiExpanded))) {
+              !self._isInitExpanded(item, self._uiExpanded))) {
               return;
             }
             var fetchListResult = response[0];
@@ -1611,7 +1777,7 @@ var __oj_tree_view_metadata =
 
       /**
        * Expands an item after its child items have been fetched.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @param {boolean} animate Whether the expand should be animated.
        * @param {Event} event The event that triggers the expand.
        * @private
@@ -1619,19 +1785,23 @@ var __oj_tree_view_metadata =
       _expandAfterFetch: function (item, animate, event) {
         var self = this;
 
-        item.removeClass('oj-collapsed').addClass('oj-expanded').attr('aria-expanded', 'true');
+        item.classList.remove('oj-collapsed');
+        item.classList.add('oj-expanded');
+        item.setAttribute('aria-expanded', 'true');
 
         var subtree = this._getSubtree(item);
-        subtree.css('display', 'block');
+        if (subtree) {
+          subtree.style.display = 'block';
+        }
 
         if (animate) {
           var busyResolve = this._addBusyState('animating expand');
-          item.addClass('oj-treeview-animated'); // animation flag
+          item.classList.add('oj-treeview-animated'); // animation flag
           self._setDisclosing(self._getKey(item), true);
 
           this._startAnimation(subtree, 'expand').then(function () {
             self._setDisclosing(self._getKey(item), false);
-            item.removeClass('oj-treeview-animated');
+            item.classList.remove('oj-treeview-animated');
             self._trigger('expand', event, self._getEventPayload(item));
 
             // Update option and fire optionChange
@@ -1646,7 +1816,7 @@ var __oj_tree_view_metadata =
 
       /**
        * Collapses an item.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @param {boolean} animate Whether the collapse should be animated.
        * @param {Event} event The event that triggers the collapse.
        * @param {boolean} vetoable Whether the collapse can be vetoed by beforeCollapse.
@@ -1655,9 +1825,25 @@ var __oj_tree_view_metadata =
       _collapse: function (item, animate, event, vetoable) {
         var self = this;
 
-        if (item.hasClass('oj-collapsed') || this._isLeaf(item) ||
+        if (item.classList.contains('oj-collapsed') || this._isLeaf(item) ||
           (animate && this._isDisclosing(this._getKey(item)))) {
           return;
+        }
+
+        if (item.contains(this._currentItem)) {
+          var tempItem = item;
+          if (!this._isActionable(tempItem, 'focus')) {
+            tempItem = this._getPreviousActionableItem(item, 'focus');
+            if (!tempItem) {
+              tempItem = this._getNextActionableItem(item, 'focus');
+            }
+          }
+          if (tempItem) {
+            this._focus(tempItem, event);
+          } else {
+            this.options.currentItem = null;
+            this._resetFocus();
+          }
         }
 
         if (animate) {
@@ -1668,22 +1854,22 @@ var __oj_tree_view_metadata =
           this._setDisclosing(this._getKey(item), true);
         }
 
-        item.removeClass('oj-expanded').addClass('oj-collapsed').attr('aria-expanded', 'false');
+        item.classList.remove('oj-expanded');
+        item.classList.add('oj-collapsed');
+        item.setAttribute('aria-expanded', 'false');
 
         this._lastSelectedItem = null;
 
         var subtree = this._getSubtree(item);
         if (animate) {
           var busyResolve = this._addBusyState('animating collapse');
-          item.addClass('oj-treeview-animated'); // animation flag
+          item.classList.add('oj-treeview-animated'); // animation flag
 
           this._uiExpanded = this._uiExpanded.delete([this._getKey(item)]);
-
           this._startAnimation(subtree, 'collapse').then(function () {
             self._setDisclosing(self._getKey(item), false);
-
-            subtree.css('display', 'none');
-            item.removeClass('oj-treeview-animated');
+            subtree.style.display = 'none';
+            item.classList.remove('oj-treeview-animated');
             self._trigger('collapse', event, self._getEventPayload(item));
 
             // Update option and fire optionChange
@@ -1693,14 +1879,14 @@ var __oj_tree_view_metadata =
 
             busyResolve();
           });
-        } else {
-          subtree.css('display', 'none');
+        } else if (subtree) {
+          subtree.style.display = 'none';
         }
       },
 
       /**
        * Starts the animation for the specific action.
-       * @param {jQuery} elem The element to animate.
+       * @param {Element} elem The element to animate.
        * @param {string} action The name of the action to animate.
        * @return {Promise} A promise that will be resolved when the animation ends.
        * @private
@@ -1713,22 +1899,22 @@ var __oj_tree_view_metadata =
 
         var effects = (this.defaultOptions.animation || {})[action];
         // eslint-disable-next-line no-undef
-        return AnimationUtils.startAnimation(elem[0], action, effects, this);
+        return AnimationUtils.startAnimation(elem, action, effects, this);
       },
 
       /**
        * Returns the default event payload for the provided item element.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @return {Object}
        * @private
        */
       _getEventPayload: function (item) {
-        return { key: this._getKey(item), item: item[0] };
+        return { key: this._getKey(item), item: item };
       },
 
       /**
        * Returns whether an action (select or focus) can be performed on the item.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @param {string} actionName The action name: 'select' or 'focus'.
        * @return {boolean}
        * @private
@@ -1738,7 +1924,7 @@ var __oj_tree_view_metadata =
         if (actionable === false) {
           return false;
         } else if (typeof actionable === 'function') {
-          var itemContext = this.getContextByNode(item[0]);
+          var itemContext = this.getContextByNode(item);
           return actionable(itemContext);
         }
         return true;
@@ -1746,27 +1932,45 @@ var __oj_tree_view_metadata =
 
       /**
        * Returns whether item element is selected.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @return {boolean}
        * @private
        */
       _isSelected: function (item) {
         var selectionMode = this.options.selectionMode;
-        var selection = this.options.selection;
+        var selected = this.options.selected;
 
         if (selectionMode === 'none') {
           return false;
-        } else if (selectionMode === 'single' && selection.length > 1) {
-          selection = [selection[0]];
         }
 
         var key = this._getKey(item);
-        return selection.indexOf(key) !== -1;
+        return selected.has(key);
       },
 
       /**
+       * Handles the selected or selection option being set programatically
+       * @param {string} key the option
+       * @param {KeySet} value the selected object
+       * @private
+       */
+      _handleSelectedOption: function (key, value) {
+        if (key === 'selected') {
+          var selectedArray = KeySet.KeySetUtils.toArray(value);
+          this._userOptionChange('selection', selectedArray, null);
+        } else if (key === 'selection') {
+          var selectionKeySet = KeySet.KeySetUtils.toKeySet(value);
+          this._userOptionChange('selected', selectionKeySet, null);
+        }
+
+        var items = this._getItems();
+        for (var i = 0; i < items.length; i++) {
+          this._select(items[i]);
+        }
+      },
+      /**
        * Selects or unselects an item, depending on what triggers the selection.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @param {Event} event The event that triggers the select.
        * @private
        */
@@ -1792,25 +1996,25 @@ var __oj_tree_view_metadata =
           var isMultiple = selectionMode === 'multiple';
           var isNavigation = event.keyCode === 40 || event.keyCode === 38;
           var key = this._getKey(item);
-          var selection = [];
+          var selected = new KeySet.KeySetImpl();
 
           if (isMultiple && event.shiftKey && !isNavigation) {
             // Maintain selection of other items if meta key is pressed
             if (isMetaKey) {
-              selection = this.options.selection.slice(0);
+              selected = this.options.selected;
             } else {
               this._clearSelection();
             }
 
             // Select a range from the last selected item to the current item
             var nextItem = this._lastSelectedItem;
-            var getNextItem = (nextItem && nextItem.offset().top < item.offset().top) ?
-                this._getNextActionableItem.bind(this) : this._getPreviousActionableItem.bind(this);
+            var getNextItem = (nextItem && nextItem.offsetTop < item.offsetTop) ?
+              this._getNextActionableItem.bind(this) : this._getPreviousActionableItem.bind(this);
 
-            while (nextItem && (nextItem[0] !== item[0])) {
+            while (nextItem && (nextItem !== item)) {
               var nextKey = this._getKey(nextItem);
-              if (selection.indexOf(nextKey) === -1) {
-                selection.push(nextKey);
+              if (!selected.has(nextKey)) {
+                selected = selected.add([nextKey]);
                 this._setSelected(nextItem);
               }
               nextItem = getNextItem(nextItem, 'select');
@@ -1818,15 +2022,15 @@ var __oj_tree_view_metadata =
 
             // Select the current item
             isSelected = true;
-            selection.push(key);
+            selected = selected.add([key]);
           } else if (isMultiple && (isMetaKey || isTouch || isNavigation)) {
             // Toggle selection of current item while maintaining the selection of the other items
             isSelected = !isSelected;
-            selection = this.options.selection.slice(0);
+            selected = this.options.selected;
             if (isSelected) {
-              selection.push(key);
+              selected = selected.add([key]);
             } else {
-              selection.splice(selection.indexOf(key), 1);
+              selected = selected.delete([key]);
             }
           } else {
             // Clear selection of all other items
@@ -1836,15 +2040,16 @@ var __oj_tree_view_metadata =
             // Otherwise, select the current item even if it is already selected
             if ((isTouch || event.keyCode === 32) && isSelected) {
               isSelected = false;
-              selection = [];
+              selected = new KeySet.KeySetImpl();
             } else {
               isSelected = true;
-              selection = [key];
+              selected = new KeySet.KeySetImpl([key]);
             }
           }
 
           // Update option and fire optionChange
-          this._userOptionChange('selection', selection, event);
+          this._userOptionChange('selected', selected, event);
+          this._userOptionChange('selection', KeySet.KeySetUtils.toArray(selected), event);
           this._lastSelectedItem = item;
         }
 
@@ -1857,35 +2062,38 @@ var __oj_tree_view_metadata =
 
       /**
        * Style the provided item as selected.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @private
        */
       _setSelected: function (item) {
-        this._getItemContent(item).addClass('oj-selected');
-        item.attr('aria-selected', 'true');
+        var itemContent = this._getItemContent(item);
+        itemContent.classList.add('oj-selected');
+        item.setAttribute('aria-selected', 'true');
       },
-
       /**
        * Style the provided item as unselected.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @private
        */
       _setUnselected: function (item) {
-        this._getItemContent(item).removeClass('oj-selected');
-        item.attr('aria-selected', 'false');
+        var itemContent = this._getItemContent(item);
+        itemContent.classList.remove('oj-selected');
+        item.setAttribute('aria-selected', 'false');
       },
-
       /**
-       * Clears the selection of all items.
-       * @private
-       */
+      * Clears the selection of all items.
+      * @private
+      */
       _clearSelection: function () {
-        this._setUnselected(this._getItems());
+        var items = this._getItems();
+        for (var i = 0; i < items.length; i++) {
+          this._setUnselected(items[i]);
+        }
       },
 
       /**
        * Sets the focus (current item) on the provided item element.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @param {Event} event The event that triggers the focus.
        * @private
        */
@@ -1899,7 +2107,7 @@ var __oj_tree_view_metadata =
           var payload = this._getEventPayload(item);
           if (this._currentItem) {
             payload.previousKey = this._getKey(this._currentItem);
-            payload.previousItem = this._currentItem[0];
+            payload.previousItem = this._currentItem;
           }
 
           var cancelled = !this._trigger('beforeCurrentItem', event, payload);
@@ -1911,8 +2119,8 @@ var __oj_tree_view_metadata =
           this._userOptionChange('currentItem', this._getKey(item), event);
         }
 
-        this._focusOutHandler(this._getItemContent(this._currentItem));
-        this._focusInHandler(this._getItemContent(item));
+        this._focusOutHandler($(this._getItemContent(this._currentItem)));
+        this._focusInHandler($(this._getItemContent(item)));
         this._setCurrentItem(item);
       },
 
@@ -1923,7 +2131,7 @@ var __oj_tree_view_metadata =
       _resetFocus: function () {
         if (this.options.currentItem) {
           var currentItem = this._getItemByKey(this.options.currentItem);
-          if (currentItem.length > 0) {
+          if (currentItem) {
             this._setCurrentItem(currentItem);
             return;
           }
@@ -1931,14 +2139,17 @@ var __oj_tree_view_metadata =
 
         // CurrentItem not specified, so default to the first item.
         // Update the option so the currentItem attribute is in sync.
-        var firstItem = this._getItems().first();
+        var firstItem = this._getItems()[0];
+        if (!this._isActionable(firstItem, 'focus')) {
+          firstItem = this._getNextActionableItem(firstItem, 'focus');
+        }
         this._setCurrentItem(firstItem);
         this._userOptionChange('currentItem', this._getKey(this._currentItem), null);
       },
 
       /**
        * Set the provided item as the current item.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @private
        */
       _setCurrentItem: function (item) {
@@ -1946,7 +2157,10 @@ var __oj_tree_view_metadata =
 
         // Set the item content to be the activedescendant so that the screen reader
         // does not read the child items.
-        this._getRoot().attr('aria-activedescendant', this._getKey(item));
+        var root = this._getRoot();
+        if (root) {
+          this._getRoot().setAttribute('aria-activedescendant', this._getKey(item));
+        }
       },
 
       /**
@@ -1996,32 +2210,32 @@ var __oj_tree_view_metadata =
 
       /**
        * Returns the closest item to the element.
-       * @param {jQuery} elem The element.
-       * @return {jQuery} The item content element.
+       * @param {Element} elem The element.
+       * @return {Element} The item content element.
        * @private
        */
       _getClosestItem: function (elem) {
-        return elem.closest('.oj-treeview-item');
+        return this._closest(elem, '.oj-treeview-item');
       },
 
       /**
        * Returns the closest item content to the element.
-       * @param {jQuery} elem The element.
-       * @return {jQuery} The item content element.
+       * @param {Element} elem The element.
+       * @return {Element} The item content element.
        * @private
        */
       _getClosestItemContent: function (elem) {
-        return elem.closest('.oj-treeview-item-content');
+        return this._closest(elem, '.oj-treeview-item-content');
       },
 
       /**
        * Returns the closest disclosure icon to the element.
-       * @param {jQuery} elem The element.
-       * @return {jQuery} The disclosure icon element.
+       * @param {Element} elem The element.
+       * @return {Element} The disclosure icon element.
        * @private
        */
       _getClosestDisclosureIcon: function (elem) {
-        return elem.closest('.oj-treeview-disclosure-icon');
+        return this._closest(elem, '.oj-treeview-disclosure-icon');
       },
 
       /**
@@ -2032,9 +2246,9 @@ var __oj_tree_view_metadata =
       _handleClick: function (event) {
         var item;
         // Clicking on disclosure icon
-        var disclosureIcon = this._getClosestDisclosureIcon($(event.target));
-        if (disclosureIcon.length > 0) {
-          item = disclosureIcon.closest('.oj-treeview-item');
+        var disclosureIcon = this._getClosestDisclosureIcon(event.target);
+        if (disclosureIcon) {
+          item = this._getClosestItem(disclosureIcon);
           if (this._isExpanded(item)) {
             this._collapse(item, true, event);
           } else {
@@ -2045,9 +2259,9 @@ var __oj_tree_view_metadata =
         }
 
         // Clicking on item content
-        var itemContent = this._getClosestItemContent($(event.target));
-        if (itemContent.length > 0) {
-          item = itemContent.parent();
+        var itemContent = this._getClosestItemContent(event.target);
+        if (itemContent) {
+          item = itemContent.parentNode;
           this._select(item, event);
           this._focus(item, event);
           this.touchStartEvent = null;
@@ -2059,6 +2273,7 @@ var __oj_tree_view_metadata =
         if (selectionMode !== 'none') {
           this._clearSelection();
           this._lastSelectedItem = null;
+          this._userOptionChange('selected', new KeySet.KeySetImpl(), event);
           this._userOptionChange('selection', [], event);
         }
 
@@ -2076,15 +2291,17 @@ var __oj_tree_view_metadata =
           return;
         }
 
-        var target = this._getClosestDisclosureIcon($(event.target));
+        var target = this._getClosestDisclosureIcon(event.target);
 
-        if (target.length === 0) {
-          target = this._getClosestItemContent($(event.target));
+        if (!target) {
+          target = this._getClosestItemContent(event.target);
         }
 
         // Add hover effect
-        target.removeClass('oj-default');
-        target.addClass('oj-hover');
+        if (target) {
+          target.classList.remove('oj-default');
+          target.classList.add('oj-hover');
+        }
       },
 
       /**
@@ -2093,16 +2310,21 @@ var __oj_tree_view_metadata =
        * @private
        */
       _handleMouseOut: function (event) {
-        var target = this._getClosestDisclosureIcon($(event.target));
-        target.removeClass('oj-selected');
+        var target = this._getClosestDisclosureIcon(event.target);
+        if (target) {
+          target.classList.remove('oj-selected');
+        }
 
-        if (target.length === 0) {
-          target = this._getClosestItemContent($(event.target));
+
+        if (!target) {
+          target = this._getClosestItemContent(event.target);
         }
 
         // Remove hover effect
-        target.addClass('oj-default');
-        target.removeClass('oj-hover');
+        if (target) {
+          target.classList.add('oj-default');
+          target.classList.remove('oj-hover');
+        }
       },
 
       /**
@@ -2111,8 +2333,10 @@ var __oj_tree_view_metadata =
        * @private
        */
       _handleMouseDown: function (event) {
-        var disclosureIcon = this._getClosestDisclosureIcon($(event.target));
-        disclosureIcon.addClass('oj-selected');
+        var disclosureIcon = this._getClosestDisclosureIcon(event.target);
+        if (disclosureIcon) {
+          disclosureIcon.classList.add('oj-selected');
+        }
       },
 
       /**
@@ -2121,8 +2345,10 @@ var __oj_tree_view_metadata =
        * @private
        */
       _handleMouseUp: function (event) {
-        var disclosureIcon = this._getClosestDisclosureIcon($(event.target));
-        disclosureIcon.removeClass('oj-selected');
+        var disclosureIcon = this._getClosestDisclosureIcon(event.target);
+        if (disclosureIcon) {
+          disclosureIcon.classList.remove('oj-selected');
+        }
       },
 
       /**
@@ -2134,6 +2360,7 @@ var __oj_tree_view_metadata =
         var keyCode = event.keyCode;
         var currentItem = this._currentItem;
         var nextItem;
+        var selectionMode = this.options.selectionMode;
 
         if (keyCode === 38 || keyCode === 40) { // UP or DOWN
           nextItem = (keyCode === 40) ? this._getNextActionableItem(currentItem, 'focus') :
@@ -2167,29 +2394,39 @@ var __oj_tree_view_metadata =
         } else if (keyCode === 13 || keyCode === 32) { // ENTER or SPACE
           event.preventDefault(); // prevent scrolling the page
           this._select(currentItem, event);
+        } else if (keyCode === 65 && oj.DomUtils.isMetaKeyPressed(event) && selectionMode === 'multiple') { // CRTL - A
+          event.preventDefault(); // prevent default ctrl a
+          var items = this._getItems();
+          var selected = new KeySet.AllKeySetImpl();
+          for (var i = 0; i < items.length; i++) {
+            if (this._isActionable(items[i], 'select')) {
+              this._setSelected(items[i]);
+            }
+          }
+          this._userOptionChange('selected', selected, event);
+          this._userOptionChange('selection', KeySet.KeySetUtils.toArray(selected), event);
         }
       },
-
       /**
        * Returns the item below the provided item.
-       * @param {jQuery} item The TreeView item element.
-       * @return {jQuery} The next item element.
+       * @param {Element} item The TreeView item element.
+       * @return {Element} The next item element.
        * @private
        */
       _getNextItem: function (item) {
         // If the item is expanded, go to the first child
         if (!this._isLeaf(item) && this._isExpanded(item)) {
-          var firstChild = this._getChildItems(item).first();
-          if (firstChild.length > 0) {
+          var firstChild = this._getChildItems(item)[0];
+          if (firstChild) {
             return firstChild;
           }
         }
 
         // Otherwise, go to the next sibling of the item or its ancestors
         var parent = item;
-        while (parent.length > 0) {
-          var nextSibling = parent.next('.oj-treeview-item');
-          if (nextSibling.length > 0) {
+        while (parent) {
+          var nextSibling = this._getNextSibling(parent, '.oj-treeview-item');
+          if (nextSibling) {
             return nextSibling;
           }
 
@@ -2202,9 +2439,9 @@ var __oj_tree_view_metadata =
 
       /**
        * Returns the closest item below the provided item that can accept the specified action.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @param {string} actionName The action name: 'select' or 'focus'.
-       * @return {jQuery} The next item element.
+       * @return {Element} The next item element.
        * @private
        */
       _getNextActionableItem: function (item, actionName) {
@@ -2217,20 +2454,20 @@ var __oj_tree_view_metadata =
         }
         return null;
       },
-
       /**
        * Returns the item above the provided item.
-       * @param {jQuery} item The TreeView item element.
-       * @return {jQuery} The previous item element.
+       * @param {Element} item The TreeView item element.
+       * @return {Element} The previous item element.
        * @private
        */
       _getPreviousItem: function (item) {
         // Go to the last expanded child of the previous sibling
-        var prevSibling = item.prev('.oj-treeview-item');
-        while (prevSibling.length > 0) {
+        var prevSibling = this._getPreviousSibling(item, '.oj-treeview-item');
+        while (prevSibling) {
           if (!this._isLeaf(prevSibling) && this._isExpanded(prevSibling)) {
-            var lastChild = this._getChildItems(prevSibling).last();
-            if (lastChild.length > 0) {
+            var prevChildren = this._getChildItems(prevSibling);
+            var lastChild = prevChildren[prevChildren.length - 1];
+            if (lastChild) {
               prevSibling = lastChild;
             } else {
               return prevSibling;
@@ -2242,19 +2479,18 @@ var __oj_tree_view_metadata =
 
         // Otherwise, go to the parent
         var parent = this._getParentItem(item);
-        if (parent.length > 0) {
+        if (parent) {
           return parent;
         }
 
         // Otherwise, don't go anywhere
         return null;
       },
-
       /**
        * Returns the closest item above the provided item that can accept the specified action.
-       * @param {jQuery} item The TreeView item element.
+       * @param {Element} item The TreeView item element.
        * @param {string} actionName The action name: 'select' or 'focus'.
-       * @return {jQuery} The previous item element.
+       * @return {Element} The previous item element.
        * @private
        */
       _getPreviousActionableItem: function (item, actionName) {
@@ -2274,23 +2510,30 @@ var __oj_tree_view_metadata =
        * @private
        */
       _handleDragStart: function (event) {
+        if (oj.DomUtils.isTouchSupported()) {
+          // eslint-disable-next-line no-param-reassign
+          this.ojTreeViewDragEvent = true;
+        }
         var self = this;
         var isRTL = this._GetReadingDirection() === 'rtl';
 
-        var targetItem = this._getClosestItem($(event.target));
-        if (targetItem.length === 0) {
+        var targetItem = this._getClosestItem(event.target);
+        if (!targetItem) {
           return;
         }
 
         var i;
-        var items = $();
+        var items = [];
         if (!this._isSelected(targetItem)) {
           this._select(targetItem, event);
-          items = items.add(targetItem);
+          items.push(targetItem);
         } else {
           var selection = this.options.selection;
           for (i = 0; i < selection.length; i++) {
-            items = items.add(this._getItemByKey(selection[i]));
+            var itemByKey = this._getItemByKey(selection[i]);
+            if (itemByKey) {
+              items.push(itemByKey);
+            }
           }
         }
 
@@ -2298,7 +2541,9 @@ var __oj_tree_view_metadata =
         var dragOptions = this._getDragOptions();
         var dataTransfer = event.originalEvent.dataTransfer;
 
-        var dragImage = $(document.createElement('ul')).addClass('oj-treeview-drag-image oj-treeview-list');
+        var dragImage = document.createElement('ul');
+        dragImage.classList.add('oj-treeview-drag-image');
+        dragImage.classList.add('oj-treeview-list');
         if (oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.SAFARI) {
           // On Safari, the drag image is not rendered if the position is fixed.
           // If we set {position: absolute; top: -10000px}, it should theoretically
@@ -2310,42 +2555,48 @@ var __oj_tree_view_metadata =
           // position and negative top (I tested that positive top is fine, but positive
           // top adds a scrollbar on IE). This issue never happens on table and
           // listview because they don't allow dragging unselected items.
-          dragImage.css('position', 'absolute');
+          dragImage.style.position = 'absolute';
         }
 
         var dragData = [];
         var topmost = Infinity;
         var leftmost = Infinity;
 
-        items.each(function () {
-          var item = $(this);
-          dragData.push(item.data('data'));
+        items.forEach(function (item) {
+          dragData.push(item['oj-item-data']);
 
           // Clone the item for the drag image and match the offset of the original item.
           // For RTL, we have to use the left offset of the item content because the
           // left offset of the li is always zero due to the li filling up the entire line.
-          var offset = item.offset();
+          var offset = item.getBoundingClientRect();
+          var offsetTop = offset.top;
+          var offsetLeft = offset.left;
+
           if (isRTL) {
-            offset.left = self._getItemContent(item).offset().left;
+            offsetLeft = self._getItemContent(item).getBoundingClientRect().left;
           }
 
-          var clonedItem = item.clone().css({
-            top: offset.top,
-            left: offset.left
-          });
+          offsetTop += document.body.scrollTop;
+          offsetLeft += document.body.scrollLeft;
+
+          var clonedItem = item.cloneNode(true);
+          clonedItem.style.top = offsetTop + 'px';
+          clonedItem.style.left = offsetLeft + 'px';
 
           // Don't include children in the drag image
-          self._getSubtree(clonedItem).remove();
-
+          var children = self._getSubtree(clonedItem);
+          if (children) {
+            clonedItem.removeChild(children);
+          }
           // Drag image offset is based on the top left corner of the resulting drag image
-          if (offset.top < topmost) {
-            topmost = offset.top;
+          if (offsetTop < topmost) {
+            topmost = offsetTop;
           }
-          if (offset.left < leftmost) {
-            leftmost = offset.left;
+          if (offsetLeft < leftmost) {
+            leftmost = offsetLeft;
           }
 
-          dragImage.append(clonedItem); // @HTMLUpdateOK
+          dragImage.appendChild(clonedItem); // @HTMLUpdateOK
         });
 
         // : There's inconsistency in how the drag image offset is computed
@@ -2354,13 +2605,12 @@ var __oj_tree_view_metadata =
         // polyfill, the offset is relative to the {top: 0, left: 0} position. To
         // reconcile this, we must make sure that the top-left corner of the rendered
         // drag image element is at the {top: 0, left: 0} position.
-        dragImage.children().each(function () {
-          $(this).css({
-            top: parseFloat($(this).css('top')) - topmost,
-            left: parseFloat($(this).css('left')) - leftmost
-          });
-        });
-
+        var child;
+        for (i = 0; i < dragImage.children.length; i++) {
+          child = dragImage.children[i];
+          child.style.top = (parseFloat(child.style.top) - topmost) + 'px';
+          child.style.left = (parseFloat(child.style.left) - leftmost) + 'px';
+        }
         var optionTypes = dragOptions.dataTypes;
         var dragDataTypes = (typeof optionTypes === 'string') ? [optionTypes] : (optionTypes || []);
         for (i = 0; i < dragDataTypes.length; i++) {
@@ -2369,10 +2619,10 @@ var __oj_tree_view_metadata =
 
         // Drag image has to be attached to the DOM when being assigned to the dataTransfer.
         // It has to be removed afterwards to prevent leaks.
-        $('body').append(dragImage); // @HTMLUpdateOK
-        dataTransfer.setDragImage(dragImage[0], event.pageX - leftmost, event.pageY - topmost);
+        document.body.appendChild(dragImage); // @HTMLUpdateOK
+        dataTransfer.setDragImage(dragImage, event.pageX - leftmost, event.pageY - topmost);
         setTimeout(function () {
-          dragImage.remove();
+          dragImage.parentElement.removeChild(dragImage);
         }, 0);
 
         var callback = dragOptions.dragStart;
@@ -2405,17 +2655,17 @@ var __oj_tree_view_metadata =
         var optionTypes = dropOptions.dataTypes;
         var dropDataTypes = typeof optionTypes === 'string' ? [optionTypes] : (optionTypes || []);
         var callback = dropOptions[eventType];
-        var targetItem = $(event.target).closest('.oj-treeview-item');
+        var targetItem = this._getClosestItem(event.target);
 
         // Position drop effects based on the spacer (disclosure icon) because it takes up the entire item height
-        var spacer = targetItem.children('.oj-treeview-spacer')[0];
+        var spacer = targetItem.getElementsByClassName('oj-treeview-spacer')[0];
         var spacerRect = spacer.getBoundingClientRect();
         var spacerTop = spacer.offsetTop;
         var spacerLeft = spacer.offsetLeft;
         var middleY = spacerTop + (spacerRect.height / 2);
 
         var position = 'inside';
-        var relativeY = event.pageY - spacerRect.top;
+        var relativeY = event.originalEvent.clientY - spacerRect.top;
         if (relativeY < 0.25 * spacerRect.height) {
           position = 'before';
         } else if (relativeY > 0.75 * spacerRect.height) {
@@ -2423,7 +2673,7 @@ var __oj_tree_view_metadata =
         }
 
         if (callback) {
-          callback(event.originalEvent, { item: targetItem[0], position: position });
+          callback(event.originalEvent, { item: targetItem, position: position });
         }
 
         for (var i = 0; i < dropDataTypes.length; i++) {
@@ -2435,19 +2685,19 @@ var __oj_tree_view_metadata =
         }
 
         if ((eventType === 'dragEnter' || eventType === 'dragOver') &&
-            event.originalEvent.defaultPrevented) {
+          event.originalEvent.defaultPrevented) {
           var isRTL = this._GetReadingDirection() === 'rtl';
 
           // Draw the drop target effect on dragEnter and dragOver
           var dropLineTop = middleY;
           var dropLineLeft = isRTL ?
-              (spacerLeft - this._dropLineRect.width) :
-              spacerLeft + spacerRect.width;
+            (spacerLeft - this._dropLineRect.width) :
+            spacerLeft + spacerRect.width;
 
           // Align the drop marker with the disclosure icon (spacer)
           var dropMarkerTop = middleY - (this._dropMarkerRect.height / 2);
           var dropMarkerLeft = (spacerLeft + (spacerRect.width / 2)) -
-              (this._dropMarkerRect.width / 2);
+            (this._dropMarkerRect.width / 2);
 
           if (position === 'before') {
             dropMarkerTop -= spacerRect.height / 2;
@@ -2463,18 +2713,26 @@ var __oj_tree_view_metadata =
               dropLineLeft += spacerOffset;
             }
           }
-
-          this._dropMarker.css('top', dropMarkerTop + 'px').css('left', dropMarkerLeft + 'px').show();
+          this._dropMarker.style.top = dropMarkerTop + 'px';
+          this._dropMarker.style.left = dropMarkerLeft + 'px';
+          this._dropMarker.style.display = '';
 
           if (position !== 'inside') {
-            this._dropLine.css('top', dropLineTop + 'px').css('left', dropLineLeft + 'px').show();
+            this._dropLine.style.top = dropLineTop + 'px';
+            this._dropLine.style.left = dropLineLeft + 'px';
+            this._dropLine.style.display = '';
           } else {
-            this._dropLine.hide();
+            this._dropLine.style.display = 'none';
           }
         } else {
+          if (eventType === 'dragEnd' && oj.DomUtils.isTouchSupported()) {
+            // eslint-disable-next-line no-param-reassign
+            this.ojTreeViewDragEvent = false;
+            document.body.style.touchAction = 'auto';
+          }
           // Remove the drop target effect on dragLeave and drop
-          this._dropMarker.hide();
-          this._dropLine.hide();
+          this._dropMarker.style.display = 'none';
+          this._dropLine.style.display = 'none';
         }
       },
 
@@ -2485,12 +2743,12 @@ var __oj_tree_view_metadata =
           // to the currentItem.
           var launcher = this._currentItem ? this._getItemContent(this._currentItem) : this.element;
           var openOptions = {
-            launcher: launcher,
+            launcher: this._getRoot(),
             initialFocus: 'menu',
             position: { my: 'start top', at: 'start bottom', of: launcher }
           };
           this._OpenContextMenu(event, eventType, openOptions);
-        } else {
+        } else if (!this.ojTreeViewDragEvent) {
           this._superApply(arguments);
         }
       },
@@ -2518,10 +2776,10 @@ var __oj_tree_view_metadata =
         var item = this._getItemByKey(key);
         var ret;
 
-        if (subId === 'oj-treeview-disclosure') {
-          ret = item.children('.oj-treeview-disclosure-icon')[0];
-        } else if (subId === 'oj-treeview-item') {
-          ret = item.children('.oj-treeview-item-content')[0];
+        if (subId === 'oj-treeview-disclosure' && item) {
+          ret = item.getElementsByClassName('oj-treeview-disclosure-icon')[0];
+        } else if (subId === 'oj-treeview-item' && item) {
+          ret = item.getElementsByClassName('oj-treeview-item-content')[0];
         }
 
         // Non-null locators have to be handled by the component subclasses
@@ -2530,17 +2788,17 @@ var __oj_tree_view_metadata =
 
       // @inheritdoc
       getSubIdByNode: function (node) {
-        if (!$.contains(this.element[0], node)) {
+        if (!this.element[0].contains(node)) {
           return null;
         }
 
         var subId;
-        var disclosureIcon = this._getClosestDisclosureIcon($(node));
-        var item = this._getClosestItem($(node));
+        var disclosureIcon = this._getClosestDisclosureIcon(node);
+        var item = this._getClosestItem(node);
 
-        if (disclosureIcon.length > 0) {
+        if (disclosureIcon) {
           subId = 'oj-treeview-disclosure';
-        } else if (item.length > 0) {
+        } else if (item) {
           subId = 'oj-treeview-item';
         } else {
           return null;
@@ -2562,18 +2820,25 @@ var __oj_tree_view_metadata =
        * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
        */
       getContextByNode: function (node) {
-        if (!$.contains(this.element[0], node)) {
+        if (!this.element[0].contains(node)) {
           return null;
         }
-
-        var item = this._getClosestItem($(node));
-        if (item.length < 1) {
+        var i;
+        var item = this._getClosestItem(node);
+        if (!item) {
           return null;
+        }
+        var itemParentChildren = item.parentNode.children;
+        var treeViewItems = [];
+        for (i = 0; i < itemParentChildren.length; i++) {
+          if (itemParentChildren[i].classList.contains('oj-treeview-item')) {
+            treeViewItems.push(itemParentChildren[i]);
+          }
         }
 
         var context = {};
         context.subId = 'oj-treeview-item';
-        context.index = item.parent().children('.oj-treeview-item').index(item);
+        context.index = treeViewItems.indexOf(item);
         context.parentKey = this._getKey(this._getParentItem(item));
 
         context.component = Components.__GetWidgetConstructor(this.element);
@@ -2581,15 +2846,15 @@ var __oj_tree_view_metadata =
           context = this._FixRendererContext(context);
         }
 
-        var metadata = item.data('metadata');
+        var metadata = item['oj-item-metadata'];
         if (metadata) {
-          context.data = item.data('data');
+          context.data = item['oj-item-data'];
           context.datasource = this.options.data;
 
           // Merge properties from metadata into item context
           // Contains key, leaf, and depth
           var props = Object.keys(metadata);
-          for (var i = 0; i < props.length; i++) {
+          for (i = 0; i < props.length; i++) {
             var prop = props[i];
             context[prop] = metadata[prop];
           }
@@ -2597,7 +2862,7 @@ var __oj_tree_view_metadata =
           // Static content
           context.key = this._getKey(item);
           context.leaf = this._isLeaf(item);
-          context.depth = item.parents('.oj-treeview-list').length;
+          context.depth = this._getParents(item, '.oj-treeview-list').length;
         }
 
         return context;
@@ -2607,25 +2872,24 @@ var __oj_tree_view_metadata =
       // eslint-disable-next-line no-unused-vars
       _setOption: function (key, value, flags) {
         var self = this;
+        var i;
+        var items;
 
         // Call the super to update the property values
         this._superApply(arguments);
 
         if (key === 'expanded') {
           this._uiExpanded = self._uiExpanded.clear();
-          this._getItems().each(function () {
-            var item = $(this);
-            if (self._isInitExpanded(item)) {
-              self._expand(item, true);
+          items = this._getItems();
+          for (i = 0; i < items.length; i++) {
+            if (self._isInitExpanded(items[i])) {
+              self._expand(items[i], true);
             } else {
-              self._collapse(item, true);
+              self._collapse(items[i], true);
             }
-          });
-        } else if (key === 'selection') {
-          this._getItems().each(function () {
-            var item = $(this);
-            self._select(item);
-          });
+          }
+        } else if (key === 'selection' || key === 'selected') {
+          this._handleSelectedOption(key, value);
         } else if (key === 'currentItem') {
           this._resetFocus();
         } else {
@@ -2676,8 +2940,46 @@ var __oj_tree_view_metadata =
           this.handleModelChangeEvent(event);
         }
       },
+      handleModelRemoveEvent: function (event) {
+        var self = this;
+        var keys = event.detail.remove.keys;
+        var removedKeys = [];
+        if (keys == null || keys.size === 0) {
+          return;
+        }
+
+        keys.forEach(function (key) {
+          removedKeys = removedKeys.concat(self._removeAllChildrenOfParentKey(key));
+        });
+
+        // checks whether the removed item is selected, and adjust the value as needed
+        var selected = this.options.selected;
+        if (selected != null) {
+          var newSelected = selected.delete(removedKeys);
+          // update selected/selection option if it did changed
+          if (selected !== newSelected) {
+            this._userOptionChange('selected', newSelected, event);
+            this._userOptionChange('selection', KeySet.KeySetUtils.toArray(newSelected), event);
+          }
+        }
+
+        // checks whether the removed item is expanded, and adjust the value as needed
+        var expanded = this.options.expanded;
+        if (expanded != null) {
+          var newExpanded = expanded.delete(removedKeys);
+          this._uiExpanded.delete(removedKeys);
+          // update selection option if it did changed
+          if (expanded !== newExpanded) {
+            this._userOptionChange('expanded', newExpanded, null);
+          }
+        }
+
+        this._resetFocus();
+      },
       _changeNodeToLeaf: function (item, subtree) {
         item.removeChild(subtree);
+        // eslint-disable-next-line no-param-reassign
+        item['oj-item-metadata'].leaf = true;
         item.classList.add('oj-treeview-leaf');
         item.classList.remove('oj-expanded');
         item.removeAttribute('aria-expanded');
@@ -2697,71 +2999,30 @@ var __oj_tree_view_metadata =
         }
 
         var disclosureIcon = item.getElementsByClassName('oj-treeview-spacer')[0];
-        disclosureIcon.classList.remove('oj-treeview-disclosure-icon');
-        disclosureIcon.classList.remove('oj-component-icon');
-        disclosureIcon.classList.remove('oj-clickable-icon-nocontext');
-        disclosureIcon.classList.remove('oj-default');
+        this._removeDisclosureClasses(disclosureIcon);
       },
       _changeNodeToParent: function (item) {
+        // eslint-disable-next-line no-param-reassign
+        item['oj-item-metadata'].leaf = false;
         item.classList.remove('oj-treeview-leaf');
         item.classList.add('oj-collapsed');
         item.setAttribute('aria-expanded', false);
 
         var disclosureIcon = item.getElementsByClassName('oj-treeview-spacer')[0];
-        disclosureIcon.classList.add('oj-treeview-disclosure-icon');
-        disclosureIcon.classList.add('oj-component-icon');
-        disclosureIcon.classList.add('oj-clickable-icon-nocontext');
-        disclosureIcon.classList.add('oj-default');
-      },
-      handleModelRemoveEvent: function (event) {
-        var self = this;
-        var keys = event.detail.remove.keys;
-        var removedKeys = [];
-        if (keys == null || keys.size === 0) {
-          return;
-        }
-
-        keys.forEach(function (key) {
-          removedKeys = removedKeys.concat(self._removeAllChildrenOfParentKey(key));
-        });
-
-        // checks whether the removed item is selected, and adjust the value as needed
-        var selected = this.options.selected;
-        if (selected != null) {
-          var newSelected = selected.delete(removedKeys);
-          // update selection option if it did changed
-          if (selected !== newSelected) {
-            this._userOptionChange('selection', newSelected, null);
-          }
-        }
-
-        // checks whether the removed item is expanded, and adjust the value as needed
-        var expanded = this.options.expanded;
-        if (expanded != null) {
-          var newExpanded = expanded.delete(removedKeys);
-          this._uiExpanded.delete(removedKeys);
-          // update selection option if it did changed
-          if (expanded !== newExpanded) {
-            this._userOptionChange('expanded', newExpanded, null);
-          }
-        }
-
-        this._resetFocus();
+        this._addDisclosureClasses(disclosureIcon);
       },
       _removeAllChildrenOfParentKey: function (key) {
         var self = this;
         var removedKeys = [];
         var elem = this._getItemByKey(key);
-        if (elem[0]) {
-          var children = this._getChildItems(elem);
-          children.each(function (index, child) {
-            var childkey = self._getKey($(child));
+        if (elem) {
+          this._getChildItems(elem).forEach(function (child) {
+            var childkey = self._getKey(child);
             var childKeys = self._removeAllChildrenOfParentKey(childkey);
             removedKeys = removedKeys.concat(childKeys);
           });
-          var subtree = elem[0].parentNode;
-          subtree.removeChild(elem[0]);
-
+          var subtree = elem.parentNode;
+          subtree.removeChild(elem);
           this._keyList.delete(key);
           removedKeys.push(key);
           if (subtree.getElementsByTagName('li').length === 0) {
@@ -2785,8 +3046,9 @@ var __oj_tree_view_metadata =
         addEvent.keys.forEach(function (key) {
           keys.push(key);
         });
+
         parentKeys.forEach(function (key) {
-          var parentItem = self._getItemByKey(key)[0];
+          var parentItem = self._getItemByKey(key);
           if (parentItem && self._isLeafIcon(parentItem)) {
             self._changeNodeToParent(parentItem);
           }
@@ -2810,16 +3072,18 @@ var __oj_tree_view_metadata =
             var subtree;
             if (parentKey == null) {
               subtree = this._getRoot();
-              this._renderItem(subtree, { data: [data[i]], metadata: [metadata[i]] }, 0, index);
-            } else if (parentItem.length !== 0) {
-              subtree = this._getSubtree(parentItem);
-              if (subtree.length === 0 && self._isInitExpanded(parentItem)) {
-                subtree = $(document.createElement('ul'))
-                .addClass('oj-treeview-list')
-                .attr('role', 'group')
-                .appendTo(parentItem);
+              if (subtree) {
+                this._renderItem(subtree, { data: [data[i]], metadata: [metadata[i]] }, 0, index);
               }
-              if (subtree.length !== 0) {
+            } else if (parentItem) {
+              subtree = this._getSubtree(parentItem);
+              if (!subtree && parentItem && self._isInitExpanded(parentItem)) {
+                subtree = document.createElement('ul');
+                subtree.classList.add('oj-treeview-list');
+                subtree.setAttribute('role', 'group');
+                parentItem.appendChild(subtree); // @HTMLUpdateOK
+              }
+              if (subtree) {
                 this._renderItem(subtree, { data: [data[i]], metadata: [metadata[i]] }, 0, index);
               }
             }
@@ -2834,11 +3098,10 @@ var __oj_tree_view_metadata =
         changeEvent.keys.forEach(function (key) {
           keys.push(key);
         });
-
         for (var i = 0; i < data.length; i++) {
           var elem = this._getItemByKey(keys[i]);
           if (elem != null) {
-            var insertIndex = this._indexToParent(elem[0]);
+            var insertIndex = this._indexToParent(elem);
             this._renderItem(null, { data: [data[i]], metadata: [metadata[i]] },
               0, insertIndex, true);
           }
@@ -2857,6 +3120,56 @@ var __oj_tree_view_metadata =
       },
       handleModelRefreshEvent: function () {
         this.refresh();
+      },
+      _closest: function (element, selector) {
+        if (!element) {
+          return null;
+        }
+        if (!element.closest) {
+          do {
+            if (this._matches(element, selector)) return element;
+            // eslint-disable-next-line no-param-reassign
+            element = element.parentElement || element.parentNode;
+          } while (element !== null && element.nodeType === 1);
+          return null;
+        }
+        return element.closest(selector);
+      },
+      _getParents: function (elem, parentSelector) {
+        var parents = [];
+        // eslint-disable-next-line no-param-reassign
+        for (; elem && elem !== document; elem = elem.parentNode) {
+          if (this._matches(elem, parentSelector)) {
+            parents.push(elem);
+          }
+        }
+        return parents;
+      },
+      _getNextSibling: function (elem, selector) {
+        var sibling = elem.nextElementSibling;
+        if (!selector) return sibling;
+        while (sibling) {
+          if (this._matches(sibling, selector)) return sibling;
+          sibling = sibling.nextElementSibling;
+        }
+        return null;
+      },
+      _getPreviousSibling: function (elem, selector) {
+        var sibling = elem.previousElementSibling;
+        if (!selector) return sibling;
+        while (sibling) {
+          if (this._matches(sibling, selector)) return sibling;
+          sibling = sibling.previousElementSibling;
+        }
+        return null;
+      },
+      _matches: function (elem, selector) {
+        if (!elem.matches) {
+          // eslint-disable-next-line no-param-reassign
+          elem.matches = Element.prototype.msMatchesSelector
+            || Element.prototype.webkitMatchesSelector;
+        }
+        return elem.matches(selector);
       }
     });
 }());
@@ -2952,6 +3265,10 @@ var __oj_tree_view_metadata =
  *       <td><kbd>Shift+Space/Enter</kbd></td>
  *       <td>Selects contiguous items from the last selected item to the current item. Only applicable if the multiple selection is enabled.</td>
  *     </tr>
+ *     <tr>
+ *       <td><kbd>Ctrl+A</kbd></td>
+ *       <td>If selectionMode is multiple, will select all selectable nodes.</td>
+ *     </tr>
  *   </tbody>
  * </table>
  *
@@ -3030,27 +3347,20 @@ var __oj_tree_view_metadata =
 // Slots
 
 /**
- * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the list. The slot must be a &lt;template> element.
+ * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the list. The slot content must be a &lt;template> element.
  * The content of the template could either include the &lt;li> element, in which case that will be used as
  * the root of the item.  Or it can be just the content which excludes the &lt;li> element.</p>
  * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current item. (See the table below for a list of properties available on $current)</li>
+ *   <li>$current - an object that contains information for the current item. (See [oj.ojTreeView.ItemTemplateContext]{@link oj.ojTreeView.ItemTemplateContext} or the table below for a list of properties available on $current)</li>
  *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
  * </ul>
- * @ojstatus preview
+ *
  * @ojslot itemTemplate
  * @ojshortdesc The itemTemplate slot is used to specify the template for rendering each item in the tree. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojTreeView
- * @property {Element} componentElement The &lt;oj-tree-view> custom element
- * @property {Object} data The data for the current item being rendered
- * @property {number} index The zero-based index of the curent item
- * @property {any} key The key of the current item being rendered
- * @property {number} depth The depth of the current item being rendered. The depth of the first level children under the invisible root is 1.
- * @property {boolean} leaf True if the current item is a leaf node.
- * @property {any} parentkey The key of the parent item. The parent key is null for root nodes.
- *
+ * @ojslotitemprops oj.ojTreeView.ItemTemplateContext
  * @example <caption>Initialize the TreeView with an inline item template specified:</caption>
  * &lt;oj-tree-view>
  *   &lt;template slot='itemTemplate'>
@@ -3058,6 +3368,17 @@ var __oj_tree_view_metadata =
  *   &lt;template>
  * &lt;/oj-tree-view>
  */
+/**
+ * @typedef {Object} oj.ojTreeView.ItemTemplateContext
+ * @property {Element} componentElement The &lt;oj-tree-view> custom element
+ * @property {Object} data The data for the current item being rendered
+ * @property {number} index The zero-based index of the curent item
+ * @property {any} key The key of the current item being rendered
+ * @property {number} depth The depth of the current item being rendered. The depth of the first level children under the invisible root is 1.
+ * @property {boolean} leaf True if the current item is a leaf node.
+ * @property {any} parentkey The key of the parent item. The parent key is null for root nodes.
+ */
+
 
 /* global __oj_tree_view_metadata:false */
 (function () {

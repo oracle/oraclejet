@@ -1467,81 +1467,63 @@
   $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, noteWindowCloseAnimation, popupTailCloseAnimation, $renamedNoteWindowVars);
   $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, noteWindowZindex, popupTailZindex, $renamedNoteWindowVars);
 
+  
   @if ($renamedVarFound == true)
   {
     @error "Please check the warnings above and rename the relevant variables before continuing."
   }
 };
 
-// @function _oj-theming-var-removed($removedVarFound, $oldVarName, $generalRmMessage: null) {
-//   @if (variable-exists($oldVarName) == true) {
-//     $rm_message: null;
-//
-//     @if ($generalRmMessage != null) {
-//       $rm_message: $generalRmMessage + " Specifically ";
-//     }
-//
-//     $rm_message: $rm_message + "var $#{$oldVarName}.";
-//
-//     @debug $rm_message;
-//     @return true;
-//   } @else {
-//     @return $removedVarFound;
-//   }
-// };
+@mixin oj-theming-vars-removed() {
+  // below is the example to add removed variable and how to define a message for it.
+  $interactionVarsRemovedMsg: "All interaction color variables has been removed and desupported. Please read the JET 5.0 release notes for more information.";
+  $removedVarFound: _oj-theming-var-removed(interaction1Color, $interactionVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(interaction2Color, $interactionVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(interaction3Color, $interactionVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(interaction4Color, $interactionVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(interaction5Color, $interactionVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(interaction6Color, $interactionVarsRemovedMsg);
+  
+  $backgroundVarsRemovedMsg: "All background color variables has been removed and desupported. Please read the JET 5.0 release notes for more information.";
+  $removedVarFound: _oj-theming-var-removed(background1Color, $backgroundVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(background2Color, $backgroundVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(background3Color, $backgroundVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(background4Color, $backgroundVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(background5Color, $backgroundVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(background6Color, $backgroundVarsRemovedMsg);
+  
+  $borderVarsRemovedMsg: "All border color variables has been removed and desupported. Please read the JET 5.0 release notes for more information.";
+  $removedVarFound: _oj-theming-var-removed(border1Color, $borderVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(border2Color, $borderVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(border3Color, $borderVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(border4Color, $borderVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(border5Color, $borderVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(border6Color, $borderVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(border7Color, $borderVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(border8Color, $borderVarsRemovedMsg);
 
-@function _oj-theming-var-removed() {
-  $removedVars: (interaction1Color, interaction2Color, interaction3Color, interaction4Color, interaction5Color, interaction6Color, background1Color, background2Color, background3Color, background4Color, background5Color, background6Color, border1Color, border2Color, border3Color, border4Color, border5Color, border6Color, border7Color, border8Color);
-  $existFlag: false;
-  @each $item in $removedVars {
-    @if (variable-exists(#{$item}) == true) {
-        $existFlag: true;
-    }
-  }
-  @if($existFlag == true) {
-    @debug "Detected use of deprecated variable in theme with name '#{$themeName}' and target platform '#{$themeTargetPlatform}'. All $interaction*, $background*, and $border* variables have been replaced by new branding and neutral variables. Please read the JET 5.0 release notes for more information.";
+  $avatarVarsRemovedMsg: "All avatar border offset variables have been removed and desupported. Please read the JET 8.0 release notes for more information.";
+  $removedVarFound: _oj-theming-var-removed(avatarBorderOffsetBgColor, $avatarVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(avatarXxsBorderOffset, $avatarVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(avatarXsBorderOffset, $avatarVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(avatarSmBorderOffset, $avatarVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(avatarMdBorderOffset, $avatarVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(avatarLgBorderOffset, $avatarVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(avatarXlBorderOffset, $avatarVarsRemovedMsg);
+  $removedVarFound: _oj-theming-var-removed(avatarXxlBorderOffset, $avatarVarsRemovedMsg);  
+
+  $avatarVarsRemovedMsg: "'$avatarInitialsShadeColor' variable has been removed and desupported. Consider using '$avatarInitialsShadeOpacity' instead. Please read the JET 8.0 release notes for more information.";
+  $removedVarFound: _oj-theming-var-removed(avatarInitialsShadeColor, $avatarVarsRemovedMsg);
+  // provide removed variables message here and pass as perameter in 
+  // _oj-theming-var-removed function as did above
+  
+};
+
+@function _oj-theming-var-removed($removedVar, $message) {
+  @if (variable-exists(#{$removedVar}) == true) {
+    @debug "Detected use of variable $#{$removedVar}, which was desupported in theme '#{$themeName}-#{$themeTargetPlatform}'. '#{$message}'";
     @return true;
   } @else {
     @return false;
   }
-};
-
-@mixin oj-theming-vars-removed() {
-  $removedVarFound: _oj-theming-var-removed();
 }
-
-// @mixin oj-theming-vars-removed() {
-//
-//   $removedVarFound: false;
-//
-//   // // Removed interaction, background, border variables
-//   $removedInteractionVars: "All interaction color variables has been removed";
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, interaction1Color, $removedInteractionVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, interaction2Color, $removedInteractionVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, interaction3Color, $removedInteractionVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, interaction4Color, $removedInteractionVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, interaction5Color, $removedInteractionVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, interaction6Color, $removedInteractionVars);
-//   $removedBackgroundVars: "All background color variables has been removed";
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, background1Color, $removedBackgroundVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, background2Color, $removedBackgroundVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, background3Color, $removedBackgroundVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, background4Color, $removedBackgroundVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, background5Color, $removedBackgroundVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, background6Color, $removedBackgroundVars);
-//   $removedBorderVars: "All border color variables has been removed ";
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border1Color, $removedBorderVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border2Color, $removedBorderVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border3Color, $removedBorderVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border4Color, $removedBorderVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border5Color, $removedBorderVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border6Color, $removedBorderVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border7Color, $removedBorderVars);
-//   $removedVarFound: _oj-theming-var-removed($removedVarFound, border8Color, $removedBorderVars);
-//
-//
-//   @if ($removedVarFound == true)
-//   {
-//     @debug "All interaction, background, and border colors have been removed, a branding and neutral palette system has been put in its place. Please read the JET 5.0 release notes for more information."
-//   }
-// };

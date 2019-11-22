@@ -20,7 +20,7 @@ export interface ojPictoChart<K, D extends ojPictoChart.Item<K> | any> extends d
     rowCount: number | null;
     rowHeight: number | null;
     selection: K[];
-    selectionMode: 'single' | 'multiple' | 'none';
+    selectionMode: 'none' | 'single' | 'multiple';
     tooltip: {
         renderer: ((context: ojPictoChart.TooltipContext<K>) => ({
             insert: Element | string;
@@ -133,6 +133,13 @@ export namespace ojPictoChart {
         tooltip: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
         subId: string;
         index: number;
@@ -189,7 +196,7 @@ export interface ojPictoChartSettableProperties<K, D extends ojPictoChart.Item<K
     rowCount: number | null;
     rowHeight: number | null;
     selection: K[];
-    selectionMode: 'single' | 'multiple' | 'none';
+    selectionMode: 'none' | 'single' | 'multiple';
     tooltip: {
         renderer: ((context: ojPictoChart.TooltipContext<K>) => ({
             insert: Element | string;

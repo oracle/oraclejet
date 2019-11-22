@@ -21,13 +21,10 @@
     }
 
     .oj-tagcloud {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-          color: var(--oj-text-color);
-          user-select: none;
-      } @else {
+
           color: $textColor;
           @include oj-user-select-property(none);
-      }
+      
       width:100%;
       height:300px;
     }

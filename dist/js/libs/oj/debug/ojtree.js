@@ -2,15 +2,14 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojdnd'],
 function(oj, $, Context, Components)
 {
   "use strict";
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global TreeUtils:false */
 
@@ -1429,21 +1428,21 @@ oj.TreeDndContext.prototype._setDragImage = function (dt, $nodes) {
 
   var $dragImg = $('<div></div>');
   var ul = $("<ul style='padding:0px;margin:0;'></ul>");
-  $dragImg.append(ul);       // @HTMLUpdateOK; no user input involved and
+  $dragImg.append(ul);       // @HTMLUpdateOK no user input involved and
                               // only creating a drag image.
 
   for (var i = 0; i < len; i++) {
     var el = $nodes[i].cloneNode(true);
     el.style.marginLeft = 0;
     el.style.paddingLeft = 0;
-    ul.append(el);            // @HTMLUpdateOK; appended elems have already
+    ul.append(el);            // @HTMLUpdateOK appended elems have already
                                // been sanitized before being added to the DOM,
                                // and are only referenced here to create an image
                                // for dragging.
   }
 
   var elem = $dragImg[0];
-  document.body.appendChild(elem);    // @HTMLUpdateOK; pre-sanitized elems used to create a drag image
+  document.body.appendChild(elem);    // @HTMLUpdateOK pre-sanitized elems used to create a drag image
   elem.style.position = 'absolute';
   elem.style.top = '-' + ($dragImg.height() * 2) + 'px';
   elem.style.right = '0';
@@ -1777,10 +1776,7 @@ oj.TreeDndContext._DND_INTERNAL_DT = '_ojtree';    // internal data type for tre
  */
 oj.TreeDndContext._DND_INTERNAL_DT_REORDER = '_ojtreereorder';   // internal data type for reorder
 
-/**
-  * Copyright (c) 2015, Oracle and/or its affiliates.
-  * All rights reserved.
-  */
+
 
 /**
   *  Common tree/node state
@@ -1804,19 +1800,19 @@ TreeUtils._OJ_DISABLED = 'oj-disabled';
 TreeUtils._OJ_DEFAULT = 'oj-default';
 TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
-/* This component is based on original code from:
-   jsTree 1.0-rc3   http://jstree.com/
-   "Copyright (c) 2010 Ivan Bozhanov (vakata.com)
-    Licensed same as jquery - under the terms of either the MIT License or
-    the GPL Version 2 License
-    http://www.opensource.org/licenses/mit-license.php
-    http://www.gnu.org/licenses/gpl.html"
-*/
+
+/**
+ * @license
+ * This component is based on original code from:
+ * jsTree 1.0-rc3   http://jstree.com/
+ * "Copyright (c) 2010 Ivan Bozhanov (vakata.com)
+ * Licensed same as jquery - under the terms of either the MIT License or
+ * the GPL Version 2 License
+ * http://www.opensource.org/licenses/mit-license.php
+ * http://www.gnu.org/licenses/gpl.html"
+ * @ignore
+ */
 
 /* eslint-disable no-param-reassign */ /* component deprecated */
 /* global TreeUtils:false, Components:false, Context:false */
@@ -9154,7 +9150,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         }
 
         var $m = $(menu);                    // get the user's <ul> list
-        if ($m) {
+        if ($m.length > 0) {
           $m.css('display', 'none');         // ensure it's not visible
           var dm = this._data.menu;
           dm.$container = $m;

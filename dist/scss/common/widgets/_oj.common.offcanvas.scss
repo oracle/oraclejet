@@ -50,13 +50,10 @@
      * In overlay mode, it's applied to the offcanvas element.
      */
     .oj-offcanvas-transition {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        transition: transform var(--oj-animation-duration-medium);
-        backface-visibility: hidden;
-      } @else {
+
         transition: transform $animationDurationMedium;
         @include oj-backface-visibility-property (hidden);
-      }
+
       transition-timing-function: ease-in-out;
     }
 
@@ -77,13 +74,10 @@
      */
     .oj-offcanvas-pin-transition {
        min-width: 0;
-       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-         transition: min-width var(--oj-animation-duration-medium);
-         backface-visibility: hidden;
-       } @else {
+
          transition: min-width $animationDurationMedium;
          @include oj-backface-visibility-property (hidden);
-       }
+
        transition-timing-function: ease-in-out;
     }
 
@@ -201,11 +195,9 @@
      */
     .oj-offcanvas-overlay.oj-offcanvas-start {
       //need to set z-index otherwise the start area is covered by the main content
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        z-index: var(--oj-off-canvas-z-index);
-      } @else {
+
         z-index: $offcanvasZindex;
-      }
+
     }
 
     /*
@@ -237,11 +229,9 @@
       left: 0;
       right: 0;
       bottom: 0;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background: var(--oj-overlay-bg-color);
-      } @else {
+
         background: $overlayBgColor;
-      }
+
       opacity: 0;
 
       transition: opacity 0.5s;
@@ -259,20 +249,7 @@
     /*
      * applied to the overlay offcanvas when it is open
      */
-     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        html:not([dir="rtl"]) .oj-offcanvas-start.oj-offcanvas-overlay.oj-offcanvas-open.oj-offcanvas-overlay-shadow {
-          box-shadow: 3px 0px 3px 0 unquote('hsla(var(--oj-box-shadow-hsl), 0.10)');}
-        html[dir="rtl"] .oj-offcanvas-start.oj-offcanvas-overlay.oj-offcanvas-open.oj-offcanvas-overlay-shadow {
-          box-shadow: -3px 0px 3px 0 unquote('hsla(var(--oj-box-shadow-hsl), 0.10)'); }
-        html:not([dir="rtl"]) .oj-offcanvas-end.oj-offcanvas-overlay.oj-offcanvas-open.oj-offcanvas-overlay-shadow {
-          box-shadow: -3px 0px 3px 0 unquote('hsla(var(--oj-box-shadow-hsl), 0.10)'); }
-        html[dir="rtl"] .oj-offcanvas-end.oj-offcanvas-overlay.oj-offcanvas-open.oj-offcanvas-overlay-shadow {
-          box-shadow: 3px 0px 3px 0 unquote('hsla(var(--oj-box-shadow-hsl), 0.10)'); }
-        .oj-offcanvas-top.oj-offcanvas-overlay.oj-offcanvas-open.oj-offcanvas-overlay-shadow {
-          box-shadow: 0px 3px 3px 0 unquote('hsla(var(--oj-box-shadow-hsl), 0.10)'); }
-        .oj-offcanvas-bottom.oj-offcanvas-overlay.oj-offcanvas-open.oj-offcanvas-overlay-shadow {
-          box-shadow: 0px -3px 3px 0 unquote('hsla(var(--oj-box-shadow-hsl), 0.10)'); }
-     } @else {
+    
        .oj-offcanvas-start.oj-offcanvas-overlay.oj-offcanvas-open.oj-offcanvas-overlay-shadow {
          @include oj-ltr() {
            @include oj-box-shadow(3px 0px 3px 0 unquote('hsla(0, 0%, 0%, 0.10)'));
@@ -295,7 +272,7 @@
        .oj-offcanvas-bottom.oj-offcanvas-overlay.oj-offcanvas-open.oj-offcanvas-overlay-shadow {
          @include oj-box-shadow(0px -3px 3px 0 unquote('hsla(0, 0%, 0%, 0.10)'));
        }
-     }
+
 
 
     // Native theming

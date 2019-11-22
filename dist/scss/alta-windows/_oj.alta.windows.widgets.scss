@@ -58,6 +58,9 @@
 @import "widgets/oj.alta.windows.rowexpander";
 @import "widgets/oj.alta.windows.listview";
 @import "widgets/oj.alta.windows.indexer";
+@import "widgets/oj.alta.windows.masonry";
+@import "widgets/oj.alta.windows.activitystream";
+@import "widgets/oj.alta.windows.waterfalllayout";
 
 // data visualizations
 @import "widgets/oj.alta.windows.dvt.base";
@@ -88,6 +91,7 @@
 @import "widgets/oj.alta.windows.formcontrol.checkboxset";
 @import "widgets/oj.alta.windows.formcontrol.listbox";
 @import "widgets/oj.alta.windows.formcontrol.combobox";
+@import "widgets/oj.alta.windows.formcontrol.select2";
 @import "widgets/oj.alta.windows.formcontrol.select";
 @import "widgets/oj.alta.windows.formcontrol.inputsearch";
 @import "widgets/oj.alta.windows.formcontrol.switch";

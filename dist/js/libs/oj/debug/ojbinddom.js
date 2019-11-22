@@ -2,10 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'knockout', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojkoshared'], function(oj, ko, Logger, Context, BindingProviderImpl)
 {
   "use strict";
+
 /* global BindingProviderImpl:false */
 
 /**
@@ -58,6 +61,7 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojkoshar
     return null;
   }
 }());
+
 
 /* global Promise:false, ko:false, Logger:false, Context:false */
 
@@ -175,14 +179,17 @@ ko.bindingHandlers._ojBindDom_ = {
 // Allow _ojBindDom_ binding on virtual elements (comment nodes) which is done during knockout's preprocessNode method
 ko.virtualElements.allowedBindings._ojBindDom_ = true;
 
+
 /**
- * @ojstatus preview
+ *
  * @ojcomponent oj.ojBindDom
+ * @ojdisplayname Bind DOM
  * @ojshortdesc An oj-bind-dom element renders HTML content with access to passed in data properties.
- * @ojsignature {target: "Type", value:"class ojBindDom extends JetElement<ojBindDomSettableProperties>"}
+ * @ojsignature {target: "Type",
+ *               value: "class ojBindDom<D> extends HTMLElement",
+ *               genericParameters: [{name: "D", description: "Type of data to be provided to the view"}]}
  * @ojbindingelement
  * @since 6.1.0
- * @ojtsignore
  *
  * @ojpropertylayout [ {propertyGroup: "common", items: ["config.view"]},
  *                     {propertyGroup: "data", items: ["config.data"]} ]
@@ -206,9 +213,9 @@ ko.virtualElements.allowedBindings._ojBindDom_ = true;
  */
 
 /**
- * Configuration object that defines a view and a data available to the oj-bind-dom element.
- * See details for each attribute. The configuration object can be specified
- * either directly or via a Promise.
+ * Configuration object that defines HTML content to be inserted into the DOM and data
+ * to use when applying bindings to this content.
+ * The configuration object can be specified either directly or via a Promise.
  * @name config
  * @memberof oj.ojBindDom
  * @instance
@@ -217,30 +224,19 @@ ko.virtualElements.allowedBindings._ojBindDom_ = true;
  * @example <caption>Initialize the oj-bind-dom:</caption>
  * &lt;oj-bind-dom config='[[myConfig]]'>
  * &lt;/oj-bind-dom>
+ * @ojsignature {target: "Type", value: "oj.ojBindDom.Config<D>|Promise<oj.ojBindDom.Config<D>>", jsdocOverride: true}
  */
 
 /**
- * Defines the view for the ojBindDom. Note that oj-bind-dom will not be cloning the node array
+ * @typedef {Object} oj.ojBindDom.Config
+ * @property {Array<Node>} view The Nodes to be inserted. Note that oj-bind-dom does not clone the node array
  * before applying bindings to it. If the application needs to have access to the original node array,
- * it should be setting the 'view' property to a cloned copy. Node arrays should not have a longer lifespan
+ * it should set the 'view' property to a cloned copy.  Node arrays should not have a longer lifespan
  * than their oj-bind-dom element as would be the case for a node array created in the application model and
  * referenced by an oj-bind-dom element that is detached and reattached by another binding element or script.
- * @name config.view
- * @ojshortdesc Defines oj-bind-dom view.
- * @memberof! oj.ojBindDom
- * @instance
- * @type {Array<Node>}
- */
-
-/**
- * Only properties defined in the config.data object will be available to the view when
- * expressions are evaluated. The oj-bind-dom element's binding context will not be made
- * available to the view.
- * @name config.data
- * @ojshortdesc The data available to the oj-bind-dom view.
- * @memberof! oj.ojBindDom
- * @instance
- * @type {Object}
+ * @property {Object} data The data available to the view when expressions are evaluated.  Note that the oj-bind-dom element's binding context will not be made available.
+ * @ojsignature [{for: "data", target: "Type", value: "D"},
+ *               {for: "genericTypeParameters", target: "Type", value: "<D>"}]
  */
 
 });

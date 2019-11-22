@@ -1,3 +1,14 @@
+export function animateHero(element: Element, options: {
+    toElementSelector: string;
+    toElementWaitTime?: number;
+    createClonedElement?: ((param0: HeroContext) => Element);
+    hideFromAndToElements?: ((param0: HeroContext) => void);
+    animateClonedElement?: ((param0: HeroContext) => Promise<any>);
+    showToElement?: ((param0: HeroContext) => void);
+    delay?: string;
+    duration?: string;
+    timingFunction?: string;
+}): Promise<boolean>;
 export function collapse(element: Element, options?: {
     delay?: string;
     duration?: string;
@@ -109,3 +120,14 @@ export function zoomOut(element: Element, options?: {
 }): Promise<boolean>;
 // tslint:disable-next-line interface-over-type-literal
 export type AnimationMethods = 'collapse' | 'expand' | 'fadeIn' | 'fadeOut' | 'flipIn' | 'flipOut' | 'ripple' | 'slideIn' | 'slideOut' | 'zoomIn' | 'zoomOut';
+// tslint:disable-next-line interface-over-type-literal
+export type HeroContext = {
+    fromElement: Element;
+    toElement: Element;
+    clonedElement: Element | null;
+    translateX: number;
+    translateY: number;
+    scaleX: number;
+    scaleY: number;
+    toElementElapsedTime: number;
+};

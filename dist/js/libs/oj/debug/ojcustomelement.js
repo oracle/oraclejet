@@ -2,10 +2,14 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'require', 'ojs/ojlogger', 'ojs/ojcontext', 'promise', 'customElements'], function(oj, require, Logger, Context)
+
+define(['ojs/ojcore', 'require', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojmetadatautils', 'customElements'],
+  function(oj, require, Logger, Context, MetadataUtils)
 {
   "use strict";
+
 /* global Promise:false, Set:false, Logger:false, Context:false */
 
 /**
@@ -43,7 +47,7 @@ oj.BaseCustomElementBridge.proto =
     Object.defineProperty(proto, 'unset', { value: function (prop) { this.setProperty(prop, undefined); } });
 
     // Add lifecycle listeners
-    proto.attributeChangedCallback = this._attributeChangedCallback;
+    proto.attributeChangedCallback = this.AttributeChangedCallback;
     proto.connectedCallback = this._connectedCallback;
     proto.disconnectedCallback = this._detachedCallback;
 
@@ -97,6 +101,61 @@ oj.BaseCustomElementBridge.proto =
   // eslint-disable-next-line no-unused-vars
   AddComponentMethods: function (proto) {},
 
+  AttributeChangedCallback: function (attr, oldValue, newValue) {
+    // The browser triggers this callback even if old and new values are the same
+    // so we should do an equality check ourselves to prevent extra work
+    if (oldValue !== newValue) {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+
+      // Due to  where IE11 disables child inputs for a parent with the disabled attribute,
+      // we will remove the disabled attribute after we save the value and will ignore all disabled
+      // attribute sets after component initialization when the application can just as easily use the property
+      // setter instead. Expressions will be handled in the CustomElementBinding.
+      if (attr === 'disabled' && bridge.ShouldRemoveDisabled() && bridge._isDisabledAttributeRemoved()) {
+        // Always remove the disabled attribute even after component initialization and log warning.
+        // A null value indicates that the value was removed already.
+        if (newValue != null) {
+          Logger.warn("Ignoring 'disabled' attribute change after component initialization. Use element property setter instead.");
+          bridge._removeDisabledAttribute(this);
+        }
+        return;
+      }
+
+      if (bridge.ShouldHandleAttributeChanged(this)) {
+        var prop = oj.__AttributeUtils.attributeToPropertyName(attr);
+        var propMeta = oj.BaseCustomElementBridge
+            .__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge));
+
+        oj.BaseCustomElementBridge.__CheckOverlappingAttribute(this, attr);
+
+        // removeAttribute calls return null as the newValue which we want to treat as
+        // a property unset and convert to undefined. We allow property null sets as an
+        // actual property override.
+        if (newValue === null) {
+          // eslint-disable-next-line no-param-reassign
+          newValue = undefined;
+        }
+
+        var params = {
+          detail: { attribute: attr, value: newValue, previousValue: oldValue }
+        };
+        this.dispatchEvent(new CustomEvent('attribute-changed', params));
+
+        var expression = oj.__AttributeUtils.getExpressionInfo(newValue).expr;
+        if (!expression) {
+          if (propMeta) {
+            this.setProperty(prop, oj.BaseCustomElementBridge.__ParseAttrValue(this, attr,
+                                                                              prop, newValue,
+                                                                              propMeta));
+          }
+          // This allows subclasses to handle special cases like global transfer
+          // attributes for JET components or controlled properties for virtual components
+          bridge.HandleAttributeChanged(this, attr, oldValue, newValue);
+        }
+      }
+    }
+  },
+
   // eslint-disable-next-line no-unused-vars
   CreateComponent: function (element) {},
 
@@ -135,14 +194,31 @@ oj.BaseCustomElementBridge.proto =
     return property;
   },
 
-  GetDefaultValue: function (propertyMeta) {
-    return oj.BaseCustomElementBridge._consolidateDefaults(propertyMeta);
-  },
-
   GetTrackChildrenOption: function () {
     return this.METADATA.extension && this.METADATA.extension._TRACK_CHILDREN ?
       this.METADATA.extension._TRACK_CHILDREN : 'none';
   },
+
+  /**
+   * Tests whether attribute changed processing should be performed.
+   */
+  // eslint-disable-next-line no-unused-vars
+  ShouldHandleAttributeChanged: function (element) {
+    return this._bCreateCalled;
+  },
+
+  /**
+   * Tests whether the HandleAttributeChanged callback should be called.
+   * This is only needed in the VirtualElementBridge case when a VComponent
+   * is patching and updates a controlled property on the root element which we
+   * want to update our internal _CONTROLLED_PROPS object with, but not cause a
+   * rerender.
+   */
+  // eslint-disable-next-line no-unused-vars
+  ShouldCallHandleAttributeChanged: function (element) {
+    return this.ShouldHandleAttributeChanged();
+  },
+
 
   // eslint-disable-next-line no-unused-vars
   HandleAttributeChanged: function (element, attr, oldValue, newValue) {},
@@ -184,7 +260,7 @@ oj.BaseCustomElementBridge.proto =
   GetProperty: function (element, prop, props) {
     var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
     var meta = oj.BaseCustomElementBridge
-        .__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this, element));
+        .__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this));
 
     // For event listener and non component properties, retrieve the value directly stored on the element.
     // For top level properties, this will delegate to our 'set' methods so we can handle default values.
@@ -195,7 +271,7 @@ oj.BaseCustomElementBridge.proto =
     return oj.BaseCustomElementBridge.__GetProperty(props, prop);
   },
 
-  InitializeBridge: function (element) {
+  InitializeBridge: function (element, descriptor) {
     // Initialize property storage and other variables needed for property sets.
     // Since early property sets can occur before the element's connected callback
     // is triggered we can't rely on performing this logic there. The cases where
@@ -203,7 +279,6 @@ oj.BaseCustomElementBridge.proto =
     // custom element is programatically created and sets are done before adding
     // the element to the DOM or if the element is stamped by knockout and its expressions
     // processed disconnected as in the case for oj-bind-for-each.
-    var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName);
     this.METADATA = this.GetMetadata(descriptor);
     this._eventListeners = {};
   },
@@ -262,7 +337,7 @@ oj.BaseCustomElementBridge.proto =
     // Check value against any defined enums
     var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
     var meta = oj.BaseCustomElementBridge
-        .__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this, element));
+        .__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this));
     if (event || !meta) {
       // eslint-disable-next-line no-param-reassign
       element[prop] = value;
@@ -317,13 +392,19 @@ oj.BaseCustomElementBridge.proto =
     return { property: null, propertySet: false, isSubproperty: false };
   },
 
+  ShouldRemoveDisabled: function () {
+    // Subclasses should override if the disabled attribute shouldn't be unconditionally removed
+    // from the DOM, e.g. definitional and composite components
+    return true;
+  },
+
   ValidateAndSetProperty: function (propNameFun, componentProps, property, value, element) {
     var _value = this.ValidatePropertySet(element, property, value);
     oj.BaseCustomElementBridge.__SetProperty(propNameFun, componentProps, property, _value);
   },
 
   ValidatePropertySet: function (element, property, value) {
-    var propsMeta = oj.BaseCustomElementBridge.getProperties(this, element);
+    var propsMeta = oj.BaseCustomElementBridge.getProperties(this);
     var propMeta = oj.BaseCustomElementBridge.__GetPropertyMetadata(property, propsMeta);
     var propAr = property.split('.');
 
@@ -348,41 +429,23 @@ oj.BaseCustomElementBridge.proto =
     return value;
   },
 
-  _attributeChangedCallback: function (attr, oldValue, newValue) {
-    var bridge = oj.BaseCustomElementBridge.getInstance(this);
+  GetPreCreatePromise: function (element) {
+    var preCreatePromise = this._getBindingProvider(element);
+    var trackOption = oj.BaseCustomElementBridge.getTrackChildrenOption(element);
+    if (trackOption !== 'none') {
+      // this will return a promise that will get automatically chained to the binding provider promise
+      preCreatePromise = preCreatePromise.then(function () {
+        return this._whenChildrenCreated(element);
+      }.bind(this));
+    }
+    return preCreatePromise;
+  },
 
-    if (bridge._bCreateCalled) {
-      var prop = oj.__AttributeUtils.attributeToPropertyName(attr);
-      var propMeta = oj.BaseCustomElementBridge
-          .__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge, this));
-
-      oj.BaseCustomElementBridge.__CheckOverlappingAttribute(this, attr);
-
-      // removeAttribute calls return null as the newValue which we want to treat as
-      // a property unset and convert to undefined. We allow property null sets as an
-      // actual property override.
-      if (newValue === null) {
-        // eslint-disable-next-line no-param-reassign
-        newValue = undefined;
-      }
-
-      var params = {
-        detail: { attribute: attr, value: newValue, previousValue: oldValue }
-      };
-      this.dispatchEvent(new CustomEvent('attribute-changed', params));
-
-      var expression = oj.__AttributeUtils.getExpressionInfo(newValue).expr;
-      if (!expression) {
-        if (propMeta) {
-          this.setProperty(prop, oj.BaseCustomElementBridge.__ParseAttrValue(this, attr,
-                                                                             prop, newValue,
-                                                                             propMeta));
-        }
-
-        // This allows subclasses to handle special cases like global transfer
-        // attributes for JET components
-        bridge.HandleAttributeChanged(this, attr, oldValue, newValue);
-      }
+  PostCreate: function (element) {
+    // After parsing the DOM attribute values and initializing properties, remove the disabled
+    // property if it exists due to 
+    if (element.hasAttribute('disabled') && this.ShouldRemoveDisabled() && !this._isDisabledAttributeRemoved()) {
+      this._removeDisabledAttribute(element);
     }
   },
 
@@ -402,22 +465,14 @@ oj.BaseCustomElementBridge.proto =
       var createComponentCallback = function () {
         try {
           self.CreateComponent(element);
+          self.PostCreate(element);
         } catch (ex) {
           // If an error occurs during component creation, resolve the busy context and throw an error.
           self.throwError(element, 'Error while rendering component. ' + ex);
         }
       };
 
-      var preCreatePromise = this._getBindingProvider(element);
-      var trackOption = oj.BaseCustomElementBridge.getTrackChildrenOption(element);
-      if (trackOption !== 'none') {
-        // this will return a promise that will get automatically chained to the binding provider promise
-        preCreatePromise = preCreatePromise.then(function () {
-          return self._whenChildrenCreated(element);
-        });
-      }
-
-      this._whenCreatedPromise = preCreatePromise.then(createComponentCallback);
+      this._whenCreatedPromise = this.GetPreCreatePromise(element).then(createComponentCallback);
     } else if (!this._complete) {
       // If the component had been previously disconnected, and the 'ready'
       // promise is still not resolved, we need to re-register the busy state
@@ -577,6 +632,10 @@ oj.BaseCustomElementBridge.proto =
         } else {
           this.throwError(element, 'Cannot determine binding provider for a disconnected subtree.');
         }
+      } else if (parent._vcomp) {
+        // Content rendered by a VComponent parent does not get processed
+        // by any binding provider.
+        name = oj.BaseCustomElementBridge._NO_BINDING_PROVIDER;
       } else {
         name = this._getBindingProviderName(parent);
       }
@@ -636,6 +695,26 @@ oj.BaseCustomElementBridge.proto =
               });
     });
     return Promise.all(promises);
+  },
+
+  /**
+   * Returns true if the disabled attribute has already been removed by the bridge.
+   * @return  {boolean}
+   * @private
+   */
+  _isDisabledAttributeRemoved: function () {
+    return this._disabledProcessed === true;
+  },
+
+  /**
+   * Removes the disabled attribute from an element and marks the bridge as having
+   * processed the value to prevent evaluation of additional attribute sets.
+   * @param  {Element} element The custom element
+   * @private
+   */
+  _removeDisabledAttribute: function (element) {
+    this._disabledProcessed = true;
+    element.removeAttribute('disabled');
   }
 
 };
@@ -719,7 +798,8 @@ oj.BaseCustomElementBridge.getInstance = function (element) {
     }
 
     instance = Object.create(info.bridgeProto);
-    instance.InitializeBridge(element);
+    var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName);
+    instance.InitializeBridge(element, descriptor);
     Object.defineProperty(element, oj.BaseCustomElementBridge._INSTANCE_KEY, { value: instance });
   }
 
@@ -729,12 +809,11 @@ oj.BaseCustomElementBridge.getInstance = function (element) {
 /**
  * Returns the properties stored on a bridge instance
  * @param  {Object} bridge The bridge instance
- * @param  {Object} element The element instance
  * @return {Object}
  * @ignore
  */
 // eslint-disable-next-line no-unused-vars
-oj.BaseCustomElementBridge.getProperties = function (bridge, element) {
+oj.BaseCustomElementBridge.getProperties = function (bridge) {
   return bridge.METADATA.properties;
 };
 
@@ -857,12 +936,11 @@ oj.BaseCustomElementBridge._verifyMetadata = function (tagName, metadata) {
     var properties = metadata.properties;
     if (properties) {
       // We are not currently checking for redefined aria-*, data-*, or event handler attributes, e.g. onclick.
-      var globals = oj.BaseCustomElementBridge._GLOBAL_PROPERTIES;
-      for (var i = 0; i < globals.length; i++) {
-        if (properties[globals[i]]) {
-          Logger.error("Error registering composite %s. Redefined global HTML element attribute '%s' in metadata.", tagName, globals[i]);
+      Object.keys(properties).forEach(function (prop) {
+        if (oj.__AttributeUtils.isGlobal(prop)) {
+          Logger.error("Error registering composite %s. Redefined global HTML element attribute '%s' in metadata.", tagName, prop);
         }
-      }
+      });
     }
   }
 };
@@ -1035,7 +1113,7 @@ oj.BaseCustomElementBridge.__GetPropertyMetadata = function (prop, metadata) {
 oj.BaseCustomElementBridge.__InitProperties = function (element, componentProps) {
   var bridge = oj.BaseCustomElementBridge.getInstance(element);
   bridge.__INITIALIZING_PROPS = true;
-  var metaProps = oj.BaseCustomElementBridge.getProperties(bridge, element);
+  var metaProps = oj.BaseCustomElementBridge.getProperties(bridge);
   if (metaProps) {
     var attrs = element.attributes; // attrs is a NodeList
     for (var i = 0; i < attrs.length; i++) {
@@ -1251,55 +1329,6 @@ oj.BaseCustomElementBridge.__DefineDynamicObjectProperty =
     });
   };
 
-var _UNIQUE_INCR = 0;
-var _UNIQUE = '_ojcustomelem';
-
-/**
- * @ignore
- */
-oj.BaseCustomElementBridge.__GetUnique = function () {
-  var ret = _UNIQUE + _UNIQUE_INCR;
-  _UNIQUE_INCR += 1;
-  return ret;
-};
-
-/**
- * Default values can be specified at the top level or at leaf subproperties.
- * This utility walks complex property subproperties to generate default value
- * @property {object} metadata
- * @ignore
- */
-oj.BaseCustomElementBridge._consolidateDefaults = function (metadata) {
-  var defaultValue = metadata.value;
-  if (defaultValue !== undefined) {
-    // Make a copy if the default value is an Object or Array to prevent modification
-    // of the metadata copy and store in the propertyTracker so we have a copy
-    // to modify in place for the object case
-    if (Array.isArray(defaultValue)) {
-      return defaultValue.slice();
-    } else if (defaultValue !== null && typeof defaultValue === 'object') {
-      return oj.CollectionUtils.copyInto({}, defaultValue, undefined, true);
-    }
-    return defaultValue;
-  }
-  // If top level metadata isn't specified, check subproperties.
-  // Note that we are not handling cases where both top level and subproperty
-  // default values are provided, leaving that to auditing and build tools to check.
-  var subMeta = metadata.properties;
-  if (subMeta) {
-    var complexDefault = {};
-    var keys = Object.keys(subMeta);
-    for (var i = 0; i < keys.length; i++) {
-      var subpropDefault = oj.BaseCustomElementBridge._consolidateDefaults(subMeta[keys[i]]);
-      if (subpropDefault !== undefined) {
-        complexDefault[keys[i]] = subpropDefault;
-      }
-    }
-    return (Object.keys(complexDefault).length > 0) ? complexDefault : undefined;
-  }
-  return undefined;
-};
-
 /**
  * @ignore
  */
@@ -1315,11 +1344,6 @@ oj.BaseCustomElementBridge.DESC_KEY_PARSE_FUN = 'parseFunction';
 oj.BaseCustomElementBridge.DESC_KEY_VIEW = 'view';
 /** @ignore */
 oj.BaseCustomElementBridge.DESC_KEY_VIEW_MODEL = 'viewModel';
-/** @ignore */
-oj.BaseCustomElementBridge._GLOBAL_PROPERTIES = ['accesskey', 'autocapitalize', 'class',
-  'contenteditable', 'contextmenu', 'dir', 'draggable', 'dropzone', 'hidden', 'id', 'is',
-  'itemid', 'itemprop', 'itemref', 'itemscope', 'itemtype', 'lang', 'slot', 'spellcheck',
-  'style', 'tabindex', 'title', 'translate'];
 
 /**
  * @ignore
@@ -1372,6 +1396,7 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
     }
   };
 };
+
 
 /**
  * @ojoverviewdoc CustomElementOverview - [2]JET Web Components
@@ -1638,7 +1663,7 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-properties-changed-section"></a>
  * </h2>
  * <p>
- *   When a property or attribute value changes, a [property]Changed <code>CustomEvent</code>
+ *   When a property or attribute value changes, a non-bubbling [property]Changed <code>CustomEvent</code>
  *   will be fired with the following properties in the event's detail property.
  *   <table class="props">
  *     <thead>
@@ -1714,18 +1739,8 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
  *   by calling slice(), or by refreshing the component after an in place Array mutation.
  * </p>
  * <p>
- *   The application can listen to these [property]Changed events by adding a listener either declaratively:
- *   <pre class="prettyprint">
- *   <code>
- * &lt;oj-some-element value="{{currentValue}}" on-value-changed="{{valueChangedListener}}">&lt;/oj-some-element>
- *   </code>
- *   </pre>
- *   or programmatically using addEventListener :
- *   <pre class="prettyprint">
- *   <code>
- * someElement.addEventListener("valueChanged", function(event) {...});
- *   </code>
- *   </pre>
+ *   See <a href="#ce-events-section">Events and Listeners</a> for additional information on how to listen for
+ *   these events.
  * </p>
  * <h2 id="ce-proptoattr-section" class="subsection-title">Property-to-Attribute Mapping
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-proptoattr-section"></a>
@@ -1752,19 +1767,26 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
  *   Events and Listeners<a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-events-section"></a>
  * </h2>
  * <p>
- *   By default, JET components will fire [property]Changed (e.g. valueChanged) <code>CustomEvents</code>
- *   whenever a property is updated. These events, unlike other component events, are non bubbling.
- *   See the <a href="#ce-properties-section">properties section</a> above
+ *   JET Web Components, like other custom HTML elements, may fire <code>CustomEvents</code>.  These
+ *   events typically bubble and will be described in component documentation.  In addition, JET components
+ *   fire non-bubbling [property]Changed (e.g. valueChanged) <code>CustomEvents</code>
+ *   whenever a property is updated. See the <a href="#ce-properties-section">properties section</a> above
  *   for details on the event payload.
  * </p>
+ *  <p>
+ *   JET <code>CustomEvents</code> can be listened to using the standard addEventListener mechanism:
+ *   <pre class="prettyprint">
+ *   <code>
+ * someElement.addEventListener("eventName", function(event) {...});
+ *   </code>
+ *   </pre>
+ * </p>
  * <p>
- *   In addition to supporting event listeners via the standard <code>addEventListener</code>
- *   mechanism, both JET custom elements and native HTML elements support declarative specification of event
+ *   Additionally, JET custom elements and native HTML elements within JET pages support declarative specification of event
  *   listeners via <code>on-[event-name]</code> attributes (e.g. <code>on-click</code>,
  *   <code>on-value-changed</code> or <code>on-oj-expand</code>). The attributes ultimately delegate to the standard
  *   <code>addEventListener</code> mechanism and only support data bound expressions
  *   that evaluate to functions; arbitrary JavaScript will not be accepted.
- *   Sample usages can be seen in the attribute API doc.
  * </p>
  * <p>
  *   In addition to the event parameter, event listeners specified via <code>on-[event-name]</code>
@@ -1773,9 +1795,17 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
  *   was applied to the element while the data parameter provides convenient access to relevant data.
  *   When in an iteration context (e.g. inside an <code>oj-bind-for-each</code>), the <code>data</code> parameter
  *   is equal to <code>bindingContext["$current"]</code>; otherwise, it is equal to <code>bindingContext["$data"]</code>.
- *   These event listeners should be written with signatures of <code>function(event, data, bindingContext)</code>.
- *   Event listeners that are specified via addEventListener will not receive these additional parameters;
- *   they will be invoked with the single event parameter only.
+ *   These declarative event listeners should take the form:
+ *   <pre class="prettyprint">
+ *   <code>
+ * &lt;oj-some-element on-event-name="[[eventListener]]">&lt;/oj-some-element>
+ *
+ *
+ * function eventListener(event, data, bindingContext) {
+ *   ...
+ * }
+ *   </code>
+ *   </pre>
  * </p>
  * <p>
  *   Please note that there is a

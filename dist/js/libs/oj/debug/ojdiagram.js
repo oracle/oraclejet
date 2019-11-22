@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtDiagram', 'ojs/ojdiagram-utils', 'ojs/ojlogger', 'ojs/ojkeyset', 'ojs/ojdatasource-common'], 
 function(oj, $, Config, Components, DvtAttributeUtils, dvt, DiagramUtils, Logger, KeySet)
 {
@@ -173,8 +175,7 @@ var __oj_diagram_metadata =
     },
     "expanded": {
       "type": "KeySet",
-      "writeback": true,
-      "value": "new KeySetImpl()"
+      "writeback": true
     },
     "focusRenderer": {
       "type": "function"
@@ -211,6 +212,23 @@ var __oj_diagram_metadata =
     "layout": {
       "type": "function"
     },
+    "linkContent": {
+      "type": "object",
+      "properties": {
+        "focusRenderer": {
+          "type": "function"
+        },
+        "hoverRenderer": {
+          "type": "function"
+        },
+        "renderer": {
+          "type": "function"
+        },
+        "selectionRenderer": {
+          "type": "function"
+        }
+      }
+    },
     "linkData": {
       "type": "object"
     },
@@ -232,6 +250,26 @@ var __oj_diagram_metadata =
     "minZoom": {
       "type": "number",
       "value": 0
+    },
+    "nodeContent": {
+      "type": "object",
+      "properties": {
+        "focusRenderer": {
+          "type": "function"
+        },
+        "hoverRenderer": {
+          "type": "function"
+        },
+        "renderer": {
+          "type": "function"
+        },
+        "selectionRenderer": {
+          "type": "function"
+        },
+        "zoomRenderer": {
+          "type": "function"
+        }
+      }
     },
     "nodeData": {
       "type": "object"
@@ -837,10 +875,7 @@ var __oj_diagram_node_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Promise:false */
 
@@ -976,7 +1011,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
   return 'unknown';
 };
 
-// Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+
 /**
  * <p>Pluggable layout code must conform to the pluggable layout contract. The following steps outline a simple pluggable layout.</p>
  * <ol>
@@ -996,7 +1031,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * </ol>
  *
  * <p>The DvtDiagramLayoutContext interface defines the context for a layout call.</p>
- * @ojstatus preview
+ *
  * @export
  * @interface DvtDiagramLayoutContext
  * @since 3.0
@@ -1168,17 +1203,19 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @ojtsignore
  */
 
-// Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+
 /**
  * The DvtDiagramLayoutContextLink interface defines the link context for a layout call.
- * @ojstatus preview
+ *
  * @export
  * @interface DvtDiagramLayoutContextLink
  * @since 3.0
  * @memberof oj
  * @ojsignature {target: "Type",
  *               value: "interface DvtDiagramLayoutContextLink<K1, K2, D2 extends oj.ojDiagram.Link<K2, K1>|any>",
- *               genericParameters: [{"name": "D2", "description": "Type of data from the linkData dataprovider"}]}
+ *               genericParameters: [{"name": "K1", "description": "Type of key of the nodeData dataprovider"},
+ *                                   {"name": "K2", "description": "Type of key of the linkData dataprovider"},
+ *                                   {"name": "D2", "description": "Type of data from the linkData dataprovider"}]}
  */
 
 /**
@@ -1493,7 +1530,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @export
  */
 
-// Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+
 
 /**
  * The DvtDiagramLayoutContextNode interface defines the node context for a layout call.
@@ -1503,7 +1540,8 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @memberof oj
  * @ojsignature {target: "Type",
  *               value: "interface DvtDiagramLayoutContextNode<K1, D1 extends oj.ojDiagram.Node<K1>|any>",
- *               genericParameters: [{"name": "D1", "description": "Type of data from the nodeData dataprovider"}]}
+ *               genericParameters: [{"name": "K1", "description": "Type of key of the nodeData dataprovider"},
+ *                                   {"name": "D1", "description": "Type of data from the nodeData dataprovider"}]}
  */
 
 /**
@@ -1793,14 +1831,12 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @ojsignature {target: "Type", value: "D1", for: "returns"}
  */
 
+
 /* global DiagramUtils:false */
 // bleed DiagramUtils into oj to keep backward compatibility
 oj.DiagramUtils = DiagramUtils;
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global dvt:false, Components:false, Promise:false, Logger:false, Config:false, KeySet:false */
 
@@ -1808,7 +1844,7 @@ oj.DiagramUtils = DiagramUtils;
  * @ojcomponent oj.ojDiagram
  * @augments oj.dvtBaseComponent
  * @since 1.1.0
- * @ojstatus preview
+ *
  * @ojrole application
  * @ojshortdesc A diagram displays a set of nodes and the links between them. The node positions and link paths are specified by an application-provided layout function.
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
@@ -2517,15 +2553,21 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        */
       selection: [],
       /**
-       * Specifies the selection mode.
+       * <p>The type of selection behavior that is enabled on the diagram. This attribute controls the number of selections that can be made via selection gestures at any given time.
+       *
+       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the diagram's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the diagram's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+       *
+       * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+       *
        * @expose
        * @name selectionMode
        * @memberof oj.ojDiagram
        * @instance
        * @type {string}
-       * @ojvalue {string} "single"
-       * @ojvalue {string} "multiple"
-       * @ojvalue {string} "none"
+       * @ojvalue {string} "none" Selection is disabled.
+       * @ojvalue {string} "single" Only a single item can be selected at a time.
+       * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
        * @default "none"
        *
        * @example <caption>Initialize the diagram with the
@@ -2870,6 +2912,274 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        */
       linkHighlightMode: 'link',
       /**
+       * An object containing an optional callbacks function for link customization.
+       * @expose
+       * @name linkContent
+       * @memberof oj.ojDiagram
+       * @instance
+       * @type {Object}
+       * @example <caption>Initialize the diagram with the
+       * <code class="prettyprint">link-content</code> attribute specified:</caption>
+       * <!-- Using dot notation -->
+       * &lt;oj-diagram link-content.renderer='[[linkRendererFunc]]'>&lt;/oj-diagram>
+       *
+       * &lt;oj-diagram link-content='[[{"renderer": linkRendererFunc}]]'>&lt;/oj-diagram>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">linkContent</code>
+       * property after initialization:</caption>
+       * // Get one
+       * var value = myDiagram.linkContent.renderer;
+       *
+       * // Get all
+       * var values = myDiagram.linkContent;
+       *
+       * // Set one, leaving the others intact. Always use the setProperty API for
+       * // subproperties rather than setting a subproperty directly.
+       * myDiagram.setProperty('linkContent.renderer', linkRendererFunc);
+       *
+       * // Set all. Must list every resource key, as those not listed are lost.
+       * myDiagram.linkContent={'renderer': linkRendererFunc};
+       */
+      linkContent: {
+        /**
+         * A callback function - a custom renderer - that will be used for initial link rendering.
+         * The function should return an Object with the following property:
+         * <ul>
+         *   <li>insert: SVGElement - An SVG element, which will be used as content of a Diagram link.</li>
+         * </ul>
+         *
+         * <p><b>Note</b> that a link can be represented by any SVG content. However if an application
+         * wants to take advantage of built-in path animation provided by the Diagram component,
+         * then the main shape of a link should be represented by a single path element and that
+         * path element should be marked by <i>oj-diagram-link-path</i> class. When the class
+         * is applied to the path element, its <i>d</i> attribute value will be populated by the
+         * component and the path transformation will be applied to the element during data change
+         * animation. Fade-in animation will be used for other elements of the link.</p>
+         * <p>When the <i>oj-diagram-link-path</i> class is not used for any element of the link, then
+         * the entire custom content will fade-in during data change animation.<p>
+         *
+         * <p><b>Note</b> that when linkContent.renderer is specified, but the other state renderer functions are not, then
+         * the linkContent.renderer will be used to render the state.</p>
+         *
+         * <p><b>Note</b> that when the content returned by the renderer is an <code>svg</code> element,
+         * the children of this element will be inserted into the DOM by the component,
+         * omitting the <code>svg</code> element itself.</p>
+         *
+         * @ojshortdesc Specifies custom renderer for the diagram links used for initial rendering.
+         * @expose
+         * @name linkContent.renderer
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {function(Object):Object|null}
+         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.LinkRendererContext<K1,K2,D2>) => ({insert: SVGElement}))", jsdocOverride: true}
+         * @default null
+         */
+        renderer: null,
+        /**
+         * An optional callback function to update the link in response to changes in hover state.
+         * The function should return one of the following:
+         * <ul>
+         *   <li>An Object with the following property:
+         *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram link.</li></ul>
+         *   </li>
+         *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
+         * </ul>
+         *
+         * <p>See <a href="#linkContent.renderer">linkContent.renderer</a> for additional details on custom content for Diagram links.</p>
+         * @ojshortdesc Specifies custom renderer for the diagram links used for hover updates.
+         * @expose
+         * @name linkContent.hoverRenderer
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {function(Object):Object|null}
+         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.LinkRendererContext<K1,K2,D2>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+         * @default null
+         */
+        hoverRenderer: null,
+        /**
+         * An optional callback function to update the link in response to changes in selection state.
+         * The function should return one of the following:
+         * <ul>
+         *   <li>An Object with the following property:
+         *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram link.</li></ul>
+         *   </li>
+         *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
+         * </ul>
+         *
+         * <p>See <a href="#linkContent.renderer">linkContent.renderer</a> for additional details on custom content for Diagram links.</p>
+         * @ojshortdesc Specifies custom renderer for the diagram links used for selection updates.
+         * @expose
+         * @name linkContent.selectionRenderer
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {function(Object):Object|null}
+         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.LinkRendererContext<K1,K2,D2>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+         * @default null
+         */
+        selectionRenderer: null,
+
+        /**
+         * An optional callback function to update the link in response to changes in keyboard focus state.
+         * The function should return one of the following:
+         * <ul>
+         *   <li>An Object with the following property:
+         *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram link.</li></ul>
+         *   </li>
+         *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
+         * </ul>
+         *
+         * <p>See <a href="#linkContent.renderer">linkContent.renderer</a> for additional details on custom content for Diagram links.</p>
+         * @ojshortdesc Specifies custom renderer for the diagram links used for focus updates.
+         * @expose
+         * @name linkContent.focusRenderer
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {function(Object):Object|null}
+         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.LinkRendererContext<K1,K2,D2>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+         * @default null
+         */
+        focusRenderer: null
+      },
+      /**
+       * An object containing an optional callbacks function for node customization.
+       * @expose
+       * @name nodeContent
+       * @memberof oj.ojDiagram
+       * @instance
+       * @type {Object}
+       * @example <caption>Initialize the diagram with the
+       * <code class="prettyprint">node-content</code> attribute specified:</caption>
+       * <!-- Using dot notation -->
+       * &lt;oj-diagram node-content.renderer='[[linkRendererFunc]]'>&lt;/oj-diagram>
+       *
+       * &lt;oj-diagram node-content='[[{"renderer": linkRendererFunc}]]'>&lt;/oj-diagram>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">nodeContent</code>
+       * property after initialization:</caption>
+       * // Get one
+       * var value = myDiagram.nodeContent.renderer;
+       *
+       * // Get all
+       * var values = myDiagram.nodeContent;
+       *
+       * // Set one, leaving the others intact. Always use the setProperty API for
+       * // subproperties rather than setting a subproperty directly.
+       * myDiagram.setProperty('nodeContent.renderer', linkRendererFunc);
+       *
+       * // Set all. Must list every resource key, as those not listed are lost.
+       * myDiagram.linkContent={'renderer': linkRendererFunc};
+       */
+      nodeContent: {
+        /**
+         * A callback function - a custom renderer - that will be used for initial node rendering.
+         * The function should return an Object with the following property:
+         * <ul>
+         *   <li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li>
+         * </ul>
+         *
+         * <p><b>Note</b> that when nodeContent.renderer is specified, but the other state renderer functions are not, then
+         * the default state renderer will be used to render the state.</p>
+         *
+         * @ojshortdesc Specifies custom renderer for the diagram nodes used for initial rendering.
+         * @expose
+         * @name nodeContent.renderer
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {function(Object):(Object)}
+         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => ({insert: SVGElement}))", jsdocOverride: true}
+         * @default null
+         */
+        renderer: null,
+        /**
+         * An optional callback function to update the node in response to changes in hover state.
+         * The function should return one of the following:
+         * <ul>
+         *   <li>An Object with the following property:
+         *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li></ul>
+         *   </li>
+         *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
+         * </ul>
+         *
+         * <p>See <a href="#nodeContent.renderer">nodeContent.renderer</a> for additional details on custom content for Diagram nodes.</p>
+         *
+         * @ojshortdesc Specifies custom renderer for the diagram nodes used for hover updates.
+         * @expose
+         * @name nodeContent.hoverRenderer
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {function(Object):(Object|void)|null}
+         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+         * @default null
+         */
+        hoverRenderer: null,
+        /**
+         * An optional callback function to update the node in response to changes in selection state.
+         * The function should return one of the following:
+         * <ul>
+         *   <li>An Object with the following property:
+         *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li></ul>
+         *   </li>
+         *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
+         * </ul>
+         *
+         * <p>See <a href="#nodeContent.renderer">nodeContent.renderer</a> for additional details on custom content for Diagram nodes.</p>
+         *
+         * @ojshortdesc Specifies custom renderer for the diagram nodes used for selection updates.
+         * @expose
+         * @name nodeContent.selectionRenderer
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {function(Object):(Object|void)|null}
+         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+         * @default null
+         */
+        selectionRenderer: null,
+        /**
+         * An optional callback function to update the node in response to changes in keyboard focus state.
+         * The function should return one of the following:
+         * <ul>
+         *   <li>An Object with the following property:
+         *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li></ul>
+         *   </li>
+         *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
+         * </ul>
+         *
+         * <p>See <a href="#nodeContent.renderer">nodeContent.renderer</a> for additional details on custom content for Diagram nodes.</p>
+         *
+         * @ojshortdesc Specifies custom renderer for the diagram nodes used for focus updates.
+         * @expose
+         * @name nodeContent.focusRenderer
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {function(Object):(Object|void)|null}
+         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+         * @default null
+         */
+        focusRenderer: null,
+        /**
+         * An optional callback function to update the node in response to changes in zoom level.
+         * The function should return one of the following:
+         * <ul>
+         *   <li>An Object with the following property:
+         *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li></ul>
+         *   </li>
+         *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
+         * </ul>
+         *
+         * <p>See <a href="#nodeContent.renderer">nodeContent.renderer</a> for additional details on custom content for Diagram nodes.</p>
+         *
+         * @ojshortdesc Specifies custom renderer for the diagram nodes used for zoom updates.
+         * @expose
+         * @name nodeContent.zoomRenderer
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {function(Object):(Object|void)|null}
+         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+         * @default null
+         */
+        zoomRenderer: null
+      },
+      /**
        * A callback function - a custom renderer - that will be used for initial node rendering.
        * The function should return an Object with the following property:
        * <ul>
@@ -2877,6 +3187,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * </ul>
        *
        * @ojshortdesc Specifies custom renderer for the diagram nodes used for initial rendering.
+       * @ojdeprecated {since: '8.0.0', description: 'Use nodeContent.renderer instead.'}
        * @expose
        * @name renderer
        * @memberof oj.ojDiagram
@@ -2907,6 +3218,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * </ul>
        *
        * @ojshortdesc Specifies custom renderer for the diagram nodes used for hover updates.
+       * @ojdeprecated {since: '8.0.0', description: 'Use nodeContent.hoverRenderer instead.'}
        * @expose
        * @name hoverRenderer
        * @memberof oj.ojDiagram
@@ -2937,6 +3249,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * </ul>
        *
        * @ojshortdesc Specifies custom renderer for the diagram nodes used for selection updates.
+       * @ojdeprecated {since: '8.0.0', description: 'Use nodeContent.selectionRenderer instead.'}
        * @expose
        * @name selectionRenderer
        * @memberof oj.ojDiagram
@@ -2968,6 +3281,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * </ul>
        *
        * @ojshortdesc Specifies custom renderer for the diagram nodes used for focus updates.
+       * @ojdeprecated {since: '8.0.0', description: 'Use nodeContent.focusRenderer instead.'}
        * @expose
        * @name focusRenderer
        * @memberof oj.ojDiagram
@@ -2998,6 +3312,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * </ul>
        *
        * @ojshortdesc Specifies custom renderer for the diagram nodes used for zoom updates.
+       * @ojdeprecated {since: '8.0.0', description: 'Use nodeContent.zoomRenderer instead.'}
        * @expose
        * @name zoomRenderer
        * @memberof oj.ojDiagram
@@ -3018,7 +3333,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        */
       zoomRenderer: null,
       /**
-       * The data source for the Diagram element. See <a href="oj.DiagramDataSource.html">oj.DiagramDataSource</a for details>
+       * The data source for the Diagram element. See <a href="oj.DiagramDataSource.html">oj.DiagramDataSource</a> for details.
        * @ojshortdesc Specifies the data for the component.
        * @ojdeprecated {since: '6.0.0', description: 'Use nodeData and linkData instead.'}
        * @ojtsignore
@@ -3855,10 +4170,21 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
     _ProcessOptions: function () {
       this._super();
       this.options._logger = Logger;
-      if (this.options._templateFunction) {
-        this.options.renderer = this._GetTemplateDataRenderer(this.options._templateFunction, 'node');
+      // convert deprecated node renderers into new format
+      if (this.options.renderer && !this.options.nodeContent.renderer) {
+        this.options.nodeContent = {
+          renderer: this.options.renderer,
+          hoverRenderer: this.options.hoverRenderer,
+          selectionRenderer: this.options.selectionRenderer,
+          focusRenderer: this.options.focusRenderer,
+          zoomRenderer: this.options.zoomRenderer,
+        };
       }
-      if (this.options.renderer || this._TemplateHandler.getTemplates().nodeContentTemplate) {
+      if (this.options._templateFunction) {
+        this.options.nodeContent.renderer = this._GetTemplateDataRenderer(this.options._templateFunction, 'node');
+      }
+      if (this.options.renderer || this._TemplateHandler.getTemplates().nodeContentTemplate ||
+        this.options.linkContent || this._TemplateHandler.getTemplates().linkContentTemplate) {
         this.options._contextHandler = this._getContextHandler();
       }
       if (this.options.nodeData) {
@@ -3905,11 +4231,15 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
     //* * @inheritdoc */
     _GetComponentRendererOptions: function () {
       return [{ path: 'tooltip/renderer', slot: 'tooltipTemplate' },
-              { path: 'renderer', slot: 'nodeContentTemplate' },
-              { path: 'focusRenderer', slot: 'nodeContentTemplate' },
-              { path: 'hoverRenderer', slot: 'nodeContentTemplate' },
-              { path: 'selectionRenderer', slot: 'nodeContentTemplate' },
-              { path: 'zoomRenderer', slot: 'nodeContentTemplate' }];
+              { path: 'nodeContent/renderer', slot: 'nodeContentTemplate' },
+              { path: 'nodeContent/focusRenderer', slot: 'nodeContentTemplate' },
+              { path: 'nodeContent/hoverRenderer', slot: 'nodeContentTemplate' },
+              { path: 'nodeContent/selectionRenderer', slot: 'nodeContentTemplate' },
+              { path: 'nodeContent/zoomRenderer', slot: 'nodeContentTemplate' },
+              { path: 'linkContent/renderer', slot: 'linkContentTemplate' },
+              { path: 'linkContent/focusRenderer', slot: 'linkContentTemplate' },
+              { path: 'linkContent/hoverRenderer', slot: 'linkContentTemplate' },
+              { path: 'linkContent/selectionRenderer', slot: 'linkContentTemplate' }];
     },
 
     //* * @inheritdoc */
@@ -3937,23 +4267,23 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
      */
     _getContextHandler: function () {
       var thisRef = this;
-      var contextHandlerFunc = function (
-        parentElement, rootElement, childContent, nodeDataContext, state, previousState
-      ) {
+      var contextHandlerFunc = function (type, parentElement, rootElement,
+        childContent, dataContext, state, previousState, linkPoints) {
         var context = {
           component: Components.__GetWidgetConstructor(thisRef.element),
           parentElement: parentElement,
           rootElement: rootElement,
           content: childContent,
-          data: nodeDataContext.data,
-          itemData: nodeDataContext.itemData,
+          data: dataContext.data,
+          itemData: dataContext.itemData,
           state: state,
           previousState: previousState,
-          id: nodeDataContext.id,
-          type: 'node',
-          label: nodeDataContext.label
+          id: dataContext.id,
+          type: type,
+          label: dataContext.label,
+          points: linkPoints
         };
-        if (thisRef._IsCustomElement()) {
+        if (type === 'node' && thisRef._IsCustomElement()) {
           context.renderDefaultHover = thisRef.renderDefaultHover.bind(thisRef, context);
           context.renderDefaultSelection = thisRef.renderDefaultSelection.bind(thisRef, context);
           context.renderDefaultFocus = thisRef.renderDefaultFocus.bind(thisRef, context);
@@ -4105,7 +4435,11 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
         { path: 'styleDefaults/nodeDefaults/hoverOuterColor', property: 'border-top-color' },
         { path: 'styleDefaults/nodeDefaults/hoverInnerColor', property: 'border-bottom-color' }
       ];
-      styleClasses['oj-diagram-link'] = { path: 'styleDefaults/linkDefaults/color', property: 'color' };
+      styleClasses['oj-diagram-link'] = [
+        { path: 'styleDefaults/linkDefaults/color', property: 'color' },
+        { path: 'styleDefaults/linkDefaults/_hitDetectionOffset', property: 'padding' },
+        { path: 'styleDefaults/promotedLink/_hitDetectionOffset', property: 'padding' }
+      ];
       styleClasses['oj-diagram-link-label'] = { path: 'styleDefaults/linkDefaults/labelStyle', property: 'TEXT' };
       styleClasses['oj-diagram-link oj-selected'] = { path: 'styleDefaults/linkDefaults/selectionColor', property: 'border-color' };
       styleClasses['oj-diagram-link oj-hover'] = [
@@ -4213,11 +4547,6 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
           height: 20
         };
       }
-      // Add cursors
-      resources.panCursorDown =
-        Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-closed.cur');
-      resources.panCursorUp =
-        Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-open.cur');
     },
 
     //* * @inheritdoc */
@@ -4511,6 +4840,7 @@ Components.setDefaultOptions({
   }
 });
 
+
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -4766,6 +5096,7 @@ Components.setDefaultOptions({
  * @typedef {Object} oj.ojDiagram.RendererContext
  * @property {Element}  parentElement A parent group element that takes a custom SVG fragment as the node content. Modifications of the parentElement are not supported.
  * @property {Element}  componentElement The diagram element.
+ * @property {Element|null}  rootElement Null on initial rendering or SVG element for the node.
  * @property {Object}   data The data object for the node. If oj.DataProvider is being used, this property contains template processed data.
  * @property {Object|null} itemData The row data object for the node. This will only be set if an oj.DataProvider is being used.
  * @property {Object}   content  An object that describes child content. The object has the following properties
@@ -4793,6 +5124,51 @@ Components.setDefaultOptions({
  *            {target: "Type", value: "oj.ojDiagram.Node<K1>", for: "data"},
  *            {target: "Type", value: "D1", for: "itemData"},
  *            {target: "Type", value: "<K1,D1>", for: "genericTypeParameters"}]
+ */
+
+/**
+ * @typedef {Object} oj.ojDiagram.LinkRendererContext
+ * @property {Element}  parentElement A parent group element that takes a custom SVG fragment as the link content. Modifications of the parentElement are not supported.
+ * @property {Element}  componentElement The diagram element.
+ * @property {Element|null}  rootElement Null on initial rendering or SVG element for the link.
+ * @property {Object}   data The data object for the link or an array of data objects for the promoted link.
+ *                           If oj.DataProvider is being used, this property contains template processed data.
+ * @property {Object|null} itemData The row data object for the link or an array of row data objects for the promoted link.
+ *                           This will only be set if an oj.DataProvider is being used.
+ * @property {Object}   state An object that reflects the current state of the data item.
+ * @property {boolean}  state.hovered True if the link is currently hovered.
+ * @property {boolean}  state.selected True if the link is currently selected.
+ * @property {boolean}  state.focused True if the link is currently selected.
+ * @property {Object}   previousState An object that reflects the previous state of the data item.
+ * @property {boolean}  previousState.hovered True if the link was previously hovered.
+ * @property {boolean}  previousState.selected True if the link was previously selected.
+ * @property {boolean}  previousState.focused True if the link was previously selected.
+ * @property {any}      id Link id.
+ * @property {string}   type Object type is 'link' or 'promotedLink'.
+ * @property {array|string} points An array of points or a string with SVG path to use for rendering this link as set by diagram layout.
+ *            When custom renderer is used for link creation, the property will contain an array of x and y points for the link start
+ *            and link end calculated by Diagram.
+ * @ojsignature [{target: "Type", value: "K2", for: "id"},
+ *            {target: "Type", value: "'link'|'promotedLink'", for: "type"},
+ *            {target: "Type", value: "oj.ojDiagram.Link<K2, K1>", for: "data"},
+ *            {target: "Type", value: "D2|D2[]", for: "itemData"},
+ *            {target: "Type", value: "<K1,K2,D2>", for: "genericTypeParameters"}]
+ */
+
+/**
+ * @typedef {Object} oj.ojDiagram.LinkTemplateContext
+ * @property {Element} componentElement The &lt;oj-diagram> custom element.
+ * @property {Object} data The data object for the current link.
+ * @property {number} index The zero-based index of the current link.
+ * @property {any} key The key of the current link.
+ */
+ /**
+ * @typedef {Object} oj.ojDiagram.NodeTemplateContext
+ * @property {Object} data The data object for the current node.
+ * @property {number} index The zero-based index of the current node.
+ * @property {any} key The key of the current node.
+ * @property {array} parentData  An array of data for the leaf and its parents. Eg: parentData[0] is the outermost parent and parentData[1] is the second outermost parent of the leaf.
+ * @property {any} parentKey The key of the parent item. The parent key is null for root nodes.
  */
 
 // KEEP FOR WIDGET SYNTAX
@@ -5449,10 +5825,10 @@ Components.setDefaultOptions({
  // Slots
 
 /**
- * <p> The <code class="prettyprint">linkTemplate</code> slot is used to specify the template for creating each diagram link. The slot must be a &lt;template> element.
+ * <p> The <code class="prettyprint">linkTemplate</code> slot is used to specify the template for creating each diagram link. The slot content must be a &lt;template> element.
  * <p>When the template is executed for each item, it will have access to the diagram's binding context and the following properties:</p>
  * <ul>
- * <li>$current - an object that contains information for the current item
+ *   <li>$current - an object that contains information for the current link. (See [oj.ojDiagram.LinkTemplateContext]{@link oj.ojDiagram.LinkTemplateContext} or the table below for a list of properties available on $current) </li>
  * </li>
  * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
  * </li>
@@ -5460,16 +5836,12 @@ Components.setDefaultOptions({
  *
  * <p>The content of the template should only be one &lt;oj-diagram-link> element. See the [oj-diagram-link]{@link oj.ojDiagram} doc for more details.</p>
  *
- * @ojstatus preview
+ *
  * @ojslot linkTemplate
  * @ojshortdesc The linkTemplate slot is used to specify the template for creating each diagram link. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojDiagram
- * @property {Element} componentElement The &lt;oj-diagram> custom element.
- * @property {Object} data The data object for the current link.
- * @property {number} index The zero-based index of the current link.
- * @property {any} key The key of the current link.
- *
+ * @ojslotitemprops oj.ojDiagram.LinkTemplateContext
  * @example <caption>Initialize the diagram with an inline link template specified:</caption>
  * &lt;oj-diagram node-data='[[nodeDataProvider]]' link-data='[[linkDataProvider]]'>
  *  &lt;template slot='nodeTemplate' data-oj-as='node'>
@@ -5483,10 +5855,10 @@ Components.setDefaultOptions({
  * &lt;/oj-diagram>
  */
 /**
- * <p> The <code class="prettyprint">nodeTemplate</code> slot is used to specify the template for creating each diagram node. The slot must be a &lt;template> element.
+ * <p> The <code class="prettyprint">nodeTemplate</code> slot is used to specify the template for creating each diagram node. The slot content must be a &lt;template> element.
  * <p>When the template is executed for each item, it will have access to the diagram's binding context and the following properties:</p>
  * <ul>
- * <li>$current - an object that contains information for the current item
+ *   <li>$current - an object that contains information for the current node. (See [oj.ojDiagram.NodeTemplateContext]{@link oj.ojDiagram.NodeTemplateContext} or the table below for a list of properties available on $current) </li>
  * </li>
  * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
  * </li>
@@ -5494,17 +5866,12 @@ Components.setDefaultOptions({
  *
  * <p>The content of the template should only be one &lt;oj-diagram-node> element. See the [oj-diagram-node]{@link oj.ojDiagram} doc for more details.</p>
  *
- * @ojstatus preview
+ *
  * @ojslot nodeTemplate
  * @ojshortdesc The nodeTemplate slot is used to specify the template for creating each diagram node. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojDiagram
- * @property {Element} componentElement The &lt;oj-diagram> custom element.
- * @property {Object} data The data object for the current node.
- * @property {number} index The zero-based index of the current node.
- * @property {any} key The key of the current node.
- * @property {array} parentData  An array of data for the leaf and its parents. Eg: parentData[0] is the outermost parent and parentData[1] is the second outermost parent of the leaf.
- * @property {any} parentKey The key of the parent item. The parent key is null for root nodes.
+ * @ojslotitemprops oj.ojDiagram.NodeTemplateContext
  *
  * @example <caption>Initialize the tag cloud with an inline item template specified:</caption>
  * &lt;oj-diagram node-data='[[nodeDataProvider]]' link-data='[[linkDataProvider]]'>
@@ -5520,10 +5887,10 @@ Components.setDefaultOptions({
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current node or link. (See [oj.ojDiagram.TooltipContext]{@link oj.ojDiagram.TooltipContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current node or link. (See [oj.ojDiagram.TooltipContext]{@link oj.ojDiagram.TooltipContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot tooltipTemplate
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojDiagram.TooltipContext
@@ -5539,15 +5906,21 @@ Components.setDefaultOptions({
 
  /**
  * <p>The <code class="prettyprint">nodeContentTemplate</code> slot is used to specify custom node content.</p>
- * This slot takes precedence over the renderer/focusRenderer/hoverRenderer/selectionRenderer/zoomRenderer properties if specified.
+ * This slot takes precedence over the
+ * renderer/focusRenderer/hoverRenderer/selectionRenderer/zoomRenderer
+ * properties on the nodeContent object if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current node. (See [oj.ojDiagram.RendererContext]{@link oj.ojDiagram.RendererContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current node. (See [oj.ojDiagram.RendererContext]{@link oj.ojDiagram.RendererContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  * <p>Add data-oj-default-focus, data-oj-default-hover and/or data-oj-default-selection attributes to the template to also render the default focus, hover and/or selection effect for the data item.</p>
  * <p>Similarly, add oj-data-zoom-thresholds attribute to the template to set thresholds that will trigger a rerender when crossed. This should be a JSON array containing values between the <i><b>min-zoom</b></i> and <i><b>max-zoom</b></i></p>
  *
+ * <p><b>Note</b> that SVG nodes for the diagram node content should be wrapped into an <code>svg</code> element in order to have the SVG namespace.
+ * The component will insert the entire SVG structure into DOM including the outer <code>svg</code> element.</p>
+ *
  * @ojslot nodeContentTemplate
+ * @ojshortdesc The nodeContentTemplate slot is used to specify custom node content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojDiagram.RendererContext
  * @memberof oj.ojDiagram
  * @since 7.1.0
@@ -5562,13 +5935,46 @@ Components.setDefaultOptions({
  * &lt;/oj-diagram>
  */
 
+ /**
+ * <p>The <code class="prettyprint">linkContentTemplate</code> slot is used to specify custom link content.</p>
+ * This slot takes precedence over the renderer/focusRenderer/hoverRenderer/selectionRenderer
+ * properties on the linkContent object if specified.
+ * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
+ * <ul>
+ *   <li>$current - an object that contains information for the current link. (See [oj.ojDiagram.LinkRendererContext]{@link oj.ojDiagram.LinkRendererContext} or the table below for a list of properties available on $current) </li>
+ * </ul>
+ *
+ * <p><b>Note</b> that SVG nodes for the diagram link content should be wrapped into an <code>svg</code> element in order to have the SVG namespace.
+ * The component will strip the outer <code>svg</code> element before inserting nodes into DOM.</p>
+ *
+ * <p>See <a href="#linkContent.renderer">linkContent.renderer</a> for additional details on custom content for Diagram links.</p>
+ *
+ * @ojslot linkContentTemplate
+ * @ojshortdesc The linkContentTemplate slot is used to specify custom link content. See the Help documentation for more information.
+ * @ojslotitemprops oj.ojDiagram.LinkRendererContext
+ * @memberof oj.ojDiagram
+ * @since 8.0.0
+ *
+ * @example <caption>Initialize the Diagram with a link content template specified:</caption>
+ * &lt;oj-diagram>
+ *  &lt;template slot="linkContentTemplate">
+ *   &lt;svg>
+ *    &lt;g value="[['link' + $current.id]]">
+ *     &lt;path class="oj-diagram-link-path" stroke="[[$current.itemData.color]]" stroke-width="[[$current.itemData.width]]">&lt;/path>
+ *    &lt;/g>
+ *   &lt;/svg>
+ *  &lt;/template>
+ * &lt;/oj-diagram>
+ */
+
+
 /**
  * @ojcomponent oj.ojDiagramLink
  * @ojimportmembers oj.ojDiagramLinkProperties
  * @ojsignature {target: "Type", value:"class ojDiagramLink extends JetElement<ojDiagramLinkSettableProperties>"}
  * @ojslotcomponent
  * @since 6.0.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="overview">
@@ -5594,13 +6000,14 @@ Components.setDefaultOptions({
  * </pre>
  */
 
+
 /**
  * @ojcomponent oj.ojDiagramNode
  * @ojimportmembers oj.ojDiagramNodeProperties
  * @ojsignature {target: "Type", value:"class ojDiagramNode extends JetElement<ojDiagramNodeSettableProperties>"}
  * @ojslotcomponent
  * @since 6.0.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="overview">
@@ -5625,6 +6032,7 @@ Components.setDefaultOptions({
  * </code>
  * </pre>
  */
+
 
 /* global __oj_diagram_metadata:false */
 /* global DvtAttributeUtils */

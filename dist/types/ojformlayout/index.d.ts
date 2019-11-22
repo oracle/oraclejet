@@ -1,7 +1,8 @@
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojFormLayout extends JetElement<ojFormLayoutSettableProperties> {
+    colspanWrap: 'nowrap' | 'wrap';
     direction: 'column' | 'row';
-    labelEdge: 'start' | 'top';
+    labelEdge: 'inside' | 'start' | 'top';
     labelWidth: string;
     labelWrapping: 'truncate' | 'wrap';
     maxColumns: number;
@@ -16,6 +17,8 @@ export interface ojFormLayout extends JetElement<ojFormLayoutSettableProperties>
 }
 export namespace ojFormLayout {
     // tslint:disable-next-line interface-over-type-literal
+    type colspanWrapChanged = JetElementCustomEvent<ojFormLayout["colspanWrap"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type directionChanged = JetElementCustomEvent<ojFormLayout["direction"]>;
     // tslint:disable-next-line interface-over-type-literal
     type labelEdgeChanged = JetElementCustomEvent<ojFormLayout["labelEdge"]>;
@@ -27,6 +30,7 @@ export namespace ojFormLayout {
     type maxColumnsChanged = JetElementCustomEvent<ojFormLayout["maxColumns"]>;
 }
 export interface ojFormLayoutEventMap extends HTMLElementEventMap {
+    'colspanWrapChanged': JetElementCustomEvent<ojFormLayout["colspanWrap"]>;
     'directionChanged': JetElementCustomEvent<ojFormLayout["direction"]>;
     'labelEdgeChanged': JetElementCustomEvent<ojFormLayout["labelEdge"]>;
     'labelWidthChanged': JetElementCustomEvent<ojFormLayout["labelWidth"]>;
@@ -34,8 +38,9 @@ export interface ojFormLayoutEventMap extends HTMLElementEventMap {
     'maxColumnsChanged': JetElementCustomEvent<ojFormLayout["maxColumns"]>;
 }
 export interface ojFormLayoutSettableProperties extends JetSettableProperties {
+    colspanWrap: 'nowrap' | 'wrap';
     direction: 'column' | 'row';
-    labelEdge: 'start' | 'top';
+    labelEdge: 'inside' | 'start' | 'top';
     labelWidth: string;
     labelWrapping: 'truncate' | 'wrap';
     maxColumns: number;

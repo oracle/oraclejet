@@ -39,14 +39,16 @@
         box-sizing: border-box;
         position: absolute;
     }
+
+    .oj-masonrylayout .oj-masonrylayout-tile {
+        position: absolute;
+    }
+
     .oj-masonrylayout-tile.oj-drop {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background-color: var(--oj-drop-target-color-1);
-        border: 1px solid var(--oj-drop-target-color-2);
-      } @else {
+
         background-color: $dropTarget1Color;
         border: 1px solid $dropTarget2Color;
-      }
+
         opacity: .75;
     }
     .oj-masonrylayout-tile.oj-drag {
@@ -59,13 +61,9 @@
     }
     
     //generate the default tile size classes
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-    {
-      @include oj-masonrylayout-tile-sizes($baseTileWidth: var(--oj-masonry-layout-tile-width), $baseTileHeight: var(--oj-masonry-layout-tile-height), $margin: var(--oj-masonry-layout-tile-margin));
-    }
-    @else {
+
       @include oj-masonrylayout-tile-sizes($baseTileWidth: $masonryLayoutTileWidth, $baseTileHeight: $masonryLayoutTileHeight, $margin: $masonryLayoutTileMargin);
-    }
+    
     
     // animation defaults
     $masonryLayoutAnimationDefaults: ();

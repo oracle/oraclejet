@@ -2,20 +2,17 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-"use strict";
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojlogger', 'ojs/ojinputtext', 'ojs/ojvalidation-number','ojs/ojjquery-hammer', 'ojs/ojpagingmodel'], 
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojlogger', 'ojs/ojconverter-number', 'ojs/ojinputtext','ojs/ojjquery-hammer', 'ojs/ojpagingmodel', 'ojs/ojvalidation-number'], 
 /*
   * @param {Object} oj 
   * @param {jQuery} $
   * @param {Object} compCore
   * @param {Object} Hammer
   */
-function(oj, $, Context, compCore, Hammer, Logger)
+function(oj, $, Context, compCore, Hammer, Logger, NumberConverter)
 {
   "use strict";
 var __oj_paging_control_metadata = 
@@ -214,17 +211,14 @@ var __oj_paging_control_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
-/* global Hammer:false, Promise:false, Logger:false, Context:false */
+
+/* global Hammer:false, Promise:false, Logger:false, Context:false, NumberConverter: false */
 
 /**
  * @ojcomponent oj.ojPagingControl
  * @augments oj.baseComponent
- * @ojstatus preview
+ *
  * @since 0.7.0
  * @ojshortdesc A paging control provides paging functionality for data collections.
  * @ojrole navigation
@@ -2028,7 +2022,7 @@ var __oj_paging_control_metadata =
               var accPageLabel = self._getPagingControlAccPageLabel();
               accPageLabel.childNodes[0].nodeValue =
                 self.getTranslatedString(self._BUNDLE_KEY._LABEL_ACC_PAGE_NUMBER,
-                                        { pageNum: (page + 1) }); // @htmlupdatereview
+                                        { pageNum: (page + 1) });
 
               self._removeComponentBusyState(resolveBusyState);
               self._userDataPageFetching = false;
@@ -2871,7 +2865,7 @@ var __oj_paging_control_metadata =
         pagingControlAccPageSpan.style.whiteSpace = 'nowrap';
         pagingControlAccPageSpan.style.clip = 'rect(1px, 1px, 1px, 1px)';
 
-        pagingControlContainer.append(pagingControlAccPageSpan); // @htmlupdatereview
+        pagingControlContainer.append(pagingControlAccPageSpan);
       },
       /**
        * Create the acc paging control label
@@ -3052,6 +3046,7 @@ var __oj_paging_control_metadata =
               validatorHint: ['notewindow']
             },
             rootAttributes: { style: 'width: auto; min-width: 0;' },
+            converter: new NumberConverter.IntlNumberConverter(),
             validators: [{ type: 'numberRange', options: { min: 1, max: maxPageVal } }]
           }).attr('data-oj-internal', '');
 
@@ -3800,6 +3795,7 @@ var __oj_paging_control_metadata =
      * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-max-rows'} );
      */
 }());
+
 
 /* global __oj_paging_control_metadata:false */
 (function () {

@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojlogger'], 
 function(oj, $, ThemeUtils, Components, Logger)
 {
@@ -13,9 +15,11 @@ var __oj_toolbar_metadata =
     "chroming": {
       "type": "string",
       "enumValues": [
+        "borderless",
         "full",
         "half",
-        "outlined"
+        "outlined",
+        "solid"
       ]
     },
     "translations": {
@@ -33,10 +37,7 @@ var __oj_toolbar_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
  /* global Components:false, Logger:false, ThemeUtils:false */
 (function () { // Toolbar wrapper function, to keep "private static members" private
@@ -47,7 +48,6 @@ var __oj_toolbar_metadata =
  * @ojrole toolbar
  * @since 0.6.0
  * @ojshortdesc A toolbar displays a strip of control elements such as buttons and menu buttons, often grouped by separators.
- * @ojstatus preview
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["chroming"]}
  * @ojvbdefaultcolumns 12
@@ -199,25 +199,28 @@ var __oj_toolbar_metadata =
          * @since 1.2.0
          *
          * @type {string}
-         * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
-         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
-         *     (This is the toolbar default in most themes.)
-         * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
+         * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI.
+         * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
+         * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
+         * @ojvalue {string} "full" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use solid instead.</span>
+         * In typical themes, full-chrome buttons always have chrome.
+         * @ojvalue {string} "half" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use borderless instead.</span>
+         * In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
          *
-         ** @example <caption>Initialize the Toolbar with the <code class="prettyprint">chroming</code> attribute specified:</caption>
-         * &lt;oj-toolbar chroming='half'>&lt;/oj-toolbar>
+         * @example <caption>Initialize the Toolbar with the <code class="prettyprint">chroming</code> attribute specified:</caption>
+         * &lt;oj-toolbar chroming='borderless'>&lt;/oj-toolbar>
          *
          * @example <caption>Get or set the <code class="prettyprint">chroming</code> property after initialization:</caption>
          * // getter
          * var chromingValue = myToolbar.chroming;
          *
          * // setter
-         * myToolbar.chroming = 'half';
+         * myToolbar.chroming = 'borderless';
          *
          * @example <caption>Set the default in the theme (SCSS) :</caption>
-         * $toolbarChromingOptionDefault: half !default;
+         * $toolbarChromingOptionDefault: borderless !default;
          */
-      chroming: 'half'
+      chroming: 'borderless'
 
         /**
          * <p>JET Toolbar does not support a
@@ -931,6 +934,7 @@ Components.setDefaultOptions({
     })
   }
 });
+
 
 /* global __oj_toolbar_metadata:false */
 (function () {

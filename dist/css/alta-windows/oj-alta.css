@@ -1,3 +1,4 @@
+/* This padding is needed to bring the text field below the label, so that the label and the text inside the text field don't overlap. */
 /*! normalize.css v8.0.0 | MIT License | github.com/necolas/normalize.css */
 /* Document
        ========================================================================== */
@@ -1161,7 +1162,7 @@ a.oj-disabled.oj-clickable-icon-nocontext,
 .oj-fwk-icon-cross03:before, .oj-tabs-close-icon:before, .oj-inputtext-clear-icon:before {
   content: "\e60e"; }
 
-.oj-fwk-icon-magnifier:before, .oj-listbox-search-icon:before, .oj-inputsearch-search-icon:before {
+.oj-fwk-icon-magnifier:before, .oj-listbox-search-icon:before, .oj-searchselect-filter-indicator-icon:before, .oj-inputsearch-search-icon:before {
   content: "\e60d"; }
 
 .oj-fwk-icon-calendar:before, .oj-inputdatetime-calendar-icon:before {
@@ -1194,6 +1195,12 @@ a.oj-disabled.oj-clickable-icon-nocontext,
 .oj-fwk-icon-arrowbox-n:before {
   content: "\e902"; }
 
+.oj-fwk-icon-user:before {
+  content: "\e907"; }
+
+.oj-fwk-icon-users:before {
+  content: "\e908"; }
+
 .oj-fwk-icon-corner-drag:before {
   content: "\e619"; }
 
@@ -1205,6 +1212,9 @@ a.oj-disabled.oj-clickable-icon-nocontext,
 
 .oj-fwk-icon-warning:before, .oj-train-icon.oj-error:before, .oj-train-icon.oj-warning:before {
   content: "\e905"; }
+
+.oj-fwk-icon-plus:before {
+  content: "\e906"; }
 
 .oj-fwk-icon-dots-vertical:before, .oj-select-multiple-open-icon:before,
 .oj-fwk-icon-dots-horizontal:before,
@@ -1241,16 +1251,16 @@ a.oj-disabled.oj-clickable-icon-nocontext,
 .oj-fwk-icon-arrowtail-s:before {
   transform: scale(-1, 1) rotate(-90deg); }
 
-.oj-fwk-icon-arrow-e:before, .oj-fwk-icon-arrow-w:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow-start:before, html[dir="rtl"] .oj-fwk-icon-arrow-end:before, html[dir="rtl"] .oj-treeview-drop-marker-icon:before, .oj-fwk-icon-arrow-n:before, .oj-table-column-header-asc-icon:before, .oj-fwk-icon-arrow-s:before, .oj-table-column-header-dsc-icon:before, html[dir="rtl"] .oj-fwk-icon-arrow-start:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow-end:before, html:not([dir="rtl"]) .oj-treeview-drop-marker-icon:before {
+.oj-fwk-icon-arrow-e:before, .oj-fwk-icon-arrow-w:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow-start:before, html[dir="rtl"] .oj-fwk-icon-arrow-end:before, html[dir="rtl"] .oj-treeview-drop-marker-icon:before, .oj-fwk-icon-arrow-n:before, .oj-fwk-icon-arrow-s:before, html[dir="rtl"] .oj-fwk-icon-arrow-start:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow-end:before, html:not([dir="rtl"]) .oj-treeview-drop-marker-icon:before {
   content: "\e600"; }
 
 .oj-fwk-icon-arrow-w:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow-start:before, html[dir="rtl"] .oj-fwk-icon-arrow-end:before, html[dir="rtl"] .oj-treeview-drop-marker-icon:before {
   transform: scale(-1, 1); }
 
-.oj-fwk-icon-arrow-n:before, .oj-table-column-header-asc-icon:before {
+.oj-fwk-icon-arrow-n:before {
   transform: rotate(-90deg); }
 
-.oj-fwk-icon-arrow-s:before, .oj-table-column-header-dsc-icon:before {
+.oj-fwk-icon-arrow-s:before {
   transform: scale(-1, 1) rotate(90deg); }
 
 .oj-fwk-icon-arrow-se:before, .oj-fwk-icon-arrow-sw:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow-s-start:before, html[dir="rtl"] .oj-fwk-icon-arrow-s-end:before, .oj-fwk-icon-arrow-nw:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow-n-start:before, html[dir="rtl"] .oj-fwk-icon-arrow-n-end:before, .oj-fwk-icon-arrow-ne:before, html[dir="rtl"] .oj-fwk-icon-arrow-n-start:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow-n-end:before, html[dir="rtl"] .oj-fwk-icon-arrow-s-start:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow-s-end:before {
@@ -1265,7 +1275,7 @@ a.oj-disabled.oj-clickable-icon-nocontext,
 .oj-fwk-icon-arrow-ne:before, html[dir="rtl"] .oj-fwk-icon-arrow-n-start:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow-n-end:before {
   transform: scale(1, -1); }
 
-.oj-fwk-icon-arrow02-s:before, .oj-fwk-icon-arrow02-w:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow02-start:before, html[dir="rtl"] .oj-fwk-icon-arrow02-end:before, .oj-fwk-icon-arrow02-n:before, .oj-fwk-icon-arrow02-e:before, html[dir="rtl"] .oj-fwk-icon-arrow02-start:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow02-end:before, .oj-button-menu-dropdown-icon:before, .oj-combobox-open-icon:before, .oj-select-open-icon:before {
+.oj-fwk-icon-arrow02-s:before, .oj-fwk-icon-arrow02-w:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow02-start:before, html[dir="rtl"] .oj-fwk-icon-arrow02-end:before, .oj-fwk-icon-arrow02-n:before, .oj-fwk-icon-arrow02-e:before, html[dir="rtl"] .oj-fwk-icon-arrow02-start:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow02-end:before, .oj-button-menu-dropdown-icon:before, .oj-combobox-open-icon:before, .oj-searchselect-open-icon:before, .oj-select-open-icon:before {
   content: "\e602"; }
 
 .oj-fwk-icon-arrow02-w:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow02-start:before, html[dir="rtl"] .oj-fwk-icon-arrow02-end:before {
@@ -1313,16 +1323,16 @@ a.oj-disabled.oj-clickable-icon-nocontext,
 .oj-fwk-icon-caret-n:before, .oj-conveyorbelt-overflow-icon.oj-top:before, .oj-filmstrip-arrow-icon.oj-top:before, .oj-inputnumber-up-icon:before {
   transform: rotate(-90deg); }
 
-.oj-fwk-icon-caret02-e:before, .oj-fwk-icon-caret02-s:before, .oj-pagingcontrol-nav-next-vertical-icon:before, .oj-expanded > .oj-treeview-disclosure-icon:before, .oj-datagrid-sort-descending-icon:before, .oj-rowexpander-collapse-icon:before, .oj-fwk-icon-caret02-w:before, html:not([dir="rtl"]) .oj-fwk-icon-caret02-start:before, html[dir="rtl"] .oj-fwk-icon-caret02-end:before, html[dir="rtl"] .oj-collapsed > .oj-treeview-disclosure-icon:before, html[dir="rtl"] .oj-rowexpander-expand-icon:before, html:not([dir="rtl"]) .oj-pagingcontrol-nav-previous-icon:before, html[dir="rtl"] .oj-pagingcontrol-nav-next-icon:before, .oj-fwk-icon-caret02-n:before, .oj-pagingcontrol-nav-previous-vertical-icon:before, .oj-datagrid-sort-ascending-icon:before, html[dir="rtl"] .oj-fwk-icon-caret02-start:before, html:not([dir="rtl"]) .oj-fwk-icon-caret02-end:before, html:not([dir="rtl"]) .oj-collapsed > .oj-treeview-disclosure-icon:before, html:not([dir="rtl"]) .oj-rowexpander-expand-icon:before, html[dir="rtl"] .oj-pagingcontrol-nav-previous-icon:before, html:not([dir="rtl"]) .oj-pagingcontrol-nav-next-icon:before {
+.oj-fwk-icon-caret02-e:before, .oj-fwk-icon-caret02-s:before, .oj-pagingcontrol-nav-next-vertical-icon:before, .oj-table-column-header-dsc-icon:before, .oj-expanded > .oj-treeview-disclosure-icon:before, .oj-datagrid-sort-descending-icon:before, .oj-rowexpander-collapse-icon:before, .oj-fwk-icon-caret02-w:before, html:not([dir="rtl"]) .oj-fwk-icon-caret02-start:before, html[dir="rtl"] .oj-fwk-icon-caret02-end:before, html[dir="rtl"] .oj-collapsed > .oj-treeview-disclosure-icon:before, html[dir="rtl"] .oj-rowexpander-expand-icon:before, html:not([dir="rtl"]) .oj-pagingcontrol-nav-previous-icon:before, html[dir="rtl"] .oj-pagingcontrol-nav-next-icon:before, .oj-fwk-icon-caret02-n:before, .oj-pagingcontrol-nav-previous-vertical-icon:before, .oj-table-column-header-asc-icon:before, .oj-datagrid-sort-ascending-icon:before, html[dir="rtl"] .oj-fwk-icon-caret02-start:before, html:not([dir="rtl"]) .oj-fwk-icon-caret02-end:before, html:not([dir="rtl"]) .oj-collapsed > .oj-treeview-disclosure-icon:before, html:not([dir="rtl"]) .oj-rowexpander-expand-icon:before, html[dir="rtl"] .oj-pagingcontrol-nav-previous-icon:before, html:not([dir="rtl"]) .oj-pagingcontrol-nav-next-icon:before {
   content: "\e606"; }
 
-.oj-fwk-icon-caret02-s:before, .oj-pagingcontrol-nav-next-vertical-icon:before, .oj-expanded > .oj-treeview-disclosure-icon:before, .oj-datagrid-sort-descending-icon:before, .oj-rowexpander-collapse-icon:before {
+.oj-fwk-icon-caret02-s:before, .oj-pagingcontrol-nav-next-vertical-icon:before, .oj-table-column-header-dsc-icon:before, .oj-expanded > .oj-treeview-disclosure-icon:before, .oj-datagrid-sort-descending-icon:before, .oj-rowexpander-collapse-icon:before {
   transform: scale(-1, 1) rotate(90deg); }
 
 .oj-fwk-icon-caret02-w:before, html:not([dir="rtl"]) .oj-fwk-icon-caret02-start:before, html[dir="rtl"] .oj-fwk-icon-caret02-end:before, html[dir="rtl"] .oj-collapsed > .oj-treeview-disclosure-icon:before, html[dir="rtl"] .oj-rowexpander-expand-icon:before, html:not([dir="rtl"]) .oj-pagingcontrol-nav-previous-icon:before, html[dir="rtl"] .oj-pagingcontrol-nav-next-icon:before {
   transform: scale(-1, 1); }
 
-.oj-fwk-icon-caret02-n:before, .oj-pagingcontrol-nav-previous-vertical-icon:before, .oj-datagrid-sort-ascending-icon:before {
+.oj-fwk-icon-caret02-n:before, .oj-pagingcontrol-nav-previous-vertical-icon:before, .oj-table-column-header-asc-icon:before, .oj-datagrid-sort-ascending-icon:before {
   transform: rotate(-90deg); }
 
 .oj-fwk-icon-caret02end-e:before, .oj-fwk-icon-caret02end-s:before, .oj-pagingcontrol-nav-last-vertical-icon:before, .oj-fwk-icon-caret02end-w:before, html:not([dir="rtl"]) .oj-fwk-icon-caret02end-start:before, html[dir="rtl"] .oj-fwk-icon-caret02end-end:before, html:not([dir="rtl"]) .oj-pagingcontrol-nav-first-icon:before, html[dir="rtl"] .oj-pagingcontrol-nav-last-icon:before, .oj-fwk-icon-caret02end-n:before, .oj-pagingcontrol-nav-first-vertical-icon:before, html[dir="rtl"] .oj-fwk-icon-caret02end-start:before, html:not([dir="rtl"]) .oj-fwk-icon-caret02end-end:before, html[dir="rtl"] .oj-pagingcontrol-nav-first-icon:before, html:not([dir="rtl"]) .oj-pagingcontrol-nav-last-icon:before {
@@ -2559,6 +2569,9 @@ oj-film-strip:not(.oj-complete) {
   min-width: 1px;
   overflow: hidden; }
 
+.oj-filmstrip:not(.oj-focus-highlight):focus {
+  outline: none; }
+
 .oj-filmstrip-container {
   position: relative;
   display: flex; }
@@ -2738,6 +2751,9 @@ oj-masonry-layout {
 /* masonry tile */
 .oj-masonrylayout-tile {
   box-sizing: border-box;
+  position: absolute; }
+
+.oj-masonrylayout .oj-masonrylayout-tile {
   position: absolute; }
 
 .oj-masonrylayout-tile.oj-drop {
@@ -3350,7 +3366,6 @@ html[dir="rtl"] .oj-tabs-vertical.oj-tabs-text-icon.oj-tabs-end > .oj-tabs-nav-r
 
 .oj-tabs-horizontal.oj-tabs-text-icon.oj-tabs-bottom > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
 .oj-tabs-horizontal.oj-tabs-icon-only.oj-tabs-bottom > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
-  border-top-color: transparent;
   border-color: #e0e1e1;
   border-radius: 0 0 1px 1px; }
 
@@ -3578,7 +3593,7 @@ oj-train {
   border-style: solid; }
 
 .oj-train-icon.oj-confirmation {
-  background-color: #81BA5F; }
+  background-color: #81ba5f; }
 
 .oj-train-button.oj-disabled .oj-train-icon {
   background-color: #cbcccd;
@@ -3596,7 +3611,7 @@ oj-train {
 
 .oj-train-button.oj-visited .oj-train-icon.oj-confirmation,
 .oj-train-button.oj-selected .oj-train-icon.oj-confirmation {
-  background-color: #81BA5F;
+  background-color: #81ba5f;
   border-color: #027bc7; }
 
 .oj-train-button.oj-active .oj-train-icon.oj-confirmation,
@@ -3605,11 +3620,11 @@ oj-train {
   background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)); }
 
 .oj-train-icon.oj-error {
-  background-color: #DE2333; }
+  background-color: #de2333; }
 
 .oj-train-button.oj-visited .oj-train-icon.oj-error,
 .oj-train-button.oj-selected .oj-train-icon.oj-error {
-  background-color: #DE2333; }
+  background-color: #de2333; }
 
 .oj-train-button.oj-active .oj-train-icon.oj-error,
 .oj-train-button.oj-hover.oj-active .oj-train-icon.oj-error,
@@ -3617,11 +3632,11 @@ oj-train {
   background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)); }
 
 .oj-train-icon.oj-info {
-  background-color: #2B94BF; }
+  background-color: #2b94bf; }
 
 .oj-train-button.oj-visited .oj-train-icon.oj-info,
 .oj-train-button.oj-selected .oj-train-icon.oj-info {
-  background-color: #2B94BF; }
+  background-color: #2b94bf; }
 
 .oj-train-button.oj-active .oj-train-icon.oj-info,
 .oj-train-button.oj-hover.oj-active .oj-train-icon.oj-info,
@@ -3629,11 +3644,11 @@ oj-train {
   background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)); }
 
 .oj-train-icon.oj-warning {
-  background-color: #F6B846; }
+  background-color: #f6b846; }
 
 .oj-train-button.oj-visited .oj-train-icon.oj-warning,
 .oj-train-button.oj-selected .oj-train-icon.oj-warning {
-  background-color: #F6B846; }
+  background-color: #f6b846; }
 
 .oj-train-button.oj-active .oj-train-icon.oj-warning,
 .oj-train-button.oj-hover.oj-active .oj-train-icon.oj-warning,
@@ -4131,6 +4146,95 @@ input.oj-button[type="reset"] {
 
 .oj-button.oj-disabled.oj-selected.oj-button-outlined-chrome .oj-button-icon {
   color: #ededee; }
+
+/* Call To Action (CTA) chrome button guides the user to take or complete the action that is the main goal of the page or page section.
+     * There should only be one CTA button on a page at any given time.
+     * cta-chrome buttons have chrome (background and border) in all states (default,
+     * focus-only, disabled, hover, active ...).
+     * selected states do not apply since CTA buttons are Push Buttons only
+     */
+.oj-button-jqui.oj-button-cta-chrome,
+.oj-button-jqui.oj-button-cta-chrome:link,
+.oj-button-jqui.oj-button-cta-chrome:visited,
+.oj-button-jqui.oj-button-cta-chrome:hover,
+.oj-button-jqui.oj-button-cta-chrome:active,
+.oj-button-nocomp.oj-button-cta-chrome,
+.oj-button-nocomp.oj-button-cta-chrome:link,
+.oj-button-nocomp.oj-button-cta-chrome:visited,
+.oj-button-nocomp.oj-button-cta-chrome:hover,
+.oj-button-nocomp.oj-button-cta-chrome:active,
+.oj-button.oj-button-cta-chrome .oj-button-button,
+.oj-button.oj-button-cta-chrome .oj-button-button:link,
+.oj-button.oj-button-cta-chrome .oj-button-button:visited,
+.oj-button.oj-button-cta-chrome .oj-button-button:hover,
+.oj-button.oj-button-cta-chrome .oj-button-button:active {
+  font-weight: normal; }
+
+/* oj-default is applied iff the button is not in any of the other states, 
+        namely oj-active, oj-disabled, oj-hover, or oj-focus.
+        oj-focus-only is applied iff the button has oj-focus but not any of the other 4 states listed above.*/
+.oj-button-jqui.oj-default.oj-button-cta-chrome,
+.oj-button-jqui.oj-focus-only.oj-button-cta-chrome,
+.oj-button-nocomp.oj-button-cta-chrome,
+.oj-button.oj-default.oj-button-cta-chrome .oj-button-button,
+.oj-button.oj-focus-only.oj-button-cta-chrome .oj-button-button {
+  background-color: #027bc7;
+  background-image: none;
+  border-color: transparent;
+  color: white;
+  box-shadow: none;
+  text-shadow: none; }
+
+.oj-button.oj-default.oj-button-cta-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-cta-chrome .oj-button-icon,
+.oj-button.oj-focus-only.oj-button-cta-chrome .oj-button-icon {
+  color: white; }
+
+.oj-button-jqui.oj-hover.oj-button-cta-chrome,
+.oj-button-nocomp.oj-button-cta-chrome:hover,
+.oj-button.oj-hover.oj-button-cta-chrome .oj-button-button {
+  background-color: #027bc7;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15));
+  border-color: transparent;
+  color: white;
+  box-shadow: none;
+  text-shadow: none; }
+
+.oj-button.oj-hover.oj-button-cta-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-cta-chrome:hover .oj-button-icon {
+  color: white; }
+
+/* oj-active is applied to a push button when it is actively being held down 
+        by the mouse button or Enter or Spacebar. */
+.oj-button-jqui.oj-active.oj-button-cta-chrome,
+.oj-button-nocomp.oj-button-cta-chrome:active,
+.oj-button-nocomp.oj-active.oj-button-cta-chrome,
+.oj-button.oj-active.oj-button-cta-chrome .oj-button-button {
+  background-color: #027bc7;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1));
+  border-color: var(transparent);
+  color: white;
+  box-shadow: none;
+  text-shadow: none; }
+
+.oj-button.oj-active.oj-button-cta-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-cta-chrome:active .oj-button-icon,
+.oj-button-nocomp.oj-active.oj-button-cta-chrome .oj-button-icon {
+  color: white; }
+
+.oj-button-jqui.oj-disabled.oj-button-cta-chrome,
+.oj-button-nocomp.oj-button-cta-chrome:disabled,
+.oj-button.oj-disabled.oj-button-cta-chrome .oj-button-button {
+  background-color: #027bc7;
+  border-color: transparent;
+  color: white;
+  box-shadow: none;
+  opacity: 0.4;
+  background-image: none; }
+
+.oj-button.oj-disabled.oj-button-cta-chrome .oj-button-icon,
+.oj-button-nocomp.oj-button-cta-chrome:disabled .oj-button-icon {
+  color: white; }
 
 /* The element containing the text of buttons without icons.  This is the Button (input element) 
      * itself for <input type=button|submit|reset>, which doesn't support icons at all, and a nested span 
@@ -4990,7 +5094,7 @@ html[dir="rtl"] .oj-menu-item-end-icon {
   font-family: '{"animation":{"dropdown":{"open":{"effect":"zoomIn","transformOrigin":"#myPosition","duration":"0.25s"},"close":{"effect":"none"}},"sheet":{"open":{"effect":"slideIn","direction":"top","duration":"0.25s"},"close":{"effect":"slideOut","direction":"bottom","duration":"0.25s"}},"submenu":{"open":{"effect":"zoomIn","transformOrigin":"#myPosition","duration":"0.25s"},"close":{"effect":"none"}}}}'; }
 
 .oj-menu-config {
-  font-family: '{"dropDownThresholdWidth":"768px","sheetCancelAffordance":"none","dropDownModality":"modal","sheetModality":"modal","sheetSwipeDownBehavior":"none","sheetMarginBottom":0}'; }
+  font-family: '{"sheetCancelAffordance":"none","dropDownModality":"modal","sheetModality":"modal","sheetSwipeDownBehavior":"none","sheetMarginBottom":0}'; }
 
 oj-navigation-list:not(.oj-complete) {
   visibility: hidden; }
@@ -7401,7 +7505,7 @@ oj-messages {
 .oj-messages-notification oj-message:not(:last-child) .oj-message-container {
   margin-bottom: 12px; }
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 767.9px) {
   .oj-messages-general,
   .oj-messages-notification {
     width: calc(100% - 20px);
@@ -7448,7 +7552,7 @@ html[dir="rtl"] .oj-messages-notification .oj-message-body {
 .oj-messages-notification .oj-message-header .oj-message-summary {
   padding: 0px 16px; }
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 767.9px) {
   .oj-messages-inline .oj-message-header {
     padding: 20px 12px 0px 12px; }
   html:not([dir="rtl"]) .oj-messages-inline .oj-message-body {
@@ -7688,9 +7792,8 @@ html[dir="rtl"] .oj-progressbar-end-label, html[dir="rtl"]
   vertical-align: middle;
   height: 100%;
   overflow: hidden;
-  transition-timing-function: ease-in-out;
   color: white;
-  transition: max-width 0.4s;
+  transition: max-width 0.4s ease-in-out;
   background-color: #027bc7;
   min-width: 75px; }
 
@@ -7710,13 +7813,13 @@ html[dir="rtl"] .oj-progressbar-end-label, html[dir="rtl"]
      * Applied to the flag action item
      */
 .oj-swipetoreveal .oj-swipetoreveal-flag {
-  background-color: #BF552E; }
+  background-color: #bf552e; }
 
 /*
      * Applied to the alert action item
      */
 .oj-swipetoreveal .oj-swipetoreveal-alert {
-  background-color: #BA0006; }
+  background-color: #ba0006; }
 
 /* Styling for the swipeactions root element */
 .oj-swipeactions {
@@ -7728,11 +7831,11 @@ html[dir="rtl"] .oj-progressbar-end-label, html[dir="rtl"]
 
 /* Styling for the attention action item. */
 .oj-swipeactions-attention {
-  background-color: #BF552E; }
+  background-color: #bf552e; }
 
 /* Styling for the danger action item. */
 .oj-swipeactions-danger {
-  background-color: #BA0006; }
+  background-color: #ba0006; }
 
 /* Styling for the text within action item. */
 .oj-swipeactions-action-text {
@@ -8335,39 +8438,24 @@ label.oj-pagingcontrol-nav-label {
   color: rgba(0, 0, 0, 0.8);
   font-size: 1rem; }
 
-/* Styling for the page mode page input element. */
-/* Copying from form controls css vars mixins but removing rtl*/
-input.oj-pagingcontrol-nav-input.oj-inputtext-input {
-  text-align: center;
-  color: black;
-  background-color: white;
-  border-style: solid;
-  border-color: #b1b3b4;
-  border-width: 2px 2px 2px 2px;
-  border-radius: 0;
-  -webkit-appearance: none;
-  -webkit-tap-highlight-color: transparent;
-  font-size: 1rem;
+.oj-pagingcontrol-nav-input-section .oj-inputtext .oj-text-field-container {
   min-width: 2.5rem;
   max-width: 2.5rem;
   min-height: 2rem;
   max-height: 2rem;
+  margin-top: 0.2em; }
+
+/* Styling for the page mode page input element. */
+/* Copying from form controls css vars mixins but removing rtl*/
+input.oj-pagingcontrol-nav-input.oj-inputtext-input {
+  font-size: 1rem;
   padding-left: 2px;
   padding-top: 0px;
-  padding-right: 2px;
-  margin-top: 0.2em; }
-  input.oj-pagingcontrol-nav-input.oj-inputtext-input:-ms-input-placeholder {
-    color: rgba(0, 0, 0, 0.6);
-    opacity: 1;
-    font-style: normal; }
-  input.oj-pagingcontrol-nav-input.oj-inputtext-input::-ms-input-placeholder {
-    color: rgba(0, 0, 0, 0.6);
-    opacity: 1;
-    font-style: normal; }
-  input.oj-pagingcontrol-nav-input.oj-inputtext-input::placeholder {
-    color: rgba(0, 0, 0, 0.6);
-    opacity: 1;
-    font-style: normal; }
+  padding-right: 2px; }
+  html:not([dir="rtl"]) input.oj-pagingcontrol-nav-input.oj-inputtext-input {
+    text-align: center; }
+  html[dir="rtl"] input.oj-pagingcontrol-nav-input.oj-inputtext-input {
+    text-align: center; }
 
 /* Styling for the page mode page input element when readOnly. */
 input[readOnly].oj-pagingcontrol-nav-input.oj-inputtext-input {
@@ -8455,19 +8543,20 @@ oj-table:not(.oj-complete) {
 
 /* Styling for the root component element with warning. */
 .oj-table.oj-warning {
-  border: 1px solid #F8CA75; }
+  border: 1px solid #f8ca75; }
 
 /* Styling for the component div container element. */
 .oj-table-container {
   display: inline-block;
   vertical-align: top;
   clear: both;
-  box-sizing: border-box; }
+  box-sizing: border-box;
+  overflow: hidden; }
 
 /* Styling for HTML table element. */
 table.oj-table-element {
   box-sizing: border-box;
-  width: calc(100% - 1px);
+  width: 100%;
   outline: none;
   border-collapse: collapse;
   border-spacing: 0;
@@ -8506,7 +8595,7 @@ table.oj-table-element.oj-table-column-header-resizing {
 
 /* Grid display table styling for the header row element. */
 .oj-table-grid-display .oj-table-header-row {
-  height: calc(2.86667rem + 4px); }
+  height: 2.86667rem; }
 
 /* Styling for the header row element when table is scrollable. */
 .oj-table-scroll .oj-table-header-row {
@@ -8514,8 +8603,8 @@ table.oj-table-element.oj-table-column-header-resizing {
   height: auto; }
 
 /* Grid display table styling for the header row element when table is scrollable. */
-.oj-table-scroll .oj-table-grid-display .oj-table-header-row {
-  min-height: calc(2.86667rem + 4px);
+.oj-table-scroll.oj-table-grid-display .oj-table-header-row {
+  min-height: 2.86667rem;
   height: auto; }
 
 /* Styling for the header row element when table has vertical or horizontal scrollbars. */
@@ -8530,13 +8619,12 @@ table.oj-table-element.oj-table-column-header-resizing {
   font-weight: normal;
   padding-top: 0.66667rem;
   padding-bottom: 0.66667rem;
-  height: calc(2.75em - 1.33334rem);
-  line-height: calc(2.75em - 1.33334rem);
+  height: 2.75em;
   float: none;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  box-sizing: content-box; }
+  box-sizing: border-box; }
   html:not([dir="rtl"]) .oj-table-column-header-cell {
     padding-left: 1em; }
   html[dir="rtl"] .oj-table-column-header-cell {
@@ -8550,8 +8638,7 @@ table.oj-table-element.oj-table-column-header-resizing {
 
 /* Grid display table styling for the column header elements. */
 .oj-table-grid-display .oj-table-column-header-cell {
-  height: 1.53333rem;
-  line-height: 1.53333rem; }
+  height: 2.86667rem; }
   html:not([dir="rtl"]) .oj-table-grid-display .oj-table-column-header-cell {
     padding-left: 0.66667rem;
     padding-right: 0.66667rem; }
@@ -8672,87 +8759,99 @@ html:not([dir="rtl"]) .oj-table-editable .oj-table-column-header-text {
 html[dir="rtl"] .oj-table-editable .oj-table-column-header-text {
   padding-left: 0px; }
 
-/* Styling for the column header sort ascending element. */
-.oj-table-column-header-asc {
+/* Styling for the sort area around the icon */
+.oj-table-sort-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 100%;
+  padding: 0.66667rem;
   position: absolute;
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  vertical-align: top;
-  top: 0; }
-  html:not([dir="rtl"]) .oj-table-column-header-asc {
-    right: 5px; }
-  html[dir="rtl"] .oj-table-column-header-asc {
-    left: 5px; }
+  top: 0;
+  -webkit-user-select: none; }
+  html:not([dir="rtl"]) .oj-table-sort-icon-container {
+    right: 2px; }
+  html[dir="rtl"] .oj-table-sort-icon-container {
+    left: 2px; }
 
-/* Grid display table styling for the column header sort ascending element. */
-.oj-table-grid-display .oj-table-column-header-asc {
-  top: -2px; }
-  html:not([dir="rtl"]) .oj-table-grid-display .oj-table-column-header-asc {
-    right: -5px; }
-  html[dir="rtl"] .oj-table-grid-display .oj-table-column-header-asc {
-    left: -5px; }
+/* Grid display table styling for sort container */
+html:not([dir="rtl"]) .oj-table-grid-display .oj-table-sort-icon-container {
+  right: -0.5em; }
 
-/* Styling for the column header sort descending element. */
-.oj-table-column-header-dsc {
-  position: absolute;
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  vertical-align: top;
-  top: -2px;
-  top: 0; }
-  html:not([dir="rtl"]) .oj-table-column-header-dsc {
-    right: 5px; }
-  html[dir="rtl"] .oj-table-column-header-dsc {
-    left: 5px; }
+html[dir="rtl"] .oj-table-grid-display .oj-table-sort-icon-container {
+  left: -0.5em; }
 
-/* Grid display table styling for the column header sort descending element. */
-.oj-table-grid-display .oj-table-column-header-dsc {
-  top: -2px; }
-  html:not([dir="rtl"]) .oj-table-grid-display .oj-table-column-header-dsc {
-    right: -5px; }
-  html[dir="rtl"] .oj-table-grid-display .oj-table-column-header-dsc {
-    left: -5px; }
+/* Editable display table styling for sort container */
+html:not([dir="rtl"]) .oj-table-editable .oj-table-sort-icon-container {
+  right: -0.5em; }
 
-/* Styling for the column header sort ascending element in disabled state. */
-.oj-table-column-header-asc.oj-disabled {
-  display: none; }
+html[dir="rtl"] .oj-table-editable .oj-table-sort-icon-container {
+  left: -0.5em; }
 
-/* Styling for the column header sort descending element in disabled state. */
-.oj-table-column-header-dsc.oj-disabled {
-  display: none; }
+/* Styling for the gradient for sort icons in the header */
+.oj-table-sort-icon-container.oj-enabled {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0), white 40%); }
+  html[dir="rtl"] .oj-table-sort-icon-container.oj-enabled {
+    background-image: linear-gradient(to left, rgba(255, 255, 255, 0), white 40%); }
 
-/* Styling for the column header sort icons. */
+/* Grid display styling for the gradient for sort icons in the header */
+.oj-table-grid-display .oj-table-sort-icon-container.oj-enabled {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0), white 40%); }
+  html[dir="rtl"] .oj-table-grid-display .oj-table-sort-icon-container.oj-enabled {
+    background-image: linear-gradient(to left, rgba(255, 255, 255, 0), white 40%); }
+
+/* Styling for the gradient for sort icons on hover in the header */
+.oj-table-column-header-cell.oj-hover .oj-table-sort-icon-container {
+  background-image: linear-gradient(to right, rgba(224, 225, 225, 0), #e0e1e1 40%); }
+  html[dir="rtl"] .oj-table-column-header-cell.oj-hover .oj-table-sort-icon-container {
+    background-image: linear-gradient(to left, rgba(224, 225, 225, 0), #e0e1e1 40%); }
+
+/* Styling for the gradient for sort icons on hover in the selected header column */
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-selected.oj-hover .oj-table-sort-icon-container {
+  background-image: linear-gradient(to right, rgba(203, 204, 205, 0), #cbcccd 40%); }
+  html[dir="rtl"] .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-selected.oj-hover .oj-table-sort-icon-container {
+    background-image: linear-gradient(to left, rgba(203, 204, 205, 0), #cbcccd 40%); }
+
+/* Styling for the gradient for sort icons in the selected header column */
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-selected .oj-table-sort-icon-container.oj-enabled {
+  background-image: linear-gradient(to right, rgba(203, 204, 205, 0), #cbcccd 40%); }
+  html[dir="rtl"] .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-selected .oj-table-sort-icon-container.oj-enabled {
+    background-image: linear-gradient(to left, rgba(203, 204, 205, 0), #cbcccd 40%); }
+
+/* Styling for the gradient for sort icons on hover in selected in-active header column */
+.oj-table:not(.oj-focus) .oj-table-column-header-cell.oj-selected.oj-hover .oj-table-sort-icon-container {
+  background-image: linear-gradient(to right, rgba(242, 242, 243, 0), #f2f2f3 40%); }
+  html[dir="rtl"] .oj-table:not(.oj-focus) .oj-table-column-header-cell.oj-selected.oj-hover .oj-table-sort-icon-container {
+    background-image: linear-gradient(to left, rgba(242, 242, 243, 0), #f2f2f3 40%); }
+
+/* Styling for the gradient for sort icons in selected in-active header column */
+.oj-table:not(.oj-focus) .oj-table-column-header-cell.oj-selected .oj-table-sort-icon-container.oj-enabled {
+  background-image: linear-gradient(to right, rgba(242, 242, 243, 0), #f2f2f3 40%); }
+  html[dir="rtl"] .oj-table:not(.oj-focus) .oj-table-column-header-cell.oj-selected .oj-table-sort-icon-container.oj-enabled {
+    background-image: linear-gradient(to left, rgba(242, 242, 243, 0), #f2f2f3 40%); }
+
+/* Styling for the gradient for sort icon in the dragged column header element. */
+.oj-table-column-header-cell.oj-drag .oj-table-sort-icon-container {
+  background-image: linear-gradient(to right, rgba(225, 239, 248, 0), #e1eff8 40%); }
+  html[dir="rtl"] .oj-table-column-header-cell.oj-drag .oj-table-sort-icon-container {
+    background-image: linear-gradient(to left, rgba(225, 239, 248, 0), #e1eff8 40%); }
+
+/* Styling for the gradient for sort icons in column header drag image. */
+.oj-table-column-header-cell-drag-image .oj-table-sort-icon-container {
+  background-image: linear-gradient(to right, rgba(203, 204, 205, 0), #cbcccd 40%); }
+  html[dir="rtl"] .oj-table-column-header-cell-drag-image .oj-table-sort-icon-container {
+    background-image: linear-gradient(to left, rgba(203, 204, 205, 0), #cbcccd 40%); }
+
+/* Styling for both the sort icons and click area */
 .oj-table-column-header-asc-icon,
 .oj-table-column-header-dsc-icon {
-  width: 2rem;
-  height: 2rem;
-  line-height: 2rem;
-  position: absolute;
-  margin-top: -2px;
-  text-decoration: none; }
-  html:not([dir="rtl"]) .oj-table-column-header-asc-icon, html:not([dir="rtl"])
-  .oj-table-column-header-dsc-icon {
-    left: 0; }
-  html[dir="rtl"] .oj-table-column-header-asc-icon, html[dir="rtl"]
-  .oj-table-column-header-dsc-icon {
-    right: 0; }
+  flex: 0 1 auto; }
 
-/* Styling for the column header sort icons in hover state. */
-.oj-table-column-header-asc-icon.oj-hover,
-.oj-table-column-header-dsc-icon.oj-hover {
-  text-decoration: none; }
-
-/* Icon for column header sort ascending in enabled state. */
-/* Icon for column header sort ascending in disabled state. */
-.oj-table-column-header-asc-icon.oj-disabled {
-  visibility: hidden; }
-
-/* Icon for column header sort descending */
-/* Icon for column header sort descending in disabled state. */
+/* Styling for disabled sort icons */
+.oj-table-column-header-asc-icon.oj-disabled,
 .oj-table-column-header-dsc-icon.oj-disabled {
-  visibility: hidden; }
+  display: none; }
 
 /* Styling for the column header resize indicator. */
 .oj-table-column-header-resize-indicator {
@@ -8771,13 +8870,19 @@ html[dir="rtl"] .oj-table-editable .oj-table-column-header-text {
   border-color: #e0e1e1;
   border-width: 0 0 1px;
   border-style: solid;
-  font-size: inherit; }
+  font-size: inherit;
+  overflow: hidden; }
 
-/* Styling for the table body element when table has vertical or horizontal scrollbars. */
-.oj-table-scroll-vertical .oj-table-body,
+/* Styling for the table body element when table has vertical scrollbars. */
+.oj-table-scroll-vertical .oj-table-body {
+  display: block;
+  overflow-y: auto;
+  position: relative; }
+
+/* Styling for the table body element when table has horizontal scrollbars. */
 .oj-table-scroll-horizontal .oj-table-body {
   display: block;
-  overflow: auto;
+  overflow-x: auto;
   position: relative; }
 
 /* Grid display styling for the data body element. */
@@ -8790,9 +8895,15 @@ html[dir="rtl"] .oj-table-editable .oj-table-column-header-text {
   height: 2.75em;
   font-size: inherit; }
 
+.oj-table-horizontal-grid .oj-table-body-row {
+  border-bottom: 1px solid #e0e1e1; }
+
+.oj-table-horizontal-grid.oj-table-scroll-vertical .oj-table-body-row:last-child {
+  border-bottom: none; }
+
 /* Grid display table styling for the data row elements. */
 .oj-table-grid-display .oj-table-body-row {
-  height: calc(2.86667rem + 4px); }
+  height: 2.86667rem; }
 
 /* Styling for the data row elements in focus state. */
 .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) {
@@ -8809,6 +8920,12 @@ html[dir="rtl"] .oj-table-editable .oj-table-column-header-text {
 .oj-table-body-row-drag-indicator-after {
   height: 2.86667rem;
   background-color: #c2eaf3; }
+
+.oj-table-touch-affordance-glass-pane {
+  position: absolute;
+  width: 100%;
+  pointer-events: none;
+  overflow: hidden; }
 
 /* Styling for the selection affordance icon on touch devices*/
 .oj-table-body-row-touch-selection-affordance-top-icon,
@@ -8831,7 +8948,8 @@ html[dir="rtl"] .oj-table-editable .oj-table-column-header-text {
 .oj-table-body-row-touch-selection-affordance-touch-area {
   width: 24px;
   height: 24px;
-  position: absolute; }
+  position: absolute;
+  pointer-events: auto; }
 
 /* Styling for the data cell elements. */
 .oj-table-data-cell {
@@ -8843,11 +8961,12 @@ html[dir="rtl"] .oj-table-editable .oj-table-column-header-text {
   padding-bottom: 0.66667rem;
   padding-left: 1em;
   padding-right: 1em;
+  height: 2.75em;
   float: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  box-sizing: content-box; }
+  box-sizing: border-box; }
   html:not([dir="rtl"]) .oj-table-data-cell {
     text-align: left; }
   html[dir="rtl"] .oj-table-data-cell {
@@ -8857,13 +8976,12 @@ html[dir="rtl"] .oj-table-editable .oj-table-column-header-text {
 .oj-table-grid-display .oj-table-data-cell {
   padding-left: 0.66667rem;
   padding-right: 0.66667rem;
-  height: calc(2.86667rem - 11px); }
+  height: 2.86667rem; }
 
 /* Editable table styling for the data cell elements. */
 .oj-table-editable .oj-table-data-cell {
   padding-left: 0.66667rem;
-  padding-right: 0.66667rem;
-  height: calc(2.75em - 1.33334rem); }
+  padding-right: 0.66667rem; }
 
 /* Edit row styling for data cell elements. */
 .oj-table-body-row-edit .oj-table-data-cell:not(.oj-read-only) {
@@ -8908,29 +9026,35 @@ html[dir="rtl"] .oj-table-editable .oj-table-column-header-text {
 
 /* Styling on form controls stamped inside a table */
 .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control {
-  height: calc(2.75em - 1.33334rem); }
-  .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control .oj-inputtext-input,
-  .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control .oj-inputtext-nocomp,
-  .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control .oj-inputpassword-input,
-  .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control .oj-inputpassword-nocomp,
-  .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control .oj-textarea-input,
-  .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control .oj-textarea-nocomp,
-  .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control .oj-inputnumber-input,
-  .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control .oj-inputsearch-input,
-  .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control .oj-select-select,
-  .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control .oj-select .oj-select-choice,
-  .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control .oj-select .oj-select-choices,
-  .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control .oj-combobox .oj-combobox-choice,
-  .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control .oj-combobox .oj-combobox-choices,
-  .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control .oj-inputdatetime .oj-inputdatetime-input {
-    padding: 0 calc(0.66667rem + 1px); }
+  height: 2.75em; }
+
+/* Styling on form controls stamped inside a table */
+.oj-table-grid-display .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control {
+  height: 2.86667rem; }
+
+/* Styling on form controls stamped inside a table */
+.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input,
+.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp,
+.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input,
+.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp,
+.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input,
+.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp,
+.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input,
+.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input,
+.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select,
+.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice,
+.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices,
+.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
+.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
+.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-searchselect-input,
+.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
+  padding: 0 0.66667rem; }
 
 .oj-table-data-cell .oj-checkboxset .oj-checkbox-label {
   justify-content: flex-end; }
 
 /* Styling for the footer. */
 .oj-table-footer {
-  border-top: 1px solid #e5e6e6;
   font-size: inherit;
   overflow: hidden; }
 
@@ -8952,7 +9076,7 @@ html[dir="rtl"] .oj-table-editable .oj-table-column-header-text {
 
 /* Grid display table styling for the footer row. */
 .oj-table-grid-display .oj-table-footer-row {
-  height: calc(2.86667rem + 4px); }
+  height: 2.86667rem; }
 
 /* Styling for the footer row when table is scrollable. */
 .oj-table-scroll .oj-table-footer-row {
@@ -8960,8 +9084,8 @@ html[dir="rtl"] .oj-table-editable .oj-table-column-header-text {
   height: auto; }
 
 /* Grid display table styling for the footer row when table is scrollable. */
-.oj-table-scroll .oj-table-grid-display .oj-table-footer-row {
-  min-height: calc(2.86667rem + 4px);
+.oj-table-scroll.oj-table-grid-display .oj-table-footer-row {
+  min-height: 2.86667rem;
   height: auto; }
 
 /* Styling for the footer row when table has vertical or horizontal scrollbars. */
@@ -8973,15 +9097,17 @@ html[dir="rtl"] .oj-table-editable .oj-table-column-header-text {
 /* Styling for the footer cells. */
 .oj-table-footer-cell {
   float: none;
+  height: 2.75em;
   padding-top: 0.66667rem;
   padding-bottom: 0.66667rem;
   padding-left: 1em;
   padding-right: 1em;
   font-size: inherit;
-  box-sizing: content-box; }
+  box-sizing: border-box; }
 
 /* Grid display table styling for the footer cells. */
 .oj-table-grid-display .oj-table-footer-cell {
+  height: 2.86667rem;
   padding-left: 0.66667rem;
   padding-right: 0.66667rem; }
 
@@ -9011,10 +9137,6 @@ html[dir="rtl"] .oj-table-vgrid-lines:last-child, html[dir="rtl"]
 .oj-table-grid-display .oj-table-vgrid-lines:last-child, html[dir="rtl"]
 .oj-table-grid-display .oj-table-column-header-cell.oj-table-vgrid-lines:last-child {
   border-left: 0; }
-
-/* Styling for the horizontal grid lines. */
-.oj-table-hgrid-lines {
-  border-bottom: 1px solid #e0e1e1; }
 
 /* Styling for the status message. */
 .oj-table-status-message {
@@ -9055,6 +9177,8 @@ html[dir="rtl"] .oj-table-vgrid-lines:last-child, html[dir="rtl"]
   background-color: white;
   border-width: 0 1px 1px; }
 
+/* Styling for the sort ascending icon */
+/* Styling for the sort descending icon */
 /* tree */
 /* --------------------------------------------------------------- */
 oj-tree:not(.oj-complete) {
@@ -9721,8 +9845,9 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
 .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices,
 .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
 .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
+.oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-searchselect-input,
 .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
-  padding: 0 0.66667rem 0 0.66667rem; }
+  padding: 0 0.66667rem; }
 
 .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input,
 .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp,
@@ -9738,6 +9863,7 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
 .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
 .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
 .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-input,
+.oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-searchselect-input,
 .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
   font-size: inherit; }
 
@@ -9921,15 +10047,15 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer {
 
 /* Styling for the gradient for sort icons in the header */
 .oj-datagrid-sort-icon-container.oj-enabled {
-  background-image: linear-gradient(to right, transparent, white 40%); }
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0), white 40%); }
   html[dir="rtl"] .oj-datagrid-sort-icon-container.oj-enabled {
-    background-image: linear-gradient(to left, transparent, white 40%); }
+    background-image: linear-gradient(to left, rgba(255, 255, 255, 0), white 40%); }
 
 /* Styling for the gradient for sort icons on hover in the header */
 .oj-datagrid-header-cell.oj-hover .oj-datagrid-sort-icon-container {
-  background-image: linear-gradient(to right, transparent, #e0e1e1 40%); }
+  background-image: linear-gradient(to right, rgba(224, 225, 225, 0), #e0e1e1 40%); }
   html[dir="rtl"] .oj-datagrid-header-cell.oj-hover .oj-datagrid-sort-icon-container {
-    background-image: linear-gradient(to left, transparent, #e0e1e1 40%); }
+    background-image: linear-gradient(to left, rgba(224, 225, 225, 0), #e0e1e1 40%); }
 
 /* Styling for both the sort icons and click area */
 .oj-datagrid-sort-ascending-icon,
@@ -10142,6 +10268,14 @@ oj-list-view:not(.oj-complete) {
 .oj-listview-cell-element:focus {
   outline: none; }
 
+/* styling to hide the gridline */
+.oj-listview.gridline-top-hidden {
+  border-top-width: 0; }
+
+/* styling to hide the gridline */
+.oj-listview.gridline-bottom-hidden {
+  border-bottom-width: 0; }
+
 /* Styling for the component div container element. */
 .oj-listview-container {
   overflow: auto; }
@@ -10173,6 +10307,10 @@ ul:not(.oj-listview-card-layout) .oj-listview-group > .oj-listview-item:first-ch
   background-repeat: no-repeat;
   box-sizing: border-box;
   border-top: 1px solid transparent; }
+
+/* styling to hide the gridline */
+.oj-listview-item.gridline-hidden {
+  background-size: 0; }
 
 /* set on item before add or remove animation */
 .oj-listview-item-add-remove-transition {
@@ -10318,6 +10456,11 @@ ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-hover 
   padding: 0.5rem;
   display: none; }
 
+/* Styling for the container of custom no data content */
+.oj-listview-no-data-container {
+  width: 100%;
+  height: 100%; }
+
 /* Styling for the empty list text */
 .oj-listview-no-data-message {
   padding: 0.5rem;
@@ -10460,8 +10603,17 @@ html:not([dir="rtl"]) .oj-listview.oj-full-width.oj-listview-card-layout > .oj-l
 .oj-listview-cut {
   opacity: 0.8; }
 
+/* Styling for the placeholder item for the last item gridline */
+.oj-listview-gridline-placeholder {
+  background-image: linear-gradient(#e0e1e1, #e0e1e1);
+  background-position: 0 0;
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+  height: 1px; }
+
+/* Option defaults */
 .oj-listview-option-defaults {
-  font-family: '{"animation":{"add":[{"effect":"expand"},"fadeIn"],"remove":[{"effect":"collapse"},"fadeOut"],"update":{"effect":"fadeIn"},"expand":{"effect":"expand"},"collapse":{"effect":"collapse"},"pointerUp":{"effect":"none"}},"showIndicatorDelay":"250"}'; }
+  font-family: '{"animation":{"add":[{"effect":"expand"},"fadeIn"],"remove":[{"effect":"collapse"},"fadeOut"],"update":{"effect":"fadeIn"},"expand":{"effect":"expand"},"collapse":{"effect":"collapse"},"pointerUp":{"effect":"none"}},"showIndicatorDelay":"250","loadIndicator":"icon","gridlines":{"item":"visible","top":"visible","bottom":"visible"}}'; }
 
 /* Styling for the listview widget container */
 .oj-listview {
@@ -10554,6 +10706,99 @@ oj-indexer:not(.oj-complete) {
 /* styling for the ellipsis between two characters */
 .oj-indexer-ellipsis:after {
   content: "\25CF"; }
+
+oj-masonry:not(.oj-complete) {
+  visibility: hidden; }
+
+/* Styling for the masonry widget container */
+.oj-masonry {
+  position: relative;
+  display: block;
+  overflow: auto; }
+
+/* Styling to remove focus ring border on masonry */
+.oj-masonry:focus {
+  outline: none; }
+
+/* styling on each item */
+.oj-masonry-item {
+  position: absolute;
+  border-radius: 0px 10px 10px;
+  margin-top: 10px;
+  margin-right: 10px;
+  width: 240px; }
+
+.oj-masonry-option-defaults {
+  font-family: '{"animation":{"insert":[{"effect":"expand"},"fadeIn"],"remove":[{"effect":"collapse"},"fadeOut"]}}'; }
+
+oj-activity-stream:not(.oj-complete) {
+  visibility: hidden; }
+
+/* Styling for the activity stream widget container */
+.oj-activitystream {
+  display: block;
+  position: relative;
+  border-width: 1px 0;
+  border-style: solid;
+  box-sizing: border-box;
+  overflow: auto;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  border-color: #e0e1e1;
+  min-height: 2.86667rem; }
+
+/* Styling to remove focus ring border on activity stream */
+.oj-activitystream:focus {
+  outline: none; }
+
+/* remove border top for the first item to prevent double border */
+.oj-activitystream-item:first-child {
+  background-size: 0; }
+
+/* styling on each item */
+.oj-activitystream-item {
+  line-height: normal;
+  padding: 0.5rem;
+  background-image: linear-gradient(#e0e1e1, #e0e1e1);
+  background-position: 0 0;
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+  box-sizing: border-box;
+  border-top: 1px solid transparent; }
+
+.oj-activitystream-option-defaults {
+  font-family: '{"animation":{"insert":[{"effect":"expand"},"fadeIn"],"remove":[{"effect":"collapse"},"fadeOut"]}}'; }
+
+oj-waterfall-layout:not(.oj-complete) {
+  visibility: hidden; }
+
+oj-waterfall-layout {
+  display: block; }
+
+/* Styling for the waterfall layout widget container */
+.oj-waterfalllayout {
+  position: relative;
+  display: block;
+  overflow: auto; }
+
+/* Styling to remove focus ring border on waterfall layout */
+.oj-waterfalllayout:focus {
+  outline: none; }
+
+/* styling on each item */
+.oj-waterfalllayout-item {
+  position: absolute;
+  width: 240px; }
+
+/* styling on container of items */
+.oj-waterfalllayout-item-container {
+  position: relative;
+  margin: 24px; }
+
+.oj-waterfalllayout-option-defaults {
+  font-family: '{"animation":{"entrance":[{"effect":"fadeIn","duration":"300ms","timingFunction":"cubic-bezier(0, 0, 0.2, 1)"},{"effect":"slideIn","direction":"top","offsetY":"300px","duration":"300ms","timingFunction":"cubic-bezier(0, 0, 0.2, 1)"}],"exit":{"effect":"fadeOut","duration":"200ms","timingFunction":"cubic-bezier(0, 0, 0.2, 1)"}},"gutter":"24px"}'; }
 
 .oj-dvtbase {
   display: block;
@@ -10811,7 +11056,8 @@ oj-diagram {
   color: black; }
 
 .oj-diagram-link {
-  color: #b1b3b4; }
+  color: #b1b3b4;
+  padding: 10px; }
 
 .oj-diagram-link.oj-hover {
   border-top-color: #b1b3b4;
@@ -11744,20 +11990,20 @@ oj-timeline:not(.oj-complete) {
   margin-top: 18px; }
 
 .oj-messaging-inline-container .oj-message.oj-message-error {
-  background-color: #FCF3F4;
-  border-color: #F8D3D6; }
+  background-color: #fcf3f4;
+  border-color: #f8d3d6; }
 
 .oj-messaging-inline-container .oj-message.oj-message-warning {
-  background-color: #FEF5E4;
-  border-color: #FCE7C1; }
+  background-color: #fef5e4;
+  border-color: #fce7c1; }
 
 .oj-messaging-inline-container .oj-message.oj-message-info {
-  background-color: #E9F4F8;
-  border-color: #CAE4EF; }
+  background-color: #e9f4f8;
+  border-color: #cae4ef; }
 
 .oj-messaging-inline-container .oj-message.oj-message-confirmation {
-  background-color: #ECF5E7;
-  border-color: #D9EACF; }
+  background-color: #ecf5e7;
+  border-color: #d9eacf; }
 
 /** 
      * wraps a message block that includes the icon and content inline-blocks
@@ -11855,6 +12101,11 @@ oj-label:not(.oj-complete) {
   margin-top: 0;
   vertical-align: baseline; }
 
+.oj-text-field-label-inside .oj-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; }
+
 /* When label is block, this wrapper is needed in order 
        to float modifiers (required, help, changed) to the end of the label */
 .oj-label-group {
@@ -11866,11 +12117,6 @@ oj-label:not(.oj-complete) {
 
 .oj-label-required-icon {
   vertical-align: top; }
-
-.oj-label label {
-  float: left; }
-  html[dir="rtl"] .oj-label label {
-    float: right; }
 
 .oj-label-required-icon,
 .oj-label-help-icon {
@@ -11936,11 +12182,6 @@ oj-label:not(.oj-complete) {
   margin-top: 0.55em;
   box-sizing: border-box; }
 
-.oj-label-inline label {
-  float: right; }
-  html[dir="rtl"] .oj-label-inline label {
-    float: left; }
-
 .oj-label-inline .oj-label-required-icon,
 .oj-label-inline .oj-label-help-icon {
   float: left; }
@@ -11964,6 +12205,7 @@ oj-label:not(.oj-complete) {
 .oj-label-inline.oj-label-inline-top {
   margin-top: 0; }
 
+/* Deprecated since v8.0.0. JET's Accessibility team discourages access keys */
 .oj-label-accesskey {
   text-decoration: underline; }
 
@@ -11971,31 +12213,22 @@ oj-label:not(.oj-complete) {
   content: ""; }
 
 .oj-label-required-icon {
-  color: #DE2333;
+  color: #de2333;
   font-size: 1.6rem;
   font-weight: normal;
   line-height: 1rem;
   font-family: inherit;
-  background-color: #DE2333;
+  background-color: #de2333;
   border-radius: 50%;
   height: 4px;
   width: 4px; }
 
 /* Component option defaults. */
 .oj-form-control-option-defaults {
-  font-family: '{"showIndicatorDelay":"250"}'; }
+  font-family: '{"showIndicatorDelay":"250","labelEdge":"provided"}'; }
 
 /* form-control classes */
 /* --------------------------------------------------------------- */
-/************************* oj-form-control-inherit OVERRIDES *************************/
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control {
-  height: 100%;
-  min-height: 100%;
-  margin-bottom: 0;
-  max-width: 100%;
-  min-width: 100%; }
-
-/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 html .oj-form-control {
   margin-bottom: 4px;
   vertical-align: middle; }
@@ -12009,10 +12242,245 @@ html .oj-form-control {
 .oj-form-control-title {
   color: black; }
 
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field {
+  height: 100%;
+  min-height: 100%;
+  margin-bottom: 0;
+  max-width: 100%;
+  min-width: 100%; }
+
 .oj-form-control input::-ms-clear {
   display: none;
   width: 0;
   height: 0; }
+
+.oj-text-field-middle {
+  position: relative;
+  display: inline-flex;
+  flex: 1;
+  width: 1em;
+  min-width: 1em; }
+
+/* when the label is inside or above, we must set the max-width of the component to
+       100%. Otherwise some components like input text, whose max-width is decided by 
+       oj-text-field-lg-max-width looks so different from other components like radioset
+       which does not have a configured default max width in alta.
+    */
+.oj-text-field-label-inside.oj-form-control,
+.oj-form-control-label-top.oj-form-control,
+.oj-text-field-label-inside.oj-text-field,
+.oj-form-control-label-top.oj-text-field {
+  max-width: 100%; }
+
+/* when the label is inside, set the padding right so that the long labels are truncated
+      at the same width as input field
+    */
+.oj-text-field-label-inside .oj-label {
+  max-width: 100%;
+  box-sizing: border-box; }
+  html:not([dir="rtl"]) .oj-text-field-label-inside .oj-label {
+    padding-right: 10px; }
+  html[dir="rtl"] .oj-text-field-label-inside .oj-label {
+    padding-left: 10px; }
+
+.oj-text-field-label-inside .oj-text-field-input {
+  min-height: 2.75rem;
+  padding-top: 0.85rem; }
+
+/* consolidating styles - start
+    */
+.oj-text-field {
+  display: inline-block;
+  font-size: 1rem;
+  /* use a width of 100% and then max and min width so that when 
+          there's less room for the form control it can automatically 
+          get smaller instead of overflowing its boundaries */
+  max-width: 100%;
+  min-width: 8em;
+  width: 100%;
+  box-sizing: border-box; }
+  @media screen and (max-width: 767.9px) {
+    .oj-text-field {
+      -webkit-text-size-adjust: 107%; } }
+
+.oj-form-control-full-width.oj-text-field,
+.oj-form-control-full-width .oj-text-field {
+  max-width: 100%; }
+
+.oj-text-field-input {
+  outline: 0;
+  box-sizing: border-box;
+  font-family: inherit;
+  border: 0;
+  background-color: transparent; }
+
+/* Styling for text-align */
+.oj-form-control-text-align-right.oj-text-field .oj-text-field-input,
+.oj-form-control-text-align-right .oj-text-field .oj-text-field-input {
+  text-align: right; }
+
+.oj-form-control-text-align-start.oj-text-field .oj-text-field-input,
+.oj-form-control-text-align-start .oj-text-field .oj-text-field-input {
+  text-align: left; }
+  html[dir="rtl"] .oj-form-control-text-align-start.oj-text-field .oj-text-field-input, html[dir="rtl"]
+  .oj-form-control-text-align-start .oj-text-field .oj-text-field-input {
+    text-align: right; }
+
+.oj-form-control-text-align-end.oj-text-field .oj-text-field-input,
+.oj-form-control-text-align-end .oj-text-field .oj-text-field-input {
+  text-align: right; }
+  html[dir="rtl"] .oj-form-control-text-align-end.oj-text-field .oj-text-field-input, html[dir="rtl"]
+  .oj-form-control-text-align-end .oj-text-field .oj-text-field-input {
+    text-align: left; }
+
+.oj-text-field.oj-read-only .oj-text-field-input {
+  background-color: transparent;
+  border-color: transparent;
+  border-left-width: 0;
+  border-right-width: 0;
+  color: black;
+  font-size: 1rem;
+  font-weight: bold;
+  padding-left: 0;
+  padding-right: 0; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field .oj-text-field-input,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field .oj-text-field-container {
+  color: inherit;
+  height: 100%;
+  width: 100%; }
+  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field .oj-text-field-input, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field .oj-text-field-container {
+    text-align: inherit; }
+  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field .oj-text-field-input, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field .oj-text-field-container {
+    text-align: inherit; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-disabled) .oj-text-field-input,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-disabled) .oj-text-field-container {
+  background-color: transparent; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-invalid):not(.oj-warning) .oj-text-field-input,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-invalid):not(.oj-warning) .oj-text-field-container {
+  border-width: 0; }
+
+.oj-text-field-label-inside .oj-text-field-input.oj-hover {
+  background-color: transparent; }
+
+.oj-text-field .oj-text-field-container {
+  position: relative;
+  box-sizing: border-box;
+  border-style: solid;
+  border-color: #b1b3b4;
+  border-width: 2px 2px 2px 2px;
+  border-radius: 0;
+  background-color: white;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center; }
+
+.oj-text-field.oj-read-only .oj-text-field-container,
+.oj-text-field .oj-read-only .oj-text-field-container {
+  border-style: none;
+  border-color: transparent;
+  border-width: 0;
+  border-radius: 0;
+  background-color: transparent; }
+
+.oj-text-field.oj-invalid .oj-text-field-container,
+.oj-text-field .oj-invalid .oj-text-field-container,
+.oj-text-field.oj-warning .oj-text-field-container,
+.oj-text-field .oj-warning .oj-text-field-container {
+  border-width: 2px 2px 2px 2px;
+  border-style: solid; }
+
+.oj-text-field.oj-invalid .oj-text-field-container,
+.oj-text-field .oj-invalid .oj-text-field-container {
+  border-color: #e65a66; }
+
+.oj-text-field.oj-warning .oj-text-field-container,
+.oj-text-field .oj-warning .oj-text-field-container {
+  border-color: #f8ca75; }
+
+.oj-text-field-label-inside.oj-text-field .oj-text-field-container {
+  min-height: 2.75rem; }
+
+.oj-text-field-label-inside.oj-text-field .oj-text-field-container .oj-label,
+.oj-text-field-label-inside.oj-text-field.oj-disabled .oj-text-field-container .oj-label,
+.oj-text-field-label-inside.oj-text-field .oj-disabled .oj-text-field-container .oj-label {
+  position: absolute;
+  top: 0;
+  z-index: 1;
+  transition: all .25s ease .1s;
+  pointer-events: none; }
+  html:not([dir="rtl"]) .oj-text-field-label-inside.oj-text-field .oj-text-field-container .oj-label, html:not([dir="rtl"])
+  .oj-text-field-label-inside.oj-text-field.oj-disabled .oj-text-field-container .oj-label, html:not([dir="rtl"])
+  .oj-text-field-label-inside.oj-text-field .oj-disabled .oj-text-field-container .oj-label {
+    transform-origin: left top 0;
+    transform: translateX(5px) translateY(0.625rem); }
+  html[dir="rtl"] .oj-text-field-label-inside.oj-text-field .oj-text-field-container .oj-label, html[dir="rtl"]
+  .oj-text-field-label-inside.oj-text-field.oj-disabled .oj-text-field-container .oj-label, html[dir="rtl"]
+  .oj-text-field-label-inside.oj-text-field .oj-disabled .oj-text-field-container .oj-label {
+    transform-origin: right top 0;
+    transform: translateX(-5px) translateY(0.625rem); }
+
+.oj-form-control-label-inside.oj-label-value .oj-label[slot="label"],
+.oj-form-control-label-inside.oj-form-control .oj-label {
+  font-size: 0.93333rem;
+  font-weight: normal;
+  line-height: normal; }
+
+.oj-text-field-label-inside.oj-text-field.oj-focus .oj-text-field-container .oj-label,
+.oj-text-field-label-inside.oj-text-field:not(.oj-has-no-value) .oj-text-field-container .oj-label {
+  transition: transform .25s ease .1s, font-weight .25s ease .1s, font-size .25s ease .1s;
+  font-size: 0.93333rem;
+  font-weight: normal;
+  line-height: normal; }
+  html:not([dir="rtl"]) .oj-text-field-label-inside.oj-text-field.oj-focus .oj-text-field-container .oj-label, html:not([dir="rtl"])
+  .oj-text-field-label-inside.oj-text-field:not(.oj-has-no-value) .oj-text-field-container .oj-label {
+    transform-origin: left top 0;
+    transform: translateX(5px) translateY(0.1875rem); }
+  html[dir="rtl"] .oj-text-field-label-inside.oj-text-field.oj-focus .oj-text-field-container .oj-label, html[dir="rtl"]
+  .oj-text-field-label-inside.oj-text-field:not(.oj-has-no-value) .oj-text-field-container .oj-label {
+    transform-origin: right top 0;
+    transform: translateX(-5px) translateY(0.1875rem); }
+
+.oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container .oj-label,
+.oj-text-field-label-inside.oj-text-field .oj-read-only .oj-text-field-container .oj-label {
+  font-size: 0.93333rem;
+  font-weight: normal;
+  line-height: normal; }
+  html:not([dir="rtl"]) .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container .oj-label, html:not([dir="rtl"])
+  .oj-text-field-label-inside.oj-text-field .oj-read-only .oj-text-field-container .oj-label {
+    transform-origin: left top 0;
+    transform: translateX(0) translateY(0.1875rem); }
+  html[dir="rtl"] .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container .oj-label, html[dir="rtl"]
+  .oj-text-field-label-inside.oj-text-field .oj-read-only .oj-text-field-container .oj-label {
+    transform-origin: right top 0;
+    transform: translateX(0) translateY(0.1875rem); }
+
+.oj-text-field-label-inside.oj-text-field.oj-disabled:not(.oj-has-no-value) .oj-text-field-container .oj-label,
+.oj-text-field-label-inside.oj-text-field:not(.oj-has-no-value) .oj-disabled .oj-text-field-container .oj-label {
+  transition: none;
+  background-color: #ededee; }
+
+.oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container .oj-label,
+.oj-text-field-label-inside.oj-text-field .oj-read-only .oj-text-field-container .oj-label {
+  transition: none;
+  background-color: transparent; }
+
+.oj-text-field-label-inside .oj-text-field-middle {
+  height: 100%; }
+
+.oj-text-field-counter {
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: default;
+  font-size: 0.93333rem;
+  color: rgba(0, 0, 0, 0.38); }
 
 oj-form-layout {
   display: block; }
@@ -12093,6 +12561,7 @@ oj-form-layout {
 .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-formlayout-label-nowrap,
 .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
 .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
+.oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-form-control-label-top .oj-label,
 .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
   white-space: nowrap;
   overflow: hidden;
@@ -12171,10 +12640,10 @@ html[dir="rtl"] .oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:nth-chil
 .oj-label-nocomp:not(.oj-label-for-non-control) {
   line-height: 1.6em; }
 
-html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-flex-item:nth-child(odd) {
+html:not([dir="rtl"]) .oj-formlayout-form-across.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) {
   padding-left: 1.33333rem; }
 
-html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-flex-item:nth-child(odd) {
+html[dir="rtl"] .oj-formlayout-form-across.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) {
   padding-right: 1.33333rem; }
 
 html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
@@ -12182,6 +12651,18 @@ html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-flex-item:nth-
 
 html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
   padding-left: 1.33333rem; }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-flex-item:first-child {
+  padding-left: 0; }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-flex-item:first-child {
+  padding-right: 0; }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-flex-item:last-child {
+  padding-right: 0; }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-flex-item:last-child {
+  padding-left: 0; }
 
 .oj-form.oj-formlayout-form-across > .oj-flex {
   padding-left: 0;
@@ -12199,17 +12680,85 @@ html:not([dir="rtl"]) .oj-form.oj-formlayout-form-across > .oj-flex {
 html[dir="rtl"] .oj-form.oj-formlayout-form-across > .oj-flex {
   padding-left: 0; }
 
+oj-form-layout > .oj-form {
+  padding-left: 1.33333rem;
+  padding-right: 1.33333rem;
+  column-gap: 2.66666rem; }
+
+oj-form-layout > .oj-form.oj-formlayout-form-across {
+  padding-left: 0px;
+  padding-right: 0px;
+  column-gap: 0px; }
+
 .oj-formlayout-labels-inline > .oj-flex {
   flex-wrap: nowrap; }
+
+html:not([dir="rtl"]) .oj-form.oj-formlayout-form-across > .oj-flex > .oj-flex-item:first-child {
+  padding-left: 1.33333rem; }
+
+html[dir="rtl"] .oj-form.oj-formlayout-form-across > .oj-flex > .oj-flex-item:first-child {
+  padding-right: 1.33333rem; }
+
+html:not([dir="rtl"]) .oj-form.oj-formlayout-form-across > .oj-flex > .oj-flex-item:last-child {
+  padding-right: 1.33333rem; }
+
+html[dir="rtl"] .oj-form.oj-formlayout-form-across > .oj-flex > .oj-flex-item:last-child {
+  padding-left: 1.33333rem; }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item:nth-child(odd), html:not([dir="rtl"])
+.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(odd) {
+  padding-left: 0px; }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item:nth-child(odd), html[dir="rtl"]
+.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(odd) {
+  padding-right: 0px; }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item, html:not([dir="rtl"])
+.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(2) {
+  padding-left: 1.33333rem; }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item, html[dir="rtl"]
+.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(2) {
+  padding-right: 1.33333rem; }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item:nth-child(2), html:not([dir="rtl"])
+.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(2) {
+  padding-left: 1.33333rem; }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item:nth-child(2), html[dir="rtl"]
+.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(2) {
+  padding-right: 1.33333rem; }
+
+.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:last-child {
+  padding-left: 1.33333rem;
+  padding-right: 1.33333rem; }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:first-child {
+  padding-left: 1.33333rem; }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:first-child {
+  padding-right: 1.33333rem; }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:nth-child(2) > .oj-label-value > .oj-flex > .oj-flex-item:first-child {
+  padding-left: 0.66667rem; }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:nth-child(2) > .oj-label-value > .oj-flex > .oj-flex-item:first-child {
+  padding-right: 0.66667rem; }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:last-child {
+  padding-left: 0px; }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:last-child {
+  padding-right: 0px; }
 
 .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-labelvalue.oj-flex-item {
   padding-left: 0px;
   padding-right: 0px; }
 
-html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item:nth-child(odd) {
+html:not([dir="rtl"]) .oj-formlayout-form-across.oj-formlayout-labels-inline > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(odd) {
   padding-left: 0px; }
 
-html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item:nth-child(odd) {
+html[dir="rtl"] .oj-formlayout-form-across.oj-formlayout-labels-inline > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(odd) {
   padding-right: 0px; }
 
 .oj-form-layout > .oj-form > .oj-flex > .oj-formlayout-nested-formlayout > .oj-form-layout > .oj-form,
@@ -12217,43 +12766,65 @@ html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-com
   padding-left: 0px;
   padding-right: 0px; }
 
+.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:nth-child(even) > .oj-form-layout > .oj-form {
+  padding-left: 1.33333rem;
+  padding-right: 1.33333rem; }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:nth-child(2) > .oj-form-layout > .oj-form {
+  padding-left: 1.33333rem; }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:nth-child(2) > .oj-form-layout > .oj-form {
+  padding-right: 1.33333rem; }
+
 .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across {
   padding-left: 0px;
   padding-right: 0px; }
 
-html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item {
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:first-child, html:not([dir="rtl"])
+.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(2) {
   padding-left: 1.33333rem; }
 
-html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item {
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:first-child, html[dir="rtl"]
+.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(2) {
   padding-right: 1.33333rem; }
 
-.oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item {
-  padding-left: 0px;
-  padding-right: 0px; }
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+  padding-right: 1.33333rem; }
 
-html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:nth-child(odd) {
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
   padding-left: 1.33333rem; }
 
-html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:nth-child(odd) {
-  padding-right: 1.33333rem; }
-
-html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:nth-child(even) {
-  padding-right: 1.33333rem; }
-
-html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:nth-child(even) {
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:nth-child(2) > .oj-form-layout > .oj-form.oj-formlayout-form-across.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:first-child, html:not([dir="rtl"])
+.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:nth-child(2) > .oj-form-layout > .oj-form.oj-formlayout-form-across:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(2) {
   padding-left: 1.33333rem; }
 
-html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(odd) {
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:nth-child(2) > .oj-form-layout > .oj-form.oj-formlayout-form-across.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:first-child, html[dir="rtl"]
+.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:nth-child(2) > .oj-form-layout > .oj-form.oj-formlayout-form-across:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(2) {
   padding-right: 1.33333rem; }
 
-html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(odd) {
-  padding-left: 1.33333rem; }
-
-html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(even) {
-  padding-left: 1.33333rem; }
-
-html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(even) {
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:last-child > .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-flex-item:last-child {
   padding-right: 1.33333rem; }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:last-child > .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-flex-item:last-child {
+  padding-left: 1.33333rem; }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:nth-child(2) > .oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:first-child {
+  padding-left: 1.33333rem; }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:nth-child(2) > .oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:first-child {
+  padding-right: 1.33333rem; }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:nth-child(2) > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:last-child {
+  padding-left: 1.33333rem; }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:nth-child(2) > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:last-child {
+  padding-right: 1.33333rem; }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:last-child > .oj-label-value > .oj-flex > .oj-flex-item:last-child {
+  padding-right: 1.33333rem; }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:last-child > .oj-label-value > .oj-flex > .oj-flex-item:last-child {
+  padding-left: 1.33333rem; }
 
 .oj-label-value.oj-form > .oj-flex {
   padding-top: 0; }
@@ -12264,49 +12835,12 @@ html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-
 .oj-form > .oj-flex > .oj-flex-item.oj-formlayout-nested-formlayout:last-child {
   margin: 0; }
 
+.oj-form-layout-option-defaults {
+  font-family: '{"labelEdge":"top","labelGeneration":"form","colspanWrap":"nowrap"}'; }
+
 oj-form-layout:not(.oj-complete) {
   visibility: hidden; }
 
-.oj-form > .oj-flex {
-  padding-left: 1.33333rem;
-  padding-right: 1.33333rem; }
-
-/************************* oj-form-control-inherit OVERRIDES *************************/
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp {
-  color: inherit;
-  height: 100%;
-  width: 100%;
-  background-color: transparent;
-  border-width: 0; }
-  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp {
-    text-align: inherit; }
-  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp {
-    text-align: inherit; }
-
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext:not(.oj-disabled):not(.oj-read-only) .oj-inputtext-input:focus,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword:not(.oj-disabled):not(.oj-read-only) .oj-inputpassword-input:focus,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea:not(.oj-disabled):not(.oj-read-only) .oj-textarea-input:focus,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp:not([disabled]):not([readonly]):focus {
-  border-width: 0; }
-
-/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 oj-input-text:not(.oj-complete) {
   visibility: hidden; }
 
@@ -12316,9 +12850,6 @@ oj-input-password:not(.oj-complete) {
 oj-text-area:not(.oj-complete) {
   visibility: hidden; }
 
-.oj-inputtext,
-.oj-inputpassword,
-.oj-textarea,
 .oj-inputtext-nocomp,
 .oj-inputpassword-nocomp,
 .oj-textarea-nocomp {
@@ -12331,34 +12862,31 @@ oj-text-area:not(.oj-complete) {
   max-width: 100%;
   min-width: 8em;
   width: 100%; }
-  @media screen and (max-width: 767px) {
-    .oj-inputtext,
-    .oj-inputpassword,
-    .oj-textarea,
+  @media screen and (max-width: 767.9px) {
     .oj-inputtext-nocomp,
     .oj-inputpassword-nocomp,
     .oj-textarea-nocomp {
       -webkit-text-size-adjust: 107%; } }
 
-.oj-form-control-full-width.oj-inputtext,
-.oj-form-control-full-width.oj-inputpassword,
-.oj-form-control-full-width.oj-textarea,
 .oj-form-control-full-width.oj-inputtext-nocomp,
 .oj-form-control-full-width.oj-inputpassword-nocomp,
 .oj-form-control-full-width.oj-textarea-nocomp,
-.oj-form-control-full-width .oj-inputtext,
-.oj-form-control-full-width .oj-inputpassword,
-.oj-form-control-full-width .oj-textarea,
 .oj-form-control-full-width .oj-inputtext-nocomp,
 .oj-form-control-full-width .oj-inputpassword-nocomp,
 .oj-form-control-full-width .oj-textarea-nocomp {
   max-width: 100%; }
 
-.oj-inputtext {
-  position: relative; }
+.oj-inputtext-start,
+.oj-inputtext-end {
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  margin: unset; }
+
+.oj-inputtext .oj-text-field-middle {
+  width: 100%;
+  flex: auto; }
 
 .oj-inputtext .oj-inputtext-clear-icon-btn {
-  position: absolute;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -12366,10 +12894,6 @@ oj-text-area:not(.oj-complete) {
   width: 25px;
   text-decoration: none;
   cursor: default; }
-  html:not([dir="rtl"]) .oj-inputtext .oj-inputtext-clear-icon-btn {
-    right: 0px; }
-  html[dir="rtl"] .oj-inputtext .oj-inputtext-clear-icon-btn {
-    left: 0px; }
 
 a.oj-inputtext-clear-icon-btn:active {
   background-color: transparent; }
@@ -12381,26 +12905,89 @@ a.oj-inputtext-clear-icon-btn:active {
 .oj-inputtext .oj-inputtext-clear-icon-btn:focus {
   outline: none; }
 
-.oj-inputtext.oj-focus:not(.oj-form-control-empty-clearicon).oj-inputtext-clearicon-conditional .oj-inputtext-clear-icon-btn,
-.oj-inputtext.oj-hover:not(.oj-form-control-empty-clearicon).oj-inputtext-clearicon-conditional .oj-inputtext-clear-icon-btn {
+.oj-inputtext.oj-focus .oj-text-field-container.oj-inputtext-clearicon-conditional:not(.oj-form-control-empty-clearicon) .oj-inputtext-clear-icon-btn,
+.oj-inputtext.oj-hover .oj-text-field-container.oj-inputtext-clearicon-conditional:not(.oj-form-control-empty-clearicon) .oj-inputtext-clear-icon-btn {
   visibility: visible; }
 
-.oj-inputtext.oj-inputtext-clearicon-conditional .oj-inputtext-clear-icon-btn {
+.oj-inputtext .oj-text-field-container.oj-inputtext-clearicon-conditional .oj-inputtext-clear-icon-btn {
   visibility: hidden; }
 
-html:not([dir="rtl"]) .oj-inputtext.oj-inputtext-clearicon-visible .oj-inputtext-input, html:not([dir="rtl"])
-.oj-inputtext.oj-focus.oj-inputtext-clearicon-conditional .oj-inputtext-input, html:not([dir="rtl"])
-.oj-inputtext.oj-hover.oj-inputtext-clearicon-conditional .oj-inputtext-input {
-  padding-right: 21px; }
+.oj-inputtext .oj-text-field-counter {
+  visibility: hidden; }
 
-html[dir="rtl"] .oj-inputtext.oj-inputtext-clearicon-visible .oj-inputtext-input, html[dir="rtl"]
-.oj-inputtext.oj-focus.oj-inputtext-clearicon-conditional .oj-inputtext-input, html[dir="rtl"]
-.oj-inputtext.oj-hover.oj-inputtext-clearicon-conditional .oj-inputtext-input {
-  padding-left: 21px; }
+.oj-inputtext.oj-focus .oj-text-field-counter {
+  visibility: visible; }
+
+.oj-text-field-counter .oj-inputtext-counter-el {
+  position: relative;
+  bottom: -3px; }
+  html:not([dir="rtl"]) .oj-text-field-counter .oj-inputtext-counter-el {
+    right: 4px; }
+  html[dir="rtl"] .oj-text-field-counter .oj-inputtext-counter-el {
+    left: 4px; }
+
+.oj-textarea .oj-text-field-counter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; }
+
+.oj-textarea .oj-text-field-counter .oj-textarea-counter-el {
+  visibility: hidden; }
+
+.oj-textarea.oj-focus .oj-text-field-counter .oj-textarea-counter-el {
+  visibility: visible; }
+
+.oj-textarea .oj-text-field-container {
+  flex-wrap: wrap; }
+
+.oj-text-field-counter.oj-textarea-counter-container {
+  height: 32px;
+  width: 100%;
+  padding: 0 8px; }
+
+html:not([dir="rtl"]) .oj-inputtext.oj-focus .oj-inputtext-clearicon-conditional .oj-inputtext-input, html:not([dir="rtl"])
+.oj-inputtext.oj-hover .oj-inputtext-clearicon-conditional .oj-inputtext-input, html:not([dir="rtl"])
+.oj-inputtext .oj-inputtext-clearicon-visible .oj-inputtext-input {
+  padding-right: 25px; }
+
+html[dir="rtl"] .oj-inputtext.oj-focus .oj-inputtext-clearicon-conditional .oj-inputtext-input, html[dir="rtl"]
+.oj-inputtext.oj-hover .oj-inputtext-clearicon-conditional .oj-inputtext-input, html[dir="rtl"]
+.oj-inputtext .oj-inputtext-clearicon-visible .oj-inputtext-input {
+  padding-left: 25px; }
 
 .oj-inputtext-input,
 .oj-inputpassword-input,
-.oj-textarea-input,
+.oj-textarea-input {
+  text-align: left;
+  color: black;
+  background-color: white;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  font-weight: normal;
+  width: 100%; }
+  html[dir="rtl"] .oj-inputtext-input, html[dir="rtl"]
+  .oj-inputpassword-input, html[dir="rtl"]
+  .oj-textarea-input {
+    text-align: right; }
+  .oj-inputtext-input:-ms-input-placeholder,
+  .oj-inputpassword-input:-ms-input-placeholder,
+  .oj-textarea-input:-ms-input-placeholder {
+    color: rgba(0, 0, 0, 0.6);
+    opacity: 1;
+    font-style: normal; }
+  .oj-inputtext-input::-ms-input-placeholder,
+  .oj-inputpassword-input::-ms-input-placeholder,
+  .oj-textarea-input::-ms-input-placeholder {
+    color: rgba(0, 0, 0, 0.6);
+    opacity: 1;
+    font-style: normal; }
+  .oj-inputtext-input::placeholder,
+  .oj-inputpassword-input::placeholder,
+  .oj-textarea-input::placeholder {
+    color: rgba(0, 0, 0, 0.6);
+    opacity: 1;
+    font-style: normal; }
+
 .oj-inputtext-nocomp,
 .oj-inputpassword-nocomp,
 .oj-textarea-nocomp {
@@ -12413,84 +13000,33 @@ html[dir="rtl"] .oj-inputtext.oj-inputtext-clearicon-visible .oj-inputtext-input
   border-radius: 0;
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
+  font-weight: normal;
+  width: 100%;
   outline: 0;
   box-sizing: border-box;
-  font-family: inherit;
-  font-weight: normal;
-  width: 100%; }
-  html[dir="rtl"] .oj-inputtext-input, html[dir="rtl"]
-  .oj-inputpassword-input, html[dir="rtl"]
-  .oj-textarea-input, html[dir="rtl"]
-  .oj-inputtext-nocomp, html[dir="rtl"]
+  font-family: inherit; }
+  html[dir="rtl"] .oj-inputtext-nocomp, html[dir="rtl"]
   .oj-inputpassword-nocomp, html[dir="rtl"]
   .oj-textarea-nocomp {
     text-align: right; }
-  .oj-inputtext-input:-ms-input-placeholder,
-  .oj-inputpassword-input:-ms-input-placeholder,
-  .oj-textarea-input:-ms-input-placeholder,
   .oj-inputtext-nocomp:-ms-input-placeholder,
   .oj-inputpassword-nocomp:-ms-input-placeholder,
   .oj-textarea-nocomp:-ms-input-placeholder {
     color: rgba(0, 0, 0, 0.6);
     opacity: 1;
     font-style: normal; }
-  .oj-inputtext-input::-ms-input-placeholder,
-  .oj-inputpassword-input::-ms-input-placeholder,
-  .oj-textarea-input::-ms-input-placeholder,
   .oj-inputtext-nocomp::-ms-input-placeholder,
   .oj-inputpassword-nocomp::-ms-input-placeholder,
   .oj-textarea-nocomp::-ms-input-placeholder {
     color: rgba(0, 0, 0, 0.6);
     opacity: 1;
     font-style: normal; }
-  .oj-inputtext-input::placeholder,
-  .oj-inputpassword-input::placeholder,
-  .oj-textarea-input::placeholder,
   .oj-inputtext-nocomp::placeholder,
   .oj-inputpassword-nocomp::placeholder,
   .oj-textarea-nocomp::placeholder {
     color: rgba(0, 0, 0, 0.6);
     opacity: 1;
     font-style: normal; }
-
-/* Styling for text-align */
-.oj-form-control-text-align-right.oj-inputtext .oj-inputtext-input,
-.oj-form-control-text-align-right.oj-inputpassword .oj-inputpassword-input,
-.oj-form-control-text-align-right.oj-textarea .oj-textarea-input,
-.oj-form-control-text-align-right .oj-inputtext .oj-inputtext-input,
-.oj-form-control-text-align-right .oj-inputpassword .oj-inputpassword-input,
-.oj-form-control-text-align-right .oj-textarea .oj-textarea-input {
-  text-align: right; }
-
-.oj-form-control-text-align-start.oj-inputtext .oj-inputtext-input,
-.oj-form-control-text-align-start.oj-inputpassword .oj-inputpassword-input,
-.oj-form-control-text-align-start.oj-textarea .oj-textarea-input,
-.oj-form-control-text-align-start .oj-inputtext .oj-inputtext-input,
-.oj-form-control-text-align-start .oj-inputpassword .oj-inputpassword-input,
-.oj-form-control-text-align-start .oj-textarea .oj-textarea-input {
-  text-align: left; }
-  html[dir="rtl"] .oj-form-control-text-align-start.oj-inputtext .oj-inputtext-input, html[dir="rtl"]
-  .oj-form-control-text-align-start.oj-inputpassword .oj-inputpassword-input, html[dir="rtl"]
-  .oj-form-control-text-align-start.oj-textarea .oj-textarea-input, html[dir="rtl"]
-  .oj-form-control-text-align-start .oj-inputtext .oj-inputtext-input, html[dir="rtl"]
-  .oj-form-control-text-align-start .oj-inputpassword .oj-inputpassword-input, html[dir="rtl"]
-  .oj-form-control-text-align-start .oj-textarea .oj-textarea-input {
-    text-align: right; }
-
-.oj-form-control-text-align-end.oj-inputtext .oj-inputtext-input,
-.oj-form-control-text-align-end.oj-inputpassword .oj-inputpassword-input,
-.oj-form-control-text-align-end.oj-textarea .oj-textarea-input,
-.oj-form-control-text-align-end .oj-inputtext .oj-inputtext-input,
-.oj-form-control-text-align-end .oj-inputpassword .oj-inputpassword-input,
-.oj-form-control-text-align-end .oj-textarea .oj-textarea-input {
-  text-align: right; }
-  html[dir="rtl"] .oj-form-control-text-align-end.oj-inputtext .oj-inputtext-input, html[dir="rtl"]
-  .oj-form-control-text-align-end.oj-inputpassword .oj-inputpassword-input, html[dir="rtl"]
-  .oj-form-control-text-align-end.oj-textarea .oj-textarea-input, html[dir="rtl"]
-  .oj-form-control-text-align-end .oj-inputtext .oj-inputtext-input, html[dir="rtl"]
-  .oj-form-control-text-align-end .oj-inputpassword .oj-inputpassword-input, html[dir="rtl"]
-  .oj-form-control-text-align-end .oj-textarea .oj-textarea-input {
-    text-align: left; }
 
 .oj-inputtext-input[size],
 .oj-inputpassword-input[size],
@@ -12514,20 +13050,6 @@ html[dir="rtl"] .oj-inputtext.oj-inputtext-clearicon-visible .oj-inputtext-input
   padding-top: 6px;
   resize: none; }
 
-.oj-inputtext.oj-invalid .oj-inputtext-input,
-.oj-inputpassword.oj-invalid .oj-inputpassword-input,
-.oj-textarea.oj-invalid .oj-textarea-input {
-  border-width: 2px 2px 2px 2px;
-  border-color: #E65A66;
-  border-style: solid; }
-
-.oj-inputtext.oj-warning .oj-inputtext-input,
-.oj-inputpassword.oj-warning .oj-inputpassword-input,
-.oj-textarea.oj-warning .oj-textarea-input {
-  border-width: 2px 2px 2px 2px;
-  border-color: #F8CA75;
-  border-style: solid; }
-
 .oj-inputtext.oj-disabled .oj-inputtext-input,
 .oj-inputpassword.oj-disabled .oj-inputpassword-input,
 .oj-textarea.oj-disabled .oj-textarea-input,
@@ -12540,9 +13062,6 @@ html[dir="rtl"] .oj-inputtext.oj-inputtext-clearicon-visible .oj-inputtext-input
   border-color: #e0e1e1;
   opacity: 1; }
 
-.oj-inputtext.oj-read-only .oj-inputtext-input,
-.oj-inputpassword.oj-read-only .oj-inputpassword-input,
-.oj-textarea.oj-read-only .oj-textarea-input,
 .oj-inputtext-nocomp[readonly],
 .oj-inputpassword-nocomp[readonly],
 .oj-textarea-nocomp[readonly] {
@@ -12581,73 +13100,73 @@ html[dir="rtl"] .oj-inputtext.oj-inputtext-clearicon-visible .oj-inputtext-input
 .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus {
   padding-bottom: 0; }
 
-/* inputnumber */
-/* --------------------------------------------------------------- */
-/************************* oj-form-control-inherit OVERRIDES *************************/
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input {
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp {
   color: inherit;
   height: 100%;
   width: 100%;
-  background-color: transparent;
   border-width: 0; }
-  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input {
+  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp {
     text-align: inherit; }
-  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input {
+  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp {
     text-align: inherit; }
 
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-wrapper {
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp:not([disabled]),
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp:not([disabled]),
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp:not([disabled]) {
+  background-color: transparent; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext:not(.oj-disabled):not(.oj-read-only) .oj-inputtext-input:focus,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword:not(.oj-disabled):not(.oj-read-only) .oj-inputpassword-input:focus,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea:not(.oj-disabled):not(.oj-read-only) .oj-textarea-input:focus,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp:not([disabled]):not([readonly]):focus {
+  border-width: 0; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext .oj-text-field-middle,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword .oj-text-field-middle {
   height: 100%; }
 
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber:not(.oj-read-only).oj-focus .oj-inputnumber-input {
-  border-width: 0; }
+.oj-text-field-label-inside .oj-textarea-input {
+  padding: 1.25rem 5px 0;
+  display: block; }
 
-/************************* END OF oj-form-control-inherit OVERRIDES *************************/
+.oj-text-field-label-inside.oj-textarea.oj-read-only .oj-textarea-input {
+  padding-top: 1.25rem; }
+
+.oj-text-field-label-inside.oj-textarea:not(.oj-disabled) .oj-label {
+  background-color: white; }
+
+/* inputnumber */
+/* --------------------------------------------------------------- */
 oj-input-number:not(.oj-complete) {
   visibility: hidden; }
-
-/* We need to support this sizing use cases: 
-       - width on root dom element should be the width of input and buttons, not just input. */
-/* Root dom element for inputnumber. 
-     It wraps the input and the down/up buttons */
-.oj-inputnumber {
-  display: inline-block;
-  width: 100%;
-  max-width: 100%;
-  min-width: 8em;
-  font-size: 1rem; }
-  @media screen and (max-width: 767px) {
-    .oj-inputnumber {
-      -webkit-text-size-adjust: 107%; } }
-
-.oj-form-control-full-width.oj-inputnumber,
-.oj-form-control-full-width .oj-inputnumber {
-  max-width: 100%; }
 
 .oj-inputnumber-wrapper {
   width: 100%;
   white-space: nowrap;
   display: inline-flex;
-  box-sizing: border-box;
-  height: 2.13333rem;
-  border-radius: 0; }
+  box-sizing: border-box; }
 
 /* Input field for inputnumber */
 .oj-inputnumber-input {
-  border-style: solid;
   flex: 1;
   width: 1em;
   min-width: 1em;
-  outline: 0;
-  box-sizing: border-box;
-  font-family: inherit;
   font-size: 100%;
+  height: 2.13333rem;
   text-align: left;
   color: black;
   background-color: white;
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
-  border-color: #b1b3b4;
-  border-width: 2px 2px 2px 2px;
+  border-width: 0px;
   padding: 0 5px;
   padding-bottom: 0px; }
   html[dir="rtl"] .oj-inputnumber-input {
@@ -12664,102 +13183,34 @@ oj-input-number:not(.oj-complete) {
     color: rgba(0, 0, 0, 0.6);
     opacity: 1;
     font-style: normal; }
-  html:not([dir="rtl"]) .oj-inputnumber-input {
-    border-radius: 0 0 0 0;
-    border-right-width: 0; }
-  html[dir="rtl"] .oj-inputnumber-input {
-    border-radius: 0 0 0 0;
-    border-left-width: 0; }
 
-html:not([dir="rtl"]) .oj-inputnumber-input {
+html:not([dir="rtl"]) .oj-inputnumber.oj-has-buttons .oj-inputnumber-input, html:not([dir="rtl"])
+.oj-inputnumber.oj-has-buttons .oj-text-field-middle {
   margin-right: 0; }
 
-html[dir="rtl"] .oj-inputnumber-input {
+html[dir="rtl"] .oj-inputnumber.oj-has-buttons .oj-inputnumber-input, html[dir="rtl"]
+.oj-inputnumber.oj-has-buttons .oj-text-field-middle {
   margin-left: 0; }
-
-/* Invalid/warning styling */
-/* ----------------------- */
-.oj-inputnumber.oj-invalid .oj-inputnumber-input {
-  border-color: #E65A66;
-  border-style: solid; }
-
-.oj-inputnumber.oj-warning .oj-inputnumber-input {
-  border-color: #F8CA75;
-  border-style: solid; }
-
-html:not([dir="rtl"]) .oj-inputnumber.oj-invalid .oj-inputnumber-input, html:not([dir="rtl"])
-.oj-inputnumber.oj-warning .oj-inputnumber-input {
-  border-width: 2px 0 2px 2px; }
-
-html[dir="rtl"] .oj-inputnumber.oj-invalid .oj-inputnumber-input, html[dir="rtl"]
-.oj-inputnumber.oj-warning .oj-inputnumber-input {
-  border-width: 2px 2px 2px 0; }
-
-html:not([dir="rtl"]) .oj-inputnumber.oj-invalid .oj-buttonset, html:not([dir="rtl"])
-.oj-inputnumber.oj-warning .oj-buttonset {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0; }
-
-html[dir="rtl"] .oj-inputnumber.oj-invalid .oj-buttonset, html[dir="rtl"]
-.oj-inputnumber.oj-warning .oj-buttonset {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0; }
-
-.oj-inputnumber.oj-invalid .oj-buttonset {
-  border-style: solid;
-  border-color: #E65A66; }
-
-.oj-inputnumber.oj-warning .oj-buttonset {
-  border-style: solid;
-  border-color: #F8CA75; }
-
-html:not([dir="rtl"]) .oj-inputnumber.oj-invalid .oj-buttonset, html:not([dir="rtl"])
-.oj-inputnumber.oj-warning .oj-buttonset {
-  border-width: 2px 2px 2px 0; }
-
-html[dir="rtl"] .oj-inputnumber.oj-invalid .oj-buttonset, html[dir="rtl"]
-.oj-inputnumber.oj-warning .oj-buttonset {
-  border-width: 2px 0 2px 2px; }
 
 /* Disabled styling for the widget */
 .oj-inputnumber.oj-disabled .oj-inputnumber-input {
   color: black;
-  background-color: #ededee; }
-
-.oj-inputnumber.oj-disabled .oj-inputnumber-input {
-  border-style: solid;
-  color: black;
   background-color: #ededee;
-  border-color: #e0e1e1;
   opacity: 1; }
-
-/* readonly styling for the widget */
-.oj-inputnumber.oj-read-only .oj-inputnumber-input {
-  border-color: transparent; }
-
-.oj-inputnumber.oj-read-only .oj-inputnumber-input {
-  background-color: transparent;
-  border-color: transparent;
-  border-left-width: 0;
-  border-right-width: 0;
-  color: black;
-  font-size: 1rem;
-  font-weight: bold;
-  padding: 0; }
 
 .oj-inputnumber.oj-loading .oj-inputnumber-input {
   background-color: transparent;
   opacity: 1; }
 
 /* Styling for focus state */
-.oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-inputnumber-input {
+.oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-text-field-container {
   border-color: #027bc7;
   border-width: 2px 2px 2px 2px;
   padding-bottom: 0; }
 
 /* styling for inputNumber's buttonset/buttons */
 .oj-inputnumber .oj-buttonset {
-  height: 100%;
+  height: auto;
   box-sizing: border-box; }
 
 .oj-inputnumber .oj-inputnumber-button.oj-button {
@@ -12775,25 +13226,6 @@ html[dir="rtl"] .oj-inputnumber.oj-invalid .oj-buttonset, html[dir="rtl"]
 
 .oj-inputnumber-button.oj-button.oj-focus {
   outline-style: none; }
-
-/* Styling for text-align */
-.oj-form-control-text-align-right.oj-inputnumber .oj-inputnumber-input,
-.oj-form-control-text-align-right .oj-inputnumber .oj-inputnumber-input {
-  text-align: right; }
-
-.oj-form-control-text-align-start.oj-inputnumber .oj-inputnumber-input,
-.oj-form-control-text-align-start .oj-inputnumber .oj-inputnumber-input {
-  text-align: left; }
-  html[dir="rtl"] .oj-form-control-text-align-start.oj-inputnumber .oj-inputnumber-input, html[dir="rtl"]
-  .oj-form-control-text-align-start .oj-inputnumber .oj-inputnumber-input {
-    text-align: right; }
-
-.oj-form-control-text-align-end.oj-inputnumber .oj-inputnumber-input,
-.oj-form-control-text-align-end .oj-inputnumber .oj-inputnumber-input {
-  text-align: right; }
-  html[dir="rtl"] .oj-form-control-text-align-end.oj-inputnumber .oj-inputnumber-input, html[dir="rtl"]
-  .oj-form-control-text-align-end .oj-inputnumber .oj-inputnumber-input {
-    text-align: left; }
 
 html:not([dir="rtl"]) .oj-inputnumber .oj-buttonset {
   border-top-left-radius: 0;
@@ -12849,30 +13281,20 @@ html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-inputnumber-button
 .oj-inputnumber.oj-disabled .oj-inputnumber-button {
   border-color: #cbcccd; }
 
-.oj-inputnumber .oj-buttonset {
-  border-color: #b1b3b4;
-  border-width: 2px 2px 2px 2px;
-  border-style: solid; }
-  html:not([dir="rtl"]) .oj-inputnumber .oj-buttonset {
-    border-left-width: 0; }
-  html[dir="rtl"] .oj-inputnumber .oj-buttonset {
-    border-right-width: 0; }
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-wrapper {
+  height: 100%; }
 
-.oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-inputnumber-input {
-  border-color: #027bc7;
-  border-width: 2px 2px 2px 2px; }
-  html:not([dir="rtl"]) .oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-inputnumber-input {
-    border-right-width: 0; }
-  html[dir="rtl"] .oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-inputnumber-input {
-    border-left-width: 0; }
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber:not(.oj-read-only).oj-focus .oj-text-field-container {
+  border-width: 0; }
 
-.oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-buttonset {
-  border-color: #027bc7;
-  border-width: 2px 2px 2px 2px; }
-  html:not([dir="rtl"]) .oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-buttonset {
-    border-left-width: 0; }
-  html[dir="rtl"] .oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-buttonset {
-    border-right-width: 0; }
+.oj-inputnumber.oj-invalid .oj-text-field-input {
+  border-color: #e65a66; }
+
+.oj-inputnumber.oj-warning .oj-text-field-input {
+  border-color: #f8ca75; }
+
+.oj-input-number-option-defaults {
+  font-family: '{"step":1}'; }
 
 .oj-inputnumber.oj-loading {
   background-image: linear-gradient(90deg, #ededee 0%, #fafafa 10%, #ededee 20%);
@@ -12881,19 +13303,6 @@ html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-inputnumber-button
 
 /* listbox */
 /* --------------------------------------------------------------- */
-/************************* oj-form-control-inherit OVERRIDES *************************/
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
-  color: inherit;
-  height: 100%;
-  width: 100%;
-  background-color: transparent;
-  border-width: 0; }
-  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
-    text-align: inherit; }
-  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
-    text-align: inherit; }
-
-/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 /*
      * applied to the dropdown
      */
@@ -12908,6 +13317,10 @@ html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-inputnumber-button
   border: 1px solid #c6c7c8;
   box-shadow: 0 0 5px 0 hsla(0, 0%, 0%,0.2);
   border-top: 0; }
+
+.oj-listbox-drop.oj-listbox-searchselect {
+  display: flex;
+  flex-direction: column; }
 
 /*
      * applied to the dropdown when it is open above the component
@@ -12927,13 +13340,13 @@ html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-inputnumber-button
      * applied to results
      */
 .oj-listbox-results {
-  max-height: 200px;
   padding: 0;
   margin: 1px 0 2px 0;
   position: relative;
   overflow-x: hidden;
   overflow-y: auto;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  max-height: 200px; }
 
 /*
      * applied to nested option groups
@@ -13089,12 +13502,15 @@ html[dir="rtl"] .oj-listbox-results-depth-7 > .oj-listbox-result-label {
 .oj-listbox-search {
   box-sizing: border-box;
   width: 100%;
-  display: inline-table;
+  display: inline-flex;
   background-color: white;
   border-color: #b1b3b4;
   border-width: 2px 2px 2px 2px;
   border-radius: 0;
   border-style: solid; }
+  @media screen and (max-width: 767.9px) {
+    .oj-listbox-search {
+      -webkit-text-size-adjust: 107%; } }
 
 /*
      * Applied to the search text
@@ -13242,25 +13658,17 @@ html[dir="rtl"] .oj-listbox-no-results {
 .oj-listbox-highlighter {
   font-weight: bold; }
 
-/************************* oj-form-control-inherit OVERRIDES *************************/
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
   color: inherit;
   height: 100%;
   width: 100%;
   background-color: transparent;
   border-width: 0; }
-  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
+  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
     text-align: inherit; }
-  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
+  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
     text-align: inherit; }
 
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime-input-container,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input-trigger {
-  height: 100%;
-  background-color: inherit;
-  border-width: 0; }
-
-/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 oj-input-time:not(.oj-complete) {
   visibility: hidden; }
 
@@ -13280,21 +13688,17 @@ oj-calendar:not(.oj-complete) {
 .oj-inputdatetime-date-time,
 .oj-inputdatetime-date-only,
 .oj-inputdatetime-time-only {
-  /* use a width of 100% and then max and min width so that when
-         there's less room for the form control it can automatically
-         get smaller instead of overflowing its boundaries */
-  max-width: 100%;
-  min-width: 8em;
   font-size: 1rem;
-  width: 100%;
-  display: inline-block;
   position: relative; }
-  @media screen and (max-width: 767px) {
+  @media screen and (max-width: 767.9px) {
     .oj-inputdatetime,
     .oj-inputdatetime-date-time,
     .oj-inputdatetime-date-only,
     .oj-inputdatetime-time-only {
       -webkit-text-size-adjust: 107%; } }
+
+.oj-inputdatetime-inline {
+  display: inline-block; }
 
 .oj-form-control-full-width.oj-inputdatetime,
 .oj-form-control-full-width.oj-inputdatetime-date-time,
@@ -13306,7 +13710,7 @@ oj-calendar:not(.oj-complete) {
 .oj-form-control-full-width .oj-inputdatetime-time-only {
   max-width: 100%; }
 
-.oj-inputdatetime-inline {
+.oj-datepicker-inline {
   /* use a width of 100% and then max and min width so that when
          there's less room for the form control it can automatically
          get smaller instead of overflowing its boundaries */
@@ -13318,6 +13722,9 @@ oj-calendar:not(.oj-complete) {
   box-sizing: border-box;
   display: inline-flex;
   width: 100%; }
+
+.oj-inputdatetime-input-container:focus {
+  outline: none; }
 
 .oj-inputdatetime-input {
   text-align: left;
@@ -13331,13 +13738,10 @@ oj-calendar:not(.oj-complete) {
   -webkit-tap-highlight-color: transparent;
   padding: 0 5px;
   height: 2.13333rem;
-  box-sizing: border-box;
   flex: 1;
   width: 1em;
   min-width: 1em;
-  font-family: inherit;
-  font-weight: normal;
-  outline: 0; }
+  font-weight: normal; }
   html[dir="rtl"] .oj-inputdatetime-input {
     text-align: right; }
   .oj-inputdatetime-input:-ms-input-placeholder {
@@ -13359,6 +13763,10 @@ oj-calendar:not(.oj-complete) {
     border-width: 2px 2px 2px 0;
     border-radius: 0 0 0 0; }
 
+.oj-text-field-middle .oj-inputdatetime-input {
+  width: 100%;
+  flex: none; }
+
 .oj-inputdatetime-input-trigger {
   box-sizing: border-box;
   display: inline-flex;
@@ -13379,9 +13787,8 @@ oj-calendar:not(.oj-complete) {
     border-width: 2px 0 2px 2px;
     border-radius: 0 0 0 0; }
 
-.oj-inputdatetime.oj-warning .oj-inputdatetime-input,
 .oj-inputdatetime.oj-warning .oj-inputdatetime-input-trigger {
-  border-color: #F8CA75; }
+  border-color: #f8ca75; }
 
 .oj-inputdatetime:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-inputdatetime-input {
   border-color: #027bc7; }
@@ -13401,9 +13808,8 @@ oj-calendar:not(.oj-complete) {
   outline: dotted 1px black;
   outline: -webkit-focus-ring-color auto; }
 
-.oj-inputdatetime.oj-invalid .oj-inputdatetime-input,
 .oj-inputdatetime.oj-invalid .oj-inputdatetime-input-trigger {
-  border-color: #E65A66; }
+  border-color: #e65a66; }
 
 html:not([dir="rtl"]) .oj-inputdatetime.oj-invalid .oj-inputdatetime-input, html:not([dir="rtl"])
 .oj-inputdatetime.oj-warning .oj-inputdatetime-input {
@@ -13441,39 +13847,10 @@ html[dir="rtl"] .oj-inputdatetime.oj-invalid .oj-inputdatetime-input-trigger, ht
 .oj-inputdatetime-date-only.oj-loading .oj-datepicker-inline .oj-datepicker-content {
   background-color: transparent; }
 
-/* Styling for text-align */
-.oj-form-control-text-align-right.oj-inputdatetime .oj-inputdatetime-input,
-.oj-form-control-text-align-right .oj-inputdatetime .oj-inputdatetime-input {
-  text-align: right; }
-
-.oj-form-control-text-align-start.oj-inputdatetime .oj-inputdatetime-input,
-.oj-form-control-text-align-start .oj-inputdatetime .oj-inputdatetime-input {
-  text-align: left; }
-  html[dir="rtl"] .oj-form-control-text-align-start.oj-inputdatetime .oj-inputdatetime-input, html[dir="rtl"]
-  .oj-form-control-text-align-start .oj-inputdatetime .oj-inputdatetime-input {
-    text-align: right; }
-
-.oj-form-control-text-align-end.oj-inputdatetime .oj-inputdatetime-input,
-.oj-form-control-text-align-end .oj-inputdatetime .oj-inputdatetime-input {
-  text-align: right; }
-  html[dir="rtl"] .oj-form-control-text-align-end.oj-inputdatetime .oj-inputdatetime-input, html[dir="rtl"]
-  .oj-form-control-text-align-end .oj-inputdatetime .oj-inputdatetime-input {
-    text-align: left; }
-
 .oj-inputdatetime.oj-disabled .oj-inputdatetime-input-trigger {
   background-color: #ededee;
   border-color: #e0e1e1;
   opacity: 1; }
-
-.oj-inputdatetime.oj-read-only .oj-inputdatetime-input {
-  background-color: transparent;
-  border-color: transparent;
-  border-left-width: 0;
-  border-right-width: 0;
-  color: black;
-  font-size: 1rem;
-  font-weight: bold;
-  padding: 0; }
 
 .oj-inputdatetime.oj-read-only .oj-inputdatetime-input-trigger {
   display: none; }
@@ -13608,12 +13985,13 @@ html[dir="rtl"] .oj-datepicker-next-icon {
 .oj-datepicker-calendar.oj-datepicker-monthview,
 .oj-datepicker-calendar.oj-datepicker-yearview {
   /* Take up space on right and bottom to make it same size as day view */
-  margin-right: 35px;
-  margin-bottom: 5px; }
+  margin-right: 27px;
+  margin-left: 26px;
+  margin-bottom: 0px; }
 
 .oj-datepicker-calendar.oj-datepicker-monthview td,
 .oj-datepicker-calendar.oj-datepicker-yearview td {
-  padding: 8px 3px 3px 23px; }
+  padding: 8px 3px 3px 4px; }
 
 .oj-datepicker-calendar.oj-datepicker-monthview td span,
 .oj-datepicker-calendar.oj-datepicker-monthview td a,
@@ -13929,12 +14307,42 @@ html[dir="rtl"] .oj-datetimepicker-switcher-buttons a:first-child {
   top: -24px;
   visibility: hidden; }
 
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime-input-container,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-text-field-middle,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input-trigger {
+  height: 100%; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime:not(.oj-disabled) .oj-inputdatetime-input-container,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime:not(.oj-disabled) .oj-inputdatetime-input-trigger {
+  background-color: transparent; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime-input-container,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime:not(.oj-invalid):not(.oj-warning) .oj-inputdatetime-input-trigger {
+  border-width: 0; }
+
 /* Override default options*/
 .oj-inputdatetime-option-defaults {
-  font-family: '{"renderMode":"native","keyboardEdit":"disabled","datePicker":{"footerLayout":"today"}}'; }
+  font-family: '{"renderMode":"native","keyboardEdit":"disabled","datePicker":{"footerLayout":"today"},"converterYear":"2-digit","showPickerOnDesktop":"enabled"}'; }
 
 .oj-datetimepicker-config {
-  font-family: '{"dateTimePickerDropDownThresholdWidth":"768px"}'; }
+  font-family: "{}"; }
+
+.oj-text-field .oj-inputdatetime-input-trigger {
+  border: 0; }
+
+.oj-inputdatetime .oj-inputdatetime-input {
+  border: 0;
+  background-color: transparent; }
+
+.oj-text-field-label-inside .oj-inputdatetime-input {
+  border: 0;
+  background-color: transparent;
+  padding: 0.85rem 5px 0;
+  width: 100%; }
+
+.oj-text-field-label-inside .oj-inputdatetime-input-trigger {
+  border: 0;
+  min-height: 2.75rem; }
 
 .oj-inputdatetime-calendar-icon,
 .oj-inputdatetime-time-only .oj-inputdatetime-time-icon {
@@ -13949,21 +14357,6 @@ html[dir="rtl"] .oj-inputdatetime-date-only .oj-inputdatetime-input {
 /* radioset and checkboxset styles */
 /* this styles the radio, checkbox, and their labels */
 /* --------------------------------------------------------------- */
-/************************* oj-form-control-inherit OVERRIDES *************************/
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single.oj-choice-direction-column .oj-choice-item,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single .oj-checkboxset-wrapper,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single .oj-choice-row {
-  margin-bottom: 0;
-  height: 100%;
-  min-height: 100%; }
-
-html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkbox-label {
-  text-align: inherit; }
-
-html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkbox-label {
-  text-align: inherit; }
-
-/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 oj-radioset:not(.oj-complete) {
   visibility: hidden; }
 
@@ -14104,6 +14497,13 @@ oj-choice-row .oj-radio-label,
   visibility: hidden;
   min-height: 2.9rem; }
 
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single.oj-choice-direction-column .oj-choice-item,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single .oj-checkboxset-wrapper,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-checkboxset-single .oj-choice-row {
+  margin-bottom: 0;
+  height: 100%;
+  min-height: 100%; }
+
 html:not([dir="rtl"]) .oj-radiocheckbox-label-text, html:not([dir="rtl"])
 .oj-checkbox-label-nocomp {
   padding: 0 20px 0 0; }
@@ -14226,6 +14626,12 @@ html[dir="rtl"] .oj-choice-direction-row.oj-radioset-input-end .oj-choice-item:n
 .oj-choice-direction-row.oj-checkboxset-input-end .oj-choice-item:not(:first-child) > .oj-checkbox-label-nocomp {
   margin-right: 1.5rem; }
 
+html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkbox-label {
+  text-align: inherit; }
+
+html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-checkbox-label {
+  text-align: inherit; }
+
 .oj-choice-direction-row .oj-choice-item,
 .oj-choice-row-inline {
   border-top-width: 0; }
@@ -14286,13 +14692,13 @@ html[dir="rtl"] .oj-radioset-input-end .oj-radiocheckbox-icon, html[dir="rtl"]
 .oj-checkboxset.oj-invalid .oj-checkboxset-wrapper {
   border-width: 2px 2px 2px 2px;
   border-style: solid;
-  border-color: #E65A66; }
+  border-color: #e65a66; }
 
 .oj-radioset.oj-warning .oj-radioset-wrapper,
 .oj-checkboxset.oj-warning .oj-checkboxset-wrapper {
   border-width: 2px 2px 2px 2px;
   border-style: solid;
-  border-color: #F8CA75; }
+  border-color: #f8ca75; }
 
 .oj-radioset.oj-invalid .oj-radioset-wrapper,
 .oj-checkboxset.oj-invalid .oj-checkboxset-wrapper,
@@ -14329,25 +14735,6 @@ html[dir="rtl"] .oj-choice-direction-row.oj-radioset-input-end .oj-choice-item:n
 
 /* combobox */
 /* --------------------------------------------------------------- */
-/************************* oj-form-control-inherit OVERRIDES *************************/
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
-  color: inherit;
-  height: 100%;
-  width: 100%;
-  background-color: transparent;
-  border-width: 0; }
-  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
-    text-align: inherit; }
-  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
-    text-align: inherit; }
-
-/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 oj-combobox:not(.oj-complete) {
   visibility: hidden; }
 
@@ -14359,7 +14746,7 @@ oj-combobox:not(.oj-complete) {
   min-width: 8em;
   font-size: 1rem;
   width: 100%; }
-  @media screen and (max-width: 767px) {
+  @media screen and (max-width: 767.9px) {
     .oj-combobox {
       -webkit-text-size-adjust: 107%; } }
 
@@ -14375,10 +14762,6 @@ oj-combobox:not(.oj-complete) {
   text-align: left;
   color: black;
   background-color: white;
-  border-style: solid;
-  border-color: #b1b3b4;
-  border-width: 2px 2px 2px 2px;
-  border-radius: 0;
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
   height: 2.13333rem;
@@ -14427,7 +14810,7 @@ oj-combobox:not(.oj-complete) {
   color: black;
   font-size: 1rem;
   box-shadow: none; }
-  @media screen and (max-width: 767px) {
+  @media screen and (max-width: 767.9px) {
     .oj-combobox-input {
       -webkit-text-size-adjust: 107%; } }
   .oj-combobox-input:-ms-input-placeholder {
@@ -14567,10 +14950,6 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-combobox-selected-choice {
   text-align: left;
   color: black;
   background-color: white;
-  border-style: solid;
-  border-color: #b1b3b4;
-  border-width: 2px 2px 2px 2px;
-  border-radius: 0;
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
   min-height: 2.13333rem;
@@ -14581,7 +14960,8 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-combobox-selected-choice {
   margin: 0;
   position: relative;
   cursor: text;
-  overflow: hidden; }
+  overflow: hidden;
+  width: 100%; }
   html[dir="rtl"] .oj-combobox-choices {
     text-align: right; }
   .oj-combobox-choices:-ms-input-placeholder {
@@ -14640,6 +15020,12 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-combobox-selected-choice {
   outline: dotted 1px white;
   outline: -webkit-focus-ring-color auto; }
 
+/*
+     * Applied to the multi-select selected choice when disabled
+     */
+.oj-combobox.oj-disabled .oj-combobox-selected-choice {
+  padding: 0; }
+
 /* 
      * Applied to the label of the selected choice
      */
@@ -14666,19 +15052,12 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-combobox-selected-choice {
      * Invalid styling for the widget 
      */
 .oj-combobox.oj-invalid .oj-combobox-choice,
-.oj-combobox-multi.oj-invalid .oj-combobox-choices {
-  border-width: 2px 2px 2px 2px;
-  border-color: #E65A66;
-  border-style: solid; }
-
-/* 
-     * Warning styling for the widget 
-     */
+.oj-combobox-multi.oj-invalid .oj-combobox-choices,
 .oj-combobox.oj-warning .oj-combobox-choice,
 .oj-combobox-multi.oj-warning .oj-combobox-choices {
-  border-width: 2px 2px 2px 2px;
-  border-color: #F8CA75;
-  border-style: solid; }
+  border: 0;
+  border-width: 0;
+  border-style: none; }
 
 /* 
      * Disabled styles for single-select 
@@ -14711,6 +15090,9 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-combobox-selected-choice {
   border-color: #e0e1e1;
   opacity: 1;
   outline: 0; }
+
+.oj-combobox-multi.oj-disabled .oj-combobox-choices {
+  width: 100%; }
 
 .oj-combobox-multi.oj-disabled input {
   border: 0; }
@@ -14757,32 +15139,327 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-combobox-selected-choice {
 .oj-combobox .oj-button {
   margin-bottom: 0; }
 
-/* select */
-/* --------------------------------------------------------------- */
-/************************* oj-form-control-inherit OVERRIDES *************************/
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
   color: inherit;
   height: 100%;
   width: 100%;
+  border-width: 0; }
+  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
+    text-align: inherit; }
+  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
+    text-align: inherit; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox:not(.oj-disabled) .oj-combobox-choice,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox:not(.oj-disabled) .oj-combobox-choices,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
+  background-color: transparent; }
+
+.oj-text-field-label-inside .oj-combobox-choice {
+  border: 0;
   background-color: transparent;
-  border-width: 0; }
-  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {
-    text-align: inherit; }
-  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {
-    text-align: inherit; }
+  width: 100%;
+  min-height: 2.75rem; }
+  html:not([dir="rtl"]) .oj-text-field-label-inside .oj-combobox-choice {
+    padding: 0; }
+  html[dir="rtl"] .oj-text-field-label-inside .oj-combobox-choice {
+    padding: 0; }
 
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-chosen {
-  background-color: inherit;
+.oj-text-field-label-inside .oj-combobox-input {
+  padding: 0.85rem 5px 0; }
+
+.oj-text-field-label-inside .oj-combobox-choices {
+  border: 0;
+  background-color: transparent;
+  padding: 0.85rem 5px 5px; }
+
+.oj-text-field-label-inside .oj-combobox-choice.oj-hover,
+.oj-text-field-label-inside .oj-combobox-choices.oj-hover {
+  background-color: transparent; }
+
+.oj-text-field-label-inside .oj-combobox.oj-read-only .oj-combobox-choice {
+  padding: 0; }
+  html:not([dir="rtl"]) .oj-text-field-label-inside .oj-combobox.oj-read-only .oj-combobox-choice {
+    margin-left: 0; }
+  html[dir="rtl"] .oj-text-field-label-inside .oj-combobox.oj-read-only .oj-combobox-choice {
+    margin-right: 0; }
+
+.oj-text-field-label-inside .oj-combobox.oj-read-only .oj-combobox-input,
+.oj-text-field-label-inside .oj-combobox.oj-read-only .oj-combobox-choices {
+  padding-left: 0;
+  padding-right: 0; }
+
+.oj-text-field-label-inside .oj-combobox.oj-disabled .oj-text-field-container {
+  background-color: #ededee; }
+
+html:not([dir="rtl"]) .oj-text-field-label-inside .oj-combobox-selected-choice {
+  margin: 10px 6px 0 0; }
+
+html[dir="rtl"] .oj-text-field-label-inside .oj-combobox-selected-choice {
+  margin: 10px 0 0 6px; }
+
+.oj-text-field-label-inside .oj-combobox,
+.oj-form-control-label-top .oj-combobox {
+  max-width: 100%; }
+
+.oj-text-field-label-inside .oj-combobox-label {
+  align-self: flex-start; }
+
+/* searchselect */
+/* --------------------------------------------------------------- */
+oj-searchselect:not(.oj-complete) {
+  visibility: hidden; }
+
+.oj-searchselect {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  max-width: 100%;
+  min-width: 8em;
+  font-size: 1rem;
+  width: 100%; }
+  @media screen and (max-width: 767.9px) {
+    .oj-searchselect {
+      -webkit-text-size-adjust: 107%; } }
+
+.oj-form-control-full-width.oj-searchselect,
+.oj-form-control-full-width .oj-searchselect {
+  max-width: 100%; }
+
+.oj-searchselect .oj-text-field-middle {
+  width: 100%;
+  flex: auto; }
+
+/* single-select */
+/*
+     * Applied to the input field
+     */
+.oj-searchselect-input {
+  flex: 1;
+  width: 1em;
+  min-width: 1em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background-color: white;
+  color: black;
+  font-size: 1rem;
+  box-shadow: none;
+  text-align: left;
+  color: black;
+  background-color: white;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  height: 2.13333rem;
+  padding-bottom: 0px; }
+  @media screen and (max-width: 767.9px) {
+    .oj-searchselect-input {
+      -webkit-text-size-adjust: 107%; } }
+  .oj-searchselect-input:-ms-input-placeholder {
+    color: rgba(0, 0, 0, 0.6);
+    opacity: 1;
+    font-style: normal; }
+  .oj-searchselect-input::-ms-input-placeholder {
+    color: rgba(0, 0, 0, 0.6);
+    opacity: 1;
+    font-style: normal; }
+  .oj-searchselect-input::placeholder {
+    color: rgba(0, 0, 0, 0.6);
+    opacity: 1;
+    font-style: normal; }
+  html[dir="rtl"] .oj-searchselect-input {
+    text-align: right; }
+  .oj-searchselect-input:-ms-input-placeholder {
+    color: rgba(0, 0, 0, 0.6);
+    opacity: 1;
+    font-style: normal; }
+  .oj-searchselect-input::-ms-input-placeholder {
+    color: rgba(0, 0, 0, 0.6);
+    opacity: 1;
+    font-style: normal; }
+  .oj-searchselect-input::placeholder {
+    color: rgba(0, 0, 0, 0.6);
+    opacity: 1;
+    font-style: normal; }
+  html:not([dir="rtl"]) .oj-searchselect-input {
+    padding-left: 5px; }
+  html[dir="rtl"] .oj-searchselect-input {
+    padding-right: 5px; }
+
+/*
+     * Applied to the filter field on desktop and mobile.
+     */
+.oj-searchselect-filter.oj-form-control {
+  max-width: 100%; }
+
+/*
+     * Applied to the filter field on desktop.
+     */
+.oj-searchselect .oj-searchselect-filter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0; }
+
+.oj-searchselect .oj-searchselect-filter.oj-form-control {
+  margin-bottom: 0; }
+
+.oj-searchselect .oj-searchselect-filter.oj-text-field .oj-text-field-container {
+  background-color: transparent;
+  border-color: transparent; }
+
+html:not([dir="rtl"]) .oj-searchselect.oj-form-control-text-align-end .oj-searchselect-filter, html:not([dir="rtl"])
+.oj-searchselect.oj-form-control-text-align-right .oj-searchselect-filter {
+  padding-right: 1px; }
+
+html[dir="rtl"] .oj-searchselect.oj-form-control-text-align-end .oj-searchselect-filter {
+  padding-left: 1px; }
+
+html:not([dir="rtl"]) .oj-searchselect .oj-searchselect-filter .oj-inputtext-input {
+  padding-right: 0; }
+
+html[dir="rtl"] .oj-searchselect .oj-searchselect-filter .oj-inputtext-input {
+  padding-left: 0; }
+
+/* Styling for readonly mode */
+/* don't show dropdown trigger */
+.oj-searchselect.oj-read-only .oj-searchselect-arrow {
+  display: none; }
+
+/*
+     * Applied to the single-select drop down arrow
+     */
+.oj-searchselect-arrow {
+  cursor: pointer; }
+
+.oj-searchselect-arrow,
+.oj-searchselect-filter-indicator {
+  box-sizing: border-box;
+  display: inline-flex;
+  text-align: center;
+  vertical-align: middle;
+  text-decoration: none;
+  align-items: center;
+  justify-content: center; }
+
+.oj-searchselect-arrow:hover, .oj-searchselect-arrow:focus,
+.oj-searchselect-filter-indicator:hover, .oj-searchselect-filter-indicator:focus {
+  text-decoration: none; }
+
+/*
+     * Disabled styles for single-select
+     */
+.oj-searchselect.oj-disabled .oj-searchselect-input {
+  border-style: solid;
+  color: black;
+  background-color: #ededee;
+  border-color: #e0e1e1;
+  opacity: 1; }
+
+.oj-searchselect.oj-disabled .oj-searchselect-arrow {
+  cursor: default;
+  background-color: #ededee; }
+
+/*
+     * Styling for focus state
+     */
+.oj-searchselect:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-searchselect-input:focus {
+  border-color: #027bc7;
+  border-width: 2px 2px 2px 2px;
+  padding-bottom: 0; }
+
+.oj-searchselect.oj-loading .oj-searchselect-input {
+  background-image: linear-gradient(90deg, #ededee 0%, #fafafa 10%, #ededee 20%);
+  animation: LoadingGradientAnimation 3s infinite;
+  background-size: 200% 200%;
+  opacity: 1; }
+
+.oj-searchselect.oj-loading .oj-searchselect-arrow {
+  display: none; }
+
+/*
+     * Applied to results collection element
+     */
+.oj-select-results {
+  padding: 0;
+  margin: 1px 0 2px 0;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
+
+.oj-searchselect-cancel {
+  align-self: flex-end;
+  flex-shrink: 0; }
+
+/* icon */
+/* -----------------------------*/
+/*
+     * Applied to the single-select drop down open icon
+     */
+.oj-searchselect-open-icon {
+  line-height: inherit;
+  padding-right: 5px;
+  padding-left: 5px;
+  min-height: 2.13333rem;
+  min-width: 2.13333rem;
+  margin: unset; }
+
+/*
+     * Applied to the single-select mobile filter field magnifying glass icon
+     */
+.oj-searchselect-filter-indicator-icon {
+  line-height: inherit;
+  padding-right: 5px;
+  padding-left: 5px; }
+
+/*
+     * Applied to the container of the no data template shown in the default listView.
+     */
+.oj-searchselect-no-results-container {
+  padding: 40px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column; }
+
+/*
+     * Applied to the first line of text in the no data template shown in the default listView.
+     */
+.oj-searchselect-no-results-line1 {
+  padding: 10px; }
+
+/*
+     * Applied to the second line of text in the no data template shown in the default listView.
+     */
+.oj-searchselect-no-results-line2 {
+  font-size: .8rem; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext:not(.oj-disabled):not(.oj-read-only) .oj-inputtext-input:focus {
   border-width: 0; }
 
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select {
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-searchselect-arrow {
+  align-self: stretch; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-searchselect .oj-text-field-middle {
   height: 100%; }
 
-/************************* END OF oj-form-control-inherit OVERRIDES *************************/
+/* Default options*/
+.oj-searchselect-option-defaults {
+  font-family: '{"showIndicatorDelay":"250"}'; }
+
+.oj-text-field-label-inside .oj-searchselect-open-icon {
+  min-height: 2.75rem;
+  min-width: 2.75rem; }
+
+/* select */
+/* --------------------------------------------------------------- */
 oj-select:not(.oj-complete) {
   visibility: hidden; }
 
@@ -14794,7 +15471,7 @@ oj-select:not(.oj-complete) {
   font-size: 1rem;
   width: 100%;
   box-sizing: border-box; }
-  @media screen and (max-width: 767px) {
+  @media screen and (max-width: 767.9px) {
     .oj-select {
       -webkit-text-size-adjust: 107%; } }
 
@@ -14822,6 +15499,7 @@ oj-select:not(.oj-complete) {
   border-radius: 0;
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
+  border-width: 0;
   height: 2.13333rem;
   box-sizing: border-box;
   display: inline-flex;
@@ -14971,10 +15649,12 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-select-selected-choice {
   border-radius: 0;
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
+  border-width: 0;
   margin: 0;
   position: relative;
   cursor: text;
-  overflow: hidden; }
+  overflow: hidden;
+  width: 100%; }
   html[dir="rtl"] .oj-select-choices {
     text-align: right; }
   .oj-select-choices:-ms-input-placeholder {
@@ -15023,7 +15703,7 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-select-selected-choice {
   text-overflow: ellipsis;
   padding-top: 0;
   padding-bottom: 0; }
-  @media screen and (max-width: 767px) {
+  @media screen and (max-width: 767.9px) {
     .oj-select-multi .oj-listbox-input {
       -webkit-text-size-adjust: 107%; } }
   html:not([dir="rtl"]) .oj-select-multi .oj-listbox-input {
@@ -15058,6 +15738,12 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-select-selected-choice {
   outline: dotted 1px white;
   outline: -webkit-focus-ring-color auto; }
 
+/*
+     * Applied to the multi-select selected choice when disabled
+     */
+.oj-select.oj-disabled .oj-select-selected-choice {
+  padding: 0; }
+
 /* 
      * Applied to the label of the selected choice
      */
@@ -15080,21 +15766,15 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-select-selected-choice {
     left: 3px; }
 
 /* end multiselect */
-/* Invalid styling for the widget */
+/* Invalid/Warning styling for the widget */
+/* The borders are no longer on this element */
 .oj-select.oj-invalid .oj-select-choice,
 .oj-select-native.oj-invalid .oj-select-select,
-.oj-select-multi.oj-invalid .oj-select-choices {
-  border-width: 2px 2px 2px 2px;
-  border-color: #E65A66;
-  border-style: solid; }
-
-/* Warning styling for the widget */
+.oj-select-multi.oj-invalid .oj-select-choices,
 .oj-select.oj-warning .oj-select-choice,
 .oj-select-native.oj-warning .oj-select-select,
 .oj-select-multi.oj-warning .oj-select-choices {
-  border-width: 2px 2px 2px 2px;
-  border-color: #F8CA75;
-  border-style: solid; }
+  border-width: 0; }
 
 /* disabled styles  for single-select */
 .oj-select.oj-disabled .oj-select-choice {
@@ -15217,6 +15897,7 @@ html:not([dir="rtl"]) .oj-select-open-icon {
   border-radius: 0;
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
+  border-width: 0;
   height: 2.13333rem;
   padding: 0 5px;
   box-sizing: border-box;
@@ -15264,6 +15945,85 @@ select.oj-select-select.oj-select-default:not([multiple]) {
 .oj-select-jet .oj-select-arrow.oj-select-open-icon:not(.oj-disabled) {
   color: black; }
 
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {
+  color: inherit;
+  height: 100%;
+  width: 100%;
+  border-width: 0; }
+  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {
+    text-align: inherit; }
+  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {
+    text-align: inherit; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-select:not(.oj-disabled) .oj-select-choice,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-select:not(.oj-disabled) .oj-select-choices {
+  background-color: transparent; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-chosen {
+  background-color: inherit;
+  border-width: 0; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select {
+  height: 100%; }
+
+.oj-text-field-label-inside .oj-select-choice {
+  border: 0;
+  background-color: transparent;
+  width: 100%;
+  min-height: 2.75rem; }
+  html:not([dir="rtl"]) .oj-text-field-label-inside .oj-select-choice {
+    padding: 0; }
+  html[dir="rtl"] .oj-text-field-label-inside .oj-select-choice {
+    padding: 0; }
+
+.oj-text-field-label-inside .oj-combobox-input {
+  padding: 0.85rem 5px 0; }
+
+.oj-text-field-label-inside .oj-select-choices {
+  border: 0;
+  background-color: transparent;
+  padding: 0.85rem 5px 5px; }
+
+.oj-text-field-label-inside .oj-select-chosen {
+  padding: 0.85rem 5px 0;
+  margin-top: 5px; }
+
+.oj-text-field-label-inside .oj-select-choice.oj-hover,
+.oj-text-field-label-inside .oj-select-choices.oj-hover {
+  background-color: transparent; }
+
+.oj-text-field-label-inside .oj-select.oj-read-only .oj-select-choice {
+  padding: 0; }
+  html:not([dir="rtl"]) .oj-text-field-label-inside .oj-select.oj-read-only .oj-select-choice {
+    margin-left: 0; }
+  html[dir="rtl"] .oj-text-field-label-inside .oj-select.oj-read-only .oj-select-choice {
+    margin-right: 0; }
+
+.oj-text-field-label-inside .oj-select.oj-read-only .oj-select-chosen,
+.oj-text-field-label-inside .oj-select.oj-read-only .oj-select-choices {
+  padding-left: 0;
+  padding-right: 0; }
+
+.oj-text-field-label-inside .oj-select.oj-disabled .oj-text-field-container {
+  background-color: #ededee; }
+
+html:not([dir="rtl"]) .oj-text-field-label-inside .oj-select-selected-choice {
+  margin: 10px 6px 0 0; }
+
+html[dir="rtl"] .oj-text-field-label-inside .oj-select-selected-choice {
+  margin: 10px 0 0 6px; }
+
+.oj-text-field-label-inside .oj-select,
+.oj-form-control-label-top .oj-select {
+  max-width: 100%; }
+
+.oj-text-field-label-inside .oj-select-label {
+  align-self: flex-start; }
+
 .oj-select-select::-ms-value {
   background-color: white;
   color: black; }
@@ -15304,25 +16064,6 @@ oj-select-many.oj-form-control-text-align-end .oj-select .oj-select-select {
 
 /* InputSearch */
 /* --------------------------------------------------------------- */
-/************************* oj-form-control-inherit OVERRIDES *************************/
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-choice,
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input {
-  color: inherit;
-  height: 100%;
-  width: 100%;
-  background-color: transparent;
-  border-width: 0; }
-  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-choice, html:not([dir="rtl"])
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input {
-    text-align: inherit; }
-  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-choice, html[dir="rtl"]
-  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input {
-    text-align: inherit; }
-
-.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus .oj-inputsearch-choice {
-  border-width: 0; }
-
-/************************* END OF oj-form-control-inherit OVERRIDES *************************/
 oj-input-search:not(.oj-complete) {
   visibility: hidden; }
 
@@ -15334,7 +16075,7 @@ oj-input-search:not(.oj-complete) {
   min-width: 8em;
   font-size: 1rem;
   width: 100%; }
-  @media screen and (max-width: 767px) {
+  @media screen and (max-width: 767.9px) {
     .oj-inputsearch {
       -webkit-text-size-adjust: 107%; } }
 
@@ -15399,7 +16140,7 @@ oj-input-search:not(.oj-complete) {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis; }
-  @media screen and (max-width: 767px) {
+  @media screen and (max-width: 767.9px) {
     .oj-inputsearch-input {
       -webkit-text-size-adjust: 107%; } }
   .oj-inputsearch-input:-ms-input-placeholder {
@@ -15435,7 +16176,7 @@ oj-input-search:not(.oj-complete) {
 .oj-inputsearch-search-icon {
   line-height: inherit;
   font-size: 1rem; }
-  @media screen and (max-width: 767px) {
+  @media screen and (max-width: 767.9px) {
     .oj-inputsearch-search-icon {
       -webkit-text-size-adjust: 107%; } }
   html:not([dir="rtl"]) .oj-inputsearch-search-icon {
@@ -15457,7 +16198,7 @@ oj-input-search:not(.oj-complete) {
      * Invalid styling for the widget 
      */
 .oj-inputsearch.oj-invalid .oj-inputsearch-choice {
-  border-color: #E65A66;
+  border-color: #e65a66;
   border-width: 2px 2px 2px 2px;
   border-style: solid; }
 
@@ -15465,7 +16206,7 @@ oj-input-search:not(.oj-complete) {
      * Warning styling for the widget 
      */
 .oj-inputsearch.oj-warning .oj-inputsearch-choice {
-  border-color: #F8CA75;
+  border-color: #f8ca75;
   border-width: 2px 2px 2px 2px;
   border-style: solid; }
 
@@ -15477,10 +16218,7 @@ oj-input-search:not(.oj-complete) {
   color: black;
   background-color: #ededee;
   border-color: #e0e1e1;
-  opacity: 1; }
-
-.oj-inputsearch.oj-disabled .oj-inputsearch-choice,
-.oj-inputsearch.oj-disabled input {
+  opacity: 1;
   background-color: #ededee; }
 
 .oj-inputsearch.oj-disabled input {
@@ -15488,6 +16226,23 @@ oj-input-search:not(.oj-complete) {
 
 .oj-inputsearch.oj-disabled .oj-inputsearch-search-button {
   cursor: default; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-choice,
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input {
+  color: inherit;
+  height: 100%;
+  width: 100%;
+  background-color: transparent;
+  border-width: 0; }
+  html:not([dir="rtl"]) .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-choice, html:not([dir="rtl"])
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input {
+    text-align: inherit; }
+  html[dir="rtl"] .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-choice, html[dir="rtl"]
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input {
+    text-align: inherit; }
+
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus .oj-inputsearch-choice {
+  border-width: 0; }
 
 /* switch */
 /* --------------------------------------------------------------- */
@@ -15508,7 +16263,7 @@ oj-switch:not(.oj-complete) {
 .oj-switch.oj-disabled.oj-selected:not(.oj-read-only).oj-invalid .oj-switch-track {
   border-width: 2px 2px 2px 2px;
   border-style: solid;
-  border-color: #E65A66; }
+  border-color: #e65a66; }
 
 .oj-switch.oj-warning .oj-switch-track,
 .oj-switch.oj-default.oj-warning .oj-switch-track,
@@ -15520,7 +16275,7 @@ oj-switch:not(.oj-complete) {
 .oj-switch.oj-disabled.oj-selected:not(.oj-read-only).oj-warning .oj-switch-track {
   border-width: 2px 2px 2px 2px;
   border-style: solid;
-  border-color: #F8CA75; }
+  border-color: #f8ca75; }
 
 .oj-switch .oj-switch-container {
   position: relative;
@@ -15535,6 +16290,14 @@ oj-switch:not(.oj-complete) {
   html[dir="rtl"] .oj-switch .oj-switch-thumb {
     left: auto;
     right: 0; }
+
+html:not([dir="rtl"]) .oj-switch.oj-selected.oj-read-only .oj-switch-thumb {
+  left: 0;
+  right: auto; }
+
+html[dir="rtl"] .oj-switch.oj-selected.oj-read-only .oj-switch-thumb {
+  left: auto;
+  right: 0; }
 
 html:not([dir="rtl"]) .oj-switch.oj-selected .oj-switch-thumb {
   left: auto;
@@ -15783,29 +16546,29 @@ oj-slider:not(.oj-complete) {
 .oj-form-control-full-width .oj-slider.oj-slider-horizontal {
   max-width: 100%; }
 
-.oj-slider.oj-slider-horizontal {
+.oj-slider.oj-slider-horizontal .oj-slider-container {
   /* This ensures that the slider bounding box will include
    the thumb radius - important for form controls. */
-  padding-left: 4px;
-  padding-right: 12px; }
-
-.oj-slider.oj-slider-vertical {
-  padding-left: 12px;
-  padding-right: 4px; }
+  margin-top: 12px;
+  margin-bottom: 12px;
+  margin-right: 4px;
+  margin-left: 4px; }
 
 .oj-slider-vertical > .oj-slider-container {
   margin-top: 4px;
-  margin-bottom: 4px; }
+  margin-bottom: 4px;
+  margin-right: 12px;
+  margin-left: 12px; }
 
 .oj-slider.oj-invalid .oj-slider-thumb {
   border-width: 2px 2px 2px 2px;
   border-style: solid;
-  border-color: #E65A66; }
+  border-color: #e65a66; }
 
 .oj-slider.oj-warning .oj-slider-thumb {
   border-width: 2px 2px 2px 2px;
   border-style: solid;
-  border-color: #F8CA75; }
+  border-color: #f8ca75; }
 
 .oj-slider-horizontal.oj-form-control .oj-slider-container {
   height: 2.13333rem; }
@@ -16101,6 +16864,9 @@ html[dir="rtl"] .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb.oj-a
 .oj-slider-color-picker .oj-slider-bar-value {
   display: none; }
 
+.oj-form-control-label-top.oj-slider-horizontal {
+  max-width: 100%; }
+
 /* Color Palette */
 /* --------------------------------------------------------------- */
 oj-color-palette:not(.oj-complete) {
@@ -16247,11 +17013,13 @@ oj-color-palette:not(.oj-complete) {
   background-image: none;
   padding: 0;
   border-width: 0;
-  cursor: pointer; }
+  cursor: pointer;
+  min-height: auto; }
 
 .oj-colorpalette-container .oj-listview-card-layout li.oj-listview-item {
   width: auto;
   height: auto;
+  padding: 0;
   border-width: 0;
   border-color: transparent;
   border-radius: 0;
@@ -16297,12 +17065,12 @@ oj-color-palette:not(.oj-complete) {
 .oj-colorpalette.oj-warning .oj-colorpalette-container {
   border-width: 2px 2px 2px 2px;
   border-style: solid;
-  border-color: #F8CA75; }
+  border-color: #f8ca75; }
 
 .oj-colorpalette.oj-invalid .oj-colorpalette-container {
   border-width: 2px 2px 2px 2px;
   border-style: solid;
-  border-color: #E65A66; }
+  border-color: #e65a66; }
 
 /* Color  Spectrum */
 /* --------------------------------------------------------------- */
@@ -16373,12 +17141,12 @@ html .oj-colorspectrum-container .oj-form-control {
 .oj-colorspectrum.oj-warning .oj-colorspectrum-container {
   border-width: 2px 2px 2px 2px;
   border-style: solid;
-  border-color: #F8CA75; }
+  border-color: #f8ca75; }
 
 .oj-colorspectrum.oj-invalid .oj-colorspectrum-container {
   border-width: 2px 2px 2px 2px;
   border-style: solid;
-  border-color: #E65A66; }
+  border-color: #e65a66; }
 
 .oj-colorspectrum-alpha-bg {
   background-image: url("../common/images/spectrum-opacity-slider-bg.png");
@@ -16648,7 +17416,7 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-xl-flex-wrap-nowrap {
     flex-wrap: nowrap; } }
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 767.9px) {
   .oj-sm-only-flex-items-0 > .oj-flex-item,
   .oj-sm-only-flex-0 {
     flex: 0; }
@@ -16687,7 +17455,7 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-sm-only-flex-wrap-nowrap {
     flex-wrap: nowrap; } }
 
-@media print and (orientation: portrait), screen and (min-width: 768px) and (max-width: 1023px) {
+@media print and (orientation: portrait), screen and (min-width: 768px) and (max-width: 1023.9px) {
   .oj-md-only-flex-items-0 > .oj-flex-item,
   .oj-md-only-flex-0 {
     flex: 0; }
@@ -16726,7 +17494,7 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-md-only-flex-wrap-nowrap {
     flex-wrap: nowrap; } }
 
-@media print and (orientation: landscape), screen and (min-width: 1024px) and (max-width: 1280px) {
+@media print and (orientation: landscape), screen and (min-width: 1024px) and (max-width: 1280.9px) {
   .oj-lg-only-flex-items-0 > .oj-flex-item,
   .oj-lg-only-flex-0 {
     flex: 0; }
@@ -18133,7 +18901,7 @@ html[dir="rtl"] .oj-flex-bar-end {
     html[dir="rtl"] .oj-xl-float-start {
       float: right; } }
 
-@media print and (orientation: portrait), screen and (max-width: 1023px) {
+@media print and (orientation: portrait), screen and (max-width: 1023.9px) {
   .oj-md-down-hide {
     display: none; }
   .oj-md-down-text-align-end {
@@ -18149,7 +18917,7 @@ html[dir="rtl"] .oj-flex-bar-end {
     html[dir="rtl"] .oj-md-down-float-start {
       float: right; } }
 
-@media print and (orientation: landscape), screen and (max-width: 1280px) {
+@media print and (orientation: landscape), screen and (max-width: 1280.9px) {
   .oj-lg-down-hide {
     display: none; }
   .oj-lg-down-text-align-end {
@@ -18165,7 +18933,7 @@ html[dir="rtl"] .oj-flex-bar-end {
     html[dir="rtl"] .oj-lg-down-float-start {
       float: right; } }
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 767.9px) {
   /* small only screen layout helpers */
   .oj-sm-only-hide {
     display: none; }
@@ -18342,7 +19110,7 @@ html[dir="rtl"] .oj-flex-bar-end {
     html[dir="rtl"] .oj-sm-only-float-start {
       float: right; } }
 
-@media print and (orientation: portrait), screen and (min-width: 768px) and (max-width: 1023px) {
+@media print and (orientation: portrait), screen and (min-width: 768px) and (max-width: 1023.9px) {
   /* medium only screen layout helpers */
   .oj-md-only-hide {
     display: none; }
@@ -18519,7 +19287,7 @@ html[dir="rtl"] .oj-flex-bar-end {
     html[dir="rtl"] .oj-md-only-float-start {
       float: right; } }
 
-@media print and (orientation: landscape), screen and (min-width: 1024px) and (max-width: 1280px) {
+@media print and (orientation: landscape), screen and (min-width: 1024px) and (max-width: 1280.9px) {
   /* large only screen layout helpers */
   .oj-lg-only-hide {
     display: none; }
@@ -18738,22 +19506,22 @@ html[dir="rtl"] .oj-flex-bar-end {
   font-family: "/null/"; }
 
 .oj-mq-sm-only {
-  font-family: "/screen and (max-width: 767px)/"; }
+  font-family: "/screen and (max-width: 767.9px)/"; }
 
 .oj-mq-md-only {
-  font-family: "/print and (orientation: portrait), screen and (min-width: 768px) and (max-width: 1023px)/"; }
+  font-family: "/print and (orientation: portrait), screen and (min-width: 768px) and (max-width: 1023.9px)/"; }
 
 .oj-mq-lg-only {
-  font-family: "/print and (orientation: landscape), screen and (min-width: 1024px) and (max-width: 1280px)/"; }
+  font-family: "/print and (orientation: landscape), screen and (min-width: 1024px) and (max-width: 1280.9px)/"; }
 
 .oj-mq-xl-only {
   font-family: "/null/"; }
 
 .oj-mq-md-down {
-  font-family: "/print and (orientation: portrait), screen and (max-width: 1023px)/"; }
+  font-family: "/print and (orientation: portrait), screen and (max-width: 1023.9px)/"; }
 
 .oj-mq-lg-down {
-  font-family: "/print and (orientation: landscape), screen and (max-width: 1280px)/"; }
+  font-family: "/print and (orientation: landscape), screen and (max-width: 1280.9px)/"; }
 
 .oj-mq-xl-down {
   font-family: "/null/"; }
@@ -18765,6 +19533,7 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-sm-label-nowrap,
   .oj-sm-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
   .oj-sm-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
+  .oj-sm-labels-nowrap > .oj-flex > .oj-flex-item > .oj-form-control-label-top .oj-label,
   .oj-sm-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
     white-space: nowrap;
     overflow: hidden;
@@ -18830,14 +19599,22 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) >
 .oj-label-nocomp:not(.oj-label-for-non-control) {
     line-height: 1.6em; }
-  html:not([dir="rtl"]) .oj-sm-form-across > .oj-flex > .oj-flex-item:nth-child(odd) {
+  html:not([dir="rtl"]) .oj-sm-form-across.oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) {
     padding-left: 1.33333rem; }
-  html[dir="rtl"] .oj-sm-form-across > .oj-flex > .oj-flex-item:nth-child(odd) {
+  html[dir="rtl"] .oj-sm-form-across.oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) {
     padding-right: 1.33333rem; }
   html:not([dir="rtl"]) .oj-sm-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
     padding-right: 1.33333rem; }
   html[dir="rtl"] .oj-sm-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
     padding-left: 1.33333rem; }
+  html:not([dir="rtl"]) .oj-sm-form-across > .oj-flex > .oj-flex-item:first-child {
+    padding-left: 0; }
+  html[dir="rtl"] .oj-sm-form-across > .oj-flex > .oj-flex-item:first-child {
+    padding-right: 0; }
+  html:not([dir="rtl"]) .oj-sm-form-across > .oj-flex > .oj-flex-item:last-child {
+    padding-right: 0; }
+  html[dir="rtl"] .oj-sm-form-across > .oj-flex > .oj-flex-item:last-child {
+    padding-left: 0; }
   .oj-form.oj-sm-form-across > .oj-flex {
     padding-left: 0;
     padding-right: 0; }
@@ -18906,6 +19683,7 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-md-label-nowrap,
   .oj-md-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
   .oj-md-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
+  .oj-md-labels-nowrap > .oj-flex > .oj-flex-item > .oj-form-control-label-top .oj-label,
   .oj-md-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
     white-space: nowrap;
     overflow: hidden;
@@ -18971,14 +19749,22 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) >
 .oj-label-nocomp:not(.oj-label-for-non-control) {
     line-height: 1.6em; }
-  html:not([dir="rtl"]) .oj-md-form-across > .oj-flex > .oj-flex-item:nth-child(odd) {
+  html:not([dir="rtl"]) .oj-md-form-across.oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) {
     padding-left: 1.33333rem; }
-  html[dir="rtl"] .oj-md-form-across > .oj-flex > .oj-flex-item:nth-child(odd) {
+  html[dir="rtl"] .oj-md-form-across.oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) {
     padding-right: 1.33333rem; }
   html:not([dir="rtl"]) .oj-md-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
     padding-right: 1.33333rem; }
   html[dir="rtl"] .oj-md-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
     padding-left: 1.33333rem; }
+  html:not([dir="rtl"]) .oj-md-form-across > .oj-flex > .oj-flex-item:first-child {
+    padding-left: 0; }
+  html[dir="rtl"] .oj-md-form-across > .oj-flex > .oj-flex-item:first-child {
+    padding-right: 0; }
+  html:not([dir="rtl"]) .oj-md-form-across > .oj-flex > .oj-flex-item:last-child {
+    padding-right: 0; }
+  html[dir="rtl"] .oj-md-form-across > .oj-flex > .oj-flex-item:last-child {
+    padding-left: 0; }
   .oj-form.oj-md-form-across > .oj-flex {
     padding-left: 0;
     padding-right: 0; }
@@ -19047,6 +19833,7 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-lg-label-nowrap,
   .oj-lg-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
   .oj-lg-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
+  .oj-lg-labels-nowrap > .oj-flex > .oj-flex-item > .oj-form-control-label-top .oj-label,
   .oj-lg-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
     white-space: nowrap;
     overflow: hidden;
@@ -19112,14 +19899,22 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) >
 .oj-label-nocomp:not(.oj-label-for-non-control) {
     line-height: 1.6em; }
-  html:not([dir="rtl"]) .oj-lg-form-across > .oj-flex > .oj-flex-item:nth-child(odd) {
+  html:not([dir="rtl"]) .oj-lg-form-across.oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) {
     padding-left: 1.33333rem; }
-  html[dir="rtl"] .oj-lg-form-across > .oj-flex > .oj-flex-item:nth-child(odd) {
+  html[dir="rtl"] .oj-lg-form-across.oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) {
     padding-right: 1.33333rem; }
   html:not([dir="rtl"]) .oj-lg-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
     padding-right: 1.33333rem; }
   html[dir="rtl"] .oj-lg-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
     padding-left: 1.33333rem; }
+  html:not([dir="rtl"]) .oj-lg-form-across > .oj-flex > .oj-flex-item:first-child {
+    padding-left: 0; }
+  html[dir="rtl"] .oj-lg-form-across > .oj-flex > .oj-flex-item:first-child {
+    padding-right: 0; }
+  html:not([dir="rtl"]) .oj-lg-form-across > .oj-flex > .oj-flex-item:last-child {
+    padding-right: 0; }
+  html[dir="rtl"] .oj-lg-form-across > .oj-flex > .oj-flex-item:last-child {
+    padding-left: 0; }
   .oj-form.oj-lg-form-across > .oj-flex {
     padding-left: 0;
     padding-right: 0; }
@@ -19188,6 +19983,7 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-xl-label-nowrap,
   .oj-xl-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
   .oj-xl-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
+  .oj-xl-labels-nowrap > .oj-flex > .oj-flex-item > .oj-form-control-label-top .oj-label,
   .oj-xl-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
     white-space: nowrap;
     overflow: hidden;
@@ -19253,14 +20049,22 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) >
 .oj-label-nocomp:not(.oj-label-for-non-control) {
     line-height: 1.6em; }
-  html:not([dir="rtl"]) .oj-xl-form-across > .oj-flex > .oj-flex-item:nth-child(odd) {
+  html:not([dir="rtl"]) .oj-xl-form-across.oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) {
     padding-left: 1.33333rem; }
-  html[dir="rtl"] .oj-xl-form-across > .oj-flex > .oj-flex-item:nth-child(odd) {
+  html[dir="rtl"] .oj-xl-form-across.oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) {
     padding-right: 1.33333rem; }
   html:not([dir="rtl"]) .oj-xl-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
     padding-right: 1.33333rem; }
   html[dir="rtl"] .oj-xl-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
     padding-left: 1.33333rem; }
+  html:not([dir="rtl"]) .oj-xl-form-across > .oj-flex > .oj-flex-item:first-child {
+    padding-left: 0; }
+  html[dir="rtl"] .oj-xl-form-across > .oj-flex > .oj-flex-item:first-child {
+    padding-right: 0; }
+  html:not([dir="rtl"]) .oj-xl-form-across > .oj-flex > .oj-flex-item:last-child {
+    padding-right: 0; }
+  html[dir="rtl"] .oj-xl-form-across > .oj-flex > .oj-flex-item:last-child {
+    padding-left: 0; }
   .oj-form.oj-xl-form-across > .oj-flex {
     padding-left: 0;
     padding-right: 0; }
@@ -19325,21 +20129,17 @@ html[dir="rtl"] .oj-flex-bar-end {
   html[dir="rtl"] .oj-xl-label-inline.oj-label label {
     float: none; } }
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 767.9px) {
   .oj-form-layout.oj-sm-only-flex-direction-column > .oj-flex-item:not(:last-child) > .oj-form > .oj-flex:last-child {
     border-width: 0 0 0 0; } }
 
-@media print and (orientation: portrait), screen and (min-width: 768px) and (max-width: 1023px) {
+@media print and (orientation: portrait), screen and (min-width: 768px) and (max-width: 1023.9px) {
   .oj-form-layout.oj-md-only-flex-direction-column > .oj-flex-item:not(:last-child) > .oj-form > .oj-flex:last-child {
     border-width: 0 0 0 0; } }
 
-@media print and (orientation: landscape), screen and (min-width: 1024px) and (max-width: 1280px) {
+@media print and (orientation: landscape), screen and (min-width: 1024px) and (max-width: 1280.9px) {
   .oj-form-layout.oj-lg-only-flex-direction-column > .oj-flex-item:not(:last-child) > .oj-form > .oj-flex:last-child {
     border-width: 0 0 0 0; } }
-
-.oj-form > .oj-flex {
-  padding-left: 1.33333rem;
-  padding-right: 1.33333rem; }
 
 .oj-applayout-fixed-top, .oj-hybrid-applayout-navbar-fixed-top,
 .oj-applayout-fixed-bottom,
@@ -19693,7 +20493,7 @@ html[dir="rtl"] .oj-sm-web-padding-end {
 .oj-web-applayout-content {
   padding-bottom: 10px; }
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 767.9px) {
   .oj-sm-only-web-padding-horizontal {
     padding-left: 20px;
     padding-right: 20px; }
@@ -19731,7 +20531,7 @@ html[dir="rtl"] .oj-sm-web-padding-end {
   .oj-md-web-padding-vertical {
     padding-bottom: 10px; } }
 
-@media print and (orientation: portrait), screen and (min-width: 768px) and (max-width: 1023px) {
+@media print and (orientation: portrait), screen and (min-width: 768px) and (max-width: 1023.9px) {
   .oj-md-only-web-padding-horizontal {
     padding-left: 20px;
     padding-right: 20px; }
@@ -19750,7 +20550,7 @@ html[dir="rtl"] .oj-sm-web-padding-end {
   .oj-md-only-web-padding-vertical {
     padding-bottom: 10px; } }
 
-@media print and (orientation: portrait), screen and (max-width: 1023px) {
+@media print and (orientation: portrait), screen and (max-width: 1023.9px) {
   .oj-md-down-web-padding-horizontal {
     padding-left: 20px;
     padding-right: 20px; }
@@ -19788,7 +20588,7 @@ html[dir="rtl"] .oj-sm-web-padding-end {
   .oj-lg-web-padding-vertical {
     padding-bottom: 10px; } }
 
-@media print and (orientation: landscape), screen and (min-width: 1024px) and (max-width: 1280px) {
+@media print and (orientation: landscape), screen and (min-width: 1024px) and (max-width: 1280.9px) {
   .oj-lg-only-web-padding-horizontal {
     padding-left: 20px;
     padding-right: 20px; }
@@ -19807,7 +20607,7 @@ html[dir="rtl"] .oj-sm-web-padding-end {
   .oj-lg-only-web-padding-vertical {
     padding-bottom: 10px; } }
 
-@media print and (orientation: landscape), screen and (max-width: 1280px) {
+@media print and (orientation: landscape), screen and (max-width: 1280.9px) {
   .oj-lg-down-web-padding-horizontal {
     padding-left: 20px;
     padding-right: 20px; }
@@ -19866,7 +20666,7 @@ html[dir="rtl"] .oj-sm-web-padding-end {
   flex-wrap: wrap;
   flex: 0 1 auto; }
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 767.9px) {
   .oj-web-applayout-footer-item {
     justify-content: center;
     text-align: center; } }
@@ -19915,22 +20715,35 @@ oj-file-picker:not(.oj-complete) {
   max-width: 400px;
   width: 100%; }
 
-.oj-filepicker-dropzone {
+.oj-filepicker-clickable {
+  height: 100%; }
+
+.oj-filepicker-dropzone,
+.oj-filepicker-disabled {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  height: 100px;
+  height: 100%;
   box-sizing: border-box;
   border-width: 2px;
   border-style: dashed;
-  border-color: #b1b3b4;
   border-radius: 0;
-  background-color: white; }
+  padding: 24px; }
+
+.oj-filepicker-dropzone {
+  background-color: white;
+  border-color: #b1b3b4; }
+
+.oj-filepicker-disabled {
+  background-color: #fcfcfd;
+  border-color: #fcfcfd; }
+
+.oj-filepicker-dropzone.oj-invalid-drop {
+  border-color: #e65a66; }
 
 .oj-filepicker-dropzone.oj-valid-drop,
+.oj-filepicker.oj-valid-drop,
 .oj-filepicker-dropzone:active {
-  padding: 1px;
-  border-width: 1px;
   background-color: #e1eff8; }
 
 /* 
@@ -19940,10 +20753,26 @@ oj-file-picker:not(.oj-complete) {
   outline: none; }
 
 .oj-filepicker-text {
-  font-size: 1.28571rem;
+  font-size: 1.25rem;
   color: #02629f;
-  text-align: center;
-  padding: 10px; }
+  margin-bottom: 6px;
+  font-weight: normal; }
+
+.oj-filepicker-secondary-text {
+  color: #02629f;
+  font-size: 0.875rem;
+  font-weight: 400; }
+
+.oj-filepicker-icon {
+  font-size: 24px;
+  color: #8a8d8f; }
+
+.oj-filepicker-disabled .oj-filepicker-text,
+.oj-filepicker-disabled .oj-filepicker-secondary-text {
+  color: rgba(0, 0, 0, 0.38); }
+
+.oj-filepicker-disabled .oj-filepicker-icon {
+  color: #cbcccd; }
 
 oj-progress-list:not(.oj-complete) {
   visibility: hidden; }
@@ -19959,19 +20788,19 @@ oj-progress-list:not(.oj-complete) {
   padding-right: 10px; }
 
 .oj-progresslist-error-message {
-  color: #BA0006; }
+  color: #ba0006; }
 
 .oj-progressstatus-done-icon {
-  background-size: 498px 78px;
-  background-position: -279px -3px;
-  width: 30px;
-  height: 30px; }
+  background-size: 398.4px 62.4px;
+  background-position: -223.2px -2.4px;
+  width: 24px;
+  height: 24px; }
 
 .oj-progressstatus-error-icon {
-  background-size: 498px 78px;
-  background-position: -334.5px -3px;
-  width: 30px;
-  height: 30px; }
+  background-size: 398.4px 62.4px;
+  background-position: -267.6px -2.4px;
+  width: 24px;
+  height: 24px; }
 
 .oj-progressstatus-cancel-icon {
   padding: 4px; }
@@ -19995,39 +20824,65 @@ oj-avatar {
 .oj-avatar-background-image {
   background-size: cover;
   background-position: center center;
-  width: 100%;
   border-radius: 50%;
   align-self: stretch;
   align-items: center;
   justify-content: center;
-  display: flex; }
+  display: flex;
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px); }
 
-.oj-avatar-outer {
+.oj-avatar {
   border-radius: 50%;
   border: 1px solid #707375;
-  background-color: #707375;
-  box-sizing: border-box;
-  display: block;
-  position: relative; }
-
-.oj-avatar-inner {
-  border-radius: 50%;
   color: white;
-  box-sizing: border-box;
   align-items: center;
   justify-content: center;
-  display: flex; }
+  display: flex;
+  position: relative;
+  background-color: #707375;
+  overflow: hidden; }
 
-.oj-avatar-has-initials .oj-avatar-inner {
-  background-color: #707375; }
+div.oj-avatar.oj-avatar-image {
+  background-color: rgba(0, 0, 0, 0); }
 
-.oj-avatar-outer::after {
+.oj-avatar-bg-purple.oj-avatar {
+  background-color: #920083;
+  border-color: #920083; }
+
+.oj-avatar-bg-orange.oj-avatar {
+  background-color: #be4800;
+  border-color: #be4800; }
+
+.oj-avatar-bg-red.oj-avatar {
+  background-color: #e4001e;
+  border-color: #e4001e; }
+
+.oj-avatar-bg-teal.oj-avatar {
+  background-color: #008179;
+  border-color: #008179; }
+
+.oj-avatar-bg-green.oj-avatar {
+  background-color: #005a1c;
+  border-color: #005a1c; }
+
+.oj-avatar-bg-forest.oj-avatar {
+  background-color: #008323;
+  border-color: #008323; }
+
+.oj-avatar-bg-mauve.oj-avatar {
+  background-color: #754b9a;
+  border-color: #754b9a; }
+
+.oj-avatar::after {
   content: '';
   display: block;
   position: absolute;
   border-radius: 50%;
-  border: 0px solid transparent;
-  box-sizing: border-box; }
+  border: 0px solid transparent; }
 
 .oj-avatar-initials {
   text-overflow: ellipsis;
@@ -20037,25 +20892,22 @@ oj-avatar {
   background-repeat: no-repeat;
   border-radius: 50%; }
 
-.oj-avatar-xxs.oj-avatar-has-initials .oj-avatar-inner,
-.oj-avatar-xs.oj-avatar-has-initials .oj-avatar-inner {
-  background-image: linear-gradient(transparent, transparent); }
+.oj-avatar-xxs.oj-avatar-has-initials.oj-avatar,
+.oj-avatar-xs.oj-avatar-has-initials.oj-avatar {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.189), rgba(0, 0, 0, 0.189)); }
 
-.oj-avatar-xxs.oj-avatar-has-initials.oj-avatar-outer::after,
-.oj-avatar-xs.oj-avatar-has-initials.oj-avatar-outer::after {
-  border-color: transparent;
+.oj-avatar-xxs.oj-avatar-has-initials.oj-avatar::after,
+.oj-avatar-xs.oj-avatar-has-initials.oj-avatar::after {
+  border-color: rgba(0, 0, 0, 0.189);
   top: -1px;
   left: -1px; }
 
-.oj-avatar-xxs.oj-avatar-outer {
-  padding: 0; }
-
-.oj-avatar-xxs.oj-avatar-has-initials.oj-avatar-outer::after {
-  width: 34px;
-  height: 34px;
+.oj-avatar-xxs.oj-avatar-has-initials.oj-avatar::after {
+  width: 32px;
+  height: 32px;
   border-width: 1px; }
 
-.oj-avatar-xxs .oj-avatar-inner {
+.oj-avatar-xxs.oj-avatar {
   font-size: 12px;
   width: 32px;
   height: 32px; }
@@ -20072,15 +20924,12 @@ oj-avatar {
   width: 32px;
   height: 32px; }
 
-.oj-avatar-xs.oj-avatar-outer {
-  padding: 0; }
-
-.oj-avatar-xs.oj-avatar-has-initials.oj-avatar-outer::after {
-  width: 38px;
-  height: 38px;
+.oj-avatar-xs.oj-avatar-has-initials.oj-avatar::after {
+  width: 36px;
+  height: 36px;
   border-width: 1px; }
 
-.oj-avatar-xs .oj-avatar-inner {
+.oj-avatar-xs.oj-avatar {
   font-size: 14px;
   width: 36px;
   height: 36px; }
@@ -20097,10 +20946,7 @@ oj-avatar {
   width: 36px;
   height: 36px; }
 
-.oj-avatar-sm.oj-avatar-outer {
-  padding: 0; }
-
-.oj-avatar-sm .oj-avatar-inner {
+.oj-avatar-sm.oj-avatar {
   height: 54px;
   width: 54px;
   font-size: 18px; }
@@ -20118,10 +20964,7 @@ oj-avatar {
   height: 54px; }
 
 /*Don't need to specify medium size since it is the default*/
-.oj-avatar-outer {
-  padding: 0; }
-
-.oj-avatar-inner {
+.oj-avatar {
   height: 72px;
   width: 72px;
   font-size: 24px; }
@@ -20138,10 +20981,7 @@ oj-avatar {
   width: 72px;
   height: 72px; }
 
-.oj-avatar-lg.oj-avatar-outer {
-  padding: 0; }
-
-.oj-avatar-lg .oj-avatar-inner {
+.oj-avatar-lg.oj-avatar {
   height: 104px;
   width: 104px;
   font-size: 36px; }
@@ -20158,10 +20998,7 @@ oj-avatar {
   width: 104px;
   height: 104px; }
 
-.oj-avatar-xl.oj-avatar-outer {
-  padding: 0; }
-
-.oj-avatar-xl .oj-avatar-inner {
+.oj-avatar-xl.oj-avatar {
   height: 192px;
   width: 192px;
   font-size: 72px; }
@@ -20178,14 +21015,11 @@ oj-avatar {
   width: 192px;
   height: 192px; }
 
-.oj-avatar-xxl.oj-avatar-outer,
-.oj-avatar-xl.oj-avatar-outer {
+.oj-avatar-xxl.oj-avatar,
+.oj-avatar-xl.oj-avatar {
   border-width: 2px; }
 
-.oj-avatar-xxl.oj-avatar-outer {
-  padding: 0; }
-
-.oj-avatar-xxl .oj-avatar-inner {
+.oj-avatar-xxl.oj-avatar {
   height: 256px;
   width: 256px;
   font-size: 96px; }

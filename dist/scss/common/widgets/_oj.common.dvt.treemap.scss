@@ -23,15 +23,11 @@
     .oj-treemap {
       width:650px;
       height:400px;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        color: var(--oj-text-color);
-        font-size: var(--oj-font-size-sm);
-        user-select: none;
-      } @else {
+
         color: $textColor;
         font-size: $smallFontSize;
         @include oj-user-select-property(none);
-      }
+
     }
 
     .oj-treemap-isolate-icon {
@@ -89,119 +85,83 @@
     }
 
     .oj-treemap-attribute-type-text {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      color: var(--oj-treemap-legend-label-color);
-      font-size: var(--oj-font-size);
-      } @else {
+
       color: $formControlLabelColor;
       font-size: $fontSize;
-      }
+
     }
 
     .oj-treemap-attribute-value-text {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      font-size: var(--oj-font-size);
-      } @else {
+
       font-size: $fontSize;
-      }
+
     }
 
     .oj-treemap-current-drill-text {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      color: var(--oj-text-color);
-      font-size: var(--oj-font-size);
-      } @else {
+
       color: $textColor;
       font-size: $fontSize;
-      }
+
     }
     
     .oj-treemap-drill-text {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      color: var(--oj-treemap-drill-text-color);
-      font-size: var(--oj-font-size);
-      text-decoration: var(--oj-link-text-decoration);
-      } @else {
+
       color: $dvtTreemapDrillTextColor;
       font-size: $fontSize;
       text-decoration: $linkTextDecoration;
-      }
+
     }
     
     .oj-treemap-drill-text.oj-hover {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      text-decoration: var(--oj-link-text-decoration-hover);
-      } @else {
+
       text-decoration: $linkTextDecorationHover;
-      }
+
     }
 
     .oj-treemap-node {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      font-size: var(--oj-font-size-sm);
-      } @else {
+
       font-size: $smallFontSize;
-      }
+
     }
 
     .oj-treemap-node.oj-hover {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      border-color: var(--oj-treemap-node-border-color-hover);
-      } @else {
+
       border-color: $dvtTreemapNodeBorderColorHover;
-      }
+
     }
 
     .oj-treemap-node.oj-selected {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      border-top-color: var(--oj-dvt-item-outer-border-color-selected);
-      border-bottom-color: var(--oj-dvt-item-inner-border-color-selected);
-      } @else {
+
       border-top-color:$dvtBorderColor;
       border-bottom-color: $dvtBorder2Color;
-      }
+
     }
 
     .oj-treemap-node-header {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      font-size: var(--oj-font-size-sm);
-      color: var(--oj-header-text-color);
-      background-color: var(--oj-treemap-node-header-bg-color);
-      border-color: var(--oj-treemap-node-header-border-color);
-      } @else {
+
       font-size: $smallFontSize;
       color: $headerTextColor;
       background-color: $dvtComponentBgColor;
       border-color: $dvtTreemapNodeHeaderBorderColor;
-      }
+
     }
 
     .oj-treemap-node-header.oj-hover {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      background-color: var(--oj-treemap-node-border-color-hover);
-      border-color: var(--oj-treemap-node-header-border-color);
-      border-top-color : var(--oj-treemap-node-border-color-hover);
-      border-bottom-color: var(--oj-treemap-node-header-border-color-hover);
-      } @else {
+
       background-color: $dvtTreemapNodeBorderColorHover;
       border-color: $dvtTreemapNodeHeaderBorderColor;
       border-top-color : $dvtTreemapNodeBorderColorHover;
       border-bottom-color: $dvtTreemapNodeHeaderBorderColorHover;
-      }
+
     }
 
     .oj-treemap-node-header.oj-selected {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      background-color: var(--oj-treemap-node-header-bg-color-selected);
-      border-color: var(--oj-treemap-node-header-border-color);
-      border-top-color: var(--oj-dvt-item-outer-border-color-selected);
-      border-bottom-color: var(--oj-dvt-item-inner-border-color-selected);
-      } @else {
+
       background-color: $dvtTreemapNodeHeaderBgColor;
       border-color: $dvtTreemapNodeHeaderBorderColor;
       border-top-color: $dvtBorderColor;
       border-bottom-color: $dvtBorder2Color;
-      }
+      
     }
   }
 }

@@ -2,10 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['require', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojlogger', 'ojs/ojresponsiveutils', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojtranslation'], function(require, oj, Context, Config, Logger, ResponsiveUtils, ThemeUtils, TimerUtils, Translations)
 {
   "use strict";
+
 /**
  * @ojoverviewdoc ModuleLoadingOverview - [5]JET Module Loading
  * @classdesc
@@ -49,20 +52,27 @@ define(['require', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojlo
  * </code></pre>
  * <h4>Multiple return values</h4>
  *  <p>Some modules package several objects or constructor functions inside a single JavaScript object.  Applications would typically retrieve the relevant object or constructor function via a
- *     documented property on this object and then either call functions or instantiate new objects as appropriate.  For example, the 'ojs/ojvalidation-base' module has multiple return values.
+ *     documented property on this object and then either call functions or instantiate new objects as appropriate.  For example, the 'ojs/ojattributegrouphandler' module has multiple return values.
  *  </p>
  * <pre class="prettyprint"><code>
- * //Javascript example
- * define(['ojs/ojvalidation-base'], function(validationBase) {
- *  var colorConverterFactory = validationBase.Validation.converterFactory('color');
- *  var colorConverter = new validationBase.ColorConverter({format: 'hsl'});
- * })</code></pre>
- * <pre class="prettyprint"><code>
  * //TypeScript example
- * import {Validation, LengthValidatorFactory} from "ojs/ojvalidation-base";
- *  let factory = Validation.validatorFactory('length') as LengthValidatorFactory;
- *  let validator = factory.createValidator({max: 10});
- *  myTextComponent.validators = [validator];
+ * import {ColorAttributeGroupHandler, ShapeAttributeGroupHandler} from "ojs/ojattributegrouphandler";
+ *  let colorHandler = new ColorAttributeGroupHandler();
+ *  let shapeHandler = new ShapeAttributeGroupHandler({'0-2 years': 'triangleDown',
+ *                                                     '3-5 years': 'circle',
+ *                                                     '6+ years': 'triangleUp'});
+ *  var getLegendData = function(data, colorHandler) {
+ *     var items = [];
+ *     for (var i = 0; i < data.length; i++)
+ *     {
+ *       items.push({
+ *         value: data[i].value,
+ *         text: data[i].category,
+ *         color: colorHandler.getValue(data[i].category),
+ *       });
+ *     }
+ *     return [{items: items}];
+ *   };
  *
  * //Another example
  * import * as Logger from "ojs/ojlogger";
@@ -72,6 +82,7 @@ define(['require', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojlo
  * @ojfragment moduleLoadingOverviewDoc
  * @memberof ModuleLoadingOverview
  */
+
 
 /* global Logger:false, Context:false, Config:false, ResponsiveUtils:false, ThemeUtils:false, TimerUtils:false, Translations:false */
 

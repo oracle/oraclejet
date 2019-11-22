@@ -2,21 +2,20 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'knockout', 'ojs/ojhtmlutils', 'ojs/ojlogger'], function(oj, ko, HtmlUtils, Logger)
 {
   "use strict";
-/**
- * Copyright (c) 2018, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Promise:false, HtmlUtils:false, Logger:false */
 
 /**
  * @namespace
  * @name ModuleElementUtils
- * @ojstatus preview
+ *
  * @ojtsmodule
  * @classdesc
  * <h3>Utility methods for oj-module element</h3>
@@ -56,7 +55,7 @@ oj.ModuleElementUtils = ModuleElementUtils;
 /**
  * Utility function for creating a view to be used in configuration object for oj-module.
  * @since 5.0.0
- * @ojstatus preview
+ *
  * @param {Object} options Options object used to create a view
  * @param {string} options.viewPath The path to the view, relative to the RequireJS baseURL.
  *                                  The text plugin will be used for loading the view.
@@ -97,7 +96,7 @@ ModuleElementUtils.createView = function (options) {
 /**
  * Utility function for creating a view model to be used in configuration object for oj-module.
  * @since 5.0.0
- * @ojstatus preview
+ *
  * @param {Object} options Options object used to create a view model
  * @param {string} options.viewModelPath The path to the model, relative to the RequireJS baseURL.
  * @param {Function=} options.require An optional instance of the require() function to be used for loading the view model.
@@ -156,7 +155,7 @@ ModuleElementUtils.createViewModel = function (options) {
  * The <code>initialize</code> method on the view model is optional.
  *
  * @since 7.0.0
- * @ojstatus preview
+ *
  * @param {Object} options Options object used to create a view model
  * @param {string=} options.name View model name. If <code>viewPath</code> option is omitted,
  *                  the name is also going to be used for loading the view.
@@ -197,15 +196,9 @@ ModuleElementUtils.createConfig = function (options) {
       initialize: 'always'
     })
   ])
-  .then(
-    function (values) {
-      return { view: values[0], viewModel: values[1] };
-    },
-    function (reason) {
-      Logger.error('Error creating oj-module config : ', reason);
-      return null;
-    }
-  );
+  .then(function (values) {
+    return { view: values[0], viewModel: values[1] };
+  });
 };
 
 ;return {

@@ -31,23 +31,19 @@
     }
 
     .oj-progresslist-error-message {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        color: var(--oj-progress-list-text-color-error);
-      }
-      @else {
+
         color: $textColorError;
-      }
+
     }
 
     .oj-progressstatus-done-icon {
       @extend .oj-fwk-icon-status-confirmation;
-      @include oj-fwk-icon-status-confirmation-scale(1.5); // scale the 16px image to 24px
+      @include oj-fwk-icon-status-confirmation-scale(1.2); // scale the 16px image to 24px
     }
 
     .oj-progressstatus-error-icon {
       @extend .oj-fwk-icon-status-error;
-      @include oj-fwk-icon-status-error-scale(1.5); // scale the 16px image to 24px
+      @include oj-fwk-icon-status-error-scale(1.2); // scale the 16px image to 24px
     }
 
     .oj-progressstatus-cancel-icon {

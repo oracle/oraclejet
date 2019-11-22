@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojoffcanvas', 'ojs/ojswipetoreveal', 'ojs/ojoption', 'touchr'],
 /*
 * @param {Object} oj 
@@ -43,10 +45,7 @@ var __oj_swipe_actions_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2018, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global OffcanvasUtils:false, SwipeToRevealUtils:false, Context:false, Config:false */
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -67,7 +66,7 @@ var __oj_swipe_actions_metadata =
  * @ojcomponent oj.ojSwipeActions
  * @augments oj.baseComponent
  * @since 5.1.0
- * @ojstatus preview
+ *
  *
  * @ojshortdesc A swipe actions component adds swipe-to-reveal functionality to elements such as items in ListView.
  *
@@ -176,17 +175,19 @@ var __oj_swipe_actions_metadata =
         this.element[0].classList.add('oj-swipeactions', 'oj-component');
         this.element[0].setAttribute('tabIndex', '-1');
 
+        this._touchstartListener = function (event) {
+          // if touch to dismiss swipe actions, prevent listview item to get selected or activated
+          offcanvas = self.element[0].querySelector('.oj-offcanvas-open');
+          if (offcanvas != null && offcanvas.offsetWidth > 0) {
+            // this will prevent click event from firing, listen for touchend instead
+            event.preventDefault();
+          }
+          touchStarted = true;
+        };
+        this.element[0].addEventListener('touchstart', this._touchstartListener, { passive: false });
+
         // pass true to catch these events on all menus, not just enabled menus
         this._on(true, {
-          touchstart: function (event) {
-            // if touch to dismiss swipe actions, prevent listview item to get selected or activated
-            offcanvas = self.element[0].querySelector('.oj-offcanvas-open');
-            if (offcanvas != null && offcanvas.offsetWidth > 0) {
-              // this will prevent click event from firing, listen for touchend instead
-              event.preventDefault();
-            }
-            touchStarted = true;
-          },
           touchend: function (event) {
             if (touchStarted) {
               self._handleAction(event);
@@ -544,7 +545,7 @@ var __oj_swipe_actions_metadata =
           link.addEventListener('touchstart', function (event) {
             // whether the touch event is triggered by a touch or talkback double tap
             isTriggerByTouch = (event.touches[0].force > 0);
-          });
+          }, { passive: true });
         } else {
           link.className = 'oj-helper-hidden-accessible';
         }
@@ -721,6 +722,14 @@ var __oj_swipe_actions_metadata =
         }
 
         $(option).prepend(container); // @HTMLUpdateOK append trusted new DOM
+      },
+      /**
+       * @private
+       */
+      _destroy: function () {
+        // remove touchstart listener
+        this.element[0].removeEventListener('touchstart', this._touchstartListener, { passive: false });
+        delete this._touchstartListener;
       }
     });
 }());
@@ -744,11 +753,11 @@ var __oj_swipe_actions_metadata =
  */
 
 /**
- * <p>The <code class="prettyprint">start</code> slot is used to specify the action bar options that appear when user swipes from start to end on its container. The slot must be a &lt;template> element.</p>
+ * <p>The <code class="prettyprint">start</code> slot is used to specify the action bar options that appear when user swipes from start to end on its container. The slot content must be a &lt;template> element.</p>
  *
  * <p>When the template is executed, it will have access to the parent binding context.  For example, in the case of ListView, $current should return the data of the row containing the swipe actions.</p>
  *
- * @ojstatus preview
+ *
  * @ojslot start
  * @ojshortdesc The start slot is used to specify the action bar options that appear when user swipes from start to end on its container. See the Help documentation for more information.
  * @memberof oj.ojSwipeActions
@@ -763,11 +772,11 @@ var __oj_swipe_actions_metadata =
  */
 
 /**
- * <p>The <code class="prettyprint">end</code> slot is used to specify the action bar options that appear when user swipes from end to start on its container. The slot must be a &lt;template> element.</p>
+ * <p>The <code class="prettyprint">end</code> slot is used to specify the action bar options that appear when user swipes from end to start on its container. The slot content must be a &lt;template> element.</p>
  *
  * <p>When the template is executed, it will have access to the parent binding context.  For example, in the case of ListView, $current should return the data of the row containing the swipe actions.</p>
  *
- * @ojstatus preview
+ *
  * @ojslot end
  * @ojshortdesc The end slot is used to specify the action bar options that appear when user swipes from end to start on its container. See the Help documentation for more information.
  * @memberof oj.ojSwipeActions
@@ -900,6 +909,7 @@ var __oj_swipe_actions_metadata =
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.ojSwipeActions
  */
+
 
 /* global __oj_swipe_actions_metadata:false */
 (function () {

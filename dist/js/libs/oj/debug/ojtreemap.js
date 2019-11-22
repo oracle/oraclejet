@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTreeView', 'ojs/ojkeyset'], function(oj, $, comp, base, dvt, KeySet)
 {
   "use strict";
@@ -97,7 +99,7 @@ var __oj_treemap_metadata =
     "isolatedNode": {
       "type": "any",
       "writeback": true,
-      "value": "\"\""
+      "value": ""
     },
     "layout": {
       "type": "string",
@@ -242,7 +244,7 @@ var __oj_treemap_metadata =
     },
     "rootNode": {
       "type": "any",
-      "value": "\"\""
+      "value": ""
     },
     "selection": {
       "type": "Array<any>",
@@ -514,17 +516,14 @@ var __oj_treemap_node_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global dvt:false, KeySet:false */
 /**
  * @ojcomponent oj.ojTreemap
  * @augments oj.dvtBaseComponent
  * @since 0.7.0
- * @ojstatus preview
+ *
  * @ojshortdesc A tree map is an interactive data visualization in which hierarchical data is represented across two dimensions by the size and color of nested rectangular nodes.
  * @ojrole application
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
@@ -1190,15 +1189,21 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent,
       nodeSeparators: 'gaps',
 
       /**
-       * Specifies the selection mode.
+       * <p>The type of selection behavior that is enabled on the treemap. This attribute controls the number of selections that can be made via selection gestures at any given time.
+       *
+       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the treemap's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the treemap's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+       *
+       * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+       *
        * @expose
        * @name selectionMode
        * @memberof oj.ojTreemap
        * @instance
        * @type {string}
-       * @ojvalue {string} "none"
-       * @ojvalue {string} "single"
-       * @ojvalue {string} "multiple"
+       * @ojvalue {string} "none" Selection is disabled.
+       * @ojvalue {string} "single" Only a single item can be selected at a time.
+       * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
        * @default "multiple"
        */
       selectionMode: 'multiple',
@@ -1585,6 +1590,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent,
     }
   });
 
+
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -1818,24 +1824,19 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent,
  * <ul>
  *   <li>
  *      $current - an object that contains information for the current node.
- *      (See the table below for a list of properties available on $current)
+ *      (See [oj.ojTreemap.NodeTemplateContext]{@link oj.ojTreemap.NodeTemplateContext} or the table below for a list of properties available on $current)
  *   </li>
  *   <li>
  *      alias - if 'as' attribute was specified, the value will be used to provide an
  *      application-named alias for $current.
  *   </li>
  * </ul>
- * @ojstatus preview
+ *
  * @ojslot nodeTemplate
  * @ojshortdesc The nodeTemplate slot is used to specify the template for creating nodes of the treemap. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojTreemap
- * @property {Element} componentElement The &lt;oj-treemap> custom element
- * @property {Object} data The data object of the node
- * @property {number} index The zero-based index of the current node
- * @property {any} key The key of the current node
- * @property {Array} parentData  An array of data objects of the outermost to innermost parents of the node
- * @property {any} parentKey  The key of the parent node
+ * @ojslotitemprops oj.ojTreemap.NodeTemplateContext
  *
  * @example <caption>Initialize the treemap with an inline node template specified:</caption>
  * &lt;oj-treemap data='[[dataProvider]]'>
@@ -1845,17 +1846,25 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent,
  *  &lt;/template>
  * &lt;/oj-treemap>
  */
-
+/**
+ * @typedef {Object} oj.ojTreemap.NodeTemplateContext
+ * @property {Element} componentElement The &lt;oj-treemap> custom element
+ * @property {Object} data The data object of the node
+ * @property {number} index The zero-based index of the current node
+ * @property {any} key The key of the current node
+ * @property {Array} parentData  An array of data objects of the outermost to innermost parents of the node
+ * @property {any} parentKey  The key of the parent node
+ */
 
 /**
  * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current node. (See [oj.ojTreemap.TooltipContext]{@link oj.ojTreemap.TooltipContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current node. (See [oj.ojTreemap.TooltipContext]{@link oj.ojTreemap.TooltipContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot tooltipTemplate
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojTreemap.TooltipContext
@@ -1874,10 +1883,10 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent,
  * for leaf nodes of a treemap.  This slot takes precedence over the nodeContent.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current node. (See [oj.ojTreemap.NodeContentContext]{@link oj.ojTreemap.NodeContentContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current node. (See [oj.ojTreemap.NodeContentContext]{@link oj.ojTreemap.NodeContentContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot nodeContentTemplate
  * @ojshortdesc The nodeContentTemplate slot is used to specify custom node content for leaf nodes of a treemap. See the Help documentation for more information.
  * @ojslotitemprops oj.ojTreemap.NodeContentContext
@@ -1936,12 +1945,13 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent,
  * @memberof oj.ojTreemap
  */
 
+
 /**
  * @ojcomponent oj.ojTreemapNode
  * @ojsignature {target: "Type", value:"class ojTreemapNode extends JetElement<ojTreemapNodeSettableProperties>"}
  * @ojslotcomponent
  * @since 6.0.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="overview">
@@ -2183,6 +2193,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent,
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  */
+
 
 /* global __oj_treemap_metadata:false */
 /**

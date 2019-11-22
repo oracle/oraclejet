@@ -2,14 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore'], function(oj)
 {
   "use strict";
-/**
- * Copyright (c) 2016, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /*
  * Portions of this component are based on
@@ -77,8 +76,7 @@ define(['ojs/ojcore'], function(oj)
    *  oj.Color.TRANSPARENT;
    *
    * @example <caption>Using a converter to obtain a different color format</caption>
-   * var cf       = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_COLOR);
-   * var convHsl  = cf.createConverter({"format": "hsl"}) ;
+   * var convHsl  = new ColorConverter({"format": "hsl"}) ;
    *
    * var c        = new oj.Color('rgb(0, 191, 255)');
    * var s        = convHsl.format(c) ;            // returns "hsl(197, 71%, 73%)"
@@ -114,6 +112,7 @@ define(['ojs/ojcore'], function(oj)
    *               for: "color",
    *               jsdocOverride: true}
    * @constructor
+   * @final
    * @throws {Error} if the color specification cannot be parsed correctly.
    * @export
    */

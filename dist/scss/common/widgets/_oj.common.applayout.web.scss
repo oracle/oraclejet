@@ -9,44 +9,8 @@
 
 @mixin oj-web-padding($selectorPrefix)
 {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    .#{$selectorPrefix}-web-padding-horizontal {
-        padding-left: var(--oj-app-layout-web-padding);
-        padding-right: var(--oj-app-layout-web-padding);
-      }
-  
-  
-    .#{$selectorPrefix}-web-padding-start {
-        @include oj-ltr() {
-          padding-left: var(--oj-app-layout-web-padding);
-        }
-        @include oj-rtl() {
-          padding-right: var(--oj-app-layout-web-padding);
-        }
-    }
-  
-    .#{$selectorPrefix}-web-padding-end {
-        @include oj-ltr() {
-          padding-right: var(--oj-app-layout-web-padding);
-        }
-        @include oj-rtl() {
-          padding-left: var(--oj-app-layout-web-padding);
-        }
-    }
-  
-    .#{$selectorPrefix}-web-padding-top,
-    .#{$selectorPrefix}-web-padding-vertical {
-      padding-top: calc(var(--oj-app-layout-web-padding) / 2);
-    }
-  
-    .#{$selectorPrefix}-web-padding-bottom,
-    .#{$selectorPrefix}-web-padding-vertical {
-      padding-bottom: calc(var(--oj-app-layout-web-padding) / 2);
-    }
-  
-  }
-  @else {
+
+
     .#{$selectorPrefix}-web-padding-horizontal {
         padding-left: $appLayoutWebPadding;
         padding-right: $appLayoutWebPadding;
@@ -80,7 +44,7 @@
     .#{$selectorPrefix}-web-padding-vertical {
       padding-bottom: calc(#{$appLayoutWebPadding} / 2);
     }
-  }
+
 
 }
 
@@ -95,19 +59,12 @@
 
     // OFFCANVAS
     .oj-web-applayout-offcanvas {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        width: var(--oj-app-layout-offcanvas-width);
-        max-width: var(--oj-app-layout-offcanvas-max-width);
-        background-color: var(--oj-app-layout-web-offcanvas-bg-color);
-        color: var(--oj-text-color-contrast);
-      }
-      @else {
+
         width: $appLayoutOffcanvasWidth;
         max-width: $appLayoutOffcanvasMaxWidth;
         background-color: $appLayoutWebOffcanvasBgColor;
         color: $contrastTextColor;
-      }
+
     }
     .oj-web-applayout-offcanvas-icon {
       @extend .oj-fwk-icon;
@@ -141,13 +98,9 @@
       margin-left: auto;
       margin-right: auto;
       width: 100%;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        max-width: var(--oj-app-layout-max-width);
-      }
-      @else {
+
         max-width: $appLayoutMaxWidth;        
-      }
+
       box-sizing: border-box;
     }
     // The following classes have flex none so they are sized correctly in the
@@ -164,15 +117,10 @@
       // need to bump up the z-index so that colored panels under the header
       // don't hide the shadow.
       z-index: 1;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-app-layout-web-header-bg-color);
-        box-shadow: var(--oj-app-layout-web-header-box-shadow);
-      }
-      @else {
+
         background-color: $appLayoutWebHeaderBgColor;
         @include oj-box-shadow($appLayoutWebHeaderBoxShadow);
-      }
+
     }
     // Add padding between the start and title containers
     // Add padding to bar-start instead of title because the web pattern sometimes hides bar-start
@@ -185,14 +133,10 @@
       }
     }
     .oj-slow-boxshadow .oj-web-applayout-header {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        border-bottom: 1px solid var(--oj-app-layout-web-header-border-color);
-      }
-      @else {
+
         // Use a border color if not using a shadow
         border-bottom: 1px solid $appLayoutWebHeaderBorderColor;        
-      }
+
     }
     .oj-web-applayout-header .oj-button,
     .oj-web-applayout-header .oj-button-button {
@@ -206,103 +150,64 @@
       // To workaround IE11 min-height and flex bug
       content: "";
       display: inline-block;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        min-height: var(--oj-app-layout-web-header-min-height);
-      }
-      @else {
+
         min-height: $appLayoutWebHeaderMinHeight;        
-      }
+
       visibility: hidden;
     }
     .oj-web-applayout-header > div,
     .oj-web-applayout-footer > div {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        padding-left: var(--oj-app-layout-web-padding);
-        padding-right: var(--oj-app-layout-web-padding);
-      }
-      @else {
+
         padding-left: $appLayoutWebPadding;
         padding-right: $appLayoutWebPadding;
-      }
+
     }
     .oj-web-applayout-header .oj-flex-bar-start > .oj-button:first-child {
       // negative margins so we can align button image with content padding
       @include oj-ltr() {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          margin-left: calc(0px - var(--oj-button-icon-only-padding));
-        }
-        @else {
+
           margin-left: calc(0px - #{$buttonIconOnlyPadding});
-        }
+
       }
       @include oj-rtl() {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          margin-right: calc(0px - var(--oj-button-icon-only-padding));
-        }
-        @else {
+
           margin-right: calc(0px - #{$buttonIconOnlyPadding});
-        }
+
       }
     }
     .oj-web-applayout-header .oj-flex-bar-start > .oj-button.oj-button-lg:first-child {
       // negative margins so we can align button image with content padding
       @include oj-ltr() {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          margin-left: calc(0px - var(--oj-button-lg-icon-only-padding));
-        }
-        @else {
+
           margin-left: calc(0px - #{$buttonLargeIconOnlyPadding});
-        }
+
       }
       @include oj-rtl() {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          margin-right: calc(0px - var(--oj-button-lg-icon-only-padding));
-        }
-        @else {
+
           margin-right: calc(0px - #{$buttonLargeIconOnlyPadding});
-        }
+
       }
     }
     .oj-web-applayout-header .oj-flex-bar-end > .oj-button:last-child,
     .oj-web-applayout-header .oj-flex-bar-end > .oj-toolbar:last-child {
       // negative margins so we can align button image with content padding
       @include oj-ltr() {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          margin-right: calc(0px - var(--oj-button-icon-only-padding));
-        }
-        @else {
+
           margin-right: calc(0px - #{$buttonIconOnlyPadding});
-        }
+
       }
       @include oj-rtl() {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          margin-left: calc(0px - var(--oj-button-icon-only-padding));
-        }
-        @else {
+
           margin-left: calc(0px - #{$buttonIconOnlyPadding});
-        }
+
       }
     }
     .oj-web-applayout-header-title {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        font-size: var(--oj-app-layout-web-header-title-font-size);
-        font-weight: var(--oj-app-layout-web-header-title-font-weight);
-        color: var(--oj-app-layout-web-header-title-text-color);
-      }
-      @else {
+
         font-size: $appLayoutWebHeaderTitleFontSize;
         font-weight: $appLayoutWebHeaderTitleFontWeight;
         color: $appLayoutWebHeaderTextColor;
-      }
+
       font-weight: normal;
       // Because we baseline algin the logo and application name we can't easily
       // vertically center aligned them to other elements like an offcanvas toggle
@@ -412,34 +317,23 @@
     .oj-web-applayout-content {
       @extend .oj-web-applayout-content-nopad;
       @extend .oj-sm-web-padding-vertical;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        padding-left: calc(var(--oj-app-layout-web-padding) - (2 * var(--oj-spacing-1x)));
-        padding-right: calc(var(--oj-app-layout-web-padding) - (2 * var(--oj-spacing-1x)));
-      }
-      @else {
+
         // We expect content area to use a flex layout with padding so we need to subtract
         // half of the column gutter from the padding of the content area so
         // that its contents will align with header and footer
         padding-left: calc(#{$appLayoutWebPadding} - (2 * #{$spacingSmall}));
         padding-right: calc(#{$appLayoutWebPadding} - (2 * #{$spacingSmall}));
-      }
+
     }
 
 
     // FOOTER
     .oj-web-applayout-footer {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        min-height: var(--oj-app-layout-web-footer-min-height);
-        border-top: 1px solid var(--oj-app-layout-web-footer-border-color);
-        background-color: var(--oj-app-layout-web-footer-bg-color);
-      }
-      @else {
+
         min-height: $appLayoutWebFooterMinHeight;
         border-top: 1px solid $appLayoutWebFooterBorderColor;
         background-color: $appLayoutWebFooterBgColor;
-      }
+
       box-sizing: border-box;
       padding-top: 10px;
       padding-bottom: 10px;
@@ -477,25 +371,17 @@
         margin-right: 10px;
         margin-left: 0;
         padding-right: 10px;
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          border-right: 1px solid var(--oj-app-layout-web-footer-border-color);
-        }
-        @else {
-          border-right: 1px solid $appLayoutWebFooterBorderColor;          
-        }
+
+          border-right: 1px solid $appLayoutWebFooterBorderColor;
+
       }
       @include oj-rtl() {
         margin-left: 5px;
         margin-right: 0;
         padding-left: 5px;
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          border-left: 1px solid var(--oj-app-layout-web-footer-border-color);
-        }
-        @else {
+
           border-left: 1px solid $appLayoutWebFooterBorderColor;
-        }
+        
       }
     }
     .oj-web-applayout-footer li:last-child {

@@ -47,8 +47,8 @@
     $altButtonBgColor:                          null,
     $altButtonIconColor:                        null,
     $altButtonBorderColor:                      null,
-    $altButtonBgImage:                          null, 
-    $altButtonTextShadow:                       null, 
+    $altButtonBgImage:                          null,
+    $altButtonTextShadow:                       null,
     $altButtonBoxShadow:                        null,
 
     // hover
@@ -56,7 +56,7 @@
     $altButtonBgColorHover:                     null,
     $altButtonIconColorHover:                   null,
     $altButtonBorderColorHover:                 null,
-    $altButtonBgImageHover:                     null,                   
+    $altButtonBgImageHover:                     null,
     $altButtonTextShadowHover:                  null,
     $altButtonBoxShadowHover:                   null,
 
@@ -65,7 +65,7 @@
     $altButtonBgColorActive:                    null,
     $altButtonIconColorActive:                  null,
     $altButtonBorderColorActive:                null,
-    $altButtonBgImageActive:                    null,                  
+    $altButtonBgImageActive:                    null,
     $altButtonTextShadowActive:                 null,
     $altButtonBoxShadowActive:                  null,
     $altButtonOpacityActive:                    null,
@@ -75,7 +75,7 @@
     $altButtonTextColorSelected:                null,
     $altButtonIconColorSelected:                null,
     $altButtonBorderColorSelected:              null,
-    $altButtonBgImageSelected:                  null,                 
+    $altButtonBgImageSelected:                  null,
     $altButtonTextShadowSelected:               null,
     $altButtonBoxShadowSelected:                null,
 
@@ -84,7 +84,7 @@
     $altButtonTextColorSelectedHover:           null,
     $altButtonIconColorSelectedHover:           null,
     $altButtonBorderColorSelectedHover:         null,
-    $altButtonBgImageSelectedHover:             null,                 
+    $altButtonBgImageSelectedHover:             null,
     $altButtonTextShadowSelectedHover:          null,
     $altButtonBoxShadowSelectedHover:           null,
 
@@ -193,10 +193,10 @@
     &.oj-button.oj-focus-only.oj-button-full-chrome .oj-button-button {  // custom element only
         background-color: $altButtonBgColor; 
         @include oj-background-image($altButtonBgImage);
-        border-color: $altButtonBorderColor;   
-        color: $altButtonTextColor;    
-        @include oj-box-shadow($altButtonBoxShadow); 
-        // can't set text-shadow on oj-button-text class because oj-button-text 
+        border-color: $altButtonBorderColor;
+        color: $altButtonTextColor;
+        @include oj-box-shadow($altButtonBoxShadow);
+        // can't set text-shadow on oj-button-text class because oj-button-text
         // not used on inputs of type button, submit, and reset
         text-shadow: $altButtonTextShadow ;
     }
@@ -213,9 +213,9 @@
     &.oj-button.oj-hover.oj-button-full-chrome:not(.oj-active) .oj-button-button {   // custom element only 
         background-color: $altButtonBgColorHover;
         @include oj-background-image($altButtonBgImageHover);
-        border-color: $altButtonBorderColorHover; 
-        color: $altButtonTextColorHover;  
-        @include oj-box-shadow($altButtonBoxShadowHover); 
+        border-color: $altButtonBorderColorHover;
+        color: $altButtonTextColorHover;
+        @include oj-box-shadow($altButtonBoxShadowHover);
         text-shadow: $altButtonTextShadowHover;
     }
 
@@ -230,8 +230,8 @@
         background-color: $altButtonBgColorActive;
         @include oj-background-image($altButtonBgImageActive);
         border-color: $altButtonBorderColorActive;
-        color: $altButtonTextColorActive;  
-        @include oj-box-shadow($altButtonBoxShadowActive); 
+        color: $altButtonTextColorActive;
+        @include oj-box-shadow($altButtonBoxShadowActive);
         text-shadow: $altButtonTextShadowActive;
         opacity: $altButtonOpacityActive;
     }
@@ -247,8 +247,8 @@
         background-color: $altButtonBgColorSelected;
         @include oj-background-image($altButtonBgImageSelected);
         border-color: $altButtonBorderColorSelected;
-        color: $altButtonTextColorSelected;  
-        @include oj-box-shadow($altButtonBoxShadowSelected); 
+        color: $altButtonTextColorSelected;
+        @include oj-box-shadow($altButtonBoxShadowSelected);
         text-shadow: $altButtonTextShadowSelected;
     }
     
@@ -258,8 +258,8 @@
         background-color: $altButtonBgColorSelectedHover;
         @include oj-background-image($altButtonBgImageSelectedHover);
         border-color: $altButtonBorderColorSelectedHover;
-        color: $altButtonTextColorSelectedHover;  
-        @include oj-box-shadow($altButtonBoxShadowSelectedHover); 
+        color: $altButtonTextColorSelectedHover;
+        @include oj-box-shadow($altButtonBoxShadowSelectedHover);
         text-shadow: $altButtonTextShadowSelectedHover;
     }
     
@@ -541,8 +541,8 @@
     $altButtonTextColor:                   null,
     $altButtonIconColor:                   $altButtonTextColor,
     $altButtonBorderColor:                 transparent,
-    $altButtonBgImage:                     none, 
-    $altButtonTextShadow:                  none, 
+    $altButtonBgImage:                     none,
+    $altButtonTextShadow:                  none,
     $altButtonBoxShadow:                   none,
 
     // hover
@@ -550,7 +550,7 @@
     $altButtonTextColorHover:              $altButtonTextColor,
     $altButtonIconColorHover:              $altButtonIconColor,
     $altButtonBorderColorHover:            $altButtonBorderColor,
-    $altButtonBgImageHover:                linear-gradient(hsla(0,0%,100%,.15), hsla(0,0%,100%,.15)),                   
+    $altButtonBgImageHover:                linear-gradient(hsla(0,0%,100%,.15), hsla(0,0%,100%,.15)),
     $altButtonTextShadowHover:             none,
     $altButtonBoxShadowHover:              none,
 
@@ -559,7 +559,7 @@
     $altButtonTextColorActive:             $altButtonTextColor,
     $altButtonIconColorActive:             $altButtonIconColor,
     $altButtonBorderColorActive:           $altButtonBorderColor,
-    $altButtonBgImageActive:               linear-gradient(hsla(0,0%,0%,.10), hsla(0,0%,0%,.10)),                  
+    $altButtonBgImageActive:               linear-gradient(hsla(0,0%,0%,.10), hsla(0,0%,0%,.10)),
     $altButtonTextShadowActive:            none,
     $altButtonBoxShadowActive:             none,
     $altButtonOpacityActive:               null,
@@ -569,7 +569,7 @@
     $altButtonTextColorSelected:           $altButtonTextColorActive,
     $altButtonIconColorSelected:           $altButtonIconColorActive,
     $altButtonBorderColorSelected:         $altButtonBorderColorActive,
-    $altButtonBgImageSelected:             $altButtonBgImageActive,                 
+    $altButtonBgImageSelected:             $altButtonBgImageActive,
     $altButtonTextShadowSelected:          $altButtonTextShadowActive,
     $altButtonBoxShadowSelected:           $altButtonBoxShadowActive,
 
@@ -578,7 +578,7 @@
     $altButtonTextColorSelectedHover:      $altButtonTextColorSelected,
     $altButtonIconColorSelectedHover:      $altButtonIconColorSelected,
     $altButtonBorderColorSelectedHover:    $altButtonBorderColorSelected,
-    $altButtonBgImageSelectedHover:        $altButtonBgImageSelected,                 
+    $altButtonBgImageSelectedHover:        $altButtonBgImageSelected,
     $altButtonTextShadowSelectedHover:     $altButtonTextShadowHover,
     $altButtonBoxShadowSelectedHover:      $altButtonBoxShadowHover,
 
@@ -606,8 +606,8 @@
         $altButtonBgColor:                     $altButtonBgColor,
         $altButtonIconColor:                   $altButtonIconColor,
         $altButtonBorderColor:                 $altButtonBorderColor,
-        $altButtonBgImage:                     $altButtonBgImage, 
-        $altButtonTextShadow:                  $altButtonTextShadow, 
+        $altButtonBgImage:                     $altButtonBgImage,
+        $altButtonTextShadow:                  $altButtonTextShadow,
         $altButtonBoxShadow:                   $altButtonBoxShadow,
 
         // hover
@@ -615,7 +615,7 @@
         $altButtonBgColorHover:                $altButtonBgColorHover,
         $altButtonIconColorHover:              $altButtonIconColorHover,
         $altButtonBorderColorHover:            $altButtonBorderColorHover,
-        $altButtonBgImageHover:                $altButtonBgImageHover,                   
+        $altButtonBgImageHover:                $altButtonBgImageHover,
         $altButtonTextShadowHover:             $altButtonTextShadowHover,
         $altButtonBoxShadowHover:              $altButtonBoxShadowHover,
 
@@ -624,7 +624,7 @@
         $altButtonBgColorActive:               $altButtonBgColorActive,
         $altButtonIconColorActive:             $altButtonIconColorActive,
         $altButtonBorderColorActive:           $altButtonBorderColorActive,
-        $altButtonBgImageActive:               $altButtonBgImageActive,                  
+        $altButtonBgImageActive:               $altButtonBgImageActive,
         $altButtonTextShadowActive:            $altButtonTextShadowActive,
         $altButtonBoxShadowActive:             $altButtonBoxShadowActive,
         $altButtonOpacityActive:               $altButtonOpacityActive,
@@ -634,7 +634,7 @@
         $altButtonTextColorSelected:           $altButtonTextColorSelected,
         $altButtonIconColorSelected:           $altButtonIconColorSelected,
         $altButtonBorderColorSelected:         $altButtonBorderColorSelected,
-        $altButtonBgImageSelected:             $altButtonBgImageSelected,                 
+        $altButtonBgImageSelected:             $altButtonBgImageSelected,
         $altButtonTextShadowSelected:          $altButtonTextShadowSelected,
         $altButtonBoxShadowSelected:           $altButtonBoxShadowSelected,
 
@@ -643,7 +643,7 @@
         $altButtonTextColorSelectedHover:      $altButtonTextColorSelectedHover,
         $altButtonIconColorSelectedHover:      $altButtonIconColorSelectedHover,
         $altButtonBorderColorSelectedHover:    $altButtonBorderColorSelectedHover,
-        $altButtonBgImageSelectedHover:        $altButtonBgImageSelectedHover,                 
+        $altButtonBgImageSelectedHover:        $altButtonBgImageSelectedHover,
         $altButtonTextShadowSelectedHover:     $altButtonTextShadowSelectedHover,
         $altButtonBoxShadowSelectedHover:      $altButtonBoxShadowSelectedHover,
 

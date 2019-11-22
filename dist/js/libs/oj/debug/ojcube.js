@@ -2,14 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojdatasource-common'], function(oj, $)
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
 {
   "use strict";
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* jslint browser: true*/
 
 
@@ -708,10 +707,7 @@ oj.Cube.prototype.GetAggType = function (dataValue) {
   return {};
 };
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* jslint browser: true*/
 
 /**
@@ -775,10 +771,7 @@ oj.CubeAggType = {
   CUSTOM: 'custom'
 };
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* jslint browser: true*/
 
 /**
@@ -923,7 +916,7 @@ oj.CubeAxisValue.prototype.getValue = function () {
  * @returns {string|null} the label for this axis header value
  * @memberof oj.CubeAxisValue
  * @since 1.1.0
- * @ojstatus preview
+ *
  * @export
  */
 oj.CubeAxisValue.prototype.getLabel = function () {
@@ -1066,10 +1059,7 @@ oj.CubeAxisValue.prototype._getPrevChild = function (currChild) {
 };
 
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* jslint browser: true*/
 
 /**
@@ -1221,10 +1211,7 @@ oj.CubeAxis.prototype.ProcessRow = function (row, keys) {
 };
 
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
  /**
  * @class oj.CubeCellSet
@@ -1377,10 +1364,7 @@ oj.CubeCellSet.prototype.getExtent = function (indexes) {
   };
 };
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Promise:false */
 
@@ -1393,6 +1377,7 @@ oj.CubeCellSet.prototype.getExtent = function (indexes) {
  * @export
  * @extends oj.DataGridDataSource
  * @constructor
+ * @final
  * @since 1.1.0
  */
 oj.CubeDataGridDataSource = function (cube) {
@@ -1682,10 +1667,7 @@ oj.CubeDataGridDataSource.prototype._getAxis = function (axis) {
   return null;
 };
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* jslint browser: true*/
 
 /**
@@ -1785,10 +1767,7 @@ oj.CubeDataValue.prototype._getVariance = function () {
   return (count > 1) ? this._data.square / (count - 1) : 0.0;
 };
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @class oj.CubeHeaderSet
@@ -1951,10 +1930,7 @@ oj.CubeHeaderSet.prototype._getValue = function (index, level) {
   return null;
 };
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* jslint browser: true*/
 
 /**
@@ -2028,10 +2004,7 @@ oj.CubeKeys.prototype._buildKeyHash = function () {
   return keyHash;
 };
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* jslint browser: true*/
 
 /**
@@ -2122,10 +2095,7 @@ oj.CubeKeys.prototype._buildKeyHash = function () {
  */
  oj.CubeLevel.prototype._axisObj = null;
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* jslint browser: true*/
 
 
@@ -2149,6 +2119,7 @@ oj.CubeKeys.prototype._buildKeyHash = function () {
  *                            (defaults to sum)
  * @see oj.Cube
  * @constructor
+ * @final
  * @since 1.1.0
  * @augments oj.Cube
  * @ojsignature  [{target: "Type", value: "Array<oj.DataColumnCube.Layout>", for: "layout"}, {target: "Type",
@@ -2292,10 +2263,7 @@ oj.DataColumnCube.prototype._buildAggTypeLookup = function () {
   }
 };
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* jslint browser: true*/
 
 
@@ -2313,6 +2281,7 @@ oj.DataColumnCube.prototype._buildAggTypeLookup = function () {
  *                           (optional) aggregation - the oj.CubeAggType for this data value attribute (defaults to sum).  If the type is 'CUSTOM' then a 'callback' property should be specified which is a function to call with each value.  The function takes two arguments, the first being the running value for the cell being calculated, the second being the new value to be aggregated with that running value
  * @see oj.Cube
  * @constructor
+ * @final
  * @since 1.1.0
  * @augments oj.Cube
  * @ojsignature  [{target: "Type", value: "Array<oj.DataValueAttributeCube.Layout>", for: "layout"}, {target: "Type",
@@ -2472,6 +2441,7 @@ oj.DataValueAttributeCube.prototype._buildAggTypeLookup = function () {
          { aggregation: oj.CubeAggType.SUM, callback: dv.callback });
   }
 };
+
 
 // Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
 

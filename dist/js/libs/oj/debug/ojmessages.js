@@ -2,9 +2,11 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojtranslation', 'knockout', 'ojs/ojcomposite', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojknockout', 
-        'promise', 'ojs/ojpopupcore', 'ojs/ojmessage', 'ojs/ojdataprovider'], 
+        'ojs/ojpopupcore', 'ojs/ojmessage', 'ojs/ojdataprovider'], 
 function(oj, $, Context, ThemeUtils, Translations, ko, Composite, Components, AnimationUtils, Logger)
 {
   "use strict";
@@ -149,9 +151,7 @@ var __oj_messages_metadata =
   "extension": {}
 };
 /* jslint browser: true*/
-/*
- ** Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
- */
+
 
 /* global ko:false, Components:false, Logger:false, Translations:false, ThemeUtils:false, Context:false */
 /**
@@ -159,7 +159,7 @@ var __oj_messages_metadata =
  * @since 5.0.0
  * @ojdisplayname Messages
  * @ojshortdesc Messages manages the layout and display of child messages.
- * @ojstatus preview
+ *
  * @ojsignature {target: "Type", value:"class ojMessages extends JetElement<ojMessagesSettableProperties>"}
  * @ojtsimport {module: "ojmessage", type: "AMD", imported: ["ojMessage"]}
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
@@ -177,9 +177,22 @@ var __oj_messages_metadata =
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#messageOverview-section"></a>
  * </h3>
  * <p>Description:
- * <p>Manages the layout and display of one or more messages. The only supported component child
- * element of <code class="prettyprint">oj-messages</code> is
- * <code class="prettyprint">oj-message</code>.
+ * <p>Manages the layout and display of one or more messages.
+ *
+ * <h4 id="messages-syntax-section">Syntax
+ * <a class="bookmarkable-link" title="Bookmarkable Link" href="#messages-syntax-section"></a></h4>
+ * <p>Messages can be defined using a simple syntax to directly bind a DataProvider to the 'messages'
+ *    attribute of oj-messages as shown below.
+ * <p><b>Note that the use of inlined oj-message children inside of oj-messages is deprecated.</b>
+ *    Applications should directly databind 'messages' attribute of oj-messages instead. Using
+ *    oj-message inside of the 'messageTemplate' slot to define the template is still valid.
+ *
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;oj-messages id="pageMessages" messages="[[messagesDataProvider]]">
+ * &lt;/oj-messages>
+ * </code>
+ * </pre>
  *
  * <h4 id="messages-layout-section">Layouts
  * <a class="bookmarkable-link" title="Bookmarkable Link" href="#messages-layout-section"></a></h4>
@@ -210,47 +223,6 @@ var __oj_messages_metadata =
  * &lt;/oj-messages>
  *
  * &lt;!-- Notification: Set 'position' to an empty or a structured object, set 'display' to 'notification' -->
- * &lt;oj-messages id="notificationMessages" messages="[[emailMessages]]" position="{}" display="notification">
- * &lt;/oj-messages>
- * </code>
- * </pre>
- *
- * <h4 id="messages-syntax-section">Syntaxes
- * <a class="bookmarkable-link" title="Bookmarkable Link" href="#messages-syntax-section"></a></h4>
- * <p>Messages can be defined as below followed by examples
- * <ul>
- * <li>Include an oj-message child for every message to be shown. This is suitable for case when the
- * messages are static and in small numbers</li>
- * <li>Include oj-message child, wrap it inside of a for-each binding. This is suitable for case
- * where one or more message sources need to be displayed in a single messages element</li>
- * <li>Use the simple syntax to directly bind a collection to the 'messages' attribute of oj-messages.
- * This is a convenient syntax and suitable when a single message source is used</li>
- * </ul>
- *
- * <pre class="prettyprint">
- * <code>
- * &lt;!-- Including oj-message children -->
- * &lt;oj-messages id="inlineMessages">
- *   &lt;oj-message message='{"summary": "Some summary", "detail": "Some detail", "autoTimeout": 5000}'>&lt;/oj-message>
- *   &lt;oj-message message="[[surveyInstructions]]">&lt;/oj-message>
- *   &lt;oj-message message="[[surveySubmitConfirmation]]">&lt;/oj-message>
- * &lt;/oj-messages>
- *
- * &lt;!-- For-each bound oj-message children -->
- * &lt;oj-messages id="pageOverlayMessages" position="{}" display="notification">
- *   &lt;oj-bind-for-each data="[[serviceRequestStatusUpdateMessages]]">
- *     &lt;template>
- *       &lt;oj-message message="[[$current.data]]">&lt;/oj-message>
- *     &lt;/template>
- *   &lt;/oj-bind-for-each>
- *   &lt;oj-bind-for-each data="[[criticalIncidentMessages]]">
- *     &lt;template>
- *       &lt;oj-message message="[[$current.data]]">&lt;/oj-message>
- *     &lt;/template>
- *   &lt;/oj-bind-for-each>
- * &lt;/oj-messages>
- *
- * &lt;!-- Collection bound simple syntax, no need to specify oj-message children -->
  * &lt;oj-messages id="notificationMessages" messages="[[emailMessages]]" position="{}" display="notification">
  * &lt;/oj-messages>
  * </code>
@@ -352,9 +324,9 @@ var __oj_messages_metadata =
 
 /**
  *<p> Specifies the collection of structured message data used to display the individual messages.
- * Instead of providing multiple oj-message as children, this property can be used to conveniently
- * specify the required data as a single collection. Individual message will be automatically
- * created based on this data. See {@link oj.ojMessage.Message} for message values.</p>
+ * This property can be used to conveniently specify the required data as a single collection.
+ * Individual message will be automatically created based on this data. See
+ * {@link oj.ojMessage.Message} for message values.</p>
  * <p> More information about the structured 'Message' data can be found in documentation for
  * 'message' attribute of <code class="prettyprint">oj-message</code> element.</p>
  *
@@ -432,7 +404,7 @@ var __oj_messages_metadata =
 /**
  * <p>The position property defines the presentation style.  The default presentation is inline,
  * defined by a <code>null</code> position property value.  When a value is provide for the
- * property, the presentation style will be an overaly "popup".  The aligment of the overaly
+ * property, the presentation style will be an overaly "popup".  The alignment of the overaly
  * is defined by the position sub-properties.</p>
  *
  * Default position sub-properites are extended by the provided value.  Defaults vary
@@ -440,7 +412,7 @@ var __oj_messages_metadata =
  * property is used to establish the location where the messages popup overlay will appear
  * relative to another element.</p>
  *
- * <p>The "my" and "at" properties defines aligment points relative to the popup and other
+ * <p>The "my" and "at" properties defines alignment points relative to the popup and other
  * element.  The "my" property represents the popups alignment where the "at" property
  * represents the other element that can be identified by "of" or defauts to the launcher
  * when the popup opens.  The values of these properties describe horizontal and
@@ -526,7 +498,7 @@ var __oj_messages_metadata =
  */
 
 /**
- * Horizontal aligment offset.
+ * Horizontal alignment offset.
  * @expose
  * @memberof! oj.ojMessages
  * @instance
@@ -558,7 +530,7 @@ var __oj_messages_metadata =
  */
 
 /**
- * Defines the horizontal alignment of what the messges overlay is aligned to.
+ * Defines the horizontal alignment of what the messages overlay is aligned to.
  * @expose
  * @memberof! oj.ojMessages
  * @instance
@@ -745,6 +717,10 @@ var __oj_messages_metadata =
  * <code class="prettyprint">&lt;oj-message></code> children are automatically stamped for each
  * message data in the collection.
  *
+ * <p><b>Note that the use of inlined oj-message children inside of oj-messages is deprecated.</b>
+ *    Applications should directly databind 'messages' attribute of oj-messages instead. Using
+ *    oj-message inside of the 'messageTemplate' slot to define the template is still valid.
+ *
  * @ojchild Default
  * @ojshortdesc The oj-messages element accepts only oj-message elements as children for the default slot. See the Help documentation for more information.
  * @memberof oj.ojMessages
@@ -771,22 +747,19 @@ var __oj_messages_metadata =
  * <p>When the template is executed for each message, it will have access to the binding context
  * containing the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current message. (See the table
+ *   <li>$current - an object that contains information for the current message. (See [oj.ojMessages.MessageTemplateContext]{@link oj.ojMessages.MessageTemplateContext} or the table
  *       below for a list of properties available on $current)</li>
  *  <li>alias - if 'data-oj-as' attribute was specified on the &lt;template> element, the value
  *      will be used to provide an application-named alias for $current.</li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot messageTemplate
  * @ojshortdesc The messageTemplate slot is used to specify the template for rendering each message. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojMessages
  * @since 6.2.0
- *
- * @property {Element} componentElement The &lt;oj-messages> custom element.
- * @property {Object} data The data for the current message being rendered.
- * @ojsignature {target:"Type", value:"oj.ojMessage.Message", for:"data", jsdocOverride: true}
+ * @ojslotitemprops oj.ojMessages.MessageTemplateContext
  *
  * @example <caption>Initialize oj-messages with an inline message template specified:</caption>
  * &lt;oj-messages messages="[[dataProvider]]">
@@ -928,8 +901,14 @@ var __oj_messages_metadata =
 
 /**
  * @typedef {Object} oj.ojMessages.PositionPoint
- * @property {number} [x] Horizontal aligment offset.
+ * @property {number} [x] Horizontal alignment offset.
  * @property {number} [y] Vertical alignment offset.
+ */
+/**
+ * @typedef {Object} oj.ojMessages.MessageTemplateContext
+ * @property {Element} componentElement The &lt;oj-messages> custom element.
+ * @property {Object} data The data for the current message being rendered.
+ * @ojsignature {target:"Type", value:"oj.ojMessage.Message", for:"data", jsdocOverride: true}
  */
 
 /**
@@ -978,7 +957,7 @@ var _MESSAGES_VIEW =
   '        <oj-bind-template-slot name="messageTemplate" ' +
   '          data="[[{data:$current.data, componentElement:_composite}]]">' +
   '          <template>' +
-  '            <oj-message message="[[$current.data]]" display-options="[[$props.displayOptions]]">' +
+  '            <oj-message message="[[$current.data]]" display-options="[[$properties.displayOptions]]">' +
   '            </oj-message>' +
   '          </template>' +
   '        </oj-bind-template-slot>' +
@@ -1007,6 +986,20 @@ function MessagesViewModel(context) {
   this._properties = context.properties;
   this._createObservables();
   this._updateLandmark();
+
+  //  When slideIn/out animation is used, like the defaults in notification messages, the
+  //  the transformation starts from off viewport. For applications that use oj-messages inside of
+  //  iFrame with 100% width/height *(eg. our cookbook demos), this works find in all cases except
+  //  WebKit. WebKit has a bug that 100% is not respected, and iFrame is resized to accomodate its
+  //  contents. In this case the transformation starting from outside the iFrame bounds triggers a
+  //  resize, the resize event then results in popupservice calling in the refresh hook (the
+  //  _refresh() method here), which will again position to top-end for notification message, which
+  //  will be further off view-port further trigger resize and goes into blind look.
+  // Workaround is to set overflow hidden on the containing oj-messages so that transformation due
+  //  to animation is confined to its boundary, this will workaround iFrame resize bug in Webkit.
+  if (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS) {
+    this._composite.style.overflow = 'hidden';
+  }
 }
 
 MessagesViewModel.prototype._bindingsApplied = function () {

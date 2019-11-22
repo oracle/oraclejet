@@ -2,14 +2,12 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], function(oj, ko, signals, Logger)
+
+define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, signals, Logger)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /* jslint browser: true*/
 /* global oj, ko, Promise, signals, Logger:false */
@@ -1266,6 +1264,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
    * @export
    * @ojtsimport knockout
    * @ojtsimport signals
+   * @ojtsimport {module: "ojrouterstate", type: "AMD", imported:["RouterState"]}
    */
   oj.Router = function (key, parentRouter, parentState) {
     var router = this;
@@ -1428,7 +1427,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
      * @type {string|undefined}
      * @readonly
      * @since 5.0.0
-     * @ojstatus preview
+     *
      */
     this._navigationType = undefined;
 
@@ -1637,7 +1636,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
      * @type {Object}
      * @since 4.2.0
      * @readonly
-     * @ojstatus preview
+     *
      * @ojsignature {target: "Type", value: "ko.Observable<oj.Router.ModuleConfigType>", jsdocOverride: true}
      */
     this._getObservableModuleConfig = function () {
@@ -1851,7 +1850,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
    * @return {oj.Router|undefined} The child router for the current state, if defined.
    * @since 5.0.0
    * @export
-   * @ojstatus preview
+   *
    */
   oj.Router.prototype.getCurrentChildRouter = function () {
     var sId = _getShortId(this._stateId() || this._defaultStateId);
@@ -2965,6 +2964,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
 // eslint-disable-next-line no-unused-vars
 var Router = oj.Router;
 
+
 /* eslint-disable no-bitwise */ /* The purpose of this file is compression which by its nature is bit banging */
 
 /**
@@ -3433,10 +3433,6 @@ var Router = oj.Router;
   }
 }());
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /* jslint browser: true*/
 /* global Promise:false */
@@ -3444,84 +3440,9 @@ var Router = oj.Router;
 /**
  * The RouterState module.
  */
-
-// Wrap in a IIFE to prevents the possiblity of collision in a non-AMD scenario.
 (function () {
-  'use strict';
-
   var stateParamExp = /^{(\w+)}$/;
-  /**
-   * @typedef {object} oj.RouterState.ConfigOptions
-   * @property {string=} label the string to be displayed in the command component.
-   * See the {@link oj.RouterState#label} property.
-   * @property {any=} value the object associated with this state.
-   * See the {@link oj.RouterState#value} property.
-   * @property {boolean=} isDefault true if this state is the default.
-   * See the {@link oj.Router#defaultStateId|defaultStateId} property.
-   * @property {(function(): boolean|function(): Promise.<boolean>)=} canEnter A callback that
-   * either returns a boolean or the Promise of a boolean. If the boolean is true the transition
-   * will continue.
-   * The default value is a method that always returns true.
-   * See the {@link oj.RouterState#canEnter} property.
-   * @property {(function():void|function(): Promise.<void>)=} enter A callback or
-   * the promise of a callback which execute when entering this state.
-   * See the {@link oj.RouterState#enter} property.
-   * @property {(function(): boolean|function(): Promise.<boolean>)=} canExit  A callback that
-   * either returns a boolean or the Promise of a boolean. If the boolean is true the transition
-   * will continue.
-   * The default value is a method that always returns true.
-   * See the {@link oj.RouterState#canExit} property.
-   * @property {(function():void|function(): Promise.<void>)=} exit A callback or
-   * the promise of a callback which execute when exiting this state.
-   * See the {@link oj.RouterState#canExit} property.
-   */
 
-  /**
-   * @class
-   * @since 1.1.0
-   * @ojtsnoexport
-   * @ojtsmodule
-   * @ojtsexportastype Router
-   * @classdesc
-   * Object representing a state of the router.
-   * @desc
-   * It is the type of the {@link oj.Router#currentState|currentState} property and type of
-   * the value returned by {@link oj.Router#getState|getState(String)}.
-   * @param {!string} id the state id.
-   * See the {@link oj.RouterState#id} property.
-   * @param {!Object=} options an object defining the state.
-   * @param {string=} options.label the string to be displayed in the command component.
-   * See the {@link oj.RouterState#label} property.
-   * @param {any=} options.value the object associated with this state.
-   * See the {@link oj.RouterState#value} property.
-   * @param {boolean=} options.isDefault true if this state is the default.
-   * See the {@link oj.Router#defaultStateId|defaultStateId} property.
-   * @param {(function(): boolean|function(): Promise.<boolean>)=} options.canEnter A callback that
-   * either returns a boolean or the Promise of a boolean. If the boolean is true the transition
-   * will continue.
-   * The default value is a method that always returns true.
-   * See the {@link oj.RouterState#canEnter} property.
-   * @param {(function():void|function(): Promise.<void>)=} options.enter A callback or
-   * the promise of a callback which execute when entering this state.
-   * See the {@link oj.RouterState#enter} property.
-   * @param {(function(): boolean|function(): Promise.<boolean>)=} options.canExit  A callback that
-   * either returns a boolean or the Promise of a boolean. If the boolean is true the transition
-   * will continue.
-   * The default value is a method that always returns true.
-   * See the {@link oj.RouterState#canExit} property.
-   * @param {(function():void|function(): Promise.<void>)=} options.exit A callback or
-   * the promise of a callback which execute when exiting this state.
-   * See the {@link oj.RouterState#canExit} property.
-   * @param {oj.Router=} router The router this state belongs to. If undefined, the method
-   * {@link oj.RouterState#go|go} and {@link oj.RouterState#isCurrent|isCurrent} will not work.
-   * @constructor
-   * @export
-   * @ojsignature {
-   *              target: 'Type',
-   *              for: 'options',
-   *              value: 'oj.RouterState.ConfigOptions',
-   *              jsdocOverride: true }
-   */
   oj.RouterState = function (id, options, router) {
     // eslint-disable-next-line no-param-reassign
     options = options || {};
@@ -3535,56 +3456,14 @@ var Router = oj.Router;
     // doesn't allow it.
     this._id = path.shift();
 
-    /**
-     * Router parameters allow passing of name/value pairs easily from one state
-     * to another.
-     *
-     * Configure the router with the parameter names embedded in
-     * the key of the router state, enclosed by curly-braces.  The parameter
-     * keys will be used to retrieve their values.
-     * @name oj.RouterState#parameters
-     * @example
-     * <caption>Configure router with a parameterized state</caption>
-     * oj.Router.rootInstance.configure({
-     *    'list': { label: 'List' },
-     *    'detail/{empId}/{edit}'
-     * });
-     * @description Parameter values are passed in the URL, and are position-
-     * dependent.
-     * @example
-     * <caption>Parameter values are passed in the URL, and are position-
-     * dependent.</caption>
-     * /app/detail/e100/true
-     * @description The newly-activated state is passed the 'parameters' Object
-     * alongside the {@link oj.Router#instance} property to the View Model of
-     * the state (if {@link oj.Router#moduleConfig} is used).
-     * To reference the values, use the key name by which the router states
-     * were configured.
-     * @example
-     * <caption>Retrieve parameter values from router</caption>
-     * function ViewModel(config) {
-     *    var router = config['ojRouter']['instance'];
-     *    var params = config['ojRouter']['parameters'];
-     *    var empId = params['empId'];
-     *    var edit = params['edit'];
-     * }
-     * @ojsignature [{ target: "Type", value: "{[key:string]:any}" }]
-     * @ojstatus preview
-     * @since 4.2.0
-     */
     this._parameters = {};
 
-    /**
-     * Internal array to track the order of configured param names.
-     * @type {Array}
-     * @private
-     */
     this._paramOrder = new Array(path.length);
 
     path.forEach(function (pathItem, i) {
       /*
-       * Match pattern "{token}"
-       */
+        * Match pattern "{token}"
+        */
       var match = pathItem.match(stateParamExp);
       if (match) {
         var token = match[1];
@@ -3593,150 +3472,37 @@ var Router = oj.Router;
       }
     }, this);
 
-    /**
-     * A callback that either returns a boolean or the Promise of a boolean.
-     * When defined, this callback is executed before entering this state. If the boolean
-     * is true the transition will continue, otherwise the state is not entered and the
-     * current state of the router does not change.
-     * <br>This allows the application to veto the transition into the
-     * state if there are known conditions that must be met before the state
-     * should be entered into.
-     * <br>If the operation (to check if the state can be entered) is synchronous,
-     * return a boolean directly; if asynchronous, a Promise of a boolean should
-     * be returned.  The state transition will not occur until either the boolean
-     * returned is true, or the Promise is resolved and returns true.
-     * <br>The default value is a method that always returns true.
-     * @name oj.RouterState#canEnter
-     * @type {(function():boolean|function():Promise.<boolean>)}
-     */
     this._canEnter = options.canEnter;
     if (this._canEnter) {
       oj.Assert.assertFunctionOrNull(this._canEnter);
     }
 
-    /**
-     * A callback or the promise of a callback which executes when entering this
-     * state.
-     * This callback executes after the router stateId changes.
-     * @name oj.RouterState#enter
-     * @type {(function():void|function():Promise.<void>)}
-     */
     this._enter = options.enter;
     if (this._enter) {
       oj.Assert.assertFunctionOrNull(this._enter);
     }
 
-    /**
-     * A callback that either returns a boolean or the Promise of a boolean.
-     * When defined, this callback is executed before exiting this state. If the boolean
-     * is true the transition will continue, otherwise the state is not exited and the
-     * current state of the router does not change.
-     * <br>This is typically used by states which need to verify user input is
-     * correct before moving on.  Synchronous checks can return a boolean directly,
-     * and asynchronous checks can return a Promise of a boolean.
-     * The state transition will not occur until either the boolean returned is
-     * true, or the Promise returned is resolved and returns true.
-     * <br>The default value is a method that always returns true.
-     * @name oj.RouterState#canExit
-     * @type {(function():boolean|function():Promise.<boolean>)}
-     */
     this._canExit = options.canExit;
     if (this._canExit) {
       oj.Assert.assertFunctionOrNull(this._canExit);
     }
 
-    /**
-     * A callback or the promise of a callback which execute when exiting this
-     * state.
-     * This callback executes before the router stateId changes.
-     * @name oj.RouterState#exit
-     * @type {(function():void|function():Promise.<void>)}
-     */
     this._exit = options.exit;
     if (this._exit) {
       oj.Assert.assertFunctionOrNull(this._exit);
     }
-    /**
-     * The value associated with this state. When this state is the current state of the
-     * router, it is the value returned by the observable {@link oj.Router#currentValue}.
-     * @name oj.RouterState#value
-     * @type {string}
-     */
     this._value = options.value;
 
-    /**
-     * The string to be used for the navigation component that will transition to this state.
-     * This is also used to build the title of the page when the {@link oj.RouterState#title}
-     * property is not defined. The title will be composed of the labels of all current
-     * states in the router hierarchy like "My Page | label lvl1 | label lvl2".
-     * @name oj.RouterState#label
-     * @type {string|undefined}
-     * @example <caption>Use the label property for the text of anchor tags in a list:</caption>
-     * &lt;ul id="foreachMenu">
-     *   &lt;oj-bind-for-each data="[[router.states]]">
-     *     &lt;template>
-     *       &lt;li>
-     *         &lt;a :style.active="[[isCurrent]]" :id="[[id]]" on-click="[[go]]">
-     *           &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
-     *         &lt;/a>
-     *       &lt;/li>
-     *     &lt;/template>
-     *   &lt;/oj-bind-for-each>
-     * &lt;/ul>
-     */
     this._label = options.label;
 
-    /**
-     * The string to be used for the page title. This can either be a string or a function
-     * returning a string. When more than one level of child router is defined, the title of
-     * the current state of the router nested the deepest has precedence. If the leaf router
-     * current state does not have a title property defined, the title of the current state of
-     * the parent router is used. If no title property is defined in the router hierarchy, a
-     * title is built using the {@link oj.RouterState#label} property.
-     * @name oj.RouterState#title
-     * @type {string|function():string|undefined}
-     */
     this._title = options.title;
 
-    /**
-     * @private
-     * @type {oj.Router|undefined}
-     *
-     */
     this._router = router;
 
-    /**
-     * This property is used when the router states are ojModule names.
-     * When the router transition to this state, it will attempt to execute the callbacks canExit, canEnter,
-     * enter and exit on the viewModel object first. If the callback is not defined on the viewModel, the
-     * router will attempt to execute the callback on the {@link oj.RouterState|RouterState}.
-     * @private
-     * @type {Object|undefined}
-     */
     this.viewModel = undefined;
 
     Object.defineProperties(this, {
       id: {
-        /**
-         * The id of this state.<br>
-         * It uniquely identify a state object in a router. The id property can be used as the
-         * attribute id of a navigation component like link or button.
-         * @name oj.RouterState#id
-         * @readonly
-         * @type {!string}
-         * @example <caption>Use the state id property for the attribute id of anchor tags in a list:</caption>
-         * &lt;ul id="foreachMenu">
-         *   &lt;oj-bind-for-each data="[[router.states]]">
-         *     &lt;template>
-         *       &lt;li>
-         *         &lt;a :style.active="[[isCurrent]]" :id="[[id]]" on-click="[[go]]">
-         *           &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
-         *         &lt;/a>
-         *       &lt;/li>
-         *     &lt;/template>
-         *   &lt;/oj-bind-for-each>
-         * &lt;/ul>
-         */
         value: this._id,
         enumerable: true
       },
@@ -3812,39 +3578,6 @@ var Router = oj.Router;
     });
   };
 
-  /**
-   * Transition the router to this state.
-   * This is a convenience method used as the event handler for a Knockout click binding on
-   * a button or <code class="prettyprint">a</code> tag.<br>
-   * A {@link oj.Router.transitionedToState|transitionedToState} signal is dispatched when the
-   * state transition has completed.
-   * @return {!Promise.<{hasChanged: boolean}>} A Promise that resolves when the
-   * router is done with the state transition.<br>
-   * When the promise is fullfilled, the parameter value is an object with the property
-   * <code class="prettyprint">hasChanged</code>.<br>
-   * The value of <code class="prettyprint">hasChanged</code> is:
-   * <ul>
-   *   <li>true: If the router state changed.</li>
-   * </ul>
-   * When the Promise is rejected, the parameter value is:
-   * <ul>
-   *   <li>An Error object stipulating the reason for the rejection when an error
-   * occurred during the resolution.</li>
-   * </ul>
-   * @export
-   * @example <caption>Use the go function as the handler for a click binding:</caption>
-   * &lt;ul id="foreachMenu">
-   *   &lt;oj-bind-for-each data="[[router.states]]">
-   *     &lt;template>
-   *       &lt;li>
-   *         &lt;a :style.active="[[isCurrent]]" :id="[[id]]" on-click="[[go]]">
-   *           &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
-   *         &lt;/a>
-   *       &lt;/li>
-   *     &lt;/template>
-   *   &lt;/oj-bind-for-each>
-   * &lt;/ul>
-   */
   oj.RouterState.prototype.go = function () {
     if (!this._router) {
       oj.Router._transitionedToState.dispatch({ hasChanged: false });
@@ -3853,26 +3586,6 @@ var Router = oj.Router;
     return this._router.go(this._id);
   };
 
-  /**
-   * Determine if the router current state is this state.
-   * This method is typically used by elements in the markup to show the appropriate selection value.
-   * @return {boolean} true if this state is the current router state.
-   * @throws An error if an owning router was not specified when the state was
-   * created.
-   * @export
-   * @example <caption>Use the is function to change the css of the state links:</caption>
-   * &lt;ul id="foreachMenu">
-   *   &lt;oj-bind-for-each data="[[router.states]]">
-   *     &lt;template>
-   *       &lt;li>
-   *         &lt;a :style.active="[[isCurrent]]" :id="[[id]]" on-click="[[go]]">
-   *           &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
-   *         &lt;/a>
-   *       &lt;/li>
-   *     &lt;/template>
-   *   &lt;/oj-bind-for-each>
-   * &lt;/ul>
-   */
   oj.RouterState.prototype.isCurrent = function () {
     if (!this._router) {
       throw new Error('Router is not defined for this RouterState object.');

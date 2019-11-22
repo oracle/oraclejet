@@ -2,15 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'knockout', 'ojs/ojlogger', 'ojs/ojcontext', 'promise'], function(oj, ko, Logger, Context)
+
+define(['ojs/ojcore', 'knockout', 'ojs/ojlogger', 'ojs/ojcontext'], function(oj, ko, Logger, Context)
 {
   "use strict";
-/*
-** Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
-**
-**34567890123456789012345678901234567890123456789012345678901234567890123456789
-*/
+
 
 /* global ko:false, Promise:false, Logger:false, Context:false */
 
@@ -146,7 +144,7 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
           cacheHolder.className = 'oj-helper-module-cache';
           // it is Ok to insert the cache holder as the first element because
           // all current children of the element will be moved to the cache holder
-          ko.virtualElements.prepend(element, cacheHolder); // @HTMLUpdateOK; cacheHolder is constructed above
+          ko.virtualElements.prepend(element, cacheHolder); // @HTMLUpdateOK cacheHolder is constructed above
         }
       };
 
@@ -355,6 +353,7 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
 
             var nodes = _getDomNodes(view, resolveBusyState);
             var model = values[1];
+            _checkForReusedView(element, nodes, model, isCustomElement, resolveBusyState);
 
             var saveInCache = false;
             var cachedNodeArray;
@@ -668,7 +667,7 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
   function _moveDomNodes(nodes, target) {
     nodes.forEach(
       function (n) {
-        target.appendChild(n); // @HTMLUpdateOK; child nodes are module view
+        target.appendChild(n); // @HTMLUpdateOK child nodes are module view
       }
     );
   }
@@ -858,7 +857,7 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
   function _insertNodes(container, nodes) {
     var nodeCount = nodes.length;
     for (var i = nodeCount - 1; i >= 0; i--) {
-      ko.virtualElements.prepend(container, nodes[i]); // @HTMLUpdateOK; nodes are the module view
+      ko.virtualElements.prepend(container, nodes[i]); // @HTMLUpdateOK nodes are the module view
     }
   }
 
@@ -949,6 +948,22 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
 
     );
     return noFail;
+  }
+
+  /**
+   * @ignore
+   */
+  function _checkForReusedView(element, nodes, model, isCustomElement, resolveBusyState) {
+    //   - <oj-module> does not give any indication to the page author if the previously cleaned view is being reused
+    // Throw an error if the view is being reused, else set a non-enumerable property for the next time check
+    if (isCustomElement && nodes.length > 0 && !_isBindingApplied(nodes, model)) {
+      if (nodes[0]._oj_module_used_view) {
+        resolveBusyState();
+        throw new Error('The oj-module with id \'' + element.id + '\' cannot apply binding on a previously cleaned view.');
+      } else {
+        Object.defineProperty(nodes[0], '_oj_module_used_view', { value: true });
+      }
+    }
   }
 }());
 

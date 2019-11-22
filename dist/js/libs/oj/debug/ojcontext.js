@@ -2,14 +2,12 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore-base', 'ojs/ojlogger' ], function(oj, Logger)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -957,10 +955,7 @@ oj.BusyContext._BOOTSTRAP_MEDIATOR = new /** @constructor */(function () {
   };
 })();
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -999,7 +994,7 @@ oj.BusyState = function (description) {
    * @private
    * @type {string}
    */
-  this._id = this._addedWaitTs.toString(36) + '_' + Math.random().toString(36); // @RandomNumberOk -
+  this._id = this._addedWaitTs.toString(36) + '_' + Math.random().toString(36); // @RandomNumberOK -
   // random number concatinated to the current timestamp is used for a unique id for a local Map
   // key. This random number is not used use as a cryptography key.
 };
@@ -1067,10 +1062,7 @@ oj.BusyState._getTs = function () {
   return window.performance ? window.performance.now() : new Date().getTime();
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors

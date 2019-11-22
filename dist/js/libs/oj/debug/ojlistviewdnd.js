@@ -2,14 +2,12 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistview'], function(oj, $, Logger)
 {
   "use strict";
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors

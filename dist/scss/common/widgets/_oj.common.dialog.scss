@@ -23,19 +23,15 @@
     /* defines the stacking context of the dialog and for it's children '**/
     .oj-dialog-layer {
       @extend .oj-component-layer;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        z-index: var(--oj-dialog-z-index);
-      } @else {
+
         z-index: $dialogZindex;
-      }
+      
     }
 
     .oj-dialog-layer.oj-focus-within {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        z-index: calc(var(--oj-dialog-z-index) + 1);
-      } @else {
+
         z-index: calc(#{$dialogZindex} + 1);
-      }
+
     }
 
     .oj-dialog {
@@ -51,17 +47,12 @@
       // use flex direction column to achieve a sticky footer
       flex-direction: column;
 
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        box-shadow: var(--oj-dialog-box-shadow);
-        background: var(--oj-dialog-bg-color);
-        border: var(--oj-dialog-border-width) solid var(--oj-dialog-border-color);
-        border-radius: var(--oj-dialog-border-radius);
-      } @else {
+
         @include oj-box-shadow($dialogBoxShadow);
         background: $dialogBgColor;
         border: $dialogBorderWidth solid $dialogBorderColor;
         border-radius: $dialogBorderRadius;
-      }
+
     }
 
     .oj-dialog-header {
@@ -71,16 +62,7 @@
       // Use flex to align elements in the header (title and close icon)
       display: flex;
       justify-content: space-between;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        padding: var(--oj-dialog-header-padding-top) var(--oj-dialog-header-padding-side)  var(--oj-dialog-header-padding-bottom);
-        background-color: var(--oj-dialog-header-bg-color);
-        background-image: var(--oj-dialog-header-bg-image);
-        border-bottom-color: var(--oj-dialog-header-border-color);
-        font-size: var(--oj-dialog-header-font-size);
-        color: var(--oj-dialog-header-text-color);
-        font-weight: var(--oj-dialog-header-font-weight);
-        min-height: var(--oj-button-sm-height);
-      } @else {
+
         // the height of any bottom padding put on here plus the height of the close icon
         // would make the header too tall. Therefore the bottom padding is put on the title,
         // see the bottom margin in .oj-dialog-title
@@ -93,7 +75,7 @@
         font-weight: $headerFontWeight;
         // The min-height provides a more consistent vertical centering of the header when the title font size varies due to browser-dependent font sizing differences.
         min-height: $buttonSmallHeight;
-      }
+
     }
 
     .oj-draggable .oj-dialog-header,
@@ -105,14 +87,7 @@
       // Vertically align the body with the close icon. 
       // Adjust margins so the the close button is positioned at the end of the dialog
       // Adjust horizontal padding so that a centered title does not collide with the close icon.
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        html:not([dir="rtl"]) .oj-dialog-header-close-wrapper {
-          margin-right: calc(0rem - var(--oj-dialog-header-padding-side));
-        }
-        html[dir="rtl"] .oj-dialog-header-close-wrapper {
-          margin-left: calc(0rem - var(--oj-dialog-header-padding-side));
-        }
-      } @else {
+
        .oj-dialog-header-close-wrapper { 
           $dialogPaddingSide: oj-shorthand-property-value-left($dialogHeaderPadding);
           @include oj-ltr() {
@@ -123,64 +98,47 @@
           }
         }
       }
-    }
+
 
     @if $dialogCloseIconPosition == top {
       // Adjust margins so the the close button is vertically positioned
       // in the top of the dialog header.
       // The class oj-dialog-header-close is asserted on the header div when there is a close button present.
       // We use this to adjust title padding when we have a close button
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-       .oj-dialog-header-close .oj-dialog-title {
-         padding-top: calc(var(--oj-button-height) - var(--oj-dialog-header-padding-top));
-       }
-       .oj-dialog-header-close-wrapper {
-          margin-top: calc(0rem - var(--oj-dialog-header-padding-top));
-        }
-      } @else {
+
         .oj-dialog-header-close .oj-dialog-title {
           padding-top: calc(#{$buttonHeight} - #{oj-shorthand-property-value-top($dialogHeaderPadding)});
         }   
        .oj-dialog-header-close-wrapper { 
           margin-top: calc(0rem - #{oj-shorthand-property-value-top($dialogHeaderPadding)});
         }
-      }
+
     } @else if $dialogCloseIconPosition == center {
       // adjust margins so the the close button is vertically positioned
       // in the center of the dialog header.
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-       .oj-dialog-header-close-wrapper { 
-          margin-bottom: calc(0rem - var(--oj-dialog-header-padding-top));
-        }
-      } @else {
-       .oj-dialog-header-close-wrapper { 
+
+       .oj-dialog-header-close-wrapper {
           margin-bottom: calc(0rem - #{oj-shorthand-property-value-top($dialogHeaderPadding)});
         }
-      }
+
     }
 
     // 
     // Use to control margin adjustments on close buttons' icon.
     // 
     .oj-dialog-header-close-wrapper.oj-button-icon-only .oj-button-icon  {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        margin: var(--oj-dialog-close-icon-button-margin);
-      } @else {
+
         margin: $dialogCloseIconButtonMargin;
-      }
+
      }
 
     .oj-dialog-title {
       overflow: hidden;
       cursor: default;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        user-select: none;
-      }
-      @else 
-      {
+
+
         @include oj-user-select-property(none);
-      }
+
       // vertically center-align the title within the header
       align-self: center;
       font-size: inherit;
@@ -204,18 +162,14 @@
         margin-left:auto;
       }
       html:not([dir="rtl"]) .oj-dialog-header-close .oj-dialog-title {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-          padding-left: calc(var(--oj-dialog-footer-button-height) - var(--oj-dialog-header-padding-side));
-        } @else {
+
           padding-left: calc(#{$dialogFooterButtonHeight} - #{oj-shorthand-property-value-left($dialogBodyPadding)});
-        }
+
       }
       html[dir="rtl"] .oj-dialog-header-close .oj-dialog-title {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-          padding-right: calc(var(--oj-dialog-footer-button-height) - var(--oj-dialog-header-padding-side));
-        } @else {
+
           padding-right: calc(#{$dialogFooterButtonHeight} - #{oj-shorthand-property-value-left($dialogBodyPadding)});
-        }
+
         margin-right:auto;
       }
       html:not([dir="rtl"]) .oj-dialog-header-close-wrapper {
@@ -250,23 +204,18 @@
       position: relative; 
       overflow: auto;   
       box-sizing: border-box;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        padding: var(--oj-dialog-body-padding);
-        text-align: var(--oj-dialog-body-text-align);
-      } @else {
+
         padding: $dialogBodyPadding;
         text-align: $dialogBodyTextAlign;
-      }
+
     }
 
    // optional footer separator
    //------------------------------------------
     .oj-dialog-footer-separator {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        border-top: 1px solid var(--oj-dialog-footer-divider-color);
-      } @else {
+
         border-top: 1px solid $dialogFooterDividerColor;
-      }
+
     }
 
     .oj-dialog-footer {
@@ -274,11 +223,9 @@
       justify-content: flex-end;
       // Configure the footer content to be fixed height on resize.
       flex: 0 0 auto;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        padding: var(--oj-dialog-footer-padding);
-      } @else {
+
         padding: $dialogFooterPadding;
-      }
+
       @include oj-ltr() {
          text-align: right;
       }
@@ -289,15 +236,11 @@
 
     .oj-dialog-footer > .oj-button,
     .oj-dialog-footer > .oj-button > .oj-button-button {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        height: var(--oj-dialog-footer-button-height);
-        font-weight: var(--oj-dialog-footer-button-font-weight);
-        margin-left: var(--oj-spacing-1x); // creates horizontal space between footer buttons
-      } @else {
+
         height: $dialogFooterButtonHeight;
         font-weight: $dialogFooterButtonFontWeight;
         margin-left: $spacingSmall; // creates horizontal space between footer buttons
-      }
+
     }
 
     @if $dialogFooterIntegrateButtons == true {
@@ -324,43 +267,18 @@
       html[dir="rtl"] .oj-dialog-footer > .oj-button.oj-active:not(:last-child),
       html[dir="rtl"] .oj-dialog-footer > .oj-button.oj-active.oj-focus:not(:last-child),
       html[dir="rtl"] .oj-dialog-footer > .oj-button:not(:last-child) > .oj-button-button {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-          border-color: transparent transparent transparent var(--oj-dialog-footer-divider-color);
-        } @else {
+
           border-color: transparent transparent transparent $dialogFooterDividerColor;
-        } 
+
       }
 
       .oj-dialog-footer {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-          border-top: 1px solid var(--oj-dialog-footer-divider-color);
-        } @else {
+
           border-top: 1px solid $dialogFooterDividerColor;
-        }
+
       }
 
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
 
-        // Define radius of the first button
-        html:not([dir="rtl"]) .oj-dialog-footer > .oj-button:first-child {
-          border-left-color: transparent;
-          border-radius: 0 0 0 var(--oj-dialog-border-radius);
-        }
-        
-        html[dir="rtl"] .oj-dialog-footer > .oj-button:first-child {
-          border-right-color: transparent;
-          border-radius: 0 0 var(--oj-dialog-border-radius) 0;
-        }
-        
-        // Define radius of the last button
-        html:not([dir="rtl"]) .oj-dialog-footer > .oj-button:last-child {
-          border-radius: 0 0 var(--oj-dialog-border-radius) 0;
-        }
-        
-        html[dir="rtl"] .oj-dialog-footer > .oj-button:last-child {
-          border-radius: 0 0 0 var(--oj-dialog-border-radius);
-        }
-      } @else {
 
         // Define radius of the first button
         .oj-dialog-footer > .oj-button:first-child {
@@ -381,9 +299,9 @@
           }
           @include oj-rtl() {
             @include oj-border-radius(0 0 0 $dialogBorderRadius);
-          }     
+          }
         }
-      }
+
     }
 
     // Disable Chrome's automatic blue outline on the dialog container,
@@ -400,12 +318,9 @@
     // Apply this to the dialog container and the close wrapper.
    .oj-dialog.oj-focus-highlight,
    .oj-dialog-header-close-wrapper.oj-focus-highlight {
-     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-       outline: dotted 1px var(--oj-text-color-primary);
-       outline: -webkit-focus-ring-color auto;
-     } @else {
+
        @include oj-browser-focus-outline-approximation($primaryTextColor);
-     }
+
     }
 
     // 
@@ -416,11 +331,9 @@
     // 
    .oj-dialog-layer.oj-focus-within,
    .oj-dialog-layer.oj-animate-open {
-     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-       z-index: calc(var(--oj-dialog-z-index) + 1);
-     } @else {
+
        z-index: calc(#{$dialogZindex} + 1);
-     }
+
    }
 
   // icons

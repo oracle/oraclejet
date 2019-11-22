@@ -18,18 +18,12 @@
     }
 
     .oj-progress-bar {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        height: var(--oj-progress-bar-height);
-        border: 1px var(--oj-progress-bar-border-style) var(--oj-progress-bar-border-color);
-        border-radius: var(--oj-progress-bar-border-radius);
-      }
-      @else
-      {
+
+
         height: $progressBarHeight;
         border: 1px $progressBarBorderStyle $progressBarBorderColor;
         @include oj-border-radius($progressBarBorderRadius);
-      }
+
       position: relative;
       box-sizing: border-box;
       overflow: hidden;
@@ -41,30 +35,21 @@
       height: 100%;
       width: 100%;
       z-index: -1;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-progress-bar-bg-color);
-        opacity: var(--oj-progress-bar-bg-opacity);
-      }
-      @else
-      {
+
+
         background-color: $progressBarBgColor;
         opacity: $progressBarBgOpacity;
-      }
+
     }
 
     .oj-progress-bar-value {
       margin: 0;
       box-sizing: border-box;
       height: 100%;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background: var(--oj-progress-value-bg-color);
-      }
-      @else
-      {
+
+
         background: $progressValueBgColor;
-      }
+
     }
     //.oj-progressbar-start-label, oj-progressbar-end-label are old syntax
     .oj-progressbar-start-label,
@@ -95,12 +80,9 @@
     .oj-progress-bar-overlay {
       height: 100%;
       background: url($progressBarIndeterminateOverlayImage);
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        opacity: var(--oj-progress-bar-indeterminate-overlay-opacity);
-      } @else {
+
         opacity: $progressBarIndeterminateOverlayOpacity;
-      }
+
       // TODO
       @include oj-rtl() {
         transform:scaleX(-1);
@@ -109,14 +91,10 @@
 
     // Add border for high contrast mode where the background color can't be seen
     .oj-hicontrast .oj-progress-bar-value {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        border: 1px dashed var(--oj-progress-bar-border-color);
-      }
-      @else
-      {
+
+
         border: 1px dashed $progressBarBorderColor;
-      }
+
     }
 
 
@@ -126,16 +104,11 @@
     .oj-progress-circle {
       position: relative;
       display: inline-block;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        width: var(--oj-progress-circle-size);
-        height: var(--oj-progress-circle-size);
-      }
-      @else
-      {
+
+
         width: $progressCircleSize;
         height: $progressCircleSize;
-      }
+
       max-width: 100%;
       max-height: 100%;
     }
@@ -143,36 +116,24 @@
     .oj-progress-circle-base {
       fill: transparent;
       stroke-width: 10%;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        stroke: var(--oj-progress-circle-bg-color);
-      }
-      @else
-      {
+
+
         stroke: $progressCircleBgColor;
-      }
+
     }
 
     .oj-progress-circle-base:not(.oj-progress-circle-value) {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        stroke-opacity: var(--oj-progress-circle-bg-opacity);
-      }
-      @else
-      {
+
+
         stroke-opacity: $progressCircleBgOpacity;
-      }
+
     }
 
     .oj-progress-circle-value {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        stroke: var(--oj-progress-value-bg-color);
-      }
-      @else
-      {
+
+
         stroke: $progressValueBgColor;
-      }
+      
     }
 
     .oj-progress-circle-transform {

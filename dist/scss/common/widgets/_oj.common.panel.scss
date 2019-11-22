@@ -14,30 +14,22 @@ $includePanelClasses:   $includeAllClasses !default;
   @include module-include-once("common.panel") {
 
     .oj-panel {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        border: 1px solid var(--oj-panel-border-color);
-        background-color: var(--oj-panel-bg-color);
-        border-radius: var(--oj-panel-border-radius);
-        padding: var(--oj-panel-padding);
-      } @else {
+
         border: 1px solid $panelBorderColor;
         background-color: $panelBgColor;
         @include oj-border-radius( $panelBorderRadius );
         padding: $panelPadding;
-      }
+
       box-sizing: border-box;
       overflow: hidden;
       position: relative;
     }
 
     .oj-panel-alt1 {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        background-color: var(--oj-panel-1-bg-color);
-        border-color: var(--oj-panel-1-border-color);
-      } @else {
+
         background-color: $panel1BgColor;
         border-color: $panel1BorderColor;
-      }
+
     }
 
     .oj-panel-alt2 {
@@ -61,11 +53,9 @@ $includePanelClasses:   $includeAllClasses !default;
     }
 
     .oj-panel.oj-selected {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        border-color: var(--oj-panel-border-color-selected);
-      } @else {
+
         border-color: $panelBorderColorSelected;
-      }
+
     }
 
     .oj-hicontrast .oj-panel.oj-selected {
@@ -74,27 +64,21 @@ $includePanelClasses:   $includeAllClasses !default;
 
 
     .oj-panel-shadow-sm {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        box-shadow: 0 2px 2px 0 unquote('hsla(var(--oj-box-shadow-hsl),0.14)'), 0 3px 1px -2px unquote('hsla(var(--oj-box-shadow-hsl),0.2)'), 0 1px 5px 0 unquote('hsla(var(--oj-box-shadow-hsl),0.12)');
-      } @else {
+
         @include oj-box-shadow(0 2px 2px 0 unquote('hsla(#{$boxShadowHsl},0.14)'), 0 3px 1px -2px unquote('hsla(#{$boxShadowHsl},0.2)'), 0 1px 5px 0 unquote('hsla(#{$boxShadowHsl},0.12)')); 
-      }
+
     }
 
     .oj-panel-shadow-md {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-          box-shadow: 0 4px 5px 0 unquote('hsla(var(--oj-box-shadow-hsl),0.14)'), 0 1px 10px 0 unquote('hsla(var(--oj-box-shadow-hsl),0.12)'), 0 2px 4px -1px unquote('hsla(var(--oj-box-shadow-hsl),0.2)');
-      } @else {
+
           @include oj-box-shadow(0 4px 5px 0 unquote('hsla(#{$boxShadowHsl},0.14)'), 0 1px 10px 0 unquote('hsla(#{$boxShadowHsl},0.12)'), 0 2px 4px -1px unquote('hsla(#{$boxShadowHsl},0.2)'));
-      }
+
     }
 
     .oj-panel-shadow-lg {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-          box-shadow: 0 6px 10px 0 unquote('hsla(var(--oj-box-shadow-hsl),0.14)'), 0 1px 18px 0 unquote('hsla(var(--oj-box-shadow-hsl),0.12)'), 0 3px 5px -1px unquote('hsla(var(--oj-box-shadow-hsl),0.2)');
-      } @else {
+
           @include oj-box-shadow(0 6px 10px 0 unquote('hsla(#{$boxShadowHsl},0.14)'), 0 1px 18px 0 unquote('hsla(#{$boxShadowHsl},0.12)'), 0 3px 5px -1px unquote('hsla(#{$boxShadowHsl},0.2)'));
-      }
+
     }
 
     //this should be applied to the drag handle of a draggable panel
@@ -104,15 +88,11 @@ $includePanelClasses:   $includeAllClasses !default;
       cursor: move;
       height: 20px;
       line-height: 20px;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        margin-top: calc(0px - var(--oj-panel-padding));
-        margin-left: calc(0px - var(--oj-panel-padding));
-        margin-right: calc(0px - var(--oj-panel-padding));
-      } @else {
+
         margin-top: calc(0px - #{$panelPadding});
         margin-left: calc(0px - #{$panelPadding});
         margin-right: calc(0px - #{$panelPadding});
-      }
+
     }
     
     //these should be applied to the button used to resize or remove
@@ -126,11 +106,9 @@ $includePanelClasses:   $includeAllClasses !default;
         position: absolute;
         margin-bottom: 0;
         overflow: hidden;
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            width: var(--oj-button-height);
-        } @else {
+
             width: $buttonHeight;
-        }
+        
         @include oj-ltr() {
             right: 0;
         }

@@ -2,15 +2,15 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'promise', 'jqueryui-amd/position'], 
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'jqueryui-amd/position'], 
 function(oj, $, Context, Components, Logger)
 {
   "use strict";
 /* jslint browser: true*/
-/*
- ** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
- */
+
 
 /* global Promise:false, Components:false, Logger:false, Context:false */
 
@@ -658,7 +658,7 @@ oj.PopupServiceImpl.prototype._assertEventSink = function () {
     window.removeEventListener('scroll', oj.PopupServiceImpl._refreshCallback, true);
 
     docElement = document.documentElement;
-    docElement.removeEventListener('mousewheel', oj.PopupServiceImpl._refreshCallback, true);
+    docElement.removeEventListener('mousewheel', oj.PopupServiceImpl._refreshCallback, { passive: true, capture: true });
     docElement.removeEventListener('DOMMouseScroll', oj.PopupServiceImpl._refreshCallback, true);
 
     this._callbackEventFilter = null;
@@ -677,7 +677,7 @@ oj.PopupServiceImpl.prototype._assertEventSink = function () {
     window.addEventListener('scroll', oj.PopupServiceImpl._refreshCallback, true);
 
     docElement = document.documentElement;
-    docElement.addEventListener('mousewheel', oj.PopupServiceImpl._refreshCallback, true);
+    docElement.addEventListener('mousewheel', oj.PopupServiceImpl._refreshCallback, { passive: true, capture: true });
     docElement.addEventListener('DOMMouseScroll', oj.PopupServiceImpl._refreshCallback, true);
 
     callbackEventFilter = this._eventFilterCallback.bind(this);
@@ -1045,7 +1045,7 @@ oj.ZOrderUtils.getDefaultLayer = function () {
   defaultLayer = $('<div>');
   defaultLayer.attr('role', 'presentation');
   defaultLayer.attr('id', oj.ZOrderUtils._DEFAULT_LAYER_ID);
-  defaultLayer.prependTo($(document.body)); // @HTMLUpdateOK; attach programmatic generated node
+  defaultLayer.prependTo($(document.body)); // @HTMLUpdateOK attach programmatic generated node
 
   return defaultLayer;
 };
@@ -1086,17 +1086,17 @@ oj.ZOrderUtils.addToAncestorLayer = function (popup, launcher, modality, layerCl
 
   layer.attr('role', 'presentation');
   layer.addClass(layerClass);
-  popup.after(layer);  // @HtmlUpdateOk
+  popup.after(layer);  // @HTMLUpdateOK
 
   oj.ZOrderUtils._createSurrogate(layer, isCustomElement);
 
   Components.subtreeDetached(popupDom);
-  popup.appendTo(layer);  // @HtmlUpdateOk
+  popup.appendTo(layer);  // @HTMLUpdateOK
 
   // link the popup to the layer @see oj.ZOrderUtils.getOpenPopupLayer
   popup.data(oj.ZOrderUtils._LAYER_ID_DATA, layer.attr('id'));
 
-  layer.appendTo(ancestorLayer);  // @HtmlUpdateOk
+  layer.appendTo(ancestorLayer);  // @HTMLUpdateOK
   Components.subtreeAttached(popupDom);
 
   oj.ZOrderUtils.applyModality(layer, modality);
@@ -1173,7 +1173,7 @@ oj.ZOrderUtils._createSurrogate = function (layer, isCustomElement) {
   }
 
   /** @type {?} */
-  var surrogate = $(document.createElement(nodeName));  // @HtmlUpdateOk;
+  var surrogate = $(document.createElement(nodeName));  // @HTMLUpdateOK
 
   /** @type {?} */
   var layerId = layer.attr('id');
@@ -1187,7 +1187,7 @@ oj.ZOrderUtils._createSurrogate = function (layer, isCustomElement) {
     surrogate.attr('data-oj-binding-provider', 'none');
   }
 
-  surrogate.insertBefore(layer);  // @HtmlUpdateOk
+  surrogate.insertBefore(layer);  // @HTMLUpdateOK
 
   if (!isCustomElement) {
     // create the jquery ui component bound to the script node
@@ -1220,7 +1220,7 @@ oj.ZOrderUtils._removeSurrogate = function (layer) {
   var surrogate = $(document.getElementById(surrogateId));
   var originatingSubtreeExists = surrogate.length > 0;
   if (originatingSubtreeExists) {
-    layer.insertAfter(surrogate);  // @HtmlUpdateOk
+    layer.insertAfter(surrogate);  // @HTMLUpdateOK
     Components.setComponentOption(surrogate[0], 'beforeDestroy', null);
     surrogate.remove();
   }
@@ -1388,7 +1388,7 @@ oj.ZOrderUtils._addOverlayToAncestorLayer = function (layer) {
     overlay.attr('id', [layerId, 'overlay'].join('_'));
   }
 
-  layer.before(overlay);  // @HtmlUpdateOk
+  layer.before(overlay);  // @HTMLUpdateOK
 
   /** @type {?} */
   var overlayId = overlay.attr('id');
@@ -2005,8 +2005,18 @@ oj.SimpleTapRecognizer.prototype.Init = function () {
   this._eventHandlerCallback = eventHandlerCallback;
 
   var docElement = document.documentElement;
+  var eventType;
   for (var i = 0; i < oj.SimpleTapRecognizer._TOUCHEVENTS.length; i++) {
-    docElement.addEventListener(oj.SimpleTapRecognizer._TOUCHEVENTS[i], eventHandlerCallback, true);
+    eventType = oj.SimpleTapRecognizer._TOUCHEVENTS[i];
+    if (eventType === 'touchstart' || eventType === 'touchmove') {
+      docElement.addEventListener(
+        eventType,
+        eventHandlerCallback,
+        { passive: false, capture: true }
+      );
+    } else {
+      docElement.addEventListener(eventType, eventHandlerCallback, true);
+    }
   }
 };
 
@@ -2054,9 +2064,18 @@ oj.SimpleTapRecognizer.prototype.destroy = function () {
   this._eventHandlerCallback = null;
 
   var docElement = document.documentElement;
+  var eventType;
   for (var i = 0; i < oj.SimpleTapRecognizer._TOUCHEVENTS.length; i++) {
-    docElement.removeEventListener(oj.SimpleTapRecognizer._TOUCHEVENTS[i],
-      eventHandlerCallback, true);
+    eventType = oj.SimpleTapRecognizer._TOUCHEVENTS[i];
+    if (eventType === 'touchstart' || eventType === 'touchmove') {
+      docElement.removeEventListener(
+        eventType,
+        eventHandlerCallback,
+        { passive: false, capture: true }
+      );
+    } else {
+      docElement.removeEventListener(eventType, eventHandlerCallback, true);
+    }
   }
 };
 
@@ -2139,7 +2158,7 @@ oj.PopupLiveRegion.prototype.announce = function (message) {
   if (!oj.StringUtils.isEmpty(message)) {
     var liveRegion = oj.PopupLiveRegion._getLiveRegion();
     liveRegion.children().remove();
-    $('<div>').text(message).appendTo(liveRegion);  // @HtmlUpdateOk; the "messsage" comes from a
+    $('<div>').text(message).appendTo(liveRegion);  // @HTMLUpdateOK the "messsage" comes from a
                                                     // translated string that can be overridden by
                                                     // an option on the ojPopup.  The jquery "text"
                                                     // function will escape script.
@@ -2161,7 +2180,7 @@ oj.PopupLiveRegion._getLiveRegion = function () {
       'aria-live': 'polite',
       'aria-relevant': 'additions' });
     liveRegion.addClass('oj-helper-hidden-accessible');
-    liveRegion.appendTo(document.body);  // @HtmlUpdateOk
+    liveRegion.appendTo(document.body);  // @HTMLUpdateOK
   }
   return liveRegion;
 };
@@ -2235,9 +2254,9 @@ oj.PopupSkipLink.prototype.Init = function () {
   link.addClass('oj-helper-hidden-accessible');
   link.text(message);
   if (!insertBefore) {
-    link.insertAfter(sibling);  // @HtmlUpdateOk
+    link.insertAfter(sibling);  // @HTMLUpdateOK
   } else {
-    link.insertBefore(sibling);  // @HtmlUpdateOk
+    link.insertBefore(sibling);  // @HTMLUpdateOK
   }
 
   link.on('click', oj.PopupSkipLink._activateHandler.bind(this, callback));
@@ -2540,9 +2559,7 @@ oj.PopupWhenReadyMediator.prototype.isOperationPending = function (widgetInstanc
 };
 
 /* jslint browser: true*/
-/*
-** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
-*/
+
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.

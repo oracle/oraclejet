@@ -2,14 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojdatasource-common'], function(oj, $, ko)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -32,6 +31,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojdatasource-common'], function
  * @implements oj.PagingModel
  * @param {Array.<Object>} data
  * @constructor
+ * @final
  * @ojtsignore
  * @ojtsimport knockout
  */

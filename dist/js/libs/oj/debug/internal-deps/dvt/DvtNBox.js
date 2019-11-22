@@ -6,8 +6,20 @@ define(['./DvtToolkit'], function(dvt) {
   "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
-// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+
+/**
+ * @license
+ * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -72,7 +84,7 @@ dvt.NBox.prototype.Init = function(context, callback, callbackObj) {
     this.EventManager.setKeyboardHandler(this.CreateKeyboardHandler(this.EventManager));
 
   // Make sure the object has an id for clipRect naming
-  this.setId('nbox' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
+  this.setId('nbox' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOK
 
   /**
    * The array of logical objects for this nbox.
@@ -813,7 +825,12 @@ dvt.NBox.prototype.setAnimationAllowed = function(animationAllowed) {
   this._animationAllowed = animationAllowed;
 };
 
-// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 /**
@@ -1150,7 +1167,12 @@ dvt.NBoxConstants.HEIGHT = 'height';
 dvt.NBoxConstants.WIDTH = 'width';
 
 
-// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -1276,6 +1298,12 @@ DvtNBoxDefaults.SKIN_ALTA = {
 };
 
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 var DvtNBoxCell = function() {};
 
 dvt.Obj.createSubclass(DvtNBoxCell, dvt.Container);
@@ -1743,6 +1771,12 @@ DvtNBoxCell.prototype.getKeyboardFocusDisplayable = function() {
   return null;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * An NBox node.
  * @param {dvt.NBox} nbox the parent nbox
@@ -2234,6 +2268,12 @@ DvtNBoxNode.prototype.setChildContainer = function(container) {
   this._childContainer = container;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 var DvtNBoxNodeOverflow = function() {};
 
 dvt.Obj.createSubclass(DvtNBoxNodeOverflow, dvt.Container);
@@ -2494,6 +2534,12 @@ DvtNBoxNodeOverflow.prototype.getKeyboardFocusDisplayable = function() {
   return newPrevNode.nextNavigable;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 var DvtNBoxCategoryNode = function() {};
 
 dvt.Obj.createSubclass(DvtNBoxCategoryNode, dvt.Container);
@@ -2985,6 +3031,12 @@ DvtNBoxCategoryNode.prototype.getKeyboardFocusDisplayable = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Category rollover handler for NBox
  * @param {function} callback A function that responds to component events.
  * @param {object} callbackObj The object instance that the callback function is defined on.
@@ -3029,6 +3081,12 @@ DvtNBoxCategoryRolloverHandler.prototype.GetRolloutCallback = function(event, ob
   return callback.bind(this);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 var DvtNBoxDrawer = function() {};
 
 dvt.Obj.createSubclass(DvtNBoxDrawer, dvt.Container);
@@ -3293,6 +3351,12 @@ DvtNBoxDrawer.prototype.getKeyboardFocusDisplayable = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Animation handler for NBox
  * @param {dvt.Context} context the platform specific context object
  * @param {dvt.Container} deleteContainer the container where deletes should be moved for animation
@@ -3356,7 +3420,12 @@ DvtNBoxDataAnimationHandler.prototype.getAnimationDuration = function() {
   return DvtNBoxStyleUtils.getAnimationDuration(this._oldNBox);
 };
 
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Event Manager for dvt.NBox.
  * @param {dvt.NBox} nbox NBox component
@@ -3491,6 +3560,12 @@ DvtNBoxEventManager.prototype.GetTouchResponse = function() {
   return dvt.EventManager.TOUCH_RESPONSE_AUTO;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Keyboard handler for the NBox component
  * @param {dvt.EventManager} manager The owning dvt.EventManager
@@ -3648,6 +3723,12 @@ DvtNBoxKeyboardHandler.getNextNavigableCategoryNode = function(curr, event, navi
 
 
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  *  Provides automation services for a DVT nBox component.
  *  @class  DvtNBoxAutomation
@@ -4446,7 +4527,12 @@ DvtNBoxAutomation.prototype.getNodeIndexFromId = function(id) {
   return DvtNBoxDataUtils.getNodeIndex(this._nBox, id);
 };
 
-// Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 /**
@@ -5684,7 +5770,12 @@ DvtNBoxRenderer._renderEmptyText = function(nbox, container, availSpace) {
       nbox.getEventManager(), options['_statusMessageStyle']);
 };
 
-// Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 /**
@@ -6481,7 +6572,12 @@ DvtNBoxCellRenderer._addAccessibilityAttributes = function(nbox, cellData, cellC
   }
 };
 
-// Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 /**
@@ -7520,7 +7616,12 @@ DvtNBoxNodeRenderer._addAccessibilityAttributes = function(nbox, object) {
   }
 };
 
-// Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 /**
@@ -7865,7 +7966,12 @@ DvtNBoxCategoryNodeRenderer._addAccessibilityAttributes = function(nbox, object)
   }
 };
 
-// Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 /**
@@ -8211,7 +8317,7 @@ DvtNBoxDrawerRenderer.getDrawerBounds = function(nbox, data, availSpace) {
  */
 DvtNBoxDrawerRenderer.animateUpdate = function(animationHandler, oldDrawer, newDrawer) {
   // TODO
-  console.log('********************* DvtNBoxDrawerRenderer.animateUpdate *********************');
+  //console.log('********************* DvtNBoxDrawerRenderer.animateUpdate *********************');
 };
 
 
@@ -8294,6 +8400,12 @@ DvtNBoxDrawerRenderer._addAccessibilityAttributes = function(nbox, data, drawerC
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Data related utility functions for dvt.NBox.
  * @class
@@ -9257,7 +9369,12 @@ DvtNBoxDataUtils.getNextNavigableNode = function(nbox, object, event) {
 
 
 
-// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 /**
@@ -9915,7 +10032,12 @@ DvtNBoxStyleUtils.getLabelHalign = function(nbox, data) {
   }
 };
 
-// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  * Vector math utilities.
@@ -9978,6 +10100,13 @@ var DvtVectorUtils = {
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
   return dvt;
 });

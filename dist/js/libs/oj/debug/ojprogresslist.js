@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 
 define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomposite', 'ojs/ojknockouttemplateutils', 'ojs/ojcomponentcore', 'ojs/ojlistview', 'ojs/ojprogress'], 
 function(oj, $, ko, Composite, KnockoutTemplateUtils)
@@ -24,10 +26,7 @@ var __oj_progress_list_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* jslint browser: true,devel:true*/
 /**
@@ -39,7 +38,8 @@ var __oj_progress_list_metadata =
  * @interface ProgressItem
  * @memberof oj
  * @since 4.0.0
- * @ojstatus preview
+ * @ojdeprecated {since: '8.0.0', description: '&lt;oj-progress-list> has been deprecated, please use &lt;oj-list-view> instead.'}
+ *
  */
 oj.ProgressItem = function () {
 };
@@ -144,10 +144,7 @@ oj.ProgressItem.EventType = {
   LOADEND: 'loadend'
 };
 
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global ko */
 
@@ -286,18 +283,16 @@ Composite.register('oj-progress-item',
     metadata: progressItemMetadata
   });
 
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global KnockoutTemplateUtils:false */
 /**
  * @ojcomponent oj.ojProgressList
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @since 4.0.0
+ * @ojdeprecated {since: '8.0.0', description: 'Please use &lt;oj-list-view> instead.'}
  * @ojdisplayname Progress List
  * @ojshortdesc A progress list displays a list of items and their progress, it is most commonly used in conjunction with a file picker to display file upload progress.
- * @ojstatus preview
+ *
  * @class oj.ojProgressList
  * @ojsignature {target: "Type", value:"class ojProgressList extends JetElement<ojProgressListSettableProperties>"}
  *
@@ -429,10 +424,7 @@ Composite.register('oj-progress-list',
  * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
  */
 
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @ignore

@@ -2,14 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery'], function(oj, $)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -26,6 +25,7 @@ define(['ojs/ojcore', 'jquery'], function(oj, $)
  * @classdesc Object representing data used by table and grid components
  * @param {Object} data data supported by the components
  * @constructor
+ * @final
  * @since 1.0
  * @abstract
  * @ojdeprecated {since: '5.0.0', description: 'Use DataProvider instead.'}
@@ -63,10 +63,7 @@ oj.DataSource.prototype.Init = function () {
  * @return {string|null} the capability of the specified feature.  Returns null if the feature is not recognized.
  */
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /**
  * @class oj.TreeDataSource
  * @classdesc Abstract class representing hierarchical (tree) data that can be used by different components such as [Indexer]{@link oj.ojIndexer}, [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
@@ -107,6 +104,7 @@ oj.DataSource.prototype.Init = function () {
  * @extends oj.DataSource
  * @abstract
  * @constructor
+ * @final
  * @since 1.0
  * @ojdeprecated {since: '6.0.0', description: 'Use TreeDataProvider instead.'}
  * @ojtsignore
@@ -252,10 +250,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, 'oj.TreeDataSource');
  * @instance
  */
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -311,6 +306,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, 'oj.TreeDataSource');
  * @param {Object} data data supported by the components
  * @param {Object=} options Options for the TableDataSource
  * @constructor
+ * @final
  * @since 1.0
  * @ojdeprecated {since: '5.0.0', description: 'Use DataProvider instead.'}
  * @ojtsignore
@@ -580,10 +576,7 @@ oj.TableDataSource._LOGGER_MSG =
   _ERR_DATA_INVALID_TYPE_DETAIL: 'Please specify the appropriate data type.'
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @class oj.DataGridDataSource
@@ -592,6 +585,7 @@ oj.TableDataSource._LOGGER_MSG =
  * @export
  * @extends oj.DataSource
  * @constructor
+ * @final
  * @since 1.0
  * @ojtsignore
  */
@@ -762,10 +756,7 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, 'oj.DataGridDataS
  *         Returns null if the feature is not recognized.
  */
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @class oj.DiagramDataSource
@@ -774,6 +765,7 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, 'oj.DataGridDataS
  * @export
  * @extends oj.DataSource
  * @constructor
+ * @final
  * @since 3.0
  * @ojtsignore
  */
@@ -934,6 +926,7 @@ oj.DiagramDataSource.EventType =
    */
   CHANGE: 'change'
 };
+
 
 // Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
 

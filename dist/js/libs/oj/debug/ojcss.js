@@ -2,10 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 'use strict';
 define(['css', 'require'], function (cssmodule, require) {
   var cssAPI = {};
+
 /**
  * Custom RequireJs plugin that conditially loads a css file based on some RequireJs config options.
  * @ignore

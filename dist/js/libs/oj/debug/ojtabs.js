@@ -2,16 +2,15 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'ojs/ojmenu', 
         'jqueryui-amd/widgets/sortable', 'ojs/ojtouchproxy'], 
 function(oj, $, Components)
 {
   "use strict";
- /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global Components:false */
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -1191,14 +1190,14 @@ function(oj, $, Components)
         // don't insert <ul> between <!-- ko foreach: tabs --> and <!-- /ko -->
         if (edge === 'start' || edge === 'top') {
           // add <ul> after the start button or as the first child of the container
-          if (startBtn) {
+          if (startBtn && startBtn.length > 0) {
             startBtn.after(this.tablist); // @HTMLUpdateOK
           } else {
             this.element.prepend(this.tablist); // @HTMLUpdateOK
           }
         } else {
           // add <ul> before the trailing button or as the last child of the container
-          if (trailingBtn) { // eslint-disable-line no-lonely-if
+          if (trailingBtn && trailingBtn.length > 0) { // eslint-disable-line no-lonely-if
             trailingBtn.before(this.tablist); // @HTMLUpdateOK
           } else {
             this.element.append(this.tablist); // @HTMLUpdateOK

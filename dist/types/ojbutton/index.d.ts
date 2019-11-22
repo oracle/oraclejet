@@ -1,6 +1,6 @@
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojButton<SP extends ojButtonSettableProperties = ojButtonSettableProperties> extends baseComponent<SP> {
-    chroming: 'full' | 'half' | 'outlined';
+    chroming: 'solid' | 'outlined' | 'borderless' | 'callToAction' | 'full' | 'half';
     disabled: boolean;
     display: 'all' | 'icons';
     addEventListener<T extends keyof ojButtonEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojButtonEventMap<SP>[T]) => any, useCapture?: boolean): void;
@@ -30,7 +30,7 @@ export interface ojButtonEventMap<SP extends ojButtonSettableProperties = ojButt
     'displayChanged': JetElementCustomEvent<ojButton<SP>["display"]>;
 }
 export interface ojButtonSettableProperties extends baseComponentSettableProperties {
-    chroming: 'full' | 'half' | 'outlined';
+    chroming: 'solid' | 'outlined' | 'borderless' | 'callToAction' | 'full' | 'half';
     disabled: boolean;
     display: 'all' | 'icons';
 }
@@ -58,7 +58,7 @@ export interface ojButtonsetSettablePropertiesLenient extends Partial<ojButtonse
     [key: string]: any;
 }
 export interface ojButtonsetMany extends ojButtonset<ojButtonsetManySettableProperties> {
-    chroming: 'full' | 'half' | 'outlined';
+    chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
     describedBy: string | null;
     disabled: boolean;
     display: 'all' | 'icons';
@@ -99,7 +99,7 @@ export interface ojButtonsetManyEventMap extends ojButtonsetEventMap<ojButtonset
     'valueChanged': JetElementCustomEvent<ojButtonsetMany["value"]>;
 }
 export interface ojButtonsetManySettableProperties extends ojButtonsetSettableProperties {
-    chroming: 'full' | 'half' | 'outlined';
+    chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
     describedBy: string | null;
     disabled: boolean;
     display: 'all' | 'icons';
@@ -111,7 +111,7 @@ export interface ojButtonsetManySettablePropertiesLenient extends Partial<ojButt
     [key: string]: any;
 }
 export interface ojButtonsetOne extends ojButtonset<ojButtonsetOneSettableProperties> {
-    chroming: 'full' | 'half' | 'outlined';
+    chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
     describedBy: string | null;
     disabled: boolean;
     display: 'all' | 'icons';
@@ -152,7 +152,7 @@ export interface ojButtonsetOneEventMap extends ojButtonsetEventMap<ojButtonsetO
     'valueChanged': JetElementCustomEvent<ojButtonsetOne["value"]>;
 }
 export interface ojButtonsetOneSettableProperties extends ojButtonsetSettableProperties {
-    chroming: 'full' | 'half' | 'outlined';
+    chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
     describedBy: string | null;
     disabled: boolean;
     display: 'all' | 'icons';
@@ -164,7 +164,7 @@ export interface ojButtonsetOneSettablePropertiesLenient extends Partial<ojButto
     [key: string]: any;
 }
 export interface ojMenuButton extends ojButton<ojMenuButtonSettableProperties> {
-    chroming: 'full' | 'half' | 'outlined';
+    chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
     disabled: boolean;
     display: 'all' | 'icons';
     addEventListener<T extends keyof ojMenuButtonEventMap>(type: T, listener: (this: HTMLElement, ev: ojMenuButtonEventMap[T]) => any, useCapture?: boolean): void;
@@ -194,7 +194,7 @@ export interface ojMenuButtonEventMap extends ojButtonEventMap<ojMenuButtonSetta
     'displayChanged': JetElementCustomEvent<ojMenuButton["display"]>;
 }
 export interface ojMenuButtonSettableProperties extends ojButtonSettableProperties {
-    chroming: 'full' | 'half' | 'outlined';
+    chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
     disabled: boolean;
     display: 'all' | 'icons';
 }

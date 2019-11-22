@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 
 define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtNBox'], function(oj, $, Config, comp, DvtAttributeUtils, dvt)
 {
@@ -652,10 +654,7 @@ var __oj_n_box_node_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global dvt:false, Config:false */
 
@@ -663,7 +662,7 @@ var __oj_n_box_node_metadata =
  * @ojcomponent oj.ojNBox
  * @augments oj.dvtBaseComponent
  * @since 1.1.0
- * @ojstatus preview
+ *
  * @ojrole application
  * @ojshortdesc NBox is an interactive data visualization (typically found in Human Capital Management applications) in which employees are grouped and compared across two dimensions.  Each dimension can be split into multiple ranges.
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
@@ -1160,15 +1159,21 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
       selection: [],
 
       /**
-       * Specifies the selection mode.
+       * <p>The type of selection behavior that is enabled on the NBox. This attribute controls the number of selections that can be made via selection gestures at any given time.
+       *
+       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the NBox's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the NBox's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+       *
+       * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+       *
        * @expose
        * @name selectionMode
        * @memberof oj.ojNBox
        * @instance
        * @type {string}
-       * @ojvalue {string} "none"
-       * @ojvalue {string} "single"
-       * @ojvalue {string} "multiple"
+       * @ojvalue {string} "none" Selection is disabled.
+       * @ojvalue {string} "single" Only a single item can be selected at a time.
+       * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
        * @default "multiple"
        */
       selectionMode: 'multiple',
@@ -1204,9 +1209,10 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
          */
         cellDefaults: {
           /**
-           * The halign value for the cell label.
+           * The horizontal alignment value for the cell label.
            * @expose
            * @name styleDefaults.cellDefaults.labelHalign
+           * @ojdisplayname Label Horizontal Alignment
            * @memberof! oj.ojNBox
            * @instance
            * @type {string}
@@ -1461,7 +1467,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
             pattern: 'none',
 
             /**
-             * The default shape of the node icons. Can take the name of a built-in shape or the svg path commands for a custom shape.
+             * The default shape of the node icons. Can take the name of a built-in shape or the SVG path commands for a custom shape.
              * @expose
              * @name styleDefaults.nodeDefaults.iconDefaults.shape
              * @memberof! oj.ojNBox
@@ -1616,7 +1622,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
             pattern: 'none',
 
             /**
-             * The default shape of the node indicator icons. Can take the name of a built-in shape or the svg path commands for a custom shape.
+             * The default shape of the node indicator icons. Can take the name of a built-in shape or the SVG path commands for a custom shape.
              * @expose
              * @name styleDefaults.nodeDefaults.indicatorIconDefaults.shape
              * @memberof! oj.ojNBox
@@ -2270,6 +2276,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
 
   });
 
+
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -2443,7 +2450,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @property {number=} icon.height The height of this icon.
  * @property {number=} icon.opacity The opacity of this icon.
  * @property {("largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"|"none"|"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle")=} icon.pattern The pattern of this icon.
- * @property {("circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string)=} icon.shape The shape of this icon. Can take the name of a built-in shape or the svg path commands for a custom shape.
+ * @property {("circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string)=} icon.shape The shape of this icon. Can take the name of a built-in shape or the SVG path commands for a custom shape.
  * @property {string=} icon.source The URL of an image to display for this icon.
  * @property {string=} icon.svgClassName The CSS style class defining the style of this icon.
  * @property {Object=} icon.svgStyle The CSS style object defining the style of this icon.
@@ -2457,7 +2464,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @property {number=} indicatorIcon.height The height of this indicator icon.
  * @property {number=} indicatorIcon.opacity The opacity of this indicator icon.
  * @property {("largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"|"none"|"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle")=} indicatorIcon.pattern The pattern of this indicator icon.
- * @property {("circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string)=} indicatorIcon.shape The shape of this indicator icon. Can take the name of a built-in shape or the svg path commands for a custom shape.
+ * @property {("circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string)=} indicatorIcon.shape The shape of this indicator icon. Can take the name of a built-in shape or the SVG path commands for a custom shape.
  * @property {string=} indicatorIcon.source The URL of an image to display for this indicator icon.
  * @property {string=} indicatorIcon.svgClassName The CSS style class defining the style of this indicator icon.
  * @property {Object=} indicatorIcon.svgStyle The CSS style object defining the style of this indicator icon.
@@ -2481,7 +2488,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @typedef {Object} oj.ojNBox.Cell
  * @property {string=} label The text for the cell label.
  * @property {string} column The id of the column containing this cell.
- * @property {string=} labelHalign The halign value for the cell label.
+ * @property {string=} labelHalign The horizontal alignment value for the cell label.
  * @property {Object=} labelStyle The CSS style object defining the style of the cell label.
  * @property {string=} svgClassName The CSS style class for this cell. Used for customizing the cell background and border.
  * @property {Object=} svgStyle The CSS style object for this cell. Used for customizing the cell background and border.
@@ -2551,7 +2558,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @property {string} column The id of the column containing the hovered node.
  * @property {string} color The color of the hovered node.
  * @property {string} indicatorColor The indicator color of the hovered node.
- * @property {Element} componentElement The nbox HTML element.
+ * @property {Element} componentElement The NBox HTML element.
  * @ojsignature [{target: "Type", value: "K", for: "id"},
  *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
  */
@@ -2657,10 +2664,10 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
 
  /**
   * <p> The <code class="prettyprint">nodeTemplate</code> slot is used to specify the template for creating each node of the NBox when a DataProvider
-  * has been specified with the data attribute. The slot must be a &lt;template> element.
+  * has been specified with the data attribute. The slot content must be a &lt;template> element.
   * <p>When the template is executed for each node, it will have access to the NBox's binding context and the following properties:</p>
   * <ul>
-  * <li>$current - an object that contains information for the current node
+  *   <li>$current - an object that contains information for the current node. (See [oj.ojNBox.NodeTemplateContext]{@link oj.ojNBox.NodeTemplateContext} or the table below for a list of properties available on $current) </li>
   * </li>
   * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
   * </li>
@@ -2668,17 +2675,13 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
   *
   * <p>The content of the template should only be one &lt;oj-n-box-node> element. See the [oj-n-box-node]{@link oj.ojNBoxNode.html} doc for more details.</p>
   *
-  * @ojstatus preview
+  *
   * @ojslot nodeTemplate
   * @ojmaxitems 1
   * @ojshortdesc The nodeTemplate slot is used to specify the template for creating each node of the NBox. See the Help documentation for more information.
   *
   * @memberof oj.ojNBox
-  * @property {Element} componentElement The &lt;oj-n-box> custom element.
-  * @property {Object} data The data object for the current node.
-  * @property {number} index The zero-based index of the current node.
-  * @property {any} key The key of the current node.
-  *
+  * @ojslotitemprops oj.ojNBox.NodeTemplateContext
   * @example <caption>Initialize the NBox with an inline node template specified:</caption>
   * &lt;oj-n-box data='[[dataProvider]]'>
   *  &lt;template slot='nodeTemplate'>
@@ -2693,17 +2696,23 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
   *  &lt;/template>
   * &lt;/oj-n-box>
  */
-
+/**
+ * @typedef {Object} oj.ojNBox.NodeTemplateContext
+ * @property {Element} componentElement The &lt;oj-n-box> custom element.
+ * @property {Object} data The data object for the current node.
+ * @property {number} index The zero-based index of the current node.
+ * @property {any} key The key of the current node.
+ */
 
   /**
  * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current node. (See [oj.ojNBox.TooltipContext]{@link oj.ojNBox.TooltipContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current node. (See [oj.ojNBox.TooltipContext]{@link oj.ojNBox.TooltipContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot tooltipTemplate
  * @ojslotitemprops oj.ojNBox.TooltipContext
  * @memberof oj.ojNBox
@@ -2757,12 +2766,13 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @ojsignature {target: "Type", value: "K", for: "id"}
  */
 
+
 /**
  * @ojcomponent oj.ojNBoxNode
  * @ojsignature {target: "Type", value:"class ojNBoxNode extends JetElement<ojNBoxNodeSettableProperties>"}
  * @ojslotcomponent
  * @since 6.0.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="nBoxNodeOverview-section">
@@ -3037,7 +3047,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * &lt;/oj-n-box>
  */
 /**
- * The shape of this icon. Can take the name of a built-in shape or the svg path commands for a custom shape.
+ * The shape of this icon. Can take the name of a built-in shape or the SVG path commands for a custom shape.
  * @expose
  * @name icon.shape
  * @memberof! oj.ojNBoxNode
@@ -3279,7 +3289,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * &lt;/oj-n-box>
  */
 /**
- * The shape of this indicator icon. Can take the name of a built-in shape or the svg path commands for a custom shape.
+ * The shape of this indicator icon. Can take the name of a built-in shape or the SVG path commands for a custom shape.
  * @expose
  * @name indicatorIcon.shape
  * @memberof! oj.ojNBoxNode
@@ -3496,6 +3506,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *  &lt;/template>
  * &lt;/oj-n-box>
  */
+
 
 /* global __oj_n_box_metadata */
 /* global DvtAttributeUtils */

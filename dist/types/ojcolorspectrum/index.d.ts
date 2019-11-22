@@ -2,6 +2,12 @@ import Color = require('../ojcolor');
 import { editableValue, editableValueEventMap, editableValueSettableProperties } from '../ojeditablevalue';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojColorSpectrum extends editableValue<Color, ojColorSpectrumSettableProperties> {
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelledBy: string | null;
     readonly transientValue: Color;
     value: Color;
@@ -34,6 +40,8 @@ export namespace ojColorSpectrum {
     }> {
     }
     // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojColorSpectrum["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged = JetElementCustomEvent<ojColorSpectrum["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
     type transientValueChanged = JetElementCustomEvent<ojColorSpectrum["transientValue"]>;
@@ -43,11 +51,18 @@ export namespace ojColorSpectrum {
 export interface ojColorSpectrumEventMap extends editableValueEventMap<Color, ojColorSpectrumSettableProperties> {
     'ojAnimateEnd': ojColorSpectrum.ojAnimateEnd;
     'ojAnimateStart': ojColorSpectrum.ojAnimateStart;
+    'displayOptionsChanged': JetElementCustomEvent<ojColorSpectrum["displayOptions"]>;
     'labelledByChanged': JetElementCustomEvent<ojColorSpectrum["labelledBy"]>;
     'transientValueChanged': JetElementCustomEvent<ojColorSpectrum["transientValue"]>;
     'valueChanged': JetElementCustomEvent<ojColorSpectrum["value"]>;
 }
 export interface ojColorSpectrumSettableProperties extends editableValueSettableProperties<Color> {
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelledBy: string | null;
     readonly transientValue: Color;
     value: Color;

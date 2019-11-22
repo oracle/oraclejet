@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojlogger'], 
 /*
 * @param {Object} oj 
@@ -36,15 +38,12 @@ var __oj_validation_group_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global Components:false, Logger:false, Context:false */
 /**
  * @ojcomponent oj.ojValidationGroup
  * @since 4.2.0
- * @ojstatus preview
+ *
  * @ojshortdesc A validation group tracks and summarizes the current validity state of a group of components.
  * @ojsignature class ojValidationGroup extends JetElement<ojValidationGroupSettableProperties>
  *
@@ -914,6 +913,7 @@ function ojValidationGroup(context) {
     return !!((bridgeWidgetElem === undefined || widgetElem));
   }
 }
+
 
 /* global __oj_validation_group_metadata:false */
 /* global ojValidationGroup */

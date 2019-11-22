@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojlogger',  'ojs/ojcomponentcore', 'ojs/ojlabelledbyutils', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'ojs/ojoption', 'ojs/ojdataprovider'],
 function(oj, $, Logger, Components, LabelledByUtils)
 {
@@ -41,6 +43,10 @@ var __oj_radioset_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
+          "enumValues": [
+            "none",
+            "notewindow"
+          ],
           "value": [
             "notewindow"
           ]
@@ -68,6 +74,14 @@ var __oj_radioset_metadata =
           "value": ""
         }
       }
+    },
+    "labelEdge": {
+      "type": "string",
+      "enumValues": [
+        "inside",
+        "none",
+        "provided"
+      ]
     },
     "labelHint": {
       "type": "string",
@@ -162,10 +176,7 @@ var __oj_radioset_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global Logger:false */
 /* global Components:false */
 /* global Symbol:false */
@@ -187,6 +198,7 @@ var __oj_radioset_metadata =
 /**
  * @ojcomponent oj.ojRadioset
  * @augments oj.editableValue
+ * @ojimportmembers oj.ojDisplayOptions
  * @ojsignature [{
  *                target: "Type",
  *                value: "class ojRadioset<K, D, V=any> extends editableValue<V, ojRadiosetSettableProperties<K, D, V>>",
@@ -205,9 +217,8 @@ var __oj_radioset_metadata =
  * @ojrole radiogroup
  * @ojrole option
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
- * @ojstatus preview
  *
- * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "required", "disabled", "labelledBy", "describedBy"]}
+ * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "required", "disabled"]}
  * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 2
@@ -395,7 +406,7 @@ var __oj_radioset_metadata =
          * @public
          * @instance
          * @memberof oj.ojRadioset
-         * @ojshortdesc Establishes a relationship between this component and another element, typically an oj-label custom element. See the Help documenation for more information.
+         * @ojshortdesc Establishes a relationship between this component and another element, typically an oj-label custom element. See the Help documentation for more information.
          */
         labelledBy: null,
 
@@ -608,8 +619,8 @@ var __oj_radioset_metadata =
 
         /**
          * Whether the component is required or optional. When required is set to true, an implicit
-         * required validator is created using the validator factory -
-         * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED).createValidator()</code>.
+         * required validator is created using the RequiredValidator -
+         * <code class="prettyprint">RequiredValidator()</code>.
          *
          * Translations specified using the <code class="prettyprint">translations.required</code> option
          * and the label associated with the component, are passed through to the options parameter of the
@@ -818,7 +829,7 @@ var __oj_radioset_metadata =
        * @memberof oj.ojRadioset
        * @ojshortdesc Validates the component's display value using all validators registered on the component. If there are no validation errors, then the value is updated. See the Help documentation for more information.
        * @since 4.0.0
-       * @ojstatus preview
+       *
        */
       validate: oj.EditableValueUtils.validate,
 
@@ -922,7 +933,7 @@ var __oj_radioset_metadata =
         // exclude all comment and text nodes
         $(element.get(0).childNodes).filter(function () {
           return !((this.getAttribute && this.getAttribute('slot') === 'contextMenu'));
-        }).wrapAll("<div class='oj-radioset-wrapper'></div>"); // @HTMLUpdateOK
+        }).wrapAll("<div class='oj-radioset-wrapper oj-form-control-container'></div>"); // @HTMLUpdateOK
 
         this._on(this._events);
         this._setup();
@@ -1031,6 +1042,31 @@ var __oj_radioset_metadata =
           var len;
           var renderer = this._customOptionRenderer.bind(this);
           var options = this.element.children('oj-option');
+          var domElem = this.element[0];
+          var wrapperDom = domElem.querySelector('.oj-radioset-wrapper');
+          var selectedOption = this.options.value;
+
+          // if there isn't a wrapper yet, use the component as the wrapper.
+          if (!wrapperDom) {
+            wrapperDom = domElem;
+          }
+
+          var novaluespan = domElem.querySelector('[data-no-value-span]');
+          // Remove the old no-value span, if there is one and there is a current selection.
+          if (novaluespan) {
+            if (selectedOption && selectedOption !== '') {
+              novaluespan.parentElement.removeChild(novaluespan);
+            }
+          } else if ((!selectedOption || selectedOption === '') && this.options.readOnly) { // Otherwise, add the no value span if no selection.
+            var span = document.createElement('span');
+            span.setAttribute('data-no-value-span', '');
+            span.setAttribute('class', 'oj-choice-item');
+            var noCheckboxSelected = this.getTranslatedString('readonlyNoValue');
+            if (noCheckboxSelected !== null) {
+              span.textContent = noCheckboxSelected;
+            }
+            wrapperDom.appendChild(span);// @HTMLUpdateOK
+          }
 
           for (i = 0, len = options.length; i < len; i++) {
             options[i].customOptionRenderer = renderer;
@@ -1071,14 +1107,7 @@ var __oj_radioset_metadata =
             parentSpan.classList.add('oj-helper-hidden');
           }
         }
-        if (!selectedOption) {
-          var span = document.createElement('span');
-          var noRadioSelected = this.getTranslatedString('readonlyNoValue');
-          if (noRadioSelected !== null) {
-            span.textContent = noRadioSelected;
-          }
-          elem.parentElement.insertBefore(span, elem); // @HTMLUpdateOK
-        } else if (selectedOption === optionValue) {
+        if (selectedOption === optionValue) {
           elem.classList.remove('oj-helper-hidden');
           this._initReadonlyLabelFromOjOption(elem, parentSpan);
         }
@@ -1620,6 +1649,7 @@ var __oj_radioset_metadata =
             break;
         }
       },
+
       //* * @inheritdoc */
       getNodeBySubId: function (locator) {
         var node = this._super(locator);
@@ -1916,6 +1946,7 @@ var __oj_radioset_metadata =
    * @memberof oj.ojRadioset
    */
 }());
+
 
 /* global __oj_radioset_metadata:false */
 (function () {

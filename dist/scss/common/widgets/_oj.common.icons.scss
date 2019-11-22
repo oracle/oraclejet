@@ -53,13 +53,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     .oj-fwk-icon,
     %oj-component-icon-placeholder {
       
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        @include oj-icon-font-base(
-             // the alta icon font was designed to look best at 16px
-             $fontSize:   16px,
-             $fontFamily: 'Alta Icon Font',
-             $color:      var(--oj-icon-color));
-      } @else {
+
         @if  $iconFontFileName and $iconFontFileName != '' {
   
           @include oj-icon-font-base(
@@ -68,7 +62,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
                $fontFamily: 'Alta Icon Font',
                $color:      $iconColor);
         }
-      }
+
     }
 
     // extend %oj-component-icon-placeholder;
@@ -135,11 +129,9 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     .oj-default .oj-clickable-icon,
     .oj-default.oj-clickable-icon,
     .oj-default.oj-clickable-icon-nocontext {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        color: var(--oj-icon-color-default);
-      } @else {
+
         color: $iconColorDefault;        
-      }
+
     }
 
     a:hover .oj-clickable-icon,
@@ -148,11 +140,9 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     .oj-hover .oj-clickable-icon,
     .oj-hover.oj-clickable-icon,
     .oj-hover.oj-clickable-icon-nocontext {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        color: var(--oj-icon-color-hover);
-      } @else {
+
         color: $iconColorHover;
-      }
+
     }
 
     a:active .oj-clickable-icon,
@@ -161,11 +151,9 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     .oj-active .oj-clickable-icon,
     .oj-active.oj-clickable-icon,
     .oj-active.oj-clickable-icon-nocontext {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        color: var(--oj-icon-color-active);
-      } @else {
+
         color: $iconColorActive;
-      }
+
     }
 
     a.oj-selected .oj-clickable-icon,
@@ -174,11 +162,9 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     .oj-selected .oj-clickable-icon,
     .oj-selected.oj-clickable-icon,
     .oj-selected.oj-clickable-icon-nocontext {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        color: var(--oj-icon-color-selected);
-      } @else {
+
         color: $iconColorSelected;
-      }
+
     }
 
     a.oj-disabled .oj-clickable-icon,
@@ -188,13 +174,10 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     .oj-disabled a .oj-clickable-icon,
     .oj-disabled.oj-clickable-icon,
     .oj-disabled.oj-clickable-icon-nocontext {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        color: var(--oj-icon-color-disabled);
-        opacity: var(--oj-opacity-disabled);
-      } @else {
+
         color: $iconColorDisabled;
         opacity: $opacityDisabled;
-      }
+      
 
     }
 
@@ -278,6 +261,12 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     }
     .oj-fwk-icon-arrowbox-n:before {
       content: oj-prepend-slash($oj-fwk-icon-arrowbox-n);
+    }
+    .oj-fwk-icon-user:before {
+      content: oj-prepend-slash($oj-fwk-icon-user);
+    }
+    .oj-fwk-icon-users:before {
+      content: oj-prepend-slash($oj-fwk-icon-users);
     }
 
     @if global-variable-exists(oj-fwk-icon-corner-drag) and $oj-fwk-icon-corner-drag != '' {

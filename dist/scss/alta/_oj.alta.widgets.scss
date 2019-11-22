@@ -58,6 +58,9 @@
 @import "widgets/oj.alta.rowexpander";
 @import "widgets/oj.alta.listview";
 @import "widgets/oj.alta.indexer";
+@import "widgets/oj.alta.masonry";
+@import "widgets/oj.alta.activitystream";
+@import "widgets/oj.alta.waterfalllayout";
 
 // data visualizations
 @import "widgets/oj.alta.dvt.base";
@@ -88,6 +91,7 @@
 @import "widgets/oj.alta.formcontrol.checkboxset";
 @import "widgets/oj.alta.formcontrol.listbox";
 @import "widgets/oj.alta.formcontrol.combobox";
+@import "widgets/oj.alta.formcontrol.select2";
 @import "widgets/oj.alta.formcontrol.select";
 @import "widgets/oj.alta.formcontrol.inputsearch";
 @import "widgets/oj.alta.formcontrol.switch";

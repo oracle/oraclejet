@@ -707,7 +707,7 @@ $switchThumbBorderColorSelectedDisabled: $switchThumbBgColorSelectedDisabled !de
 // LISTBOX
 //-----------------------------------------------------------------------------
 // listbox values used in drop down for
-// inputTime, select, combobox
+// inputTime, select, combobox, select2
 $listboxBgColorFocus: $interaction2Color !default;
 
 // listbox message color
@@ -1278,7 +1278,6 @@ $iconCircleFontColor:            #FFFFFF !default;
 //avatar
 //----------------------------------
 $avatarInnerBgColor:         $iconCircleInnerBgColor !default;
-$avatarBorderOffsetBgColor:  $avatarInnerBgColor !default;//the padding color between border and circle
 $avatarBorderColor:          $avatarInnerBgColor !default;
 $avatarTextColor:            $iconCircleFontColor !default;
 

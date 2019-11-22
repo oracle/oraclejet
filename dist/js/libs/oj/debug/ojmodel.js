@@ -2,17 +2,17 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojlogger', 'promise'], function(oj, $, Config, Logger)
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojlogger'], function(oj, $, Config, Logger)
 {
   "use strict";
-/**
- * Copyright (c) 2014, 2015 Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* jslint browser: true*/
 /**
  * @constructor
+ * @final
  * @class oj.Events
  * @classdesc Supports event system for the common model ([oj.Collection]{@link oj.Collection} and
  * [oj.Model]{@link oj.Model})
@@ -848,10 +848,7 @@ oj.Events._getHandlers = function (handlers, eventType, original) {
   return null;
 };
 
-/**
- * Copyright (c) 2014, 2015 Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* jslint browser: true*/
 /* global Promise:false, Logger:false */
 
@@ -867,6 +864,7 @@ oj.Events._getHandlers = function (handlers, eventType, original) {
  * @param {Object=} options Passed through to the user's initialize routine, if any, upon
  *                  construction
  * @constructor
+ * @final
  * @since 1.0
  * @mixes oj.Events
  * @ojsignature {target: "Type", value: "class Collection"}
@@ -1021,7 +1019,17 @@ oj.Collection.prototype.customURL = null;
  * [where]{@link oj.Collection#where} for complete documentation of query values
  * @property {boolean=} all true (along with 'query', above) indicates that this is a findWhere or where type
  * call that is expecting all models meeting the query condition to be returned
-*/
+ *
+ * @example <caption>Sample information that is commonly passed to customURL to give information about the collection's request.  The customURL implementer should use this information to return a custom URL for their REST service./caption>
+ * <pre class="prettyprint"><code>
+ * {
+ *   fetchSize: 20,       // Number of records the collection is requesting
+ *   startIndex: 40,      // Absolute index of the starting record requested
+ *   sort: 'name',        // Field by which the collection would like the results sorted, if any
+ *   sortDir: 'asc'       // Desired sort direction, if any
+ * }
+ * </code></pre>
+ */
 
 
 /**
@@ -1066,7 +1074,20 @@ oj.Collection.prototype.customPagingOptions = null;
  * @property {number=} count
  * @property {number=} offset
  * @property {boolean=} hasMore
-*/
+ *
+ * @example <caption>Map paging return properties from a sample REST service to the properties expected by the Collection.  Here is an example customPagingOptions callback function implementation:</caption>
+ * <pre class="prettyprint"><code>
+ * collection.customPagingOptions = function(response) {
+ *   return {
+ *     totalResults: response.allRecordCount,     // REST service returns total possible record count as 'allRecordCount'
+ *     limit: repsonse.fetchBlockSize,    // REST service returns its fetch size block as 'fetchBlockSize'
+ *     count: response.recordsFetched,    // REST service returns the number of records actually fetched as 'recordsFetched'
+ *     offset: response.startRecord,    // REST service returns the starting index of the block fetched here as 'startRecord'
+ *     hasMore: (response.startRecord + response.recordsFetched < response.allRecordCount-1)  // Calculate whether this fetch got the last records available to return a boolean to indicate whether more records are available
+ *   };
+ * }
+ * </code></pre>
+ */
 
 /**
  * @export
@@ -1178,7 +1199,7 @@ oj.Collection.prototype.comparator = null;
 
 /**
  * @export
- * @ojstatus preview
+ *
  * @memberof oj.Collection
  * @type {boolean}
  * @desc If true, do not insert the JET locale-based Accept-Language header.  If false,
@@ -3516,7 +3537,7 @@ oj.Collection.prototype._parseImpl = function (response) {
 
 /**
  * Optional callback to parse responses from the server.  It is called with the server's response and should return a response (possibly modified) for processing
- * @ojstatus preview
+ *
  * @type {function(Object):Object}
  * @since 1.0.0
  * @memberof oj.Collection
@@ -3568,6 +3589,15 @@ oj.Collection.prototype.setRangeLocal = function (start, count, options) {
  * @property {number} count number of models fetched
  * @property {Array.<oj.Model>} models array of models fetched
  * @ojsignature  [{target: "Type", value: "Model[]", for: "models"}]
+ *
+ * @example <caption>Information about a fetch made from a REST service.  If the return fulfilled a request to get records 20 through 39, for example:</caption>
+ * <pre class="prettyprint"><code>
+ * {
+ *   start: 20,
+ *   count: 20,
+ *   models: [modelObjects]
+ * }
+ * </code></pre>
  */
 
 /**
@@ -5779,10 +5809,7 @@ oj.Collection.prototype.sync = function (method, collection, options) {
  */
 oj.Collection._FETCH_SIZE_PROP = 'fetchSize';
 
-/**
- * Copyright (c) 2014, 2015 Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* jslint browser: true*/
 
@@ -5795,6 +5822,7 @@ oj.Collection._FETCH_SIZE_PROP = 'fetchSize';
  * @param {Object=} options
  *                  collection: collection for this model
  * @constructor
+ * @final
  * @since 1.0
  * @mixes oj.Events
  * @ojsignature {target: "Type", value: "class Model"}
@@ -5935,7 +5963,7 @@ oj.Model.prototype.validationError = null;
 /**
  * @export
  * @memberof oj.Model
- * @ojstatus preview
+ *
  * @type {boolean}
  * @desc If true, do not insert the JET locale-based Accept-Language header.  If false, let the Ajax system set the header.
  * @since 5.0.0
@@ -6744,7 +6772,7 @@ oj.Model.prototype._parseImpl = function (rawData) {
 /**
  * Optional callback to parse responses from the server.  It is called with the server's response with a model's data and should return a response (possibly modified) for processing
  * @type {function(Object):Object}
- * @ojstatus preview
+ *
  * @memberof oj.Model
  * @since 1.0.0
  * @export
@@ -6977,7 +7005,7 @@ oj.Model.prototype._parseSaveImpl = function (modelData) {
  * @type {function(Object):Object}
  * @since 1.0.0
  * @memberof oj.Model
- * @ojstatus preview
+ *
  * @export
  */
 oj.Model.prototype.parseSave = oj.Model.prototype._parseSaveImpl;
@@ -7844,10 +7872,7 @@ oj.ajax = function (settings) { // eslint-disable-line no-unused-vars
   return $.ajax.apply(oj, arguments);
 };
 
-/**
- * Copyright (c) 2014, 2015 Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* jslint browser: true*/
 /* global jQuery:false*/
@@ -7870,6 +7895,7 @@ oj.ajax = function (settings) { // eslint-disable-line no-unused-vars
  * myOAuth.setAccessTokenResponse({...Access Token...});
  *
  * @constructor
+ * @final
  * @since 1.0.0
 */
 oj.OAuth = function (header, attributes) {
@@ -8109,10 +8135,7 @@ oj.OAuth._base64_encode = function (a) {
   return (d ? c.slice(0, d - 3) : c) + '==='.slice(d || 3);
 };
 
-/**
- * Copyright (c) 2014, 2015 Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* jslint browser: true*/
 /* global jQuery:false, Config:false*/
@@ -8412,15 +8435,13 @@ oj.RestImpl.prototype.ajax = function (settings, collection) {
 };
 
 
-/**
- * Copyright (c) 2014, 2015 Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* jslint browser: true*/
 
 /**
  * @constructor
+ * @final
  * @class oj.URLError
  * @classdesc Constructs a URLError, thrown when API calls are made that require a URL but no URL is
  * defined.
@@ -8433,6 +8454,7 @@ oj.URLError = function () {
 };
 oj.URLError.prototype = new Error();
 oj.URLError.constructor = oj.URLError;
+
 
 // Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
 

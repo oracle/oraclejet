@@ -19,6 +19,10 @@
     {
         $formControlDefaultOptions: map-merge($formControlDefaultOptions, (showIndicatorDelay: $loadingIndicatorDelayDuration));
     }
+    @if ($formControlLabelEdgeDefault != null)
+    {
+      $formControlDefaultOptions: map-merge($formControlDefaultOptions, (labelEdge: $formControlLabelEdgeDefault));
+    }
     .oj-form-control-option-defaults {
         font-family: oj-json-from-map($formControlDefaultOptions);
     }
@@ -26,19 +30,40 @@
     /* form-control classes */
     
     /* --------------------------------------------------------------- */
+    
+    // bumping up the specificity with the html because 
+    // when $includeNormalize is false (compatibility mode) the input will get 
+    // a margin of 0 which would override the margin set here
+    html .oj-form-control {
 
+        margin-bottom: $wrappableMarginBottom;        
 
-    /************************* oj-form-control-inherit OVERRIDES *************************/
-    // DO NOT ADD SELECTOR DEFINITIONS BEFORE THESE OVERRIDES AS SPECIFICITY ISSUES CAN ARISE
+      vertical-align: middle;
+    }
 
+    /** for all hints */
+    .oj-form-control-hint {
+
+        color: $textColor;
+
+      padding: 0;
+      word-wrap: break-word;  
+    };
+
+    .oj-form-control-title {
+
+        color: $textColor;        
+      
+    }
+    
     // The oj-form-control-inherit selector on an ancestor indicates that the form control should
-    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
-    // editable datagrid cells and editable table cells
+    // inherit styles, like width/height/borders/colors/text-alignment
     // -----------------------------------------------------------------------------------------
     // inherit the height of the container and remove margin-bottom
     // form controls have min-width/max-width set on their root dom element. 
     // Allow that to be inherited as well.
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control  {
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field {
       height:100%;
       min-height:100%;
       margin-bottom: 0;
@@ -46,45 +71,285 @@
       min-width: 100%;
     }
 
-    /************************* END OF oj-form-control-inherit OVERRIDES *************************/
-
-    
-    // bumping up the specificity with the html because 
-    // when $includeNormalize is false (compatibility mode) the input will get 
-    // a margin of 0 which would override the margin set here
-    html .oj-form-control {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        margin-bottom: var(--oj-wrappable-margin-bottom)
-      } @else {
-        margin-bottom: $wrappableMarginBottom;        
-      }
-      vertical-align: middle;
-    }
-
-    /** for all hints */
-    .oj-form-control-hint {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        color: var(--oj-text-color);
-      } @else {
-        color: $textColor;        
-      }
-      padding: 0;
-      word-wrap: break-word;  
-    };
-
-    .oj-form-control-title {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        color: var(--oj-text-color);
-      } @else {
-        color: $textColor;        
-      }
-    }
-
     // suppress the native clear icons in IE
     .oj-form-control input::-ms-clear {
       display: none; 
       width : 0; 
       height: 0;
+    }
+
+    .oj-text-field-middle { 
+      position: relative;
+      display: inline-flex;
+      // grow the input using the flex property
+      flex: 1;
+      // needed for the input to be able to shrink smaller than the browser
+      // default width.  Because this has flex-grow of 1, it will always grow
+      // to the available space of the parent container, which is what we want.
+      width: 1em;
+      // needed or else the input could overflow the container
+      min-width: 1em; 
+    }
+
+    /* when the label is inside or above, we must set the max-width of the component to
+       100%. Otherwise some components like input text, whose max-width is decided by 
+       oj-text-field-lg-max-width looks so different from other components like radioset
+       which does not have a configured default max width in alta.
+    */
+    .oj-text-field-label-inside.oj-form-control,
+    .oj-form-control-label-top.oj-form-control,
+    .oj-text-field-label-inside.oj-text-field,
+    .oj-form-control-label-top.oj-text-field {
+      max-width: 100%;
+    }
+
+    /* when the label is inside, set the padding right so that the long labels are truncated
+      at the same width as input field
+    */
+    .oj-text-field-label-inside .oj-label{
+      max-width: 100%;
+      @include oj-ltr() {
+        padding-right: calc( #{2 * $formControlPaddingHorizontal});
+      }
+      @include oj-rtl() {
+        padding-left: calc( #{2 * $formControlPaddingHorizontal});
+      }
+      box-sizing: border-box;
+    }
+
+    .oj-text-field-label-inside .oj-text-field-input {
+      min-height: $formControlInsideInputHeight;
+      padding-top: $formControlInsidePaddingTop;
+    }
+
+    /* consolidating styles - start
+    */
+    //common styles for component root
+    .oj-text-field {
+      display: inline-block;
+      // because max/min width is in em the font size needs to be on this element 
+      // and not on the selector that goes on the input.
+      font-size: $formControlInputFontSize;
+      @include oj-form-control-text-size-adjust($formControlInputFontSize);
+      /* use a width of 100% and then max and min width so that when 
+          there's less room for the form control it can automatically 
+          get smaller instead of overflowing its boundaries */
+      max-width: $formControlLargeMaxWidth;
+      min-width: $formControlMinWidth;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    // .oj-form-control-full-width is an override to set max-width to 100% if on the
+    // element or an ancestor element
+    .oj-form-control-full-width.oj-text-field,
+    .oj-form-control-full-width .oj-text-field {
+      max-width: 100%;
+    }
+
+    //common styles for actual input field
+    .oj-text-field-input {
+      // normally removing an outline can cause accessibility issues, however
+      // on an input the cursor blinks so an outline is not required for
+      // accessibility. As of 6-11-14 only chrome is putting
+      // an outline on inputs anyway
+      outline: 0;
+      box-sizing: border-box;
+      font-family: inherit;
+      border: 0;
+      background-color: transparent;
+    }
+
+    /* Styling for text-align */
+    .oj-form-control-text-align-right.oj-text-field .oj-text-field-input,
+    .oj-form-control-text-align-right .oj-text-field .oj-text-field-input {
+      text-align: right;
+    }
+
+    .oj-form-control-text-align-start.oj-text-field .oj-text-field-input,
+    .oj-form-control-text-align-start .oj-text-field .oj-text-field-input {
+      @include oj-bidi-property(
+        $property: 'text-align',
+        $startOrEnd: start,
+        $important: false);
+    }
+
+    .oj-form-control-text-align-end.oj-text-field .oj-text-field-input,
+    .oj-form-control-text-align-end .oj-text-field .oj-text-field-input {
+      @include oj-bidi-property(
+          $property: 'text-align',
+          $startOrEnd: end,
+          $important: false);
+    }
+
+    // Styling for readonly state, if supported in the future
+    .oj-text-field.oj-read-only .oj-text-field-input {
+      @include oj-form-control-content-readonly;
+      
+      padding-left: 0;
+      padding-right: 0;
+    }
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+
+    // remove borders, inherit colors and stretch the height
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field .oj-text-field-input,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field .oj-text-field-container {
+      @include oj-form-control-inherit(); 
+    }
+
+    // only override the background when not disabled
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-disabled) .oj-text-field-input,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-disabled) .oj-text-field-container {
+      @include oj-form-control-inherit-background();
+    }
+
+    // only override the border when not oj-invalid or oj-warning
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-invalid):not(.oj-warning) .oj-text-field-input,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-invalid):not(.oj-warning) .oj-text-field-container {
+      @include oj-form-control-inherit-border();
+    }
+
+    //Quiet form common styles
+    //For inside label
+
+    .oj-text-field-label-inside .oj-text-field-input.oj-hover{
+      background-color: transparent;
+    }
+
+    .oj-text-field .oj-text-field-container {
+      position: relative;
+      box-sizing: border-box;
+      border-style: solid;
+      border-color: $formControlBorderColor;
+      border-width: $formControlBorderWidth;
+      border-radius: $formControlBorderRadius;
+      background-color: $formControlBgColor;
+      overflow: hidden;
+      // For quiet Forms
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    } 
+
+    .oj-text-field.oj-read-only .oj-text-field-container,
+    .oj-text-field .oj-read-only .oj-text-field-container {
+      border-style: none;
+      border-color: transparent;
+      border-width: 0;
+      border-radius: 0;
+      background-color: transparent;
+    }      
+
+    .oj-text-field.oj-invalid .oj-text-field-container,
+    .oj-text-field .oj-invalid .oj-text-field-container,
+    .oj-text-field.oj-warning .oj-text-field-container,
+    .oj-text-field .oj-warning .oj-text-field-container {
+      @include oj-form-control-border-message-width;
+      border-style: solid;
+    }
+
+    // Styling for invalid state
+    .oj-text-field.oj-invalid .oj-text-field-container,
+    .oj-text-field .oj-invalid .oj-text-field-container {
+      border-color: $borderColorError; 
+    }
+    // Styling for warning state
+    .oj-text-field.oj-warning .oj-text-field-container,
+    .oj-text-field .oj-warning .oj-text-field-container {
+      border-color: $borderColorWarning; 
+    }
+
+    .oj-text-field-label-inside.oj-text-field .oj-text-field-container {
+      min-height: $formControlInsideInputHeight; 
+    }
+    .oj-text-field-label-inside.oj-text-field .oj-text-field-container .oj-label,
+    .oj-text-field-label-inside.oj-text-field.oj-disabled .oj-text-field-container .oj-label,
+    .oj-text-field-label-inside.oj-text-field .oj-disabled .oj-text-field-container .oj-label {
+      position: absolute;
+      top: 0;
+      z-index: 1;
+      
+      transition: all .25s ease .1s;
+      pointer-events: none;
+
+      @include oj-ltr() {
+        transform-origin: left top 0;
+        transform: translateX($formControlInsideLabelTranslateX) translateY($formControlInsideLabelTranslateY);
+      }
+      @include oj-rtl() {
+        transform-origin: right top 0;
+        transform: translateX(calc(#{$formControlInsideLabelTranslateX} * -1)) translateY($formControlInsideLabelTranslateY);
+      }
+    }
+
+    // Styling for small inside label on non-text-field 
+    .oj-form-control-label-inside.oj-label-value .oj-label[slot="label"],
+    .oj-form-control-label-inside.oj-form-control .oj-label {
+      font-size: $formControlInsideLabelFontSize;
+      font-weight: $formControlInsideLabelFontWeight;
+      line-height: $formControlInsideLabelLineHeight;
+    }
+
+    .oj-text-field-label-inside.oj-text-field.oj-focus .oj-text-field-container .oj-label,
+    .oj-text-field-label-inside.oj-text-field:not(.oj-has-no-value) .oj-text-field-container .oj-label {
+      transition: transform .25s ease .1s, font-weight .25s ease .1s, font-size .25s ease .1s;
+      font-size: $formControlInsideLabelFontSize;
+      font-weight: $formControlInsideLabelFontWeight;
+      line-height: $formControlInsideLabelLineHeight;
+    
+      @include oj-ltr() {
+        transform-origin: left top 0;
+        transform: translateX($formControlInsideLabelTranslateX) translateY($formControlInsideLabelTranslateYFocus);
+      }
+      @include oj-rtl() {
+        transform-origin: right top 0;
+        transform: translateX(calc(#{$formControlInsideLabelTranslateX} * -1)) translateY($formControlInsideLabelTranslateYFocus);
+      }
+    }
+
+    .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container .oj-label,
+    .oj-text-field-label-inside.oj-text-field .oj-read-only .oj-text-field-container .oj-label {
+      font-size: $formControlInsideLabelFontSize;
+      font-weight: $formControlInsideLabelFontWeight;
+      line-height: $formControlInsideLabelLineHeight;
+  
+      @include oj-ltr() {
+        transform-origin: left top 0;
+        transform: translateX(0) translateY($formControlInsideLabelTranslateYFocus);
+      }
+      @include oj-rtl() {
+        transform-origin: right top 0;
+        transform: translateX(0) translateY($formControlInsideLabelTranslateYFocus);
+      }
+    }
+
+    .oj-text-field-label-inside.oj-text-field.oj-disabled:not(.oj-has-no-value) .oj-text-field-container .oj-label,
+    .oj-text-field-label-inside.oj-text-field:not(.oj-has-no-value) .oj-disabled .oj-text-field-container .oj-label {
+      transition: none; 
+      background-color: $formControlBgColorDisabled;
+    }
+
+    .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container .oj-label,
+    .oj-text-field-label-inside.oj-text-field .oj-read-only .oj-text-field-container .oj-label {
+      transition: none; 
+      background-color: transparent;
+    }
+
+    .oj-text-field-label-inside .oj-text-field-middle {
+      // needed for stopping single combobox to shrink
+      height: 100%;
+    }
+
+    .oj-text-field-counter {
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      cursor: default;
+      font-size: $formControlInsideLabelFontSize;
+      color: $textColorDisabled;
     }
   }
 }

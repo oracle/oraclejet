@@ -6,7 +6,20 @@ define(['./DvtToolkit'], function(dvt) {
   "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * PictoChart component.  The component should never be instantiated directly.  Use the newInstance function instead
  * @param {dvt.Context} context The rendering context.
@@ -57,7 +70,7 @@ dvt.PictoChart.prototype.Init = function(context, callback, callbackObj) {
   this._items = [];
 
   // PictoChart sets the width and height of its svg so no need for fix for 
-  if (dvt.Agent.browser === 'chrome' || dvt.Agent.browser === 'safari') {
+  if (dvt.Agent.engine === 'blink'|| dvt.Agent.browser === 'safari') {
   	this.getCtx().removeSizingSvg();
   }
 };
@@ -411,6 +424,12 @@ dvt.PictoChart.prototype.getAutomation = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Provides automation services for dvt.PictoChart.
  * @class  DvtPictoChartAutomation
  * @param {dvt.PictoChart} picto
@@ -501,6 +520,12 @@ DvtPictoChartAutomation.prototype.getItemCount = function() {
   return this._picto.getItems().length;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Event Manager for pictoChart component.
  * @param {dvt.PictoChart} picto
@@ -611,6 +636,12 @@ DvtPictoChartEventManager.prototype.processDrillEvent = function(obj) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -658,11 +689,16 @@ DvtPictoChartDefaults.VERSION_1 = {
  * @override
  */
 DvtPictoChartDefaults.prototype.getAnimationDuration = function(options)
-{ 
+{
   return options['animationDuration'];
 };
 
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  * @param {dvt.PictoChart} picto
@@ -744,7 +780,12 @@ DvtPictoChartImageMarker.prototype._setAnimationParams = function(params) {
   this.setHeight(params[3]);
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * PictoChartItem
  * @param {dvt.PictoChart} picto
@@ -1212,6 +1253,12 @@ DvtPictoChartItem.prototype.getKeyboardTooltipLocation = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * @param {DvtPictoChartEventManager} eventManager The owning event manager.
  * @class DvtPictoChartKeyboardHandler
  * @extends {dvt.KeyboardHandler}
@@ -1306,7 +1353,12 @@ DvtPictoChartKeyboardHandler.prototype.processKeyDown = function(event) {
     return DvtPictoChartKeyboardHandler.superclass.processKeyDown.call(this, event);
 };
 
-// Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  *  @param {DvtPictChart} picto
@@ -1393,6 +1445,12 @@ DvtPictoChartShapeMarker.prototype._setAnimationParams = function(params) {
   this.setHeight(params[3]);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Renderer for dvt.PictoChart.
  * @class
@@ -1500,7 +1558,7 @@ DvtPictoChartRenderer.render = function(picto, container, availSpace, info) {
       else {
         // Set a random ID so that fractional markers don't get animateUpdate (only animateInsert and animateDelete)
         // This is a workaround for not animating the clipPath
-        markerId = Math.random(); // @randomNumberOk
+        markerId = Math.random(); // @RandomNumberOK
       }
 
       var marker;
@@ -1784,6 +1842,13 @@ DvtPictoChartRenderer.isOriginRight = function(picto) {
   return dvt.Agent.isRightToLeft(picto.getCtx()) ? !isEnd : isEnd;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
   return dvt;
 });

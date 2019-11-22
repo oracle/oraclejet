@@ -2,14 +2,12 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'ojs/ojtranslation', 'jquery', 'ojs/ojlogger', 'ojs/ojdatasource-common'], function(oj, Translations, $, Logger)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -46,6 +44,7 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'jquery', 'ojs/ojlogger', 'ojs/ojdata
  *               value: "KnockoutObservableArray<object>|Array<object>",
  *               for: "data"}
  * @constructor
+ * @final
  * @ojtsignore
  * @example
  * // First initialize an array
@@ -817,16 +816,20 @@ oj.ArrayTableDataSource.prototype._getRowArray = function (values) {
     var clonedRowValues = {};
     var rowValues = values[i];
 
-    var props = Object.keys(rowValues);
-    for (var j = 0; j < props.length; j++) {
-      var prop = props[j];
-      clonedRowValues[prop] = rowValues[prop];
-      if (i === 0) {
-        if (this._attributes == null) {
-          this._attributes = [];
+    if (rowValues) {
+      var props = Object.keys(rowValues);
+      for (var j = 0; j < props.length; j++) {
+        var prop = props[j];
+        clonedRowValues[prop] = rowValues[prop];
+        if (i === 0) {
+          if (this._attributes == null) {
+            this._attributes = [];
+          }
+          this._attributes.push(prop);
         }
-        this._attributes.push(prop);
       }
+    } else {
+      clonedRowValues = null;
     }
     rowArray.data[i] = clonedRowValues;
     rowArray.indexes[i] = i;
@@ -839,6 +842,10 @@ oj.ArrayTableDataSource.prototype._getId = function (row) {
   var id;
   var idAttribute = this._getIdAttr(row);
   var errDetail;
+
+  if (row == null) {
+    return null;
+  }
 
   if ($.isArray(idAttribute)) {
     var i;
@@ -1000,10 +1007,15 @@ oj.ArrayTableDataSource.prototype._subscribeObservableArray = function (data) {
 
 oj.ArrayTableDataSource.prototype._wrapWritableValue = function (m) {
   var returnObj = {};
-  var props = Object.keys(m);
 
-  for (var i = 0; i < props.length; i++) {
-    oj.ArrayTableDataSource._defineProperty(returnObj, m, props[i]);
+  if (m) {
+    var props = Object.keys(m);
+
+    for (var i = 0; i < props.length; i++) {
+      oj.ArrayTableDataSource._defineProperty(returnObj, m, props[i]);
+    }
+  } else {
+    return null;
   }
 
   return returnObj;

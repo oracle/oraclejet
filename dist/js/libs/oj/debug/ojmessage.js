@@ -2,10 +2,12 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'knockout', 'require', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojtranslation', 'hammerjs', 'ojs/ojcomposite', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojjquery-hammer', 'ojs/ojknockout', 'ojs/ojbutton'], 
-function(oj, $, ko, localRequire, Context, ThemeUtils, Translations,  Hammer, Composite, Components, AnimationUtils, Logger)
+define(['ojs/ojcore', 'jquery', 'knockout', 'require', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojtranslation', 'hammerjs', 'ojs/ojcomposite', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojconverterutils', 
+      'ojs/ojconverterutils-i18n', 'ojs/ojlogger', 'ojs/ojjquery-hammer', 'ojs/ojknockout', 'ojs/ojbutton'], 
+function(oj, $, ko, localRequire, Context, ThemeUtils, Translations,  Hammer, Composite, Components, AnimationUtils, ConverterUtils, __ConverterI18nUtils, Logger)
 {
   "use strict";
 var __oj_message_metadata = 
@@ -117,10 +119,7 @@ var __oj_message_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global ko:false, Hammer:false, Promise:false, Components:false, Logger:false, Translations:false, ThemeUtils:false, Context:false, localRequire:false */
 
@@ -129,7 +128,7 @@ var __oj_message_metadata =
  * @since 5.0.0
  * @ojdisplayname Message
  * @ojshortdesc A message conveys categorized information to the user, often regarding errors.
- * @ojstatus preview
+ *
  * @ojsignature {target: "Type", value:"class ojMessage extends JetElement<ojMessageSettableProperties>"}
  *
  * @classdesc
@@ -666,7 +665,7 @@ var __oj_message_metadata =
    * with the detail slot. This slot is useful to add links or buttons to the detail area. The
    * default template will just display the text value of 'message.detail' property for any message.
    *
-   * @ojstatus preview
+   *
    * @ojslot detail
    * @ojshortdesc The detail slot accepts DOM nodes as children. It is useful for adding links or buttons to the message's detail area.
    * @ojmaxitems 1
@@ -888,12 +887,13 @@ var _MESSAGE_VIEW =
   '  <div class="oj-message-header">' +
   '    <div class="oj-message-leading-header" :title="[[computedCategory]]">' +
   '      <oj-bind-if test="[[computedIconStyle]]">' +
-  '        <div class="oj-component-icon oj-message-status-icon oj-message-custom-icon" role="img" ' +
-  '         :title="[[computedCategory]]" :style.background="[[computedIconStyle]]">' +
+  '        <div class="oj-component-icon oj-message-status-icon oj-message-custom-icon" ' +
+  '         role="presentation" :title="[[computedCategory]]" ' +
+  '         :style.background="[[computedIconStyle]]">' +
   '        </div>' +
   '      </oj-bind-if>' +
   '      <oj-bind-if test="[[computedIconClass]]">' +
-  '        <div role="img" :title="[[computedCategory]]" :class="[[computedIconClass]]"> ' +
+  '        <div role="presentation" :title="[[computedCategory]]" :class="[[computedIconClass]]">' +
   '        </div>' +
   '      </oj-bind-if>' +
   '      <oj-bind-if test="[[computedCategory]]">' +
@@ -1213,24 +1213,19 @@ MessageViewModel.prototype._formatTimestamp = function () {
 };
 
 MessageViewModel.prototype._getConverterPromise = function (timestamp) {
-  var validationBaseLoadPromise = oj.__getRequirePromise('./ojvalidation-base', localRequire);
-  var validationDateTimeLoadPromise =
-    oj.__getRequirePromise('./ojvalidation-datetime', localRequire);
+  var dateTimeConverterLoadPromise = oj.__getRequirePromise('ojs/ojconverter-datetime', localRequire);
 
-  if (!validationBaseLoadPromise || !validationDateTimeLoadPromise) {
+  if (!dateTimeConverterLoadPromise) {
     Logger.warning(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
       "': failed to parse message.timestamp='", timestamp,
       "' because require() is not available"].join(''));
   }
 
-  return Promise.all([validationBaseLoadPromise, validationDateTimeLoadPromise])
-    .then(function (loadedObjects) {
-      // get the default datetime converter
-      var dateTimeConverterFactory = loadedObjects[0].Validation.converterFactory('datetime');
-      // use default format as in UX specs
-      var pattern = this._isDateToday(timestamp) ? 'hh:mm a' : 'MM/dd/yy, hh:mm a';
-      return dateTimeConverterFactory.createConverter({ pattern: pattern });
-    }.bind(this));
+  return dateTimeConverterLoadPromise.then(function (__DateTimeConverter) {
+    // use default format as in UX specs
+    var pattern = this._isDateToday(timestamp) ? 'hh:mm a' : 'MM/dd/yy, hh:mm a';
+    return new __DateTimeConverter.IntlDateTimeConverter({ pattern: pattern });
+  }.bind(this));
 };
 
 MessageViewModel.prototype._isDateToday = function (isoDate) {
@@ -1558,7 +1553,6 @@ MessageViewModel.prototype._createObservables = function () {
   // this["computedLabelCloseIcon"] = ko.pureComputed(this._computeLabelCloseIcon.bind(this), this);
   // this["computedCloseAffordance"] = ko.pureComputed(this._computeCloseAffordance.bind(this), this);
   // workaround for 
-
   this.hasCloseAffordance = ko.observable(this._computeCloseAffordance() === 'defaults');
   this.computedIconStyle = ko.observable(this._computeIconStyle());
   this.computedIconClass = ko.observable(this._computeIconClass());

@@ -532,6 +532,108 @@ define(['./impl/logger'], function (logger) {
     });
   };
 
+  function _mapData(idArray, dataArray, dataMapping) {
+    var mappedIdArray = idArray || [];
+    var mappedDataArray = dataArray || [];
+
+    if (dataMapping) {
+      mappedIdArray = [];
+      mappedDataArray = [];
+      var totalCount = idArray != null ? idArray.length : dataArray.length;
+      var i;
+      for (i = 0; i < totalCount; i ++) {
+        var itemMetadata = idArray != null ? {key: idArray[i]} : {key: null};
+        var item = dataArray != null ? {metadata: itemMetadata, data: dataArray[i]} : {metadata: itemMetadata, data: null};
+        var mappedItem = dataMapping.mapFields(item);
+        mappedIdArray[i] = mappedItem.metadata.key;
+        mappedDataArray[i] = mappedItem.data;
+      };
+    }
+
+    return {keys: mappedIdArray, data: mappedDataArray};
+  };
+
+  function _unmapData(idArray, dataArray, dataMapping) {
+    var unmappedIdArray = idArray || [];
+    var unmappedDataArray = dataArray || [];
+
+    if (dataMapping) {
+      unmappedIdArray = [];
+      unmappedDataArray = [];
+      var totalCount = idArray != null ? idArray.length : dataArray.length;
+      var i;
+      for (i = 0; i < totalCount; i ++) {
+        var itemMetadata = idArray != null ? {key: idArray[i]} : {key: null};
+        var item = dataArray != null ? {metadata: itemMetadata, data: dataArray[i]} : {metadata: itemMetadata, data: null};
+        var unmappedItem = dataMapping.unmapFields(item);
+        unmappedIdArray[i] = unmappedItem.metadata.key;
+        unmappedDataArray[i] = unmappedItem.data;
+      }
+    }
+
+    return {keys: unmappedIdArray, data: unmappedDataArray};
+  };
+
+  function _mapFindQuery(findQuery, dataMapping) {
+    if (findQuery  && dataMapping) {
+      var filterCriterion = _transformFindQuerySelectorToFilterCriterion(findQuery.selector);
+
+      if (filterCriterion) {
+        findQuery.selector = _transformFilterCriterionToFindQuerySelector(dataMapping.mapFilterCriterion(filterCriterion));
+      }
+    }
+    return findQuery;
+  };
+
+  function _transformFindQuerySelectorToFilterCriterion(findQuery) {
+    if (findQuery) {
+      var filterCriterion = {};
+      Object.keys(findQuery).forEach(function(lhs) {
+        if (!lhs.startsWith('value.')) {
+          var operand = lhs;
+          if (operand == '$and' || operand == '$or') {
+            filterCriterion['op'] = operand;
+            filterCriterion['value'] = [];
+            findQuery[operand].forEach(function(innerQuery, index) {
+              filterCriterion['value'][index] = _transformFindQuerySelectorToFilterCriterion(innerQuery);
+            });
+          }
+        } else {
+          var rhs = findQuery[lhs];
+          if (rhs instanceof Object) {
+            filterCriterion['op'] = Object.keys(rhs)[0];
+            filterCriterion['value'] = rhs[filterCriterion['op']];
+          } else {
+            filterCriterion['op'] = '$eq';
+            filterCriterion['value'] = rhs;
+          }
+          filterCriterion['attribute'] = lhs.substr(6, lhs.length);
+        }
+      });
+      return filterCriterion;
+    }
+    return null;
+  };
+
+  function _transformFilterCriterionToFindQuerySelector(filterCriterion) {
+    if (filterCriterion) {
+      var findQuery = {};
+      var operand = filterCriterion.op;
+      if (operand == '$and' || operand == '$or') {
+        findQuery[operand] = [];
+        filterCriterion.value.forEach(function(innerFilterCriterion, index) {
+          findQuery[operand][index] = _transformFilterCriterionToFindQuerySelector(innerFilterCriterion);
+        });
+      } else {
+        findQuery['value.' + filterCriterion.attribute] = {};
+        findQuery['value.' + filterCriterion.attribute][filterCriterion.op] = filterCriterion.value; 
+      }
+      return findQuery;
+    }
+    return null;
+  };
+
+
   return {
     requestToJSON: requestToJSON,
     requestFromJSON: requestFromJSON,
@@ -545,7 +647,10 @@ define(['./impl/logger'], function (logger) {
     buildEndpointKey: buildEndpointKey,
     _cloneRequest: _cloneRequest,
     _cloneResponse: _cloneResponse,
-    _derivePayloadType: _derivePayloadType
+    _derivePayloadType: _derivePayloadType,
+    _mapData: _mapData,
+    _unmapData: _unmapData,
+    _mapFindQuery: _mapFindQuery
   };
 });
 

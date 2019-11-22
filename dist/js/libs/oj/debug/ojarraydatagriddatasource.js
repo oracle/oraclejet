@@ -2,15 +2,14 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
 {
   "use strict";
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
  /**
  * @class oj.ArrayCellSet
@@ -194,10 +193,7 @@ oj.ArrayCellSet.prototype.getStartColumn = function () {
   return this.m_startColumn;
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Promise:false */
 
@@ -217,6 +213,7 @@ oj.ArrayCellSet.prototype.getStartColumn = function () {
  * @property {string=} options.initialSort.direction valid values are ascending or descending
  * @export
  * @constructor
+ * @final
  * @since 1.0
  * @extends oj.DataGridDataSource
  * @ojtsignore
@@ -474,6 +471,9 @@ oj.ArrayDataGridDataSource.prototype.fetchHeaders = function (
 
   start = Math.max(0, start);
   if (axis === 'column') {
+    if (!this.columns.length) {
+      this._populateColumns();
+    }
     end = Math.min(this.columns.length, start + count);
   } else {
     var data = this.getDataArray();
@@ -566,6 +566,9 @@ oj.ArrayDataGridDataSource.prototype.fetchCells = function (
       rowStart = cellRange.start;
       rowEnd = Math.min(this._size(), rowStart + cellRange.count);
     } else if (cellRange.axis === 'column') {
+      if (!this.columns.length) {
+        this._populateColumns();
+      }
       colStart = cellRange.start;
       colEnd = Math.min(this.columns.length, colStart + cellRange.count);
     }
@@ -1016,6 +1019,9 @@ oj.ArrayDataGridDataSource.prototype._getRowIndexByKey = function (key) {
 oj.ArrayDataGridDataSource.prototype._getRowKeyByIndex = function (index) {
   var data = this.getDataArray();
   if (data[index]) {
+    if (!data[index].ojKey) {
+      this._initializeRowKeys();
+    }
     return data[index].ojKey;
   }
   return null;
@@ -1176,9 +1182,21 @@ oj.ArrayDataGridDataSource.prototype.getData = function () {
 };
 
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Populate columns from data Array.
+ * @private
+ * @memberof oj.ArrayDataGridDataSource
  */
+
+oj.ArrayDataGridDataSource.prototype._populateColumns = function () {
+  if (this.getDataArray().length) {
+    var columnLength = this.getDataArray()[0].length;
+    for (var i = 0; i < columnLength; i++) {
+      this.columns.push(i.toString());
+    }
+  }
+};
+
+
 
 /**
  * @class oj.ArrayHeaderSet
@@ -1361,6 +1379,7 @@ oj.ArrayHeaderSet.prototype.getCount = function () {
 oj.ArrayHeaderSet.prototype.getStart = function () {
   return this.m_start;
 };
+
 
 // Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
 

@@ -36,30 +36,16 @@
       margin: 0 ;
       padding: 0;
       list-style-type: none;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        user-select: none;
-      }
-      @else
-      {
+
+
         @include oj-user-select-property(none);
-      }
+
     }
 
     // Basic item
     .oj-treeview-item {
       white-space: nowrap;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        min-width: var(--oj-tree-view-spacer-width);
-        @include oj-ltr() {
-          margin-left: var(--oj-tree-view-spacer-width);
-        }
-        @include oj-rtl() {
-          margin-right: var(--oj-tree-view-spacer-width);
-        }
-      }
-      @else {
+
         min-width: $treeViewSpacerWidth;
         @include oj-ltr() {
           margin-left: $treeViewSpacerWidth;
@@ -67,7 +53,7 @@
         @include oj-rtl() {
           margin-right: $treeViewSpacerWidth;
         }
-      }
+
       vertical-align: middle;
     }
 
@@ -112,12 +98,9 @@
 
     // Item text
     .oj-treeview-item-text {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        color: var(--oj-tree-view-text-color);
-      } @else {
+
         color: $treeViewTextColor;
-      }
+
 
       cursor: default;
       vertical-align: middle;
@@ -137,32 +120,23 @@
 
     // Hovered item content
     .oj-treeview-item-content.oj-hover {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-tree-view-item-bg-color-hover);
-      } @else {
+
         background-color: $treeViewItemBgColorHover;
-      }
+
     }
 
     // Selected item content when the root is focused
     .oj-treeview-list:focus .oj-treeview-item-content.oj-selected {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-tree-view-item-bg-color-selected);
-      } @else {
+
         background-color: $treeViewItemBgColorSelected;
-      }
+
     }
 
     // Selected item content when the root is NOT focused
     .oj-treeview-item-content.oj-selected {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-tree-view-item-bg-color-selected-inactive);
-      } @else {
+
         background-color: $treeViewItemBgColorSelectedInactive;
-      }
+
     }
 
     // Styling for the list item elements in selected state when treeview is in high contrast mode.
@@ -182,25 +156,17 @@
 
     // Focused item content
     .oj-treeview-item-content.oj-focus-highlight {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        outline: dotted 1px var(--oj-text-color-primary);
-        outline: -webkit-focus-ring-color auto;
-      } @else {
+
         @include oj-browser-focus-outline-approximation($primaryTextColor);
-      }
+
     }
 
     // Disclosure icon or the spacer
     .oj-treeview-spacer {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        width: var(--oj-tree-view-spacer-width);
-        height: var(--oj-tree-view-spacer-height);
-      } @else {
+
         width: $treeViewSpacerWidth;
         height: $treeViewSpacerHeight;
-      }
+
     }
 
     .oj-treeview-disclosure-icon {
@@ -226,12 +192,9 @@
       height: 1px;
       width: 100px;
       position: absolute;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-tree-view-drop-line-color);
-      } @else {
+
         background-color: $treeViewDropLineColor;
-      }
+
       pointer-events: none;
     }
 
@@ -239,12 +202,9 @@
     .oj-treeview-drop-marker-icon {
       position: absolute;
       @extend .oj-fwk-icon-arrow-end;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        color: var(--oj-tree-view-drop-marker-color);
-      } @else {
+
         color: $treeViewDropMarkerColor;
-      }
+      
     }
 
     // Make sure drag image isn't visible to the end user

@@ -2,9 +2,11 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcolor', 'ojs/ojvalidation-base', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojlabelledbyutils', 'ojs/ojarraytabledatasource', 'ojs/ojlistview', 'ojs/ojeditablevalue'],
-       function(oj, $, Components, Color, __ValidationBase, Logger, Context, LabelledByUtils)
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcolor', 'ojs/ojconverter-color', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojlabelledbyutils', 'ojs/ojarraytabledatasource', 'ojs/ojlistview', 'ojs/ojeditablevalue'],
+       function(oj, $, Components, Color, ColorConverter, Logger, Context, LabelledByUtils)
 {
   "use strict";
 var __oj_color_palette_metadata = 
@@ -41,6 +43,10 @@ var __oj_color_palette_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
+          "enumValues": [
+            "none",
+            "notewindow"
+          ],
           "value": [
             "notewindow"
           ]
@@ -76,6 +82,14 @@ var __oj_color_palette_metadata =
         "off"
       ],
       "value": "off"
+    },
+    "labelEdge": {
+      "type": "string",
+      "enumValues": [
+        "inside",
+        "none",
+        "provided"
+      ]
     },
     "labelHint": {
       "type": "string",
@@ -150,12 +164,9 @@ var __oj_color_palette_metadata =
   },
   "extension": {}
 };
-/**
- *  Copyright (c) 2015, Oracle and/or its affiliates.
- *  All rights reserved.
- */
 
-/* global Promise:false, Color:false, __ValidationBase: false, Logger:false, Context:false, LabelledByUtils:false */
+
+/* global Promise:false, Color:false, ColorConverter:false, Logger:false, Context:false, LabelledByUtils:false */
 
 /*---------------------------------------------------------
    ojColorPalette    Jet Color Palette element
@@ -194,8 +205,9 @@ var __oj_color_palette_metadata =
    * @ojcomponent oj.ojColorPalette
    * @augments oj.editableValue
    * @since 3.0.0
-   * @ojstatus preview
+   *
    * @class oj.ojColorPalette
+   * @ojimportmembers oj.ojDisplayOptions
    * @ojtsimport {module: "ojcolor", type: "AMD", importName: "Color"}
    * @ojshortdesc A color palette displays a set of predefined colors from which a specific color can be selected.
    * @ojsignature [{
@@ -1110,14 +1122,14 @@ var __oj_color_palette_metadata =
       _renderStandard: function (color, showLabels, label, tooltip, swatchClass, selectedClass) {
         var entry = $("<div class='oj-colorpalette-swatch-entry'></div>")
           .addClass(swatchClass + (showLabels ? ' oj-colorpalette-swatch-showlabel' : ''))
-          .append($("<div class='oj-colorpalette-swatch-container'></div>")
-            .append($("<div class='oj-colorpalette-swatch'></div>")
+          .append($("<div class='oj-colorpalette-swatch-container'></div>")    // @HTMLUpdateOK
+            .append($("<div class='oj-colorpalette-swatch'></div>")            // @HTMLUpdateOK
               .attr('title', (!label) ? tooltip : null)
               .addClass(selectedClass)
               .css('backgroundColor', color.toString())));
 
         if (label) {
-          entry.append($("<span class='oj-colorpalette-swatch-text'>" + label + '</span>')[0]);
+          entry.append($("<span class='oj-colorpalette-swatch-text'>" + label + '</span>')[0]);  // @HTMLUpdateOK
         }
         return entry[0];
       },
@@ -1478,11 +1490,8 @@ var __oj_color_palette_metadata =
        */
       _initData: function () {
         this._applyOptions();     // process the component options
-
-        this._converterFactory =
-          __ValidationBase.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_COLOR);
-        this._convHex = this._converterFactory.createConverter({ format: 'hex' });
-
+        var converterOptions = { format: 'hex' };
+        this._convHex = new ColorConverter(converterOptions);
         this._labelNone = this.getTranslatedString(TRANSKEY_NONE);
 
         var layoutClass;
@@ -1495,13 +1504,12 @@ var __oj_color_palette_metadata =
         //  Create the inner ListView markup
         this._markup = (function () {
           return [
-            "<div class='oj-colorpalette-container'>",
+            "<div class='oj-colorpalette-container oj-form-control-container'>",
             "<ul class='" + layoutClass + "'/>",
             '</div>'
           ].join('');
         }());
       },
-
 
       /**
        * Process the component options
@@ -1662,7 +1670,6 @@ var __oj_color_palette_metadata =
        * @private
        */
       _clear: function () {
-        this._converterFactory = null;
         this._convHex = null;
         this._markup = null;
         this._$LVElem = null;
@@ -1689,7 +1696,7 @@ var __oj_color_palette_metadata =
         innerDiv.style.height = '100%';
         div.appendChild(innerDiv);
 
-        this.element.append(div);
+        this.element.append(div);    // @HTMLUpdateOK
         var outerWidth = div.offsetWidth;
         var innerWidth = innerDiv.offsetWidth;
         $(div).remove();
@@ -1899,6 +1906,7 @@ var __oj_color_palette_metadata =
 
     });    // end    $.widget("oj.ojColorPalette", ...
 }());
+
 
 /* global __oj_color_palette_metadata */
 (function () {

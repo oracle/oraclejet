@@ -133,12 +133,9 @@
     /*  Disabled  */
     .oj-tree-list.oj-disabled .oj-tree-disclosure-icon,
     .oj-tree-node.oj-disabled  {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-       color: var(--oj-text-color-disabled);
-      } @else {
+
        color: $textColorDisabled;
-      }
+
        cursor: default;
     }
 
@@ -152,12 +149,9 @@
        // adding a transparent border so that the height
        // doesn't change when border shown for hovered/selected
        border: 1px solid transparent;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        color: var(--oj-tree-text-color);
-      } @else {
+
         color: $treeTextColor;
-      }
+
 
        cursor: pointer;
        vertical-align: -0.15rem;
@@ -176,53 +170,37 @@
 
     /*  Active node text  */
     .oj-hover .oj-tree-title {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        border:  1px dashed var(--oj-tree-node-border-color-hover);
-        background-color: var(--oj-tree-node-bg-color-hover);
-      } @else {
+
         border:  1px dashed $treeNodeBorderColorHover;
         background-color: $treeNodeBgColorHover;
-      }
+
 
     }
 
     /*  Selected node text  */
     .oj-selected .oj-tree-title {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        border: 1px solid var(--oj-tree-node-border-color-selected);
-        background-color: var(--oj-tree-node-bg-color-selected);
-      } @else {
+
         border: 1px solid $treeNodeBorderColorSelected;
         background-color: $treeNodeBgColorSelected;
-      }
+
 
     }
 
     /*  Selected inactive node text  */
     .oj-selected.oj-tree-inactive .oj-tree-title {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        border: 1px solid var(--oj-tree-node-border-color-selected-inactive);
-        background-color: var(--oj-tree-node-bg-color-selected-inactive);
-      } @else {
+
         border: 1px solid $treeNodeBorderColorSelectedInactive;
         background-color: $treeNodeBgColorSelectedInactive;
-      }
+
 
     }
 
     /*  active and selected node text  */
     .oj-hover.oj-selected .oj-tree-title {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-tree-node-bg-color-hover-selected);
-        border:  1px solid var(--oj-tree-node-border-color-hover-selected);
-      } @else {
+
         background-color: $treeNodeBgColorHoverSelected;
         border:  1px solid $treeNodeBorderColorHoverSelected;
-      }
+
 
     }
 
@@ -241,12 +219,9 @@
 
     /* transition properties and duration  */
     .oj-tree-transition {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        transition: max-height var(--oj-tree-animation-duration);
-      } @else {
+
         transition: max-height $treeAnimationDuration;
-      }
+
 
     }
 
@@ -262,12 +237,9 @@
         width: 8px;
         display: inline-block;
         text-decoration: none;
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        color: var(--oj-tree-dnd-marker-line-color);
-      } @else {
+
         color: $treeDndMarkerLineColor;
-      }
+
 
     }
 
@@ -277,12 +249,9 @@
        width: 100px;
        position: absolute;
        display: none;
-       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-tree-dnd-marker-line-color);
-      } @else {
+
         background-color: $treeDndMarkerLineColor;
-      }
+      
 
     }
 

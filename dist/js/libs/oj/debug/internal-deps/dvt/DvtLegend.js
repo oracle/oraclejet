@@ -6,7 +6,20 @@ define(['./DvtToolkit'], function(dvt) {
   "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Legend component.  This class should never be instantiated directly.  Use the
  * newInstance function instead.
@@ -50,7 +63,7 @@ dvt.Legend.getDefaults = function(skin)
  */
 dvt.Legend.prototype.Init = function(context, callback, callbackObj) {
   dvt.Legend.superclass.Init.call(this, context, callback, callbackObj);
-  this.setId('legend' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
+  this.setId('legend' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOK
 
   // Create the defaults object
   this.Defaults = new DvtLegendDefaults(context);
@@ -459,6 +472,12 @@ dvt.Legend.getSectionItemsCount = function(section) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  *  Provides automation services for a DVT component.
  *  @class DvtLegendAutomation
  *  @param {dvt.Legend} dvtComponent
@@ -717,6 +736,12 @@ DvtLegendAutomation.prototype._generateSectionObjects = function(sections) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -794,6 +819,12 @@ DvtLegendDefaults.prototype.getNoCloneObject = function(legend) {
   return {'sections': {'items': {'_dataContext': true}} };
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Event Manager for dvt.Legend.
  * @param {dvt.Legend} legend
@@ -1152,6 +1183,12 @@ DvtLegendEventManager.prototype.ShowRejectedDropEffect = function(event) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
   *  @param {dvt.EventManager} manager The owning dvt.EventManager
   *  @param {dvt.Legend} legend
   *  @class DvtLegendKeyboardHandler
@@ -1223,6 +1260,12 @@ DvtLegendKeyboardHandler.prototype.processKeyDown = function(event) {
   return nextNavigable;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Logical object for legend data object displayables.
  * @param {dvt.Legend} legend The owning legend instance.
@@ -1523,6 +1566,12 @@ DvtLegendObjPeer.prototype.getDragFeedback = function(mouseX, mouseY) {
   return this.getDisplayables();
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Renderer for dvt.Legend.
  * @class
@@ -2498,6 +2547,13 @@ DvtLegendRenderer.isSectionCollapsed = function(section, legend) {
   return section['expanded'] == 'off' || section['expanded'] == false || (options.expanded && options.expanded.has(section.id) == false);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
   return dvt;
 });

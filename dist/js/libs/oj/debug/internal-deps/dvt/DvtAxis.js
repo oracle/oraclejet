@@ -6,7 +6,20 @@ define(['./DvtToolkit'], function(dvt) {
   "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Calculated axis information and drawable creation.  This class should
  * not be instantiated directly.
@@ -200,6 +213,12 @@ dvt.BaseAxisInfo.prototype.getUnboundedCoordAt = function(value) {
   return null; // subclasses should override
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Calculated axis information and drawable creation for a data axis.
  * @param {dvt.Context} context
@@ -564,6 +583,12 @@ dvt.DataAxisInfoMixin = function(context, options, availSpace) {
 }
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Formatter for an axis with a linear scale.
  * Following cases can occur:
  * 1. scaling is set to none:
@@ -922,6 +947,13 @@ dvt.LinearScaleAxisValueFormatter.prototype._getPowerOfTen = function(value) {
   return power;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
   return dvt;
 });

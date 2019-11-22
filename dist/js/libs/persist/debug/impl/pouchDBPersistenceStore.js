@@ -465,5 +465,19 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
     }
   };
 
+  PouchDBPersistenceStore.prototype.updateKey = function(currentKey, newKey) {
+    logger.log("Offline Persistence Toolkit PouchDBPersistenceStore: updateKey() with currentKey: " + currentKey + " and new key: " + newKey);
+    var self = this;
+    return self._db.get(currentKey).then(function (existingValue) {
+      if (existingValue) {
+        return self.upsert(newKey, existingValue.metadata, existingValue.value);
+      } else {
+        return Promise.reject("No existing key found to update");
+      }
+    }).then(function() {
+      return self.removeByKey(currentKey);
+    });
+  };
+
   return PouchDBPersistenceStore;
 });

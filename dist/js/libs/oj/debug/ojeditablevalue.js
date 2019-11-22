@@ -2,24 +2,23 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojtranslation', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojmessaging', 'ojs/ojvalidation-base', 'ojs/ojlogger', 'ojs/ojlabelledbyutils',
-'ojs/ojjquery-hammer', 'promise', 'ojs/ojpopup', 'ojs/ojlabel'], 
+ 
+define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojtranslation', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojmessaging', 'ojs/ojconverterutils', 'ojs/ojvalidator-required',
+'ojs/ojlogger', 'ojs/ojlabelledbyutils', 'ojs/ojvalidation-error', 'ojs/ojjquery-hammer', 'ojs/ojpopup', 'ojs/ojlabel'], 
   /*        
     * @param {Object} oj         
     * @param {jQuery} $        
     * @param {Object} Hammer        
   */
-function(oj, $, Hammer, Translations, Context, ThemeUtils, Components, AnimationUtils, Message, __ValidationBase, Logger, LabelledByUtils)
+function(oj, $, Hammer, Translations, Context, ThemeUtils, Components, AnimationUtils, Message, ConverterUtils, RequiredValidator, Logger, LabelledByUtils)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
-/* global Promise:false, __ValidationBase:false, Logger:false, Context:false, ThemeUtils:false, */
+
+/* global Promise:false, ConverterUtils:false, Logger:false, Context:false, ThemeUtils:false, */
 
 /**
  * @class oj.EditableValueUtils
@@ -637,8 +636,11 @@ oj.EditableValueUtils.validate = function () {
         return Promise.resolve(booleanSetValueReturn ? 'valid' : 'invalid');
       });
     }
+  } else if (returnValue instanceof Promise) {
+    return returnValue.then(function (booleanSetValueReturn) {
+      return Promise.resolve(booleanSetValueReturn ? 'valid' : 'invalid');
+    });
   }
-
   return returnValue;
 };
 
@@ -942,7 +944,12 @@ oj.EditableValueUtils._GetNormalizedValidatorsFromOption = function () {
           //                                    'hint': {'min': 'some hint about min'}}}
           vTypeStr = validator.type;
           if (vTypeStr && typeof vTypeStr === 'string') {
-            vType = __ValidationBase.Validation.validatorFactory(vTypeStr);
+            if (oj.Validation &&
+              oj.Validation.validatorFactory) {
+              vType = oj.Validation.validatorFactory(vTypeStr);
+            } else {
+              Logger.error('oj.Validation.validatorFactory is not available and it is needed to support the deprecated json format for validators property. Please include the backward compatibility "ojvalidation-base" module.');
+            }
             if (vType) {
               vOptions = oj.CollectionUtils.copyInto({}, validator.options) || {};
               // we push converter into the options if not provided explicitly. This is to allow
@@ -950,8 +957,6 @@ oj.EditableValueUtils._GetNormalizedValidatorsFromOption = function () {
               vOptions.converter = vOptions.converter || this._GetConverter();
               vOptions.label = vOptions.label || this._getLabelText();
               validator = vType.createValidator(vOptions);
-            } else {
-              Logger.error('Unable to locate a validatorFactory for the requested type: ' + vTypeStr);
             }
           }
         }
@@ -1024,10 +1029,7 @@ oj.EditableValueUtils._GetConverter = function () {
       converterPromise = converterOption;
     } else {
       converterInstanceReturn =
-      __ValidationBase.IntlConverterUtils.getConverterInstance(converterOption);
-      if (converterInstanceReturn instanceof Promise) {
-        converterPromise = converterInstanceReturn;
-      }
+      ConverterUtils.getConverterInstance(converterOption);
     }
 
     if (converterPromise) {
@@ -1232,11 +1234,8 @@ oj.EditableValueUtils._SetInputType = function (allowedTypes) {
   }
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-/* global Promise:false, Components:false, Message:false, __ValidationBase:false, Logger:false, Translations:false, LabelledByUtils:false */
+
+/* global Promise:false, RequiredValidator:false, Components:false, Message:false, Logger:false, Context:false, Translations:false, ThemeUtils: false, LabelledByUtils:false */
 /**
  * The various validation modes
  * @ignore
@@ -1374,12 +1373,11 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
     options:
     {
       /**
-       * It is used to establish a relationship between this component and another element.
-       * Typically this is not used by the application developer, but by the oj-label custom element's
-       * code. One use case is where the oj-label custom element code writes described-by
-       * on its form component for accessibility reasons.
-       * To facilitate correct screen reader behavior, the described-by attribute is
-       * copied to the aria-describedby attribute on the component's dom element.
+       * The oj-label sets the described-by attribute programmatically on the form component.
+       * This attribute is not meant to be set by an application developer directly.
+       * The described-by is copied to the aria-describedby
+       * attribute on the component's inner dom element, and it is needed
+       * for accessibility.
        * @example <caption>Initialize component with the <code class="prettyprint">described-by</code> attribute specified:</caption>
        * &lt;oj-some-element described-by="someId">&lt;/oj-some-element>
        *
@@ -1390,7 +1388,8 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * // setter
        * myComp.describedBy = "someId";
        *
-       * @ojshortdesc Specifies a relationship between this component and another element.
+       * @ojshortdesc The form component's oj-label automatically sets described-by
+       * to make it accessible. It is not meant to be set by application developer.
        * @expose
        * @type {?string}
        * @public
@@ -1459,118 +1458,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * @since 0.7.0
        */
       disabled: false,
-      /**
-       * Display options for auxilliary content that determines where it should be displayed
-       * in relation to the component.
-       *
-       * <p>
-       * The types of messaging content for which display options can be configured include
-       * <code class="prettyprint">converterHint</code>, <code class="prettyprint">helpInstruction</code>,
-       * <code class="prettyprint">messages</code>, and <code class="prettyprint">validatorHint</code>.<br/>
-       * The display options for each type is specified either as an array of strings or a string. When
-       * an array is specified the first display option takes precedence over the second and so on.
-       * </p>
-       * <p>
-       * When display-options changes due to programmatic intervention, the component updates its
-       * display to reflect the updated choices. For example, if 'help.instruction' property goes from
-       * 'notewindow' to 'none' then it no longer shows in the notewindow.
-       * </p>
-       * <p>
-       * A side note: help.instruction and message detail text can include formatted HTML text, whereas hints and
-       * message summary text cannot. If you use formatted text, it should be accessible
-       * and make sense to the user if formatting wasn't there.
-       * To format the help.instruction, you could do this:
-       * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
-       * </p>
-       *
-       * @example <caption>Override default values for <code class="prettyprint">display-options</code>
-       * for one component:</caption>
-       * // In this example, the display-options are changed from the defaults.
-       * // The 'converterHint' is none, the 'validatorHint' is none and the 'helpInstruction' is none,
-       * // so only the 'messages' will display in its default state.
-       * //
-       * &lt;oj-some-element display-options='{"converterHint": "none",
-       *                                     "validatorHint": "none",
-       *                                     "helpInstruction": "none"}'>&lt;/oj-some-element>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">displayOptions</code> property after initialization:</caption>
-       * // Get one subproperty
-       * var hint = myComp.displayOptions.converterHint;
-       *
-       * // Set one, leaving the others intact. Use the setProperty API for
-       * // subproperties so that a property change event is fired.
-       * myComp.setProperty("displayOptions.converterHint", "none");
-       *
-       * // get all
-       * var options = myComp.displayOptions;
-       *
-       * // set all.  Must list every resource key, as those not listed are lost.
-       * myComp.displayOptions = {converterHint: "none", validatorHint: "none", helpInstruction: "none"};
-       *
-       * @ojshortdesc Display options for the form field's messages, converter and validator hints, and help instruction text.
-       * @expose
-       * @access public
-       * @instance
-       * @memberof oj.editableValue
-       * @type {Object}
-       * @since 0.7
-       */
-      displayOptions: {
-          /**
-           * Display options for auxilliary converter hint text that determines where it should be displayed
-           * in relation to the component.  When there is already a placeholder set on the component,
-           * the converter hint falls back to display type of 'notewindow'.
-           *
-           * @expose
-           * @name displayOptions.converterHint
-           * @ojshortdesc Display options for auxilliary converter hint text that determines where it should be displayed in relation to the component.
-           * @memberof! oj.editableValue
-           * @instance
-           * @type {Array<string> | string}
-           * @default ['placeholder','notewindow']
-           * @since 0.7
-           * @ojsignature {target: "Type", value: "Array<'placeholder'|'notewindow'|'none'>|'placeholder'|'notewindow'|'none'", jsdocOverride: true}
-           */
-          /**
-           * Display options for auxilliary help instruction text that determines where it should be displayed
-           * in relation to the component.
-           *
-           * @expose
-           * @name displayOptions.helpInstruction
-           * @memberof! oj.editableValue
-           * @instance
-           * @type {Array<string> | string}
-           * @default ['notewindow']
-           * @since 0.7
-           * @ojsignature {target: "Type", value: "Array<'notewindow'|'none'>|'notewindow'|'none'", jsdocOverride: true}
-           */
-          /**
-           * Display options for auxilliary message text that determines where it should be displayed
-           * in relation to the component.
-           *
-           * @expose
-           * @name displayOptions.messages
-           * @memberof! oj.editableValue
-           * @instance
-           * @type {Array<string> | string}
-           * @default ['inline']
-           * @since 0.7
-           * @ojsignature {target: "Type", value: "Array<'inline'|'notewindow'|'none'>|'inline'|'notewindow'|'none'", jsdocOverride: true}
-           */
-          /**
-           * Display options for auxilliary validator hint text that determines where it should be displayed
-           * in relation to the component.
-           *
-           * @expose
-           * @name displayOptions.validatorHint
-           * @memberof! oj.editableValue
-           * @instance
-           * @type {Array<string> | string}
-           * @default ['notewindow']
-           * @since 0.7
-           * @ojsignature {target: "Type", value: "Array<'notewindow'|'none'>|'notewindow'|'none'",  jsdocOverride: true}
-           */
-      },
+      displayOptions: {},
       /**
        * Form component help information.
        * @expose
@@ -1618,7 +1506,12 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * myInputComp.help.source = "www.abc.com";
        */
       /**
-       * Represents hints for oj-form-layout element to render help information on the label of the editable component.
+       * Represents hints to render help information on the label of the editable component.
+       * This is used when an oj-form-layout creates labels for its editable value component children.
+       * Also when an editable value component (inside or outside oj-form-layout) creates a label for itself (if you set labelEdge), these
+       * hints will be used to render the help information. However, please note that, help information will
+       * not be rendered if the label is created inside the input field (labelEdge ='inside').
+       *
        * <p>This is used only if the editable component is added as a direct child to an oj-form-layout element, and the labelHint property is also specified.</p>
        *
        * <p>
@@ -1703,13 +1596,19 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
         source: ''
       },
       /**
-       * Represents a hint for oj-form-layout element to render a label on the editable component.
-       * <p>This is used only if the editable component is added as a direct child to an oj-form-layout element.</p>
+       * Represents a hint for rendering a label on the component.
+       * <p>This is used in combination with the <a href="#labelEdge">label-edge</a> attribute to control how the label should be rendered.</p>
        *
        * <p>
-       * When labelHint is present it gives a hint to the oj-form-layout element to create an oj-label element for the editable component.
-       * When the <code class="prettyprint">labelHint</code> property changes oj-form-layout element refreshes to
+       * When label-edge is "provided", it gives a hint to oj-form-layout parent element to create an oj-label element for the component.
+       * When the <code class="prettyprint">label-hint</code> attribute changes, oj-form-layout element refreshes to
        * display the updated label information.
+       * </p>
+       * <p>
+       * When label-edge is "inside", it gives a hint to the component itself to render a label.
+       * </p>
+       * <p>
+       * When label-edge is "none", and if the component has no labelled-by, aria-label, or aria-labelledby attribute, the label-hint value will be used as the aria-label.
        * </p>
        *
        * @example <caption>Add the component as a direct child of oj-form-layout. Initialize the component with the <code class="prettyprint">label-hint</code> attribute specified.</caption>
@@ -1738,6 +1637,36 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * @since 4.1.0
        */
       labelHint: '',
+
+      /**
+       * Specifies how the label of the component is created when the label-hint attribute is set on the component.
+       * <p>The default value varies by theme, and it works well for the theme in most cases.
+       * If the component is in an oj-form-layout, and the label-edge attribute on oj-form-layout is set to an explicit value,
+       * the label-edge attribute on all form controls should also be set to an explict value.
+       * For example, if the label-edge attribute on oj-form-layout is set to "start" or "top", the label-edge attribute of all form controls should be set to "provided".</p>
+       * @ojshortdesc Defines how the label of a component is created.
+       * @access public
+       * @expose
+       * @name labelEdge
+       * @instance
+       * @type {string}
+       * @ojsignature {target: "Type", value: "'inside'|'none'|'provided'",  jsdocOverride: true}
+       * @memberof! oj.editableValue
+       * @ojvalue {string} "inside" The component creates the label using the label-hint attribute.
+       * <p>For text input components (such as oj-input-text), the label floats over the input element but moves up on focus or when the component has a value.</p>
+       * <p>For non-text input components (such as oj-checkboxset), the label is created at the top of the component and doesn't move.</p>
+       * <p>The help-hints attribute will be ignored.  No help related information will be rendered on the label.</p>
+       * @ojvalue {string} "none" The component will not have a label, regardless of whether it's in an oj-form-layout or not.
+       * <p>If the component has a label-hint attribute but no labelled-by, aria-label, or aria-labelledby attribute, the label-hint value will be used as the aria-label.</p>
+       * <p>Note that if the component already has an external label, "none" should not be specified and "provided" should be used instead.
+       * Otherwise it may end up with conflicting label information.</p>
+       * @ojvalue {string} "provided" Label is provided by the parent if the parent is an oj-form-layout.
+       * <p>oj-form-layout provides the label using the label-hint from the form control and the <a href="oj.ojFormLayout.html#labelEdge">label-edge</a> from oj-form-layout.</p>
+       * <p>If there is no oj-form-layout, use an oj-label.</p>
+       * @since 8.0.0
+       */
+      labelEdge: undefined,
+
       /**
        * List of messages an app would add to the component when it has business/custom validation
        * errors that it wants the component to show. This allows the app to perform further validation
@@ -1996,7 +1925,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * @readonly
        * @memberof oj.editableValue
        * @since 4.2.0
-       * @ojstatus preview
+       *
        */
       valid: undefined,
 
@@ -2515,6 +2444,13 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
 
       this._refreshTheming('disabled', this.options.disabled);
       this.widget()[0].classList.add('oj-form-control');
+      if (this._IsTextFieldComponent()) {
+        if (this._IsCustomElement()) {
+          this._getRootElement().classList.add('oj-text-field');
+        } else {
+          this.widget()[0].classList.add('oj-text-field');
+        }
+      }
       // We need to make sure the form component has an id since oj-form-layout
       // creates the label and associates them via for/id. Adding an id from ojformlayout
       // after the component is created does not create the form component's internal id.
@@ -2532,6 +2468,8 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
             ojlabel.classList.add(this._GetDefaultStyleClass() + '-label');
           }
         }
+      } else {
+        this._setAriaLabelFromLabelHint();
       }
 
       // set describedby on the element as aria-describedby
@@ -2550,9 +2488,17 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
       // Validators can have a dependency on the converter, so don't do anything with a validator
       // until the converter is loaded. That includes don't show a validator hint.
       var converter = this._GetConverter();
+      this._converterChangedCounter = 0;
       if (converter instanceof Promise) {
         this._setBusyStateAsyncConverterLoading();
-        this._converterChangedCounter = 0;
+        // generally, the label edge is derived during the component messaging initialization.
+        // but, in this case we are delaying the messaging init.
+        // this will be a problem when we deal with deriving the label edge from a form layout.
+        // because converter could resolve while the form layout is reparenting the children and
+        // look up of parent might not work as expected. So we should just call the label edge
+        // derivation logic here. That method internally caches the derived label-edge and we should be
+        // fine delaying the label creation until the component is ready.
+        this._ResolveLabelEdgeStrategyType();
         this._loadingConverter(converter).then(function () {
           self._AfterCreateConverterCached();
           self._clearBusyStateAsyncConverterLoading();
@@ -2625,6 +2571,16 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
           // clear the cached merged options; the getter setup for this.options['displayOptions']
           // will merge the new value with the defaults
           this._initComponentMessaging();
+          break;
+
+        case 'labelEdge' :
+          // if the labelEdge of the component changed, we need to recreate or move the label
+          this._initComponentMessaging();
+          this._setAriaLabelFromLabelHint();
+          break;
+
+        case 'labelHint':
+          this._setAriaLabelFromLabelHint();
           break;
 
         case 'help':
@@ -2780,8 +2736,11 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
       var ret = this._super();
 
       this._clearAllMessages(null, true);
-      this._getComponentMessaging().deactivate();
       this.widget().removeUniqueId();
+      if (this._getComponentMessaging()._isActive()) {
+        this._getComponentMessaging().deactivate();
+      }
+
       // make sure the label is still "alive". Otherwise we could get error when we try to
       // destroy it if the dom was removed first and ojLabel was destroyed directly.
       // also make sure to check if there is more than one label and destroy them individually.
@@ -3022,35 +2981,12 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @instance
      * @protected
      */
-    _GetImplicitSyncValidators: function () {
+    _GetImplicitValidators: function () {
       if (!this._implicitSyncValidators) {
         this._implicitSyncValidators = {};
       }
 
       return this._implicitSyncValidators;
-    },
-
-    /**
-     * Returns an array of implicit async validators setup by component.
-     * This list contains validators for
-     * the internal use of the component and are not a part of this.options.validators. <br/>
-     * E.g., if the pattern attribute or option is set, the component code might
-     * create an AsyncRegExpValidator instance, and if it does, it is added to this list.
-     * RequiredValidator is tracked separately from the default validators.
-     *
-     * @return {Object} a map of type string name (e.g., 'async-numberRange')
-     * to the validator instance.
-     *
-     * @memberof oj.editableValue
-     * @instance
-     * @protected
-     */
-    _GetImplicitAsyncValidators: function () {
-      if (!this._implicitAsyncValidators) {
-        this._implicitAsyncValidators = {};
-      }
-
-      return this._implicitAsyncValidators;
     },
 
     /**
@@ -3102,10 +3038,11 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
     },
 
     /**
-     * Returns an array of all sync validators built by merging the validators
-     * option set on the component and the synchronous implicit validators
-     * setup by the component. <br/>
-     * This does not include the implicit required validator. Components can override to add to this
+     * Returns an array of all validators built by merging the validators
+     * option set on the component and the implicit validators
+     * setup by the component. As of v8.0, these can be async or sync.<br/>
+     * This does not include the implicit required validator.
+     * Components can override to add to this
      * array of validators.
      *
      * @return {Array} of validators
@@ -3114,16 +3051,16 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @instance
      * @protected
      */
-    _GetAllSyncValidators: function () {
-      var allValidators;
+    _GetAllValidatorsFromValidatorsOptionAndImplicit: function () {
+      var allValidators = [];
       var idx;
       var implicitValidatorMap;
       var implicitValidators;
       var normalizedValidators;
-
+      // this flag helps us only get or create the validators once, not every time
+      // we want to get a hint or validate.
       if (!this._allValidators) {
-        allValidators = [];
-        implicitValidatorMap = this._GetImplicitSyncValidators();
+        implicitValidatorMap = this._GetImplicitValidators();
         implicitValidators = [];
 
         // combine public and implicit validators to get the combined list
@@ -3141,19 +3078,16 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
         normalizedValidators = this._GetNormalizedValidatorsFromOption();
         if (normalizedValidators.length > 0) {
           // Add normalize validators
-          allValidators = allValidators.concat(normalizedValidators);
+          normalizedValidators.forEach(function (normalizedValidator) {
+            allValidators.push(normalizedValidator);
+          });
         }
-
         this._allValidators = allValidators;
       }
-
-      return this._allValidators || [];
+      return this._allValidators;
     },
 
     /**
-     * EditableValue caches the validators to be run, within this._allValidators variable.
-     * This is great; however when the implicit validator needs to be reset [i.e. min + max changing]
-     * or the validators option changes, then the cached this._allValidators needs to be cleared.
      * This method also updates the messaging strategies as hints associated with validators could
      * have changed.
      *
@@ -3162,15 +3096,13 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @protected
      */
     _ResetAllValidators: function () {
+      // this is used in PopupConmponentMessagingStrategy.
+      this._initAsyncMessaging = null;
+
       if (this._allValidators) {
         this._allValidators.length = 0;
       }
       this._allValidators = null;
-
-      if (this._allAsyncValidators) {
-        this._allAsyncValidators.length = 0;
-      }
-      this._allAsyncValidators = null;
 
       if (this._IsCustomElement()) {
         // This gets sync and async validator hints.
@@ -3184,54 +3116,57 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
     },
 
     /**
-     * Returns an array of all async validators; the implicit ones and the ones specified
-     * on the async-validators option.
-     *
-     * @return {Array} of async validators
-     *
+     * Return the element on which aria-label can be found.
+     * Usually this is the root element, but some components have aria-label as a transfer attribute,
+     * and aria-label set on the root element is transferred to the inner element.
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _GetAriaLabelElement: function () {
+      return this._getRootElement();
+    },
+
+
+    /**
      * @memberof oj.editableValue
      * @instance
      * @private
      */
-    _getAllAsyncValidators: function () {
-      var allValidators;
-      var implicitValidatorMap;
-      var implicitValidators;
-      var idx;
-      var normalizedValidators;
+    _setAriaLabelFromLabelHint: function () {
+      if (this._IsCustomElement()) {
+        var ariaLabelElem = this._GetAriaLabelElement();
+        var ariaLabel = ariaLabelElem.getAttribute('aria-label');
 
-      if (!this._allAsyncValidators) {
-        allValidators = [];
-        // this map has key of validator type
-        implicitValidatorMap = this._GetImplicitAsyncValidators();
-        implicitValidators = [];
+        if (!this.options.labelledBy && this.options.labelHint && this.options.labelEdge === 'none' &&
+            (!ariaLabel || ariaLabel === this._ariaLabelFromHint) &&
+            !this._getRootElement().getAttribute('aria-labelledby')) {
+          // Set aria-label if all of the followings are true:
+          // 1. This is a custom element.
+          // 2. There is no labelledBy option.
+          // 3. There is a labelHint option.
+          // 4. labelEdge option is set to 'none' (this will only be set by app)
+          // 5. There is no aria-label attribute or the aria-label was set by us.
+          // 6. There is no aria-labelledby attribute.
+          ariaLabelElem.setAttribute('aria-label', this.options.labelHint);
 
-        // combine public and implicit validators to get the combined list
-        var keys = Object.keys(implicitValidatorMap);
-        var valType;
-        var len = keys.length;
-        if (len > 0) {
-          for (idx = 0; idx < len; idx++) {
-            valType = keys[idx];
-            implicitValidators.push(implicitValidatorMap[valType]);
-          }
-          allValidators = allValidators.concat(implicitValidators);
+          // Remember what we set aria-label to
+          this._ariaLabelFromHint = this.options.labelHint;
+        } else if (this._ariaLabelFromHint && this._ariaLabelFromHint === ariaLabel) {
+          // If we have set aria-label previously and no one has changed it, remove it
+          // if the current condition no longer need to set aria-label.
+          ariaLabelElem.removeAttribute('aria-label');
         }
-
-        normalizedValidators = this._GetNormalizedAsyncValidatorsFromOption();
-        if (normalizedValidators.length > 0) {
-          // Add normalize validators
-          allValidators = allValidators.concat(normalizedValidators);
-        }
-
-        this._allAsyncValidators = allValidators;
       }
-
-      return this._allAsyncValidators || [];
     },
 
     /**
-     * Returns an array of all async validators that have hint property.
+     * Returns an array of all validators with a hint property. We
+     * look on the attributes validators and async-validators as well
+     * as in the implicit validators.
+     * Having a 'hint' property means they are async validators since
+     * the AsyncValidator interface has  an optional 'hint' property
+     * whereas the Validator interface has an optional getHint function.
      *
      * @return {Array} of async validators that have hints, [] if none
      *
@@ -3240,10 +3175,18 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @private
      */
     _getAllAsyncValidatorsWithHint: function () {
-      var allAsyncValidators = this._getAllAsyncValidators();
+      var allAsyncValidators = this._GetNormalizedAsyncValidatorsFromOption();
       var allAsyncValidatorsWithHints = [];
       var i;
       var validator;
+
+      if (this._IsRequired()) {
+        // get the hint for the default required validator and push into array
+        validator = this._getImplicitRequiredValidator();
+        if ('hint' in validator) {
+          allAsyncValidatorsWithHints.push(validator);
+        }
+      }
 
       if (allAsyncValidators.length > 0) {
         for (i = 0; i < allAsyncValidators.length; i++) {
@@ -3253,6 +3196,17 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
           }
         }
       }
+      // gets implicit validators and all validators from the validators option.
+      var allValidators = this._GetAllValidatorsFromValidatorsOptionAndImplicit();
+      if (allValidators.length > 0) {
+        for (i = 0; i < allValidators.length; i++) {
+          validator = allValidators[i];
+          if ('hint' in validator) {
+            allAsyncValidatorsWithHints.push(validator);
+          }
+        }
+      }
+
       return allAsyncValidatorsWithHints;
     },
 
@@ -3307,7 +3261,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
       var currentCounter;
       var self = this;
 
-      // this gets all sync validators, and gets the hints from them
+      // this gets all validators with getHint (these are sync validators)
       var syncValidatorHintMC = this._getMessagingContent(
         this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS);
 
@@ -3709,7 +3663,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
           this._AsyncValidate(newValue, event, options, clearBusyStateKey);
 
         if (!(validateReturn instanceof Promise)) {
-          // Synchronous validation only. could be async format, though.
+          // Synchronous validation only.
           this._afterAsyncValidateUpdateValue(validateReturn, event, options);
           resolvedState = validateReturn !== undefined;
         } else {
@@ -3849,7 +3803,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
 
           // Step 2: Parse didn't throw an error.
           // Run validators and set valid state
-          // asyncValidateValue will return a Promise if the component has async-validators,
+          // asyncValidateValue will return a Promise if the component has async validators,
           // otherwise it returns the value if successful or undefined if not.
           validateReturn = self._asyncValidateValue(successfullyParsedValue,
                                 event,
@@ -4390,7 +4344,15 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @instance
      */
     _getMessages: function () {
-      return this.options.messagesShown.concat(this.options.messagesHidden); // todo: revisit
+      var messages = [];
+      // messagesShown and messagesHidden could be undefined
+      if (this.options.messagesShown) {
+        messages = messages.concat(this.options.messagesShown);
+      }
+      if (this.options.messagesHidden) {
+        messages = messages.concat(this.options.messagesHidden);
+      }
+      return messages; // todo: revisit
     },
     /**
      * Helper method to retrieve the label text. Needed for required translation.
@@ -4513,14 +4475,11 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
       // (like async validator messaging hints)
       compMessaging.activate(messagingLauncher, compContentElement, messagingContent);
 
-      if (this._IsCustomElement()) {
-        // async validators hint property returns a Promise, so we purposely
-        // update async validators' hints after activating the component messaging above.
-        this._initAsyncValidatorMessagingHint();
-        // initialize this counter when we initialize the component.
-        // It is used to decide whether or not to ignore async validate resolutions.
-        this._asyncValidatorValidateCounter = 0;
-      }
+      // Async validators hints are retrieved only when they are needed to be shown to the user.
+      // See PopupComponentMessaging.js
+      // initialize this counter when we initialize the component.
+      // It is used to decide whether or not to ignore async validate resolutions.
+      this._asyncValidatorValidateCounter = 0;
     },
 
     /**
@@ -4818,13 +4777,15 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
 
 
     /**
-     * Returns an array of validator hints.
-     * @param {Array} allValidators
+     * Returns an array of validator hints from any validator with getHint() function.
+     * @param {Array} allValidators these are from the validators option
+     * and from the GetImplicitValidators function.
+     * These can be sync and/or async validators.
      * @private
      * @memberof oj.editableValue
      * @instance
      */
-    _getHintsForAllValidators: function (allValidators) {
+    _getHintsFromAllValidatorsWithGetHintFunction: function (allValidators) {
       var i;
       var validator;
       var validatorHints = [];
@@ -4867,7 +4828,6 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @instance
      */
     _getImplicitRequiredValidator: function () {
-      var vf;
       var reqTrans = {};
       var reqValOptions;
 
@@ -4883,12 +4843,8 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
           messageSummary: reqTrans.messageSummary || null,
           messageDetail: reqTrans.messageDetail || null
         };
-
-        vf =
-        __ValidationBase.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED);
-        this._implicitReqValidator = vf ? vf.createValidator(reqValOptions) : null;
+        this._implicitReqValidator = new RequiredValidator(reqValOptions);
       }
-
       return this._implicitReqValidator;
     },
 
@@ -4941,8 +4897,9 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
 
       if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.ALL ||
           updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS) {
-        allValidators = this._GetAllSyncValidators();
-        validatorHints = this._getHintsForAllValidators(allValidators) || [];
+        // gets implicit validators and all validators from the validators option.
+        allValidators = this._GetAllValidatorsFromValidatorsOptionAndImplicit();
+        validatorHints = this._getHintsFromAllValidatorsWithGetHintFunction(allValidators) || [];
         messagingContent.validatorHint = validatorHints;
       }
 
@@ -5197,15 +5154,44 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * Deferred error is pushed to <code class="prettyprint">messagesHidden</code> option.
      *
      * @param {number} context in which validation was run.
-     *
      * @see #showMessages
      * @private
      * @memberof oj.editableValue
      * @instance
      */
     _runDeferredValidation: function (context) {
+      var self = this;
+
       if (this._CanSetValue()) {
-        this._validateValueForRequiredOnly(this.options.value, context);
+        if (!this._resolveBusyStateDeferredValidation) {
+          var domElem = this.element[0];
+          var busyContext = Context.getContext(domElem).getBusyContext();
+          var description = 'The page is waiting for async deferred validation ';
+
+          if (domElem && domElem.id) {
+            description += 'for "' + domElem.id + '" ';
+          }
+          description += 'to finish.';
+          this._resolveBusyStateDeferredValidation =
+            busyContext.addBusyState({ description: description });
+        }
+        var resultPromise = this._validateValueForRequiredOnly(this.options.value, context);
+        if (resultPromise instanceof Promise) {
+          resultPromise.then(function () {
+            if (self._resolveBusyStateDeferredValidation) {
+              self._resolveBusyStateDeferredValidation();
+              delete self._resolveBusyStateDeferredValidation;
+            }
+            self._setValidOption(self._determineValidFromMessagesOptions(), null);
+          });
+        } else {
+          this._setValidOption(this._determineValidFromMessagesOptions(), null);
+          if (this._resolveBusyStateDeferredValidation) {
+            this._resolveBusyStateDeferredValidation();
+            delete this._resolveBusyStateDeferredValidation;
+          }
+          return;
+        }
       } else if (Logger.level > Logger.LEVEL_WARN) {
         Logger.info('Deferred validation skipped as component is readonly or disabled.');
       }
@@ -5407,10 +5393,10 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
         return ci;
       });
     },
-
-    /**
+/**
      * @param {Object|undefined} value
      * @param {number} context in which validation was run.
+     * @return {Promise<null> | null} a Promise to indicate validation has finished or null if sync
      * @private
      * @memberof oj.editableValue
      * @instance
@@ -5418,15 +5404,26 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
     _validateValueForRequiredOnly: function (value, context) {
       var newMsgs;
       var validator;
+      var self = this;
 
       // run required validation if component is required
-      // SYNCHRONOUS
+      // SYNCHRONOUS OR ASYNCHRONOUS
       if (this._IsRequired()) {
         validator = this._getImplicitRequiredValidator();
         try {
           // check if trimmed value is empty. See AdfUIEditableValue.prototype.ValidateValue
           this._setValidOption(_PENDING, null);
-          validator.validate(oj.StringUtils.trim(value));
+          var validateReturned = validator.validate(oj.StringUtils.trim(value));
+          if (validateReturned instanceof Promise) {
+            return validateReturned.then(function () {
+            }, function (e) {
+              newMsgs = self._processValidationErrors(e, context,
+                      oj.ComponentMessage.DISPLAY.HIDDEN);
+              if (newMsgs) {
+                self._updateMessagesOption('messagesHidden', newMsgs);
+              }
+            });
+          }
         } catch (e) {
           // this is a messagesHidden message
           // turn this into Array of oj.ComponentMessage instances. This is what we set on 'messagesHidden'
@@ -5436,81 +5433,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
           }
         }
       }
-    },
-
-    /** This calls validators that are synchronous, not asynchronous.
-     * This is called from _asyncValidateValue.
-     * This updates messagesShown, but does not update the valid state.
-     * The caller of this function needs to update the valid state.
-     * @param {Object|undefined} value
-     * @param {Event?} event the original event (for user initiated actions that trigger a DOM event,
-     * like blur) or undefined. The custom element bridge creates a CustomEvent out of this when
-     * it sends the property changed event.
-     * @param {number} context in which validation was run.
-     * @return {boolean} return true if valid, false if not
-     * @private
-     * @memberof oj.editableValue
-     * @instance
-     */
-    _validateValue: function (value, event, context) {
-      var allValidators = this._GetAllSyncValidators();
-      var i;
-      var isRequired = this._IsRequired();
-      var isInvalidShownSet = false;
-      // newMsgs: Array of oj.ComponentMessage
-      var newMsgs;
-      var validator;
-      var valMsgs = [];
-      var ve;
-
-      if (isRequired || allValidators.length > 0) {
-        this._setValidOption(_PENDING, event);
-      }
-      // run required validation first;
-      // SYNCHRONOUS
-      if (isRequired) {
-        validator = this._getImplicitRequiredValidator();
-        try {
-          // check if trimmed value is empty. See AdfUIEditableValue.prototype.ValidateValue
-          validator.validate(oj.StringUtils.trim(value));
-        } catch (e) {
-          // save all validation errors
-          this._addValidationError(e, valMsgs);
-          this._setValidOption(_INVALID_SHOWN, event);
-          isInvalidShownSet = true;
-        }
-      }
-      // SYNCHRONOUS
-      // run other validators when requested.
-      for (i = 0; i < allValidators.length; i++) {
-        validator = allValidators[i];
-        if (typeof validator === 'object') {
-          if (validator.validate && typeof validator.validate === 'function') {
-            try {
-              validator.validate(value);
-            } catch (e) {
-              // save all validation errors and update valid option if it is for the worse.
-              this._addValidationError(e, valMsgs);
-              if (!isInvalidShownSet) {
-                this._setValidOption(_INVALID_SHOWN, event);
-                isInvalidShownSet = true;
-              }
-            }
-          } else if (Logger.level > Logger.LEVEL_WARN) {
-            Logger.info('validator does not support the validate method.');
-          }
-        }
-      }
-      // SYNCHRONOUS. update messages
-      if (valMsgs.length > 0) {
-        ve = new Error();
-        ve._messages = valMsgs;
-        newMsgs = this._processValidationErrors(ve, context);
-        // turn this into Array of oj.ComponentMessage instances.
-        // This is what we set on 'messagesShown'
-        this._updateMessagesOption('messagesShown', newMsgs, event);
-      }
-      return (valMsgs.length === 0);
+      return null;
     },
 
     /**
@@ -5544,14 +5467,19 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @instance
      */
     _asyncValidateValue: function (value, event, context) {
-      var normalizedValidators = this._getAllAsyncValidators();
+      // we get validators from async-validators option. This is not cached, but
+      // it is fast to get. TODO cache.
+      var normalizedAsyncValidators = this._GetNormalizedAsyncValidatorsFromOption();
+      // gets implicit validators and validators from validators option.
+      // these can be sync or async validators. This is cached.
+      var normalizedValidators = this._GetAllValidatorsFromValidatorsOptionAndImplicit();
       var i;
       var isInvalidShownSet = false;
-      var hasAsyncValidators = normalizedValidators.length > 0;
       var finalValidState;
       var newMsgs;
       var self = this;
-      var validatePassed;
+      var implicitRequiredValidator;
+      var valMsgs = [];
 
       // this to be used to decide whether or not to ignore async validate resolutions.
       // if we use the value to decide whether or not to ignore async validate resolutions, it
@@ -5559,36 +5487,69 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
       // invalid value again. He would see two identical error messages if the async validators
       // are slow. We talked about using a queue, and decided a counter would work just as well.
       var asyncValidatorValidateCounter = this._asyncValidatorValidateCounter;
-
-      // if there are any async validators to run, set PENDING.
-      if (hasAsyncValidators) {
+      var promiseArray = [];
+      // run required validator first, push to promiseArray if it is a Promise
+      var isRequired = this._IsRequired();
+      if (isRequired) {
+        implicitRequiredValidator = this._getImplicitRequiredValidator();
+      }
+      if (isRequired || normalizedAsyncValidators.length > 0 || normalizedValidators.length > 0) {
         this._setValidOption(_PENDING, event);
       }
-
-      // First run the SYNCHRONOUS VALIDATORS
-      // This will set valid to PENDING (option change will be ignored if already PENDING).
-      // It runs each validator and updates the error messages, if any.
-      // It will update the valid option to invalidShown as soon as a validator
-      // throws an error. If no validator throws an error, then it does not
-      // set the valid state since we want to wait for async validators to complete to do that.
-      validatePassed = this._validateValue(value, event, context);
-      if (!hasAsyncValidators) {
-        if (validatePassed) {
-          // we could be showing messages, like 'messagesCustom'. If so, valid is invalidShown,
-          // even if all validators passed.
-          this._setValidOption(self._determineValidFromMessagesOptions(), event);
+      if (implicitRequiredValidator) {
+        try {
+          var requiredValidatorPromise = implicitRequiredValidator.validate(
+            oj.StringUtils.trim(value));
+          if (requiredValidatorPromise) {
+            promiseArray.push(requiredValidatorPromise);
+          }
+        } catch (e) {
+          // save all validation errors
+          this._addValidationError(e, valMsgs);
+          this._setValidOption(_INVALID_SHOWN, event);
+          isInvalidShownSet = true;
         }
-        // if no error messages returned from validating the value, return newValue
-        return (validatePassed) ? value : undefined;
       }
 
-      // now run the ASYNCHRONOUS VALIDATORS, if any
+      var result;
+      for (i = 0; i < normalizedAsyncValidators.length; i++) {
+        try {
+          result = normalizedAsyncValidators[i].validate(value);
+        } catch (e) {
+          // async validators should not throw errors, they should just reject
+          // so we should treat this as a reject
+          result = Promise.reject(e);
+        }
+        if (!(result instanceof Promise)) {
+          result = Promise.resolve(result);
+        }
+        promiseArray.push(result);
+      }
 
-      // We kick off all the async validators simultaneously. When they all complete,
-      // regardless of resolve/reject, then we can move on.
-      var promiseArray = [];
+      // run through all validators on the validators option + implicit ones.
+      // could be sync or async
       for (i = 0; i < normalizedValidators.length; i++) {
-        promiseArray.push(normalizedValidators[i].validate(oj.StringUtils.trim(value)));
+        try {
+          result = normalizedValidators[i].validate(value);
+          if (result instanceof Promise) {
+            promiseArray.push(result);
+          }
+        } catch (e) {
+          // save all validation errors
+          this._addValidationError(e, valMsgs);
+          this._setValidOption(_INVALID_SHOWN, event);
+          isInvalidShownSet = true;
+        }
+      }
+
+      // show sync validator messages, if any
+      if (valMsgs.length > 0) {
+        let ve = new Error();
+        ve._messages = valMsgs;
+        newMsgs = this._processValidationErrors(ve, context);
+        // turn this into Array of oj.ComponentMessage instances.
+        // This is what we set on 'messagesShown'
+        this._updateMessagesOption('messagesShown', newMsgs, event);
       }
 
       // when a promise resolves or errors out, we return an Object with the value or error state,
@@ -5643,25 +5604,36 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
         });
       }
 
-      // this will get called even when there are no async validators
-      return new Promise(function (resolve) {
-        // Promise.all will end as soon as it gets its first rejection. We don't want that.
-        // We want to wait until all promises either resolve or reject. Then we can resolve this
-        // outer promise. We do this using the reflect function defined above.
-        Promise.all(promiseArray.map(reflect)).then(function (results) {
-          var ignoreList = results.filter(function (x) { return x.status === 'ignore'; });
-          if (ignoreList.length > 0) {
-            finalValidState = 'ignoreValidation';
-          } else {
-            finalValidState = (!isInvalidShownSet) ? _VALID : _INVALID_SHOWN;
-            // we could be showing messages, like 'messagesCustom'. If so, valid is invalidShown,
-            // even if all validators passed.
-            self._setValidOption(self._determineValidFromMessagesOptions(), event);
-          }
-          resolve(finalValidState);
+      if (promiseArray.length > 0) {
+        return new Promise(function (resolve) {
+          // Promise.all will end as soon as it gets its first rejection. We don't want that.
+          // We want to wait until all promises either resolve or reject. Then we can resolve this
+          // outer promise. We do this using the reflect function defined above.
+          Promise.all(promiseArray.map(reflect)).then(function (results) {
+            var ignoreList = results.filter(function (x) { return x.status === 'ignore'; });
+            if (ignoreList.length > 0) {
+              finalValidState = 'ignoreValidation';
+            } else {
+              finalValidState = (!isInvalidShownSet) ? _VALID : _INVALID_SHOWN;
+              // we could be showing messages, like 'messagesCustom'. If so, valid is invalidShown,
+              // even if all validators passed.
+              self._setValidOption(self._determineValidFromMessagesOptions(), event);
+            }
+            resolve(finalValidState);
+          });
         });
-      });
+      }
+
+      // only sync validators were found
+      if (valMsgs.length === 0) {
+        // we could be showing messages, like 'messagesCustom'. If so, valid is invalidShown,
+        // even if all validators passed.
+        this._setValidOption(self._determineValidFromMessagesOptions(), event);
+      }
+      // if no error messages returned from validating the value, return newValue
+      return (valMsgs.length === 0) ? value : undefined;
     },
+
     /**
      * propogate described-by to aria-describedby
      *
@@ -5746,9 +5718,104 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @instance
      * @protected
      */
-    _AfterCreateConverterCached: oj.EditableValueUtils._AfterCreateConverterCached
+    _AfterCreateConverterCached: oj.EditableValueUtils._AfterCreateConverterCached,
+
+    /**
+     * Returns the associated input container needed for component managed labels.  Subclasses can
+     * override if the container is not marked with the '.oj-text-field-container' or
+     * '.oj-form-control-container' selector. The
+     * input elements are children of the container and a sibling to the inline messages container.
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     * @return {Element|undefined}
+     */
+    _GetFormControlContainer: function () {
+      if (this._IsCustomElement()) {
+        var selector = '.' + [this._GetComponentManagedBaseLabelStyleClass(), 'container'].join('-');
+        return this._getRootElement().querySelector(selector);
+      }
+      return undefined;
+    },
+
+    /**
+     * Returns if the element is a text field element or not.
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     * @return {string}
+     */
+    _IsTextFieldComponent: function () {
+      return false;
+    },
+
+    /**
+     * Returns the base selector name used to define the input container.
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     * @return {string}
+     */
+    _GetComponentManagedBaseLabelStyleClass: function () {
+      if (this._IsTextFieldComponent()) {
+        return 'oj-text-field';
+      }
+      return 'oj-form-control';
+    },
+
+    /**
+     * For components like input number/ input date etc, where we have some icon or button beside the input text:
+     * Previously, we set flex =1 on the input and the input's width will autogrow based on buttons width.
+     * But in case of an inside label, the label also should grow and shrink exactly as the input
+     * We can make this to work only by wrapping the input (and label in case of inside) in to a div and
+     * set the flex for the div to 1.
+     * Now the button or icon becomes a sibling of this div and not the input.
+     *
+     * @protected
+     * @instance
+     * @ignore
+     * @return {Element}
+     */
+    _CreateMiddleWrapper: function () {
+      // For the inside label to be assigned with the same width as input,
+      // We need to put the label and the input together in a div and set flex=1 for the div.
+      // This way, they both will occupy the same space as avialble after the buttons.
+      var innerDivElem = document.createElement('div');
+      innerDivElem.className = 'oj-text-field-middle';
+      return innerDivElem;
+    },
+
+    /**
+     * Resolves the labelEdge strategy type from the labelEdge property.
+     * Called from the ComponentMessaging
+     * class which picks which label strategy to use. For example,
+     * oj-radioset with label-edge='inside' uses the InsideFormControlLabelStrategy
+     * which has type 'insideformcontrol'.
+     * whereas the oj-input-text with label-edige='inside' uses the InsideLabelStrategy
+     * which has type 'inside'.
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     * @return {string}
+     */
+    _ResolveLabelEdgeStrategyType: function () {
+      var labelEdge = this.options.labelEdge;
+      if (this._IsCustomElement()) {
+        if (labelEdge === 'inside') {
+          // Resolve the 'inside' labelEdge to 'insideformcontrol' for
+          // non-text fields.
+          // An 'insideformcontrol' label renders on top of the component with
+          // the smaller font that matches a text-field's 'inside' label.
+          if (!this._IsTextFieldComponent()) {
+            labelEdge = oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL;
+          }
+        }
+      }
+      return labelEdge;
+    }
 
   }, true);
+
 
 Components.setDefaultOptions(
   {
@@ -5772,6 +5839,13 @@ Components.setDefaultOptions(
         }
         return { definition: null, source: null };
       }),
+      labelEdge: Components.createDynamicPropertyGetter(function (context) {
+        // update the labelEdge value to theme based.
+        if (context.isCustomElement) {
+          return (ThemeUtils.parseJSONFromFontFamily('oj-form-control-option-defaults') || {}).labelEdge;
+        }
+        return undefined;
+      })
     }
   }
 
@@ -5931,10 +6005,7 @@ Components.setDefaultOptions(
  * @instance
  */
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global ThemeUtils:false, Context:false */
 /* jslint browser: true*/
 
@@ -5957,7 +6028,7 @@ oj.InlineMessagingStrategy = function (displayOptions) {
  *
  * @private
  */
-oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._DISPLAY_TYPE.INLINE,
+oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.INLINE,
                                                 oj.InlineMessagingStrategy);
 
 // Subclass from oj.MessagingStrategy
@@ -6490,10 +6561,800 @@ oj.InlineMessagingStrategy.prototype._buildMessagesHtml = function (document) {
   return content;
 };
 
+
+/* jslint browser: true*/
+
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Adapter for rendering fixed labels located on top of the form component,
+ * but still within the form component's root dom node, and smaller to match
+ * a text field's 'inside' label.
+ * Extends the MessagingStrategy which does more now than messages. It now
+ * is also for rendering the form component's label in one of many positions.
+ *
+ * @extends {oj.MessagingStrategy}
+ * @protected
+ * @constructor
+ * @since 8.0.0
+ * @class InsideFormControlLabelStrategy
+ * @ignore
+ * @ojtsignore
+ * @param {Array.<string>} options an array of messaging artifacts that are
+ * displayed as an inside label for non-text field form controls.
+ * For LabelStrategies this is always only labelEdge.
  */
+var InsideFormControlLabelStrategy = function (options) {
+  this.Init(options);
+};
+
+/**
+ * Registers the LabelStrategy constructor function with oj.ComponentMessaging.
+ *
+ * @private
+ */
+oj.ComponentMessaging
+   .registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL,
+    InsideFormControlLabelStrategy);
+
+// Subclass from oj.MessagingStrategy
+oj.Object.createSubclass(InsideFormControlLabelStrategy,
+  oj.MessagingStrategy, 'InsideFormControlLabelStrategy');
+
+/**
+ * @param {Object} cm a reference to an instance of oj.ComponentMessaging that provides access to
+ * the latest messaging content.
+ * @public
+ * @memberof InsideFormControlLabelStrategy
+ * @instance
+ * @override
+ */
+InsideFormControlLabelStrategy.prototype.activate = function (cm) {
+  InsideFormControlLabelStrategy.superclass.activate.call(this, cm);
+  this._createFixedLabel();
+};
+
+/**
+ * @param {Array.<string>} newOptions
+ * @public
+ * @memberof InsideFormControlLabelStrategy
+ * @instance
+ * @override
+ */
+InsideFormControlLabelStrategy.prototype.reactivate = function (newOptions) {
+  InsideFormControlLabelStrategy.superclass.reactivate.call(this, newOptions);
+
+  this._destroyFixedLabel();
+  this._createFixedLabel();
+};
+
+/**
+ * @param {Object=} content the messaging content object. If it contains validityState, then
+ * this means the component has messaging content.
+ * @return {boolean}
+ * @memberof InsideFormControlLabelStrategy
+ * @instance
+ * @oublic
+ * @override
+ */
+InsideFormControlLabelStrategy.prototype.shouldUpdate = function () {
+  return false;
+};
+
+/**
+ * Updates component with instance using the content provided.
+ * @memberof InsideFormControlLabelStrategy
+ * @instance
+ * @public
+ * @override
+ */
+InsideFormControlLabelStrategy.prototype.update = function () {
+  InsideFormControlLabelStrategy.superclass.update.call(this);
+};
+
+/**
+ * Cleans up messages on the component and destroys any widgets it created.
+ * @memberof InsideFormControlLabelStrategy
+ * @instance
+ * @public
+ * @override
+ */
+InsideFormControlLabelStrategy.prototype.deactivate = function () {
+  this._destroyFixedLabel();
+  InsideFormControlLabelStrategy.superclass.deactivate.call(this);
+};
+
+/**
+ * Adds a hook for subclass to use its own styleclass on root dom element.
+ * @memberof InsideFormControlLabelStrategy
+ * @instance
+ * @protected
+ */
+InsideFormControlLabelStrategy.prototype.getFormControlLabelStyleClass = function () {
+  return 'oj-form-control-label-inside';
+};
+
+/**
+ * Removes the fixed label unregistering associated event listeners.
+ * @memberof InsideFormControlLabelStrategy
+ * @instance
+ * @private
+ */
+InsideFormControlLabelStrategy.prototype._destroyFixedLabel = function () {
+  var component = this.GetComponent();
+  var options = component.options;
+  var element = component._getRootElement();
+
+  var labelStyleClass = this.getFormControlLabelStyleClass();
+  element.classList.remove(labelStyleClass);
+
+  element.removeEventListener('labelHintChanged', this._labelHintChangedCallback);
+  element.removeEventListener('requiredChanged', this._requiredChangedCallback);
+  element.removeEventListener('helpHintsChanged', this._helpHintsChangedCallback);
+
+  var labelId = InsideFormControlLabelStrategy._getLabelId(element);
+  var ojlabel = document.getElementById(labelId);
+  if (ojlabel) ojlabel.parentElement.removeChild(ojlabel);
+
+  options.labelledBy = undefined;
+  this.customOjLabelElement = undefined;
+  delete this._labelHintChangedCallback;
+  delete this._helpHintsChangedCallback;
+  delete this._requiredChangedCallback;
+};
+
+/**
+ * Creates the fixed label adding associated event listeners for applying
+ * marker selectors to the root and responding to label-hint property changes.
+ * @memberof InsideFormControlLabelStrategy
+ * @instance
+ * @private
+ */
+InsideFormControlLabelStrategy.prototype._createFixedLabel = function () {
+  var component = this.GetComponent();
+  var container = component._GetFormControlContainer();
+  if (!container) return;
+
+  var options = component.options;
+  var element = component._getRootElement();
+
+  var labelStyleClass = this.getFormControlLabelStyleClass();
+  element.classList.add(labelStyleClass);
+  this.GenerateIdIfNeeded(element);
+
+  var ojlabel = document.createElement('oj-label');
+  ojlabel.id = InsideFormControlLabelStrategy._getLabelId(element);
+  ojlabel.setAttribute('data-oj-binding-provider', 'none');
+  ojlabel.setAttribute('data-oj-internal', '');
+  // associate with form component
+  ojlabel.setAttribute('for', element.id);
+  container.parentElement.insertBefore(ojlabel, container);
+
+  var defaultLabelStyleClass = [component._GetDefaultStyleClass(), 'label'].join('-');
+  ojlabel.classList.add(defaultLabelStyleClass);
+  ojlabel.showRequired = options.required;
+  ojlabel.help = options.helpHints;
+
+  this.customOjLabelElement = ojlabel;
+
+  var span = document.createElement('span');
+  span.id = [element.id, '|hint'].join('');
+  span.innerText = options.labelHint;
+  ojlabel.appendChild(span);
+
+  this._labelHintChangedCallback =
+    InsideFormControlLabelStrategy._labelHintChangedHandler.bind(this, span);
+  element.addEventListener('labelHintChanged', this._labelHintChangedCallback);
+
+  this._requiredChangedCallback =
+    InsideFormControlLabelStrategy._requiredChangedHandler.bind(this, ojlabel);
+  element.addEventListener('requiredChanged', this._requiredChangedCallback);
+
+  this._helpHintsChangedCallback =
+    InsideFormControlLabelStrategy._helpHintsChangedHandler.bind(this, ojlabel);
+  element.addEventListener('helpHintsChanged', this._helpHintsChangedCallback);
+};
+
+/**
+ * @static
+ * @private
+ * @param {Element} element root custom element
+ * @return {string} fixed label id
+ */
+InsideFormControlLabelStrategy._getLabelId = function (element) {
+  return [element.id, '-labelled-by'].join('');
+};
+
+/**
+ * @static
+ * @private
+ * @param {Element} span holding label text
+ * @param {CustomEvent} event labelChanged event
+ */
+InsideFormControlLabelStrategy._labelHintChangedHandler = function (span, event) {
+  // eslint-disable-next-line no-param-reassign
+  span.innerText = event.detail.value;
+};
+
+/**
+ * @static
+ * @private
+ * @param {Element} label oj-label element
+ * @param {CustomEvent} event requiredChanged event
+ */
+InsideFormControlLabelStrategy._requiredChangedHandler = function (label, event) {
+  // eslint-disable-next-line no-param-reassign
+  label.showRequired = event.detail.value;
+};
+
+/**
+ * @static
+ * @private
+ * @param {Element} label oj-label element
+ * @param {CustomEvent} event helpHintsChanged event
+ */
+InsideFormControlLabelStrategy._helpHintsChangedHandler = function (label, event) {
+  // eslint-disable-next-line no-param-reassign
+  label.help = event.detail.value;
+};
+
+
+/* global Promise:false, Context:false */
+/* jslint browser: true*/
+
+/**
+ * Adapter for handling dynamically setting the inputs placeholder attribute
+ *
+ * @extends {oj.MessagingStrategy}
+ * @protected
+ * @constructor
+ * @since 8.0.0
+ * @class oj.InsideLabelPlaceholderStrategy
+ * @ignore
+ * @ojtsignore
+ * @param {Array.<string>} options an array of messaging artifacts displayed inline. e.g,
+ */
+oj.InsideLabelPlaceholderStrategy = function (options) {
+  this.Init(options);
+};
+
+// Subclass from oj.MessagingStrategy
+oj.Object.createSubclass(oj.InsideLabelPlaceholderStrategy, oj.MessagingStrategy,
+  'oj.InsideLabelPlaceholderStrategy');
+
+
+/**
+ * Sets up a placeholder for the component instance using the converter hint.
+ *
+ * @param {Object} cm a reference to an instance of oj.ComponentMessaging that provides access to
+ * the latest messaging content.
+ * @public
+ * @memberof oj.InsideLabelPlaceholderStrategy
+ * @instance
+ * @override
+ */
+oj.InsideLabelPlaceholderStrategy.prototype.activate = function (cm) {
+  oj.InsideLabelPlaceholderStrategy.superclass.activate.call(this, cm);
+  this._createPlaceholderToggle();
+};
+
+/**
+ * @param {Array.<string>} newOptions
+ * @public
+ * @memberof oj.InsideLabelPlaceholderStrategy
+ * @instance
+ * @override
+ */
+oj.InsideLabelPlaceholderStrategy.prototype.reactivate = function (newOptions) {
+  oj.InsideLabelPlaceholderStrategy.superclass.reactivate.call(this, newOptions);
+  this._destroyPlaceholderToggle();
+  this._createPlaceholderToggle();
+};
+
+/**
+ * @public
+ * @memberof oj.InsideLabelPlaceholderStrategy
+ * @instance
+ * @override
+ */
+oj.InsideLabelPlaceholderStrategy.prototype.deactivate = function () {
+  this._destroyPlaceholderToggle();
+  oj.InsideLabelPlaceholderStrategy.superclass.deactivate.call(this);
+};
+
+/**
+ *
+ * @param {Object=} content the messaging content that is being updated
+ * @return {boolean}
+ * @public
+ * @memberof oj.InsideLabelPlaceholderStrategy
+ * @instance
+ * @override
+ */
+oj.InsideLabelPlaceholderStrategy.prototype.shouldUpdate = function (content) {
+  return ((content && content.converterHint !== undefined) ||
+    (this.GetComponent().options.placeholder));
+};
+
+/**
+ * @public
+ * @memberof oj.InsideLabelPlaceholderStrategy
+ * @instance
+ * @override
+ */
+oj.InsideLabelPlaceholderStrategy.prototype.update = function () {
+  oj.InsideLabelPlaceholderStrategy.superclass.update.call(this);
+  this._placeholderChanged();
+};
+
+/**
+ * @private
+ * @memberof oj.InsideLabelPlaceholderStrategy
+ * @instance
+ */
+oj.InsideLabelPlaceholderStrategy.prototype._destroyPlaceholderToggle = function () {
+  var component = this.GetComponent();
+  var element = component._GetContentElement()[0];
+  var rootElement = component._getRootElement();
+
+  this._blurCallback();
+  element.removeEventListener('focusout', this._blurCallback, false);
+  delete this._blurCallback;
+
+  element.removeEventListener('focusin', this._focusCallback, false);
+  delete this._focusCallback;
+
+  rootElement.removeEventListener('placeholderChanged', this._placeholderChangedCallback, false);
+  delete this._placeholderChangedCallback;
+
+  if (component._HasPlaceholderSet()) {
+    component._SetPlaceholder(component.options.placeholder);
+    component._customPlaceholderSet = true;
+  }
+};
+
+/**
+ * @private
+ * @memberof oj.InsideLabelPlaceholderStrategy
+ * @instance
+ */
+oj.InsideLabelPlaceholderStrategy.prototype._createPlaceholderToggle = function () {
+  var component = this.GetComponent();
+  var element = component._GetContentElement()[0];
+  var rootElement = component._getRootElement();
+
+  component._customPlaceholderSet = true;
+  this._blurCallback = oj.InsideLabelPlaceholderStrategy._blurHandler.bind(this, element);
+  element.addEventListener('focusout', this._blurCallback, false);
+
+  this._focusCallback = oj.InsideLabelPlaceholderStrategy._focusHandler.bind(this);
+  element.addEventListener('focusin', this._focusCallback, false);
+
+  this._placeholderChangedCallback = this._placeholderChanged.bind(this);
+  rootElement.addEventListener('placeholderChanged', this._placeholderChangedCallback, false);
+
+  this._placeholderChanged();
+};
+
+/**
+ * @private
+ * @memberof oj.InsideLabelPlaceholderStrategy
+ * @instance
+ */
+oj.InsideLabelPlaceholderStrategy.prototype._placeholderChanged = function () {
+  var component = this.GetComponent();
+  var element = component._GetContentElement()[0];
+
+  var callback;
+  if (oj.FocusUtils.containsFocus(element)) {
+    callback = this._focusCallback;
+  } else {
+    callback = this._blurCallback;
+  }
+  // Allow the component to complete default processing. setPlaceholder will
+  // following after the value changed from _AfterSetOption - invoke micro next-tick.
+  Promise.resolve(true).then(function () {
+    callback();
+  });
+};
+
+/**
+ * @private
+ * @memberof oj.InsideLabelPlaceholderStrategy
+ * @param {Object} component
+ * @return {boolean}
+ * @static
+ */
+oj.InsideLabelPlaceholderStrategy._showConverterHintAsPlaceholder = function (component) {
+  var displayOptions = component.options.displayOptions;
+  if (!displayOptions) return false;
+  var converterHint = displayOptions.converterHint;
+  if (converterHint instanceof Array) {
+    return converterHint[0] === 'placeholder';
+  }
+  return converterHint === 'placeholder';
+};
+
+/**
+ * @private
+ * @memberof oj.InsideLabelPlaceholderStrategy
+ * @static
+ */
+oj.InsideLabelPlaceholderStrategy._focusHandler = function () {
+  var component = this.GetComponent();
+
+  var placeholder;
+  if (oj.InsideLabelPlaceholderStrategy._showConverterHintAsPlaceholder(component)) {
+    var hints = this.GetConverterHint();
+    placeholder = hints.length > 0 ? hints[0] : null;
+  }
+  if (!placeholder) {
+    placeholder = component.options.placeholder;
+  }
+
+  component._SetPlaceholder(placeholder);
+};
+
+/**
+ * @private
+ * @memberof oj.InsideLabelPlaceholderStrategy
+ * @static
+ */
+oj.InsideLabelPlaceholderStrategy._blurHandler = function (element) {
+  if (element.hasAttribute('aria-haspopup')) {
+    // ignore blur handling if the component has a popup and the popup has focus
+    var popupId = element.getAttribute('aria-owns');
+    var popupDom = document.getElementById(popupId);
+    if (oj.FocusUtils.containsFocus(popupDom)) {
+      return;
+    }
+  }
+
+  var placeholder;
+  var component = this.GetComponent();
+  if (oj.InsideLabelPlaceholderStrategy._showConverterHintAsPlaceholder(component)) {
+    var hints = this.GetConverterHint();
+    placeholder = hints.length > 0 ? hints[0] : null;
+  }
+  if (!placeholder) {
+    placeholder = component.options.placeholder;
+  }
+
+  // if the component legally has a placeholder we cant set it to null.
+  // if we do that, select components will choke. Because they rely on placeholder
+  // to decide if it should render a empty option etc.
+  // So if there is a legal placeholder, we will just set its value to empty on blur.
+  if (placeholder === null || placeholder === undefined) {
+    component._SetPlaceholder(null);
+  } else {
+    component._SetPlaceholder('');
+  }
+};
+
+
+/* global ThemeUtils:false, Context:false */
+/* jslint browser: true*/
+
+/**
+ * Adapter for handling aspects of floating labels.
+ * Extends the MessagingStrategy which does more now than messages. It now
+ * is also for rendering the form component's label in one of many positions.
+ *
+ * @extends {oj.MessagingStrategy}
+ * @protected
+ * @constructor
+ * @since 7.0.0
+ * @class oj.InsideLabelStrategy
+ * @ignore
+ * @ojtsignore
+ * @param {Array.<string>} options an array of messaging artifacts that are
+ * displayed as an inside label for text fields.
+ * For LabelStrategies this is always only labelEdge.
+ */
+oj.InsideLabelStrategy = function (options) {
+  this.Init(options);
+  this._placeholderStrategy = new oj.InsideLabelPlaceholderStrategy(options);
+};
+
+/**
+ * Registers the LabelStrategy constructor function with oj.ComponentMessaging.
+ *
+ * @private
+ */
+oj.ComponentMessaging
+   .registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE,
+    oj.InsideLabelStrategy);
+
+// Subclass from oj.MessagingStrategy
+oj.Object.createSubclass(oj.InsideLabelStrategy,
+  oj.MessagingStrategy, 'oj.InsideLabelStrategy');
+
+/**
+ * @param {Object} cm a reference to an instance of oj.ComponentMessaging that provides access to
+ * the latest messaging content.
+ * @public
+ * @memberof oj.InsideLabelStrategy
+ * @instance
+ * @override
+ */
+oj.InsideLabelStrategy.prototype.activate = function (cm) {
+  oj.InsideLabelStrategy.superclass.activate.call(this, cm);
+  this._placeholderStrategy.activate(cm);
+  this._createFloatingLabel();
+};
+
+/**
+ * @param {Array.<string>} newOptions
+ * @public
+ * @memberof oj.InsideLabelStrategy
+ * @instance
+ * @override
+ */
+oj.InsideLabelStrategy.prototype.reactivate = function (newOptions) {
+  oj.InsideLabelStrategy.superclass.reactivate.call(this, newOptions);
+
+  this._destroyFloatingLabel();
+  this._createFloatingLabel();
+  this._placeholderStrategy.reactivate(newOptions);
+};
+
+/**
+ * @param {Object=} content the messaging content object. If it contains validityState, then
+ * this means the component has messaging content.
+ * @return {boolean}
+ * @memberof oj.InsideLabelStrategy
+ * @instance
+ * @oublic
+ * @override
+ */
+oj.InsideLabelStrategy.prototype.shouldUpdate = function (content) {
+  return this._placeholderStrategy.shouldUpdate(content);
+};
+
+/**
+ * Updates component with instance using the content provided.
+ * @memberof oj.InsideLabelStrategy
+ * @instance
+ * @public
+ * @override
+ */
+oj.InsideLabelStrategy.prototype.update = function () {
+  this._placeholderStrategy.update();
+};
+
+/**
+ * Cleans up messages on the component and destroys any widgets it created.
+ * @memberof oj.InsideLabelStrategy
+ * @instance
+ * @public
+ * @override
+ */
+oj.InsideLabelStrategy.prototype.deactivate = function () {
+  this._placeholderStrategy.deactivate();
+  this._destroyFloatingLabel();
+  oj.InsideLabelStrategy.superclass.deactivate.call(this);
+};
+
+/**
+ * Removes the floating label unregistering associated event listeners.
+ * @memberof oj.InsideLabelStrategy
+ * @instance
+ * @private
+ */
+oj.InsideLabelStrategy.prototype._destroyFloatingLabel = function () {
+  var component = this.GetComponent();
+  var element = component._getRootElement();
+
+  var labelStyleClass = oj.InsideLabelStrategy
+                          ._getBaseLabelSelector('inside');
+  element.classList.remove(labelStyleClass);
+
+  element.removeEventListener('labelHintChanged', this._labelHintChangedCallback);
+  element.removeEventListener('valueChanged', this._valueChangedCallback);
+  element.removeEventListener('requiredChanged', this._requiredChangedCallback);
+  element.removeEventListener('validChanged', this._validChangedCallback);
+
+  var labelId = oj.InsideLabelStrategy._getLabelId(element);
+  var ojlabel = document.getElementById(labelId);
+  if (ojlabel) {
+    ojlabel.for = ''; // Triggers code to unlink the oj-label from its form component
+    ojlabel.parentElement.removeChild(ojlabel);
+  }
+
+  this.customOjLabelElement = undefined;
+  delete this._labelHintChangedCallback;
+  delete this._valueChangedCallback;
+  delete this._requiredChangedCallback;
+  delete this._validChangedCallback;
+};
+
+/**
+ * Creates the floating label adding associated event listeners for applying
+ * marker selectors to the root and responding to label-hint property changes.
+ * @memberof oj.InsideLabelStrategy
+ * @instance
+ * @private
+ */
+oj.InsideLabelStrategy.prototype._createFloatingLabel = function () {
+  var component = this.GetComponent();
+  var container = component._GetFormControlContainer();
+  if (!container) return;
+
+  // look for a component container override
+  var fname = '_GetContentWrapper';
+  if (component[fname]) {
+    container = component[fname]();
+  }
+
+  var options = component.options;
+  var element = component._getRootElement();
+
+  var labelEdge = 'inside';
+  var labelStyleClass = oj.InsideLabelStrategy
+                          ._getBaseLabelSelector(labelEdge);
+  element.classList.add(labelStyleClass);
+  this.GenerateIdIfNeeded(element);
+
+  var ojlabel = document.createElement('oj-label');
+  ojlabel.id = oj.InsideLabelStrategy._getLabelId(element);
+  ojlabel.setAttribute('data-oj-binding-provider', 'none');
+  ojlabel.setAttribute('data-oj-internal', '');
+  // associate with form component
+  ojlabel.setAttribute('for', element.id);
+
+  container.insertBefore(ojlabel, container.firstElementChild);
+
+  var defaultLabelStyleClass = [component._GetDefaultStyleClass(), 'label'].join('-');
+  ojlabel.classList.add(defaultLabelStyleClass);
+  ojlabel.showRequired = options.required;
+
+  this.customOjLabelElement = ojlabel;
+
+  var span = document.createElement('span');
+  span.id = [element.id, '|hint'].join('');
+  span.innerText = options.labelHint;
+  ojlabel.appendChild(span);
+
+  this._labelHintChangedCallback =
+    oj.InsideLabelStrategy._labelHintChangedHandler.bind(this, span);
+  element.addEventListener('labelHintChanged', this._labelHintChangedCallback);
+
+  this._valueChangedCallback =
+    oj.InsideLabelStrategy._valueChangedHandler.bind(this, element);
+  element.addEventListener('valueChanged', this._valueChangedCallback);
+
+  this._requiredChangedCallback =
+    oj.InsideLabelStrategy._requiredChangedHandler.bind(this, ojlabel);
+  element.addEventListener('requiredChanged', this._requiredChangedCallback);
+
+  this._validChangedCallback =
+    oj.InsideLabelStrategy._validChangedHandler.bind(this, component);
+  element.addEventListener('validChanged', this._validChangedCallback);
+
+  oj.InsideLabelStrategy._toggleHasNoValueSelector(element, component.options.value);
+};
+
+/**
+ * @static
+ * @private
+ * @param {string} labelEdgeValue
+ * @return {string}
+ */
+oj.InsideLabelStrategy._getBaseLabelSelector = function (labelEdgeValue) {
+  return [oj.InsideLabelStrategy._BASE_STYLE_CLASS, 'label', labelEdgeValue.toLowerCase()].join('-');
+};
+
+/**
+ * @static
+ * @private
+ * @param {Element} element root custom element
+ * @return {string} floating label id
+ */
+oj.InsideLabelStrategy._getLabelId = function (element) {
+  return [element.id, '-labelled-by'].join('');
+};
+
+/**
+ * @static
+ * @private
+ * @param {Element} span holding label text
+ * @param {CustomEvent} event labelChanged event
+ */
+oj.InsideLabelStrategy._labelHintChangedHandler = function (span, event) {
+  // eslint-disable-next-line no-param-reassign
+  span.innerText = event.detail.value;
+};
+
+/**
+ * @static
+ * @private
+ * @param {Element} label oj-label element
+ * @param {CustomEvent} event requiredChanged event
+ */
+oj.InsideLabelStrategy._requiredChangedHandler = function (label, event) {
+  // eslint-disable-next-line no-param-reassign
+  label.showRequired = event.detail.value;
+};
+
+/**
+ * @static
+ * @private
+ * @param {Element} element element
+ * @param {CustomEvent} event requiredChanged event
+ */
+oj.InsideLabelStrategy._validChangedHandler = function (component, event) {
+  // The issue:- When the user enters a invalid input in to field and tabs out,
+  // the floating label moves down and overlaps the invalid text.
+  // Cause:- We were relying on value changes to position or reposition the label.
+  // But in this case, a value change is not triggered and hence the label goes back and
+  // overlaps the invalid text entered by the user.
+  // Fix:- we listen on valid change, check if there is a display value in the field and then decide
+  // the position.
+
+  var valid = event.detail.value;
+  if (valid === 'invalidShown') {
+    var displayValue = component._GetDisplayValue();
+    var element = component._getRootElement();
+    oj.InsideLabelStrategy._toggleHasNoValueSelector(element, displayValue);
+  }
+};
+
+/**
+ * @static
+ * @private
+ * @param {Element} element root custom element
+ * @param {CustomEvent} event valueChanged event
+ */
+oj.InsideLabelStrategy._valueChangedHandler = function (element, event) {
+  oj.InsideLabelStrategy._toggleHasNoValueSelector(element, event.detail.value);
+};
+
+/**
+ * @static
+ * @private
+ * @param {Element} element root custom element
+ * @param {Object} val value or the display value of the editable component.
+ */
+oj.InsideLabelStrategy._toggleHasNoValueSelector = function (element, val) {
+  function isEmpty(value) {
+    if (value === undefined || value === null) {
+      return true;
+    } else if (typeof value === 'string') {
+      return oj.StringUtils.isEmptyOrUndefined(value);
+    } else if (typeof value === 'number') {
+      return isNaN(value);
+    } else if (Array.isArray(value)) {
+      // oj-select-many setting observable(undefined) returns an array with
+      // an undefined value versus an undefined value
+      return (value.length === 0) ||
+        (value.length === 1 && (value[0] === null || value[0] === undefined));
+    }
+    return false;
+  }
+
+  if (isEmpty(val)) {
+    element.classList.add(oj.InsideLabelStrategy._HAS_NO_VALUE_MARKER_CLASS);
+  } else {
+    element.classList.remove(oj.InsideLabelStrategy._HAS_NO_VALUE_MARKER_CLASS);
+  }
+};
+
+/**
+ * Holds the marker selector that is toggled on and off when the editable component
+ * doesn't have a value.
+ * @const
+ * @private
+ * @type {string}
+ */
+oj.InsideLabelStrategy._HAS_NO_VALUE_MARKER_CLASS = 'oj-has-no-value';
+
+/**
+ * Base selector (prefix) for styling floating labels
+ * @const
+ * @private
+ * @type {string}
+ */
+oj.InsideLabelStrategy._BASE_STYLE_CLASS = 'oj-text-field';
+
+
 
 /* jslint browser: true*/
 /* global Promise:false, Hammer:false, Components:false, Message:false, Context:false, ThemeUtils:false, Translations:false */
@@ -6515,7 +7376,7 @@ oj.PopupMessagingStrategy = function (displayOptions) {
  *
  * @private
  */
-oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._DISPLAY_TYPE.NOTEWINDOW,
+oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW,
 oj.PopupMessagingStrategy);
 
 // Subclass from oj.MessagingStrategy
@@ -6697,6 +7558,29 @@ oj.PopupMessagingStrategy.prototype.deactivate = function () {
 oj.PopupMessagingStrategy.prototype.close = function () {
   this._closePopup();
 };
+
+oj.PopupMessagingStrategy.prototype.GetValidatorHints = function () {
+  var component = this.GetComponent();
+  // Async validators hints are retrieved only when they are needed to be shown to the user.
+  // So instead of calling _initAsyncValidatorMessagingHint when the component is created,
+  // it is called here when validator hints are first shown to the user.
+  if (!component._initAsyncMessaging &&
+      component &&
+      component._initAsyncValidatorMessagingHint) {
+    component._initAsyncMessaging = true;
+    component._initAsyncValidatorMessagingHint();
+  }
+  var hints = [];
+  var mc = this._getMessagingContent();
+  var vHints = (mc && mc.validatorHint) || [];
+
+  $.each(vHints, function (index, hint) {
+    hints.push(hint);
+  });
+
+  return hints;
+};
+
 /**
  * Closes the associated notewindow popup
  * @private
@@ -7901,7 +8785,7 @@ oj.PopupMessagingStrategyPoolUtils.getNextFreePopup = function () {
     popup = $(oj.PopupMessagingStrategyPoolUtils._getPopupContentHtml());
     popup[0].style.display = 'none';
     // popup is an empty div
-    popup.appendTo(pool); // @HTMLUpdateOk
+    popup.appendTo(pool); // @HTMLUpdateOK
     var popupOptions =
       {
         initialFocus: 'none',
@@ -7961,7 +8845,7 @@ oj.PopupMessagingStrategyPoolUtils._getPool = function () {
   var poolElem = pool[0];
   poolElem.setAttribute('id', oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID);
   poolElem.setAttribute('role', 'presentation');
-  document.body.appendChild(poolElem); // @HTMLUpdateOk
+  document.body.appendChild(poolElem); // @HTMLUpdateOK
 
   return pool;
 };

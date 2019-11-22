@@ -175,6 +175,7 @@
 // form controls
 //$includeCheckboxsetClasses:      $includeFormControlClasses !default;
 //$includeComboboxClasses:         $includeFormControlClasses !default;
+//$includeSelectSingleClasses:     $includeFormControlClasses !default;
 //$includeInputDateTimeClasses:    $includeFormControlClasses !default;
 //$includeInputNumberClasses:      $includeFormControlClasses !default;
 //$includeInputPasswordClasses:    $includeFormControlClasses !default;
@@ -212,6 +213,7 @@
 
 // other
 //$includeAccordionClasses:        $includeAllClasses !default;
+//$includeActivityStreamClasses:   $includeAllClasses !default;
 //$includeAnimationClasses:        $includeAllClasses !default;
 //$includeAppLayoutClasses:        $includeAllClasses !default;
 //$includeAppLayoutHybridClasses:  $includeAllClasses !default;
@@ -234,6 +236,7 @@
 //$includeIconCircleClasses:       $includeAllClasses !default;
 //$includeIndexerClasses:          $includeAllClasses !default;
 //$includeListViewClasses:         $includeAllClasses !default;
+//$includeMasonryClasses:          $includeAllClasses !default;
 //$includeMasonryLayoutClasses:    $includeAllClasses !default;
 //$includeMenuClasses:             $includeAllClasses !default;
 //$includeMenuSelectManyClasses:   $includeAllClasses !default;
@@ -260,6 +263,7 @@
 //$includeTrainClasses:            $includeAllClasses !default;
 //$includeTreeClasses:             $includeAllClasses !default;
 //$includeTreeViewClasses:         $includeAllClasses !default;
+//$includeWaterfallLayoutClasses:  $includeAllClasses !default;
 //$includeHelpClasses:             $includeAllClasses !default;
 
 //-----------------------------------------------------------------------------
@@ -317,28 +321,28 @@
 //$accentColorHighlight1:    #d9f4fa !default;
 //$accentColorHighlight2:    #c2eaf3 !default;
 
-//$accentColorDanger1:       #FCF3F4 !default;
-//$accentColorDanger2:       #F8D3D6 !default;
-//$accentColorDanger3:       #E65A66 !default;
-//$accentColorDanger4:       #DE2333 !default;
-//$accentColorDanger5:       #BA0006 !default;
+//$accentColorDanger1:       #fcf3f4 !default;
+//$accentColorDanger2:       #f8d3d6 !default;
+//$accentColorDanger3:       #e65a66 !default;
+//$accentColorDanger4:       #de2333 !default;
+//$accentColorDanger5:       #ba0006 !default;
 
-//$accentColorAttention1:    #FEF5E4 !default;
-//$accentColorAttention2:    #FCE7C1 !default;
-//$accentColorAttention3:    #F8CA75 !default;
-//$accentColorAttention4:    #F6B846 !default;
-//$accentColorAttention5:    #BF552E !default;
+//$accentColorAttention1:    #fef5e4 !default;
+//$accentColorAttention2:    #fce7c1 !default;
+//$accentColorAttention3:    #f8ca75 !default;
+//$accentColorAttention4:    #f6b846 !default;
+//$accentColorAttention5:    #bf552e !default;
 
-//$accentColorInfo1:         #E9F4F8 !default;
-//$accentColorInfo2:         #CAE4EF !default;
-//$accentColorInfo3:         #80BFD9 !default;
-//$accentColorInfo4:         #2B94BF !default;
-//$accentColorInfo5:         #0574A1 !default;
+//$accentColorInfo1:         #e9f4f8 !default;
+//$accentColorInfo2:         #cae4ef !default;
+//$accentColorInfo3:         #80bfd9 !default;
+//$accentColorInfo4:         #2b94bf !default;
+//$accentColorInfo5:         #0574a1 !default;
 
-//$accentColorConfirmation1: #ECF5E7 !default;
-//$accentColorConfirmation2: #D9EACF !default;
-//$accentColorConfirmation3: #B3D69F !default;
-//$accentColorConfirmation4: #81BA5F !default;
+//$accentColorConfirmation1: #ecf5e7 !default;
+//$accentColorConfirmation2: #d9eacf !default;
+//$accentColorConfirmation3: #b3d69f !default;
+//$accentColorConfirmation4: #81ba5f !default;
 //$accentColorConfirmation5: #008230 !default;
 
 // DVT Colors
@@ -544,7 +548,7 @@
 // ojDialog port from jquery resizable.  Assigned to resize grippers on the dialogs corners and edges.
 //$resizableZindex:       900  !default;
 
-// ojPopup option tail=none and popups used to collect immediate feedback: inputdatatime, menu, listbox (ojSelect, ojCombobox)
+// ojPopup option tail=none and popups used to collect immediate feedback: inputdatatime, menu, listbox (ojSelect, ojCombobox, ojSelect2)
 //$popupZindex:           1000 !default;
 
 //$dialogZindex:          1050 !default;
@@ -650,9 +654,9 @@
 //
 // For pixel values here is some helpful info on device sizes:
 // http://www.mydevice.io/devices/
-//$screenSmallRange:  0, 767px !default;
-//$screenMediumRange: 768px, 1023px !default;
-//$screenLargeRange:  1024px, 1280px !default;
+//$screenSmallRange:  0, 767.9px !default;
+//$screenMediumRange: 768px, 1023.9px !default;
+//$screenLargeRange:  1024px, 1280.9px !default;
 //$screenXlargeRange: 1281px, null !default;
 
 
@@ -1099,11 +1103,6 @@
 // MENU
 //-----------------------------------------------------------------------------
 
-// If Menu's "display" option is "auto" (the default), then at or above this screen width
-// the menu displays as a dropDown, and below this screen width the menu displays as a sheet.
-// Accepts px values like 768px or 0
-//$menuDropDownThresholdWidth: #{lower-bound($screenMediumRange)} !default;
-
 // Controls whether sheet menus have a "Cancel" menu item automatically added.
 // Valid values are "none" and "menuItem".
 //$menuSheetCancelAffordance: "none" !default;
@@ -1452,6 +1451,39 @@
 //$buttonOutlinedChromeBorderColorSelectedDisabled:  $buttonHalfChromeBorderColorSelectedDisabled !default;
 //$buttonOutlinedChromeInternalBorderColorSelectedDisabled:  $buttonOutlinedChromeInternalBorderColorSelected !default;
 
+// cta enabled
+//$buttonCallToActionChromeBgColor:                     $brandColor !default;
+//$buttonCallToActionChromeBorderColor:                 transparent !default;
+//$buttonCallToActionChromeTextColor:                    $contrastTextColor !default;
+//$buttonCallToActionChromeIconColor:                   $contrastTextColor !default;
+//$buttonCallToActionChromeBgImage:                     none !default;
+//$buttonCallToActionChromeBoxShadow:                   none !default;
+
+// cta hover
+//$buttonCallToActionChromeBgColorHover:                $brandColor !default;
+//$buttonCallToActionChromeBorderColorHover:            $buttonCallToActionChromeBorderColor !default;
+//$buttonCallToActionChromeTextColorHover:               $contrastTextColor !default;
+//$buttonCallToActionChromeIconColorHover:              $contrastTextColor !default;
+//$buttonCallToActionChromeBgImageHover:                linear-gradient(hsla(0,0%,100%,.15), hsla(0,0%,100%,.15)) !default;
+//$buttonCallToActionChromeBoxShadowHover:              none !default;
+
+// cta active
+//$buttonCallToActionChromeBgColorActive:               $brandColor !default;
+//$buttonCallToActionChromeBorderColorActive:           var($buttonCallToActionChromeBorderColor);
+//$buttonCallToActionChromeTextColorActive:              $contrastTextColor !default;
+//$buttonCallToActionChromeIconColorActive:              $contrastTextColor !default;
+//$buttonCallToActionChromeBgImageActive:               linear-gradient(hsla(0,0%,0%,.10), hsla(0,0%,0%,.10)) !default;
+//$buttonCallToActionChromeBoxShadowActive:             none !default;
+//$buttonCallToActionChromeOpacityActive:               null !default;
+
+// cta disabled
+//$buttonCallToActionChromeBgColorDisabled:             $brandColor !default;
+//$buttonCallToActionChromeBorderColorDisabled:         $buttonCallToActionChromeBorderColor !default;
+//$buttonCallToActionChromeTextColorDisabled:            $contrastTextColor !default;
+//$buttonCallToActionChromeIconColorDisabled:           $contrastTextColor !default;
+//$buttonCallToActionChromeBoxShadowDisabled:           none !default;
+//$buttonCallToActionChromeOpacityDisabled:             .4 !default;
+
 
 // alternate button colors
 //----------------------------------
@@ -1541,41 +1573,6 @@
 
 //$toolbarChromingOptionDefault: half !default;
 
-
-// FORM LAYOUT
-//-----------------------------------------------------------------------------
-
-// outer border
-//$formLayoutBorderColor:  null !default;
-// divider between rows
-//$formLayoutDividerColor: null !default;
-
-// These variables are used to set the column-width/column-gap properties
-// in .oj-form-cols and .oj-form-cols-labels-inline.
-// These classes use css multi column layout, see:
-// http://dev.w3.org/csswg/css-multicol/
-//$formLayoutColumnWidth:             18.45rem !default;
-//$formLayoutColumnGap:               normal !default;
-//$formLayoutLabelsInlineColumnWidth: 22rem !default;
-//$formLayoutLabelsInlineColumnGap:   normal !default;
-
-
-// In a form layout this is the space expected between
-// form controls in different rows
-//$formLayoutMarginBottom: 10px !default;
-
-// inline label in a oj-flex > oj-flex-item; we do not float, thus we need line-height
-// to maintain label's height, and we need a different top margin for this case.
-//$formLayoutLabelInlineMarginTop: .2em !default;
-
-// in a form layout when the labels are inline what is the
-// default label alignment, legal values are start and end
-//$formLayoutLabelInlineAlign: start !default;
-
-
-// in a form layout when the labels are inline what is the
-// default field alignment, legal values are start and end
-//$formLayoutFieldInlineAlign: null !default;
 
 
 // FORM CONTROLS
@@ -1695,12 +1692,71 @@
 //$formControlPlaceholderColor:     $tertiaryTextColor !default;
 //$formControlPlaceholderFontStyle: normal !default;
 
+
+// form control option defaults
+//----------------------------------
+//$formControlLabelEdgeDefault: provided !default;
+
+
+
+// FORM LAYOUT
+//-----------------------------------------------------------------------------
+
+// outer border
+//$formLayoutBorderColor:  null !default;
+// divider between rows
+//$formLayoutDividerColor: null !default;
+
+// These variables are used to set the column-width/column-gap properties
+// in .oj-form-cols and .oj-form-cols-labels-inline.
+// These classes use css multi column layout, see:
+// http://dev.w3.org/csswg/css-multicol/
+//$formLayoutColumnWidth:             18.45rem !default;
+//$formLayoutColumnGap:               normal !default;
+//$formLayoutLabelsInlineColumnWidth: 22rem !default;
+//$formLayoutLabelsInlineColumnGap:   normal !default;
+// These next two variables are using redwood terminology.  The above variables are for backwards
+// compatibility and may be deprecated at some point.
+// The left/right margin is the space before the first column and after the last column of an oj-form-layout
+//$formLayoutHorizontalMargin:  $formControlLabelInlineGutter !default;
+// The gutter is the space between columns of an oj-form-layout
+// This is assigned to be twice the label-inline-gutter currently
+// for backwards compatibility
+//$formLayoutColumnGutter: calc(#{$formControlLabelInlineGutter} * 2);
+
+
+// In a form layout this is the space expected between
+// form controls in different rows
+//$formLayoutMarginBottom: 10px !default;
+
+// inline label in a oj-flex > oj-flex-item; we do not float, thus we need line-height
+// to maintain label's height, and we need a different top margin for this case.
+//$formLayoutLabelInlineMarginTop: .2em !default;
+
+// in a form layout when the labels are inline what is the
+// default label alignment, legal values are start and end
+//$formLayoutLabelInlineAlign: start !default;
+//$formLayoutLabelEdgeDefault: top !default;
+//$formLayoutLabelGenerationDefault: form !default;
+
+// Default value for colspan-wrap attribute
+//$formLayoutColspanWrapDefault: nowrap !default;
+
+
+// in a form layout when the labels are inline what is the
+// default field alignment, legal values are start and end
+//$formLayoutFieldInlineAlign: null !default;
+
 // INPUT NUMBER
 // the spacing between the input and the buttonset
 //$inputNumberInputToButtonMargin: 0 !default;
 
 //inputnumber up and down button width
 //$inputNumberButtonWidth: auto !default;
+
+//options
+// For option 'step'
+//$inputNumberStepOptionDefault: 1 !default;
 
 // RADIO and CHECKBOX
 // The input html element can be hidden the radio/checkbox rendered as an image instead
@@ -1710,10 +1766,6 @@
 //$radioCheckboxLabelPosition: end !default;
 
 //$radioCheckboxRowHeight: 2.9rem !default;
-
-// TODO Bug 25897533: Clean up after sprite tooling is implemented
-// image size
-//$radioCheckboxImageHeightWidth: 20px !default;
 
 // spacing between edge and the label text
 //$radioCheckboxLabelToEdgePadding: 20px !default;
@@ -1725,10 +1777,6 @@
 //$radioCheckboxInputToEdgePadding: $radioCheckboxLabelToEdgePadding !default;
 // spacing on the input (html input or input image) to give spacing between the input and the text
 //$radioCheckboxInputToLabelPadding: $radioCheckboxLabelToEdgePadding !default;
-
-// TODO Bug 25897533: Clean up after sprite tooling is implemented
-// radioset and checkboxset image directory
-//$radioCheckboxImageDir: null !default;
 
 // radioset and checkboxset states
 //----------------------------------
@@ -1980,7 +2028,7 @@
 // LISTBOX
 //-----------------------------------------------------------------------------
 // listbox values used in drop down for
-// inputTime, select, combobox
+// inputTime, select, combobox, select2
 //$listboxBgColorFocus: $neutralColor6 !default;
 
 // padding for a listbox item
@@ -2001,8 +2049,6 @@
 
 //$dateTimePickerSwitcherBgColor: $neutralColor6     !default;
 //$dateTimePickerSwitcherPadding: 5px $dateTimePickerPadding !default;
-
-//$dateTimePickerDropDownThresholdWidth: #{lower-bound($screenMediumRange)} !default;
 
 // DATEPICKER
 //-----------------------------------------------------------------------------
@@ -2033,6 +2079,8 @@
 
 //$inputDateTimeKeyboardEditOptionDefault: disabled !default;
 //$inputDateTimeTimePickerOptionDefault:   null     !default;
+//$inputDateTimeConverterYearOptionDefault: 2-digit !default;
+//$inputDateTimeShowPickerOnDesktopOptionDefault: enabled !default;
 
 
 // TIMEPICKER
@@ -2360,6 +2408,12 @@
 //$listViewExpandAnimation:      (effect: "expand") !default;
 //$listViewCollapseAnimation:    (effect: "collapse") !default;
 //$listViewPointerUpAnimation:   (effect: "none") !default;
+// gridlines option defaulting
+//$listViewGridlinesItemOptionDefault: visible !default;
+//$listViewGridlinesTopOptionDefault: visible !default;
+//$listViewGridlinesBottomOptionDefault: visible !default;
+// load indicator
+//$listViewLoadIndicator: icon !default;
 
 // PULL TO REFRESH
 //-----------------------------------------------------------------------------
@@ -2369,9 +2423,6 @@
 // duration of pull to refresh transition
 //$refresherAnimationDuration:  $animationDurationMedium !default;
 
-// TODO Bug 25897533: Clean up after sprite tooling is implemented
-// the dir of pull to refresh images
-//$refresherImageDir: null !default;
 
 // SWIPE TO REVEAL
 //-----------------------------------------------------------------------------
@@ -2410,6 +2461,21 @@
 // font weight of the prefix in the indexer
 //$indexerFontWeight:          bold !default;
 
+// ACTIVITY STREAM
+//-----------------------------------------------------------------------------
+//$activityStreamItemBorderPosition:   0 !default;
+//$activityStreamAnimationDuration:   $animationDurationMedium !default;
+//$activityStreamInsertAnimation:     ((effect: "expand"), "fadeIn") !default;
+//$activityStreamRemoveAnimation:     ((effect: "collapse"), "fadeOut") !default;
+
+// MASONRY
+//-----------------------------------------------------------------------------
+// width of each item in the indexer
+//$masonryItemWidth:           240px !default;
+//$masonryAnimationDuration:   $animationDurationMedium !default;
+//$masonryInsertAnimation:     ((effect: "expand"), "fadeIn") !default;
+//$masonryRemoveAnimation:     ((effect: "collapse"), "fadeOut") !default;
+
 // MASONRY LAYOUT
 //-----------------------------------------------------------------------------
 
@@ -2430,6 +2496,17 @@
 //$masonryLayoutMoveAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
 //$masonryLayoutResizeAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
 //$masonryLayoutReorderAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDurationFast, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
+
+// WATERFALL LAYOUT
+//-----------------------------------------------------------------------------
+
+// width of each item in the waterfall layout
+//$waterfallLayoutItemWidth:           240px !default;
+// width of the horizontal and vertical gutter
+//$waterfallLayoutGutterWidth:         24px !default;
+// animations
+//$waterfallLayoutEntranceAnimation: ((effect: "fadeIn", duration: "300ms", timingFunction: "cubic-bezier(0, 0, 0.2, 1)"), (effect: "slideIn", direction: "top", offsetY: "300px", duration: "300ms", timingFunction: "cubic-bezier(0, 0, 0.2, 1)")) !default;
+//$waterfallLayoutExitAnimation:      (effect: "fadeOut", duration: "200ms", timingFunction: "cubic-bezier(0, 0, 0.2, 1)") !default;
 
 // FILM STRIP
 //-----------------------------------------------------------------------------
@@ -2728,12 +2805,20 @@
 //$filePickerBorderRadius:          $formControlBorderRadius !default;
 //$filePickerBorderStyle:           dashed !default;
 //$filePickerTextColor:             $linkTextColor !default;
-//$filePickerTextFontSize:          oj-px-to-rem(18px, $baseFontSize: 14px) !default;
+//$filePickerTextFontSize:          1.25rem !default;
+//$filePickerTextFontWeight:        normal !default;
+//$filePickerSecondaryTextColor:    $linkTextColor !default;
+//$filePickerSecondaryTextFontSize: .875rem !default;
+//$filePickerSecondaryTextFontWeight: 400 !default;
+//$filePickerPadding:               24px !default;
 
 
 //active
 //$filePickerBgColorActive: $brandColorLight4 !default;
-//$filePickerBorderWidthActive:     1px !default;
+ 
+//disabled
+//$filePickerBgColorDisabled:       $neutralColor2 !default;
+//$filePickerBorderColorDisabled:   $filePickerBgColorDisabled !default;
 
 // DVT
 //-----------------------------------------------------------------------------
@@ -2796,6 +2881,7 @@
 //$dvtDiagramNodeBorderColorHover: $neutralColor11 !default;
 //$dvtDiagramLinkBorderColorHover: $dvtDiagramNodeBorderColorHover !default;
 //$dvtDiagramLinkColor:            $dvtDiagramNodeBorderColorHover !default;
+//$dvtDiagramLinkPadding:          10px !default;
 
 //$dvtDiagramOverviewBgColor:           $neutralColor7 !default;
 //$dvtDiagramOverviewPadding:           0px !default;
@@ -2939,7 +3025,6 @@
 //avatar
 //----------------------------------
 //$avatarInnerBgColor:         $iconCircleInnerBgColor !default;
-//$avatarBorderOffsetBgColor:  $avatarInnerBgColor !default;//the padding color between border and circle
 //$avatarBorderColor:          $avatarInnerBgColor !default;
 //$avatarTextColor:            $iconCircleFontColor !default;
 
@@ -2951,15 +3036,6 @@
 //$avatarLgInnerSize:          104px !default;
 //$avatarXlInnerSize:          192px !default;
 //$avatarXxlInnerSize:         256px !default;
-
-//Distance between inner circle and border
-//$avatarXxsBorderOffset:           0 !default;
-//$avatarXsBorderOffset:            0 !default;
-//$avatarSmBorderOffset:            0 !default;
-//$avatarMdBorderOffset:            0 !default;
-//$avatarLgBorderOffset:            0 !default;
-//$avatarXlBorderOffset:            0 !default;
-//$avatarXxlBorderOffset:           0 !default;
 
 //Font size for the initials
 //$avatarXxsInitialsFontSize:         12px !default;
@@ -2987,9 +3063,18 @@
 //$avatarXlPlaceholderScale:  6   !default;
 //$avatarXxlPlaceholderScale: 8   !default;
 
-//Color of the black filter put on the background/border to meet contrast
+//Opacity of the black filter put on the background/border to meet contrast
 //ratio requirements for smaller text sizes
-//$avatarInitialsShadeColor:          transparent !default;
+//$avatarInitialsShadeOpacity:          0.189 !default;
+
+//Other Background colors
+//$avatarPurple:                  #920083 !default;
+//$avatarOrange:                  #be4800 !default;
+//$avatarRed:                     #e4001e !default;
+//$avatarTeal:                    #008179 !default;
+//$avatarGreen:                   #005a1c !default; 
+//$avatarForest:                  #008323 !default;
+//$avatarMauve:                   #754b9a !default;
 
 //-----------------------------------------------------------------------------
 // OPTIMIZATION VARIABLES
@@ -3115,8 +3200,26 @@
 //  '--oj-color-required':              $brandColorDark1
 //);
 
+// For quiet forms
+//$formControlInsideInputHeight:          2.75rem !default;
+
+/* This padding is needed to bring the text field below the label, so that the label and the text inside the text field don't overlap. */
+//$formControlInsidePaddingTop:           0.85rem !default;
+//$formControlInsideTextareaPaddingTop:   1.25rem !default;
+//$formControlInsideLabelFontSize:        $smallFontSize !default;
+//$formControlInsideLabelFontWeight:      $formControlLabelFontWeight !default;
+//$formControlInsideLabelLineHeight:      normal !default;
+//$formControlInsideLabelTranslateX:      $formControlPaddingHorizontal !default;
+//$formControlInsideLabelTranslateY:      0.625rem !default;
+//$formControlInsideLabelTranslateYFocus: 0.1875rem !default;
+//$formControlInsideLabelFontSize:        $smallestFontSize !default;
+//$formControlInsideBorderRightWidth:     1px !default; //TODO: use oj-shorthand-property-value-bottom($formControlBorderWidth)
+//$formControlInsideBorderLeftWidth:      1px !default;
+//$formControlInsideBorderBottomWidth:    1px !default;
+//$formControlInsideBorderTopWidth:       1px !default;
+
 // check for vars that have been renamed but the old var name is defined,
 // if any are found an error will be thrown
 @include oj-theming-vars-renamed();
+// check for vars that have been removed but still defined somewhere, if found throw error
 @include oj-theming-vars-removed();
-

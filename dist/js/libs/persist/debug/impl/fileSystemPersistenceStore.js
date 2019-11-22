@@ -261,5 +261,21 @@ define(['./keyValuePersistenceStore', '../persistenceStoreManager', './logger'],
       };
     };
 
+    FileSystemPersistenceStore.prototype.updateKey = function(currentKey, newKey) {
+      logger.log("Offline Persistence Toolkit FileSystemPersistenceStore: updateKey() with currentKey: " + currentKey + " and new key: " + newKey);
+      var self = this;
+      return _findByKeyFileIndex(currentKey).then(function(fileIndex) {
+        if (fileIndex) {
+          var filename = fileIndex.filename;
+          var metadata = fileIndex.metadata;
+          return _updateFileIndex(newKey, filename, metadata);
+        } else {
+          return Promise.reject("No existing key found to update");
+        }
+      }).then(function() {
+        return _removeByKeyFileIndex(currentKey);
+      });
+    };
+
     return FileSystemPersistenceStore;
   });

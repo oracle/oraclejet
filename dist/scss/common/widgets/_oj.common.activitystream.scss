@@ -1,0 +1,85 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.activitystream.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@if $includeActivityStreamClasses != false {
+  @include module-include-once("common.activitystream") {
+    
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-activity-stream:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    /* Styling for the activity stream widget container */
+    .oj-activitystream {
+      display: block;
+      position: relative;
+      border-width: 1px 0;
+      border-style: solid;
+      box-sizing: border-box;
+      overflow: auto;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        user-select: none;
+        border-color: var(--oj-collection-border-color);
+        min-height: var(--oj-collection-row-height);
+      } @else {
+        @include oj-user-select-property (none);
+        border-color: $collectionBorderColor;
+        // min-height is 1 row to leave space for the no data message.
+        min-height: $collectionRowHeight;
+      }
+    }
+
+    /* Styling to remove focus ring border on activity stream */
+    .oj-activitystream:focus {
+      outline: none; 
+    }
+
+    /* remove border top for the first item to prevent double border */
+    .oj-activitystream-item:first-child {
+      background-size: 0;
+    }
+
+    /* styling on each item */
+    .oj-activitystream-item {
+      line-height: normal;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        padding: var(--oj-panel-padding);
+        background-image: linear-gradient(var(--oj-collection-cell-border-color), var(--oj-collection-cell-border-color));
+        background-position: var(--oj-activity-stream-item-border-position) 0;
+      } @else {
+        padding: $panelPadding;
+        background-image: linear-gradient($collectionCellBorderColor, $collectionCellBorderColor);
+        background-position: $activityStreamItemBorderPosition 0;
+      }
+      background-size: 100% 1px;
+      background-repeat: no-repeat;
+      box-sizing: border-box;
+      border-top:1px solid transparent;
+    }
+
+    $activityStreamDefaultOptions: ();
+    $activityStreamAnimationDefaults: ();
+
+    @if ($activityStreamInsertAnimation) {
+      $activityStreamAnimationDefaults: map-merge($activityStreamAnimationDefaults, (insert: $activityStreamInsertAnimation));
+    }
+
+    @if ($activityStreamRemoveAnimation) {
+      $activityStreamAnimationDefaults: map-merge($activityStreamAnimationDefaults, (remove: $activityStreamRemoveAnimation));
+    }
+
+    @if ($activityStreamAnimationDefaults) {
+      $activityStreamDefaultOptions: map-merge($activityStreamDefaultOptions, (animation: $activityStreamAnimationDefaults));
+    }
+
+    .oj-activitystream-option-defaults {
+      font-family: oj-json($activityStreamDefaultOptions);
+    }
+  }
+}

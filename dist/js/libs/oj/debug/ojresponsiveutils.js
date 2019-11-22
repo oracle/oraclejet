@@ -2,13 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojlogger'], function(Logger)
 {
   "use strict";
-/*
-** Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
-*/
+
 
 /* jslint browser: true*/
 /* global Logger:false */

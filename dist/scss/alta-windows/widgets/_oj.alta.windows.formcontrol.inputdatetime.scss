@@ -47,17 +47,7 @@
     
     .oj-inputdatetime-date-only .oj-inputdatetime-input
     {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        html:not([dir="rtl"]) & {
-           border-radius: var(--oj-text-field-border-radius) var(--oj-text-field-border-radius) var(--oj-text-field-border-radius) var(--oj-text-field-border-radius);
-        }
-        
-        html[dir="rtl"] & {
-           border-radius: var(--oj-text-field-border-radius) var(--oj-text-field-border-radius) var(--oj-text-field-border-radius) var(--oj-text-field-border-radius);          
-        }
-        //todo:
-      }
-      @else {
+     
         //need to include end border radius because we dont show any trigger icon
         @include oj-ltr()
         { 
@@ -72,7 +62,7 @@
         }
         
         @include oj-border-radius-slowoverride();
-      }
+
     }
   }
 }

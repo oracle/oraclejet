@@ -2,14 +2,18 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'ojs/ojvalidation-base', 'ojs/ojlogger', 'ojs/ojeditablevalue', 'ojs/ojvalidation-number', 'ojs/ojbutton'], 
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
+'ojs/ojconverterutils', 'ojs/ojconverter-number', 'ojs/ojvalidator-numberrange', 'ojs/ojlogger', 
+'ojs/ojeditablevalue', 'ojs/ojbutton'], 
 /*
 * @param {Object} oj 
 * @param {jQuery} $
 */
-function(oj, $, __ValidationBase, Logger)
+function(oj, $, Context, ThemeUtils, Components, ConverterUtils, 
+__NumberConverter, NumberRangeValidator, Logger)
 {
   "use strict";
 var __oj_input_number_metadata = 
@@ -34,16 +38,7 @@ var __oj_input_number_metadata =
       }
     },
     "converter": {
-      "type": "object",
-      "value": "oj.Validation.converterFactory('number').createConverter()",
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "options": {
-          "type": "object"
-        }
-      }
+      "type": "object"
     },
     "describedBy": {
       "type": "string"
@@ -76,6 +71,10 @@ var __oj_input_number_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
+          "enumValues": [
+            "none",
+            "notewindow"
+          ],
           "value": [
             "notewindow"
           ]
@@ -103,6 +102,14 @@ var __oj_input_number_metadata =
           "value": ""
         }
       }
+    },
+    "labelEdge": {
+      "type": "string",
+      "enumValues": [
+        "inside",
+        "none",
+        "provided"
+      ]
     },
     "labelHint": {
       "type": "string",
@@ -147,8 +154,7 @@ var __oj_input_number_metadata =
       "value": false
     },
     "step": {
-      "type": "number",
-      "value": 1
+      "type": "number"
     },
     "transientValue": {
       "type": "number",
@@ -276,12 +282,10 @@ var __oj_input_number_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
-/* global __ValidationBase:false, Logger:false, Promise:false */
+
+/* global ConverterUtils:false, __NumberConverter:false, NumberRangeValidator: false, Context:false,
+Logger:false, Promise:false, Components:false, ThemeUtils:false */
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -316,8 +320,17 @@ var __oj_input_number_metadata =
  * @ojshortdesc An input number allows the user to enter a number value.
  * @ojrole textbox
  * @ojrole spinbutton
- * @ojstatus preview
- * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter", "Validator", "Validation", "AsyncValidator"]}
+ *
+ * @ojimportmembers oj.ojDisplayOptions
+ * @ojtsimport {module: "ojvalidationfactory-base", type: "AMD", imported:["Validation"]}
+ * @ojtsimport {module: "ojconverter", type: "AMD", importName: "Converter"}
+ * @ojtsimport {module: "ojvalidator", type: "AMD", importName: "Validator"}
+ * @ojtsimport {module: "ojvalidator-async", type: "AMD", importName: "AsyncValidator"}
+ * @ojtsimport {module: "ojconverter-number", type: "AMD",  imported: ["IntlNumberConverter", "NumberConverter"]}
+ * @ojtsimport {module: "ojvalidator-length", type: "AMD", importName: "LengthValidator"}
+ * @ojtsimport {module: "ojvalidator-numberrange", type: "AMD", importName: "NumberRangeValidator"}
+ * @ojtsimport {module: "ojvalidator-regexp", type: "AMD", importName: "RegExpValidator"}
+ * @ojtsimport {module: "ojvalidator-required", type: "AMD", importName: "RequiredValidator"}
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "min", "max", "step", "required", "disabled", "readonly", "virtualKeyboard", "converter"]}
  * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
@@ -445,8 +458,8 @@ var __oj_input_number_metadata =
        * (like presses Enter or Tab), a new validation lifecycle will start
        * and validation errors for the previous value will not be shown to the user.
        * If you need to format the value for the error message,
-       * you can use
-       * <code class="prettyprint">oj.IntlConverterUtils.getConverterInstance(converterOption)</code>
+       * you can use e.g. for number
+       * <code class="prettyprint">new NumberConverter.IntlNumberConverter(converterOption)</code>
        * to get the converter instance,
        * then call <code class="prettyprint">converter.format(value)</code>.
        * </p>
@@ -517,7 +530,7 @@ var __oj_input_number_metadata =
        * }
        * }];
        * myComp.asyncValidators = myValidators;
-       *
+       * @ojdeprecated {since: '8.0.0', description: 'Use the validators property instead for either regular Validators or AsyncValidators.'}
        * @expose
        * @access public
        * @instance
@@ -597,10 +610,11 @@ var __oj_input_number_metadata =
 
         /**
          * A number converter instance or a Promise to a number converter instance
-         * that duck types {@link oj.NumberConverter}. Or an object literal
-         * containing the properties listed below.
+         * or one that duck types {@link oj.NumberConverter}.
+         * <p>
          * When no converter is specified, the default converter will be used,
          * and default option of "numeric" is used.
+         * </p>
          * <p>
          * When <code class="prettyprint">converter</code> property changes due to programmatic
          * intervention, the component performs various tasks based on the current state it is in. </br>
@@ -644,12 +658,6 @@ var __oj_input_number_metadata =
          * </ul>
          * </p>
          *
-         * @property {string} type - the converter type registered with the oj.ConverterFactory.
-         * Usually 'number'. See {@link oj.NumberConverterFactory} for details. <br/>
-         * E.g., <code class="prettyprint">{converter: {type: 'number'}</code>
-         * @property {Object=} options - optional Object literal of options that the converter expects.
-         * See {@link oj.IntlNumberConverter} for options supported by the jet number converter.
-         * E.g., <code class="prettyprint">{converter: {type: 'number', options: {style: 'decimal'}}</code>
          *
          * @example <caption>Initialize component to use default converter</caption>
          * &lt;oj-input-number value="25000">&lt;/oj-input-number>
@@ -657,21 +665,10 @@ var __oj_input_number_metadata =
          * @example <caption>Initialize the component with a number converter instance:</caption>
          * // Initialize converter instance using currency options
          * var options = {style: 'currency', 'currency': 'USD', maximumFractionDigits: 0};
-         * var numberConverterFactory = oj.Validation.converterFactory("number");
-         * var salaryConverter = numberConverterFactory.createConverter(options);<br/>
+         * var salaryConverter = new NumberConverter.IntlNumberConverter(options);<br/>
          * // set converter instance using converter attribute
          * &lt;oj-input-number value="25000" converter="[[salaryConverter]]">&lt;/oj-input-number>
          *
-         * @example <caption>Initialize the component with converter object literal:</caption>
-         * &lt;oj-input-number value="25000" converter='
-         *   {
-         *     "type": "number",
-         *     "options" : {
-         *       "style": "currency",
-         *       "currency": "USD",
-         *       "maximumFractionDigits": "0"
-         *     }
-         *   }'>&lt;/oj-input-number>
          *
          * @example <caption>Get or set the <code class="prettyprint">converter</code> property after initialization:</caption>
          * // Getter
@@ -681,21 +678,27 @@ var __oj_input_number_metadata =
          * myComponent.converter = salaryConverter;
          *
          *
-         * @default oj.Validation.converterFactory('number').createConverter()
+         * @default new NumberConverter.IntlNumberConverter()
          *
          * @expose
          * @access public
          * @instance
          * @memberof oj.ojInputNumber
          * @ojshortdesc An object that converts the value. See the Help documentation for more information.
-         * @ojsignature {
+         * @ojsignature [{
          *    target: "Type",
+         *    value: "Promise<oj.Converter<number>>|oj.Converter<number>",
+         *    jsdocOverride: true},
+         * {target: "Type",
          *    value: "Promise<oj.Converter<number>>|oj.Converter<number>|oj.Validation.RegisteredConverter",
-         *    jsdocOverride: true}
+         *    consumedBy: 'tsdep'}]
+         * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredConverter'],
+         *                description:'Defining a converter with an object literal with converter type and its options
+         *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
+         *                  work again by importing the deprecated ojvalidation-number module.'}
          * @type {Object}
          */
-        converter: __ValidationBase.Validation.converterFactory(
-          oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter(),
+        converter: new __NumberConverter.IntlNumberConverter(null),
       /**
        * <p>
        * The oj-label sets the labelledBy property programmatically on the form component
@@ -910,8 +913,8 @@ var __oj_input_number_metadata =
         readOnly: false,
         /**
          * Whether the component is required or optional. When required is set to true, an implicit
-         * required validator is created using the validator factory -
-         * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED).createValidator()</code>.
+         * required validator is created using the RequiredValidator -
+         * <code class="prettyprint">RequiredValidator()</code>.
          *
          * Translations specified using the <code class="prettyprint">translations.required</code> attribute
          * and the label associated with the component, are passed through to the options parameter of the
@@ -987,31 +990,49 @@ var __oj_input_number_metadata =
          */
         required: false,
         /**
-         * The size of the step to take when spinning via buttons or via the
+         * The size of the step to take when spinning via buttons or via the up/down arrows or via the
          * <code class="prettyprint">stepUp()</code>/<code class="prettyprint">stepDown()</code> methods.
-         * Step must be a <code class="prettyprint">number</code>
-         * greater than 0, otherwise an exception is thrown. It defaults to <code class="prettyprint">1</code>.
+         * If step is 0, inputNumber will not have buttons or up/down spin functionality.
+         * If step is less than 0, an exception is thrown.
+         * <p><code class="prettyprint">step</code> defaults to <code class="prettyprint">1</code>
+         * in all themes except the redwood theme where it defaults to <code class="prettyprint">0</code>.
+         * Use the $inputNumberStepOptionDefault variable to change the default step (in SCSS).
+         * </p>
          * <p>
-         * The step up and step down feature will change the value to be a step match if it isn't already.
-         * A step match is when the value is a multiple of step, starting at the
-         * <code class="prettyprint">min</code>, and if min is not set, then starting at the initial value,
-         * and if neither <code class="prettyprint">min</code> or initial value are set,
-         * then starting at <code class="prettyprint">0</code>. For example, if the value is 5, min is 0,
-         * and step is 100, stepUp will change value to be 100. Now if the value is 5, min is -20,
-         * and step is 100, stepUp will change the value to be 80.
-         * If the min is not set, and the initial value is 5 and the step is 100, then the stepUp will change
-         * the value to be 105.
+         * <p>
+         * The <code class="prettyprint">step</code> attribute can be used together
+         * with the <code class="prettyprint">min</code> and
+         * <code class="prettyprint">max</code> attributes
+         * to create a range of values the up/down arrows will step through. For example,
+         * if min is 0 and step is 3, the range of values is 0, 3, 6, etc.
+         * </p>
+         * <p>
+         * The up/down arrows will spin the value and adjust it to keep it a
+         * 'step match' value.
+         * A 'step match' value is when the value is a multiple
+         * of <code class="prettyprint">step</code>,
+         * starting at the <code class="prettyprint">min</code>, and if
+         * <code class="prettyprint">min</code> is not set,
+         * then starting at the initial <code class="prettyprint">value</code>,
+         * and if neither <code class="prettyprint">min</code> and initial
+         * <code class="prettyprint">value</code> are set,
+         * then starting at 0.
+         * </p>
+         * <p>When using step > 1 with min and/or max,
+         * make sure the initial value and max are both a 'step match' value,
+         * otherwise the first step will adjust the value in a way
+         * that could confuse the user.</p>
          * </p>
          * <p>
          * A value can be a step mismatch; if the <code class="prettyprint">value</code> is set
          * to be a step mismatch, it will not be flagged as a validation error.
+         * </p>
          * @expose
          * @instance
          * @type {?number}
-         * @default 1
-         * @ojexclusivemin 0
+         * @ojexclusivemin -1
          * @memberof oj.ojInputNumber
-         * @ojshortdesc Specifies the amount to increase or decrease the value when moving in step increments. See the Help documentation for more information.
+         * @ojshortdesc Specifies the amount to increase or decrease the value when moving in step increments. If 0, no step functionality. See the Help documentation for more information.
          * @access public
          * @example <caption>Initialize the inputNumber with the
          * <code class="prettyprint">step</code> attribute specified:</caption>
@@ -1023,6 +1044,9 @@ var __oj_input_number_metadata =
          *
          * // Setter
          * myComponent.step = 5;
+         *
+         * @example <caption>Set the default in the theme (SCSS)</caption>
+         * $inputNumberStepOptionDefault: 1 !default;
          * */
         step: 1,
         /**
@@ -1030,30 +1054,38 @@ var __oj_input_number_metadata =
          * retrieving the transient value from the component.</p>
          * <p>
          * The <code class="prettyprint">transientValue</code> updates to display the transient
-         * changes from pressing the up or down arrow (subject to the step constraints). The difference
-         * in behavior is <code class="prettyprint">transientValue</code> will be updated
-         * as the up or down arrow is pressed, whereas <code class="prettyprint">value</code>
-         * is updated only after the up or down arrow is released.
+         * changes from pressing the up or down arrow (subject to the step constraints).
+         * <code class="prettyprint">transientValue</code> will update only if it passes
+         * validation.
+         * </p>
+         * <p>
+         * The difference
+         * in behavior is
+         * <code class="prettyprint">transientValue</code> will be updated
+         * as the up or down arrow is pressed (and only if validation succeeds),
+         * whereas <code class="prettyprint">value</code>
+         * is updated only after the up or down arrow is released
+         * (and only if validation succeeds).
          * </p>
          * <p>This is a read-only attribute so page authors cannot set or change it directly.</p>
          * @expose
          * @access public
          * @instance
+         * @default null
          * @memberof oj.ojInputNumber
          * @ojshortdesc Read-only property used for retrieving the transient value from the component. See the Help documentation for more information.
-         * @type {number}
-         * @ojsignature {target:"Type", value:"number"}
+         * @type {?number}
          * @since 6.2.0
          * @readonly
          * @ojwriteback
-         * @ojstatus preview
+         *
          */
-        transientValue: undefined,
+        transientValue: null,
         /**
-         * List of synchronous validators used by component along with asynchronous validators
+         * List of validators, synchronous or asynchronous,
+         * used by component along with asynchronous validators from the deprecated async-validators option
          * and the implicit component validators when performing validation. Each item is either an
-         * instance that duck types {@link oj.Validator}, or is an Object literal containing the
-         * properties listed below.
+         * instance that duck types {@link oj.Validator} or {@link oj.AsyncValidator}.
          * <p>
          * Implicit validators are created by the element when certain attributes are present.
          * For example, if the <code class="prettyprint">required</code>
@@ -1063,7 +1095,7 @@ var __oj_input_number_metadata =
          * At runtime when the component runs validation, it
          * combines all the implicit validators with all the validators
          * specified through this <code class="prettyprint">validators</code> attribute
-         * and the <code class="prettyprint">async-validators</code> attribute, and
+         * and the deprecated <code class="prettyprint">async-validators</code> attribute, and
          * runs all of them.
          * </p>
          * <p>
@@ -1112,31 +1144,26 @@ var __oj_input_number_metadata =
          * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
          * </ul>
          * </p>
-         *
-         * @property {string} type - the validator type that has a {@link oj.ValidatorFactory} that can
-         * be retrieved using the {@link oj.Validation} module. For a list of supported validators refer
-         * to {@link oj.ValidatorFactory}. <br/>
-         * E.g., <code class="prettyprint">{validators: [{type: 'regExp'}]}</code>
-         * @property {Object=} options - optional Object literal of options that the validator expects.
          * <br/>
-         * E.g., <code class="prettyprint">{validators: [{type: 'regExp', options: {pattern: '[a-zA-Z0-9]{3,}'}}]}</code>
-
          *
-         * @example <caption>Initialize the component with validator object literal:</caption>
-         * &lt;oj-input-number validators='[{"type": "regExp", "options": {
-         *                     "pattern": "[a-zA-Z0-9]{3,}",
-         *                     "messageDetail": "You must enter at least 3 letters or numbers"}}]'>
+         * @example <caption>Initialize the component with a Validator instance:</caption>
+         * &lt;oj-input-number validators='[[[myRegExpValidator]]]'>
          * &lt;/oj-input-number>
-         *
+         * self.myRegExpValidator = new RegExpValidator({
+         *   pattern: "[a-zA-Z0-9]{3,}",
+         *   messageDetail: "You must enter at least 3 letters or numbers"});
          * @example <caption>Initialize the component with a custom validator:</caption>
          * // A custom validator whose validate method, ensures that the value is not 100.
          * self.no100Validator = {
          *   'validate' : function (value) {
          *      value = value + "";
          *      if (value === 100) {
-         *        throw new oj.ValidatorError("You cannot enter a value that is 100!!");
+         *        throw new Error("You cannot enter a value that is 100!!");
          *      }
          *      return true;
+         *    },
+         *    'getHint': function() {
+         *       return null;
          *    }
          *  };
          * ...
@@ -1151,15 +1178,22 @@ var __oj_input_number_metadata =
          *
          * // setter
          * myComp.validators = myValidators;
-         *
          * @expose
          * @access public
          * @instance
          * @memberof oj.ojInputNumber
-         * @ojshortdesc Specifies a list of synchronous validators for performing validation by the element. See the Help documentation for more information.
-         * @ojsignature  { target: "Type",
-         *       value: "Array<oj.Validator<number>|oj.Validation.RegisteredValidator>",
-         *       jsdocOverride: true}
+         * @ojshortdesc Specifies a list of validators for performing validation by the element. See the Help documentation for more information.
+         * @ojsignature  [{ target: "Type",
+         *       value: "Array<oj.Validator<number>|oj.AsyncValidator<number>",
+         *       jsdocOverride: true},
+         * { target: "Type",
+         *       value: "Array<oj.Validator<number>|oj.AsyncValidator<number>|
+         *       oj.Validation.RegisteredValidator>",
+         *       consumedBy: 'tsdep'}]
+         * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredValidator'],
+         *                description: 'Defining a validator with an object literal with validator type and
+         *                  its options (aka JSON format) has been deprecated and does nothing. If needed, you can
+         *                  make the JSON format work again by importing the deprecated ojvalidation-number module.'}
          * @type {Array.<Object>}
          * @default []
          */
@@ -1310,10 +1344,12 @@ var __oj_input_number_metadata =
       },
       /**
        * <p>Decrements the value by the specified number of steps.
-       * Without the parameter, a single step is decremented.</p>
+       * Without the parameter, a single step is decremented. One step is
+       * defined by the component's step property.
+       * If the component's step property is 0, the stepDown method is a no-op.</p>
        * <p>If the resulting value is above the max, below the min,
        * or results in a step mismatch, the value will be adjusted to the closest valid value.</p>
-       * @param {number=} steps - Number of steps to decrement, defaults to 1.  Null is treated as 0.
+       * @param {number=} steps - Number of steps to decrement, defaults to 1.
        * @return {void}
        * @expose
        * @instance
@@ -1325,13 +1361,17 @@ var __oj_input_number_metadata =
        */
       stepDown: function (steps) {
         var step = this.options.step;
-        step = (step != null) ? step : 1;
-        var realStep = (steps !== undefined ? steps : 1) * step * -1;
+        if (step === 0) {
+          return;
+        }
+        var realStep = (steps != null ? steps : 1) * step * -1;
         this._step(realStep);
       },
       /**
        * <p>Increments the value by the specified number of steps.
-       * Without the parameter, a single step is incremented.</p>
+       * Without the parameter, a single step is incremented. One step is
+       * defined by the component's step property.
+       * If the component's step property is 0, the stepUp method is a no-op.</p>
        * <p>If the resulting value is above the max, below the min,
        * or results in a step mismatch, the value will be adjusted to the closest valid value.</p>
        * @param {number=} steps - Number of steps to increment, defaults to 1.
@@ -1346,8 +1386,10 @@ var __oj_input_number_metadata =
        */
       stepUp: function (steps) {
         var step = this.options.step;
-        step = (step != null) ? step : 1;
-        var realStep = (steps !== undefined ? steps : 1) * step;
+        if (step === 0) {
+          return;
+        }
+        var realStep = (steps != null ? steps : 1) * step;
         this._step(realStep);
       },
 
@@ -1441,17 +1483,10 @@ var __oj_input_number_metadata =
         // for custom elements like we do above for non-custom-elements.
         // Check the 'step' to make sure it's in the correct range.
         if (this._IsCustomElement()) {
-          var optValue = opts.step;
-          if (optValue != null) {
-            // this will coerce with a + and throw an error if it is < 0.
-            // since the bridge frameworkd code already coerced step to a number before _InitOptions
-            // was called, all we care about is throwing an error if step < 0.
-            self._parseStep(optValue);
-          }
-        }
-
-        if (opts.value === undefined) {
-          throw new Error('ojInputNumber has no value');
+          // this will coerce with a + and throw an error if it is < 0.
+          // since the bridge framework code already coerced step to a number before _InitOptions
+          // was called, all we care about is throwing an error if step < 0.
+          self._parseStep(opts.step);
         }
 
         this.initialValue = opts.value;
@@ -1477,12 +1512,8 @@ var __oj_input_number_metadata =
         this._draw();
 
         this._inputNumberDefaultValidators = {};
-        this._inputNumberDefaultAsyncValidators = {};
         this._setup();
-        // I want everything set up before I turn on events, since the events affect the component,
-        // like keydown will update the value and update the buttons.
-        this._on(this._events);
-
+        this._registerEvents();
         this._focusable($(this.uiInputNumber));
       },
       /**
@@ -1718,9 +1749,6 @@ var __oj_input_number_metadata =
       _ResetConverter: oj.EditableValueUtils._ResetConverter,
 
     /**
-     * EditableValue caches the validators to be run, within this._allValidators variable.
-     * This is great; however when the implicit validator needs to be reset [i.e. min + max changing]
-     * or the validators option changes, then the cached this._allValidators needs to be cleared.
      * This method also updates the messaging strategies as hints associated with validators could
      * have changed.
      *
@@ -1730,7 +1758,6 @@ var __oj_input_number_metadata =
      */
       _ResetAllValidators: function () {
         this._inputNumberDefaultValidators = {};
-        this._inputNumberDefaultAsyncValidators = {};
 
         this._superApply(arguments);
       },
@@ -1836,18 +1863,14 @@ var __oj_input_number_metadata =
         // when a dom element supports readonly, use that, and not aria-readonly.
         // having both is an error
         if (key === 'readOnly') {
-          var readOnly = !!value;
-
-          // Create the buttonset if readOnly is false and there is no buttonset
-          if (!readOnly && this.buttonSet == null) {
-            var valuenow = this.options.value || 0;
-            this._createOjButtonset();
-            this._updateButtons(valuenow);
-          }
-
-          this.element[0].readOnly = readOnly;
+          // if readonly, we remove buttons/spinner functionality.
+          this._createOrDestroyOjButtonset();
+          this.element[0].readOnly = !!value;
           this._refreshStateTheming('readOnly', this.options.readOnly);
-          this._refreshRoleSpinbutton('readOnly', this.options.readOnly);
+        }
+        if (key === 'step') {
+          // if step is 0, we remove buttons/spinner functionality.
+          this._createOrDestroyOjButtonset();
         }
         if (key === 'labelledBy') {
           if (this.options.labelledBy) {
@@ -1868,17 +1891,14 @@ var __oj_input_number_metadata =
 
         // destroy the buttonset
         if (this.buttonSet) {
-          this.buttonSet.ojButtonset('destroy');
-          this.buttonSet.remove();
-          this.upButton = null;
-          this.downButton = null;
-          this.buttonSet = null;
+          this._destroyOjButtonset();
         }
         this.initialValue = null;
         this.element.off('blur keydown keyup compositionstart compositionend input');
         //  - DomUtils.unwrap() will avoid unwrapping if the node is being destroyed by Knockout
         oj.DomUtils.unwrap(this.element, $(this.uiInputNumber));
         clearTimeout(this.timer);
+
         return ret;
       },
 
@@ -1927,7 +1947,7 @@ var __oj_input_number_metadata =
        * @memberof oj.ojInputNumber
        * @ojshortdesc Validates the component's display value using all validators registered on the component. If there are no validation errors. then the value is updated. See the Help documentation for more information.
        * @since 4.0.0
-       * @ojstatus preview
+       *
        */
       validate: oj.EditableValueUtils.validate,
       /**
@@ -2007,7 +2027,7 @@ var __oj_input_number_metadata =
 
       /**
        * Sets up a synchronous numberRange validator if min and max is set and the
-       * app has NOT overridden the async number range validator that JET registered
+       * RangeValidator was overridden by a sync validator.
        *
        * If the validator is created, it is added to the
        * this._inputNumberDefaultValidators type->validator instance map
@@ -2018,41 +2038,16 @@ var __oj_input_number_metadata =
        * @instance
        * @memberof oj.ojInputNumber
        * @return {Object} returns the implicit sync validators map, where the key is the sync
-       * validator type, e.g., 'numberRange'.
+       * validator type, e.g., 'numberrange'.
        */
-      _GetImplicitSyncValidators: function () {
+      _GetImplicitValidators: function () {
         var ret = this._superApply(arguments);
-        var numberRangeValidatorOptions;
-        // var asyncRangeValidator;
 
         if (this.options.min != null || this.options.max != null) {
-          numberRangeValidatorOptions = this._createRangeValidatorOptions();
-          var syncRangeValidator =
-          __ValidationBase.Validation.validatorFactory(
-            oj.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE)
-            .createValidator(numberRangeValidatorOptions);
-          this._inputNumberDefaultValidators[oj.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE] =
-            syncRangeValidator;
+          this._inputNumberDefaultValidators.numberrange = this._getImplicitNumberRangeValidator();
         }
-        return $.extend(this._inputNumberDefaultValidators, ret);
-      },
-      /**
-       * Sets up a asynchronous numberRange validator if min and max is set and the
-       * app has overridden the async number range validator that JET registered
-       * If the validator is created, it is added to the
-       * this._inputNumberDefaultAsyncValidators type->validator instance map
-       *
-       * @ignore
-       * @protected
-       * @override
-       * @instance
-       * @memberof oj.ojInputNumber
-       * @return {Object} returns the implicit async validators map, where the key is the async
-       * validator type, e.g., 'async-numberRange'.
-       */
-      _GetImplicitAsyncValidators: function () {
-        var ret = this._superApply(arguments);
-        return $.extend(this._inputNumberDefaultAsyncValidators, ret);
+
+        return Object.assign(this._inputNumberDefaultValidators, ret);
       },
 
       /**
@@ -2068,7 +2063,12 @@ var __oj_input_number_metadata =
       },
 
       /**
-       *
+       * This gets called if/when the converter is loading.
+       * We do not want to set the oj-input-number's readonly attribute,
+       * but we do want the UI of readonly. The buttonset may be rendered,
+       * but in theming it is set display:none if oj-read-only is there.
+       * This is preferred for this scenario over removing the buttonset dom
+       * only to add it back again when loading is compolete.
        * @protected
        * @override
        * @instance
@@ -2080,7 +2080,8 @@ var __oj_input_number_metadata =
 
         this.element[0].readOnly = readOnly;
         this._refreshStateTheming('readOnly', readOnly);
-        this._refreshRoleSpinbutton('readOnly', readOnly);
+        // removes role spinbutton while loading
+        this._refreshRoleSpinbutton(!readOnly);
       },
 
       /**
@@ -2093,102 +2094,49 @@ var __oj_input_number_metadata =
       _ClearLoading: function () {
         this._super();
         var readOnly = this.options.readOnly;
-
-        // Create the buttonset if readOnly is false and there is no buttonset
-        if (!readOnly && this.buttonSet == null) {
-          var valuenow = this.options.value || 0;
-          this._createOjButtonset();
-          this._updateButtons(valuenow);
-        }
-
         this.element[0].readOnly = readOnly;
         this._refreshStateTheming('readOnly', readOnly);
-        this._refreshRoleSpinbutton('readOnly', readOnly);
       },
 
-      _events:
-      {
-        compositionstart: function () {
-          // See _isComposing in InputBase for comments on what this does
-          this._isComposing = true;
-        },
-        compositionend: function (event) {
-          this._isComposing = false;
-          this._SetRawValue(this.element.val(), event);
-        },
-        input: function (event) {
-          if (!this._isComposing) {
-            this._SetRawValue(this.element.val(), event);
-          }
-        },
-        keydown: function (event) {
-          var keyCode = $.ui.keyCode;
-          if (event.keyCode === keyCode.ENTER) {
-            this._blurEnterSetValue(event);
-            event.preventDefault();
-          } else if (this._start() && this._keydown(event)) {
-            event.preventDefault();
-          }
-        },
-        keyup: function (event) {
-          var keyCode = $.ui.keyCode;
+      /**
+       * Returns if the element is a text field element or not.
+       * @memberof oj.ojInputNumber
+       * @instance
+       * @protected
+       * @return {boolean}
+       */
+      _IsTextFieldComponent: function () {
+        return true;
+      },
 
-          switch (event.keyCode) {
-            case keyCode.UP:
-            case keyCode.DOWN:
-              this._stop(event);
-              break;
-            default:
-              this._stop(event);
-              break;
-          }
-        },
-        blur: function (event) {
-          this._blurEnterSetValue(event);
-        },
-        'touchstart .oj-inputnumber-button.oj-enabled': function (event) {
-          this._start();
-
-          this._repeat(null, event.currentTarget.classList.contains('oj-inputnumber-up') ? 1 : -1, event);
-        },
-        'touchend .oj-inputnumber-button': function (event) {
-          this._stop(event);
-        },
-        'touchcancel .oj-inputnumber-button': function (event) {
-          this._stop(event);
-        },
-        'mousedown .oj-inputnumber-button.oj-enabled': function (event) {
-          if (this._isRealMouseEvent(event)) {
-            this._start();
-
-            this._repeat(null, event.currentTarget.classList.contains('oj-inputnumber-up') ? 1 : -1, event);
-          }
-        },
-        'mouseup .oj-inputnumber-button': function (event) {
-          if (this._isRealMouseEvent(event)) {
-            this._stop(event);
-          }
-        },
-        'mouseenter .oj-inputnumber-button.oj-enabled': function (event) {
-          // button will add oj-active if mouse was down while mouseleave and kept down
-          if (!event.currentTarget.classList.contains('oj-active')) {
-            return;
-          }
-          if (this._isRealMouseEvent(event)) {
-            this._start();
-
-            this._repeat(null, event.currentTarget.classList.contains('oj-inputnumber-up') ? 1 : -1, event);
-          }
-        },
-        // TODO: do we really want to consider this a stop?
-        // shouldn't we just stop the repeater and wait until mouseup before
-        // we trigger the stop event?
-        'mouseleave .oj-inputnumber-button': function (event) {
-          if (this._isRealMouseEvent(event)) {
-            this._stop(event);
-          }
+      /**
+       * Returns the components wrapper under which label needs to be inserted in the inside strategy
+       * For input number we need the label to go under the span so that it occupies the same width
+       * as the input text giving way to the buttons.
+       * @memberof oj.ojInputNumber
+       * @instance
+       * @protected
+       * @return {Element|undefined}
+       */
+      _GetContentWrapper: function () {
+        if (this._IsCustomElement()) {
+          return this._getRootElement().querySelector('.oj-text-field-middle');
         }
+        return undefined;
       },
+
+      /**
+       * Return the element on which aria-label can be found.
+       * Usually this is the root element, but some components have aria-label as a transfer attribute,
+       * and aria-label set on the root element is transferred to the inner element.
+       * @memberof! oj.ojInputNumber
+       * @instance
+       * @protected
+       */
+      _GetAriaLabelElement: function () {
+        return this.element[0];
+      },
+
       // I N T E R N A L   P R I V A T E   C O N S T A N T S    A N D   M E T H O D S
       //
       // Subclasses should not override or call these methods
@@ -2213,14 +2161,27 @@ var __oj_input_number_metadata =
       {
         readOnly: 'oj-read-only'
       },
+      /**
+       * Returns the numberRange validator instance.
+       * @private
+       * @memberof oj.ojInputNumber
+       */
+      _getImplicitNumberRangeValidator: function () {
+        var numberRangeValidatorOptions = this._createRangeValidatorOptions();
+        var rangeValidator = new NumberRangeValidator(
+          numberRangeValidatorOptions);
 
+        return rangeValidator;
+      },
       /**
        * _setup is called on create and refresh.
        * @private
        * @memberof oj.ojInputNumber
        */
       _setup: function () {
-        if (this.options.readOnly !== true) {
+        // we only render buttons if not readonly and step > 0.
+        var needsButtonset = this._needsButtonset();
+        if (needsButtonset) {
           // add/update translated strings to buttons
           var incrementString =
               this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_INCREMENT);
@@ -2234,7 +2195,7 @@ var __oj_input_number_metadata =
           this.element[0].readOnly = this.options.readOnly;
         }
         this._refreshStateTheming('readOnly', this.options.readOnly);
-        this._refreshRoleSpinbutton('readOnly', this.options.readOnly);
+        this._refreshRoleSpinbutton(needsButtonset);
         this._refreshRequired(this.options.required);
       },
       // Mark internal JET components for automation support. The automation
@@ -2264,7 +2225,8 @@ var __oj_input_number_metadata =
         // Still, voiceover is broken due to this webkit bug
         //  - ios: input number doesn't support vo because of webkit bug
         var buttons = this.uiInputNumber.querySelectorAll('.oj-inputnumber-button');
-        for (var i = 0, len = buttons ? buttons.length : 0; i < len; i++) {
+        var len = buttons.length;
+        for (var i = 0; i < len; i++) {
           buttons[i].setAttribute('tabIndex', '-1');
         }
 
@@ -2279,6 +2241,37 @@ var __oj_input_number_metadata =
         this._markInternalComponents();
       },
       /**
+       * destroys the ojButtonset
+       * @private
+       * @memberof oj.ojInputNumber
+       */
+      _destroyOjButtonset: function () {
+        this.buttonSet.ojButtonset('destroy');
+        this.buttonSet.remove();
+        this.upButton = null;
+        this.downButton = null;
+        this.buttonSet = null;
+      },
+      /**
+       * creates or destroys buttonset and adds or removes role=spinbutton.
+       * @private
+       * @memberof oj.ojInputNumber
+       */
+      _createOrDestroyOjButtonset: function () {
+        let needsButtonset = this._needsButtonset();
+        // Create or destroy buttonset
+        if (needsButtonset && this.buttonSet == null) {
+          this._createOjButtonset();
+          this._updateButtons(this.options.value || 0);
+          this.uiInputNumber.classList.add('oj-has-buttons');
+        } else if (!needsButtonset && this.buttonSet) {
+          this._destroyOjButtonset();
+          this.uiInputNumber.classList.remove('oj-has-buttons');
+        }
+        // adds or removes role='spinbutton'.
+        this._refreshRoleSpinbutton(needsButtonset);
+      },
+      /**
        * @private
        * @memberof oj.ojInputNumber
        */
@@ -2286,23 +2279,36 @@ var __oj_input_number_metadata =
         var element = this.element[0];
 
         element.classList.add('oj-inputnumber-input');
+        element.classList.add('oj-text-field-input');
         var spanElem = document.createElement('span');
         spanElem.className = 'oj-inputnumber-wrapper';
-        element.parentNode.insertBefore(spanElem, element); // @HTMLUpdateOK
-        spanElem.appendChild(element); // @HTMLUpdateOK
         this.inputNumberWrapper = spanElem;
         this.uiInputNumber = spanElem;
 
+        var containerElem = document.createElement('div');
+        containerElem.className = 'oj-text-field-container';
+        containerElem.setAttribute('role', 'presentation');
+
+        // only custom element will have an OuterWrapper
         if (this.OuterWrapper) {
-          this.OuterWrapper.appendChild(spanElem); // @HTMLUpdateOK
+          containerElem.appendChild(spanElem);
+
+          var middleWrapper = this._CreateMiddleWrapper();
+          spanElem.appendChild(middleWrapper);
+
+          middleWrapper.appendChild(element);
+
+          this.OuterWrapper.appendChild(containerElem); // @HTMLUpdateOK
           this.uiInputNumber = this.OuterWrapper;
           this.uiInputNumber.classList.add('oj-inputnumber');
           this.uiInputNumber.classList.add('oj-component');
         } else {
           var divElem = document.createElement('div');
           divElem.className = 'oj-inputnumber oj-component';
-          spanElem.parentNode.insertBefore(divElem, spanElem); // @HTMLUpdateOK
-          divElem.appendChild(spanElem); // @HTMLUpdateOK
+          element.parentNode.insertBefore(divElem, element); // @HTMLUpdateOK
+          divElem.appendChild(containerElem); // @HTMLUpdateOK
+          containerElem.appendChild(spanElem); // @HTMLUpdateOK
+          spanElem.appendChild(element); // @HTMLUpdateOK
           this.uiInputNumber = divElem;
         }
 
@@ -2311,31 +2317,18 @@ var __oj_input_number_metadata =
         this.saveType = element.type;
         this._SetInputType(this._ALLOWED_TYPES);
 
-        if (this.options.readOnly !== true) {
+        // Won't create buttons if readonly or if step is 0.
+        if (this._needsButtonset()) {
           this._createOjButtonset();
+          this.uiInputNumber.classList.add('oj-has-buttons');
         }
       },
       /**
        * @private
        * @memberof oj.ojInputNumber
        */
-      _keydown: function (event) {
-        var keyCode = $.ui.keyCode;
-
-        switch (event.keyCode) {
-            // keeping the up/down pressed repeats
-            // using the up and down arrows will adjust the value so that it is
-            // a multiple of step and it is in min/max, same as if you used the
-            // up and down buttons
-          case keyCode.UP:
-            this._repeat(null, 1, event);
-            return true;
-          case keyCode.DOWN:
-            this._repeat(null, -1, event);
-            return true;
-          default:
-            return false;
-        }
+      _needsButtonset: function () {
+        return ((this.options.readOnly !== true) && (this.options.step > 0));
       },
       /**
        * @private
@@ -2384,7 +2377,7 @@ var __oj_input_number_metadata =
         var domElem;
         var busyContext;
         var self = this;
-        var stepOpt = (this.options.step != null) ? this.options.step : 1;
+        var stepOpt = this.options.step;
 
         // if direction is > 0, it is going up, else it is going down.
         // need to check if min/max is reached, and if so, stop the repeat.
@@ -2471,7 +2464,7 @@ var __oj_input_number_metadata =
         var options = this.options;
         var minOpt = options.min;
         var maxOpt = options.max;
-        var stepOpt = (options.step != null) ? options.step : 1;
+        var stepOpt = options.step;
         var initialValue = this.initialValue;
         var precision;
         var adjustedValue;
@@ -2662,7 +2655,7 @@ var __oj_input_number_metadata =
         // by power, round the value to make it a whole number.
         var minOptPower = minOpt != null ? Math.round(minOpt * power) : minOpt;
         var maxOptPower = maxOpt != null ? Math.round(maxOpt * power) : maxOpt;
-        var stepOptPower = stepOpt != null ? Math.round(stepOpt * power) : stepOpt;
+        var stepOptPower = Math.round(stepOpt * power);
 
 
         var adjustValuePower = this._adjustValue(Math.round(value * power),
@@ -2720,10 +2713,6 @@ var __oj_input_number_metadata =
         var upButtonDisabledAlready;
         var isMaxOptNonNull = maxOpt != null;
         var isMinOptNonNull = minOpt != null;
-
-        if (!this.uiInputNumber) {
-          return;
-        }
 
         if (!downButton && !upButton) {
           return;
@@ -2974,6 +2963,8 @@ var __oj_input_number_metadata =
        * We are following the behavior of HTML-5 the best we can. According
        * to the spec, it says step must be a number greater than 0.
        * Chrome defaults it to 1 if it is not.
+       * In v8.0 we added the feature to not step or show buttons if
+       * step is 0.
        * @throws {Error} if option value is invalid
        * @private
        * @memberof oj.ojInputNumber
@@ -2984,14 +2975,15 @@ var __oj_input_number_metadata =
         if (val === null) {
           return defaultStep;
         }
-        parsedStep = this._parse('step', val);
-        if (parsedStep <= 0) {
+        if (val === '') {
           // throw an exception
-          throw new Error('Invalid step for ojInputNumber; step must be > 0');
+          throw new Error('Invalid step for ojInputNumber; step must be a number 0 or greater.');
         }
-        // DEFAULT to 1 if it isn't > 0
-        if (parsedStep === null || parsedStep <= 0) {
-          parsedStep = defaultStep;
+
+        parsedStep = this._parse('step', val);
+        if (parsedStep < 0) {
+          // throw an exception
+          throw new Error('Invalid step for ojInputNumber; step must be 0 or greater.');
         }
         return parsedStep;
       },
@@ -3014,19 +3006,16 @@ var __oj_input_number_metadata =
         }
       },
       /**
-       * When readOnly option changes,
-       * the role spinbutton needs to be toggled We don't have role spinbutton
-       * on readOnly inputNumber.
-       * @param {string} option
-       * @param {Object|string|boolean} readOnly
+       * The role spinbutton needs to be toggled.
+       * If the up/down buttons are not rendered, then we do not want the
+       * role spinbutton.
+       * E.g., We don't have role spinbutton on readOnly inputNumber.
+       * @param {boolean} needsRole
        * @private
        * @memberof oj.ojInputNumber
        */
-      _refreshRoleSpinbutton: function (option, readOnly) {
-        var _readOnly = !!readOnly;
-        // if readonly is true, remove role spinbutton
-        // if readonly is false, add role spinbutton
-        if (_readOnly) {
+      _refreshRoleSpinbutton: function (needsRole) {
+        if (!needsRole) {
           this.element[0].removeAttribute('role');
         } else {
           this.element[0].setAttribute('role', 'spinbutton');
@@ -3167,6 +3156,140 @@ var __oj_input_number_metadata =
        */
       _SetInputType: oj.EditableValueUtils._SetInputType,
 
+      /**
+       * Events registerd without the passive option
+       * @private
+       * @memberof oj.ojInputNumber
+       * @ignore
+       */
+      _regularEventsAndListeners: {
+        compositionstart: function () {
+          // See _isComposing in InputBase for comments on what this does
+          this._isComposing = true;
+        },
+        compositionend: function (event) {
+          this._isComposing = false;
+          this._SetRawValue(this.element.val(), event);
+        },
+        input: function (event) {
+          if (!this._isComposing) {
+            this._SetRawValue(this.element.val(), event);
+          }
+        },
+        keydown: function (event) {
+          var keyCode = $.ui.keyCode;
+          switch (event.keyCode) {
+            case keyCode.ENTER:
+              this._blurEnterSetValue(event);
+              event.preventDefault();
+              break;
+            case keyCode.UP:
+              // same as if you used the up and down buttons
+              // if buttons aren't there, then up/down keys shouldn't be
+              // there as well.
+              if (this._needsButtonset()) {
+                if (!this.spinning) {
+                  this._start();
+                  this._repeat(null, 1, event);
+                }
+              }
+              event.preventDefault();
+
+              break;
+            case keyCode.DOWN:
+              if (this._needsButtonset()) {
+                if (!this.spinning) {
+                  this._start();
+                  this._repeat(null, -1, event);
+                }
+              }
+              event.preventDefault();
+              break;
+            default:
+              break;
+          }
+        },
+        keyup: function (event) {
+          var keyCode = $.ui.keyCode;
+
+          switch (event.keyCode) {
+            case keyCode.UP:
+            case keyCode.DOWN:
+              this._stop(event);
+              break;
+            default:
+              this._stop(event);
+              break;
+          }
+        },
+        blur: function (event) {
+          this._blurEnterSetValue(event);
+        },
+        'touchend .oj-inputnumber-button': function (event) {
+          this._stop(event);
+        },
+        'touchcancel .oj-inputnumber-button': function (event) {
+          this._stop(event);
+        },
+        'mousedown .oj-inputnumber-button.oj-enabled': function (event) {
+          if (this._isRealMouseEvent(event)) {
+            this._start();
+
+            this._repeat(null, event.currentTarget.classList.contains('oj-inputnumber-up') ? 1 : -1, event);
+          }
+        },
+        'mouseup .oj-inputnumber-button': function (event) {
+          if (this._isRealMouseEvent(event)) {
+            this._stop(event);
+          }
+        },
+        'mouseenter .oj-inputnumber-button.oj-enabled': function (event) {
+          // button will add oj-active if mouse was down while mouseleave and kept down
+          if (!event.currentTarget.classList.contains('oj-active')) {
+            return;
+          }
+          if (this._isRealMouseEvent(event)) {
+            this._start();
+
+            this._repeat(null, event.currentTarget.classList.contains('oj-inputnumber-up') ? 1 : -1, event);
+          }
+        },
+        // TODO: do we really want to consider this a stop?
+        // shouldn't we just stop the repeater and wait until mouseup before
+        // we trigger the stop event?
+        'mouseleave .oj-inputnumber-button': function (event) {
+          if (this._isRealMouseEvent(event)) {
+            this._stop(event);
+          }
+        }
+      },
+
+      /**
+       * Events registerd with the passive option
+       * @private
+       * @memberof oj.ojInputNumber
+       * @ignore
+       */
+      _passiveEventsAndListeners: {
+        'touchstart .oj-inputnumber-button.oj-enabled': function (event) {
+          this._start();
+          this._repeat(null, event.currentTarget.classList.contains('oj-inputnumber-up') ? 1 : -1, event);
+        }
+      },
+
+       /**
+        * Register event listeners
+        * @memberof oj.ojInputNumber
+        * @private
+        * @ignore
+       */
+      _registerEvents: function () {
+        // register all regular events
+        this._on(this._regularEventsAndListeners);
+        // will register these with the passive option in 8.1.0
+        this._on(this._passiveEventsAndListeners);
+      },
+
       // API doc for inherited methods with no JS in this file:
 
       /**
@@ -3302,6 +3425,14 @@ var __oj_input_number_metadata =
        */
     });
 
+  Components.setDefaultOptions({
+    ojInputNumber: {
+      step: Components.createDynamicPropertyGetter(function () {
+        return (ThemeUtils.parseJSONFromFontFamily('oj-input-number-option-defaults') || {}).step;
+      })
+    }
+  });
+
 // -----------------------------------------------------------------------------
 // "private static members" shared by all inputNumbers
 // -----------------------------------------------------------------------------
@@ -3337,6 +3468,7 @@ var __oj_input_number_metadata =
  * var node = myComp.getNodeBySubId('oj-inputnumber-input');
  */
 }()); // end of inputNumber wrapper function
+
 
 /* global __oj_input_number_metadata:false */
 (function () {

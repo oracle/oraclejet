@@ -2,18 +2,18 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
- */
-define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtToolkit', 'ojs/ojlocaledata', 'ojs/ojlogger', 'ojs/ojvalidation-base', 'ojs/ojvalidation-datetime'], 
-function(oj, $, Config, comp, base, dvt, LocaleData, Logger, __ValidationBase)
-{
-  "use strict";
-/** This file is generated. Do not edit directly. Actual file located in 3rdparty/dvt/prebuild.**/
-/**
- * Copyright (c) 2016, Oracle and/or its affiliates.
- * All rights reserved.
+ * @ignore
  */
 
-/* global LocaleData:false, Logger:false, Config:false, __ValidationBase:false */
+define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 
+'ojs/internal-deps/dvt/DvtToolkit', 'ojs/ojlocaledata', 'ojs/ojlogger', 'ojs/ojconverter-datetime', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter-number'], 
+function(oj, $, Config, comp, base, dvt, LocaleData, Logger, __DateTimeConverter, ConverterUtils, NumberConverter)
+{
+  "use strict";
+
+/** This file is generated. Do not edit directly. Actual file located in 3rdparty/dvt/prebuild.**/
+
+/* global LocaleData:false, Logger:false, Config:false, __DateTimeConverter:false, ConverterUtils:false, NumberConverter:false */
 
 /**
  * @ojcomponent oj.dvtTimeComponent
@@ -31,7 +31,7 @@ oj.__registerWidget('oj.dvtTimeComponent', $.oj.dvtBaseComponent,
      */
     _ComponentCreate: function () {
       this._super();
-      this._SetLocaleHelpers(__ValidationBase);
+      this._SetLocaleHelpers(NumberConverter, ConverterUtils);
     },
     //* * @inheritdoc */
     _GetEventTypes: function () {
@@ -67,32 +67,20 @@ oj.__registerWidget('oj.dvtTimeComponent', $.oj.dvtBaseComponent,
         this.options._resources = {};
       }
 
-      var resources = this.options._resources;
-
-      // Add cursors
-      resources.grabbingCursor =
-        Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-closed.cur');
-      resources.grabCursor =
-        Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-open.cur');
-
       // Create default converters
-      // access Validation through the oj namespace (for backward compatibility)
-      // other code is using the return value of the ojvalidation-base module
-      var converterFactory =
-          oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
-      var secondsConverter = converterFactory.createConverter({
+      var secondsConverter = new __DateTimeConverter.IntlDateTimeConverter({
         hour: 'numeric',
         minute: '2-digit',
         second: '2-digit'
       });
-      var minutesConverter = converterFactory.createConverter({
+      var minutesConverter = new __DateTimeConverter.IntlDateTimeConverter({
         hour: 'numeric',
         minute: '2-digit'
       });
-      var hoursConverter = converterFactory.createConverter({ hour: 'numeric' });
-      var daysConverter = converterFactory.createConverter({ month: 'numeric', day: '2-digit' });
-      var monthsConverter = converterFactory.createConverter({ month: 'long' });
-      var yearsConverter = converterFactory.createConverter({ year: 'numeric' });
+      var hoursConverter = new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric' });
+      var daysConverter = new __DateTimeConverter.IntlDateTimeConverter({ month: 'numeric', day: '2-digit' });
+      var monthsConverter = new __DateTimeConverter.IntlDateTimeConverter({ month: 'long' });
+      var yearsConverter = new __DateTimeConverter.IntlDateTimeConverter({ year: 'numeric' });
 
       var converter = {
         seconds: secondsConverter,
@@ -105,13 +93,20 @@ oj.__registerWidget('oj.dvtTimeComponent', $.oj.dvtBaseComponent,
         years: yearsConverter
       };
 
+      var resources = this.options._resources;
       resources.converter = converter;
-      resources.converterFactory = converterFactory;
+      resources.defaultDateTimeConverter = new __DateTimeConverter.IntlDateTimeConverter({
+        formatType: 'datetime',
+        dateFormat: 'medium',
+        timeFormat: 'medium'
+      }); // e.g. Jan 1, 2016, 5:53:39 PM
+      resources.defaultDateConverter = new __DateTimeConverter.IntlDateTimeConverter({
+        formatType: 'date',
+        dateFormat: 'medium'
+      }); // e.g. Jan 1, 2016
 
       // first day of week; locale specific
-      // leave this line use the access to LocaleData via the oj namespace (to check backward compatibilty)
-      // other references to LocaleData are resolved through direct access of the return value of ojlocaledata module
-      resources.firstDayOfWeek = oj.LocaleData.getFirstDayOfWeek();
+      resources.firstDayOfWeek = LocaleData.getFirstDayOfWeek();
     },
 
     //* * @inheritdoc */

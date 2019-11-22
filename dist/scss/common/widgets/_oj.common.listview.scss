@@ -24,16 +24,12 @@
             border-width: 1px 0;
             border-style: solid;
             box-sizing: border-box;
-            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-              user-select: none;
-              border-color: var(--oj-collection-border-color);
-              min-height: var(--oj-collection-row-height);
-            } @else {
+
               @include oj-user-select-property (none);
               border-color: $collectionBorderColor;
               // min-height is 1 row to leave space for the no data message.
               min-height: $collectionRowHeight;
-            }
+
         }
 
         /* styling for the listview root element and group element */
@@ -54,6 +50,16 @@
         .oj-listview-item-element:focus,
         .oj-listview-cell-element:focus {
             outline: none;
+        }
+
+        /* styling to hide the gridline */
+        .oj-listview.gridline-top-hidden {
+            border-top-width: 0;
+        }
+
+        /* styling to hide the gridline */
+        .oj-listview.gridline-bottom-hidden {
+            border-bottom-width: 0;
         }
 
         /* Styling for the component div container element. */
@@ -84,19 +90,19 @@
         /* note that background image is used for border because we need to ability to position the border.
            using linear-gradient allows us to customize the color of the border */
         .oj-listview-item {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            padding: var(--oj-panel-padding);
-            background-image: linear-gradient(var(--oj-collection-cell-border-color), var(--oj-collection-cell-border-color));
-            background-position: var(--oj-list-view-item-border-position) 0;
-          } @else {
             padding: $panelPadding;
             background-image: linear-gradient($collectionCellBorderColor, $collectionCellBorderColor);
             background-position: $listViewItemBorderPosition 0;
-          }
+
             background-size: 100% 1px;
             background-repeat: no-repeat;
             box-sizing: border-box;
             border-top:1px solid transparent;
+        }
+
+        /* styling to hide the gridline */
+        .oj-listview-item.gridline-hidden {
+            background-size: 0;
         }
 
         /* set on item before add or remove animation */
@@ -111,80 +117,61 @@
 
         /* Styling on list item hover */
         .oj-listview-item.oj-hover {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            background-color: var(--oj-collection-cell-bg-color-hover);
-            border-top: 1px solid var(--oj-collection-cell-border-color-hover);
-          } @else {
+
             background-color: $collectionCellBgColorHover;
             border-top: 1px solid $collectionCellBorderColorHover;
-          }
+
             background-size: 0;
         }
 
         .oj-listview-group-item.oj-hover {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            background-color: var(--oj-collection-cell-bg-color-hover);
-          } @else {
+
             background-color: $collectionCellBgColorHover;
-          }
+
         }
 
         ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-hover + li.oj-listview-item {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            border-top: 1px solid var(--oj-collection-cell-border-color-hover);
-          } @else {
+
             border-top: 1px solid $collectionCellBorderColorHover;
-          }
+
             background-size: 0;
         }
 
         /* Styling on list item selection */
         .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            background-color: var(--oj-collection-cell-bg-color-selected);
-            border-top: 1px solid var(--oj-collection-cell-border-color-selected);
-          } @else {
+
             background-color: $collectionCellBgColorSelected;
             border-top: 1px solid $collectionCellBorderColorSelected;
-          }
+
             background-size: 0;
         }
 
         .oj-listview.oj-focus-ancestor .oj-listview-group-item.oj-selected {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            background-color: var(--oj-collection-cell-bg-color-selected);
-          } @else {
+
             background-color: $collectionCellBgColorSelected;
-          }
+
         }
 
         .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-selected + li.oj-listview-item {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            border-top: 1px solid var(--oj-collection-cell-border-color-selected);
-          } @else {
+
             border-top: 1px solid $collectionCellBorderColorSelected;
-          }
+
             background-size: 0;
         }
 
         /* Styling on list item inactive selection (when the root is not focus) */
         .oj-listview-item.oj-selected {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            background-color: var(--oj-collection-cell-bg-color-selected-inactive);
-            border-top: 1px solid var(--oj-collection-cell-border-color-selected-inactive);
-          } @else {
+
             background-color: $collectionCellBgColorSelectedInactive;
             border-top: 1px solid $collectionCellBorderColorSelectedInactive;
-          }
+
             background-size: 0;
         }
 
         .oj-listview-group-item.oj-selected {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            background-color: var(--oj-collection-cell-bg-color-selected-inactive);
-          } @else {
+
             background-color: $collectionCellBgColorSelectedInactive;
-          }
+
         }
 
         /* Styling on focused list or group item */
@@ -207,32 +194,26 @@
             @include oj-rtl() {
                 right: 1px;
             }
-            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-              @include oj-browser-focus-outline-approximation-css-vars(var(--oj-text-color-primary));
-            } @else {
+
               @include oj-browser-focus-outline-approximation($primaryTextColor);
-            }
+
         }
 
         /* Styling on expand/collapse icon when it has focus highlight */
         .oj-listview-expanding-icon.oj-focus-highlight::before,
         .oj-listview-expand-icon.oj-focus-highlight::before,
         .oj-listview-collapse-icon.oj-focus-highlight::before {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            @include oj-browser-focus-outline-approximation-css-vars(var(--oj-text-color-primary));
-          } @else {
+
             @include oj-browser-focus-outline-approximation($primaryTextColor);
-          }
+
         }
 
         /* Styling on focused list item */
         .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus,
         .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus + li.oj-listview-item {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            border-top: 1px solid var(--oj-collection-cell-border-color-focus);
-          } @else {
+
             border-top: 1px solid $collectionCellBorderColorFocus;
-          }
+
             background-size: 0;
         }
 
@@ -255,16 +236,7 @@
 
         /* Styling addition for group items */
         .oj-listview-group-item {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            font-weight: var(--oj-list-view-header-font-weight);
-            color: var(--oj-header-text-color);
-            padding: var(--oj-panel-padding);
-            border: 0 solid var(--oj-header-border-color);
-            border-width: var(--oj-list-view-header-border-width-expanded);
-            font-size: var(--oj-list-view-header-font-size);
-            background-color: var(--oj-list-view-header-bg-color);
-            opacity: var(--oj-list-view-header-opacity);
-          } @else {
+
             font-weight: $listViewHeaderFontWeight;
             color: $headerTextColor;
             padding: $panelPadding;
@@ -273,7 +245,7 @@
             font-size: $listViewHeaderFontSize;
             background-color: $headerBgColor;
             opacity: $listViewHeaderOpacity;
-          }
+
             box-sizing: border-box;
             @include oj-rtl() {
                 right: 0;
@@ -288,11 +260,9 @@
         /* Styling for group items when it has no children or in collapsed state */
         .oj-listview-item-element.oj-collapsed .oj-listview-group-item,
         .oj-listview-group-item.oj-empty {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            border-width: var(--oj-list-view-header-border-width-collapsed);
-          } @else {
+
             border-width: $listViewHeaderBorderWidthCollapsed;
-          }
+
         }
 
         /* Styling for group item element that has focus */
@@ -324,25 +294,25 @@
         /* Styling on the status text, such as fetching data */
         .oj-listview-status-message {
             position: absolute;
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            padding: var(--oj-panel-padding);
-          } @else {
+
             padding: $panelPadding;
-          }
+
             display: none;
+        }
+
+        /* Styling for the container of custom no data content */
+        .oj-listview-no-data-container {
+            width: 100%;
+            height: 100%;
         }
 
         /* Styling for the empty list text */
         .oj-listview-no-data-message {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            padding: var(--oj-panel-padding);
-            background-color: var(--oj-collection-cell-bg-color);
-            min-height: var(--oj-font-size);
-          } @else {
+
             padding: $panelPadding;
             background-color: $collectionCellBgColor;
             min-height: $fontSize;
-          }
+
         }
 
         /* Alignment for the expand and collapse icons */
@@ -370,31 +340,14 @@
         .oj-listview-card-layout .oj-listview-group {
             display: flex;
             flex-wrap: wrap;
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            margin-bottom: var(--oj-list-view-card-margin-top);
-          } @else {
+
             margin-bottom: oj-shorthand-property-value-top($listViewCardMargin);
-          }
+
         }
 
         /* Styling for item when card layout is used */
         .oj-listview-card-layout li.oj-listview-item {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            width: var(--oj-list-view-card-width);
-            height: var(--oj-list-view-card-height);
-            border: 1px solid var(--oj-panel-border-color);
-            border-radius: var(--oj-panel-border-radius);
-            margin-top: var(--oj-list-view-card-margin-top);
-            margin-bottom: var(--oj-list-view-card-margin-bottom);
-            @include oj-rtl() {
-                margin-right: var(--oj-list-view-card-margin-start);
-                margin-left: var(--oj-list-view-card-margin-end);
-            }
-            @include oj-ltr() {
-                margin-left: var(--oj-list-view-card-margin-start);
-                margin-right: var(--oj-list-view-card-margin-end);
-            }
-          } @else {
+
             width: $listViewCardWidth;
             height: $listViewCardHeight;
             border: 1px solid $panelBorderColor;
@@ -409,7 +362,7 @@
                 margin-left: oj-shorthand-property-value-left($listViewCardMargin);
                 margin-right: oj-shorthand-property-value-right($listViewCardMargin);
             }
-          }
+
             background-size: 0;
             box-sizing: border-box;
         }
@@ -418,16 +371,7 @@
         /* for now, first level group header or no group headers only */
         .oj-listview.oj-full-width.oj-listview-card-layout > .oj-listview-element > li > .oj-listview-group,
         .oj-listview.oj-full-width > .oj-listview-card-layout > li > .oj-listview-group {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) { 
-            @include oj-rtl() {
-                margin-left: var(--oj-list-view-card-margin-start);
-                margin-right: var(--oj-list-view-card-margin-end); 
-            }
-            @include oj-ltr() {
-                margin-right: var(--oj-list-view-card-margin-start);
-                margin-left: var(--oj-list-view-card-margin-end);
-            }
-          } @else {
+
             @include oj-rtl() {
                 margin-left: oj-shorthand-property-value-left($listViewCardMargin);
                 margin-right: oj-shorthand-property-value-right($listViewCardMargin);
@@ -436,7 +380,7 @@
                 margin-right: oj-shorthand-property-value-left($listViewCardMargin);
                 margin-left: oj-shorthand-property-value-right($listViewCardMargin);
             }
-          }
+
         }
 
         /* Styling for group header when listview is filling the entire width */
@@ -450,38 +394,30 @@
         .oj-listview-drill-icon {
             width: 16px;
             height: 16px;
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            color: var(--oj-list-view-drill-icon-color);
-          } @else {
+
             color: $listViewDrillIconColor;
-          }
+
         }
 
         /* Styling for the drill icon when item has focus */
         .oj-listview.oj-focus-ancestor .oj-listview-item.oj-focus .oj-listview-drill-icon {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            color: var(--oj-icon-color-active);
-          } @else {
+
             color: $iconColorActive;
-          }
+
         }
 
         /* Styling for the drill icon when item is selected */
         .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected .oj-listview-drill-icon {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            color: var(--oj-icon-color-selected);
-          } @else {
+
             color: $iconColorSelected;
-          }
+
         }
 
         /* Styling for the drill icon when hover over an item */
         .oj-listview-item.oj-hover .oj-listview-drill-icon {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            color: var(--oj-icon-color-hover);
-          } @else {
+
             color: $iconColorHover;
-          }
+
         }
 
         /* Styling for the container of the activity indicator for high watermark scrolling */
@@ -538,36 +474,27 @@
 
         /* Styling for the item that is being moved using drag */
         .oj-listview-item.oj-drag {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            box-shadow: var(--oj-box-shadow-lg);
-            border-top: 1px solid var(--oj-collection-cell-drag-image-border-color);
-            border-bottom: 1px solid var(--oj-collection-cell-drag-image-border-color);
-          } @else {
+
             box-shadow: $largeBoxShadow;
             border-top: 1px solid $collectionCellDragImageBorderColor;
             border-bottom: 1px solid $collectionCellDragImageBorderColor;
-          }
+
         }
 
         /* Styling all drop targets in the list */
         .oj-listview-item.oj-drop {
             box-sizing: border-box;
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            border: 1px solid var(--oj-drop-target-color-2);
-            background-color: var(--oj-drop-target-color-1);
-          } @else {
+
             border: 1px solid $dropTarget2Color;
             background-color: $dropTarget1Color;
-          }
+
         }
 
         /* Styling on empty list as drop targets in the list */
         .oj-listview-empty-text.oj-drop {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            background-color: var(--oj-drop-target-color-1);
-          } @else {
+
             background-color: $dropTarget1Color;
-          }
+          
         }
 
         /* Styling for an item that is cut during a context menu cut operation */
@@ -575,8 +502,19 @@
             opacity: 0.8;
         }
 
+        /* Styling for the placeholder item for the last item gridline */
+        .oj-listview-gridline-placeholder {
+            background-image: linear-gradient($collectionCellBorderColor, $collectionCellBorderColor);
+            background-position: $listViewItemBorderPosition 0;
+            background-size: 100% 1px;
+            background-repeat: no-repeat;
+            height: 1px;
+        }
+
+        /* Option defaults */
         $listViewDefaultOptions: ();
         $listViewAnimationDefaults: ();
+        $listViewGridlinesDefaults: ();
 
         @if ($listViewAddAnimation) {
             $listViewAnimationDefaults: map-merge($listViewAnimationDefaults, (add: $listViewAddAnimation));
@@ -608,6 +546,26 @@
 
         @if ($loadingIndicatorDelayDuration) {
             $listViewDefaultOptions: map-merge($listViewDefaultOptions, (showIndicatorDelay: $loadingIndicatorDelayDuration));
+        }
+
+        @if ($listViewLoadIndicator) {
+            $listViewDefaultOptions: map-merge($listViewDefaultOptions, (loadIndicator: $listViewLoadIndicator));
+        }
+
+        @if ($listViewGridlinesItemOptionDefault) {
+            $listViewGridlinesDefaults: map-merge($listViewGridlinesDefaults, (item: $listViewGridlinesItemOptionDefault));
+        }
+
+        @if ($listViewGridlinesTopOptionDefault) {
+            $listViewGridlinesDefaults: map-merge($listViewGridlinesDefaults, (top: $listViewGridlinesTopOptionDefault));
+        }
+
+        @if ($listViewGridlinesBottomOptionDefault) {
+            $listViewGridlinesDefaults: map-merge($listViewGridlinesDefaults, (bottom: $listViewGridlinesBottomOptionDefault));
+        }
+
+        @if ($listViewGridlinesDefaults) {
+            $listViewDefaultOptions: map-merge($listViewDefaultOptions, (gridlines: $listViewGridlinesDefaults));
         }
 
         .oj-listview-option-defaults {

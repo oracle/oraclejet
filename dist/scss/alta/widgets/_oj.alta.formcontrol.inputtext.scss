@@ -28,5 +28,15 @@
 @if $includeInputTextClasses != false {
   @include module-include-once("alta.inputtext") {
 
+    .oj-inputtext .oj-inputtext-clear-icon-btn {
+      z-index: 1;
+      @include oj-ltr() {
+        margin-left: -25px;
+      }      
+      @include oj-rtl() {
+        margin-right: -25px;
+      }
+    }
+
   }
 }

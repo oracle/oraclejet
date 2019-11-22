@@ -2,8 +2,10 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'promise', 'touchr'],
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'touchr'],
 function(oj, $, Context, Components, Logger)
 {
   "use strict";
@@ -97,10 +99,7 @@ var __oj_film_strip_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Promise:false */
 /* jslint browser: true*/
@@ -309,16 +308,13 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
 
 // end oj.PagingModel interface methods ////////////////////////////////////////
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global Components:false, Logger:false, Context:false */
 /**
  * @ojcomponent oj.ojFilmStrip
  * @augments oj.baseComponent
  * @since 1.1.0
- * @ojstatus preview
+ *
  * @ojshortdesc A filmstrip lays out its children in a single row or column across logical pages and allows navigating through them.
  * @ojrole region
  * @class oj.ojFilmStrip
@@ -626,7 +622,6 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
          * @see #getItemsPerPage
          * @ojshortdesc Specifies the maximum number of child items shown in a logical page.
          * @ojmin 0
-         * @ojunits items
          *
          * @example <caption>Initialize the FilmStrip with the
          * <code class="prettyprint">max-items-per-page</code> attribute specified:</caption>
@@ -794,7 +789,7 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         /**
          * Specify the navigation looping behavior.
          *
-         * @ojstatus preview
+         *
          * @expose
          * @memberof oj.ojFilmStrip
          * @instance
@@ -879,6 +874,8 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
 
         // ensure a unique id for use with aria-labelledby on navigation arrows
         elem.uniqueId();
+
+        this._focusable({ element: elem, applyHighlight: true });
 
         // log warning message when "disabled" property set
         var options = this.options;
@@ -1202,6 +1199,14 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         // remove a generated unique id
         elem.removeUniqueId();
 
+        // remove passive listeners if added
+        if (this._IsCustomElement()) {
+          elem[0].removeEventListener('touchstart', this._delegatedHandleTouchStartFunc, { passive: true });
+          elem[0].removeEventListener('touchmove', this._delegatedHandleTouchMoveFunc, { passive: false });
+          delete this._delegatedHandleTouchStartFunc;
+          delete this._delegatedHandleTouchMoveFunc;
+        }
+
         this._super();
       },
 
@@ -1437,7 +1442,7 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         style.width = '10px';
         style.height = '10px';
         var elem = this.element[0];
-        elem.appendChild(div); // @HTMLUpdateOK; div is created locally at the beginning of this function
+        elem.appendChild(div); // @HTMLUpdateOK div is created locally at the beginning of this function
         var bCanCalcSizes = false;
         try {
           bCanCalcSizes = div.offsetWidth > 0 && div.offsetHeight > 0;
@@ -2576,11 +2581,26 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        */
       _addTouchListeners: function () {
         var elem = this.element;
-        elem
+        if (this._IsCustomElement()) {
+          var createDelegatedListener = function (listener) {
+            return function (event) {
+              listener($.Event(event));
+            };
+          };
+          this._delegatedHandleTouchStartFunc = createDelegatedListener(this._handleTouchStartFunc);
+          this._delegatedHandleTouchMoveFunc = createDelegatedListener(this._handleTouchMoveFunc);
+          elem[0].addEventListener('touchstart', this._delegatedHandleTouchStartFunc, { passive: true });
+          elem[0].addEventListener('touchmove', this._delegatedHandleTouchMoveFunc, { passive: false });
+          elem
+          .on('touchend' + this.touchEventNamespace, this._handleTouchEndFunc)
+          .on('touchcancel' + this.touchEventNamespace, this._handleTouchEndFunc);
+        } else {
+          elem
           .on('touchstart' + this.touchEventNamespace, this._handleTouchStartFunc)
           .on('touchmove' + this.touchEventNamespace, this._handleTouchMoveFunc)
           .on('touchend' + this.touchEventNamespace, this._handleTouchEndFunc)
           .on('touchcancel' + this.touchEventNamespace, this._handleTouchEndFunc);
+        }
       },
 
       /**
@@ -3263,6 +3283,7 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
 
     }); // end of oj.__registerWidget
 }()); // end of FilmStrip wrapper function
+
 
 /* global __oj_film_strip_metadata:false */
 (function () {

@@ -23,9 +23,12 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
    * @memberof simpleJsonShredding
    * @param {string} storeName Name of the Persistent Store into which the shredded data should be stored
    * @param {string|Array} idAttr The id field or array of fields in the JSON data
+   * @param {DataMapping=} dataMapping Optional dataMapping to apply to the data 
    * @return {Function} shredder The shredder function takes a Response object as
    * parameter and returns a Promise which resolves to an array of objects which have the following
    * structure:
+   * <code>
+   * <pre>
    * {
    *  'name': storeName, 
    *  'resourceIdentifier': resourceIdentifier, 
@@ -33,8 +36,10 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
    *  'data': dataArray,
    *  'resourceType' : 'single' or 'collection'
    * }
+   * </pre>
+   * </code>
    */
-  var getShredder = function (storeName, idAttr) {
+  var getShredder = function (storeName, idAttr, dataMapping) {
     return function (response) {
       logger.log("Offline Persistence Toolkit simpleJsonShredding: Shredding Response");
       var responseClone = response.clone();
@@ -77,11 +82,12 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
             logger.log("Offline Persistence Toolkit simpleRestJsonShredding: Error during shredding: " + err);
           }
         }
+        var mappedData = persistenceUtils._mapData(idArray, dataArray, dataMapping);
         return [{
             'name': storeName,
             'resourceIdentifier': resourceIdentifier,
-            'keys': idArray,
-            'data': dataArray,
+            'keys': mappedData.keys,
+            'data': mappedData.data,
             'resourceType' : resourceType
           }];
       });
@@ -93,9 +99,12 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
    * @method
    * @name getUnshredder
    * @memberof simpleJsonShredding
+   * @param {DataMapping=} dataMapping Optional dataMapping to apply to the data 
    * @return {Function} unshredder The unshredder function takes an array of objects 
    * and a response object as parameters. The array of objects has the following
    * structure:
+   * <code>
+   * <pre>
    * {
    *  'name': storeName, 
    *  'resourceIdentifier': resourceIdentifier, 
@@ -103,13 +112,23 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
    *  'data': dataArray,
    *  'resourceType' : 'single' or 'collection'
    * }
+   * </pre>
+   * </code>
    * The unshredder returns a Promise which resolves to a Response object.
    */
-  var getUnshredder = function () {
+  var getUnshredder = function (dataMapping) {
     return function (data, response) {
       logger.log("Offline Persistence Toolkit simpleJsonShredding: Unshredding Response");
       return Promise.resolve().then(function () {
-        var dataContent = _retrieveDataContent(data);
+        if (!data || data.length !== 1) {
+          throw new Error({message: 'shredded data is not in the correct format.'});
+        }
+        var unmappedData = persistenceUtils._unmapData(data[0].keys, data[0].data, dataMapping);
+        var dataContent = _retrieveDataContent([{
+          'keys': unmappedData.keys,
+          'data': unmappedData.data,
+          'resourceType' : data[0].resourceType
+        }]);
         return persistenceUtils.setResponsePayload(response, dataContent);
       }).then(function (response) {
         response.headers.set('x-oracle-jscpt-cache-expiration-date', '');
@@ -124,9 +143,6 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
   // that store. For simple json shredder/unshredder, the valueArray should 
   // contain only one entry.
   function _retrieveDataContent(valueArray) {
-    if (!valueArray || valueArray.length !== 1) {
-      throw new Error({message: 'shredded data is not in the correct format.'});
-    }
     var data = valueArray[0].data;
     if (data && data.length === 1 && valueArray[0].resourceType === 'single') {
       return data[0];

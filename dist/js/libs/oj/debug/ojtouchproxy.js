@@ -2,15 +2,14 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery'], 
 function(oj, $)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve jQuery UI Touch Punch 0.2.3
@@ -47,21 +46,25 @@ oj._TouchProxy.prototype._init = function (elem) {
   this._touchMoveHandler = $.proxy(this._touchMove, this);
 
   this._elem.on({
-    touchstart: this._touchStartHandler,
     touchend: this._touchEndHandler,
-    touchmove: this._touchMoveHandler,
     touchcancel: this._touchEndHandler
   });
+
+  // register touchstart & touchmove with passive option
+  this._elem[0].addEventListener('touchstart', this._touchStartHandler, { passive: true });
+  this._elem[0].addEventListener('touchmove', this._touchMoveHandler, { passive: false });
 };
 
 oj._TouchProxy.prototype._destroy = function () {
   if (this._elem && this._touchStartHandler) {
     this._elem.off({
-      touchstart: this._touchStartHandler,
-      touchmove: this._touchMoveHandler,
       touchend: this._touchEndHandler,
       touchcancel: this._touchEndHandler
     });
+
+    // remove touchstart & touchmove registered with passive option
+    this._elem[0].removeEventListener('touchstart', this._touchStartHandler, { passive: true });
+    this._elem[0].removeEventListener('touchmove', this._touchMoveHandler, { passive: false });
 
     this._touchStartHandler = undefined;
     this._touchEndHandler = undefined;
@@ -120,6 +123,11 @@ oj._TouchProxy.prototype._touchStart = function (event) {
   // Track movement to determine if interaction was a click
   this._touchMoved = false;
 
+  // touchstart is registered with addEventListener but
+  // downstream code expects jQuery event
+  // eslint-disable-next-line no-param-reassign
+  event = $.Event(event);
+
   // Simulate the mouseover, mousemove and mousedown events
   this._touchHandler(event, 'mouseover');
   this._touchHandler(event, 'mousemove');
@@ -140,6 +148,11 @@ oj._TouchProxy.prototype._touchMove = function (event) {
 
   // Interaction was not a click
   this._touchMoved = true;
+
+  // touchmove is registered with addEventListener but
+  // downstream code expects jQuery event
+  // eslint-disable-next-line no-param-reassign
+  event = $.Event(event);
 
   // Simulate the mousemove event
   this._touchHandler(event, 'mousemove');

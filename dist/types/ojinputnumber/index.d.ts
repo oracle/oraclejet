@@ -1,11 +1,25 @@
-import { Converter, Validator, Validation, AsyncValidator } from '../ojvalidation-base';
+import RequiredValidator = require('../ojvalidator-required');
+import RegExpValidator = require('../ojvalidator-regexp');
+import NumberRangeValidator = require('../ojvalidator-numberrange');
+import LengthValidator = require('../ojvalidator-length');
+import { IntlNumberConverter, NumberConverter } from '../ojconverter-number';
+import AsyncValidator = require('../ojvalidator-async');
+import Validator = require('../ojvalidator');
+import Converter = require('../ojconverter');
+import { Validation } from '../ojvalidationfactory-base';
 import { editableValue, editableValueEventMap, editableValueSettableProperties } from '../ojeditablevalue';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojInputNumber extends editableValue<number | null, ojInputNumberSettableProperties, number | null, string> {
     asyncValidators: Array<AsyncValidator<number>>;
     autocomplete: 'on' | 'off' | string;
     autofocus: boolean;
-    converter: Promise<Converter<number>> | Converter<number> | Validation.RegisteredConverter;
+    converter: Promise<Converter<number>> | Converter<number>;
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelledBy: string | null;
     max: number | null;
     min: number | null;
@@ -14,8 +28,8 @@ export interface ojInputNumber extends editableValue<number | null, ojInputNumbe
     readonly: boolean | null;
     required: boolean;
     step: number | null;
-    readonly transientValue: number;
-    validators: Array<Validator<number> | Validation.RegisteredValidator>;
+    readonly transientValue: number | null;
+    validators: Array<Validator<number> | AsyncValidator<number>>;
     value: number | null;
     virtualKeyboard: 'auto' | 'number' | 'text';
     translations: {
@@ -79,6 +93,8 @@ export namespace ojInputNumber {
     // tslint:disable-next-line interface-over-type-literal
     type converterChanged = JetElementCustomEvent<ojInputNumber["converter"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojInputNumber["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged = JetElementCustomEvent<ojInputNumber["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
     type maxChanged = JetElementCustomEvent<ojInputNumber["max"]>;
@@ -110,6 +126,7 @@ export interface ojInputNumberEventMap extends editableValueEventMap<number | nu
     'autocompleteChanged': JetElementCustomEvent<ojInputNumber["autocomplete"]>;
     'autofocusChanged': JetElementCustomEvent<ojInputNumber["autofocus"]>;
     'converterChanged': JetElementCustomEvent<ojInputNumber["converter"]>;
+    'displayOptionsChanged': JetElementCustomEvent<ojInputNumber["displayOptions"]>;
     'labelledByChanged': JetElementCustomEvent<ojInputNumber["labelledBy"]>;
     'maxChanged': JetElementCustomEvent<ojInputNumber["max"]>;
     'minChanged': JetElementCustomEvent<ojInputNumber["min"]>;
@@ -127,7 +144,13 @@ export interface ojInputNumberSettableProperties extends editableValueSettablePr
     asyncValidators: Array<AsyncValidator<number>>;
     autocomplete: 'on' | 'off' | string;
     autofocus: boolean;
-    converter: Promise<Converter<number>> | Converter<number> | Validation.RegisteredConverter;
+    converter: Promise<Converter<number>> | Converter<number>;
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelledBy: string | null;
     max: number | null;
     min: number | null;
@@ -136,8 +159,8 @@ export interface ojInputNumberSettableProperties extends editableValueSettablePr
     readonly: boolean | null;
     required: boolean;
     step: number | null;
-    readonly transientValue: number;
-    validators: Array<Validator<number> | Validation.RegisteredValidator>;
+    readonly transientValue: number | null;
+    validators: Array<Validator<number> | AsyncValidator<number>>;
     value: number | null;
     virtualKeyboard: 'auto' | 'number' | 'text';
     translations: {

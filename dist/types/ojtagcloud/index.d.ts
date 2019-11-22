@@ -12,7 +12,7 @@ export interface ojTagCloud<K, D extends ojTagCloud.Item<K> | any> extends dvtBa
     hoverBehavior: 'dim' | 'none';
     layout: 'cloud' | 'rectangular';
     selection: K[];
-    selectionMode: 'single' | 'multiple' | 'none';
+    selectionMode: 'none' | 'single' | 'multiple';
     styleDefaults: {
         animationDuration?: number;
         hoverBehaviorDelay?: number;
@@ -104,6 +104,13 @@ export namespace ojTagCloud {
         value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext<K> = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: K;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
         subId: string;
         index: number;
@@ -145,7 +152,7 @@ export interface ojTagCloudSettableProperties<K, D extends ojTagCloud.Item<K> | 
     hoverBehavior: 'dim' | 'none';
     layout: 'cloud' | 'rectangular';
     selection: K[];
-    selectionMode: 'single' | 'multiple' | 'none';
+    selectionMode: 'none' | 'single' | 'multiple';
     styleDefaults: {
         animationDuration?: number;
         hoverBehaviorDelay?: number;

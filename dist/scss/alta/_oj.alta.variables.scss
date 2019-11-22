@@ -173,13 +173,19 @@ $formControlOpacityDisabled: 1 !default;
 // placeholder
 $formControlPlaceholderFontStyle: italic !default;
 
+// form control option defaults
+//----------------------------------
+$formControlLabelEdgeDefault: provided !default;
+
 
 $formLayoutLabelInlineAlign: end !default;
+$formLayoutLabelEdgeDefault: top !default;
+$formLayoutLabelGenerationDefault: form !default;
+
+// Default value for colspan-wrap attribute
+$formLayoutColspanWrapDefault: nowrap !default;
 
 // RADIOSET AND CHECKBOXSET
-// TODO Bug 25897533: Clean up after sprite tooling is implemented
-$radioCheckboxImageHeightWidth: 16px !default;
-
 $radioCheckboxRowHeight: 1.9rem !default;
 $radioCheckboxItemBgColorActive: transparent !default;
 $radioCheckboxInputToEdgePadding: 0 !default;
@@ -193,6 +199,8 @@ $radioCheckboxLabelToEdgePadding: 0 !default;
 // For option 'renderMode' in ojInputDate / ojInputDateTime / ojInputDate
 $inputDateTimeRenderModeOptionDefault:    jet !default;
 $inputDateTimeKeyboardEditOptionDefault:  enabled !default;
+$inputDateTimeConverterYearOptionDefault: 2-digit !default;
+$inputDateTimeShowPickerOnDesktopOptionDefault: enabled !default;
 $dateTimePickerSwitcherBgColor:           $neutralColor5 !default;
 
 // DIALOG

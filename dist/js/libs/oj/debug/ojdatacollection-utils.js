@@ -2,10 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery'], function(oj, $)
 {
   "use strict";
+
 /**
  * This class contains all utility methods used by the data grid collection model.
  * @export

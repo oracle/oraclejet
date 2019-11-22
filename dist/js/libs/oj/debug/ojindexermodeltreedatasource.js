@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojindexer', 'ojs/ojdatasource-common'],
 /*
 * @param {Object} oj 
@@ -11,10 +13,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojindexer', 'ojs/ojdatasource-common'],
 function(oj, $)
 {
   "use strict";
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * Implementation of the IndexerModel and TreeDataSource based on an array of data set.
@@ -48,6 +47,7 @@ function(oj, $)
  *               value: "(section1: string|object, section2: string|object)=> number",
  *               for: "options.sortComparatorFunction"}
  * @constructor
+ * @final
  * @since 3.0
  * @export
  * @ojtsignore

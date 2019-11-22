@@ -2,8 +2,10 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'hammerjs', 'ojs/ojoffcanvas', 'promise', 'touchr'],
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'hammerjs', 'ojs/ojoffcanvas', 'touchr'],
 /*
 * @param {Object} oj 
 * @param {jQuery} $
@@ -12,18 +14,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'hammerjs', 'ojs/ojoffcanvas', 
 function(oj, $, Context, Hammer, OffcanvasUtils) 
 {
   "use strict";
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global OffcanvasUtils:false, Context:false */
 /**
  * @namespace oj.SwipeToRevealUtils
  * @ojtsmodule
  * @since 1.2.0
  * @export
+ * @ojdeprecated {since: '7.0.0', description: 'Use ojSwipeActions instead.'}
  * @hideconstructor
- * @ojstatus preview
+ *
  *
  * @classdesc
  * This class provides functions for setting up and handling swipe to reveal on an offcanvas element.  The offcanvas
@@ -116,14 +116,14 @@ oj.SwipeToRevealUtils.setupSwipeActions = function (elem, options) {
 
   // However, this does not get trigger in hybrid app, see .
   // this change ensures that it always get reset
-  outerWrapper.on('touchstart.swipetoreveal', function (event) {
+  outerWrapper._touchStartListener = function (event) {
     drawerShown = false;
-
     // prevent click event from firing when tapping on outer wrapper (like list item) while offcanvas is still open
     if (drawer.hasClass('oj-offcanvas-open') && drawer[0].offsetWidth > 0 && !drawer[0].contains(event.target)) {
       event.preventDefault();
     }
-  });
+  };
+  outerWrapper[0].addEventListener('touchstart', outerWrapper._touchStartListener, { passive: false });
 
   drawer
     .on('ojpanstart', function (event, ui) {
@@ -234,6 +234,10 @@ oj.SwipeToRevealUtils.tearDownSwipeActions = function (elem) {
   }
 
   OffcanvasUtils.tearDownPanToReveal(offcanvas);
+
+  // remove touchstart listener
+  outerWrapper[0].removeEventListener('touchstart', outerWrapper._touchStartListener, { passive: false });
+  delete outerWrapper._touchStartListener;
 };
 
 /**

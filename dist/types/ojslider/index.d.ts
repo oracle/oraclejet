@@ -2,6 +2,12 @@ import { editableValue, editableValueEventMap, editableValueSettableProperties }
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojSlider extends editableValue<number | null, ojSliderSettableProperties> {
     disabled: boolean;
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelledBy: string | null;
     max: number | null;
     min: number | null;
@@ -42,6 +48,8 @@ export namespace ojSlider {
     // tslint:disable-next-line interface-over-type-literal
     type disabledChanged = JetElementCustomEvent<ojSlider["disabled"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojSlider["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged = JetElementCustomEvent<ojSlider["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
     type maxChanged = JetElementCustomEvent<ojSlider["max"]>;
@@ -62,6 +70,7 @@ export interface ojSliderEventMap extends editableValueEventMap<number | null, o
     'ojAnimateEnd': ojSlider.ojAnimateEnd;
     'ojAnimateStart': ojSlider.ojAnimateStart;
     'disabledChanged': JetElementCustomEvent<ojSlider["disabled"]>;
+    'displayOptionsChanged': JetElementCustomEvent<ojSlider["displayOptions"]>;
     'labelledByChanged': JetElementCustomEvent<ojSlider["labelledBy"]>;
     'maxChanged': JetElementCustomEvent<ojSlider["max"]>;
     'minChanged': JetElementCustomEvent<ojSlider["min"]>;
@@ -73,6 +82,12 @@ export interface ojSliderEventMap extends editableValueEventMap<number | null, o
 }
 export interface ojSliderSettableProperties extends editableValueSettableProperties<number | null> {
     disabled: boolean;
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelledBy: string | null;
     max: number | null;
     min: number | null;

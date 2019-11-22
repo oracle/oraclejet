@@ -40,7 +40,7 @@ export interface ojThematicMap<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | a
         insert: SVGElement;
     } | void) | null;
     selection: Array<K1 | K2 | K3>;
-    selectionMode: 'single' | 'multiple' | 'none';
+    selectionMode: 'none' | 'single' | 'multiple';
     selectionRenderer: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
         insert: SVGElement;
     } | void) | null;
@@ -214,6 +214,13 @@ export namespace ojThematicMap {
         svgStyle?: CSSStyleDeclaration;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type AreaTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type DataContext = {
         color: string;
         label: string;
@@ -244,6 +251,13 @@ export namespace ojThematicMap {
         width?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type LinkTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type Marker<K> = {
         borderColor?: string;
         borderStyle?: 'solid' | 'none';
@@ -271,6 +285,13 @@ export namespace ojThematicMap {
         width?: number;
         x?: number;
         y?: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type MarkerTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
@@ -389,7 +410,7 @@ export interface ojThematicMapSettableProperties<K1, K2, K3, D1 extends ojThemat
         insert: SVGElement;
     } | void) | null;
     selection: Array<K1 | K2 | K3>;
-    selectionMode: 'single' | 'multiple' | 'none';
+    selectionMode: 'none' | 'single' | 'multiple';
     selectionRenderer: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
         insert: SVGElement;
     } | void) | null;

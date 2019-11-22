@@ -37,6 +37,11 @@ export namespace ojMessages {
     // tslint:disable-next-line interface-over-type-literal
     type translationsChanged = JetElementCustomEvent<ojMessages["translations"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type MessageTemplateContext = {
+        componentElement: Element;
+        data: ojMessage.Message;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type Position = {
         my?: PositionAlign;
         at?: PositionAlign;

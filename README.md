@@ -1,4 +1,4 @@
-# Oracle JET version 7.2.0
+# Oracle JET version 8.0.0
 
 ## About Oracle JET
 Oracle JET is targeted at intermediate to advanced JavaScript developers working on client-side applications. It's a collection of open source JavaScript libraries along with a set of Oracle contributed JavaScript libraries that make it as simple and efficient as possible to build applications that consume and interact with Oracle products and services, especially Oracle Cloud services.
@@ -34,19 +34,19 @@ npm install -g @oracle/ojet-cli
 
 ojet create <app name>
 ```
-See the [Oracle JET Developer Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet720&id=homepage) for complete installation details, including prerequisites.
+See the [Oracle JET Developer Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet800&id=homepage) for complete installation details, including prerequisites.
 
 ## Related GitHub Projects
 All related projects on GitHub are associated under the [oracle-jet topic](https://github.com/search?q=topic%3Aoracle-jet+org%3Aoracle&type=Repositories).
 
-## [Documentation](http://www.oracle.com/pls/topic/lookup?ctx=jet720&id=homepage)
-Oracle JET comes with a full [Developers Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet720&id=homepage) to help with Getting Started and many common issues.
+## [Documentation](http://www.oracle.com/pls/topic/lookup?ctx=jet800&id=homepage)
+Oracle JET comes with a full [Developers Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet800&id=homepage) to help with Getting Started and many common issues.
 
-## [Contributing](https://github.com/oracle/oraclejet/tree/master/CONTRIBUTING.md)
+## [Contributing](https://github.com/oracle/oraclejet/blob/master/CONTRIBUTING.md)
 Oracle JET is an open source project. Pull Requests are currently not being accepted. See 
-[CONTRIBUTING](https://github.com/oracle/oraclejet/tree/master/CONTRIBUTING.md)
+[CONTRIBUTING](https://github.com/oracle/oraclejet/blob/master/CONTRIBUTING.md)
 for details.
 
-## [License](https://github.com/oracle/oraclejet/tree/master/LICENSE.md)
-Copyright (c) 2014, 2019 Oracle and/or its affiliates
-The Universal Permissive License (UPL), Version 1.0
+## [License](https://github.com/oracle/oraclejet/blob/master/LICENSE)
+Copyright (c) 2019 Oracle and/or its affiliates and released  under the 
+[Universal Permissive License (UPL)](https://oss.oracle.com/licenses/upl/), Version 1.0

@@ -2,14 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojmessaging', 'ojs/ojpagingtabledatasource'], function(oj, $, Message)
 {
   "use strict";
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @class oj.PagingCellSet
@@ -131,10 +130,7 @@ oj.PagingCellSet.prototype.getExtent = function (indexes) {
   return this.m_cellSet.getExtent(pagedIndexes);
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Promise:false, Message:false */
 
@@ -147,6 +143,7 @@ oj.PagingCellSet.prototype.getExtent = function (indexes) {
  * @extends oj.DataGridDataSource
  * @implements oj.PagingModel
  * @constructor
+ * @final
  * @since 1.0
  * @ojtsignore
  */
@@ -790,10 +787,7 @@ oj.PagingDataGridDataSource.prototype.move = function (
 };
 /** ** end delegated functions ****/
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @class oj.PagingHeaderSet
@@ -951,6 +945,7 @@ oj.PagingHeaderSet.prototype.getStartIndex = function () {
 oj.PagingHeaderSet.prototype.getLabel = function (level) {
   return this.m_headerSet.getLabel(level);
 };
+
 
 // Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
 

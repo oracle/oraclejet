@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtPictoChart'], function(oj, $, comp, base, dvt)
 {
   "use strict";
@@ -291,11 +293,8 @@ var __oj_picto_chart_item_metadata =
   },
   "extension": {}
 };
+
 /** This file is generated. Do not edit directly. Actual file located in 3rdparty/dvt/prebuild.**/
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /* global dvt:false */
 
@@ -303,7 +302,7 @@ var __oj_picto_chart_item_metadata =
  * @ojcomponent oj.ojPictoChart
  * @augments oj.dvtBaseComponent
  * @since 1.2.0
- * @ojstatus preview
+ *
  * @ojshortdesc A picto chart displays information using icons to visualize an absolute number or the relative sizes of the different parts of a population.
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojsignature [{
@@ -677,16 +676,22 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
       selection: [],
 
       /**
-       * The type of selection behavior that is enabled on the picto chart.
+       * <p>The type of selection behavior that is enabled on the picto chart. This attribute controls the number of selections that can be made via selection gestures at any given time.
+       *
+       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the picto chart's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the picto chart's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+       *
+       * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+       *
        * @expose
        * @name selectionMode
        * @ojshortdesc Specifies the selection mode.
        * @memberof oj.ojPictoChart
        * @instance
        * @type {string}
-       * @ojvalue {string} "single"
-       * @ojvalue {string} "multiple"
-       * @ojvalue {string} "none"
+       * @ojvalue {string} "none" Selection is disabled.
+       * @ojvalue {string} "single" Only a single item can be selected at a time.
+       * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
        * @default "none"
        */
       selectionMode: 'none',
@@ -879,6 +884,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
     }
   });
 
+
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -999,7 +1005,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  * @typedef {Object} oj.ojPictoChart.Item
  * @property {any=} id The item id. The item id should be set by the application if the DataProvider is not being used.
  * @property {string=} name The name of the item. Used for default tooltip and accessibility.
- * @property {"ellipse"|"square"|"circle"|"diamond"|"triangleUp"|"triangleDown"|"star"|"plus"|"human"|"none"|"rectangle"|string} [shape="rectangle"] The shape of the item. Can take the name of a built-in shape or the svg path commands for a custom shape. "None" will make the item transparent and can be used to create gaps. Does not apply if custom image is specified.
+ * @property {"ellipse"|"square"|"circle"|"diamond"|"triangleUp"|"triangleDown"|"star"|"plus"|"human"|"none"|"rectangle"|string} [shape="rectangle"] The shape of the item. Can take the name of a built-in shape or the SVG path commands for a custom shape. "None" will make the item transparent and can be used to create gaps. Does not apply if custom image is specified.
  * @property {string=} color The color of the item. Does not apply if custom image is specified.
  * @property {string=} borderColor The border color of the item. Does not apply if custom image is specified.
  * @property {number=} borderWidth The border width of the item in pixels. Does not apply if custom image is specified.
@@ -1032,6 +1038,14 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
  */
 
+/**
+ * @typedef {Object} oj.ojPictoChart.ItemTemplateContext
+ * @property {Element} componentElement The &lt;oj-picto-chart> custom element.
+ * @property {Object} data The data object for the current item.
+ * @property {number} index The zero-based index of the current item.
+ * @property {any} key The key of the current item.
+ */
+
  // METHOD TYPEDEFS
 
 /**
@@ -1057,10 +1071,10 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  // Slots
  /**
  *
- * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the picto chart when a DataProvider has been specified with the data attribute. The slot must be a &lt;template> element.</p>
+ * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the picto chart when a DataProvider has been specified with the data attribute. The slot content must be a &lt;template> element.</p>
  * <p>When the template is executed for each item, it will have access to the picto chart's binding context and the following properties:</p>
  * <ul>
- * <li>$current - an object that contains information for the current item
+ *   <li>$current - an object that contains information for the current item. (See [oj.ojPictoChart.ItemTemplateContext]{@link oj.ojPictoChart.ItemTemplateContext} or the table below for a list of properties available on $current) </li>
  * </li>
  * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
  * </li>
@@ -1068,16 +1082,12 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * <p>The content of the template should only be one &lt;oj-picto-chart-item> element. See the [oj-picto-chart-item]{@link oj.ojPictoChartItem} doc for more details.</p>
  *
- * @ojstatus preview
+ *
  * @ojslot itemTemplate
  * @ojshortdesc The itemTemplate slot is used to specify the template for creating each item of the picto chart. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojPictoChart
- * @property {Element} componentElement The &lt;oj-picto-chart> custom element.
- * @property {Object} data The data object for the current item.
- * @property {number} index The zero-based index of the current item.
- * @property {any} key The key of the current item.
- *
+ * @ojslotitemprops oj.ojPictoChart.ItemTemplateContext
  * @example <caption>Initialize the PictoChart with an inline item template specified:</caption>
  * &lt;oj-picto-chart data='[[dataProvider]]'>
  *  &lt;template slot='itemTemplate'>
@@ -1094,10 +1104,10 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current item. (See [oj.ojPictoChart.TooltipContext]{@link oj.ojPictoChart.TooltipContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current item. (See [oj.ojPictoChart.TooltipContext]{@link oj.ojPictoChart.TooltipContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot tooltipTemplate
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojPictoChart.TooltipContext
@@ -1145,12 +1155,13 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  * @memberof oj.ojPictoChart
  */
 
+
 /**
  * @ojcomponent oj.ojPictoChartItem
  * @ojsignature {target: "Type", value:"class ojPictoChartItem extends JetElement<ojPictoChartItemSettableProperties>"}
  * @ojslotcomponent
  * @since 5.2.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="pictoChartItemOverview-section">
@@ -1339,7 +1350,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  * &lt;/oj-picto-chart>
  */
  /**
- * The shape of the item. Can take the name of a built-in shape or the svg path commands for a custom shape. "None" will make the item transparent and can be used to create gaps. Does not apply if custom image is specified.
+ * The shape of the item. Can take the name of a built-in shape or the SVG path commands for a custom shape. "None" will make the item transparent and can be used to create gaps. Does not apply if custom image is specified.
  * @expose
  * @name shape
  * @ojshortdesc The shape of the item. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. See the Help documentation for more information.
@@ -1477,6 +1488,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *  &lt;/template>
  * &lt;/oj-picto-chart>
  */
+
 
 /* global __oj_picto_chart_metadata:false */
 /**

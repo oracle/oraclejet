@@ -2,10 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'knockout', 'ojs/ojkeyset'], function(oj, ko)
 {
   "use strict";
+
 /* global ko:false */
 
 /**
@@ -97,6 +100,7 @@ ko.utils.arrayForEach(['add', 'addAll', 'clear', 'delete'], function (methodName
  * @ojsignature [{target: "Type", value: "Set<K>|Array<K>", for:"keys"},
  *               {target: "Type", value: "ObservableExpandedKeySet<K>", for: "returns"}]
  */
+
 
 /* global ko:false */
 

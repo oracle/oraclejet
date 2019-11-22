@@ -6,7 +6,20 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * TimelineOverview component.
  * @param {dvt.Context} context The rendering context.
@@ -1102,6 +1115,12 @@ dvt.TimelineOverview.prototype.getMarkers = function()
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -1184,13 +1203,19 @@ DvtTimelineOverviewDefaults.VERSION_1 = {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * TimelineOverview Parser
  * @param {dvt.TimelineOverview} timelineOverview The owning timelineOverview component.
  * @class
  * @constructor
  * @extends {dvt.Obj}
  */
-var DvtTimelineOverviewParser = function(timelineOverview) 
+var DvtTimelineOverviewParser = function(timelineOverview)
 {
   this.Init(timelineOverview);
 };
@@ -1202,7 +1227,7 @@ dvt.Obj.createSubclass(DvtTimelineOverviewParser, dvt.OverviewParser);
  * @param {dvt.TimelineOverview} timelineOverview
  * @protected
  */
-DvtTimelineOverviewParser.prototype.Init = function(overview) 
+DvtTimelineOverviewParser.prototype.Init = function(overview)
 {
   this._view = overview;
 };
@@ -1213,7 +1238,7 @@ DvtTimelineOverviewParser.prototype.Init = function(overview)
  * @param {object} options The options object describing the component.
  * @return {object} An object containing the parsed properties
  */
-DvtTimelineOverviewParser.prototype.parse = function(options) 
+DvtTimelineOverviewParser.prototype.parse = function(options)
 {
   var ret = this.ParseRootAttributes(options);
   ret.timeAxisInfo = this._parseTimeAxis(options['axisTicks']);
@@ -1230,7 +1255,7 @@ DvtTimelineOverviewParser.prototype.parse = function(options)
  * @return {object} An object containing the parsed properties
  * @protected
  */
-DvtTimelineOverviewParser.prototype.ParseRootAttributes = function(options) 
+DvtTimelineOverviewParser.prototype.ParseRootAttributes = function(options)
 {
   // The object that will be populated with parsed values and returned
   var ret = DvtTimelineOverviewParser.superclass.ParseRootAttributes.call(this, options);
@@ -1325,7 +1350,7 @@ DvtTimelineOverviewParser.prototype.ParseNodeAttributes = function(options, defa
   return ret;
 };
 
-DvtTimelineOverviewParser.prototype._parseTimeAxis = function(options) 
+DvtTimelineOverviewParser.prototype._parseTimeAxis = function(options)
 {
   if (options)
   {
@@ -1341,13 +1366,19 @@ DvtTimelineOverviewParser.prototype._parseTimeAxis = function(options)
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Class representing a timelineOverview node.
  * @param {dvt.TimelineOverview} timelineOverview The owning timelineOverview component.
  * @param {object} props The properties for the node.
  * @class
  * @constructor
  */
-var DvtTimelineOverviewNode = function(overview, props) 
+var DvtTimelineOverviewNode = function(overview, props)
 {
   this.Init(overview, props);
 };
@@ -1360,7 +1391,7 @@ dvt.Obj.createSubclass(DvtTimelineOverviewNode, dvt.Obj);
  * @param {object} props The properties for the node.
  * @protected
  */
-DvtTimelineOverviewNode.prototype.Init = function(overview, props) 
+DvtTimelineOverviewNode.prototype.Init = function(overview, props)
 {
   this._view = overview;
 
@@ -1486,6 +1517,12 @@ DvtTimelineOverviewNode.prototype.setY = function(y)
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Style related utility functions for dvt.TimelineOverview.
  * @class
  */
@@ -1608,7 +1645,12 @@ DvtTimelineOverviewStyleUtils.getDefaultMarkerBorderStyles = function(options)
   return borderStyles;
 };
 
-// Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2012 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /*---------------------------------------------------------------------*/
 /*  DvtTimelineOverviewAutomation                                      */
 /*---------------------------------------------------------------------*/
@@ -1786,9 +1828,28 @@ DvtTimelineOverviewAutomation._findMarker = function(markers, seriesId, index) {
   return null;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
-/** Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved. */
+
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 var DvtTimeUtils = new Object();
 
 DvtTimeUtils.supportsTouch = function()
@@ -1830,6 +1891,12 @@ DvtTimeUtils.getPositionDate = function(startTime, endTime, pos, width)
   return (number / width) + startTime;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Timeline keyboard handler.
  * @param {dvt.EventManager} manager The owning dvt.EventManager.
@@ -1934,6 +2001,12 @@ DvtTimelineKeyboardHandler.getClosestItem = function(item, navigableItems)
   return null;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Timeline event manager.
  * @param {dvt.Timeline} timeline The owning dvt.Timeline.
@@ -2061,6 +2134,12 @@ DvtTimelineEventManager.prototype.panBy = function(dx, dy)
   DvtTimelineEventManager.superclass.panBy.call(this, dx, dy);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Timeline component. The component should never be instantiated directly. Use the newInstance function instead.
  * @param {dvt.Context} context The rendering context.
@@ -3523,6 +3602,12 @@ dvt.Timeline.prototype.setBackgroundXOffset = function(backgroundX)
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Timeline automation service.
  * @param {dvt.Timeline} timeline The owning dvt.Timeline.
  * @class  DvtTimelineAutomation
@@ -3599,6 +3684,12 @@ DvtTimelineAutomation.prototype.getDomElementForSubId = function(subId)
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -3668,6 +3759,12 @@ DvtTimelineDefaults.VERSION_1 = {
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Timeline JSON Parser
  * @class
@@ -3743,6 +3840,12 @@ DvtTimelineParser.prototype.parse = function(options)
   return ret;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Renderer for dvt.Timeline.
  * @class
@@ -4572,6 +4675,12 @@ DvtTimelineRenderer._addLabel = function(context, container, pos, text, maxLengt
   return label;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Style related utility functions for dvt.Timeline.
  * @class
@@ -5486,6 +5595,12 @@ DvtTimelineStyleUtils.getZoomOutButtonDisabledBorderColor = function(options)
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * TimelineSeries component.
  * @param {dvt.Context} context The rendering context.
  * @param {object} callback The function that should be called to dispatch component events.
@@ -5843,7 +5958,7 @@ DvtTimelineSeries.prototype.calculateSpacing = function(item, index)
       // If not enough room, default to return bottom value
       if (top < 0)
         top = 0;
-      y = Math.round(Math.random() * top) + bottom;//@RandomNumberOk
+      y = Math.round(Math.random() * top) + bottom;//@RandomNumberOK
 
       if (this._maxOverflowValue < y + itemHeight)
         this._maxOverflowValue = y + itemHeight + DvtTimelineStyleUtils.getBubbleSpacing();
@@ -6113,6 +6228,12 @@ DvtTimelineSeries.prototype.setHScrollPos = function(pos)
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Creates an instance of DvtTimelineSeriesItem which extends dvt.Container with hover and selection feedback.
  * @extends {dvt.Container}
  * @param {dvt.Context} context The rendering context
@@ -6254,6 +6375,12 @@ DvtTimelineSeriesItem.prototype.applyState = function(state)
     duration.setStroke(bubbleStroke);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Renderer for DvtTimelineSeriesItem.
  * @class
@@ -6913,6 +7040,12 @@ DvtTimelineSeriesItemRenderer._updateDuration = function(item, series, overflowO
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Class representing a TimelineSeries node.
  * @param {object} props The properties for the node.
  * @class
@@ -7471,6 +7604,12 @@ DvtTimelineSeriesNode.prototype._updateAriaLabel = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * TimelineSeries JSON Parser
  * @param {DvtTimelineSeries} timelineSeries The owning timelineSeries component.
  * @class
@@ -7698,6 +7837,12 @@ DvtTimelineSeriesParser.prototype.ParseNodeAttributes = function(data, compStart
   return ret;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Renderer for DvtTimelineSeries.
  * @class
@@ -8346,6 +8491,12 @@ DvtTimelineSeriesRenderer._animateItemRemoval = function(items, series, animatio
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Utility functions for dvt.Timeline tooltips.
  * @class
  */
@@ -8579,6 +8730,13 @@ DvtTimelineTooltipUtils.formatValue = function(timeline, type, valueFormat, valu
   return value;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
   return dvt;
 });

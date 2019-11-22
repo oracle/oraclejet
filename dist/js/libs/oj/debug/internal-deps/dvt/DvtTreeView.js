@@ -6,8 +6,20 @@ define(['./DvtToolkit'], function(dvt) {
   "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -45,7 +57,7 @@ dvt.Breadcrumbs.prototype.Init = function(context, callback, callbackObj, option
   this._eventHandler.addListeners(this);
 
   // Make sure the object has an id for clipRect naming
-  this.setId('breadcrumbs' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
+  this.setId('breadcrumbs' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOK
 
   // index of the breadcrumb with keyboard focus. index is used to find the
   // Object stored in the _data object's item field
@@ -281,6 +293,12 @@ dvt.Breadcrumbs.prototype.GetCrumbs = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Default values and utility functions for breadcrumb versioning.
  * @class
  */
@@ -342,6 +360,12 @@ DvtBreadcrumbsDefaults.getGapSize = function(options, defaultSize) {
   return Math.ceil(defaultSize * options['layout']['gapRatio']);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Event Manager for dvt.Breadcrumbs.
  */
@@ -414,6 +438,12 @@ DvtBreadcrumbsEventManager.prototype.handleKeyboardEvent = function(event) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Simple logical object for drilling and tooltip support.
  * @param {string} id The id of the associated breadcrumb.
  * @param {dvt.Displayable} displayable The displayable associated with this logical object
@@ -481,6 +511,12 @@ DvtBreadcrumbsPeer.prototype.setTruncated = function(truncated){
   this._truncated = truncated;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Renderer for dvt.Breadcrumbs.
  * @class
@@ -820,6 +856,12 @@ DvtBreadcrumbsRenderer._newSeparator = function(breadcrumbs) {
   return label;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * The base class for tree components.
  * @extends {dvt.BaseComponent}
@@ -1797,6 +1839,12 @@ DvtTreeView.prototype.hasDataProvider = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Animation handler for tree data objects.
  * @param {dvt.Context} context The platform specific context object.
  * @param {dvt.Container} deleteContainer The container where deletes should be moved for animation.
@@ -1885,6 +1933,12 @@ DvtTreeAnimationHandler._isAncestor = function(ancestors, node) {
   return false;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Event Manager for tree components.
  * @param {DvtTreeView} view
@@ -2106,6 +2160,12 @@ DvtTreeEventManager.prototype.GetTouchResponse = function() {
   return this._view.getOptions()['touchResponse'];
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Base class for tree component nodes.
  * @class The base class for tree component nodes.
@@ -3039,6 +3099,12 @@ DvtTreeNode.prototype.isRootNode = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Simple logical object for drilling and tooltip support.
  * @param {DvtTreeNode} node The associated node, if it has been created.
  * @param {string} id The id of the associated node.
@@ -3108,6 +3174,12 @@ DvtTreePeer.prototype.handleMouseOut = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Breadcrumb rendering utilities for tree components.
  * @class
  */
@@ -3167,6 +3239,12 @@ DvtTreeBreadcrumbsRenderer.render = function(treeView, availSpace, ancestors, ro
   return breadcrumbs;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Legend rendering utilies for tree components.
  * @class
@@ -3403,6 +3481,12 @@ DvtTreeLegendRenderer._renderLabels = function(context, treeView, legend, availW
   return labelContainer;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /*---------------------------------------------------------------------------------*/
 /*  DvtTreeKeyboardHandler     Keyboard handler for Sunburst                   */
 /*---------------------------------------------------------------------------------*/
@@ -3437,6 +3521,12 @@ DvtTreeKeyboardHandler.prototype.isMultiSelectEvent = function(event)
   return event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -3486,23 +3576,29 @@ DvtTreeDefaults.SKIN_ALTA = {
 /**
  * @override
  */
-DvtTreeDefaults.prototype.Init = function(defaultsMap) {
+DvtTreeDefaults.prototype.Init = function(defaultsMap, context) {
   // This will only be called via subclasses.  Combine with defaults from this class before passing to super.
   var ret = {
     'alta': dvt.JsonUtils.merge(defaultsMap['alta'], DvtTreeDefaults.SKIN_ALTA)
   };
 
-  DvtTreeDefaults.superclass.Init.call(this, ret);
+  DvtTreeDefaults.superclass.Init.call(this, ret, context);
 };
 
 /**
  * @override
  */
 DvtTreeDefaults.prototype.getAnimationDuration = function(options)
-{ 
+{
   return options['animationDuration'];
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Utility functions for DvtTreeView.
  * @class
@@ -3638,7 +3734,12 @@ DvtTreeUtils.findRootAndAncestors = function(context, nodes, rootId, ancestors) 
   return null;
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
   *  Provides automation services for treemap/sunburst.  To obtain a
@@ -3959,6 +4060,12 @@ DvtTreeAutomation._getNodeByIndex = function(nodes, index) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * @constructor
  * Treemap component.
  * @param {dvt.Context} context The rendering context.
@@ -4014,7 +4121,7 @@ dvt.Treemap.prototype.Init = function(context, callback, callbackObj) {
   this._nodeContent = {};
 
   // Make sure the object has an id for accessibility 
-  this.setId('treemap' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
+  this.setId('treemap' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOK
 };
 
 /**
@@ -4450,6 +4557,12 @@ dvt.Treemap.prototype.getNodeContent = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Class representing a treemap node.
  * @param {dvt.Treemap} treemap The owning treemap component.
  * @param {object} props The properties for the node.
@@ -4638,7 +4751,7 @@ DvtTreemapNode.prototype.setSelected = function(selected) {
     var h = Math.max(this._height - DvtTreemapNode._LINE_FUDGE_FACTOR, 0);
 
     // Workaround for different pixel drawing behavior between browsers
-    if ((dvt.Agent.browser === 'safari' || dvt.Agent.browser === 'chrome'))
+    if ((dvt.Agent.browser === 'safari' || dvt.Agent.engine === 'blink'))
       y -= DvtTreemapNode._LINE_FUDGE_FACTOR;
 
     // Clear the selection inner and outer, which may be used by hover
@@ -5113,7 +5226,7 @@ DvtTreemapNode.prototype.GetAnimationParams = function() {
   var b = dvt.ColorUtils.getBlue(this._color);
 
   // Force bevel removal during animation for leaf nodes by passing an additional random number to force animation.
-  return [this._x, this._y, this._width, this._height, r, g, b, this.hasChildren() ? 0 : Math.random()];//Random Number used to force animation @RandomNumberOk
+  return [this._x, this._y, this._width, this._height, r, g, b, this.hasChildren() ? 0 : Math.random()];//Random Number used to force animation @RandomNumberOK
 };
 
 /**
@@ -5471,7 +5584,7 @@ DvtTreemapNode.prototype._createTextNode = function(container) {
   }
   else if (this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER) {
     // Note: No need to worry about available height here.  Headers are sized based on the text size.
-    var chromeAdjustment = (dvt.Agent.browser === 'safari' || dvt.Agent.browser === 'chrome') ? DvtTreemapNode._LINE_FUDGE_FACTOR : 0;
+    var chromeAdjustment = (dvt.Agent.browser === 'safari' || dvt.Agent.engine === 'blink') ? DvtTreemapNode._LINE_FUDGE_FACTOR : 0;
     text.setY(this._y + DvtTreemapNode.DEFAULT_HEADER_BORDER_WIDTH + this._titleBarHeight / 2 + chromeAdjustment);
     text.alignMiddle();
     this.ApplyHeaderTextStyle(text, 'labelStyle');
@@ -5929,14 +6042,14 @@ DvtTreemapNode.prototype._createCustomNodeContent = function() {
       return;
     var newOverlay = context.createOverlayDiv();
     if (Array.isArray(customContent)) {
-      customContent.forEach(function(node) {newOverlay.appendChild(node);}); // @HtmlUpdateOk
+      customContent.forEach(function(node) {newOverlay.appendChild(node);}); // @HTMLUpdateOK
     }
     else {
-      newOverlay.appendChild(customContent); // @HtmlUpdateOk
+      newOverlay.appendChild(customContent); // @HTMLUpdateOK
     }
     var nodeContent = treemap.getNodeContent();
     nodeContent[id] = newOverlay;
-    parentDiv.appendChild(newOverlay); // @HtmlUpdateOk
+    parentDiv.appendChild(newOverlay); // @HTMLUpdateOK
 
     // Invoke the overlay attached callback if one is available.
     var callback = context.getOverlayAttachedCallback();
@@ -5973,6 +6086,12 @@ DvtTreemapNode.prototype._removeAllNodeContent = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Base layout class for treemaps.
  * @class
  * @constructor
@@ -6005,7 +6124,7 @@ DvtTreemapLayoutBase.prototype.Init = function() {
  * @param {number} height The height of this node.
  * @param {boolean} bShowRoot True if the root node should be displayed.
  */
-DvtTreemapLayoutBase.prototype.layout = function(view, root, x, y, width, height, bShowRoot) 
+DvtTreemapLayoutBase.prototype.layout = function(view, root, x, y, width, height, bShowRoot)
 {
   // subclasses should override
 };
@@ -6020,7 +6139,7 @@ DvtTreemapLayoutBase.prototype.layout = function(view, root, x, y, width, height
  * @param {boolean} isRoot true if this node is the root of the tree.
  * @return {dvt.Rectangle} The rectangle indicating the area to allocate to the children of this node.
  */
-DvtTreemapLayoutBase.prototype.setNodeBounds = function(node, x, y, width, height, isRoot) 
+DvtTreemapLayoutBase.prototype.setNodeBounds = function(node, x, y, width, height, isRoot)
 {
   // Set the relative zIndex of the node and increment
   node.setZIndex(this._zIndex);
@@ -6065,6 +6184,12 @@ DvtTreemapLayoutBase.prototype.getGapSize = function(view, depth) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Layout class for treemaps.  This layout optimizes the aspect ratios, making the nodes as square as
  * possible for improved comparisons between nodes.  This layout does not maintain the ordering of
  * the nodes.
@@ -6097,7 +6222,7 @@ DvtTreemapLayoutSquarifying.prototype.layout = function(view, root, x, y, width,
  * @param {number} height The height of this node.
  * @param {boolean} isRoot true if this node is the root of the tree.
  */
-DvtTreemapLayoutSquarifying.prototype._layout = function(node, x, y, width, height, isRoot) 
+DvtTreemapLayoutSquarifying.prototype._layout = function(node, x, y, width, height, isRoot)
 {
   // Set the bounds on the current node and get the space available for its children
   var availBounds = this.setNodeBounds(node, x, y, width, height, isRoot);
@@ -6226,7 +6351,7 @@ DvtTreemapLayoutSquarifying.prototype._getWorst = function(areas, w) {
  * @return {dvt.Rectangle} A rectangle containing the unallocated space.
  * @private
  */
-DvtTreemapLayoutSquarifying.prototype._layoutRow = function(row, w, r) 
+DvtTreemapLayoutSquarifying.prototype._layoutRow = function(row, w, r)
 {
   // Calculate the sum of the row areas
   var total = 0;
@@ -6265,6 +6390,12 @@ DvtTreemapLayoutSquarifying.prototype._layoutRow = function(row, w, r)
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Layout class for treemaps.  This layout allocates space across a single dimension for each layer,
  * alternating between horizontal and vertical allocation.  This layout maintains the ordering of
  * the nodes while sacrificing aspect ratio.
@@ -6302,7 +6433,7 @@ DvtTreemapLayoutSliceAndDice.prototype.layout = function(view, root, x, y, width
  * @param {boolean} isRoot true if this node is the root of the tree.
  * @private
  */
-DvtTreemapLayoutSliceAndDice.prototype._layout = function(isHoriz, view, node, x, y, width, height, isRoot) 
+DvtTreemapLayoutSliceAndDice.prototype._layout = function(isHoriz, view, node, x, y, width, height, isRoot)
 {
   var options = view.getOptions();
 
@@ -6362,6 +6493,12 @@ DvtTreemapLayoutSliceAndDice.prototype._layout = function(isHoriz, view, node, x
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /*---------------------------------------------------------------------------------*/
 /*  DvtTreemapKeyboardHandler     Keyboard handler for Treemap                     */
 /*---------------------------------------------------------------------------------*/
@@ -6397,6 +6534,12 @@ DvtTreemapKeyboardHandler.prototype.isNavigationEvent = function(event)
   return isNavigable;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Event Manager for Treemap.
  * @param {dvt.Treemap} view The treemap to associate with this event manager
@@ -6447,6 +6590,12 @@ DvtTreemapEventManager.prototype.isClearMenuAllowed = function()
   return false;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -6502,6 +6651,12 @@ DvtTreemapDefaults.SKIN_ALTA = {
   'nodeContent': {}
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * @constructor
  * Sunburst component.
@@ -6984,6 +7139,12 @@ dvt.Sunburst.prototype.getCenterPoint = function() {
   return this._translatePt;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Class representing a sunburst node.
  * @param {dvt.Sunburst} sunburst The owning sunburst component.
@@ -8118,7 +8279,7 @@ DvtSunburstNode.prototype._getExpandButton = function() {
 
   // Create button and hook up click listener
   var button = new dvt.Button(context, upState, overState, downState);
-  button.addEvtListener(dvt.MouseEvent.CLICK, this.expandCollapse, false, this);
+  button.setCallback(this.expandCollapse, this);
   return button;
 };
 
@@ -8146,7 +8307,7 @@ DvtSunburstNode.prototype._getCollapseButton = function() {
 
   // Create button and hook up click listener
   var button = new dvt.Button(context, upState, overState, downState);
-  button.addEvtListener(dvt.MouseEvent.CLICK, this.expandCollapse, false, this);
+  button.setCallback(this.expandCollapse, this);
   return button;
 };
 
@@ -8296,13 +8457,13 @@ DvtSunburstNode.prototype._createRootNodeContent = function() {
     return;
   var newOverlay = context.createOverlayDiv();
   if (Array.isArray(customContent)) {
-    customContent.forEach(function(node) {newOverlay.appendChild(node);}); // @HtmlUpdateOk
+    customContent.forEach(function(node) {newOverlay.appendChild(node);}); // @HTMLUpdateOK
   }
   else {
-    newOverlay.appendChild(customContent); // @HtmlUpdateOk
+    newOverlay.appendChild(customContent); // @HTMLUpdateOK
   }
   sunburst.rootNodeContent = newOverlay;
-  parentDiv.appendChild(newOverlay); // @HtmlUpdateOk
+  parentDiv.appendChild(newOverlay); // @HTMLUpdateOK
 
   // Invoke the overlay attached callback if one is available.
   var callback = context.getOverlayAttachedCallback();
@@ -8355,6 +8516,12 @@ DvtSunburstNode.prototype._evaluateExpanded = function(sunburst, props) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Layout class for sunbursts.
  * @class
  */
@@ -8391,7 +8558,7 @@ DvtSunburstLayout.layout = function(totalRadius, root, startAngle, angleExtent, 
  * @param {string} sorting "on" if sorting by size is enabled.
  * @param {number} innerRadius The inner radius of the node to layout.
  */
-DvtSunburstLayout._layout = function(radiusPerDepth, node, startAngle, angleExtent, sorting, innerRadius) 
+DvtSunburstLayout._layout = function(radiusPerDepth, node, startAngle, angleExtent, sorting, innerRadius)
 {
   // First layout the node itself
   var outerRadius = innerRadius + node.__getRadius() * radiusPerDepth;
@@ -8465,6 +8632,12 @@ DvtSunburstLayout._calcLargestRadius = function(node) {
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Event Manager for Sunburst.
  *
@@ -8612,6 +8785,12 @@ DvtSunburstEventManager.prototype.RotateEndTouch = function(event, touch) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -8646,6 +8825,13 @@ DvtSunburstDefaults.SKIN_ALTA = {
   'startAngle': 90
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
   return dvt;
 });

@@ -2,8 +2,10 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtChart', 'ojs/ojattributegrouphandler', 'ojs/ojkeyset', 'ojs/ojlogger', 'ojs/ojmap', 'ojs/ojvalidation-base', 'ojs/ojvalidation-number'], function(oj, $, Config, comp, DvtAttributeUtils, dvt, attributeGroupHandler, KeySet, Logger, ojMap, __ValidationBase)
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtChart', 'ojs/ojattributegrouphandler', 'ojs/ojkeyset', 'ojs/ojlogger', 'ojs/ojmap', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter-number', 'ojs/ojvalidation-number'], function(oj, $, Config, comp, DvtAttributeUtils, dvt, attributeGroupHandler, KeySet, Logger, ojMap, ConverterUtils, NumberConverter)
 {
   "use strict";
 var __oj_chart_metadata = 
@@ -686,6 +688,14 @@ var __oj_chart_metadata =
         "dataItemGaps": {
           "type": "string"
         },
+        "dataLabelCollision": {
+          "type": "string",
+          "enumValues": [
+            "fitInBounds",
+            "none"
+          ],
+          "value": "none"
+        },
         "dataLabelPosition": {
           "type": "string|Array<string>",
           "enumValues": [
@@ -810,7 +820,7 @@ var __oj_chart_metadata =
             "gradient",
             "pattern"
           ],
-          "value": "gradient"
+          "value": "color"
         },
         "shapes": {
           "type": "Array<string>"
@@ -2563,8 +2573,7 @@ var __oj_chart_series_metadata =
         "dashed",
         "dotted",
         "solid"
-      ],
-      "value": "solid"
+      ]
     },
     "lineType": {
       "type": "string",
@@ -2577,8 +2586,7 @@ var __oj_chart_series_metadata =
         "segmented",
         "stepped",
         "straight"
-      ],
-      "value": "auto"
+      ]
     },
     "lineWidth": {
       "type": "number"
@@ -2592,12 +2600,10 @@ var __oj_chart_series_metadata =
         "auto",
         "off",
         "on"
-      ],
-      "value": "auto"
+      ]
     },
     "markerShape": {
-      "type": "string",
-      "value": "auto"
+      "type": "string"
     },
     "markerSize": {
       "type": "number"
@@ -2947,10 +2953,7 @@ var __oj_spark_chart_item_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2018, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Logger:false, Map:false, ojMap:false */
 
@@ -3336,21 +3339,18 @@ oj.ChartDataProviderHandler.prototype._sortGroups = function (groupsArray) {
   }
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-/* global dvt:false, attributeGroupHandler:false, KeySet:false, Config:false, Logger:false, __ValidationBase:false */
+
+/* global dvt:false, attributeGroupHandler:false, KeySet:false, Config:false, Logger:false, ConverterUtils:false, NumberConverter:false */
 
 /**
  * @ojcomponent oj.ojChart
  * @augments oj.dvtBaseComponent
  * @since 0.7.0
- * @ojstatus preview
+ *
  * @ojshortdesc A chart displays information graphically, making relationships among the data easier to understand.
  * @ojrole application
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
- * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter"]}
+ * @ojtsimport {module: "ojconverter", type: "AMD", importName: "Converter"}
  * @ojsignature [{
  *                target: "Type",
  *                value: "class ojChart<K,  D extends oj.ojChart.DataItem<I>|any, I extends Array<oj.ojChart.Item<any, null>>|Array<number>|null, C extends ojChart<K, D, I, null>|null> extends dvtBaseComponent<ojChartSettableProperties<K, D, I, C>>",
@@ -3665,15 +3665,21 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default "auto"
        */
       /**
-       * The type of selection behavior that is enabled on the chart.
+       * <p>The type of selection behavior that is enabled on the chart. This attribute controls the number of selections that can be made via selection gestures at any given time.
+       *
+       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the chart's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the chart's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+       *
+       * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+       *
        * @expose
        * @name selectionMode
        * @memberof oj.ojChart
        * @instance
        * @type {string}
-       * @ojvalue {string} "single"
-       * @ojvalue {string} "multiple"
-       * @ojvalue {string} "none"
+       * @ojvalue {string} "none" Selection is disabled.
+       * @ojvalue {string} "single" Only a single item can be selected at a time.
+       * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
        * @default "none"
        */
       /**
@@ -3916,7 +3922,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default "auto"
        */
       /**
-       * Speficies the position of the data cursor. Used for synchronizing data cursors across multiple charts. Null if the data cursor is not displayed.
+       * Specifies the position of the data cursor. Used for synchronizing data cursors across multiple charts. Null if the data cursor is not displayed.
        * @expose
        * @name dataCursorPosition
        * @memberof oj.ojChart
@@ -6381,7 +6387,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       * @ojvalue {string} "color"
       * @ojvalue {string} "pattern"
       * @ojvalue {string} "gradient"
-      * @default "gradient"
+      * @default "color"
       */
       /**
       * The array defining the default color ramp for the series.
@@ -6717,6 +6723,18 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @type {Object|Array.<Object>}
        * @ojsignature {target: "Type", value: "CSSStyleDeclaration|Array<CSSStyleDeclaration>", jsdocOverride: true}
        * @default null
+       */
+      /**
+       * Rule for adjusting data label layout. If set to fitInBounds, data label positions will be adjusted if they overlap with the chart's major axes or the legend, or go outside the bounds of the chart's plot area.
+       * @expose
+       * @name styleDefaults.dataLabelCollision
+       * @memberof! oj.ojChart
+       * @ojshortdesc Rule for adjusting data label layout. See the Help documentation for more information.
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "fitInBounds"
+       * @ojvalue {string} "none"
+       * @default "none"
        */
       /**
        * The CSS style object defining the style of the stack label. Only applies to stacked bar charts.
@@ -8381,7 +8399,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @expose
        * @name dnd.drop.legend.drop
        * @memberof! oj.ojChart
-       * @ojshortdesc An optional callback function that receives the "drop" event and emtpy context information as arguments. See the Help documentation for more information.
+       * @ojshortdesc An optional callback function that receives the "drop" event and empty context information as arguments. See the Help documentation for more information.
        * @instance
        * @type {function(Event, Object)}
        * @ojsignature {target: "Type", value: "((event: Event, context: oj.ojChart.DndDrop) => void)", jsdocOverride: true}
@@ -8397,7 +8415,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
      */
     _ComponentCreate: function () {
       this._super();
-      this._SetLocaleHelpers(__ValidationBase);
+      this._SetLocaleHelpers(NumberConverter, ConverterUtils);
     },
     //* * @inheritdoc */
     _CreateDvtComponent: function (context, callback, callbackObj) {
@@ -8722,12 +8740,6 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       resources.overviewGrippy =
         Config.getResourceUrl('resources/internal-deps/dvt/chart/drag_horizontal.png');
 
-      // Add cursors
-      resources.panCursorDown =
-        Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-closed.cur');
-      resources.panCursorUp =
-        Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-open.cur');
-
       // Drag button images
       resources.panUp = 'oj-chart-pan-icon';
       resources.panUpHover = 'oj-chart-pan-icon oj-hover';
@@ -9010,6 +9022,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       return this._super(option, value1, value2);
     }
   });
+
 
 /**
  * <table class="keyboard-table">
@@ -9408,7 +9421,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @property {"dashed"|"dotted"|"solid"} [lineStyle="solid"] The line style. Only applies when the symbolType is "line" or "lineWithMarker".
  * @property {number=} lineWidth The line width in pixels. Only applies when the symbolType is "line" or "lineWithMarker".
  * @property {string=} markerColor The color of the marker, if different than the line color. Only applies if the symbolType is "lineWithMarker".
- * @property {"circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string} [markerShape="square"] The shape of the marker. Only applies if symbolType is "marker" or "lineWithMarker". Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
+ * @property {"circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string} [markerShape="square"] The shape of the marker. Only applies if symbolType is "marker" or "lineWithMarker". Can take the name of a built-in shape or the SVG path commands for a custom shape. Does not apply if a custom image is specified.
  * @property {"largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"|"none"|"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle"} [pattern="none"] The pattern used to fill the marker. Only applies if symbolType is "marker" or "lineWithMarker".
  * @property {string=} shortDesc The description of this legend item. This is used for accessibility and for customizing the tooltip text.
  * @property {string=} source The URI of the image of the legend symbol.
@@ -9444,26 +9457,30 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  *               {target: "Type", value: "<D>", for: "genericTypeParameters"}]
  */
 
+/**
+ * @typedef {Object} oj.ojChart.ItemTemplateContext
+ * @property {Element} componentElement The &lt;oj-chart> custom element
+ * @property {number} index The zero-based index of the current item
+ * @property {Object} data The data object for the current item
+ * @property {any} key The key of the current item
+ */
+
  // Slots
 
 /**
- * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the chart. The slot must be a &lt;template> element.
+ * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the chart. The slot content must be a &lt;template> element.
  * The content of the template should only be one &lt;oj-chart-item> element. See the [oj-chart-item]{@link oj.ojChartItem} doc for more details. A <b>series-id</b> and <b>group-id</b> must be specified.</p>
  * <p>When the template is executed for each item, it will have access to the chart's binding context containing the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current item. (See the table below for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current item. (See [oj.ojChart.ItemTemplateContext]{@link oj.ojChart.ItemTemplateContext} or the table below for a list of properties available on $current) </li>
  *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
  * </ul>
- * @ojstatus preview
+ *
  * @ojslot itemTemplate
  * @ojshortdesc The itemTemplate slot is used to specify the template for creating each item of the chart. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojChart
- *
- * @property {Element} componentElement The &lt;oj-chart> custom element
- * @property {Object} data The data object for the current item
- * @property {number} index The zero-based index of the curent item
- * @property {any} key The key of the current item
+ * @ojslotitemprops oj.ojChart.ItemTemplateContext
  *
  * @example <caption>Initialize the Chart with an inline item template specified:</caption>
  * &lt;oj-chart data="[[dataProvider]]">
@@ -9478,16 +9495,16 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  */
 
  /**
- * <p>The <code class="prettyprint">seriesTemplate</code> slot is used to specify the template for generating the series properties of the chart. The slot must be a &lt;template> element.
+ * <p>The <code class="prettyprint">seriesTemplate</code> slot is used to specify the template for generating the series properties of the chart. The slot content must be a &lt;template> element.
  * The content of the template should only be one &lt;oj-chart-series> element.See the [oj-chart-series]{@link oj.ojChartSeries} doc for more details.</p>
  * <p>When the template is executed for each series, it will have access to the chart's binding context containing the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current item. (See [oj.ojChart.SeriesTemplateContext]{@link oj.ojChart.SeriesTemplateContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current item. (See [oj.ojChart.SeriesTemplateContext]{@link oj.ojChart.SeriesTemplateContext} or the table below for a list of properties available on $current) </li>
  *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
  * </ul>
  *
  *
- * @ojstatus preview
+ *
  * @ojslot seriesTemplate
  * @ojshortdesc The seriesTemplate slot is used to specify the template for generating the series properties of the chart. See the Help documentation for more information.
  * @ojslotitemprops oj.ojChart.SeriesTemplateContext
@@ -9506,15 +9523,15 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  */
 
  /**
- * <p>The <code class="prettyprint">groupTemplate</code> slot is used to specify the template for generating the group properties of the chart. The slot must be a &lt;template> element.
+ * <p>The <code class="prettyprint">groupTemplate</code> slot is used to specify the template for generating the group properties of the chart. The slot content must be a &lt;template> element.
  * The content of the template should only be one &lt;oj-chart-group> element. See the [oj-chart-group]{@link oj.ojChartGroup} doc for more details.</p>
  * <p>When the template is executed for each group, it will have access to the chart's binding context containing the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current item. (See [oj.ojChart.GroupTemplateContext]{@link oj.ojChart.GroupTemplateContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current item. (See [oj.ojChart.GroupTemplateContext]{@link oj.ojChart.GroupTemplateContext} or the table below for a list of properties available on $current) </li>
  *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot groupTemplate
  * @ojshortdesc The groupTemplate slot is used to specify the template for generating the group properties of the chart. See the Help documentation for more information.
  * @ojslotitemprops oj.ojChart.GroupTemplateContext
@@ -9537,10 +9554,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current item. (See [oj.ojChart.TooltipContext]{@link oj.ojChart.TooltipContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current item. (See [oj.ojChart.TooltipContext]{@link oj.ojChart.TooltipContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot tooltipTemplate
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojChart.TooltipContext
@@ -9560,10 +9577,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * for a pie chart.  This slot takes precedence over the pieCenter.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the pie center. (See [oj.ojChart.PieCenterContext]{@link oj.ojChart.PieCenterContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the pie center. (See [oj.ojChart.PieCenterContext]{@link oj.ojChart.PieCenterContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot pieCenterTemplate
  * @ojshortdesc The pieCenterTemplate slot is used to specify custom center content for a pie chart. This slot takes precedence over the pieCenter.renderer property if specified. See the Help documentation for more information.
  * @ojslotitemprops oj.ojChart.PieCenterContext
@@ -9744,13 +9761,14 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @memberof oj.ojChart
  */
 
+
 /**
  * @ojcomponent oj.ojChartGroup
  * @ojimportmembers oj.ojChartGroupProperties
  * @ojslotcomponent
  * @ojsignature {target: "Type", value:"class ojChartGroup extends JetElement<ojChartGroupSettableProperties>"}
  * @since 5.1.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="chartGroupOverview-section">
@@ -9775,13 +9793,14 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * </pre>
  */
 
+
 /**
  * @ojcomponent oj.ojChartItem
  * @ojimportmembers oj.ojChartItemProperties
  * @ojsignature {target: "Type", value:"class ojChartItem extends JetElement<ojChartItemSettableProperties>"}
  * @ojslotcomponent
  * @since 5.1.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="chartItemOverview-section">
@@ -9838,13 +9857,14 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  *
  */
 
+
 /**
  * @ojcomponent oj.ojChartSeries
  * @ojimportmembers oj.ojChartSeriesProperties
  * @ojslotcomponent
  * @ojsignature {target: "Type", value:"class ojChartSeries extends JetElement<ojChartSeriesSettableProperties>"}
  * @since 5.1.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="chartSeriesOverview-section">
@@ -9869,6 +9889,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * </pre>
  */
 
+
 /* global dvt:false */
 
 /**
@@ -9876,7 +9897,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @augments oj.dvtBaseComponent
  * @since 0.7.0
  * @ojshortdesc A spark chart displays information graphically, typically highlighting the trend of a data set in a compact form factor.
- * @ojstatus preview
+ *
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojrole application
  * @ojsignature [{
@@ -10544,7 +10565,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      */
       lineType: 'straight',
     /**
-     * The shape of the data markers. Can take the name of a built-in shape or the svg path commands for a custom shape. Only applies to line and area spark charts.
+     * The shape of the data markers. Can take the name of a built-in shape or the SVG path commands for a custom shape. Only applies to line and area spark charts.
      * @expose
      * @name markerShape
      * @ojshortdesc The shape of the data markers. See the Help documentation for more information.
@@ -10730,6 +10751,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
     },
   });
 
+
 /**
  * <p>This element has no touch interaction.  </p>
  *
@@ -10755,7 +10777,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  * @property {number} high The high value for range bar/area. Define 'low' and 'high' instead of 'value' to create a range bar/area spark chart.
  * @property {number} low The low value for range bar/area. Define 'low' and 'high' instead of 'value' to create a range bar/area spark chart.
  * @property {"on"|"off"} markerDisplayed="off" Defines whether a marker should be displayed for the data item. Only applies to line and area spark charts.
- * @property {"square"|"circle"|"diamond"|"plus"|"triangleDown"|"triangleUp"|"human"|"star"|"auto"|string} markerShape="auto" The shape of the data markers. Can take the name of a built-in shape or the svg path commands for a custom shape. Only applies to line and area spark charts.
+ * @property {"square"|"circle"|"diamond"|"plus"|"triangleDown"|"triangleUp"|"human"|"star"|"auto"|string} markerShape="auto" The shape of the data markers. Can take the name of a built-in shape or the SVG path commands for a custom shape. Only applies to line and area spark charts.
  * @property {number} markerSize The size of the data markers in pixels. Only applies to line and area spark charts.
  * @property {string} svgClassName The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
  * @property {Object} svgStyle The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
@@ -10766,10 +10788,10 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  // Slots
 
 /**
- * <p> The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the spark chart when a DataProvider has been specified with the data attribute. The slot must be a &lt;template> element.
+ * <p> The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the spark chart when a DataProvider has been specified with the data attribute. The slot content must be a &lt;template> element.
  * <p>When the template is executed for each item, it will have access to the spark chart's binding context and the following properties:</p>
  * <ul>
- * <li>$current - an object that contains information for the current item
+ *   <li>$current - an object that contains information for the current item. (See [oj.ojSparkChart.ItemTemplateContext]{@link oj.ojSparkChart.ItemTemplateContext} or the table below for a list of properties available on $current) </li>
  * </li>
  * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
  * </li>
@@ -10777,15 +10799,12 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  *
  * <p>The content of the template should only be one &lt;oj-spark-chart-item> element. See the [oj-spark-chart-item]{@link oj.ojSparkChartItem} doc for more details.</p>
  *
- * @ojstatus preview
+ *
  * @ojslot itemTemplate
  * @ojshortdesc The itemTemplate slot is used to specify the template for creating each item of the spark chart. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojSparkChart
- * @property {Element} componentElement The &lt;oj-spark-chart> custom element.
- * @property {Object} data The data object for the current item.
- * @property {number} index The zero-based index of the current item.
- * @property {any} key The key of the current item.
+ * @ojslotitemprops oj.ojSparkChart.ItemTemplateContext
  *
  * @example <caption>Initialize the spark chart with an inline item template specified:</caption>
  * &lt;oj-spark-chart data='[[dataProvider]]'>
@@ -10803,10 +10822,10 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the spark chart. (See [oj.ojSparkChart.TooltipContext]{@link oj.ojSparkChart.TooltipContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the spark chart. (See [oj.ojSparkChart.TooltipContext]{@link oj.ojSparkChart.TooltipContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot tooltipTemplate
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojSparkChart.TooltipContext
@@ -10843,6 +10862,14 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  * @property {Element} parentElement The tooltip element. The function can directly modify or append content to this element.
  */
 
+/**
+ * @typedef {Object} oj.ojSparkChart.ItemTemplateContext
+ * @property {Element} componentElement The &lt;oj-spark-chart> custom element.
+ * @property {Object} data The data object for the current item.
+ * @property {number} index The zero-based index of the current item.
+ * @property {any} key The key of the current item.
+ */
+
 // METHOD TYPEDEFS
 
 /**
@@ -10855,12 +10882,13 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  * @property {number} value The value of the item
  */
 
+
 /**
  * @ojcomponent oj.ojSparkChartItem
  * @ojsignature {target: "Type", value:"class ojSparkChartItem extends JetElement<ojSparkChartItemSettableProperties>"}
  * @ojslotcomponent
  * @since 5.2.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="sparkChartItemOverview-section">
@@ -10988,7 +11016,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  * &lt;/oj-spark-chart>
  */
 /**
- * The shape of the data markers. Can take the name of a built-in shape or the svg path commands for a custom shape. Only applies to line and area spark charts.
+ * The shape of the data markers. Can take the name of a built-in shape or the SVG path commands for a custom shape. Only applies to line and area spark charts.
  * @expose
  * @name markerShape
  * @ojshortdesc The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. See the Help documentation for more information.
@@ -11074,6 +11102,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  *  &lt;/template>
  * &lt;/oj-spark-chart>
  */
+
 
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.

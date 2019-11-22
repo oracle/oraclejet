@@ -2,14 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojrowexpander'], function(oj, $)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @class oj.FlattenedTreeCellSet
@@ -23,6 +22,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojrowexpander'],
  * @param {Object} nodeSet the node set in which this cell set wraps around
  * @param {Array|null} columns the set of column keys
  * @constructor
+ * @final
  * @since 1.0
  * @export
  * @ojtsignore
@@ -248,10 +248,6 @@ oj.FlattenedTreeCellSet.prototype.getExtent = function (indexes) {
     column: { extent: 1, more: { before: false, after: false } } };
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /* global Promise:false */
 
@@ -263,6 +259,7 @@ oj.FlattenedTreeCellSet.prototype.getExtent = function (indexes) {
  * @property {Array.<any>=} options.columns an array of columns to return as column headers
  * @property {any} options.rowHeader the key of the attribute designated as the row header
  * @constructor
+ * @final
  * @since 1.0
  * @export
  * @extends oj.FlattenedTreeDataSource
@@ -853,10 +850,6 @@ oj.FlattenedTreeDataGridDataSource.prototype.handleMaxCountReached = function (r
   callbacks.success.call(null, empty);
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /**
  * @class oj.FlattenedTreeHeaderSet
@@ -868,6 +861,7 @@ oj.FlattenedTreeDataGridDataSource.prototype.handleMaxCountReached = function (r
  * @param {Object=} nodeSet the node set containing data about the row header.  Required for row headers.
  * @param {string=} rowHeader the id of the row header column.  Required for row headers.
  * @constructor
+ * @final
  * @since 1.0
  * @export
  * @ojtsignore
@@ -1042,6 +1036,7 @@ oj.FlattenedTreeHeaderSet.prototype.getDepth = function (index, level) {
 oj.FlattenedTreeHeaderSet.prototype.getLabel = function () {
   return null;
 };
+
 
 // Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
 

@@ -116,6 +116,19 @@ export namespace ojNavigationList {
         key: any;
         data: any;
         parentElement: Element;
+        depth?: number;
+        parentKey?: K;
+        leaf?: boolean;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+        depth: number;
+        leaf: boolean;
+        parentkey: any;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext<K> = {
@@ -302,6 +315,13 @@ export namespace ojTabBar {
         key: K;
         data: D;
         parentElement: Element;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext<K> = {

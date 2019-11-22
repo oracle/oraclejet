@@ -1,4 +1,4 @@
-import { Converter } from '../ojvalidation-base';
+import Converter = require('../ojconverter');
 import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettableProperties } from '../ojdvt-base';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojTimeAxis extends dvtBaseComponent<ojTimeAxisSettableProperties> {

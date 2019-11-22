@@ -2,16 +2,19 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'knockout'], function(oj, ko)
 {
   "use strict";
+
 /**
  * Utility class with functions for preprocessing HTML content.
  * @namespace
  * @hideconstructor
  * @ojtsmodule
- * @ojstatus preview
+ *
  * @since 6.1.0
  */
 var HtmlUtils = {};
@@ -119,8 +122,8 @@ function _unescapeTag(parent) {
         attr = child.attributes[j];
         replNode.setAttribute(attr.name, attr.value);
       }
-      var origHTML = child.innerHTML;
-      replNode.innerHTML = origHTML.replace(new RegExp('oj-bind-replace-', 'g'), '');
+      var origHTML = child.innerHTML; // @HTMLUpdateOK
+      replNode.innerHTML = origHTML.replace(new RegExp('oj-bind-replace-', 'g'), ''); // @HTMLUpdateOK
       parent.replaceChild(replNode, child);
     } else if (child.nodeType === 8) { // comment node
       var origValue = child.nodeValue;

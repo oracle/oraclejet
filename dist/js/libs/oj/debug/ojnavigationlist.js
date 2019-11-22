@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore','ojs/ojdatacollection-common','ojs/ojbutton','ojs/ojmenu','ojs/ojlistview'], 
 function(oj, $, ThemeUtils, Components, DataCollectionUtils)
 {
@@ -48,8 +50,7 @@ var __oj_navigation_list_metadata =
     },
     "expanded": {
       "type": "KeySet",
-      "writeback": true,
-      "value": "new ExpandedKeySet();"
+      "writeback": true
     },
     "hierarchyMenuThreshold": {
       "type": "number",
@@ -257,6 +258,7 @@ var __oj_tab_bar_metadata =
   },
   "extension": {}
 };
+
 /* global _ojNavigationListView:false, Promise:false */
 
 /**
@@ -581,6 +583,7 @@ oj.DefaultNavListHandler.prototype.HandleKeydown = function (event) {
 oj.DefaultNavListHandler.prototype.HandleSelectionChange = function (item) {
 
 };
+
 
 /* global _ojNavigationListView:false, DataCollectionUtils:false */
 
@@ -1472,6 +1475,7 @@ oj._HorizontalNavListOverflowHandler.prototype._getMinLabelWidth = function (ite
   return 0;
 };
 
+
 /* global _ojNavigationListView:false */
 /**
  * Handler for Collapsible Navigation List
@@ -1536,6 +1540,7 @@ oj.CollapsibleNavListHandler.prototype.HandleExpandAndCollapseKeys =
     }
     return false;
   };
+
 
 /* global _ojNavigationListView:false, Promise:false */
 
@@ -2200,6 +2205,7 @@ oj.SlidingNavListHandler.prototype.GetSubIdByNode = function (node) {
 
   return null;
 };
+
 
 /**
  * todo: create common utility class between combobox, listview and navlist
@@ -3013,6 +3019,14 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      */
     getItemStyleClass: function () {
       return this._ITEM_STYLE_CLASS[this._getNavigationMode()];
+    },
+
+    /**
+     * NavList doesn't have item layout style class
+     * @override
+     */
+    getItemLayoutStyleClass: function () {
+      return this.getItemStyleClass();
     },
 
     getFocusedElementStyleClass: function () {
@@ -3989,10 +4003,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
 
   });
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global _ojNavigationListView:false, Components:false, ThemeUtils:false */
 
@@ -4001,7 +4012,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojcomponent oj.ojNavigationList
    * @augments oj.baseComponent
    * @since 1.1.0
-   * @ojstatus preview
+   *
    * @ojrole menu
    * @ojrole tree
    * @ojrole listbox
@@ -4380,7 +4391,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * if oj-bind-for-each element is used inside the item template since it has its own scope of data access.
        *
        * @ojshortdesc Specifies the alias for the current item when referenced inside the item template.
-       * @ojstatus preview
+       *
        * @expose
        * @public
        * @instance
@@ -4455,7 +4466,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @type {string}
        * @default none
        * @ojvalue {string} "none" All group items are expanded by default and user not allowed to collapse them.
-       * @ojvalue {string} "collapsible" Allows user to expand and collapse group items. If there are more than two levels in hierarchy, <code class="prettyprint">sliding</code> is preferered drill mode.
+       * @ojvalue {string} "collapsible" Allows user to expand and collapse group items. If there are more than two levels in hierarchy, <code class="prettyprint">sliding</code> is preferred drill mode.
        * @ojvalue {string} "sliding" This is typically used for hierarchical lists. This allows user to view one level at a time.
        *
        * @example <caption>Initialize the Navigation List with the <code class="prettyprint">drill-mode</code> attribute specified:</caption>
@@ -4689,7 +4700,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @memberof oj.ojNavigationList
        * @instance
        * @type {string}
-       * @ojvalue {string} "popup" popup menu will be shown with overflowed items.<p> NOTE: Setting <code class="prettyprint">overflow</code> to <code class="prettyprint">popup</code> can trigger browser reflow, so only set it when it is actually required.
+       * @ojvalue {string} "popup" popup menu will be shown with overflowed items.<p> Note that setting <code class="prettyprint">overflow</code> to <code class="prettyprint">popup</code> can trigger browser reflow, so only set it when it is actually required.
        * @ojvalue {string} "hidden" overflow is clipped, and the rest of the content will be invisible.
        * @default hidden
        * @since 3.0.0
@@ -4712,6 +4723,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @property {any} key The Key of the item.
        * @property {any} data The data object for the item.
        * @property {Element} parentElement The list item element. The renderer can use this to directly append content.
+       * @property {number=} depth the depth of the item
+       * @property {K=} parentKey the key of the parent item
+       * @property {boolean=} leaf whether the item is a leaf
        * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
        */
 
@@ -5310,27 +5324,20 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     // Slots
 
     /**
-     * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the list. The slot must be a &lt;template> element.
+     * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the list. The slot content must be a &lt;template> element.
      * The content of the template could either include the &lt;li> element, in which case that will be used as
      * the root of the item.  Or it can be just the content which excludes the &lt;li> element.</p>
      * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
      * <ul>
-     *   <li>$current - an object that contains information for the current item. (See the table below for a list of properties available on $current)</li>
+     *   <li>$current - an object that contains information for the current item. (See [oj.ojNavigationList.ItemTemplateContext]{@link oj.ojNavigationList.ItemTemplateContext} or the table below for a list of properties available on $current)</li>
      *  <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
      * </ul>
-     * @ojstatus preview
+     *
      * @ojslot itemTemplate
      * @ojmaxitems 1
      * @memberof oj.ojNavigationList
      * @ojshortdesc The itemTemplate slot is used to specify the template for rendering each item in the list. See the Help documentation for more information.
-     *
-     * @property {Element} componentElement The &lt;oj-navigation-list> custom element
-     * @property {Object} data The data for the current item being rendered
-     * @property {number} index The zero-based index of the curent item
-     * @property {any} key The key of the current item being rendered
-     * @property {number} depth The depth of the current item (available when hierarchical data is provided) being rendered. The depth of the first level children under the invisible root is 1.
-     * @property {boolean} leaf True if the current item is a leaf node (available when hierarchical data is provided).
-     * @property {any} parentkey The key of the parent item (available when hierarchical data is provided). The parent key is null for root nodes.
+     * @ojslotitemprops oj.ojNavigationList.ItemTemplateContext
      *
      * @example <caption>Initialize the ListView with an inline item template specified:</caption>
      * &lt;oj-navigation-list>
@@ -5339,7 +5346,16 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *   &lt;/template>
      * &lt;/oj-navigation-list>
      */
-
+  /**
+   * @typedef {Object} oj.ojNavigationList.ItemTemplateContext
+   * @property {Element} componentElement The &lt;oj-navigation-list> custom element
+   * @property {Object} data The data for the current item being rendered
+   * @property {number} index The zero-based index of the current item
+   * @property {any} key The key of the current item being rendered
+   * @property {number} depth The depth of the current item (available when hierarchical data is provided) being rendered. The depth of the first level children under the invisible root is 1.
+   * @property {boolean} leaf True if the current item is a leaf node (available when hierarchical data is provided).
+   * @property {any} parentkey The key of the parent item (available when hierarchical data is provided). The parent key is null for root nodes.
+   */
 
     // Fragments:
 
@@ -5772,11 +5788,12 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
   });
 }());
 
+
 // DOCLETS
   /**
    * @ojcomponent oj.ojTabBar
    * @augments oj.baseComponent
-   * @ojstatus preview
+   *
    * @since 4.0.0
    * @ojrole tablist
    * @ojsignature [{
@@ -6021,7 +6038,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * if oj-bind-for-each element is used inside the item template since it has its own scope of data access.
    *
    * @ojshortdesc Specifies the alias for the current item when referenced inside the item template.
-   * @ojstatus preview
+   *
    * @name as
    * @expose
    * @public
@@ -6109,7 +6126,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @memberof oj.ojTabBar
    * @instance
    * @ojshortdesc Specifies whether tabs can be reordered.
-   * @ojstatus preview
+   *
    * @since 4.1.0
    * @type {string}
    * @ojvalue {string} "enabled" Enables reordering of items in tabbar.
@@ -6129,7 +6146,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @name truncation
    * @memberof oj.ojTabBar
    * @instance
-   * @ojstatus preview
+   *
    * @ojshortdesc Specifies whether truncation needs to be applied.
    * @since 4.1.0
    * @type {string}
@@ -6244,7 +6261,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @name overflow
    * @instance
    * @type {string}
-   * @ojvalue {string} "popup" popup menu will be shown with overflowed items. <p> NOTE: Setting <code class="prettyprint">overflow</code> to <code class="prettyprint">popup</code> can trigger browser reflow, so only set it when it is actually required.
+   * @ojvalue {string} "popup" popup menu will be shown with overflowed items. <p> Note that setting <code class="prettyprint">overflow</code> to <code class="prettyprint">popup</code> can trigger browser reflow, so only set it when it is actually required.
    * @ojvalue {string} "hidden" overflow is clipped, and the rest of the content will be invisible.
    * @default hidden
    * @ojshortdesc Specifies overflow behaviour for the Tab Bar.
@@ -6398,7 +6415,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojcancelable
    * @memberof oj.ojTabBar
    * @name beforeDeselect
-   * @ojstatus preview
+   *
    * @since 4.1.0
    * @instance
    * @property {any} fromKey the <a href="#key-section">Key</a> of the tab item being navigated from
@@ -6413,7 +6430,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @event
    * @memberof oj.ojTabBar
    * @name deselect
-   * @ojstatus preview
+   *
    * @since 4.1.0
    * @instance
    * @property {any} fromKey the <a href="#key-section">Key</a> of the tab item being navigated from
@@ -6430,7 +6447,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojcancelable
    * @memberof oj.ojTabBar
    * @name beforeRemove
-   * @ojstatus preview
+   *
    * @since 4.1.0
    * @instance
    * @property {Element} item Item being removed
@@ -6443,7 +6460,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @event
    * @memberof oj.ojTabBar
    * @name remove
-   * @ojstatus preview
+   *
    * @since 4.1.0
    * @instance
    * @property {Element} item Item removed
@@ -6456,7 +6473,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @event
    * @memberof oj.ojTabBar
    * @name reorder
-   * @ojstatus preview
+   *
    * @since 4.1.0
    * @instance
    * @property {Element} item Item to be moved
@@ -6505,25 +6522,20 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       // Slots
 
     /**
-     * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the list. The slot must be a &lt;template> element.
+     * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the list. The slot content must be a &lt;template> element.
      * The content of the template could either include the &lt;li> element, in which case that will be used as
      * the root of the item.  Or it can be just the content which excludes the &lt;li> element.</p>
      * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
      * <ul>
-     *   <li>$current - an object that contains information for the current item. (See the table below for a list of properties available on $current)</li>
+     *   <li>$current - an object that contains information for the current item. (See [oj.ojTabBar.ItemTemplateContext]{@link oj.ojTabBar.ItemTemplateContext} or the table below for a list of properties available on $current)</li>
      *  <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
      * </ul>
-     * @ojstatus preview
+     *
      * @ojslot itemTemplate
      * @ojmaxitems 1
      * @memberof oj.ojTabBar
      * @ojshortdesc The itemTemplate slot is used to specify the template for rendering each item in the list. See the Help documentation for more information.
-     *
-     * @property {Element} componentElement The &lt;oj-navigation-list> custom element
-     * @property {Object} data The data for the current item being rendered
-     * @property {number} index The zero-based index of the curent item
-     * @property {any} key The key of the current item being rendered
-     *
+     * @ojslotitemprops oj.ojTabBar.ItemTemplateContext
      * @example <caption>Initialize the ListView with an inline item template specified:</caption>
      * &lt;oj-tab-bar>
      *   &lt;template slot='itemTemplate' data-oj-as='item'>
@@ -6531,7 +6543,13 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *   &lt;/template>
      * &lt;/oj-tab-bar>
      */
-
+    /**
+     * @typedef {Object} oj.ojTabBar.ItemTemplateContext
+     * @property {Element} componentElement The &lt;oj-navigation-list> custom element
+     * @property {Object} data The data for the current item being rendered
+     * @property {number} index The zero-based index of the current item
+     * @property {any} key The key of the current item being rendered
+     */
   // Fragments:
 
   /**
@@ -6907,6 +6925,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojnodecontext oj-tabbar-item
    * @memberof oj.ojTabBar
    */
+
 
 /* global __oj_navigation_list_metadata */
 

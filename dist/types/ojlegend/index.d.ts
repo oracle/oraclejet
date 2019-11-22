@@ -112,6 +112,15 @@ export namespace ojLegend {
         text?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+        parentData: any[];
+        parentKey: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
         itemIndex: number;
         sectionIndexPath: number[];

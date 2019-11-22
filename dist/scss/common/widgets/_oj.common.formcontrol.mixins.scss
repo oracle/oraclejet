@@ -279,7 +279,7 @@
 //
 // Usage Example:
 //
-//  .oj-datagrid-cell.oj-form-control-inherit:not(oj-form-control-default) {
+//  .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) {
 //     @include oj-form-control-padding-override(
 //        $padding: "0 5px");
 //   }
@@ -299,6 +299,7 @@
     & .oj-select .oj-select-choices,
     & .oj-combobox .oj-combobox-choice,
     & .oj-combobox .oj-combobox-choices,
+    & .oj-searchselect-input,
     & .oj-inputdatetime .oj-inputdatetime-input {
       padding: #{$padding};
     }
@@ -311,7 +312,7 @@
 //
 // Usage Example:
 //
-//  .oj-datagrid-cell.oj-form-control-inherit:not(oj-form-control-default) {
+//  .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) {
 //    @include oj-form-control-font-size-override(
 //      $fontSize: 16px);
 //   }
@@ -332,6 +333,7 @@
     & .oj-combobox .oj-combobox-choice,
     & .oj-combobox .oj-combobox-choices,
     & .oj-combobox .oj-combobox-input,
+    & .oj-searchselect-input,
     & .oj-inputdatetime .oj-inputdatetime-input, {
       font-size: #{$fontSize};
     }
@@ -345,9 +347,6 @@
   color: inherit;
   height: 100%;
   width: 100%;
-  // use transparent because IE11/Edge doesn't inherit doesn't work with inputs
-  background-color: transparent;
-  border-width: 0;
   @include oj-ltr() {
     text-align:inherit;
   }
@@ -355,6 +354,15 @@
   @include oj-rtl() {
     text-align:inherit;
   }
+}
+
+@mixin oj-form-control-inherit-background() {
+  // use transparent because IE11/Edge doesn't inherit doesn't work with inputs
+  background-color: transparent;
+}
+
+@mixin oj-form-control-inherit-border() {
+  border-width: 0;
 }
 
 // returns the difference between the bottom border width on focus and the bottom border width

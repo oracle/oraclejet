@@ -296,10 +296,41 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
         insert: SVGElement;
     } | void) | null;
     layout: ((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => void);
+    linkContent: {
+        focusRenderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
+            insert: SVGElement;
+        } | void) | null;
+        hoverRenderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
+            insert: SVGElement;
+        } | void) | null;
+        renderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => ({
+            insert: SVGElement;
+        }));
+        selectionRenderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
+            insert: SVGElement;
+        } | void) | null;
+    };
     linkData: DataProvider<K2, D2> | null;
     linkHighlightMode: 'linkAndNodes' | 'link';
     maxZoom: number;
     minZoom: number;
+    nodeContent: {
+        focusRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+            insert: SVGElement;
+        } | void) | null;
+        hoverRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+            insert: SVGElement;
+        } | void) | null;
+        renderer: ((context: ojDiagram.RendererContext<K1, D1>) => ({
+            insert: SVGElement;
+        }));
+        selectionRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+            insert: SVGElement;
+        } | void) | null;
+        zoomRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+            insert: SVGElement;
+        } | void) | null;
+    };
     nodeData: DataProvider<K1, D1> | null;
     nodeHighlightMode: 'nodeAndIncomingLinks' | 'nodeAndOutgoingLinks' | 'nodeAndLinks' | 'node';
     overview: {
@@ -316,7 +347,7 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
         insert: SVGElement;
     }));
     selection: Array<K1 | K2>;
-    selectionMode: 'single' | 'multiple' | 'none';
+    selectionMode: 'none' | 'single' | 'multiple';
     selectionRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
@@ -451,6 +482,8 @@ export namespace ojDiagram {
     // tslint:disable-next-line interface-over-type-literal
     type layoutChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["layout"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type linkContentChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["linkContent"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type linkDataChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["linkData"]>;
     // tslint:disable-next-line interface-over-type-literal
     type linkHighlightModeChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["linkHighlightMode"]>;
@@ -458,6 +491,8 @@ export namespace ojDiagram {
     type maxZoomChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["maxZoom"]>;
     // tslint:disable-next-line interface-over-type-literal
     type minZoomChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["minZoom"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type nodeContentChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["nodeContent"]>;
     // tslint:disable-next-line interface-over-type-literal
     type nodeDataChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["nodeData"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -528,6 +563,34 @@ export namespace ojDiagram {
         itemData: D2;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type LinkRendererContext<K1, K2, D2> = {
+        parentElement: Element;
+        componentElement: Element;
+        rootElement: Element | null;
+        data: Link<K2, K1>;
+        itemData: D2 | D2[];
+        state: {
+            hovered: boolean;
+            selected: boolean;
+            focused: boolean;
+        };
+        previousState: {
+            hovered: boolean;
+            selected: boolean;
+            focused: boolean;
+        };
+        id: K2;
+        type: 'link' | 'promotedLink';
+        points: any[] | string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type LinkTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type Node<K1> = {
         id?: K1;
         categories?: string[];
@@ -578,6 +641,14 @@ export namespace ojDiagram {
         itemData: D1;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type NodeTemplateContext = {
+        data: object;
+        index: number;
+        key: any;
+        parentData: any[];
+        parentKey: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type PromotedLinkItemContext<K1, K2, D2> = {
         componentElement: Element;
         id: K2;
@@ -590,6 +661,7 @@ export namespace ojDiagram {
     type RendererContext<K1, D1> = {
         parentElement: Element;
         componentElement: Element;
+        rootElement: Element | null;
         data: Node<K1>;
         itemData: D1;
         content: {
@@ -645,10 +717,12 @@ export interface ojDiagramEventMap<K1, K2, D1 extends ojDiagram.Node<K1> | any, 
     'hoverBehaviorChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["hoverBehavior"]>;
     'hoverRendererChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["hoverRenderer"]>;
     'layoutChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["layout"]>;
+    'linkContentChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["linkContent"]>;
     'linkDataChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["linkData"]>;
     'linkHighlightModeChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["linkHighlightMode"]>;
     'maxZoomChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["maxZoom"]>;
     'minZoomChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["minZoom"]>;
+    'nodeContentChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["nodeContent"]>;
     'nodeDataChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["nodeData"]>;
     'nodeHighlightModeChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["nodeHighlightMode"]>;
     'overviewChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["overview"]>;
@@ -823,10 +897,41 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
         insert: SVGElement;
     } | void) | null;
     layout: ((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => void);
+    linkContent: {
+        focusRenderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
+            insert: SVGElement;
+        } | void) | null;
+        hoverRenderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
+            insert: SVGElement;
+        } | void) | null;
+        renderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => ({
+            insert: SVGElement;
+        }));
+        selectionRenderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
+            insert: SVGElement;
+        } | void) | null;
+    };
     linkData: DataProvider<K2, D2> | null;
     linkHighlightMode: 'linkAndNodes' | 'link';
     maxZoom: number;
     minZoom: number;
+    nodeContent: {
+        focusRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+            insert: SVGElement;
+        } | void) | null;
+        hoverRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+            insert: SVGElement;
+        } | void) | null;
+        renderer: ((context: ojDiagram.RendererContext<K1, D1>) => ({
+            insert: SVGElement;
+        }));
+        selectionRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+            insert: SVGElement;
+        } | void) | null;
+        zoomRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+            insert: SVGElement;
+        } | void) | null;
+    };
     nodeData: DataProvider<K1, D1> | null;
     nodeHighlightMode: 'nodeAndIncomingLinks' | 'nodeAndOutgoingLinks' | 'nodeAndLinks' | 'node';
     overview: {
@@ -843,7 +948,7 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
         insert: SVGElement;
     }));
     selection: Array<K1 | K2>;
-    selectionMode: 'single' | 'multiple' | 'none';
+    selectionMode: 'none' | 'single' | 'multiple';
     selectionRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;

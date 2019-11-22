@@ -2,14 +2,12 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojmodel', 'ojs/ojdatasource-common'], function(oj, $, Model)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /* global Promise:false */
 
@@ -18,6 +16,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojmodel', 'ojs/ojdatasource-common'], funct
  * of the fetchChildren method on CollectionTreeDataSource.
  * @implements oj.NodeSet
  * @constructor
+ * @final
  * @since 1.0
  * @param {any} parentKey the key of the parent node
  * @param {oj.Collection} collection the Collection associated with this NodeSet
@@ -213,6 +212,7 @@ oj.CollectionNodeSet.prototype.getChildNodeSet = function (index) {
   return this.childNodeSet[index];
 };
 
+
 /* global Promise:false, Model:false */
 
 /**
@@ -226,6 +226,7 @@ oj.CollectionNodeSet.prototype.getChildNodeSet = function (index) {
  * @property {function(oj.Collection,oj.Model):oj.Collection=} options.childCollectionCallback callback to return a child collection given a root and model representing the parent
  * @property {function(oj.Model):{key: *, leaf: boolean, depth: number}=} options.parseMetadata callback to return key, leaf, depth metadata from a given Model
  * @constructor
+ * @final
  * @since 1.0
  * @export
  * @extends oj.TreeDataSource

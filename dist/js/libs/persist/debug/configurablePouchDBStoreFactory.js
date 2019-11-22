@@ -47,12 +47,18 @@ define(["./impl/pouchDBPersistenceStore"],
       if (!storeOptions) {
         storeOptions = options;
       } else {
-        storeOptions = Object.create(storeOptions);
-        for (var key in options) {
-          if (Object.prototype.hasOwnProperty.call(options, key)) {
-            storeOptions[key] = options[key];
+        var mergedOptions = {};
+        for (var key in storeOptions) {
+          if (Object.prototype.hasOwnProperty.call(storeOptions, key)) {
+            mergedOptions[key] = storeOptions[key];
           }
         }
+        for (var key in options) {
+          if (Object.prototype.hasOwnProperty.call(options, key)) {
+            mergedOptions[key] = options[key];
+          }
+        }
+        storeOptions = mergedOptions;
       }
     }
     return store.Init(storeOptions).then(function () {

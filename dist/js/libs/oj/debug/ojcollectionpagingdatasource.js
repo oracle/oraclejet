@@ -2,10 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout-model', 'ojs/ojdatasource-common', 'ojs/ojmodel'], function(oj, $, ko, KnockoutUtils)
 {
   "use strict";
+
 /* global Promise:false, ko:false, KnockoutUtils:false */
 
 /* jslint browser: true,devel:true*/
@@ -20,6 +23,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout-model', 'ojs/ojdatas
  * @implements oj.PagingModel
  * @param {oj.Collection} collection the collection to use as source data for this paging control
  * @constructor
+ * @final
  * @since 1.0
  * @ojtsignore
  * @ojtsimport knockout

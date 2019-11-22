@@ -2,14 +2,17 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define([], function()
 {
   "use strict";
+
 /**
  * A behavior subject implementation of observable
  * @class BehaviorSubject
- * @ojstatus preview
+ *
  * @classdesc a internal class behavior subject implementation of observable
  * @constructor
  * @hideconstructor
@@ -23,7 +26,7 @@ var BehaviorSubject = function (value) {
     this._value = value;
 };
 BehaviorSubject.prototype.subscribe = function (onNextOrSubscriber, onError, onComplete) {
-    var subscriber = onNextOrSubscriber;
+    let subscriber = onNextOrSubscriber;
     if (typeof subscriber === "function") {
         subscriber = {
             next: onNextOrSubscriber,
@@ -35,7 +38,7 @@ BehaviorSubject.prototype.subscribe = function (onNextOrSubscriber, onError, onC
         subscriber = {};
     }
     this.observers.push(subscriber);
-    var subscription = new SubjectSubscription(this, subscriber);
+    let subscription = new SubjectSubscription(this, subscriber);
     if (subscription && !subscription.closed) {
         subscriber.next(this._value);
     }
@@ -43,10 +46,10 @@ BehaviorSubject.prototype.subscribe = function (onNextOrSubscriber, onError, onC
 };
 BehaviorSubject.prototype.next = function (value) {
     this._value = value;
-    var observers = this.observers;
-    var len = observers.length;
-    var copy = observers.slice();
-    for (var i = 0; i < len; i++) {
+    let { observers } = this;
+    let len = observers.length;
+    let copy = observers.slice();
+    for (let i = 0; i < len; i++) {
         copy[i].next(value);
     }
     ;
@@ -61,13 +64,13 @@ SubjectSubscription.prototype.unsubscribe = function () {
         return;
     }
     this.closed = true;
-    var subject = this.subject;
-    var observers = subject.observers;
+    let subject = this.subject;
+    let observers = subject.observers;
     this.subject = null;
     if (!observers || observers.length === 0) {
         return;
     }
-    var subscriberIndex = observers.indexOf(this.subscriber);
+    let subscriberIndex = observers.indexOf(this.subscriber);
     if (subscriberIndex !== -1) {
         observers.splice(subscriberIndex, 1);
     }

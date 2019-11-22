@@ -1,5 +1,4 @@
-/// <reference types="signals" />
-/// <reference types="knockout" />
+import { RouterState } from '../ojrouterstate';
 /// <reference types='signals'/>
 /// <reference types='knockout'/>
 declare class Router {
@@ -79,65 +78,5 @@ declare namespace Router {
     class urlPathAdapter {
         constructor();
     }
-    interface RouterState {
-        canEnter: (() => boolean) | (() => Promise<boolean>);
-        canExit: (() => boolean) | (() => Promise<boolean>);
-        enter: (() => void) | (() => Promise<void>);
-        exit: (() => void) | (() => Promise<void>);
-        readonly id: string;
-        label: string | undefined;
-        parameters: {
-            [key: string]: any;
-        };
-        title: string | (() => string | undefined);
-        value: string;
-        // constructor(id: string, options?: RouterState.ConfigOptions, router?: Router);
-        go(): Promise<{
-            hasChanged: boolean;
-        }>;
-        isCurrent(): boolean;
-    }
-    namespace RouterState {
-        // tslint:disable-next-line interface-over-type-literal
-        type ConfigOptions = {
-            label?: string;
-            value?: any;
-            isDefault?: boolean;
-            canEnter?: (() => boolean) | (() => Promise<boolean>);
-            enter?: (() => void) | (() => Promise<void>);
-            canExit?: (() => boolean) | (() => Promise<boolean>);
-            exit?: (() => void) | (() => Promise<void>);
-        };
-    }
 }
 export = Router;
-declare class RouterState {
-    canEnter: (() => boolean) | (() => Promise<boolean>);
-    canExit: (() => boolean) | (() => Promise<boolean>);
-    enter: (() => void) | (() => Promise<void>);
-    exit: (() => void) | (() => Promise<void>);
-    readonly id: string;
-    label: string | undefined;
-    parameters: {
-        [key: string]: any;
-    };
-    title: string | (() => string | undefined);
-    value: string;
-    constructor(id: string, options?: RouterState.ConfigOptions, router?: Router);
-    go(): Promise<{
-        hasChanged: boolean;
-    }>;
-    isCurrent(): boolean;
-}
-declare namespace RouterState {
-    // tslint:disable-next-line interface-over-type-literal
-    type ConfigOptions = {
-        label?: string;
-        value?: any;
-        isDefault?: boolean;
-        canEnter?: (() => boolean) | (() => Promise<boolean>);
-        enter?: (() => void) | (() => Promise<void>);
-        canExit?: (() => boolean) | (() => Promise<boolean>);
-        exit?: (() => void) | (() => Promise<void>);
-    };
-}

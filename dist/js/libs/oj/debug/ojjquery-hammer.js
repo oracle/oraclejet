@@ -2,14 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojlogger'], function(oj, $, Hammer, Logger) 
 {
   "use strict";
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 // Forked from Version 2.0.0 of https://github.com/hammerjs/jquery.hammer.js, retrieved 2/4/2015.
 

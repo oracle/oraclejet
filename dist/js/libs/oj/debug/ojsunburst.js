@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTreeView', 'ojs/ojkeyset'], function(oj, $, Config, comp, base, dvt, KeySet)
 {
   "use strict";
@@ -57,8 +59,7 @@ var __oj_sunburst_metadata =
     },
     "expanded": {
       "type": "KeySet",
-      "writeback": true,
-      "value": "new AllKeySetImpl()"
+      "writeback": true
     },
     "hiddenCategories": {
       "type": "Array<string>",
@@ -150,7 +151,7 @@ var __oj_sunburst_metadata =
     },
     "rootNode": {
       "type": "any",
-      "value": "\"\""
+      "value": ""
     },
     "rootNodeContent": {
       "type": "object",
@@ -421,17 +422,14 @@ var __oj_sunburst_node_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global dvt:false, KeySet:false, Config:false, Promise:false */
 /**
  * @ojcomponent oj.ojSunburst
  * @augments oj.dvtBaseComponent
  * @since 0.7.0
- * @ojstatus preview
+ *
  * @ojrole application
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojtsimport {module: "ojkeyset", imported:["KeySet"], type: "AMD"}
@@ -735,15 +733,21 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
         renderer: null
       },
     /**
-     * Specifies the selection mode.
+     * <p>The type of selection behavior that is enabled on the sunburst. This attribute controls the number of selections that can be made via selection gestures at any given time.
+     *
+     * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the sunburst's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+     * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the sunburst's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+     *
+     * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+     *
      * @expose
      * @name selectionMode
      * @memberof oj.ojSunburst
      * @instance
      * @type {string}
-     * @ojvalue {string} "none"
-     * @ojvalue {string} "single"
-     * @ojvalue {string} "multiple"
+     * @ojvalue {string} "none" Selection is disabled.
+     * @ojvalue {string} "single" Only a single item can be selected at a time.
+     * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
      * @default "multiple"
      */
       selectionMode: 'multiple',
@@ -1429,6 +1433,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
     }
   });
 
+
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -1683,26 +1688,19 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
  * </p>
  * <ul>
  *   <li>
- *      $current - an object that contains information for the current node.
- *      (See the table below for a list of properties available on $current)
+ *      $current - an object that contains information for the current node. (See [oj.ojSunburst.NodeTemplateContext]{@link oj.ojSunburst.NodeTemplateContext} or the table below for a list of properties available on $current)
  *   </li>
  *   <li>
  *      alias - if 'as' attribute was specified, the value will be used to provide an
  *      application-named alias for $current.
  *   </li>
  * </ul>
- * @ojstatus preview
+ *
  * @ojslot nodeTemplate
  * @ojshortdesc The nodeTemplate slot is used to specify the template for creating nodes of the sunburst. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojSunburst
- * @property {Element} componentElement The &lt;oj-sunburst> custom element
- * @property {Object} data The data object of the node
- * @property {number} index The zero-based index of the current node
- * @property {any} key The key of the current node
- * @property {Array} parentData  An array of data objects of the outermost to innermost parents of the node
- * @property {any} parentKey  The key of the parent node
- *
+ * @ojslotitemprops oj.ojSunburst.NodeTemplateContext
  * @example <caption>Initialize the sunburst with an inline node template specified:</caption>
  * &lt;oj-sunburst data='[[dataProvider]]'>
  *  &lt;template slot='nodeTemplate'>
@@ -1711,16 +1709,24 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
  *  &lt;/template>
  * &lt;/oj-sunburst>
  */
-
+ /**
+  * @typedef {Object} oj.ojSunburst.NodeTemplateContext
+  * @property {Element} componentElement The &lt;oj-sunburst> custom element
+  * @property {Object} data The data object of the node
+  * @property {number} index The zero-based index of the current node
+  * @property {any} key The key of the current node
+  * @property {Array} parentData  An array of data objects of the outermost to innermost parents of the node
+  * @property {any} parentKey  The key of the parent node
+  */
 /**
  * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current node. (See [oj.ojSunburst.TooltipContext]{@link oj.ojSunburst.TooltipContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current node. (See [oj.ojSunburst.TooltipContext]{@link oj.ojSunburst.TooltipContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot tooltipTemplate
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojSunburst.TooltipContext
@@ -1739,10 +1745,10 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
  * for a sunburst.  This slot takes precedence over the rootNodeContent.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the root node. (See [oj.ojSunburst.RootNodeContext]{@link oj.ojSunburst.RootNodeContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the root node. (See [oj.ojSunburst.RootNodeContext]{@link oj.ojSunburst.RootNodeContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot rootNodeContentTemplate
  * @ojshortdesc The rootNodeContentTemplate slot is used to specify custom root node content for a sunburst. See the Help documentation for more information.
  * @ojslotitemprops oj.ojSunburst.RootNodeContext
@@ -1801,12 +1807,13 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
  * @memberof oj.ojSunburst
  */
 
+
 /**
  * @ojcomponent oj.ojSunburstNode
  * @ojsignature {target: "Type", value:"class ojSunburstNode extends JetElement<ojSunburstNodeSettableProperties>"}
  * @ojslotcomponent
  * @since 6.0.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="overview">
@@ -2018,6 +2025,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
  * @instance
  * @type {number=}
  */
+
 
 /* global __oj_sunburst_metadata:false */
 /**

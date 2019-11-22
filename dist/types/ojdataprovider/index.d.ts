@@ -1,5 +1,13 @@
-export interface AttributeFilter<D> {
-    filterfilter(item: D, index?: number, array?: D[]): boolean;
+// tslint:disable-next-line no-unnecessary-class
+export interface AttributeExprFilter<D> extends AttributeExprFilterDef<D>, BaseDataFilter<D> {
+}
+export interface AttributeExprFilterDef<D> {
+    attribute: string;
+    op: AttributeFilterOperator.AttributeOperator;
+    value: any;
+}
+// tslint:disable-next-line no-unnecessary-class
+export interface AttributeFilter<D> extends AttributeFilterDef<D>, BaseDataFilter<D> {
 }
 export interface AttributeFilterCapability {
     defaultShape?: object;
@@ -7,8 +15,7 @@ export interface AttributeFilterCapability {
     ordering?: object;
 }
 export interface AttributeFilterDef<D> {
-    attribute?: string;
-    op: string;
+    op: AttributeFilterOperator.AttributeOperator;
     value: any;
 }
 export interface AttributeFilterOperator<D> {
@@ -19,11 +26,14 @@ export interface AttributeFilterOperator<D> {
 export namespace AttributeFilterOperator {
     type AttributeOperator = "$co" | "$eq" | "$ew" | "$pr" | "$gt" | "$ge" | "$lt" | "$le" | "$ne" | "$regex" | "$sw";
 }
-export interface CompoundFilter<D> {
-    filterfilter(item: D, index?: number, array?: D[]): boolean;
+export interface BaseDataFilter<D> {
+    filter(item: D, index?: number, array?: D[]): boolean;
+}
+// tslint:disable-next-line no-unnecessary-class
+export interface CompoundFilter<D> extends CompoundFilterDef<D>, BaseDataFilter<D> {
 }
 export interface CompoundFilterDef<D> {
-    criteria: Array<AttributeFilterDef<D> | CompoundFilterDef<D>>;
+    criteria: Array<AttributeFilterDef<D> | AttributeExprFilterDef<D> | CompoundFilterDef<D>>;
     op: string;
 }
 export interface CompoundFilterOperator<D> {
@@ -37,10 +47,18 @@ export interface ContainsKeysResults<K> {
     containsParameters: FetchByKeysParameters<K>;
     results: Set<K>;
 }
+// tslint:disable-next-line no-unnecessary-class
+export namespace DataFilter {
+    // tslint:disable-next-line interface-over-type-literal
+    type Filter<D> = AttributeFilter<D> | AttributeExprFilter<D> | CompoundFilter<D> | TextFilter<D>;
+    // tslint:disable-next-line interface-over-type-literal
+    type FilterDef<D> = AttributeFilterDef<D> | AttributeExprFilterDef<D> | CompoundFilterDef<D> | TextFilterDef;
+}
 export interface DataMapping<K, D, Kin, Din> {
     mapFields: (item: Item<Kin, Din>) => Item<K, D>;
-    mapFilterCriterion?: (filterCriterion: AttributeFilter<D> | CompoundFilter<D>) => AttributeFilter<Din> | CompoundFilter<Din>;
+    mapFilterCriterion?: (filterCriterion: DataFilter.Filter<D>) => DataFilter.Filter<Din>;
     mapSortCriteria?: (sortCriteria: Array<SortCriterion<D>>) => Array<SortCriterion<Din>>;
+    unmapFilterCriterion?: (filterCriterion: DataFilter.Filter<Din>) => DataFilter.Filter<D>;
     unmapSortCriteria?: (sortCriteria: Array<SortCriterion<Din>>) => Array<SortCriterion<D>>;
 }
 export interface DataProvider<K, D> extends EventTarget {
@@ -112,7 +130,7 @@ export interface FetchCapability {
 }
 export interface FetchListParameters<D> {
     attributes?: Array<string | FetchAttribute>;
-    filterCriterion?: AttributeFilter<D> | CompoundFilter<D> | FilterOperator<D>;
+    filterCriterion?: DataFilter.Filter<D>;
     size?: number;
     sortCriteria?: Array<SortCriterion<D>>;
 }
@@ -123,11 +141,13 @@ export interface FetchListResult<K, D> {
 }
 export interface FilterCapability {
     operators: string[];
+    textFilter: any;
 }
 export class FilterFactory<D> {
     getFilter(options: {
-        filterDef: AttributeFilterDef<D> | CompoundFilterDef<D>;
-    }): AttributeFilter<D> | CompoundFilter<D>;
+        filterDef: DataFilter.FilterDef<D>;
+        filterOptions: any;
+    }): DataFilter.Filter<D>;
 }
 export interface FilterOperator<D> {
     op: AttributeFilterOperator.AttributeOperator | CompoundFilterOperator.CompoundOperator;
@@ -146,4 +166,10 @@ export interface SortCapability<D> {
 export interface SortCriterion<D> {
     attribute: keyof D;
     direction: string;
+}
+// tslint:disable-next-line no-unnecessary-class
+export interface TextFilter<D> extends TextFilterDef, BaseDataFilter<D> {
+}
+export interface TextFilterDef {
+    text: string;
 }

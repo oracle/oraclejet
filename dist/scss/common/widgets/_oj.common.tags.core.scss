@@ -19,14 +19,10 @@
       $tagSelectors:   "html", 
       $classSelectors: ".oj-html") {
         @include oj-normalize-html;
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-          font-family: var(--oj-font-family);
-          font-size: var(--oj-font-size-root); 
-        }
-        @else {
+
           font-family: $fontFamily;
           font-size: $rootFontSize; 
-        }
+
     }
     
     /* body */
@@ -38,18 +34,12 @@
         @include oj-normalize-body;
         background-repeat: repeat;
         background-position: top left; 
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-          background-image: var(--oj-body-bg-image);
-          color: var(--oj-body-text-color);  
-          background-color: var(--oj-body-bg-color);
-          touch-action: var(--oj-body-touch-action);
-        }
-        @else {
+
           @include oj-background-image($bodyBgImage);
           color: $bodyTextColor;  
           background-color: $bodyBgColor;
           touch-action: $bodyTouchAction;
-        }   
+           
     }
 
   }

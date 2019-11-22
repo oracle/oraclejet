@@ -1,8 +1,9 @@
-/*
-** Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
-**
-**34567890123456789012345678901234567890123456789012345678901234567890123456789
-*/
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  * Checkpoint manager implementation for Oracle JET

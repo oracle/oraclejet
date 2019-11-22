@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTagCloud'], function(oj, $, Components, base, dvt)
 {
   "use strict";
@@ -232,10 +234,7 @@ var __oj_tag_cloud_item_metadata =
   "extension": {}
 };
 /** This file is generated. Do not edit directly. Actual file located in 3rdparty/dvt/prebuild.**/
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global dvt:false, Components:false */
 
@@ -243,7 +242,7 @@ var __oj_tag_cloud_item_metadata =
  * @ojcomponent oj.ojTagCloud
  * @augments oj.dvtBaseComponent
  * @since 1.1.0
- * @ojstatus preview
+ *
  * @ojrole application
  * @ojshortdesc A tag cloud is an interactive data visualization of textual data, where the importance of each tagged word or phrase is represented by font size or color.
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
@@ -618,16 +617,22 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        */
       selection: [],
       /**
-       * The type of selection behavior that is enabled on the tag cloud.
+       * <p>The type of selection behavior that is enabled on the tag cloud. This attribute controls the number of selections that can be made via selection gestures at any given time.
+       *
+       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the tag cloud's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the tag cloud's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+       *
+       * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+       *
        * @expose
        * @name selectionMode
        * @ojshortdesc Specifies the selection mode.
        * @memberof oj.ojTagCloud
        * @instance
        * @type {string}
-       * @ojvalue {string} "single"
-       * @ojvalue {string} "multiple"
-       * @ojvalue {string} "none"
+       * @ojvalue {string} "none" Selection is disabled.
+       * @ojvalue {string} "single" Only a single item can be selected at a time.
+       * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
        * @default "none"
        *
        * @example <caption>Initialize the tag cloud with the
@@ -954,6 +959,7 @@ Components.setDefaultOptions({
   }
 });
 
+
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -1091,6 +1097,15 @@ Components.setDefaultOptions({
  * @ojsignature [{target: "Type", value: "K", for: "id"},
  *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
  */
+/**
+ * @typedef {Object} oj.ojTagCloud.ItemTemplateContext
+ * @property {Element} componentElement The &lt;oj-tag-cloud> custom element.
+ * @property {Object} data The data object for the current item.
+ * @property {number} index The zero-based index of the current item.
+ * @property {any} key The key of the current item.
+ * @ojsignature [{target: "Type", value: "K", for: "key"},
+ *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+ */
 
 // METHOD TYPEDEFS
 
@@ -1139,10 +1154,10 @@ Components.setDefaultOptions({
  */
 
  /**
- * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the tag cloud. The slot must be a &lt;template> element.
+ * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the tag cloud. The slot content must be a &lt;template> element.
  * <p>When the template is executed for each item, it will have access to the tag cloud's binding context and the following properties:</p>
  * <ul>
- * <li>$current - an object that contains information for the current item
+ *   <li>$current - an object that contains information for the current item. (See [oj.ojTagCloud.ItemTemplateContext]{@link oj.ojTagCloud.ItemTemplateContext} or the table below for a list of properties available on $current) </li>
  * </li>
  * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
  * </li>
@@ -1150,16 +1165,12 @@ Components.setDefaultOptions({
  *
  * <p>The content of the template should only be one &lt;oj-tag-cloud-item> element. See the [oj-tag-cloud-item]{@link oj.ojTagCloudItem} doc for more details.</p>
  *
- * @ojstatus preview
+ *
  * @ojslot itemTemplate
  * @ojshortdesc The itemTemplate slot is used to specify the template for creating each item of the tag cloud. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojTagCloud
- * @property {Element} componentElement The &lt;oj-tag-cloud> custom element.
- * @property {Object} data The data object for the current item.
- * @property {number} index The zero-based index of the current item.
- * @property {any} key The key of the current item.
- *
+ * @ojslotitemprops oj.ojTagCloud.ItemTemplateContext
  * @example <caption>Initialize the tag cloud with an inline item template specified:</caption>
  * &lt;oj-tag-cloud data='[[dataProvider]]'>
  *  &lt;template slot='itemTemplate'>
@@ -1176,10 +1187,10 @@ Components.setDefaultOptions({
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current item. (See [oj.ojTagCloud.TooltipContext]{@link oj.ojTagCloud.TooltipContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current item. (See [oj.ojTagCloud.TooltipContext]{@link oj.ojTagCloud.TooltipContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot tooltipTemplate
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojTagCloud.TooltipContext
@@ -1227,12 +1238,13 @@ Components.setDefaultOptions({
  * @memberof oj.ojTagCloud
  */
 
+
 /**
  * @ojcomponent oj.ojTagCloudItem
  * @ojsignature {target: "Type", value:"class ojTagCloudItem extends JetElement<ojTagCloudItemSettableProperties>"}
  * @ojslotcomponent
  * @since 5.2.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="tagCloudItemOverview-section">
@@ -1393,6 +1405,7 @@ Components.setDefaultOptions({
  *  &lt;/template>
  * &lt;/oj-tag-cloud>
  */
+
 
 /* global __oj_tag_cloud_metadata:false */
 /**

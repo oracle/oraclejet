@@ -2,10 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery'], function(oj, $)
 {
   "use strict";
+
 /**
  * Creates an attribute group handler that will generate stylistic attribute values such as colors or shapes based on data set categories.
  *
@@ -14,6 +17,7 @@ define(['ojs/ojcore', 'jquery'], function(oj, $)
  * @ojsignature {target: "Type", value: "{[propName: string]: any}", for: "matchRules"}
  * @export
  * @constructor
+ * @final
  * @since 1.0
  * @name oj.AttributeGroupHandler
  */
@@ -112,6 +116,7 @@ AttributeGroupHandler.prototype.addMatchRule = function (category, attributeValu
   this._matchRules[category] = attributeValue;
 };
 
+
 /**
  * Creates a color attribute group handler that will generate color attribute values.
  *
@@ -123,6 +128,7 @@ AttributeGroupHandler.prototype.addMatchRule = function (category, attributeValu
  * @ojsignature {target: "Type", value: "{[propName: string]: any}", for: "matchRules"}
  * @export
  * @constructor
+ * @final
  * @since 1.2
  * @extends oj.AttributeGroupHandler
  * @name oj.ColorAttributeGroupHandler
@@ -228,6 +234,7 @@ ColorAttributeGroupHandler.__processAttrDiv = function (attrGpsDiv) {
   }
 };
 
+
 /**
  * Creates a shape attribute group handler that will generate shape attribute values.
  *
@@ -236,6 +243,7 @@ ColorAttributeGroupHandler.__processAttrDiv = function (attrGpsDiv) {
  * @ojsignature {target: "Type", value: "{[propName: string]: any}", for: "matchRules"}
  * @export
  * @constructor
+ * @final
  * @since 1.0
  * @extends oj.AttributeGroupHandler
  * @name oj.ShapeAttributeGroupHandler
@@ -260,6 +268,7 @@ ShapeAttributeGroupHandler._attributeValues = ['square', 'circle', 'diamond', 'p
 ShapeAttributeGroupHandler.prototype.getValueRamp = function () {
   return ShapeAttributeGroupHandler._attributeValues;
 };
+
 
 /* global AttributeGroupHandler:false, ColorAttributeGroupHandler:false, ShapeAttributeGroupHandler:false */
 // Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.

@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojkoshared', 'customElements'], function(oj, $, ko, BindingProviderImpl)
 {
   "use strict";
@@ -10,6 +12,7 @@ var __oj_defer_metadata =
 {
   "extension": {}
 };
+
 /* global BindingProviderImpl:false */
 /**
  * @protected
@@ -33,6 +36,7 @@ var __oj_defer_metadata =
     }
     );
 }());
+
 
 /* global ko:false */
 
@@ -72,10 +76,7 @@ ko.bindingHandlers._ojDefer_ =
   }
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -84,7 +85,7 @@ ko.bindingHandlers._ojDefer_ =
  */
 
 /**
- * @ojstatus preview
+ *
  * @since 4.0.0
  * @ojcomponent oj.ojDefer
  * @ojshortdesc Defer is used to delay applying bindings to its children until it is activated. Child elements are disconnected from the DOM tree until the parent component activates its subtree.
@@ -142,8 +143,8 @@ ko.bindingHandlers._ojDefer_ =
         writable: false
       });
     var constructorFunc = function () {
-      var reflect = window.Reflect;
-      var ret;
+      const reflect = window.Reflect;
+      let ret;
       if (typeof reflect !== 'undefined') {
         ret = reflect.construct(HTMLElement, [], this.constructor);
       } else {

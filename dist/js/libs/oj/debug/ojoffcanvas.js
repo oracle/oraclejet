@@ -2,8 +2,10 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'promise', 'ojs/ojjquery-hammer', ],
+
+define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojjquery-hammer', ],
 /*
 * @param {Object} oj 
 * @param {jQuery} $
@@ -12,10 +14,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojcontext', 'ojs/ojthemeutils',
 function(oj, $, Hammer, Context, ThemeUtils, Components, Logger) 
 {
   "use strict";
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Hammer, Promise, Components:false, Logger:false, ThemeUtils:false, Context:false */
 
@@ -25,7 +24,7 @@ function(oj, $, Hammer, Context, ThemeUtils, Components, Logger)
  * @export
  * @ojtsmodule
  * @hideconstructor
- * @ojstatus preview
+ *
  *
  * @classdesc
  * This class provides functions used for controlling offcanvas regions.  Offcanvas regions can be used in either static (simply displaying and hiding in response to user interactions) or responsive (using media queries to dynamically move application content between the main viewport and offcanvas regions) contexts.  The OffcanvasUtils methods can be used to directly control the display of an offcanvas region in both the static and responsive cases.
@@ -707,7 +706,7 @@ oj.OffcanvasUtils._registerCloseHandler = function (_offcanvas) {
 
     var documentElement = document.documentElement;
     if (oj.DomUtils.isTouchSupported()) {
-      documentElement.addEventListener('touchstart', dismisHandler, true);
+      documentElement.addEventListener('touchstart', dismisHandler, { passive: true, capture: true });
     }
 
     documentElement.addEventListener('mousedown', dismisHandler, true);
@@ -731,7 +730,7 @@ oj.OffcanvasUtils._unregisterCloseHandler = function (_offcanvas) {
     var documentElement = document.documentElement;
 
     if (oj.DomUtils.isTouchSupported()) {
-      documentElement.removeEventListener('touchstart', dismisHandler, true);
+      documentElement.removeEventListener('touchstart', dismisHandler, { passive: true, capture: true });
     }
 
     documentElement.removeEventListener('mousedown', dismisHandler, true);
@@ -1959,6 +1958,13 @@ oj.OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
        [Hammer.Pan, { direction: Hammer.DIRECTION_HORIZONTAL }]
     ] };
 
+  // workaround for Hammer with iOS 13 issue, see: https://github.com/hammerjs/hammer.js/issues/1237
+  var agent = oj.AgentUtils.getAgentInfo();
+  if (agent.os === oj.AgentUtils.OS.IOS) {
+    // force Hammer to only accept TouchEvent and not PointerEvent
+    mOptions.inputClass = Hammer.TouchInput;
+  }
+
   // flag to signal whether pan to reveal should proceed
   proceed = false;
 
@@ -2021,6 +2027,8 @@ oj.OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
 
             // stop touch event from bubbling to prevent for example pull to refresh from happening
         event.gesture.srcEvent.stopPropagation();
+            // prevent page from scrolling
+        event.gesture.srcEvent.preventDefault();
 
             // stop bubbling
         event.stopPropagation();

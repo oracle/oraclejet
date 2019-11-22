@@ -33,40 +33,28 @@
         // Icons only horizontal navlist should have same color as icons with text color.
         .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item .oj-navigationlist-item-icon
         {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            color: var(--oj-tab-bar-item-icon-color-default);
-            .oj-contrast-marker & {
-              color: var(--oj-tab-bar-item-contrast-label-color-default);
-            }
-          } @else {
+
             color: $tabBarItemIconColorDefault;
             .oj-contrast-marker & {
               color: $tabBarItemContrastLabelColorDefault;
             }
-          }
+
         }
 
         .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
         {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            color: var(--oj-tab-bar-item-icon-color-selected);
-            .oj-contrast-marker & {
-              color: var(--oj-tab-bar-item-contrast-label-color-selected);
-            }
-          } @else {
+
             color: $tabBarItemIconColorSelected;
             .oj-contrast-marker & {
                 color: $tabBarItemContrastLabelColorSelected;
             }
-          }
+
         }
         .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover .oj-navigationlist-item-icon
         {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            color: var(--oj-tab-bar-item-icon-color-hover);
-          } @else {
+
             color: $tabBarItemIconColorHover;
-          }
+          
         }
         
         .oj-navigationlist-previous-icon {

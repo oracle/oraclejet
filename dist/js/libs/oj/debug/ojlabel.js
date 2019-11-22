@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup'], 
       /*
       * @param {Object} oj 
@@ -64,10 +66,7 @@ var __oj_label_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Hammer:false, Logger:false, Context:false */
 
@@ -108,6 +107,13 @@ var __oj_label_metadata =
    * @type {string}
    */
   var _ARIA_LABELLEDBY = 'aria-labelledby';
+  /**
+   * labelled-by
+   * @const
+   * @private
+   * @type {string}
+   */
+  var _LABELLED_BY = 'labelled-by';
 
   /*!
    * JET oj-label. @VERSION
@@ -163,6 +169,7 @@ var __oj_label_metadata =
    *   Styling
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
    * </h3>
+   * {@ojinclude "name":"stylingDoc"}
    * <h3 id="a11y-section">
    *   Accessibility
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
@@ -173,8 +180,8 @@ var __oj_label_metadata =
    * the JET form component's <code class="prettyprint">id</code> attribute. For more examples,
    * refer to the JET form component's API jsdoc.
    * </p>
-   * {@ojinclude "name":"stylingDoc"}
-   * @ojstatus preview
+
+   *
    * @ojcomponent oj.ojLabel
    * @ojshortdesc A label is a short description of requested input.
    * @since 4.0.0
@@ -517,7 +524,7 @@ var __oj_label_metadata =
               if (!inputIdOption) {
                 if (self._isElementCustomElement(targetElement)) {
                   var ojLabelId = self.OuterWrapper.id;
-                  self._addElementAttribute(targetElement, ojLabelId, 'labelled-by');
+                  self._addElementAttribute(targetElement, ojLabelId, _LABELLED_BY);
                 } else {
                   self.element[0].setAttribute('for', forOption);
                 }
@@ -691,7 +698,7 @@ var __oj_label_metadata =
         // </oj-label>
         if (this.OuterWrapper) {
           this.uiLabel = $(this.OuterWrapper).append(
-            this.element.wrap(this._createOjLabelGroupDom()).parent()); // @HTMLUpdateOk
+            this.element.wrap(this._createOjLabelGroupDom()).parent()); // @HTMLUpdateOK
           this.uiLabel.addClass('oj-label oj-component');
         } else {
           // wrap the label with a root dom element (oj-label) and its child
@@ -1089,7 +1096,7 @@ var __oj_label_metadata =
         //     this.document[0]);
         rootDomNode = document.createElement('div');
         rootDomNode.className = rootDomNodeClasses;
-        rootDomNode.appendChild(this._createOjLabelGroupDom()); // @HTMLUpdateOk
+        rootDomNode.appendChild(this._createOjLabelGroupDom()); // @HTMLUpdateOK
 
         return rootDomNode;
       },
@@ -1285,7 +1292,6 @@ var __oj_label_metadata =
        * @memberof oj.ojLabel
        */
       _createHelpDefPopupDiv: function () {
-        var bodyDom;
         var contentDiv;
         var $contentDiv;
         var helpDef = this.options.help.definition;
@@ -1312,12 +1318,11 @@ var __oj_label_metadata =
           // create a content node
           contentDiv = document.createElement('div');
           contentDiv.className = 'oj-help-popup-container';
-          helpDefPopupDiv.appendChild(contentDiv); // @HTMLUpdateOk created contentDiv ourselves
+          helpDefPopupDiv.appendChild(contentDiv); // @HTMLUpdateOK created contentDiv ourselves
           $contentDiv = $(contentDiv);
 
           $contentDiv.text(helpDefText);
-          bodyDom = document.getElementsByTagName('body')[0];
-          bodyDom.appendChild(helpDefPopupDiv); // @HTMLUpdateOK
+          this.uiLabel.append($helpDefPopupDiv);
         } else {
           // Find the div with the id, and then update the text of it.
           $helpDefPopupDiv = $(document.getElementById(this._helpDefPopupDivId));
@@ -1465,7 +1470,7 @@ var __oj_label_metadata =
 
         if (this._helpDefPopupDivId != null) {
           $helpDefPopupDiv = $(document.getElementById(this._helpDefPopupDivId));
-          if ($helpDefPopupDiv) {
+          if ($helpDefPopupDiv.length > 0) {
             $helpDefPopupDiv.ojPopup('destroy');
             $helpDefPopupDiv.remove();
           }
@@ -1595,10 +1600,10 @@ var __oj_label_metadata =
           this.OuterWrapper.removeAttribute('data-oj-input-id');
           var oldTarget = document.getElementById(oldValue);
           if (oldTarget) {
-            var labelledBy = oldTarget.getAttribute('labelled-by');
+            var labelledBy = oldTarget.getAttribute(_LABELLED_BY);
             if (labelledBy) {
               if (labelledBy === ojLabelId) {
-                oldTarget.removeAttribute('labelled-by');
+                oldTarget.removeAttribute(_LABELLED_BY);
               } else {
                 // remove the ojLabelId from the labelledBy
                 var splitArray = labelledBy.split(/\s+/);
@@ -1610,7 +1615,7 @@ var __oj_label_metadata =
                 );
 
                 var newLabelledBy = newArray.join(' ');
-                oldTarget.setAttribute('labelled-by', newLabelledBy);
+                oldTarget.setAttribute(_LABELLED_BY, newLabelledBy);
               }
             }
           }
@@ -1620,7 +1625,7 @@ var __oj_label_metadata =
         if (this._targetElement) {
           var targetElement = this._targetElement;
           if (this._isElementCustomElement(targetElement)) {
-            this._addElementAttribute(targetElement, ojLabelId, 'labelled-by');
+            this._addElementAttribute(targetElement, ojLabelId, _LABELLED_BY);
             if (this._needsHelpIcon()) {
               this._addHelpSpanIdOnTarget(this.helpSpanId, targetElement);
             }
@@ -1831,11 +1836,10 @@ var __oj_label_metadata =
        *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
        *     </tr>
        *     <tr>
-       *       <td>oj-label-accesskey</td>
-       *       <td>Use this in a span around a single text character in the oj-label's text.
-       *       It styles the character in a way that indicates to the
-       *       user that this character is the accesskey. Use this in conjunction with
-       *       the HTML accesskey attribute on the oj-label element.</td>
+       *       <td style="text-decoration:line-through">oj-label-accesskey</td>
+       *       <td><span style="color:red">Deprecated</span> JET's
+       *       accessibility team discourages access keys, so
+       *       this styleclass has been deprecated.</td>
        *     </tr>
        *     <tr>
        *       <td>oj-label-nowrap</td>
@@ -1875,6 +1879,7 @@ var __oj_label_metadata =
    * var node = myComponent.getNodeBySubId({'subId': 'oj-label-help-icon'});
    */
 }());
+
 
 /* global __oj_label_metadata:false */
 (function () {

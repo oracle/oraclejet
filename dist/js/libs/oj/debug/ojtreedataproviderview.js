@@ -2,19 +2,18 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojlistdataproviderview', 'ojs/ojcomponentcore', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj, $, ListDataProviderView)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /**
  * Class which provides list based optimizations
  */
-var TreeDataProviderView = /** @class */ (function () {
-    function TreeDataProviderView(dataProvider, options) {
+class TreeDataProviderView {
+    constructor(dataProvider, options) {
         this.dataProvider = dataProvider;
         this.options = options;
         this._listDataProviderView = new ListDataProviderView(dataProvider, options);
@@ -24,54 +23,50 @@ var TreeDataProviderView = /** @class */ (function () {
      * This should return null for node that cannot have children.
      * This should return a TreeDataProvider for node that can (but doesn't have to) have children.
      */
-    TreeDataProviderView.prototype.getChildDataProvider = function (parentKey, options) {
-        var childDataProvider = this.dataProvider.getChildDataProvider(parentKey, options);
+    getChildDataProvider(parentKey, options) {
+        let childDataProvider = this.dataProvider.getChildDataProvider(parentKey, options);
         if (childDataProvider) {
             return new TreeDataProviderView(childDataProvider, this.options);
         }
         return null;
-    };
-    TreeDataProviderView.prototype.containsKeys = function (params) {
+    }
+    containsKeys(params) {
         return this._listDataProviderView.containsKeys(params);
-    };
-    TreeDataProviderView.prototype.fetchByKeys = function (params) {
+    }
+    fetchByKeys(params) {
         return this._listDataProviderView.fetchByKeys(params);
-    };
-    TreeDataProviderView.prototype.fetchByOffset = function (params) {
+    }
+    fetchByOffset(params) {
         return this._listDataProviderView.fetchByOffset(params);
-    };
-    TreeDataProviderView.prototype.fetchFirst = function (params) {
+    }
+    fetchFirst(params) {
         return this._listDataProviderView.fetchFirst(params);
-    };
-    TreeDataProviderView.prototype.getCapability = function (capabilityName) {
+    }
+    getCapability(capabilityName) {
         return this._listDataProviderView.getCapability(capabilityName);
-    };
-    TreeDataProviderView.prototype.getTotalSize = function () {
+    }
+    getTotalSize() {
         return this._listDataProviderView.getTotalSize();
-    };
-    TreeDataProviderView.prototype.isEmpty = function () {
+    }
+    isEmpty() {
         return this._listDataProviderView.isEmpty();
-    };
-    TreeDataProviderView.prototype.addEventListener = function (eventType, listener) {
+    }
+    addEventListener(eventType, listener) {
         this._listDataProviderView.addEventListener(eventType, listener);
-    };
+    }
     ;
-    TreeDataProviderView.prototype.removeEventListener = function (eventType, listener) {
+    removeEventListener(eventType, listener) {
         this._listDataProviderView.removeEventListener(eventType, listener);
-    };
+    }
     ;
-    TreeDataProviderView.prototype.dispatchEvent = function (evt) {
+    dispatchEvent(evt) {
         return this._listDataProviderView.dispatchEvent(evt);
-    };
-    return TreeDataProviderView;
-}());
+    }
+}
 oj['TreeDataProviderView'] = TreeDataProviderView;
 oj.TreeDataProviderView = TreeDataProviderView;
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -81,8 +76,9 @@ oj.TreeDataProviderView = TreeDataProviderView;
 
 /* jslint browser: true,devel:true*/
 /**
- * @ojstatus preview
+ *
  * @since 6.2.0
+ * @final
  * @export
  * @class oj.TreeDataProviderView
  * @ojtsmodule
@@ -110,7 +106,7 @@ oj.TreeDataProviderView = TreeDataProviderView;
 /**
  * Get a data provider for the children of the row identified by parentKey.
  *
- * @ojstatus preview
+ *
  * @param {any} parentKey key of the row to get child data provider for.
  * @return {TreeDataProviderView | null} A TreeDataProviderView if the row can (but doesn't have to) have children; or null if the row cannot have children.
  *   Use the <code class="prettyprint">isEmpty</code> method on the returned TreeDataProviderView to determine if it currently has children.
@@ -127,7 +123,7 @@ oj.TreeDataProviderView = TreeDataProviderView;
 /**
  * Check if there are rows containing the specified keys
  *
- * @ojstatus preview
+ *
  * @since 6.2.0
  * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
  * @return {Promise.<oj.ContainsKeysResults>} Promise which resolves to {@link oj.ContainsKeysResults}
@@ -144,7 +140,7 @@ oj.TreeDataProviderView = TreeDataProviderView;
 /**
  * Fetch rows by keys
  *
- * @ojstatus preview
+ *
  * @since 6.2.0
  * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
  * @return {Promise.<oj.FetchByKeysResults>} Promise which resolves to {@link oj.FetchByKeysResults}
@@ -161,7 +157,7 @@ oj.TreeDataProviderView = TreeDataProviderView;
 /**
  * Fetch rows by offset
  *
- * @ojstatus preview
+ *
  * @since 4.2.0
  * @param {oj.FetchByOffsetParameters} params Fetch by offset parameters
  * @return {Promise.<oj.FetchByOffsetResults>} Promise which resolves to {@link oj.FetchByOffsetResults}
@@ -178,7 +174,7 @@ oj.TreeDataProviderView = TreeDataProviderView;
 /**
  * Fetch the first block of data.
  *
- * @ojstatus preview
+ *
  * @since 6.2.0
  * @param {oj.FetchListParameters=} params Fetch parameters
  * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
@@ -196,7 +192,7 @@ oj.TreeDataProviderView = TreeDataProviderView;
 /**
  * Determines whether this DataProvider supports certain feature.
  *
- * @ojstatus preview
+ *
  * @since 6.2.0
  * @param {string} capabilityName capability name. Supported capability names
  *                  are determined by the underlying dataprovider.
@@ -214,7 +210,7 @@ oj.TreeDataProviderView = TreeDataProviderView;
 /**
  * Return the total number of rows in this dataprovider
  *
- * @ojstatus preview
+ *
  * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
  * @export
  * @expose
@@ -227,7 +223,7 @@ oj.TreeDataProviderView = TreeDataProviderView;
 /**
  * Return a string that indicates if this data provider is empty
  *
- * @ojstatus preview
+ *
  * @return {"yes"|"no"|"unknown"} a string that indicates if this data provider is empty. Valid values are:
  *                  "yes": this data provider is empty.
  *                  "no": this data provider is not empty.
@@ -243,7 +239,7 @@ oj.TreeDataProviderView = TreeDataProviderView;
 /**
  * Optional dataMapping to apply
  *
- * @ojstatus preview
+ *
  * @since 6.2.0
  * @export
  * @expose
@@ -255,7 +251,7 @@ oj.TreeDataProviderView = TreeDataProviderView;
  */
 
 /**
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.TreeDataProviderView
@@ -267,7 +263,7 @@ oj.TreeDataProviderView = TreeDataProviderView;
  */
 
 /**
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.TreeDataProviderView
@@ -279,7 +275,7 @@ oj.TreeDataProviderView = TreeDataProviderView;
  */
 
 /**
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.TreeDataProviderView

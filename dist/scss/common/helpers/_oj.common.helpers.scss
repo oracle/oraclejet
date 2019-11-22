@@ -77,36 +77,20 @@
   /* aligns text left by default, aligns right when dir="rtl" is set on html element
      NOTE: this uses !important, it can therefore be used to override a previously set value */
   .oj-helper-text-align-start {
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      text-align: left !important;
-      html[dir="rtl"] & {
-        text-align: right !important; 
-      }
-    }
-    @else {
       @include oj-bidi-property(
            $property: 'text-align',
            $startOrEnd: start,
-           $important: true) ;
-    }
+           $important: true);
   }
 
 
   /* aligns text right by default, aligns left when dir="rtl" is set on html element
      NOTE: this uses !important, it can therefore be used to override a previously set value */
   .oj-helper-text-align-end {
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      text-align: right !important;
-      html[dir="rtl"] & {
-        text-align: left !important; 
-      }
-    }
-    @else {
       @include oj-bidi-property(
            $property: 'text-align',
            $startOrEnd: end,
            $important: true);
-    }
   }
 
 

@@ -1,3 +1,4 @@
+import CommonTypes = require('../ojcommontypes');
 import { KeySet } from '../ojkeyset';
 import { DataProvider } from '../ojdataprovider';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
@@ -37,9 +38,9 @@ export interface ojListView<K, D> extends baseComponent<ojListViewSettableProper
     };
     drillMode: 'collapsible' | 'none';
     expanded: KeySet<K>;
-    readonly firstSelectedItem: {
-        key: K;
-        data: D;
+    readonly firstSelectedItem: CommonTypes.ItemContext<K, D>;
+    gridlines: {
+        item: 'visible' | 'visibleExceptLast' | 'hidden';
     };
     groupHeaderPosition: 'static' | 'sticky';
     item: {
@@ -185,6 +186,8 @@ export namespace ojListView {
     // tslint:disable-next-line interface-over-type-literal
     type firstSelectedItemChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["firstSelectedItem"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type gridlinesChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["gridlines"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type groupHeaderPositionChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["groupHeaderPosition"]>;
     // tslint:disable-next-line interface-over-type-literal
     type itemChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["item"]>;
@@ -227,6 +230,16 @@ export namespace ojListView {
         position: 'before' | 'after' | 'inside';
         reorder: boolean;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+        depth: number;
+        leaf: boolean;
+        parentkey: any;
+    };
 }
 export interface ojListViewEventMap<K, D> extends baseComponentEventMap<ojListViewSettableProperties<K, D>> {
     'ojAnimateEnd': ojListView.ojAnimateEnd;
@@ -247,6 +260,7 @@ export interface ojListViewEventMap<K, D> extends baseComponentEventMap<ojListVi
     'drillModeChanged': JetElementCustomEvent<ojListView<K, D>["drillMode"]>;
     'expandedChanged': JetElementCustomEvent<ojListView<K, D>["expanded"]>;
     'firstSelectedItemChanged': JetElementCustomEvent<ojListView<K, D>["firstSelectedItem"]>;
+    'gridlinesChanged': JetElementCustomEvent<ojListView<K, D>["gridlines"]>;
     'groupHeaderPositionChanged': JetElementCustomEvent<ojListView<K, D>["groupHeaderPosition"]>;
     'itemChanged': JetElementCustomEvent<ojListView<K, D>["item"]>;
     'scrollPolicyChanged': JetElementCustomEvent<ojListView<K, D>["scrollPolicy"]>;
@@ -293,9 +307,9 @@ export interface ojListViewSettableProperties<K, D> extends baseComponentSettabl
     };
     drillMode: 'collapsible' | 'none';
     expanded: KeySet<K>;
-    readonly firstSelectedItem: {
-        key: K;
-        data: D;
+    readonly firstSelectedItem: CommonTypes.ItemContext<K, D>;
+    gridlines: {
+        item: 'visible' | 'visibleExceptLast' | 'hidden';
     };
     groupHeaderPosition: 'static' | 'sticky';
     item: {

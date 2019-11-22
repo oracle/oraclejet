@@ -1,4 +1,10 @@
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * This is a fork of the i18n Require.js plugin.
  * It makes minor chnages to the way the default locale is determined and to the way bundles are merged
  */

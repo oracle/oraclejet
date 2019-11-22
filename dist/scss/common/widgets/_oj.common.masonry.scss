@@ -1,0 +1,62 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.masonry.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@if $includeMasonryClasses != false {
+  @include module-include-once("common.masonry") {
+    
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-masonry:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    /* Styling for the masonry widget container */
+    .oj-masonry {
+      position: relative;
+      display: block;
+      overflow: auto;
+    }
+
+    /* Styling to remove focus ring border on masonry */
+    .oj-masonry:focus {
+      outline: none; 
+    }
+
+    /* styling on each item */
+    .oj-masonry-item {
+      position: absolute;
+      border-radius: 0px 10px 10px;
+      margin-top: 10px;
+      margin-right: 10px;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        width: var(--oj-masonry-item-width);
+      } @else {
+        width: $masonryItemWidth;
+      }
+    }
+
+    $masonryDefaultOptions: ();
+    $masonryAnimationDefaults: ();
+
+    @if ($masonryInsertAnimation) {
+      $masonryAnimationDefaults: map-merge($masonryAnimationDefaults, (insert: $masonryInsertAnimation));
+    }
+
+    @if ($masonryRemoveAnimation) {
+      $masonryAnimationDefaults: map-merge($masonryAnimationDefaults, (remove: $masonryRemoveAnimation));
+    }
+
+    @if ($masonryAnimationDefaults) {
+      $masonryDefaultOptions: map-merge($masonryDefaultOptions, (animation: $masonryAnimationDefaults));
+    }
+
+    .oj-masonry-option-defaults {
+      font-family: oj-json($masonryDefaultOptions);
+    }
+  }
+}

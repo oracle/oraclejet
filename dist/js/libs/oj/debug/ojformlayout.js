@@ -2,18 +2,27 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
 
-define(['ojs/ojcore', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojlogger'], 
+
+define(['ojs/ojcore', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojlogger', 'ojs/ojthemeutils'], 
 /*
 * @param {Object} oj 
 */
-function(oj, Context, ComponentCore, Label, Logger)
+function(oj, Context, ComponentCore, Label, Logger, ThemeUtils)
 {
   "use strict";
 var __oj_form_layout_metadata = 
 {
   "properties": {
+    "colspanWrap": {
+      "type": "string",
+      "enumValues": [
+        "nowrap",
+        "wrap"
+      ]
+    },
     "direction": {
       "type": "string",
       "enumValues": [
@@ -25,10 +34,10 @@ var __oj_form_layout_metadata =
     "labelEdge": {
       "type": "string",
       "enumValues": [
+        "inside",
         "start",
         "top"
-      ],
-      "value": "top"
+      ]
     },
     "labelWidth": {
       "type": "string",
@@ -57,16 +66,14 @@ var __oj_form_layout_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global Context:false, Logger:false */
+/* global ThemeUtils:false */
 /**
  * @ojcomponent oj.ojFormLayout
  * @since 4.1.0
  * @ojshortdesc A form layout manages the layout of labels and fields in a form.
- * @ojstatus preview
+ *
  * @ojsignature {target: "Type", value:"class ojFormLayout extends JetElement<ojFormLayoutSettableProperties>"}
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["maxColumns", "labelEdge", "labelWidth"]}
@@ -131,6 +138,36 @@ var __oj_form_layout_metadata =
 
 /**
  * @member
+ * @name colspanWrap
+ * @expose
+ * @memberof oj.ojFormLayout
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "nowrap" The component will occupy the remaining columns in the current row.
+ * @ojvalue {string} "wrap" The component will start from the first column of the next row.
+ * @desc Specifies how to fit components with colspan attribute in the form layout, when there are fewer columns left in the current row
+ * than the colspan value specifies.
+ * <p>The default value depends on the theme.</p>
+ *
+ * @example <caption>Initialize the oj-form-layout with the <code class="prettyprint">colspan-wrap</code> attribute specified:</caption>
+ * &lt;oj-form-layout max-columns="3" colspan-wrap="wrap">
+ *   &lt;oj-input-text id="inputcontrol" required value="text" label-hint="input 1">&lt;/oj-input-text>
+ *   &lt;oj-label-value colspan="2">
+ *     &lt;oj-label slot="label" for="textareacontrol">textarea&lt;/oj-input-text>
+ *     &lt;oj-text-area slot="value" id="textareacontrol" value='text' rows="6">&lt;/oj-text-area>
+ *   &lt;/oj-label-value>
+ * &lt;/oj-form-layout>
+ *
+ * @example <caption>Get or set the <code class="prettyprint">colspanWrap</code> property after initialization:</caption>
+ * // getter
+ * var wrap = myFormLayout.colspanWrap;
+ *
+ * // setter
+ * myFormLayout.colspanWrap = 'wrap';
+ */
+
+/**
+ * @member
  * @name direction
  * @expose
  * @memberof oj.ojFormLayout
@@ -162,10 +199,16 @@ var __oj_form_layout_metadata =
  * @memberof oj.ojFormLayout
  * @instance
  * @type {string}
- * @default "top"
- * @ojvalue {string} "start" Label is inline with the start of its editable value component
- * @ojvalue {string} "top" Label is on top of its editable value component
- * @desc Specifies how the label is aligned with its editable value component.
+ * @ojvalue {string} "inside" oj-form-layout will not create any label.  Label will be created by the form control if the form control has its label-edge set to "inside".
+ *                            Please see the specific form control's label-edge attribute documentation for details.
+ * @ojvalue {string} "start" oj-form-layout will create a label that's before the start of the form control if the form control has its label-edge set to "provided".
+ *                           If the form control specifies "inside" or "none" as its label-edge, no label will be created by oj-form-layout.
+ * @ojvalue {string} "top" oj-form-layout will create a label that's on top of the form control if the form control has its label-edge set to "provided".
+ *                         If the form control specifies "inside" or "none" as its label-edge, no label will be created by oj-form-layout.
+ * @desc Specifies how the label is created and aligned with its form control.
+ * <p>The default value varies by theme, and it works well for the theme in most cases.
+ * If this attribute is set to an explicit value, The label-edge attribute on all form controls should also be set to an explict value.
+ * For example, if this attribute is set to "start" or "top", the label-edge attribute of all form controls should be set to "provided".</p>
  *
  * @example <caption>Initialize the oj-form-layout with the <code class="prettyprint">label-edge</code> attribute specified:</caption>
  * &lt;oj-form-layout label-edge="top">
@@ -215,7 +258,7 @@ var __oj_form_layout_metadata =
  * @instance
  * @type {string}
  * @default "wrap"
- * @ojvalue {string} "truncate" Label will trunctate if needed
+ * @ojvalue {string} "truncate" Label will truncate if needed
  * @ojvalue {string} "wrap" Label will wrap if needed
  * @desc Specifies if the label text should wrap or truncate.
  *
@@ -369,6 +412,9 @@ function ojFormLayout(context) {
   var labelFlexItemWidth;
   var updatePending = false;
 
+  // update labelEdge and colspanWrap based on context
+  _updateDefaultFromTheme(context);
+
   // Our version of GCC has a bug where the second param of MutationObserver.observe must be of
   // type MutationObserverInit which isn't a real class that we can instantiate. Work around is to
   // create the MutationObserver on an alias of 'this' and call observe in a different function.
@@ -444,6 +490,8 @@ function ojFormLayout(context) {
     function doUpdate() {
       _notReady();
 
+      _updateDefaultFromTheme();
+
       unresolvedChildren = []; // start with an empty list
 
       labelFlexItemWidth = null;
@@ -486,12 +534,16 @@ function ojFormLayout(context) {
         // is finished upgrading.
         self._rootElementMutationObserver
           .observe(element, { childList: true, subtree: true, attributes: true });
-        _ojFormMakeReady();
-        _makeReady();
 
+        // During debugging a different bug, I noticed on IE11 that sometimes this wasn't updated
+        // when it obviously should have been (i.e. we reentered this function after the initial time
+        // and isInitialRender was still true), so moving this setting before marking the promiss ready
         if (isInitialRender) {
           isInitialRender = false;
         }
+
+        _ojFormMakeReady();
+        _makeReady();
       });
     }
 
@@ -639,6 +691,9 @@ function ojFormLayout(context) {
       // don't remove bonus dom elems owned by child oj-form-layouts
       if (_isNodeOfThisFormLayout(bonusDomElem)) {
         if (bonusDomElem.tagName === 'OJ-LABEL') {
+          // Before we remove the oj-label, set the for to "" to trigger the code to
+          // unlink the oj-label from its form component
+          bonusDomElem.for = '';
           // For the oj-label elements we create, we can just remove them safely
           // as none of their children are the original child elements we are preserving
           bonusDomElem.parentElement.removeChild(bonusDomElem);
@@ -712,6 +767,13 @@ function ojFormLayout(context) {
   }
 
   /**
+   * Return true if the label is handled by the child element; false otherwise.
+   */
+  function _isLabelByChild(child) {
+    return (element.labelEdge === 'inside' || child.labelEdge === 'inside' || child.labelEdge === 'none');
+  }
+
+  /**
    * For one child, add an oj-label if it supports label-hint.
    *
    * @param {EventTarget} child The element that may need an oj-label created
@@ -723,15 +785,19 @@ function ojFormLayout(context) {
   function _addLabelFromHint(child) {
     var ojLabel = null;
 
+    if (_isLabelByChild(child)) {
+      // if the label is created by the component we just return
+      return ojLabel;
+    }
+
     if (child instanceof Element && 'labelHint' in child
-         && child.labelHint !== '') {
+        && child.labelHint !== '') {
       _ensureUniqueId(child);
       ojLabel = _createOjLabelAndInitialize(child);
 
       // the label should preceed the input element it is associated with
       child.parentElement.insertBefore(ojLabel, child); // @HTMLUpdateOK insert oj-label containing trusted content.
 
-      _updateLabelHelpAndShowRequired(child, ojLabel);
       // JET's custom element's property change events,
       // e.g., labelHintChanged,
       // do not bubble and component events do bubble.
@@ -754,7 +820,18 @@ function ojFormLayout(context) {
    * @private
    */
   function _createOjLabelAndInitialize(editableElem) {
-    var tagName = editableElem.tagName.toLowerCase();
+    let evLabelledBy = editableElem.labelledBy;
+    if (evLabelledBy) {
+      // catch the condition where the app dev removed
+      // oj-label in favor of label-hint but forgot to remove labelled-by.
+      let labelledByLabel = document.getElementById(evLabelledBy);
+      if (labelledByLabel) {
+        Logger.error('The oj-form-layout descendent component with id ' + editableElem.id +
+        ' has both label-hint and labelled-by. Remove labelled-by="' +
+        evLabelledBy + '" since no matching element was found in the document, ' +
+        'and a label will be created using the label-hint.');
+      }
+    }
     var ojLabel = document.createElement('oj-label');
     ojLabel.setAttribute(BONUS_DOM_ATTR, '');
     ojLabel.setAttribute('data-oj-internal', '');
@@ -764,17 +841,12 @@ function ojFormLayout(context) {
     ojLabel.setAttribute('data-oj-binding-provider', 'none');
     ojLabel.setAttribute('data-oj-context', '');
 
-    // for alignment purposes, we need to add label alignment classes for labels of
-    // oj-checkboxset and oj-radioset. These are for inline labels only.
-    if (element.labelEdge === 'start' && (tagName === 'oj-checkboxset' || tagName === 'oj-radioset')) {
-      ojLabel.classList.add(tagName + '-label');
-    }
-
     // Note: the hint might be null, but that is fine, we still want a label for this case to hang the required and help icons off of
     // and allow for programatic changes to label-hint, help-hints, required.
     var span = document.createElement('span');
     span.id = editableElem.id + '|hint';
     span.textContent = editableElem.labelHint;
+    _updateLabelHelpAndShowRequired(editableElem, ojLabel);
     ojLabel.appendChild(span); // @HTMLUpdateOK append span containing trusted content.
 
     _linkLabelAndElement(ojLabel, editableElem);
@@ -969,23 +1041,19 @@ function ojFormLayout(context) {
    */
   function _updateLabelHelpAndShowRequired(comp, _ojLabel) {
     var ojLabel = _ojLabel;
-    var busyContext = Context.getContext(ojLabel).getBusyContext();
-    busyContext.whenReady().then(function () {
-      var helpHints = comp.helpHints;
+    var helpHints = comp.helpHints;
 
-      if (helpHints) {
-        // if either of these has a value, set the help property of ojLabel.
-        // This is a work around for the fact that oj-label doesn't correctly
-        // handle the default value for help.definition or help.source (i.e. when
-        // the value is "").  If we have the default value, null or undefined
-        // for both of them, we don't set the help attribute on the oj-label.
-        if (helpHints.definition || helpHints.source) {
-          ojLabel.help = helpHints;
-        }
+    if (helpHints) {
+      // if either of these has a value, set the help property of ojLabel.
+      // This is a work around for the fact that oj-label doesn't correctly
+      // handle the default value for help.definition or help.source (i.e. when
+      // the value is "").  If we have the default value, null or undefined
+      // for both of them, we don't set the help attribute on the oj-label.
+      if (helpHints.definition || helpHints.source) {
+        ojLabel.help = helpHints;
       }
-
-      ojLabel.showRequired = comp.required;
-    });
+    }
+    ojLabel.showRequired = comp.required;
   }
 
   /**
@@ -1027,12 +1095,18 @@ function ojFormLayout(context) {
           // for direction === "row", we only render the oj-flex div once per row.
           currentRow = _addFlexDivs(label, elem,
                                     directionIsColumn || pairCnt % maxCols === 0);
+        } else if ('labelHint' in label && _isLabelByChild(label)) {
+          // In case of label edge = inside or top generated by component,
+          // Form layout does not render the label.
+          // But we want all the flow to be similar to what it does if component was rendering a label
+          currentRow = _addFlexDivs(label, null,
+            directionIsColumn || pairCnt % maxCols === 0);
         } else {
           // handle the non oj-label child, which includes oj-label-value
           // if the child element supports colspan, we need to calculate that actual
           // colspan based on the available columns left in this row.
           // Issue a warning if colspan is used, but direction is not set to row
-          if ('colspan' in label && label.colspan !== '') {
+          if ('colspan' in label && label.getAttribute('colspan')) {
             if (directionIsColumn) {
               // We only need to issue this error once
               if (!directionColspanError) {
@@ -1040,8 +1114,21 @@ function ojFormLayout(context) {
                 directionColspanError = true;
               }
             } else {
-              // force integer colspan values, don't exceed availableCols
-              colspan = Math.min(Math.floor(label.colspan), maxCols - curCol);
+              var availableCols = maxCols - curCol;
+              // force integer colspan values
+              colspan = Math.floor(label.colspan);
+              if (element.colspanWrap === 'wrap' && availableCols < colspan && curCol > 0) {
+                // If colspanWrap is 'wrap' and there isn't enough column left to satisfy colspan,
+                // then just add empty flex items to take up remaining columns and adjust the counters.
+                // _addFlexDivs will start a new row.
+                _addMissingFlexItems(currentRow, pairCnt);
+                pairCnt += availableCols;
+                curCol = 0;
+                colspan = Math.min(colspan, maxCols);
+              } else {
+                // don't exceed availableCols
+                colspan = Math.min(colspan, availableCols);
+              }
 
               if (!needsFullWidthClass && maxCols > 1) {
                 needsFullWidthClass = true;
@@ -1118,11 +1205,29 @@ function ojFormLayout(context) {
     return labelFlexItemWidth;
   }
 
+  // this should only be called for direction = row, not needed when direction = column
+  // For labelEdge === 'start', we need to set the width of the comp flex item so that
+  // colspan width will get set correctly and fields will line up correctly row to row.
+  function _getCompFlexItemWidth(elem, availableCols) {
+    var compFlexItemWidth;
+    if (element.labelEdge === 'start') {
+      compFlexItemWidth = 'calc(' + _getFullFlexItemWidth(elem, availableCols) + ' - ' +
+             _getLabelFlexItemWidth() + ')';
+    } else {
+      compFlexItemWidth = _getFullFlexItemWidth(elem, availableCols);
+    }
+
+    return compFlexItemWidth;
+  }
+
   function _addEmptyFlexItem(flexContainer, width) {
     var flexItem = _createDivElement('oj-flex-item');
 
-    flexItem.style.webkitFlex = '0 1 ' + width;
-    flexItem.style.flex = '0 1 ' + width;
+    //  - IE11 doesn't allow calc() expressions in 'style.flex' so we have to specify
+    // the longhand versions just in case the slotWidth is specified as a calc() expression
+    flexItem.style.flexGrow = '0';
+    flexItem.style.flexShrink = '1';
+    flexItem.style.flexBasis = width;
     flexItem.style.maxWidth = width;
     flexItem.style.width = width;
 
@@ -1166,42 +1271,77 @@ function ojFormLayout(context) {
     label.parentElement.insertBefore(ojFlex, label); // @HTMLUpdateOK insert div containing trusted content.
     labelOjFlexItem.appendChild(label); // @HTMLUpdateOK append oj-label containing trusted content.
 
-    // set the width of the label flex item
-    labelOjFlexItem.style.flex = '0 0 ' + slotWidth;
-    labelOjFlexItem.style.maxWidth = slotWidth;
-    labelOjFlexItem.style.width = slotWidth;
 
     // create the component flex-item and append the element as a child
     if (elem) {
+      // set the width of the label flex item
+      //  - IE11 doesn't allow calc() expressions in 'style.flex' so we have to specify
+      // the longhand versions just in case the slotWidth is specified as a calc() expression
+      labelOjFlexItem.style.flexGrow = '0';
+      labelOjFlexItem.style.flexShrink = '0';
+      labelOjFlexItem.style.flexBasis = slotWidth;
+      labelOjFlexItem.style.maxWidth = slotWidth;
+      labelOjFlexItem.style.width = slotWidth;
+
       var elementOjFlexItem = _createDivElement('oj-flex-item');
       ojFlex.appendChild(elementOjFlexItem); // @HTMLUpdateOK append div containing trusted content.
 
-      if (element.direction === 'row' && element.labelEdge === 'top') {
-        // For the direction row case when labels are on top, we move the label into the value part,
-        // and make the label flex item 0px width and add the 'oj-formlayout-label-comp-flex-item class
-        // to get the correct padding
-        elementOjFlexItem.appendChild(label);
-        labelOjFlexItem.style.webkitFlex = '0 1 0px';
-        labelOjFlexItem.style.flex = '0 1 0px';
-        labelOjFlexItem.style.maxWidth = '0px';
-        labelOjFlexItem.style.width = '0px';
-        labelOjFlexItem.classList.add('oj-formlayout-label-comp-flex-item');
-        elementOjFlexItem.classList.add('oj-formlayout-label-comp-flex-item');
+      if (element.direction === 'row') {
+        if (element.labelEdge === 'top') {
+          // For the direction row case when labels are on top, we move the label into the value part,
+          // and make the label flex item 0px width and add the 'oj-formlayout-label-comp-flex-item class
+          // to get the correct padding
+          elementOjFlexItem.appendChild(label);
+          labelOjFlexItem.style.flex = '0 1 0px';
+          labelOjFlexItem.style.maxWidth = '0px';
+          labelOjFlexItem.style.width = '0px';
+          labelOjFlexItem.classList.add('oj-formlayout-label-comp-flex-item');
+          elementOjFlexItem.classList.add('oj-formlayout-label-comp-flex-item');
+        }
       }
+      slotWidth = _getCompFlexItemWidth(label, colspan);
       elementOjFlexItem.appendChild(elem); // @HTMLUpdateOK append element containing trusted content.
 
       // Set the flex style of the value flex item.
       // Set a flex-grow factor of 1 and a flex-basis of 0 so that all "value" flex items share the
       // remaining space left over by "label" flex items equally.
-      elementOjFlexItem.style.webkitFlex = '1 1 0';
-      elementOjFlexItem.style.flex = '1 1 0';
+      //  - IE11 doesn't allow calc() expressions in 'style.flex' so we have to specify
+      // the longhand versions just in case the slotWidth is specified as a calc() expression
+      elementOjFlexItem.style.flexGrow = '1';
+      elementOjFlexItem.style.flexShrink = '1';
+      elementOjFlexItem.style.flexBasis = slotWidth;
+      elementOjFlexItem.style.maxWidth = slotWidth;
+      elementOjFlexItem.style.width = slotWidth;
       if (elem.tagName === 'OJ-FORM-LAYOUT') {
         // For the nested form layout case, we need to have a way to apply styles to the
         // flex item element that is the parent of the oj-form-layout so that we can
         // make padding adjustments, etc.
         elementOjFlexItem.classList.add('oj-formlayout-nested-formlayout');
       }
+    } else if ('labelHint' in label && _isLabelByChild(label)) {
+      // case when component is creating label.
+      if (element.direction === 'row') {
+        emptyLabelFlexItem.style.flex = '0 1 0px';
+        emptyLabelFlexItem.style.maxWidth = '0px';
+        emptyLabelFlexItem.style.width = '0px';
+        emptyLabelFlexItem.classList.add('oj-formlayout-label-comp-flex-item');
+        labelOjFlexItem.classList.add('oj-formlayout-label-comp-flex-item');
+      }
+      labelOjFlexItem.style.flex = '1 1 0';
+      labelOjFlexItem.style.maxWidth = slotWidth;
+      labelOjFlexItem.style.width = slotWidth;
     } else {
+      slotWidth = _getFullFlexItemWidth(label, colspan);
+      // this is actually the element flex item in this case
+      //  - IE11 doesn't allow calc() expressions in 'style.flex' so we have to specify
+      // the longhand versions just in case the slotWidth is specified as a calc() expression
+      labelOjFlexItem.style.flexGrow = '1';
+      labelOjFlexItem.style.flexShrink = '1';
+      labelOjFlexItem.style.flexBasis = slotWidth;
+      // We need this for both row and column direction so that labels will
+      // truncate correctly.
+      labelOjFlexItem.style.maxWidth = slotWidth;
+      labelOjFlexItem.style.width = slotWidth;
       // for the case where there is an empty label flex item with 0px width, we need to add this class
       // so that we get the correct padding on the flex items
       emptyLabelFlexItem.classList.add('oj-formlayout-no-label-flex-item');
@@ -1286,8 +1426,8 @@ function ojFormLayout(context) {
         ignore = false;
         break;
       }
-      // If an attribute we care changes on a child, we don't ignore the mutation
-      if (mutation.type === 'attributes' && dontIgnoreAttribute.indexOf(mutation.attributeName) !== -1) {
+      // If an attribute we care about changes on a child, we don't ignore the mutation
+      if (mutation.type === 'attributes' && dontIgnoreAttribute.includes(mutation.attributeName)) {
         ignore = false;
         break;
       }
@@ -1344,7 +1484,10 @@ function ojFormLayout(context) {
    */
   function _removeElementAndReparentChildren(elem) {
     while (elem.firstElementChild) {
-      elem.parentNode.insertBefore(elem.firstElementChild, elem); // @HTMLUpdateOK reparenting existing element.
+      var child = elem.firstElementChild;
+      elem.parentNode.insertBefore(child, elem); // @HTMLUpdateOK reparenting existing element.
+      var refresh = 'refresh';
+      if (child[refresh] && child.classList.contains('oj-complete')) child.refresh();
     }
 
     elem.parentNode.removeChild(elem);
@@ -1365,7 +1508,40 @@ function ojFormLayout(context) {
       _uidCounter += 1;
     }
   }
+
+  /**
+   * Some properties of the form is based on the theme.
+   * We first check if the user has set a value. If so, we use it and do not find a default from themes.
+   * Else we take the default from themes and use it.
+   */
+  function _updateDefaultFromTheme(componentContext) {
+    var themeDefault = (ThemeUtils.parseJSONFromFontFamily('oj-form-layout-option-defaults') || {});
+    // componentContext.props.labelEdge = themeDefault;
+    if (componentContext) {
+      if (!componentContext.props.labelEdge) {
+        element.labelEdge = themeDefault.labelEdge;
+      }
+      if (!componentContext.props.colspanWrap) {
+        element.colspanWrap = themeDefault.colspanWrap;
+      }
+    } else {
+      if (!element.labelEdge) {
+        element.labelEdge = themeDefault.labelEdge;
+      }
+      if (!element.colspanWrap) {
+        element.colspanWrap = themeDefault.colspanWrap;
+      }
+    }
+  }
 }
+
+// static function called by the bridge to get attribute default values
+ojFormLayout.getDynamicDefaults = function () {
+  return {
+    labelEdge: (ThemeUtils.parseJSONFromFontFamily('oj-form-layout-option-defaults') || {}).labelEdge
+  };
+};
+
 
 /* global __oj_form_layout_metadata:false */
 /* global ojFormLayout */

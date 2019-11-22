@@ -2,20 +2,20 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojs/ojdatasource-common'], function(oj, $, Logger)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * A JsonNodeSet represents a collection of nodes.  The JsonNodeSet is an object returned by the success callback
  * of the fetchChildren method on TreeDataSource.
  * @implements oj.NodeSet
  * @constructor
+ * @final
  * @since 1.0
  * @ojtsignore
  * @param {number} startNode the index of the first node in this NodeSet relative to its parent
@@ -169,10 +169,7 @@ oj.JsonNodeSet.prototype.getChildNodeSet = function (index) {
   return new oj.JsonNodeSet(0, results.length, results, key, 0);
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global Logger:false */
 
 // ////////////////// _JsonTreeNodeDataSource ///////////////////////////////////

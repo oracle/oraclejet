@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore',  'ojs/ojpulltorefresh', 'ojs/ojlogger', 'touchr'], 
 /*
 * @param {Object} oj 
@@ -54,10 +56,7 @@ var __oj_refresher_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2018, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global PullToRefreshUtils:false, Logger:false, Context:false */
 /*!
  * jQuery UI Refresher @VERSION
@@ -80,7 +79,7 @@ var __oj_refresher_metadata =
  * @ojcomponent oj.ojRefresher
  * @augments oj.baseComponent
  * @since 5.1.0
- * @ojstatus preview
+ *
  * @ojshortdesc A refresher is a wrapper for attaching pull to refresh functionality to a DOM element.
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["text", "threshold"]}
@@ -122,6 +121,7 @@ var __oj_refresher_metadata =
          *
          * @expose
          * @memberof oj.ojRefresher
+         * @ojrequired
          * @instance
          * @type {function():Promise.<*>}
          * @default null
@@ -357,6 +357,7 @@ var __oj_refresher_metadata =
 
     });
 }());
+
 
 /* global __oj_refresher_metadata */
 /**

@@ -61,15 +61,10 @@
     // render a menulist (Alta and Windows).  (In the latter case, only the
     // placeholder option is styled).
     .oj-select-select.oj-select-default[multiple] {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        color: var(--oj-text-field-placeholder-color); 
-        font-style: var(--oj-text-field-placeholder-font-style);      
-      }
-      @else {
-        color: $formControlPlaceholderColor; 
+
+        color: $formControlPlaceholderColor;
         font-style: $formControlPlaceholderFontStyle;        
-      }
+      
     }
     // android oj-select-many has a native select element with no icon, so doesn't need the padding-right here.
     .oj-form-control-text-align-right oj-select-many .oj-select .oj-select-select,

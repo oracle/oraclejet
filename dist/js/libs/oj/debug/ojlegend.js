@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtLegend', 'ojs/ojmap', 'ojs/ojkeyset'], function(oj, $, Components, DvtAttributeUtils, dvt, ojMap, KeySet)
 {
   "use strict";
@@ -335,10 +337,7 @@ var __oj_legend_section_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global dvt:false, KeySet:false, Components:false */
 
@@ -346,7 +345,7 @@ var __oj_legend_section_metadata =
  * @ojcomponent oj.ojLegend
  * @augments oj.dvtBaseComponent
  * @since 0.7.0
- * @ojstatus preview
+ *
  * @ojshortdesc A legend displays an interactive description of symbols, colors, etc., used in graphical information representations.
  * @ojrole application
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
@@ -1162,6 +1161,7 @@ Components.setDefaultOptions({
   }
 });
 
+
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -1260,7 +1260,7 @@ Components.setDefaultOptions({
  * @property {"dashed"|"dotted"|"solid"} [lineStyle="solid"] The line style. Only applies when the symbolType is "line" or "lineWithMarker".
  * @property {number=} lineWidth The line width in pixels. Only applies when the symbolType is "line" or "lineWithMarker".
  * @property {string=} markerColor The color of the marker, if different than the line color. Only applies if the symbolType is "lineWithMarker".
- * @property {"circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string} [markerShape="square"] The shape of the marker. Only applies if symbolType is "marker" or "lineWithMarker". Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
+ * @property {"circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string} [markerShape="square"] The shape of the marker. Only applies if symbolType is "marker" or "lineWithMarker". Can take the name of a built-in shape or the SVG path commands for a custom shape. Does not apply if a custom image is specified.
  * @property {string=} markerSvgClassName The CSS style class to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
  * @property {Object=} markerSvgStyle The inline style to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
  * @property {"largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"|"none"|"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle"} [pattern="none"] The pattern used to fill the marker. Only applies if symbolType is "marker" or "lineWithMarker".
@@ -1326,26 +1326,19 @@ Components.setDefaultOptions({
  * </p>
  * <ul>
  *   <li>
- *      $current - an object that contains information for the current node.
- *      (See the table below for a list of properties available on $current)
+ *      $current - an object that contains information for the current node. (See [oj.ojLegend.ItemTemplateContext]{@link oj.ojLegend.ItemTemplateContext} or the table below for a list of properties available on $current)
  *   </li>
  *   <li>
  *      alias - if 'as' attribute was specified, the value will be used to provide an
  *      application-named alias for $current.
  *   </li>
  * </ul>
- * @ojstatus preview
+ *
  * @ojslot itemTemplate
  * @ojmaxitems 1
  * @memberof oj.ojLegend
  * @ojshortdesc The itemTemplate slot is used to specify the template for creating each legend item. See the Help documentation for more information.
- *
- * @property {Element} componentElement The &lt;oj-legend> custom element
- * @property {Object} data The data object of the node
- * @property {number} index The zero-based index of the curent node
- * @property {any} key The key of the current node
- * @property {Array} parentData  An array of data objects of the outermost to innermost parents of the node
- * @property {any} parentKey  The key of the parent node
+ * @ojslotitemprops oj.ojLegend.ItemTemplateContext
  *
  * @example <caption>Initialize the legend with an inline item template specified:</caption>
  * &lt;oj-legend data='[[dataProvider]]'>
@@ -1355,6 +1348,16 @@ Components.setDefaultOptions({
  *  &lt;/template>
  * &lt;/oj-legend>
  */
+
+ /**
+  * @typedef {Object} oj.ojLegend.ItemTemplateContext
+  * @property {Element} componentElement The &lt;oj-legend> custom element
+  * @property {Object} data The data object of the node
+  * @property {number} index The zero-based index of the current node
+  * @property {any} key The key of the current node
+  * @property {Array} parentData  An array of data objects of the outermost to innermost parents of the node
+  * @property {any} parentKey  The key of the parent node
+  */
 
  /**
  * <p>
@@ -1377,7 +1380,7 @@ Components.setDefaultOptions({
  *      application-named alias for $current.
  *   </li>
  * </ul>
- * @ojstatus preview
+ *
  * @ojslot sectionTemplate
  * @ojmaxitems 1
  * @memberof oj.ojLegend
@@ -1385,7 +1388,7 @@ Components.setDefaultOptions({
  *
  * @property {Element} componentElement The &lt;oj-legend> custom element
  * @property {Object} data The data object of the node
- * @property {number} index The zero-based index of the curent node
+ * @property {number} index The zero-based index of the current node
  * @property {any} key The key of the current node
  * @property {Array} parentData  An array of data objects of the outermost to innermost parents of the node
  * @property {any} parentKey  The key of the parent node
@@ -1442,12 +1445,13 @@ Components.setDefaultOptions({
  * @memberof oj.ojLegend
  */
 
+
 /**
  * @ojcomponent oj.ojLegendItem
  * @ojsignature {target: "Type", value:"class ojLegendItem extends JetElement<ojLegendItemSettableProperties>"}
  * @ojslotcomponent
  * @since 6.0.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="overview">
@@ -1615,7 +1619,7 @@ Components.setDefaultOptions({
  * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
  */
 /**
- * The shape of the marker. Only applies if symbolType is "marker" or "lineWithMarker". Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
+ * The shape of the marker. Only applies if symbolType is "marker" or "lineWithMarker". Can take the name of a built-in shape or the SVG path commands for a custom shape. Does not apply if a custom image is specified.
  * @expose
  * @name markerShape
  * @memberof! oj.ojLegendItem
@@ -1667,12 +1671,13 @@ Components.setDefaultOptions({
  * @default ""
  */
 
+
 /**
  * @ojcomponent oj.ojLegendSection
  * @ojsignature {target: "Type", value:"class ojLegendSection extends JetElement<ojLegendSectionSettableProperties>"}
  * @ojslotcomponent
  * @since 6.0.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="overview">
@@ -1740,6 +1745,7 @@ Components.setDefaultOptions({
  * @ojvalue {string} "off"
  * @default "off"
  */
+
 
 /* global __oj_legend_metadata:false, DvtAttributeUtils:false */
 /**

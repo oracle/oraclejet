@@ -2,45 +2,45 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojarraydataprovider', 'ojs/ojeventtarget', 'ojs/ojtreedataprovider'], function(oj, $, ko)
 {
   "use strict";
   var ArrayDataProvider = oj['ArrayDataProvider'];
 
-var ArrayTreeDataProvider = /** @class */ (function () {
-    function ArrayTreeDataProvider(treeData, options, _rootDataProvider) {
+class ArrayTreeDataProvider {
+    constructor(treeData, options, _rootDataProvider) {
         this.treeData = treeData;
         this.options = options;
         this._rootDataProvider = _rootDataProvider;
-        this.TreeAsyncIterator = /** @class */ (function () {
-            function class_1(_parent, _baseIterable) {
+        this.TreeAsyncIterator = class {
+            constructor(_parent, _baseIterable) {
                 this._parent = _parent;
                 this._baseIterable = _baseIterable;
             }
-            class_1.prototype['next'] = function () {
-                var self = this;
+            ['next']() {
+                let self = this;
                 return this._baseIterable[Symbol.asyncIterator]().next().then(function (result) {
-                    var metadata = result.value.metadata;
-                    for (var i = 0; i < metadata.length; i++) {
+                    let metadata = result.value.metadata;
+                    for (let i = 0; i < metadata.length; i++) {
                         // Replace flat array metadata with tree array metadata 
                         metadata[i] = self._parent._getNodeMetadata(result.value.data[i]);
                     }
                     return result;
                 });
-            };
-            return class_1;
-        }());
-        this.TreeAsyncIterable = /** @class */ (function () {
-            function class_2(_parent, _asyncIterator) {
+            }
+        };
+        this.TreeAsyncIterable = class {
+            constructor(_parent, _asyncIterator) {
                 this._parent = _parent;
                 this._asyncIterator = _asyncIterator;
                 this[Symbol.asyncIterator] = function () {
                     return this._asyncIterator;
                 };
             }
-            return class_2;
-        }());
+        };
         this._baseDataProvider = new oj['ArrayDataProvider'](treeData, options);
         this._mapKeyToNode = new Map();
         this._mapNodeToKey = new Map();
@@ -51,10 +51,10 @@ var ArrayTreeDataProvider = /** @class */ (function () {
             this._processTreeArray(treeData, []);
         }
     }
-    ArrayTreeDataProvider.prototype.containsKeys = function (params) {
-        var self = this;
+    containsKeys(params) {
+        let self = this;
         return this.fetchByKeys(params).then(function (fetchByKeysResult) {
-            var results = new Set();
+            let results = new Set();
             params['keys'].forEach(function (key) {
                 if (fetchByKeysResult['results'].get(key) != null) {
                     results.add(key);
@@ -62,50 +62,48 @@ var ArrayTreeDataProvider = /** @class */ (function () {
             });
             return Promise.resolve({ 'containsParameters': params, 'results': results });
         });
-    };
-    ArrayTreeDataProvider.prototype.getCapability = function (capabilityName) {
-        // No filtering support yet
-        if (capabilityName === 'filter') {
-            return null;
-        }
+    }
+    getCapability(capabilityName) {
         return this._baseDataProvider.getCapability(capabilityName);
-    };
-    ArrayTreeDataProvider.prototype.getTotalSize = function () {
+    }
+    getTotalSize() {
         return this._baseDataProvider.getTotalSize();
-    };
-    ArrayTreeDataProvider.prototype.isEmpty = function () {
+    }
+    isEmpty() {
         return this._baseDataProvider.isEmpty();
-    };
-    ArrayTreeDataProvider.prototype.getChildDataProvider = function (parentKey, options) {
-        var node = this._getNodeForKey(parentKey);
+    }
+    getChildDataProvider(parentKey, options) {
+        let node = this._getNodeForKey(parentKey);
         if (node) {
-            var children = this._getChildren(node);
+            let children = this._getChildren(node);
             if (children) {
-                var childDataProvider = new ArrayTreeDataProvider(children, this.options, this._getRootDataProvider());
+                let childDataProvider = new ArrayTreeDataProvider(children, this.options, this._getRootDataProvider());
                 return childDataProvider;
             }
         }
         return null;
-    };
-    ArrayTreeDataProvider.prototype.fetchFirst = function (params) {
-        if (params && params.filterCriterion) {
-            // clear out filterCriterion until support for filtering is added
-            params = $.extend({}, params);
-            params.filterCriterion = null;
+    }
+    fetchFirst(params) {
+        if (params &&
+            params.filterCriterion) {
+            let paramsClone = $.extend({}, params);
+            paramsClone.filterCriterion = this._getLeafNodeFilter(paramsClone.filterCriterion);
+            paramsClone.filterCriterion.filter = params.filterCriterion.filter;
+            params = paramsClone;
         }
-        var baseIterable = this._baseDataProvider.fetchFirst(params);
+        let baseIterable = this._baseDataProvider.fetchFirst(params);
         return new this.TreeAsyncIterable(this, new this.TreeAsyncIterator(this, baseIterable));
-    };
-    ArrayTreeDataProvider.prototype.fetchByOffset = function (params) {
-        var basePromise = this._baseDataProvider.fetchByOffset(params);
-        var self = this;
+    }
+    fetchByOffset(params) {
+        let basePromise = this._baseDataProvider.fetchByOffset(params);
+        let self = this;
         return basePromise.then(function (result) {
             // Repackage the results with tree node metadata
-            var results = result.results;
-            var newResults = [];
-            for (var i = 0; i < results.length; i++) {
-                var metadata = results[i]['metadata'];
-                var data = results[i]['data'];
+            let results = result.results;
+            let newResults = [];
+            for (let i = 0; i < results.length; i++) {
+                let metadata = results[i]['metadata'];
+                let data = results[i]['data'];
                 metadata = self._getNodeMetadata(data);
                 newResults.push({ 'data': data, 'metadata': metadata });
             }
@@ -113,12 +111,12 @@ var ArrayTreeDataProvider = /** @class */ (function () {
                 'fetchParameters': result['fetchParameters'],
                 'results': newResults };
         });
-    };
-    ArrayTreeDataProvider.prototype.fetchByKeys = function (params) {
-        var self = this;
-        var results = new Map();
+    }
+    fetchByKeys(params) {
+        let self = this;
+        let results = new Map();
         params['keys'].forEach(function (key) {
-            var node = self._getNodeForKey(key);
+            let node = self._getNodeForKey(key);
             if (node) {
                 results.set(key, { 'metadata': { 'key': key },
                     'data': node });
@@ -126,21 +124,21 @@ var ArrayTreeDataProvider = /** @class */ (function () {
         });
         return Promise.resolve({ 'fetchParameters': params,
             'results': results });
-    };
-    ArrayTreeDataProvider.prototype._getChildren = function (node) {
-        var childrenAttr = this.options && this.options['childrenAttribute'] ? this.options['childrenAttribute'] : 'children';
+    }
+    _getChildren(node) {
+        let childrenAttr = this.options && this.options['childrenAttribute'] ? this.options['childrenAttribute'] : 'children';
         // Pass true to _getVal so that we keep observableArray children in the same form 
         return this._getVal(node, childrenAttr, true);
-    };
-    ArrayTreeDataProvider.prototype._getRootDataProvider = function () {
+    }
+    _getRootDataProvider() {
         if (this._rootDataProvider) {
             return this._rootDataProvider;
         }
         else {
             return this;
         }
-    };
-    ArrayTreeDataProvider.prototype._subscribeObservableArray = function (treeData, parentKeyPath) {
+    }
+    _subscribeObservableArray(treeData, parentKeyPath) {
         if (!(ko.isObservable(treeData) && !(treeData['destroyAll'] === undefined))) {
             // we only support Array or ko.observableArray
             throw new Error('Invalid data type. ArrayTreeDataProvider only supports Array or observableArray.');
@@ -150,18 +148,18 @@ var ArrayTreeDataProvider = /** @class */ (function () {
         var subscriptions = new Array(2);
         // subscribe to observableArray arrayChange event to get individual updates
         subscriptions[0] = treeData['subscribe'](function (changes) {
-            var i, id, dataArray = [], keyArray = [], indexArray = [], metadataArray = [];
-            var j, index;
-            var updatedIndexes = [];
-            var operationUpdateEventDetail = null;
-            var operationAddEventDetail = null;
-            var operationRemoveEventDetail = null;
+            let i, id, dataArray = [], keyArray = [], indexArray = [], metadataArray = [];
+            let j, index;
+            let updatedIndexes = [];
+            let operationUpdateEventDetail = null;
+            let operationAddEventDetail = null;
+            let operationRemoveEventDetail = null;
             // squash deletes and adds into updates
-            var removeDuplicate = [];
+            let removeDuplicate = [];
             for (i = 0; i < changes.length; i++) {
                 index = changes[i].index;
                 status = changes[i].status;
-                var iKey = self._getId(changes[i].value);
+                let iKey = self._getId(changes[i].value);
                 if (iKey) {
                     for (j = 0; j < changes.length; j++) {
                         if (j != i &&
@@ -170,7 +168,7 @@ var ArrayTreeDataProvider = /** @class */ (function () {
                             updatedIndexes.indexOf(i) < 0 &&
                             removeDuplicate.indexOf(i) < 0) {
                             // Squash delete and add only if they have the same index and same key
-                            var jKey = self._getId(changes[j].value);
+                            let jKey = self._getId(changes[j].value);
                             if (oj.Object.compareValues(iKey, jKey)) {
                                 if (status === 'deleted') {
                                     removeDuplicate.push(i);
@@ -190,8 +188,8 @@ var ArrayTreeDataProvider = /** @class */ (function () {
                 if (changes[i]['status'] === 'deleted' &&
                     updatedIndexes.indexOf(i) < 0 &&
                     removeDuplicate.indexOf(i) < 0) {
-                    var node = changes[i].value;
-                    var key = self._getKeyForNode(node);
+                    let node = changes[i].value;
+                    let key = self._getKeyForNode(node);
                     keyArray.push(key);
                     dataArray.push(node);
                     indexArray.push(changes[i].index);
@@ -202,21 +200,21 @@ var ArrayTreeDataProvider = /** @class */ (function () {
                 metadataArray = keyArray.map(function (value) {
                     return { 'key': value };
                 });
-                var keySet_1 = new Set();
+                let keySet = new Set();
                 keyArray.map(function (key) {
-                    keySet_1.add(key);
+                    keySet.add(key);
                 });
-                operationRemoveEventDetail = { data: dataArray, indexes: indexArray, keys: keySet_1, metadata: metadataArray };
+                operationRemoveEventDetail = { data: dataArray, indexes: indexArray, keys: keySet, metadata: metadataArray };
             }
             // Preprocessing for the "add" and "update" event detail
             dataArray = [], keyArray = [], indexArray = [], metadataArray = [];
-            var nodeArray = treeData();
-            var updateKeyArray = [], updateDataArray = [], updateIndexArray = [], updateMetadataArray = [];
+            let nodeArray = treeData();
+            let updateKeyArray = [], updateDataArray = [], updateIndexArray = [], updateMetadataArray = [];
             for (i = 0; i < changes.length; i++) {
                 if (changes[i]['status'] === 'added' &&
                     removeDuplicate.indexOf(i) < 0) {
-                    var node = changes[i].value;
-                    var keyObj = self._processNode(node, parentKeyPath, treeData);
+                    let node = changes[i].value;
+                    let keyObj = self._processNode(node, parentKeyPath, treeData);
                     if (updatedIndexes.indexOf(i) < 0) {
                         keyArray.push(keyObj.key);
                         dataArray.push(node);
@@ -233,43 +231,43 @@ var ArrayTreeDataProvider = /** @class */ (function () {
             }
             // Prepare the "add" event detail
             if (keyArray.length > 0) {
-                var keySet_2 = new Set();
+                let keySet = new Set();
                 keyArray.map(function (key) {
-                    keySet_2.add(key);
+                    keySet.add(key);
                 });
-                var afterKeySet_1 = new Set();
-                var afterKeyArray_1 = [];
-                var parentKeyArray_1 = [];
-                var parentKey_1;
+                let afterKeySet = new Set();
+                let afterKeyArray = [];
+                let parentKeyArray = [];
+                let parentKey;
                 if (self.options && self.options.keyAttributes && self.options.keyAttributesScope !== 'siblings') {
                     // For global key, the last part of the parentKeyPath is the parent key
-                    parentKey_1 = parentKeyPath.length > 0 ? parentKeyPath[parentKeyPath.length - 1] : null;
+                    parentKey = parentKeyPath.length > 0 ? parentKeyPath[parentKeyPath.length - 1] : null;
                 }
                 else {
                     // For non-global key, the entire parentKeyPath is the parent key
-                    parentKey_1 = parentKeyPath.length > 0 ? parentKeyPath : null;
+                    parentKey = parentKeyPath.length > 0 ? parentKeyPath : null;
                 }
                 indexArray.map(function (addIndex) {
-                    var afterKey;
+                    let afterKey;
                     if (addIndex >= nodeArray.length - 1) {
                         afterKey = '';
                     }
                     else {
                         afterKey = self._getKeyForNode(nodeArray[addIndex + 1]);
                     }
-                    afterKeySet_1.add(afterKey);
-                    afterKeyArray_1.push(afterKey);
-                    parentKeyArray_1.push(parentKey_1);
+                    afterKeySet.add(afterKey);
+                    afterKeyArray.push(afterKey);
+                    parentKeyArray.push(parentKey);
                 });
-                operationAddEventDetail = { afterKeys: afterKeySet_1, addBeforeKeys: afterKeyArray_1, parentKeys: parentKeyArray_1, data: dataArray, indexes: indexArray, keys: keySet_2, metadata: metadataArray };
+                operationAddEventDetail = { afterKeys: afterKeySet, addBeforeKeys: afterKeyArray, parentKeys: parentKeyArray, data: dataArray, indexes: indexArray, keys: keySet, metadata: metadataArray };
             }
             // Prepare the "update" event detail
             if (updateKeyArray.length > 0) {
-                var updateKeySet_1 = new Set();
+                let updateKeySet = new Set();
                 updateKeyArray.map(function (key) {
-                    updateKeySet_1.add(key);
+                    updateKeySet.add(key);
                 });
-                operationUpdateEventDetail = { data: updateDataArray, indexes: updateIndexArray, keys: updateKeySet_1, metadata: updateMetadataArray };
+                operationUpdateEventDetail = { data: updateDataArray, indexes: updateIndexArray, keys: updateKeySet, metadata: updateMetadataArray };
             }
             mutationEvent = new oj.DataProviderMutationEvent({ add: operationAddEventDetail,
                 remove: operationRemoveEventDetail,
@@ -285,8 +283,8 @@ var ArrayTreeDataProvider = /** @class */ (function () {
             mutationEvent = null;
         }, null, 'change');
         this._mapKoArrayToSubscriptions.set(treeData, subscriptions);
-    };
-    ArrayTreeDataProvider.prototype._unsubscribeObservableArray = function (treeData) {
+    }
+    _unsubscribeObservableArray(treeData) {
         if (ko.isObservable(treeData) && !(treeData['destroyAll'] === undefined)) {
             var subscriptions = this._mapKoArrayToSubscriptions.get(treeData);
             if (subscriptions) {
@@ -295,13 +293,13 @@ var ArrayTreeDataProvider = /** @class */ (function () {
                 this._mapKoArrayToSubscriptions.delete(treeData);
             }
         }
-    };
+    }
     /**
      * If observableArray, then subscribe to it
      */
-    ArrayTreeDataProvider.prototype._processTreeArray = function (treeData, parentKeyPath) {
-        var self = this;
-        var dataArray;
+    _processTreeArray(treeData, parentKeyPath) {
+        let self = this;
+        let dataArray;
         if (treeData instanceof Array) {
             dataArray = treeData;
         }
@@ -312,10 +310,10 @@ var ArrayTreeDataProvider = /** @class */ (function () {
         dataArray.forEach(function (node, i) {
             self._processNode(node, parentKeyPath, treeData);
         });
-    };
-    ArrayTreeDataProvider.prototype._releaseTreeArray = function (treeData) {
-        var self = this;
-        var dataArray;
+    }
+    _releaseTreeArray(treeData) {
+        let self = this;
+        let dataArray;
         if (treeData instanceof Array) {
             dataArray = treeData;
         }
@@ -326,29 +324,29 @@ var ArrayTreeDataProvider = /** @class */ (function () {
         dataArray.forEach(function (node, i) {
             self._releaseNode(node);
         });
-    };
-    ArrayTreeDataProvider.prototype._processNode = function (node, parentKeyPath, treeData) {
-        var self = this;
-        var keyObj = self._createKeyObj(node, parentKeyPath, treeData);
+    }
+    _processNode(node, parentKeyPath, treeData) {
+        let self = this;
+        let keyObj = self._createKeyObj(node, parentKeyPath, treeData);
         self._setMapEntry(keyObj.key, node);
-        var children = self._getChildren(node);
+        let children = self._getChildren(node);
         if (children) {
             self._processTreeArray(children, keyObj.keyPath);
         }
         return keyObj;
-    };
-    ArrayTreeDataProvider.prototype._releaseNode = function (node) {
-        var self = this;
-        var key = this._getKeyForNode(node);
+    }
+    _releaseNode(node) {
+        let self = this;
+        let key = this._getKeyForNode(node);
         self._deleteMapEntry(key, node);
-        var children = self._getChildren(node);
+        let children = self._getChildren(node);
         if (children) {
             self._releaseTreeArray(children);
         }
-    };
-    ArrayTreeDataProvider.prototype._createKeyObj = function (node, parentKeyPath, treeData) {
-        var key = this._getId(node);
-        var keyPath = parentKeyPath ? parentKeyPath.slice() : [];
+    }
+    _createKeyObj(node, parentKeyPath, treeData) {
+        let key = this._getId(node);
+        let keyPath = parentKeyPath ? parentKeyPath.slice() : [];
         if (key == null) {
             // _getId returns null if keyAttributes is not specified.  In this case we 
             // use the index path of the node as the key.
@@ -367,13 +365,13 @@ var ArrayTreeDataProvider = /** @class */ (function () {
             }
         }
         return { 'key': key, 'keyPath': keyPath };
-    };
+    }
     /**
      * Get id value for row
      */
-    ArrayTreeDataProvider.prototype._getId = function (row) {
-        var id;
-        var keyAttributes = this.options != null ? this.options['keyAttributes'] : null;
+    _getId(row) {
+        let id;
+        let keyAttributes = this.options != null ? this.options['keyAttributes'] : null;
         if (keyAttributes != null) {
             if (Array.isArray(keyAttributes)) {
                 var i;
@@ -393,18 +391,18 @@ var ArrayTreeDataProvider = /** @class */ (function () {
         else {
             return null;
         }
-    };
+    }
     ;
     /**
      * Get value for attribute
      */
-    ArrayTreeDataProvider.prototype._getVal = function (val, attr, keepFunc) {
+    _getVal(val, attr, keepFunc) {
         if (typeof attr == 'string') {
-            var dotIndex = attr.indexOf('.');
+            let dotIndex = attr.indexOf('.');
             if (dotIndex > 0) {
-                var startAttr = attr.substring(0, dotIndex);
-                var endAttr = attr.substring(dotIndex + 1);
-                var subObj = val[startAttr];
+                let startAttr = attr.substring(0, dotIndex);
+                let endAttr = attr.substring(dotIndex + 1);
+                let subObj = val[startAttr];
                 if (subObj) {
                     return this._getVal(subObj, endAttr);
                 }
@@ -416,56 +414,67 @@ var ArrayTreeDataProvider = /** @class */ (function () {
             return val[attr]();
         }
         return val[attr];
-    };
+    }
     ;
     /**
      * Get all values in a row
      */
-    ArrayTreeDataProvider.prototype._getAllVals = function (val) {
-        var self = this;
+    _getAllVals(val) {
+        let self = this;
         return Object.keys(val).map(function (key) {
             return self._getVal(val, key);
         });
-    };
+    }
     ;
-    ArrayTreeDataProvider.prototype._getNodeMetadata = function (node) {
+    _getNodeMetadata(node) {
         return { 'key': this._getKeyForNode(node) };
-    };
-    ArrayTreeDataProvider.prototype._getNodeForKey = function (key) {
-        var rootDataProvider = this._getRootDataProvider();
+    }
+    _getNodeForKey(key) {
+        let rootDataProvider = this._getRootDataProvider();
         return rootDataProvider._mapKeyToNode.get(JSON.stringify(key));
-    };
-    ArrayTreeDataProvider.prototype._getKeyForNode = function (node) {
-        var rootDataProvider = this._getRootDataProvider();
+    }
+    _getKeyForNode(node) {
+        let rootDataProvider = this._getRootDataProvider();
         return rootDataProvider._mapNodeToKey.get(node);
-    };
-    ArrayTreeDataProvider.prototype._setMapEntry = function (key, node) {
-        var rootDataProvider = this._getRootDataProvider();
+    }
+    _setMapEntry(key, node) {
+        let rootDataProvider = this._getRootDataProvider();
         rootDataProvider._mapKeyToNode.set(JSON.stringify(key), node);
         rootDataProvider._mapNodeToKey.set(node, key);
-    };
-    ArrayTreeDataProvider.prototype._deleteMapEntry = function (key, node) {
-        var rootDataProvider = this._getRootDataProvider();
+    }
+    _deleteMapEntry(key, node) {
+        let rootDataProvider = this._getRootDataProvider();
         rootDataProvider._mapKeyToNode.delete(JSON.stringify(key));
         rootDataProvider._mapNodeToKey.delete(node);
-    };
-    ArrayTreeDataProvider.prototype._incrementSequenceNum = function (treeData) {
-        var rootDataProvider = this._getRootDataProvider();
-        var seqNum = rootDataProvider._mapArrayToSequenceNum.get(treeData) || 0;
+    }
+    _incrementSequenceNum(treeData) {
+        let rootDataProvider = this._getRootDataProvider();
+        let seqNum = rootDataProvider._mapArrayToSequenceNum.get(treeData) || 0;
         rootDataProvider._mapArrayToSequenceNum.set(treeData, seqNum + 1);
         // Return the previous sequence number
         return seqNum;
-    };
-    return ArrayTreeDataProvider;
-}());
+    }
+    _getLeafNodeFilter(filter) {
+        let attributeFilter;
+        if (filter && filter['text']) {
+            let filterValue = new RegExp(filter['text'], 'i');
+            attributeFilter = { op: '$regex', attribute: '*', value: filterValue };
+        }
+        else {
+            attributeFilter = filter;
+        }
+        let childrenAttr = this.options && this.options['childrenAttribute'] ? this.options['childrenAttribute'] : 'children';
+        let childrenNull = { op: '$ne', attribute: childrenAttr, value: null };
+        let childrenUndefined = { op: '$ne', attribute: childrenAttr, value: undefined };
+        let excludeParentNodeFilter = { op: '$and', criteria: [childrenNull, childrenUndefined] };
+        return { op: '$or', criteria: [attributeFilter, excludeParentNodeFilter] };
+    }
+}
 oj.ArrayTreeDataProvider = ArrayTreeDataProvider;
 oj['ArrayTreeDataProvider'] = ArrayTreeDataProvider;
 oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -475,9 +484,10 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 
 /* jslint browser: true,devel:true*/
 /**
- * @ojstatus preview
+ *
  * @since 5.1.0
  * @export
+ * @final
  * @class oj.ArrayTreeDataProvider
  * @implements oj.TreeDataProvider
  * @classdesc This class implements {@link oj.TreeDataProvider} and is used to represent hierachical data available from an array.<br><br>
@@ -488,7 +498,12 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
  *            For nodes that can but don't have children, the "children" property should be set to an empty array.<br><br>
  *            Data can be passed as a regular array or a Knockout observableArray.  If a Knockout observableArray is
  *            used, any mutation must be performed with observableArray methods.  The events described below will be dispatched to the ArrayTreeDataProvider
- *            with the appropriate event payload.
+ *            with the appropriate event payload.<br><br>
+ *            Filtering is supported and, by default, applied only on leaf nodes. Empty tree nodes are not collapsed. The filtering on leaf nodes only works
+ *            by combining the passed in filter definition with an OR expression of the "children" property to determine if a node
+ *            is a tree or leaf. Therefore, if users want to customize this to include filtering on tree nodes as well, then a custom filter()
+ *            function can be specified which excludes tree nodes.
+ *
  *
  * <h3 id="events-section">
  *   Events
@@ -586,7 +601,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 /**
  * Fetch rows by keys in the entire tree.
  *
- * @ojstatus preview
+ *
  * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
  * @return {Promise.<oj.FetchByKeysResults>} Promise which resolves to {@link oj.FetchByKeysResults}
  * @export
@@ -602,7 +617,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 /**
  * Get a data provider for the children of the row identified by parentKey.
  *
- * @ojstatus preview
+ *
  * @param {any} parentKey key of the row to get child data provider for.
  * @return {ArrayTreeDataProvider | null} An ArrayTreeDataProvider if the row can (but doesn't have to) have children; or null if the row cannot have children.
  *   Use the <code class="prettyprint">isEmpty</code> method on the returned ArrayTreeDataProvider to determine if it currently has children.
@@ -619,7 +634,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 /**
  * Check if there are rows containing the specified keys in the entire tree.
  *
- * @ojstatus preview
+ *
  * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
  * @return {Promise.<oj.ContainsKeysResults>} Promise which resolves to {@link oj.ContainsKeysResults}
  * @export
@@ -635,7 +650,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 /**
  * Fetch rows by offset at the top level.
  *
- * @ojstatus preview
+ *
  * @param {oj.FetchByOffsetParameters} params Fetch by offset parameters
  * @return {Promise.<oj.FetchByOffsetResults>} Promise which resolves to {@link oj.FetchByOffsetResults}
  * @export
@@ -654,7 +669,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
  * If <code class="prettyprint">params.sortCriteria</code> is specified, the default sorting algorithm used is natural sort.
  * </p>
  *
- * @ojstatus preview
+ *
  * @param {oj.FetchListParameters=} params Fetch parameters
  * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
  * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
@@ -671,7 +686,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 /**
  * Determines whether this data provider supports certain feature.
  *
- * @ojstatus preview
+ *
  * @param {string} capabilityName capability name. Supported capability names are:
  *                  "fetchByKeys", "fetchByOffset", and "sort".
  * @return {Object} capability information or null if unsupported
@@ -679,6 +694,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
  *   <li>If capabilityName is "fetchByKeys", returns a {@link oj.FetchByKeysCapability} object.</li>
  *   <li>If capabilityName is "fetchByOffset", returns a {@link oj.FetchByOffsetCapability} object.</li>
  *   <li>If capabilityName is "sort", returns a {@link oj.SortCapability} object.</li>
+ *   <li>If capabilityName is "filter", returns a {@link oj.FilterCapability} object.</li>
  * </ul>
  * @export
  * @expose
@@ -693,7 +709,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 /**
  * Return the total number of rows at the top level.
  *
- * @ojstatus preview
+ *
  * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
  * @export
  * @expose
@@ -706,7 +722,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 /**
  * Return a string that indicates if this data provider is empty.
  *
- * @ojstatus preview
+ *
  * @return {"yes" | "no" | "unknown"} a string that indicates if this data provider is empty. Valid values are:
  *                  "yes": this data provider is empty.
  *                  "no": this data provider is not empty.
@@ -722,7 +738,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 /**
  * Add a callback function to listen for a specific event type.
  *
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.ArrayTreeDataProvider
@@ -738,7 +754,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 /**
  * Remove a listener previously registered with addEventListener.
  *
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.ArrayTreeDataProvider
@@ -754,7 +770,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 /**
  * Dispatch an event and invoke any registered listeners.
  *
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.ArrayTreeDataProvider

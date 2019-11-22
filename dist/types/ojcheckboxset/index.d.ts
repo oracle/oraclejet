@@ -3,6 +3,12 @@ import { editableValue, editableValueEventMap, editableValueSettableProperties }
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojCheckboxset<K, D, V = any> extends editableValue<V[], ojCheckboxsetSettableProperties<K, D, V>> {
     disabled: boolean;
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelledBy: string | null;
     optionRenderer?: ((param0: ojCheckboxset.OptionContext<D>) => Element) | null;
     options: DataProvider<K, D> | null;
@@ -45,6 +51,8 @@ export namespace ojCheckboxset {
     // tslint:disable-next-line interface-over-type-literal
     type disabledChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["disabled"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
     type optionRendererChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["optionRenderer"]>;
@@ -80,6 +88,7 @@ export interface ojCheckboxsetEventMap<K, D, V = any> extends editableValueEvent
     'ojAnimateEnd': ojCheckboxset.ojAnimateEnd;
     'ojAnimateStart': ojCheckboxset.ojAnimateStart;
     'disabledChanged': JetElementCustomEvent<ojCheckboxset<K, D, V>["disabled"]>;
+    'displayOptionsChanged': JetElementCustomEvent<ojCheckboxset<K, D, V>["displayOptions"]>;
     'labelledByChanged': JetElementCustomEvent<ojCheckboxset<K, D, V>["labelledBy"]>;
     'optionRendererChanged': JetElementCustomEvent<ojCheckboxset<K, D, V>["optionRenderer"]>;
     'optionsChanged': JetElementCustomEvent<ojCheckboxset<K, D, V>["options"]>;
@@ -90,6 +99,12 @@ export interface ojCheckboxsetEventMap<K, D, V = any> extends editableValueEvent
 }
 export interface ojCheckboxsetSettableProperties<K, D, V> extends editableValueSettableProperties<V[]> {
     disabled: boolean;
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelledBy: string | null;
     optionRenderer?: ((param0: ojCheckboxset.OptionContext<D>) => Element) | null;
     options: DataProvider<K, D> | null;

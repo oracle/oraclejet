@@ -1,0 +1,7 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+define(["ojs/ojcore-base"],function(e){"use strict";function t(e){return(t="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e})(e)}var r={};function o(e){if(Array.isArray(e))e=e.map(function(e){return o(e)});else{if(null==e||"object"!==t(e))return e;var r=Object.getOwnPropertyNames(e);Object.keys(r).forEach(function(t){e[t]=o(e[t])})}return Object.freeze(e)}return r.getDefaultValue=function(n,u){var f=n.value;if(void 0===f){var i=n.properties;if(i){for(var l={},c=Object.keys(i),a=0;a<c.length;a++){var y=r.getDefaultValue(i[c[a]]);void 0!==y&&(l[c[a]]=y)}Object.keys(l).length>0&&(n.value=l,f=l)}}return void 0!==f&&(Array.isArray(f)?f=u?o(f):f.slice():null!==f&&"object"===t(f)&&(f=u?o(f):e.CollectionUtils.copyInto({},f,void 0,!0))),f},r.getDefaultValues=function(e,t){var o={},n=Object.keys(e),u=!1;return n.forEach(function(n){var f=r.getDefaultValue(e[n],t);void 0!==f&&(o[n]=f,u=!0)}),u?o:null},r});

@@ -2,14 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojlogger', 'promise', 'ojs/ojcomponentcore'], function(oj, $, ThemeUtils, Logger)
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojlogger', 'ojs/ojcomponentcore'], function(oj, $, ThemeUtils, Logger)
 {
   "use strict";
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Promise:false, Logger:false, ThemeUtils:false */
 /**
@@ -979,15 +978,15 @@ oj.AnimationUtils._wrapRowContent = function (row, rowHeight) {
     innerWrapper.style.textAlign = cellsTextAlign[i];
 
     // Append inner wrapper to outer wrapper
-    outerWrapper.appendChild(innerWrapper); // @HTMLUpdateOK; innerWrapper is constructed by component code and is not using string passed in through any APIs.
+    outerWrapper.appendChild(innerWrapper); // @HTMLUpdateOK innerWrapper is constructed by component code and is not using string passed in through any APIs.
 
     // Transfer children of cell to inner wrapper
     while (cell.firstChild) {
-      innerWrapper.appendChild(cell.firstChild); // @HTMLUpdateOK; cell.firstChild is constructed by component code and is not using string passed in through any APIs.
+      innerWrapper.appendChild(cell.firstChild); // @HTMLUpdateOK cell.firstChild is constructed by component code and is not using string passed in through any APIs.
     }
 
     // Finally append the outer wrapper back to the cell
-    cell.appendChild(outerWrapper); // @HTMLUpdateOK; outerWrapper is constructed by component code and is not using string passed in through any APIs.
+    cell.appendChild(outerWrapper); // @HTMLUpdateOK outerWrapper is constructed by component code and is not using string passed in through any APIs.
 
     // Set the cell padding to 0 so that it can be completely collapsed
     cell.style.padding = '0';
@@ -1014,7 +1013,7 @@ oj.AnimationUtils._unwrapRowContent = function (row) {
       var innerWrapper = outerWrapper.children[0];
       if (innerWrapper) {
         while (innerWrapper.firstChild) {
-          cell.appendChild(innerWrapper.firstChild); // @HTMLUpdateOK; innerWrapper.firstChild is constructed by component code and is not using string passed in through any APIs.
+          cell.appendChild(innerWrapper.firstChild); // @HTMLUpdateOK innerWrapper.firstChild is constructed by component code and is not using string passed in through any APIs.
         }
       }
 
@@ -1414,13 +1413,13 @@ oj.AnimationUtils.ripple = function (element, options) {
   var style = window.getComputedStyle(element);
   var position = (style.position === 'static')
       ? { left: element.offsetLeft, top: element.offsetTop } : { left: 0, top: 0 };
-  element.insertBefore(container[0], element.firstChild); // @HTMLUpdateOK; container is constructed by component code and is not using string passed in through any APIs.
+  element.insertBefore(container[0], element.firstChild); // @HTMLUpdateOK container is constructed by component code and is not using string passed in through any APIs.
   container.css({ left: position.left + 'px',
     top: position.top + 'px',
     width: width + 'px',
     height: height + 'px' });
 
-  container.prepend(rippler); // @HTMLUpdateOK; rippler is constructed by component code and is not using string passed in through any APIs.
+  container.prepend(rippler); // @HTMLUpdateOK rippler is constructed by component code and is not using string passed in through any APIs.
 
   var fromCSS = fromState.css;
   var toStateCSS = toState.css;
@@ -1732,6 +1731,230 @@ oj.AnimationUtils.addTransition = function (element, options) {
 
   return oj.AnimationUtils._animate(element, null, null, _options, _options.transitionProperties);
 };
+
+
+oj.AnimationUtils._createHeroParent = function () {
+  var viewport = document.createElement('div');
+  var body = document.body;
+
+  body.appendChild(viewport); // @HTMLUpdateOK viewPort constructed above
+  viewport.style.position = 'absolute';
+  viewport.style.height = body.offsetHeight + 'px';
+  viewport.style.width = body.offsetWidth + 'px';
+  viewport.style.left = body.offsetLeft + 'px';
+  viewport.style.top = body.offsetTop + 'px';
+  viewport.style.zIndex = 2000;
+  viewport.className = 'oj-animation-host-viewport';
+
+  var host = document.createElement('div');
+  host.className = 'oj-animation-host';
+
+  viewport.appendChild(host); // @HTMLUpdateOK host is constructed above
+
+  return host;
+};
+
+
+oj.AnimationUtils._removeHeroParent = function (heroParent) {
+  if (heroParent) {
+    var viewport = heroParent.parentNode;
+    if (viewport && viewport.parentNode) {
+      viewport.parentNode.removeChild(viewport);
+    }
+  }
+};
+
+
+oj.AnimationUtils._defaultHeroCreateClonedElement = function (context) {
+  return context.fromElement.cloneNode(true);
+};
+
+
+oj.AnimationUtils._defaultHeroHideFromAndToElements = function (context) {
+  var fromElement = context.fromElement;
+  var toElement = context.toElement;
+  fromElement.style.visibility = 'hidden';
+  toElement.style.visibility = 'hidden';
+};
+
+
+oj.AnimationUtils._defaultHeroAnimateClonedElement = function (context) {
+  return new Promise(function (resolve) {
+    var heroStyle = context.clonedElement.style;
+
+    heroStyle.transformOrigin = 'left top';
+    heroStyle.transform = 'translate(0, 0) scale(1, 1)';
+
+    requestAnimationFrame(function () {
+      heroStyle.transitionDelay = context.delay;
+      heroStyle.transitionDuration = context.duration;
+      heroStyle.transitionTimingFunction = context.timingFunction;
+      heroStyle.transitionProperty = 'transform';
+
+      // Put translate before scale because otherwise the scale factor will affect the translate value
+      var transform = 'translate(' + context.translateX + 'px,' + context.translateY + 'px)';
+      transform += ' scale(' + context.scaleX.toFixed(2) + ',' + context.scaleY.toFixed(2) + ')';
+      heroStyle.transform = transform;
+
+      var waitTime = oj.AnimationUtils._getTimingValue(context.delay) +
+                     oj.AnimationUtils._getTimingValue(context.duration);
+
+      setTimeout(function () {
+        resolve();
+      }, waitTime);
+    });
+  });
+};
+
+
+oj.AnimationUtils._defaultHeroShowToElement = function (context) {
+  var toElement = context.toElement;
+  toElement.style.visibility = 'visible';
+};
+
+
+oj.AnimationUtils._doAnimateHero = function (fromElement, toElementSelector, resolvedOptions,
+  toElementElapsedTime, resolve, reject) {
+  var toElement = document.querySelector(toElementSelector);
+
+  // Wait for toElement to appear to DOM if it is not there yet
+  if (toElement == null) {
+    var interval = 100;
+    if ((toElementElapsedTime + interval) > resolvedOptions.toElementWaitTime) {
+      reject('toElement not found in DOM after toElementWaitTime has expired');
+    } else {
+      setTimeout(function () {
+        oj.AnimationUtils._doAnimateHero(fromElement, toElementSelector, resolvedOptions,
+          toElementElapsedTime + interval, resolve, reject);
+      }, interval);
+    }
+    return;
+  }
+
+  var fromRect = fromElement.getBoundingClientRect();
+  var toRect = toElement.getBoundingClientRect();
+  var translateX = toRect.left - fromRect.left;
+  var translateY = toRect.top - fromRect.top;
+  var scaleX = toRect.width / fromRect.width;
+  var scaleY = toRect.height / fromRect.height;
+  var heroContext = {
+    fromElement: fromElement,
+    toElement: toElement,
+    clonedElement: null,
+    translateX: translateX,
+    translateY: translateY,
+    scaleX: scaleX,
+    scaleY: scaleY,
+    toElementElapsedTime: toElementElapsedTime,
+    delay: resolvedOptions.delay,
+    duration: resolvedOptions.duration,
+    timingFunction: resolvedOptions.timingFunction
+  };
+
+  var clonedElement = resolvedOptions.createClonedElement(heroContext);
+
+  heroContext.clonedElement = clonedElement;
+
+  var heroParent = oj.AnimationUtils._createHeroParent();
+  var parentRect = heroParent.getBoundingClientRect();
+  heroParent.appendChild(clonedElement);
+  clonedElement.style.position = 'absolute';
+  clonedElement.style.left = (fromRect.left - parentRect.left) + 'px';
+  clonedElement.style.top = (fromRect.top - parentRect.top) + 'px';
+
+  resolvedOptions.hideFromAndToElements(heroContext);
+
+  // Make sure clonedElement is visible in case createClonedElement return fromElement or toElement
+  clonedElement.style.visibility = 'visible';
+
+  function _postAnimation() {
+    resolvedOptions.showToElement(heroContext);
+    oj.AnimationUtils._removeHeroParent(heroParent);
+  }
+
+  resolvedOptions.animateClonedElement(heroContext).then(function () {
+    _postAnimation();
+    resolve();
+  }).catch(function (reason) {
+    _postAnimation();
+    reject(reason);
+  });
+};
+
+/**
+ * Animation effect method for animating a hero element from one location to another.
+ * A hero element is an element that appears to be shared between a source location and a destination location,
+ * even though there are separate source element and destination element.
+ * <p>
+ * The following steps are taken by this method:
+ * </p>
+ * <ol>
+ *   <li>Create a temporary div that has a z-index higher than that of the source and destination elements.
+ *   <li>Clone the source element.
+ *   <li>Position the cloned element on the temporary div at the same position as the source element.
+ *   <li>Hide the source and destination elements.
+ *   <li>Animate the cloned element by translating and scaling its position and size towards the destination element.
+ *   <li>Show the destination element.
+ *   <li>Remove the temporary div together with the cloned element that is on it.
+ * </ol>
+ * This method provides callback parameters that can be used to override some of the steps.
+ *
+ * @param {Element} element The source element for the hero animation.
+ * @param {Object} options Options applicable to the specific animation effect.
+ * @param {string} options.toElementSelector  A CSS selector which specifies the destination element that occupies the location to animate to.
+ * @param {number=} options.toElementWaitTime  The time in millisecond to wait for the destination element to become present in the DOM tree.
+ * The default is 5000, which is equal to 5 seconds. No animation occurs and the promise returned by this function will be rejected if the
+ * destination element is not present when toElementWaitTime expires.
+ * @param {(function(AnimationUtils.HeroContext):Element)=} options.createClonedElement An optional application-provided function that returns the element used in animation.
+ * <p>By default animateHero will clone the source element specified by the "fromElement" parameter. Application can override this by returning a different element.</p>
+ * @param {(function(AnimationUtils.HeroContext):void)=} options.hideFromAndToElements An optional application-provided function that controls the visibility of the source and destination elements during animation.
+ * <p>By default animateHero will hide both the source element and destination element while animating the cloned element.</p>
+ * @param {(function(AnimationUtils.HeroContext):Promise)=} options.animateClonedElement An optional application-provided function that animates the cloned element.
+ * <p>By default animateHero will move and scale the cloned element to the position and size of the destination element.</p>
+ * @param {(function(AnimationUtils.HeroContext):void)=} options.showToElement An optional application-provided function that controls the visibility of the destination element after animation.
+ * <p>By default animateHero will show the destination element after animation ends.</p>
+ * @param {string=} options.delay  The delay from the time the animation is applied to time the
+ * animation should begin. This may be specified in either seconds (by specifying s as the unit) or milliseconds
+ * (by specifying ms as the unit). Default is "0s".
+ * @param {string=} options.duration The duration that an animation should take to complete. This may be
+ * specified in either seconds (by specifying s as the unit) or milliseconds (by specifying ms as the unit).
+ * Default is "400ms".
+ * @param {string=} options.timingFunction  One of the valid values for either CSS transition-timing-function or CSS
+ * animation-timing-function. Default is "ease".
+ * @return {Promise.<boolean>} a promise that will be resolved when the animation ends
+ *
+ * @export
+ * @memberof oj.AnimationUtils
+ */
+oj.AnimationUtils.animateHero = function (element, options) {
+  var fromElement = element;
+  var resolvedOptions = {
+    toElementWaitTime: 5000,
+    createClonedElement: oj.AnimationUtils._defaultHeroCreateClonedElement,
+    hideFromAndToElements: oj.AnimationUtils._defaultHeroHideFromAndToElements,
+    animateClonedElement: oj.AnimationUtils._defaultHeroAnimateClonedElement,
+    showToElement: oj.AnimationUtils._defaultHeroShowToElement,
+    delay: '0s',
+    duration: '400ms',
+    timingFunction: 'ease'
+  };
+  var toElementElapsedTime = 0;
+
+  Object.assign(resolvedOptions, options);
+
+  return new Promise(function (resolve, reject) {
+    if (!fromElement) {
+      reject('No element specified');
+    } else if (!options.toElementSelector) {
+      reject('No options.toElementSelector specified');
+    } else {
+      oj.AnimationUtils._doAnimateHero(fromElement, options.toElementSelector, resolvedOptions,
+        toElementElapsedTime, resolve, reject);
+    }
+  });
+};
+
+
 /**
  * All the available animation methods supported in oj.AnimationUtils
  * @typedef {Object} oj.AnimationUtils.AnimationMethods
@@ -1746,6 +1969,22 @@ oj.AnimationUtils.addTransition = function (element, options) {
  * @ojvalue {string} "slideOut"
  * @ojvalue {string} "zoomIn"
  * @ojvalue {string} "zoomOut"
+ */
+
+/**
+ * The context object passed to callback functions in the animateHero method
+ * @typedef {Object} oj.AnimationUtils.HeroContext
+ * @property {Element} fromElement The source element
+ * @property {Element} toElement The destination element
+ * @property {Element|null} clonedElement The cloned element.  This property is null when createClonedElement is called.
+ * It will be the value returned by createClonedElement in other callback functions.
+ * @property {number} translateX The x offset of the toElement from the fromElement
+ * @property {number} translateY The y offset of the toElement from the fromElement
+ * @property {number} scaleX The horizontal size ratio of the toElement to the fromElement
+ * @property {number} scaleY The vertical size ratio of the toElement to the fromElement
+ * @property {number} toElementElapsedTime The elapsed time in millisecond that the destination element becomes present
+ * in the DOM tree after animateHero is called. If desired, applications can use this information to adjust the animation.
+ * For example, if the destination element takes a long time to appear, a shorter animation may be used.
  */
 
 /**

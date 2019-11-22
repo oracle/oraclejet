@@ -2,15 +2,23 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['require', 'promise', 'ojs/ojlogger'], function(require, promise, Logger)
+
+  `This ES6 code cannot run on IE11`
+
+  define('polyfills', []);
+
+  define('promise', ['polyfills'], function () {
+    Promise.polyfill = function () {};
+    return Promise;
+  });
+
+define(['require', 'ojs/ojlogger', 'polyfills'], function(require, Logger)
 {
   "use strict";
-  promise['polyfill']();
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
+
 
 /* jslint browser: true*/
 /* global self:true */
@@ -45,12 +53,12 @@ var oj = {
    * @global
    * @member {string} version JET version numberr
    */
-  version: '7.2.0',
+  version: '8.0.0',
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  revision: '2019-09-12_18-05-50',
+  revision: '2019-11-15_21-18-53',
 
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -61,9 +69,7 @@ var oj = {
 
 _scope.oj = oj;
 
-/*
-** Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
-*/
+
 
 /* global _scope:false */
 /* jslint browser: true*/
@@ -632,9 +638,7 @@ if (_assertSetting !== undefined) {
   oj.Assert[_DEBUG] = _assertSetting;
 }
 
-/*
-** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
-*/
+
 
 /**
  * Utilities for working with collections
@@ -753,11 +757,7 @@ oj.CollectionUtils._copyIntoImpl = function (
   return target;
 };
 
-/*
-** Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
-**
-**34567890123456789012345678901234567890123456789012345678901234567890123456789
-*/
+
 
 /* jslint browser: true*/
 /* global define: false, Promise:false*/
@@ -779,6 +779,7 @@ oj.CollectionUtils._copyIntoImpl = function (
 
 /**
  * @constructor oj.Object
+ * @final
  * @ojtsignore
  * @since 1.0
  * @export
@@ -1344,9 +1345,7 @@ oj.__getRequirePromise = function (module, requireFunc) {
 };
 
 
-/*
-** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
-*/
+
 
 /**
  * String utilities.
@@ -1474,10 +1473,122 @@ oj.StringUtils.hashCode = function (str) {
   }
 }());
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
+  /**
+   * This list provides a map of global property to attribute names
+   * where the attribute name is used for both key and value if no property
+   * exists. We start with the list of global attributes found here:
+   * https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
+   * and check those against the Element and HTMLElement specs to determine
+   * the property name if different. This list is not exhaustive of all Element
+   * and HTMLElement properties.
+   * @ignore
+   */
+  // eslint-disable-next-line no-unused-vars
+  var _GLOBAL_PROPS = {
+    accessKey: 'accesskey',
+    autocapitalize: 'autocapitalize',
+    className: 'class',
+    contentEditable: 'contenteditable',
+    contextMenu: 'contextmenu',
+    dir: 'dir',
+    draggable: 'draggable',
+    dropzone: 'dropzone',
+    hidden: 'hidden',
+    id: 'id',
+    inputMode: 'inputmode',
+    is: 'is',
+    itemId: 'itemid',
+    itemProp: 'itemprop',
+    itemRef: 'itemref',
+    itemScope: 'itemscope',
+    itemType: 'itemtype',
+    lang: 'lang',
+    role: 'role',
+    slot: 'slot',
+    spellcheck: 'spellcheck',
+    style: 'style',
+    tabIndex: 'tabindex',
+    title: 'title',
+    translate: 'translate'
+  };
+
+  /**
+   * This map includes property to attribute names for
+   * all native HTML elements where the two differ.
+   * This list should only be manually populated for attributes belonging to
+   * *subclasses* of HTMLElement.
+   * @ignore
+   */
+  // eslint-disable-next-line no-unused-vars
+  var _NATIVE_PROPS = {
+    aLink: 'alink',
+    acceptCharset: 'accept-charset',
+    allowFullscreen: 'allowfullscreen',
+    allowPaymentRequest: 'allowpaymentrequest',
+    bgColor: 'bgcolor',
+    cellPadding: 'cellpadding',
+    cellSpacing: 'cellspacing',
+    ch: 'char',
+    chOff: 'charoff',
+    codeBase: 'codebase',
+    codeType: 'codetype',
+    colSpan: 'colspan',
+    controlsList: 'controlslist',
+    crossOrigin: 'crossorigin',
+    dateTime: 'datetime',
+    defaultChecked: 'checked',
+    defaultMuted: 'muted',
+    defaultSelected: 'selected',
+    defaultValue: 'value',
+    dirName: 'dirname',
+    disablePictureInPicture: 'disablepictureinpicture',
+    disableRemotePlayback: 'disableremoteplayback',
+    encoding: 'enctype',
+    formAction: 'formaction',
+    formEnctype: 'formenctype',
+    formMethod: 'formmethod',
+    formNoValidate: 'formnovalidate',
+    formTarget: 'formtarget',
+    frameBorder: 'frameborder',
+    htmlFor: 'for',
+    httpEquiv: 'http-equiv',
+    imageSizes: 'imagesizes',
+    imageSrcset: 'imagesrcset',
+    inputMode: 'inputmode',
+    isMap: 'ismap',
+    longDesc: 'longdesc',
+    marginHeight: 'marginheight',
+    marginWidth: 'marginwidth',
+    maxLength: 'maxlength',
+    minLength: 'minlength',
+    noHref: 'nohref',
+    noModule: 'nomodule',
+    noResize: 'noresize',
+    noShade: 'noshade',
+    noValidate: 'novalidate',
+    noWrap: 'nowrap',
+    readOnly: 'readonly',
+    referrerPolicy: 'referrerpolicy',
+    relList: 'rel',
+    rowSpan: 'rowspan',
+    useMap: 'usemap',
+    vAlign: 'valign',
+    vLink: 'vlink',
+    valueType: 'valuetype',
+    Methods: 'methods',
+    borderColor: 'bordercolor',
+    frameSpacing: 'framespacing',
+    hideFocus: 'hidefocus',
+    msKeySystem: 'mskeysystem',
+    msPlayToDisabled: 'x-ms-playtodisabled',
+    msPlayToPreferredSourceUri: 'x-ms-playtopreferredsourceuri',
+    msPlayToPrimary: 'x-ms-playtoprimary',
+    mozOpaque: 'moz-opaque',
+    typeMustMatch: 'typemustmatch'
+  };
+
+
 
 /* jslint browser: true*/
 
@@ -1503,6 +1614,7 @@ oj.AgentUtils.BROWSER = {
   SAFARI: 'safari',
   CHROME: 'chrome',
   EDGE: 'edge',
+  EDGE_CHROMIUM: 'edge-chromium',
   UNKNOWN: 'unknown'
 };
 /**
@@ -1636,6 +1748,11 @@ oj.AgentUtils.getAgentInfo = function (userAgent) {
     engineVersion = oj.AgentUtils._parseFloatVersion(userAgent, /edge\/(\d+[.]\d+)/);
     browserVersion = engineVersion;
     engine = oj.AgentUtils.ENGINE.EDGE_HTML;
+  } else if (userAgent.indexOf('edg') > -1) {
+    browser = oj.AgentUtils.BROWSER.EDGE_CHROMIUM;
+    browserVersion = oj.AgentUtils._parseFloatVersion(userAgent, /edg\/(\d+[.]\d+)/);
+    engine = oj.AgentUtils.ENGINE.BLINK;
+    engineVersion = browserVersion;
   } else if (userAgent.indexOf('chrome') > -1) {
     browser = oj.AgentUtils.BROWSER.CHROME;
     browserVersion = oj.AgentUtils._parseFloatVersion(userAgent, /chrome\/(\d+[.]\d+)/);
@@ -1699,6 +1816,8 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
 };
 
 
+
+/* global _GLOBAL_PROPS:false,_NATIVE_PROPS:false */
 (function () {
   // Checks that a string either starts with 'array' or contains '|array'
   var _ARRAY_TYPE_EXP = /(^array)|(\|array)/;
@@ -1712,6 +1831,21 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
   // any usages mid string
   var _ATTR_EXP = /^(?:\{\{)([^]+)(?:\}\})$/;
   var _ATTR_EXP_RO = /^(?:\[\[)([^]+)(?:\]\])$/;
+
+  /**
+   * This map includes attribute to property names for
+   * all global attributes where the two differ.
+   * @ignore
+   */
+  var _GLOBAL_ATTRS = {};
+
+  Object.keys(_GLOBAL_PROPS).forEach(function (prop) {
+    var attr = _GLOBAL_PROPS[prop];
+    if (prop !== attr) {
+      _GLOBAL_ATTRS[attr] = prop;
+      _NATIVE_PROPS[prop] = attr;
+    }
+  });
 
   /**
    * @ignore
@@ -1748,11 +1882,7 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
    * @private
    */
   oj.__AttributeUtils.attributeToPropertyName = function (attr) {
-    return attr.toLowerCase().replace(/-(.)/g,
-      function (match, group1) {
-        return group1.toUpperCase();
-      }
-    );
+    return attr.toLowerCase().replace(/-(.)/g, (match, group1) => group1.toUpperCase());
   };
 
   /**
@@ -1762,11 +1892,7 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
    * @private
    */
   oj.__AttributeUtils.propertyNameToAttribute = function (name) {
-    return name.replace(/([A-Z])/g,
-      function (match) {
-        return '-' + match.toLowerCase();
-      }
-    );
+    return name.replace(/([A-Z])/g, match => `-${match.toLowerCase()}`);
   };
 
   /**
@@ -1898,7 +2024,85 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
     throw new Error('Unable to parse ' + attr + "='" + value + "' for " +
                     elem + ' with id ' + elem.id + ' to a ' + type + '.');
   };
+
+  /**
+   * Returns true if the given property name maps to a global attribute.
+   * For global attributes with no property getter, this method will check
+   * the attribute name, but does not handle data- and aria- dash cases.
+   * @param {string} prop The property name to check
+   * @return {boolean}
+   */
+  oj.__AttributeUtils.isGlobal = function (prop) {
+    // TODO: watch out for performance of hasOwnProperty given how often we expect isGlobal to be called
+    return Object.prototype.hasOwnProperty.call(_GLOBAL_PROPS, prop);
+  };
+
+  /**
+  * Returns true if the given property name maps to a global attribute.
+  * For global attributes with no property getter, this method will check
+  * the attribute name and handle data- and aria- dash cases.
+  * @param {string} prop The property name to check
+  * @return {boolean}
+  */
+  oj.__AttributeUtils.isGlobalOrData = function (prop) {
+    // TODO: watch out for performance of hasOwnProperty given how often we expect isGlobal to be called
+    return Object.prototype.hasOwnProperty.call(_GLOBAL_PROPS, prop) || prop.startsWith('data-') || prop.startsWith('aria-');
+  };
+
+  /**
+   * This method assumes that the given property name has already been confirmed to
+   * be global and will return the attribute syntax or the original value which could be
+   * the global attribute name that does not have a property equivalent, e.g.
+   * data- or aria-.
+   * @param {string} prop The property name to check
+   * @return {string}
+   */
+  oj.__AttributeUtils.getGlobalAttrForProp = function (prop) {
+    return _GLOBAL_PROPS[prop] || prop;
+  };
+
+  /**
+   * This method assumes that the given attribute name has already been confirmed
+   * to be global and will return the attribute syntax or the original value which could be
+   * the global attribute name that does not have a property equivalent, e.g.
+   * data- or aria-.
+   * @param {string} attr The attribute name to check
+   * @return {string}
+   */
+  oj.__AttributeUtils.getGlobalPropForAttr = function (attr) {
+    return _GLOBAL_ATTRS[attr] || attr;
+  };
+
+  /**
+   * This method assumes that the given attribute name has already been confirmed
+   * to be come from a native HTML element and will return the attribute name if
+   * different from the property name for any native HTML element or the original value.
+   * @param {string} prop The property name to check
+   * @return {string}
+   */
+  oj.__AttributeUtils.getNativeAttr = function (prop) {
+    return _NATIVE_PROPS[prop] || prop;
+  };
+
+  var _UNIQUE_INCR = 0;
+  var _UNIQUE = '_ojcustomelem';
+
+  /**
+   * Returns either the passed id or a unique string that can be used for
+   * a custom element id.
+   * @param {string} id
+   * @return {string}
+   */
+  oj.__AttributeUtils.getUniqueId = function (id) {
+    if (id) {
+      return id;
+    }
+    var ret = _UNIQUE + _UNIQUE_INCR;
+    _UNIQUE_INCR += 1;
+    return ret;
+  };
 }());
+
 
 
 (function () {
@@ -1921,6 +2125,94 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
         };
   }
 }());
+
+(function () {
+  // Polyfill for addEventListener & removeEventListener in browsers
+  // that do not support an options object. The polyfilled methods accept
+  // an options object, extract the capture option and pass it on as useCapture
+
+  /**
+  * Detect if options object is supported by checking if
+  * browser looks for passive option. Code taken from
+  * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
+  * under "Safely detecting option support"
+  * @ignore
+  * @return {boolean} true if option object is supported,
+  * false otherwise
+  */
+  function browserSupportsOptionObject() {
+    let supportsOptionsObject = false;
+    try {
+      var opts = Object.defineProperty({}, 'passive', {
+        get: function () {
+          supportsOptionsObject = true;
+        }
+      });
+      window.addEventListener('testPassive', null, opts);
+      window.removeEventListener('testPassive', null, opts);
+      // eslint-disable-next-line no-empty
+    } catch (e) {}
+    return supportsOptionsObject;
+  }
+
+  /**
+   * If option is object, extract capture and pass on
+   * as useCapture. Otherwise simply pass on useCapture
+   * @ignore
+   * @param {Object|boolean} option option object or useCapture
+   * @return {boolean} value for useCapture
+  */
+  function getCaptureOption(option) {
+    if (typeof option === 'boolean') {
+      return option;
+    }
+    return option ? option.capture : false;
+  }
+
+  /**
+   * Helper for creating polyfilled addEventListener
+   * or removeEventListener
+   * @ignore
+   * @param {Function} native addEventlister or
+   * removeEventListener
+   * @return {Function} polyfilled addEventListenr or
+   * removeEventListener that accepts either options
+   * object or useCapture.
+  */
+  function polyfill(native) {
+    /**
+     * @ignore
+     * @param {string} event
+     * @param {Function} handler
+     * @param {Object|boolean} option options object or useCapture
+    */
+    return function (event, handler, option) {
+      return native.call(
+        this,
+        event,
+        handler,
+        getCaptureOption(option)
+      );
+    };
+  }
+  if (typeof window !== 'undefined' && !browserSupportsOptionObject()) {
+    let nativePrototype;
+    if (window.EventTarget) {
+      // modern browsers define addEventListener and
+      // removeEventListener on EventTarget
+      nativePrototype = EventTarget.prototype;
+    } else if (window.Node) {
+      // IE defines addEventListener and removeEventListener
+      // on Node
+      nativePrototype = Node.prototype;
+    }
+    if (nativePrototype) {
+      nativePrototype.addEventListener = polyfill(nativePrototype.addEventListener);
+      nativePrototype.removeEventListener = polyfill(nativePrototype.removeEventListener);
+    }
+  }
+}());
+
 
 /* global Set:false */
 
@@ -1953,10 +2245,7 @@ oj.ElementUtils = {
   }
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -1971,6 +2260,7 @@ oj.ElementUtils = {
  * @class oj.EventSource
  * @classdesc Object which supports subscribing to and firing events
  * @constructor
+ * @final
  * @since 1.1
  * @ojdeprecated {since: '5.0.0', description: 'Use DataProvider instead.'}
  */
@@ -2061,6 +2351,7 @@ oj.EventSource.prototype.handleEvent = function (eventType, event) {
   return true;
 };
 
+
 /**
  * Key utilities.
  * @class oj.KeyUtils
@@ -2086,6 +2377,7 @@ oj.KeyUtils.equals = function (key1, key2) {
   // ex: generate hash with key and compare hash value instead
   return oj.Object.compareValues(key1, key2);
 };
+
 
 /* global Map:false */
 
@@ -2198,10 +2490,7 @@ oj.KeyUtils.equals = function (key1, key2) {
     var slice = Array.prototype.slice;
     var args = slice.call(arguments, 1);
 
-    if (typeof callback !== 'function') {
-      // eslint-disable-next-line no-new-func
-      callback = new Function(callback.toString());
-    }
+    oj.Assert.assertFunction(callback);
 
     var id = _nextId();
 
@@ -2302,11 +2591,7 @@ oj.KeyUtils.equals = function (key1, key2) {
   }
 }());
 
-/*
-** Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
-**
-**34567890123456789012345678901234567890123456789012345678901234567890123456789
-*/
+
 
 /* global _scope:false, Logger:false */
 

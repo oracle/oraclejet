@@ -6,8 +6,20 @@ define(['./DvtToolkit', './DvtAxis'], function(dvt) {
   "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -51,7 +63,7 @@ DvtGauge.prototype.Init = function(context, callback, callbackObj, bStaticRender
       this.EventManager.setKeyboardHandler(this.CreateKeyboardHandler(this.EventManager));
 
     // Make sure the object has an id for clipRect naming
-    this.setId('gauge' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
+    this.setId('gauge' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOK
 
     // Create an editing overlay to prevent touch conflicts
     this._editingOverlay = new dvt.Rect(context, 0, 0);
@@ -548,6 +560,12 @@ DvtGauge.prototype.UpdateAriaAttributes = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  *  Provides automation services for a DVT component.
  *  @class DvtGaugeAutomation
  *  @param {DvtGauge} dvtComponent
@@ -620,6 +638,12 @@ DvtGaugeAutomation.prototype.getMetricLabel = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Calculated axis information and drawable creation.
  * @class
  * @constructor
@@ -638,6 +662,12 @@ DvtGaugeDataAxisInfo.prototype.Init = function(context, options, availSpace) {
 
 dvt.DataAxisInfoMixin.call(DvtGaugeDataAxisInfo.prototype);
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -692,10 +722,16 @@ DvtGaugeDefaults.prototype.Init = function(defaultsMap) {
  * @override
  */
 DvtGaugeDefaults.prototype.getAnimationDuration = function(options)
-{ 
+{
   return options['animationDuration'];
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Style related utility functions for gauge components.
  * @class
@@ -788,6 +824,12 @@ DvtGaugeDataUtils.getReferenceObject = function(gauge, index) {
     return null;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Event Manager for DvtGauge.
  * @param {DvtGauge} gauge
@@ -947,7 +989,12 @@ DvtGaugeEventManager.prototype.__isMouseEditing = function() {
   return this.IsMouseEditing;
 };
 
-
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * @param {dvt.EventManager} manager The owning dvt.EventManager
  * @param {DvtGauge} gauge
@@ -1006,6 +1053,12 @@ DvtGaugeKeyboardHandler.prototype.processKeyDown = function(event) {
 };
 
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Style related utility functions for gauge components.
  * @class
@@ -1322,6 +1375,12 @@ DvtGaugeStyleUtils.hasLabel = function(options) {
   return !!options['label']['text'];
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Renderer for DvtGauge.
  * @class
@@ -1648,7 +1707,12 @@ DvtGaugeRenderer.adjustForStep = function(options, value) {
   return value;
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -1719,11 +1783,17 @@ dvt.LedGauge.prototype.SetOptions = function(options) {
 /**
  * @override
  */
-dvt.LedGauge.prototype.Render = function(container, width, height) 
+dvt.LedGauge.prototype.Render = function(container, width, height)
 {
   DvtLedGaugeRenderer.render(this, container, width, height);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -1745,6 +1815,12 @@ DvtLedGaugeDefaults.SKIN_ALTA = {
   'type': 'circle'
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Renderer for dvt.LedGauge.
  * @class
@@ -2089,7 +2165,12 @@ DvtLedGaugeRenderer._getMetricLabelBounds = function(gauge, container, bounds) {
   return new dvt.Rectangle(newX, newY, newWidth, newHeight);
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -2166,7 +2247,7 @@ dvt.StatusMeterGauge.prototype.SetOptions = function(options) {
 /**
  * @override
  */
-dvt.StatusMeterGauge.prototype.Render = function(container, width, height) 
+dvt.StatusMeterGauge.prototype.Render = function(container, width, height)
 {
   DvtStatusMeterGaugeRenderer.render(this, container, width, height);
 };
@@ -2230,6 +2311,12 @@ dvt.StatusMeterGauge.prototype.GetValueAt = function(x, y) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -2258,6 +2345,12 @@ DvtStatusMeterGaugeDefaults.SKIN_ALTA = {
   'thresholdDisplay': 'onIndicator'
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Renderer for dvt.StatusMeterGauge.
  * @class
@@ -3381,13 +3474,13 @@ DvtStatusMeterGaugeRenderer._renderCenterContent = function(gauge, options, boun
       return;
     var newOverlay = context.createOverlayDiv();
     if (Array.isArray(customContent)) {
-      customContent.forEach(function(node) {newOverlay.appendChild(node);}); // @HtmlUpdateOk
+      customContent.forEach(function(node) {newOverlay.appendChild(node);}); // @HTMLUpdateOK
     }
     else {
-      newOverlay.appendChild(customContent); // @HtmlUpdateOk
+      newOverlay.appendChild(customContent); // @HTMLUpdateOK
     }
     gauge.centerDiv = newOverlay;
-    parentDiv.appendChild(newOverlay); // @HtmlUpdateOk
+    parentDiv.appendChild(newOverlay); // @HTMLUpdateOK
 
     // Invoke the overlay attached callback if one is available.
     var callback = context.getOverlayAttachedCallback();
@@ -3396,7 +3489,12 @@ DvtStatusMeterGaugeRenderer._renderCenterContent = function(gauge, options, boun
   }
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -3483,7 +3581,12 @@ DvtStatusMeterGaugeIndicator.prototype.setAnimationParams = function(params) {
     this.setCoords(params[0], params[1], params[2], params[3]);
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -3564,7 +3667,12 @@ DvtStatusMeterGaugeCircularIndicator.prototype.setAnimationParams = function(par
     this.setPath(params[0], params[1], params[2], params[3], params[4]);
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -3637,7 +3745,7 @@ dvt.DialGauge.prototype.SetOptions = function(options) {
 /**
  * @override
  */
-dvt.DialGauge.prototype.Render = function(container, width, height) 
+dvt.DialGauge.prototype.Render = function(container, width, height)
 {
   DvtDialGaugeRenderer.render(this, container, width, height);
 };
@@ -3734,6 +3842,12 @@ dvt.DialGauge.prototype.GetValueAt = function(x, y) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -3759,6 +3873,12 @@ DvtDialGaugeDefaults.SKIN_ALTA = {
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Renderer for dvt.DialGauge.
  * @class
@@ -3797,7 +3917,7 @@ DvtDialGaugeRenderer.render = function(gauge, container, width, height) {
  * @param {number} width The width of the component.
  * @param {number} height The height of the component.
  */
-DvtDialGaugeRenderer.updateIndicatorAndLabel = function(gauge, container, width, height) 
+DvtDialGaugeRenderer.updateIndicatorAndLabel = function(gauge, container, width, height)
 {
   // Update the rotation angle for the indicator
   gauge.__indicatorContainer.setAngle(DvtDialGaugeRenderer._getRotation(gauge, gauge.getOptions()['value']));
@@ -3926,7 +4046,7 @@ DvtDialGaugeRenderer._createBackground = function(gauge, bounds) {
 
         // Create an image loader to set the width and height of the image after loads.  This is
         // needed to correctly load svg images in webkit.
-        if (isSvg && (dvt.Agent.browser === 'safari' || dvt.Agent.browser === 'chrome')) {
+        if (isSvg && (dvt.Agent.browser === 'safari' || dvt.Agent.engine === 'blink')) {
           var imageDims = dvt.ImageLoader.loadImage(source, shape.__setDimensions.bind(shape));
           if (imageDims)
             shape.__setDimensions(imageDims);
@@ -4015,7 +4135,7 @@ DvtDialGaugeRenderer._createIndicator = function(gauge, bounds) {
 
         // Create an image loader to set the width and height of the image after loads.  This is
         // needed to correctly load svg images in webkit.
-        if (isSvg && (dvt.Agent.browser === 'safari' || dvt.Agent.browser === 'chrome')) {
+        if (isSvg && (dvt.Agent.browser === 'safari' || dvt.Agent.engine === 'blink')) {
           var imageDims = dvt.ImageLoader.loadImage(source, shape.__setDimensions.bind(shape));
           if (imageDims) {
             // Once the image is initially loaded, ping it with the given size.  This is needed to get the
@@ -4256,7 +4376,12 @@ DvtDialGaugeRenderer._renderTickLabels = function(gauge, container, bounds) {
   }
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -4306,7 +4431,12 @@ DvtDialGaugeIndicator.prototype.setAnimationParams = function(params) {
     this.setAngle(params[0]);
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  * Rating Gauge component.  This class should never be instantiated directly.  Use the
@@ -4395,7 +4525,7 @@ dvt.RatingGauge.prototype.SetOptions = function(options) {
 /**
  * @override
  */
-dvt.RatingGauge.prototype.Render = function(container, width, height) 
+dvt.RatingGauge.prototype.Render = function(container, width, height)
 {
   var outerGap = this.Options['__layout']['outerGap'];
   var maxValue = this.Options['max'];
@@ -4643,6 +4773,12 @@ dvt.RatingGauge.prototype.CreateEventManager = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -4669,6 +4805,12 @@ DvtRatingGaugeDefaults.SKIN_ALTA = {
   'step': 1
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Rating gauge tooltip support
  * @param {dvt.RatingGauge} gauge The rating gauge.
@@ -4698,6 +4840,12 @@ DvtRatingGaugePeer.prototype.getDatatip = function(target, x, y) {
 };
 
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Renderer for dvt.RatingGauge.
  * @class
@@ -4866,6 +5014,12 @@ DvtRatingGaugeRenderer._createShape = function(context, x, y, width, height, sta
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Event Manager for dvt.RatingGauge.
  * @param {DvtGauge} gauge
  * @class
@@ -4950,6 +5104,13 @@ DvtRatingGaugeEventManager.prototype.IsShowingTooltipWhileEditing = function() {
   return true;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
   return dvt;
 });

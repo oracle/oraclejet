@@ -2,8 +2,10 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'require', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojthemeutils', 'ojs/ojkeysetimpl', 'ojs/ojcomponentcore', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojkeyset', 'ojs/ojmap', 'ojs/ojdomscroller', 'promise', 'ojs/ojdataprovideradapter'], function(oj, $, localRequire, Context, Config, ThemeUtils, KeySetImpl, Components, DataCollectionUtils, AnimationUtils, Logger, KeySet, KeyMap)
+
+define(['ojs/ojcore', 'jquery', 'require', 'ojs/ojdataproviderscroller', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojthemeutils', 'ojs/ojkeysetimpl', 'ojs/ojcomponentcore', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojkeyset', 'ojs/ojmap', 'ojs/ojdomscroller', 'ojs/ojdataprovideradapter'], function(oj, $, localRequire, List, Context, Config, ThemeUtils, KeySetImpl, Components, DataCollectionUtils, AnimationUtils, Logger, KeySet, KeyMap)
 {
   "use strict";
 
@@ -96,8 +98,7 @@ var __oj_list_view_metadata =
     },
     "expanded": {
       "type": "KeySet",
-      "writeback": true,
-      "value": "new ExpandedKeySet();"
+      "writeback": true
     },
     "firstSelectedItem": {
       "type": "object",
@@ -106,13 +107,19 @@ var __oj_list_view_metadata =
       "value": {
         "key": null,
         "data": null
-      },
+      }
+    },
+    "gridlines": {
+      "type": "object",
       "properties": {
-        "key": {
-          "type": "any"
-        },
-        "data": {
-          "type": "any"
+        "item": {
+          "type": "string",
+          "enumValues": [
+            "hidden",
+            "visible",
+            "visibleExceptLast"
+          ],
+          "value": "visible"
         }
       }
     },
@@ -198,8 +205,7 @@ var __oj_list_view_metadata =
     },
     "selected": {
       "type": "KeySet",
-      "writeback": true,
-      "value": "new KeySetImpl();"
+      "writeback": true
     },
     "selection": {
       "type": "Array<any>",
@@ -295,1947 +301,8 @@ var __oj_list_view_metadata =
   },
   "extension": {}
 };
-/* global Promise:false, KeyMap:false, KeySet:false, Config:false, Context:false */
 
-/**
- * Base class for TableDataSourceContentHandler and TreeDataSourceContentHandler
- * Handler for DataSource generated content
- * @constructor
- * @ignore
- */
-oj.DataSourceContentHandler = function (widget, root, data) {
-  this.m_root = root;
-  this.m_widget = widget;
-
-  this.m_fetching = false;
-
-  this.setDataProvider(data);
-  this.Init();
-};
-
-// Subclass from oj.Object
-oj.Object.createSubclass(oj.DataSourceContentHandler, oj.Object, 'oj.DataSourceContentHandler');
-
-/**
- * Initializes the instance.
- * @export
- */
-oj.DataSourceContentHandler.prototype.Init = function () {
-  oj.DataSourceContentHandler.superclass.Init.call(this);
-};
-
-/**
- * Handles when the listview is shown due to for example CSS changes (inside a dialog)
- */
-oj.DataSourceContentHandler.prototype.notifyShown = function () {
-  // by default do nothing, to be override by subclass
-};
-
-/**
- * Handles when the listview is re-attached to the DOM (ex: when a children of CCA gets re-attached from slotting)
- */
-oj.DataSourceContentHandler.prototype.notifyAttached = function () {
-  // by default do nothing, to be override by subclass
-};
-
-/**
- * Cleanse all items under the root node
- */
-oj.DataSourceContentHandler.prototype.cleanItems = function (templateEngine, parent) {
-  if (templateEngine === undefined) {
-    // eslint-disable-next-line no-param-reassign
-    templateEngine = this.getTemplateEngine();
-  }
-
-  if (parent === undefined) {
-    // eslint-disable-next-line no-param-reassign
-    parent = this.m_root;
-  }
-
-  if (templateEngine && parent) {
-    var children = parent.childNodes;
-    for (var i = 0; i < children.length; i++) {
-      templateEngine.clean(children[i]);
-    }
-  }
-};
-
-/**
- * Destroy the content handler
- * @protected
- */
-oj.DataSourceContentHandler.prototype.Destroy = function (completelyDestroy) {
-  // this.m_root was changed in RenderContent
-  if (this.m_superRoot != null) {
-    this.m_root = this.m_superRoot;
-  }
-
-  this.cleanItems();
-  if (completelyDestroy) {
-    $(this.m_root).empty(); // @HTMLUpdateOK
-  }
-  this.m_widget = null;
-  this.m_root = null;
-  this.m_superRoot = null;
-};
-
-/**
- * Determines whether the content handler is in a ready state
- * @return {boolean} true if there's no outstanding fetch, false otherwise.
- * @protected
- */
-oj.DataSourceContentHandler.prototype.IsReady = function () {
-  return !this.m_fetching;
-};
-
-/**
- * @private
- */
-oj.DataSourceContentHandler.prototype.setRootAriaProperties = function () {
-  if (this.shouldUseGridRole()) {
-    this.m_root.setAttribute('role', 'grid');
-  } else if (this.IsHierarchical()) {
-    this.m_root.setAttribute('role', 'tree');
-  } else {
-    this.m_root.setAttribute('role', 'listbox');
-  }
-};
-
-/**
- * Renders the content inside the list
- * @protected
- */
-oj.DataSourceContentHandler.prototype.RenderContent = function () {
-  this.signalTaskStart('rendering content'); // signal method task start
-
-  this.setRootAriaProperties();
-  this.fetchRows(false);
-  this.signalTaskEnd(); // signal method task end
-};
-
-/**
- * Retrieve the key given the item element
- * @param {Element} element
- * @return {Object|null}
- * @protected
- */
-oj.DataSourceContentHandler.prototype.GetKey = function (element) {
-  // should be in the element
-  return element.key;
-};
-
-oj.DataSourceContentHandler.prototype.FindElementByKey = function (key) {
-  var children = $(this.m_root).find('.' + this.m_widget.getItemElementStyleClass());
-  for (var i = 0; i < children.length; i++) {
-    var elem = children[i];
-    // use == for the string number compare case
-    // eslint-disable-next-line eqeqeq
-    if (key == this.GetKey(elem) || oj.Object.compareValues(key, this.GetKey(elem))) {
-      return elem;
-    }
-  }
-
-  return null;
-};
-
-oj.DataSourceContentHandler.prototype.getDataProvider = function () {
-  return this.m_dataProvider;
-};
-
-/**
- * @protected
- */
-oj.DataSourceContentHandler.prototype.setDataProvider = function (dataProvider) {
-  this._removeDataSourceEventListeners();
-
-  if (dataProvider != null) {
-    this.m_handleModelMutateEventListener = this.handleModelMutateEvent.bind(this);
-    this.m_handleModelRefreshEventListener = this.handleModelRefreshEvent.bind(this);
-
-    dataProvider.addEventListener('mutate', this.m_handleModelMutateEventListener);
-    dataProvider.addEventListener('refresh', this.m_handleModelRefreshEventListener);
-  }
-
-  this.m_dataProvider = dataProvider;
-};
-
-/**
- * Remove data source event listeners
- * @private
- */
-oj.DataSourceContentHandler.prototype._removeDataSourceEventListeners = function () {
-  var dataProvider = this.getDataProvider();
-  if (dataProvider != null) {
-    dataProvider.removeEventListener('mutate', this.m_handleModelMutateEventListener);
-    dataProvider.removeEventListener('refresh', this.m_handleModelRefreshEventListener);
-
-    // If dataProvider is a TableDataSourceAdapter, call destroy on it also to remove its listeners
-    if (dataProvider instanceof oj.TableDataSourceAdapter) {
-      dataProvider.destroy();
-    }
-  }
-};
-
-/**
- * Initiate loading of the template engine.  An error is thrown if the template engine failed to load.
- * @return {Promise} resolves to the template engine, or null if:
- *                   1) there's no need because no item template is specified
- *                   2) a renderer is present which takes precedence
- * @protected
- */
-oj.DataSourceContentHandler.prototype.loadTemplateEngine = function () {
-  var self = this;
-
-  if (this.m_widget.getItemTemplate() != null && this.m_widget._getItemRenderer() == null) {
-    return new Promise(function (resolve) {
-      Config.__getTemplateEngine().then(function (engine) {
-        self.m_engine = engine;
-        resolve(engine);
-      }, function (reason) {
-        throw new Error('Error loading template engine: ' + reason);
-      });
-    });
-  }
-
-  return Promise.resolve(null);
-};
-
-/**
- * Retrieve the template engine, returns null if it has not been loaded yet
- */
-oj.DataSourceContentHandler.prototype.getTemplateEngine = function () {
-  return this.m_engine;
-};
-
-// eslint-disable-next-line no-unused-vars
-oj.DataSourceContentHandler.prototype.fetchRows = function (forceFetch) {
-  this.m_widget.showStatusText();
-};
-
-/**
- * Returns the insert before element given the index, or null if insert at the end.
- * @return {Element|null} the reference element.
- * @protected
- */
-oj.DataSourceContentHandler.prototype.GetReferenceNode = function (parentElement, index) {
-  if (index === -1) {
-    return null;
-  }
-
-  var childElements =
-      $(parentElement).children('.' + this.m_widget.getItemElementStyleClass() +
-                                ', .' + this.m_widget.getEmptyTextStyleClass() +
-                                ', .oj-listview-temp-item');
-  return (index === childElements.length) ? null : childElements[index];
-};
-
-/**
- * Create a list item and add it to the list
- * @param {Element|DocumentFragment} parentElement the element to add the list items to
- * @param {number} index the index of the item
- * @param {Object|null} data the data for the item
- * @param {Object} metadata the set of metadata for the item
- * @param {Object} templateEngine the template engine to process inline template
- * @param {function(Element, Object)=} callback optional callback function to invoke after item is added
- * @return {Object} contains the list item and the context object
- * @protected
- */
-oj.DataSourceContentHandler.prototype.addItem =
-  function (parentElement, index, data, metadata, templateEngine, callback) {
-    var item = document.createElement('li');
-
-    $(item).uniqueId();
-    var referenceNode = this.GetReferenceNode(parentElement, index);
-    this.m_widget.BeforeInsertItem();
-    parentElement.insertBefore(item, referenceNode); // @HTMLUpdateOK
-    var position = $(parentElement).children().index(item);
-    return this._addOrReplaceItem(item, position, parentElement, index, data, metadata,
-                                  templateEngine, callback);
-  };
-
-/**
- * Replace an existing list item in the list
- * @param {Element} item the list item to change
- * @param {number} index the index of the item
- * @param {Object|null} data the data for the item
- * @param {Object} metadata the set of metadata for the item
- * @param {Object} templateEngine the template engine to process inline template
- * @param {function(Element, Object)=} callback optional callback function to invoke after item is added
- * @protected
- */
-oj.DataSourceContentHandler.prototype.replaceItem =
-  function (item, index, data, metadata, templateEngine, callback) {
-    // animate hiding of existing item first
-    this.signalTaskStart('replace item'); // signal replace item animation start. Ends in _handleReplaceTransitionEnd() defined in TableDataSourceContentHandler
-
-    // now actually replace the item
-    var parentElement = item.parentNode;
-    var position = $(parentElement).children().index(item);
-    var newItem = document.createElement('li');
-
-    // explicit clean when inline template is used
-    if (templateEngine) {
-      templateEngine.clean(item);
-    }
-
-    // this should trigger ko.cleanNode if applicable
-    $(item).replaceWith(newItem); // @HTMLUpdateOK; newItem is constructed by the component and not yet manipulated by the application
-
-    this._addOrReplaceItem(newItem, position, parentElement, index, data, metadata,
-                           templateEngine, callback);
-  };
-
-/**
- * Handles both add and replace item
- * @private
- */
-oj.DataSourceContentHandler.prototype._addOrReplaceItem =
-  function (item, position, parentElement, index, data, metadata, templateEngine, callback) {
-    if (callback == null) {
-      // eslint-disable-next-line no-param-reassign
-      callback = this.afterRenderItem.bind(this);
-    }
-
-    var context = this.createContext(position, data, metadata, item);
-    var renderer = this.m_widget._getItemRenderer();
-    var templateElement = this.m_widget.getItemTemplate();
-    var textWrapper;
-
-    if (renderer != null) {
-      // if an element is returned from the renderer and the parent of that element is null, we will append
-      // the returned element to the parentElement.  If non-null, we won't do anything, assuming that the
-      // rendered content has already added into the DOM somewhere.
-      var content = renderer.call(this, context);
-      if (content != null) {
-        // allow return of document fragment from jquery create/js document.createDocumentFragment
-        if (content.parentNode === null || content.parentNode instanceof DocumentFragment) {
-          item.appendChild(content); // @HTMLUpdateOK
-        } else if (content.parentNode != null) {
-          // parent node exists, do nothing
-        } else if (content.toString) {
-          textWrapper = document.createElement('span');
-          textWrapper.appendChild(document.createTextNode(content.toString())); // @HTMLUpdateOK
-          item.appendChild(textWrapper); // @HTMLUpdateOK
-        }
-      }
-    } else if (templateElement != null && templateEngine != null) {
-      var componentElement = this.m_widget.GetRootElement()[0];
-      var bindingContext = this.GetBindingContext(context);
-      var nodes = templateEngine.execute(componentElement, templateElement, bindingContext,
-                                     this.m_widget.GetOption('as'));
-
-      for (var i = 0; i < nodes.length; i++) {
-        if (nodes[i].tagName === 'LI') {
-          parentElement.replaceChild(nodes[i], item);
-          break;
-        } else {
-          item.appendChild(nodes[i]);
-        }
-      }
-    } else {
-      textWrapper = document.createElement('span');
-      textWrapper.appendChild(document.createTextNode(data == null ? '' : data.toString())); // @HTMLUpdateOK
-      item.appendChild(textWrapper); // @HTMLUpdateOK
-    }
-
-    // get the item from root again as template replaces the item element
-    var parentItem = parentElement.children ?
-      parentElement.children[position] :
-      this._getItemFromDocumentFragment(parentElement, position);
-    context.parentElement = parentItem;
-
-    // cache data in item element, this is needed for getDataForVisibleItem.
-    $.data(parentItem, 'data', data);
-
-    // do any post processing
-    callback(parentItem, context);
-
-    return { item: parentItem, context: context };
-  };
-
-/**
- * In IE/Safari, DocumentFragment does not support children property
- * @private
- */
-oj.DataSourceContentHandler.prototype._getItemFromDocumentFragment = function (fragment, index) {
-  var nodeIndex = 0;
-  var nodes = fragment.childNodes;
-
-  for (var i = 0; i < nodes.length; i++) {
-    var node = nodes[i];
-    if (!node) {
-      break;
-    }
-
-    if (node.nodeType === 1) {
-      if (nodeIndex === index) {
-        return node;
-      }
-      nodeIndex += 1;
-    }
-  }
-  return null;
-};
-
-/**
- * Creates a binding context based on context object
- * To be override by different ContentHandler
- * @protected
- */
-oj.DataSourceContentHandler.prototype.GetBindingContext = function (context) {
-  var current = {};
-  current.data = context.data;
-  current.index = context.index;
-  current.key = context.key;
-  current.componentElement = context.componentElement;
-
-  return current;
-};
-
-oj.DataSourceContentHandler.prototype.afterRenderItem = function (item, context) {
-  // save the key in the element (cannot use data- here since it could be a non-string)
-  // eslint-disable-next-line no-param-reassign
-  item.key = context.key;
-
-  var $item = $(item);
-  $item.uniqueId();
-
-  // if there's only one element inside the item and it is focusable, set
-  // the role on it instead
-  var elem = this.m_widget.getSingleFocusableElement($item);
-
-  if (this.shouldUseGridRole()) {
-    if (context.leaf != null && !context.leaf) {
-      // it's a group item
-      $item.attr('role', 'presentation');
-    } else if (this.isCardLayout()) {
-      elem.attr('role', 'gridcell');
-    } else {
-      $item.attr('role', 'row');
-      if (elem !== $item) {
-        elem.attr('role', 'gridcell');
-      } else {
-        // we'll need to wrap content with a gridcell role
-        var wrapperHTML = "<div role='gridcell' class='oj-listview-cell-element'></div>";
-        var children = elem.children();
-        if (children.length === 0) {
-          elem.get(0).innerHTML = wrapperHTML; // @HTMLUpdateOK
-        } else {
-          // include comment nodes/ko virtual elements
-          var cell = document.createElement('div');
-          cell.setAttribute('role', 'gridcell');
-          cell.className = 'oj-listview-cell-element';
-
-          while (elem[0].firstChild) {
-            // The list is LIVE so it will re-index each call
-            cell.appendChild(elem[0].firstChild); // @HTMLUpdateOK
-          }
-          elem[0].appendChild(cell);
-        }
-      }
-    }
-  } else {
-    elem.attr('role', this.IsHierarchical() ? 'treeitem' : 'option');
-    if (elem !== $item) {
-      $item.attr('role', 'presentation');
-    }
-  }
-
-  elem.addClass(this.m_widget.getFocusedElementStyleClass());
-
-  // tag it if item is not focusable
-  if (!this.isFocusable(context)) {
-    $item.addClass('oj-skipfocus');
-  }
-
-  $item.addClass(this.m_widget.getItemElementStyleClass());
-};
-
-/**
- * Creates the context object containing metadata
- * @param {number} index the index
- * @param {Object} key the key
- * @param {Object} data the data
- * @param {Element} parentElem the parent element
- * @return {Object} the context object
- * @private
- */
-// eslint-disable-next-line no-unused-vars
-oj.DataSourceContentHandler.prototype.getMetadata = function (index, key, data, parentElem) {
-  var context = data.context;
-  if (context == null) {
-    context = {};
-  }
-
-  if (context.index == null) {
-    context.index = index;
-  }
-
-  if (context.key == null) {
-    context.key = key;
-  }
-
-  return context;
-};
-
-/**
- * Model mutate event handler.  Called on rows mutation.
- * @param {Object} event the mutate model event
- * @protected
- */
-oj.DataSourceContentHandler.prototype.handleModelMutateEvent = function (event) {
-  if (this.m_root == null || !this.m_widget.isAvailable()) {
-    return;
-  }
-
-  if (event.detail.remove != null) {
-    this.handleModelRemoveEvent(event);
-  }
-  if (event.detail.add != null) {
-    this.handleModelAddEvent(event);
-  }
-  if (event.detail.update != null) {
-    this.handleModelChangeEvent(event);
-  }
-};
-
-/**
- * @protected
- */
-// eslint-disable-next-line no-unused-vars
-oj.DataSourceContentHandler.prototype.handleModelRefreshEvent = function (event) {
-};
-
-/**
- * @private
- */
-oj.DataSourceContentHandler.prototype._pushToEventQueue = function (event) {
-  if (this.m_eventQueue == null) {
-    this.m_eventQueue = [];
-  }
-
-  this.m_eventQueue.push(event);
-};
-
-oj.DataSourceContentHandler.prototype._processEventQueue = function () {
-  var event;
-
-  if (this.m_eventQueue != null && this.m_eventQueue.length > 0) {
-    // see if we can find a refresh event
-    for (var i = 0; i < this.m_eventQueue.length; i++) {
-      event = this.m_eventQueue[i];
-      if (event.type === 'refresh') {
-        this.handleModelRefreshEvent(event.event);
-        // we are done
-        return;
-      }
-    }
-
-    // we'll just need to handle one event at a time since processEventQueue will be triggered whenever an event is done processing
-    event = this.m_eventQueue.shift();
-    if (event.type === 'mutate') {
-      this.handleModelMutateEvent(event.event);
-    }
-  }
-};
-
-oj.DataSourceContentHandler.prototype._clearEventQueue = function () {
-  if (this.m_eventQueue != null) {
-    this.m_eventQueue.length = 0;
-  }
-};
-
-/**
- * Override by ContentHandler to do the actual model insert
- * @protected
- */
-oj.DataSourceContentHandler.prototype.addItemsForModelInsert =
-  // eslint-disable-next-line no-unused-vars
-  function (data, indexes, keys, parentKeys, afterKeys) {
-  };
-
-/**
- * @private
- */
-oj.DataSourceContentHandler.prototype.handleModelAddEvent = function (event) {
-  // if listview is busy, queue it for processing later
-  if (!this.IsReady()) {
-    this._pushToEventQueue({ type: event.type, event: event });
-    return;
-  }
-
-  this.signalTaskStart('handling model add event'); // signal method task start
-
-  // in card layout mode, the root is an additional element created by ListView, and that will be disassociated by ListView when
-  // it is empty, re-append it to the root ul (the superRoot)
-  if (this.m_superRoot && this.m_root.childNodes.length === 0) {
-    this.m_superRoot.appendChild(this.m_root.parentNode);
-  }
-
-  var addEvent = event.detail.add;
-  var data = addEvent.data;
-  var keys = [];
-  var afterKeys;
-
-  addEvent.keys.forEach(function (key) {
-    keys.push(key);
-  });
-  // afterKeys is deprecated, but continue to support it until we can remove it.
-  // forEach can be called on both array and set.
-  var afterKeyIter = addEvent.addBeforeKeys ? addEvent.addBeforeKeys : addEvent.afterKeys;
-  if (afterKeyIter) {
-    afterKeys = [];
-    afterKeyIter.forEach(function (key) {
-      afterKeys.push(key);
-    });
-  }
-
-  // parentKeys would be undefined for non-hierarchical DataProvider
-  var parentKeys = addEvent.parentKeys;
-
-  // indexes could be undefined if not supported by DataProvider
-  var indexes = addEvent.indexes;
-
-  if (data != null && keys != null && keys.length > 0 && data.length > 0 &&
-      keys.length === data.length && (indexes == null || indexes.length === data.length)) {
-    this.addItemsForModelInsert(data, indexes, keys, parentKeys, afterKeys);
-  }
-
-  this.signalTaskEnd(); // signal method task end
-};
-
-oj.DataSourceContentHandler.prototype.afterRenderItemForInsertEvent =
-  function (item, context) {
-    var action = 'add';
-
-    this.signalTaskStart('after render item from model insert event'); // signal post rendering processing start. Ends at the end of the method.
-
-    item.setAttribute('data-oj-context', '');
-
-    this.afterRenderItem(item, context);
-
-    // hide it before starting animation to show added item
-    var elem = $(item);
-
-    var itemStyleClass = item.className;
-    // eslint-disable-next-line no-param-reassign
-    item.className = 'oj-listview-temp-item oj-listview-item-add-remove-transition';
-    if (!this.shouldUseGridRole()) {
-      elem.children().wrapAll('<div></div>'); // @HTMLUpdateOK
-    }
-
-    var content = elem.children().first();
-    content[0].className = itemStyleClass;
-    // transfer key and role for FindElementByKey lookup that might happen while animating (navlist)
-    content[0].key = item.key;
-
-    // transfer aria-selected for selectable checks that might happen while animating (navlist)
-    if (!this.shouldUseGridRole()) {
-      content.attr('role', item.getAttribute('role'));
-      if (elem[0].hasAttribute('aria-selected')) {
-        content.attr('aria-selected', item.getAttribute('aria-selected'));
-      }
-    }
-
-    var self = this;
-    var busyContext = Context.getContext(item).getBusyContext();
-    busyContext.whenReady().then(function () {
-      if (self.m_widget == null) {
-        return;
-      }
-
-      self.signalTaskStart('kick off animation for insert item'); // signal add animation start. Ends in _handleAddTransitionEnd().
-
-      var promise = self.m_widget.StartAnimation(item, action);
-
-      // now show it
-      promise.then(function () {
-        item.removeAttribute('data-oj-context');
-        self._handleAddTransitionEnd(context, item);
-      });
-
-      self.signalTaskEnd(); // signal post rendering processing end. Started at the beginning of the method.
-    });
-  };
-
-oj.DataSourceContentHandler.prototype._handleAddTransitionEnd =
-  function (context, elem) {
-    // this could have been called after listview is destroyed
-    // or it could have been removed immediately
-    if (this.m_widget == null || elem.parentNode == null) {
-      this.signalTaskEnd();
-      return;
-    }
-
-    // cleanup
-    var itemStyleClass = elem.children[0].className;
-    // eslint-disable-next-line no-param-reassign
-    elem.className = itemStyleClass;
-
-    if (this.shouldUseGridRole()) {
-      // eslint-disable-next-line no-param-reassign
-      elem.children[0].className = 'oj-listview-cell-element';
-    } else {
-      $(elem).children().children().unwrap(); // @HTMLUpdateOK
-    }
-
-    this.m_widget.itemInsertComplete(elem, context);
-
-    this.signalTaskEnd(); // signal add animation end. Started in afterRenderItemForInsertEvent();
-  };
-
-oj.DataSourceContentHandler.prototype.handleModelRemoveEvent = function (event) {
-  var self = this;
-  var keys = event.detail.remove.keys;
-
-  if (keys == null || keys.size === 0) {
-    return;
-  }
-
-    // if listview is busy, hold that off until later
-  if (!this.IsReady()) {
-    this._pushToEventQueue({ type: event.type, event: event });
-    return;
-  }
-
-  this.signalTaskStart('handling model remove event'); // signal method task start
-
-  keys.forEach(function (key) {
-    var elem = self.FindElementByKey(key);
-    if (elem != null) {
-      self.signalTaskStart('handling model remove event for item: ' + key); // signal removeItem start
-      // item remove might have been just added (in insert animation phase)
-      if (elem.parentNode.classList.contains('oj-listview-temp-item')) {
-        elem = elem.parentNode;
-      }
-      self._removeItem(elem);
-      self.signalTaskEnd(); // signal removeItem end
-    }
-  });
-
-  // checks whether the removed item is selected, and adjust the value as needed
-  var selected = this.m_widget.options.selected;
-  var newSelected = selected.delete(keys);
-
-  // update selection option if it did changed
-  if (selected !== newSelected) {
-    var selectedItems = [];
-    if (newSelected.values) {
-      newSelected.values().forEach(function (key) {
-        selectedItems.push(self.FindElementByKey(key));
-      });
-    }
-    this.m_widget._setSelectionOption(newSelected, null, selectedItems);
-  }
-
-  // since the items are removed, need to clear cache
-  this.m_widget.ClearCache();
-
-  this.signalTaskEnd(); // signal method task end
-};
-
-/**
- * Remove a single item element
- * @param {jQuery|Element} elem the element to remove
- * @private
- */
-oj.DataSourceContentHandler.prototype._removeItem = function (elem) {
-  var self = this;
-  var action = 'remove';
-
-  this.signalTaskStart('removing an item'); // signal method task start
-
-  // got to do this before wrapAll since that changes activeElement
-  var active = document.activeElement;
-  var restoreFocus = elem.contains(active);
-
-  var item = $(elem).get(0);
-  var itemStyleClass = item.className;
-  $(item).children().wrapAll("<div class='" + itemStyleClass + "'></div>"); // @HtmlUpdateOK
-  item.className = 'oj-listview-item-add-remove-transition';
-  item.children[0].key = elem.key;
-
-  this.signalTaskStart('kick off animation to remove an item'); // signal remove item animation start. Ends in _handleRemoveTransitionEnd()
-
-  var promise = this.m_widget.StartAnimation(item, action);
-
-  // now hide it
-  promise.then(function () {
-    self._handleRemoveTransitionEnd(elem, restoreFocus);
-  });
-
-  this.signalTaskEnd(); // signal method task end
-};
-
-/**
- * Handles when remove item animation transition ends
- * @param {Element|jQuery} elem
- * @param {boolean} restoreFocus
- * @private
- */
-oj.DataSourceContentHandler.prototype._handleRemoveTransitionEnd =
-  function (elem, restoreFocus) {
-    // this could have been called after listview is destroyed
-    if (this.m_widget == null) {
-      this.signalTaskEnd();
-      return;
-    }
-
-    var $elem = $(elem);
-    var parent = $elem.parent();
-    // could happen if there is a reset right after model update, the content has already been cleared out
-    if (parent.length === 0) {
-      this.signalTaskEnd();
-      return;
-    }
-
-    // invoke hook before actually removing the item
-    this.m_widget.itemRemoveComplete($elem.get(0), restoreFocus);
-
-    // template engine should have already been loaded
-    var templateEngine = this.getTemplateEngine();
-    if (templateEngine) {
-      templateEngine.clean($elem.get(0));
-    }
-
-    $elem.remove();
-
-    // if it's the last item, show empty text
-    if (parent.get(0).childElementCount === 0) {
-      this.m_widget.renderComplete();
-    }
-
-    // ensure something is selected if the removed item is the last selected item
-    // need to complete after the DOM element is removed
-    this.m_widget.enforceSelectionRequired();
-
-    // this should focus on the current item, set by itemRemoveComplete
-    if (restoreFocus) {
-      this.m_root.focus();
-    }
-
-    this.signalTaskEnd(); // signal remove item animation end. Started in _removeItem()
-  };
-
-/**
- * Model change event handler.  Called when a row has been changed from the underlying data.
- * @param {Object} event the model change event
- * @private
- */
-oj.DataSourceContentHandler.prototype.handleModelChangeEvent = function (event) {
-  this.signalTaskStart('handling model update event'); // signal method task start
-
-  var changeEvent = event.detail.update;
-  var data = changeEvent.data;
-  var keys = [];
-  changeEvent.keys.forEach(function (key) {
-    keys.push(key);
-  });
-
-  // template engine should have already been loaded
-  var templateEngine = this.getTemplateEngine();
-
-  // indexes could be undefined if not supported by DataProvider
-  var indexes = changeEvent.indexes;
-  for (var i = 0; i < keys.length; i++) {
-    var elem = this.FindElementByKey(keys[i]);
-    if (elem != null) {
-      this.signalTaskStart('handling model update event for item: ' + keys[i]); // signal replace item start
-      var index = (indexes == null) ? -1 : indexes[i];
-      this.replaceItem(elem, index, data[i], this.getMetadata(index, keys[i], data[i],
-       elem.parentNode), templateEngine, this.afterRenderItemForChangeEvent.bind(this));
-      this.signalTaskEnd(); // signal replace item end
-    }
-  }
-
-  // since the item element will change, need to clear cache
-  this.m_widget.ClearCache();
-
-  this.signalTaskEnd(); // signal method task end
-};
-
-/**
- * @private
- */
-oj.DataSourceContentHandler.prototype.afterRenderItemForChangeEvent =
-  function (item, context) {
-    var self = this;
-    var action = 'update';
-
-    this.signalTaskStart('after render item for model change event'); // signal method task start
-
-    // adds all neccessary wai aria role and classes
-    this.afterRenderItem(item, context);
-
-    var promise = this.m_widget.StartAnimation(item, action);
-
-    // now hide it
-    promise.then(function () {
-      self._handleReplaceTransitionEnd(item);
-    });
-
-    this.signalTaskEnd(); // signal method task end
-  };
-
-/**
- * @private
- */
-oj.DataSourceContentHandler.prototype._handleReplaceTransitionEnd = function (item) {
-  // this could have been called after listview is destroyed
-  if (this.m_widget == null) {
-    this.signalTaskEnd();
-    return;
-  }
-
-  $(item).removeClass('oj-listview-item-add-remove-transition');
-
-  this.m_widget.restoreCurrentItem();
-
-  this.signalTaskEnd(); // signal replace item animation end. Started in replaceItem() from handleModelChangeEvent() (see base class DataSourceContentHandler)
-};
-
-oj.DataSourceContentHandler.prototype.createContext = function (index, data, metadata, elem) {
-  var context = {};
-
-  context.parentElement = elem;
-  context.index = index;
-  context.data = data;
-  context.component = this.m_widget.getWidgetConstructor();
-  context.datasource = this.getDataProvider();
-  context = this.m_widget._FixRendererContext(context);
-
-  // merge properties from metadata into cell context
-  // the properties in metadata would have precedence
-  var props = Object.keys(metadata);
-  for (var i = 0; i < props.length; i++) {
-    var prop = props[i];
-    context[prop] = metadata[prop];
-  }
-
-  return context;
-};
-
-oj.DataSourceContentHandler.prototype.isFocusable = function (context) {
-  return this.m_widget.getItemFocusable(context);
-};
-
-oj.DataSourceContentHandler.prototype.isSelectable = function (context) {
-  return this.m_widget.getItemSelectable(context);
-};
-
-oj.DataSourceContentHandler.prototype.isCardLayout = function () {
-  return this.m_widget.isCardLayout();
-};
-
-oj.DataSourceContentHandler.prototype.shouldUseGridRole = function () {
-  return this.m_widget.ShouldUseGridRole();
-};
-
-oj.DataSourceContentHandler.prototype.isAsyncRendering = function () {
-  return false;
-  //    return this.m_widget.ojContext._IsCustomElement() && this.shouldUseGridRole();
-};
-
-oj.DataSourceContentHandler.prototype.signalTaskStart = function (description) {
-  if (this.m_widget) { // check that widget exists (e.g. not destroyed)
-    this.m_widget.signalTaskStart('DataSource ContentHandler ' + description);
-  }
-};
-
-oj.DataSourceContentHandler.prototype.signalTaskEnd = function () {
-  if (this.m_widget) { // check that widget exists (e.g. not destroyed)
-    this.m_widget.signalTaskEnd();
-  }
-};
-
-oj.DataSourceContentHandler.prototype.createKeyMap = function (initialMap) {
-  var map = new KeyMap();
-  if (initialMap) {
-    initialMap.forEach(function (value, key) {
-      map.set(key, value);
-    });
-    return map;
-  }
-  return map;
-};
-
-oj.DataSourceContentHandler.prototype.createKeySet = function (initialSet) {
-  return new KeySet(initialSet);
-};
-
-/* global Promise:false, Symbol:false, Logger:false, Context:false, KeyMap:false, KeySet:false */
-
-/**
- * Handler for IteratingDataProvider generated content
- * @constructor
- * @extends oj.DataSourceContentHandler
- * @ignore
- */
-oj.IteratingDataProviderContentHandler = function (widget, root, data) {
-  oj.IteratingDataProviderContentHandler.superclass.constructor.call(this, widget, root, data);
-};
-
-// Subclass from oj.DataSourceContentHandler
-oj.Object.createSubclass(oj.IteratingDataProviderContentHandler, oj.DataSourceContentHandler,
-                         'oj.IteratingDataProviderContentHandler');
-
-/**
- * Initializes the instance.
- * @protected
- */
-oj.IteratingDataProviderContentHandler.prototype.Init = function () {
-  oj.IteratingDataProviderContentHandler.superclass.Init.call(this);
-};
-
-oj.IteratingDataProviderContentHandler.prototype.IsHierarchical = function () {
-  return false;
-};
-
-/**
- * Determines whether the content handler is in a ready state
- * @return {boolean} true if there's no outstanding fetch or outstanding item in render queue, false otherwise.
- * @protected
- */
-oj.IteratingDataProviderContentHandler.prototype.IsReady = function () {
-  return !this.m_fetching && this.m_idleCallback == null;
-};
-
-/**
- * Destroy the internal DomScroller if there is one.  Called when this ContentHandler is destroyed or on refresh.
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._destroyDomScroller = function () {
-  if (this.m_domScroller != null) {
-    this.m_domScroller.destroy();
-
-    this.m_domScroller = null;
-  }
-
-  // remove loading indicator if it still exists:
-  this._removeLoadingIndicator();
-};
-
-/**
- * Destroy the content handler
- * @protected
- */
-oj.IteratingDataProviderContentHandler.prototype.Destroy = function (completelyDestroy) {
-  oj.IteratingDataProviderContentHandler.superclass.Destroy.call(this, completelyDestroy);
-  this._removeDataSourceEventListeners();
-  this._destroyDomScroller();
-  this._cancelIdleCallback();
-
-  this.m_loadingIndicator = null;
-  this.m_viewportCheckPromise = null;
-};
-
-/**
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._cancelIdleCallback = function () {
-  if (this.m_idleCallback != null) {
-    if (!window.requestIdleCallback || !window.cancelIdleCallback) {
-      window.cancelAnimationFrame(this.m_idleCallback);
-    } else {
-      window.cancelIdleCallback(this.m_idleCallback);
-      // requestAnimationFrame might have been used
-      window.cancelAnimationFrame(this.m_idleCallback);
-    }
-    this.m_idleCallback = null;
-  }
-};
-
-oj.IteratingDataProviderContentHandler.prototype.shouldHandleResize = function () {
-  // we only care about the high-water mark scrolling case
-  return this._isLoadMoreOnScroll();
-};
-
-oj.IteratingDataProviderContentHandler.prototype.HandleResize = function (width, height) {
-  // we only care about the high-water mark scrolling case, and if height changes
-  if (!this._isLoadMoreOnScroll() || this.m_height === height) {
-    return;
-  }
-
-  // check viewport if the height increased
-  if (height > this.m_height) {
-    this.checkViewport();
-  }
-};
-
-/**
- * @override
- */
-oj.IteratingDataProviderContentHandler.prototype.notifyShown = function () {
-  // we only care about the high-water mark scrolling case
-  if (!this._isLoadMoreOnScroll()) {
-    return;
-  }
-
-  // for loadMoreOnScroll case, we will have to make sure the viewport is satisfied
-  this.checkViewport();
-};
-
-/**
- * @override
- */
-oj.IteratingDataProviderContentHandler.prototype.notifyAttached = function () {
-  // this should only be populated in high-water mark scrolling case with scroller specified
-  var currentFetchTrigger = this._getFetchTrigger();
-  if (currentFetchTrigger != null && this.m_domScroller != null) {
-    // this should force the fetch trigger to recalculate
-    var fetchTrigger = this._getFetchTrigger();
-    if (currentFetchTrigger !== fetchTrigger) {
-      // update fetch trigger
-      this.m_domScroller.setFetchTrigger(fetchTrigger);
-    }
-
-    // check again whether the viewport is satisfied
-    this.checkViewport();
-  }
-};
-
-/**
- * Sets aria properties on root
- * @override
- */
-oj.IteratingDataProviderContentHandler.prototype.setRootAriaProperties = function () {
-  oj.IteratingDataProviderContentHandler.superclass.setRootAriaProperties.call(this);
-
-  // for high-water mark scrolling, we'll need to add additional wai-aria attribute since not
-  // all items are in the DOM
-  var self = this;
-  if (this.shouldUseGridRole() && this._isLoadMoreOnScroll()) {
-    this.getDataProvider().getTotalSize().then(function (size) {
-      // if count is unknown, then use max count
-      self.m_root.setAttribute('aria-rowcount', size === -1 ? self._getMaxCount() : size);
-    });
-  }
-};
-
-/**
- * Unsets aria properties on root
- * @override
- */
-oj.IteratingDataProviderContentHandler.prototype.unsetRootAriaProperties = function () {
-  oj.IteratingDataProviderContentHandler.superclass.unsetRootAriaProperties.call(this);
-  this.m_root.removeAttribute('aria-rowcount');
-};
-
-/**
- * Is loadMoreOnScroll
- * @return {boolean} true or false
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._isLoadMoreOnScroll = function () {
-  return this.m_widget.isLoadMoreOnScroll();
-};
-
-/**
- * Gets the number of items to return in each fetch
- * @return {number} the fetch size
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._getFetchSize = function () {
-  return Math.max(0, this.m_widget.options.scrollPolicyOptions.fetchSize);
-};
-
-/**
- * Gets the scroller element used in DomScroller
- * @return {Element} the scroller element
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._getScroller = function () {
-  var scroller = this.m_widget.options.scrollPolicyOptions.scroller;
-  if (scroller != null) {
-    // make sure it's an ancestor
-    if ($.contains(scroller, this.m_root)) {
-      // might as well calculate offset here
-      if (this._fetchTrigger === undefined) {
-        this._fetchTrigger = oj.DomScroller.calculateOffsetTop(scroller, this.m_root) +
-          this._getLoadingIndicatorHeight();
-      }
-      return scroller;
-    }
-  }
-
-  // if not specified or not an ancestor, use the listview root element
-  return this.m_widget.GetRootElement();
-};
-
-/**
- * Gets the distance from maximum scroll position that triggers a fetch
- * @return {number|undefined} the distance in pixel or undefined if no scroller is specified
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._getFetchTrigger = function () {
-  if (this._fetchTrigger === undefined) {
-    this._fetchTrigger = this._getLoadingIndicatorHeight();
-  }
-  return this._fetchTrigger;
-};
-
-/**
- * Calculates the height of the loading indicator
- * @return {number} the height of the loading indicator
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._getLoadingIndicatorHeight = function () {
-  var container = $(document.createElement('div'));
-  container.addClass(this.m_widget.getItemStyleClass())
-    .css({ visibility: 'hidden', overflow: 'hidden', position: 'absolute' });
-  var icon = $(document.createElement('div'));
-  icon.addClass('oj-icon oj-listview-loading-icon');
-  container.append(icon); // @HTMLUpdateOK
-
-  $(this.m_widget.GetRootElement()).append(container); // @HTMLUpdateOK
-  var height = container.get(0).offsetHeight;
-  container.remove();
-
-  return height;
-};
-
-/**
- * Gets the maximum number of items that can be retrieved from data source
- * @return {number} the maximum fetch count
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._getMaxCount = function () {
-  return this.m_widget.options.scrollPolicyOptions.maxCount;
-};
-
-/**
- * Add a loading indicator to the list for high-water mark scrolling scenario
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._appendLoadingIndicator = function () {
-  // check if it's already added
-  if (this.m_loadingIndicator != null) {
-    return;
-  }
-
-  var item = $(document.createElement('li'));
-  item.uniqueId()
-    .attr('role', 'presentation')
-    .addClass(this.m_widget.getItemStyleClass())
-    .addClass('oj-listview-loading-icon-container');
-
-  var icon = $(document.createElement('div'));
-  icon.addClass('oj-icon oj-listview-loading-icon');
-  item.append(icon); // @HtmlUpdateOK
-
-  $(this.m_root).append(item); // @HtmlUpdateOK
-
-  this.m_loadingIndicator = item;
-};
-
-/**
- * Remove the loading indicator
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._removeLoadingIndicator = function () {
-  if (this.m_loadingIndicator != null) {
-    this.m_loadingIndicator.remove();
-  }
-  this.m_loadingIndicator = null;
-};
-
-/**
- * Whether there are more items to fetch when scroll policy loadMoreOnScroll is used.
- * @return {boolean} true if there are more items to fetch, false otherwise.
- * @protected
- */
-oj.IteratingDataProviderContentHandler.prototype.hasMoreToFetch = function () {
-  return (this.m_loadingIndicator != null);
-};
-
-/**
- * Add required attributes to item after it is rendered by the renderer
- * @param {Element} item the item element to modify
- * @param {Object} context the item context
- * @protected
- */
-oj.IteratingDataProviderContentHandler.prototype.afterRenderItem = function (item, context) {
-  oj.IteratingDataProviderContentHandler.superclass.afterRenderItem.call(this, item, context);
-
-  $(item).addClass(this.m_widget.getItemStyleClass());
-
-  if (this.m_widget._isSelectionEnabled() && this.isSelectable(context)) {
-    this.m_widget.getFocusItem($(item)).attr('aria-selected', false);
-  }
-
-  // for high-water mark scrolling, we'll need to add additional wai-aria attribute since not
-  // all items are in the DOM
-  if (this._isLoadMoreOnScroll()) {
-    $(item).attr('aria-rowindex', context.index + 1);
-  }
-
-  this.m_widget.itemRenderComplete(item, context);
-};
-
-/**
- * Callback handler max fetch count.
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._handleScrollerMaxRowCount = function () {
-  // TODO: use resource bundle
-  Logger.error('max count reached');
-};
-
-/**
- * Empty out root element and create any necessary artifacts before rendering items
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._prepareRootElement = function () {
-  // reset root if it was manipulated prior
-  if (this.m_superRoot) {
-    this.m_root = this.m_superRoot;
-    this.m_superRoot = null;
-  }
-
-  // empty out root element
-  $(this.m_root).empty();
-
-  if (this.shouldUseGridRole() && this.isCardLayout()) {
-    // in card layout, this is going to be a single row, N columns grid
-    // so we'll need to wrap all <li> within a row
-    var presentation = document.createElement('li');
-    var row = document.createElement('ul');
-    presentation.appendChild(row); // @HTMLUpdateOK
-    $(presentation).attr('role', 'presentation')
-      .css('width', '100%');
-    $(row).attr('role', 'row')
-      .addClass(this.m_widget.getGroupStyleClass());
-
-    this.m_root.appendChild(presentation); // @HTMLUpdateOK
-    this.m_superRoot = this.m_root;
-    this.m_root = row;
-  }
-};
-
-/**
- * @param {boolean} forceFetch
- * @override
- */
-oj.IteratingDataProviderContentHandler.prototype.fetchRows = function (forceFetch) {
-  var offset = 0;
-
-  this.signalTaskStart('fetching rows'); // signal method task start
-
-  // checks if we are already fetching cells
-  if (this.IsReady()) {
-    var self = this;
-
-    this.m_fetching = true;
-
-    oj.IteratingDataProviderContentHandler.superclass.fetchRows.call(this, forceFetch);
-
-    // initiate loading of template engine, note it will not load it unless a template has been specified
-    var enginePromise = this.loadTemplateEngine();
-
-    // signal fetch started. Ends in fetchEnd() if successful. Otherwise, ends in the reject block of promise below right after _handleFetchError().
-    // Cannot end in _handleFetchError() to be consistent with pagingTableDataSource behavior (see comment above)
-    this.signalTaskStart('first fetch');
-
-    var options = {};
-    // use fetch size if loadMoreOnScroll, otherwise specify -1 to fetch all rows
-    options.size = this._isLoadMoreOnScroll() ? this._getFetchSize() : -1;
-
-    this.m_dataProviderAsyncIterator =
-      this.getDataProvider().fetchFirst(options)[Symbol.asyncIterator]();
-    var promise = this.m_dataProviderAsyncIterator.next();
-    self.fetchSize = options.size;
-
-    // new helper function to be called in recursion to fetch all data.
-    var helperFunction = function (values) {
-      // skip additional fetching if done, or if fetchSize is not -1.
-      // if it has getPageCount method, it is a pagingTableDataSource so skip this fetch process.
-      if (values[0].done || self.fetchSize !== -1 ||
-          typeof self.getDataProvider().getPageCount === 'function') {
-        return values;
-      }
-      var nextPromise = self.m_dataProviderAsyncIterator.next();
-      var fetchMoreData = nextPromise.then(function (value) {
-        // eslint-disable-next-line no-param-reassign
-        values[0].done = value.done;
-        // eslint-disable-next-line no-param-reassign
-        values[0].value.data = values[0].value.data.concat(value.value.data);
-        // eslint-disable-next-line no-param-reassign
-        values[0].value.metadata = values[0].value.metadata.concat(value.value.metadata);
-        return helperFunction(values);
-      }, function (reason) {
-        self._handleFetchError(reason);
-        self.signalTaskEnd(); // signal fetch stopped. Started above.
-      });
-
-      return (fetchMoreData);
-    };
-
-    Promise.all([promise, enginePromise]).then(function (values) {
-      return helperFunction(values);
-    }, function (reason) {
-      self._handleFetchError(reason);
-      self.signalTaskEnd(); // signal fetch stopped. Started above.
-    }).then(function (values) {
-      // if not fetching, stop b/c fetch error happened earlier
-      // Previous _handleFetchError will pass the reason value into
-      // values for this then call, so ignore if m_fetching is false.
-      if (self.m_fetching) {
-        // check if content handler has been destroyed already
-        if (self.m_widget == null) {
-          return;
-        }
-
-        var value = values[0];
-        var templateEngine = values[1];
-
-        var dataProvider = self.getDataProvider();
-        if (dataProvider instanceof oj.TableDataSourceAdapter) {
-          // paging control loadMore mode, offset will not be 0 after first fetch
-          offset = dataProvider.offset;
-        }
-
-        if (offset === 0) {
-          if (templateEngine) {
-            // clean nodes generated by templateengine before
-            self.cleanItems(templateEngine);
-          }
-
-          // empty content now that we have data
-          self._prepareRootElement();
-        }
-
-        // append loading indicator at the end as needed
-        self._handleFetchedData(value, templateEngine);
-      }
-    }, function (reason) {
-      self._handleFetchError(reason);
-      self.signalTaskEnd(); // signal fetch stopped. Started above.
-    });
-    this.signalTaskEnd(); // signal method task end
-    return;
-  }
-  this.signalTaskEnd(); // signal method task end
-};
-
-
-oj.IteratingDataProviderContentHandler.prototype._handleFetchError = function (msg) {
-  // TableDataSource aren't giving me any error message
-  Logger.error(msg);
-
-  // turn off fetching if there is an error
-  this.m_fetching = false;
-
-  // listview might have been destroyed before fetch error is handled
-  if (this.m_widget == null) {
-    Logger.info('handleFetchError: widget has already been destroyed');
-    return;
-  }
-
-  if (this._isLoadMoreOnScroll()) {
-    this._removeLoadingIndicator();
-  }
-
-  this.m_widget.renderComplete();
-};
-
-/**
- * Renders items when browser is idle (if not support, then fallback to requestAnimationFrame)
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._renderItemsWhenIdle =
-  function (data, keys, index, templateEngine, isMouseWheel) {
-    var self = this;
-
-    if (data.length === 0 || keys.length === 0) {
-      window.requestAnimationFrame(function () {
-        // idle callback might have been cancelled
-        if (self.m_idleCallback) {
-          self._appendLoadingIndicator();
-          self._afterItemsInserted();
-          self.signalTaskEnd(); // started in initial renderItemsWhenIdle call
-        }
-        self.m_idleCallback = null;
-      });
-      return;
-    }
-
-    function addFragmentOnRequestAnimationFrame(fragment) {
-      window.requestAnimationFrame(function () {
-        // need the check here since listview might have been destroyed before idleCallback is cancelled
-        if (self.m_widget != null) {
-          self.m_root.appendChild(fragment);
-        }
-
-        // schedule next idle callback until all items from the current fetch are rendered
-        self._renderItemsWhenIdle(data, keys, index, templateEngine, isMouseWheel);
-      });
-    }
-
-    // IE/Edge/Safari do not support requestIdleCallback, use requestAnimationFrame as fall back
-    // also Chrome has an issue with requestIdleCallback when mouse wheel is used, see Chrome :
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=822269
-    if (isMouseWheel || !window.requestIdleCallback || !window.cancelIdleCallback) {
-      this.m_idleCallback = window.requestAnimationFrame(function () {
-        var fragment = document.createDocumentFragment();
-        var oneData = data.shift();
-        var oneKey = keys.shift();
-        self.addItem(fragment, -1, oneData, self.getMetadata(index, oneKey, oneData),
-          templateEngine);
-
-        // eslint-disable-next-line no-param-reassign
-        index += 1;
-        addFragmentOnRequestAnimationFrame(fragment);
-      });
-    } else {
-      this.m_idleCallback = window.requestIdleCallback(function (idleDeadline) {
-        // no need to check for whether listview has been destroyed yet since we cancel the callback on destroy
-        var timeRemaining = idleDeadline.timeRemaining();
-        var lastTimeTaken = 0;
-        var fragment = document.createDocumentFragment();
-        while (timeRemaining > lastTimeTaken) {
-          if (data.length === 0 || keys.length === 0) {
-            break;
-          }
-
-          var oneData = data.shift();
-          var oneKey = keys.shift();
-          self.addItem(fragment, -1, oneData, self.getMetadata(index, oneKey, oneData),
-            templateEngine);
-
-          // eslint-disable-next-line no-param-reassign
-          index += 1;
-          lastTimeTaken = timeRemaining - idleDeadline.timeRemaining();
-          timeRemaining = idleDeadline.timeRemaining();
-        }
-
-        addFragmentOnRequestAnimationFrame(fragment);
-      });
-    }
-  };
-
-/**
- * Checks whether content is overflowed
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._isOverflow = function () {
-  return this._isLoadMoreOnScroll() && this.m_domScroller && this.m_domScroller.isOverflow();
-};
-
-/**
- * Callback for handling fetch success
- * @param {Array} data the array of data
- * @param {Array} keys the array of keys
- * @param {boolean} doneOrMaxLimitReached true if there are no more data or max count limit reached, false otherwise
- * @param {Object} templateEngine the template engine to process inline template
- * @return {boolean} true if items are rendered when idle, false otherwise
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._handleFetchSuccess =
-  function (data, keys, doneOrMaxLimitReached, templateEngine, isMouseWheel) {
-    // listview might have been destroyed before fetch success is handled
-    if (this.m_widget == null) {
-      return true;
-    }
-
-    var index = this.m_root.childElementCount;
-    if (index > 0 && !doneOrMaxLimitReached && this._isOverflow() &&
-      this.m_widget.m_scrollPosition == null) {
-      // clone the data since we are going to manipulate the array
-      // just in case the DataProvider returns something that references internal structure
-      this.signalTaskStart('render items during idle time'); // signal task start
-      this._renderItemsWhenIdle(data.slice(0), keys.slice(0), index, templateEngine, isMouseWheel);
-      return true;
-    }
-
-    var parent = document.createDocumentFragment();
-
-    for (var i = 0; i < data.length; i++) {
-      var row = data[i];
-      // passing -1 for opt since we know it will be inserted at the end of the parent
-      this.addItem(parent, -1, row, this.getMetadata(index, keys[i], row), templateEngine);
-      index += 1;
-    }
-    this.m_root.appendChild(parent);
-    return false;
-  };
-
-/**
- * Handles fetched data initiated by the DomScroller (scroll and fetch, or checkViewport)
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._handleDomScrollerFetchedData =
-  function (result) {
-    if (result != null) {
-      this.signalTaskStart('handle results from DomScroller'); // signal task start
-
-      // remove any loading indicator, which is always added to the end after fetch
-      this._removeLoadingIndicator();
-
-      if (this.IsReady()) {
-        this.signalTaskStart('dummy task'); // start a dummy task to be paired with the fetchEnd() call below if no new data were fetched.
-      }
-
-      this._handleFetchedData(result, this.getTemplateEngine()); // will call fetchEnd(), which signals a task end. Started either in fetchRows() or in a dummy task not involving data fetch.
-
-      if (result.value && result.value.data) {
-        this.m_widget.updateStatusFetchEnd(result.value.data.length);
-      }
-
-      // reset cached scroll height
-      this.m_widget.m_scrollHeight = null;
-
-      this.signalTaskEnd(); // signal domscroller fetch end. Started in beforeFetch callback below
-      this.signalTaskEnd(); // signal task end
-    } else {
-      // when there's no more data or any other unexpected cases
-      this._removeLoadingIndicator();
-      this.signalTaskEnd(); // signal domscroller fetch end. Started in beforeFetch callback below
-    }
-  };
-
-/**
- * Register the DomScroller
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._registerDomScroller = function () {
-  var self = this;
-
-  var options = {
-    fetchSize: this._getFetchSize(),
-    fetchTrigger: this._getFetchTrigger(),
-    maxCount: this._getMaxCount(),
-    asyncIterator: this.m_dataProviderAsyncIterator,
-    initialRowCount: this.m_root.childElementCount,
-    success: function (result) {
-      self._handleDomScrollerFetchedData(result);
-      if (self.m_root == null || result.value == null) {
-        // in this case fetchEnd will not be called so we will need to clean up for signalTaskStart in scrollFetch callback
-        self.signalTaskEnd();
-        if (self.m_root != null) {
-          // this is called as part of fetchEnd, see 
-          self.m_widget.renderComplete();
-        }
-      }
-    },
-    error: this.signalTaskEnd.bind(this),
-    localKeyValidator: function (key) {
-      if (self.m_widget) {
-        return (self.m_widget.FindElementByKey(key) != null);
-      }
-      return false;
-    },
-    beforeFetch: function () {
-      self.m_viewportCheckPromise = null;
-      if (self.m_idleCallback != null) {
-        return false;
-      }
-      self.m_widget.updateStatusFetchStart();
-      self.signalTaskStart('starts high-water mark scrolling'); // signal domscroller data fetching. Ends either in success call (m_domScrollerMaxCountFunc) or in error call (self.signalTaskEnd)
-      return true;
-    }
-  };
-  this.m_domScroller = new oj.DomScroller(this._getScroller(), this.getDataProvider(), options);
-};
-
-oj.IteratingDataProviderContentHandler.prototype._clearEventQueue = function () {
-  if (this.m_eventQueue != null) {
-    this.m_eventQueue.length = 0;
-  }
-};
-
-/**
- * Retrieve the index of the item with the specified key
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._getIndex = function (keys, index) {
-  if (keys == null || keys.length === 0 || index >= keys.length) {
-    return -1;
-  }
-
-  var key = keys[index];
-  var elem = this.FindElementByKey(key);
-  return (elem != null) ? $(this.m_root).children().index(elem) : -1;
-};
-
-/**
- * Returns the insert before element given the index, or null if insert at the end.
- * @return {Element|null} the reference element.
- * @protected
- * @override
- */
-oj.IteratingDataProviderContentHandler.prototype.GetReferenceNode =
-  function (parentElement, index) {
-    var referenceNode = oj.IteratingDataProviderContentHandler.superclass.GetReferenceNode.call(
-      this, parentElement, index);
-    if (referenceNode == null && this.m_loadingIndicator != null) {
-      return this.m_loadingIndicator.get(0);
-    }
-    return referenceNode;
-  };
-
-/**
- * Gets the maximum index for insert event
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._getMaxIndexForInsert = function () {
-  var max = Number.MAX_VALUE;
-  // only care about child count if there's more to fetch
-  if (this._isLoadMoreOnScroll() && this.hasMoreToFetch()) {
-    max = $(this.m_root).children('li.' + this.m_widget.getItemElementStyleClass()).length;
-    var fetchSize = this._getFetchSize();
-    var min = fetchSize;
-    if (this.m_widget.getMinimumCountForViewport) {
-      min = Math.ceil(this.m_widget.getMinimumCountForViewport() / fetchSize) * fetchSize;
-    }
-    max = Math.max(max, min);
-  }
-
-  return max;
-};
-
-/**
- * Do the actual adding items to DOM based on model insert event
- * @protected
- */
-oj.IteratingDataProviderContentHandler.prototype.addItemsForModelInsert =
-  function (data, indexes, keys, parentKeys, afterKeys) {
-    // index to determine whether it's outside of range of not
-    var max = this._getMaxIndexForInsert();
-
-    // template engine should have already been loaded
-    var templateEngine = this.getTemplateEngine();
-
-    for (var i = 0; i < data.length; i++) {
-      this.signalTaskStart('handling model add event for item: ' + keys[i]); // signal add item start
-      // indexes takes precedence
-      var index = (indexes == null) ? this._getIndex(afterKeys, i) + 1 : indexes[i];
-      // we skip any insert/append outside of range if there's still more to fetch
-      if (index < max) {
-        this.addItem(this.m_root, index, data[i],
-                     this.getMetadata(index, keys[i], data[i]),
-                     templateEngine,
-                     this.afterRenderItemForInsertEvent.bind(this));
-      }
-      this.signalTaskEnd(); // signal add item end
-    }
-
-    if (this.IsReady()) {
-      this.signalTaskStart('dummy task'); // start a dummy task to be paired with the fetchEnd() call below if no new data were fetched.
-    }
-    // do whatever post fetch processing
-    this.fetchEnd(); // signals a task end. Started either in fetchRows() or in a dummy task not involving data fetch.
-  };
-
-/**
- * Model refresh event handler.  Called when all rows has been removed from the underlying data.
- * @param {Object} event the model refresh event
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype.handleModelRefreshEvent = function (event) {
-  if (this.m_root == null) {
-    return;
-  }
-
-  // any outstanding idle-time rendering should immediately be stopped
-  this._cancelIdleCallback();
-
-  // if listview is busy, hold that off until later, the refresh must be handled in order
-  // since we don't know when the results are coming back in
-  if (!this.IsReady()) {
-    this._pushToEventQueue({ type: event.type, event: event });
-    return;
-  }
-
-  this.signalTaskStart('handling model reset event'); // signal method task start
-
-  // since we are refetching everything, we should just clear out any outstanding model events
-  this._clearEventQueue();
-
-  // empty everything (later) and clear cache
-  this.m_widget.ClearCache();
-
-  // it will be recreated with a new asyncIterator
-  this._destroyDomScroller();
-
-  // handle scrollPositionPolicy on refresh
-  this.m_widget.adjustScrollPositionValueOnRefresh();
-
-  // fetch data
-  this.fetchRows(true);
-
-  this.signalTaskEnd(); // signal method task end
-};
-
-/**
- * Handle fetched data, either from a fetch call or from a sync event
- * @param {Object} dataObj the fetched data object
- * @return {boolean} true if a loading indicator should be appended, false otherwise
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._handleFetchedData =
-  function (dataObj, templateEngine) {
-    var result = false;
-
-    // this could happen if destroy comes before fetch completes (note a refresh also causes destroy)
-    if (this.m_root == null || dataObj.value == null) {
-      return result;
-    }
-
-    var data = dataObj.value.data;
-    var keys = dataObj.value.metadata.map(function (value) {
-      return value.key;
-    });
-
-    if (data.length === keys.length) {
-      var lastItemIndex = this.m_root.childElementCount;
-      var skipPostProcessing = this._handleFetchSuccess(data, keys,
-        (dataObj.done || dataObj.maxCountLimit), templateEngine, dataObj.isMouseWheel);
-
-      if (this._isLoadMoreOnScroll()) {
-        if (!dataObj.done) {
-          // if number of items returned is zero but result indicates it's not done
-          // log it
-          if (keys != null && keys.length === 0) {
-            Logger.info('handleFetchedData: zero data returned while done flag is false');
-          }
-
-          // always append the loading indicator at the end except the case when max limit has been reached
-          if (!skipPostProcessing && !dataObj.maxCountLimit) {
-            if (this.m_domScroller == null) {
-              this._registerDomScroller();
-
-              // handleResize might not get invoked with the initial width/height
-              if (isNaN(this.m_height)) {
-                this.m_height = this.m_widget.GetRootElement()[0].offsetHeight;
-              }
-            }
-            this._appendLoadingIndicator();
-          }
-        }
-
-        if (dataObj.maxCountLimit) {
-          this._handleScrollerMaxRowCount();
-        }
-      }
-
-      this.fetchEnd(skipPostProcessing);
-
-      // disable tabbable elements once the fetched items are rendered
-      var self = this;
-      var busyContext = Context.getContext(this.m_root).getBusyContext();
-      busyContext.whenReady().then(function () {
-        if (self.m_root != null) {
-          var children = self.m_root.children;
-          for (var i = lastItemIndex; i < children.length; i++) {
-            self.m_widget.disableAllTabbableElements(children[i]);
-          }
-        }
-      });
-    }
-
-    return result;
-  };
-
-/**
- * Do any logic after items are inserted into the DOM
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype._afterItemsInserted = function () {
-  if (this.m_widget) {
-    this.m_widget.renderComplete();
-
-    // process any outstanding events
-    this._processEventQueue();
-
-    // check viewport
-    var self = this;
-    var promise = this.checkViewport();
-    if (promise && this._isLoadMoreOnScroll()) {
-      promise.then(function (result) {
-        // the height of the stamp could be contracted and if that's the case we could
-        // potentially have an underflow
-        if (self.m_root != null && result == null) {
-          var busyContext = Context.getContext(self.m_root).getBusyContext();
-          var viewportCheckPromise = busyContext.whenReady();
-          viewportCheckPromise.then(function () {
-            if (self.m_viewportCheckPromise != null) {
-              self.checkViewport();
-            }
-          });
-          self.m_viewportCheckPromise = viewportCheckPromise;
-        }
-      });
-    }
-  }
-};
-
-/**
- * Do any logic needed after results from fetch are processed
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype.fetchEnd = function (skipPostProcessing) {
-  // fetch is done
-  this.m_fetching = false;
-
-  if (!skipPostProcessing) {
-    this._afterItemsInserted();
-  }
-
-  this.signalTaskEnd(); // signal fetch end. Started in either fetchRows() or started as a dummy task whenever this method is called without fetching rows first (e.g. see m_domScrollerMaxCountFunc).
-};
-
-/**
- * Checks the viewport to see if additional fetch is needed
- * @private
- */
-oj.IteratingDataProviderContentHandler.prototype.checkViewport = function () {
-  var self = this;
-
-  this.signalTaskStart('checking viewport'); // signal method task start
-
-  // if loadMoreOnScroll then check if we have underflow and do a fetch if we do
-  var fetchPromise;
-  if (this.m_domScroller != null && this.IsReady()) {
-    fetchPromise = this.m_domScroller.checkViewport();
-    if (fetchPromise != null) {
-      this.signalTaskStart('got promise from checking viewport'); // signal fetchPromise started. Ends in promise resolution below
-      fetchPromise.then(function (result) {
-        if (result != null) {
-          self._handleDomScrollerFetchedData(result);
-        }
-        self.signalTaskEnd(); // signal checkViewport task end. Started above before fetchPromise resolves here;
-      }, null);
-    }
-  }
-
-  this.signalTaskEnd(); // signal method task end
-
-  return fetchPromise;
-};
-
-oj.IteratingDataProviderContentHandler.prototype.createKeyMap = function (initialMap) {
-  if (this.getDataProvider().createOptimizedKeyMap) {
-    return this.getDataProvider().createOptimizedKeyMap(initialMap);
-  }
-
-  var map = new KeyMap();
-  if (initialMap) {
-    initialMap.forEach(function (value, key) {
-      map.set(key, value);
-    });
-    return map;
-  }
-  return map;
-};
-
-oj.IteratingDataProviderContentHandler.prototype.createKeySet = function (initialSet) {
-  if (this.getDataProvider().createOptimizedKeySet) {
-    return this.getDataProvider().createOptimizedKeySet(initialSet);
-  }
-  return new KeySet(initialSet);
-};
-
-/* global Promise:false, Symbol:false, Logger:false, Context:false, KeyMap:false */
+/* global List:false, Promise:false, Symbol:false, Logger:false, Context:false, KeyMap:false */
 /**
  * Handler for TreeDataProvider generated content
  * @constructor
@@ -2247,7 +314,7 @@ oj.TreeDataProviderContentHandler = function (widget, root, data) {
 };
 
 // Subclass from oj.DataSourceContentHandler
-oj.Object.createSubclass(oj.TreeDataProviderContentHandler, oj.DataSourceContentHandler,
+oj.Object.createSubclass(oj.TreeDataProviderContentHandler, List.DataProviderContentHandler,
                          'oj.TreeDataProviderContentHandler');
 
 /**
@@ -2507,92 +574,99 @@ oj.TreeDataProviderContentHandler.prototype.GetBindingContext = function (contex
   return bindingContext;
 };
 
-oj.TreeDataProviderContentHandler.prototype.afterRenderItem = function (item, context) {
-  this.signalTaskStart('after rendering an item'); // signal method task start
+oj.TreeDataProviderContentHandler.prototype.afterRenderItem =
+  function (item, context, isCustomizeItem) {
+    this.signalTaskStart('after rendering an item'); // signal method task start
 
-  oj.TreeDataProviderContentHandler.superclass.afterRenderItem.call(this, item, context);
+    oj.TreeDataProviderContentHandler.superclass.afterRenderItem.call(this, item, context,
+      isCustomizeItem);
 
-  var groupStyleClass = this.m_widget.getGroupStyleClass();
-  var itemStyleClass = this.m_widget.getItemStyleClass();
-  var groupItemStyleClass = this.m_widget.getGroupItemStyleClass(true);
-  var groupCollapseStyleClass = this.m_widget.getGroupCollapseStyleClass();
-  var collapseClass = this.m_widget.getCollapseIconStyleClass();
-  var focusedStyleClass = this.m_widget.getFocusedElementStyleClass();
+    var groupStyleClass = this.m_widget.getGroupStyleClass();
+    var itemStyleClass = this.m_widget.getItemStyleClass();
+    var groupItemStyleClass = this.m_widget.getGroupItemStyleClass(true);
+    var groupCollapseStyleClass = this.m_widget.getGroupCollapseStyleClass();
+    var collapseClass = this.m_widget.getCollapseIconStyleClass();
+    var focusedStyleClass = this.m_widget.getFocusedElementStyleClass();
 
-  // eslint-disable-next-line no-param-reassign
-  item = $(item);
+    // eslint-disable-next-line no-param-reassign
+    item = $(item);
 
-  if (context.leaf === false) {
-    item.children().wrapAll('<div></div>'); // @HTMLUpdateOK
+    if (context.leaf === false) {
+      item.children().wrapAll('<div></div>'); // @HTMLUpdateOK
 
-    // collapsed by default
-    if (item.hasClass(focusedStyleClass)) {
-      item.removeClass(focusedStyleClass)
-        .children().first()
-        .addClass(focusedStyleClass)
-        .attr('aria-expanded', 'false');
-    } else {
-      item.children().first()
-        .attr('role', 'presentation')
-        .find('.' + focusedStyleClass)
-        .attr('aria-expanded', 'false');
-    }
-
-    var content = item.children().first();
-    content.uniqueId()
-      .addClass(groupItemStyleClass);
-
-    // add the expand icon
-    if (this.m_widget.isExpandable()) {
-      item.addClass('oj-collapsed');
-
-      var icon = document.createElement('a');
-      $(icon).attr('href', '#')
-        .attr('aria-labelledby', content.get(0).id)
-        .addClass('oj-component-icon oj-clickable-icon-nocontext')
-        .addClass(collapseClass);
-
-      content.prepend(icon); // @HTMLUpdateOK
-    }
-
-    if (this.shouldUseGridRole()) {
-      content.get(0).removeAttribute('aria-expanded');
-      content.removeClass(focusedStyleClass);
-      content.attr('role', 'row');
-      content.children()
-        .wrapAll("<div role='gridcell' aria-expanded='false' class='oj-listview-cell-element " +
-                 focusedStyleClass + "'></div>"); // @HTMLUpdateOK
-    }
-
-    // the yet to be expand group element
-    var groupItem = document.createElement('ul');
-    var role;
-    if (this.shouldUseGridRole()) {
-      if (this.isCardLayout()) {
-        role = 'row';
+      // collapsed by default
+      if (item.hasClass(focusedStyleClass)) {
+        item.removeClass(focusedStyleClass)
+          .children().first()
+          .addClass(focusedStyleClass)
+          .attr('aria-expanded', 'false');
       } else {
-        role = 'presentation';
+        item.children().first()
+          .attr('role', 'presentation')
+          .find('.' + focusedStyleClass)
+          .attr('aria-expanded', 'false');
       }
-    } else {
-      role = 'group';
+
+      var content = item.children().first();
+      content.uniqueId()
+        .addClass(groupItemStyleClass);
+
+      // add the expand icon
+      if (this.m_widget.isExpandable()) {
+        item.addClass('oj-collapsed');
+
+        var icon = document.createElement('a');
+        $(icon).attr('href', '#')
+          .attr('aria-labelledby', content.get(0).id)
+          .addClass('oj-component-icon oj-clickable-icon-nocontext')
+          .addClass(collapseClass);
+
+        content.prepend(icon); // @HTMLUpdateOK
+      }
+
+      if (this.shouldUseGridRole()) {
+        content.get(0).removeAttribute('aria-expanded');
+        content.removeClass(focusedStyleClass);
+        content.attr('role', 'row');
+        content.children()
+          .wrapAll("<div role='gridcell' aria-expanded='false' class='oj-listview-cell-element " +
+                   focusedStyleClass + "'></div>"); // @HTMLUpdateOK
+      }
+
+      // the yet to be expand group element
+      var groupItem = document.createElement('ul');
+      var role;
+      if (this.shouldUseGridRole()) {
+        if (this.isCardLayout()) {
+          role = 'row';
+        } else {
+          role = 'presentation';
+        }
+      } else {
+        role = 'group';
+      }
+      $(groupItem).addClass(groupStyleClass)
+        .addClass(groupCollapseStyleClass)
+        .attr('role', role);
+      item.append(groupItem); // @HTMLUpdateOK
+    } else if (context.leaf === true) {
+      item.addClass(itemStyleClass);
+
+      // if item root (<LI>) is not specified, add a default layout class
+      if (!isCustomizeItem && this.m_widget.getItemLayoutStyleClass) {
+        item.addClass(this.m_widget.getItemLayoutStyleClass());
+      }
     }
-    $(groupItem).addClass(groupStyleClass)
-      .addClass(groupCollapseStyleClass)
-      .attr('role', role);
-    item.append(groupItem); // @HTMLUpdateOK
-  } else if (context.leaf === true) {
-    item.addClass(itemStyleClass);
-  }
 
-  if (this.m_widget._isSelectionEnabled() && this.isSelectable(context)) {
-    this.m_widget.getFocusItem(item).attr('aria-selected', false);
-  }
+    if (this.m_widget._isSelectionEnabled() && this.isSelectable(context)) {
+      this.m_widget.getFocusItem(item).attr('aria-selected', false);
+    }
 
-  // callback to widget
-  this.m_widget.itemRenderComplete(item[0], context);
+    // callback to widget
+    this.m_widget.itemRenderComplete(item[0], context);
 
-  this.signalTaskEnd(); // signal method task end
-};
+    this.signalTaskEnd(); // signal method task end
+  };
 
 oj.TreeDataProviderContentHandler.prototype._handleFetchError = function (status) {
   // listview might have been destroyed before fetch error is handled
@@ -2632,8 +706,11 @@ oj.TreeDataProviderContentHandler.prototype.Collapse = function (item) {
   item.empty(); // @HTMLUpdateOK
 };
 
+/**
+ * @protected
+ */
 oj.TreeDataProviderContentHandler.prototype.addItemsForModelInsert =
-  function (data, indexes, keys, parentKeys, afterKeys) {
+  function (data, indexes, keys, parentKeys, isBeforeKeys, refKeys) {
     // template engine should have already been loaded
     var templateEngine = this.getTemplateEngine();
 
@@ -2643,14 +720,22 @@ oj.TreeDataProviderContentHandler.prototype.addItemsForModelInsert =
       var parentElem = this.m_root;
       if (parentKeys !== undefined) {
         parentElem = parentKeys[i] == null ? this.m_root : this.FindElementByKey(parentKeys[i]);
-        if (parentElem) {
+        if (parentElem && parentElem !== this.m_root) {
           // take the <ul> inside the <li>
           parentElem = parentElem.lastElementChild;
         }
       }
 
       // indexes takes precedence
-      var index = (indexes == null) ? this._getIndex(afterKeys, i) + 1 : indexes[i];
+      var index;
+      if (indexes != null) {
+        index = indexes[i];
+      } else {
+        index = this._getIndex(refKeys, i);
+        if (index > -1) {
+          index = isBeforeKeys ? index : index + 1;
+        }
+      }
 
       this.addItem(parentElem, index, data[i],
                    this.getMetadata(index, keys[i], data[i], parentElem),
@@ -2658,6 +743,20 @@ oj.TreeDataProviderContentHandler.prototype.addItemsForModelInsert =
                    this.afterRenderItemForInsertEvent.bind(this));
 
       this.signalTaskEnd(); // signal add item end
+    }
+  };
+
+/**
+ * @protected
+ */
+oj.TreeDataProviderContentHandler.prototype.afterRenderItemForInsertEvent =
+  function (item, context, isCustomizeItem) {
+    if (context.leaf === false) {
+      // if it's a group node, we just need to call afterRenderItem
+      this.afterRenderItem(item, context, isCustomizeItem);
+    } else {
+      oj.TreeDataProviderContentHandler.superclass.afterRenderItemForInsertEvent
+        .call(this, item, context, isCustomizeItem);
     }
   };
 
@@ -2692,6 +791,7 @@ oj.TreeDataProviderContentHandler.prototype.handleModelRefreshEvent = function (
 
   this.signalTaskEnd(); // signal method task end
 };
+
 
 /* global Context:false, KeyMap:false, KeySet:false, DataCollectionUtils:false */
 
@@ -2819,6 +919,10 @@ oj.StaticContentHandler.prototype.restoreContent = function (elem, depth) {
   var groupItemStyleClass = this.m_widget.getGroupItemStyleClass();
   var itemStyleClass = this.m_widget.getItemStyleClass();
   var itemElementStyleClass = this.m_widget.getItemElementStyleClass();
+  var itemLayoutStyleClass = null;
+  if (this.m_widget.getItemLayoutStyleClass) {
+    itemLayoutStyleClass = this.m_widget.getItemLayoutStyleClass();
+  }
 
   var items = elem.children;
   for (var i = 0; i < items.length; i++) {
@@ -2829,6 +933,7 @@ oj.StaticContentHandler.prototype.restoreContent = function (elem, depth) {
       this.unsetAriaProperties(item.get(0));
       item.removeClass(itemElementStyleClass)
         .removeClass(itemStyleClass)
+        .removeClass(itemLayoutStyleClass)
         .removeClass(this.m_widget.getDepthStyleClass(depth))
         .removeClass('oj-skipfocus')
         .removeClass('oj-focus')
@@ -2955,6 +1060,9 @@ oj.StaticContentHandler.prototype.modifyContent = function (elem, depth) {
       this.modifyContent(groupItem[0], depth + 1);
     } else {
       item.addClass(itemStyleClass);
+      if (this.m_widget.getItemLayoutStyleClass) {
+        item.addClass(this.m_widget.getItemLayoutStyleClass());
+      }
     }
 
     if (this.m_widget._isSelectionEnabled() && this.isSelectable(context)) {
@@ -3164,7 +1272,8 @@ oj.StaticContentHandler.prototype.createKeySet = function (initialSet) {
   return new KeySet(initialSet);
 };
 
-/* global Context:false, ThemeUtils:false, Promise:false, KeySetImpl:false, Set:false, Components:false, DataCollectionUtils:false, Logger:false, KeySet:false, localRequire:false */
+
+/* global List:false, Context:false, ThemeUtils:false, Promise:false, KeySetImpl:false, Set:false, Components:false, DataCollectionUtils:false, Logger:false, KeySet:false, KeyMap:false, localRequire:false, Config:false */
 
 /**
  * Partial Map impl, replace with ES6 Map when possible.
@@ -3208,6 +1317,28 @@ oj.KeyMap.prototype.deleteValue = function (value) {
     current = this._mapValues.indexOf(value, current);
   }
 };
+
+// mixin to inject createKeyMap and createKeySet functions to ContentHandlers
+var ContentHandlerMixin = function () {
+  this.createKeyMap = function (initialMap) {
+    var map = new KeyMap();
+    if (initialMap) {
+      initialMap.forEach(function (value, key) {
+        map.set(key, value);
+      });
+      return map;
+    }
+    return map;
+  };
+
+  this.createKeySet = function (initialSet) {
+    return new KeySet(initialSet);
+  };
+};
+
+ContentHandlerMixin.call(oj.StaticContentHandler.prototype);
+ContentHandlerMixin.call(oj.TreeDataProviderContentHandler.prototype);
+ContentHandlerMixin.call(List.IteratingDataProviderContentHandler.prototype);
 
 /**
  * Default ExpandedKeySet class
@@ -3325,15 +1456,26 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         }
       });
     }
-
+    this._touchStartListener = function (event) {
+      // convert to jQuery event for downstream code expecting it
+      if (!event.originalEvent) {
+        // eslint-disable-next-line no-param-reassign
+        event = $.Event(event);
+      }
+      self.touchStartEvent = event;
+      self.HandleMouseDownOrTouchStart(event);
+    };
+    if (this.ojContext._IsCustomElement()) {
+      this.element[0].addEventListener('touchstart', this._touchStartListener, { passive: true });
+    } else {
+      this.ojContext._on(this.element, {
+        touchstart: this._touchStartListener,
+      });
+    }
     this.ojContext._on(this.element, {
       click: function (event) {
         self.HandleMouseClick(event);
         self.touchStartEvent = null;
-      },
-      touchstart: function (event) {
-        self.touchStartEvent = event;
-        self.HandleMouseDownOrTouchStart(event);
       },
       touchend: function (event) {
         if (self.touchStartEvent && event.changedTouches.length) {
@@ -3469,6 +1611,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     this._syncSelectionWithKeySet();
 
     this._initContentHandler();
+    this._updateGridlines();
   },
 
   /**
@@ -3538,6 +1681,9 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
 
     // recreate the content handler
     this._initContentHandler();
+
+    // update top/bottom gridlines
+    this._updateGridlines();
 
     this.signalTaskEnd(); // signal method task end
   },
@@ -3637,6 +1783,9 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     this.m_clientWidth = null;
     this.m_scrollWidth = null;
     this.m_closestParent = null;
+    this.m_noDataContent = null;
+    this.m_gridlinesVisible = null;
+    this.m_gridlinePlaceholder = null;
 
     this.ClearCache();
 
@@ -3964,7 +2113,8 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
             options.groupHeaderPosition != null ||
             options.item != null ||
             options.scrollPolicy != null ||
-            options.scrollPolicyOptions != null);
+            options.scrollPolicyOptions != null ||
+            options.gridlines != null);
   },
 
   /**
@@ -4072,18 +2222,6 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     this.HandleSelectionOption(options);
 
     if (options.selectionMode != null) {
-      if (options.selectionMode !== 'none') {
-        // clear existing selection if selection mode changes
-        this._clearSelection(true);
-      } else {
-        // clear selection and selection option
-        // Options aren't updated yet so can't check if options
-        // are none in clearSelection
-        this._clearSelection(false);
-        var selected = this.GetOption('selected');
-        this._setSelectionOption(selected.clear(), null, null);
-      }
-
       // reset wai aria properties
       this.SetAriaProperties();
 
@@ -4117,6 +2255,40 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     }
 
     return false;
+  },
+
+  /**
+   * @private
+   */
+  _updateFirstSelectedItem: function (selected) {
+    var key;
+    if (selected.isAddAll()) {
+      var items = this._getItemsCache();
+      for (var j = 0; j < items.length; j++) {
+        var currentKey = this.m_contentHandler.GetKey(items[j]);
+        if (selected.has(currentKey)) {
+          key = currentKey;
+          break;
+        }
+      }
+    } else {
+      key = selected.values().values().next().value;
+    }
+
+    if (key != null) {
+      var value = {
+        key: key,
+        data: this.getDataForVisibleItem({ key: key })
+      };
+
+      this.SetOption('firstSelectedItem', value, {
+        _context: {
+          originalEvent: null,
+          internalSet: true
+        },
+        changed: true
+      });
+    }
   },
 
   /**
@@ -4169,6 +2341,10 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
               this._applySelection(elem, filteredSelection[i]);
             }
           }
+        }
+
+        if (selected != null) {
+          this._updateFirstSelectedItem(selected);
         }
       }
     }
@@ -4350,7 +2526,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     if (typeof oj.TableDataSource !== 'undefined' && data instanceof oj.TableDataSource) {
       // TODO: load the adapter as needed
       contentHandler =
-          new oj.IteratingDataProviderContentHandler(this,
+          new List.IteratingDataProviderContentHandler(this,
                                                      this.element[0],
                                                      new oj.TableDataSourceAdapter(data));
     } else if (typeof oj.TreeDataSource !== 'undefined' && data instanceof oj.TreeDataSource) {
@@ -4368,7 +2544,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     } else if (oj.DataProviderFeatureChecker.isTreeDataProvider(data)) {
       contentHandler = new oj.TreeDataProviderContentHandler(this, this.element[0], data);
     } else if (oj.DataProviderFeatureChecker.isDataProvider(data)) {
-      contentHandler = new oj.IteratingDataProviderContentHandler(this, this.element[0], data);
+      contentHandler = new List.IteratingDataProviderContentHandler(this, this.element[0], data);
     } else {
       this.throwError('Invalid data or missing module');
     }
@@ -4430,7 +2606,9 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       }
 
       func = function (item) {
-        self.getFocusItem(item).attr('aria-selected', 'false');
+        var focusElem = self.getFocusItem(item);
+        var parentElem = focusElem.parent();
+        focusElem.attr('aria-selected', parentElem.hasClass('oj-selected'));
       };
     }
 
@@ -4548,6 +2726,47 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
   },
 
   /**
+   * Whether skeletons should be shown for initial fetch.  Invoked by ContentHandler
+   */
+  isSkeletonSupport: function () {
+    // don't show for NavList
+    if (this.ShouldUseGridRole() && this.m_contentHandler.renderInitialSkeletons) {
+      var defaults = this._getOptionDefaults();
+      return defaults.loadIndicator === 'skeleton';
+    }
+    return false;
+  },
+
+  /**
+   * @private
+   */
+  _showLoadingIcon: function () {
+    var msg = this.ojContext.getTranslatedString('msgFetchingData');
+
+    var container = this.getListContainer();
+    this.m_status.attr('aria-label', msg)
+      .css('left', Math.max(0, (container.outerWidth() / 2) - (this.m_status.outerWidth() / 2)))
+      .css('top', Math.max(0, (container.outerHeight() / 2) - (this.m_status.outerHeight() / 2)))
+      .show();
+
+    // make sure the container is tall enough to show the indicator
+    if (this.m_minHeightSet === undefined) {
+      var statusHeight = this.m_status.get(0).offsetHeight;
+      var containerHeight = container.get(0).offsetHeight;
+      container.css('minHeight', Math.max(containerHeight,
+                                          statusHeight + this.getListContainerBorderWidth()));
+      this.m_minHeightSet = true;
+    }
+  },
+
+  /**
+   * @private
+   */
+  _showLoadingSkeleton: function () {
+    this.m_contentHandler.renderInitialSkeletons();
+  },
+
+  /**
    * Displays the 'fetching' status message
    * @private
    */
@@ -4563,23 +2782,14 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       // remove any empty text div
       $(document.getElementById(self._createSubId('empty'))).remove();
 
-      var msg = self.ojContext.getTranslatedString('msgFetchingData');
-
-      var container = self.getListContainer();
-      self.m_status.attr('aria-label', msg)
-        .css('left', Math.max(0, (container.outerWidth() / 2) - (self.m_status.outerWidth() / 2)))
-        .css('top', Math.max(0, (container.outerHeight() / 2) - (self.m_status.outerHeight() / 2)))
-        .show();
-
-      // make sure the container is tall enough to show the indicator
-      if (self.m_minHeightSet === undefined) {
-        var statusHeight = self.m_status.get(0).offsetHeight;
-        var containerHeight = container.get(0).offsetHeight;
-        container.css('minHeight', Math.max(containerHeight,
-                                            statusHeight + self.getListContainerBorderWidth()));
-        self.m_minHeightSet = true;
+      // listview might have already been destroyed
+      if (self.m_contentHandler != null) {
+        if (self.isSkeletonSupport()) {
+          self._showLoadingSkeleton();
+        } else {
+          self._showLoadingIcon();
+        }
       }
-
       self.m_showStatusTimeout = null;
     }, this._getShowStatusDelay());
   },
@@ -4590,11 +2800,8 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    * @private
    */
   _getShowStatusDelay: function () {
-    if (this.defaultOptions == null) {
-      this.defaultOptions =
-        ThemeUtils.parseJSONFromFontFamily(this.getOptionDefaultsStyleClass());
-    }
-    var delay = parseInt(this.defaultOptions.showIndicatorDelay, 10);
+    var defaultOptions = this._getOptionDefaults();
+    var delay = parseInt(defaultOptions.showIndicatorDelay, 10);
 
     return isNaN(delay) ? 0 : delay;
   },
@@ -4772,7 +2979,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
 
   /**
    * Returns the inline template element inside oj-list-view
-   * @return {Element|null} the inline tmeplate element
+   * @return {Element|null} the inline template element
    */
   getItemTemplate: function () {
     if (this.m_template === undefined) {
@@ -4787,6 +2994,14 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       }
     }
     return this.m_template;
+  },
+
+  /**
+   * Returns the value of as option
+   * @return {string}
+   */
+  getAs: function () {
+    return this.GetOption('as');
   },
 
   /**
@@ -4912,7 +3127,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       if (this.GetState($(elem)) === this.STATE_COLLAPSED) {
         var expanded = this.GetOption('expanded');
         // checks if expand all
-        if (this._isExpandAll()) {
+        if (this._isExpandAll(key)) {
           // for legacy syntax, expanded is not real-time in certain cases, i.e. you
           // can have expanded='all' but some itms are collapsed
           // for custom element we don't care about collapsedKeys since KeySet is keeping track of it
@@ -4942,9 +3157,65 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     }
 
     // checks if the active element has changed, this could happen in TreeDataSource, where the element gets remove when collapsed
+    // or when the item updated (mutation event) is the current item
     if (this.m_active != null && key === this.m_active.key && this.m_active.elem != null &&
         elem !== this.m_active.elem.get(0)) {
       this.m_active.elem = $(elem);
+    }
+  },
+
+  /**
+   * Returns the noData template element inside oj-list-view
+   * @return {Element|null} the content of noData slot
+   * @private
+   */
+  _addNoData: function () {
+    if (this.m_noDataContent == null) {
+      if (this.ojContext._IsCustomElement()) {
+        var slotMap = this.GetSlotMap();
+        var slot = slotMap.noData;
+        if (slot && slot.length > 0 && slot[0].tagName.toLowerCase() === 'template') {
+          var noDataContentRoot = document.createElement('div');
+          noDataContentRoot.id = this._createSubId('empty');
+          noDataContentRoot.className = 'oj-listview-no-data-container';
+          var self = this;
+          this.signalTaskStart('run no data template');
+          Config.__getTemplateEngine().then(function (engine) {
+            var root = self.GetRootElement();
+            var nodes = engine.execute(root, slot[0], {}, null);
+            nodes.forEach(function (node) {
+              noDataContentRoot.appendChild(node);
+            });
+            root.append(noDataContentRoot);
+            self.m_noDataContent = noDataContentRoot;
+            self.m_engine = engine;
+            self.signalTaskEnd();
+          }, function (reason) {
+            self.signalTaskEnd();
+            throw new Error('Error loading template engine: ' + reason);
+          });
+          return;
+        }
+      }
+      // non-custom element or when noData slot is specified
+      this.element.append(this._buildEmptyText()); // @HTMLUpdateOK
+    } else {
+      // cached
+      this.GetRootElement().append(this.m_noDataContent); // @HTMLUpdateOK
+    }
+  },
+
+  /**
+   * Remove empty element artifacts from list
+   * @private
+   */
+  _removeNoData: function () {
+    var elem = document.getElementById(this._createSubId('empty'));
+    if (elem) {
+      if (this.m_engine) {
+        this.m_engine.clean(elem);
+      }
+      elem.parentNode.removeChild(elem);
     }
   },
 
@@ -4957,7 +3228,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     this.hideStatusText();
 
     // remove any empty text div
-    $(document.getElementById(this._createSubId('empty'))).remove();
+    this._removeNoData();
 
     // clear items cache
     this.m_items = null;
@@ -4970,8 +3241,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
 
     // check if it's empty
     if (this.element[0].childElementCount === 0) {
-      var empty = this._buildEmptyText();
-      this.element.append(empty); // @HTMLUpdateOK
+      this._addNoData();
 
       // fire ready event
       this.Trigger('ready', null, {});
@@ -5035,9 +3305,33 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
 
           self.signalTaskEnd();
         });
-
-        return;
       }
+    }
+
+    // update firstSelectedItem as needed
+    if (this._isSelectionEnabled()) {
+      var firstSelectedItem = this.GetOption('firstSelectedItem');
+      if (firstSelectedItem == null || firstSelectedItem.key == null) {
+        var selected = this.GetOption('selected');
+        if (selected != null) {
+          this._updateFirstSelectedItem(selected);
+        }
+      }
+    }
+
+    // about gridlines for last item
+    if (this.m_gridlinePlaceholder != null) {
+      this.m_gridlinePlaceholder.parentNode.removeChild(this.m_gridlinePlaceholder);
+    }
+    if ((this.m_contentHandler.hasMoreToFetch === undefined ||
+      (this.m_contentHandler.hasMoreToFetch && !this.m_contentHandler.hasMoreToFetch()))
+      && this._shouldRenderGridlineForLastItem()) {
+      var gridlinePlaceholder = document.createElement('li');
+      gridlinePlaceholder.setAttribute('role', 'presentation');
+      gridlinePlaceholder.className = 'oj-listview-gridline-placeholder';
+      this.element[0].appendChild(gridlinePlaceholder);
+
+      this.m_gridlinePlaceholder = gridlinePlaceholder;
     }
 
     // fire ready event
@@ -5124,7 +3418,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     }
 
     // need to verify key if we have a DataProvider that supports FetchByKeys
-    if (this.m_contentHandler instanceof oj.IteratingDataProviderContentHandler) {
+    if (this.m_contentHandler instanceof List.IteratingDataProviderContentHandler) {
       var dataProvider = this.m_contentHandler.getDataProvider();
       if (dataProvider.containsKeys) {
         return new Promise(function (resolve) {
@@ -5234,7 +3528,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         position = this.GetOption('scrollPosition');
       }
 
-      if (validateKey && position.key) {
+      if (validateKey && position.key != null) {
         var promise = this._validateKeys([position.key]);
         if (promise) {
           promise.then(function (valid) {
@@ -5357,20 +3651,15 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
   },
 
   /**
-   * When an item is updated, if the item happens to be the current item, the active element needs to be updated.
+   * When an item is updated, if the item happens to be the current item and it previously has focus, then
+   * we'll need to restore focus.
    * @protected
    */
-  restoreCurrentItem: function () {
-    var current = this.GetOption('currentItem');
-    if (current != null) {
-      var elem = this.FindElementByKey(current);
-      // make sure item is focusable also
-      if (elem != null && !this.SkipFocus($(elem))) {
-        this.ActiveAndFocus($(elem), null);
-      }
+  restoreCurrentItemFocus: function (elem) {
+    if (this._isInViewport(elem)) {
+      this._setActive($(elem), null, true);
     }
   },
-
   /**
    * Called by content handler to reset the state of ListView
    * @private
@@ -5452,7 +3741,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    */
   notifyContextMenuGesture: function (menu, event, eventType) {
     // first check if we are invoking on an editable or clickable element If so bail
-    if (this.IsNodeEditableOrClickable($(event.target))) {
+    if (this.m_noDataContent == null && this.IsNodeEditableOrClickable($(event.target))) {
       return false;
     }
 
@@ -5466,7 +3755,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       this.SetCurrentItem($(parent[0]), null);
     }
 
-    var launcher = this.element;
+    var launcher;
 
     // When user right click on disabled item(non-focusable), this.m_active
     // will not be updated to disabled item so explicitly setting the launcher from event.target.
@@ -5476,10 +3765,15 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       launcher = this.m_active.elem;
     }
 
+    // if not on any item, then launcher is the root element
+    if (launcher == null) {
+      launcher = this.element;
+    }
+
     var openOptions = { launcher: launcher, initialFocus: 'menu' };
 
     if (eventType === 'keyboard') {
-      openOptions.position = { my: 'start top', at: 'start bottom', of: this.m_active.elem };
+      openOptions.position = { my: 'start top', at: 'start bottom', of: launcher };
     }
 
     this.ojContext._OpenContextMenu(event, eventType, openOptions);
@@ -6433,6 +4727,67 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     return $(elem).hasClass(this.getExpandIconStyleClass()) ||
       $(elem).hasClass(this.getCollapseIconStyleClass());
   },
+
+ /**
+  * Determine whether gridlines/dividers should be shown
+  * @return {boolean} true if visible, false if hidden
+  * @private
+  */
+  _isGridlinesVisible: function () {
+    if (this.m_gridlinesVisible == null) {
+      var gridlines = this.GetOption('gridlines');
+      this.m_gridlinesVisible = (gridlines.item !== 'hidden');
+    }
+    return this.m_gridlinesVisible;
+  },
+
+  /**
+   * Gets the option defaults for top and bottom border/gridline
+   * @private
+   */
+  _isTopBottomGridlinesVisible: function () {
+    var defaultOptions = this._getOptionDefaults();
+    var defaultGridlines = defaultOptions.gridlines;
+    if (defaultGridlines) {
+      return { top: defaultGridlines.top, bottom: defaultGridlines.bottom };
+    }
+    // like NavList which doesn't have that option defaults
+    return { top: true, bottom: true };
+  },
+
+  /**
+   * Update the style class based on gridline option defaults
+   * @private
+   */
+  _updateGridlines: function () {
+    var gridlines = this._isTopBottomGridlinesVisible();
+    var root = this.GetRootElement()[0];
+    root.classList.remove('gridline-top-hidden');
+    root.classList.remove('gridline-bottom-hidden');
+
+    if (gridlines.top === 'hidden') {
+      root.classList.add('gridline-top-hidden');
+    }
+
+    if (gridlines.bottom === 'hidden') {
+      root.classList.add('gridline-bottom-hidden');
+    }
+  },
+
+  /**
+   * Determine whether ListView needs to render a placeholder to show gridline for the last item
+   * @private
+   */
+  _shouldRenderGridlineForLastItem: function () {
+    var gridlines = this.GetOption('gridlines');
+    if (gridlines != null) {
+      var topBottomGridlines = this._isTopBottomGridlinesVisible();
+      if (gridlines.item === 'visible' && topBottomGridlines.bottom === 'hidden') {
+        return true;
+      }
+    }
+    return false;
+  },
   /** ********************************** end helper methods *****************************/
 
   /** ************************************* Navigation Common **************************/
@@ -6466,6 +4821,12 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
           return !($(this).parent().parent().hasClass('oj-collapsed'));
         }
         return true;
+      }).map(function (index, elem) {
+        var parentElement = elem.parentElement;
+        if (parentElement && parentElement.classList.contains('oj-animate-add')) {
+          return parentElement;
+        }
+        return elem;
       });
     }
     return this.m_items;
@@ -7206,8 +5567,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     var filtered = [];
     selection.forEach(function (key) {
       var elem = this.FindElementByKey(key);
-      if ((this._isMultipleSelection() || filtered.length === 0) &&
-        (elem == null || (elem != null && this.IsSelectable(elem)))) {
+      if (elem == null || (elem != null && this.IsSelectable(elem))) {
         filtered.push(key);
       }
     }, this);
@@ -7839,17 +6199,25 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
   },
 
   /**
+   * Gets the option defaults
+   * @private
+   */
+  _getOptionDefaults: function () {
+    if (this.defaultOptions == null) {
+      this.defaultOptions =
+        ThemeUtils.parseJSONFromFontFamily(this.getOptionDefaultsStyleClass());
+    }
+    return this.defaultOptions;
+  },
+
+  /**
    * Gets the animation effect for the specific action
    * @param {string} action the action to retrieve the effect
    * @return {Object} the animation effect for the action
    */
   getAnimationEffect: function (action) {
-    if (this.defaultOptions == null) {
-      this.defaultOptions =
-        ThemeUtils.parseJSONFromFontFamily(this.getOptionDefaultsStyleClass());
-    }
-
-    var defaultAnimations = this.defaultOptions.animation;
+    var defaultOptions = this._getOptionDefaults();
+    var defaultAnimations = defaultOptions.animation;
     return defaultAnimations == null ? null : defaultAnimations[action];
   },
 
@@ -7863,10 +6231,11 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
 
   /**
    * Whether ListView should expand all expandable items.
+   * @param {any} key the key of the item to check
    * @return {boolean} true if expand all, false otherwise
    * @private
    */
-  _isExpandAll: function () {
+  _isExpandAll: function (key) {
     var expanded = this.GetOption('expanded');
     // for legacy syntax, which supports 'auto' and 'all'
     // TODO: should add check for custom element, but can't do it until NavList also move to KeySet
@@ -7883,7 +6252,8 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     if (expanded.isAddAll) {
       // if drillMode is none and no expanded state is specified, expand all
       return (!this.isExpandable() &&
-              expanded instanceof oj._ojListViewExpandedKeySet) ? true : expanded.isAddAll();
+              expanded instanceof oj._ojListViewExpandedKeySet) ? true :
+              (expanded.isAddAll() && expanded.has(key));
     }
 
     return false;
@@ -8421,7 +6791,15 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    * @return {string} the list item style class
    */
   getItemStyleClass: function () {
-    return 'oj-listview-item';
+    return this._isGridlinesVisible() ? 'oj-listview-item' : 'oj-listview-item gridline-hidden';
+  },
+
+  /**
+   * Gets the item layout class
+   */
+  getItemLayoutStyleClass: function () {
+    // we don't have a default layout style class for card yet
+    return this.isCardLayout() ? null : 'oj-listview-item-layout';
   },
 
   /**
@@ -8613,17 +6991,45 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
 
   /**
    * Find the element closest to the top of the viewport
-   * @param {Array.<Element>} items an array of item elements to search for
-   * @param {number} index the index relative to the parent to start the search
-   * @param {number} scrollTop the current scrolltop
+   * @param {number} currScrollTop the current scrolltop
+   * @prarm {boolean} isHierData if this supports hierarchical data
+   * @param {number} itemHeight the item height
    * @private
    */
-  _findClosestElementToTop: function (items, index, scrollTop) {
-    var found = false;
-
-    if (items.length === 0 || index >= items.length) {
-      return undefined;
+  _findClosestElementToTop: function (currScrollTop, isHierData, itemHeight) {
+    // getItemsCache returns a flat view of all expanded items
+    var items = isHierData ? this._getItemsCache() :
+      $(this._getRootNodeForItems()).children('li.' + this.getItemElementStyleClass());
+    if (items == null || items.length === 0) {
+      return null;
     }
+
+    // if the previous scroll position is relatively close to the current one
+    // we'll use the previous index as the starting point
+    var index;
+    var prevScrollPosition = this.GetOption('scrollPosition');
+    if (Math.abs(prevScrollPosition.y - currScrollTop) < this.MINIMUM_ITEM_HEIGHT &&
+        prevScrollPosition.key != null && !isNaN(prevScrollPosition.index)) {
+      if (isHierData) {
+        var element = this.FindElementByKey(prevScrollPosition.key);
+        if (element != null) {
+          index = items.index(element);
+        }
+      } else {
+        index = prevScrollPosition.index;
+      }
+    }
+
+    // we'll need to approximate the index
+    if (isNaN(index)) {
+      index = Math.floor(currScrollTop / itemHeight);
+    }
+    // ensure estimated index is valid
+    index = Math.min(Math.max(index, 0), items.length - 1);
+
+    // Sanitize scrollTop values for negative values.
+    // This is to address Safari negative scrollTop when scroll "bounces" at the top
+    var scrollTop = Math.max(currScrollTop, 0);
 
     var elem = items[index];
     var offsetTop;
@@ -8632,7 +7038,6 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     } else {
       offsetTop = elem.offsetTop;
     }
-
     var diff = scrollTop - offsetTop;
     var firstInGroup = { index: index, elem: elem, offsetTop: offsetTop, offset: diff };
 
@@ -8644,14 +7049,12 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     // go forward or backward to find the item, keep that fix to avoid
     // potentially going back and forth (shouldn't happen)
     var forward = diff > 0;
-
     if (forward) {
-      // eslint-disable-next-line no-param-reassign
       index += 1;
     } else {
-      // eslint-disable-next-line no-param-reassign
       index -= 1;
     }
+    var found = false;
     while (!found && index >= 0 && index < items.length) {
       elem = items[index];
       offsetTop = elem.offsetTop;
@@ -8666,30 +7069,24 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         }
         break;
       }
-
       // for card layout, we want to return the first item among items that have the same scrollTop (same row)
       // note when scrolling backward, you'll always want the last one encountered
       if (!forward || firstInGroup.offsetTop !== offsetTop) {
         firstInGroup = { index: index, elem: elem, offsetTop: offsetTop, offset: diff };
       }
-
       if (forward) {
-        // eslint-disable-next-line no-param-reassign
         index += 1;
       } else {
-        // eslint-disable-next-line no-param-reassign
         index -= 1;
       }
     }
 
     if (!found) {
       // then it's the first/last item in the group/root
-      // eslint-disable-next-line no-param-reassign
       index = forward ? items.length - 1 : 0;
       firstInGroup.index = index;
       firstInGroup.elem = items[index];
     }
-
     return firstInGroup;
   },
 
@@ -8736,8 +7133,6 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    */
   _getCurrentScrollPosition: function (scrollTop) {
     var scrollPosition = {};
-    var index;
-    var elem;
     var scroller = this._getScroller();
 
     if (scrollTop === undefined) {
@@ -8755,40 +7150,9 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     // for the top most item.  This var should be populated in renderComplete
     // if there's no data then we should skip
     if (!isNaN(itemHeight) && itemHeight > 0) {
-      // getItemsCache returns a flat view of all expanded items
-      var items = isHierData ?
-          this._getItemsCache() :
-          $(this._getRootNodeForItems()).children('li.' + this.getItemElementStyleClass());
-
-      // if the previous scroll position is relatively close to the current one
-      // we'll use the previous index as the starting point
-      var prevScrollPosition = this.GetOption('scrollPosition');
-      var diff = Math.abs(prevScrollPosition.y - scrollTop);
-      if (diff < this.MINIMUM_ITEM_HEIGHT && prevScrollPosition.key != null &&
-          !isNaN(prevScrollPosition.index)) {
-        if (isHierData) {
-          elem = this.FindElementByKey(prevScrollPosition.key);
-          if (elem != null) {
-            index = items.index(elem);
-          }
-        } else {
-          index = prevScrollPosition.index;
-        }
-      }
-
-      // we'll need to approximate the index
-      if (isNaN(index)) {
-        index = Math.floor(scrollTop / itemHeight);
-      }
-
-      // Sanitize index/scrollTop values for negative values.
-      // This is to address Safari negative scrollTop when scroll "bounces" at the top
-      index = Math.max(index, 0);
-      var scrollTopValue = Math.max(scrollTop, 0);
-
-      var result = this._findClosestElementToTop(items, index, scrollTopValue);
+      var result = this._findClosestElementToTop(scrollTop, isHierData, itemHeight);
       if (result != null) {
-        elem = result.elem;
+        var elem = result.elem;
         if (isHierData) {
           var parent = elem.parentNode;
           if (parent !== this.element.get(0)) {
@@ -8984,7 +7348,15 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    */
   _unregisterScrollHandler: function () {
     var scrollElem = $(this._getScrollEventElement());
-    this.ojContext._off(scrollElem, 'scroll wheel');
+    this.ojContext._off(scrollElem, 'scroll');
+    if (this.ojContext._IsCustomElement()) {
+      // remove wheel listener add with addEventListener
+      scrollElem[0].removeEventListener('wheel', this._wheelListener, { passive: false });
+      delete this._wheelListener;
+    } else {
+      // remove wheel listener added with jQuery
+      this.ojContext._off(scrollElem, 'wheel');
+    }
     return scrollElem;
   },
 
@@ -9019,11 +7391,22 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
 
     // only do this for high-water mark scrolling, other cases we have (and should not care) no knowledge about the scroller
     if (this.isLoadMoreOnScroll()) {
-      this.ojContext._on(scrollElem, {
-        wheel: function (event) {
-          self._preventMouseWheelOverscroll(self._getScroller(), event);
+      this._wheelListener = function (event) {
+        // add originalEvent for downstream code expecting it
+        if (!event.originalEvent) {
+          // eslint-disable-next-line no-param-reassign
+          event.originalEvent = event;
         }
-      });
+        self._preventMouseWheelOverscroll(self._getScroller(), event);
+      };
+      this._scrollElem = scrollElem;
+      if (this.ojContext._IsCustomElement()) {
+        this._scrollElem[0].addEventListener('wheel', this._wheelListener, { passive: false });
+      } else {
+        this.ojContext._on(this._scrollElem, {
+          wheel: this._wheelListener
+        });
+      }
     }
   },
 
@@ -9252,20 +7635,17 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     /** ******************************* End Pin Header *******************************************/
 });
 
-/* global KeySet:false  */
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+/* global KeySet:false, DataCollectionUtils:false, Components:false, ThemeUtils:false */
 
 /**
  * @ojcomponent oj.ojListView
  * @augments oj.baseComponent
  * @since 1.1.0
- * @ojstatus preview
+ *
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojtsimport {module: "ojkeyset", type: "AMD", imported: ["KeySet"]}
+ * @ojtsimport {module: "ojcommontypes", type: "AMD", importName: ["CommonTypes"]}
  * @ojsignature [{
  *                target: "Type",
  *                value: "class ojListView<K, D> extends baseComponent<ojListViewSettableProperties<K,D>>",
@@ -9329,6 +7709,9 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
  * for more details on the available options.</p>
  *
  * <p>Finally, ListView also supports static HTML content as data.  The structure of the content can be either flat or hierarhical.</p>
+ *
+ * <p>A note about hierarchical data, even though ListView supports data with > 2 levels, it is not recommended because it does not render depth, for that case you should look at using ojTreeView<p>
+ *
  *
  * <p>Example of flat static content</p>
  * <pre class="prettyprint">
@@ -9546,7 +7929,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      * if oj-bind-for-each element is used inside the item template since it has its own scope of data access.
      *
      * @ojshortdesc Specifies the alias for the current item when referenced inside the item template.
-     * @ojstatus preview
+     *
      * @expose
      * @public
      * @instance
@@ -9752,10 +8135,8 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      * @memberof! oj.ojListView
      * @instance
      * @default {'key': null, 'data': null}
-     * @property {any} key The key of the first selected item
-     * @property {any} data The data of the first selected item
      * @type {Object}
-     * @ojsignature {target:"Type", value:"{key: K, data: D}"}
+     * @ojsignature {target:"Type", value:"CommonTypes.ItemContext<K,D>", jsdocOverride:true}
      *
      * @ojwriteback
      * @readonly
@@ -9765,6 +8146,51 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      * var firstSelectedItemValue = myListView.firstSelectedItem;
      */
     firstSelectedItem: { key: null, data: null },
+    /**
+     * The gridlines option contains a subset of options for gridlines.
+     *
+     * @ojshortdesc Customizes the functionality of how gridlines are shown in various parts of the list.
+     * @expose
+     * @memberof! oj.ojListView
+     * @type {Object}
+     * @instance
+     */
+    gridlines: {
+      /**
+       * Specifies whether the horizontal grid lines should be visible.  Note this attribute has no effect when ListView is in card display mode.
+       * <p>The default value varies by theme and is determined as follows:
+       * <ul>
+       *   <li>if <code class="prettyprint">$listViewGridlinesItemOptionDefault</code> is set in the current theme as seen in the example below, then that value is the gridlines default.</li>
+       *   <li>Else, the default value is <code class="prettyprint">"visible"</code>.</li>
+       * </ul>
+       * <p>Once a value has been set on this attribute, that value applies regardless of theme.
+       *
+       * @ojshortdesc Specifies whether the grid lines should be visible.
+       * @expose
+       * @alias gridlines.item
+       * @memberof! oj.ojListView
+       * @instance
+       * @default "visible"
+       * @type {string}
+       * @ojvalue {string} "visible" The horizontal gridlines are visible.
+       * @ojvalue {string} "visibleExceptLast" The horizontal gridlines are visible, except for the last item.  Note this will not have an effect for themes that renders a bottom border for the component.
+       * @ojvalue {string} "hidden" The horizontal gridlines are hidden.
+       *
+       * @example <caption>Initialize the ListView with the <code class="prettyprint">gridlines</code> attribute specified:</caption>
+       * &lt;oj-list-view gridlines.item='visible'>&lt;/oj-list-view>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">gridlines</code> property after initialization:</caption>
+       * // getter
+       * var gridlinesValue = myListView.gridlines.item;
+       *
+       * // setter
+       * myListView.gridlines.item = 'visible';
+       *
+       * @example <caption>Set the default in the theme (SCSS) :</caption>
+       * $listViewGridlinesItemOptionDefault: hidden !default;
+       */
+      item: 'visible'
+    },
     /**
      * Specifies how the group header should be positioned.  If "sticky" is specified, then the group header
      * is fixed at the top of the ListView as the user scrolls.
@@ -10135,8 +8561,12 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      */
     selection: [],
     /**
-     * Specifies whether selection can be made and the cardinality of selection in the ListView.
-     * Selection is initially disabled, but setting the value to null will disable selection.
+     * <p>The type of selection behavior that is enabled on the ListView. This attribute controls the number of selections that can be made via selection gestures at any given time.
+     *
+     * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the ListView's selection styling will be applied to all items specified by the <a href="#selection">selection</a> and <a href="#selected">selected</a> attributes.
+     * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the ListView's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> and <a href="#selected">selected</a> attributes.
+     *
+     * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> or <a href="#selected">selected</a> attributes.
      *
      * @ojshortdesc Specifies the selection mode.
      * @expose
@@ -10145,7 +8575,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      * @type {string}
      * @default "none"
      * @ojvalue {string} "none" Selection is disabled.
-     * @ojvalue {string} "single" Only one item can be selected at a time.
+     * @ojvalue {string} "single" Only a single item can be selected at a time.
      * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
      *
      * @example <caption>Initialize the ListView with the <code class="prettyprint">selection-mode</code> attribute specified:</caption>
@@ -10160,15 +8590,26 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      */
     selectionMode: 'none',
     /**
-     * Specifies whether ListView should enforce that there will always be an item selected when selection is enabled and there are one or
-     * more selectable items.  Specifically, when this is enabled, then the first selectable item in ListView will be selected.
-     * Furthermore, users will not be able to toggle selection such that it will result in no selected items.
-     * See <a href="#selectionMode">selectionMode</a> on how to enable/disable selection.
-     * See <a href="#item.selectable">item.selectable</a> on how to enable/disable selection for individual item.
+     * <p>Specifies whether selection is required on the ListView. This attribute will only take effect when selection is enabled and at least
+     * one selectable item is present. When <code class="prettyprint">true</code>, the ListView will ensure that at least one valid item is
+     * selected at all times. If no items are specified by the <a href="#selection">selection</a> or <a href="#selected">selected</a> attributes,
+     * the first selectable item in the ListView will be added to the selection state during initial render. Additionally, selection gestures that
+     * would otherwise leave the ListView with no selected items will be disabled.
      *
-     * @ojshortdesc Specifies whether there should be at least one item selected when selection is enabled.
+     * <p>When <code class="prettyprint">true</code>, the ListView will also attempt to validate all items specified by the
+     * <a href="#selection">selection</a> and <a href="#selected">selected</a> attributes. If any items specified are not immediately
+     * available, the ListView's underlying <a href="oj.DataProvider.html">DataProvider</a> will be queried. This will only occur if the
+     * data provider supports <a href="oj.DataProvider.html#getCapability">getCapability</a>, and returns a
+     * <a href="oj.FetchByKeysCapability.html#implementation">fetchByKeys capability implementation</a> of <code class="prettyprint">lookup</code>.
+     * Any items that fail this validation process will be removed from the <a href="#selection">selection</a> and <a href="#selected">selected</a>
+     * attributes. This guarantees that the ListView's <a href="#firstSelectedItem">firstSelectedItem</a> attribute is populated at all times.
+     *
+     * <p>See <a href="#selectionMode">selectionMode</a> for information on how to enable or disable selection on the ListView.
+     * <p>See <a href="#item.selectable">item.selectable</a> for information on how to enable or disable selection for individual items.
+     *
+     * @ojshortdesc Specifies whether selection is required on the ListView.
      * @expose
-     * @ojstatus preview
+     *
      * @memberof! oj.ojListView
      * @instance
      * @type {boolean}
@@ -10402,6 +8843,8 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
 
     this.listview = new oj._ojListView();
     this.listview.init(opts);
+
+    DataCollectionUtils.disableDefaultBrowserStyling(this.element[0]);
   },
 
   /**
@@ -10828,32 +9271,42 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
   // Slots
 
   /**
-   * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the list. The slot must be a &lt;template> element.
+   * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the list. The slot content must be a &lt;template> element.
    * The content of the template could either include the &lt;li> element, in which case that will be used as
    * the root of the item.  Or it can be just the content which excludes the &lt;li> element.</p>
    * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
    * <ul>
-   *   <li>$current - an object that contains information for the current item. (See the table below for a list of properties available on $current)</li>
+   *   <li>$current - an object that contains information for the current item. (See [oj.ojListView.ItemTemplateContext]{@link oj.ojListView.ItemTemplateContext} or the table below for a list of properties available on $current)</li>
    *  <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
    * </ul>
-   * @ojstatus preview
+   *
    * @ojslot itemTemplate
    * @ojshortdesc The itemTemplate slot is used to specify the template for rendering each item in the list. See the Help documentation for more information.
    * @ojmaxitems 1
    * @memberof oj.ojListView
-   *
-   * @property {Element} componentElement The &lt;oj-list-view> custom element
-   * @property {Object} data The data for the current item being rendered
-   * @property {number} index The zero-based index of the curent item
-   * @property {any} key The key of the current item being rendered
-   * @property {number} depth The depth of the current item (available when hierarchical data is provided) being rendered. The depth of the first level children under the invisible root is 1.
-   * @property {boolean} leaf True if the current item is a leaf node (available when hierarchical data is provided).
-   * @property {any} parentkey The key of the parent item (available when hierarchical data is provided). The parent key is null for root nodes.
+   * @ojslotitemprops oj.ojListView.ItemTemplateContext
    *
    * @example <caption>Initialize the ListView with an inline item template specified:</caption>
    * &lt;oj-list-view>
    *   &lt;template slot='itemTemplate'>
    *     &lt;span>&lt;oj-bind-text value='[[$current.data.name]]'>&lt;/span>
+   *   &lt;template>
+   * &lt;/oj-list-view>
+   */
+
+  /**
+   * <p>The <code class="prettyprint">noData</code> slot is used to specify the content to display when the list is empty.
+   * The slot content must be a &lt;template> element.  If not specified then a default no data message will be displayed.
+   *
+   * @ojslot noData
+   * @ojshortdesc The noData slot is used to specify the content to render when the list is empty.
+   * @ojmaxitems 1
+   * @memberof oj.ojListView
+   *
+   * @example <caption>Initialize the ListView with a noData slot specified:</caption>
+   * &lt;oj-list-view>
+   *   &lt;template slot='noData'>
+   *     &lt;span>&lt;oj-button>Add item&lt;/span>
    *   &lt;template>
    * &lt;/oj-list-view>
    */
@@ -11017,7 +9470,6 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
  *     <tr>
  *       <td>oj-clickthrough-disabled</td>
  *       <td>Use on any element inside an item where you do not want ListView to process the click event.</td>
- *       </td>
  *     </tr>
  *     <tr>
  *       <td>oj-focus-highlight</td>
@@ -11026,13 +9478,15 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
  *     <tr>
  *       <td>oj-full-width</td>
  *       <td>Use when ListView occupies the entire width of the page.
-             Removes left and right borders in card-layout mode and adjust positioning of cards to improve visual experience.</td>
- *       </td>
+ *           Removes left and right borders in card-layout mode and adjust positioning of cards to improve visual experience.</td>
  *     </tr>
  *     <tr>
  *       <td>oj-listview-card-layout</td>
  *       <td>Shows items as cards and lay them out in a grid.</td>
- *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-listview-item-layout</td>
+ *       <td>Use when the page author overrides the default styling on the item root element (&lt;LI&gt;) and wants to apply the item style on some other element.</td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -11087,7 +9541,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
  * selected items if no drag handle is set on the item.
  * @expose
  * @name dnd.drag.items
- * @ojshortdesc An object that describes drag functionlity for a selected set of items. See the Help documentation for more information.
+ * @ojshortdesc An object that describes drag functionality for a selected set of items. See the Help documentation for more information.
  * @memberof! oj.ojListView
  * @instance
  * @type {Object}
@@ -11159,10 +9613,21 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
  * @property {boolean} reorder true if the drop was a reorder in the same listview, false otherwise
  */
 /**
+ * @typedef {Object} oj.ojListView.ItemTemplateContext
+ * @property {Element} componentElement The &lt;oj-list-view> custom element
+ * @property {Object} data The data for the current item being rendered
+ * @property {number} index The zero-based index of the current item
+ * @property {any} key The key of the current item being rendered
+ * @property {number} depth The depth of the current item (available when hierarchical data is provided) being rendered. The depth of the first level children under the invisible root is 1.
+ * @property {boolean} leaf True if the current item is a leaf node (available when hierarchical data is provided).
+ * @property {any} parentkey The key of the parent item (available when hierarchical data is provided). The parent key is null for root nodes.
+ */
+
+/**
  * An object that specifies callback functions to handle dropping items.
  * @expose
  * @name dnd.drop.items
- * @ojshortdesc An object that describes drop functionlity for a selected set of items.
+ * @ojshortdesc An object that describes drop functionality for a selected set of items.
  * @memberof! oj.ojListView
  * @instance
  * @type {Object}
@@ -11285,6 +9750,16 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
  * @ojsignature { target: "Type",
  *                value: "?"}
  */
+
+// Set theme-based defaults
+Components.setDefaultOptions({
+  ojListView: {
+    gridlines: Components.createDynamicPropertyGetter(function () {
+      return { item: (ThemeUtils.parseJSONFromFontFamily('oj-listview-option-defaults') || {}).gridlines.item };
+    })
+  }
+});
+
 
 /* global __oj_list_view_metadata:false */
 

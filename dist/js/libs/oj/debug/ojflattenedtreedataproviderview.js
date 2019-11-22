@@ -2,25 +2,20 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 "use strict";
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'jquery', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojdataprovider', 'ojs/ojkeyset', 'ojs/ojobservable', 'ojs/ojmap'],
 function(oj, $, ojSet, eventTarget, DataProvider, KeySet, Observable, ojMap)
 {
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /**
  * Class which provides list based optimizations
  */
-var FlattenedTreeDataProviderView = /** @class */ (function () {
-    function FlattenedTreeDataProviderView(dataProvider, options) {
+class FlattenedTreeDataProviderView {
+    constructor(dataProvider, options) {
         this.dataProvider = dataProvider;
         this.options = options;
         this._DATAPROVIDER = 'dataprovider';
@@ -55,50 +50,53 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
         this._UPDATE = 'update';
         this._INDEXES = 'indexes';
         this._ADDEVENTLISTENER = 'addEventListener';
-        this.AsyncIterable = /** @class */ (function () {
-            function class_1(_parent, _asyncIterator) {
+        this.AsyncIterable = class {
+            constructor(_parent, _asyncIterator) {
                 this._parent = _parent;
                 this._asyncIterator = _asyncIterator;
                 this[Symbol.asyncIterator] = function () {
                     return this._asyncIterator;
                 };
             }
-            return class_1;
-        }());
-        this.AsyncIterator = /** @class */ (function () {
-            function class_2(_parent, _nextFunc, _params) {
+        };
+        this.AsyncIterator = class {
+            constructor(_parent, _nextFunc, _params) {
                 this._parent = _parent;
                 this._nextFunc = _nextFunc;
                 this._params = _params;
             }
-            class_2.prototype['next'] = function () {
-                var result = this._nextFunc(this._params);
+            ['next']() {
+                let result = this._nextFunc(this._params);
                 return Promise.resolve(result);
-            };
-            return class_2;
-        }());
-        this.AsyncIteratorResult = /** @class */ (function () {
-            function class_3(_parent, value, done) {
+            }
+        };
+        this.AsyncIteratorYieldResult = class {
+            constructor(_parent, value) {
                 this._parent = _parent;
                 this.value = value;
-                this.done = done;
                 this[_parent._VALUE] = value;
-                this[_parent._DONE] = done;
+                this[_parent._DONE] = false;
             }
-            return class_3;
-        }());
-        this.Item = /** @class */ (function () {
-            function class_4(_parent, metadata, data) {
+        };
+        this.AsyncIteratorReturnResult = class {
+            constructor(_parent, value) {
+                this._parent = _parent;
+                this.value = value;
+                this[_parent._VALUE] = value;
+                this[_parent._DONE] = true;
+            }
+        };
+        this.Item = class {
+            constructor(_parent, metadata, data) {
                 this._parent = _parent;
                 this.metadata = metadata;
                 this.data = data;
                 this[_parent._METADATA] = metadata;
                 this[_parent._DATA] = data;
             }
-            return class_4;
-        }());
-        this.FlattenedTreeItemMetadata = /** @class */ (function () {
-            function class_5(_parent, key, parentKey, indexFromParent, treeDepth, isLeaf) {
+        };
+        this.FlattenedTreeItemMetadata = class {
+            constructor(_parent, key, parentKey, indexFromParent, treeDepth, isLeaf) {
                 this._parent = _parent;
                 this.key = key;
                 this.parentKey = parentKey;
@@ -111,10 +109,9 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
                 this[_parent._TREEDEPTH] = treeDepth;
                 this[_parent._ISLEAF] = isLeaf;
             }
-            return class_5;
-        }());
-        this.FetchListParameters = /** @class */ (function () {
-            function class_6(_parent, size, sortCriteria, filterCriterion) {
+        };
+        this.FetchListParameters = class {
+            constructor(_parent, size, sortCriteria, filterCriterion) {
                 this._parent = _parent;
                 this.size = size;
                 this.sortCriteria = sortCriteria;
@@ -123,10 +120,9 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
                 this[_parent._SORTCRITERIA] = sortCriteria;
                 this[_parent._FILTERCRITERION] = filterCriterion;
             }
-            return class_6;
-        }());
-        this.FetchListResult = /** @class */ (function () {
-            function class_7(_parent, fetchParameters, data, metadata) {
+        };
+        this.FetchListResult = class {
+            constructor(_parent, fetchParameters, data, metadata) {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
                 this.data = data;
@@ -135,10 +131,9 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
                 this[_parent._DATA] = data;
                 this[_parent._METADATA] = metadata;
             }
-            return class_7;
-        }());
-        this.FetchByOffsetParameters = /** @class */ (function () {
-            function class_8(_parent, offset, size, sortCriteria, filterCriterion, attributes) {
+        };
+        this.FetchByOffsetParameters = class {
+            constructor(_parent, offset, size, sortCriteria, filterCriterion, attributes) {
                 this._parent = _parent;
                 this.offset = offset;
                 this.size = size;
@@ -151,10 +146,9 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
                 this[_parent._FILTERCRITERION] = filterCriterion;
                 this[_parent._ATTRIBUTES] = attributes;
             }
-            return class_8;
-        }());
-        this.FetchByOffsetResults = /** @class */ (function () {
-            function class_9(_parent, fetchParameters, results, done) {
+        };
+        this.FetchByOffsetResults = class {
+            constructor(_parent, fetchParameters, results, done) {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
                 this.results = results;
@@ -163,30 +157,27 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
                 this[_parent._RESULTS] = results;
                 this[_parent._DONE] = done;
             }
-            return class_9;
-        }());
-        this.FetchByKeysResults = /** @class */ (function () {
-            function class_10(_parent, fetchParameters, results) {
+        };
+        this.FetchByKeysResults = class {
+            constructor(_parent, fetchParameters, results) {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
                 this.results = results;
                 this[_parent._FETCHPARAMETERS] = fetchParameters;
                 this[_parent._RESULTS] = results;
             }
-            return class_10;
-        }());
-        this.ContainsKeysResults = /** @class */ (function () {
-            function class_11(_parent, containsParameters, results) {
+        };
+        this.ContainsKeysResults = class {
+            constructor(_parent, containsParameters, results) {
                 this._parent = _parent;
                 this.containsParameters = containsParameters;
                 this.results = results;
                 this[_parent._CONTAINSPARAMETERS] = containsParameters;
                 this[_parent._RESULTS] = results;
             }
-            return class_11;
-        }());
-        this.DataProviderMutationEventDetail = /** @class */ (function () {
-            function class_12(_parent, add, remove, update) {
+        };
+        this.DataProviderMutationEventDetail = class {
+            constructor(_parent, add, remove, update) {
                 this._parent = _parent;
                 this.add = add;
                 this.remove = remove;
@@ -195,10 +186,9 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
                 this[_parent._REMOVE] = remove;
                 this[_parent._UPDATE] = update;
             }
-            return class_12;
-        }());
-        this.DataProviderOperationEventDetail = /** @class */ (function () {
-            function class_13(_parent, keys, metadata, data, indexes) {
+        };
+        this.DataProviderOperationEventDetail = class {
+            constructor(_parent, keys, metadata, data, indexes) {
                 this._parent = _parent;
                 this.keys = keys;
                 this.metadata = metadata;
@@ -209,10 +199,9 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
                 this[_parent._DATA] = data;
                 this[_parent._INDEXES] = indexes;
             }
-            return class_13;
-        }());
-        this.DataProviderAddOperationEventDetail = /** @class */ (function () {
-            function class_14(_parent, keys, afterKeys, addBeforeKeys, metadata, data, indexes) {
+        };
+        this.DataProviderAddOperationEventDetail = class {
+            constructor(_parent, keys, afterKeys, addBeforeKeys, metadata, data, indexes) {
                 this._parent = _parent;
                 this.keys = keys;
                 this.afterKeys = afterKeys;
@@ -227,9 +216,8 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
                 this[_parent._DATA] = data;
                 this[_parent._INDEXES] = indexes;
             }
-            return class_14;
-        }());
-        var self = this;
+        };
+        let self = this;
         if (self.options == null) {
             self.options = {};
         }
@@ -244,116 +232,116 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
         self._iterators = new ojMap();
         self._done = false;
     }
-    FlattenedTreeDataProviderView.prototype._handleUndelryingMutation = function (mutationEventDetail) {
-        var self = this;
-        var operationAddEventDetail = null;
-        var operationRemoveEventDetail = null;
-        var operationUpdateEventDetail = null;
-        var addEvent = mutationEventDetail.detail.add;
+    _handleUndelryingMutation(mutationEventDetail) {
+        let self = this;
+        let operationAddEventDetail = null;
+        let operationRemoveEventDetail = null;
+        let operationUpdateEventDetail = null;
+        let addEvent = mutationEventDetail.detail.add;
         if (addEvent && addEvent.data && addEvent.data.length) {
-            var addMetadataArray_1 = [];
-            var addDataArray_1 = [];
-            var addIndexArray_1 = [];
-            var addBeforeKeys_1 = [];
-            var addParentKeys_1 = [];
-            var addAfterKeySet_1 = new Set();
-            var addKeySet_1 = new Set();
+            let addMetadataArray = [];
+            let addDataArray = [];
+            let addIndexArray = [];
+            let addBeforeKeys = [];
+            let addParentKeys = [];
+            let addAfterKeySet = new Set();
+            let addKeySet = new Set();
             addEvent.parentKeys.forEach(function (parentKey, index) {
                 if (parentKey === null || (self._isExpanded(parentKey) && self._getItemByKey(parentKey))) {
-                    var newIndex = void 0;
+                    let newIndex;
                     if (addEvent.addBeforeKeys != null) {
-                        var beforeIndex = self._getItemIndexByKey(addEvent.addBeforeKeys[index]);
+                        let beforeIndex = self._getItemIndexByKey(addEvent.addBeforeKeys[index]);
                         newIndex = beforeIndex - 1;
                     }
                     else if (addEvent.indexes != null) {
-                        var parentIndex = self._getItemIndexByKey(parentKey);
+                        let parentIndex = self._getItemIndexByKey(parentKey);
                         newIndex = parentIndex === -1 ? addEvent.indexes[index] : parentIndex + addEvent.indexes[index];
                     }
                     else {
                         newIndex = self._getItemIndexByKey(self._getLastItemByParentKey(parentKey).metadata.key) + 1;
                     }
-                    var item = self._updateItemMetadata(new self.Item(self, addEvent.metadata[index], addEvent.data[index]), parentKey, addEvent.indexes[index]);
+                    let item = self._updateItemMetadata(new self.Item(self, addEvent.metadata[index], addEvent.data[index]), parentKey, addEvent.indexes[index]);
                     self._spliceItemToCache(item, newIndex);
-                    addDataArray_1.push(item.data);
-                    addMetadataArray_1.push(item.metadata);
-                    addIndexArray_1.push(newIndex);
-                    addBeforeKeys_1.push(addEvent.addBeforeKeys[index]);
-                    addParentKeys_1.push(parentKey);
-                    addAfterKeySet_1.add(addEvent.addBeforeKeys[index]);
-                    addKeySet_1.add(addEvent.metadata[index].key);
+                    addDataArray.push(item.data);
+                    addMetadataArray.push(item.metadata);
+                    addIndexArray.push(newIndex);
+                    addBeforeKeys.push(addEvent.addBeforeKeys[index]);
+                    addParentKeys.push(parentKey);
+                    addAfterKeySet.add(addEvent.addBeforeKeys[index]);
+                    addKeySet.add(addEvent.metadata[index].key);
                     self._incrementIteratorOffset();
                 }
             });
-            operationAddEventDetail = new self.DataProviderAddOperationEventDetail(self, addKeySet_1, addAfterKeySet_1, addBeforeKeys_1, addMetadataArray_1, addDataArray_1, addIndexArray_1);
+            operationAddEventDetail = new self.DataProviderAddOperationEventDetail(self, addKeySet, addAfterKeySet, addBeforeKeys, addMetadataArray, addDataArray, addIndexArray);
         }
-        var removeEvent = mutationEventDetail.detail.remove;
+        let removeEvent = mutationEventDetail.detail.remove;
         if (removeEvent && removeEvent.data && removeEvent.data.length) {
-            var removeKeys = removeEvent.metadata.map(function (metadata) { return metadata.key; });
-            var removeMetadataArray_1 = [];
-            var removeDataArray_1 = [];
-            var removeIndexArray_1 = [];
-            var removeKeySet_1 = new Set();
+            let removeKeys = removeEvent.metadata.map(function (metadata) { return metadata.key; });
+            let removeMetadataArray = [];
+            let removeDataArray = [];
+            let removeIndexArray = [];
+            let removeKeySet = new Set();
             removeKeys.forEach(function (key) {
-                var count = self._getLocalDescendentCount(key) + 1;
-                var cacheIndex = self._getItemIndexByKey(key);
-                var deletedItems = self._cache.splice(cacheIndex, count);
+                let count = self._getLocalDescendentCount(key) + 1;
+                let cacheIndex = self._getItemIndexByKey(key);
+                let deletedItems = self._cache.splice(cacheIndex, count);
                 deletedItems.forEach(function (item, index) {
-                    removeKeySet_1.add(item.metadata.key);
-                    removeMetadataArray_1.push(item.metadata);
-                    removeDataArray_1.push(item.data);
-                    removeIndexArray_1.push(cacheIndex + index);
+                    removeKeySet.add(item.metadata.key);
+                    removeMetadataArray.push(item.metadata);
+                    removeDataArray.push(item.data);
+                    removeIndexArray.push(cacheIndex + index);
                     self._decrementIteratorOffset(cacheIndex);
                 });
             });
-            operationRemoveEventDetail = new self.DataProviderOperationEventDetail(self, removeKeySet_1, removeMetadataArray_1, removeDataArray_1, removeIndexArray_1);
+            operationRemoveEventDetail = new self.DataProviderOperationEventDetail(self, removeKeySet, removeMetadataArray, removeDataArray, removeIndexArray);
         }
-        var updateEvent = mutationEventDetail.detail.update;
+        let updateEvent = mutationEventDetail.detail.update;
         if (updateEvent && updateEvent.data && updateEvent.data.length) {
-            var updateMetadataArray_1 = [];
-            var updateDataArray_1 = [];
-            var updateIndexArray_1 = [];
-            var updateKeySet_1 = new Set();
+            let updateMetadataArray = [];
+            let updateDataArray = [];
+            let updateIndexArray = [];
+            let updateKeySet = new Set();
             updateEvent.metadata.forEach(function (metadata, index) {
-                var item = self._getItemByKey(metadata.key);
+                let item = self._getItemByKey(metadata.key);
                 if (item != null) {
-                    var itemIndex = self._getItemIndexByKey(metadata.key);
+                    let itemIndex = self._getItemIndexByKey(metadata.key);
                     var newData = updateEvent.data[index];
                     // could have new children
                     var newMetadata = new self.FlattenedTreeItemMetadata(self, item.metadata.key, item.metadata.parentKey, item.metadata.indexFromParent, item.metadata.treeDepth, self.getChildDataProvider(item.metadata.key) === null);
                     self._cache.splice(itemIndex, 1, new self.Item(self, newMetadata, newData));
-                    updateKeySet_1.add(item.metadata.key);
-                    updateMetadataArray_1.push(item.metadata);
-                    updateDataArray_1.push(item.data);
-                    updateIndexArray_1.push(itemIndex);
+                    updateKeySet.add(item.metadata.key);
+                    updateMetadataArray.push(item.metadata);
+                    updateDataArray.push(item.data);
+                    updateIndexArray.push(itemIndex);
                 }
             });
-            operationUpdateEventDetail = new self.DataProviderOperationEventDetail(self, updateKeySet_1, updateMetadataArray_1, updateDataArray_1, updateIndexArray_1);
+            operationUpdateEventDetail = new self.DataProviderOperationEventDetail(self, updateKeySet, updateMetadataArray, updateDataArray, updateIndexArray);
         }
-        var finalMutationEventDetail = new self.DataProviderMutationEventDetail(self, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
+        let finalMutationEventDetail = new self.DataProviderMutationEventDetail(self, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
         self.dispatchEvent(new oj.DataProviderMutationEvent(finalMutationEventDetail));
-    };
-    FlattenedTreeDataProviderView.prototype._handleUndelryingRefresh = function () {
+    }
+    _handleUndelryingRefresh() {
         this._clearCache();
         this.dispatchEvent(new oj.DataProviderRefreshEvent());
-    };
-    FlattenedTreeDataProviderView.prototype._getExpandedObservableValue = function (expanded, completionPromise) {
+    }
+    _getExpandedObservableValue(expanded, completionPromise) {
         return {
             value: expanded,
             completionPromise: completionPromise
         };
-    };
-    FlattenedTreeDataProviderView.prototype.getChildDataProvider = function (parentKey, options) {
+    }
+    getChildDataProvider(parentKey, options) {
         return this.dataProvider.getChildDataProvider(parentKey, options);
-    };
-    FlattenedTreeDataProviderView.prototype.containsKeys = function (params) {
+    }
+    containsKeys(params) {
         return this.dataProvider.containsKeys(params);
-    };
-    FlattenedTreeDataProviderView.prototype.fetchByKeys = function (params) {
+    }
+    fetchByKeys(params) {
         var self = this;
         return this.dataProvider.fetchByKeys(params).then(function (byKeysResult) {
-            var results = new ojMap();
+            let results = new ojMap();
             byKeysResult.results.forEach(function (value, searchKey) {
-                var cachedItem = self._getItemByKey(searchKey);
+                let cachedItem = self._getItemByKey(searchKey);
                 if (cachedItem) {
                     results.set(searchKey, cachedItem);
                 }
@@ -363,14 +351,14 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
             });
             return new self.FetchByKeysResults(self, byKeysResult.fetchParameters, results);
         });
-    };
-    FlattenedTreeDataProviderView.prototype.fetchByOffset = function (params) {
-        var self = this;
-        var size = params != null ? params[this._SIZE] : -1;
-        var sortCriteria = params != null ? params[this._SORTCRITERIA] : null;
-        var offset = params != null ? params[this._OFFSET] > 0 ? params[this._OFFSET] : 0 : 0;
-        var filterCriterion = params != null ? params[this._FILTERCRITERION] : null;
-        var fetchAttributes = params != null ? params[this._ATTRIBUTES] : null;
+    }
+    fetchByOffset(params) {
+        let self = this;
+        let size = params != null ? params[this._SIZE] : -1;
+        let sortCriteria = params != null ? params[this._SORTCRITERIA] : null;
+        let offset = params != null ? params[this._OFFSET] > 0 ? params[this._OFFSET] : 0 : 0;
+        let filterCriterion = params != null ? params[this._FILTERCRITERION] : null;
+        let fetchAttributes = params != null ? params[this._ATTRIBUTES] : null;
         params = new self.FetchByOffsetParameters(self, offset, size, sortCriteria, filterCriterion, fetchAttributes);
         if (self._isSameCriteria(sortCriteria, filterCriterion)) {
             // same criteria, check to see if we have the results cached
@@ -387,49 +375,52 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
             self._currentFilterCriteria = filterCriterion;
         }
         return self._fetchByOffset(params);
-    };
-    FlattenedTreeDataProviderView.prototype.fetchFirst = function (params) {
-        var self = this;
-        var size = params != null ? params[this._SIZE] : -1;
-        var sortCriteria = params != null ? params[this._SORTCRITERIA] : null;
-        var filterCriterion = params != null ? params[this._FILTERCRITERION] : null;
-        var fetchAttributes = params != null ? params[this._ATTRIBUTES] : null;
+    }
+    fetchFirst(params) {
+        let self = this;
+        let size = params != null ? params[this._SIZE] : -1;
+        let sortCriteria = params != null ? params[this._SORTCRITERIA] : null;
+        let filterCriterion = params != null ? params[this._FILTERCRITERION] : null;
+        let fetchAttributes = params != null ? params[this._ATTRIBUTES] : null;
         if (!self._isSameCriteria(sortCriteria, filterCriterion)) {
             self._currentSortCriteria = sortCriteria;
             self._currentFilterCriteria = filterCriterion;
             self._clearCache();
         }
-        var newIterator = new self.AsyncIterable(self, new self.AsyncIterator(self, function () {
+        let newIterator = new self.AsyncIterable(self, new self.AsyncIterator(self, function () {
             return function () {
-                var currentOffset = self._iterators.get(newIterator);
-                var updatedParams = new self.FetchByOffsetParameters(self, currentOffset, size, sortCriteria, filterCriterion, fetchAttributes);
+                let currentOffset = self._iterators.get(newIterator);
+                let updatedParams = new self.FetchByOffsetParameters(self, currentOffset, size, sortCriteria, filterCriterion, fetchAttributes);
                 return self.fetchByOffset(updatedParams).then(function (result) {
-                    var results = result['results'];
-                    var data = results.map(function (value) {
+                    let results = result['results'];
+                    let data = results.map(function (value) {
                         return value[self._DATA];
                     });
-                    var metadata = results.map(function (value) {
+                    let metadata = results.map(function (value) {
                         return value[self._METADATA];
                     });
-                    var done = data.length === 0 || result[self._DONE];
+                    let done = data.length === 0 || result[self._DONE];
                     self._iterators.set(newIterator, currentOffset + metadata.length);
-                    return Promise.resolve(new self.AsyncIteratorResult(self, new self.FetchListResult(self, updatedParams, data, metadata), done));
+                    if (done) {
+                        return Promise.resolve(new self.AsyncIteratorReturnResult(self, new self.FetchListResult(self, updatedParams, data, metadata)));
+                    }
+                    return Promise.resolve(new self.AsyncIteratorYieldResult(self, new self.FetchListResult(self, updatedParams, data, metadata)));
                 });
             };
         }(), params));
         self._iterators.set(newIterator, 0);
         return newIterator;
-    };
-    FlattenedTreeDataProviderView.prototype.getCapability = function (capabilityName) {
+    }
+    getCapability(capabilityName) {
         return this.dataProvider.getCapability(capabilityName);
-    };
-    FlattenedTreeDataProviderView.prototype.getTotalSize = function () {
+    }
+    getTotalSize() {
         return Promise.resolve(-1);
-    };
-    FlattenedTreeDataProviderView.prototype.isEmpty = function () {
+    }
+    isEmpty() {
         return this.dataProvider.isEmpty();
-    };
-    FlattenedTreeDataProviderView.prototype._isSameCriteria = function (sortCriteria, filterCriterion) {
+    }
+    _isSameCriteria(sortCriteria, filterCriterion) {
         if (sortCriteria) {
             if (!this._currentSortCriteria ||
                 (sortCriteria[0]["attribute"] != this._currentSortCriteria[0]["attribute"]
@@ -455,113 +446,113 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
             }
         }
         return true;
-    };
-    FlattenedTreeDataProviderView.prototype._checkCacheByOffset = function (params) {
+    }
+    _checkCacheByOffset(params) {
         if ((params[this._SIZE] === -1 && this._done === true) ||
             (this._cache.length >= params[this._OFFSET] + params[this._SIZE] && params[this._SIZE] !== -1)) {
             return true;
         }
         return false;
-    };
-    FlattenedTreeDataProviderView.prototype._getFetchByOffsetResultsFromCache = function (params) {
-        var data = this._cache.slice(params[this._OFFSET], params[this._SIZE] === -1 ? undefined : params[this._OFFSET] + params[this._SIZE]);
+    }
+    _getFetchByOffsetResultsFromCache(params) {
+        let data = this._cache.slice(params[this._OFFSET], params[this._SIZE] === -1 ? undefined : params[this._OFFSET] + params[this._SIZE]);
         return new this.FetchByOffsetResults(this, params, data, false);
-    };
-    FlattenedTreeDataProviderView.prototype._clearCache = function () {
+    }
+    _clearCache() {
         this._cache = [];
-    };
-    FlattenedTreeDataProviderView.prototype._fetchByOffset = function (params) {
-        var self = this;
+    }
+    _fetchByOffset(params) {
+        let self = this;
         if (self._cache.length === 0) {
             // initial fetch
-            var remainingSize_1 = params[self._SIZE] === -1 ? -1 : params[self._OFFSET] + params[self._SIZE];
-            var newParams_1 = new this.FetchByOffsetParameters(self, 0, remainingSize_1, params[self._SORTCRITERIA], params[self._FILTERCRITERION], params[self._ATTRIBUTES]);
-            return self._fetchChildrenByOffsetFromDataProvider(newParams_1, self.dataProvider, null, params);
+            let remainingSize = params[self._SIZE] === -1 ? -1 : params[self._OFFSET] + params[self._SIZE];
+            let newParams = new this.FetchByOffsetParameters(self, 0, remainingSize, params[self._SORTCRITERIA], params[self._FILTERCRITERION], params[self._ATTRIBUTES]);
+            return self._fetchChildrenByOffsetFromDataProvider(newParams, self.dataProvider, null, params);
         }
-        var lastEntry = self._getLastEntry();
-        var key = lastEntry.metadata.key;
-        var index = 0;
+        let lastEntry = self._getLastEntry();
+        let key = lastEntry.metadata.key;
+        let index = 0;
         if (lastEntry.metadata.isLeaf || !self._isExpanded(key)) {
             key = lastEntry.metadata.parentKey;
             index = lastEntry.metadata.indexFromParent + 1;
         }
-        var dataProvider = key === null ? self.dataProvider : self.getChildDataProvider(key);
-        var remainingSize = self._getRemainingSize(params);
-        var newParams = new this.FetchByOffsetParameters(self, index, remainingSize, params[self._SORTCRITERIA], params[self._FILTERCRITERION], params[self._ATTRIBUTES]);
+        let dataProvider = key === null ? self.dataProvider : self.getChildDataProvider(key);
+        let remainingSize = self._getRemainingSize(params);
+        let newParams = new this.FetchByOffsetParameters(self, index, remainingSize, params[self._SORTCRITERIA], params[self._FILTERCRITERION], params[self._ATTRIBUTES]);
         return self._fetchChildrenByOffsetFromAncestors(newParams, dataProvider, key, params);
-    };
-    FlattenedTreeDataProviderView.prototype._fetchChildrenByOffsetFromAncestors = function (params, dataprovider, parentKey, finalParams) {
-        var self = this;
-        var handleFetchFromAncestors = function (lastParentKey, result) {
-            var results = result.results;
+    }
+    _fetchChildrenByOffsetFromAncestors(params, dataprovider, parentKey, finalParams) {
+        let self = this;
+        let handleFetchFromAncestors = function (lastParentKey, result) {
+            let results = result.results;
             if (self._checkCacheByOffset(finalParams) || result[self._DONE] || parentKey === null) {
                 return Promise.resolve();
             }
-            var lastEntry = self._getItemByKey(lastParentKey);
-            var lastEntryParentKey = lastEntry.metadata.parentKey;
-            var lastEntryParentIndex = lastEntry.metadata.indexFromParent;
-            var childDataProvider = lastEntryParentKey === null ? self.dataProvider : self.getChildDataProvider(lastEntryParentKey);
-            var newParams = new self.FetchByOffsetParameters(self, lastEntryParentIndex + 1, self._getRemainingSize(finalParams), params[self._SORTCRITERIA], params[self._FILTERCRITERION], params[self._ATTRIBUTES]);
-            var childrenPromise = self._fetchChildrenByOffsetFromDataProvider(newParams, childDataProvider, lastEntryParentKey, finalParams);
+            let lastEntry = self._getItemByKey(lastParentKey);
+            let lastEntryParentKey = lastEntry.metadata.parentKey;
+            let lastEntryParentIndex = lastEntry.metadata.indexFromParent;
+            let childDataProvider = lastEntryParentKey === null ? self.dataProvider : self.getChildDataProvider(lastEntryParentKey);
+            let newParams = new self.FetchByOffsetParameters(self, lastEntryParentIndex + 1, self._getRemainingSize(finalParams), params[self._SORTCRITERIA], params[self._FILTERCRITERION], params[self._ATTRIBUTES]);
+            let childrenPromise = self._fetchChildrenByOffsetFromDataProvider(newParams, childDataProvider, lastEntryParentKey, finalParams);
             return childrenPromise.then(handleFetchFromAncestors.bind(self, lastEntryParentKey, new self.FetchByOffsetResults(self, params, results, false)));
         };
         return self._fetchChildrenByOffsetFromDataProvider(params, dataprovider, parentKey, finalParams).then(handleFetchFromAncestors.bind(self, parentKey)).then(self._getFetchByOffsetResultsFromCache.bind(self, finalParams));
-    };
-    FlattenedTreeDataProviderView.prototype._fetchChildrenByOffsetFromDataProvider = function (params, dataprovider, parentKey, finalParams) {
-        var self = this;
-        var handleNextItemInResults = function (result) {
-            var results = result.results;
+    }
+    _fetchChildrenByOffsetFromDataProvider(params, dataprovider, parentKey, finalParams) {
+        let self = this;
+        let handleNextItemInResults = function (result) {
+            let results = result.results;
             if (results.length === 0 || self._checkCacheByOffset(finalParams)) {
                 return Promise.resolve();
             }
-            var item = results.shift();
-            var updatedItem = self._updateItemMetadata(item, parentKey);
+            let item = results.shift();
+            let updatedItem = self._updateItemMetadata(item, parentKey);
             self._pushItemToCache(updatedItem, parentKey);
             if (self._isExpanded(updatedItem.metadata.key)) {
-                var childDataProvider = self.getChildDataProvider(updatedItem.metadata.key);
+                let childDataProvider = self.getChildDataProvider(updatedItem.metadata.key);
                 if (childDataProvider != null) {
-                    var newParams = new self.FetchByOffsetParameters(self, 0, self._getRemainingSize(finalParams), params[self._SORTCRITERIA], params[self._FILTERCRITERION], params[self._ATTRIBUTES]);
-                    var childrenPromise = self._fetchChildrenByOffsetFromDataProvider(newParams, childDataProvider, updatedItem.metadata.key, finalParams);
+                    let newParams = new self.FetchByOffsetParameters(self, 0, self._getRemainingSize(finalParams), params[self._SORTCRITERIA], params[self._FILTERCRITERION], params[self._ATTRIBUTES]);
+                    let childrenPromise = self._fetchChildrenByOffsetFromDataProvider(newParams, childDataProvider, updatedItem.metadata.key, finalParams);
                     return childrenPromise.then(handleNextItemInResults.bind(self, new self.FetchByOffsetResults(self, params, results, false)));
                 }
             }
             return handleNextItemInResults(new self.FetchByOffsetResults(self, params, results, false));
         };
         return dataprovider.fetchByOffset(params).then(handleNextItemInResults).then(self._getFetchByOffsetResultsFromCache.bind(self, finalParams));
-    };
-    FlattenedTreeDataProviderView.prototype._sequence = function (a, fn) {
-        return a.reduce(function (p, item) {
-            return p.then(function () {
+    }
+    _sequence(a, fn) {
+        return a.reduce((p, item) => {
+            return p.then(() => {
                 return fn(item);
             });
         }, Promise.resolve());
-    };
-    FlattenedTreeDataProviderView.prototype._getRemainingSize = function (params) {
+    }
+    _getRemainingSize(params) {
         if (params[this._SIZE] === -1) {
             return -1;
         }
         return params[this._SIZE] + params[this._OFFSET] - this._cache.length;
-    };
-    FlattenedTreeDataProviderView.prototype._getExpandedKeysFromResults = function (results) {
-        var self = this;
-        var resultsKeys = results.map(function (result) { return result.metadata.key; });
+    }
+    _getExpandedKeysFromResults(results) {
+        let self = this;
+        let resultsKeys = results.map(function (result) { return result.metadata.key; });
         return resultsKeys.filter(function (key) { return self._isExpanded(key); });
-    };
-    FlattenedTreeDataProviderView.prototype._isExpanded = function (key) {
-        var expanded = this.options[this._EXPANDED];
+    }
+    _isExpanded(key) {
+        let expanded = this.options[this._EXPANDED];
         return expanded.has(key);
-    };
-    FlattenedTreeDataProviderView.prototype.setExpanded = function (keySet) {
-        var self = this;
-        var toExpand = self.createOptimizedKeySet();
-        var toCollapse = self.createOptimizedKeySet();
+    }
+    setExpanded(keySet) {
+        let self = this;
+        let toExpand = self.createOptimizedKeySet();
+        let toCollapse = self.createOptimizedKeySet();
         self._oldExpanded = self.options.expanded;
         self.options.expanded = keySet;
-        var oldSet = self._oldExpanded;
-        var newSet = self.options.expanded;
+        let oldSet = self._oldExpanded;
+        let newSet = self.options.expanded;
         if (!newSet.isAddAll() && !oldSet.isAddAll()) {
-            var newValues = newSet.values();
-            var oldValues = oldSet.values();
+            let newValues = newSet.values();
+            let oldValues = oldSet.values();
             newValues.forEach(function (value) {
                 if (!oldSet.has(value)) {
                     toExpand.add(value);
@@ -593,48 +584,48 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
             self.getExpandedObservable().next(self._getExpandedObservableValue(this.options.expanded, Promise.resolve()));
             return;
         }
-        var expandPromise = self._expand(toExpand);
-        var operationRemoveEventDetail = self._collapse(toCollapse);
-        var completionPromise = new Promise(function (resolve) {
+        let expandPromise = self._expand(toExpand);
+        let operationRemoveEventDetail = self._collapse(toCollapse);
+        let completionPromise = new Promise(function (resolve) {
             expandPromise.then(function (operationAddEventDetail) {
-                var mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationAddEventDetail, operationRemoveEventDetail, null);
+                let mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationAddEventDetail, operationRemoveEventDetail, null);
                 self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
                 resolve();
             });
         });
         self.getExpandedObservable().next(self._getExpandedObservableValue(this.options.expanded, completionPromise));
-    };
-    FlattenedTreeDataProviderView.prototype.getExpandedObservable = function () {
+    }
+    getExpandedObservable() {
         return this._expandedObservable;
-    };
-    FlattenedTreeDataProviderView.prototype._isExpandAll = function () {
+    }
+    _isExpandAll() {
         return this.options[this._EXPANDED].isAddAll();
-    };
-    FlattenedTreeDataProviderView.prototype._pushItemToCache = function (item, parentKey) {
-        var self = this;
-        var lastEntry = self._getLastItemByParentKey(parentKey);
-        var index = lastEntry == null ? self._getItemIndexByKey(parentKey) :
+    }
+    _pushItemToCache(item, parentKey) {
+        let self = this;
+        let lastEntry = self._getLastItemByParentKey(parentKey);
+        let index = lastEntry == null ? self._getItemIndexByKey(parentKey) :
             (self._getItemIndexByKey(lastEntry.metadata.key) + self._getLocalDescendentCount(lastEntry.metadata.key));
         self._cache.splice(index + 1, 0, item);
-    };
-    FlattenedTreeDataProviderView.prototype._spliceItemToCache = function (item, index) {
+    }
+    _spliceItemToCache(item, index) {
         this._cache.splice(index + 1, 0, item);
-    };
-    FlattenedTreeDataProviderView.prototype._updateItemMetadata = function (item, parentKey, indexFromParent) {
-        var self = this;
-        var treeDepth = 0;
-        var lastEntry = self._getLastItemByParentKey(parentKey);
-        var parentIndex = lastEntry == null ? 0 : lastEntry.metadata[self._INDEXFROMPARENT] + 1;
+    }
+    _updateItemMetadata(item, parentKey, indexFromParent) {
+        let self = this;
+        let treeDepth = 0;
+        let lastEntry = self._getLastItemByParentKey(parentKey);
+        let parentIndex = lastEntry == null ? 0 : lastEntry.metadata[self._INDEXFROMPARENT] + 1;
         if (indexFromParent != null) {
             parentIndex = indexFromParent;
         }
         if (parentKey != null) {
-            var parentItem = this._getItemByKey(parentKey);
+            let parentItem = this._getItemByKey(parentKey);
             treeDepth = parentItem.metadata.treeDepth + 1;
         }
         return new self.Item(self, new self.FlattenedTreeItemMetadata(self, item.metadata.key, parentKey, parentIndex, treeDepth, self.getChildDataProvider(item.metadata.key) === null), item.data);
-    };
-    FlattenedTreeDataProviderView.prototype._getItemByKey = function (key) {
+    }
+    _getItemByKey(key) {
         var returnItem = null;
         this._cache.some(function (item) {
             if (item.metadata.key === key) {
@@ -643,8 +634,8 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
             }
         });
         return returnItem;
-    };
-    FlattenedTreeDataProviderView.prototype._getItemIndexByKey = function (key) {
+    }
+    _getItemIndexByKey(key) {
         var index = -1;
         this._cache.some(function (item, i) {
             if (item.metadata.key === key) {
@@ -653,14 +644,14 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
             }
         });
         return index;
-    };
-    FlattenedTreeDataProviderView.prototype._getLastEntry = function () {
+    }
+    _getLastEntry() {
         return this._cache[this._getLastIndex()];
-    };
-    FlattenedTreeDataProviderView.prototype._getEntry = function (i) {
+    }
+    _getEntry(i) {
         return this._cache[i];
-    };
-    FlattenedTreeDataProviderView.prototype._getLastItemByParentKey = function (parentKey) {
+    }
+    _getLastItemByParentKey(parentKey) {
         var returnItem = null;
         this._cache.slice().reverse().some(function (item) {
             if (item.metadata.parentKey === parentKey) {
@@ -669,21 +660,21 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
             }
         });
         return returnItem;
-    };
-    FlattenedTreeDataProviderView.prototype._getLastIndex = function () {
+    }
+    _getLastIndex() {
         return this._cache.length - 1;
-    };
-    FlattenedTreeDataProviderView.prototype._getLocalDescendentCount = function (key) {
-        var self = this;
-        var item = self._getItemByKey(key);
-        var count = 0;
+    }
+    _getLocalDescendentCount(key) {
+        let self = this;
+        let item = self._getItemByKey(key);
+        let count = 0;
         if (item != null) {
-            var cacheIndex = self._getItemIndexByKey(key);
-            var depth = item.metadata.treeDepth;
-            var lastIndex = self._getLastIndex();
-            for (var j = cacheIndex + 1; j <= lastIndex; j++) {
-                var newItem = self._getEntry(j);
-                var newDepth = newItem.metadata.treeDepth;
+            let cacheIndex = self._getItemIndexByKey(key);
+            let depth = item.metadata.treeDepth;
+            let lastIndex = self._getLastIndex();
+            for (let j = cacheIndex + 1; j <= lastIndex; j++) {
+                let newItem = self._getEntry(j);
+                let newDepth = newItem.metadata.treeDepth;
                 if (newDepth > depth) {
                     count += 1;
                 }
@@ -693,112 +684,108 @@ var FlattenedTreeDataProviderView = /** @class */ (function () {
             }
         }
         return count;
-    };
-    FlattenedTreeDataProviderView.prototype._expand = function (keys) {
-        var promises = [];
-        var self = this;
+    }
+    _expand(keys) {
+        let promises = [];
+        let self = this;
         keys.forEach(function (key) {
-            var params = new self.FetchByOffsetParameters(self, 0, -1, self._currentSortCriteria, self._currentFilterCriteria, null);
-            var dataprovider = self.getChildDataProvider(key);
+            let params = new self.FetchByOffsetParameters(self, 0, -1, self._currentSortCriteria, self._currentFilterCriteria, null);
+            let dataprovider = self.getChildDataProvider(key);
             promises.push(self._fetchChildrenByOffsetFromDataProvider(params, dataprovider, key, params));
         });
         return Promise.all(promises).then(function () {
-            var keySet = self.createOptimizedKeySet();
-            var afterKeySet = self.createOptimizedKeySet();
-            var metadataArray = [];
-            var dataArray = [];
-            var indexArray = [];
+            let keySet = self.createOptimizedKeySet();
+            let afterKeySet = self.createOptimizedKeySet();
+            let metadataArray = [];
+            let dataArray = [];
+            let indexArray = [];
             keys.forEach(function (key) {
-                var count = self._getLocalDescendentCount(key);
+                let count = self._getLocalDescendentCount(key);
                 if (count > 0) {
-                    var insertIndex_1 = self._getItemIndexByKey(key) + 1;
-                    var afterKey_1 = null;
-                    var addedItems = self._cache.slice(insertIndex_1, insertIndex_1 + count);
+                    let insertIndex = self._getItemIndexByKey(key) + 1;
+                    let afterKey = null;
+                    let addedItems = self._cache.slice(insertIndex, insertIndex + count);
                     addedItems.forEach(function (item, index) {
                         keySet.add(item.metadata.key);
-                        afterKeySet.add(afterKey_1);
+                        afterKeySet.add(afterKey);
                         metadataArray.push(item.metadata);
                         dataArray.push(item.data);
-                        indexArray.push(insertIndex_1 + index);
-                        afterKey_1 = item.metadata.key;
+                        indexArray.push(insertIndex + index);
+                        afterKey = item.metadata.key;
                         self._incrementIteratorOffset();
                     });
                 }
             });
             return new self.DataProviderAddOperationEventDetail(self, keySet, afterKeySet, [], metadataArray, dataArray, indexArray);
         });
-    };
-    FlattenedTreeDataProviderView.prototype._collapse = function (keys) {
-        var self = this;
-        var metadataArray = [];
-        var dataArray = [];
-        var indexArray = [];
-        var keySet = self.createOptimizedKeySet();
+    }
+    _collapse(keys) {
+        let self = this;
+        let metadataArray = [];
+        let dataArray = [];
+        let indexArray = [];
+        let keySet = self.createOptimizedKeySet();
         keys.forEach(function (key) {
-            var count = self._getLocalDescendentCount(key);
+            let count = self._getLocalDescendentCount(key);
             if (count > 0) {
-                var cacheIndex_1 = self._getItemIndexByKey(key);
-                var deletedItems = self._cache.splice(cacheIndex_1 + 1, count);
+                let cacheIndex = self._getItemIndexByKey(key);
+                let deletedItems = self._cache.splice(cacheIndex + 1, count);
                 deletedItems.forEach(function (item, index) {
                     keySet.add(item.metadata.key);
                     metadataArray.push(item.metadata);
                     dataArray.push(item.data);
-                    indexArray.push(cacheIndex_1 + index + 1);
-                    self._decrementIteratorOffset(cacheIndex_1 + 1);
+                    indexArray.push(cacheIndex + index + 1);
+                    self._decrementIteratorOffset(cacheIndex + 1);
                 });
             }
         });
         return new self.DataProviderOperationEventDetail(self, keySet, metadataArray, dataArray, indexArray);
-    };
-    FlattenedTreeDataProviderView.prototype._decrementIteratorOffset = function (index) {
+    }
+    _decrementIteratorOffset(index) {
         var self = this;
         self._iterators.forEach(function (offset, iterator) {
             if (index < offset) {
                 self._iterators.set(iterator, offset - 1);
             }
         });
-    };
-    FlattenedTreeDataProviderView.prototype._incrementIteratorOffset = function () {
+    }
+    _incrementIteratorOffset() {
         var self = this;
         self._iterators.forEach(function (offset, iterator) {
             self._iterators.set(iterator, offset + 1);
         });
-    };
+    }
     /**
    * Return an empty Set which is optimized to store keys
    */
-    FlattenedTreeDataProviderView.prototype.createOptimizedKeySet = function (initialSet) {
+    createOptimizedKeySet(initialSet) {
         if (this.dataProvider.createOptimizedKeySet) {
             return (this.dataProvider.createOptimizedKeySet(initialSet));
         }
         return new ojSet(initialSet);
-    };
+    }
     /**
      * Returns an empty Map which will efficiently store Keys returned by the DataProvider
      */
-    FlattenedTreeDataProviderView.prototype.createOptimizedKeyMap = function (initialMap) {
+    createOptimizedKeyMap(initialMap) {
         if (this.dataProvider.createOptimizedKeyMap) {
             return (this.dataProvider.createOptimizedKeyMap(initialMap));
         }
         if (initialMap) {
-            var map_1 = new ojMap();
+            let map = new ojMap();
             initialMap.forEach(function (value, key) {
-                map_1.set(key, value);
+                map.set(key, value);
             });
-            return map_1;
+            return map;
         }
         return new ojMap();
-    };
-    return FlattenedTreeDataProviderView;
-}());
+    }
+}
 oj['FlattenedTreeDataProviderView'] = FlattenedTreeDataProviderView;
 oj.FlattenedTreeDataProviderView = FlattenedTreeDataProviderView;
 oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -808,9 +795,10 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
 
 /* jslint browser: true,devel:true*/
 /**
- * @ojstatus preview
+ *
  * @since 7.0.0
  * @export
+ * @final
  * @class oj.FlattenedTreeDataProviderView
  * @ojtsmodule
  * @implements oj.DataProvider
@@ -870,7 +858,7 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
 /**
  * Check if there are rows containing the specified keys
  *
- * @ojstatus preview
+ *
  * @since 6.2.0
  * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
  * @return {Promise.<oj.ContainsKeysResults>} Promise which resolves to {@link oj.ContainsKeysResults}
@@ -887,7 +875,7 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
 /**
  * Fetch rows by keys
  *
- * @ojstatus preview
+ *
  * @since 6.2.0
  * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
  * @return {Promise.<oj.FetchByKeysResults>} Promise which resolves to {@link oj.FetchByKeysResults}
@@ -904,7 +892,7 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
 /**
  * Fetch rows by offset
  *
- * @ojstatus preview
+ *
  * @since 4.2.0
  * @param {oj.FetchByOffsetParameters} params Fetch by offset parameters
  * @return {Promise.<oj.FetchByOffsetResults>} Promise which resolves to {@link oj.FetchByOffsetResults}
@@ -921,7 +909,7 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
 /**
  * Fetch the first block of data.
  *
- * @ojstatus preview
+ *
  * @since 6.2.0
  * @param {oj.FetchListParameters=} params Fetch parameters
  * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
@@ -939,7 +927,7 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
 /**
  * Determines whether this DataProvider supports certain feature.
  *
- * @ojstatus preview
+ *
  * @since 6.2.0
  * @param {string} capabilityName capability name. Supported capability names
  *                  are determined by the underlying dataprovider.
@@ -957,7 +945,7 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
 /**
  * Return the total number of rows in this dataprovider. Will return -1 if count cannot be determined.
  *
- * @ojstatus preview
+ *
  * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
  * @export
  * @expose
@@ -970,7 +958,7 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
 /**
  * Return a string that indicates if this data provider is empty
  *
- * @ojstatus preview
+ *
  * @return {"yes"|"no"|"unknown"} a string that indicates if this data provider is empty. Valid values are:
  *                  "yes": this data provider is empty.
  *                  "no": this data provider is not empty.
@@ -984,7 +972,7 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
  */
 
 /**
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.FlattenedTreeDataProviderView
@@ -996,7 +984,7 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
  */
 
 /**
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.FlattenedTreeDataProviderView
@@ -1008,7 +996,7 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
  */
 
 /**
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.FlattenedTreeDataProviderView
@@ -1022,7 +1010,7 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
 /**
  * Set a new expanded property on the FlattenedTreeDataProviderView.
  *
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.FlattenedTreeDataProviderView
@@ -1055,7 +1043,7 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
  * </code></pre>
  *
  * @return {Object} an object to call subscribe on to receive changes to the expanded property. The subscribe function returns an object to call unsubscribe on.
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.FlattenedTreeDataProviderView
@@ -1067,9 +1055,7 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
  *               value: "():{ subscribe( subscriber : ((expanded: {value: KeySet<K>, completionPromise: Promise<any>}) => void) ): {unsubscribe(): void, closed(): boolean}}"}
  */
 
-
 /**
-
  * End of jsdoc
  */
 

@@ -2,9 +2,11 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/internal-deps/dvt/DvtGantt', 'ojs/ojkeyset', 'ojs/ojlogger', 'ojs/ojvalidation-base', 'ojs/ojvalidation-number'], 
-function(oj, $, comp, base, dvt, KeySet, Logger, __ValidationBase)
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/internal-deps/dvt/DvtGantt', 'ojs/ojkeyset', 'ojs/ojlogger', 'ojs/ojconverter-datetime', 'ojs/ojconverter-number'], 
+function(oj, $, comp, base, dvt, KeySet, Logger, __DateTimeConverter, __NumberConverter)
 {
   "use strict";
 var __oj_gantt_metadata = 
@@ -68,8 +70,7 @@ var __oj_gantt_metadata =
     },
     "expanded": {
       "type": "KeySet",
-      "writeback": true,
-      "value": "new KeySetImpl()"
+      "writeback": true
     },
     "gridlines": {
       "type": "object",
@@ -99,42 +100,33 @@ var __oj_gantt_metadata =
       "properties": {
         "converter": {
           "type": "object",
-          "value": "{\"default\": null, \"seconds\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), \"minutes\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), \"hours\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), \"days\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"weeks\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"months\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"quarters\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"years\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}",
           "properties": {
             "default": {
               "type": "object"
             },
             "seconds": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'})"
+              "type": "object"
             },
             "minutes": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'})"
+              "type": "object"
             },
             "hours": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'})"
+              "type": "object"
             },
             "days": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'})"
+              "type": "object"
             },
             "weeks": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'})"
+              "type": "object"
             },
             "months": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'})"
+              "type": "object"
             },
             "quarters": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'})"
+              "type": "object"
             },
             "years": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})"
+              "type": "object"
             }
           }
         },
@@ -164,42 +156,33 @@ var __oj_gantt_metadata =
       "properties": {
         "converter": {
           "type": "object",
-          "value": "{\"default\": null, \"seconds\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), \"minutes\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), \"hours\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), \"days\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"weeks\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"months\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"quarters\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"years\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}",
           "properties": {
             "default": {
               "type": "object"
             },
             "seconds": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'})"
+              "type": "object"
             },
             "minutes": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'})"
+              "type": "object"
             },
             "hours": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'})"
+              "type": "object"
             },
             "days": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'})"
+              "type": "object"
             },
             "weeks": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'})"
+              "type": "object"
             },
             "months": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'})"
+              "type": "object"
             },
             "quarters": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'})"
+              "type": "object"
             },
             "years": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})"
+              "type": "object"
             }
           }
         },
@@ -721,8 +704,7 @@ var __oj_gantt_metadata =
           "type": "object",
           "properties": {
             "converter": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter({style: 'percent'})"
+              "type": "object"
             },
             "tooltipDisplay": {
               "type": "string",
@@ -965,23 +947,20 @@ var __oj_gantt_task_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2016, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
-/* global dvt:false, KeySet:false, Logger:false, __ValidationBase:false, Promise:false */
+
+/* global dvt:false, KeySet:false, Logger:false, __DateTimeConverter:false, __NumberConverter:false, Promise:false */
 
 /**
  * @ojcomponent oj.ojGantt
  * @augments oj.dvtTimeComponent
  * @since 2.1.0
- * @ojstatus preview
+ *
  * @ojrole application
  * @ojshortdesc A gantt displays scheduling information graphically, making it easier to plan, coordinate, and track various tasks and resources.
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojtsimport {module: "ojkeyset", type: "AMD", imported: ["KeySet"]}
- * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter"]}
+ * @ojtsimport {module: "ojconverter", type: "AMD", importName: "Converter"}
  * @ojtsimport {module: "ojtimeaxis", type: "AMD", imported:["ojTimeAxis"]}
  * @ojsignature [{
  *                target: "Type",
@@ -996,7 +975,7 @@ var __oj_gantt_task_metadata =
  *               }
  *              ]
  *
- * @ojpropertylayout {propertyGroup: "common", items: ["start", "end", "gridlines.horizontal", "gridlines.veritcal", "majorAxis.scale", "majorAxis.zoomOrder", "minorAxis.scale", "minorAxis.zoomOrder", "style"]}
+ * @ojpropertylayout {propertyGroup: "common", items: ["start", "end", "gridlines.horizontal", "gridlines.vertical", "majorAxis.scale", "majorAxis.zoomOrder", "minorAxis.scale", "minorAxis.zoomOrder", "style"]}
  * @ojpropertylayout {propertyGroup: "data", items: ["taskData", "selection"]}
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 12
@@ -1302,6 +1281,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
       /**
        * The end time of the Gantt. A valid value is required in order for the Gantt to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
        * @expose
+       * @ojrequired
        * @name end
        * @ojshortdesc The end time of the Gantt. See the Help documentation for more information.
        * @memberof oj.ojGantt
@@ -1417,6 +1397,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
       /**
        * An object with the following properties, used to define the minor time axis. This is required for the Gantt to render properly.
        * @expose
+       * @ojrequired
        * @name minorAxis
        * @ojshortdesc Specifies the minor time axis. This is required for the Gantt to render properly.
        * @memberof oj.ojGantt
@@ -1451,7 +1432,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
       /**
        * A converter (an instance that duck types {@link oj.Converter}) used to format the labels of the minor axis for all 'scale' values, or
        * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see {@link oj.ojTimeAxis.Converters}).
-       * See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+       * See also {@link DateTimeConverter}.
        * <br></br>See the <a href="#minorAxis">minor-axis</a> attribute for usage examples.
        * @expose
        * @name minorAxis.converter
@@ -1460,34 +1441,18 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        * @instance
        * @type {Object}
        * @ojsignature {target: "Type", value: "?(oj.ojTimeAxis.Converters|oj.Converter<string>)", jsdocOverride: true}
-       * @default {"default": null, "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}
+       * @default {"default": null, "seconds": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric'}), "days": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "months": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "quarters": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "years": new DateTimeConverter.IntlDateTimeConverter({'year': 'numeric'})}
        */
         converter: {
           default: null,
-          seconds: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ hour: 'numeric', minute: '2-digit', second: '2-digit' }),
-          minutes: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ hour: 'numeric', minute: '2-digit' }),
-          hours: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ hour: 'numeric' }),
-          days: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'numeric', day: '2-digit' }),
-          weeks: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'numeric', day: '2-digit' }),
-          months: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'long' }),
-          quarters: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'long' }),
-          years: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ year: 'numeric' })
+          seconds: new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric', minute: '2-digit', second: '2-digit' }),
+          minutes: new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric', minute: '2-digit' }),
+          hours: new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric' }),
+          days: new __DateTimeConverter.IntlDateTimeConverter({ month: 'numeric', day: '2-digit' }),
+          weeks: new __DateTimeConverter.IntlDateTimeConverter({ month: 'numeric', day: '2-digit' }),
+          months: new __DateTimeConverter.IntlDateTimeConverter({ month: 'long' }),
+          quarters: new __DateTimeConverter.IntlDateTimeConverter({ month: 'long' }),
+          years: new __DateTimeConverter.IntlDateTimeConverter({ year: 'numeric' })
         },
         /**
          * Specifies the height of the minor axis in pixels.
@@ -1510,6 +1475,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          * The time scale used for the minor axis. This is required in order for the Gantt to render properly.
          * <br></br>See the <a href="#minorAxis">minor-axis</a> attribute for usage examples.
          * @expose
+         * @ojrequired
          * @name minorAxis.scale
          * @ojshortdesc Specifies the minor axis time scale. This is required for the Gantt to render properly.
          * @memberof! oj.ojGantt
@@ -1577,7 +1543,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
         /**
          * A converter (an instance that duck types {@link oj.Converter}) used to format the labels of the major axis for all 'scale' values, or
          * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see {@link oj.ojTimeAxis.Converters}).
-         * See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+         * See also {@link DateTimeConverter}.
          * <br></br>See the <a href="#majorAxis">major-axis</a> attribute for usage examples.
          * @expose
          * @name majorAxis.converter
@@ -1586,34 +1552,18 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          * @instance
          * @type {Object}
          * @ojsignature {target: "Type", value: "?(oj.ojTimeAxis.Converters|oj.Converter<string>)", jsdocOverride: true}
-         * @default {"default": null, "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}
+         * @default {"default": null, "seconds": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric'}), "days": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "months": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "quarters": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "years": new DateTimeConverter.IntlDateTimeConverter({'year': 'numeric'})}
          */
         converter: {
           default: null,
-          seconds: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ hour: 'numeric', minute: '2-digit', second: '2-digit' }),
-          minutes: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ hour: 'numeric', minute: '2-digit' }),
-          hours: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ hour: 'numeric' }),
-          days: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'numeric', day: '2-digit' }),
-          weeks: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'numeric', day: '2-digit' }),
-          months: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'long' }),
-          quarters: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'long' }),
-          years: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ year: 'numeric' })
+          seconds: new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric', minute: '2-digit', second: '2-digit' }),
+          minutes: new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric', minute: '2-digit' }),
+          hours: new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric' }),
+          days: new __DateTimeConverter.IntlDateTimeConverter({ month: 'numeric', day: '2-digit' }),
+          weeks: new __DateTimeConverter.IntlDateTimeConverter({ month: 'numeric', day: '2-digit' }),
+          months: new __DateTimeConverter.IntlDateTimeConverter({ month: 'long' }),
+          quarters: new __DateTimeConverter.IntlDateTimeConverter({ month: 'long' }),
+          years: new __DateTimeConverter.IntlDateTimeConverter({ year: 'numeric' })
         },
         /**
          * Specifies the height of the major axis in pixels.
@@ -1732,7 +1682,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          * <br></br>See the <a href="#rowAxis">row-axis</a> attribute for usage examples.
          * @expose
          * @name rowAxis.rendered
-         * @ojshortdesc Specifes whether row labels are rendered.
+         * @ojshortdesc Specifies whether row labels are rendered.
          * @memberof! oj.ojGantt
          * @instance
          * @type {string}
@@ -1835,7 +1785,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          * <br></br>See the <a href="#rowDefaults">row-defaults</a> attribute for usage examples.
          * @expose
          * @name rowDefaults.height
-         * @ojshortdesc Specifes the default row height in pixels. See the Help documentation for more information.
+         * @ojshortdesc Specifies the default row height in pixels. See the Help documentation for more information.
          * @memberof! oj.ojGantt
          * @instance
          * @type {?number}
@@ -1959,7 +1909,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          * <br></br>See the <a href="#scrollPosition">scroll-position</a> attribute for usage examples.
          * @expose
          * @name scrollPosition.y
-         * @ojshortdesc The veritcal position in pixels.
+         * @ojshortdesc The vertical position in pixels.
          * @memberof! oj.ojGantt
          * @instance
          * @type {number}
@@ -2023,16 +1973,22 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        */
       selection: [],
       /**
-       * The type of selection behavior that is enabled on the Gantt. If 'single' is specified, only a single task can be selected at once. If 'multiple', any number of tasks can be selected at once. Otherwise, selection is disabled.
+       * <p>The type of selection behavior that is enabled on the Gantt. This attribute controls the number of selections that can be made via selection gestures at any given time.
+       *
+       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the Gantt's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the Gantt's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+       *
+       * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+       *
        * @expose
        * @name selectionMode
        * @ojshortdesc Specifies the selection behavior of the Gantt. See the Help documentation for more information.
        * @memberof oj.ojGantt
        * @instance
        * @type {string}
-       * @ojvalue {string} "single"
-       * @ojvalue {string} "multiple"
-       * @ojvalue {string} "none"
+       * @ojvalue {string} "none" Selection is disabled.
+       * @ojvalue {string} "single" Only a single item can be selected at a time.
+       * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
        * @default "none"
        *
        * @example <caption>Initialize the Gantt with the <code class="prettyprint">selection-mode</code> attribute specified:</caption>
@@ -2049,6 +2005,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
       /**
        * The start time of the Gantt. A valid value is required for the Gantt to render properly. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
        * @expose
+       * @ojrequired
        * @name start
        * @ojshortdesc The start time of the Gantt. A valid value is required for the Gantt to render properly. See the Help documentation for more information.
        * @memberof oj.ojGantt
@@ -2231,7 +2188,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
            */
           behavior: 'auto',
           /**
-           * The veritcal offset amount in pixels, to be used to lay out overlapping tasks as per overlap.behavior.
+           * The vertical offset amount in pixels, to be used to lay out overlapping tasks as per overlap.behavior.
            * If not specified or null, a default amount is used depending on the <a href="#rowDefaults.height">row-defaults.height</a> value.
            * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
            * @expose
@@ -2564,7 +2521,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          */
         start: {
           /**
-           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See also {@link DateTimeConverter}.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.start.converter
@@ -2618,7 +2575,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          */
         end: {
           /**
-           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See also {@link DateTimeConverter}.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.end.converter
@@ -2672,7 +2629,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          */
         date: {
           /**
-           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See also {@link DateTimeConverter}.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.date.converter
@@ -2767,7 +2724,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          */
         progress: {
           /**
-           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. See {@link oj.NumberConverterFactory} for details on creating built-in number converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. See also {@link NumberConverter}.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.progress.converter
@@ -2776,9 +2733,9 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
            * @instance
            * @type {?Object}
            * @ojsignature {target: "Type", value: "?(oj.Converter<number>)", jsdocOverride: true}
-           * @default oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter({style: 'percent'})
+           * @default new NumberConverter.IntlNumberConverter({style: 'percent'})
            */
-          converter: __ValidationBase.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter({ style: 'percent' }),
+          converter: new __NumberConverter.IntlNumberConverter({ style: 'percent' }),
           /**
            * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojGantt.translations.labelProgress}.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
@@ -2821,7 +2778,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          */
         baselineStart: {
           /**
-           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See also {@link DateTimeConverter}.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.baselineStart.converter
@@ -2875,7 +2832,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          */
         baselineEnd: {
           /**
-           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See also {@link DateTimeConverter}.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.baselineEnd.converter
@@ -2929,7 +2886,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          */
         baselineDate: {
           /**
-           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See also {@link DateTimeConverter}.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.baselineDate.converter
@@ -3324,9 +3281,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
       resources.openDown = 'oj-gantt-row-label-open-icon oj-active';
 
       // progress value converter for task tooltip
-      var converterFactory =
-          __ValidationBase.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER);
-      resources.percentConverter = converterFactory.createConverter({ style: 'percent' });
+      resources.percentConverter = new __NumberConverter.IntlNumberConverter({ style: 'percent' });
     },
 
     // @inheritdoc
@@ -3589,6 +3544,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
       return null;
     }
   });
+
 
 /**
  * <table class="keyboard-table">
@@ -3895,27 +3851,51 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
  *               {target: "Type", value: "D2[]", for: "itemData"},
  *               {target: "Type", value: "<K2, D2>", for: "genericTypeParameters"}]
  */
-
+/**
+ * @typedef {Object} oj.ojGantt.DependencyTemplateContext
+ * @property {Element} componentElement The &lt;oj-gantt> custom element
+ * @property {Object} data The data object for the current dependency
+ * @property {number} index The zero-based index of the current dependency
+ * @property {any} key The key of the current dependency
+ */
+/**
+ * @typedef {Object} oj.ojGantt.RowTemplateContext
+ * @property {Element} componentElement The &lt;oj-gantt> custom element
+ * @property {number} index The row index
+ * @property {any} id The row id, if specified in the task template. Otherwise, it's the single task per row case, and this would be the task id.
+ * @property {Array<Object>} tasks The array of objects which are gantt tasks that belong to this row. The objects will have the following properties
+ * @property {Object} tasks.data The data object for the task
+ * @property {number} tasks.index The zero-based index of the task
+ * @property {any} tasks.key The key of the task
+ * @property {Array<Object>} tasks.parentData An array of data objects of the outermost to innermost parents of the task.
+ * @property {any} tasks.parentKey The key of the parent task. The parent key is null for root tasks.
+ */
+/**
+ * @typedef {Object} oj.ojGantt.TaskTemplateContext
+ * @property {Element} componentElement The &lt;oj-gantt> custom element
+ * @property {Object} data The data object for the current task
+ * @property {number} index The zero-based index of the current task
+ * @property {any} key The key of the current task
+ * @property {Array<Object>} parentData An array of data objects of the outermost to innermost parents of the task.
+ * @property {any} parentKey The key of the parent task. The parent key is null for root tasks.
+ */
 // Slots
 
 /**
- * <p>The <code class="prettyprint">dependencyTemplate</code> slot is used to specify the template for creating each dependency line of the gantt. The slot must be a &lt;template> element.
+ * <p>The <code class="prettyprint">dependencyTemplate</code> slot is used to specify the template for creating each dependency line of the gantt. The slot content must be a &lt;template> element.
  * The content of the template should only be one &lt;oj-gantt-dependency> element. The reference data provider is that of the <a href="#dependencyData">dependency-data</a> attribute.
  * See the [oj-gantt-dependency]{@link oj.ojGanttDependency} doc for more details.</p>
  * <p>When the template is executed for each task, it will have access to the gantt's binding context containing the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current dependency. (See the table below for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current dependency. (See [oj.ojGantt.DependencyTemplateContext]{@link oj.ojGantt.DependencyTemplateContext} or the table below for a list of properties available on $current) </li>
  *   <li>alias - if <a href="#as">as</a> attribute was specified, the value will be used to provide an application-named alias for $current.</li>
  * </ul>
- * @ojstatus preview
+ *
  * @ojslot dependencyTemplate
  * @ojshortdesc The dependencyTemplate slot is used to specify the template for creating each dependency line of the Gantt. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojGantt
- * @property {Element} componentElement The &lt;oj-gantt> custom element
- * @property {Object} data The data object for the current dependency
- * @property {number} index The zero-based index of the curent dependency
- * @property {any} key The key of the current dependency
+ * @ojslotitemprops oj.ojGantt.DependencyTemplateContext
  *
  * @example <caption>Initialize the Gantt with an inline dependency template specified:</caption>
  * &lt;oj-gantt dependency-data="[[dependencyDataProvider]]">
@@ -3929,28 +3909,20 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
  */
 
  /**
- * <p>The <code class="prettyprint">rowTemplate</code> slot is used to specify the template for generating the row properties of the gantt. The slot must be a &lt;template> element.
+ * <p>The <code class="prettyprint">rowTemplate</code> slot is used to specify the template for generating the row properties of the gantt. The slot content must be a &lt;template> element.
  * The content of the template should only be one &lt;oj-gantt-row> element.See the [oj-gantt-row]{@link oj.ojGanttRow} doc for more details.
  * See also the <a href="#taskTemplate">taskTemplate</a> regarding showing empty rows. Note that the rows will render following the order in which they are found in the data.</p>
  * <p>When the template is executed for each row, it will have access to the gantt's binding context containing the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current row. (See the table below for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current row. (See [oj.ojGantt.RowTemplateContext]{@link oj.ojGantt.RowTemplateContext} or the table below for a list of properties available on $current) </li>
  *   <li>alias - if <a href="#as">as</a> attribute was specified, the value will be used to provide an application-named alias for $current.</li>
  * </ul>
- * @ojstatus preview
+ *
  * @ojslot rowTemplate
  * @ojshortdesc The rowTemplate slot is used to specify the template for generating the row properties of the Gantt. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojGantt
- * @property {Element} componentElement The &lt;oj-gantt> custom element
- * @property {number} index The row index
- * @property {any} id The row id, if specified in the task template. Otherwise, it's the single task per row case, and this would be the task id.
- * @property {Array<Object>} tasks The array of objects which are gantt tasks that belong to this row. The objects will have the following properties
- * @property {Object} tasks.data The data object for the task
- * @property {number} tasks.index The zero-based index of the task
- * @property {any} tasks.key The key of the task
- * @property {Array<Object>} tasks.parentData An array of data objects of the outermost to innermost parents of the task.
- * @property {any} tasks.parentKey The key of the parent task. The parent key is null for root tasks.
+ * @ojslotitemprops oj.ojGantt.RowTemplateContext
  *
  * @example <caption>Initialize the Gantt with an inline row template specified:</caption>
  * &lt;oj-gantt task-data="[[taskDataProvider]]">
@@ -3963,27 +3935,22 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
  */
 
 /**
- * <p>The <code class="prettyprint">taskTemplate</code> slot is used to specify the template for creating each task of the gantt. The slot must be a &lt;template> element.
+ * <p>The <code class="prettyprint">taskTemplate</code> slot is used to specify the template for creating each task of the gantt. The slot content must be a &lt;template> element.
  * The content of the template should only be one &lt;oj-gantt-task> element. The reference data provider is that of the <a href="#taskData">task-data</a> attribute.
  * See the [oj-gantt-task]{@link oj.ojGanttTask} doc for more details.
  * The [row-id]{@link oj.ojGanttTask#rowId} is optional if there is only one task in the row for every row; otherwise it must be specified.
  * Note that if invalid values for both task start and end are specified, then the task is not rendered; if all the tasks belonging to a row are not rendered, the row will appear as an empty row.</p>
  * <p>When the template is executed for each task, it will have access to the gantt's binding context containing the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current task. (See the table below for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current task. (See [oj.ojGantt.TaskTemplateContext]{@link oj.ojGantt.TaskTemplateContext} or the table below for a list of properties available on $current) </li>
  *   <li>alias - if <a href="#as">as</a> attribute was specified, the value will be used to provide an application-named alias for $current.</li>
  * </ul>
- * @ojstatus preview
+ *
  * @ojslot taskTemplate
  * @ojshortdesc The taskTemplate slot is used to specify the template for creating each task of the Gantt. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojGantt
- * @property {Element} componentElement The &lt;oj-gantt> custom element
- * @property {Object} data The data object for the current task
- * @property {number} index The zero-based index of the curent task
- * @property {any} key The key of the current task
- * @property {Array<Object>} parentData An array of data objects of the outermost to innermost parents of the task.
- * @property {any} parentKey The key of the parent task. The parent key is null for root tasks.
+ * @ojslotitemprops oj.ojGantt.TaskTemplateContext
  *
  * @example <caption>Initialize the Gantt with an inline task template specified:</caption>
  * &lt;oj-gantt task-data="[[taskDataProvider]]">
@@ -4002,10 +3969,10 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current task. (See [oj.ojGantt.TooltipContext]{@link oj.ojGantt.TooltipContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current task. (See [oj.ojGantt.TooltipContext]{@link oj.ojGantt.TooltipContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot tooltipTemplate
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojGantt.TooltipContext
@@ -4025,10 +3992,10 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
  * This slot takes precedence over the rowAxis.label.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current row. (See [oj.ojGantt.RowAxisLabelRendererContext]{@link oj.ojGantt.RowAxisLabelRendererContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current row. (See [oj.ojGantt.RowAxisLabelRendererContext]{@link oj.ojGantt.RowAxisLabelRendererContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot rowAxisLabelTemplate
  * @ojshortdesc The rowAxisLabelTemplate slot is used to specify custom row axis label content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojGantt.RowAxisLabelRendererContext
@@ -4107,13 +4074,14 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
  * @memberof oj.ojGantt
  */
 
+
 /**
  * @ojcomponent oj.ojGanttDependency
  * @ojimportmembers oj.ojGanttDependencyProperties
  * @ojsignature {target: "Type", value:"class ojGanttDependency extends JetElement<ojGanttDependencySettableProperties>"}
  * @ojslotcomponent
  * @since 5.2.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="overview">
@@ -4140,13 +4108,14 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
  * </pre>
  */
 
+
 /**
  * @ojcomponent oj.ojGanttRow
  * @ojimportmembers oj.ojGanttRowProperties
  * @ojsignature {target: "Type", value:"class ojGanttRow extends JetElement<ojGanttRowSettableProperties>"}
  * @ojslotcomponent
  * @since 5.2.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="overview">
@@ -4172,13 +4141,14 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
  * </pre>
  */
 
+
 /**
  * @ojcomponent oj.ojGanttTask
  * @ojimportmembers oj.ojGanttTaskProperties
  * @ojsignature {target: "Type", value:"class ojGanttTask extends JetElement<ojGanttTaskSettableProperties>"}
  * @ojslotcomponent
  * @since 5.2.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="overview">
@@ -4218,6 +4188,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
  * <code class="prettyprint">row-id</code> attribute specified:</caption>
  * &lt;oj-gantt-task row-id="[[$current.data.resource]]">&lt;/oj-gantt-task>
  */
+
 
 /* global __oj_gantt_metadata:false */
 /**

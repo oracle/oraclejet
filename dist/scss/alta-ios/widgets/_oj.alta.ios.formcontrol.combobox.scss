@@ -37,12 +37,9 @@
      * Applied to the multi-select search field which is an li to wrap the input
      */
     .oj-combobox-search-field {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        line-height: var(--oj-text-field-trigger-height);
-      } @else {
+
         line-height: $formControlTriggerHeight;
-      }
+      
     }
     
     /* icon */

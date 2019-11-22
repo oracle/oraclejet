@@ -2,10 +2,12 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/internal-deps/dvt/DvtTimeline', 
-'ojs/ojattributegrouphandler', 'ojs/ojkeyset', 'ojs/ojvalidation-base'], 
-function (oj, $, comp, base, dvt, attributeGroupHandler, KeySet, __ValidationBase)
+'ojs/ojattributegrouphandler', 'ojs/ojkeyset', 'ojs/ojconverter-datetime'], 
+function (oj, $, comp, base, dvt, attributeGroupHandler, KeySet, __DateTimeConverter)
 {
   "use strict";
 var __oj_timeline_metadata = 
@@ -39,42 +41,33 @@ var __oj_timeline_metadata =
       "properties": {
         "converter": {
           "type": "object",
-          "value": "{\"default\": null, \"seconds\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), \"minutes\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), \"hours\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), \"days\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"weeks\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"months\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"quarters\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"years\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}",
           "properties": {
             "default": {
               "type": "object"
             },
             "seconds": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'})"
+              "type": "object"
             },
             "minutes": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'})"
+              "type": "object"
             },
             "hours": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'})"
+              "type": "object"
             },
             "days": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'})"
+              "type": "object"
             },
             "weeks": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'})"
+              "type": "object"
             },
             "months": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'})"
+              "type": "object"
             },
             "quarters": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'})"
+              "type": "object"
             },
             "years": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})"
+              "type": "object"
             }
           }
         },
@@ -102,42 +95,33 @@ var __oj_timeline_metadata =
       "properties": {
         "converter": {
           "type": "object",
-          "value": "{\"default\": null, \"seconds\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), \"minutes\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), \"hours\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), \"days\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"weeks\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"months\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"quarters\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"years\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}",
           "properties": {
             "default": {
               "type": "object"
             },
             "seconds": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'})"
+              "type": "object"
             },
             "minutes": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'})"
+              "type": "object"
             },
             "hours": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'})"
+              "type": "object"
             },
             "days": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'})"
+              "type": "object"
             },
             "weeks": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'})"
+              "type": "object"
             },
             "months": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'})"
+              "type": "object"
             },
             "quarters": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'})"
+              "type": "object"
             },
             "years": {
-              "type": "object",
-              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})"
+              "type": "object"
             }
           }
         },
@@ -643,7 +627,8 @@ var __oj_timeline_series_metadata =
   },
   "extension": {}
 };
-/* global dvt:false, KeySet:false, attributeGroupHandler:false, __ValidationBase:false */
+
+/* global dvt:false, KeySet:false, attributeGroupHandler:false, __DateTimeConverter:false */
 
 /**
  * @ojcomponent oj.ojTimeline
@@ -651,10 +636,10 @@ var __oj_timeline_series_metadata =
  * @augments oj.dvtTimeComponent
  * @ojrole application
  * @since 1.1.0
- * @ojstatus preview
+ *
  * @ojshortdesc A timeline is an interactive data visualization that displays a series of events in chronological order.
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
- * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter"]}
+ * @ojtsimport {module: "ojconverter", type: "AMD", importName: "Converter"}
  * @ojtsimport {module: "ojtimeaxis", type: "AMD", imported:["ojTimeAxis"]}
  * @ojsignature [{
  *                target: "Type",
@@ -842,6 +827,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
     /**
      * The end time of the timeline. A valid value is required in order for the timeline to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
      * @expose
+     * @ojrequired
      * @name end
      * @ojshortdesc The end time of the timeline. See the Help documentation for more information.
      * @memberof oj.ojTimeline
@@ -861,6 +847,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
     /**
      * An object with the following properties, used to define a timeline axis. This is required in order for the timeline to properly render.
      * @expose
+     * @ojrequired
      * @name minorAxis
      * @ojshortdesc An object defining the timeline minor axis.
      * @memberof oj.ojTimeline
@@ -896,7 +883,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
       /**
        * A converter (an instance that duck types {@link oj.Converter}) used to format the labels of the minor axis for all 'scale' values, or
        * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see {@link oj.ojTimeAxis.Converters}).
-       * See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+       * See also {@link DateTimeConverter}.
        * <br></br>See the <a href="#minorAxis">minor-axis</a> attribute for usage examples.
        * @expose
        * @name minorAxis.converter
@@ -905,39 +892,24 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
        * @instance
        * @type {Object}
        * @ojsignature {target: "Type", value: "?(oj.ojTimeAxis.Converters|oj.Converter<string>)", jsdocOverride: true}
-       * @default {"default": null, "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}
+       * @default {"default": null, "seconds": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric'}), "days": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "months": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "quarters": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "years": new DateTimeConverter.IntlDateTimeConverter({'year': 'numeric'})}
        */
         converter: {
           default: null,
-          seconds: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ hour: 'numeric', minute: '2-digit', second: '2-digit' }),
-          minutes: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ hour: 'numeric', minute: '2-digit' }),
-          hours: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ hour: 'numeric' }),
-          days: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'numeric', day: '2-digit' }),
-          weeks: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'numeric', day: '2-digit' }),
-          months: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'long' }),
-          quarters: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'long' }),
-          years: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ year: 'numeric' })
+          seconds: new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric', minute: '2-digit', second: '2-digit' }),
+          minutes: new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric', minute: '2-digit' }),
+          hours: new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric' }),
+          days: new __DateTimeConverter.IntlDateTimeConverter({ month: 'numeric', day: '2-digit' }),
+          weeks: new __DateTimeConverter.IntlDateTimeConverter({ month: 'numeric', day: '2-digit' }),
+          months: new __DateTimeConverter.IntlDateTimeConverter({ month: 'long' }),
+          quarters: new __DateTimeConverter.IntlDateTimeConverter({ month: 'long' }),
+          years: new __DateTimeConverter.IntlDateTimeConverter({ year: 'numeric' })
         },
       /**
        * The time scale used for the minor axis. This is required in order for the timeline to properly render.
        * <br></br>See the <a href="#minorAxis">minor-axis</a> attribute for usage examples.
        * @expose
+       * @ojrequired
        * @name minorAxis.scale
        * @ojshortdesc Specifies the time scale used for the minor axis.
        * @memberof! oj.ojTimeline
@@ -1017,7 +989,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
       /**
        * A converter (an instance that duck types {@link oj.Converter}) used to format the labels of the major axis for all 'scale' values, or
        * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see {@link oj.ojTimeAxis.Converters}).
-       * See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+       * See also {@link DateTimeConverter}.
        * <br></br>See the <a href="#majorAxis">major-axis</a> attribute for usage examples.
        * @expose
        * @name majorAxis.converter
@@ -1026,34 +998,18 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
        * @instance
        * @type {Object}
        * @ojsignature {target: "Type", value: "?(oj.ojTimeAxis.Converters|oj.Converter<string>)", jsdocOverride: true}
-       * @default {"default": null, "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}
+       * @default {"default": null, "seconds": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric'}), "days": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "months": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "quarters": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "years": new DateTimeConverter.IntlDateTimeConverter({'year': 'numeric'})}
        */
         converter: {
           default: null,
-          seconds: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ hour: 'numeric', minute: '2-digit', second: '2-digit' }),
-          minutes: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ hour: 'numeric', minute: '2-digit' }),
-          hours: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ hour: 'numeric' }),
-          days: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'numeric', day: '2-digit' }),
-          weeks: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'numeric', day: '2-digit' }),
-          months: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'long' }),
-          quarters: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ month: 'long' }),
-          years: __ValidationBase.Validation.converterFactory(
-            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-            .createConverter({ year: 'numeric' })
+          seconds: new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric', minute: '2-digit', second: '2-digit' }),
+          minutes: new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric', minute: '2-digit' }),
+          hours: new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric' }),
+          days: new __DateTimeConverter.IntlDateTimeConverter({ month: 'numeric', day: '2-digit' }),
+          weeks: new __DateTimeConverter.IntlDateTimeConverter({ month: 'numeric', day: '2-digit' }),
+          months: new __DateTimeConverter.IntlDateTimeConverter({ month: 'long' }),
+          quarters: new __DateTimeConverter.IntlDateTimeConverter({ month: 'long' }),
+          years: new __DateTimeConverter.IntlDateTimeConverter({ year: 'numeric' })
         },
       /**
        * The time scale used for the major axis. If not specified, no axis labels will be shown above the minor axis or in the overview.
@@ -1225,16 +1181,22 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
      */
       selection: [],
     /**
-     * The type of selection behavior that is enabled on the timeline. If 'single' is specified, only a single item across all series can be selected at once. If 'multiple', any number of items across all series can be selected at once. Otherwise, selection is disabled.
+     * <p>The type of selection behavior that is enabled on the Timeline. This attribute controls the number of selections that can be made via selection gestures at any given time.
+     *
+     * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the Timeline's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+     * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the Timeline's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+     *
+     * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+     *
      * @expose
      * @name selectionMode
      * @ojshortdesc Specifies the selection mode.
      * @memberof oj.ojTimeline
      * @instance
      * @type {string}
-     * @ojvalue {string} "single"
-     * @ojvalue {string} "multiple"
-     * @ojvalue {string} "none"
+     * @ojvalue {string} "none" Selection is disabled.
+     * @ojvalue {string} "single" Only a single item can be selected at a time.
+     * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
      * @default "none"
      *
      * @example <caption>Initialize the Timeline with the <code class="prettyprint">selection-mode</code> attribute specified:</caption>
@@ -1382,6 +1344,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
     /**
      * The start time of the timeline. A valid value is required in order for the timeline to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
      * @expose
+     * @ojrequired
      * @name start
      * @ojshortdesc The start time of the timeline. See the Help documentation for more information.
      * @memberof oj.ojTimeline
@@ -1984,7 +1947,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
          */
         start: {
           /**
-           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See also {@link DateTimeConverter}.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.start.converter
@@ -2038,7 +2001,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
          */
         end: {
           /**
-           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See also {@link DateTimeConverter}.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.end.converter
@@ -2092,7 +2055,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
          */
         date: {
           /**
-           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See also {@link DateTimeConverter}.
            * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
            * @expose
            * @name valueFormats.date.converter
@@ -2450,11 +2413,10 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
 
       var resources = this.options._resources;
       var converter = resources.converter;
-      var converterFactory = resources.converterFactory;
 
-    // Create default converters for vertical timeline
-      var monthsConverterVert = converterFactory.createConverter({ month: 'short' });
-      var yearsConverterVert = converterFactory.createConverter({ year: '2-digit' });
+      // Create default converters for vertical timeline
+      var monthsConverterVert = new __DateTimeConverter.IntlDateTimeConverter({ month: 'short' });
+      var yearsConverterVert = new __DateTimeConverter.IntlDateTimeConverter({ year: '2-digit' });
 
       var converterVert = {
         seconds: converter.seconds,
@@ -2544,6 +2506,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
       return null;
     }
   });
+
 
 /**
  * <table class="keyboard-table">
@@ -2799,22 +2762,8 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
  *               {target: "Type", value: "D", for: "itemData"},
  *               {target: "Type", value: "<K, D>", for: "genericTypeParameters"}]
  */
-
-// Slots
-
 /**
- * <p>The <code class="prettyprint">seriesTemplate</code> slot is used to specify the template for generating the series properties of the timeline. The slot must be a &lt;template> element.
- * The content of the template should only be one &lt;oj-timeline-series> element.See the [oj-timeline-series]{@link oj.ojTimelineSeries} doc for more details.
- * See also the <a href="#itemTemplate">itemTemplate</a> regarding showing empty series. Note that the series will render following the order in which they are found in the data.</p>
- * <p>When the template is executed for each series, it will have access to the timeline's binding context containing the following properties:</p>
- * <ul>
- *   <li>$current - an object that contains information for the current series. (See the table below for a list of properties available on $current) </li>
- * </ul>
- * @ojstatus preview
- * @ojslot seriesTemplate
- * @ojshortdesc The seriesTemplate slot is used to specify the template for generating the series properties of the timeline. See the Help documentation for more information.
- * @ojmaxitems 1
- * @memberof oj.ojTimeline
+ * @typedef {Object} oj.ojTimeline.SeriesTemplateContext
  * @property {Element} componentElement The &lt;oj-timeline> custom element
  * @property {number} index The series index
  * @property {any} id The series id
@@ -2822,7 +2771,31 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
  * @property {Object} items.data The data object for the item
  * @property {number} items.index The zero-based index of the item
  * @property {any} items.key The key of the item
+ */
+/**
+ * @typedef {Object} oj.ojTimeline.ItemTemplateContext
+ * @property {Element} componentElement The &lt;oj-timeline> custom element
+ * @property {Object} data The data object for the current item
+ * @property {number} index The zero-based index of the current item
+ * @property {any} key The key of the current item
+ */
+
+// Slots
+
+/**
+ * <p>The <code class="prettyprint">seriesTemplate</code> slot is used to specify the template for generating the series properties of the timeline. The slot content must be a &lt;template> element.
+ * The content of the template should only be one &lt;oj-timeline-series> element.See the [oj-timeline-series]{@link oj.ojTimelineSeries} doc for more details.
+ * See also the <a href="#itemTemplate">itemTemplate</a> regarding showing empty series. Note that the series will render following the order in which they are found in the data.</p>
+ * <p>When the template is executed for each series, it will have access to the timeline's binding context containing the following properties:</p>
+ * <ul>
+ *   <li>$current - an object that contains information for the current series. (See [oj.ojTimeline.SeriesTemplateContext]{@link oj.ojTimeline.SeriesTemplateContext} or the table below for a list of properties available on $current) </li>
+ * </ul>
  *
+ * @ojslot seriesTemplate
+ * @ojshortdesc The seriesTemplate slot is used to specify the template for generating the series properties of the timeline. See the Help documentation for more information.
+ * @ojmaxitems 1
+ * @memberof oj.ojTimeline
+ * @ojslotitemprops oj.ojTimeline.SeriesTemplateContext
  * @example <caption>Initialize the Timeline with an inline series template specified:</caption>
  * &lt;oj-timeline data="[[dataProvider]]">
  *   &lt;template slot="seriesTemplate">
@@ -2834,25 +2807,21 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
  */
 
 /**
- * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the timeline. The slot must be a &lt;template> element.
+ * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the timeline. The slot content must be a &lt;template> element.
  * The content of the template should only be one &lt;oj-timeline-item> element. The reference data provider is that of the <a href="#data">data</a> attribute.
  * See the [oj-timeline-item]{@link oj.ojTimelineItem} doc for more details.
  * The [series-id]{@link oj.ojTimelineItem#seriesId} is optional if there is only one series; otherwise it must be specified.
  * Note that if an invalid value for item start is specified, then the item is not rendered; if all the items belonging to a series are not rendered, the series will appear as an empty series.</p>
  * <p>When the template is executed for each item, it will have access to the timeline's binding context containing the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current item. (See the table below for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current item. (See [oj.ojTimeline.ItemTemplateContext]{@link oj.ojTimeline.ItemTemplateContext} or the table below for a list of properties available on $current) </li>
  * </ul>
- * @ojstatus preview
+ *
  * @ojslot itemTemplate
  * @ojshortdesc The itemTemplate slot is used to specify the template for creating each item of the timeline. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojTimeline
- * @property {Element} componentElement The &lt;oj-timeline> custom element
- * @property {Object} data The data object for the current item
- * @property {number} index The zero-based index of the curent item
- * @property {any} key The key of the current item
- *
+ * @ojslotitemprops oj.ojTimeline.ItemTemplateContext
  * @example <caption>Initialize the Timeline with an inline item template specified:</caption>
  * &lt;oj-timeline data="[[dataProvider]]">
  *   &lt;template slot="itemTemplate">
@@ -2870,10 +2839,10 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current item. (See [oj.ojTimeline.TooltipContext]{@link oj.ojTimeline.TooltipContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current item. (See [oj.ojTimeline.TooltipContext]{@link oj.ojTimeline.TooltipContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot tooltipTemplate
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojTimeline.TooltipContext
@@ -2935,13 +2904,14 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
  * @memberof oj.ojTimeline
  */
 
+
 /**
  * @ojcomponent oj.ojTimelineItem
  * @ojimportmembers oj.ojTimelineItemProperties
  * @ojsignature {target: "Type", value:"class ojTimelineItem extends JetElement<ojTimelineItemSettableProperties>"}
  * @ojslotcomponent
  * @since 7.0.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="overview">
@@ -2995,13 +2965,14 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
  * &lt;oj-timeline-item label="[[$current.data.label]]">&lt;/oj-timeline-item>
  */
 
+
 /**
  * @ojcomponent oj.ojTimelineSeries
  * @ojimportmembers oj.ojTimelineSeriesProperties
  * @ojsignature {target: "Type", value:"class ojTimelineSeries extends JetElement<ojTimelineSeriesSettableProperties>"}
  * @ojslotcomponent
  * @since 7.0.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="overview">
@@ -3026,6 +2997,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
  * </code>
  * </pre>
  */
+
 
 /* global __oj_timeline_metadata:false */
 /**

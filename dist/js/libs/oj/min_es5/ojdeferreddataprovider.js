@@ -1,0 +1,13 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+define(["ojs/ojcore","jquery","knockout","ojs/ojcomponentcore","ojs/ojeventtarget","ojs/ojdataprovider"],function(t,e,n){"use strict";function r(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}function i(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}function a(t,e,n){return e&&i(t.prototype,e),n&&i(t,n),t}var o=function(){function e(t,n){r(this,e),this._dataProvider=t,this._capabilityFunc=n,this._DATAPROVIDER="dataProvider",this.AsyncIterable=function(){return function t(e){r(this,t),this._asyncIterator=e,this[Symbol.asyncIterator]=function(){return this._asyncIterator}}}(),this.AsyncIterator=function(){function t(e){r(this,t),this._asyncIteratorPromise=e}return a(t,[{key:"next",value:function(){return this._asyncIteratorPromise.then(function(t){return t.next()})}}]),t}()}return a(e,[{key:"fetchFirst",value:function(t){var e=this._getDataProvider().then(function(e){return e.fetchFirst(t)[Symbol.asyncIterator]()});return new this.AsyncIterable(new this.AsyncIterator(e))}},{key:"fetchByKeys",value:function(t){return this._getDataProvider().then(function(e){return e.fetchByKeys(t)})}},{key:"containsKeys",value:function(t){return this._getDataProvider().then(function(e){return e.containsKeys(t)})}},{key:"fetchByOffset",value:function(t){return this._getDataProvider().then(function(e){return e.fetchByOffset(t)})}},{key:"getTotalSize",value:function(){return this._getDataProvider().then(function(t){return t.getTotalSize()})}},{key:"isEmpty",value:function(){return this[this._DATAPROVIDER]?this[this._DATAPROVIDER].isEmpty():"unknown"}},{key:"getCapability",value:function(t){return this._capabilityFunc?this._capabilityFunc(t):null}},{key:"addEventListener",value:function(t,e){this._getDataProvider().then(function(n){n.addEventListener(t,e)})}},{key:"removeEventListener",value:function(t,e){this._getDataProvider().then(function(n){n.removeEventListener(t,e)})}},{key:"dispatchEvent",value:function(t){return!!this[this._DATAPROVIDER]&&this[this._DATAPROVIDER].dispatchEvent(t)}},{key:"_getDataProvider",value:function(){var e=this;return this._dataProvider.then(function(n){if(t.DataProviderFeatureChecker.isDataProvider(n))return e[e._DATAPROVIDER]||(e[e._DATAPROVIDER]=n),n;throw new Error("Invalid data type. DeferredDataProvider takes a Promise<DataProvider>")})}}]),e}();
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+return t.DeferredDataProvider=o,o});

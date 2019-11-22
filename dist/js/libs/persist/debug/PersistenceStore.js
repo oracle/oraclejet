@@ -193,5 +193,19 @@ define([], function () {
     throw TypeError("failed in abstract function");
   };
 
+  /**
+   * Update the key value for the row referenced by the current key value.
+   * @method
+   * @name updateKey
+   * @memberof! PersistenceStore
+   * @instance
+   * @param {string} currentKey The current key used to identify this resource
+   * @param {string} newKey The new key used to identify this resource
+   * @return {Promise} Returns a Promise that resolves when the key is updated.
+   */
+  PersistenceStore.prototype.updateKey = function(currentKey, newKey) {
+    throw TypeError("failed in abstract function");
+  }
+
   return PersistenceStore;
 });

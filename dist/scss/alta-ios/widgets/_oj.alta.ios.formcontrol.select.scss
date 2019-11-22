@@ -42,14 +42,7 @@
     // for iOS because we know there are issues in Android (with direction 'rtl', the multi-
     // select string "N selected" gets rendered as "selected N").
     .oj-select-select {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        html:not([dir="rtl"]) & {
-          direction: rtl; }
 
-        html[dir="rtl"] & {
-          direction: ltr; }
-      } @else {
         @include oj-ltr() {
           @if ($formControlTextAlign == 'end' or $formControlTextAlign == 'right') {
             direction: rtl;
@@ -60,7 +53,7 @@
             direction: ltr;
           }
         }
-      }  
+
     }
 
     .oj-select-multiple-open-icon {
@@ -80,26 +73,19 @@
     // render a menulist (Alta and Windows).  (In the latter case, only the
     // placeholder option is styled).
     .oj-select-select.oj-select-default[multiple] {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        color: var(--oj-text-field-placeholder-color); 
-        font-style: var(--oj-text-field-placeholder-font-style);      
-      } @else {
+
         color: $formControlPlaceholderColor; 
         font-style: $formControlPlaceholderFontStyle;        
-      }
+
     }
     
     /* 
      * Applied to the multi-select search field which is an li to wrap the input
      */
     .oj-select-search-field {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        line-height: var(--oj-text-field-trigger-height);
-      } @else {
+
         line-height: $formControlTriggerHeight;
-      }
+      
     }
 
     // ios has a native select element with no icon, so doesn't need the padding-right here.

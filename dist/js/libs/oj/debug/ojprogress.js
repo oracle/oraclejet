@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'], 
 /*
 * @param {Object} oj 
@@ -51,10 +53,6 @@ var __oj_progress_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -65,7 +63,7 @@ var __oj_progress_metadata =
 
 /**
  * @ojcomponent oj.ojProgress
- * @ojstatus preview
+ *
  * @since 1.0.0
  * @augments oj.baseComponent
  * @ojshortdesc A progress allows the user to visualize the progression of an extended computer operation.
@@ -607,6 +605,7 @@ var __oj_progress_metadata =
 
   });
 }());
+
 
 /* global __oj_progress_metadata:false */
 (function () {

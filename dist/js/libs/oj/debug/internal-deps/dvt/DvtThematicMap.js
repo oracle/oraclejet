@@ -6,7 +6,20 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * DVT Toolkit based thematic map component
  * @param {dvt.Context} context The rendering context.
@@ -45,6 +58,7 @@ dvt.ThematicMap.prototype.Init = function(context, callback, callbackObj) {
   this._panning = false;
 
   this._selectedAreas = {};
+  this._touchEventContentMarkerRef = null;
 
   this._bListenersRemoved = false;
   this._createHandlers();
@@ -68,6 +82,14 @@ dvt.ThematicMap.prototype._createLayers = function() {
 
   this._linkLayers = new dvt.Container(this.getCtx());
   this._linkLayers.setAriaRole('region', true);
+
+  // BUG: JET-31433 - IN THEMATIC MAP: INLINE TEMPLATES DEMO, THE MARKER STAYS HIGHLIGHTED
+  // Create a layer for storing touch event source elements temporarily when needed
+  // so as to not break the events
+  if (dvt.Agent.isTouchDevice()) {
+    this._touchEventLayer = new dvt.Container(this.getCtx());
+    this._touchEventLayer.setStyle({ display: 'none' });
+  }
 };
 
 /**
@@ -424,6 +446,7 @@ dvt.ThematicMap.prototype._render = function(pzcContainer, cpContainer) {
     cpContainer.addChild(this._dataPointLayers);
   pzcContainer.addChild(this._labelLayers);
   pzcContainer.addChild(this._linkLayers);
+  this._touchEventLayer && pzcContainer.addChild(this._touchEventLayer);
 
   // Render all point layers and the first area layer
   var pzcMatrix = this._pzc.getContentPane().getMatrix();
@@ -466,8 +489,6 @@ dvt.ThematicMap.prototype._render = function(pzcContainer, cpContainer) {
 
   this._pzc.setZoomingEnabled(this._zooming);
   this._pzc.setPanningEnabled(this._panning);
-  if (this.Options['_resources'])
-    this._pzc.setPanCursor(this.Options['_resources']['panCursorUp'], this.Options['_resources']['panCursorDown']);
 };
 
 /**
@@ -1034,6 +1055,26 @@ dvt.ThematicMap.prototype.processDefaultFocusEffect = function(id, focused) {
 };
 
 /**
+ * Handles the touch start event
+ */
+dvt.ThematicMap.prototype.handleTouchStart = function() {
+  // noop: Called from HandleImmediateTouchStartInternal
+}
+
+/**
+ * Handles the touch end event
+ */
+dvt.ThematicMap.prototype.handleTouchEnd = function() {
+  this._clearTouchEventContent();
+  if (this._touchEventContentMarkerRef && this._touchEventContentMarkerRef.handleTouchEnd) {
+    // Clear the states in the marker as this will not be called if the event is ended on tmap
+    this._touchEventContentMarkerRef.handleTouchEnd();
+    // Null out the reference as it need not be called again for this marker
+    this._touchEventContentMarkerRef = null;
+  }
+}
+
+/**
  * Retrieves a data item by id
  * @param {string} id The id of the data item to retreive
  * @return {DvtMapObjPeer}
@@ -1070,6 +1111,46 @@ dvt.ThematicMap.prototype._getAreaFromDataLayer = function(areaName, dataLayer) 
   return null;
 };
 
+/**
+ * Stores the contents in the touch event layer
+ * @param {Element|Array<Element>} content The content that has to be stored
+ * @param {DvtMapObjPeer} marker The marker that is storing the content
+ */
+dvt.ThematicMap.prototype.storeTouchEventContent = function(content, marker) {
+  if (!this._touchEventLayer || !content) {
+    return;
+  }
+
+  // We support storing only one marker's content at any given time.
+  this._touchEventContentMarkerRef = marker;
+  if (content.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
+    dvt.ToolkitUtils.appendChildElem(this._touchEventLayer.getElem(), content);
+  }
+  else if (Array.isArray(content)) {
+    content.forEach(function(node) {dvt.ToolkitUtils.appendChildElem(this._touchEventLayer.getElem(), node);}.bind(this));
+  }
+}
+
+/**
+ * Removes the contents from the touch-event layer
+ */
+dvt.ThematicMap.prototype._clearTouchEventContent = function() {
+  if (!this._touchEventLayer) {
+    return;
+  }
+  var touchEventLayerElem = this._touchEventLayer.getElem();
+
+  while (touchEventLayerElem.firstChild) {
+    touchEventLayerElem.removeChild(touchEventLayerElem.firstChild);
+  }
+}
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Default values and utility functions for thematic map component versioning.
  * @class
@@ -1206,10 +1287,16 @@ DvtThematicMapDefaults.prototype.getNoCloneObject = function() {
  * @override
  */
 DvtThematicMapDefaults.prototype.getAnimationDuration = function(options)
-{ 
+{
   return options['animationDuration'];
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Provides automation services for a DVT component.
  * @class  DvtThematicMapAutomation
@@ -1393,7 +1480,12 @@ DvtThematicMapAutomation.prototype._getDataLayerId = function(dataLayerId) {
   return dataLayerId;
 };
 
-// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Creates a selectable map area.
  * @param {dvt.Context} context The rendering context.
@@ -1543,7 +1635,12 @@ DvtSelectablePath.prototype.handleZoomEvent = function(pzcMatrix) {
   }
 };
 
-// Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2015 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   *  Creates a custom data item that supports interaction and accessibility.
   *  @extends {dvt.Container}
@@ -1575,10 +1672,10 @@ DvtCustomDataItem.prototype.Init = function(context, dataItem, styles) {
     this.addChild(dataItem);
   } else {
     if (Array.isArray(dataItem)) {
-      dataItem.forEach(function(node) {this.getElem().appendChild(node);}.bind(this)); // @HtmlUpdateOk
+      dataItem.forEach(function(node) {this.getElem().appendChild(node);}.bind(this)); // @HTMLUpdateOK
     }
     else {
-      this.getElem().appendChild(dataItem); //dataItem is output of a custom renderer function or a knockout template @HtmlUpdateOk
+      this.getElem().appendChild(dataItem); //dataItem is output of a custom renderer function or a knockout template @HTMLUpdateOK
     }
     // TODO make this more efficient by defering to render call
     var dim = dvt.DisplayableUtils.getDimensionsForced(context, this);
@@ -1706,12 +1803,13 @@ DvtCustomDataItem.prototype.getRootElement = function() {
  * Updates the current root element representing this data item which can either be a custom svg element or a DvtBaseComopnent
  * with the new which is used to update interaction effects.
  * @param {SVGElement|dvt.BaseComponent|Array} rootContent The new root content
+ * @param {boolean} shouldRemoveOldContent if set to true the old content will be removed before appending new content
  */
-DvtCustomDataItem.prototype.updateRootElement = function(rootContent) {
+DvtCustomDataItem.prototype.updateRootElement = function(rootContent, shouldRemoveOldContent) {
   if (this._dataItem === rootContent)
     return;
 
-  if (this._dataItem) {
+  if (this._dataItem && shouldRemoveOldContent) {
     if (this._dataItem instanceof dvt.BaseComponent) {
       this.removeChild(this._dataItem)
     } else if (Array.isArray(this._dataItem)) {
@@ -1727,9 +1825,9 @@ DvtCustomDataItem.prototype.updateRootElement = function(rootContent) {
   if (rootContent instanceof dvt.BaseComponent)
     this.addChild(rootContent);
   else if (Array.isArray(rootContent))
-    rootContent.forEach(function(node) {this.getElem().appendChild(node);}.bind(this)); // @HtmlUpdateOk
+    rootContent.forEach(function(node) {this.getElem().appendChild(node);}.bind(this)); // @HTMLUpdateOK
   else
-    this.getElem().appendChild(rootContent);//rootContent is output of a custom renderer function or a knockout template @HtmlUpdateOk
+    this.getElem().appendChild(rootContent);//rootContent is output of a custom renderer function or a knockout template @HTMLUpdateOK
   this._dataItem = rootContent;
 };
 
@@ -1741,6 +1839,12 @@ DvtCustomDataItem.prototype.fireKeyboardListener = function(event) {
     this._dataItem.fireKeyboardListener(event);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 // For MAF this != window and we want to use this
 // For JET this isn't available in use strict mode so we want to use window
 /**
@@ -2172,6 +2276,12 @@ DvtBaseMapManager.getLayerIds = function(baseMapName, layerName) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Associates a displayable with a category
  * @constructor
  * @param {DvtDisplayable} displayable The displayable
@@ -2211,6 +2321,12 @@ DvtThematicMapCategoryWrapper.prototype.getDisplayables = function() {
   return [this._displayable];
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Map label class
  * @constructor
@@ -2301,7 +2417,7 @@ DvtMapLabel.prototype.update = function(pzcMatrix) {
       if (dimensions.w <= zoomW) {
         state = i;
         break;
-      } 
+      }
     }
   }
 
@@ -2432,6 +2548,12 @@ DvtMapLabel.prototype.reset = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Logical object for a map data object
  * @param {object} data The options for this data object
  * @param {DvtMapDataLayer} dataLayer The data layer this object belongs to
@@ -2477,6 +2599,8 @@ DvtMapObjPeer.prototype.Init = function(data, dataLayer, displayable, label, cen
   this._isSelected = false;
   this._isShowingHoverEffect = false;
   this._isShowingKeyboardFocusEffect = false;
+  this._hasContentBoundToTouchEvent = false;
+  this._contentStoredInTouchEventContainer = null;
   if (this.Displayable.setDataColor)
     this.Displayable.setDataColor(data['color']);
   this._label = label;
@@ -3123,6 +3247,34 @@ DvtMapObjPeer.prototype.processDefaultHoverEffect = function(hovered) {
 };
 
 /**
+ * Handles touch start event on this node
+ */
+DvtMapObjPeer.prototype.handleTouchStart = function() {
+  // Called from HandleImmediateTouchStartInternal of DvtThematicMapEventManager
+  // when a touch event is started on this node.
+  // Set the _hasContentBoundToTouchEvent flag to indicate a touch event started on the
+  // content of this node is active.
+  // This will be unset in cases like hover where the contents are moved to touch event container
+  // and the updated contents are not a part of the touch event.
+  this._hasContentBoundToTouchEvent = true;
+}
+
+/**
+ * Handles touch end event on this node
+ */
+DvtMapObjPeer.prototype.handleTouchEnd = function() {
+  // Called from HandleImmediateTouchEndInternal of DvtThematicMapEventManager
+  // when a touch event is ended on this node.
+  // Unset the _hasContentBoundToTouchEvent flag to indicate a touch event started on the
+  // content of this node is no more active.
+  // This is to make sure that it is unset in case like selection event
+  // where this flag is set on the handleTouchStart but never updated as
+  // the custom render would not have hapened.
+  this._hasContentBoundToTouchEvent = false;
+  this._contentStoredInTouchEventContainer = null;
+}
+
+/**
  * Calls the specified renderer, adds, removes or updates content of the data item
  * @param {function} renderer Custom renderer for the data item state
  * @param {Object} state Object that contains current data item state
@@ -3144,7 +3296,23 @@ DvtMapObjPeer.prototype._callCustomRenderer = function(renderer, state, prevStat
   if (!newRootElem && rootElem && this._view.getCtx().isCustomElement()) {
     return;
   }
-  this.Displayable.updateRootElement(newRootElem);
+
+  var stashedOldContents = false;
+  if (newRootElem != rootElem) {
+    // BUG: JET-31433 - IN THEMATIC MAP: INLINE TEMPLATES DEMO, THE MARKER STAYS HIGHLIGHTED
+    // When renderer function creates content which is different from the initial content, the initial content
+    // is removed from the DOM which breaks the touch events.
+    // To fix this, the initial content is added to the touch event container before it can be safely destroyed
+    // Move old contents if needed, instead of removing them.
+    stashedOldContents = this._checkAndMoveContents(rootElem);
+  }
+  // If the content stored in the touch event container is the new content
+  // then we need to set the _hasContentBoundToTouchEvent flag to make sure
+  // it is not removed from the DOM before the event ends.
+  if (newRootElem === this._contentStoredInTouchEventContainer) {
+    this._hasContentBoundToTouchEvent = true;
+  }
+  this.Displayable.updateRootElement(newRootElem, !stashedOldContents);
 };
 
 /**
@@ -3169,6 +3337,36 @@ DvtMapObjPeer.prototype._getState = function() {
   };
 };
 
+/**
+ * Checks if it is needed to move the contents and stores them in the touch event layer of the
+ * thematic map
+ * @param {Element|Array<Element>} rootElem The element that has to be moved
+ * @returns {boolean} true if the contents are stashed, false otherwise
+ */
+DvtMapObjPeer.prototype._checkAndMoveContents = function(rootElem) {
+  // No need to move contents when there is no active touch event in this node
+  // from the HandleImmediateTouchStartInternal handler method of the DvtThematicMapEventManager
+  if (!this._hasContentBoundToTouchEvent) {
+    return false;
+  }
+
+  this._view.storeTouchEventContent(rootElem, this);
+  this._contentStoredInTouchEventContainer = rootElem;
+
+  // Reset the _hasContentBoundToTouchEvent flag since the contents are moved to the touch events pane
+  // and this node's content no longer is associated with active touch event
+  this._hasContentBoundToTouchEvent = false;
+
+  // return true to indicate the contents are moved
+  return true;
+}
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Logical object for a map data area
  * @param {object} data The options for this data object
@@ -3279,6 +3477,12 @@ DvtMapAreaPeer.prototype.__recenter = function() {
   // no-op
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Logical object for a map data area
  * @param {object} data The options for this data object
@@ -3454,6 +3658,12 @@ DvtMapLinkPeer.prototype.animateUpdate = function(handler, oldObj) {
   handler.add(anim, DvtMapObjPeer.ANIMATION_UPDATE_PRIORITY);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Displayable representing a non data map area
  * @extends {dvt.Container}
@@ -3647,12 +3857,18 @@ DvtMapArea.prototype.contains = function(x, y) {
 DvtMapArea.prototype.HandleZoomEvent = function(pzcMatrix) {
   if (!this._bSupportsVectorEffects && this._shape && this._areaStrokeWidth) {
     var copyStroke = this._shape.getStroke();
-    var zoomStroke = new dvt.Stroke(copyStroke.getColor(), copyStroke.getAlpha(), 
+    var zoomStroke = new dvt.Stroke(copyStroke.getColor(), copyStroke.getAlpha(),
       this._areaStrokeWidth / pzcMatrix.getA(), copyStroke.isFixedWidth());
     this._shape.setStroke(zoomStroke);
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Thematic Map map layer
  * @param {dvt.ThematicMap} tmap The thematic map this map layer belongs to
@@ -3906,6 +4122,12 @@ DvtMapLayer.prototype.destroy = function() {
     dataLayers[layer].destroy();
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Thematic Map area layer
  * @param {dvt.ThematicMap} tmap The thematic map this map layer belongs to
@@ -4330,6 +4552,12 @@ DvtMapAreaLayer.prototype.HandleZoomEvent = function(event, pzcMatrix) {
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 var DvtMapDataLayer = function(tmap, parentLayer, clientId, eventHandler, options) {
   this.Init(tmap, parentLayer, clientId, eventHandler, options);
 };
@@ -4860,6 +5088,12 @@ DvtMapDataLayer.prototype.getNavigableLinksForNodeId = function(markerId) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * @param {dvt.ThematicMap} tmap The owning component
  * @param {dvt.EventManager} manager The owning dvt.EventManager
  * @class DvtThematicMapKeyboardHandler
@@ -4923,7 +5157,7 @@ DvtThematicMapKeyboardHandler.prototype.processKeyDown = function(event) {
     }
     // If we're currently in the marker data layer, move to links.
     // DvtMapObjPeer is the class we associate for markers and even though DvtMapAreaPeer subclasses
-    // DvtMapObjPeer, we're doing the instanceof check after the more specific DvtMapAreaPeer check so 
+    // DvtMapObjPeer, we're doing the instanceof check after the more specific DvtMapAreaPeer check so
     // we can assume this means that we are currently in the marker data layer.
     else if (focusObj instanceof DvtMapObjPeer) {
       navigables = this._tmap.getNavigableLinks();
@@ -4939,7 +5173,7 @@ DvtThematicMapKeyboardHandler.prototype.processKeyDown = function(event) {
     this._linkNavType = DvtThematicMapKeyboardHandler.LINK_NAV;
     // Traverse data objects in order of links [ markers [ areas
     var navigables = [];
-    
+
 
     if (focusObj instanceof DvtMapLinkPeer) {
       navigables = this._tmap.getNavigableMarkers();
@@ -4950,7 +5184,7 @@ DvtThematicMapKeyboardHandler.prototype.processKeyDown = function(event) {
     }
     // If we're currently in the marker data layer, move to links.
     // DvtMapObjPeer is the class we associate for markers and even though DvtMapAreaPeer subclasses
-    // DvtMapObjPeer, we're doing the instanceof check after the more specific DvtMapAreaPeer check so 
+    // DvtMapObjPeer, we're doing the instanceof check after the more specific DvtMapAreaPeer check so
     // we can assume this means that we are currently in the marker data layer.
     else if (!(focusObj instanceof DvtMapAreaPeer) && focusObj instanceof DvtMapObjPeer) {
       navigables = this._tmap.getNavigableAreas();
@@ -5054,7 +5288,12 @@ DvtThematicMapKeyboardHandler.getFirstNavigableLink = function(marker, event, li
   return link;
 };
 
-// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  * @param {dvt.Context} context The rendering context.
@@ -5258,6 +5497,30 @@ DvtThematicMapEventManager.prototype.HandleTouchActionsEnd = function(event, tou
 /**
  * @override
  */
+DvtThematicMapEventManager.prototype.HandleImmediateTouchStartInternal = function(event) {
+  DvtThematicMapEventManager.superclass.HandleImmediateTouchStartInternal.call(this, event);
+  var obj = this.GetLogicalObject(event.target);
+  if (obj instanceof DvtMapObjPeer) {
+    obj.handleTouchStart();
+  }
+  this._tmap.handleTouchStart();
+};
+
+/**
+ * @override
+ */
+DvtThematicMapEventManager.prototype.HandleImmediateTouchEndInternal = function(event) {
+  DvtThematicMapEventManager.superclass.HandleImmediateTouchEndInternal.call(this, event);
+  var obj = this.GetLogicalObject(event.target);
+  if (obj instanceof DvtMapObjPeer) {
+    obj.handleTouchEnd();
+  }
+  this._tmap.handleTouchEnd();
+};
+
+/**
+ * @override
+ */
 DvtThematicMapEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOver) {
   // Don't continue if not enabled
   var options = this._tmap.getOptions();
@@ -5314,7 +5577,12 @@ DvtThematicMapEventManager.prototype.ShowFocusEffect = function(event, obj) {
     DvtThematicMapEventManager.superclass.ShowFocusEffect.call(this, event, obj);
 };
 
-// Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Thematic Map JSON parser
  * @param {dvt.ThematicMap} tmap The thematic map to update
@@ -6083,7 +6351,7 @@ DvtThematicMapJsonParser.prototype._styleDisplayable = function(style, displayab
         else
           borderWidth = parseFloat(style['borderWidth']);
       }
-      var stroke = new dvt.Stroke(style['borderColor'], 1, borderWidth, 
+      var stroke = new dvt.Stroke(style['borderColor'], 1, borderWidth,
         !this._tmap.isMarkerZoomBehaviorFixed(), dvt.Stroke.getDefaultDashProps(strokeType, borderWidth));
       displayable.setStroke(stroke);
     }
@@ -6308,6 +6576,12 @@ DvtThematicMapJsonParser._getLocationName = function(basemap, dataLayer, data) {
   return null;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Utility class for built-in map projections
  * @constructor
@@ -6950,6 +7224,12 @@ DvtThematicMapProjections._getInverseRobinsonProjection = function(x, y) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Thematic Map MapProvider utility class for converting a GeoJSON object into a basemap.
  */
 var DvtMapProviderUtils = {};
@@ -7272,7 +7552,14 @@ DvtMapProviderUtils._pathToPolygon = function(path) {
   return coords;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
 // To avoid changing the basemaps, which each call the basemap manager, we will
 // put the basemap manager onto the returned object. We'll only do this if it's
 // not defined, since in min/min-debug mode, the non-exported version is on the window.

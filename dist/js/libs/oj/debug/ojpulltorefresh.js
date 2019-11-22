@@ -2,8 +2,10 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojtranslation', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'touchr'],
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojtranslation', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'touchr'],
 /*
 * @param {Object} oj 
 * @param {jQuery} $
@@ -12,10 +14,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojtranslation', 'hammerjs'
 function(oj, $, Context, Translations, Hammer)
 {
   "use strict";
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Hammer:false, Translations:false, Context:false */
 
@@ -24,9 +23,10 @@ function(oj, $, Context, Translations, Hammer)
  * @since 1.2.0
  * @export
  * @hideconstructor
- * @ojstatus preview
+ *
  * @ojtsmodule
  *
+ * @ojdeprecated {since: '7.0.0', description: 'Use ojRefresher instead.'}
  * @classdesc
  * This class provides functions for adding pull to refresh functionality to any container element which hosts refreshable content.
  * By default this class will generate a default panel, which consists of a refresh icon, a primary text, and a secondary text.  The application
@@ -103,11 +103,11 @@ oj.PullToRefreshUtils.setupPullToRefresh = function (element, refreshFunc, optio
 
   // create the element containing the content
   content = $(document.createElement('div')).addClass('oj-pulltorefresh-panel');
-  outer.append(content); // @HtmlUpdateOK
+  outer.append(content); // @HTMLUpdateOK
 
   // prepend it to the panel
   panel = $(element);
-  panel.prepend(outer); // @HTMLUpdateOK; outer is created by the component
+  panel.prepend(outer); // @HTMLUpdateOK outer is created by the component
 
   if (isTouch) {
     type = 'touch';
@@ -439,22 +439,22 @@ oj.PullToRefreshUtils._createDefaultContent = function (content, primaryText, se
   iconContainer = $(document.createElement('div'));
   iconContainer.addClass('oj-pulltorefresh-icon-container');
 
-  iconContainer.append(icon); // @HtmlUpdateOK
+  iconContainer.append(icon); // @HTMLUpdateOK
   $.data(content[0], 'data-lasticonclass', 'oj-pulltorefresh-icon-initial');
-  content.append(iconContainer); // @HtmlUpdateOK
+  content.append(iconContainer); // @HTMLUpdateOK
 
   if (primaryText != null) {
     primary = $(document.createElement('div'))
       .addClass('oj-pulltorefresh-primary-text')
       .text(primaryText);
-    content.append(primary); // @HtmlUpdateOK
+    content.append(primary); // @HTMLUpdateOK
 
     // you can't have secondary text without primary text
     if (secondaryText != null) {
       secondary = $(document.createElement('div'))
         .addClass('oj-pulltorefresh-secondary-text')
         .text(secondaryText);
-      content.append(secondary); // @HtmlUpdateOK
+      content.append(secondary); // @HTMLUpdateOK
     }
   }
 };
@@ -523,8 +523,8 @@ oj.PullToRefreshUtils._renderAccessibleLink = function (element, panel, refreshF
   status.addClass('oj-helper-hidden-accessible')
     .attr('aria-live', 'polite');
 
-  panel.append(link); // @HtmlUpdateOK
-  panel.append(status); // @HtmlUpdateOK
+  panel.append(link); // @HTMLUpdateOK
+  panel.append(status); // @HTMLUpdateOK
 };
 
 /**

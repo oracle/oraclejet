@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojconfig', 'knockout', 'ojs/ojlogger'], function(Config, ko, Logger)
 {
   "use strict";
@@ -32,7 +34,7 @@ GlobalChangeQueue.prototype.registerComponentChanges = function (tracker) {
   if (this._trackers.indexOf(tracker) === -1) {
     this._trackers.push(tracker);
     if (!this._delayTimer) {
-      this._delayTimer = setTimeout(oj.Object.createCallback(this, this._deliverChangesImpl), 1);// @HTMLUpdateOK; delaying our own callback
+      this._delayTimer = setTimeout(oj.Object.createCallback(this, this._deliverChangesImpl), 1);// @HTMLUpdateOK delaying our own callback
       this._delayPromise = new Promise(
         function (resolve) {
           this._delayPromiseResolver = resolve;
@@ -79,6 +81,7 @@ GlobalChangeQueue.prototype._resolveDelayPromise = function () {
     this._delayPromise = null;
   }
 };
+
 
 /* global ko:false, Logger:false, WeakMap: false, GlobalChangeQueue: false, Config: false */
 
@@ -200,7 +203,7 @@ function _KoCustomBindingProvider() {
     /* jslint evil:true */
     // eslint-disable-next-line no-new-func
     return new Function('$context', 'with($context){with($data||{}){return '
-      + expressionText + ';}}'); // @HTMLUpdateOK; binding expression evaluation
+      + expressionText + ';}}'); // @HTMLUpdateOK binding expression evaluation
   };
 
   this.createEvaluator = function (expression, bindingContext) {
@@ -379,7 +382,7 @@ function _KoCustomBindingProvider() {
     /* jslint evil:true */
     // eslint-disable-next-line no-new-func
     return new Function('$context', '$element', 'with($context.$data||{}){with($context){return ' +
-      expressionText + '}}'); // @HTMLUpdateOK; binding expression evaluation
+      expressionText + '}}'); // @HTMLUpdateOK binding expression evaluation
   }
 
   function _createEvaluatorViaCache(factory, expr, bindingContext) {

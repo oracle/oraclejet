@@ -18,10 +18,8 @@
     $avatarOuterBorderColor:                   null
  )
  {
-   .oj-avatar-has-initials .oj-avatar-inner {
+   .oj-avatar {
      background-color: $avatarInnerBgColor;
-   }
-   .oj-avatar-outer {
      border-color: $avatarOuterBorderColor;
    }
  }

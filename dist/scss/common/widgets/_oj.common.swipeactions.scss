@@ -19,38 +19,30 @@
 
     /* Styling for the neutral action item. */
     .oj-swipeactions-neutral {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background-color: var(--oj-swipe-actions-neutral-bg-color);
-      } @else {
+
         background-color: $swipeActionsNeutralBgColor;
-      }
+
     }
 
     /* Styling for the attention action item. */
     .oj-swipeactions-attention {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background-color: var(--oj-swipe-actions-attention-bg-color);
-      } @else {
+
         background-color: $swipeActionsAttentionBgColor;
-      }
+
     }
 
     /* Styling for the danger action item. */
     .oj-swipeactions-danger {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background-color: var(--oj-swipe-actions-danger-bg-color);
-      } @else {
+
         background-color: $swipeActionsDangerBgColor;
-      }
+
     }
 
     /* Styling for the text within action item. */
     .oj-swipeactions-action-text {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        padding-top: var(--oj-swipe-actions-icon-to-text-padding);
-      } @else {
+
         padding-top: $swipeActionsIconToTextPadding;
-      }
+
     }
 
     /* Styling for the panel of an action item. */
@@ -60,11 +52,9 @@
 
     /* styling on focused action item. */
     .oj-swipeactions-action-panel.oj-focus-highlight {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        outline: 2px dotted var(--oj-text-color-primary);
-      } @else {
+
         outline: 2px dotted $primaryTextColor;
-      }
+
       outline: -webkit-focus-ring-color solid;
       outline-offset: -2px;
     }
@@ -76,12 +66,9 @@
 
     /* Styling for the content inside swipe actions when it is hosted within a listview item. */
     .oj-listview-item .oj-swipeactions-content {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        padding: var(--oj-panel-padding);
-      }
-      @else {
+
         padding: $panelPadding;
-      }
+      
     }
 
     /* Styling for the accessible link that displays the swipe actions when activate. */

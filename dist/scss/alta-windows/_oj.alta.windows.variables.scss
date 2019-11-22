@@ -6,6 +6,9 @@
 //=================================================================
 // file picker
 $filePickerBgColorActive: $brandColorLight4 !default;
+$filePickerTextFontWeight:        normal !default;
+$filePickerPadding:               24px !default;
+
 $listViewHeaderBgColor: $neutralColor7 !default; //settings: ignore
 // nav list
 
@@ -431,6 +434,11 @@ $formControlOpacityDisabled:      1 !default;
 // placeholder
 $formControlPlaceholderColor:     $tertiaryTextColor !default;
 
+// form control option defaults
+//----------------------------------
+$formControlLabelEdgeDefault: provided !default;
+
+
 // form labels
 //----------------------------------
 // label text color defined above, look for "text colors"
@@ -455,13 +463,19 @@ $formLayoutMarginBottom: 10px !default;
 // to maintain label's height, and we need a different top margin for this case.
 $formLayoutLabelInlineMarginTop: .2em !default;
 
+// Default value for colspan-wrap attribute
+$formLayoutColspanWrapDefault: nowrap !default;
 
+// The left/right margin is the space before the first column and after the last column of an oj-form-layout
+$formLayoutHorizontalMargin:  $formControlLabelInlineGutter !default;
 
 // INPUT TEXT, INPUT PASSWORD, TEXT AREA
 //----------------------------------------------------------------
 // common
 $formControlInputHeight:                     oj-px-to-rem(32px, $baseFontSize: 15px) !default;
-
+// INPUT DATE
+$inputDateTimeConverterYearOptionDefault: 2-digit !default;
+$inputDateTimeShowPickerOnDesktopOptionDefault: enabled !default;
 //INPUT SEARCH
 //--------------------------------------------------------------
 $inputSearchIconPosition: start !default; // Possible values are 'start' and 'end'

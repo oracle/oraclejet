@@ -1,5 +1,5 @@
 import { ojTimeAxis } from '../ojtimeaxis';
-import { Converter } from '../ojvalidation-base';
+import Converter = require('../ojconverter');
 import { KeySet } from '../ojkeyset';
 import { DataProvider } from '../ojdataprovider';
 import { dvtTimeComponent, dvtTimeComponentEventMap, dvtTimeComponentSettableProperties } from '../ojtime-base';
@@ -53,7 +53,7 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
         y?: number;
     };
     selection: K2[];
-    selectionMode: 'single' | 'multiple' | 'none';
+    selectionMode: 'none' | 'single' | 'multiple';
     start: string;
     taskData?: (DataProvider<K2, D2>);
     taskDefaults: {
@@ -340,6 +340,13 @@ export namespace ojGantt {
         type?: 'finishStart' | 'finishFinish' | 'startStart' | 'startFinish';
     };
     // tslint:disable-next-line interface-over-type-literal
+    type DependencyTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type ReferenceObject = {
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
@@ -393,6 +400,28 @@ export namespace ojGantt {
             svgClassName?: string;
             svgStyle?: CSSStyleDeclaration;
         };
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RowTemplateContext = {
+        componentElement: Element;
+        index: number;
+        id: any;
+        tasks: Array<{
+            data: object;
+            index: number;
+            key: any;
+            parentData: object[];
+            parentKey: any;
+        }>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TaskTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+        parentData: object[];
+        parentKey: any;
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K2, D2> = {
@@ -482,7 +511,7 @@ export interface ojGanttSettableProperties<K1, K2, D1 extends ojGantt.Dependency
         y?: number;
     };
     selection: K2[];
-    selectionMode: 'single' | 'multiple' | 'none';
+    selectionMode: 'none' | 'single' | 'multiple';
     start: string;
     taskData?: (DataProvider<K2, D2>);
     taskDefaults: {

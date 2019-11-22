@@ -2,14 +2,14 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore'], function(oj)
 {
   "use strict";
-var EventTargetMixin = /** @class */ (function () {
-    function EventTargetMixin() {
-    }
-    EventTargetMixin.prototype.addEventListener = function (eventType, listener) {
+class EventTargetMixin {
+    addEventListener(eventType, listener) {
         if (!this._eventListeners) {
             this._eventListeners = [];
         }
@@ -17,11 +17,11 @@ var EventTargetMixin = /** @class */ (function () {
             'type': eventType.toLowerCase(),
             'listener': listener
         });
-    };
+    }
     ;
-    EventTargetMixin.prototype.removeEventListener = function (eventType, listener) {
+    removeEventListener(eventType, listener) {
         if (this._eventListeners) {
-            var i = void 0;
+            let i;
             for (i = this._eventListeners.length - 1; i >= 0; i--) {
                 if (this._eventListeners[i]['type'] == eventType &&
                     this._eventListeners[i]['listener'] == listener) {
@@ -29,9 +29,9 @@ var EventTargetMixin = /** @class */ (function () {
                 }
             }
         }
-    };
+    }
     ;
-    EventTargetMixin.prototype.dispatchEvent = function (evt) {
+    dispatchEvent(evt) {
         if (this._eventListeners) {
             var i, returnValue;
             //clone the eventListeners to isolate mutations that may occur during dispatching events
@@ -50,32 +50,30 @@ var EventTargetMixin = /** @class */ (function () {
             }
         }
         return true;
-    };
+    }
     ;
-    EventTargetMixin.applyMixin = function (derivedCtor) {
-        var baseCtors = [EventTargetMixin];
-        baseCtors.forEach(function (baseCtor) {
-            Object.getOwnPropertyNames(baseCtor.prototype).forEach(function (name) {
+    static applyMixin(derivedCtor) {
+        let baseCtors = [EventTargetMixin];
+        baseCtors.forEach(baseCtor => {
+            Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
                 if (name !== 'constructor') {
                     derivedCtor.prototype[name] = baseCtor.prototype[name];
                 }
             });
         });
-    };
-    return EventTargetMixin;
-}());
+    }
+}
 oj.EventTargetMixin = EventTargetMixin;
 
-var GenericEvent = /** @class */ (function () {
-    function GenericEvent(type, options) {
+class GenericEvent {
+    constructor(type, options) {
         this.type = type;
         this.options = options;
         if (options != null) {
             this['detail'] = options['detail'];
         }
     }
-    return GenericEvent;
-}());
+}
 oj.GenericEvent = GenericEvent;
 
 });

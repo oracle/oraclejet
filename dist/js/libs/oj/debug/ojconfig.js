@@ -2,18 +2,18 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 //although Config has a direct dependency on oj.LocaleData and oj.TimezoneData we will not list 
-// these direct dependencies here because of circulare reference error. These dependencies are tested in the code
-// if they exist so it's safe to leave them out from the define arg list.
+// these direct dependencies here because of circulare reference error. 
+// The oj.LocaleData and oj.TimezoneData dependencies are tested in the code
+// if they exist. We purposely leave them out for two reasons: one is they have a circular reference,
+// and another is to not incur the download cost if the code doesn't need them.
 define(['require','ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtranslations'  ], function(require, oj, ojt)
 {
   "use strict";
-/*
-** Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
-**
-**34567890123456789012345678901234567890123456789012345678901234567890123456789
-*/
+
 
 /* jslint browser: true*/
 /* global require:false, ojt:true, Promise:false */
@@ -30,7 +30,29 @@ define(['require','ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtranslations' 
 var Config = {};
 
 /**
- * Retrieves the type of device the application is running on.
+ * Retrieves the render mode the application should use.  This allows the application to render content
+ * differently based on the type of device.
+ * <p>By default, this function returns the value from getDeviceType.</p>
+ * <p>An application can override it by adding a "data-oj-device-render-mode" attribute with the desired value
+ * to the document body.  This may be useful in simulating the look of one device type on a different device type,
+ * such as simulating the look of "phone" on a destop computer.</p>
+ *
+ * @memberof oj.Config
+ * @method getDeviceRenderMode
+ * @return {"phone" | "tablet" | "others"} The render mode
+ * @export
+ */
+Config.getDeviceRenderMode = function () {
+  return document.body.getAttribute('data-oj-device-render-mode') ||
+         Config.getDeviceType();
+};
+
+/**
+ * Retrieves the type of device the application is running on.  This allows the application to behave
+ * differently based on the type of device.
+ * <p>This function always return the actual device type.  Use getDeviceRenderMode if the application wants
+ * to render content differently based on the device type, including simulated device type.</p>
+ *
  * @memberof oj.Config
  * @method getDeviceType
  * @return {"phone" | "tablet" | "others"} The device type
@@ -88,7 +110,13 @@ Config.setLocale = function (locale, callback) {
 
     var timezoneBundleCount = 0;
 
-    // Request LocaleElements only if ojlocaledata module is loaded
+    // Request LocaleElements only if the ojs/ojlocaledata module is loaded;
+    // oj.LocaleData will exist in that case.
+    // Validators/Converters that need locale data import ojs/ojlocaledata
+    // themselves.
+    // If you're just using Config.setLocale to change your
+    // translation bundle, this code will do that without
+    // incurring the download hit of the ojs/ojlocaledata module.
     if (oj.LocaleData) {
       requestedBundles.push(prefix + locale + '/localeElements');
 
@@ -254,8 +282,6 @@ Config.getVersionInfo = function () {
  * @export
  */
 Config.logVersionInfo = function () {
-  // eslint-disable-next-line no-console
-  console.log(Config.getVersionInfo());
 };
 
 /**

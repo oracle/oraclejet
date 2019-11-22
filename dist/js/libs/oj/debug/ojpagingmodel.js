@@ -2,24 +2,21 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 "use strict";
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'jquery'], function(oj, $)
 {
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
  */
+
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -49,7 +46,6 @@ oj.PagingModel = function () {
  * @name getPage
  * @memberof oj.PagingModel
  * @instance
- * @ojtsignore
  */
 
 /**
@@ -64,7 +60,6 @@ oj.PagingModel = function () {
  * @name setPage
  * @memberof oj.PagingModel
  * @instance
- * @ojtsignore
  */
 
 /**
@@ -76,7 +71,6 @@ oj.PagingModel = function () {
  * @name getStartItemIndex
  * @memberof oj.PagingModel
  * @instance
- * @ojtsignore
  */
 
 /**
@@ -88,7 +82,6 @@ oj.PagingModel = function () {
  * @name getEndItemIndex
  * @memberof oj.PagingModel
  * @instance
- * @ojtsignore
  */
 
 /**
@@ -100,7 +93,6 @@ oj.PagingModel = function () {
  * @name getPageCount
  * @memberof oj.PagingModel
  * @instance
- * @ojtsignore
  */
 
 /**
@@ -112,7 +104,6 @@ oj.PagingModel = function () {
  * @name totalSize
  * @memberof oj.PagingModel
  * @instance
- * @ojtsignore
  */
 
 /**
@@ -127,7 +118,6 @@ oj.PagingModel = function () {
  * @name totalSizeConfidence
  * @memberof oj.PagingModel
  * @instance
- * @ojtsignore
  */
 
 /**
@@ -135,7 +125,6 @@ oj.PagingModel = function () {
  * Event types
  * @memberof oj.PagingModel
  * @enum {string}
- * @ojtsignore
  */
 oj.PagingModel.EventType =
 {

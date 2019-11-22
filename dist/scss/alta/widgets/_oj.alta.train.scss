@@ -24,12 +24,9 @@
 
     .oj-train-button.oj-visited::before {
       content: "";
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-    {
-      display: var(--oj-train-icon-display-visited);
-    } @else {
+
       display: $trainVisitedIconDisplay;
-    }
+    
       @extend .oj-fwk-icon-checkmark-blue;
     }
 

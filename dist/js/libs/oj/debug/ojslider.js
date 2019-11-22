@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/draggable', 'ojs/ojtouchproxy'], 
 /*
 * @param {Object} oj 
@@ -46,6 +48,10 @@ var __oj_slider_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
+          "enumValues": [
+            "none",
+            "notewindow"
+          ],
           "value": [
             "notewindow"
           ]
@@ -73,6 +79,14 @@ var __oj_slider_metadata =
           "value": ""
         }
       }
+    },
+    "labelEdge": {
+      "type": "string",
+      "enumValues": [
+        "inside",
+        "none",
+        "provided"
+      ]
     },
     "labelHint": {
       "type": "string",
@@ -172,10 +186,7 @@ var __oj_slider_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
@@ -195,6 +206,7 @@ var __oj_slider_metadata =
    * @ojcomponent oj.ojSlider
    * @ojdisplayname Slider
    * @augments oj.editableValue
+   * @ojimportmembers oj.ojDisplayOptions
    * @ojsignature [{
    *                target: "Type",
    *                value: "class ojSlider extends editableValue<number|null, ojSliderSettableProperties>"
@@ -209,7 +221,6 @@ var __oj_slider_metadata =
    * @ojrole slider
    * @since 0.7.0
    * @ojshortdesc A slider allows a user to set a value by moving an indicator.
-   * @ojstatus preview
    *
    * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "type", "orientation", "min", "max", "step", "disabled"]}
    * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
@@ -313,7 +324,7 @@ var __oj_slider_metadata =
    * Assume that the <code class="prettyprint">id</code> of the remote element is
    * "idOfRemoteElement".
    * Below we show how to access the thumb element in order to set the
-   * <code class="prettyprint">aria-controls</code> attribute of the thumb to point to the the
+   * <code class="prettyprint">aria-controls</code> attribute of the thumb to point to the
    * id ("idOfRemoteElement") of the remote html element:
    *
    * <pre class="prettyprint">
@@ -386,6 +397,7 @@ var __oj_slider_metadata =
        * @memberof oj.ojSlider
        */
       labelledBy: null,
+
       /**
        * The maximum value of the slider.
        * The <code class="prettyprint">max</code> must not be less than the
@@ -550,9 +562,9 @@ var __oj_slider_metadata =
        * @expose
        * @type {?string}
        * @ojvalue {string} "fromMin" A single-thumb slider where the value bar goes from
-       * the slider min to the the slider thumb.
+       * the slider min to the slider thumb.
        * @ojvalue {string} "fromMax" A single-thumb slider where the value bar goes from
-       * the slider thumb to the the slider max.
+       * the slider thumb to the slider max.
        * @ojvalue {string} "single" A single-thumb slider where the value bar has no
        * additional styling.
        * @default "fromMin"
@@ -627,7 +639,7 @@ var __oj_slider_metadata =
        * @type {number}
        * @since 5.0
        * @readonly
-       * @ojstatus preview
+       *
        */
       rawValue: undefined
 
@@ -1067,7 +1079,7 @@ var __oj_slider_metadata =
 
       this._sliderContainer = $('<div></div>');
       $(this._sliderContainer).attr('id', sliderWrapperId);
-      this._sliderContainer.addClass('oj-slider-container');
+      this._sliderContainer.addClass('oj-slider-container').addClass('oj-form-control-container');
 
       this.element.after(this._sliderContainer); // @HTMLUpdateOK
 
@@ -1318,7 +1330,7 @@ var __oj_slider_metadata =
     },
 
     //
-    // Called when the the user clicks on the bar in order to reposition the thumb.
+    // Called when the user clicks on the bar in order to reposition the thumb.
     // Setup initial positions, distance.
     // The mouse position is used for bar clicks,
     // while the thumb position is used when dragging the thumb.
@@ -1594,7 +1606,7 @@ var __oj_slider_metadata =
         if (newVal !== this._getMultiValues(index)) {
           this._setMultiValue(event, index, newVal, rawOnly);
         }
-      } else if (newValParam !== this._getSingleValue()) {
+      } else {
          // This case handles a single value
          // sets slider thumb value
         this._setSingleValue(event, newValParam, rawOnly);
@@ -2308,37 +2320,35 @@ var __oj_slider_metadata =
          { attribute: 'max' },
          { attribute: 'step' }];
 
+      if (!this._IsCustomElement()) {
+        oj.EditableValueUtils.initializeOptionsFromDom(
+          props, constructorOptions, this,
+          // post-process callback
+          function (_initializedOptions) {
+            var initializedOptions = _initializedOptions;
+            // coerce regardless of where the option value came from - dom/constructor
+            var toParse = ['value', 'step', 'min', 'max'];
 
-      oj.EditableValueUtils.initializeOptionsFromDom(
-        props, constructorOptions, this,
-        // post-process callback
-        function (_initializedOptions) {
-          var initializedOptions = _initializedOptions;
-          // coerce regardless of where the option value came from - dom/constructor
-          var toParse = ['value', 'step', 'min', 'max'];
-
-          for (var i = 0; i < toParse.length; i++) {
-            var opt = toParse[i];
-            var value = (opt in initializedOptions) ?
-                initializedOptions[opt] : opts[opt];
-            if (value != null) {
-              if (opt === 'step') {
-                initializedOptions[opt] = self._parseStep(value);
-              } else if (opt === 'min' || opt === 'max') {
-                initializedOptions[opt] = self._parse(opt, value);
-              } else if (opt === 'value') {
-                if (Array.isArray(value)) {
-                  initializedOptions[opt] = value;
-                } else {
+            for (var i = 0; i < toParse.length; i++) {
+              var opt = toParse[i];
+              var value = (opt in initializedOptions) ?
+                  initializedOptions[opt] : opts[opt];
+              if (value != null) {
+                if (opt === 'step') {
+                  initializedOptions[opt] = self._parseStep(value);
+                } else if (opt === 'min' || opt === 'max') {
                   initializedOptions[opt] = self._parse(opt, value);
+                } else if (opt === 'value') {
+                  if (Array.isArray(value)) {
+                    initializedOptions[opt] = value;
+                  } else {
+                    initializedOptions[opt] = self._parse(opt, value);
+                  }
                 }
               }
             }
           }
-        }
-      );
-
-      if (!this._IsCustomElement()) {
+        );
         if (opts.value === undefined) {
           throw new Error(this.getTranslatedString('noValue'));
         }
@@ -2893,6 +2903,7 @@ var __oj_slider_metadata =
      */
   });
 }());
+
 
 /* global __oj_slider_metadata */
 (function () {

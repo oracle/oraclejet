@@ -39,6 +39,7 @@ export interface ojTreeView<K, D> extends baseComponent<ojTreeViewSettableProper
         } | void) | null;
         selectable?: ((itemContext: ojTreeView.ItemContext<K, D>) => boolean);
     };
+    selected: KeySet<K>;
     selection: K[];
     selectionMode: 'none' | 'single' | 'multiple';
     addEventListener<T extends keyof ojTreeViewEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTreeViewEventMap<K, D>[T]) => any, useCapture?: boolean): void;
@@ -107,6 +108,8 @@ export namespace ojTreeView {
     // tslint:disable-next-line interface-over-type-literal
     type itemChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["item"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type selectedChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["selected"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type selectionChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["selection"]>;
     // tslint:disable-next-line interface-over-type-literal
     type selectionModeChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["selectionMode"]>;
@@ -126,6 +129,16 @@ export namespace ojTreeView {
         item: Element;
         position: 'inside' | 'before' | 'after' | 'first';
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+        depth: number;
+        leaf: boolean;
+        parentkey: any;
+    };
 }
 export interface ojTreeViewEventMap<K, D> extends baseComponentEventMap<ojTreeViewSettableProperties<K, D>> {
     'ojAnimateEnd': ojTreeView.ojAnimateEnd;
@@ -140,6 +153,7 @@ export interface ojTreeViewEventMap<K, D> extends baseComponentEventMap<ojTreeVi
     'dndChanged': JetElementCustomEvent<ojTreeView<K, D>["dnd"]>;
     'expandedChanged': JetElementCustomEvent<ojTreeView<K, D>["expanded"]>;
     'itemChanged': JetElementCustomEvent<ojTreeView<K, D>["item"]>;
+    'selectedChanged': JetElementCustomEvent<ojTreeView<K, D>["selected"]>;
     'selectionChanged': JetElementCustomEvent<ojTreeView<K, D>["selection"]>;
     'selectionModeChanged': JetElementCustomEvent<ojTreeView<K, D>["selectionMode"]>;
 }
@@ -181,6 +195,7 @@ export interface ojTreeViewSettableProperties<K, D> extends baseComponentSettabl
         } | void) | null;
         selectable?: ((itemContext: ojTreeView.ItemContext<K, D>) => boolean);
     };
+    selected: KeySet<K>;
     selection: K[];
     selectionMode: 'none' | 'single' | 'multiple';
 }

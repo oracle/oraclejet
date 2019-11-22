@@ -31,10 +31,7 @@ export type ComponentMetadata = {
     };
     propertyLayout?: PropertyLayoutGroup[];
     status?: Status[];
-    styleClasses?: Array<{
-        styleGroup: string[];
-        description: string;
-    }>;
+    styleClasses?: StyleClassItem[] | StyleGroup[];
     type?: 'composite' | 'core' | 'pack' | 'reference' | 'resource';
 };
 // tslint:disable-next-line interface-over-type-literal
@@ -160,4 +157,58 @@ export type Status = {
     description?: string;
     target?: 'propertyType' | 'parameterType' | 'returnType';
     value?: string[];
+};
+// tslint:disable-next-line interface-over-type-literal
+export type StyleClass = {
+    name: string;
+    kind: 'class';
+    displayName?: string;
+    description?: string;
+    help?: string;
+    status?: Status[];
+    styleSelector?: string;
+};
+// tslint:disable-next-line interface-over-type-literal
+export type StyleClassItem = StyleClass | StyleSet | StyleTemplate;
+// tslint:disable-next-line interface-over-type-literal
+export type StyleGroup = {
+    styleGroup?: string[];
+    description?: string;
+};
+// tslint:disable-next-line interface-over-type-literal
+export type StyleSet = {
+    name: string;
+    kind: 'set';
+    displayName?: string;
+    description?: string;
+    help?: string;
+    status?: Status[];
+    styleRelation: 'exclusive' | 'inclusive';
+    styleItems: Array<(StyleClass | StyleSet | StyleTemplate)>;
+};
+// tslint:disable-next-line interface-over-type-literal
+export type StyleTemplate = {
+    name: string;
+    kind: 'template';
+    displayName?: string;
+    description?: string;
+    help?: string;
+    status?: Status[];
+    styleSelector?: string;
+    tokens: Array<(StyleTemplateToken)>;
+};
+// tslint:disable-next-line interface-over-type-literal
+export type StyleTemplateToken = {
+    name: string;
+    displayName?: string;
+    description?: string;
+    styleRelation: 'exclusive' | 'inclusive';
+    values: Array<(StyleTemplateTokenValue)>;
+};
+// tslint:disable-next-line interface-over-type-literal
+export type StyleTemplateTokenValue = {
+    name: string;
+    displayName?: string;
+    description?: string;
+    status?: Status[];
 };

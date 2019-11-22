@@ -30,47 +30,47 @@
       width: 100%;
     }
 
-    .oj-filepicker-dropzone {
+    .oj-filepicker-clickable {
+      height: 100%;
+    }
+
+    .oj-filepicker-dropzone,
+    .oj-filepicker-disabled {
       display: flex;
 
       // center containing items
-      justify-content: center;
+      justify-content: space-between;
 
       // vertically center containing items
       align-items: center;
 
-      height: 100px;
+      height: 100%;
       box-sizing: border-box;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        border-width: var(--oj-file-picker-border-width);
-        border-style: var(--oj-file-picker-border-style);
-        border-color: var(--oj-file-picker-border-color);
-        border-radius: var(--oj-file-picker-border-radius);
-        background-color: var(--oj-file-picker-bg-color);
-      }
-      @else {
+
         border-width: $filePickerBorderWidth;
         border-style: $filePickerBorderStyle;
-        border-color: $filePickerBorderColor;
         border-radius: $filePickerBorderRadius;
-        background-color: $filePickerBgColor;
-      }
-
+        padding: $filePickerPadding;
     }
 
+    .oj-filepicker-dropzone {
+      background-color: $filePickerBgColor;
+      border-color: $filePickerBorderColor;
+    }
+
+    .oj-filepicker-disabled {
+      background-color: $filePickerBgColorDisabled;
+      border-color: $filePickerBorderColorDisabled;
+    }
+
+    .oj-filepicker-dropzone.oj-invalid-drop {
+      border-color: $borderColorError;
+    }
     .oj-filepicker-dropzone.oj-valid-drop,
+    .oj-filepicker.oj-valid-drop,
     .oj-filepicker-dropzone:active { 
-      padding: 1px;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        border-width: var(--oj-file-picker-border-width-active);
-        background-color: var(--oj-file-picker-bg-color-active);
-      }
-      @else {
-        border-width: $filePickerBorderWidthActive;
         background-color: $filePickerBgColorActive;
-      }
+
     }
 
     /* 
@@ -81,17 +81,31 @@
     }
 
     .oj-filepicker-text { 
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        font-size: var(--oj-file-picker-text-font-size);
-        color: var(--oj-file-picker-text-color);
-      }
-      @else {
+
         font-size: $filePickerTextFontSize;
         color: $filePickerTextColor;
-      }
-      text-align: center;
-      padding: 10px;
+        margin-bottom:  6px;
+        font-weight: $filePickerTextFontWeight;
+    }
+
+    .oj-filepicker-secondary-text {
+        color: $filePickerTextColor;
+        font-size: $filePickerSecondaryTextFontSize;
+        font-weight: $filePickerSecondaryTextFontWeight;
+    }
+
+    .oj-filepicker-icon {
+        font-size: 24px;
+        color: $iconColorDefault;
+    }
+
+    .oj-filepicker-disabled .oj-filepicker-text,
+    .oj-filepicker-disabled .oj-filepicker-secondary-text {
+      color: $textColorDisabled;
+    }
+
+    .oj-filepicker-disabled .oj-filepicker-icon {
+      color: $iconColorDisabled;
     }
     
   }

@@ -24,11 +24,9 @@
         /* Start of Page Level navlist styles*/
         .oj-navigationlist-page-level.oj-navigationlist-icon-only .oj-navigationlist-item:not(.oj-hover) .oj-navigationlist-item-icon
         {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            color: var(--oj-tab-bar-item-icon-color-default);
-          } @else {
+
             color: $tabBarItemIconColorDefault;
-          }
+
         }
 
         //center align the entire contents
@@ -40,11 +38,9 @@
         }
          // This is needed in ios, as icon only list does't have dark color bg circle.
         .oj-navigationlist-page-level.oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            color: var(--oj-tab-bar-item-icon-color-selected);
-          } @else {
+
             color: $tabBarItemIconColorSelected;
-          }
+          
         }
 
         //For page level horizontal navlist, button size should be equal.

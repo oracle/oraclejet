@@ -7,6 +7,7 @@ declare class ArrayDataProvider<K, D> implements DataProvider<K, D> {
         keys?: any[] | (() => any[]);
         idAttribute?: string | string[];
         keyAttributes?: string | string[];
+        textFilterAttributes?: string[];
     });
     addEventListener(eventType: string, listener: EventListener): void;
     containsKeys(params: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;

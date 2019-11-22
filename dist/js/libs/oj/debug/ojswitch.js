@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],        
 /*
 * @param {Object} oj 
@@ -46,6 +48,10 @@ var __oj_switch_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
+          "enumValues": [
+            "none",
+            "notewindow"
+          ],
           "value": [
             "notewindow"
           ]
@@ -73,6 +79,14 @@ var __oj_switch_metadata =
           "value": ""
         }
       }
+    },
+    "labelEdge": {
+      "type": "string",
+      "enumValues": [
+        "inside",
+        "none",
+        "provided"
+      ]
     },
     "labelHint": {
       "type": "string",
@@ -127,10 +141,7 @@ var __oj_switch_metadata =
   },
   "extension": {}
 };
- /**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -146,6 +157,7 @@ var __oj_switch_metadata =
    * @ojcomponent oj.ojSwitch
    * @ojdisplayname Switch
    * @augments oj.editableValue
+   * @ojimportmembers oj.ojDisplayOptions
    * @ojsignature [{
    *                target: "Type",
    *                value: "class ojSwitch extends editableValue<boolean, ojSwitchSettableProperties>"
@@ -158,9 +170,8 @@ var __oj_switch_metadata =
    *              ]
    * @since 0.7.0
    * @ojshortdesc A switch toggles between two mutually exclusive states — on and off.
-   * @ojstatus preview
    *
-   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "disabled", "readonly", "describedBy"]}
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "disabled", "readonly"]}
    * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
    * @ojvbdefaultcolumns 6
    * @ojvbmincolumns 2
@@ -514,7 +525,7 @@ var __oj_switch_metadata =
         this._element2 = this.element.wrap('<div></div>').parent();  // @HTMLUpdateOK trusted string
       }
       this._element2.addClass('oj-switch oj-component oj-form-control');
-      this._element2.append("<div class='oj-switch-container'><div class='oj-switch-track'><div class='oj-switch-thumb' tabIndex='0'></div></div></div>"); // @HTMLUpdateOK append or prepend trusted new DOM to switch elem
+      this._element2.append("<div class='oj-switch-container oj-form-control-container'><div class='oj-switch-track'><div class='oj-switch-thumb' tabIndex='0'></div></div></div>"); // @HTMLUpdateOK append or prepend trusted new DOM to switch elem
 
       this.switchThumb = this._element2.find('.oj-switch-thumb');
       this.switchThumb
@@ -527,6 +538,9 @@ var __oj_switch_metadata =
       // Get aria-label and aria-labelledby attribute values from the component and move them to the thumb which is the dom that gets focus
       var target = this.switchThumb;
       this._SetAriaInfo(target);
+
+      // Set this._ariaLabelElement so that we know where to go when setting aria-label from label-hint
+      this._ariaLabelElement = this.switchThumb[0];
 
       this._setup();
     },
@@ -578,6 +592,18 @@ var __oj_switch_metadata =
           component.removeAttribute('aria-label');
         }
       }
+    },
+
+    /**
+     * Return the element on which aria-label can be found.
+     * Usually this is the root element, but some components have aria-label as a transfer attribute,
+     * and aria-label set on the root element is transferred to the inner element.
+     * @memberof oj.ojSwitch
+     * @instance
+     * @protected
+     */
+    _GetAriaLabelElement: function () {
+      return this._ariaLabelElement ? this._ariaLabelElement : this._super();
     },
 
     /**
@@ -954,6 +980,7 @@ var __oj_switch_metadata =
  * @example <caption>Get the node for the thumb:</caption>
  * var node = myComponent.getNodeBySubId({'subId': 'oj-switch-thumb'});
  */
+
 
 /* global __oj_switch_metadata:false */
 (function () {

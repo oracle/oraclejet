@@ -2,51 +2,54 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj, $)
 {
   "use strict";
-/**
- * Copyright (c) 2018, Oracle and/or its affiliates.
- * All rights reserved.
- */
-var DataSourceAdapter = /** @class */ (function () {
-    function DataSourceAdapter(dataSource) {
+
+class DataSourceAdapter {
+    constructor(dataSource) {
         this.dataSource = dataSource;
-        this.AsyncIterable = /** @class */ (function () {
-            function class_1(_asyncIterator) {
+        this.AsyncIterable = class {
+            constructor(_asyncIterator) {
                 this._asyncIterator = _asyncIterator;
                 this[Symbol.asyncIterator] = function () {
                     return this._asyncIterator;
                 };
             }
-            return class_1;
-        }());
-        this.AsyncIterator = /** @class */ (function () {
-            function class_2(_nextFunc, _params) {
+        };
+        this.AsyncIterator = class {
+            constructor(_nextFunc, _params) {
                 this._nextFunc = _nextFunc;
                 this._params = _params;
                 this._fetchFirst = true;
             }
-            class_2.prototype['next'] = function () {
+            ['next']() {
                 var fetchFirst = this._fetchFirst;
                 this._fetchFirst = false;
                 return this._nextFunc(this._params, fetchFirst);
-            };
-            return class_2;
-        }());
-        this.AsyncIteratorResult = /** @class */ (function () {
-            function class_3(_parent, value, done) {
+            }
+        };
+        this.AsyncIteratorYieldResult = class {
+            constructor(_parent, value) {
                 this._parent = _parent;
                 this.value = value;
-                this.done = done;
                 this[DataSourceAdapter._VALUE] = value;
-                this[DataSourceAdapter._DONE] = done;
+                this[DataSourceAdapter._DONE] = false;
             }
-            return class_3;
-        }());
-        this.FetchListResult = /** @class */ (function () {
-            function class_4(_parent, fetchParameters, data, metadata) {
+        };
+        this.AsyncIteratorReturnResult = class {
+            constructor(_parent, value) {
+                this._parent = _parent;
+                this.value = value;
+                this[DataSourceAdapter._VALUE] = value;
+                this[DataSourceAdapter._DONE] = true;
+            }
+        };
+        this.FetchListResult = class {
+            constructor(_parent, fetchParameters, data, metadata) {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
                 this.data = data;
@@ -55,28 +58,25 @@ var DataSourceAdapter = /** @class */ (function () {
                 this[DataSourceAdapter._DATA] = data;
                 this[DataSourceAdapter._METADATA] = metadata;
             }
-            return class_4;
-        }());
-        this.ItemMetadata = /** @class */ (function () {
-            function class_5(_parent, key) {
+        };
+        this.ItemMetadata = class {
+            constructor(_parent, key) {
                 this._parent = _parent;
                 this.key = key;
                 this[DataSourceAdapter._KEY] = key;
             }
-            return class_5;
-        }());
-        this.SortCriterion = /** @class */ (function () {
-            function class_6(_parent, attribute, direction) {
+        };
+        this.SortCriterion = class {
+            constructor(_parent, attribute, direction) {
                 this._parent = _parent;
                 this.attribute = attribute;
                 this.direction = direction;
                 this[DataSourceAdapter._ATTRIBUTE] = attribute;
                 this[DataSourceAdapter._DIRECTION] = direction;
             }
-            return class_6;
-        }());
-        this.DataProviderMutationEventDetail = /** @class */ (function () {
-            function class_7(_parent, add, remove, update) {
+        };
+        this.DataProviderMutationEventDetail = class {
+            constructor(_parent, add, remove, update) {
                 this._parent = _parent;
                 this.add = add;
                 this.remove = remove;
@@ -85,10 +85,9 @@ var DataSourceAdapter = /** @class */ (function () {
                 this[DataSourceAdapter._REMOVE] = remove;
                 this[DataSourceAdapter._UPDATE] = update;
             }
-            return class_7;
-        }());
-        this.DataProviderOperationEventDetail = /** @class */ (function () {
-            function class_8(_parent, keys, metadata, data, indexes) {
+        };
+        this.DataProviderOperationEventDetail = class {
+            constructor(_parent, keys, metadata, data, indexes) {
                 this._parent = _parent;
                 this.keys = keys;
                 this.metadata = metadata;
@@ -99,10 +98,9 @@ var DataSourceAdapter = /** @class */ (function () {
                 this[DataSourceAdapter._DATA] = data;
                 this[DataSourceAdapter._INDEXES] = indexes;
             }
-            return class_8;
-        }());
-        this.DataProviderAddOperationEventDetail = /** @class */ (function () {
-            function class_9(_parent, keys, afterKeys, addBeforeKeys, parentKeys, metadata, data, indexes) {
+        };
+        this.DataProviderAddOperationEventDetail = class {
+            constructor(_parent, keys, afterKeys, addBeforeKeys, parentKeys, metadata, data, indexes) {
                 this._parent = _parent;
                 this.keys = keys;
                 this.afterKeys = afterKeys;
@@ -118,10 +116,9 @@ var DataSourceAdapter = /** @class */ (function () {
                 this[DataSourceAdapter._DATA] = data;
                 this[DataSourceAdapter._INDEXES] = indexes;
             }
-            return class_9;
-        }());
+        };
     }
-    DataSourceAdapter.prototype.getCapability = function (capabilityName) {
+    getCapability(capabilityName) {
         if (capabilityName == DataSourceAdapter._SORT &&
             this.dataSource.getCapability(capabilityName) == 'full') {
             return { attributes: 'multiple' };
@@ -133,35 +130,34 @@ var DataSourceAdapter = /** @class */ (function () {
             return { implementation: 'lookup' };
         }
         return null;
-    };
-    DataSourceAdapter.prototype.addListener = function (eventType, eventHandler) {
+    }
+    addListener(eventType, eventHandler) {
         this._eventHandlerFuncs[eventType] = eventHandler.bind(this);
         this.dataSource.on(eventType, this._eventHandlerFuncs[eventType]);
-    };
-    DataSourceAdapter.prototype.removeListener = function (eventType) {
+    }
+    removeListener(eventType) {
         this.dataSource.off(eventType, this._eventHandlerFuncs[eventType]);
-    };
-    DataSourceAdapter.prototype.removeAllListeners = function () {
+    }
+    removeAllListeners() {
         this._eventHandlerFuncs = {};
-    };
-    DataSourceAdapter._SORT = 'sort';
-    DataSourceAdapter._DATA = 'data';
-    DataSourceAdapter._KEY = 'key';
-    DataSourceAdapter._ATTRIBUTE = 'attribute';
-    DataSourceAdapter._DIRECTION = 'direction';
-    DataSourceAdapter._VALUE = 'value';
-    DataSourceAdapter._DONE = 'done';
-    DataSourceAdapter._FETCHPARAMETERS = 'fetchParameters';
-    DataSourceAdapter._METADATA = 'metadata';
-    DataSourceAdapter._KEYS = 'keys';
-    DataSourceAdapter._INDEXES = 'indexes';
-    DataSourceAdapter._ADD = 'add';
-    DataSourceAdapter._REMOVE = 'remove';
-    DataSourceAdapter._UPDATE = 'update';
-    DataSourceAdapter._AFTERKEYS = 'afterKeys';
-    DataSourceAdapter._ADDBEFOREKEYS = 'addBeforeKeys';
-    return DataSourceAdapter;
-}());
+    }
+}
+DataSourceAdapter._SORT = 'sort';
+DataSourceAdapter._DATA = 'data';
+DataSourceAdapter._KEY = 'key';
+DataSourceAdapter._ATTRIBUTE = 'attribute';
+DataSourceAdapter._DIRECTION = 'direction';
+DataSourceAdapter._VALUE = 'value';
+DataSourceAdapter._DONE = 'done';
+DataSourceAdapter._FETCHPARAMETERS = 'fetchParameters';
+DataSourceAdapter._METADATA = 'metadata';
+DataSourceAdapter._KEYS = 'keys';
+DataSourceAdapter._INDEXES = 'indexes';
+DataSourceAdapter._ADD = 'add';
+DataSourceAdapter._REMOVE = 'remove';
+DataSourceAdapter._UPDATE = 'update';
+DataSourceAdapter._AFTERKEYS = 'afterKeys';
+DataSourceAdapter._ADDBEFOREKEYS = 'addBeforeKeys';
 oj.EventTargetMixin.applyMixin(DataSourceAdapter);
 
 return DataSourceAdapter;

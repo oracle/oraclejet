@@ -2,9 +2,11 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojjquery-hammer', 'promise', 'ojs/ojpopupcore', 'ojs/ojoption'], 
-       function(oj, $, Hammer, Context, ThemeUtils, Components, AnimationUtils, Logger)
+
+define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojconfig', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption'], 
+       function(oj, $, Hammer, Context, ThemeUtils, Components, AnimationUtils, Logger, Config)
 {
   "use strict";
 var __oj_menu_metadata = 
@@ -153,9 +155,6 @@ var __oj_menu_metadata =
   },
   "extension": {}
 };
-/**
- * All rights reserved.
- */
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -163,7 +162,7 @@ var __oj_menu_metadata =
  * http://jquery.org/license
  */
 
-/* global Hammer:false, Promise:false, Components:false, Logger:false, ThemeUtils:false, Context:false, AnimationUtils:false */
+/* global Hammer:false, Promise:false, Components:false, Logger:false, ThemeUtils:false, Context:false, AnimationUtils:false, Config:false */
 
 (function () {
   // -----------------------------------------------------------------------------
@@ -211,19 +210,6 @@ var __oj_menu_metadata =
     ]
   };
 
-  // media query for when display=="auto"
-  var _DISPLAY_QUERY = (function () {
-    // If "display" option is "auto" (the default), then at or above this screen width
-    // the option resolves to "dropDown", and below this screen width it resolves to "sheet".
-    // '768px'; // min width of "medium" screen size
-    var dropDownThresholdWidth = _config.dropDownThresholdWidth;
-    if (dropDownThresholdWidth == null) {
-      dropDownThresholdWidth = '768px'; // min width of "medium" screen size
-    }
-    var queryString = '(min-width: ' + dropDownThresholdWidth + ')';
-    return window.matchMedia(queryString);
-  }());
-
   var _SUBID_CANCEL = 'oj-menu-cancel-command';
 
   function _findImmediateMenuItems(activeMenu) {
@@ -259,7 +245,7 @@ var __oj_menu_metadata =
 
   /**
    * @typedef {Object} oj.ojMenu.PositionPoint
-   * @property {number} [x] Horizontal aligment offset.
+   * @property {number} [x] Horizontal alignment offset.
    * @property {number} [y] Vertical alignment offset.
    */
 
@@ -300,10 +286,10 @@ var __oj_menu_metadata =
 
   /**
    * @typedef {Object} oj.ojMenu.OpenOptions
-   * @property {string} [display] Determines whether the menu is displayed as a dropDown menu or a sheet menu.
+   * @property {string} [display] Determines whether the menu is displayed as a drop down menu or a sheet menu.
    * @property {string} [initialFocus] Determines focus behavior when the menu is initially opened.
    * @property {string|Element} [launcher] The DOM node (which may or may not be a JET element) that launches this menu.
-   * @property {Object} [position] Determines the position of a dropDown menu when launched. Ignored for sheet menus.
+   * @property {Object} [position] Determines the position of a drop down menu when launched. Ignored for sheet menus.
    * @ojsignature {target:"Type", value:"oj.ojMenu.Position", for:"position", jsdocOverride:true}
    */
 
@@ -314,7 +300,6 @@ var __oj_menu_metadata =
    * @ojrole menu
    * @since 0.6.0
    * @ojshortdesc A menu displays a list of options in a popup.
-   * @ojstatus preview
    *
    * @ojpropertylayout {propertyGroup: "common", items: ["openOptions.display", "openOptions.initialFocus", "disabled"]}
    * @ojvbdefaultcolumns 2
@@ -374,7 +359,7 @@ var __oj_menu_metadata =
    *
    * <p>When a submenu is present, a default submenu icon will be automatically added to the parent menu item (see <a href="#itemIcons-section">Menu Item Icons</a>).
    *
-   * <p>Sheet menus are not appropriate when submenus are present. Therefore, submenus and there parent menus are always displayed as a dropDown regardless of the
+   * <p>Sheet menus are not appropriate when submenus are present. Therefore, submenus and there parent menus are always displayed as a drop down regardless of the
    * <code class="prettyprint">open-options.display</code> attribute's value.
    *
    *
@@ -639,34 +624,27 @@ var __oj_menu_metadata =
        */
       openOptions: {
         /**
-         * <p>Determines whether the menu is displayed as a dropDown menu or a sheet menu.
+         * <p>Determines whether the menu is displayed as a drop down menu or a sheet menu.
          *
-         * <p>The default value is <code class="prettyprint">"auto"</code>, in which case the behavior is a function of the
-         * screen width and the <code class="prettyprint">$menuDropDownThresholdWidth</code> SASS variable.  For example,
-         * if that variable is set to 768px, then for screen widths of 768px and larger, the menu will display as a dropDown,
-         * and for screen widths less than 768px, the menu will display as a sheet.
-         *
-         * <p>To avoid disorienting the user, if the screen width changes while the menu is already open (e.g. due to a device
-         * rotation), the display may not change until the next launch.
+         * <p>The default value is <code class="prettyprint">"auto"</code>, in which case the behavior depends on the
+         * type of device, as determined by the <code class="prettyprint">Config.getDeviceRenderMode</code> method.
+         * If the application is running on a phone device, the menu will display as a sheet.
+         * Otherwise, the menu will display as a drop down.
          *
          * <p>Sheet menus are not appropriate when submenus are present.  Thus, menus having submenus are always displayed as
-         * a dropDown, regardless of the values of this option and the SASS variable.
-         *
-         * <p>If the SASS variable is set to 0 or a huge value such as 99999px, then all menus with
-         * <code class="prettyprint">display</code> set to <code class="prettyprint">"auto"</code> will always display as a
-         * dropDown or sheet, respectively.
+         * a drop down, regardless of the values of this option.
          *
          * @expose
          * @alias openOptions.display
-         * @ojshortdesc Specifies whether the menu displays as a dropdown or as a sheet. See the Help documentation for more information.
+         * @ojshortdesc Specifies whether the menu displays as a drop down or as a sheet. See the Help documentation for more information.
          * @memberof! oj.ojMenu
          * @instance
          * @since 2.1.0
          *
          * @type {string}
          * @default "auto"
-         * @ojvalue {string} "auto" Displays the menu as a sheet or dropDown, depending on the screen width.
-         * @ojvalue {string} "dropDown" Displays the menu as a dropDown.
+         * @ojvalue {string} "auto" Displays the menu as a sheet or drop down, depending on the screen width.
+         * @ojvalue {string} "dropDown" Displays the menu as a drop down.
          * @ojvalue {string} "sheet" Displays the menu as a sheet.
          *
          * @example <caption>Initialize the menu with the <code class="prettyprint">openOptions.display</code> sub-option specified:</caption>
@@ -716,7 +694,7 @@ var __oj_menu_metadata =
          *
          * @expose
          * @alias openOptions.launcher
-         * @ojshortdesc Specifes the DOM node that launches this menu. See the Help documentation for more information.
+         * @ojshortdesc Specifies the DOM node that launches this menu. See the Help documentation for more information.
          * @memberof! oj.ojMenu
          * @instance
          * @type {string|Element}
@@ -735,10 +713,10 @@ var __oj_menu_metadata =
         launcher: null,
 
         /**
-         * <p>Determines the position of a dropDown menu when launched via the <code class="prettyprint">open()</code> method or via menu button or
+         * <p>Determines the position of a drop down menu when launched via the <code class="prettyprint">open()</code> method or via menu button or
          * context menu functionality.  Ignored for sheet menus.
          *
-         * <p>The "my" and "at" properties define aligment points relative to the menu and other element.  The "my" property represents the menu's
+         * <p>The "my" and "at" properties define alignment points relative to the menu and other element.  The "my" property represents the menu's
          * alignment where the "at" property represents the other element that can be identified by "of" or defauts to the launcher when the menu
          * opens.  The values of these properties describe horizontal and vertical alignments.</p>
          *
@@ -767,7 +745,7 @@ var __oj_menu_metadata =
          *
          * @expose
          * @alias openOptions.position
-         * @ojshortdesc Specifies the position of a dropDown menu when launched. See the Help documentation for more information.
+         * @ojshortdesc Specifies the position of a drop down menu when launched. See the Help documentation for more information.
          * @memberof! oj.ojMenu
          * @instance
          * @type {Object}
@@ -844,7 +822,7 @@ var __oj_menu_metadata =
            */
           offset: {
             /**
-             * Horizontal aligment offset.
+             * Horizontal alignment offset.
              * @expose
              * @memberof! oj.ojMenu
              * @instance
@@ -1402,6 +1380,30 @@ var __oj_menu_metadata =
         this._collapse(event, 'eventSubtree');
       }.bind(this);
 
+      this._touchStartHandler = function () {
+        // when the touchstart event bubbles out of the root menu element, we're done with it, so
+        // reset this flag to its initial value of false in preparation for the next touch
+        this.focusHandled = false;
+      };
+
+      this.element[0].addEventListener('touchstart', this._touchStartHandler, { passive: true });
+
+      this._delegatedHandleMouseEnterMenuItem = function (event) {
+        const selector = '.oj-menu-item';
+        const container = event.currentTarget;
+        const targetElement = event.target.closest(selector);
+        if (targetElement && container.contains(targetElement)) {
+          handleMouseEnterMenuItem($.Event(event, {
+            currentTarget: targetElement
+          }));
+        }
+      };
+
+      // : Bad touch device behavior because the JQUI code relies on the above mouseenter handler to call _focus(),
+      // but for parent menu items on touch devices, mouseenter is called only if the previous tap was somewhere outside the
+      // parent menu item, not if it was in the submenu.  So call that mouseenter handler on touchstart:
+      this.element[0].addEventListener('touchstart', this._delegatedHandleMouseEnterMenuItem, { passive: true });
+
       this._on({
         // Prevent focus from sticking to links inside menu after clicking
         // them (focus should always stay on UL during navigation).
@@ -1415,11 +1417,6 @@ var __oj_menu_metadata =
           // when the click event bubbles out of the root menu element, we're done with it, so
           // reset this flag to its initial value of false in preparation for the next click
           this.mouseHandled = false;
-        },
-        touchstart: function () {
-          // when the touchstart event bubbles out of the root menu element, we're done with it, so
-          // reset this flag to its initial value of false in preparation for the next touch
-          this.focusHandled = false;
         },
         mouseover: function () {
           // when the mouseover event bubbles out of the root menu element, we're done with it, so
@@ -1471,12 +1468,6 @@ var __oj_menu_metadata =
           }
         },
         'mouseenter .oj-menu-item': handleMouseEnterMenuItem,
-
-        // : Bad touch device behavior because the JQUI code relies on the above mouseenter handler to call _focus(),
-        // but for parent menu items on touch devices, mouseenter is called only if the previous tap was somewhere outside the
-        // parent menu item, not if it was in the submenu.  So call that mouseenter handler on touchstart:
-        'touchstart .oj-menu-item': handleMouseEnterMenuItem,
-
         mouseleave: handleMouseLeave,
         'mouseleave .oj-menu': handleMouseLeave,
         focus: function (event, keepActiveItem) {
@@ -1925,6 +1916,12 @@ var __oj_menu_metadata =
         this._clearTimer();
       }
       delete this._clearTimer;
+
+      this.element[0].removeEventListener('touchstart', this._touchStartHandler, { passive: true });
+      delete this._touchStartHandler;
+
+      this.element[0].removeEventListener('touchstart', this._delegatedHandleMouseEnterMenuItem, { passive: true });
+      delete this._delegatedHandleMouseEnterMenuItem;
 
       // Destroy (sub)menus
       this.element
@@ -3778,7 +3775,7 @@ var __oj_menu_metadata =
         case 'sheet':
           return false;
         default:
-          return _DISPLAY_QUERY.matches;
+          return Config.getDeviceRenderMode() !== 'phone';
       }
     },
 
@@ -4195,6 +4192,7 @@ var __oj_menu_metadata =
    * var node = myMenu.getNodeBySubId( {'subId': 'oj-menu-cancel-command'} );
    */
 }());
+
 
 /* global __oj_menu_metadata:false */
 (function () {

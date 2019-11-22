@@ -2,10 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojexpparser', 'ojs/ojcore-base'], function(ExpParser, oj)
 {
   "use strict";
+
 /* eslint-disable eqeqeq */
 /* eslint-disable no-bitwise */
 
@@ -73,6 +76,7 @@ define(['ojs/ojexpparser', 'ojs/ojcore-base'], function(ExpParser, oj)
  * The additional scope will be used to resolve the variables if they are not defined in the $data or $context.
  * <pre class="prettyprint"><code>Config.setExpressionEvaluator(new CspExpressionEvaluator({globalScope:extraScope}));</code></pre>
  * @constructor
+ * @final
  * @export
  */
 // eslint-disable-next-line no-unused-vars

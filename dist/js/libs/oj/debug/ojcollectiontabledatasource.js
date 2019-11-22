@@ -2,14 +2,12 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojmodel', 'ojs/ojdatasource-common'], function(oj, $, Model)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -35,6 +33,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojmodel', 'ojs/ojdatasource-common'], funct
  *          <b>"disabled"</b> - Do not start initial fetch automatically.  Application will call the <a href="#fetch">fetch()</a> method to
  *                                                        start the first fetch.
  * @constructor
+ * @final
  * @ojdeprecated {since: '6.0.0', description: 'Use CollectionDataProvider instead.'}
  * @ojtsignore
  * @since 1.0

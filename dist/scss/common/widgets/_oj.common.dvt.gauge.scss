@@ -71,41 +71,32 @@
 
     // color for the first threshold on a gauge, typically represents a low value
     .oj-gauge-threshold1 {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        color: var(--oj-gauge-threshold-color-1);
-      } @else {
+
         color: $dvtThreshold1Color;
-      }
+      
     }
 
     // color for the second threshold on a gauge, typically represents a medium value
     .oj-gauge-threshold2 {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        color: var(--oj-gauge-threshold-color-2);
-      } @else {
+
         color: $dvtThreshold2Color;
-      }
+
     }
 
     // color for the third threshold on a gauge, typically represents a high value
     .oj-gauge-threshold3 {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        color: var(--oj-gauge-threshold-color-3);
-      } @else {
+
         color: $dvtThreshold3Color;
-      }
+
     }
 
     .oj-dialgauge.oj-focus-highlight,
     .oj-ledgauge.oj-focus-highlight,
     .oj-statusmetergauge.oj-focus-highlight,
     .oj-ratinggauge.oj-focus-highlight {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        outline: dotted 1px var(--oj-text-color-primary);   // used on most browsers
-        outline: -webkit-focus-ring-color auto;             // used on chrome
-      } @else {
+
         @include oj-browser-focus-outline-approximation($primaryTextColor);
-      }
+
     }
   }
 }

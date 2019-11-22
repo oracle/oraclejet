@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-define(["./defaultCacheHandler", "../persistenceStoreManager", "./logger"], function (cacheHandler, persistenceStoreManager, logger) {
+define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUtils", "./logger"], function (cacheHandler, persistenceStoreManager, persistenceUtils, logger) {
   'use strict';
 
   /**
@@ -12,7 +12,8 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "./logger"], func
    * {@link https://developer.mozilla.org/en-US/docs/Web/API/Cache|Cache API}.
    * In additional to functionalities provided by the standard Cache API, this
    * OfflineCache also interacts with shredding methods for more fine-grain
-   * caching.
+   * caching. In addition to the Cache API, the OfflineCache also supports
+   * the clear() function to clear the cache.
    * @module OfflineCache
    */
 
@@ -431,7 +432,8 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "./logger"], func
     if (request) {
       logger.log("Offline Persistence Toolkit OfflineCache: delete() for Request with url: " + request.url);
     } else {
-      logger.log("Offline Persistence Toolkit OfflineCache: delete()");
+      logger.warn("Offline Persistence Toolkit OfflineCache: delete() request is a required parameter. To clear the cache, please call clear()");
+      return Promise.resolve(false);
     }
     var self = this;
 
@@ -470,8 +472,8 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "./logger"], func
       });
     } else {
       // no shredder, deleting cache entries is sufficient.
-      return self.keys(request, options).then(function (keysArray) {
-        return self._getStore().then(function(store) {
+      return self._getStore().then(function(store) {
+        return _getStoreKeys(store, request, options).then(function(keysArray) {
           if (keysArray && keysArray.length) {
             var promisesArray = keysArray.map(store.removeByKey, store);
             return Promise.all(promisesArray);
@@ -513,7 +515,7 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "./logger"], func
    *                          a match regardless of whether the Response
    *                          object has a VARY header. It defaults to false.</li>
    * </ul>
-   * @return {Promise} Returns a promise that resolves to an array of Cache keys.
+   * @return {Promise} Returns a promise that resolves to an array of Cache keys (which are Request objects).
    */
   OfflineCache.prototype.keys = function (request, options) {
     if (request) {
@@ -522,30 +524,42 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "./logger"], func
       logger.log("Offline Persistence Toolkit OfflineCache: keys()");
     }
     var self = this;
-    
-    return self._getStore().then(function(store) {
-      if (request) {
-        // need to match with the passed-in request.
-        var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
-        searchCriteria.fields = ['key', 'value'];
-
-        var ignoreVary = (options && options.ignoreVary);
-
-        return store.find(searchCriteria).then(function (dataArray) {
-          if (dataArray && dataArray.length) {
-            var filteredEntries = dataArray.filter(_filterByVary(ignoreVary, request, 'value'));
-            var keysArray = filteredEntries.map(function (entry) { return entry.key;});
-            return keysArray;
-          } else {
-            return [];
-          }
+    return this._getStore().then(function(store) {
+      return _getStoreKeys(store, request, options).then(function(keysArray) {
+        var requestsPromiseArray = [];
+        keysArray.forEach(function(key) {
+          requestsPromiseArray.push(store.findByKey(key).then(function(entry) {
+            return persistenceUtils.requestFromJSON(entry.requestData);
+          }));
         });
-      } else {
-        // no passed-in request to match, so returns ALL requests objects in
-        // the persistence store.
-        return store.keys();
-      }
+        return Promise.all(requestsPromiseArray);
+      });
     });
+  };
+
+  function _getStoreKeys(store, request, options) {
+    var self = this;
+    if (request) {
+      // need to match with the passed-in request.
+      var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
+      searchCriteria.fields = ['key', 'value'];
+
+      var ignoreVary = (options && options.ignoreVary);
+
+      return store.find(searchCriteria).then(function (dataArray) {
+        if (dataArray && dataArray.length) {
+          var filteredEntries = dataArray.filter(_filterByVary(ignoreVary, request, 'value'));
+          var keysArray = filteredEntries.map(function (entry) { return entry.key;});
+          return keysArray;
+        } else {
+          return [];
+        }
+      });
+    } else {
+      // no passed-in request to match, so returns ALL requests objects in
+      // the persistence store.
+      return store.keys();
+    }
   };
 
   /**
@@ -588,6 +602,38 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "./logger"], func
         var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
         return matchEntry !== null;
       });
+    });
+  };
+
+  /**
+   * Clear the cache.
+   * @method
+   * @name clear
+   * @memberof! OfflineCache
+   * @instance
+   * @return {Promise} Returns a promise that resolves to true when the cache is cleared.
+   * Will resolve to false if not all cache items were able to be cleared.
+   */
+  OfflineCache.prototype.clear = function () {
+    logger.log("Offline Persistence Toolkit OfflineCache: clear()");
+    var self = this;
+    var deletePromiseArray = [];
+    return this.keys().then(function(keys) {
+      keys.forEach(function(request, index, array) {
+        deletePromiseArray.push(self.delete(request));
+      });
+      return Promise.all(deletePromiseArray);
+    }).then(function(results) {
+      var failedDelete = false;
+      results.forEach(function(result) {
+        if (!result) {
+          failedDelete = true;
+        }
+      });
+      if (failedDelete) {
+        return false;
+      }
+      return true;
     });
   };
 

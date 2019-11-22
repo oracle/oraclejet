@@ -2,6 +2,7 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
 
 define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'], 
@@ -22,6 +23,7 @@ var __oj_label_value_metadata =
       "type": "string",
       "enumValues": [
         "inherit",
+        "inside",
         "start",
         "top"
       ],
@@ -42,16 +44,13 @@ var __oj_label_value_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @ojcomponent oj.ojLabelValue
  * @since 5.1.0
  * @ojshortdesc A label value is used to lay out a label and value, it is most commonly used in a form layout.
- * @ojstatus preview
+ *
  * @ojsignature {target: "Type", value:"class ojLabelValue extends JetElement<ojLabelValueSettableProperties>"}
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["labelEdge", "labelWidth", "colspan"]}
@@ -129,11 +128,14 @@ var __oj_label_value_metadata =
  * @instance
  * @type {string}
  * @default "inherit"
+ * @ojvalue {string} "inside" Label is on top of its value component, with a smaller font-size applied to any oj-label child.
  * @ojvalue {string} "start" Label is inline with the start of its value component
- * @ojvalue {string} "top" Label is on top of its value component
+ * @ojvalue {string} "top" Label is on top of its value component.
  * @ojvalue {string} "inherit"  Label will inherit label-edge from its closest custom element ancestor element.
  * @desc Specifies how the label is aligned with its value component.
- * <p>If the value is 'inherit', it will inherit label-edge from its closest custom element ancestor element. If the ancestor doesn't have a label-width attribute, the default is "top".</p>
+ * <p>If the value is 'inherit', it will inherit label-edge from its closest custom element ancestor element. If the ancestor doesn't have a label-edge attribute, the default is "top".</p>
+ * <p><b>Note: For 'inherit' to work correctly, the application must use data binding (i.e. calling ko.applyBindings on
+ * an ancestor node of the oj-label-value).</b></p>
  *
  * @example <caption>Initialize the oj-label-value with the <code class="prettyprint">label-edge</code> attribute specified:</caption>
  * &lt;oj-label-value label-edge="top">
@@ -319,14 +321,20 @@ function ojLabelValue(context) {
   this.updateDOM = function () {
     var customElementAncestor = _findClosestCustomElementAncestor();
 
+    // Resolve labelEdge to an explict value either from oj-label-value or from ancestor oj-form-layout
     var labelEdge = _getLabelEdge(customElementAncestor);
     var labelWidth = labelEdge === 'start' ? _getLabelWidth(customElementAncestor) : '100%';
     var direction = _getParentFormLayoutDirection(customElementAncestor);
 
     if (labelEdge === 'start') {
       element.classList.add('oj-formlayout-labels-inline');
-    } else {
+      element.classList.remove('oj-form-control-label-inside');
+    } else if (labelEdge === 'inside') {
+      element.classList.add('oj-form-control-label-inside');
       element.classList.remove('oj-formlayout-labels-inline');
+    } else { // labelEdge === 'top'
+      element.classList.remove('oj-formlayout-labels-inline');
+      element.classList.remove('oj-form-control-label-inside');
     }
 
     // To pick up the correct styles, we need to add the form layout class name that
@@ -415,6 +423,7 @@ function ojLabelValue(context) {
     return null; // no custom element ancestor
   }
 }
+
 
 /* global __oj_label_value_metadata:false */
 /* global ojLabelValue */

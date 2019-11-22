@@ -135,6 +135,10 @@ $linkBgColorActive:       $neutralColor8 !default;
 // panel defaults:
 $panelBorderRadius: 0 !default;
 
+// File Picker
+//----------------------------------------------------------------
+$filePickerTextFontWeight:        normal !default;
+$filePickerPadding:               22.333333px !default;
 
 
 
@@ -539,6 +543,11 @@ $formControlFontWeightReadOnly:  bold !default;
 // placeholder
 $formControlPlaceholderColor:         $textColor4 !default;
 
+// form control option defaults
+//----------------------------------
+$formControlLabelEdgeDefault: provided !default;
+
+
 // form labels
 //----------------------------------
 // label text color defined above, look for "text colors"
@@ -569,12 +578,22 @@ $formLayoutLabelInlineMarginTop: .5em !default;
 
 
 $formLayoutFieldInlineAlign: end !default;
+$formLayoutLabelEdgeDefault: top !default;
+$formLayoutLabelGenerationDefault: form !default;
+
+// Default value for colspan-wrap attribute
+$formLayoutColspanWrapDefault: nowrap !default;
+
+// The left/right margin is the space before the first column and after the last column of an oj-form-layout
+$formLayoutHorizontalMargin:  $formControlLabelInlineGutter !default;
 
 
 // INPUT TEXT, INPUT PASSWORD, TEXT AREA
 //----------------------------------------------------------------
 $textAreaLineHeight:                  oj-px-to-rem(23px, $baseFontSize: 16px) !default;
-
+// INPUT DATE
+$inputDateTimeConverterYearOptionDefault: 2-digit !default;
+$inputDateTimeShowPickerOnDesktopOptionDefault: enabled !default;
 //INPUT SEARCH
 //--------------------------------------------------------------
 $inputSearchBgColor:                  $neutralColor9 !default;
@@ -591,9 +610,6 @@ $inputNumberButtonWidth: 50px;
 // RADIOSET AND CHECKBOXSET
 // ios has input rendered as a background image and label comes before image
 $radioCheckboxLabelPosition: start !default;
-
-// TODO Bug 25897533: Clean up after sprite tooling is implemented
-$radioCheckboxImageHeightWidth: 1rem !default;
 
 // radioset and checkboxset states
 //------------------------------------

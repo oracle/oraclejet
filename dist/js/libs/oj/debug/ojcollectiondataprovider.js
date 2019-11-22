@@ -2,56 +2,50 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'ojs/ojcollectiontabledatasource', 'ojs/ojdataprovideradapter'], function(oj)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-var CollectionDataProvider = /** @class */ (function () {
-    function CollectionDataProvider(collection) {
+class CollectionDataProvider {
+    constructor(collection) {
         this.collection = collection;
         this._dataProviderAdapter = new oj.TableDataSourceAdapter(new oj.CollectionTableDataSource(collection));
         this.addEventListener = this._dataProviderAdapter.addEventListener.bind(this._dataProviderAdapter);
         this.removeEventListener = this._dataProviderAdapter.removeEventListener.bind(this._dataProviderAdapter);
         this.dispatchEvent = this._dataProviderAdapter.dispatchEvent.bind(this._dataProviderAdapter);
     }
-    CollectionDataProvider.prototype.destroy = function () {
+    destroy() {
         this._dataProviderAdapter.destroy();
-    };
-    CollectionDataProvider.prototype.fetchFirst = function (parameters) {
+    }
+    fetchFirst(parameters) {
         return this._dataProviderAdapter.fetchFirst(parameters);
-    };
-    CollectionDataProvider.prototype.fetchByKeys = function (parameters) {
+    }
+    fetchByKeys(parameters) {
         return this._dataProviderAdapter.fetchByKeys(parameters);
-    };
-    CollectionDataProvider.prototype.containsKeys = function (parameters) {
+    }
+    containsKeys(parameters) {
         return this._dataProviderAdapter.containsKeys(parameters);
-    };
+    }
     ;
-    CollectionDataProvider.prototype.fetchByOffset = function (parameters) {
+    fetchByOffset(parameters) {
         return this._dataProviderAdapter.fetchByOffset(parameters);
-    };
-    CollectionDataProvider.prototype.getCapability = function (capabilityName) {
+    }
+    getCapability(capabilityName) {
         return this._dataProviderAdapter.getCapability(capabilityName);
-    };
-    CollectionDataProvider.prototype.getTotalSize = function () {
+    }
+    getTotalSize() {
         return this._dataProviderAdapter.getTotalSize();
-    };
-    CollectionDataProvider.prototype.isEmpty = function () {
+    }
+    isEmpty() {
         return this._dataProviderAdapter.isEmpty();
-    };
-    return CollectionDataProvider;
-}());
+    }
+}
 oj['CollectionDataProvider'] = CollectionDataProvider;
 oj.CollectionDataProvider = CollectionDataProvider;
 
-/**
- * Copyright (c) 2018, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -61,9 +55,10 @@ oj.CollectionDataProvider = CollectionDataProvider;
 
 /* jslint browser: true,devel:true*/
 /**
- * @ojstatus preview
+ *
  * @since 6.0.0
  * @export
+ * @final
  * @class oj.CollectionDataProvider
  * @implements oj.DataProvider
  * @classdesc This class implements {@link oj.DataProvider}.
@@ -88,7 +83,7 @@ oj.CollectionDataProvider = CollectionDataProvider;
 /**
  * Check if there are rows containing the specified keys
  *
- * @ojstatus preview
+ *
  * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
  * @return {Promise.<oj.ContainsKeysResults>} Promise which resolves to {@link oj.ContainsKeysResults}
  * @export
@@ -104,7 +99,7 @@ oj.CollectionDataProvider = CollectionDataProvider;
 /**
  * Fetch rows by keys
  *
- * @ojstatus preview
+ *
  * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
  * @return {Promise.<oj.FetchByKeysResults>} Promise which resolves to {@link oj.FetchByKeysResults}
  * @export
@@ -120,7 +115,7 @@ oj.CollectionDataProvider = CollectionDataProvider;
 /**
  * Fetch rows by offset
  *
- * @ojstatus preview
+ *
  * @param {oj.FetchByOffsetParameters} params Fetch by offset parameters
  * @return {Promise.<oj.FetchByOffsetResults>} Promise which resolves to {@link oj.FetchByOffsetResults}
  * @export
@@ -136,7 +131,7 @@ oj.CollectionDataProvider = CollectionDataProvider;
 /**
  * Fetch the first block of data.
  *
- * @ojstatus preview
+ *
  * @param {oj.FetchListParameters=} params Fetch parameters
  * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
  * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
@@ -153,7 +148,7 @@ oj.CollectionDataProvider = CollectionDataProvider;
 /**
  * Determines whether this DataProvider supports certain feature.
  *
- * @ojstatus preview
+ *
  * @param {string} capabilityName capability name. Supported capability names are:
  *                  "fetchByKeys", "fetchByOffset", and "sort".
  * @return {Object} capability information or null if unsupported
@@ -175,7 +170,7 @@ oj.CollectionDataProvider = CollectionDataProvider;
 /**
  * Return the total number of rows in this dataprovider
  *
- * @ojstatus preview
+ *
  * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
  * @export
  * @expose
@@ -188,7 +183,7 @@ oj.CollectionDataProvider = CollectionDataProvider;
 /**
  * Return a string that indicates if this data provider is empty
  *
- * @ojstatus preview
+ *
  * @return {"yes"|"no"|"unknown"} a string that indicates if this data provider is empty. Valid values are:
  *                  "yes": this data provider is empty.
  *                  "no": this data provider is not empty.
@@ -204,7 +199,7 @@ oj.CollectionDataProvider = CollectionDataProvider;
 /**
  * Add a callback function to listen for a specific event type.
  *
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.CollectionDataProvider
@@ -220,7 +215,7 @@ oj.CollectionDataProvider = CollectionDataProvider;
 /**
  * Remove a listener previously registered with addEventListener.
  *
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.CollectionDataProvider
@@ -236,7 +231,7 @@ oj.CollectionDataProvider = CollectionDataProvider;
 /**
  * Dispatch an event and invoke any registered listeners.
  *
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.CollectionDataProvider

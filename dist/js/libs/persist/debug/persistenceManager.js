@@ -687,7 +687,8 @@ define(['./impl/PersistenceXMLHttpRequest', './impl/PersistenceSyncManager', './
      * {@link https://developer.mozilla.org/en-US/docs/Web/API/Cache|Cache API}.
      * In additional to functionalities provided by the standard Cache API, this
      * OfflineCache also interacts with shredding methods for more fine-grain
-     * caching.
+     * caching. In addition to the Cache API, the OfflineCache also supports
+     * the clear() function to clear the cache.
      * @constructor
      * @param {String} name name of the cache
      * @param {Object} persistencestore instance for cache storage
@@ -713,6 +714,16 @@ define(['./impl/PersistenceXMLHttpRequest', './impl/PersistenceSyncManager', './
      *                          and be cached.
      * @return {Promise} returns a Promise that is resolved when the reponse
      *                           is retrieved and request/response is cached.
+     */
+
+    /**
+     * Clear the cache.
+     * @method
+     * @name clear
+     * @memberof! OfflineCache
+     * @instance
+     * @return {Promise} Returns a promise that resolves to true when the cache is cleared.
+     * Will resolve to false if not all cache items were able to be cleared.
      */
     
     /**

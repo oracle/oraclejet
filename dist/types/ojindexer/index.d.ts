@@ -1,8 +1,14 @@
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface IndexerModel {
-    getIndexableSections(): string[] | object[];
-    getMissingSections(): string[] | object[];
-    setSection(section: string | object): Promise<string> | Promise<object>;
+    getIndexableSections(): IndexerModel.Section[];
+    getMissingSections(): IndexerModel.Section[];
+    setSection(section: IndexerModel.Section): Promise<IndexerModel.Section>;
+}
+export namespace IndexerModel {
+    // tslint:disable-next-line interface-over-type-literal
+    type Section = string | {
+        label: string;
+    };
 }
 declare let IndexerModel: {
     prototype: IndexerModel;

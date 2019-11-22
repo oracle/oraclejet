@@ -2,14 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'knockout', 'ojs/ojmessaging', 'ojs/ojknockout'], function(oj, $, Context, ko, Message)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* jslint browser: true, devel: true*/
 /* global Message:false, Context:false */
@@ -564,10 +563,7 @@ oj.InvalidComponentTracker._hasInvalidMessages = function (messages) {
   return !Message.isValid(messages);
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global ko:false */
 /* jslint browser: true, devel: true*/

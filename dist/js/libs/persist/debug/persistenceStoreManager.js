@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-define(['./impl/logger'], function (logger) {
+define(['./impl/logger', './impl/PersistenceStoreMetadata', './pouchDBPersistenceStoreFactory'], function (logger, PersistenceStoreMetadata, pouchDBPersistenceStoreFactory) {
   'use strict';
   
   /**
@@ -23,6 +23,10 @@ define(['./impl/logger'], function (logger) {
     });
     Object.defineProperty(this, '_DEFAULT_STORE_FACTORY_NAME', {
       value: '_defaultFactory',
+      writable: false
+    });
+    Object.defineProperty(this, '_METADATA_STORE_NAME', {
+      value: 'systemCache-metadataStore',
       writable: false
     });
     // some pattern of store name (e.g. http://) will cause issues
@@ -119,7 +123,13 @@ define(['./impl/logger'], function (logger) {
       allVersions = allVersions || {};
       allVersions[version] = store;
       self._stores[storeName] = allVersions;
-      return store;
+      var metadata = new PersistenceStoreMetadata(storeName, factory, Object.keys(allVersions));
+      return self._getMetadataStore().then(function(store) {
+        var encodedStoreName = self._encodeString(storeName);
+        return store.upsert(encodedStoreName, {}, Object.keys(allVersions));
+      }).then(function() {
+        return store;
+      });
     });
   };
 
@@ -169,39 +179,114 @@ define(['./impl/logger'], function (logger) {
    */
   PersistenceStoreManager.prototype.deleteStore = function (name, options) {
     logger.log("Offline Persistence Toolkit PersistenceStoreManager: deleteStore() for name: " + name);
+    var self = this;
     var storeName = this._mapStoreName(name);
-    var allversions = this._stores[storeName];
-    if (!allversions) {
-      return Promise.resolve(false);
-    } else {
-      var version = options && options.version;
-      if (version) {
-        var store = allversions[version];
-        if (!store) {
-          return Promise.resolve(false);
+    return new Promise(function(resolve, reject) {
+      var localvars = {};
+      localvars.options = options;
+      localvars.self = self;
+      var allversions = self._stores[storeName];
+      if (!allversions) {
+        return self.getStoresMetadata().then(function(storeMetadataMap) {
+          var openStoresPromiseArray = [];
+          var storeMetadata = storeMetadataMap.get(storeName);
+          if (storeMetadata && storeMetadata.versions) {
+            storeMetadata.versions.forEach(function(version) {
+              openStoresPromiseArray.push(self.openStore(storeName, version));
+            });
+          }
+          return Promise.all(openStoresPromiseArray);
+        }).then(function() {
+          resolve(localvars);
+        });
+      } else {
+        resolve(localvars);
+      }
+    }).then(function(localvars) {
+      var self = localvars.self;
+      var options = localvars.options;
+      var allversions = self._stores[storeName];
+      if (!allversions) {
+        return Promise.resolve(false);
+      } else {
+        var version = options && options.version;
+        if (version) {
+          var store = allversions[version];
+          if (!store) {
+            return Promise.resolve(false);
+          } else {
+            logger.log("Offline Persistence Toolkit PersistenceStoreManager: Calling delete on store");
+            return store.delete().then(function () {
+              delete allversions[version];
+              return self._getMetadataStore().then(function(store) {
+                if (allversions &&  Object.keys(allversions).length > 0) {
+                  var encodedStoreName = self._encodeString(storeName);
+                  return store.upsert(encodedStoreName, null,  Object.keys(allversions));
+                } else {
+                  return store.removeByKey(storeName);
+                }
+              });
+            }).then(function() {
+              return true;
+            });
+          }
         } else {
-          logger.log("Offline Persistence Toolkit PersistenceStoreManager: Calling delete on store");
-          return store.delete().then(function () {
-            delete allversions[version];
-            return true;
+          var mapcallback = function (origObject) {
+            return function (version) {
+              var value = origObject[version];
+              return value.delete();
+            };
+          };
+          var promises = Object.keys(allversions).map(mapcallback(allversions), this);
+          return Promise.all(promises).then(function () {
+            delete self._stores[storeName];
+            return self._getMetadataStore().then(function(store) {
+              var encodedStoreName = self._encodeString(storeName);
+              return store.removeByKey(encodedStoreName);
+            }).then(function() {
+              return true;
+            });
           });
         }
-      } else {
-        var mapcallback = function (origObject) {
-          return function (version) {
-            var value = origObject[version];
-            return value.delete();
-          };
-        };
-        var promises = Object.keys(allversions).map(mapcallback(allversions), this);
-        var self = this;
-        return Promise.all(promises).then(function () {
-          delete self._stores[storeName];
-          return true;
-        });
       }
-    }
+    })
   };
+
+  /**
+   * Returns a promise that resolves to a Map of store name and store metadata.
+   * @method
+   * @name getStoresMetadata
+   * @memberof! PersistenceStoreManager
+   * @instance
+   * @return {Promise<Map<String, PersistenceStoreMetadata>>} Returns a Map of store name and store metadata.
+   */
+  PersistenceStoreManager.prototype.getStoresMetadata = function() {
+    var self = this;
+    return this._getMetadataStore().then(function(store) {
+      return store.keys().then(function(encodedStoreNames) {
+        var allKeysPromiseArray = [];
+        encodedStoreNames.forEach(function(encodedStoreName) {
+          allKeysPromiseArray.push(store.findByKey(encodedStoreName).then(function(entry) {
+            var allVersionsKeys = entry;
+            var storeName = self._decodeString(encodedStoreName);
+            var factory = self._factories[storeName];
+            if (!factory) {
+              factory = self._factories[self._DEFAULT_STORE_FACTORY_NAME];
+            }
+            var metadata = new PersistenceStoreMetadata(storeName, factory, allVersionsKeys);
+            return metadata;
+          }));
+        });
+        return Promise.all(allKeysPromiseArray);
+      }).then(function(storeMetadataArray) {
+        var storesMetadataMap = new Map();
+        storeMetadataArray.forEach(function(storeMetadata) {
+          storesMetadataMap.set(storeMetadata.name, storeMetadata);
+        });
+        return storesMetadataMap;
+      });
+    });
+  }
 
   PersistenceStoreManager.prototype._mapStoreName = function (name, options) {
     var mappedName = this._storeNameMapping[name];
@@ -214,6 +299,42 @@ define(['./impl/logger'], function (logger) {
       return mappedName;
     }
   };
+
+  PersistenceStoreManager.prototype._getMetadataStore = function () {
+    var self = this;
+    if (!self._metadataStore) {
+      // check if there is a default store factory
+      var factory = this._factories[this._DEFAULT_STORE_FACTORY_NAME];
+      if (!factory) {
+        // if not, register the pouchdb store
+        this._factories[self._METADATA_STORE_NAME] = pouchDBPersistenceStoreFactory;
+      }
+      return this.openStore(self._METADATA_STORE_NAME).then(function (store) {
+        self._metadataStore = store;
+        return self._metadataStore;
+      });
+    }
+    return Promise.resolve(self._metadataStore);
+  }
+
+  PersistenceStoreManager.prototype._encodeString = function(value) {
+	  var i, arr = [];
+	  for (var i = 0; i < value.length; i++) {
+		  var hex = Number(value.charCodeAt(i)).toString(16);
+		  arr.push(hex);
+	  }
+	  return arr.join('');
+  }
+
+  PersistenceStoreManager.prototype._decodeString = function (value) {
+	  var hex  = value.toString();
+    var str = '';
+    var i;
+	  for (i = 0; i < hex.length; i += 2) {
+		  str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+	  }
+	  return str;
+  }
 
   return new PersistenceStoreManager();
 });

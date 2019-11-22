@@ -2,14 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery'], function(oj, $)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * Constructs a message object.
@@ -24,6 +23,7 @@ define(['ojs/ojcore', 'jquery'], function(oj, $)
  * oj.Message.SEVERITY_LEVEL for number types and oj.Message.SEVERITY_TYPE for string types. Default
  * is SEVERITY_ERROR if no severity is specified
  * @constructor
+ * @final
  * @ojtsmodule
  * @export
  * @since 0.6.0
@@ -292,10 +292,7 @@ oj.Message._LEVEL_TO_TYPE = [
 // eslint-disable-next-line no-unused-vars
 var Message = oj.Message;
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * Extends oj.Message to represent a component specific message, this defines options that control

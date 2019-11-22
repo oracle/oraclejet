@@ -2,9 +2,11 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcontext', 'promise', 'ojs/ojanimation'], 
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcontext', 'ojs/ojanimation'], 
 /*
 * @param {Object} oj 
 * @param {jQuery} $
@@ -53,10 +55,7 @@ var __oj_collapsible_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global Components:false, Context:false */
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -68,7 +67,7 @@ var __oj_collapsible_metadata =
  * @ojcomponent oj.ojCollapsible
  * @augments oj.baseComponent
  * @since 0.6.0
- * @ojstatus preview
+ *
  * @class oj.ojCollapsible
  * @ojshortdesc A collapsible displays a header that can be expanded to show its content.
  *
@@ -301,6 +300,21 @@ var __oj_collapsible_metadata =
         this._initialRender = undefined;
       },
 
+      /**
+       * Returns the focus element.
+       * @return {Element} the focus element inside ojCollapsible or the root element
+       * @protected
+       * @ignore
+       */
+
+      GetFocusElement: function () {
+        if (!this._isDisabled()) {
+          return this._getCollapsibleIcon()[0];
+        }
+
+        return this.element[0];
+      },
+
     /**
      * @memberof oj.ojCollapsible
      * @private
@@ -335,7 +349,7 @@ var __oj_collapsible_metadata =
       _createIcons: function () {
         var options = this.options;
         var icon = (options.expanded ? OPEN_ICON : CLOSE_ICON);
-        var iconTag = this._isDisabled() ? $('<span>') : $('<a>');
+        var iconTag = this._isDisabled() ? $('<span>') : $('<a tabindex="0">');
 
         iconTag.addClass('oj-component-icon oj-clickable-icon-nocontext oj-collapsible-header-icon ' + icon)
         .attr('aria-labelledby', this.header.attr('id'))
@@ -1313,6 +1327,7 @@ var __oj_collapsible_metadata =
 
     });
 }());
+
 
 /* global __oj_collapsible_metadata */
 (function () {

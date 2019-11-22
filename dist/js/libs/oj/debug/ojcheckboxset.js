@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/ojlabelledbyutils', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'ojs/ojoption'], 
 /*
 * @param {Object} oj 
@@ -45,6 +47,10 @@ var __oj_checkboxset_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
+          "enumValues": [
+            "none",
+            "notewindow"
+          ],
           "value": [
             "notewindow"
           ]
@@ -72,6 +78,14 @@ var __oj_checkboxset_metadata =
           "value": ""
         }
       }
+    },
+    "labelEdge": {
+      "type": "string",
+      "enumValues": [
+        "inside",
+        "none",
+        "provided"
+      ]
     },
     "labelHint": {
       "type": "string",
@@ -166,10 +180,7 @@ var __oj_checkboxset_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 (function () {
   /*!
    * JET Checkboxset @VERSION
@@ -192,9 +203,10 @@ var __oj_checkboxset_metadata =
  * @ojrole checkbox
  * @ojrole checkboxgroup
  * @ojrole option
+ * @ojimportmembers oj.ojDisplayOptions
  * @ojdisplayname Checkbox Set
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
- * @ojstatus preview
+ *
  * @ojsignature [{
  *                target: "Type",
  *                value: "class ojCheckboxset<K, D, V =any> extends editableValue<Array<V>, ojCheckboxsetSettableProperties<K, D, V>>",
@@ -208,7 +220,7 @@ var __oj_checkboxset_metadata =
  *               }
  *              ]
  *
- * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "required", "disabled", "labelledBy", "describedBy"]}
+ * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "required", "disabled"]}
  * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 2
@@ -474,7 +486,7 @@ var __oj_checkboxset_metadata =
      * {@ojinclude "name":"checkboxsetCommonOptions"}
      *
      * @name options
-     * @ojshortdesc The option items for the Checkboxset.
+     * @ojshortdesc The option items for the checkbox set.
      * @expose
      * @access public
      * @instance
@@ -604,8 +616,7 @@ var __oj_checkboxset_metadata =
 
     /**
      * Whether the component is required or optional. When required is set to true, an implicit
-     * required validator is created using the validator factory -
-     * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED).createValidator()</code>.
+     * required validator is created.
      *
      * Translations specified using the <code class="prettyprint">translations.required</code> attribute
      * and the label associated with the component, are passed through to the options parameter of the
@@ -750,7 +761,7 @@ var __oj_checkboxset_metadata =
    * @expose
    * @public
    * @return {void}
-   * @ojshortdesc Refreshes the checkboxset. A refresh is required after a checkboxset is programmatically changed. See the Help documentation for more information.
+   * @ojshortdesc Refreshes the checkbox set. A refresh is required after a checkbox set is programmatically changed. See the Help documentation for more information.
    * @memberof oj.ojCheckboxset
    * @instance
    */
@@ -809,7 +820,7 @@ var __oj_checkboxset_metadata =
    * @instance
    * @memberof oj.ojCheckboxset
    * @since 4.0.0
-   * @ojstatus preview
+   *
    */
       validate: oj.EditableValueUtils.validate,
 
@@ -928,12 +939,13 @@ var __oj_checkboxset_metadata =
     // exclude all comment and text nodes
         $(element.get(0).childNodes).filter(function () {
           return !((this.getAttribute && this.getAttribute('slot') === 'contextMenu'));
-        }).wrapAll("<div class='oj-checkboxset-wrapper'></div>"); // @HTMLUpdateOK
+        }).wrapAll("<div class='oj-checkboxset-wrapper oj-form-control-container'></div>"); // @HTMLUpdateOK
 
         this._on(this._events);
         this._setup();
       },
-    /**
+
+  /**
    * Resets this.checkboxes. This is called at the beginning of a refresh in EditableValue
    * @override
    * @memberof oj.ojCheckboxset
@@ -1057,13 +1069,38 @@ var __oj_checkboxset_metadata =
           return values;
         }
 
+        // set the custom renderer on oj-option
         if (this._IsCustomElement()) {
-      // set the custom renderer on oj-option
           var i;
           var len;
           var renderer = this._customOptionRenderer.bind(this);
           var options = this.element.children('oj-option');
           var selectedOptionsArray = sortValuesInOptionsOrder(this.options.value, options);
+          var numSelected = selectedOptionsArray.length;
+          var domElem = this.element[0];
+          var wrapperDom = domElem.querySelector('.oj-checkboxset-wrapper');
+
+          // If the wrapperDom isn't created yet, we use the component element as the wrapper
+          if (!wrapperDom) {
+            wrapperDom = domElem;
+          }
+
+          var novaluespan = domElem.querySelector('[data-no-value-span]');
+          // Remove the old no-value span, if there is one and there is a current selection.
+          if (novaluespan) {
+            if (numSelected > 0) {
+              novaluespan.parentElement.removeChild(novaluespan);
+            }
+          } else if (numSelected === 0 && this.options.readOnly) { // Otherwise, add the no value span if no selection.
+            var span = document.createElement('span');
+            span.setAttribute('data-no-value-span', '');
+            span.setAttribute('class', 'oj-choice-item');
+            var noCheckboxSelected = this.getTranslatedString('readonlyNoValue');
+            if (noCheckboxSelected !== null) {
+              span.textContent = noCheckboxSelected;
+            }
+            wrapperDom.appendChild(span);// @HTMLUpdateOK
+          }
 
           if (options.length > 0) {
             for (i = 0, len = options.length; i < len; i++) {
@@ -1120,17 +1157,10 @@ var __oj_checkboxset_metadata =
           elem.classList.add('oj-helper-hidden');
         }
         // if element is readonly and there is no checked option then we do not need to process options,
-        if (!selectedOptionsArray || selectedArrayLength === 0) {
-          var span = document.createElement('span');
-          var noCheckboxSelected = this.getTranslatedString('readonlyNoValue');
-          if (noCheckboxSelected !== null) {
-            span.textContent = noCheckboxSelected;
-          }
-          elem.parentElement.insertBefore(span, elem);// @HTMLUpdateOK
-        } else {
+        if (selectedArrayLength > 0) {
           var i = selectedOptionsArray.indexOf(optionValue);
           if (i > -1) {
-            var isLastOption = (i === selectedOptionsArray.length - 1);
+            var isLastOption = (i === selectedArrayLength - 1);
             this._initReadonlyLabelFromOjOption(elem, parentSpan, isLastOption);
           }
         }
@@ -1934,15 +1964,15 @@ var __oj_checkboxset_metadata =
    *    <tr>
    *       <td>Checkbox</td>
    *       <td><kbd>Tap</kbd></td>
-   *       <td> Select/unselect the input</td>
+   *       <td> Select/unselect the checkbox</td>
    *     </tr>
    *     <tr>
-   *       <td>Input's Label</td>
+   *       <td>Checkbox's Label</td>
    *       <td><kbd>Tap</kbd></td>
-   *       <td> Select/unselect the corresponding input</td>
+   *       <td> Select/unselect the corresponding checkbox</td>
    *    </tr>
    *     <tr>
-   *       <td>Input or Label</td>
+   *       <td>Checkbox or Label</td>
    *       <td><kbd>Press & Hold</kbd></td>
    *       <td>If hints, help.instruction or messages exist in a notewindow,
      *           pop up the notewindow.</td>
@@ -1968,9 +1998,29 @@ var __oj_checkboxset_metadata =
    *     <tr>
    *       <td>Checkboxset</td>
    *       <td><kbd>Tab In</kbd></td>
-   *       <td>Set focus to the first item in the checkboxset.
+   *       <td>Set focus to the first focusable checkbox in the checkboxset.
+   *       Disabled checkboxes are not focusable.
    *       If hints, helpInstruction or messages exist in a notewindow,
    *        pop up the notewindow.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Checkbox</td>
+   *       <td><kbd>Space</kbd></td>
+   *       <td>Toggles the checkbox; Iff the checkbox is unselected, it will select it and vice versa.</td>
+   *     </tr>
+   *    <tr>
+   *       <td>Checkbox</td>
+   *       <td><kbd>Tab</kbd></td>
+   *       <td>Sets focus to the next focusable checkbox in the checkboxset.
+   *        Disabled checkboxes are not focusable. If the target is the last focusable checkbox in the
+   *        checkboxset, focus goes to the next focusable item after the oj-checkboxset.</td>
+   *     </tr>
+   *    <tr>
+   *       <td>Checkbox</td>
+   *       <td><kbd>Shift+Tab</kbd></td>
+   *       <td>Sets focus to the previous focusable checkbox in the checkboxset.
+   *        Disabled checkboxes are not focusable. If the target is the first focusable checkbox in the
+   *        checkboxset, focus goes to the previous focusable item before the oj-checkboxset.</td>
    *     </tr>
    *   </tbody>
    * </table>
@@ -2072,6 +2122,7 @@ var __oj_checkboxset_metadata =
  * var nodes = myComp.getNodeBySubId('oj-checkboxset-inputs');
  */
 }());
+
 
 /* global __oj_checkboxset_metadata */
 (function () {

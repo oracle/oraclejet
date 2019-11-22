@@ -463,6 +463,11 @@ $formControlFontWeightReadOnly:         bold !default;
 // disabled
 $formControlBgColorDisabled:            transparent !default;
 
+// form control option defaults
+//----------------------------------
+$formControlLabelEdgeDefault: provided !default;
+
+
 // form labels
 //----------------------------------
 // label text color defined above, look for "text colors"
@@ -493,8 +498,14 @@ $formLayoutLabelInlineMarginTop: .5em !default;
 
 
 $formLayoutFieldInlineAlign: end !default;
+$formLayoutLabelEdgeDefault: top !default;
+$formLayoutLabelGenerationDefault: form !default;
 
+// Default value for colspan-wrap attribute
+$formLayoutColspanWrapDefault: nowrap !default;
 
+// The left/right margin is the space before the first column and after the last column of an oj-form-layout
+$formLayoutHorizontalMargin:  $formControlLabelInlineGutter !default;
 
 
 // INPUT TEXT, INPUT PASSWORD, TEXT AREA
@@ -505,7 +516,9 @@ $textAreaLineHeight:                  oj-px-to-rem(24px, $baseFontSize: 16px) !d
 
 // disabled
 $inputTextBorderStyleDisabled:        dotted !default;
-
+// INPUT DATE
+$inputDateTimeConverterYearOptionDefault: 2-digit !default;
+$inputDateTimeShowPickerOnDesktopOptionDefault: enabled !default;
 //INPUT SEARCH
 //--------------------------------------------------------------
 $inputSearchIconPosition: start !default; // Possible values are 'start' and 'end'
@@ -522,9 +535,6 @@ $inputNumberButtonWidth: 50px;
 
 $radioCheckboxLabelPosition: start !default;
 $radioCheckboxRowHeight: 3rem !default;
-
-// TODO Bug 25897533: Clean up after sprite tooling is implemented
-$radioCheckboxImageHeightWidth: $radioCheckboxRowHeight !default;
 
 // spacing between edge and the label text
 $radioCheckboxLabelToEdgePadding: 16px !default;
@@ -839,10 +849,12 @@ $offcanvasDisplayModeOptionDefault: overlay !default;
 //----------------------------------
 $trainStepWidth:                          112px !default;
 
+// File Picker
+//----------------------------------------------------------------
+$filePickerBgColorActive:           $brandColorLight5 !default;
+$filePickerPadding:               22.333333px !default;
 
 //=================================================================
-//=================================================================
-$textColorError:    $accentColorDanger4 !default;
 // default
 $buttonTextColorDisabled:           $textColorDisabled !default;
 $buttonInternalBorderColor:         $neutralColor10 !default;
@@ -851,7 +863,6 @@ $buttonBgColorActive:               $brandColorDark1  !default;
 // selected disabled
 $buttonTextColorSelectedDisabled:   $neutralColor3 !default;
 $buttonBgColorSelectedDisabled:     $neutralColor10  !default;
-$filePickerBgColorActive:           $brandColorLight5 !default;
 //$headerBgColor: $neutralColor6 !default;
 $listViewHeaderBgColor:             $neutralColor6 !default; //settings: ignore
 // nav list

@@ -120,6 +120,20 @@ define(["../PersistenceStore", "./storageUtils", "./logger"],
       });
     };
 
+    KeyValuePersistenceStore.prototype.updateKey = function(currentKey, newKey) {
+      logger.log("Offline Persistence Toolkit keyValuePersistenceStore called by subclass: updateKey() with currentKey: " + currentKey + " and new key: " + newKey);
+      var self = this;
+      return this.getItem(currentKey).then(function (existingValue) {
+        if (existingValue) {
+          return self._insert(newKey, existingValue.metadata, existingValue.value);
+        } else {
+          return Promise.reject("No existing key found to update");
+        }
+      }).then(function() {
+        return self.removeByKey(currentKey);
+      });
+    };
+
     KeyValuePersistenceStore.prototype._sort = function (unsorted, sortCriteria) {
 
       if (!unsorted || !unsorted.length ||

@@ -12,19 +12,15 @@
     
     .oj-messages-layer {
       @extend .oj-component-layer;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        z-index: var(--oj-messages-z-index);
-      } @else {
+
         z-index: $messagesZindex;        
-      }
+
     }
     
     .oj-messages-layer.oj-focus-within {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        z-index: calc(var(--oj-messages-z-index) + 1);
-      } @else {
+
         z-index: calc(#{$messagesZindex} + 1);
-      }
+
     }
     
     oj-messages:not(.oj-complete) {
@@ -42,59 +38,39 @@
     }
     
     .oj-messages-general {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        width: var(--oj-messages-general-overlay-width);
-        max-width: var(--oj-messages-general-overlay-max-width);
-        min-width: var(--oj-messages-general-overlay-min-width);
-      } @else {
+
         width: $messagesGeneralOverlayWidth;
         max-width: $messagesGeneralOverlayMaxWidth;
         min-width: $messagesGeneralOverlayMinWidth;  
-      }
+
     }
     
     .oj-messages-notification {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        width: var(--oj-messages-notification-overlay-width);
-        max-width: var(--oj-messages-notification-overlay-max-width);
-        min-width: var(--oj-messages-notification-overlay-min-width);
-      } @else {
+
         width: $messagesNotificationOverlayWidth;
         max-width: $messagesNotificationOverlayMaxWidth;
         min-width: $messagesNotificationOverlayMinWidth;
-      }
+
     }
     
     .oj-messages-general .oj-messages-container {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        border-width: var(--oj-messages-general-overlay-border-width);
-        border-color: var(--oj-messages-general-overlay-border-color);
-        border-style: solid;
-        border-radius: var(--oj-messages-general-overlay-border-radius);
-        box-shadow: var(--oj-messages-general-overlay-box-shadow);
-      } @else {
+
         border-width: $messagesGeneralOverlayBorderWidth;
         border-color: $messagesGeneralOverlayBorderColor;
         border-style: $messagesGeneralOverlayBorderStyle;
         @include oj-border-radius($messagesGeneralOverlayBorderRadius);
         @include oj-box-shadow($messagesGeneralOverlayBoxShadow);
-      }
+
     }
     
     .oj-messages-notification .oj-messages-container {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        border-width: var(--oj-messages-notification-overlay-border-width);
-        border-color: var(--oj-messages-notification-overlay-border-color);
-        border-style: solid;
-        border-radius: var(--oj-messages-notification-overlay-border-radius);
-        box-shadow: var(--oj-messages-notification-overlay-box-shadow);
-      } @else {
+
         border-width: $messagesNotificationOverlayBorderWidth;
         border-color: $messagesNotificationOverlayBorderColor;
         border-style: $messagesNotificationOverlayBorderStyle;
         @include oj-border-radius($messagesNotificationOverlayBorderRadius);
         @include oj-box-shadow($messagesNotificationOverlayBoxShadow);
-      }
+
     }
     
     // Add a margin for non-inline case so that the messages do not collapse to viewport edge
@@ -107,139 +83,99 @@
     //////////////////////////////
     
     .oj-messages-general .oj-message-header {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background-color: var(--oj-message-general-overlay-header-bg-color);
-      } @else {
+
         background-color: $messageGeneralOverlayHeaderBgColor;
-      }
+
     }
     
     .oj-messages-general .oj-message-body {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background-color: var(--oj-message-general-overlay-body-bg-color);
-      } @else {
+
         background-color: $messageGeneralOverlayBodyBgColor;
-      }
+
     }
     
     .oj-messages-notification .oj-message-header {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background-color: var(--oj-message-notification-overlay-header-bg-color);
-      } @else {
+
         background-color: $messageNotificationOverlayHeaderBgColor;
-      }
+
     }
     
     .oj-messages-notification .oj-message-body {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background-color: var(--oj-message-notification-overlay-body-bg-color);
-      } @else {
+
         background-color: $messageNotificationOverlayBodyBgColor;
-      }
+
     }
     
     // Apply border to the last oj-message child only if page author did not opt out of it
     .oj-messages-inline oj-message:not(:last-child) .oj-message-container,
     .oj-messages-inline:not(.oj-messages-inline-remove-bottom-border) 
       oj-message:last-child .oj-message-container {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-          border-width: var(--oj-message-general-inline-border-width);
-          border-color: var(--oj-message-general-inline-border-color);
-          border-style: solid;
-        } @else {
+
           border-width: $messageGeneralInlineBorderWidth;
           border-color: $messageGeneralInlineBorderColor;
           border-style: $messageGeneralInlineBorderStyle;
-        }
+
     }
     
     .oj-messages-general .oj-message-container {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        border-width: var(--oj-message-general-overlay-border-width);
-        border-color: var(--oj-message-general-overlay-border-color);
-        border-style: solid;
-        border-radius: var(--oj-message-general-overlay-border-radius);
-        box-shadow: var(--oj-message-general-overlay-box-shadow);
-      } @else {
+
         border-width: $messageGeneralOverlayBorderWidth;
         border-color: $messageGeneralOverlayBorderColor;
         border-style: $messageGeneralOverlayBorderStyle;
         @include oj-border-radius($messageGeneralOverlayBorderRadius);
         @include oj-box-shadow($messageGeneralOverlayBoxShadow);  
-      }
+
     }
     
     .oj-messages-notification .oj-message-container {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        border-width: var(--oj-message-notification-overlay-border-width);
-        border-color: var(--oj-message-notification-overlay-border-color);
-        border-style: solid;
-        border-radius: var(--oj-message-notification-overlay-border-radius);
-        box-shadow: var(--oj-message-notification-overlay-box-shadow);
-      } @else {
+
         border-width: $messageNotificationOverlayBorderWidth;
         border-color: $messageNotificationOverlayBorderColor;
         border-style: $messageNotificationOverlayBorderStyle;
         @include oj-border-radius($messageNotificationOverlayBorderRadius);
         @include oj-box-shadow($messageNotificationOverlayBoxShadow);
-      }
+
     }
     
     // Need to set radius on header and body additionally, else the background color bleeds through  
     //  the container, which is very prominent at larger border radius (eg. 12px in iOS)
     .oj-messages-general .oj-message-header {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        border-top-left-radius: var(--oj-message-general-overlay-border-radius);
-        border-top-right-radius: var(--oj-message-general-overlay-border-radius);
-      } @else {
+
         @include oj-border-top-left-radius($messageGeneralOverlayBorderRadius);
         @include oj-border-top-right-radius($messageGeneralOverlayBorderRadius);
-      }
+
     }
     
     .oj-messages-general .oj-message-body {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        border-bottom-left-radius: var(--oj-message-general-overlay-border-radius);
-        border-bottom-right-radius: var(--oj-message-general-overlay-border-radius);
-      } @else {
+
         @include oj-border-bottom-left-radius($messageGeneralOverlayBorderRadius);
         @include oj-border-bottom-right-radius($messageGeneralOverlayBorderRadius);
-      }
+
     }
     .oj-messages-notification .oj-message-header {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        border-top-left-radius: var(--oj-message-notification-overlay-border-radius);
-        border-top-right-radius: var(--oj-message-notification-overlay-border-radius);
-      } @else {
+
         @include oj-border-top-left-radius($messageNotificationOverlayBorderRadius);
         @include oj-border-top-right-radius($messageNotificationOverlayBorderRadius);
-      }
+
     }
     
     .oj-messages-notification .oj-message-body {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        border-bottom-left-radius: var(--oj-message-notification-overlay-border-radius);
-        border-bottom-right-radius: var(--oj-message-notification-overlay-border-radius);
-      } @else {
+
         @include oj-border-bottom-left-radius($messageNotificationOverlayBorderRadius);
         @include oj-border-bottom-right-radius($messageNotificationOverlayBorderRadius);
-      }
+
     }
     
     .oj-messages-general oj-message:not(:last-child) .oj-message-container {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        margin-bottom: var(--oj-message-general-overlay-separator-margin);
-      } @else {
+
         margin-bottom: $messageGeneralOverlaySeparatorMargin;        
-      }
+
     }
     
     .oj-messages-notification oj-message:not(:last-child) .oj-message-container {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        margin-bottom: var(--oj-message-notification-overlay-separator-margin);
-      } @else {
+
         margin-bottom: $messageNotificationOverlaySeparatorMargin;        
-      }
+      
     }
 
     // Small screen responsive overrides

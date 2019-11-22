@@ -37,30 +37,17 @@
       border-style: solid;
       border-width: 0 1px 1px 1px;
 
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        margin-top: var(--oj-message-component-inline-margin-top);
-        border-top-width: var(--oj-message-component-inline-border-top-width);
-        border-radius: var(--oj-message-component-inline-border-radius);
-      }
-      @else {
+
        
          margin-top: $messageComponentInlineMarginTop;
          border-top-width: $messageComponentInlineBorderTopWidth;
          border-radius:$messageComponentInlineBorderRadius;
-      } 
+
     }
     
    .oj-checkboxset .oj-messaging-inline-container .oj-message:first-child,
    .oj-radioset .oj-messaging-inline-container .oj-message:first-child {
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-    {
 
-        margin-top: var(--oj-message-radiocheckbox-inline-margin-top);
-        border-top-width: var(--oj-message-radiocheckbox-inline-border-top-width);
-
-    }
-    @else {
       // if theme doesn't have a border around the radioset/checkboxset, it needs to 
       // detach even if the border-radius is 0.
       @if(($radioCheckboxSetBorderColor == null or $radioCheckboxSetBorderColor == transparent)) {
@@ -75,7 +62,7 @@
           border-top-width: 0;
         }
      
-    }
+
    }
 
     // For these components it needs a top border regardless of border radius.
@@ -97,55 +84,35 @@
 
     // red box
     .oj-messaging-inline-container .oj-message.oj-message-error {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-message-component-inline-bg-color-error);
-        border-color: var(--oj-message-component-inline-border-color-error);
-      }
-      @else {
+
         background-color: $messageComponentInlineBgColorError;
         border-color: $messageComponentInlineBorderColorError;        
-      }
+
     }
 
     // gold box
     .oj-messaging-inline-container .oj-message.oj-message-warning {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-message-component-inline-bg-color-warning);
-        border-color: var(--oj-message-component-inline-border-color-warning);
-      }
-      @else {
+
         background-color: $messageComponentInlineBgColorWarning;
         border-color: $messageComponentInlineBorderColorWarning;
-      }
+
     }    
 
     // blue box
     .oj-messaging-inline-container .oj-message.oj-message-info {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-message-component-inline-bg-color-info);
-        border-color: var(--oj-message-component-inline-border-color-info);
-      }
-      @else {
+
         background-color: $messageComponentInlineBgColorInfo;
         border-color: $messageComponentInlineBorderColorInfo;
-      }
+
     }
 
     // green box
     .oj-messaging-inline-container .oj-message.oj-message-confirmation {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-message-component-inline-bg-color-confirmation);
-        border-color: var(--oj-message-component-inline-border-color-confirmation);
-      }
-      @else {
+
         background-color: $messageComponentInlineBgColorConfirmation;
         border-color: $messageComponentInlineBorderColorConfirmation;
       }
-    }
+
 
     /** 
      * wraps a message block that includes the icon and content inline-blocks
@@ -154,15 +121,9 @@
     
     .oj-message {
       display: flex;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        text-align: left;
-        html[dir="rtl"] & {
-          text-align: right;
-        }
-      }
-      @else {
+    
         @include oj-bidi-property($property: 'text-align', $startOrEnd: start);
-      }
+
       white-space: nowrap; /* 1 */
     }
 

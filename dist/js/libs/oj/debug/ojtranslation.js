@@ -2,15 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore-base', 'ojs/ojconfig'], function(oj, Config)
 {
   "use strict";
-/*
-** Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
-**
-**34567890123456789012345678901234567890123456789012345678901234567890123456789
-*/
+
 
 /* global Config:false */
 

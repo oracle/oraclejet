@@ -16,13 +16,10 @@
       position: fixed;
       width: 100%;
       box-sizing: border-box;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        z-index: var(--oj-app-layout-fixed-z-index);
-      }
-      @else {
+
+
         z-index: $appLayoutFixedZindex;        
-      }
+      
     }
     .oj-applayout-fixed-top {
       top: 0;

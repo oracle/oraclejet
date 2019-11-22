@@ -29,18 +29,10 @@
       vertical-align:middle;
       height: 100%;
       overflow: hidden;
-      transition-timing-function: ease-in-out;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        color: var(--oj-swipe-actions-text-color);
-        transition: max-width var(--oj-swipe-actions-animation-duration);
-        background-color: var(--oj-swipe-actions-default-bg-color);
-        min-width: var(--oj-swipe-actions-item-width);
-      } @else {
-        color: $swipeActionsTextColor;
-        transition: max-width $swipeActionsAnimationDuration;
-        background-color: $swipeActionsDefaultBgColor;
-        min-width: $swipeActionsItemWidth;
-      }
+      color: $swipeActionsTextColor;
+      transition: max-width $swipeActionsAnimationDuration ease-in-out;
+      background-color: $swipeActionsDefaultBgColor;
+      min-width: $swipeActionsItemWidth;
     }
 
     /*
@@ -54,33 +46,27 @@
      * Applied to the more action item
      */
     .oj-swipetoreveal .oj-swipetoreveal-more {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background-color: var(--oj-swipe-actions-neutral-bg-color);
-      } @else {
+
         background-color: $swipeActionsNeutralBgColor;
-      }
+
     }
 
     /*
      * Applied to the flag action item
      */
     .oj-swipetoreveal .oj-swipetoreveal-flag {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background-color: var(--oj-swipe-actions-attention-bg-color);
-      } @else {
+
         background-color: $swipeActionsAttentionBgColor;
-      }
+
     }
 
     /*
      * Applied to the alert action item
      */
     .oj-swipetoreveal .oj-swipetoreveal-alert {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background-color: var(--oj-swipe-actions-danger-bg-color);
-      } @else {
+
         background-color: $swipeActionsDangerBgColor;
-      }
+      
     }
   }
 }

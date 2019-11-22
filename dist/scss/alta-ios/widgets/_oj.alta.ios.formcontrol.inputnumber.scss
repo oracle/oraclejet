@@ -44,17 +44,63 @@
     } 
 
     .oj-inputnumber.oj-loading {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-image: var(--oj-loading-bg-image);
-        animation: LoadingGradientAnimation 3s infinite;
-      }
-      @else {
+
         background-image: $loadingBgImage;
         animation: LoadingGradientAnimation 3s infinite; 
-      }
+      
       background-size: 200% 200%;
     }
     
+    // To replecate old android behavior, we need to disable border styles on the
+    // text container and put them back on the input element.
+    .oj-inputnumber.oj-text-field .oj-text-field-container {
+      border-width: 0px;
+    } 
+    .oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-text-field-container {
+      border-width: 0px;
+    }
+
+    .oj-inputnumber.oj-text-field .oj-inputnumber-input {
+      position: relative;
+      box-sizing: border-box;
+      border-style: solid;
+      border-color: $formControlBorderColor;
+      border-width: $formControlBorderWidth;
+      border-radius: $formControlBorderRadius;
+      background-color: $formControlBgColor;
+      overflow: hidden;
+    } 
+
+    .oj-inputnumber.oj-text-field.oj-read-only .oj-inputnumber-input,
+    .oj-inputnumber.oj-text-field .oj-read-only .oj-inputnumber-input {
+      border-style: none;
+      border-color: transparent;
+      border-width: 0;
+      border-radius: 0;
+      background-color: transparent;
+    }      
+
+    .oj-inputnumber.oj-text-field.oj-invalid .oj-inputnumber-input,
+    .oj-inputnumber.oj-text-field .oj-invalid .oj-inputnumber-input,
+    .oj-inputnumber.oj-text-field.oj-warning .oj-inputnumber-input,
+    .oj-inputnumber.oj-text-field .oj-warning .oj-inputnumber-input {
+      @include oj-form-control-border-message-width;
+      border-style: solid;
+    }
+
+    // Styling for invalid state
+    .oj-inputnumber.oj-text-field.oj-invalid .oj-inputnumber-input,
+    .oj-inputnumber.oj-text-field .oj-invalid .oj-inputnumber-input {
+      border-color: $borderColorError; 
+    }
+    // Styling for warning state
+    .oj-inputnumber.oj-text-field.oj-warning .oj-inputnumber-input,
+    .oj-inputnumber.oj-text-field .oj-warning .oj-inputnumber-input {
+      border-color: $borderColorWarning; 
+    }
+    .oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-inputnumber-input {
+      @include oj-form-control-content-focus;
+      @include oj-form-control-content-focus-padding;
+    }
   }
 }

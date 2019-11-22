@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'], 
 function(oj, $)
 {
@@ -29,10 +31,7 @@ var __oj_optgroup_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @constructor
@@ -48,10 +47,7 @@ function ojOptGroup(context) {
   };
 }
 
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @ojcomponent oj.ojOptgroup
@@ -59,7 +55,7 @@ function ojOptGroup(context) {
  * @ojdisplayname Option Group
  * @ojshortdesc An optgroup supports grouping of child oj-option elements.
  * @ojrole option
- * @ojstatus preview
+ *
  * @ojsignature class ojOptgroup extends JetElement<ojOptgroupSettableProperties>
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["label", "disabled"]}

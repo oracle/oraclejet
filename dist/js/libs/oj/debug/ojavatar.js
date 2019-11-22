@@ -2,13 +2,29 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'ojs/ojvcomponent', 'ojs/ojcomponentcore'], function(oj, VComponent)
 {
   "use strict";
 var __oj_avatar_metadata = 
 {
   "properties": {
+    "background": {
+      "type": "string",
+      "enumValues": [
+        "neutral",
+        "red",
+        "orange",
+        "forest",
+        "green",
+        "teal",
+        "mauve",
+        "purple"
+      ],
+      "value": "neutral"
+    },
     "initials": {
       "type": "string"
     },
@@ -41,64 +57,58 @@ var __oj_avatar_metadata =
 "use strict";
 
 /** @jsx VComponent.h */
-var _tagName = 'oj-avatar';
-
-var Avatar =
-/** @class */
-function (_super) {
-  __extends(Avatar, _super);
-
-  function Avatar(props, content) {
-    var _this = _super.call(this, _tagName, props, content) || this;
-
-    _this.props = props;
-    _this.content = content;
-    return _this;
+class Avatar extends VComponent {
+  constructor(props) {
+    super(props);
+    this.props = props;
   }
 
-  Avatar.prototype.render = function () {
+  render() {
     var props = this.props;
-    var size = props.size || 'md';
+    var size = props.size;
+    var background = props.background;
     var innerContent;
 
     if (props.src) {
       innerContent = VComponent.h("div", {
-        "class": "oj-avatar-background-image",
+        className: "oj-avatar-background-image",
         style: {
-          backgroundImage: "url(\"" + props.src + "\")"
+          backgroundImage: "url(\"".concat(props.src, "\")")
         }
       });
     } else if (props.initials) {
       innerContent = VComponent.h("div", {
-        "class": "oj-avatar-initials"
+        className: "oj-avatar-initials oj-avatar-background-image"
       }, props.initials);
     } else {
       innerContent = VComponent.h("div", {
-        "class": "oj-avatar-placeholder"
-      });
+        className: "oj-avatar-background-image"
+      }, VComponent.h("div", {
+        className: "oj-avatar-placeholder"
+      }));
     }
 
-    return VComponent.h("div", {
-      "class": 'oj-avatar-outer ' + (!props.initials || props.src ? 'oj-avatar-' + size : 'oj-avatar-has-initials oj-avatar-' + size),
+    return VComponent.h(Avatar.tagName, null, VComponent.h("div", {
+      className: 'oj-avatar oj-avatar-bg-' + background + ' oj-avatar-' + size + (props.initials && !props.src ? ' oj-avatar-has-initials' : props.src ? ' oj-avatar-image' : ''),
       "aria-hidden": "true"
-    }, VComponent.h("div", {
-      "class": "oj-avatar-inner"
     }, innerContent));
-  };
+  }
 
-  return Avatar;
-}(VComponent);
+}
 
-VComponent.register(_tagName, __oj_avatar_metadata, Avatar);
+Avatar.tagName = 'oj-avatar';
+Avatar.metadata = __oj_avatar_metadata;
+VComponent.register(Avatar);
+
 
 /**
  * @ojcomponent oj.ojAvatar
  * @ojsignature {target: "Type", value: "class ojAvatar extends JetElement<ojAvatarSettableProperties>"}
  * @since 4.0.0
- * @ojstatus preview
+ *
  * @ojshortdesc An avatar represents a person or entity as initials or an image.
  *
- * @ojpropertylayout {propertyGroup: "common", items: ["size"]}
+ * @ojpropertylayout {propertyGroup: "common", items: ["size", "background"]}
  * @ojpropertylayout {propertyGroup: "data", items: ["src", "initials"]}
  * @ojvbdefaultcolumns 2
  * @ojvbmincolumns 1
@@ -235,7 +245,7 @@ VComponent.register(_tagName, __oj_avatar_metadata, Avatar);
  * Specifies the src for the image of the avatar.  Image will be rendered as a background image.
  * In high contrast mode, initials will be displayed instead since background images
  * will not be rendered.
- * @ojshortdesc Specifies the src for the image of the avatar.
+ * @ojshortdesc Specifies the source for the image of the avatar.
  * @expose
  * @name src
  * @memberof oj.ojAvatar
@@ -250,6 +260,25 @@ VComponent.register(_tagName, __oj_avatar_metadata, Avatar);
  *
  * //Set src property to 'image2.jpg'
  * myAvatar.src = "image2.jpg";
+ */
+ /**
+ * Specifies the background of the avatar.
+ * @expose
+ * @name background
+ * @memberof oj.ojAvatar
+ * @ojshortdesc Specifies the background of the avatar.
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "neutral" {"description": "Neutral background (default, if unspecified)", "displayName": "Neutral"}
+ * @ojvalue {string} "red" {"description": "Red background", "displayName": "Red"}
+ * @ojvalue {string} "orange" {"description": "Orange background", "displayName": "Orange"}
+ * @ojvalue {string} "forest" {"description": "Forest background", "displayName": "Forest"}
+ * @ojvalue {string} "green" {"description": "Green background", "displayName": "Green"}
+ * @ojvalue {string} "teal" {"description": "Teal background", "displayName": "Teal"}
+ * @ojvalue {string} "mauve" {"description": "Mauve background", "displayName": "Mauve"}
+ * @ojvalue {string} "purple" {"description": "Purple background", "displayName": "Purple"}
+ * @ojvalueskeeporder
+ * @default "neutral"
  */
  /**
   *

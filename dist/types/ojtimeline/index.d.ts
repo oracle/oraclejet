@@ -1,5 +1,5 @@
 import { ojTimeAxis } from '../ojtimeaxis';
-import { Converter } from '../ojvalidation-base';
+import Converter = require('../ojconverter');
 import { DataProvider } from '../ojdataprovider';
 import { dvtTimeComponent, dvtTimeComponentEventMap, dvtTimeComponentSettableProperties } from '../ojtime-base';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
@@ -26,7 +26,7 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
     };
     referenceObjects: ojTimeline.ReferenceObject[];
     selection: K[];
-    selectionMode: 'single' | 'multiple' | 'none';
+    selectionMode: 'none' | 'single' | 'multiple';
     start: string;
     styleDefaults: {
         animationDuration?: number;
@@ -202,6 +202,13 @@ export namespace ojTimeline {
         thumbnail?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
         subId: string;
         seriesIndex: number;
@@ -231,6 +238,17 @@ export namespace ojTimeline {
         start: string;
         svgStyle?: CSSStyleDeclaration;
         thumbnail?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type SeriesTemplateContext = {
+        componentElement: Element;
+        index: number;
+        id: any;
+        items: Array<{
+            data: object;
+            index: number;
+            key: any;
+        }>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K, D> = {
@@ -285,7 +303,7 @@ export interface ojTimelineSettableProperties<K, D extends ojTimeline.DataItem |
     };
     referenceObjects: ojTimeline.ReferenceObject[];
     selection: K[];
-    selectionMode: 'single' | 'multiple' | 'none';
+    selectionMode: 'none' | 'single' | 'multiple';
     start: string;
     styleDefaults: {
         animationDuration?: number;

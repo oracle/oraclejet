@@ -24,12 +24,9 @@
       display: inline-flex;
       justify-content: space-between;
       align-items: center;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        height: var(--oj-message-header-height);
-      }
-      @else {
+
         height: $messageHeaderHeight;  
-      }      
+
     }
     
     .oj-message-leading-header {
@@ -48,16 +45,11 @@
     }
     
     .oj-message-category {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        color: var(--oj-message-category-text-color);
-        font-size: var(--oj-message-category-font-size);
-        font-weight: var(--oj-message-category-font-weight);
-      }
-      @else {
+
         color: $messageCategoryTextColor;
         font-size: $messageCategoryFontSize;
         font-weight: $messageCategoryFontWeight;
-      }
+
 
       // category text is expected to be single word, but it could be long, like "CONFIRMATION"
       //  which could end up overlapping the timestamp in small screens, eg. small iphones.
@@ -85,55 +77,36 @@
     
     // Inline component messages also share this class
     .oj-message-summary {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        font-weight: var(--oj-message-summary-font-weight);
-        color: var(--oj-message-summary-text-color);
-        font-size: var(--oj-message-summary-font-size);
-        line-height: var(--oj-message-summary-line-height);
-      }
-      @else {
+
         font-weight: $messageSummaryFontWeight;
         color: $messageSummaryTextColor;
         font-size: $messageSummaryFontSize;
         line-height: $messageSummaryLineHeight;
-      }
-      
+
+
       // usually a multi word text, set wrap at word ends
       word-wrap: break-word;
     }
     
     // Inline component messages also share this class
     .oj-message-detail {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        color: var(--oj-message-detail-text-color);
-        font-size: var(--oj-message-detail-font-size);
-        line-height: var(--oj-message-detail-line-height);
-      }
-      @else {
+
         color: $messageDetailTextColor;
         font-size: $messageDetailFontSize;
         line-height: $messageDetailLineHeight;
-      }
-      
+
+
       // usually a multi word text, set wrap at word ends
       word-wrap: break-word;
       width: 100%;
     }
     
     .oj-message-timestamp {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        color: var(--oj-message-time-text-color);
-        font-size: var(--oj-message-time-font-size);
-        text-align: right;
-        html[dir="rtl"] & {
-          text-align: left;
-        }
-      }
-      @else {
+
         color: $messageTimeTextColor;
         font-size: $messageTimeFontSize;
         @include oj-bidi-property($property: 'text-align', $startOrEnd: end);
-      }
+
       flex-grow: 9;
       
       // in worst case let it wrap at word ends so as to not overlap with category text
@@ -141,26 +114,16 @@
     }
     
     .oj-message-close {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        float: right;
-        display: var(--oj-message-close-icon-display);
-        html[dir="rtl"] & {
-          float: left;
-        }
-      }
-      @else {
+
         @include oj-bidi-property($property: 'float', $startOrEnd: end);
         display: $messageCloseIconDisplay;
-      }
+
     }
     
     .oj-message-auto-timeout-close {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        display: var(--oj-message-auto-timeout-close-icon-display);
-      }
-      @else {
+     
         display: $messageAutoTimeoutCloseIconDisplay;
-      }
+
     }
     
     // button adds bottom margin of 4px, we dont want that when inside message

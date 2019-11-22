@@ -1,6 +1,6 @@
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojToolbar extends baseComponent<ojToolbarSettableProperties> {
-    chroming: 'full' | 'half' | 'outlined';
+    chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
     addEventListener<T extends keyof ojToolbarEventMap>(type: T, listener: (this: HTMLElement, ev: ojToolbarEventMap[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     getProperty<T extends keyof ojToolbarSettableProperties>(property: T): ojToolbar[T];
@@ -18,7 +18,7 @@ export interface ojToolbarEventMap extends baseComponentEventMap<ojToolbarSettab
     'chromingChanged': JetElementCustomEvent<ojToolbar["chroming"]>;
 }
 export interface ojToolbarSettableProperties extends baseComponentSettableProperties {
-    chroming: 'full' | 'half' | 'outlined';
+    chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
 }
 export interface ojToolbarSettablePropertiesLenient extends Partial<ojToolbarSettableProperties> {
     [key: string]: any;

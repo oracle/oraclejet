@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcomposite', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojoption', 'ojs/ojdataprovider'], 
 function(Composite, $)
 {
@@ -32,10 +34,7 @@ var __oj_menu_select_many_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2018, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Composite:false */
 
@@ -46,7 +45,7 @@ var __oj_menu_select_many_metadata =
    * @ojshortdesc A menu select many allows the user to select one or more menu items from a set.
    * @ojrole menuitemcheckbox
    * @ojsignature {target: "Type", value:"class ojMenuSelectMany extends JetElement<ojMenuSelectManySettableProperties>"}
-   * @ojstatus preview
+   *
    * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
    *
    * @ojpropertylayout {propertyGroup: "common", items: ["disabled"]}
@@ -228,8 +227,8 @@ var __oj_menu_select_many_metadata =
 
 var _MENU_SELECT_MANY_VIEW =
 '<oj-bind-slot></oj-bind-slot>' +
-'<oj-bind-if test="[[$props.options]]">' +
-'  <oj-bind-for-each data="[[$props.options]]">' +
+'<oj-bind-if test="[[$properties.options]]">' +
+'  <oj-bind-for-each data="[[$properties.options]]">' +
 '    <template>' +
 '      <oj-option :id="[[$current.data.id ? $current.data.id : optionIdPrefix + $current.observableIndex()]]" ' +
 '                 value="[[$current.data.value]]" disabled="[[$current.data.disabled]]">' +

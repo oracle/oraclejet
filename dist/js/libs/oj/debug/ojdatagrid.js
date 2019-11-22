@@ -2,8 +2,10 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdatacollection-common', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojthemeutils', 'promise', 'ojs/ojdatasource-common', 'ojs/ojdatacollection-utils', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojpopup', 'touchr'], function(oj, $, Components, DataCollectionUtils, Logger, Context, ThemeUtils)
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdatacollection-common', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojdatasource-common', 'ojs/ojdatacollection-utils', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojpopup', 'touchr'], function(oj, $, Components, DataCollectionUtils, Logger, Context, ThemeUtils)
 {
   "use strict";
 var __oj_data_grid_metadata = 
@@ -516,6 +518,9 @@ var __oj_data_grid_metadata =
         "labelResize": {
           "type": "string"
         },
+        "labelResizeDialogCancel": {
+          "type": "string"
+        },
         "labelResizeDialogSubmit": {
           "type": "string"
         },
@@ -571,10 +576,7 @@ var __oj_data_grid_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* jslint browser: true*/
 /* global Components:false, Context:false */
@@ -625,6 +627,7 @@ oj.DataGridResources = function (rtlMode, translationFunction, defaultOptions, w
   this.styles['scroller-mobile'] = 'oj-datagrid-scroller-touch';
   this.styles.scroller = 'oj-datagrid-scroller';
   this.styles.scrollers = 'oj-datagrid-scrollers';
+  this.styles.scrollbarForce = 'oj-scrollbar-force';
   this.styles.focus = 'oj-focus';
   this.styles.hover = 'oj-hover';
   this.styles.active = 'oj-active';
@@ -771,6 +774,7 @@ oj.DataGridResources.prototype.getMappedAttribute = function (key) {
   }
   return null;
 };
+
 
 /* global Map:false, DvtDataGridKeyboardHandler:false, DvtDataGridOptions:false,
           DvtDataGridSizingManager:false, DvtDataGridUtils:false, Promise:false,
@@ -1012,10 +1016,6 @@ DvtDataGrid.prototype._updateSelection = function (selection) {
     // don't clear the selection so the old one can be passed in
     // sets the new selection
     this.SetSelection(selection);
-  } else {
-    // selection is not enable, still need to clear the selection in options
-    // eslint-disable-next-line no-param-reassign
-    selection.length = 0;
   }
 };
 
@@ -1401,8 +1401,14 @@ DvtDataGrid.prototype._indexes = function (keys, callback) {
  */
 DvtDataGrid.prototype._keys = function (indexes, callback) {
   var self = this;
-  var keys = this.getDataSource().keys(indexes);
+  var localKeys = this._getLocalKeys(indexes);
+  if (localKeys !== undefined) {
+    callback.call(self, localKeys, indexes);
+    return;
+  }
 
+  // check for individual stuff
+  var keys = this.getDataSource().keys(indexes);
   if (typeof keys.then === 'function') {
     // start async call
     self._signalTaskStart();
@@ -1418,6 +1424,54 @@ DvtDataGrid.prototype._keys = function (indexes, callback) {
   } else {
     callback.call(self, keys, indexes);
   }
+};
+
+/**
+ * Get keys from the dom based on indexes if possible
+ * @param {Object} indexes the indexes to find the keys of with properties row, column
+ * @return {Object} keys
+ */
+DvtDataGrid.prototype._getLocalKeys = function (indexes) {
+  var cell = this._getCellByIndex(indexes);
+  if (cell) {
+    return this.getCellKeys(cell);
+  }
+
+  var rowIndex = indexes.row;
+  var columnIndex = indexes.column;
+  var rowKey;
+  var columnKey;
+  if (rowIndex !== undefined) {
+    if (rowIndex === -1) {
+      rowKey = null;
+    } else {
+      var rowElement = this._getCellOrHeaderByIndex(rowIndex, 'row');
+      if (rowElement) {
+        rowKey = this._getKey(rowElement, 'row');
+      }
+    }
+
+    if (rowKey === undefined) {
+      return undefined;
+    }
+  }
+
+  if (columnIndex !== undefined) {
+    if (columnIndex === -1) {
+      columnKey = null;
+    } else {
+      var columnElement = this._getCellOrHeaderByIndex(columnIndex, 'column');
+      if (columnElement) {
+        columnKey = this._getKey(columnElement, 'column');
+      }
+    }
+
+    if (columnKey === undefined) {
+      return undefined;
+    }
+  }
+
+  return this.createIndex(rowKey, columnKey);
 };
 
 /**
@@ -1508,6 +1562,9 @@ DvtDataGrid.prototype._addDomEventListeners = function () {
   if (!this.m_handleDatabodyKeyDown) {
     this.m_handleDatabodyKeyDown = this.handleDatabodyKeyDown.bind(this);
   }
+  if (!this.m_handleDatabodyKeyUp) {
+    this.m_handleDatabodyKeyUp = this.handleDatabodyKeyUp.bind(this);
+  }
   if (!this.m_handleRootFocus) {
     this.m_handleRootFocus = this.handleRootFocus.bind(this);
   }
@@ -1516,6 +1573,7 @@ DvtDataGrid.prototype._addDomEventListeners = function () {
   }
 
   this.m_root.addEventListener('keydown', this.m_handleDatabodyKeyDown, false);
+  this.m_root.addEventListener('keyup', this.m_handleDatabodyKeyUp, false);
   this.m_root.addEventListener('focus', this.m_handleRootFocus, true);
   this.m_root.addEventListener('blur', this.m_handleRootBlur, true);
 };
@@ -1532,6 +1590,9 @@ DvtDataGrid.prototype._removeDomEventListeners = function () {
   if (this.m_root != null) {
     if (this.m_handleDatabodyKeyDown) {
       this.m_root.removeEventListener('keydown', this.m_handleDatabodyKeyDown, false);
+    }
+    if (this.m_handleDatabodyKeyUp) {
+      this.m_root.removeEventListener('keyup', this.m_handleDatabodyKeyUp, false);
     }
     if (this.m_handleRootFocus) {
       this.m_root.removeEventListener('focus', this.m_handleRootFocus, true);
@@ -2025,6 +2086,7 @@ DvtDataGrid.prototype.resetInternal = function () {
   this.m_prevScrollLeft = null;
   this.m_prevScrollTop = null;
   this.m_handleScrollOverflow = null;
+  this._clearScrollPositionTimeout();
 
   // resizing
   this.m_resizing = false;
@@ -2295,32 +2357,32 @@ DvtDataGrid.prototype.buildGrid = function (root) {
     // touch event handling
     if (this.m_utils.isTouchDevice()) {
       // databody touch listeners
-      databody.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
-      databody.addEventListener('touchmove', this.handleTouchMove.bind(this), false);
+      databody.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
+      databody.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
       databody.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
       databody.addEventListener('touchcancel', this.handleTouchCancel.bind(this), false);
 
       // column header listeners
-      colHeader.addEventListener('touchstart', this.handleHeaderTouchStart.bind(this), false);
-      colHeader.addEventListener('touchmove', this.handleHeaderTouchMove.bind(this), false);
+      colHeader.addEventListener('touchstart', this.handleHeaderTouchStart.bind(this), { passive: true });
+      colHeader.addEventListener('touchmove', this.handleHeaderTouchMove.bind(this), { passive: false });
       colHeader.addEventListener('touchend', this.handleHeaderTouchEnd.bind(this), false);
       colHeader.addEventListener('touchcancel', this.handleHeaderTouchCancel.bind(this), false);
 
       // row header listeners
-      rowHeader.addEventListener('touchstart', this.handleHeaderTouchStart.bind(this), false);
-      rowHeader.addEventListener('touchmove', this.handleHeaderTouchMove.bind(this), false);
+      rowHeader.addEventListener('touchstart', this.handleHeaderTouchStart.bind(this), { passive: true });
+      rowHeader.addEventListener('touchmove', this.handleHeaderTouchMove.bind(this), { passive: false });
       rowHeader.addEventListener('touchend', this.handleHeaderTouchEnd.bind(this), false);
       rowHeader.addEventListener('touchcancel', this.handleHeaderTouchCancel.bind(this), false);
 
       // column end header listeners
-      colEndHeader.addEventListener('touchstart', this.handleHeaderTouchStart.bind(this), false);
-      colEndHeader.addEventListener('touchmove', this.handleHeaderTouchMove.bind(this), false);
+      colEndHeader.addEventListener('touchstart', this.handleHeaderTouchStart.bind(this), { passive: true });
+      colEndHeader.addEventListener('touchmove', this.handleHeaderTouchMove.bind(this), { passive: false });
       colEndHeader.addEventListener('touchend', this.handleHeaderTouchEnd.bind(this), false);
       colEndHeader.addEventListener('touchcancel', this.handleHeaderTouchCancel.bind(this), false);
 
       // row end header listeners
-      rowEndHeader.addEventListener('touchstart', this.handleHeaderTouchStart.bind(this), false);
-      rowEndHeader.addEventListener('touchmove', this.handleHeaderTouchMove.bind(this), false);
+      rowEndHeader.addEventListener('touchstart', this.handleHeaderTouchStart.bind(this), { passive: true });
+      rowEndHeader.addEventListener('touchmove', this.handleHeaderTouchMove.bind(this), { passive: false });
       rowEndHeader.addEventListener('touchend', this.handleHeaderTouchEnd.bind(this), false);
       rowEndHeader.addEventListener('touchcancel', this.handleHeaderTouchCancel.bind(this), false);
     } else {
@@ -2328,7 +2390,8 @@ DvtDataGrid.prototype.buildGrid = function (root) {
 
       var mousewheelEvent = this.m_utils.getMousewheelEvent();
       // databody listeners
-      databody.addEventListener(mousewheelEvent, this.handleDatabodyMouseWheel.bind(this), false);
+      databody.addEventListener(
+                  mousewheelEvent, this.handleDatabodyMouseWheel.bind(this), { passive: false });
       databody.addEventListener('mousedown', this.handleDatabodyMouseDown.bind(this), false);
       databody.addEventListener('mousemove', this.handleDatabodyMouseMove.bind(this), false);
       databody.addEventListener('mouseup', this.handleDatabodyMouseUp.bind(this), false);
@@ -2337,7 +2400,8 @@ DvtDataGrid.prototype.buildGrid = function (root) {
       databody.addEventListener('dblclick', this.handleDatabodyDoubleClick.bind(this), false);
 
       // header listeners
-      rowHeader.addEventListener(mousewheelEvent, this.handleDatabodyMouseWheel.bind(this), false);
+      rowHeader.addEventListener(
+                  mousewheelEvent, this.handleDatabodyMouseWheel.bind(this), { passive: false });
       rowHeader.addEventListener('mousedown', this.handleHeaderMouseDown.bind(this), false);
       colHeader.addEventListener('mousedown', this.handleHeaderMouseDown.bind(this), false);
       rowHeader.addEventListener('mouseover', this.handleHeaderMouseOver.bind(this), false);
@@ -2352,8 +2416,8 @@ DvtDataGrid.prototype.buildGrid = function (root) {
       colHeader.addEventListener('click', this.handleHeaderClick.bind(this), false);
 
       // end header listeners
-      rowEndHeader.addEventListener(mousewheelEvent,
-                                    this.handleDatabodyMouseWheel.bind(this), false);
+      rowEndHeader.addEventListener(
+                  mousewheelEvent, this.handleDatabodyMouseWheel.bind(this), { passive: false });
       rowEndHeader.addEventListener('mousedown', this.handleHeaderMouseDown.bind(this), false);
       colEndHeader.addEventListener('mousedown', this.handleHeaderMouseDown.bind(this), false);
       rowEndHeader.addEventListener('mouseover', this.handleHeaderMouseOver.bind(this), false);
@@ -2834,7 +2898,7 @@ DvtDataGrid.prototype.buildCorners = function () {
 
     if (this.m_corner == null) {
       if (this.m_utils.isTouchDevice()) {
-        corner.addEventListener('touchstart', this.handleCornerMouseDown.bind(this), false);
+        corner.addEventListener('touchstart', this.handleCornerMouseDown.bind(this), { passive: true });
       } else {
         corner.addEventListener('mousedown', this.handleCornerMouseDown.bind(this), false);
         corner.addEventListener('mouseover', this.handleCornerMouseOver.bind(this), false);
@@ -2916,8 +2980,7 @@ DvtDataGrid.prototype.buildCorners = function () {
 
       if (this.m_rowHeaderScrollbarSpacer == null) {
         if (this.m_utils.isTouchDevice()) {
-          rowHeaderScrollbarSpacer.addEventListener('touchstart',
-                                                    this.handleCornerMouseDown.bind(this), false);
+          rowHeaderScrollbarSpacer.addEventListener('touchstart', this.handleCornerMouseDown.bind(this), { passive: true });
         } else {
           rowHeaderScrollbarSpacer.addEventListener('mousedown',
                                                     this.handleCornerMouseDown.bind(this), false);
@@ -2969,9 +3032,7 @@ DvtDataGrid.prototype.buildCorners = function () {
 
       if (this.m_columnHeaderScrollbarSpacer == null) {
         if (this.m_utils.isTouchDevice()) {
-          columnHeaderScrollbarSpacer.addEventListener('touchstart',
-                                                       this.handleCornerMouseDown.bind(this),
-                                                       false);
+          columnHeaderScrollbarSpacer.addEventListener('touchstart', this.handleCornerMouseDown.bind(this), { passive: true });
         } else {
           columnHeaderScrollbarSpacer.addEventListener('mousedown',
                                                        this.handleCornerMouseDown.bind(this),
@@ -3286,6 +3347,7 @@ DvtDataGrid.prototype._scrollToScrollPositionObject = function (scrollPositionOb
         self._signalTaskStart('begin scrolling to new desired location');
       }
       self.m_desiredScrollPositionObject = scrollPositionObject;
+      self._setScrollPositionTimeout();
       self._initiateScroll(newScrollX, newScrollY);
     } else {
       if (self.m_desiredScrollPositionObject != null) {
@@ -3295,6 +3357,42 @@ DvtDataGrid.prototype._scrollToScrollPositionObject = function (scrollPositionOb
       self._setScrollPosition();
     }
   });
+};
+
+// These methods exist for issues with pixel perfect scrolling when zoomed
+// there isn't a great way to guarantee cross browser that the pixel we want
+// to scroll to is actually a possible value as scrollTop/Left in the browser when zoomed
+// That means when scrollTo is called there's a chance that a scroll event is
+// 1) not fired at all becauxse it is not a possible value
+// 2) fired but ends up infinite looping trying to get to that impossible value
+// Timeout is 300ms which is long, but this should be a rare catch, and I noticed in chrome
+// that it can take up to 300ms or longer between initiateScroll and the handler
+// if it takes longer end result is scrollPosition will come up short of its goal
+// also touch devices don't allow the zoom issues because only zoom in
+
+/**
+ * @private
+ */
+DvtDataGrid.prototype._setScrollPositionTimeout = function () {
+  if (!this.m_utils.isTouchDevice()) {
+    this.pendingScrollTimeout = setTimeout(function () {
+      if (this.m_desiredScrollPositionObject != null) {
+        this._signalTaskEnd('reached desired location');
+      }
+      this.m_desiredScrollPositionObject = null;
+      this._setScrollPosition();
+    }.bind(this), 300);
+  }
+};
+
+/**
+ * @private
+ */
+DvtDataGrid.prototype._clearScrollPositionTimeout = function () {
+  if (this.pendingScrollTimeout != null) {
+    clearTimeout(this.pendingScrollTimeout);
+    this.pendingScrollTimeout = null;
+  }
 };
 
 /**
@@ -5368,7 +5466,7 @@ DvtDataGrid.prototype._setAttribute = function (element, attributeKey, value) {
 DvtDataGrid.prototype.buildDatabody = function () {
   var root = document.createElement('div');
   root.id = this.createSubId('databody');
-  root.className = this.getMappedStyle('databody');
+  root.className = this.getMappedStyle('databody') + ' ' + this.getMappedStyle('scrollbarForce');
   // workaround for mozilla , where overflow div would make it focusable
   root.tabIndex = '-1';
   this.m_databody = root;
@@ -6084,9 +6182,11 @@ DvtDataGrid.prototype._insertRowsWithAnimation = function (
 
   // loop over the row after the insert point, assign new top values, but keep
   // them where they are using transforms
-  for (i = rowStart - this.m_startRow; i <= this.m_endRow; i++) {
-    var rowCells = this._getAxisCellsByIndex(i, 'row');
+  for (i = rowStart; i <= this.m_endRow; i++) {
+    var rowCells = this._getAxisCellsByIndex(i - this.m_startRow, 'row');
+    // if (rowCells.length) {
     newTop = totalRowHeight + this.getElementDir(rowCells[0], 'top');
+    // }
     deltaY = -totalRowHeight;
 
     for (var j = 0; j < rowCells.length; j++) {
@@ -6140,7 +6240,7 @@ DvtDataGrid.prototype._insertRowsWithAnimation = function (
       rowEndHeaderContent.insertBefore(rowEndHeaderFragment, referenceRowEndHeader.nextSibling); // @HTMLUpdateOK
     }
   }
-  this.setElementHeight(databodyContent, this.m_endRowPixel - this.m_startRowPixel);
+  this.setElementHeight(databodyContent, this.getElementHeight(databodyContent) + totalRowHeight);
   this.resizeGrid();
   this.updateRowBanding();
 
@@ -6300,7 +6400,7 @@ DvtDataGrid.prototype._addCellsToFragment =
 
             var inlineStyleClass = this.m_options.getStyleClass('cell', cellContext);
             if (inlineStyleClass != null) {
-              this.m_utils.addCSSClassName(cell, inlineStyleClass);
+              cell.className += (' ' + inlineStyleClass);
             }
 
             // get the row height
@@ -6878,13 +6978,16 @@ DvtDataGrid.prototype._isFocusableElementBeforeCell = function (elem) {
  * @param {Element} elem
  * @return {boolean} true if focus is set successfully, false otherwise
  */
-DvtDataGrid.prototype._setFocusToFirstFocusableElement = function (elem) {
+DvtDataGrid.prototype._setFocusToFirstFocusableElement = function (elem, event) {
   // enable all focusable elements
   DataCollectionUtils.enableAllFocusableElements(elem);
   var elems = DataCollectionUtils.getFocusableElementsInNode(elem);
   if (elems.length > 0) {
     var firstElement = elems[0];
     firstElement.focus();
+    if (event) {
+      event.preventDefault();
+    }
     if (firstElement.setSelectionRange && firstElement.value) {
       try {
         // ensure focus at the end
@@ -6909,6 +7012,8 @@ DvtDataGrid.prototype._setFocusToFirstFocusableElement = function (elem) {
  * @param {Event} event - the scroll event triggering the method
  */
 DvtDataGrid.prototype.handleScroll = function (event) {
+  this._clearScrollPositionTimeout();
+
   // Adding to address firefox async scrolling and pixel perfect scroll bar issues:
   // If the datagrid doesn't need scrolling, ff will skip the async scroll event
   // If the handleScroll is called properly, it'll set the databody attribute as usual
@@ -8658,9 +8763,11 @@ DvtDataGrid.prototype.handleMouseMove = function (event) {
 DvtDataGrid.prototype.handleRowHeaderMouseMove = function (event) {
   if (this.m_databodyMove) {
     this._handleMove(event);
-  } else if (this.m_headerDragState && this.m_selectionFrontier &&
-             this.m_selectionFrontier.axis.indexOf('row') !== -1) {
-    this.extendSelectionHeader(event.target, event);
+  } else if (this.m_headerDragState &&
+    ((this.m_selectionFrontier && this.m_selectionFrontier.axis &&
+      this.m_selectionFrontier.axis.indexOf('row') !== -1) ||
+    (this.m_deselectInfo && this.m_deselectInfo.axis && this.m_deselectInfo.axis.indexOf('row') !== -1))) {
+    this.extendSelectionHeader(event.target, event, true, this.m_deselectInProgress);
   } else if (!this.m_isResizing) {
     // if it is resizing use the mouse move on the document
     this.handleMouseMove(event);
@@ -8672,9 +8779,10 @@ DvtDataGrid.prototype.handleRowHeaderMouseMove = function (event) {
  * @param {Event} event - mousemove event on the document
  */
 DvtDataGrid.prototype.handleColumnHeaderMouseMove = function (event) {
-  if (this.m_headerDragState && this.m_selectionFrontier &&
-      this.m_selectionFrontier.axis.indexOf('column') !== -1) {
-    this.extendSelectionHeader(event.target, event);
+  if (this.m_headerDragState && ((this.m_selectionFrontier && this.m_selectionFrontier.axis &&
+    this.m_selectionFrontier.axis.indexOf('column') !== -1) ||
+  (this.m_deselectInfo && this.m_deselectInfo.axis && this.m_deselectInfo.axis.indexOf('column') !== -1))) {
+    this.extendSelectionHeader(event.target, event, true, this.m_deselectInProgress);
   } else if (!this.m_isResizing) {
     // if it is resizing use the mouse move on the document
     this.handleMouseMove(event);
@@ -8715,7 +8823,8 @@ DvtDataGrid.prototype.handleHeaderMouseDown = function (event) {
     }
 
     // if our move is enabled make sure our row has the active cell in it
-    if (!this.m_isResizing && this._isMoveOnElementEnabled(this.findHeader(target))) {
+    var ctrlKey = this.m_utils.ctrlEquivalent(event);
+    if (!this.m_isResizing && !ctrlKey && this._isMoveOnElementEnabled(this.findHeader(target))) {
       this.m_databodyMove = true;
       this.m_currentX = event.pageX;
       this.m_currentY = event.pageY;
@@ -8739,12 +8848,12 @@ DvtDataGrid.prototype.handleHeaderMouseDown = function (event) {
     if (this._isSelectionEnabled() && this.isMultipleSelection() &&
         !(selectionMode === 'row' && cellContext.axis.indexOf('row') === -1) &&
         !this.m_databodyMove) {
-      this.handleHeaderClickSelection(event);
-
       // only allow drag on left click
       if (event.button === 0) {
         this.m_headerDragState = true;
       }
+
+      this.handleHeaderClickSelection(event);
     } else if (selectionMode === 'row' &&
                cellContext.axis.indexOf('row') !== -1 &&
                this._isSelectionEnabled()) {
@@ -8769,6 +8878,7 @@ DvtDataGrid.prototype.handleMouseUp = function (event) {
   // toggle off the drag state
   this.m_headerDragState = false;
   this.m_databodyDragState = false;
+  this.m_deselectInProgress = false;
 
   // if we mouseup outside the grid we want to cancel the selection and return the row
   if (this.m_databodyMove) {
@@ -8808,6 +8918,8 @@ DvtDataGrid.prototype.handleHeaderMouseUp = function (event) {
   // toggle off the drag state
   this.m_headerDragState = false;
   this.m_databodyDragState = false;
+  this.m_deselectInProgress = false;
+
   if (this.m_databodyMove) {
     this._handleMoveMouseUp(event, true);
   }
@@ -8887,8 +8999,9 @@ DvtDataGrid.prototype.handleDatabodyMouseDown = function (event) {
     this._exitActionableMode();
   }
 
+  var ctrlKey = this.m_utils.ctrlEquivalent(event);
   // only perform events on left mouse, (right in rtl culture)
-  if (event.button === 0) {
+  if (event.button === 0 && !ctrlKey) {
     if (this._isMoveOnElementEnabled(cell)) {
       this.m_databodyMove = true;
       this.m_currentX = event.pageX;
@@ -8908,12 +9021,11 @@ DvtDataGrid.prototype.handleDatabodyMouseDown = function (event) {
   // no else so that we can select a cell in the same row as long as no drag
   // check if selection is enabled
   if (this._isSelectionEnabled()) {
-    this.handleDatabodyClickSelection(event);
-
     // only allow drag on left click
     if (this.isMultipleSelection() && event.button === 0) {
       this.m_databodyDragState = true;
     }
+    this.handleDatabodyClickSelection(event);
   } else {
     // if selection is disable, we'll still need to highlight the active cell
     this.handleDatabodyClickActive(event);
@@ -8998,8 +9110,15 @@ DvtDataGrid.prototype.handleDatabodyMouseMove = function (event) {
 DvtDataGrid.prototype.handleDatabodyMouseUp = function (event) {
   this.m_databodyDragState = false;
   this.m_headerDragState = false;
+  this.m_deselectInProgress = false;
   if (this.m_databodyMove) {
     this._handleMoveMouseUp(event, true);
+  }
+};
+
+DvtDataGrid.prototype.handleDatabodyKeyUp = function (event) {
+  if (this.m_deselectInProgress) {
+    this.m_deselectInProgress = event.shiftKey;
   }
 };
 
@@ -9177,7 +9296,9 @@ DvtDataGrid.prototype.handleTouchMove = function (event) {
   var target = /** @type {Element} */ (event.target);
 
   if (this.m_touchActive) {
-    event.preventDefault();
+    if (event.cancelable) {
+      event.preventDefault();
+    }
     this.m_currentX = event.touches[0].pageX;
     this.m_currentY = event.touches[0].pageY;
 
@@ -9238,7 +9359,9 @@ DvtDataGrid.prototype.handleTouchEnd = function (event) {
     if (cell != null) {
       this._handleEditable(event, cell);
       this._handleEdit(event, cell);
-      event.preventDefault();
+      if (event.cancelable) {
+        event.preventDefault();
+      }
     }
   } else {
     this.m_lastTapTarget = event.target;
@@ -9247,7 +9370,9 @@ DvtDataGrid.prototype.handleTouchEnd = function (event) {
 
   if (this.m_touchActive && !event.defaultPrevented) {
     if (this.m_touchMultipleSelect) {
-      event.preventDefault();
+      if (event.cancelable) {
+        event.preventDefault();
+      }
       this.m_touchMultipleSelect = false;
     } else {
       var duration = this.m_lastTapTime - this.m_startTime;
@@ -9268,7 +9393,9 @@ DvtDataGrid.prototype.handleTouchEnd = function (event) {
       }
 
       if (this.m_databodyMove) {
-        event.preventDefault();
+        if (event.cancelable) {
+          event.preventDefault();
+        }
         this.m_databodyMove = false;
         this._handleMoveMouseUp(event, true);
         return;
@@ -9403,7 +9530,9 @@ DvtDataGrid.prototype.handleHeaderTouchStart = function (event) {
  */
 DvtDataGrid.prototype.handleHeaderTouchMove = function (event) {
   if (this.m_touchActive) {
-    event.preventDefault();
+    if (event.cancelable) {
+      event.preventDefault();
+    }
 
     this.m_currentX = event.touches[0].pageX;
     this.m_currentY = event.touches[0].pageY;
@@ -9448,7 +9577,9 @@ DvtDataGrid.prototype.handleHeaderTouchEnd = function (event) {
     if (this.m_isResizing && this.isResizeEnabled()) {
       this.handleResizeMouseUp(event);
       if (this.m_currentX !== this.m_startX && this.m_currentY !== this.m_startY) {
-        event.preventDefault();
+        if (event.cancelable) {
+          event.preventDefault();
+        }
       }
     } else if (this.m_currentX === this.m_startX && this.m_currentY === this.m_startY) {
       // if a short tap select
@@ -9460,7 +9591,9 @@ DvtDataGrid.prototype.handleHeaderTouchEnd = function (event) {
       if ((this.m_utils.containsCSSClassName(target, this.getMappedStyle('sortascending')) ||
            this.m_utils.containsCSSClassName(target, this.getMappedStyle('sortdescending')))
           && this._isDOMElementSortable(target)) {
-        event.preventDefault();
+        if (event.cancelable) {
+          event.preventDefault();
+        }
         this._removeTouchSelectionAffordance();
         this._handleSortIconMouseDown(target);
         this._handleHeaderSort(event);
@@ -9472,12 +9605,11 @@ DvtDataGrid.prototype.handleHeaderTouchEnd = function (event) {
         // if click or right click we want to adjust the selction
         // no else so that we can select a cell in the same row as long as no drag
         // check if selection is enabled
-        this.handleHeaderClickSelection(event);
-
         // only allow drag on left click
         if (event.button === 0) {
           this.m_headerDragState = true;
         }
+        this.handleHeaderClickSelection(event);
       } else if (selectionMode === 'row' &&
                  cellContext.axis.indexOf('row') !== -1 &&
                  this._isSelectionEnabled()) {
@@ -9489,7 +9621,9 @@ DvtDataGrid.prototype.handleHeaderTouchEnd = function (event) {
       }
     } else if (this.m_databodyMove) {
       // if reordering a row
-      event.preventDefault();
+      if (event.cancelable) {
+        event.preventDefault();
+      }
       this.m_databodyMove = false;
       this._handleMoveMouseUp(event, true);
     } else {
@@ -9567,14 +9701,18 @@ DvtDataGrid.prototype._handleSwipe = function (event, axis) {
       Math.abs(diffY) < DvtDataGrid.MIN_SWIPE_DISTANCE &&
       duration < DvtDataGrid.MIN_SWIPE_DURATION) {
     // detect whether this is a swipe
-    event.preventDefault();
+    if (event.cancelable) {
+      event.preventDefault();
+    }
     // center touch affordances if row selection multiple
     if (this._isSelectionEnabled()) {
       this._scrollTouchSelectionAffordance();
     }
   } else if (duration < DvtDataGrid.MAX_SWIPE_DURATION) {
     // swipe case
-    event.preventDefault();
+    if (event.cancelable) {
+      event.preventDefault();
+    }
 
     var momentumX;
     if (axis !== 'row' && axis !== 'rowEnd') {
@@ -10180,7 +10318,8 @@ DvtDataGrid.prototype._handleModelInsertEvent = function (indexes, keys) {
  */
 DvtDataGrid.prototype._handleCellInsertsFetchSuccess = function (cellSet, cellRanges) {
   // so that grid will be resize
-  this.m_initialized = false;
+  // this.m_initialized = false;
+  this.m_resizeRequired = true;
 
   // insert the row
   this.handleCellsFetchSuccess(cellSet, cellRanges, this.m_endRow >= cellRanges[0].start);
@@ -10296,7 +10435,7 @@ DvtDataGrid.prototype._handleModelInsertRangeEvent = function (cellSet, headerSe
       while (headerCount - c > 0) {
         index = rowStart + c;
         returnVal = this.buildLevelHeaders(rowHeaderFragment, index, 0, 0,
-                                           this.m_startRowPixel + totalRowHeight, true,
+                                           totalRowHeight, true,
                                            rowStart !== this.m_endRowHeader + 1,
                                            renderer, headerSet, 'row', className,
                                            this.m_rowHeaderLevelCount);
@@ -10318,7 +10457,7 @@ DvtDataGrid.prototype._handleModelInsertRangeEvent = function (cellSet, headerSe
       while (headerEndCount - c > 0) {
         index = rowStart + c;
         returnVal = this.buildLevelHeaders(rowEndHeaderFragment, index, 0, 0,
-                                           this.m_startRowPixel + totalRowHeight,
+                                           totalRowHeight,
                                            true, rowStart !== this.m_endRowEndHeader + 1,
                                            renderer, endHeaderSet, 'rowEnd', className,
                                            this.m_rowEndHeaderLevelCount);
@@ -10329,8 +10468,7 @@ DvtDataGrid.prototype._handleModelInsertRangeEvent = function (cellSet, headerSe
 
     var newCellElements = document.createDocumentFragment();
     returnVal = this._addCellsToFragment(newCellElements, cellSet, rowStart
-                                         , this.m_startRowPixel, columnStart,
-                                         this.m_startColPixel);
+                                         , 0, columnStart, 0);
     if (newCellElements.childNodes.length === 0 &&
         (rowHeaderFragment == null || rowHeaderFragment.childNodes.length === 0) &&
         (rowEndHeaderFragment == null || rowEndHeaderFragment.childNodes.length === 0)) {
@@ -10796,15 +10934,15 @@ DvtDataGrid.prototype._collapseRowsWithAnimation = function (keys) {
   for (i = 0; i < keys.length; i++) {
     var rowKey = keys[i].row;
     rowCells = this._getAxisCellsByKey(rowKey, 'row');
-    if (rowCells != null) {
-      rowsToRemove.push(rowCells);
-      totalRowHeight += this.getElementHeight(rowCells[0]);
-      for (j = 0; j < rowCells.length; j++) {
-        this.setElementDir(rowCells[j], this.getElementDir(rowCells[j], 'top') - totalRowHeight,
-                           'top');
-        this.addTransformMoveStyle(rowCells[j], 0, 0, 'linear', 0, totalRowHeight, 0);
-      }
+    // if (rowCells.length) {
+    rowsToRemove.push(rowCells);
+    totalRowHeight += this.getElementHeight(rowCells[0]);
+    for (j = 0; j < rowCells.length; j++) {
+      this.setElementDir(rowCells[j], this.getElementDir(rowCells[j], 'top') - totalRowHeight,
+                          'top');
+      this.addTransformMoveStyle(rowCells[j], 0, 0, 'linear', 0, totalRowHeight, 0);
     }
+    // }
     if (rowHeaderSupport) {
       rowHeader = this._findHeaderByKey(rowKey, this.m_rowHeader,
                                         this.getMappedStyle('rowheadercell'));
@@ -10852,9 +10990,11 @@ DvtDataGrid.prototype._collapseRowsWithAnimation = function (keys) {
   // listen to the last rows transition end
   var lastAnimationElement = this._getCellByIndex(this.createIndex(this.m_endRow, this.m_endCol));
   function transitionListener() {
-    self._modifyAxisCellContextIndex('row', referenceCellsIndex + keys.length + 1,
+    if (rowsToRemove.length) {
+      self._modifyAxisCellContextIndex('row', referenceCellsIndex + keys.length + 1,
                                      self.m_endRow - (referenceCellsIndex + keys.length),
                                      -1 * keys.length);
+    }
 
     for (var ii = 0; ii < rowsToRemove.length; ii++) {
       for (var jj = 0; jj < rowsToRemove[ii].length; jj++) {
@@ -10888,13 +11028,16 @@ DvtDataGrid.prototype._collapseRowsWithAnimation = function (keys) {
     self.setElementHeight(databodyContent, self.m_endRowPixel - self.m_startRowPixel);
     self.resizeGrid();
     self.updateRowBanding();
-    self.fillViewport();
+    if (self.m_modelEvents != null && self.m_modelEvents.length === 0 &&
+       !self.m_moveActive) {
+      self.fillViewport();
+    }
     self._handleAnimationEnd();
   }
-
+ // if (lastAnimationElement) {
   self._onTransitionEnd(lastAnimationElement, transitionListener, duration);
 
-  // animate all rows
+    // animate all rows
   this.m_animating = true;
 
   setTimeout(function () {
@@ -10906,7 +11049,7 @@ DvtDataGrid.prototype._collapseRowsWithAnimation = function (keys) {
       }
       if (rowHeaderSupport) {
         rowHeader = self._getHeaderByIndex(i, 0, self.m_rowHeader,
-                                           self.m_rowHeaderLevelCount, self.m_startRowHeader);
+                                          self.m_rowHeaderLevelCount, self.m_startRowHeader);
         self.addTransformMoveStyle(rowHeader, duration + 'ms', 0, 'ease-out', 0, 0, 0);
       }
       if (rowEndHeaderSupport) {
@@ -10917,6 +11060,9 @@ DvtDataGrid.prototype._collapseRowsWithAnimation = function (keys) {
       }
     }
   }, 0);
+  // } else {
+  //  transitionListener();
+  // }
 };
 
 /**
@@ -11647,6 +11793,16 @@ DvtDataGrid.prototype._shallowThenDeepCompare = function (value1, value2) {
 };
 
 /**
+ * Retrieve the keys of a cell
+ * @param {Element} cell
+ * @return {Object}
+ */
+DvtDataGrid.prototype.getCellKeys = function (cell) {
+  var cellContext = cell[this.getResources().getMappedAttribute('context')];
+  return this.createIndex(cellContext.keys.row, cellContext.keys.column);
+};
+
+/**
  * Retrieve the indexes of a cell
  * @param {Element} cell
  * @return {Object}
@@ -12242,6 +12398,21 @@ DvtDataGrid.prototype.getHeaderFromCell = function (cell, axis, lastContained) {
 
 /**
  * Creates a range object given the start and end index, will add in keys if they are passed in
+ * @param {Object} range - the start index of the range a range object representing the start and end index
+ * @return {Object} a range object representing the start and end index
+ * @private
+ */
+DvtDataGrid.prototype._trimRangeForSelectionMode = function (range) {
+  if (this.m_options.getSelectionMode() === 'row') {
+    // drop the column index
+    return this.createRange(this.createIndex(range.startIndex.row),
+      this.createIndex(range.endIndex.row));
+  }
+  return range;
+};
+
+/**
+ * Creates a range object given the start and end index, will add in keys if they are passed in
  * @param {Object} startIndex - the start index of the range
  * @param {Object=} endIndex - the end index of the range.  Optional, if not specified it represents a single cell/row
  * @param {Object=} startKey - the start key of the range.  Optional, if not specified it represents a single cell/row
@@ -12365,7 +12536,8 @@ DvtDataGrid.prototype._createRangeWithKeys = function (startIndex, endIndex, cal
 DvtDataGrid.prototype._createRangeStartKeyCallback =
   function (endIndex, callback, startKey, startIndex) {
     // keys will be the same
-    if (endIndex === startIndex) {
+    if (endIndex != null && startIndex != null &&
+      endIndex.row === startIndex.row && endIndex.column === startIndex.column) {
       this._createRangeEndKeyCallback(startKey, startIndex, callback, startKey, startIndex);
     } else if (endIndex) {
       // new keys needed
@@ -12577,9 +12749,9 @@ DvtDataGrid.prototype.readCurrentContent = function () {
  * @param {Element|undefined|null} element to set actionable
  * @returns {boolean} false
  */
-DvtDataGrid.prototype._enterActionableMode = function (element) {
+DvtDataGrid.prototype._enterActionableMode = function (element, event) {
   // focus on first focusable item in the cell
-  if (this._setFocusToFirstFocusableElement(element)) {
+  if (this._setFocusToFirstFocusableElement(element, event)) {
     this.m_focusOutHandler(element);
     this.setActionableMode(true);
   }
@@ -12664,20 +12836,16 @@ DvtDataGrid.prototype.isArrowKey = function (keyCode) {
 
 /**
  * Creates an index object for the cell/row
- * @param {number|string|null=} row - the start index of the range
- * @param {number|string|null=} column - the end index of the range.  Optional, if not specified it represents a single cell/row
+ * @param {*} row - the start index of the range
+ * @param {*} column - the end index of the range.  Optional, if not specified it represents a single cell/row
  * @return {Object} an index object
  */
 DvtDataGrid.prototype.createIndex = function (row, column) {
-  if (row == null && column == null) {
-    return null;
-  }
-
   var returnObj = {};
-  if (row != null) {
+  if (row !== undefined) {
     returnObj.row = row;
   }
-  if (column != null) {
+  if (column !== undefined) {
     returnObj.column = column;
   }
   return returnObj;
@@ -12792,6 +12960,11 @@ DvtDataGrid.prototype.handleLabelFocusChange = function (keyCode, event, isExten
     case DvtDataGrid.keyCodes.DOWN_KEY:
       if (axis === 'row' || axis === 'rowEnd') {
         newElement = this._getHeaderByIndex(start, level, root, levelCount, start);
+        if (this._isSelectionEnabled() && !this.m_discontiguousSelection) {
+          // unhighlight and clear selection
+          this._clearSelection(event);
+          this.m_selectionFrontier = {};
+        }
         this._setActive(newElement, {
           type: 'header',
           index: start,
@@ -12816,7 +12989,11 @@ DvtDataGrid.prototype.handleLabelFocusChange = function (keyCode, event, isExten
           newElement = this._getHeaderByIndex(newIndex, this.m_rowHeaderLevelCount - 1,
                                               this.m_rowHeader, this.m_rowHeaderLevelCount,
                                               this.m_startRowHeader);
-
+          if (this._isSelectionEnabled() && !this.m_discontiguousSelection) {
+            // unhighlight and clear selection
+            this._clearSelection(event);
+            this.m_selectionFrontier = {};
+          }
           if (newElement) {
             this._setActive(newElement, {
               type: 'header',
@@ -12856,6 +13033,11 @@ DvtDataGrid.prototype.handleLabelFocusChange = function (keyCode, event, isExten
                                               this.m_startColHeader);
 
           if (newElement) {
+            if (this._isSelectionEnabled() && !this.m_discontiguousSelection) {
+              // unhighlight and clear selection
+              this._clearSelection(event);
+              this.m_selectionFrontier = {};
+            }
             this._setActive(newElement, {
               type: 'header',
               index: newIndex,
@@ -12867,6 +13049,11 @@ DvtDataGrid.prototype.handleLabelFocusChange = function (keyCode, event, isExten
       }
       if (axis === 'column' || axis === 'columnEnd') {
         newElement = this._getHeaderByIndex(start, level, root, levelCount, start);
+        if (this._isSelectionEnabled() && !this.m_discontiguousSelection) {
+          // unhighlight and clear selection
+          this._clearSelection(event);
+          this.m_selectionFrontier = {};
+        }
         this._setActive(newElement, {
           type: 'header',
           index: start,
@@ -15066,7 +15253,7 @@ DvtDataGrid.prototype._refreshDatabodyMap = function () {
  */
 DvtDataGrid.prototype._populateDatabody = function (databodyContent, fragment) {
   this._addNodesToDatabodyMap(fragment.childNodes);
-  databodyContent.appendChild(fragment); // @HTMLDUpdateOK
+  databodyContent.appendChild(fragment); // @HTMLUpdateOK
 };
 
 /**
@@ -15298,12 +15485,9 @@ DvtDataGrid.prototype._getAxisCellsByKey = function (key, axis, breakOnFirstFind
   return matchingCells;
 };
 
-/**
- * @preserve Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
-/* global DvtDataGrid:false */
+
+/* global DvtDataGrid:false, Promise:false */
 
 /**
  * Unhighlights the selection.  Does not change selection, focus cell, anchor, or frontier
@@ -15441,10 +15625,12 @@ DvtDataGrid.prototype.handleDatabodySelectionDrag = function (event) {
   }
 
   if (cell != null) {
-    if (this.isHeaderSelectionType(this.m_selectionFrontier)) {
+    var index = this.getCellIndexes(cell);
+    if (this.m_deselectInProgress) {
+      this.extendDeselection(index, event);
+    } else if (this.isHeaderSelectionType(this.m_selectionFrontier)) {
       this.extendSelectionHeader(cell, event);
     } else {
-      var index = this.getCellIndexes(cell);
       this.extendSelection(index, event);
     }
   }
@@ -15459,6 +15645,8 @@ DvtDataGrid.prototype.handleHeaderClickSelection = function (event) {
   var header = this.findHeader(target);
   var shiftKey = event.shiftKey;
   var multi = this.isMultipleSelection();
+  var ctrlKey = this.m_utils.ctrlEquivalent(event);
+
   if (!(shiftKey && multi) && header) {
     this._setActive(header, this._createActiveObject(header), event);
   }
@@ -15471,6 +15659,42 @@ DvtDataGrid.prototype.handleHeaderClickSelection = function (event) {
   var axis;
   var index;
   var level;
+  var extent;
+
+  var headerContext = header[this.getResources().getMappedAttribute('context')];
+  axis = headerContext.axis;
+  index = headerContext.index;
+  extent = headerContext.extent;
+
+  if (ctrlKey && this._shouldDeselectHeader(index, extent, axis)) {
+    var start;
+    var end;
+    var range;
+    var returnObj;
+    if (axis.indexOf('row') !== -1) {
+      start = this.createIndex(index, 0);
+      end = this.createIndex((index + extent) - 1, -1);
+      returnObj = this._getSelectionStartAndEnd(start, end, 0);
+      range = this.createRange(
+        this.createIndex(returnObj.min.row, 0),
+        this.createIndex(returnObj.max.row, -1));
+    } else {
+      start = this.createIndex(0, index);
+      end = this.createIndex(-1, (index + extent) - 1);
+      returnObj = this._getSelectionStartAndEnd(start, end, 0);
+      range = this.createRange(
+        this.createIndex(0, returnObj.min.column),
+        this.createIndex(-1, returnObj.max.column));
+    }
+    var trimmedRange = this._trimRangeForSelectionMode(range);
+    this.m_deselectInfo = {
+      anchor: trimmedRange.startIndex,
+      selection: this.GetSelection(),
+      axis: axis.indexOf('row') !== -1 ? 'row' : 'column',
+      sourceParent: header };
+    this.m_deselectInProgress = this._deselectRange(trimmedRange, event);
+    return undefined;
+  }
 
   if (this.m_active.type === 'header') {
     axis = this.m_active.axis;
@@ -15483,7 +15707,6 @@ DvtDataGrid.prototype.handleHeaderClickSelection = function (event) {
     this._removeTouchSelectionAffordance();
     this._selectHeader(axis, index, level, event);
   } else if (shiftKey && multi) {
-    var headerContext = header[this.getResources().getMappedAttribute('context')];
     // check if cell anchor, if so inherit row/column axis from target
     if (axis == null) {
       axis = headerContext.axis;
@@ -15599,6 +15822,15 @@ DvtDataGrid.prototype.handleDatabodyClickSelection = function (event) {
 
     var ctrlKey = this.m_utils.ctrlEquivalent(event);
     var shiftKey = event.shiftKey;
+    var cellSelected = this.m_utils.containsCSSClassName(cell, this.getMappedStyle('selected'));
+    if (cellSelected && ctrlKey) {
+      this.m_deselectInfo = { anchor: index, selection: this.GetSelection() };
+      var endIndex = this.getCellEndIndexes(cell);
+      var range = this._trimRangeForSelectionMode(this.createRange(index, endIndex));
+      this.m_deselectInProgress = this._deselectRange(range, event);
+      return;
+    }
+
     if (this.isMultipleSelection()) {
       if (this.m_utils.isTouchDevice()) {
         // remove the touch affordance on a new tap, unhighlight the active cell, and select the new one
@@ -15619,6 +15851,175 @@ DvtDataGrid.prototype.handleDatabodyClickSelection = function (event) {
       this.selectAndFocus(index, event, false);
     }
   }
+};
+
+/**
+ * Check if two ranges intersect
+ * @private
+ */
+DvtDataGrid.prototype._doRangesOverlap = function (range1, range2) {
+  var startIndex1 = range1.startIndex;
+  var startCol1 = startIndex1.column;
+  var startRow1 = startIndex1.row;
+  var endIndex1 = range1.endIndex;
+  var endCol1 = endIndex1.column;
+  var endRow1 = endIndex1.row;
+
+  var startIndex2 = range2.startIndex;
+  var startCol2 = startIndex2.column;
+  var startRow2 = startIndex2.row;
+  var endIndex2 = range2.endIndex;
+  var endCol2 = endIndex2.column;
+  var endRow2 = endIndex2.row;
+
+  // end info -1 for entire rows
+  // end info undefined for row selection mode
+
+  return (startCol1 <= endCol2 || endCol2 === -1 || endCol2 === undefined) &&
+    (endCol1 >= startCol2 || endCol1 === -1 || endCol1 === undefined) &&
+    (startRow1 <= endRow2 || endRow2 === -1) &&
+    (endRow1 >= startRow2 || endRow1 === -1);
+};
+
+/**
+ * Check if start of one range comes before the other
+ * @private
+ */
+DvtDataGrid.prototype._isRangeValid = function (range) {
+  return (range.startIndex.row <= range.endIndex.row ||
+    (range.startIndex.row >= 0 && range.endIndex.row === -1)) &&
+    (range.startIndex.column <= range.endIndex.column ||
+    (range.startIndex.column >= 0 && range.endIndex.column === -1) ||
+    (range.startIndex.column === undefined && range.endIndex.column === undefined));
+};
+
+
+/**
+ * Deseclt range
+ * @private
+ * @return true if deselect will happen
+ */
+DvtDataGrid.prototype._deselectRange = function (range, event) {
+  var selection = this.m_deselectInfo.selection;
+
+  var removeStartIndex = range.startIndex;
+  var removeStartCol = removeStartIndex.column;
+  var removeStartRow = removeStartIndex.row;
+  var removeEndIndex = range.endIndex;
+  var removeEndCol = removeEndIndex.column;
+  var removeEndRow = removeEndIndex.row;
+
+  var selectionChanged = false;
+  var newSelection = [];
+  var insertIndex = 0;
+  var promises = [];
+  var self = this;
+
+  selection.forEach(function (selectedRange) {
+    var selectedStartIndex = selectedRange.startIndex;
+    var selectedStartCol = selectedStartIndex.column;
+    var selectedStartRow = selectedStartIndex.row;
+    var selectedEndIndex = selectedRange.endIndex;
+    var selectedEndCol = selectedEndIndex.column;
+    var selectedEndRow = selectedEndIndex.row;
+
+    // do they intersect?
+    if (this._doRangesOverlap(selectedRange, range)) {
+      var startIndex;
+      var endIndex;
+
+      var createRangePromise = function (start, end, newSelectionIndex) {
+        return new Promise(function (resolve) {
+          var createRangeCallback = function (rangeWithKeys) {
+            newSelection[newSelectionIndex] = rangeWithKeys;
+            resolve();
+          };
+          self._createRangeWithKeys(start, end, createRangeCallback);
+        });
+      };
+
+      selectionChanged = true;
+
+      if (selectedStartRow < removeStartRow) {
+        startIndex = this.createIndex(selectedStartRow, selectedStartCol);
+        endIndex = this.createIndex(removeStartRow - 1, selectedEndCol);
+        if (this._isRangeValid({ startIndex: startIndex, endIndex: endIndex })) {
+          promises.push(createRangePromise(startIndex, endIndex, insertIndex));
+          insertIndex += 1;
+        }
+      }
+
+      if (removeEndRow !== -1) {
+        startIndex = this.createIndex(removeEndRow + 1, selectedStartCol);
+        endIndex = this.createIndex(selectedEndRow, selectedEndCol);
+        if (this._isRangeValid({ startIndex: startIndex, endIndex: endIndex })) {
+          promises.push(createRangePromise(startIndex, endIndex, insertIndex));
+          insertIndex += 1;
+        }
+      }
+
+      if (selectedStartCol < removeStartCol && selectedStartCol !== undefined) {
+        startIndex = this.createIndex(Math.max(removeStartRow, selectedStartRow), selectedStartCol);
+        endIndex = this.createIndex(Math.min(removeEndRow === -1 ? selectedEndRow : removeEndRow,
+          selectedEndRow === -1 ? removeEndRow : selectedEndRow), removeStartCol - 1);
+        if (this._isRangeValid({ startIndex: startIndex, endIndex: endIndex })) {
+          promises.push(createRangePromise(startIndex, endIndex, insertIndex));
+          insertIndex += 1;
+        }
+      }
+
+      if (removeEndCol !== -1 && selectedStartCol !== undefined) {
+        startIndex = this.createIndex(Math.max(removeStartRow, selectedStartRow), removeEndCol + 1);
+        endIndex = this.createIndex(Math.min(removeEndRow === -1 ? selectedEndRow : removeEndRow,
+          selectedEndRow === -1 ? removeEndRow : selectedEndRow), selectedEndCol);
+        if (this._isRangeValid({ startIndex: startIndex, endIndex: endIndex })) {
+          promises.push(createRangePromise(startIndex, endIndex, insertIndex));
+          insertIndex += 1;
+        }
+      }
+    } else {
+      newSelection[insertIndex] = selectedRange;
+      insertIndex += 1;
+    }
+  }, this);
+
+  if (selectionChanged) {
+    Promise.all(promises).then(function () {
+      var previous = self.m_selection;
+      self.SetSelection(newSelection);
+      self._compareSelectionAndFire(event, previous);
+    });
+    return true;
+  }
+  return false;
+};
+
+DvtDataGrid.prototype._shouldDeselectHeader = function (index, extent, axis) {
+  var selection = this.GetSelection();
+  var primaryAxis;
+  var secondaryAxis;
+  if (axis === 'row' || axis === 'rowEnd') {
+    primaryAxis = 'row';
+    secondaryAxis = 'column';
+  } else {
+    primaryAxis = 'column';
+    secondaryAxis = 'row';
+  }
+  var isSelected = false;
+  var selectionMode = this.m_options.getSelectionMode();
+  selection.forEach(function (selectedRange) {
+    var secondaryStartIndex = selectedRange.startIndex[secondaryAxis];
+    var secondaryEndIndex = selectedRange.endIndex[secondaryAxis];
+    if ((secondaryStartIndex === 0 && secondaryEndIndex === -1) ||
+      (selectionMode === 'row' && primaryAxis === 'row')) {
+      var startIndex = selectedRange.startIndex[primaryAxis];
+      var endIndex = selectedRange.endIndex[primaryAxis];
+      if (startIndex <= index && (endIndex >= ((index + extent) - 1) || endIndex === -1)) {
+        isSelected = true;
+      }
+    }
+  });
+  return isSelected;
 };
 
 /**
@@ -15972,8 +16373,33 @@ DvtDataGrid.prototype.extendSelection = function (index, event, direction) {
     maxIndex = this.createIndex(maxIndex.row);
   }
 
+  if (this.m_discontiguousSelection) {
+    if (this.m_deselectInProgress ||
+      this._isContainSelection(anchor, this.GetSelection().slice(0, -1))) {
+      if (!this.m_deselectInProgress) {
+        this.m_deselectInfo = { anchor: anchor, selection: this.GetSelection() };
+      }
+      var range = this._trimRangeForSelectionMode(this.createRange(minIndex, maxIndex));
+      this.m_deselectInProgress = this._deselectRange(range, event);
+      return;
+    }
+  }
+
   this._createRangeWithKeys(minIndex, maxIndex,
-                            this._extendSelectionCallback.bind(this, event, anchor));
+    this._extendSelectionCallback.bind(this, event, anchor));
+};
+
+/**
+ * Extend the deselection for headers
+ * @private
+ */
+DvtDataGrid.prototype.extendDeselection = function (index, event) {
+  var anchor = this.m_deselectInfo.anchor;
+  var returnObj = this._updateSelectionFrontier(anchor, index);
+  var minIndex = returnObj.min;
+  var maxIndex = returnObj.max;
+  var range = this._trimRangeForSelectionMode(this.createRange(minIndex, maxIndex));
+  this._deselectRange(range, event);
 };
 
 /**
@@ -15981,8 +16407,9 @@ DvtDataGrid.prototype.extendSelection = function (index, event, direction) {
  * @param {Object} target - {axis, index} target of the selection.
  * @param {Event=} event - the DOM event causing the selection to to be extended
  * @param {boolean=} isExtend - boolean if we are extending a selection
+ * @param {boolean=} isDeselect - boolean if we are deselecting
  */
-DvtDataGrid.prototype.extendSelectionHeader = function (target, event, isExtend) {
+DvtDataGrid.prototype.extendSelectionHeader = function (target, event, isExtend, isDeselect) {
   // no target so just return
   if (target === null) {
     return;
@@ -16029,13 +16456,18 @@ DvtDataGrid.prototype.extendSelectionHeader = function (target, event, isExtend)
     }
   }
 
-  var sourceParent = this._getActiveElement();
+  var sourceParent = isDeselect ? this.m_deselectInfo.sourceParent : this._getActiveElement();
   var sourceParentContext = sourceParent[this.getResources().getMappedAttribute('context')];
   var sourceParentStart;
   var sourceParentEnd;
 
   // find the the top left index
-  if (this.m_utils.isTouchDevice()) {
+  if (isDeselect) {
+    axis = this.m_deselectInfo.axis;
+    anchor = this.m_deselectInfo.anchor[axis];
+    sourceParentStart = this._getAttribute(sourceParent.parentNode, 'start', true);
+    sourceParentEnd = sourceParentStart + (this._getAttribute(sourceParent.parentNode, 'extent', true) - 1);
+  } else if (this.m_utils.isTouchDevice()) {
     if (this.m_selectionFrontier.axis.indexOf('column') !== -1) {
       anchor = this.m_touchSelectAnchor.column;
     } else {
@@ -16074,7 +16506,7 @@ DvtDataGrid.prototype.extendSelectionHeader = function (target, event, isExtend)
   }
 
   // pop if anchors match so we don't duplicate a selection
-  if (isExtend) {
+  if (isExtend && !isDeselect) {
     var previousAnchor = this.m_selection[this.m_selection.length - 1];
 
     // unhighlight selection now
@@ -16131,18 +16563,23 @@ DvtDataGrid.prototype.extendSelectionHeader = function (target, event, isExtend)
                                     /** @type {Element} */ (target), true);
   }
 
-  if (axis.indexOf('column') !== -1) {
-    if (event) {
+  if (!isDeselect) {
+    if (axis.indexOf('column') !== -1) {
       this._selectEntireColumn(anchor, endpoint, event);
-    } else {
-      this._selectEntireColumn(anchor, endpoint, null);
-    }
-  } else if (axis.indexOf('row') !== -1) {
-    if (event) {
+    } else if (axis.indexOf('row') !== -1) {
       this._selectEntireRow(anchor, endpoint, event);
-    } else {
-      this._selectEntireRow(anchor, endpoint, null);
     }
+  } else {
+    var range;
+    var start = Math.min(anchor, endpoint);
+    var end = Math.max(anchor, endpoint);
+    if (axis.indexOf('row') !== -1) {
+      range = this.createRange(this.createIndex(start, 0), this.createIndex(end, -1));
+    } else {
+      range = this.createRange(this.createIndex(0, start), this.createIndex(-1, end));
+    }
+    var trimmedRange = this._trimRangeForSelectionMode(range);
+    this._deselectRange(trimmedRange, event);
   }
 };
 
@@ -16168,9 +16605,14 @@ DvtDataGrid.prototype._updateSelectionFrontier = function (anchor, index, direct
 
   // keyboard specific
   if (direction != null) {
-    var previous = this.GetSelection();
-    var lastSelectionIndex = this._getLastAnchoredSelectionIndex(previous, tempAnchor);
-    currentRange = previous[lastSelectionIndex];
+    if (this.m_deselectInProgress) {
+      currentRange = this.createRange(this.m_deselectInfo.anchor, this.m_selectionFrontier);
+    } else {
+      var previous = this.GetSelection();
+      var lastSelectionIndex = this._getLastAnchoredSelectionIndex(previous, tempAnchor);
+      currentRange = previous[lastSelectionIndex];
+    }
+
     var startIndex = currentRange.startIndex;
     var endIndex = currentRange.endIndex;
 
@@ -16932,10 +17374,6 @@ DvtDataGrid.prototype._getTouchSelectionAffordanceSize = function () {
   return this.m_touchSelectionAffordanceSize;
 };
 
-/**
- * @preserve Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /* global DvtDataGrid:false */
 
@@ -17911,10 +18349,6 @@ DvtDataGrid.prototype._doDelayedSort = function () {
   }
 };
 
-/**
- * @preserve Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /* global DvtDataGrid:false */
 
@@ -18572,7 +19006,7 @@ DvtDataGrid.prototype._getMinValue = function (dimension, axis) {
       innerDimensionValue = this.getElementDir(inner, dimension);
     } else {
       innerDimensionValue = this._getHeaderLevelDimension(level + (depth - 1), elem,
-                                                          this.m_columnHeaderLevelWidths,
+                                                          this.m_columnHeaderLevelHeights,
                                                           'height', 1);
     }
   } else if (axis === 'row') {
@@ -19306,6 +19740,7 @@ DvtDataGrid.prototype.getHeaderEdgePixels = function (elem) {
   return [leftEdge, topEdge, rightEdge, bottomEdge];
 };
 
+
 /* global Map:false */
 
 /**
@@ -19360,10 +19795,7 @@ DvtDataGridSizingManager.prototype.clear = function () {
   this.sizes.row.clear();
 };
 
-/**
- * @preserve Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * This class contains all utility methods used by the Grid.
@@ -19484,84 +19916,30 @@ DvtDataGridUtils.prototype.isTouchDevice = function () {
 };
 
 /**
- * Copied from AdfDhtmlCommonUtils used in Faces
- * Adds a CSS className to the dom node if it doesn't already exist in the classNames list and
- * returns <code>true</code> if the class name was added.
+ * Adds a CSS className to the dom node if it doesn't already exist in the classNames list,
+ * or does nothing if it already exists.
  * @param {Element|Node|null|undefined} domElement DOM Element to add style class name to
  * @param {string|null} className Name of style class to add
  * @return {boolean|null} <code>true</code> if the style class was added
  */
+
 DvtDataGridUtils.prototype.addCSSClassName = function (domElement, className) {
-  var added = false;
-
-  if (className != null && domElement != null) {
-    var currentClassName = domElement.className;
-
-    // get the current location of the className to add in the classNames list
-    var classNameIndex = DvtDataGridUtils._getCSSClassNameIndex(currentClassName, className);
-
-    // the className doesn't exist so add it
-    if (classNameIndex === -1) {
-      var newClassName = currentClassName ? className + ' ' + currentClassName : className;
-
-      // eslint-disable-next-line no-param-reassign
-      domElement.className = newClassName;
-
-      added = true;
-    }
+  if (className != null && className !== '' && domElement != null && domElement.classList != null) {
+    domElement.classList.add(className);
   }
-
-  return added;
 };
 
 /**
- * Copied from AdfDhtmlCommonUtils used in Faces
- * Removes a CSS className to the dom node if it existd in the classNames list and
- * returns <code>true</code> if the class name was removed.
+ * Removes a CSS className from the dom node if it exists in the classNames list.
  * @param {Element|Node|null|undefined} domElement DOM Element to remove style class name from
  * @param {string|null} className Name of style class to remove
  * @return {boolean|null} <code>true</code> if the style class was removed
  */
+
 DvtDataGridUtils.prototype.removeCSSClassName = function (domElement, className) {
-  var removed = false;
-
-  if (className != null && domElement != null) {
-    var currentClassName = domElement.className;
-
-    var classNameIndex = DvtDataGridUtils._getCSSClassNameIndex(currentClassName, className);
-
-    // only need to do work if CSS class name is present
-    if (classNameIndex !== -1) {
-      var classNameEndIndex = classNameIndex + className.length;
-
-      // the new classNames string is the string before our className and leading whitespace plus
-      // the string after our className and trailing whitespace
-      var beforestring = (classNameIndex === 0) ? null :
-        currentClassName.substring(0, classNameIndex);
-      var afterstring = (classNameEndIndex === currentClassName.length) ? null :
-        currentClassName.substring(classNameEndIndex + 1); // skip space
-
-      var newClassName;
-      if (beforestring == null) {
-        if (afterstring == null) {
-          newClassName = '';
-        } else {
-          newClassName = afterstring;
-        }
-      } else if (afterstring == null) {
-        newClassName = beforestring;
-      } else {
-        newClassName = beforestring + afterstring;
-      }
-
-      // eslint-disable-next-line no-param-reassign
-      domElement.className = newClassName;
-
-      removed = true;
-    }
+  if (className != null && className !== '' && domElement != null && domElement.classList != null) {
+    domElement.classList.remove(className);
   }
-
-  return removed;
 };
 
 /**
@@ -19569,11 +19947,13 @@ DvtDataGridUtils.prototype.removeCSSClassName = function (domElement, className)
  * @param {string} className the CSS className to check for
  * @return {boolean} <code>true</code> if the className is in the element's list of classes
  */
+
 DvtDataGridUtils.prototype.containsCSSClassName = function (domElement, className) {
-  if (className != null && domElement != null) {
-    return DvtDataGridUtils._getCSSClassNameIndex(domElement.className, className) !== -1;
+  var exists = false;
+  if (className != null && domElement != null && domElement.classList != null) {
+    exists = domElement.classList.contains(className);
   }
-  return false;
+  return exists;
 };
 
 /**
@@ -19905,6 +20285,7 @@ DvtDataGridUtils.prototype.shouldOffsetOutline = function () {
   return false;
 };
 
+
 /**
  * The DvtDataGridOptions object provides convenient methods to access the options passed to the Grid.
  * @param {Object=} options - options set on the grid.
@@ -20219,18 +20600,15 @@ DvtDataGridOptions.prototype.getScrollPolicyOptions = function () {
   return this.getProperty('scrollPolicyOptions');
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
-/* global DvtDataGrid:false, Promise:false, Components:false, Logger:false, Context:false, ThemeUtils */
+
+/* global DvtDataGrid:false, Promise:false, Components:false, Logger:false, Context:false, DataCollectionUtils:false, ThemeUtils */
 
 /**
  * @ojcomponent oj.ojDataGrid
  * @augments oj.baseComponent
  * @since 0.6.0
- * @ojstatus preview
+ *
  * @ojrole application
  * @ojrole grid
  * @ojshortdesc A data grid displays data in a cell oriented grid.
@@ -20599,6 +20977,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      * @property {K?} parentKey  if flattened tree data provider, the parent row key
      * @property {number?} treeDepth  if flattened tree data provider, the depth of the node
      * @property {boolean?} isLeaf if flattened tree data provider, true if it is a leaf node
+     * @property {"edit"|"navigation"} mode the mode the cell is rendered in
      * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"},
      *               {target:"Type", value:"D", for:"cell", jsdocOverride:true},
      *               {target:"Type", value:"D", for:"data", jsdocOverride:true},
@@ -20989,12 +21368,10 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
     scrollPosition: { x: 0, y: 0 },
 
     /**
-     * <p>Specifies whether row or cell selection can be made and the cardinality of each (single/multiple/none) selection in the DataGrid.
-     * Only one of the attributes, row or cell, should not be <code class="prettyprint">none</code> at a time.
-     * If both are not <code class="prettyprint">none</code> then an error will be thrown.
-     * If the selection mode is changed at runtime the selection will be cleared.
+     * <p>Specifies whether row or cell selections can be made, and the cardinality of each (single/multiple/none) selection in the DataGrid.
      *
-     * Selection is initially disabled, but setting both attributes' value to <code class="prettyprint">none</code> will disable selection.
+     * <p>Only one of the attributes, row or cell, should not be <code class="prettyprint">none</code> at a time.
+     * If both are not <code class="prettyprint">none</code> then an error will be thrown.
      *
      * @expose
      * @memberof oj.ojDataGrid
@@ -21027,12 +21404,15 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      */
     selectionMode: {
       /**
-       * <p>Specifies whether cell selection can be made and the cardinality (single/multiple/none).
-       * Only one of the <code class="prettyprint">selectionMode</code> attributes, row or cell, should not be <code class="prettyprint">none</code> at a time.
-       * If both are not <code class="prettyprint">none</code> then an error will be thrown.
+       * <p>The type of cell selection behavior that is enabled on the DataGrid. This attribute controls the number of selections that can be made via selection gestures at any given time.
        *
-       * Cell selection is initially disabled, but setting the attribute's value to <code class="prettyprint">none</code> will disable cell selection.
-       * If the selection mode is changed at runtime the selection will be cleared.
+       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the DataGrid's selection styling will be applied to all cells specified by the <a href="#selection">selection</a> attribute.
+       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the DataGrid's selection styling will not be applied to any cells specified by the <a href="#selection">selection</a> attribute.
+       *
+       * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+       *
+       * <p>Only one of the <code class="prettyprint">selectionMode</code> attributes, row or cell, should not be <code class="prettyprint">none</code> at a time.
+       * If both are not <code class="prettyprint">none</code> then an error will be thrown.
        *
        * @expose
        * @memberof! oj.ojDataGrid
@@ -21040,9 +21420,9 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
        * @instance
        * @type {string}
        * @default 'none'
-       * @ojvalue {string} "none" no cell selection
-       * @ojvalue {string} "single" at most one cell selected at a time
-       * @ojvalue {string} "multiple" any number of cells selected at a time
+       * @ojvalue {string} "none" Selection is disabled.
+       * @ojvalue {string} "single" Only a single cell can be selected at a time.
+       * @ojvalue {string} "multiple" Multiple cells can be selected at the same time.
        * @ojshortdesc Specifies the cell selection mode. By default, cell selection is disabled.
        *
        * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectionMode.cell</code> attribute specified:</caption>
@@ -21059,12 +21439,15 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
       cell: 'none',
 
       /**
-       * <p>Specifies whether row selection can be made and the cardinality (single/multiple/none).
-       * Only one of the <code class="prettyprint">selectionMode</code> attributes, row or cell, should not be <code class="prettyprint">none</code> at a time.
-       * If both are not <code class="prettyprint">none</code> then an error will be thrown.
+       * <p>The type of row selection behavior that is enabled on the DataGrid. This attribute controls the number of selections that can be made via selection gestures at any given time.
        *
-       * Row selection is initially disabled, but setting the attribute's value to <code class="prettyprint">none</code> will row disable selection.
-       * If the selection mode is changed at runtime the selection will be cleared.
+       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the DataGrid's selection styling will be applied to all rows specified by the <a href="#selection">selection</a> attribute.
+       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the DataGrid's selection styling will not be applied to any rows specified by the <a href="#selection">selection</a> attribute.
+       *
+       * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+       *
+       * <p>Only one of the <code class="prettyprint">selectionMode</code> attributes, row or cell, should not be <code class="prettyprint">none</code> at a time.
+       * If both are not <code class="prettyprint">none</code> then an error will be thrown.
        *
        * @expose
        * @memberof! oj.ojDataGrid
@@ -21072,9 +21455,9 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
        * @instance
        * @type {string}
        * @default 'none'
-       * @ojvalue {string} "none" no row selection
-       * @ojvalue {string} "single" at most one row selected at a time
-       * @ojvalue {string} "multiple" any number of rows selected at a time
+       * @ojvalue {string} "none" Selection is disabled.
+       * @ojvalue {string} "single" Only a single row can be selected at a time.
+       * @ojvalue {string} "multiple" Multiple rows can be selected at the same time.
        * @ojshortdesc Specifies the row selection mode. By default, row selection is disabled.
        *
        * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectionMode.row</code> attribute specified:</caption>
@@ -21279,7 +21662,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      * The endIndex subproperty values will be set to -1, regardless of if the endIndex is known.
      * Keys are set to null to remain consistent with row and column selections and to prevent misinterpretation of the selection range.
      * Select All will cover all the data in the data source including that which is not displayed in the viewport.
-     * A select all type selection will not allow for deselections.
+     * A select all type selection will now allow for deselections. Any range ending in -1 is unbounded.
      * Example:
      * [{startIndex: {row: 0, column: 0}, endIndex: {row: -1, column: -1}, startKey: {row: "r0", column: "c0"}, endKey: {row: null, column: null}]
      *
@@ -23112,8 +23495,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
     // required classes on init, oj-component-initnode is added by this._super
     $(this.root).addClass('oj-datagrid oj-component');
     $(this.root).attr(Components._OJ_CONTAINER_ATTR, this.widgetName);
-    // attribute to disable auto links for phone numbers on ie/edge which break accessibility
-    this.root.setAttribute('x-ms-format-detection', 'none');
+    DataCollectionUtils.disableDefaultBrowserStyling(this.root);
 
     this.redrawSet = {
       data: 'all',
@@ -23937,17 +24319,33 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
       spinner = document.createElement('input');
       spinner.id = (this.rootId + 'spinner');
 
+      var dialogCancelButton = document.createElement('button');
+      dialogCancelButton.id = (this.rootId + 'dialogcancel');
+      dialogCancelButton.style.margin = '5px';
+
       var dialogOKButton = document.createElement('button');
       dialogOKButton.id = (this.rootId + 'dialogsubmit');
+      dialogOKButton.style.margin = '5px';
 
       dialogBody.appendChild(spinner); // @HTMLUpdateOK
       dialogFooter.appendChild(dialogOKButton); // @HTMLUpdateOK
+      dialogFooter.appendChild(dialogCancelButton); // @HTMLUpdateOK
       this.root.appendChild(dialog); // @HTMLUpdateOK
 
+      $(dialogCancelButton).ojButton({
+        component: 'ojButton',
+        label: this._getTranslation('labelResizeDialogCancel')
+      });
       $(dialogOKButton).ojButton({
         component: 'ojButton',
         label: this._getTranslation('labelResizeDialogSubmit')
       });
+      var cancelActionHandler = function () {
+        $(dialogOKButton).ojButton({ disabled: false });
+        $(spinner).ojInputNumber({ value: 0 });
+        $(dialog).ojPopup('close');
+      };
+      dialogCancelButton.addEventListener('click', cancelActionHandler);
       dialogOKButton.addEventListener('click', this._handleResizeDialog.bind(this));
       $(spinner).ojInputNumber({
         component: 'ojInputNumber',
@@ -23955,6 +24353,9 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
         min: 20,
         step: 1,
         value: initialSize
+      });
+      $(spinner).on('change', function () {
+        $(dialogOKButton).ojButton({ disabled: !$(spinner).ojInputNumber('validate') });
       });
       $(dialog).ojPopup({
         initialFocus: 'firstFocusable',
@@ -24860,7 +25261,9 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
    *     </tr>
    *     <tr>
    *       <td><kbd>Shift + F8</kbd></td>
-   *       <td>Freezes the current selection, therefore allowing user to move focus to another location to add additional cells to the current selection.  This is used to accomplish non-contiguous selection.  Use the Esc key or press Shift+F8 again to exit this mode.</td>
+   *       <td>Freezes the current selection, therefore allowing user to move focus to another location to add or remove additional cells to the current selection.
+   *           To deselect begin the discontiguous selection within an existing selection.
+   *           This is used to accomplish non-contiguous selection.  Use the Esc key or press Shift+F8 again to exit this mode.</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>Shift + F10</kbd></td>
@@ -25187,6 +25590,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
    * @memberof oj.ojDataGrid
    */
 });
+
 
 /* global Symbol:false, Promise: false */
 
@@ -25657,6 +26061,7 @@ DataProviderHeaderSet.prototype.getCount = function () {
   return Math.max(0, this.end - this.start);
 };
 
+
 /* global DvtDataGrid:false, Context:false, DataCollectionUtils:false */
 
 /**
@@ -25761,7 +26166,7 @@ DvtDataGrid.prototype.setActionableMode = function (flag) {
  * @returns {boolean} false
  */
 DvtDataGrid.prototype._handleActionable = function (event, element) {
-  this._enterActionableMode(element);
+  this._enterActionableMode(element, event);
   return false;
 };
 
@@ -26200,6 +26605,7 @@ DvtDataGrid.prototype._handleSelectRow = function (event, element) {
   var end;
   var level;
   var index;
+  var extent = 1;
 
   if (!this._isSelectionEnabled() ||
       (!this.isMultipleSelection() && this.m_options.getSelectionMode() !== 'row')) {
@@ -26224,7 +26630,8 @@ DvtDataGrid.prototype._handleSelectRow = function (event, element) {
     } else {
       var elem = this._getActiveElement();
       start = this._getAttribute(elem.parentNode, 'start', true);
-      end = (start + this._getAttribute(elem.parentNode, 'extent', true)) - 1;
+      extent = this._getAttribute(elem.parentNode, 'extent', true);
+      end = (start + extent) - 1;
     }
   }
 
@@ -26239,8 +26646,22 @@ DvtDataGrid.prototype._handleSelectRow = function (event, element) {
   // set the frontier as it would be with header selection
   this.setHeaderSelectionFrontier('row', end, index, level, element, true);
 
+  if (this._shouldDeselectHeader(index, extent, 'column')) {
+    var rangeStart = this.createIndex(index, 0);
+    var rangeEnd = this.createIndex((index + extent) - 1, -1);
+    var returnObj = this._getSelectionStartAndEnd(rangeStart, rangeEnd, 0);
+    var range = this.createRange(
+      this.createIndex(returnObj.min.row, 0),
+      this.createIndex(returnObj.max.row, -1));
+    var trimmedRange = this._trimRangeForSelectionMode(range);
+    this.m_deselectInfo = { selection: this.GetSelection() };
+    this._deselectRange(trimmedRange, event);
+    return true;
+  }
+
   // handle the space key in headers
   this._selectEntireRow(start, end, event);
+
 
   // announce to screen reader, no need to include context info
   this._setAccInfoText('accessibleRowSelected', { row: index + 1 });
@@ -26258,6 +26679,7 @@ DvtDataGrid.prototype._handleSelectColumn = function (event, element) {
   var end;
   var level;
   var index;
+  var extent = 1;
 
   if (!this._isSelectionEnabled() || !this.isMultipleSelection() ||
       this.m_options.getSelectionMode() !== 'cell') {
@@ -26282,7 +26704,8 @@ DvtDataGrid.prototype._handleSelectColumn = function (event, element) {
     } else {
       var elem = this._getActiveElement();
       start = this._getAttribute(elem.parentNode, 'start', true);
-      end = (start + this._getAttribute(elem.parentNode, 'extent', true)) - 1;
+      extent = this._getAttribute(elem.parentNode, 'extent', true);
+      end = (start + extent) - 1;
     }
   }
 
@@ -26295,6 +26718,20 @@ DvtDataGrid.prototype._handleSelectColumn = function (event, element) {
 
   // set the frontier as it would be with header selection
   this.setHeaderSelectionFrontier('column', end, index, level, element, true);
+
+
+  if (this._shouldDeselectHeader(index, extent, 'row')) {
+    var rangeStart = this.createIndex(0, index);
+    var rangeEnd = this.createIndex(-1, (index + extent) - 1);
+    var returnObj = this._getSelectionStartAndEnd(rangeStart, rangeEnd, 0);
+    var range = this.createRange(
+      this.createIndex(0, returnObj.min.column),
+      this.createIndex(-1, returnObj.max.column));
+    var trimmedRange = this._trimRangeForSelectionMode(range);
+    this.m_deselectInfo = { selection: this.GetSelection() };
+    this._deselectRange(trimmedRange, event);
+    return true;
+  }
 
   // handle the space key in headers
   this._selectEntireColumn(start, end, event);
@@ -26387,6 +26824,7 @@ DvtDataGrid.prototype._handleSortKey = function (event, element) {
 DvtDataGrid.prototype._handleNoOp = function (event, element) {
   return false;
 };
+
 
 /* global DvtDataGrid:false */
 
@@ -26643,6 +27081,7 @@ DvtDataGridKeyboardHandler.prototype.getAction = function (event, capabilities) 
   }
   return 'NO_OP';
 };
+
 
 /* global __oj_data_grid_metadata */
 

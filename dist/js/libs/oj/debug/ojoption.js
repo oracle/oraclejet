@@ -2,6 +2,7 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
 
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'], 
@@ -30,10 +31,6 @@ var __oj_option_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /**
  * @constructor
@@ -97,17 +94,14 @@ function ojOption(context) {
   };
 }
 
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @ojcomponent oj.ojOption
  * @since 4.0.0
  * @ojshortdesc An option represents a value for JET elements that display a list of values.
  * @ojrole option
- * @ojstatus preview
+ *
  * @ojsignature class ojOption extends JetElement<ojOptionSettableProperties>
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["value", "disabled"]}
@@ -280,6 +274,7 @@ function ojOption(context) {
  * @example <caption>Set a batch of properties:</caption>
  * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
  */
+
 
 /* global __oj_option_metadata */
 /* global ojOption:false */

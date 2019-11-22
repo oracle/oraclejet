@@ -2,11 +2,14 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojhtmlutils', 'ojs/ojlogger'],
 function(ko, oj, BindingProviderImpl, HtmlUtils, Logger)
 {
   "use strict";
+
 /* global ko:false, oj:false, BindingProviderImpl: false, WeakMap: false, Map: false, HtmlUtils:false, Logger: false*/
 
 /**
@@ -77,15 +80,17 @@ function JetTemplateEngine() {
   };
 
   /**
-   * Defines a special 'tracked' property on the target object. Mutating the tracked property will cause the DOM produced
-   * by the .execute() method to get automatically updated
+   * Defines a special 'tracked' property on the target object. Mutating the tracked property will automatically update
+   * the DOM previously produced by the .execute() method
    * @param {Object} target an object where the property is defined
    * @param {string} name property name
    * @param {*=} optional initial value
+   * @param {Function=} optional listener for value changes. Note that the listener
+   * will be invoked both for upsteream and downstream changes
    * @ignore
    */
-  this.defineTrackableProperty = function (target, name, value) {
-    _createPropertyBackedByObservable(target, name, value);
+  this.defineTrackableProperty = function (target, name, value, changeListener) {
+    _createPropertyBackedByObservable(target, name, value, changeListener);
   };
 
   /**
@@ -98,11 +103,16 @@ function JetTemplateEngine() {
     return BindingProviderImpl.getThrottlePromise();
   };
 
-  function _createPropertyBackedByObservable(target, name, value) {
+  function _createPropertyBackedByObservable(target, name, value, changeListener) {
     var obs = ko.observable(value);
     Object.defineProperty(target, name, {
       get: function () { return obs(); },
-      set: function (val) { obs(val); },
+      set: function (val) {
+        obs(val);
+        if (changeListener) {
+          changeListener(val);
+        }
+      },
       enumerable: true
     });
   }

@@ -29,7 +29,17 @@
         min-width: 1px;
         overflow: hidden;
     }
-    
+
+    //  The oj-focus-highlight class applies focus styling that may not be desirable
+    //  when the focus results from pointer interaction (touch or mouse), but which is
+    //  needed for accessibility when the focus occurs by a non-pointer mechanism, for
+    //  example keyboard or initial page load.
+    //  See also the $focusHighlightPolicy variable, which controls when this
+    //  class is set.
+    .oj-filmstrip:not(.oj-focus-highlight):focus {
+       outline: none;
+    }
+
     //applied to each layout container
     .oj-filmstrip-container {
         position: relative;
@@ -77,13 +87,9 @@
         //can't use oj-transition-property mixin here because we need to split
         //the transform properties across the different transition properties 
         //to ensure that transitions on iOS work
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          transition: transform var(--oj-animation-duration-medium);
-        }
-        @else {
+
           transition: transform $animationDurationMedium;
-        }
+
         transition-timing-function: ease-in-out;
     }
     
@@ -223,20 +229,7 @@
     //applied to a navigation arrow
     .oj-filmstrip-arrow {
         box-sizing: border-box;
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          width: var(--oj-film-strip-overflow-indicator-height);
-          height: var(--oj-film-strip-overflow-indicator-height);
-          //specify line-height to be same as height so that arrows appear 
-          //vertically centered regardless of font size
-          line-height: var(--oj-film-strip-overflow-indicator-height);
-          
-          cursor: var(--oj-button-cursor);
-          border-radius: var(--oj-film-strip-arrow-border-radius);
-          
-          opacity: var(--oj-film-strip-arrow-opacity);
-        }
-        @else {
+
           width: $filmStripOverflowIndicatorHeight;
           height: $filmStripOverflowIndicatorHeight;
           //specify line-height to be same as height so that arrows appear 
@@ -248,7 +241,7 @@
           
           opacity: $filmStripArrowOpacity;
           
-        }
+
 
         text-align: center;
         border: 1px solid;
@@ -261,40 +254,25 @@
     }
 
     .oj-filmstrip-arrow.oj-hover {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        //from .oj-button.oj-hover
-        background-color: var(--oj-button-half-chrome-bg-color-hover);
-        background-image: var(--oj-button-bg-image-hover);
-        border-color: var(--oj-button-half-chrome-border-color-hover);
-      }
-      @else {
+
         //from .oj-button.oj-hover
         background-color: $buttonHalfChromeBgColorHover;
         @include oj-background-image($buttonBgImageHover);
         border-color: $buttonHalfChromeBorderColorHover;
-      }
+
 
     }
     
     //active should trump hover
     .oj-filmstrip-arrow.oj-active,
     .oj-filmstrip-arrow.oj-active.oj-hover {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        //from .oj-button.oj-active
-        background-color: var(--oj-button-half-chrome-bg-color-active);
-        background-image: var(--oj-button-bg-image-active);
-        border-color: var(--oj-button-half-chrome-border-color-active);
-        opacity: var(--oj-button-half-chrome-opacity-active);
-      }
-      @else {
+
         //from .oj-button.oj-active
         background-color: $buttonHalfChromeBgColorActive;
         @include oj-background-image($buttonBgImageActive);
         border-color: $buttonHalfChromeBorderColorActive;
         opacity: $buttonHalfChromeOpacityActive;
-      }
+
 
     }
 
@@ -310,48 +288,32 @@
     }
     
     .oj-filmstrip-arrow.oj-default .oj-filmstrip-arrow-icon {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        color: var(--oj-button-half-chrome-icon-color);
-      }
-      @else {  
+
         color: $buttonHalfChromeIconColor;
-      }  
+
     }
 
     .oj-filmstrip-arrow.oj-hover .oj-filmstrip-arrow-icon {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        color: var(--oj-button-half-chrome-icon-color-hover);
-      }
-      @else {  
+
         //from .oj-button.oj-hover .oj-button-icon
         color: $buttonHalfChromeIconColorHover;
-      }
+
     }
 
     //active should trump hover
     .oj-filmstrip-arrow.oj-active .oj-filmstrip-arrow-icon,
     .oj-filmstrip-arrow.oj-active.oj-hover .oj-filmstrip-arrow-icon {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        color: var(--oj-button-half-chrome-icon-color-active);
-      }
-      @else {  
+
         //from .oj-button.oj-active .oj-button-icon
         color: $buttonHalfChromeIconColorActive;
-      }
+
     }
     
     //applied to the navigation arrows when they are only shown on hover
     .oj-filmstrip-arrow-transition {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        transition: opacity var(--oj-animation-duration-short);
-      }
-      @else {
+
         transition: opacity $animationDurationShort;        
-      }
+
       transition-timing-function: ease-in-out;
     }
     
@@ -364,15 +326,11 @@
     .oj-filmstrip.oj-filmstrip-hover .oj-filmstrip-arrow-transition.oj-filmstrip-arrow {
         //if on the arrow, set opacity to 0.8, which is the default arrow
         //opacity, because this value will override that
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          opacity: var(--oj-film-strip-arrow-opacity);
-        }
-        @else {
-          opacity: $filmStripArrowOpacity;          
-        }
+
+          opacity: $filmStripArrowOpacity;
+        
     }
-    
+
     .oj-filmstrip:not(.oj-filmstrip-hover) .oj-filmstrip-arrow-transition {
         opacity: 0;
     }

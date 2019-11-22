@@ -2,8 +2,10 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'promise', 
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 
         'ojs/ojpopupcore'], 
 function(oj, $, Context, ThemeUtils, Components, AnimationUtils)
 {
@@ -182,10 +184,7 @@ var __oj_popup_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /*!
  * jQuery UI Popup @VERSION
  * http://jqueryui.com
@@ -246,7 +245,7 @@ var __oj_popup_metadata =
 
   /**
    * @typedef {Object} oj.ojPopup.PositionPoint
-   * @property {number} [x] Horizontal aligment offset.
+   * @property {number} [x] Horizontal alignment offset.
    * @property {number} [y] Vertical alignment offset.
    */
 
@@ -288,7 +287,7 @@ var __oj_popup_metadata =
   /**
    * @ojcomponent oj.ojPopup
    * @augments oj.baseComponent
-   * @ojstatus preview
+   *
    * @since 1.1.0
    * @ojdisplayname Popup
    * @ojshortdesc A popup temporarily 'pops up' content in the foreground.
@@ -570,7 +569,7 @@ var __oj_popup_metadata =
          * another element. {@link oj.ojPopup.Position} defines "my" alignment "at" the alignment
          * "of" some other thing which can be "offset" by so many pixels.</p>
          *
-         * <p>The "my" and "at" properties defines aligment points relative to the popup and other
+         * <p>The "my" and "at" properties defines alignment points relative to the popup and other
          * element.  The "my" property represents the popups alignment where the "at" property
          * represents the other element that can be identified by "of" or defauts to the launcher
          * when the popup opens.  The values of these properties describe horizontal and
@@ -661,7 +660,7 @@ var __oj_popup_metadata =
            */
           offset: {
             /**
-             * Horizontal aligment offset.
+             * Horizontal alignment offset.
              * @expose
              * @memberof! oj.ojPopup
              * @instance
@@ -899,7 +898,7 @@ var __oj_popup_metadata =
          */
         close: null,
         /**
-         * Triggered after focus has been transfered to the popup. This will occur after the
+         * Triggered after focus has been transferred to the popup. This will occur after the
          * <code class="prettyprint">open()</code> method is called, depending on the value
          * of the <code class="prettyprint">initialFocus</code> property.  It's also triggered
          * when using the <kbd>F6</kbd> key to toggle focus from the associated launcher element
@@ -908,7 +907,7 @@ var __oj_popup_metadata =
          * @expose
          * @event
          * @memberof oj.ojPopup
-         * @ojshortdesc Triggered after focus has been transfered to the popup.
+         * @ojshortdesc Triggered after focus has been transferred to the popup.
          * @instance
          * @ojbubbles
          */
@@ -1014,8 +1013,8 @@ var __oj_popup_metadata =
         var content = $('<div>');
         content.addClass([rootStyle, 'content'].join('-'));
         content.attr('role', 'presentation');
-        content.append(element[0].childNodes);    // @HTMLUpdateOK; move app defined children to content wrapper
-        content.appendTo(element);   // @HTMLUpdateOK; attach programmaticly generated node
+        content.append(element[0].childNodes);    // @HTMLUpdateOK move app defined children to content wrapper
+        content.appendTo(element);   // @HTMLUpdateOK attach programmaticly generated node
         this._content = content;
 
         this._setChrome();
@@ -1063,7 +1062,7 @@ var __oj_popup_metadata =
         // Move the children back under the root node removing the content node.
         var content = this._content;
         delete this._content;
-        element.append(content[0].childNodes);  // @HTMLUpdateOK; destructor move children back under root
+        element.append(content[0].childNodes);  // @HTMLUpdateOK destructor move children back under root
         content.remove();
 
         var closeDelayTimer = this._closeDelayTimer;
@@ -1514,7 +1513,7 @@ var __oj_popup_metadata =
         // id over "marker style" due to nesting popups in popups
         this._tailId = tailDom.attr('id', this._getSubId('tail')).attr('id');
         var element = this.element;
-        tailDom.appendTo(element);  // @HTMLUpdateOK; attach programmaticly generated node
+        tailDom.appendTo(element);  // @HTMLUpdateOK attach programmaticly generated node
 
         // tail "value" style is applied to the root dom for shadow and z-index adjustments
         element.addClass(tailStyle);
@@ -2570,6 +2569,7 @@ var __oj_popup_metadata =
    * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
    * @memberof oj.ojPopup
    */
+
 
 /* global __oj_popup_metadata:false */
 (function () {

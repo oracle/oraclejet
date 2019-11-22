@@ -2,14 +2,15 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'ojs/ojvalidation-base', 'ojs/ojlogger', 'ojs/ojeditablevalue'], 
+define(['ojs/ojcore', 'jquery', 'ojs/ojvalidator-regexp', 'ojs/ojlogger', 'ojs/ojfilter-length', 'ojs/ojeditablevalue'], 
 /*
 * @param {Object} oj 
 * @param {jQuery} $
 */
-function(oj, $, __ValidationBase, Logger)
+function(oj, $, RegExpValidator, Logger, LengthFilter)
 {
   "use strict";
 var __oj_input_password_metadata = 
@@ -64,6 +65,10 @@ var __oj_input_password_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
+          "enumValues": [
+            "none",
+            "notewindow"
+          ],
           "value": [
             "notewindow"
           ]
@@ -91,6 +96,14 @@ var __oj_input_password_metadata =
           "value": ""
         }
       }
+    },
+    "labelEdge": {
+      "type": "string",
+      "enumValues": [
+        "inside",
+        "none",
+        "provided"
+      ]
     },
     "labelHint": {
       "type": "string",
@@ -226,15 +239,7 @@ var __oj_input_text_metadata =
       "value": "never"
     },
     "converter": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "options": {
-          "type": "object"
-        }
-      }
+      "type": "object"
     },
     "describedBy": {
       "type": "string"
@@ -267,6 +272,10 @@ var __oj_input_text_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
+          "enumValues": [
+            "none",
+            "notewindow"
+          ],
           "value": [
             "notewindow"
           ]
@@ -295,12 +304,36 @@ var __oj_input_text_metadata =
         }
       }
     },
+    "labelEdge": {
+      "type": "string",
+      "enumValues": [
+        "inside",
+        "none",
+        "provided"
+      ]
+    },
     "labelHint": {
       "type": "string",
       "value": ""
     },
     "labelledBy": {
       "type": "string"
+    },
+    "length": {
+      "type": "object",
+      "properties": {
+        "countBy": {
+          "type": "string",
+          "enumValues": [
+            "codePoint",
+            "codeUnit"
+          ],
+          "value": "codePoint"
+        },
+        "max": {
+          "type": "number"
+        }
+      }
     },
     "list": {
       "type": "string",
@@ -439,15 +472,7 @@ var __oj_text_area_metadata =
       }
     },
     "converter": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "options": {
-          "type": "object"
-        }
-      }
+      "type": "object"
     },
     "describedBy": {
       "type": "string"
@@ -480,6 +505,10 @@ var __oj_text_area_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
+          "enumValues": [
+            "none",
+            "notewindow"
+          ],
           "value": [
             "notewindow"
           ]
@@ -508,12 +537,48 @@ var __oj_text_area_metadata =
         }
       }
     },
+    "labelEdge": {
+      "type": "string",
+      "enumValues": [
+        "inside",
+        "none",
+        "provided"
+      ]
+    },
     "labelHint": {
       "type": "string",
       "value": ""
     },
     "labelledBy": {
       "type": "string"
+    },
+    "length": {
+      "type": "object",
+      "properties": {
+        "countBy": {
+          "type": "string",
+          "enumValues": [
+            "codePoint",
+            "codeUnit"
+          ],
+          "value": "codePoint"
+        },
+        "counter": {
+          "type": "string",
+          "enumValues": [
+            "none",
+            "remaining"
+          ],
+          "value": "none"
+        },
+        "max": {
+          "type": "number"
+        }
+      }
+    },
+    "maxRows": {
+      "type": "number",
+      "value": 0
     },
     "messagesCustom": {
       "type": "Array<Object>",
@@ -627,11 +692,8 @@ var __oj_text_area_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-/* global __ValidationBase:false, Logger:false */
+
+/* global RegExpValidator: false, Logger:false, LengthFilter:false */
 
 /**
  * @ojcomponent oj.inputBase
@@ -651,7 +713,17 @@ var __oj_text_area_metadata =
  * @ojshortdesc Abstract InputBase element
  * @ojrole input
  * @hideconstructor
- * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter", "Validator", "Validation", "AsyncValidator"]}
+ * @ojimportmembers oj.ojDisplayOptions
+ * @ojtsimport {module: "ojvalidationfactory-base", type: "AMD", imported:["Validation"]}
+ * @ojtsimport {module: "ojconverter", type: "AMD", importName: "Converter"}
+ * @ojtsimport {module: "ojvalidator", type: "AMD", importName: "Validator"}
+ * @ojtsimport {module: "ojvalidator-async", type: "AMD", importName: "AsyncValidator"}
+ * @ojtsimport {module: "ojvalidator-daterestriction", type: "AMD", importName: "DateRestrictionValidator"}
+ * @ojtsimport {module: "ojvalidator-datetimerange", type: "AMD", importName: "DateTimeRangeValidator"}
+ * @ojtsimport {module: "ojvalidator-length", type: "AMD", importName: "LengthValidator"}
+ * @ojtsimport {module: "ojvalidator-numberrange", type: "AMD", importName: "NumberRangeValidator"}
+ * @ojtsimport {module: "ojvalidator-regexp", type: "AMD", importName: "RegExpValidator"}
+ * @ojtsimport {module: "ojvalidator-required", type: "AMD", importName: "RequiredValidator"}
  *
  * @classdesc
  * <h3 id="inputBaseOverview-section">
@@ -761,6 +833,10 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
     _COMPOSITIONEND_HANDLER_KEY: 'compositionend',
     _INPUT_HANDLER_KEY: 'input',
     _DROP_HANDLER_KEY: 'drop',
+    _CLICK_HANDLER_KEY: 'click',
+
+    _TEXT_FIELD_COUNTER_CLASS: 'oj-text-field-counter',
+    _counterSpanEl: null,
 
     options:
     {
@@ -793,8 +869,8 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        * (like presses Enter or Tab), a new validation lifecycle will start
        * and validation errors for the previous value will not be shown to the user.
        * If you need to format the value for the error message,
-       * you can use
-       * <code class="prettyprint">oj.IntlConverterUtils.getConverterInstance(converterOption)</code>
+       * you can use e.g. for number
+       * <code class="prettyprint">new NumberConverter.IntlNumberConverter(converterOption)</code>
        * to get the converter instance,
        * then call <code class="prettyprint">converter.format(value)</code>.
        * </p>
@@ -865,7 +941,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        * }
        * }];
        * myComp.asyncValidators = myValidators;
-       *
+       * @ojdeprecated {since: '8.0.0', description: 'Use the validators property instead for either regular Validators or AsyncValidators.'}
        * @expose
        * @access public
        * @instance
@@ -1122,8 +1198,8 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       readOnly: false,
       /**
        * Whether the component is required or optional. When required is set to true, an implicit
-       * required validator is created using the validator factory -
-       * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED).createValidator()</code>.
+       * required validator is created using the RequiredValidator -
+       * <code class="prettyprint">new RequiredValidator()</code>.
        *
        * Translations specified using the <code class="prettyprint">translations.required</code> attribute
        * and the label associated with the component, are passed through to the options parameter of the
@@ -1200,10 +1276,10 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       required: false,
 
       /**
-       * List of synchronous validators used by component along with asynchronous validators
+       * List of validators, synchronous or asynchronous,
+       * used by component along with asynchronous validators from the deprecated async-validators option
        * and the implicit component validators when performing validation. Each item is either an
-       * instance that duck types {@link oj.Validator}, or is an Object literal containing the
-       * properties listed below.
+       * instance that duck types {@link oj.Validator} or {@link oj.AsyncValidator}.
        * <p>
        * Implicit validators are created by the element when certain attributes are present.
        * For example, if the <code class="prettyprint">required</code> attribute
@@ -1260,21 +1336,14 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
        * </ul>
        * </p>
-       *
-       * @property {string} type - the validator type that has a {@link oj.ValidatorFactory} that can
-       * be retrieved using the {@link oj.Validation} module. For a list of supported validators refer
-       * to {@link oj.ValidatorFactory}. <br/>
-       * E.g., <code class="prettyprint">{validators: [{type: 'regExp'}]}</code>
-       * @property {Object=} options - optional Object literal of options that the validator expects.
-       * <br/>
-       * E.g., <code class="prettyprint">{validators: [{type: 'regExp', options: {pattern: '[a-zA-Z0-9]{3,}'}}]}</code>
 
        *
-       * @example <caption>Initialize the component with validator object literal:</caption>
-       * &lt;oj-some-element validators='[{"type": "regExp", "options": {
-       *                     "pattern": "[a-zA-Z0-9]{3,}",
-       *                     "messageDetail": "You must enter at least 3 letters or numbers"}}]'>
+       * @example <caption>Initialize the component with validator instance:</caption>
+       * &lt;oj-some-element validators='[[[myRegExpValidator]]]'>
        * &lt;/oj-some-element>
+       * self.myRegExpValidator = new RegExpValidator(
+       * {pattern: "[a-zA-Z0-9]{3,}",
+       * messageDetail: "You must enter at least 3 letters or numbers"});
        *
        *
        * @example <caption>Initialize the component with multiple validator instances:</caption>
@@ -1285,7 +1354,10 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        *     } else {
        *       throw new Error("value isn't fooey or pass");
        *     }
-       *   }
+       *   },
+       *  'getHint': function() {
+       *    return null;
+       *  }
        * };
        * self.checkbar = {
        * 'validate' : function(value) {
@@ -1294,6 +1366,9 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        *   } else {
        *     throw new Error("value isn't bar or pass");
        *   }
+       *  },
+       *  'getHint': function() {
+       *    return null;
        *  }
        * };
        * var validators = [checkfooey, checkbar]<br/>
@@ -1314,9 +1389,18 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        * @default []
        * @memberof oj.inputBase
        * @ojshortdesc Specifies a list of synchronous validators for performing validation by the element. See the Help documentation for more information.
-       * @ojsignature  { target: "Type",
-       *   value: "Array<oj.Validator<V>|oj.Validation.RegisteredValidator>|null",
-       *   jsdocOverride: true}
+       * @ojsignature  [{ target: "Type",
+       *       value: "Array<oj.Validator<V>|oj.AsyncValidator<V>>|null",
+       *       jsdocOverride: true},
+       * { target: "Type",
+       *       value: "Array<oj.Validator<V>|oj.AsyncValidator<V>|
+       *       oj.Validation.RegisteredValidator>|null",
+       *       consumedBy: 'tsdep'}]
+       * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredValidator'],
+       *                description: 'Defining a validator with an object literal with validator type and
+       *                  its options (aka JSON format) has been deprecated and does nothing. If needed, you can
+       *                  make the JSON format work again by importing the deprecated ojvalidation module you need,
+       *                  like ojvalidation-base.'}
        * @type {Array.<Object>}
        */
       validators: []
@@ -1374,12 +1458,53 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
         this.element.prop('readonly', readOnly);
       }
 
+      // If we need to wrap this.element, we should do it in one pass instead of multiple
+      // passes.  If elements are reparented multiple times, it will impact performance.
       if (this._DoWrapElement()) {
-        this._wrapElementInRootDomElement();
+        var outerWrapper;
+        var newParent;
+
+        // Wraps the this.element and adds _WIDGET_CLASS_NAMES classes to the wrapped element
+        if (this.OuterWrapper) {
+          // this.OuterWrapper is only set for custom element.
+          // For custom element, the outer wrapper is the custom element itself.
+          outerWrapper = this.OuterWrapper;
+          if (outerWrapper.className) {
+            outerWrapper.className = outerWrapper.className + ' ' + this._WIDGET_CLASS_NAMES;
+          } else {
+            outerWrapper.className = this._WIDGET_CLASS_NAMES;
+          }
+        } else {
+          // For widget, we need to create the outer wrapper around the element that the component binds to.
+          outerWrapper = document.createElement('div');
+          outerWrapper.className = this._WIDGET_CLASS_NAMES;
+          // this.element doesn't always have a parent (e.g. when it's in a template)
+          if (this.element[0].parentNode) {
+            this.element[0].parentNode.insertBefore(outerWrapper, this.element[0]);
+          }
+          // For now, just insert the outer wrapper before this.element.
+          // Don't bother reparenting this.element until all the other wrappers have been created.
+        }
+        newParent = outerWrapper;
+        this._wrapper = $(outerWrapper);
+
         // may need to do an extra wrapping if the element has triggers
         if (this._DoWrapElementAndTriggers()) {
-          this._WrapElement();
+          var containerWrapper = this._CreateContainerWrapper();
+          outerWrapper.appendChild(containerWrapper);
+          newParent = containerWrapper;
+
+          // _CreateMiddleWrapper may return null (e.g. oj-date-picker)
+          var middleWrapper = this._CreateMiddleWrapper();
+          if (middleWrapper) {
+            containerWrapper.appendChild(middleWrapper);
+            newParent = middleWrapper;
+          }
         }
+
+        // Only reparent this.element once
+        newParent.appendChild(this.element[0]);
+
         this._focusable({
           element: this._wrapper,
           applyHighlight: true
@@ -1391,19 +1516,23 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
         });
       }
 
-
       // remove pattern attribute to not trigger html5 validation + inline bubble
-//    if ('pattern' in savedAttributes)
-//    {
-//      node.removeAttr('pattern');
-//    }
+      //    if ('pattern' in savedAttributes)
+      //    {
+      //      node.removeAttr('pattern');
+      //    }
 
       this._defaultRegExpValidator = {};
-      this._defaultRegExpAsyncValidator = {};
       this._eventHandlers = null;
+
+      if (this._hasMaxLength()) {
+        this.lengthFilter = new LengthFilter(this.options.length);
+        var currentVal = this.options.value;
+        this._filterTextAndSetValues(currentVal, currentVal, true, true);
+      }
+
       return ret;
     },
-
     /**
      * 1) Updates component state based on the option values
      * 2) Adds the classname to the element [intentionally postponing till this process since the component might need to
@@ -1425,6 +1554,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
 
       if (this._CLASS_NAMES) {
         this.element.addClass(this._CLASS_NAMES);
+        this.element.addClass('oj-text-field-input');
       }
 
       // attach handlers such as blur, keydown, and drop. placed in a function so to detach the handlers as well
@@ -1442,6 +1572,9 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       if (this._IsCustomElement()) {
         oj.EditableValueUtils._setInputId(
           this._GetContentElement()[0], this.widget()[0].id, this.options.labelledBy);
+      }
+      if (this._hasMaxLength()) {
+        this._processLengthCounterAttr(this.options.length.counter);
       }
       return ret;
     },
@@ -1603,7 +1736,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       if (key === 'disabled' || key === 'readOnly') {
         this._processOptions(key, value);
       } else if (key === 'pattern') {
-        this._defaultRegExpValidator[oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP] =
+        this._defaultRegExpValidator.regexp =
           this._getImplicitRegExpValidator();
         this._AfterSetOptionValidators();
       } else if (key === 'labelledBy') {
@@ -1644,10 +1777,41 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
         case 'converter':
           this._AfterSetOptionConverter(option);
           break;
+        case 'length':
+          this._AfterSetOptionLength(this.options.length);
+          break;
         default:
           break;
       }
     },
+
+    /**
+     * Checks if the component has length attribute
+     *
+     * @protected
+     * @memberof oj.ojInputBase
+     * @instance
+     */
+    _hasMaxLength: function () {
+      return this.options.length && this.options.length.max && !isNaN(this.options.length.max);
+    },
+
+    /**
+     * Filters input text based on length.max value and set to the component
+     *
+     * @protected
+     * @memberof oj.ojInputBase
+     * @instance
+     */
+    _filterTextOnValueChange: function () {
+      if (this.options.length.max) {
+        var currentVal = this.options.rawValue;
+        var proposedVal = this.options.value;
+        this._filterTextAndSetValues(currentVal, proposedVal, true, false);
+      }
+    },
+
+
     /**
      * @ignore
      * @protected
@@ -1850,6 +2014,11 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       // while it's the other way around on other browsers.  Just update rawValue here
       // anyway since _SetRawValue will compare the value before actually updating it.
       this._SetRawValue(this._GetContentElement().val(), event);
+
+      // For languages like Japanese/Chinese, we need to update the counter once composing is over.
+      if (this._hasMaxLength()) {
+        this._onInputHandler(event);
+      }
     },
 
     /**
@@ -1867,7 +2036,12 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       // and each keystroke also fires the input event.  Including the intermediate input
       // in rawValue makes it hard to do meaningful validation.
       if (!this._isComposing) {
-        this._SetRawValue(this._GetContentElement().val(), event);
+        if (this._hasMaxLength()) {
+          this._filterTextAndSetValues(this.lastFilteredText,
+            this._GetContentElement().val(), false, true);
+        } else {
+          this._SetRawValue(this._GetContentElement().val(), event);
+        }
       }
     },
 
@@ -1898,32 +2072,19 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
     },
 
     /**
-     * Wraps the this.element and adds _WIDGET_CLASS_NAMES classes to the wrapped element
-     *
-     * @private
-     * @memberof! oj.inputBase
-     */
-    _wrapElementInRootDomElement: function () {
-      if (this.OuterWrapper) {
-        this._wrapper = $(this.OuterWrapper).addClass(this._WIDGET_CLASS_NAMES);
-        this._wrapper.append(this.element); // @HTMLUpdateOK this is the original input element so ok, nothing special
-      } else {
-        $(this.element).wrap($('<div>').addClass(this._WIDGET_CLASS_NAMES)); // @HTMLUpdateOK original input element so ok, nothing special
-        this._wrapper = this.element.parent();
-      }
-    },
-
-    /**
      * Wraps the this.element and adds _ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES classes to the wrapped element.
      * We might need this extra wrapper if the component has input+triggers (like inputDate).
      *
      * @protected
      * @ignore
      * @memberof! oj.inputBase
-     * @return {jQuery}
+     * @return {Element}
      */
-    _WrapElement: function () {
-      return $(this.element).wrap($('<div>').addClass(this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES)).parent(); // @HTMLUpdateOK original input element so ok, nothing special
+    _CreateContainerWrapper: function () {
+      var wrapper = document.createElement('div');
+      wrapper.setAttribute('role', 'presentation');
+      wrapper.className = this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES;
+      return wrapper;
     },
 
     /**
@@ -1986,37 +2147,20 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
      * @override
      * @instance
      * @memberof! oj.inputBase
-     * @return {Object} returns the implicit sync validators map, where the key is the sync
+     * @return {Object} returns the implicit validators map, where the key is the
      * validator type, e.g., 'regexp'.
      */
-    _GetImplicitSyncValidators: function () {
+    _GetImplicitValidators: function () {
       var ret = this._superApply(arguments);
 
       // register a default RegExp validator if we have a valid pattern
       if (this.options.pattern) {
-        this._defaultRegExpValidator[oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP] =
-        this._getImplicitRegExpValidator();
+        var validator = this._getImplicitRegExpValidator();
+        this._defaultRegExpValidator.regexp = validator;
       }
-      return $.extend(this._defaultRegExpValidator, ret);
+      return Object.assign(this._defaultRegExpValidator, ret);
     },
-    /**
-     * Sets up a asynchronous regexp validator if pattern is set and the
-     * app has overridden the async regexp validator that JET registered.
-     * If the validator is created, it is added to the
-     * this._defaultRegExpAsyncValidator type->validator instance map
-     *
-     * @ignore
-     * @protected
-     * @override
-     * @instance
-     * @memberof! oj.inputBase
-     * @return {Object} returns the implicit async validators map, where the key is the async
-     * validator type, e.g., 'async-regexp'.
-     */
-    _GetImplicitAsyncValidators: function () {
-      var ret = this._superApply(arguments);
-      return $.extend(this._defaultRegExpAsyncValidator, ret);
-    },
+
     /**
      * Whether the a value can be set on the component. For example, if the component is
      * disabled or readOnly then setting value on component is a no-op.
@@ -2067,8 +2211,21 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
         label: this._getLabelText() };
 
       $.extend(regexpOptions, this.options.translations.regexp || {});
-      return __ValidationBase.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP)
-        .createValidator(regexpOptions);
+      var regexpValidator = new RegExpValidator(regexpOptions);
+
+      return regexpValidator;
+    },
+
+    /**
+     * Return the element on which aria-label can be found.
+     * Usually this is the root element, but some components have aria-label as a transfer attribute,
+     * and aria-label set on the root element is transferred to the inner element.
+     * @memberof! oj.inputBase
+     * @instance
+     * @protected
+     */
+    _GetAriaLabelElement: function () {
+      return this.element[0];
     },
 
     /**
@@ -2093,6 +2250,158 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
      */
     _IsRTL: function () {
       return this._rtl;
+    },
+
+    /**
+     * Returns if the element is a text field element or not.
+     * @memberof oj.ojInputBase
+     * @instance
+     * @protected
+     * @return {boolean}
+     */
+    _IsTextFieldComponent: function () {
+      return true;
+    },
+
+    /**
+     * Wrappers the input component "content element".
+     * @ignore
+     * @protected
+     * @memberof oj.ojInputBase
+     * @instance
+     */
+    _GetContentWrapper: function () {
+      var contentElement = this._GetContentElement()[0];
+      if (!contentElement.parentElement.classList.contains('oj-text-field-middle')) {
+        var containerElement = document.createElement('DIV');
+        containerElement.classList.add('oj-text-field-middle');
+        contentElement.parentElement.insertBefore(containerElement, contentElement);
+        containerElement.appendChild(contentElement);
+      }
+
+      return contentElement.parentElement;
+    },
+
+    /**
+     * Removes the previous lengthFilter instance and creates a new one with new length filter options
+     * @memberof oj.ojInputBase
+     * @instance
+     * @protected
+     * @ignore
+     */
+    _resetLengthFilter: function (lengthOptions) {
+      this.lengthFilter = new LengthFilter(lengthOptions);
+    },
+
+    /**
+     * Refresh the input element value based on the newly set filter options.
+     * @memberof oj.ojInputBase
+     * @instance
+     * @protected
+     * @ignore
+     */
+    _AfterSetOptionLength: function (lengthOptions) {
+      if (lengthOptions.max) {
+        this._resetLengthFilter(lengthOptions);
+        var wrapperElem = this._GetContentWrapper();
+        var currentVal;
+        if (wrapperElem.parentElement.parentNode.classList.contains('oj-complete')) {
+          currentVal = this.element[0].value;
+        } else {
+          currentVal = this.options.value;
+        }
+        this._filterTextAndSetValues(currentVal, currentVal, true, false);
+      }
+      this._processLengthCounterAttr(lengthOptions.counter);
+    },
+
+    /**
+     * Creates a click handler method that is bound to 'this' object
+     * @memberof oj.ojInputBase
+     * @instance
+     * @protected
+     * @ignore
+     */
+    _setFocusOnTextAreaBind: function () {
+      this._setFocusOnTextArea = function () {
+        this.element[0].focus();
+      }.bind(this);
+    },
+
+    /**
+     * Processes the length attribute set on the component
+     * @memberof oj.ojInputBase
+     * @instance
+     * @protected
+     * @ignore
+     */
+    _processLengthCounterAttr: function (lengthCounterAttr) {
+      var wrapperElem = this._GetContentWrapper().parentElement;
+      var counterEl = wrapperElem.querySelector('.' + this._TEXT_FIELD_COUNTER_CLASS);
+
+      if (lengthCounterAttr === 'none' || lengthCounterAttr === undefined || lengthCounterAttr === null ||
+          this.options.length.max === 0 || this.options.disabled || this.options.readOnly) {
+        // remove the icon if it is there
+        if (counterEl) {
+          counterEl.removeEventListener(this._CLICK_HANDLER_KEY,
+                                        this._setFocusOnTextArea);
+          wrapperElem.removeChild(counterEl);
+        }
+        this._counterSpanEl = null;
+      } else {
+        if (counterEl === null) {
+          var textFieldCounter = document.createElement('div');
+          textFieldCounter.className = this._TEXT_FIELD_COUNTER_CLASS;
+          if (this._TEXTAREA_COUNTER_CONTAINER) {
+            textFieldCounter.className += ' ' + this._TEXTAREA_COUNTER_CONTAINER;
+          }
+
+          counterEl = document.createElement('span');
+          if (this._INPUTTEXT_COUNTER_EL) {
+            counterEl.className += ' ' + this._INPUTTEXT_COUNTER_EL;
+          }
+
+          if (this._TEXTAREA_COUNTER_EL) {
+            counterEl.className += ' ' + this._TEXTAREA_COUNTER_EL;
+            this._setFocusOnTextAreaBind();
+            textFieldCounter.addEventListener(this._CLICK_HANDLER_KEY,
+                                              this._setFocusOnTextArea);
+          }
+
+          textFieldCounter.appendChild(counterEl);
+          wrapperElem.appendChild(textFieldCounter);
+          this._counterSpanEl = document.querySelector('.' + this._TEXT_FIELD_COUNTER_CLASS + ' span');
+          this._counterSpanEl.textContent = '';
+        }
+
+        var textLength;
+
+        textLength = this.lengthFilter.calcLength(this.options.rawValue);
+        this._counterSpanEl.textContent = this.options.length.max - textLength;
+      }
+    },
+
+    /**
+     * @memberof oj.ojInputBase
+     * @instance
+     * @protected
+     * @ignore
+     * @param {string} currentVal Current value of the text field
+     * @param {string} proposedVal Proposed value of the text field
+     * @param {boolean} setValue Whether to set component value or not
+     * @param {boolean} processLengthCounter whether to process length counter or not
+     */
+    _filterTextAndSetValues(currentVal, proposedVal, setValue, processLengthCounter) {
+      var filteredText = this.lengthFilter.filter(currentVal, proposedVal);
+      this.lastFilteredText = filteredText;
+      this._SetRawValue(filteredText, null);
+      this._SetDisplayValue(filteredText, null);
+      if (setValue) {
+        this._SetValue(this.lastFilteredText);
+      }
+      if (processLengthCounter) {
+        this._processLengthCounterAttr(this.options.length.counter);
+      }
     },
 
     /**
@@ -2199,7 +2508,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
      * @ojshortdesc Validates the component's display value using all converters and validators registered on the component. If there are no validation errors. then the value is updated. See the Help documentation for more information.
      * @instance
      * @since 4.0.0
-     * @ojstatus preview
+     *
      */
     validate: oj.EditableValueUtils.validate,
 
@@ -2233,10 +2542,6 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
 
   }, true);
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /**
  * @ojcomponent oj.ojInputPassword
@@ -2255,7 +2560,6 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
  * @since 0.6.0
  * @ojshortdesc An input password allows the user to enter a password.
  * @ojrole textbox
- * @ojstatus preview
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled", "readonly"]}
  * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
@@ -2347,6 +2651,8 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
      */
     _WIDGET_CLASS_NAMES: 'oj-inputpassword oj-form-control oj-component',
 
+    _INPUT_CONTAINER_CLASS: 'oj-text-field-container',
+
     options:
     {
       /**
@@ -2361,9 +2667,9 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
       /**
        * Regular expression pattern which will be used to validate the component's value.
        * <p>
-       * When pattern is set to true, an implicit regExp validator is created using the validator
-       * factory -
-       * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP).createValidator()</code>.
+       * When pattern is set to true, an implicit regExp validator is created using
+       * the RegExpValidator -
+       * <code class="prettyprint">new RegExpValidator()</code>.
        * </p>
        *
        * @example <caption>Initialize the component with the <code class="prettyprint">pattern</code> attribute:</caption>
@@ -2442,6 +2748,18 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
        * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
        */
       // create event declared in superclass, but we still want the above API doc
+    },
+
+  /**
+     * @ignore
+     * @override
+     * @protected
+     * @memberof! oj.ojInputPassword
+     * @return {boolean}
+     */
+    _DoWrapElementAndTriggers: function () {
+      this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES = this._INPUT_CONTAINER_CLASS;
+      return true;
     },
 
     getNodeBySubId: function (locator) {
@@ -2535,10 +2853,7 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
  * var node = myComp.getNodeBySubId("oj-inputpassword-input");
  */
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @ojcomponent oj.ojInputText
@@ -2557,7 +2872,9 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
  * @since 0.6.0
  * @ojshortdesc An input text allows the user to enter a text value.
  * @ojrole textbox
- * @ojstatus preview
+ * @ojtsimport {module: "ojconverter-number", type: "AMD", imported: ["IntlNumberConverter", "NumberConverter"]}
+ * @ojtsimport {module: "ojconverter-color", type: "AMD", importName: "ColorConverter"}
+ * @ojtsimport {module: "ojconverter-datetime", type: "AMD",  imported: ["IntlDateTimeConverter", "DateTimeConverter"]}
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled", "readonly", "clearIcon", "virtualKeyboard"]}
  * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
@@ -2660,6 +2977,9 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
 
     _CLICK_HANDLER_KEY: 'click',
 
+    _INPUT_CONTAINER_CLASS: 'oj-text-field-container',
+    _INPUTTEXT_COUNTER_EL: 'oj-inputtext-counter-el',
+
     options:
     {
       /**
@@ -2670,7 +2990,7 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
        * @ojvalue {string} "never" The clear icon is never visible
        * @ojvalue {string} "always" The clear icon is always visible
        * @ojvalue {string} "conditional" The clear icon is visible under the following conditions:
-       * if the component has a non-empty value AND it either has focus OR the mouse is over the field.
+       * if the component has a non-empty value, and it either has focus or the mouse is over the field.
        * @default "never"
        * @desc Specifies if an icon to clear the input field should be visible.
        *
@@ -2687,28 +3007,15 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
       clearIcon: 'never',
       /**
        * A converter instance or Promise to a converter instance
-       * that duck types {@link oj.Converter}. Or an object literal containing
-       * the following properties.
+       * or one that duck types {@link oj.Converter}.
        * {@ojinclude "name":"inputBaseConverterOptionDoc"}
        *
-       * @property {string} type - the converter type registered with the oj.ConverterFactory.
-       * Supported types are 'number' and 'datetime'. See {@link oj.ConverterFactory} for details.
-       * <br/>
-       * E.g., <code class="prettyprint">converter='{"type": "number"}'</code>
-       * @property {Object=} options - optional Object literal of options that the converter expects.
-       * See {@link oj.IntlNumberConverter} for options supported by the number converter. See
-       * {@link oj.IntlDateTimeConverter} for options supported by the date time converter. <br/>
-       * E.g., <code class="prettyprint">converter='{"type": "number", "options": {"style": "decimal"}}'</code>
        *
        * @example <caption>Initialize the component with a number converter instance:</caption>
        * &lt;oj-input-text converter="[[salaryConverter]]">&lt;/oj-input-text><br/>
        * // Initialize converter instance using currency options
        * var options = {style: 'currency', 'currency': 'USD', maximumFractionDigits: 0};
-       * var numberConverterFactory = oj.Validation.converterFactory("number");
-       * var salaryConverter = numberConverterFactory.createConverter(options);
-       *
-       * @example <caption>Initialize the component with converter object literal:</caption>
-       * &lt;oj-input-text converter='{"type": "number", "options": {"style": "decimal"}}'>&lt;/oj-input-text>
+       * this.salaryConverter = new NumberConverter(options);
        *
        * @example <caption>Get or set the <code class="prettyprint">converter</code>
        *  property after initialization:</caption>
@@ -2723,10 +3030,21 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
        * @memberof! oj.ojInputText
        * @ojshortdesc An object that converts the value. See the Help documentation for more information.
        * @default null
-       * @ojsignature {
+       * @ojsignature [{
        *    target: "Type",
-       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|oj.Validation.RegisteredConverter|null",
-       *    jsdocOverride: true}
+       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+       *            null",
+       *    jsdocOverride: true},
+       *    {target: "Type",
+       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+       *            oj.Validation.RegisteredConverter|
+       *            null",
+       *    consumedBy: 'tsdep'}]
+       * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredConverter'],
+       *                description:'Defining a converter with an object literal with converter type and its options
+       *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
+       *                  work again by importing the deprecated module you need, like ojvalidation-base or
+       *                  ojvalidation-number module.'}
        * @type {Object|null}
        */
       converter: null,
@@ -2769,9 +3087,9 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
       /**
        * Regular expression pattern which will be used to validate the component's value.
        * <p>
-       * When pattern is set to a non-empty string value, an implicit regExp validator is created using the validator
-       * factory -
-       * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP).createValidator()</code>.
+       * When pattern is set to a non-empty string value, an implicit regExp validator is created using
+       * the RegExpValidator -
+       * <code class="prettyprint">new RegExpValidator()</code>.
        * </p>
        *
        * @example <caption>Initialize the component with the <code class="prettyprint">pattern</code> attribute:</caption>
@@ -2823,7 +3141,51 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
        * @default "auto"
        * @since 5.0.0
        */
-      virtualKeyboard: 'auto'
+      virtualKeyboard: 'auto',
+
+      /**
+        *
+        * @expose
+        * @instance
+        * @memberof oj.ojInputText
+        * @name length
+        * @type {Object}
+        * @since 8.0.0
+        * @ojshortdesc An object whose properties describe the maximum length attributes.
+        // * @ojtsignore tsdefonly
+      */
+
+      length: {
+      /**
+       * Maximum number of characters that can be entered in the input field.
+       *
+       * @expose
+       * @alias length.max
+       * @ojshortdesc Specifies the maximum number of characters to be entered in the input text.
+       * @memberof! oj.ojInputText
+       * @instance
+       * @type {number|null}
+       * @default null
+       * @since 8.0.0
+       */
+        max: null,
+
+      /**
+       * Dictates how the input text characters has to be counted.
+       *
+       * @expose
+       * @alias length.countBy
+       * @ojshortdesc Specifies the manner in which the input text characters has to be counted.
+       * @memberof! oj.ojInputText
+       * @instance
+       * @type {?string}
+       * @ojvalue {string} 'codePoint' Uses code point to calculate the text length
+       * @ojvalue {string} 'codeUnit' Uses code unit to calculate the text length
+       * @default "codePoint"
+       * @since 8.0.0
+       */
+        countBy: 'codePoint'
+      }
 
       // Events
 
@@ -2862,6 +3224,7 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
       var clearIconAttr = this.options.clearIcon;
 
       this._processClearIconAttr(clearIconAttr);
+      this._processSlottedChildren();
 
       this._AddHoverable(this._wrapper);
 
@@ -2869,6 +3232,17 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
       this._SetInputType(this._ALLOWED_TYPES);
 
       return retVal;
+    },
+    /**
+     * @ignore
+     * @override
+     * @protected
+     * @memberof! oj.InputText
+     * @return {boolean}
+     */
+    _DoWrapElementAndTriggers: function () {
+      this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES = this._INPUT_CONTAINER_CLASS;
+      return true;
     },
     /**
      * Render or remove the clear icon
@@ -2879,7 +3253,8 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
      * @instance
      */
     _processClearIconAttr: function (clearIconAttr) {
-      var wrapperElem = this._wrapper[0];
+      var wrapperElem = this._GetContentWrapper().parentElement;
+
       var clearIconBtn = wrapperElem.querySelector('a.oj-inputtext-clear-icon-btn');
 
       if (clearIconAttr === 'never' || this.options.disabled || this.options.readOnly) {
@@ -2944,6 +3319,57 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
       }
     },
     /**
+     * Handles slotted start and end icons.
+     * @ignore
+     * @private
+     * @memberof oj.ojInputText
+     * @instance
+     */
+    _processSlottedChildren: function () {
+      function scrubSlots(slotMap) {
+        var VALID_SLOTS = { contextMenu: true, start: true, end: true, '': true };
+        var keys = Object.keys(slotMap);
+        for (var i = keys.length - 1; i > -1; i--) {
+          var key = keys[i];
+          if (!VALID_SLOTS[key]) {
+            var nodes = slotMap[key];
+            for (var n = 0; n < nodes.length; n++) {
+              var node = nodes[n];
+              node.parentElement.removeChild(node);
+            }
+          }
+        }
+      }
+      function processStartSlots(contentContainer, nodes) {
+        for (var i = 0; i < nodes.length; i++) {
+          var node = nodes[i];
+          node.classList.add('oj-inputtext-start');
+          contentContainer.parentElement.insertBefore(node, contentContainer);
+        }
+      }
+      function processEndSlots(contentContainer, nodes) {
+        for (var i = 0; i < nodes.length; i++) {
+          var node = nodes[i];
+          node.classList.add('oj-inputtext-end');
+          contentContainer.parentElement.appendChild(node);
+        }
+      }
+
+      var slotMap = oj.BaseCustomElementBridge.getSlotMap(this._getRootElement());
+      scrubSlots(slotMap);
+
+      var contextContainer = this._GetContentWrapper();
+      var slotName = 'start';
+      if (slotMap[slotName]) {
+        processStartSlots(contextContainer, slotMap[slotName]);
+      }
+      slotName = 'end';
+      if (slotMap[slotName]) {
+        processEndSlots(contextContainer, slotMap[slotName]);
+      }
+    },
+
+    /**
      * Performs post processing after _SetOption() calls _superApply(). Different options, when changed, perform
      * different tasks.
      *
@@ -2960,7 +3386,6 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
           // all of these options potentially affect the visiblity and/or rendering of the icon
           // so we need to process the icon if any of these change.
         case 'clearIcon' :
-        case 'value' :
         case 'disabled' :
         case 'readOnly' :
           this._processClearIconAttr(this.options.clearIcon);
@@ -2968,6 +3393,12 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
 
         case 'virtualKeyboard':
           this._SetInputType(this._ALLOWED_TYPES);
+          break;
+
+        case 'value':
+          this._processClearIconAttr(this.options.clearIcon);
+          this._filterTextOnValueChange();
+          this._AfterSetOptionLength(this.options.length);
           break;
 
         default:
@@ -2985,7 +3416,7 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
     _onInputHandler: function (event) {
       this._super(event);
       var inputNode = event.target;
-      var wrapperNode = this._wrapper[0];
+      var wrapperNode = this._GetContentWrapper().parentElement;
       var clearIconAttr = this.options.clearIcon;
 
       if (clearIconAttr === 'conditional') {
@@ -3012,7 +3443,9 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
       // we need to update the raw value to keep it in sync
       this._SetRawValue(elem.value, event);
       elem.focus();
-      this._wrapper[0].classList.add('oj-form-control-empty-clearicon');
+      var wrapper = this._GetContentWrapper().parentElement;
+      wrapper.classList.add('oj-form-control-empty-clearicon');
+      this._processLengthCounterAttr(this.options.length.counter);
     },
     /**
      * Invoked when blur is triggered of the this.element
@@ -3186,9 +3619,43 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
  */
 
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * <p>The <code class="prettyprint">start</code> slot is for adding a leading icon.
+ * For example, an icon identifying the credit card type based on the value entered.
+ * </p>
+ *
+ * @ojslot start
+ * @ignore
+ * @ojshortdesc The start slot enables adding a leading icon
+ * @since 8.0.0
+ * @memberof oj.ojInputText
+ *
+ * @example <caption>Initialize the input text with child content specified for the start slot:</caption>
+ * &lt;oj-input-text on-raw-value-changed="[[changeCreditCardTypeIcon]]">
+ *   &lt;a slot="start" ::class="[[creditCardTypeIcon]]" >&lt;/a>
+ * &lt;/oj-input-text>
  */
+
+/**
+ * <p>The <code class="prettyprint">end</code> slot is for adding an associated action icon.
+ * For example, a magnifying glass icon for a search field can be provided in this slot.
+ * </p>
+ *
+ * @ojslot end
+ * @ignore
+ * @ojshortdesc The end slot enables adding a trailing associated action icon.
+ * @since 8.0.0
+ * @memberof oj.ojInputText
+ *
+ * @example <caption>Initialize the input text with child content specified for the end slot:</caption>
+ * &lt;oj-input-text>
+ *   &lt;oj-button slot="end" on-oj-action="[[performSearch]]" display="icons" >
+ *     &lt;img slot="endIcon" src="search.png"/>Search
+ *    &lt;/oj-button>
+ * &lt;/oj-input-text>
+ */
+
+
+ /* global Promise:false, Context:false */
 
 /**
  * @ojcomponent oj.ojTextArea
@@ -3207,9 +3674,11 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
  * @since 0.6.0
  * @ojshortdesc A text area allows the user to enter a multi-line text value.
  * @ojrole textbox
- * @ojstatus preview
+ * @ojtsimport {module: "ojconverter-number", type: "AMD", imported: ["IntlNumberConverter", "NumberConverter"]}
+ * @ojtsimport {module: "ojconverter-color", type: "AMD", importName: "ColorConverter"}
+ * @ojtsimport {module: "ojconverter-datetime", type: "AMD",  imported: ["IntlDateTimeConverter", "DateTimeConverter"]}
  *
- * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "rows", "disabled", "required", "readonly"]}
+ * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "rows", "maxRows","disabled", "required", "readonly"]}
  * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 2
@@ -3310,32 +3779,25 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
      */
     _WIDGET_CLASS_NAMES: 'oj-textarea oj-form-control oj-component',
 
+    _INPUT_CONTAINER_CLASS: 'oj-text-field-container',
+    _TEXTAREA_COUNTER_CONTAINER: 'oj-textarea-counter-container',
+    _TEXTAREA_COUNTER_EL: 'oj-textarea-counter-el',
+
+    _INPUT_HANDLER_KEY: 'input',
+
     options:
     {
       /**
        * A converter instance or Promise to a converter instance
-       * that duck types {@link oj.Converter}. Or an object literal containing
-       * the following properties.
+       * or one that duck types {@link oj.Converter}.
        * {@ojinclude "name":"inputBaseConverterOptionDoc"}
        *
-       * @property {string} type - the converter type registered with the oj.ConverterFactory.
-       * Supported types are 'number' and 'datetime'. See {@link oj.ConverterFactory} for details.
-       * <br/>
-       * E.g., <code class="prettyprint">converter='{"type": "number"}'</code>
-       * @property {Object=} options - optional Object literal of options that the converter expects.
-       * See {@link oj.IntlNumberConverter} for options supported by the number converter. See
-       * {@link oj.IntlDateTimeConverter} for options supported by the date time converter. <br/>
-       * E.g., <code class="prettyprint">converter='{"type": "number", "options": {"style": "decimal"}}'</code>
        *
        * @example <caption>Initialize the component with a number converter instance:</caption>
        * &lt;oj-text-area converter="[[salaryConverter]]">&lt;/oj-text-area><br/>
        * // Initialize converter instance using currency options
        * var options = {style: 'currency', 'currency': 'USD', maximumFractionDigits: 0};
-       * var numberConverterFactory = oj.Validation.converterFactory("number");
-       * var salaryConverter = numberConverterFactory.createConverter(options);
-       *
-       * @example <caption>Initialize the component with converter object literal:</caption>
-       * &lt;oj-text-area converter='{"type": "number", "options": {"style": "decimal"}}'>&lt;/oj-text-area>
+       * this.salaryConverter = new NumberConverter(options);
        *
        * @example <caption>Get or set the <code class="prettyprint">converter</code>
        * property after initialization:</caption>
@@ -3350,20 +3812,57 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
        * @default null
        * @memberof! oj.ojTextArea
        * @ojshortdesc An object that converts the value. See the Help documentation for more information.
-       * @ojsignature {
+       * @ojsignature [{
        *    target: "Type",
-       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|oj.Validation.RegisteredConverter|null",
-       *    jsdocOverride: true}
+       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+       *            null",
+       *    jsdocOverride: true},
+       *    {target: "Type",
+       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+       *            oj.Validation.RegisteredConverter|
+       *            null",
+       *    consumedBy: 'tsdep'}]
+       * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredConverter'],
+       *                description:'Defining a converter with an object literal with converter type and its options
+       *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
+       *                  work again by importing the deprecated module you need, like ojvalidation-base or
+       *                  ojvalidation-number module.'}
        * @type {Object|null}
        */
       converter: null,
-
       /**
+      * The maximum number of visible text lines of the textarea. The textarea will change its height in response to content change.
+      * If this is 0, the number of visible text lines is always as specified by the "rows" attribute, and the textarea will never change
+      * its size.
+      * If this is -1, there is no maximum and the textarea will grow to show all the content.
+      * If this is a positive number larger than the "rows" attribute, the textarea will grow to fit the content,
+      * up to the maximum number of text lines.
+      *
+      * @example <caption>Initialize component with <code class="prettyprint">max-rows</code> attribute:</caption>
+      * &lt;oj-some-element max-rows="5">&lt;/oj-some-element>
+      *
+      * @example <caption>Get or set the <code class="prettyprint">max-rows</code> property after initialization:</caption>
+      * // getter
+      * var ro = myComp.maxRows;
+      *
+      * // setter
+      * myComp.maxRows = 5;
+      *
+      * @expose
+      * @instance
+      * @memberof! oj.ojTextArea
+      * @ojshortdesc Specifies the maximum number of visible text lines of the textarea.
+      * @type {number}
+      * @default 0
+      * @since 8.0.0
+      */
+      maxRows: 0,
+     /**
        * Regular expression pattern which will be used to validate the component's value.
        * <p>
-       * When pattern is set to true, an implicit regExp validator is created using the validator
-       * factory -
-       * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP).createValidator()</code>.
+       * When pattern is set to true, an implicit regExp validator is created using
+       * the RegExpValidator -
+       * <code class="prettyprint">new RegExpValidator()</code>.
        * </p>
        *
        *
@@ -3400,6 +3899,7 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
        * @ojvalue {string} "vertical" The textarea will be resizable in the vertical direction only.
        * @ojvalue {string} "none" The textarea will not be interactively resizable.
        * @default "none"
+       * @since 7.0.0
        *
        * @example <caption>Initialize the textarea to a specific <code class="prettyprint">resizeBehavior</code></caption>
        * &lt;oj-text-area resize-behavior="none" &gt;&lt;/oj-text-area&gt;
@@ -3434,7 +3934,65 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
        * @type {number}
        * @ojextension {_COPY_TO_INNER_ELEM: true}
        */
-      rows: undefined
+      rows: undefined,
+
+      /**
+       * @expose
+       * @instance
+       * @memberof oj.ojTextArea
+       * @name length
+       * @type {Object}
+       * @ojshortdesc An object whose properties describe the maximum length attributes.
+       * @since 8.0.0
+       */
+      length: {
+        /**
+         * Maximum number of characters that can be entered in the input field.
+         *
+         * @expose
+         * @alias length.max
+         * @ojshortdesc Specifies the maximum number of characters to be entered in the text area.
+         * @memberof! oj.ojTextArea
+         * @instance
+         * @type {number|null}
+         * @default null
+         * @since 8.0.0
+         */
+        max: null,
+
+        /**
+         * Dictates how the input text characters has to be counted.
+         *
+         * @expose
+         * @alias length.countBy
+         * @ojshortdesc Specifies the manner in which the text area characters has to be counted.
+         * @memberof! oj.ojTextArea
+         * @instance
+         * @type {?string}
+         * @ojvalue {string} 'codePoint' Uses code point to calculate the text length
+         * @ojvalue {string} 'codeUnit' Uses code unit to calculate the text length
+         * @default "codePoint"
+         * @since 8.0.0
+         */
+        countBy: 'codePoint',
+
+        /**
+         * Decides whether the remaining number of characters
+         * that can be entered is shown or not.
+         *
+         * @expose
+         * @alias length.counter
+         * @ojshortdesc The type of counter to display.
+         * @memberof! oj.ojTextArea
+         * @instance
+         * @type {?string}
+         * @ojvalue {string} 'none' The remaining characters count is not displayed.
+         * @ojvalue {string} 'remaining' The remaining characters count is displayed.
+         * @default "none"
+         * @since 8.0.0
+         */
+        counter: 'none'
+      }
 
       // Events
 
@@ -3461,6 +4019,30 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
     },
 
     /**
+     * Performs post processing after _SetOption() calls _superApply(). Different options, when changed, perform
+     * different tasks.
+     *
+     * @param {string} option
+     * @param {Object=} flags
+     * @protected
+     * @memberof oj.ojTextArea
+     * @instance
+     */
+    _AfterSetOption: function (option, flags) {
+      this._super(option, flags);
+
+      switch (option) {
+        case 'value':
+          this._filterTextOnValueChange();
+          this._AfterSetOptionLength(this.options.length);
+          break;
+
+        default:
+          break;
+      }
+    },
+
+    /**
      * This function gets called on initial render,
      * and when oj-text-area attributes are modified.
      *
@@ -3472,8 +4054,44 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
     _AfterCreate: function () {
       var ret = this._superApply(arguments);
 
+      var textarea = this._GetContentElement()[0];
+      // unregister existing resize listener before emptying out the root
+      var maxrows = this.options.maxRows;
       this._GetContentElement()[0].style.resize = this.options.resizeBehavior;
-
+      if (maxrows === -1 || maxrows > textarea.rows) {
+        if (!this._isConverAsync()) {
+          this._calculateLineHeight(textarea);
+          this._resizeTextArea();
+          this._setupResizeTextareaBind();
+        }
+      }
+      return ret;
+    },
+    /**
+    * Do things here for creating the component where you need the converter, since
+    * getting the converter can be asynchronous. We get the converter before calling
+    * this method, so it is there.
+    *
+    * @protected
+    * @override
+    * @instance
+    * @memberof! oj.ojTextArea
+    */
+    _AfterCreateConverterCached: function () {
+      var ret = this._super();
+      // unregister existing resize listener before emptying out the root
+      if (this._isConverAsync()) {
+        var busyContext = Context.getContext(this.element[0]).getBusyContext();
+        busyContext.whenReady().then(function () {
+          var textarea = this._GetContentElement()[0];
+          var maxrows = this.options.maxRows;
+          if (maxrows === -1 || maxrows > textarea.rows) {
+            this._calculateLineHeight(textarea);
+            this._resizeTextArea();
+            this._setupResizeTextareaBind();
+          }
+        });
+      }
       return ret;
     },
 
@@ -3489,11 +4107,140 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
 
       if (key === 'resizeBehavior') {
         this._GetContentElement()[0].style.resize = value;
+      } else if (key === 'value') {
+        // only resize if maxrows is more than rows
+        var maxrows = this.options.maxRows;
+        if (maxrows === -1 || maxrows > this._GetContentElement()[0].rows) {
+          this._resizeTextArea();
+        }
       }
-
       return retVal;
     },
-
+    /**
+     * Notifies the component that its subtree has been connected to the document
+     * programmatically after the component has been created.
+     * @return {void}
+     * @memberof oj.ojTextArea
+     * @instance
+     * @protected
+     * @override
+    */
+    _NotifyAttached: function () {
+      this._super();
+      var maxrows = this.options.maxRows;
+      if (maxrows === -1 || maxrows > this._GetContentElement()[0].rows) {
+        this._resizeTextArea();
+      }
+    },
+    /**
+     * Invoked when the input event happens
+     *
+     * @ignore
+     * @protected
+     * @memberof! oj.inputBase
+     * @param {Event} event
+     */
+    _onInputHandler: function (event) {
+      this._super(event);
+      var textarea = this._GetContentElement()[0];
+      // only resize if maxrows is more than rows
+      var maxrows = this.options.maxRows;
+      if (maxrows === -1 || maxrows > textarea.rows) {
+        this._resizeTextArea();
+      }
+    },
+    /**
+     * Resize the textarea based on the content
+     *
+     * @ignore
+     * @protected
+     * @memberof! oj.ojTextArea
+     * @param {Event} event
+     */
+    _resizeTextArea: function () {
+      var maxRows = this.options.maxRows;
+      var textarea = this._GetContentElement()[0];
+      var rows = textarea.rows;
+      var heightOfRows;
+      var resizedHeight;
+      // this is an error condition, if rows > maxrows
+      if (rows) {
+        heightOfRows = rows * this._lineHeight;
+      }
+      textarea.style.height = 0;
+      // if maxRows is -1 the textarea will grow to show all the content.
+      if (maxRows === -1) {
+        resizedHeight = textarea.scrollHeight;
+      } else if (maxRows > rows) {
+        // if maxRows is positive and greater than rows, the textarea will grow to fit the content, up to maxrows.
+        var heightForMaximumRows = this._lineHeight * maxRows;
+        var maxHeight = textarea.scrollHeight;
+        if (maxHeight > heightForMaximumRows) {
+          resizedHeight = heightForMaximumRows + this._getStylingHeight(textarea);
+        } else {
+          resizedHeight = maxHeight;
+        }
+      }
+      if (heightOfRows && heightOfRows > resizedHeight) {
+        resizedHeight = heightOfRows + this._getStylingHeight(textarea);
+      }
+      textarea.style.height = resizedHeight + 'px';
+    },
+    _setupResizeTextareaBind: function () {
+      this._resizeTextareaBind = function () {
+        var textarea = this._GetContentElement()[0];
+        // only resize if maxrows is more than rows
+        var maxrows = this.options.maxRows;
+        if (maxrows === -1 || maxrows > textarea.rows) {
+          this._resizeTextArea();
+        }
+      }.bind(this);
+      window.addEventListener('resize', this._resizeTextareaBind, false);
+    },
+    /**
+     * Calculates the padding and borders height for text-area
+     *
+     * @ignore
+     * @protected
+     * @memberof! oj.ojTextArea
+     */
+    _getStylingHeight: function (textarea) {
+      var cssStyle = window.getComputedStyle(textarea);
+      var paddingTop = parseInt(cssStyle.paddingTop, 10);
+      var paddingBottom = parseInt(cssStyle.paddingBottom, 10);
+      var borderTopWidth = parseInt(cssStyle.borderTopWidth, 10);
+      var borderBottomWidth = parseInt(cssStyle.borderBottomWidth, 10);
+      return paddingTop + paddingBottom + borderTopWidth + borderBottomWidth;
+    },
+    /**
+     * Calculates the line height for text-area
+     *
+     * @ignore
+     * @protected
+     * @memberof! oj.ojTextArea
+     */
+    _calculateLineHeight: function (textarea) {
+      var textareaOffsetHeight = textarea.offsetHeight - this._getStylingHeight(textarea);
+      this._lineHeight = textareaOffsetHeight / textarea.rows;
+    },
+    /**
+     * @ignore
+     * @private
+     */
+    _cleanUpListeners: function () {
+      if (this._resizeTextareaBind) {
+        window.removeEventListener('resize', this._resizeTextareaBind);
+      }
+    },
+    /**
+     * @ignore
+     * @protected
+     * @override
+     */
+    _ReleaseResources: function () {
+      this._super();
+      this._cleanUpListeners();
+    },
     getNodeBySubId: function (locator) {
       var node = this._superApply(arguments);
       var subId;
@@ -3505,6 +4252,18 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
       }
       // Non-null locators have to be handled by the component subclasses
       return node || null;
+    },
+
+    /**
+     * @ignore
+     * @override
+     * @protected
+     * @memberof! oj.ojTextArea
+     * @return {boolean}
+     */
+    _DoWrapElementAndTriggers: function () {
+      this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES = this._INPUT_CONTAINER_CLASS;
+      return true;
     },
 
     /**
@@ -3527,7 +4286,20 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
     _GetTranslationsSectionName: function () {
       return 'oj-inputBase';
     },
-
+     /**
+     * If the converter is async or not
+     *
+     * @ignore
+     * @protected
+     * @memberof! oj.ojTextArea
+     */
+    _isConverAsync: function () {
+      var converter = this._GetConverter();
+      if (converter instanceof Promise) {
+        return true;
+      }
+      return false;
+    },
     /**
      * Invoked when keyup is triggered of the this.element
      *
@@ -3648,6 +4420,7 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
  * @example <caption>Get the node for the input element:</caption>
  * var node = myComp.getNodeBySubId("oj-textarea-input");
  */
+
 
 /* global __oj_input_password_metadata:false */
 (function () {

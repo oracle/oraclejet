@@ -31,14 +31,10 @@
     @include oj-tag-selectors(
       $tagSelectors:   "a", 
       $classSelectors: ".oj-link") {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-              color: var(--oj-link-text-color);
-              text-decoration: var(--oj-link-text-decoration); 
-            }
-        @else {
+
           color: $linkTextColor;
           text-decoration: $linkTextDecoration; 
-        }
+
         line-height: inherit;
     }
 
@@ -46,54 +42,38 @@
     @include oj-tag-selectors(
       $tagSelectors:   "a:visited", 
       $classSelectors: ".oj-link:visited") {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-          color: var(--oj-link-text-color-visited);
-        }
-        @else {
+
           color: $linkTextColorVisited; 
-        }
+
     }
 
 
       @include oj-tag-selectors(
         $tagSelectors:   "a:hover, a:focus", 
         $classSelectors: ".oj-link:hover, .oj-link:focus") {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            text-decoration: var(--oj-link-text-decoration-hover); 
-          }
-          @else {
+
             text-decoration: $linkTextDecorationHover;
-          }
+
       }
 
       @include oj-tag-selectors(
         $tagSelectors:   "a:active", 
         $classSelectors: ".oj-link:active") {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            color: var(--oj-link-text-color-active);
-            font-weight: var(--oj-link-font-weight-active);
-            background-color: var(--oj-link-bg-color-active);
-            border-radius: var(--oj-border-radius-sm);
-          }
-          @else {
+
             color: $linkTextColorActive;
             font-weight: $linkFontWeightActive;
             background-color: $linkBgColorActive;
             @include oj-border-radius($smallBorderRadius);
-          }
+
       }
 
       @include oj-tag-selectors(
         $tagSelectors:   "a.oj-disabled", 
         $classSelectors:  ".oj-link.oj-disabled") {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            color: var(--oj-link-text-color-disabled);
-            opacity: var(--oj-opacity-disabled);
-          }
-          @else {
+
             color: $linkTextColorDisabled;
             opacity: $opacityDisabled;
-          }
+
           cursor: default;
           text-decoration: none;
       }
@@ -104,12 +84,9 @@
       @include oj-tag-selectors(
         $tagSelectors:   "h1, h2, h3, h4, h5, h6",
         $classSelectors: ".oj-header") {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            color: var(--oj-header-text-color); 
-            }
-          @else {
+
             color: $headerTextColor; 
-         }
+
          font-family: inherit;
          font-style: normal;
          margin: 8px 0;
@@ -120,69 +97,49 @@
       @include oj-tag-selectors(
         $tagSelectors:   "h1", 
         $classSelectors: "h1.oj-header") {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            font-size: var(--oj-header-1-font-size);
-            font-weight: var(--oj-header-1-font-weight);
-            }
-          @else {
+
             font-size: $header1FontSize;
             font-weight: $header1FontWeight;
-          }
+
       }
 
       @include oj-tag-selectors(
         $tagSelectors:   "h2", 
         $classSelectors: "h2.oj-header") {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            font-size: var(--oj-header-2-font-size);
-            font-weight: var(--oj-header-2-font-weight);
-            }
-          @else {
+
             font-size: $header2FontSize; 
             font-weight: $header2FontWeight;
-          }
+
       }
 
      
       @include oj-tag-selectors(
         $tagSelectors:   "h3", 
         $classSelectors: "h3.oj-header") {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            font-size: var(--oj-header-3-font-size);
-            font-weight: var(--oj-header-3-font-weight);
-            }
-          @else {
+
             font-size: $header3FontSize; 
             font-weight: $header3FontWeight;
-          }
+
       }
 
       
       @include oj-tag-selectors(
         $tagSelectors:   "h4", 
         $classSelectors: "h4.oj-header") {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            font-size: var(--oj-header-4-font-size);
-            font-weight: var(--oj-header-4-font-weight);
-            }
-          @else {
+
             font-size: $header4FontSize; 
             font-weight: $header4FontWeight;
-          }
+
       }
 
       
       @include oj-tag-selectors(
         $tagSelectors:   "h5", 
         $classSelectors: "h5.oj-header") {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            font-size: var(--oj-header-5-font-size);
-            font-weight: var(--oj-header-5-font-weight);
-            }
-          @else {
+
             font-size: $header5FontSize; 
             font-weight: $header5FontWeight;
-          }
+
       }
       
       @include oj-tag-selectors(
@@ -198,12 +155,9 @@
       @include oj-tag-selectors(
         $tagSelectors:   "hr", 
         $classSelectors: ".oj-hr") {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-            border: solid var(--oj-header-border-color);
-          }
-          @else {
+
             border: solid $headerBorderColor;
-          }
+
           border-width: 1px 0 0;
           margin: 7px 0;
       }
@@ -220,11 +174,9 @@
 
 
     .oj-header-border {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        border: solid var(--oj-header-border-color);
-      } @else {
+
         border: solid $headerBorderColor;
-      }
+      
         border-width: 0 0 1px;
         padding: 0 0 7px;
     }

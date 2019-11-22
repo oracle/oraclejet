@@ -2,51 +2,45 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojdataprovideradapter-base'], function(oj, $, DataSourceAdapter)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-var TableDataSourceAdapter = /** @class */ (function (_super) {
-    __extends(TableDataSourceAdapter, _super);
-    function TableDataSourceAdapter(tableDataSource) {
-        var _this = _super.call(this, tableDataSource) || this;
-        _this.tableDataSource = tableDataSource;
-        _this.FetchByKeysResults = /** @class */ (function () {
-            function class_1(_parent, fetchParameters, results) {
+class TableDataSourceAdapter extends DataSourceAdapter {
+    constructor(tableDataSource) {
+        super(tableDataSource);
+        this.tableDataSource = tableDataSource;
+        this.FetchByKeysResults = class {
+            constructor(_parent, fetchParameters, results) {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
                 this.results = results;
                 this[TableDataSourceAdapter._FETCHPARAMETERS] = fetchParameters;
                 this[TableDataSourceAdapter._RESULTS] = results;
             }
-            return class_1;
-        }());
-        _this.ContainsKeysResults = /** @class */ (function () {
-            function class_2(_parent, containsParameters, results) {
+        };
+        this.ContainsKeysResults = class {
+            constructor(_parent, containsParameters, results) {
                 this._parent = _parent;
                 this.containsParameters = containsParameters;
                 this.results = results;
                 this[TableDataSourceAdapter._CONTAINSPARAMETERS] = containsParameters;
                 this[TableDataSourceAdapter._RESULTS] = results;
             }
-            return class_2;
-        }());
-        _this.Item = /** @class */ (function () {
-            function class_3(_parent, metadata, data) {
+        };
+        this.Item = class {
+            constructor(_parent, metadata, data) {
                 this._parent = _parent;
                 this.metadata = metadata;
                 this.data = data;
                 this[TableDataSourceAdapter._METADATA] = metadata;
                 this[TableDataSourceAdapter._DATA] = data;
             }
-            return class_3;
-        }());
-        _this.FetchByOffsetResults = /** @class */ (function () {
-            function class_4(_parent, fetchParameters, results, done) {
+        };
+        this.FetchByOffsetResults = class {
+            constructor(_parent, fetchParameters, results, done) {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
                 this.results = results;
@@ -55,34 +49,31 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
                 this[TableDataSourceAdapter._RESULTS] = results;
                 this[TableDataSourceAdapter._DONE] = done;
             }
-            return class_4;
-        }());
-        _this.FetchListParameters = /** @class */ (function () {
-            function class_5(_parent, size, sortCriteria) {
+        };
+        this.FetchListParameters = class {
+            constructor(_parent, size, sortCriteria) {
                 this._parent = _parent;
                 this.size = size;
                 this.sortCriteria = sortCriteria;
                 this[TableDataSourceAdapter._SIZE] = size;
                 this[TableDataSourceAdapter._SORTCRITERIA] = sortCriteria;
             }
-            return class_5;
-        }());
-        _this._addTableDataSourceEventListeners();
-        _this[TableDataSourceAdapter._OFFSET] = 0;
-        _this._ignoreDataSourceEvents = new Array();
-        return _this;
+        };
+        this._addTableDataSourceEventListeners();
+        this[TableDataSourceAdapter._OFFSET] = 0;
+        this._ignoreDataSourceEvents = new Array();
     }
-    TableDataSourceAdapter.prototype.destroy = function () {
+    destroy() {
         this._removeTableDataSourceEventListeners();
-    };
-    TableDataSourceAdapter.prototype.containsKeys = function (params) {
-        var self = this;
-        var resultsPromiseArray = [];
+    }
+    containsKeys(params) {
+        let self = this;
+        let resultsPromiseArray = [];
         params[TableDataSourceAdapter._KEYS].forEach(function (key) {
             resultsPromiseArray.push(self.tableDataSource.get(key));
         });
         return Promise.all(resultsPromiseArray).then(function (resultsArray) {
-            var results = new Set();
+            let results = new Set();
             resultsArray.map(function (value) {
                 if (value != null) {
                     results.add(value[TableDataSourceAdapter._KEY]);
@@ -90,51 +81,53 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
             });
             return Promise.resolve(new self.ContainsKeysResults(self, params, results));
         });
-    };
-    TableDataSourceAdapter.prototype.fetchByKeys = function (params) {
-        var self = this;
-        var resultsPromiseArray = [];
+    }
+    fetchByKeys(params) {
+        let self = this;
+        let resultsPromiseArray = [];
         params[TableDataSourceAdapter._KEYS].forEach(function (key) {
             resultsPromiseArray.push(self.tableDataSource.get(key));
         });
         return Promise.all(resultsPromiseArray).then(function (resultsArray) {
-            var results = new Map();
+            let results = new Map();
             resultsArray.map(function (value) {
-                var key = value[TableDataSourceAdapter._KEY];
-                var data = value[TableDataSourceAdapter._DATA];
-                results.set(key, new self.Item(self, new self.ItemMetadata(self, key), data));
+                if (value != null) {
+                    let key = value[TableDataSourceAdapter._KEY];
+                    let data = value[TableDataSourceAdapter._DATA];
+                    results.set(key, new self.Item(self, new self.ItemMetadata(self, key), data));
+                }
             });
             return Promise.resolve(new self.FetchByKeysResults(self, params, results));
         });
-    };
-    TableDataSourceAdapter.prototype.fetchByOffset = function (params) {
-        var self = this;
-        var size = params != null ? params[TableDataSourceAdapter._SIZE] : -1;
-        var sortCriteria = params != null ? params[TableDataSourceAdapter._SORTCRITERIA] : null;
-        var offset = params != null ? params[TableDataSourceAdapter._OFFSET] > 0 ? params[TableDataSourceAdapter._OFFSET] : 0 : 0;
-        var fetchParams = new this.FetchListParameters(this, size, sortCriteria);
+    }
+    fetchByOffset(params) {
+        let self = this;
+        let size = params != null ? params[TableDataSourceAdapter._SIZE] : -1;
+        let sortCriteria = params != null ? params[TableDataSourceAdapter._SORTCRITERIA] : null;
+        let offset = params != null ? params[TableDataSourceAdapter._OFFSET] > 0 ? params[TableDataSourceAdapter._OFFSET] : 0 : 0;
+        let fetchParams = new this.FetchListParameters(this, size, sortCriteria);
         this._startIndex = 0;
         return this._getFetchFunc(fetchParams, offset)(fetchParams, true).then(function (iteratorResults) {
-            var value = iteratorResults[TableDataSourceAdapter._VALUE];
-            var done = iteratorResults[TableDataSourceAdapter._DONE];
-            var data = value[TableDataSourceAdapter._DATA];
-            var keys = value[TableDataSourceAdapter._METADATA].map(function (value) {
+            let value = iteratorResults[TableDataSourceAdapter._VALUE];
+            let done = iteratorResults[TableDataSourceAdapter._DONE];
+            let data = value[TableDataSourceAdapter._DATA];
+            let keys = value[TableDataSourceAdapter._METADATA].map(function (value) {
                 return value[TableDataSourceAdapter._KEY];
             });
-            var resultsArray = new Array();
+            let resultsArray = new Array();
             data.map(function (value, index) {
                 resultsArray.push(new self.Item(self, new self.ItemMetadata(self, keys[index]), data[index]));
             });
             return new self.FetchByOffsetResults(self, params, resultsArray, done);
         });
-    };
-    TableDataSourceAdapter.prototype.fetchFirst = function (params) {
+    }
+    fetchFirst(params) {
         if (!this._isPagingModelTableDataSource()) {
             this._startIndex = 0;
         }
         return new this.AsyncIterable(new this.AsyncIterator(this._getFetchFunc(params), params));
-    };
-    TableDataSourceAdapter.prototype.getCapability = function (capabilityName) {
+    }
+    getCapability(capabilityName) {
         if (capabilityName == TableDataSourceAdapter._SORT &&
             this.tableDataSource.getCapability(capabilityName) == 'full') {
             return { attributes: 'multiple' };
@@ -146,66 +139,66 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
             return { implementation: 'lookup' };
         }
         return null;
-    };
-    TableDataSourceAdapter.prototype.getTotalSize = function () {
+    }
+    getTotalSize() {
         return Promise.resolve(this.tableDataSource.totalSize());
-    };
-    TableDataSourceAdapter.prototype.isEmpty = function () {
+    }
+    isEmpty() {
         return this.tableDataSource.totalSize() > 0 ? 'no' : 'yes';
-    };
+    }
     // Start PagingModel APIs
-    TableDataSourceAdapter.prototype.getPage = function () {
+    getPage() {
         if (this._isPagingModelTableDataSource()) {
             return this.tableDataSource.getPage();
         }
         return -1;
-    };
-    TableDataSourceAdapter.prototype.setPage = function (value, options) {
+    }
+    setPage(value, options) {
         if (this._isPagingModelTableDataSource()) {
             return this.tableDataSource.setPage(value, options);
         }
         return Promise.reject(null);
-    };
-    TableDataSourceAdapter.prototype.getStartItemIndex = function () {
+    }
+    getStartItemIndex() {
         if (this._isPagingModelTableDataSource()) {
             return this.tableDataSource.getStartItemIndex();
         }
         return -1;
-    };
-    TableDataSourceAdapter.prototype.getEndItemIndex = function () {
+    }
+    getEndItemIndex() {
         if (this._isPagingModelTableDataSource()) {
             return this.tableDataSource.getEndItemIndex();
         }
         return -1;
-    };
-    TableDataSourceAdapter.prototype.getPageCount = function () {
+    }
+    getPageCount() {
         if (this._isPagingModelTableDataSource()) {
             return this.tableDataSource.getPageCount();
         }
         return -1;
-    };
-    TableDataSourceAdapter.prototype.totalSize = function () {
+    }
+    totalSize() {
         if (this._isPagingModelTableDataSource()) {
             return this.tableDataSource.totalSize();
         }
         return -1;
-    };
-    TableDataSourceAdapter.prototype.totalSizeConfidence = function () {
+    }
+    totalSizeConfidence() {
         if (this._isPagingModelTableDataSource()) {
             return this.tableDataSource.totalSizeConfidence();
         }
         return null;
-    };
+    }
     // End PagingModel APIs
     /**
      * Get the function which performs the fetch
      */
-    TableDataSourceAdapter.prototype._getFetchFunc = function (params, offset) {
-        var self = this;
+    _getFetchFunc(params, offset) {
+        let self = this;
         if (params != null &&
             params[TableDataSourceAdapter._SORTCRITERIA] != null) {
-            var attribute = params[TableDataSourceAdapter._SORTCRITERIA][0][TableDataSourceAdapter._ATTRIBUTE];
-            var direction = params[TableDataSourceAdapter._SORTCRITERIA][0][TableDataSourceAdapter._DIRECTION];
+            let attribute = params[TableDataSourceAdapter._SORTCRITERIA][0][TableDataSourceAdapter._ATTRIBUTE];
+            let direction = params[TableDataSourceAdapter._SORTCRITERIA][0][TableDataSourceAdapter._DIRECTION];
             this._ignoreSortEvent = true;
             if (!this._isPagingModelTableDataSource()) {
                 this._startIndex = 0;
@@ -213,7 +206,7 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
             return function (attribute, direction) {
                 return function (params, fetchFirst) {
                     if (fetchFirst) {
-                        var sortParam = {};
+                        let sortParam = {};
                         sortParam[TableDataSourceAdapter._KEY] = attribute;
                         sortParam[TableDataSourceAdapter._DIRECTION] = direction;
                         self[TableDataSourceAdapter._OFFSET] = 0;
@@ -231,14 +224,14 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
         else {
             return this._getTableDataSourceFetch(params, offset);
         }
-    };
+    }
     /**
      * Get the function which invokes fetch() on TableDataSource
      */
-    TableDataSourceAdapter.prototype._getTableDataSourceFetch = function (params, offset) {
-        var self = this;
+    _getTableDataSourceFetch(params, offset) {
+        let self = this;
         return function (params, fetchFirst) {
-            var options = {};
+            let options = {};
             offset = offset > 0 ? offset : 0;
             if (self._startIndex != null) {
                 options[TableDataSourceAdapter._STARTINDEX] = self._startIndex + offset;
@@ -250,7 +243,7 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
             }
             if (self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA] != null && params[TableDataSourceAdapter._SORTCRITERIA] == null) {
                 params[TableDataSourceAdapter._SORTCRITERIA] = [];
-                var sortCriterion = new self.SortCriterion(self, self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA][TableDataSourceAdapter._KEY], self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA][TableDataSourceAdapter._DIRECTION]);
+                let sortCriterion = new self.SortCriterion(self, self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA][TableDataSourceAdapter._KEY], self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA][TableDataSourceAdapter._DIRECTION]);
                 params[TableDataSourceAdapter._SORTCRITERIA].push(sortCriterion);
             }
             options[TableDataSourceAdapter._FETCHTYPE] = params[TableDataSourceAdapter._FETCHTYPE];
@@ -276,7 +269,7 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
                                 result[TableDataSourceAdapter._KEYS] = [];
                                 result[TableDataSourceAdapter._DATA] = [];
                             }
-                            var resultMetadata = [];
+                            let resultMetadata = [];
                             if (result[TableDataSourceAdapter._KEYS] != null) {
                                 resultMetadata = result[TableDataSourceAdapter._KEYS].map(function (value) {
                                     return new self.ItemMetadata(self, value);
@@ -285,11 +278,11 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
                             if (self._startIndex == null) {
                                 self._startIndex = 0;
                             }
-                            var done = false;
+                            let done = false;
                             self._startIndex = self._startIndex + result[TableDataSourceAdapter._DATA].length;
                             if (self.tableDataSource.totalSizeConfidence() == 'actual' &&
                                 self.tableDataSource.totalSize() > 0 &&
-                                self._startIndex >= self.tableDataSource.totalSize()) {
+                                (result.startIndex + result[TableDataSourceAdapter._DATA].length) >= self.tableDataSource.totalSize()) {
                                 done = true;
                             }
                             else if (options[TableDataSourceAdapter._PAGESIZE] > 0 &&
@@ -301,7 +294,12 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
                             }
                             self._fetchResolveFunc = null;
                             self._fetchParams = null;
-                            resolve(new self.AsyncIteratorResult(self, new self.FetchListResult(self, params, result[TableDataSourceAdapter._DATA], resultMetadata), done));
+                            if (done) {
+                                resolve(new self.AsyncIteratorReturnResult(self, new self.FetchListResult(self, params, result[TableDataSourceAdapter._DATA], resultMetadata)));
+                            }
+                            else {
+                                resolve(new self.AsyncIteratorYieldResult(self, new self.FetchListResult(self, params, result[TableDataSourceAdapter._DATA], resultMetadata)));
+                            }
                         }
                     }, function (error) {
                         if (!self._isPagingModelTableDataSource() && !options[TableDataSourceAdapter._SILENT]) {
@@ -312,9 +310,9 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
                 }
             });
         };
-    };
-    TableDataSourceAdapter.prototype._handleSync = function (event) {
-        var self = this;
+    }
+    _handleSync(event) {
+        let self = this;
         // checks for sync triggered by own fetch
         if (self._ignoreDataSourceEvents.length > 0) {
             return;
@@ -326,16 +324,21 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
         }
         if (self._fetchResolveFunc && event[TableDataSourceAdapter._KEYS] != null) {
             self._isFetching = false;
-            var resultMetadata = event[TableDataSourceAdapter._KEYS].map(function (value) {
+            let resultMetadata = event[TableDataSourceAdapter._KEYS].map(function (value) {
                 return new self.ItemMetadata(self, value);
             });
-            var done = false;
+            let done = false;
             if (self.tableDataSource.totalSizeConfidence() == 'actual' &&
                 self.tableDataSource.totalSize() > 0 &&
-                self._startIndex >= self.tableDataSource.totalSize()) {
+                (self._startIndex + event[TableDataSourceAdapter._DATA].length) >= self.tableDataSource.totalSize()) {
                 done = true;
             }
-            self._fetchResolveFunc(new self.AsyncIteratorResult(self, new self.FetchListResult(self, self._fetchParams, event[TableDataSourceAdapter._DATA], resultMetadata), done));
+            if (done) {
+                self._fetchResolveFunc(new self.AsyncIteratorReturnResult(self, new self.FetchListResult(self, self._fetchParams, event[TableDataSourceAdapter._DATA], resultMetadata)));
+            }
+            else {
+                self._fetchResolveFunc(new self.AsyncIteratorYieldResult(self, new self.FetchListResult(self, self._fetchParams, event[TableDataSourceAdapter._DATA], resultMetadata)));
+            }
             self._fetchResolveFunc = null;
             self._fetchParams = null;
         }
@@ -343,35 +346,35 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
             self.dispatchEvent(new oj.DataProviderRefreshEvent());
         }
         self._requestEventTriggered = false;
-    };
-    TableDataSourceAdapter.prototype._handleAdd = function (event) {
-        var self = this;
-        var metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
+    }
+    _handleAdd(event) {
+        let self = this;
+        let metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
             return new self.ItemMetadata(self, value);
         });
-        var keySet = new Set();
+        let keySet = new Set();
         event[TableDataSourceAdapter._KEYS].map(function (key) {
             keySet.add(key);
         });
-        var operationEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet, null, null, null, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
-        var mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationEventDetail, null, null);
+        let operationEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet, null, null, null, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
+        let mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationEventDetail, null, null);
         self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
-    };
-    TableDataSourceAdapter.prototype._handleRemove = function (event) {
-        var self = this;
-        var metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
+    }
+    _handleRemove(event) {
+        let self = this;
+        let metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
             return new self.ItemMetadata(self, value);
         });
-        var keySet = new Set();
+        let keySet = new Set();
         event[TableDataSourceAdapter._KEYS].map(function (key) {
             keySet.add(key);
         });
-        var operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
-        var mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, operationEventDetail, null);
+        let operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
+        let mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, operationEventDetail, null);
         self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
-    };
-    TableDataSourceAdapter.prototype._handleReset = function (event) {
-        var self = this;
+    }
+    _handleReset(event) {
+        let self = this;
         // Dispatch a dataprovider refresh event except for the following situations:
         // 1. If a datasource request event was triggered, a dataprovider refresh event has been dispatched;
         // 2. If the datasource is a paging datasource, the pagingcontrol reset handler will indirectly trigger
@@ -381,29 +384,29 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
             self._startIndex = 0;
             self.dispatchEvent(new oj.DataProviderRefreshEvent());
         }
-    };
-    TableDataSourceAdapter.prototype._handleSort = function (event) {
-        var self = this;
+    }
+    _handleSort(event) {
+        let self = this;
         if (!self._ignoreSortEvent) {
             self._startIndex = null;
             self.dispatchEvent(new oj.DataProviderRefreshEvent());
         }
-    };
-    TableDataSourceAdapter.prototype._handleChange = function (event) {
-        var self = this;
-        var metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
+    }
+    _handleChange(event) {
+        let self = this;
+        let metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
             return new self.ItemMetadata(self, value);
         });
-        var keySet = new Set();
+        let keySet = new Set();
         event[TableDataSourceAdapter._KEYS].map(function (key) {
             keySet.add(key);
         });
-        var operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
-        var mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, null, operationEventDetail);
+        let operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
+        let mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, null, operationEventDetail);
         self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
-    };
-    TableDataSourceAdapter.prototype._handleRefresh = function (event) {
-        var self = this;
+    }
+    _handleRefresh(event) {
+        let self = this;
         if (!self._isFetching &&
             !self._requestEventTriggered) {
             if (event[TableDataSourceAdapter._OFFSET] != null) {
@@ -415,9 +418,9 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
             self.dispatchEvent(new oj.DataProviderRefreshEvent());
         }
         self._requestEventTriggered = false;
-    };
-    TableDataSourceAdapter.prototype._handleRequest = function (event) {
-        var self = this;
+    }
+    _handleRequest(event) {
+        let self = this;
         // checks for sync triggered by own fetch
         if (self._ignoreDataSourceEvents.length > 0) {
             return;
@@ -442,27 +445,27 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
             self._requestEventTriggered = true;
             self.dispatchEvent(new oj.DataProviderRefreshEvent());
         }
-    };
-    TableDataSourceAdapter.prototype._handleError = function (event) {
-        var self = this;
+    }
+    _handleError(event) {
+        let self = this;
         if (self._fetchRejectFunc) {
             self._fetchRejectFunc(event);
         }
         self._isFetching = false;
         self._requestEventTriggered = false;
-    };
-    TableDataSourceAdapter.prototype._handlePage = function (event) {
-        var self = this;
+    }
+    _handlePage(event) {
+        let self = this;
         self._isFetching = false;
         self._requestEventTriggered = false;
-        var options = {};
+        let options = {};
         options['detail'] = event;
         self.dispatchEvent(new oj.GenericEvent(oj.PagingModel.EventType['PAGE'], options));
-    };
+    }
     /**
      * Add event listeners to TableDataSource
      */
-    TableDataSourceAdapter.prototype._addTableDataSourceEventListeners = function () {
+    _addTableDataSourceEventListeners() {
         this.removeAllListeners();
         this.addListener('sync', this._handleSync);
         this.addListener('add', this._handleAdd);
@@ -474,11 +477,11 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
         this.addListener('request', this._handleRequest);
         this.addListener('error', this._handleError);
         this.addListener('page', this._handlePage);
-    };
+    }
     /**
      * Remove event listeners to TableDataSource
      */
-    TableDataSourceAdapter.prototype._removeTableDataSourceEventListeners = function () {
+    _removeTableDataSourceEventListeners() {
         this.removeListener('sync');
         this.removeListener('add');
         this.removeListener('remove');
@@ -489,27 +492,26 @@ var TableDataSourceAdapter = /** @class */ (function (_super) {
         this.removeListener('request');
         this.removeListener('error');
         this.removeListener('page');
-    };
+    }
     /**
      * Check if it's a PagingModel TableDataSource
      */
-    TableDataSourceAdapter.prototype._isPagingModelTableDataSource = function () {
+    _isPagingModelTableDataSource() {
         if (this.tableDataSource['getStartItemIndex'] != null) {
             return true;
         }
         return false;
-    };
-    TableDataSourceAdapter._STARTINDEX = 'startIndex';
-    TableDataSourceAdapter._SILENT = 'silent';
-    TableDataSourceAdapter._SORTCRITERIA = 'sortCriteria';
-    TableDataSourceAdapter._PAGESIZE = 'pageSize';
-    TableDataSourceAdapter._OFFSET = 'offset';
-    TableDataSourceAdapter._SIZE = 'size';
-    TableDataSourceAdapter._CONTAINSPARAMETERS = 'containsParameters';
-    TableDataSourceAdapter._RESULTS = 'results';
-    TableDataSourceAdapter._FETCHTYPE = 'fetchType';
-    return TableDataSourceAdapter;
-}(DataSourceAdapter));
+    }
+}
+TableDataSourceAdapter._STARTINDEX = 'startIndex';
+TableDataSourceAdapter._SILENT = 'silent';
+TableDataSourceAdapter._SORTCRITERIA = 'sortCriteria';
+TableDataSourceAdapter._PAGESIZE = 'pageSize';
+TableDataSourceAdapter._OFFSET = 'offset';
+TableDataSourceAdapter._SIZE = 'size';
+TableDataSourceAdapter._CONTAINSPARAMETERS = 'containsParameters';
+TableDataSourceAdapter._RESULTS = 'results';
+TableDataSourceAdapter._FETCHTYPE = 'fetchType';
 oj.EventTargetMixin.applyMixin(TableDataSourceAdapter);
 oj['TableDataSourceAdapter'] = TableDataSourceAdapter;
 oj.TableDataSourceAdapter = TableDataSourceAdapter;

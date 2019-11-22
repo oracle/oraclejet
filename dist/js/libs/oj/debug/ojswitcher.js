@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcustomelement'], 
 function(oj, Components)
 {
@@ -25,10 +27,7 @@ var __oj_switcher_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global Components:false */
 /**
  * @ojcomponent oj.ojSwitcher
@@ -37,7 +36,7 @@ var __oj_switcher_metadata =
  *                value: "class ojSwitcher extends JetElement<ojSwitcherSettableProperties>"
  *               }
  * @since 4.0.0
- * @ojstatus preview
+ *
  * @ojshortdesc A switcher dynamically decides which child element should be made visible.
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["value"]}
@@ -238,6 +237,7 @@ function ojSwitcher(context) {
     }
   }
 }
+
 
 /* global __oj_switcher_metadata:false */
 /* global ojSwitcher:false */

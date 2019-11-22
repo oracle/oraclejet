@@ -277,6 +277,13 @@ export namespace ojNBox {
         subId: 'oj-nbox-node';
     };
     // tslint:disable-next-line interface-over-type-literal
+    type NodeTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type Row = {
         id: string;
         label?: string;

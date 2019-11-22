@@ -39,14 +39,10 @@
   // disable the "copy" feature on iOS
   -webkit-touch-callout: none;
    // Prevent showing selection handles on press-hold for Mobile Safari and Android Chrome
-   @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-   {
-     user-select: none;
-   }
-   @else 
-   {
+
+
      @include oj-user-select-property(none);
-   }
+
    // Prevent flash on slider bar tap-hold on touch devices.
    -webkit-tap-highlight-color: transparent;
 }
@@ -55,15 +51,10 @@
   /* use a width of 100% and then max and min width so that when
      there's less room for the form control it can automatically
       get smaller instead of overflowing its boundaries */
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    max-width: var(--oj-text-field-lg-max-width);
-    min-width: var(--oj-text-field-min-width);
-  }
-  @else {
+
     max-width: $formControlLargeMaxWidth;
     min-width: $formControlMinWidth;
-  }
+
    width: 100%;
 }
 // .oj-form-control-full-width is an override to set max-width to 100% if on the
@@ -73,31 +64,14 @@
   max-width: 100%;
 }
 
-.oj-slider.oj-slider-horizontal {
+.oj-slider.oj-slider-horizontal .oj-slider-container {
   /* This ensures that the slider bounding box will include
    the thumb radius - important for form controls. */
-   @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-   {
-     padding-left: calc(var(--oj-slider-thumb-width-active) / 2);
-     padding-right: calc(var(--oj-slider-thumb-height-active) / 2);
-   }
-   @else {
-     padding-left: calc(#{$sliderThumbWidthActive} / 2);
-     padding-right: calc(#{$sliderThumbHeightActive} / 2);
-   }
-}
 
-.oj-slider.oj-slider-vertical {
-    // Note - the height and width variables are swapped for vertical sliders.
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-    {
-      padding-left: calc(var(--oj-slider-thumb-height-active) / 2);
-      padding-right: calc(var(--oj-slider-thumb-width-active) / 2);
-    }
-    @else {
-      padding-left: calc(#{$sliderThumbHeightActive} / 2);
-      padding-right: calc(#{$sliderThumbWidthActive} / 2);
-    }
+   margin-top: calc(#{$sliderThumbHeightActive} / 2);
+   margin-bottom: calc(#{$sliderThumbHeightActive} / 2);
+   margin-right: calc(#{$sliderThumbWidthActive} / 2);
+   margin-left: calc(#{$sliderThumbWidthActive} / 2);
 }
 
 //
@@ -106,67 +80,44 @@
 //
 .oj-slider-vertical > .oj-slider-container {
   // Note - the height and width variables are swapped for vertical sliders.
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    margin-top: calc(var(--oj-slider-thumb-width) / 2);
-    margin-bottom: calc(var(--oj-slider-thumb-width) / 2);
-  }
-  @else {
-    margin-top: calc(#{$sliderThumbWidth} / 2);
-    margin-bottom: calc(#{$sliderThumbWidth} / 2);
-  }
+
+    margin-top: calc(#{$sliderThumbWidthActive} / 2);
+    margin-bottom: calc(#{$sliderThumbWidthActive} / 2);
+    margin-right: calc(#{$sliderThumbHeightActive} / 2);
+    margin-left: calc(#{$sliderThumbHeightActive} / 2);
+
 }
 
 // Styling for invalid state
 .oj-slider.oj-invalid .oj-slider-thumb {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    border-width: var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width);
-    border-style: solid;
-    border-color: var(--oj-text-field-border-color-invalid);
-  }
-  @else {
+
     border-width: $formControlMessagingBorderWidth;
     border-style: solid;
     border-color: $borderColorError;
-  }
+
 }
 
 // Styling for warning state
 .oj-slider.oj-warning .oj-slider-thumb {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    border-width: var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width);
-    border-style: solid;
-    border-color: var(--oj-text-field-border-color-warning);
-  }
-  @else {
+
     border-width: $formControlMessagingBorderWidth;
     border-style: solid;
     border-color: $borderColorWarning;
-  }
+
 }
 
 .oj-slider-horizontal.oj-form-control .oj-slider-container {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    height: var(--oj-text-field-trigger-height);
-  }
-  @else {
+
     height: $formControlTriggerHeight;
-  }
+
 }
 
 .oj-slider-vertical.oj-form-control .oj-slider-container {
   height: 150px;
   // Note - the height and width variables are swapped for vertical sliders.
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    min-height: calc(var(--oj-slider-thumb-width) * 2);
-  }
-  @else {
+
     min-height: calc(#{$sliderThumbWidth} * 2);
-  }
+
 }
 
 //
@@ -186,33 +137,21 @@
   box-sizing: border-box;
   cursor: default;
   touch-action: none;
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    background-color: var(--oj-slider-thumb-bg-color);
-    border-radius: var(--oj-slider-thumb-border-radius);
-    border: var(--oj-slider-thumb-border-width) solid var(--oj-slider-thumb-border-color);
-    box-shadow: var(--oj-slider-thumb-box-shadow);
-  }
-  @else {
+
     background-color: $sliderThumbBgColor;
     @include oj-border-radius($sliderThumbBorderRadius);
     border: $sliderThumbBorderWidth solid $sliderThumbBorderColor;
     @include oj-box-shadow($sliderThumbBoxShadow);
-  }
+
 
 }
 
 // Thumb properties for disabled sliders.
 .oj-disabled .oj-slider-thumb {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    background-color: var(--oj-slider-thumb-bg-color-disabled);
-    border-color: var(--oj-slider-thumb-border-color-disabled);
-  }
-  @else {
+
     background-color: $sliderThumbBgColorDisabled;
     border-color: $sliderThumbBorderColorDisabled;
-  }
+
 }
 
 .oj-slider-range {
@@ -229,28 +168,19 @@
 // bar value (the foreground, blue part of the bar).
 //
 .oj-slider-bar {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    border-radius: var(--oj-slider-bar-thickness);
-    background-color: var(--oj-slider-bar-bg-color);
-  }
-  @else {
+
     @include oj-border-radius($sliderBarThickness);
     background-color: $sliderBarBgColor;
-  }
+
    box-sizing: border-box;
    position: absolute;
 }
 
 // For vertical orientations, set the width of the slider-bar and the slider-bar-value
 .oj-slider-vertical .oj-slider-bar, .oj-slider-vertical .oj-slider-bar-value {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    width: var(--oj-slider-bar-thickness);
-  }
-  @else {
+
     width: $sliderBarThickness;
-  }
+
 }
 
 //
@@ -268,29 +198,19 @@
 
 // For horizontal orientations, set the width of the slider-bar and the slider-bar-value
 .oj-slider-horizontal .oj-slider-bar, .oj-slider-horizontal .oj-slider-bar-value {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    height: var(--oj-slider-bar-thickness);
-    margin-top: calc(0px - var(--oj-slider-bar-thickness) / 2);
-  }
-  @else {
+
     height: $sliderBarThickness;
     margin-top: calc(0px - #{$sliderBarThickness} / 2);
-  }
+
    top: 50%;
 }
 
 // For vertical orientations, set the width of the slider-bar and the slider-bar-value
 .oj-slider-vertical .oj-slider-bar, .oj-slider-vertical .oj-slider-bar-value {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    width: var(--oj-slider-bar-thickness);
-    margin-left: calc(0px - var(--oj-slider-bar-thickness) / 2);
-  }
-  @else {
+
     width: $sliderBarThickness;
     margin-left: calc(0px - #{$sliderBarThickness} / 2);
-  }
+
    left: 50%;
 }
 
@@ -302,32 +222,20 @@
 .oj-slider-bar:after {
     content: '';
    position: absolute;
-   @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-   {
-     top: calc(0px - (36px / 2) + (var(--oj-slider-bar-thickness) / 2));
-     bottom: calc(0px - (36px / 2) + (var(--oj-slider-bar-thickness) / 2));
-     left: calc(0px - (36px / 2) + (var(--oj-slider-bar-thickness) / 2));
-     right: calc(0px - (36px / 2) + (var(--oj-slider-bar-thickness) / 2));
-   }
-   @else {
+
      top: calc(0px - (36px / 2) + (#{$sliderBarThickness} / 2));
      bottom: calc(0px - (36px / 2) + (#{$sliderBarThickness} / 2));
      left: calc(0px - (36px / 2) + (#{$sliderBarThickness} / 2));
      right: calc(0px - (36px / 2) + (#{$sliderBarThickness} / 2));
-   }
+
   }
 
 // oj-slider-bar-value represents the filled part of the slider bar
 .oj-slider-bar-value {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    border-radius: var(--oj-slider-bar-thickness);
-    background: var(--oj-slider-bar-value-bg-color);
-  }
-  @else {
+ 
    @include oj-border-radius($sliderBarThickness);
    background: $sliderBarValueBgColor;
- }
+
 
 }
 
@@ -339,59 +247,37 @@
 
 // center align the slider bar value for high contrast (horizontal slider)
 .oj-hicontrast .oj-slider-horizontal .oj-slider-bar-value {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    margin-top: calc(0px - (var(--oj-slider-bar-thickness) / 2 + 1px));
-  }
-  @else{
+
     margin-top: calc(0px - (#{$sliderBarThickness} / 2 + 1px));
-  }
+
 }
 
 // Center align the slider bar value for high contrast (vertical slider)
 .oj-hicontrast .oj-slider-vertical .oj-slider-bar-value {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    margin-left: calc(0px - (var(--oj-slider-bar-thickness) / 2 + 1px));
-  }
-  @else{
+
    margin-left: calc(0px - (#{$sliderBarThickness} / 2 + 1px));
-  }
+
 }
 
 // Color of the bar value when active
 .oj-slider-bar-value.oj-active  {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    background: var(--oj-slider-bar-value-bg-color-active);
-  }
-  @else {
+
     background: $sliderBarValueBgColorActive;
-  }
+
 }
 
 .oj-disabled .oj-slider-bar {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    opacity: var(--oj-text-field-opacity-disabled);
-    background: var(--oj-slider-bar-bg-color-disabled);
-  }
-  @else {
+
     opacity: $formControlOpacityDisabled;
     background: $sliderBarBgColorDisabled;
-  }
+
 }
 
 .oj-disabled .oj-slider-bar-value {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    opacity: var(--oj-text-field-opacity-disabled);
-    background: var(--oj-slider-bar-value-bg-color-disabled);
-  }
-  @else {
+
     opacity: $formControlOpacityDisabled;
     background: $sliderBarValueBgColorDisabled;
-  }
+
 }
 
 // Hi contrast disabled sliders have a dotted border on the bar
@@ -406,19 +292,12 @@
 //
 .oj-slider-horizontal .oj-slider-thumb  {
   top: 50%;
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    width: var(--oj-slider-thumb-width);
-    height: var(--oj-slider-thumb-height);
-    margin-top: calc(0px - (var(--oj-slider-thumb-height) / 2));
-    margin-left: calc(0px - (var(--oj-slider-thumb-width) / 2));
-  }
-  @else {
+
     width: $sliderThumbWidth;
     height: $sliderThumbHeight;
     margin-top: calc(0px - (#{$sliderThumbHeight} / 2));
     margin-left: calc(0px - (#{$sliderThumbWidth} / 2));
-  }
+
 
 }
 
@@ -451,22 +330,7 @@
 // This effectively rotates the thumb by 90 degrees (important for asymmetrical thumbs)
 //
 .oj-slider-vertical .oj-slider-thumb {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    width: var(--oj-slider-thumb-height);
-    height: var(--oj-slider-thumb-width);
-    html:not([dir="rtl"]) & {
-      margin-left: calc(0px - var(--oj-slider-thumb-height) / 2);
-      left: 50%;
-    }
-    html[dir="rtl"] & {
-      margin-right: calc(0px - var(--oj-slider-thumb-height) / 2);
-      right: 50%;
-    }
-     margin-bottom: calc(0px - var(--oj-slider-thumb-width) / 2);
-     margin-top: calc(0px - var(--oj-slider-thumb-width) / 2);
-  }
-  @else {
+
     width: $sliderThumbHeight;
     height: $sliderThumbWidth;
      @include oj-ltr() {
@@ -479,7 +343,7 @@
      }
      margin-bottom: calc(0px - #{$sliderThumbWidth} / 2);
      margin-top: calc(0px - #{$sliderThumbWidth} / 2);
-   }
+
 
 }
 
@@ -510,26 +374,17 @@
 }
 
 .oj-slider-thumb.oj-hover {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    background-color: var(--oj-slider-thumb-bg-color-hover);
-  }
-  @else {
+
     background-color: $sliderThumbBgColorHover;
-  }
+
 }
 
 // active should trump hover
 .oj-slider-thumb.oj-active {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    background-color: var(--oj-slider-thumb-bg-color-active);
-    border-color: var(--oj-slider-thumb-border-color-active);
-  }
-  @else {
+
     background-color: $sliderThumbBgColorActive;
     border-color: $sliderThumbBorderColorActive;
-  }
+
 
 }
 
@@ -544,28 +399,8 @@
 // Calculate the hit area, using the dimensions of the 'normal' thumb.
 //
 
-@if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-{
-  .oj-slider-horizontal .oj-slider-thumb:after  {
-    content:'';
-    position:absolute;
-    top: calc(0px - (28px - var(--oj-slider-thumb-height-active)) / 2);
-    bottom: calc(0px - (28px - var(--oj-slider-thumb-height-active)) / 2);
-    left: calc(0px - (28px - var(--oj-slider-thumb-width-active)) / 2);
-    right: calc(0px - (28px - var(--oj-slider-thumb-width-active)) / 2);
 
-  }
 
-  .oj-slider-vertical .oj-slider-thumb:after  {
-    content:'';
-    position:absolute;
-    top: calc(0px - (28px - var(--oj-slider-thumb-width-active)) / 2);
-    bottom: calc(0px - (28px - var(--oj-slider-thumb-width-active)) / 2);
-    left: calc(0px - (28px - var(--oj-slider-thumb-height-active)) / 2);
-    right: calc(0px - (28px - var(--oj-slider-thumb-height-active)) / 2);
-  }
-} 
-@else {
 
   .oj-slider-horizontal .oj-slider-thumb:after  {
     content:'';
@@ -585,40 +420,9 @@
     left: calc(0px - (28px - #{$sliderThumbHeightActive}) / 2);
     right: calc(0px - (28px - #{$sliderThumbHeightActive}) / 2);
   }
-}
+
   
-@if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-{
 
-  .oj-slider-horizontal .oj-slider-thumb.oj-active {
-    margin-left: calc(0px - var(--oj-slider-thumb-width-active) / 2);
-    margin-top: calc(0px - var(--oj-slider-thumb-height-active) / 2);
-  }
-
-  .oj-slider-vertical .oj-slider-thumb.oj-active {
-    // Note - the height and width variables are swapped for vertical sliders.
-    html:not([dir="rtl"]) & {
-      margin-left: calc(0px - var(--oj-slider-thumb-height-active) / 2);
-    }
-    html[dir="rtl"] & {
-      margin-right: calc(0px - var(--oj-slider-thumb-height-active) / 2);
-    }
-  }
-
-  .oj-slider-thumb.oj-active {
-     width: var(--oj-slider-thumb-width-active);
-     height: var(--oj-slider-thumb-height-active);
-  }
-
-  .oj-slider-vertical .oj-slider-thumb.oj-active {
-    // Note - the height and width variables are swapped for vertical sliders.
-    margin-bottom: calc(0px - var(--oj-slider-thumb-width-active) / 2);
-    margin-top: calc(0px - var(--oj-slider-thumb-width-active) / 2);
-    width: var(--oj-slider-thumb-height-active);
-    height: var(--oj-slider-thumb-width-active);
-  }
-} 
-@else {
 
   //
   // Calculate the hit area, using the dimensions of the 'active' thumb.
@@ -650,18 +454,13 @@
       width: $sliderThumbHeightActive;
       height: $sliderThumbWidthActive;
   }
-}
+
 
 .oj-slider-thumb.oj-active {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    background-color: var(--oj-slider-thumb-bg-color-active);
-    border-color: var(--oj-slider-thumb-border-color-active);
-  }
-  @else {
+
     background-color: $sliderThumbBgColorActive;
     border-color: $sliderThumbBorderColorActive;
-  }
+
 
 }
 
@@ -703,55 +502,34 @@
 .oj-slider-color-picker.oj-slider-horizontal {
       /* This ensures that the slider bounding box will include
      the thumb radius - important for form controls. */
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    padding-left: calc(var(--oj-slider-color-picker-thumb-width-active) / 2);
-    padding-right: calc(var(--oj-slider-color-picker-thumb-height-active) / 2);
-  }
-  @else {
+
     padding-left: calc(#{$sliderColorPickerThumbWidthActive} / 2);
     padding-right: calc(#{$sliderColorPickerThumbHeightActive} / 2);
-  }
+
 
 }
 
 .oj-slider-color-picker.oj-slider-vertical {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    // Note - the height and width variables are swapped for vertical sliders.
-   padding-left: calc(var(--oj-slider-color-picker-thumb-height-active) / 2);
-   padding-right: calc(var(--oj-slider-color-picker-thumb-width-active) / 2);
-  }
-  @else {
+
     // Note - the height and width variables are swapped for vertical sliders.
    padding-left: calc(#{$sliderColorPickerThumbHeightActive} / 2);
    padding-right: calc(#{$sliderColorPickerThumbWidthActive} / 2);
-  }
+
 }
 
 .oj-slider-color-picker.oj-slider-vertical > .oj-slider-container {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    margin-top: calc(var(--oj-slider-color-picker-thumb-width-active) / 2);
-    margin-bottom: calc(var(--oj-slider-color-picker-thumb-width-active) / 2);
-  }
-  @else {
+
     margin-top: calc(#{$sliderColorPickerThumbWidthActive} / 2);
     margin-bottom: calc(#{$sliderColorPickerThumbWidthActive} / 2);
-  }
+
 
 }
 
 .oj-slider-color-picker.oj-slider-vertical.oj-form-control .oj-slider-container {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    // Note - the height and width variables are swapped for vertical sliders.
-    min-height: calc(var(--oj-slider-color-picker-thumb-width) * 2);
-  }
-  @else {
+
     // Note - the height and width variables are swapped for vertical sliders.
     min-height: calc(#{$sliderColorPickerThumbWidth} * 2);
-  }
+
 
 }
 
@@ -760,123 +538,69 @@
 .oj-warning .oj-slider-color-picker .oj-slider-thumb,
 .oj-invalid .oj-slider-color-picker .oj-slider-thumb {
   background-color: transparent;
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    border-radius: var(--oj-slider-color-picker-thumb-border-radius);
-    border: var(--oj-slider-color-picker-thumb-border-width) solid var(--oj-slider-color-picker-thumb-border-color);
-    box-shadow: var(--oj-slider-color-picker-thumb-box-shadow);
-  }
-  @else {
+
     @include oj-border-radius($sliderColorPickerThumbBorderRadius);
     border: $sliderColorPickerThumbBorderWidth $sliderColorPickerThumbBorderStyle $sliderColorPickerThumbBorderColor;
     @include oj-box-shadow($sliderColorPickerThumbBoxShadow);
-  }
+
 
 }
 
 .oj-disabled .oj-slider-color-picker .oj-slider-thumb {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    border: var(--oj-slider-color-picker-thumb-border-width) solid var(--oj-slider-thumb-border-color-disabled);
-  } @else {
+
     border: $sliderColorPickerThumbBorderWidth $sliderColorPickerThumbBorderStyle $sliderThumbBorderColorDisabled;
-  }
+
 }
 
 .oj-slider-color-picker .oj-slider-bar {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    border-radius: var(--oj-slider-color-picker-bar-thickness);
-  }
-  @else {
+
     @include oj-border-radius($sliderColorPickerBarThickness);
-  }
+
 }
 
 // For horizontal orientations, set the width of the slider-bar and the slider-bar-value
 .oj-slider-color-picker.oj-slider-horizontal .oj-slider-bar, .oj-slider-color-picker.oj-slider-horizontal .oj-slider-bar-value {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    height: var(--oj-slider-color-picker-bar-thickness);
-    margin-top: calc(0px - var(--oj-slider-color-picker-bar-thickness) / 2);
-  }
-  @else {
+
     height: $sliderColorPickerBarThickness;
     margin-top: calc(0px - #{$sliderColorPickerBarThickness} / 2);
-  }
+
 }
 
 // For vertical orientations, set the width of the slider-bar and the slider-bar-value
 .oj-slider-color-picker.oj-slider-vertical .oj-slider-bar, .oj-slider-color-picker.oj-slider-vertical .oj-slider-bar-value {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    width: var(--oj-slider-color-picker-bar-thickness);
-    margin-left: calc(0px - var(--oj-slider-color-picker-bar-thickness) / 2);
-  }
-  @else {
+
     width: $sliderColorPickerBarThickness;
     margin-left: calc(0px - #{$sliderColorPickerBarThickness} / 2);
-  }
+
 }
 
 .oj-slider-color-picker .oj-slider-bar:after {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    top: calc(0px - 36px / 2 + var(--oj-slider-color-picker-bar-thickness) / 2);
-    bottom: calc(0px - 36px / 2 + var(--oj-slider-color-picker-bar-thickness) / 2);
-    left: calc(0px - 36px / 2 + var(--oj-slider-color-picker-bar-thickness) / 2);
-    right: calc(0px - 36px / 2 + var(--oj-slider-color-picker-bar-thickness) / 2);
-  }
-  @else {
+
     top: calc(0px - 36px / 2 + #{$sliderColorPickerBarThickness} / 2);
     bottom: calc(0px - 36px / 2 + #{$sliderColorPickerBarThickness} / 2);
     left: calc(0px - 36px / 2 + #{$sliderColorPickerBarThickness} / 2);
     right: calc(0px - 36px / 2 + #{$sliderColorPickerBarThickness} / 2);
-  }
+
 }
 
 // oj-slider-bar-value represents the filled part of the slider bar
 .oj-slider-color-picker .oj-slider-bar-value {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    border-radius: var(--oj-slider-color-picker-bar-thickness)
-  }
-  @else {
+
     @include oj-border-radius($sliderColorPickerBarThickness);
-  }
+
 }
 
 .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb  {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    width: var(--oj-slider-color-picker-thumb-width);
-    height: var(--oj-slider-color-picker-thumb-height);
-    margin-top: calc(0px - var(--oj-slider-color-picker-thumb-height) / 2);
-    margin-left: calc(0px - var(--oj-slider-color-picker-thumb-width) / 2);
-  }
-  @else {
+
     width: $sliderColorPickerThumbWidth;
     height: $sliderColorPickerThumbHeight;
     margin-top: calc(0px - #{$sliderColorPickerThumbHeight} / 2);
     margin-left: calc(0px - #{$sliderColorPickerThumbWidth} / 2);
-  }
+
 }
 
 .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb {
-  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    width: var(--oj-slider-color-picker-thumb-height);
-    height: var(--oj-slider-color-picker-thumb-width);
-    html:not([dir="rtl"]) & {
-      margin-left: calc(0px - var(--oj-slider-color-picker-thumb-height) / 2);
-    }
-    html[dir="rtl"] & {
-      margin-right: calc(0px - var(--oj-slider-color-picker-thumb-height) / 2);
-    }
-    margin-bottom: calc(0px - var(--oj-slider-color-picker-thumb-width) / 2);
-    margin-top: calc(0px - var(--oj-slider-color-picker-thumb-width) / 2);
-  }
-  @else {
+ 
     width: $sliderColorPickerThumbHeight;
     height: $sliderColorPickerThumbWidth;
      @include oj-ltr() {
@@ -887,27 +611,10 @@
      }
      margin-bottom: calc(0px - #{$sliderColorPickerThumbWidth} / 2);
      margin-top: calc(0px - #{$sliderColorPickerThumbWidth} / 2);
-  }
+
 }
 
-@if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-{
-  .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb:after  {
-    top: calc(0px - (28px - var(--oj-slider-color-picker-thumb-height-active)) / 2);
-    bottom: calc(0px - (28px - var(--oj-slider-color-picker-thumb-height-active)) / 2);
-    left: calc(0px - (28px - var(--oj-slider-color-picker-thumb-width-active)) / 2);
-    right: calc(0px - (28px - var(--oj-slider-color-picker-thumb-width-active)) / 2);
-  }
 
-  .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb:after  {
-    // Note - the height and width variables are swapped for vertical sliders.
-    top: calc(0px - (28px - var(--oj-slider-color-picker-thumb-width-active)) / 2);
-    bottom: calc(0px - (28px - var(--oj-slider-color-picker-thumb-width-active)) / 2);
-    left: calc(0px - (28px - var(--oj-slider-color-picker-thumb-height-active)) / 2);
-    right: calc(0px - (28px - var(--oj-slider-color-picker-thumb-height-active)) / 2);
-  }
-}
-@else {
 
   .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb:after  {      
     top: calc(0px - (28px - #{$sliderColorPickerThumbHeightActive}) / 2);
@@ -923,37 +630,9 @@
     left: calc(0px - (28px - #{$sliderColorPickerThumbHeightActive}) / 2);
     right: calc(0px - (28px - #{$sliderColorPickerThumbHeightActive}) / 2);
   }
-}
 
-@if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-{
-  .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb.oj-active {
-    margin-left: calc(0px - var(--oj-slider-color-picker-thumb-width-active) / 2);
-    margin-top: calc(0px - var(--oj-slider-color-picker-thumb-height-active) / 2);
-  }
 
-  .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb.oj-active {
-    // Note - the height and width variables are swapped for vertical sliders.
-    html:not([dir="rtl"]) & {
-      margin-left: calc(0px - var(--oj-slider-color-picker-thumb-height-active) / 2);
-    }
-    html[dir="rtl"] & {
-      margin-right: calc(0px - var(--oj-slider-color-picker-thumb-height-active) / 2);
-    }
-  }
 
-  .oj-slider-color-picker .oj-slider-thumb.oj-active {
-    width: var(--oj-slider-color-picker-thumb-width-active);
-    height: var(--oj-slider-color-picker-thumb-height-active);
-  }
-
-  .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb.oj-active {
-    // Note - the height and width variables are swapped for vertical sliders.
-    margin-bottom: calc(0px - var(--oj-slider-color-picker-thumb-width-active) / 2);
-    margin-top: calc(0px - var(--oj-slider-color-picker-thumb-width-active) / 2);
-  }
-}
-@else {
 
   .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb.oj-active {
     margin-left: calc(0px - #{$sliderColorPickerThumbWidthActive} / 2);
@@ -980,11 +659,16 @@
     margin-bottom: calc(0px - #{$sliderColorPickerThumbWidthActive} / 2);
     margin-top: calc(0px - #{$sliderColorPickerThumbWidthActive} / 2);
   }
-}
 
-.oj-slider-color-picker .oj-slider-bar-value {
-    display: none;
-}
+
+  .oj-slider-color-picker .oj-slider-bar-value {
+      display: none;
+  }
+
+  .oj-form-control-label-top.oj-slider-horizontal{
+    max-width: 100%;
+  }
+
 
  }
  }

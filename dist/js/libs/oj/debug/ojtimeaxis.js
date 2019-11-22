@@ -2,10 +2,12 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTimeAxis', 'ojs/ojlocaledata', 
-'ojs/ojvalidation-base', 'ojs/ojvalidation-datetime'], 
-function (oj, $, comp, base, dvt, LocaleData, __ValidationBase)
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTimeAxis', 
+'ojs/ojlocaledata', 'ojs/ojconverter-datetime', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter-number'], 
+function (oj, $, comp, base, dvt, LocaleData, __DateTimeConverter, ConverterUtils, NumberConverter)
 {
   "use strict";
 var __oj_time_axis_metadata = 
@@ -13,42 +15,33 @@ var __oj_time_axis_metadata =
   "properties": {
     "converter": {
       "type": "object",
-      "value": "{\"default\": null, \"seconds\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), \"minutes\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), \"hours\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), \"days\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"weeks\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"months\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"quarters\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"years\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}",
       "properties": {
         "default": {
           "type": "object"
         },
         "seconds": {
-          "type": "object",
-          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'})"
+          "type": "object"
         },
         "minutes": {
-          "type": "object",
-          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'})"
+          "type": "object"
         },
         "hours": {
-          "type": "object",
-          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'})"
+          "type": "object"
         },
         "days": {
-          "type": "object",
-          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'})"
+          "type": "object"
         },
         "weeks": {
-          "type": "object",
-          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'})"
+          "type": "object"
         },
         "months": {
-          "type": "object",
-          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'})"
+          "type": "object"
         },
         "quarters": {
-          "type": "object",
-          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'})"
+          "type": "object"
         },
         "years": {
-          "type": "object",
-          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})"
+          "type": "object"
         }
       }
     },
@@ -149,21 +142,18 @@ var __oj_time_axis_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2016, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
-/* global dvt:false, LocaleData:false, __ValidationBase:false */
+
+/* global dvt:false, LocaleData:false, __DateTimeConverter:false, ConverterUtils:false, NumberConverter:false */
 
 /**
  * @ojcomponent oj.ojTimeAxis
  * @augments oj.dvtBaseComponent
  * @since 2.1.0
- * @ojstatus preview
+ *
  * @ojshortdesc A time axis displays a range of dates based on specified start and end dates and a time scale.
  * @ojrole application
- * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter"]}
+ * @ojtsimport {module: "ojconverter", type: "AMD", importName: "Converter"}
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["start", "end", "scale", "style"]}
  * @ojvbdefaultcolumns 12
@@ -241,7 +231,7 @@ oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
       /**
        * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the time axis for all 'scale' values, or
        * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting.
-       * See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+       * See also {@link DateTimeConverter}.
        * @expose
        * @name converter
        * @ojshortdesc An object that converts the labels of the time axis for all 'scale' values'. See the Help documentation for more information.
@@ -249,7 +239,7 @@ oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
        * @instance
        * @type {Object}
        * @ojsignature {target: "Type", value: "oj.ojTimeAxis.Converters|oj.Converter<string>", jsdocOverride: true}
-       * @default {"default": null, "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}
+       * @default {"default": null, "seconds": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric'}), "days": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "months": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "quarters": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "years": new DateTimeConverter.IntlDateTimeConverter({'year': 'numeric'})}
        *
        * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">converter</code> attribute specified:</caption>
        * &lt;oj-time-axis converter='[[myConverterObject]]'>&lt;/oj-time-axis>
@@ -281,35 +271,20 @@ oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
        */
       converter: {
         default: null,
-        seconds: __ValidationBase.Validation.converterFactory(
-          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-          .createConverter({ hour: 'numeric', minute: '2-digit', second: '2-digit' }),
-        minutes: __ValidationBase.Validation.converterFactory(
-          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-          .createConverter({ hour: 'numeric', minute: '2-digit' }),
-        hours: __ValidationBase.Validation.converterFactory(
-          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-          .createConverter({ hour: 'numeric' }),
-        days: __ValidationBase.Validation.converterFactory(
-          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-          .createConverter({ month: 'numeric', day: '2-digit' }),
-        weeks: __ValidationBase.Validation.converterFactory(
-          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-          .createConverter({ month: 'numeric', day: '2-digit' }),
-        months: __ValidationBase.Validation.converterFactory(
-          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-          .createConverter({ month: 'long' }),
-        quarters: __ValidationBase.Validation.converterFactory(
-          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-          .createConverter({ month: 'long' }),
-        years: __ValidationBase.Validation.converterFactory(
-          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-          .createConverter({ year: 'numeric' })
+        seconds: new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric', minute: '2-digit', second: '2-digit' }),
+        minutes: new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric', minute: '2-digit' }),
+        hours: new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric' }),
+        days: new __DateTimeConverter.IntlDateTimeConverter({ month: 'numeric', day: '2-digit' }),
+        weeks: new __DateTimeConverter.IntlDateTimeConverter({ month: 'numeric', day: '2-digit' }),
+        months: new __DateTimeConverter.IntlDateTimeConverter({ month: 'long' }),
+        quarters: new __DateTimeConverter.IntlDateTimeConverter({ month: 'long' }),
+        years: new __DateTimeConverter.IntlDateTimeConverter({ year: 'numeric' })
       },
       /**
        * The start time of the time axis. A valid value is required in order for the time axis to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
        * @expose
        * @name start
+       * @ojrequired
        * @ojshortdesc The start time of the time axis. See the Help documentation for more information.
        * @memberof oj.ojTimeAxis
        * @instance
@@ -332,6 +307,7 @@ oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
        * The end time of the time axis. A valid value is required in order for the time axis to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
        * @expose
        * @name end
+       * @ojrequired
        * @ojshortdesc The end time of the time axis. See the Help documentation for more information.
        * @memberof oj.ojTimeAxis
        * @instance
@@ -354,6 +330,7 @@ oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
        * The time scale used for the time axis. This is required in order for the time axis to properly render.
        * @expose
        * @name scale
+       * @ojrequired
        * @ojshortdesc The time scale used for the time axis.
        * @memberof oj.ojTimeAxis
        * @instance
@@ -387,7 +364,7 @@ oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
      */
     _ComponentCreate: function () {
       this._super();
-      this._SetLocaleHelpers(__ValidationBase);
+      this._SetLocaleHelpers(NumberConverter, ConverterUtils);
     },
 
     // @inheritdoc
@@ -449,27 +426,25 @@ oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
       var resources = this.options._resources;
 
       // Create default converters
-      var converterFactory =
-        __ValidationBase.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
-      var secondsConverter = converterFactory.createConverter({
+      var secondsConverter = new __DateTimeConverter.IntlDateTimeConverter({
         hour: 'numeric',
         minute: '2-digit',
         second: '2-digit'
       });
-      var minutesConverter = converterFactory.createConverter({
+      var minutesConverter = new __DateTimeConverter.IntlDateTimeConverter({
         hour: 'numeric',
         minute: '2-digit'
       });
-      var hoursConverter = converterFactory.createConverter({ hour: 'numeric' });
-      var daysConverter = converterFactory.createConverter({
+      var hoursConverter = new __DateTimeConverter.IntlDateTimeConverter({ hour: 'numeric' });
+      var daysConverter = new __DateTimeConverter.IntlDateTimeConverter({
         month: 'numeric',
         day: '2-digit'
       });
-      var monthsConverter = converterFactory.createConverter({ month: 'long' });
-      var yearsConverter = converterFactory.createConverter({ year: 'numeric' });
+      var monthsConverter = new __DateTimeConverter.IntlDateTimeConverter({ month: 'long' });
+      var yearsConverter = new __DateTimeConverter.IntlDateTimeConverter({ year: 'numeric' });
 
-      var monthsConverterVert = converterFactory.createConverter({ month: 'short' });
-      var yearsConverterVert = converterFactory.createConverter({ year: '2-digit' });
+      var monthsConverterVert = new __DateTimeConverter.IntlDateTimeConverter({ month: 'short' });
+      var yearsConverterVert = new __DateTimeConverter.IntlDateTimeConverter({ year: '2-digit' });
 
       var converter = {
         seconds: secondsConverter,
@@ -492,7 +467,15 @@ oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
         years: yearsConverterVert
       };
 
-      resources.converterFactory = converterFactory;
+      resources.defaultDateTimeConverter = new __DateTimeConverter.IntlDateTimeConverter({
+        formatType: 'datetime',
+        dateFormat: 'medium',
+        timeFormat: 'medium'
+      }); // e.g. Jan 1, 2016, 5:53:39 PM
+      resources.defaultDateConverter = new __DateTimeConverter.IntlDateTimeConverter({
+        formatType: 'date',
+        dateFormat: 'medium'
+      }); // e.g. Jan 1, 2016
       resources.converter = converter;
       resources.converterVert = converterVert;
 
@@ -511,6 +494,7 @@ oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
       resources.firstDayOfWeek = LocaleData.getFirstDayOfWeek();
     }
   });
+
 
 /**
  * <p>The Time Axis is intended to be used inside of a JET Table or DataGrid. All touch interactions are the same as those of the root elements. See the <a href="oj.ojTable.html#touch-section">Table</a> and <a href="oj.ojDataGrid.html#touch-section">DataGrid</a> touch doc for more details.</p>
@@ -577,15 +561,15 @@ oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
 
 /**
  * @typedef {Object} oj.ojTimeAxis.Converters
- * @property {Object} [default=null] The default converter (an object literal or instance that duck types {@link oj.Converter}) to use for all 'scale' values that do not otherwise have a converter object provided. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
- * @property {Object} [seconds=oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'})] The converter (an object literal or instance that duck types {@link oj.Converter}) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
- * @property {Object} [minutes=oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'})] The converter (an object literal or instance that duck types {@link oj.Converter}) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
- * @property {Object} [hours=oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'})] The converter (an object literal or instance that duck types {@link oj.Converter}) used for the 'hours' scale. If not specified, the default converter will be used for this scale. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
- * @property {Object} [days=oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'})] The converter (an object literal or instance that duck types {@link oj.Converter}) used for the 'days' scale. If not specified, the default converter will be used for this scale. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
- * @property {Object} [weeks=oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'})] The converter (an object literal or instance that duck types {@link oj.Converter}) used for the 'weeks' scale. If not specified, the default converter will be used for this scale. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
- * @property {Object} [months=oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'})] The converter (an object literal or instance that duck types {@link oj.Converter}) used for the 'months' scale. If not specified, the default converter will be used for this scale. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
- * @property {Object} [quarters=oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'})] The converter (an object literal or instance that duck types {@link oj.Converter}) used for the 'quarters' scale. If not specified, the default converter will be used for this scale. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
- * @property {Object} [years=oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})] The converter (an object literal or instance that duck types {@link oj.Converter}) used for the 'years' scale. If not specified, the default converter will be used for this scale. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+ * @property {Object} [default=null] The default converter (an object literal or instance that duck types {@link oj.Converter}) to use for all 'scale' values that do not otherwise have a converter object provided. See also {@link DateTimeConverter}.
+ * @property {Object} [seconds=new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'seconds' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
+ * @property {Object} [minutes=new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'minutes' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
+ * @property {Object} [hours=new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'hours' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
+ * @property {Object} [days=new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'days' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
+ * @property {Object} [weeks=new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'weeks' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
+ * @property {Object} [months=new DateTimeConverter.IntlDateTimeConverter({'month': 'long'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'months' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
+ * @property {Object} [quarters=new DateTimeConverter.IntlDateTimeConverter({'month': 'long'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'quarters' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
+ * @property {Object} [years=new DateTimeConverter.IntlDateTimeConverter({'year': 'numeric'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'years' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
  * @ojsignature [{target:"Type", value:"oj.Converter.<string>", for:"default", jsdocOverride:true},
  *               {target:"Type", value:"oj.Converter.<string>", for:"seconds", jsdocOverride:true},
  *               {target:"Type", value:"oj.Converter.<string>", for:"minutes", jsdocOverride:true},
@@ -596,6 +580,7 @@ oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
  *               {target:"Type", value:"oj.Converter.<string>", for:"quarters", jsdocOverride:true},
  *               {target:"Type", value:"oj.Converter.<string>", for:"years", jsdocOverride:true}]
  */
+
 
 /* global __oj_time_axis_metadata:false */
 /**

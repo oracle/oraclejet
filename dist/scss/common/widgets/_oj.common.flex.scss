@@ -209,25 +209,19 @@
 
     .oj-flex-items-pad > .oj-flex > .oj-flex-item,
     .oj-flex.oj-flex-items-pad > .oj-flex-item {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        padding-left: var(--oj-spacing-2x);
-        padding-right: var(--oj-spacing-2x);
-      } @else {
+
         padding-left: $spacingMedium;
         padding-right: $spacingMedium;
-      }
+
     }
 
     // nested
     .oj-flex-items-pad > .oj-flex > .oj-flex-item > .oj-flex,
     .oj-flex.oj-flex-items-pad > .oj-flex-item > .oj-flex {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        margin-left: calc(0px - var(--oj-spacing-2x));
-        margin-right: calc(0px - var(--oj-spacing-2x));
-      } @else {
+
         margin-left: calc(0px - #{$spacingMedium});
         margin-right: calc(0px - #{$spacingMedium});
-      }
+      
     }
 
 

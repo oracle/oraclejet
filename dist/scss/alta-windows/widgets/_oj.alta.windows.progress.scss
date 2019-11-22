@@ -26,12 +26,9 @@
     }
 
     .oj-progress-bar-indeterminate .oj-progress-bar-value {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-progress-bar-bg-color);
-      } @else {
+
         background-color: $progressBarBgColor;
-      }
+      
       position: relative;
     }
 

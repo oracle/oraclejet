@@ -6,7 +6,20 @@ define(['./DvtToolkit'], function(dvt) {
   "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * This is the base class for all time based components (Gantt, Timeline).  It handles the following:
  * - all common attributes (start time, end time etc.)
@@ -1048,11 +1061,7 @@ dvt.TimeComponent.prototype.endDragPan = function()
  */
 dvt.TimeComponent.prototype.setPanCursorDown = function()
 {
-  // IE doesn't support cursor image with custom positioning
-  if ((dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge'))
-    this.setCursor('move');
-  else
-    this.setCursor('url(' + this.getOptions()['_resources']['grabbingCursor'] + ') 8 8, move');
+  this.setCursor(dvt.ToolkitUtils.getGrabbingCursor());
 };
 
 /**
@@ -1060,11 +1069,7 @@ dvt.TimeComponent.prototype.setPanCursorDown = function()
  */
 dvt.TimeComponent.prototype.setPanCursorUp = function()
 {
-  // IE doesn't support cursor image with custom positioning
-  if ((dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge'))
-    this.setCursor('move');
-  else
-    this.setCursor('url(' + this.getOptions()['_resources']['grabCursor'] + ') 8 8, move');
+  this.setCursor(dvt.ToolkitUtils.getGrabCursor());
 };
 
 /**
@@ -1176,6 +1181,12 @@ dvt.TimeComponent.prototype.panBy = function(deltaX, deltaY)
   this.panZoomCanvasBy(deltaX);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Base event manager for Timeline and Gantt.
  * @param {dvt.TimeComponent} comp The owning dvt.Timeline or dvt.Gantt.
@@ -1610,6 +1621,12 @@ dvt.TimeComponentEventManager.prototype.GetTouchResponse = function()
 
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * TimeComponent keyboard handler.
  * @param {dvt.EventManager} manager The owning dvt.EventManager.
  * @class dvt.TimeComponentKeyboardHandler
@@ -1642,7 +1659,7 @@ dvt.TimeComponentKeyboardHandler.prototype.isMultiSelectEvent = function(event)
 /**
  * @override
  */
-dvt.TimeComponentKeyboardHandler.prototype.processKeyDown = function(event) 
+dvt.TimeComponentKeyboardHandler.prototype.processKeyDown = function(event)
 {
   if (dvt.KeyboardEvent.isPlus(event) || dvt.KeyboardEvent.isEquals(event))
   {
@@ -1678,6 +1695,12 @@ dvt.TimeComponentKeyboardHandler.prototype.processKeyDown = function(event)
   return dvt.TimeComponentKeyboardHandler.superclass.processKeyDown.call(this, event);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Style related utility functions for dvt.TimeComponent.
  * @class
@@ -1734,6 +1757,13 @@ DvtTimeComponentStyleUtils.getScrollbarPadding = function()
   return DvtTimeComponentStyleUtils._SCROLLBAR_PADDING;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
   return dvt;
 });

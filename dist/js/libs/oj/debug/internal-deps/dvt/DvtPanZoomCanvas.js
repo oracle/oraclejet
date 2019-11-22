@@ -6,7 +6,20 @@ define(['./DvtToolkit'], function(dvt) {
   "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * A component that supports panning and zooming
  * @param {dvt.Context} context The rendering context.
@@ -231,7 +244,12 @@ dvt.PanZoomComponent.prototype.isPanning = function() {
   return this._panAnimator != null || this._panningInterrupted;
 };
 
-// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   *  Creates a canvas that supports panning and zooming.
   *  @extends {dvt.Container}
@@ -551,11 +569,6 @@ dvt.PanZoomCanvas.prototype.zoomBy = function(dz, xx, yy, animator)
 
   var oldZoom = this.getZoom(animator);
   var newZoom = this.ConstrainZoom(oldZoom * dz);
-
-  if (dvt.PanZoomCanvas.RoundFloatForCompare(oldZoom) == dvt.PanZoomCanvas.RoundFloatForCompare(newZoom))
-  {
-    return;
-  }
 
   var deltaZoom = newZoom / oldZoom;
 
@@ -1367,38 +1380,24 @@ dvt.PanZoomCanvas.prototype.destroy = function() {
 };
 
 /**
- * Sets the pan cursor.
- * @param {string} panUpCursor The URI of the cursor image for the non-dragged state.
- * @param {string} panDownCursor The URI of the cursor image for the dragged state.
- */
-dvt.PanZoomCanvas.prototype.setPanCursor = function(panUpCursor, panDownCursor) {
-  // IE doesn't support cursor image with custom positioning
-  if ((dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge'))
-    return;
-
-  if (panUpCursor)
-    this._panUpCursor = 'url(' + panUpCursor + ') 8 8, auto';
-  if (panDownCursor)
-    this._panDownCursor = 'url(' + panDownCursor + ') 8 8, auto';
-};
-
-/**
  * Returns the appropriate cursor type.
  * @param {boolean} panOn true during active panning
  * @return {string} The cursor type.
  */
 dvt.PanZoomCanvas.prototype.getCursor = function(panOn) {
   if (this._bPanningEnabled) {
-    if (panOn)
-      return this._panDownCursor ? this._panDownCursor : 'move';
-    else
-      return this._panUpCursor ? this._panUpCursor : 'move';
+    return panOn ? dvt.ToolkitUtils.getGrabbingCursor() : dvt.ToolkitUtils.getGrabCursor();
   }
   else
     return 'inherit';
 };
 
-// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * @constructor
  * @param {dvt.Context} context The rendering context
@@ -1514,9 +1513,7 @@ dvt.PanZoomCanvasEventManager.prototype.OnMouseMove = function(event) {
   if (Math.abs(pos.x - this._px) <= 3 && Math.abs(pos.y - this._py) <= 3)
     return;
 
-  this._callbackObj.setCursor("grab");
   if (this._bDown) {
-    this._callbackObj.setCursor("grabbing");
     this._bDragging = true;
     var pos = this._callbackObj.GetRelativeMousePosition(event);
     var xx = pos.x;
@@ -2020,7 +2017,7 @@ dvt.PanZoomCanvasEventManager.prototype._handlePanEnd = function() {
     this._momentumXperMS = dx / dt;
     this._momentumYperMS = dy / dt;
     //use timer interval similar to mousemove interval
-    this._momentumTimer.setInterval(Math.ceil(dt / numMoves));//@HTMLUpdateOk
+    this._momentumTimer.setInterval(Math.ceil(dt / numMoves));//@HTMLUpdateOK
     this._momentumIterCount = 1;
     this._momentumDx = 0;
     this._momentumDy = 0;
@@ -2070,6 +2067,12 @@ dvt.PanZoomCanvasEventManager.prototype.StoreInfoByEventType = function(key) {
   return dvt.PanZoomCanvasEventManager.superclass.StoreInfoByEventType.call(this, key);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  *  @param {dvt.EventManager} manager The owning dvt.EventManager
  *  @class dvt.PanZoomCanvasKeyboardHandler
@@ -2127,6 +2130,13 @@ dvt.PanZoomCanvasKeyboardHandler.prototype.processKeyDown = function(event) {
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
   return dvt;
 });

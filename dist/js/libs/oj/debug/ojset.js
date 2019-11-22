@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 "use strict";
 define(['ojs/ojcore', 'ojs/ojkeysetimpl'],
        /*
@@ -12,11 +14,12 @@ define(['ojs/ojcore', 'ojs/ojkeysetimpl'],
        function(oj, KeySetImpl)
 {
 
+
 /* global KeySetImpl:false, Map:false, Symbol:false */
-var ojSet = /** @class */ (function () {
-    function ojSet(initialKeys) {
+class ojSet {
+    constructor(initialKeys) {
         this.initialKeys = initialKeys;
-        var self = this;
+        let self = this;
         this._set = new Set();
         this._keyset = new KeySetImpl();
         if (initialKeys) {
@@ -31,59 +34,54 @@ var ojSet = /** @class */ (function () {
             return this._set[Symbol.iterator]();
         };
     }
-    ojSet.prototype.clear = function () {
+    clear() {
         this._set.clear();
         this._keyset._keys.clear();
-    };
+    }
     ;
-    ojSet.prototype.delete = function (key) {
+    delete(key) {
         var theKey = this._keyset.get(key);
         if (theKey === this._keyset.NOT_A_KEY) {
             return false;
         }
         this._keyset._keys.delete(theKey);
         return this._set.delete(theKey);
-    };
+    }
     ;
-    ojSet.prototype.forEach = function (callbackfn, thisArg) {
+    forEach(callbackfn, thisArg) {
         this._set.forEach(callbackfn, thisArg);
-    };
+    }
     ;
-    ojSet.prototype.keys = function () {
+    keys() {
         return this._set.keys();
-    };
+    }
     ;
-    ojSet.prototype.values = function () {
+    values() {
         return this._set.values();
-    };
+    }
     ;
-    ojSet.prototype.entries = function () {
+    entries() {
         return this._set.entries();
-    };
+    }
     ;
-    ojSet.prototype.has = function (key) {
+    has(key) {
         return this._keyset.has(key);
-    };
+    }
     ;
-    ojSet.prototype.add = function (key) {
+    add(key) {
         var theKey = this._keyset.get(key);
         if (theKey === this._keyset.NOT_A_KEY) {
             this._keyset._keys.add(key);
             this._set.add(key);
         }
         return this;
-    };
+    }
     ;
-    Object.defineProperty(ojSet.prototype, Symbol.toStringTag, {
-        get: function () {
-            return Set[Symbol.toStringTag]();
-        },
-        enumerable: true,
-        configurable: true
-    });
+    get [Symbol.toStringTag]() {
+        return Set[Symbol.toStringTag]();
+    }
     ;
-    return ojSet;
-}());
+}
 
 ;return ojSet;
 });

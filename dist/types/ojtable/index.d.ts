@@ -143,18 +143,21 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     };
     selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart<K> & ojTable.ColumnSelectionEnd<K>>;
     selectionMode: {
-        column: 'single' | 'multiple' | 'none';
-        row: 'single' | 'multiple' | 'none';
+        column: 'none' | 'single' | 'multiple';
+        row: 'none' | 'single' | 'multiple';
     };
     selectionRequired: boolean;
     verticalGridVisible: 'auto' | 'enabled' | 'disabled';
     translations: {
+        accessibleSortAscending?: string;
+        accessibleSortDescending?: string;
         labelAccSelectionAffordanceBottom?: string;
         labelAccSelectionAffordanceTop?: string;
         labelDisableNonContiguousSelection?: string;
         labelEditRow?: string;
         labelEnableNonContiguousSelection?: string;
         labelResize?: string;
+        labelResizePopupCancel?: string;
         labelResizePopupSpinner?: string;
         labelResizePopupSubmit?: string;
         labelSelectAndEditRow?: string;
@@ -598,18 +601,21 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     };
     selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart<K> & ojTable.ColumnSelectionEnd<K>>;
     selectionMode: {
-        column: 'single' | 'multiple' | 'none';
-        row: 'single' | 'multiple' | 'none';
+        column: 'none' | 'single' | 'multiple';
+        row: 'none' | 'single' | 'multiple';
     };
     selectionRequired: boolean;
     verticalGridVisible: 'auto' | 'enabled' | 'disabled';
     translations: {
+        accessibleSortAscending?: string;
+        accessibleSortDescending?: string;
         labelAccSelectionAffordanceBottom?: string;
         labelAccSelectionAffordanceTop?: string;
         labelDisableNonContiguousSelection?: string;
         labelEditRow?: string;
         labelEnableNonContiguousSelection?: string;
         labelResize?: string;
+        labelResizePopupCancel?: string;
         labelResizePopupSpinner?: string;
         labelResizePopupSubmit?: string;
         labelSelectAndEditRow?: string;

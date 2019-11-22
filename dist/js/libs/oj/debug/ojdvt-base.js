@@ -2,22 +2,22 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojattributegrouphandler', 'ojs/ojlocaledata', 'ojs/internal-deps/dvt/DvtToolkit', 'ojs/ojkeysetimpl', 'ojs/ojmap', 'ojs/ojlogger', 'ojdnd', 'promise'], 
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojattributegrouphandler', 'ojs/ojlocaledata', 'ojs/internal-deps/dvt/DvtToolkit', 'ojs/ojkeysetimpl', 'ojs/ojmap', 'ojs/ojlogger', 'ojdnd'], 
 function(oj, $, Context, Config, Components, attributeGroupHandler, LocaleData, dvt, KeySetImpl, ojMap, Logger)
 {
   "use strict";
+
 /* global attributeGroupHandler:false */
 // bleed the 3 AttributeGroupHandler classes into the oj namespace for brackward compatibility
 oj.AttributeGroupHandler = attributeGroupHandler.AttributeGroupHandler;
 oj.ColorAttributeGroupHandler = attributeGroupHandler.ColorAttributeGroupHandler;
 oj.ShapeAttributeGroupHandler = attributeGroupHandler.ShapeAttributeGroupHandler;
 
-/**
- * Copyright (c) 2018, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Promise:false, Map:false, Symbol:false, KeySetImpl:false, ojMap:false */
 
@@ -530,6 +530,7 @@ DataProviderHandler.prototype._fireEvent = function (type, detail) {
   }
 };
 
+
 /**
  * Utility class with functions for parsing common DVT attributes.
  * Currently the following DVT components are using it: ojchart, ojdiagram, ojgauge, ojnbox, ojthematicmap.
@@ -575,6 +576,7 @@ DvtAttributeUtils.shapeParseFunction = function (shapeAttrs, shapeEnums) {
     return defaultParseFunction(value);
   };
 };
+
 
 /**
  * Class to help set css properties on the component root options object
@@ -658,6 +660,7 @@ DvtJsonPath.prototype.setValue = function (value, bOverride) {
     this._leaf[this._param] = value;
   }
 };
+
 
 /* global DvtJsonPath:false, attributeGroupHandler:false */
 
@@ -977,10 +980,7 @@ DvtStyleProcessor._hasUncachedProperty = function (styleClass, definitions) {
   return false;
 };
 
-/**
- * Copyright (c) 2018, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Config:false, Promise:false, ojMap:false, Logger:false */
 
@@ -1427,12 +1427,9 @@ TemplateHandler.prototype._fireEvent = function (type, detail) {
   }
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
-/* global Config:false, Context:false, Promise:false, Map:false, Symbol:false, dvt:false, DvtJsonPath:false, DvtStyleProcessor:false, KeySetImpl:false, ojMap:false, Components:false, Set:false, LocaleData:false, __ValidationBase:false, Logger:false, TemplateHandler:false , DataProviderHandler:false*/
+
+/* global Config:false, Context:false, Promise:false, Map:false, Symbol:false, dvt:false, DvtJsonPath:false, DvtStyleProcessor:false, KeySetImpl:false, ojMap:false, Components:false, Set:false, LocaleData:false, Logger:false, TemplateHandler:false , DataProviderHandler:false*/
 
 /**
  * @ojcomponent oj.dvtBaseComponent
@@ -1567,25 +1564,27 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
    * The function sets Locale helpers (various converter instances for Numeric, Date or TimeZone data types) on the DvtContext object.
    * @protected
    * @instance
+   * @param {Object} NumberConverter - The return value of the ojconverter-number module
+   * @param {Object} ConverterUtils - The return value of the ojconverterutils-i18n module
    * @memberof oj.dvtBaseComponent
-   * @param {Object} validationBase - The return value of the ojvalidation-base module
    * @return {null}
    */
-  _SetLocaleHelpers: function (validationBase) {
+  _SetLocaleHelpers: function (NumberConverter, ConverterUtils) {
     // If requireJS is not used, can't rely on internationalization modules.
     if (dvt.requireJS !== false) {
       var helpers = {};
-
       // Number converter factory for use in formatting default strings
-      helpers.numberConverterFactory = validationBase.Validation.getDefaultConverterFactory('number');
+      helpers.createNumberConverter = function (options) {
+        return new NumberConverter.IntlNumberConverter(options);
+      };
 
       // Iso to date converter to be called for JS that requires Dates
       helpers.isoToDateConverter = function (input) {
         if (typeof (input) === 'string') {
-          var dateWithTimeZone = validationBase.IntlConverterUtils.isoToDate(input);
+          var dateWithTimeZone = ConverterUtils.IntlConverterUtils.isoToDate(input);
           var localIsoTime = dateWithTimeZone.toJSON() ?
-          validationBase.IntlConverterUtils.dateToLocalIso(dateWithTimeZone) : input;
-          return validationBase.IntlConverterUtils.isoToLocalDate(localIsoTime);
+          ConverterUtils.IntlConverterUtils.dateToLocalIso(dateWithTimeZone) : input;
+          return ConverterUtils.IntlConverterUtils.isoToLocalDate(localIsoTime);
         }
         return input;
       };
@@ -1600,7 +1599,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
           var isoTimeZone = offsetSign +
             (offsetHour.toString().length !== 2 ? '0' + offsetHour : offsetHour) + ':' +
             (offsetMinutes.toString().length !== 2 ? offsetMinutes + '0' : offsetMinutes);
-          return validationBase.IntlConverterUtils.dateToLocalIso(input) + isoTimeZone;
+          return ConverterUtils.IntlConverterUtils.dateToLocalIso(input) + isoTimeZone;
         }
         return input;
       };
@@ -2954,6 +2953,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
   }
 
 }, true);
+
 
 /**
  * <p>The SVG DOM that this component generates should be treated as a black box, as it is subject to change.</p>

@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'], 
 /*
 * @param {Object} oj 
@@ -46,10 +48,7 @@ var __oj_train_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -60,7 +59,7 @@ var __oj_train_metadata =
 /**
  * @ojcomponent oj.ojTrain
  * @augments oj.baseComponent
- * @ojstatus preview
+ *
  * @ojshortdesc A train allows a user to navigate between different steps of a process.
  * @since 1.0.0
  *
@@ -1174,6 +1173,7 @@ var __oj_train_metadata =
      */
     });
 }());
+
 
 /* global __oj_train_metadata:false */
 (function () {

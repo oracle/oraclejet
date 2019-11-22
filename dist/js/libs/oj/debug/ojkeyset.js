@@ -2,16 +2,19 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'ojs/ojkeysetimpl'], function(oj, KeySetImpl)
 {
   "use strict";
+
 /* global KeySetImpl:false, Set:false */
 
 /**
  * An immutable set of keys.
  * @class KeySet
- * @ojstatus preview
+ *
  * @classdesc The base class for ExpandedKeySet and ExpandAllKeySet.  Represents an immutable set of keys.
  * @constructor
  * @hideconstructor
@@ -206,6 +209,7 @@ KeySet.prototype.Clone = function () {
 
 KeySetImpl.call(KeySet.prototype);
 
+
 /* global KeySet:false, ExpandAllKeySet:false */
 
 /**
@@ -213,12 +217,13 @@ KeySetImpl.call(KeySet.prototype);
  * Use this KeySet when specifying individual keys to expand.
  *
  * @param {(Set|Array)=} keys A set of keys to initialize this KeySet with.
- * @ojstatus preview
+ *
  * @class ExpandedKeySet
  * @classdesc The ExpandedKeySet class contains a set of keys of the expanded items.  See
  * also the <a href="ObservableExpandedKeySet.html">observable</a> version of this class.
  * @extends {KeySet}
  * @constructor
+ * @final
  * @since 4.1.0
  * @ojdeprecated {since: '7.0.0', description: 'Use KeySetImpl instead.'}
  * @ojsignature [{target: "Type", value: "class ExpandedKeySet<K> extends KeySet<K>", genericParameters: [{"name": "K", "description": "Type of Key"}]},
@@ -343,17 +348,19 @@ ExpandedKeySet.prototype.values = function () {
   return this.Clone();
 };
 
+
 /* global KeySet:false, ExpandedKeySet:false */
 
 /**
  * Create a new immutable KeySet containing the keys of the collapsed items.
  * Use this KeySet when expanding all keys.
  *
- * @ojstatus preview
+ *
  * @class ExpandAllKeySet
  * @classdesc The ExpandAllKeySet class represents a set with all keys expanded.
  * @extends {KeySet}
  * @constructor
+ * @final
  * @since 4.1.0
  * @ojdeprecated {since: '7.0.0', description: 'Use AllKeySetImpl instead.'}
  * @ojsignature {target: "Type", value: "class ExpandAllKeySet<K> extends KeySet<K>",
@@ -480,6 +487,7 @@ ExpandAllKeySet.prototype.deletedValues = function () {
   return this.Clone();
 };
 
+
 /* global KeySet:false, AllKeySetImpl:false */
 
 /**
@@ -487,11 +495,12 @@ ExpandAllKeySet.prototype.deletedValues = function () {
  * Use this KeySet when specifying individual keys to select or expand.
  *
  * @param {(Set|Array)=} keys A set of keys to initialize this KeySet with.
- * @ojstatus preview
+ *
  * @class KeySetImpl
  * @classdesc The KeySetImpl class contains a set of keys of items.
  * @extends {KeySet}
  * @constructor
+ * @final
  * @since 7.0.0
  * @ojsignature [{target: "Type", value: "class KeySetImpl<K> extends KeySet<K>", genericParameters: [{"name": "K", "description": "Type of Key"}]},
  *               {target: "Type", value: "Set<K>|Array<K>", for:"keys"}]
@@ -514,7 +523,10 @@ oj.KeySetImpl = KeySetImpl;
 
 /**
  * Returns a new KeySet based on this set with the specified keys included.
- * If none of the keys specified are being added, then this KeySet is returned.
+ * When a key is added to this KeySet it implies the key will become expanded (when this
+ * is used for expansion) or selected (when this is used for selection).
+ * If none of the keys specified are being added, then it will be a no-op and this KeySet is
+ * returned.
  *
  * @param {Set|Array} keys a set of keys to add to this KeySet.
  * @return {KeySetImpl} a new KeySet with the specified keys included.
@@ -529,7 +541,8 @@ KeySetImpl.prototype.add = function (keys) {
 };
 
 /**
- * Returns a new KeySet that represents a set with all keys.
+ * Returns a new KeySet that represents a set with all keys.  This will return a
+ * AllKeySetImpl instance.
  *
  * @return {AllKeySetImpl} a new KeySet that represents a set with all keys.
  * @expose
@@ -543,7 +556,8 @@ KeySetImpl.prototype.addAll = function () {
 };
 
 /**
- * Determines whether this is a set that represents all keys.
+ * Determines whether this is a set that represents all keys.  Since this KeySet
+ * does not represent all keys, thie method will always return false.
  *
  * @return {boolean} true if this is a set that reprsents all keys, false otherwise.
  * @expose
@@ -557,6 +571,8 @@ KeySetImpl.prototype.isAddAll = function () {
 
 /**
  * Returns a new KeySet based on this set with the specified keys excluded.
+ * When a key is removed from this KeySet it implies the key will become collapsed (when this
+ * is used for expansion) or de-selected (when this is used for selection).
  * If none of the keys specified are being deleted, then this KeySet is returned.
  *
  * @param {Set|Array} keys a set of keys to remove from this KeySet.
@@ -572,8 +588,9 @@ KeySetImpl.prototype.delete = function (keys) {
 };
 
 /**
- * Returns a new KeySet containing no keys.  If this KeySet already contains no keys then
- * the current KeySet is returned.
+ * Returns a new KeySet containing no keys.  Specifically, invoking clear will collapse all keys (
+ * when this is used for expansion) or clear selection (when this is used for selection).
+ * If this KeySet already contains no keys then it is a no-op and the current KeySet is returned.
  *
  * @return {KeySetImpl} a new KeySet with no keys.
  * @expose
@@ -588,6 +605,8 @@ KeySetImpl.prototype.clear = function () {
 
 /**
  * Determines whether the specified key is in this set.
+ * Specifically, this returns true if the key is expanded (when this is used for expansion)
+ * or selected (when this is used for selection), and false otherwise.
  *
  * @param {any} key the key to check whether it is in this set.
  * @return {boolean} true if the specified key is in the set, false otherwise.
@@ -603,6 +622,8 @@ KeySetImpl.prototype.has = function (key) {
 
 /**
  * Returns the keys in this KeySet in the order they are added.
+ * Specifically, this returns a set of keys that are expanded (when this is used for expansion)
+ * or selected (when this is used for selection).
  *
  * @return {Set} the keys in this KeySet in the order they are added.
  * @expose
@@ -615,17 +636,18 @@ KeySetImpl.prototype.values = function () {
   return this.Clone();
 };
 
+
 /* global KeySet:false, KeySetImpl:false */
 
 /**
  * Create a new immutable KeySet that represents a set with all keys.
- * Use this KeySet when select or expand all keys.
+ * Use this KeySet to select or expand all keys.
  *
- * @ojstatus preview
  * @class AllKeySetImpl
  * @classdesc The AllKeySetImpl class represents a set with all keys.
  * @extends {KeySet}
  * @constructor
+ * @final
  * @since 7.0.0
  * @ojsignature {target: "Type", value: "class AllKeySetImpl<K> extends KeySet<K>", genericParameters: [{"name": "K", "description": "Type of Key"}]}
  * @example <caption>Creates a new AllKeySetImpl to select all keys</caption>
@@ -646,9 +668,10 @@ oj.Object.createSubclass(AllKeySetImpl, KeySet, 'AllKeySetImpl');
 oj.AllKeySetImpl = AllKeySetImpl;
 
 /**
- * Returns a new KeySet with the specified keys included in the set.  Specifically,
- * the specified keys will be deleted from the currently excluded keys.
- * If the keys specified are already added then this KeySet is returned.
+ * Returns a new KeySet with the specified keys included in the set.
+ * When a key is added to this KeySet it implies the key will become expanded (when this
+ * is used for expansion) or selected (when this is used for selection).
+ * If the keys specified are already added then it will be a no-op and this KeySet is returned.
  *
  * @param {Set|Array} keys a set of keys to add to this KeySet.
  * @return {AllKeySetImpl} a new KeySet with the specified keys included.
@@ -666,6 +689,8 @@ AllKeySetImpl.prototype.add = function (keys) {
 /**
  * Returns a new KeySet that represents a set with all keys.  If this KeySet already is
  * a set with all keys, then this would just return itself.
+ * Specifically, invoking addAll will cause all keys to be expanded (when this is used for
+ * expansion) or selected (when this is used for selection).
  *
  * @return {AllKeySetImpl} a new KeySet that represents a set with all keys.
  * @expose
@@ -679,7 +704,8 @@ AllKeySetImpl.prototype.addAll = function () {
 };
 
 /**
- * Determines whether this is a set that represents all keys.
+ * Determines whether this is a set that represents all keys.  Since this KeySet represents
+ * all keys, this method will always return true.
  *
  * @return {boolean} true if this is a set that reprsents all keys, false otherwise.
  * @expose
@@ -692,9 +718,10 @@ AllKeySetImpl.prototype.isAddAll = function () {
 };
 
 /**
- * Returns a new KeySet based on this set with the specified keys deleted.  Specifically,
- * the returned KeySet represents all keys except for the keys deleted.
- * If the keys specified are already deleted then this KeySet is returned.
+ * Returns a new KeySet based on this set with the specified keys deleted.
+ * When a key is removed from this KeySet it implies the key will become collapsed (when this
+ * is used for expansion) or de-selected (when this is used for selection).
+ * If the keys specified are already deleted then it will be a no-op and this KeySet is returned.
  *
  * @param {Set|Array} keys a set of keys to remove from this KeySet.
  * @return {AllKeySetImpl} a new KeySet with the specified keys excluded.
@@ -710,7 +737,8 @@ AllKeySetImpl.prototype.delete = function (keys) {
 };
 
 /**
- * Returns a new KeySet containing no keys.
+ * Returns a new KeySet containing no keys.  Specifically, invoking clear will collapse all keys (
+ * when this is used for expansion) or clear selection (when this is used for selection).
  *
  * @return {KeySetImpl} a new KeySet with no keys.
  * @expose
@@ -725,6 +753,8 @@ AllKeySetImpl.prototype.clear = function () {
 
 /**
  * Determines whether the specified key is in this set.
+ * Specifically, this returns true if the key is expanded (when this is used for expansion)
+ * or selected (when this is used for selection), and false otherwise.
  *
  * @param {any} key the key to check whether it is in this set.
  * @return {boolean} true if the specified key is in this set, false otherwise.
@@ -740,6 +770,8 @@ AllKeySetImpl.prototype.has = function (key) {
 
 /**
  * Returns a set of keys of the items that are excluded from this set.
+ * Specifically, this returns a set of keys that are collapsed (when this is used for expansion)
+ * or de-selected (when this is used for selection).
  *
  * @return {Set} the keys of the deleted items.
  * @expose
@@ -752,10 +784,7 @@ AllKeySetImpl.prototype.deletedValues = function () {
   return this.Clone();
 };
 
-/**
- * Copyright (c) 2019, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global AllKeySetImpl:false, KeySetImpl:false */
 
 /**
@@ -790,8 +819,15 @@ KeySetUtils.toArray = function (keyset) {
  * Converts an array into a KeySet
  */
 KeySetUtils.toKeySet = function (arr) {
-  var keyset = arr.inverted ? new AllKeySetImpl() : new KeySetImpl();
-  return keyset.add(arr);
+  var keyset = null;
+  if (arr.inverted) {
+    keyset = new AllKeySetImpl();
+    keyset = keyset.delete(arr);
+  } else {
+    keyset = new KeySetImpl();
+    keyset = keyset.add(arr);
+  }
+  return keyset;
 };
 
 ;return {

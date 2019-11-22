@@ -1,5 +1,5 @@
 import { DataProvider } from '../ojdataprovider';
-import { Converter } from '../ojvalidation-base';
+import Converter = require('../ojconverter');
 import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettableProperties } from '../ojdvt-base';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
@@ -137,7 +137,7 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
     };
     polarGridShape: 'polygon' | 'circle';
     selection: K[];
-    selectionMode: 'single' | 'multiple' | 'none';
+    selectionMode: 'none' | 'single' | 'multiple';
     seriesComparator: ((context1: ojChart.SeriesTemplateContext<D>, context2: ojChart.SeriesTemplateContext<D>) => number);
     sorting: 'ascending' | 'descending' | 'off';
     splitDualY: 'on' | 'off' | 'auto';
@@ -171,6 +171,7 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
             markerSize: number;
         };
         dataItemGaps: string;
+        dataLabelCollision: 'fitInBounds' | 'none';
         dataLabelPosition: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
         dataLabelStyle: CSSStyleDeclaration | CSSStyleDeclaration[];
         funnelBackgroundColor: string;
@@ -938,6 +939,13 @@ export namespace ojChart {
         subId: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        index: number;
+        data: object;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type LegendItem = {
         borderColor?: string;
         categories?: string[];
@@ -1264,7 +1272,7 @@ export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | an
     };
     polarGridShape: 'polygon' | 'circle';
     selection: K[];
-    selectionMode: 'single' | 'multiple' | 'none';
+    selectionMode: 'none' | 'single' | 'multiple';
     seriesComparator: ((context1: ojChart.SeriesTemplateContext<D>, context2: ojChart.SeriesTemplateContext<D>) => number);
     sorting: 'ascending' | 'descending' | 'off';
     splitDualY: 'on' | 'off' | 'auto';
@@ -1298,6 +1306,7 @@ export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | an
             markerSize: number;
         };
         dataItemGaps: string;
+        dataLabelCollision: 'fitInBounds' | 'none';
         dataLabelPosition: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
         dataLabelStyle: CSSStyleDeclaration | CSSStyleDeclaration[];
         funnelBackgroundColor: string;
@@ -2244,6 +2253,13 @@ export namespace ojSparkChart {
         high: number;
         low: number;
         value: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ReferenceObject = {

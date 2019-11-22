@@ -6,7 +6,20 @@ define(['./DvtToolkit', './DvtTimeComponent', './DvtTimeAxis'], function(dvt) {
   "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Style related utility functions for dvt.Gantt.
  * @class
@@ -852,6 +865,12 @@ DvtGanttStyleUtils.getSizeInPixels = function(size, totalSize) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Utility functions for dvt.Gantt tooltips.
  * @class
  */
@@ -1269,6 +1288,12 @@ DvtGanttTooltipUtils.formatValue = function(gantt, type, valueFormat, value) {
   return value;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Animation manager for dvt.Gantt
  * @param {dvt.Gantt} gantt the Gantt component
@@ -2020,6 +2045,12 @@ DvtGanttAnimationManager.prototype.preAnimateRowLabelRemove = function(labelCont
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Data view layout manager for dvt.Gantt
  * @param {dvt.Gantt} gantt the Gantt component
@@ -3686,6 +3717,12 @@ DvtGanttDataLayoutManager.prototype.renderViewport = function(yMin, yMax, bFromS
   return { "minRowInd": minRowInd, "maxRowInd": maxRowInd };
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Gantt component.  The component should never be instantiated directly.  Use the newInstance function instead
  * @param {dvt.Context} context The rendering context.
@@ -5394,6 +5431,12 @@ dvt.Gantt.prototype.HandleTouchStart = function(event)
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Gantt automation service.
  * @param {dvt.Gantt} gantt The owning dvt.Gantt.
  * @class  DvtGanttAutomation
@@ -5526,6 +5569,12 @@ DvtGanttAutomation.prototype.getDomElementForSubId = function(subId)
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -5615,6 +5664,12 @@ DvtGanttDefaults.prototype.getAnimationDuration = function(options)
   return options['_resources'] ? options['_resources']['animationDuration'] : null;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Class representing a GanttDependency node.
  * @param {dvt.Gantt} gantt The gantt component
@@ -6437,6 +6492,12 @@ DvtGanttDependencyNode.prototype.getAriaLabel = function()
   return desc;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Gantt event manager.
  * @param {dvt.Gantt} gantt The owning dvt.Gantt.
@@ -7727,6 +7788,12 @@ DvtGanttEventManager.prototype.OnTouchMoveBubble = function(event) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Gantt keyboard handler.
  * @param {dvt.Gantt} gantt The Gantt component.
  * @param {dvt.EventManager} manager The owning dvt.EventManager.
@@ -8283,6 +8350,12 @@ DvtGanttKeyboardHandler.prototype.processKeyDown = function(event)
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Gantt JSON Parser
  * @class
  * @constructor
@@ -8376,6 +8449,12 @@ DvtGanttParser.prototype.parse = function(options)
   return ret;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Renderer for dvt.Gantt.
  * @class
@@ -9215,6 +9294,12 @@ DvtGanttRenderer._createDefaultMarker = function(gantt)
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Class representing a Gantt row axis
  * @param {dvt.Gantt} gantt the Gantt component
  * @class
@@ -9471,6 +9556,12 @@ DvtGanttRowAxis.prototype.adjustPosition = function()
   this.setClipPath(cp);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Class representing a Gantt row label content (plain text, or custom content from custom renderer)
  * @param {DvtGanttRowAxis} rowAxis The associated row axis container.
@@ -9918,6 +10009,12 @@ DvtGanttRowLabelContent.prototype.getAriaLabel = function()
                                            + ' ' + rowObj['depth'] + ', ' + this.getLabelString(), states);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Class representing a Gantt Row node.
  * @param {dvt.Gantt} gantt the Gantt component
@@ -10390,6 +10487,12 @@ DvtGanttRowNode.prototype.getDataContext = function()
   };
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Class representing a task container (i.e. container for shapes and labels that make up a task).
  * @param {dvt.Gantt} gantt The gantt component
@@ -11710,6 +11813,12 @@ DvtGanttTaskNode.prototype.getDragFeedback = function(mouseX, mouseY) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Class representing a task, which manages a collection
  * of elements (the main shape, baseline, progress, etc).
  * @param {dvt.Gantt} gantt The gantt component
@@ -12641,6 +12750,12 @@ DvtGanttTask.prototype.removeHandles = function(exclude)
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Class that manages a task label
  * @param {dvt.Gantt} gantt The gantt component
  * @param {DvtGanttTaskNode} container The containing task node
@@ -13271,6 +13386,12 @@ DvtGanttTaskLabel.prototype.setFinalY = function(y)
   this._finalY = y;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Class representing a task element path shape.
  * @param {dvt.Context} context
@@ -14025,6 +14146,13 @@ DvtGanttTaskShape.prototype.setDimensions = function(x, y, w, h, r)
   this.setCmds(cmds);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
   return dvt;
 });

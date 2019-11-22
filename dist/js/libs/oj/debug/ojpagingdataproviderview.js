@@ -2,17 +2,15 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 "use strict";
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'jquery', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj, $)
 {
-var PagingDataProviderView = /** @class */ (function () {
-    function PagingDataProviderView(dataProvider) {
+class PagingDataProviderView {
+    constructor(dataProvider) {
         this.dataProvider = dataProvider;
         this._KEY = 'key';
         this._KEYS = 'keys';
@@ -45,40 +43,44 @@ var PagingDataProviderView = /** @class */ (function () {
         this._REMOVE = 'remove';
         this._UPDATE = 'update';
         this._INDEXES = 'indexes';
-        this.AsyncIterable = /** @class */ (function () {
-            function class_1(_parent, _asyncIterator) {
+        this.AsyncIterable = class {
+            constructor(_parent, _asyncIterator) {
                 this._parent = _parent;
                 this._asyncIterator = _asyncIterator;
                 this[Symbol.asyncIterator] = function () {
                     return this._asyncIterator;
                 };
             }
-            return class_1;
-        }());
-        this.AsyncIterator = /** @class */ (function () {
-            function class_2(_parent, _nextFunc, _params) {
+        };
+        this.AsyncIterator = class {
+            constructor(_parent, _nextFunc, _params) {
                 this._parent = _parent;
                 this._nextFunc = _nextFunc;
                 this._params = _params;
             }
-            class_2.prototype['next'] = function () {
-                var result = this._nextFunc(this._params);
+            ['next']() {
+                let result = this._nextFunc(this._params);
                 return Promise.resolve(result);
-            };
-            return class_2;
-        }());
-        this.AsyncIteratorResult = /** @class */ (function () {
-            function class_3(_parent, value, done) {
+            }
+        };
+        this.AsyncIteratorYieldResult = class {
+            constructor(_parent, value) {
                 this._parent = _parent;
                 this.value = value;
-                this.done = done;
                 this[_parent._VALUE] = value;
-                this[_parent._DONE] = done;
+                this[_parent._DONE] = false;
             }
-            return class_3;
-        }());
-        this.FetchListParameters = /** @class */ (function () {
-            function class_4(_parent, size, sortCriteria, filterCriterion) {
+        };
+        this.AsyncIteratorReturnResult = class {
+            constructor(_parent, value) {
+                this._parent = _parent;
+                this.value = value;
+                this[_parent._VALUE] = value;
+                this[_parent._DONE] = true;
+            }
+        };
+        this.FetchListParameters = class {
+            constructor(_parent, size, sortCriteria, filterCriterion) {
                 this._parent = _parent;
                 this.size = size;
                 this.sortCriteria = sortCriteria;
@@ -87,10 +89,9 @@ var PagingDataProviderView = /** @class */ (function () {
                 this[_parent._SORTCRITERIA] = sortCriteria;
                 this[_parent._FILTERCRITERION] = filterCriterion;
             }
-            return class_4;
-        }());
-        this.FetchListResult = /** @class */ (function () {
-            function class_5(_parent, fetchParameters, data, metadata) {
+        };
+        this.FetchListResult = class {
+            constructor(_parent, fetchParameters, data, metadata) {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
                 this.data = data;
@@ -99,10 +100,9 @@ var PagingDataProviderView = /** @class */ (function () {
                 this[_parent._DATA] = data;
                 this[_parent._METADATA] = metadata;
             }
-            return class_5;
-        }());
-        this.FetchByOffsetParameters = /** @class */ (function () {
-            function class_6(_parent, offset, size, sortCriteria, filterCriterion) {
+        };
+        this.FetchByOffsetParameters = class {
+            constructor(_parent, offset, size, sortCriteria, filterCriterion) {
                 this._parent = _parent;
                 this.offset = offset;
                 this.size = size;
@@ -113,10 +113,9 @@ var PagingDataProviderView = /** @class */ (function () {
                 this[_parent._OFFSET] = offset;
                 this[_parent._FILTERCRITERION] = filterCriterion;
             }
-            return class_6;
-        }());
-        this.FetchByOffsetResults = /** @class */ (function () {
-            function class_7(_parent, fetchParameters, results, done) {
+        };
+        this.FetchByOffsetResults = class {
+            constructor(_parent, fetchParameters, results, done) {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
                 this.results = results;
@@ -125,38 +124,34 @@ var PagingDataProviderView = /** @class */ (function () {
                 this[_parent._RESULTS] = results;
                 this[_parent._DONE] = done;
             }
-            return class_7;
-        }());
-        this.FetchByKeysResults = /** @class */ (function () {
-            function class_8(_parent, fetchParameters, results) {
+        };
+        this.FetchByKeysResults = class {
+            constructor(_parent, fetchParameters, results) {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
                 this.results = results;
                 this[_parent._FETCHPARAMETERS] = fetchParameters;
                 this[_parent._RESULTS] = results;
             }
-            return class_8;
-        }());
-        this.ContainsKeysResults = /** @class */ (function () {
-            function class_9(_parent, containsParameters, results) {
+        };
+        this.ContainsKeysResults = class {
+            constructor(_parent, containsParameters, results) {
                 this._parent = _parent;
                 this.containsParameters = containsParameters;
                 this.results = results;
                 this[_parent._CONTAINSPARAMETERS] = containsParameters;
                 this[_parent._RESULTS] = results;
             }
-            return class_9;
-        }());
-        this.ItemMetadata = /** @class */ (function () {
-            function class_10(_parent, key) {
+        };
+        this.ItemMetadata = class {
+            constructor(_parent, key) {
                 this._parent = _parent;
                 this.key = key;
                 this[_parent._KEY] = key;
             }
-            return class_10;
-        }());
-        this.DataProviderMutationEventDetail = /** @class */ (function () {
-            function class_11(_parent, add, remove, update) {
+        };
+        this.DataProviderMutationEventDetail = class {
+            constructor(_parent, add, remove, update) {
                 this._parent = _parent;
                 this.add = add;
                 this.remove = remove;
@@ -165,10 +160,9 @@ var PagingDataProviderView = /** @class */ (function () {
                 this[_parent._REMOVE] = remove;
                 this[_parent._UPDATE] = update;
             }
-            return class_11;
-        }());
-        this.DataProviderOperationEventDetail = /** @class */ (function () {
-            function class_12(_parent, keys, metadata, data, indexes) {
+        };
+        this.DataProviderOperationEventDetail = class {
+            constructor(_parent, keys, metadata, data, indexes) {
                 this._parent = _parent;
                 this.keys = keys;
                 this.metadata = metadata;
@@ -179,10 +173,9 @@ var PagingDataProviderView = /** @class */ (function () {
                 this[_parent._DATA] = data;
                 this[_parent._INDEXES] = indexes;
             }
-            return class_12;
-        }());
-        this.DataProviderAddOperationEventDetail = /** @class */ (function () {
-            function class_13(_parent, keys, afterKeys, addBeforeKeys, metadata, data, indexes) {
+        };
+        this.DataProviderAddOperationEventDetail = class {
+            constructor(_parent, keys, afterKeys, addBeforeKeys, metadata, data, indexes) {
                 this._parent = _parent;
                 this.keys = keys;
                 this.afterKeys = afterKeys;
@@ -197,12 +190,12 @@ var PagingDataProviderView = /** @class */ (function () {
                 this[_parent._DATA] = data;
                 this[_parent._INDEXES] = indexes;
             }
-            return class_13;
-        }());
-        var self = this;
+        };
+        let self = this;
         this._addEventListeners(dataProvider);
         this._currentPage = -1;
         this._pageSize = -1;
+        this._pageCount = -1;
         this._offset = 0;
         this._totalSize = -1;
         this._skipCriteriaCheck = false;
@@ -225,39 +218,40 @@ var PagingDataProviderView = /** @class */ (function () {
         this._doRefreshEvent = false;
         this._mutatingTotalSize = null;
         this._fetchMore = false;
+        this._isUnknownRowCount = false;
     }
-    PagingDataProviderView.prototype.containsKeys = function (params) {
-        var self = this;
+    containsKeys(params) {
+        let self = this;
         return this._checkIfDataInitialized(function () {
             // if containsKeys exists, use that and filter out extra keys
             return self.dataProvider[self._CONTAINSKEYS](params).then(function (value) {
-                var keys = value.results;
+                let keys = value.results;
                 if (!self._isGlobal(params)) {
-                    var currentPageResults_1 = new Set();
-                    var currentPageKeys_1 = self._getCurrentPageKeys();
+                    let currentPageResults = new Set();
+                    let currentPageKeys = self._getCurrentPageKeys();
                     keys.forEach(function (key) {
-                        if (currentPageKeys_1.indexOf(key) != -1) {
-                            currentPageResults_1.add(key);
+                        if (currentPageKeys.indexOf(key) != -1) {
+                            currentPageResults.add(key);
                         }
                     });
-                    return new self.ContainsKeysResults(self, params, currentPageResults_1);
+                    return new self.ContainsKeysResults(self, params, currentPageResults);
                 }
                 else {
                     return new self.ContainsKeysResults(self, params, keys);
                 }
             });
         });
-    };
-    PagingDataProviderView.prototype.fetchByKeys = function (params) {
-        var self = this;
+    }
+    fetchByKeys(params) {
+        let self = this;
         return this._checkIfDataInitialized(function () {
-            var requestedKeys = params.keys;
+            let requestedKeys = params.keys;
             if (!self._isGlobal(params)) {
                 // use the cached fetch data to get values by keys.
                 return self._fetchByOffset(new self.FetchByOffsetParameters(self, self._offset, self._pageSize, self._currentSortCriteria, self._currentFilterCriteria)).then(function (results) {
-                    var result = results['results'];
-                    var mappedResultMap = new Map();
-                    var filteredResults = result.map(function (value) {
+                    let result = results['results'];
+                    let mappedResultMap = new Map();
+                    let filteredResults = result.map(function (value) {
                         if (requestedKeys.has(value[self._METADATA][self._KEY])) {
                             return value;
                         }
@@ -281,26 +275,26 @@ var PagingDataProviderView = /** @class */ (function () {
                 }
             }
         });
-    };
-    PagingDataProviderView.prototype.fetchByOffset = function (params) {
-        var self = this;
+    }
+    fetchByOffset(params) {
+        let self = this;
         return this._checkIfDataInitialized(function () {
-            var offset = params != null ? params[self._OFFSET] > 0 ? params[self._OFFSET] : 0 : 0;
+            let offset = params != null ? params[self._OFFSET] > 0 ? params[self._OFFSET] : 0 : 0;
             params = new self.FetchByOffsetParameters(self, self._offset, self._pageSize, self._currentSortCriteria, self._currentFilterCriteria);
             return self._fetchByOffset(params).then(function (results) {
-                var newResult = results['results'].filter(function (value, index) {
+                let newResult = results['results'].filter(function (value, index) {
                     return index >= offset;
                 });
                 return new self.FetchByOffsetResults(self, self._getLocalParams(params), newResult, results['done']);
             });
         });
-    };
-    PagingDataProviderView.prototype.fetchFirst = function (params) {
-        var self = this;
+    }
+    fetchFirst(params) {
+        let self = this;
         // set up iterator variables
-        var sortCriteria = params != null ? params[self._SORTCRITERIA] : null;
-        var filterCriterion = params != null ? params[self._FILTERCRITERION] : null;
-        var payload = {};
+        let sortCriteria = params != null ? params[self._SORTCRITERIA] : null;
+        let filterCriterion = params != null ? params[self._FILTERCRITERION] : null;
+        let payload = {};
         // we can force a criteria check skip if we know that we shouldn't check
         if (self._skipCriteriaCheck) {
             self._skipCriteriaCheck = false;
@@ -318,19 +312,19 @@ var PagingDataProviderView = /** @class */ (function () {
                 }
             }
         }
-        var offset = self._offset;
-        var size = self._pageSize;
+        let offset = self._offset;
+        let size = self._pageSize;
         // this fetchFirst applies the offset properties on the this.
         return new self.AsyncIterable(self, new self.AsyncIterator(self, function () {
             return function () {
-                var updatedParams = new self.FetchByOffsetParameters(self, offset, size, self._currentSortCriteria, self._currentFilterCriteria);
+                let updatedParams = new self.FetchByOffsetParameters(self, offset, size, self._currentSortCriteria, self._currentFilterCriteria);
                 return self._checkIfDataInitialized(function () {
                     return self._fetchByOffset(updatedParams).then(function (result) {
-                        var results = result['results'];
-                        var data = results.map(function (value) {
+                        let results = result['results'];
+                        let data = results.map(function (value) {
                             return value[self._DATA];
                         });
-                        var metadata = results.map(function (value) {
+                        let metadata = results.map(function (value) {
                             return value[self._METADATA];
                         });
                         offset = offset + metadata.length;
@@ -339,38 +333,43 @@ var PagingDataProviderView = /** @class */ (function () {
                             self.dispatchEvent(new CustomEvent(self._PAGE, { "detail": payload }));
                             payload = {};
                         }
-                        var resultsParam = new self.FetchByOffsetParameters(self, result['fetchParameters']['offset'], self._pageSize, self._currentSortCriteria);
+                        // Datagrid triggers fetchfirst before setPage, so we need to clear this parameter here
+                        self._skipCriteriaCheck = false;
+                        let resultsParam = new self.FetchByOffsetParameters(self, result['fetchParameters']['offset'], self._pageSize, self._currentSortCriteria);
                         // if the dataprovider supports fetchByOffset then we use that to do an offset based fetch
-                        return Promise.resolve(new self.AsyncIteratorResult(self, new self.FetchListResult(self, resultsParam, data, metadata), result[self._DONE]));
+                        if (result[self._DONE]) {
+                            return Promise.resolve(new self.AsyncIteratorReturnResult(self, new self.FetchListResult(self, resultsParam, data, metadata)));
+                        }
+                        return Promise.resolve(new self.AsyncIteratorYieldResult(self, new self.FetchListResult(self, resultsParam, data, metadata)));
                     });
                 });
             };
         }(), params));
-    };
-    PagingDataProviderView.prototype.getCapability = function (capabilityName) {
+    }
+    getCapability(capabilityName) {
         return this.dataProvider.getCapability(capabilityName);
-    };
-    PagingDataProviderView.prototype.getTotalSize = function () {
-        var self = this;
+    }
+    getTotalSize() {
+        let self = this;
         return this._checkIfInitialized(function () {
             return new Promise(function (resolve) {
                 resolve(self._pageSize);
             });
         });
-    };
-    PagingDataProviderView.prototype.isEmpty = function () {
+    }
+    isEmpty() {
         return this.dataProvider.isEmpty();
-    };
+    }
     // Start PagingModel APIs
-    PagingDataProviderView.prototype.getPage = function () {
+    getPage() {
         return this._currentPage;
-    };
-    PagingDataProviderView.prototype.setPage = function (value, options) {
-        var self = this;
+    }
+    setPage(value, options) {
+        let self = this;
         // make sure mutation events are complete before starting
         return this._mutationBusyContext(function () {
             value = parseInt(value, 10);
-            var payload = {};
+            let payload = {};
             payload[self._PAGE] = value;
             payload[self._PREVIOUSPAGE] = self._currentPage;
             self.dispatchEvent(new CustomEvent(self._BEFOREPAGE, payload));
@@ -384,16 +383,25 @@ var PagingDataProviderView = /** @class */ (function () {
                 self._resolveFunc(true);
                 self._updateTotalSize();
             }
-            var params = new self.FetchByOffsetParameters(self, self._offset, self._pageSize, self._currentSortCriteria, self._currentFilterCriteria);
+            let params = new self.FetchByOffsetParameters(self, self._offset, self._pageSize, self._currentSortCriteria, self._currentFilterCriteria);
             return self._fetchByOffset(params).then(function (results) {
-                var data = results['results'];
+                let data = results['results'];
                 if (data.length !== 0) {
                     self._endItemIndex = self._offset + data.length - 1;
                     self._skipCriteriaCheck = true;
                     self.dispatchEvent(new CustomEvent(self._PAGE, { detail: payload }));
                     self._updateTotalSize();
                 }
-                else if (self._currentPage === 0) {
+                else if (self._currentPage !== 0) {
+                    // reset to previous page if no data and not on page 1
+                    // since it means we were done last page
+                    self._currentPage = payload[self._PREVIOUSPAGE];
+                    self._offset = self._currentPage * self._pageSize;
+                    self.dispatchEvent(new CustomEvent(self._PAGECOUNT, { detail: { "previousValue": value, "value": value } }));
+                    // skip refresh
+                    self._doRefreshEvent = false;
+                }
+                else {
                     // no data and page 0 means empty data set
                     self._offset = 0;
                     self._endItemIndex = 0;
@@ -410,58 +418,71 @@ var PagingDataProviderView = /** @class */ (function () {
                 }
             });
         });
-    };
-    PagingDataProviderView.prototype.getStartItemIndex = function () {
+    }
+    getStartItemIndex() {
         return this._offset;
-    };
-    PagingDataProviderView.prototype.getEndItemIndex = function () {
+    }
+    getEndItemIndex() {
         return this._endItemIndex;
-    };
-    PagingDataProviderView.prototype.getPageCount = function () {
+    }
+    getPageCount() {
         return this._pageCount;
-    };
-    PagingDataProviderView.prototype.totalSize = function () {
+    }
+    totalSize() {
         return this._totalSize;
-    };
-    PagingDataProviderView.prototype.totalSizeConfidence = function () {
-        if (this._totalSize === -1) {
-            return 'unknown';
+    }
+    totalSizeConfidence() {
+        if (this._totalSizeConfidence) {
+            return this._totalSizeConfidence;
         }
-        return 'actual';
-    };
+        else {
+            if (this._totalSize === -1) {
+                return 'unknown';
+            }
+            return 'actual';
+        }
+    }
     // End PagingModel APIs
     // Start Paging DataProvider View Helper API
     // helper method for the view to get the global offset
-    PagingDataProviderView.prototype.getGlobalIndex = function (value) {
+    getGlobalIndex(value) {
         return this._offset + value;
-    };
+    }
     // helper method for the view to get the local offset
-    PagingDataProviderView.prototype.getLocalIndex = function (value) {
+    getLocalIndex(value) {
         return value - this._offset;
-    };
+    }
     // End Paging DataProvider View Helper API
     // helper method to get local params
-    PagingDataProviderView.prototype._getLocalParams = function (params) {
+    _getLocalParams(params) {
         return new this.FetchByOffsetParameters(this, this.getLocalIndex(params.offset), params.size, params.sortCriteria, params.filterCriterion);
-    };
+    }
     // helper method to update total size and fire events if necessary
-    PagingDataProviderView.prototype._updateTotalSize = function () {
-        var self = this;
+    _updateTotalSize() {
+        let self = this;
         // fire pagecount/totalsize change events if applicable
-        var previousTotalSize = self._totalSize;
-        var previousPageCount = self._pageCount;
+        let previousTotalSize = self._totalSize;
+        let previousPageCount = self._pageCount;
         return this._checkIfInitialized(function () {
             return self.dataProvider.getTotalSize().then(function (totalSize) {
                 self._totalSize = totalSize;
+                // Reset page count;
+                self._pageCount = -1;
                 if (self._totalSize !== -1) {
+                    if (self._isUnknownRowCount) {
+                        // unknown row count flag means that we should be in
+                        // partial row count mode now
+                        self._isUnknownRowCount = false;
+                        self._totalSizeConfidence = 'atLeast';
+                    }
                     self._pageCount = Math.ceil(self._totalSize / self._pageSize);
                     // update offsets and currentpage if needed
                     if (self._offset >= self._totalSize) {
                         self._offset = self._totalSize - self._totalSize % self._pageSize;
                         self._endItemIndex = self._totalSize - 1;
-                        var newPage = Math.floor(self._totalSize / self._pageSize);
+                        let newPage = Math.floor(self._totalSize / self._pageSize);
                         if (self._currentPage != newPage) {
-                            var payload = {};
+                            let payload = {};
                             payload[self._PAGE] = newPage;
                             payload[self._PREVIOUSPAGE] = self._currentPage;
                             self.dispatchEvent(new CustomEvent(self._PAGE, { detail: payload }));
@@ -478,11 +499,11 @@ var PagingDataProviderView = /** @class */ (function () {
                 return self._pageSize;
             });
         });
-    };
+    }
     // busy context for mutation event handling. 
     // should block setPage calls until done
-    PagingDataProviderView.prototype._mutationBusyContext = function (callback) {
-        var self = this;
+    _mutationBusyContext(callback) {
+        let self = this;
         if (this._isMutating) {
             return self._isMutating.then(function () {
                 self._isMutating = null;
@@ -492,17 +513,17 @@ var PagingDataProviderView = /** @class */ (function () {
         else {
             return callback();
         }
-    };
+    }
     // setup the mutation busyContext
-    PagingDataProviderView.prototype._setupMutationBusyContext = function () {
-        var self = this;
+    _setupMutationBusyContext() {
+        let self = this;
         this._isMutating = new Promise(function (resolve) {
             self._mutationFunc = resolve;
         });
-    };
+    }
     // helper method to check if paging control dataprovider view is initialized with currentpage
-    PagingDataProviderView.prototype._checkIfInitialized = function (callback) {
-        var self = this;
+    _checkIfInitialized(callback) {
+        let self = this;
         if (this._isInitialized) {
             return self._isInitialized.then(function (value) {
                 // make sure currentPage is set
@@ -519,10 +540,10 @@ var PagingDataProviderView = /** @class */ (function () {
         else {
             return callback();
         }
-    };
+    }
     // helper method to check if paging control dataprovider view is initialized with data  
-    PagingDataProviderView.prototype._checkIfDataInitialized = function (callback) {
-        var self = this;
+    _checkIfDataInitialized(callback) {
+        let self = this;
         if (this._isInitialDataLoaded) {
             return self._isInitialDataLoaded.then(function (value) {
                 // make sure currentPage is set
@@ -539,17 +560,17 @@ var PagingDataProviderView = /** @class */ (function () {
         else {
             return callback();
         }
-    };
+    }
     // helper method to determine if a row is in the current page.
-    PagingDataProviderView.prototype._getCurrentPageKeys = function () {
-        var self = this;
-        var currentPageKeys = this._currentResults.map(function (value) {
+    _getCurrentPageKeys() {
+        let self = this;
+        let currentPageKeys = this._currentResults.map(function (value) {
             return value[self._METADATA][self._KEY];
         });
         return currentPageKeys;
-    };
+    }
     // helper method to check that all params for the current fetched data are still the same
-    PagingDataProviderView.prototype._isSameParams = function (params) {
+    _isSameParams(params) {
         if (this._currentParams[this._SIZE] === params[this._SIZE]
             && this._currentParams[this._OFFSET] === params[this._OFFSET]
             && this._currentParams[this._SORTCRITERIA] === params[this._SORTCRITERIA]
@@ -559,9 +580,9 @@ var PagingDataProviderView = /** @class */ (function () {
         else {
             return false;
         }
-    };
+    }
     // helper method to determine if the criteria is the same
-    PagingDataProviderView.prototype._isSameCriteria = function (sortCriteria, filterCriterion) {
+    _isSameCriteria(sortCriteria, filterCriterion) {
         if (sortCriteria) {
             if (!this._currentSortCriteria ||
                 (sortCriteria[0]["attribute"] != this._currentSortCriteria[0]["attribute"]
@@ -587,13 +608,13 @@ var PagingDataProviderView = /** @class */ (function () {
             }
         }
         return true;
-    };
-    PagingDataProviderView.prototype._isGlobal = function (params) {
+    }
+    _isGlobal(params) {
         return params.scope != undefined && params.scope === "global";
-    };
+    }
     // helper method to get current page data
-    PagingDataProviderView.prototype._getCurrentPageData = function () {
-        var self = this;
+    _getCurrentPageData() {
+        let self = this;
         // if params haven't changed, just return what we already have
         // Also need to check that offset and page size are properly set
         if (self._currentParams && self._currentParams['offset'] === self._offset && self._currentParams['size'] === self._pageSize) {
@@ -613,10 +634,10 @@ var PagingDataProviderView = /** @class */ (function () {
                 return result;
             });
         }
-    };
+    }
     // internal fetch by offset method to get page data based on offset
-    PagingDataProviderView.prototype._fetchByOffset = function (params) {
-        var self = this;
+    _fetchByOffset(params) {
+        let self = this;
         return this._checkIfInitialized(function () {
             // if params haven't changed, just return what we already have
             if (self._currentParams && self._isSameParams(params) && !self._hasMutated) {
@@ -637,9 +658,9 @@ var PagingDataProviderView = /** @class */ (function () {
             }
             return self._fetchByOffsetHelper(params);
         });
-    };
-    PagingDataProviderView.prototype._fetchByOffsetHelper = function (params) {
-        var self = this;
+    }
+    _fetchByOffsetHelper(params) {
+        let self = this;
         // perform a fetch by offset using the available params.
         return self.dataProvider[self._FETCHBYOFFSET](params).then(function (result) {
             // store results locally. If fetchMore is true, we should append instead of replace
@@ -653,26 +674,40 @@ var PagingDataProviderView = /** @class */ (function () {
             }
             self._fetchMore = false;
             // check if we are at the end of the available data
-            var resultSize = self._currentResults.length;
-            var newSize = self._offset + resultSize;
+            let resultSize = self._currentResults.length;
+            let newSize = self._offset + resultSize;
             if (result['done']) {
                 self._pageCount = Math.ceil((newSize) / self._pageSize);
+                // if partial, can change back to exact.
+                if (self._totalSizeConfidence) {
+                    self._totalSizeConfidence = null;
+                }
+            }
+            else if (!result['done'] && newSize >= self._totalSize && self._totalSize > -1 && params.size === self._pageSize) {
+                // we have more data than we expect given the totalSize, so we should be in partial mode
+                self._totalSizeConfidence = 'atLeast';
+                self._pageCount = self._pageCount + 1;
             }
             else if (!result['done'] && resultSize < self._pageSize) {
                 // we are not done and we have less data than we expected.
                 // need to refetch with new params since the underlying dataprovider
                 // fetchSize is smaller than pageSize
                 self._fetchMore = true;
-                var newParams = new self.FetchByOffsetParameters(self, newSize, self._pageSize - resultSize, self._currentSortCriteria, self._currentFilterCriteria);
+                let newParams = new self.FetchByOffsetParameters(self, newSize, self._pageSize - resultSize, self._currentSortCriteria, self._currentFilterCriteria);
                 return self._fetchByOffsetHelper(newParams);
             }
+            else if (!result['done'] && self._totalSize === -1) {
+                // either we haven't initialized total size yet, 
+                // or we are in unknown row count mode
+                self._isUnknownRowCount = true;
+            }
             // check if pageSize matches length or if length and offset hits total size.
-            if (self._pageSize == self._currentResults.length || self._currentResults.length + self._offset >= self._totalSize) {
+            if (self._pageSize == self._currentResults.length || (newSize >= self._totalSize && self._totalSize > -1)) {
                 self._currentIsDone = true;
             }
             // updated data so set mutated flag to false;
             self._hasMutated = false;
-            return new self.FetchByOffsetResults(self, self._getLocalParams(params), self._currentResults, self._currentIsDone);
+            return new self.FetchByOffsetResults(self, self._getLocalParams(self._currentParams), self._currentResults, self._currentIsDone);
         }).catch(function (reject) {
             // if fetch is rejected, set all current records to null and reject.
             self._hasMutated = false;
@@ -682,17 +717,17 @@ var PagingDataProviderView = /** @class */ (function () {
             self._currentParams = null;
             return Promise.reject(reject);
         });
-    };
+    }
     // Sanity Check helper method to correct any issues with the params for fetch by offset.
-    PagingDataProviderView.prototype._cleanFetchParams = function (params) {
-        var self = this;
+    _cleanFetchParams(params) {
+        let self = this;
         // Sanity Check that the offset is within acceptable range
-        var newOffset = params.offset;
+        let newOffset = params.offset;
         if (newOffset >= self._offset + self._pageSize || newOffset < self._offset) {
             newOffset = self._offset;
         }
         // Sanity Check that the pageSize is positive
-        var newSize = params.size;
+        let newSize = params.size;
         if (newSize <= 0) {
             newSize = self._pageSize;
         }
@@ -700,25 +735,25 @@ var PagingDataProviderView = /** @class */ (function () {
         if (newOffset + newSize > self._offset + self._pageSize) {
             newSize = self._offset + self._pageSize - newOffset;
         }
-        var totalSize = self._mutatingTotalSize === null ? self._totalSize : self._mutatingTotalSize;
-        if (totalSize > 0) {
+        let totalSize = self._mutatingTotalSize === null ? self._totalSize : self._mutatingTotalSize;
+        if (totalSize > 0 && self._totalSizeConfidence !== 'atLeast') {
             // Sanity Check that the size and offset combined are within bounds of the total page size
             if (newOffset + newSize > totalSize) {
                 newSize = totalSize - newOffset;
             }
         }
         return new self.FetchByOffsetParameters(self, newOffset, newSize, params.sortCriteria, params.filterCriterion);
-    };
+    }
     // helper method to fetch data from dataprovider
     // needs to make sure that no new mutation events have 
     // occurred while fetching to prevent mistakes.
-    PagingDataProviderView.prototype._mutationEventDataFetcher = function (callback) {
-        var self = this;
+    _mutationEventDataFetcher(callback) {
+        let self = this;
         this.dataProvider.getTotalSize().then(function (totalSize) {
             if (totalSize > 0) {
                 self._mutatingTotalSize = totalSize;
                 if (self._offset >= totalSize) {
-                    self._offset = totalSize - totalSize % self._pageSize;
+                    self._offset = totalSize - ((totalSize - 1) % self._pageSize) - 1;
                     self._endItemIndex = totalSize - 1;
                 }
             }
@@ -743,46 +778,68 @@ var PagingDataProviderView = /** @class */ (function () {
                 }
             });
         });
-    };
+    }
     // helper method to handle mutation events with index
-    PagingDataProviderView.prototype._processMutationEventsByKey = function (result) {
-        var self = this;
-        var removeMetadataArray = [];
-        var removeDataArray = [];
-        var removeIndexArray = [];
-        var removeKeySet = new Set();
-        var addMetadataArray = [];
-        var addDataArray = [];
-        var addIndexArray = [];
-        var addKeySet = new Set();
-        var updateMetadataArray = [];
-        var updateDataArray = [];
-        var updateIndexArray = [];
-        var updateKeySet = new Set();
+    _processMutationEventsByKey(result) {
+        let self = this;
+        let removeMetadataArray = [];
+        let removeDataArray = [];
+        let removeIndexArray = [];
+        let removeKeySet = new Set();
+        let addMetadataArray = [];
+        let addDataArray = [];
+        let addIndexArray = [];
+        let addKeySet = new Set();
+        let updateMetadataArray = [];
+        let updateDataArray = [];
+        let updateIndexArray = [];
+        let updateKeySet = new Set();
         //TODO iterate through previous page data vs current page data 
         // and generate the mutation event detail
-        var previousPageData = self._currentResultsForMutation.map(function (item, index) {
+        let previousPageData = self._currentResultsForMutation.map(function (item, index) {
             return { item: item, index: index };
         });
-        var updatedPageData = result['results'].map(function (item, index) {
+        let updatedPageData = result['results'].map(function (item, index) {
             return { item: item, index: index };
         });
-        var previousPageDataKeys = previousPageData.map(function (item) {
+        let previousPageDataKeys = previousPageData.map(function (item) {
             return item.item.metadata.key;
         });
-        var updatedPageDataKeys = updatedPageData.map(function (item) {
+        let updatedPageDataKeys = updatedPageData.map(function (item) {
             return item.item.metadata.key;
         });
-        var removedItems = previousPageData.filter(function (item) {
+        let removedItems = previousPageData.filter(function (item) {
             return updatedPageDataKeys.indexOf(item.item.metadata.key) < 0;
         });
-        var addedItems = updatedPageData.filter(function (item) {
+        let addedItems = updatedPageData.filter(function (item) {
             return previousPageDataKeys.indexOf(item.item.metadata.key) < 0;
         });
-        var updateItems = previousPageData.filter(function (item) {
-            var updatedIndex = updatedPageDataKeys.indexOf(item.item.metadata.key);
-            return updatedIndex > -1 && updatedPageData[updatedIndex].item.data != item.data;
+        // Use filtered mutation event queue to track update events
+        let updateMutationsIndices = self._mutationEventQueue.filter(function (item) {
+            return !item.detail.add && !item.detail.remove && item.detail.update;
+        }).map(function (item) {
+            return item.detail.update.indexes;
         });
+        // flatten array so we can check for duplicates
+        updateMutationsIndices = updateMutationsIndices.reduce(function (a, b) {
+            return a.concat(b);
+        }, []);
+        // remove duplicate update entries
+        updateMutationsIndices = updateMutationsIndices.filter(function (item, index) {
+            return updateMutationsIndices.indexOf(item) === index;
+        });
+        // Use tracked update event items to check whether or not
+        // existing items in the previous page data that are in the
+        // same place in the current page date have updated.
+        let updateItems = previousPageData.filter(function (item) {
+            let updatedIndex = updatedPageDataKeys.indexOf(item.item.metadata.key);
+            if (updateMutationsIndices.indexOf(updatedIndex) > -1) {
+                return true;
+            }
+            return false;
+        });
+        // clear mutation event queue
+        self._mutationEventQueue = [];
         if (addedItems.length > 0) {
             addedItems.forEach(function (item) {
                 addMetadataArray.push(updatedPageData[item.index].item.metadata);
@@ -814,9 +871,9 @@ var PagingDataProviderView = /** @class */ (function () {
             });
         }
         // build mutation event detail and fire if not null
-        var operationAddEventDetail = null;
-        var operationRemoveEventDetail = null;
-        var operationUpdateEventDetail = null;
+        let operationAddEventDetail = null;
+        let operationRemoveEventDetail = null;
+        let operationUpdateEventDetail = null;
         if (addIndexArray.length > 0) {
             operationAddEventDetail = new self.DataProviderAddOperationEventDetail(self, addKeySet, null, null, addMetadataArray, addDataArray, addIndexArray);
         }
@@ -827,12 +884,12 @@ var PagingDataProviderView = /** @class */ (function () {
             operationUpdateEventDetail = new self.DataProviderOperationEventDetail(self, updateKeySet, updateMetadataArray, updateDataArray, updateIndexArray);
         }
         if (operationAddEventDetail != null || operationRemoveEventDetail != null || operationUpdateEventDetail != null) {
-            var mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
+            let mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
             self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
         }
-    };
-    PagingDataProviderView.prototype._addEventListeners = function (dataprovider) {
-        var self = this;
+    }
+    _addEventListeners(dataprovider) {
+        let self = this;
         dataprovider.addEventListener(this._REFRESH, function (event) {
             // Treat it as a set page to 0 and refresh if not
             // directly after a mutation b/c mutation event trigger
@@ -881,22 +938,19 @@ var PagingDataProviderView = /** @class */ (function () {
                 });
             }
         });
-    };
-    return PagingDataProviderView;
-}());
+    }
+}
 oj['PagingDataProviderView'] = PagingDataProviderView;
 oj.PagingDataProviderView = PagingDataProviderView;
 oj.EventTargetMixin.applyMixin(PagingDataProviderView);
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* jslint browser: true,devel:true*/
 /**
- * @ojstatus preview
+ *
  * @export
+ * @final
  * @class oj.PagingDataProviderView
  * @implements oj.PagingModel
  * @implements oj.DataProvider
@@ -923,7 +977,7 @@ oj.EventTargetMixin.applyMixin(PagingDataProviderView);
  * Check if rows are contained by keys (default: local dataset)
  * FetchByKeysParameter scope may be set to "global" to check in global dataset
  *
- * @ojstatus preview
+ *
  * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
  * @return {Promise.<oj.ContainsKeysResults>} Promise which resolves to {@link oj.ContainsKeysResults}
  * @export
@@ -955,7 +1009,7 @@ oj.EventTargetMixin.applyMixin(PagingDataProviderView);
 /**
  * Fetch rows by offset within context of the current page data.
  *
- * @ojstatus preview
+ *
  * @param {oj.FetchByOffsetParameters} params Fetch by offset parameters
  * @return {Promise.<oj.FetchByOffsetResults>} Promise which resolves to {@link oj.FetchByOffsetResults}
  * @export
@@ -1036,7 +1090,7 @@ oj.EventTargetMixin.applyMixin(PagingDataProviderView);
 /**
  * Add a callback function to listen for a specific event type.
  *
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.PagingDataProviderView
@@ -1052,7 +1106,7 @@ oj.EventTargetMixin.applyMixin(PagingDataProviderView);
 /**
  * Remove a listener previously registered with addEventListener.
  *
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.PagingDataProviderView
@@ -1068,7 +1122,7 @@ oj.EventTargetMixin.applyMixin(PagingDataProviderView);
 /**
  * Dispatch an event and invoke any registered listeners.
  *
- * @ojstatus preview
+ *
  * @export
  * @expose
  * @memberof oj.PagingDataProviderView

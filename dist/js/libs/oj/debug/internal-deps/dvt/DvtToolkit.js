@@ -9,8 +9,20 @@ define(['jquery'], function($) {
   // Declare dvt, since it will be used in the toolkit source.
   var dvt;
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 dvt = (function() {
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  * Namespace for DVT toolkit.
@@ -83,7 +95,12 @@ dvt.Obj.compareValues = function(ctx, obj1, obj2) {
   return ctx.oj.KeyUtils.equals(obj1, obj2);
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Context object corresponding to an SVG document. The constructor creates a SVG document inside the specified
  * container.
@@ -102,7 +119,7 @@ dvt.Context = function(container, id, referenceDiv) {
   container.appendChild(this._root);//@HTMLUpdateOK
 
   //  - Fix for flex layout and height inheritance in Chrome and Safari
-  if (dvt.Agent.browser === 'chrome' || dvt.Agent.browser === 'safari') {
+  if (dvt.Agent.engine === 'blink' || dvt.Agent.browser === 'safari') {
     this._root.style.position = 'absolute';
     this._root.style.left = '0px';
     this._root.style.top = '0px';
@@ -659,7 +676,7 @@ dvt.Context.prototype.setActiveElement = function(displayable) {
 };
 
 dvt.Context._generateActiveElementId = function(displayable) {
-  var randomizedPrefix = '_dvtActiveElement' + (dvt.Agent.isEnvironmentTest() ? '' : Math.floor(Math.random() * 1000000000));//@RandomNumberOk;
+  var randomizedPrefix = '_dvtActiveElement' + (dvt.Agent.isEnvironmentTest() ? '' : Math.floor(Math.random() * 1000000000));//@RandomNumberOK
   var dispId = displayable.getId();
   // Use the displayable ID as a suffix if it's a string or a number
   if (typeof dispId ==='string' || dispId instanceof String || typeof dispId === 'number' || dispId instanceof Number) {
@@ -822,8 +839,8 @@ dvt.Context.prototype.previousKeyboardFocus = function() {
  */
 dvt.Context.prototype.getNumberConverter = function(options) {
   var localeHelpers = this.getLocaleHelpers();
-  if (localeHelpers['numberConverterFactory'])
-    return localeHelpers['numberConverterFactory']['createConverter'](options);
+  if (localeHelpers.createNumberConverter)
+    return localeHelpers.createNumberConverter(options);
 
   return null;
 };
@@ -979,7 +996,12 @@ dvt.Context.prototype.destroy = function() {
   this._destroyed = true;
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class representing a scheduling service.
   * @extends {dvt.Obj}
@@ -1093,7 +1115,12 @@ DvtScheduler.prototype.play = function()
   }
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Class representing an animator that animates a property change.
  * @class dvt.Animator
@@ -1482,7 +1509,12 @@ var DvtAnimatorPropItem = function(type, setter, destVal) {
 
 // Nested class end ////////////////////////////////////////
 
-// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Abstract base class representing something that can be played, like an animation.
   * @extends {dvt.Obj}
@@ -1664,7 +1696,12 @@ dvt.Playable.prototype.stop = function(bJumpToEnd)
   //subclasses must override
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class representing a set of DvtPlayables that are played at the same time.
   * The playables should be passed into the constructor as either:
@@ -1842,7 +1879,12 @@ dvt.ParallelPlayable.prototype.DoEnd = function()
   this._animationRequestId = null;
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class representing a set of DvtPlayables that are played one after another.
   * The playables should be passed into the constructor as either:
@@ -2042,6 +2084,12 @@ dvt.SequentialPlayable.prototype.DoEnd = function()
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Animation handler for black box animations.
  * @class dvt.BlackBoxAnimationHandler
  */
@@ -2143,6 +2191,12 @@ dvt.BlackBoxAnimationHandler._offsetObjects = function(objs, offsetX, offsetY) {
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Animation handler for data objects.
  * @param {dvt.Context} context The platform specific context object.
@@ -2313,7 +2367,12 @@ dvt.DataAnimationHandler.prototype.getNumPlayables = function()
   return this._playables.length;
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class defining easing functions for animations.
   * @extends {dvt.Obj}
@@ -2591,7 +2650,12 @@ dvt.Easing.prototype.Init = function()
 {
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class defining interpolation functions for animations.
   * @extends {dvt.Obj}
@@ -3295,7 +3359,12 @@ DvtInterpolator._map[dvt.Animator.TYPE_FILL] = DvtInterpolator.InterpolateFill;
 DvtInterpolator._map[dvt.Animator.TYPE_STROKE] = DvtInterpolator.InterpolateStroke;
 DvtInterpolator._map[dvt.Animator.TYPE_POLYLINE] = DvtInterpolator.InterpolatePolyline;
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class representing a timer.
   * @extends {dvt.Obj}
@@ -3462,7 +3531,12 @@ dvt.Timer.prototype.StopTimer = function()
   }
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Abstract base class representing an animation.
   * @extends {dvt.Playable}
@@ -4021,7 +4095,12 @@ dvt.BaseAnimation.prototype.RestoreOriginalMatrices = function()
   }
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Class providing the ability to create a custom animation using a dvt.Animator.
  * @param {dvt.Context} context The platform specific context object.
@@ -4049,7 +4128,12 @@ dvt.CustomAnimation.prototype.getAnimator = function()
   return this._animator;
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class representing an animation to fade in an object.
   * @extends {dvt.BaseAnimation}
@@ -4098,7 +4182,12 @@ dvt.AnimFadeIn.prototype.InitEndState = function(obj)
   this._animator.addProp(dvt.Animator.TYPE_NUMBER, obj, obj.getAlpha, obj.setAlpha, 1);
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class representing an animation to fade out an object.
   * @extends {dvt.BaseAnimation}
@@ -4137,7 +4226,12 @@ dvt.AnimFadeOut.prototype.InitEndState = function(obj)
   this._animator.addProp(dvt.Animator.TYPE_NUMBER, obj, obj.getAlpha, obj.setAlpha, 0);
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class representing an animation to move an object by a given amount.
   * @extends {dvt.BaseAnimation}
@@ -4205,7 +4299,12 @@ dvt.AnimMoveBy.prototype.InitEndState = function(obj)
   this._currIndex++;
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class representing an animation to move an object to a given point.
   * @extends {dvt.BaseAnimation}
@@ -4273,7 +4372,12 @@ dvt.AnimMoveTo.prototype.InitEndState = function(obj)
   this._currIndex++;
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class representing an animation to move and fade in an object.  The object
   * is moved in from the edges of a provided rectangle as it fades.
@@ -4351,7 +4455,12 @@ dvt.AnimScaleFadeIn.prototype.InitEndState = function(obj)
   this._animator.addProp(dvt.Animator.TYPE_MATRIX, obj, obj.getMatrix, obj.setMatrix, currMat);
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class representing an animation to scale an object to a given value.
   * @extends {dvt.BaseAnimation}
@@ -4419,7 +4528,12 @@ dvt.AnimScaleTo.prototype.InitEndState = function(obj)
   this._currIndex++;
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class representing an animation to pop an object in.
   * @extends {dvt.BaseAnimation}
@@ -4583,7 +4697,12 @@ dvt.AnimPopIn.prototype.RemoveTempContainers = function() {
   }
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class used to animate replacing one set of display objects with another set by
   * fading out the old and fading in the new.
@@ -4623,7 +4742,12 @@ DvtCombinedAnimFade.prototype.Init = function(context, outObjs, inObjs, duration
   DvtCombinedAnimFade.superclass.Init.call(this, context, [fadeOut, fadeIn]);
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class used to animate replacing one set of display objects with another set by
   * moving out the old and moving in the new.
@@ -4664,7 +4788,12 @@ dvt.CombinedAnimMoveBy.prototype.Init = function(context, outObjs, inObjs, outOf
   dvt.CombinedAnimMoveBy.superclass.Init.call(this, context, [moveOut, moveIn]);
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Class used to animate replacing one set of display objects with another set by
   * moving and fading out the old and moving and fading in the new.  The objects
@@ -4720,7 +4849,12 @@ DvtCombinedAnimScaleFade.prototype.Init = function(context, outObjs, inObjs, bou
   DvtCombinedAnimScaleFade.superclass.Init.call(this, context, [fadeOut, fadeIn]);
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /*-------------------------------------------------------------------------*/
 /*   dvt.ColorUtils       A static class for css color manipulation         */
 /*-------------------------------------------------------------------------*/
@@ -5605,7 +5739,12 @@ dvt.ColorUtils.fixColorForPlatform = function(color, alpha) {
   return colorObj;
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -5736,7 +5875,12 @@ dvt.ClipPath.prototype.addPath = function(d)
   this._regions.push(obj);
 };
 
-// Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2015 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  *  Defines a mask.
  *  @param {dvt.GradientFill} gradient The gradient to use for this mask
@@ -5780,6 +5924,12 @@ dvt.Mask.prototype.getBounds = function() {
   return this._bounds;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * An immutable shape fill class rendering a solid fill color.
   * @constructor
@@ -5833,13 +5983,19 @@ dvt.SolidFill.prototype.equals = function(fill) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
   * An immutable class representing the stroke properties for a solid line.
   * @param {String} color  A css color specification for the stroke color.
   * @param {String} alpha  An optional alpha. Can be used to supplement the alpha specified by the stroke color.
   *                     If omitted, the alpha specifed by the stroke color (or 1 if it does not specify an alpha) is used.
   * @param {number} width  The width of the stroke line.  If omitted, the default width is 1.
   * @param {boolean} props.isFixedWidth True if this stroke should be of fixed width. If omitted, the default is false.
-  * 
+  *
   * @param {Object} dashProps Additional properties for customizing dashed and dotted line types.
   * @param {String} dashProps.dashArray  For dashed lines, specifies the dash and space size.
   *                           The string contains a list of numbers separated by commas
@@ -5847,7 +6003,7 @@ dvt.SolidFill.prototype.equals = function(fill) {
   *                           should have an even number of entries, but if an odd number
   *                           is used the list will be repeated so that the entry count is even.
   * @param {number} dashProps.dashOffset Offset on the rendering of the dashArray.
-  * 
+  *
   * @param {Object} lineProps Additional properties for customizing line types.
   * @param {string} lineProps.lineJoin Specifies the type of line end. See 'stroke-linejoin' attribute
   *                                     doc for valid and default values.
@@ -5916,10 +6072,16 @@ dvt.Stroke.getDefaultDashProps = function (type, width) {
     return {dashArray: '' + Math.max(6, width * 2)};
   if (type == 'dotted')
     return {dashArray: '' + Math.max(2, width)};
-  
+
   return null;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * @class dvt.Shadow
   * Represents an immutable drop shadow.  The shadow object properties are a superset of values, and
@@ -5964,6 +6126,12 @@ dvt.Obj.createSubclass(dvt.Shadow, dvt.Obj);
 
 dvt.Shadow._uniqueId = 1;
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   *   Creates an immutable gradient specification (shareable by other shapes).
   *   @extends {dvt.Obj}
@@ -6068,6 +6236,12 @@ dvt.GradientFill.prototype.equals = function(fill) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
   *   Creates an immutable linear gradient fill.
   *   @extends {dvt.GradientFill}
   *   @class
@@ -6106,14 +6280,14 @@ dvt.Obj.createSubclass(dvt.LinearGradientFill, dvt.GradientFill);
 dvt.LinearGradientFill.prototype.Init = function(angle, arColors, arAlphas, arStops, arBounds)
 {
   dvt.LinearGradientFill.superclass.Init.call(this, arColors, arAlphas, arStops, arBounds);
-  
+
   if (angle === null || isNaN(angle)) {
     angle = 0;
   }
   else if (Math.abs(angle) > 360) {
     angle %= 360;
   }
-  
+
   this._angle = angle;
 };
 
@@ -6139,6 +6313,12 @@ dvt.LinearGradientFill.prototype.equals = function(fill) {
     return false;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  *   Creates an immutable pattern specification (shareable by other shapes).
  *   @extends {dvt.Obj}
@@ -6289,7 +6469,12 @@ dvt.PatternFill._convertPatternValue = function(patternStr) {
     return patternStr;
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -6338,7 +6523,12 @@ dvt.SelectionEffectUtils.getSelectingCursor = function()
 };
 
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /*---------------------------------------------------------------------*/
 /*    dvt.KeyboardFocusEffect     Manages keyboard focus effect         */
 /*---------------------------------------------------------------------*/
@@ -6406,7 +6596,7 @@ dvt.KeyboardFocusEffect.prototype.CreateStroke = function()
   var width = dvt.KeyboardFocusEffect.FOCUS_STROKE_WIDTH;
   var alpha = dvt.KeyboardFocusEffect.FOCUS_STROKE_ALPHA;
   var dashProps;
-  if ((dvt.Agent.browser === 'safari' || dvt.Agent.browser === 'chrome')) {
+  if ((dvt.Agent.browser === 'safari' || dvt.Agent.engine === 'blink')) {
     width = 2;
   } else {
     dashProps = {
@@ -6418,12 +6608,12 @@ dvt.KeyboardFocusEffect.prototype.CreateStroke = function()
   return new dvt.Stroke(color, alpha, width, false, dashProps);
 };
 
-dvt.KeyboardFocusEffect.prototype.getEffect = function() 
+dvt.KeyboardFocusEffect.prototype.getEffect = function()
 {
   return this._focusEffect;
 };
 
-dvt.KeyboardFocusEffect.prototype.setEffect = function(effect) 
+dvt.KeyboardFocusEffect.prototype.setEffect = function(effect)
 {
   this._focusEffect = effect;
 };
@@ -6442,7 +6632,12 @@ dvt.KeyboardFocusEffect.prototype.hide = function() {
     this._container.removeChild(this._focusEffect);
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * @constructor
  */
@@ -6485,7 +6680,12 @@ DvtSvgFilterContext.prototype.createResultId = function(id)
   return (id + (this._counter++));
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -6620,7 +6820,12 @@ DvtSvgFilterUtils.CreateFilterId = function()
   return ('filt' + (DvtSvgFilterUtils._counter++));
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /*---------------------------------------------------------------------------*/
 /*    DvtSvgGradientUtils    A static class for SVG gradient property manip- */
 /*                           ulation.                                        */
@@ -6761,7 +6966,12 @@ DvtSvgGradientUtils.createElem = function(grad, id)
   return elemGrad;
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /*---------------------------------------------------------------------------*/
 /*    DvtSvgPatternFillUtils    A static class for SVG pattern fill property */
 /*                              manipulation.                                */
@@ -7021,7 +7231,12 @@ DvtSvgPatternFillUtils.CreatePatternElems = function(patternFill, parentElem)
   }
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /*---------------------------------------------------------------------------*/
 /*   DvtSvgShadowUtils    A static class for SVG drop shadow property manip- */
 /*                        ulation.                                           */
@@ -7185,7 +7400,12 @@ DvtSvgShadowUtils.createFilterPrimitives = function(filt, shadow, svgDisplayable
   dvt.ToolkitUtils.appendChildElem(filt, elemO);
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  * Defines a (w,h) dimension.
@@ -7200,7 +7420,12 @@ dvt.Dimension = function(w, h)
   this.h = ((h === null || isNaN(h)) ? 0 : h);
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  *  Creates an immutable matrix object. Note that methods that mutate the matrix after
@@ -7227,7 +7452,7 @@ dvt.Dimension = function(w, h)
  *  @param {number} tx Optional
  *  @param {number} ty Optional
  */
-dvt.Matrix = function(a, b, c, d, tx, ty) 
+dvt.Matrix = function(a, b, c, d, tx, ty)
 {
   //don't allow users to set individual elements, because we
   //may need to adjust transforms for different platforms, for
@@ -7342,7 +7567,7 @@ dvt.Matrix.prototype.getTy = function()
 };
 
 /**
- *  Returns a new dvt.Matrix which is a concatenation of the given matrix 
+ *  Returns a new dvt.Matrix which is a concatenation of the given matrix
  *  with this matrix.
  *  @param {dvt.Matrix} mat   The matrix to concatenate with this matrix.
  *  @return {dvt.Matrix}
@@ -7564,12 +7789,17 @@ dvt.Matrix.prototype.transformPoint = function(p)
  */
 dvt.Matrix.prototype.isIdentity = function()
 {
-  return (this._a === 1 && this._b === 0 && this._c === 0 && this._d === 1 && 
+  return (this._a === 1 && this._b === 0 && this._c === 0 && this._d === 1 &&
     this._tx === 0 && this._ty === 0);
 };
 
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  * Defines an (x,y) coordinate.
@@ -7599,7 +7829,12 @@ dvt.Point.prototype.equals = function(p)
   return false;
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
   *  Defines the geometry of a rectangle. Top-left (x,y), and width and height.
@@ -7637,7 +7872,7 @@ dvt.Rectangle.create = function(ar)
 /**
  * Returns true if the rectangle contains the given point.
  */
-dvt.Rectangle.prototype.containsPoint = function(nX, nY) 
+dvt.Rectangle.prototype.containsPoint = function(nX, nY)
 {
   return (nX >= this.x && nX <= this.x + this.w && nY >= this.y && nY <= this.y + this.h);
 };
@@ -7654,7 +7889,7 @@ dvt.Rectangle.prototype.getCenter = function()
  * @param {dvt.Rectangle}  rect  the supplied rectangle.
  * @return {dvt.Rectangle} a new rectangle that is the union of this and the supplied rectangle.
  */
-dvt.Rectangle.prototype.getUnion = function(rect) 
+dvt.Rectangle.prototype.getUnion = function(rect)
 {
   var u = new dvt.Rectangle();
 
@@ -7695,7 +7930,7 @@ dvt.Rectangle.prototype.getUnion = function(rect)
  * @param {dvt.Rectangle}  rect  the supplied rectangle.
  * @return {dvt.Rectangle} a new rectangle that is the intersection of this and the supplied rectangle. Returns null if there is no intersection.
  */
-dvt.Rectangle.prototype.getIntersection = function(rect) 
+dvt.Rectangle.prototype.getIntersection = function(rect)
 {
   var i = new dvt.Rectangle();
 
@@ -7731,7 +7966,7 @@ dvt.Rectangle.prototype.getIntersection = function(rect)
  * Returns true if the rectangle intersectes the supplied rectangle.
  * @param {dvt.Rectangle}  rect  the supplied rectangle.
  */
-dvt.Rectangle.prototype.intersects = function(rect) 
+dvt.Rectangle.prototype.intersects = function(rect)
 {
   if (rect && rect.w !== 0 && rect.h !== 0) {  // ignore zero size rect's
     if (this.w !== 0 && this.h !== 0) {        //  ..     ..   ..    ..
@@ -7771,6 +8006,12 @@ dvt.Rectangle.prototype.toString = function() {
   return this.x + ', ' + this.y + ', ' + this.w + ', ' + this.h;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * 2D array implementation for use in improving performance.  Alternate implementation options may be added in
  * the future as needed.
@@ -7830,6 +8071,12 @@ dvt.Array2D.prototype._getInner = function(keyA) {
   return innerMap;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * LRU cache implementation for use in improving performance.  Alternate cache implementation options may be added in
  * the future as needed.
@@ -7943,6 +8190,12 @@ dvt.Cache.prototype.toString = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  *  A static class for DnD support.
  *  @class dvt.DragAndDropUtils
  */
@@ -7995,6 +8248,12 @@ dvt.DragAndDropUtils.getDragFeedbackBounds = function(displayables, targetCoordi
   return bounds;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  *  A static class for chart layout.
  *  @class dvt.LayoutUtils
@@ -8115,7 +8374,12 @@ dvt.LayoutUtils.getBubbleSize = function(z, minZ, maxZ, minSize, maxSize) {
   return Math.sqrt(area);
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Defines miscellaneous math constants and utilities.
  * @class dvt.Math
@@ -8218,6 +8482,12 @@ dvt.Math.calculateAngleBetweenTwoVectors = function(vector1X, vector1Y, vector2X
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * 2D map implementation for use in improving performance.  Alternate implementation options may be added in
  * the future as needed.
  * @class dvt.Map2D
@@ -8276,6 +8546,12 @@ dvt.Map2D.prototype._getInnerMap = function(keyA) {
   return innerMap;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * A specialized map used for tracking whether a set of pixel coords has been drawn to.
  * @param {number=} scale The scale factor determining how many pixels in each direction the map coords correspond to.
@@ -8439,7 +8715,12 @@ dvt.PixelMap.prototype._adjustForScale = function(coord) {
   return Math.floor(coord / this._scale);
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  * dvt.ImageLoader
@@ -8454,7 +8735,7 @@ dvt.Obj.createSubclass(dvt.ImageLoader, dvt.Obj);
  * regarding the number of times that an event listener will be called if
  * it is added to the same element multiple times.
  */
-dvt.ImageLoader.addBubbleEventListener = function(element, type, listener) 
+dvt.ImageLoader.addBubbleEventListener = function(element, type, listener)
 {
   if (window.addEventListener) {
     dvt.ToolkitUtils.addDomEventListener(element, type, listener, false);
@@ -8570,7 +8851,12 @@ dvt.ImageLoader._addListenerToQueue = function(queue, listener) {
   }
 };
 
-// Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2012 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 /**
@@ -8742,7 +9028,12 @@ dvt.JsonUtils._isClonableObject = function(obj) {
   return false;
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  * @class
@@ -8876,11 +9167,12 @@ dvt.ToolkitUtils._getDragFeedbackSVG = function(displayables, bounds) {
  * @param {object} elem DOM element
  * @param {string} type type of event
  * @param {function} listener the listener function
- * @param {boolean} useCapture true if the listener operates in the capture phase, false otherwise
+ * @param {object|boolean} options options for the event listener or a boolean to inidcate
+ *                                 whether the listener operates in the capture phase
  */
-dvt.ToolkitUtils.addDomEventListener = function(elem, type, listener, useCapture) {
+dvt.ToolkitUtils.addDomEventListener = function(elem, type, listener, options) {
   if (elem && elem.addEventListener) {
-    elem.addEventListener(type, listener, useCapture);
+    elem.addEventListener(type, listener, options);
   }
 };
 
@@ -8890,11 +9182,12 @@ dvt.ToolkitUtils.addDomEventListener = function(elem, type, listener, useCapture
  * @param {object} elem DOM element
  * @param {string} type type of event
  * @param {function} listener the listener function
- * @param {boolean} useCapture true if the listener operates in the capture phase, false otherwise
+ * @param {object|boolean} options options for the event listener or a boolean to inidcate
+ *                                 whether the listener operates in the capture phase
  */
-dvt.ToolkitUtils.removeDomEventListener = function(elem, type, listener, useCapture) {
+dvt.ToolkitUtils.removeDomEventListener = function(elem, type, listener, options) {
   if (elem && elem.removeEventListener) {
-    elem.removeEventListener(type, listener, useCapture);
+    elem.removeEventListener(type, listener, options);
   }
 };
 
@@ -8906,7 +9199,7 @@ dvt.ToolkitUtils.removeDomEventListener = function(elem, type, listener, useCapt
  * @return {object} the appended element (child)
  */
 dvt.ToolkitUtils.appendChildElem = function(parent, child) {
-  return parent.appendChild(child);//@HTMLUpdateOk
+  return parent.appendChild(child);//@HTMLUpdateOK
 };
 
 /**
@@ -9085,7 +9378,7 @@ dvt.ToolkitUtils.getImageUrl = function(context, className) {
   cssDiv.addClass(className);
 
   var outerDiv = $(context.getContainer());
-  outerDiv.append(cssDiv);
+  outerDiv.append(cssDiv); // @HTMLUpdateOK
 
   url = cssDiv.css('background-image');
   if (url && url.indexOf('url(') !== -1)
@@ -9137,9 +9430,25 @@ dvt.ToolkitUtils.removeClassName = function(elem, className) {
 };
 
 /**
+ * Gets 'grab' cursor if it's supported by a browser, otherwise returns 'move' cursor.
+ * @return {String} 'grab' or 'move'
+ */
+dvt.ToolkitUtils.getGrabCursor = function() {
+  return dvt.Agent.browser === 'ie' ? 'move' : 'grab';
+};
+
+/**
+ * Gets 'grabbing' cursor if it's supported by a browser, otherwise returns 'move' cursor.
+ * @return {String} 'grabbing' or 'move'
+ */
+dvt.ToolkitUtils.getGrabbingCursor = function() {
+  return dvt.Agent.browser === 'ie' ? 'move' : 'grabbing';
+};
+
+/**
  * Cleans up the dataContext for drag events. Removes the component and componentElement properties
  * @param {object} context
- * @return {object} 
+ * @return {object}
  */
 dvt.ToolkitUtils.cleanDragDataContext = function(context) {
   delete context.componentElement;
@@ -9147,7 +9456,28 @@ dvt.ToolkitUtils.cleanDragDataContext = function(context) {
   return context;
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * Extracts the value for the capture from the options passed
+ * @param {object|boolean} options options for the event listener or a boolean to inidcate
+ *                                 whether the listener operates in the capture phase
+ * @returns {boolean} value for useCapture, false if none specified.
+ */
+dvt.ToolkitUtils.getUseCaptureFromOptions = function(options) {
+  if (options == null) {
+    return false;
+  }
+  if (typeof options === 'boolean') {
+    return options;
+  }
+  return options['capture'] || false;
+};
+
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Document APIs.
  * @class dvt.SvgDocumentUtils
@@ -9298,7 +9628,12 @@ dvt.SvgDocumentUtils.disableMouseEvents = function(elem) {
   }
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Utilities for Arrays.
  * @class dvt.ArrayUtils
@@ -9312,7 +9647,7 @@ dvt.Obj.createSubclass(dvt.ArrayUtils, dvt.Obj);
  * @param {array} array
  * @param {Object} item
  */
-dvt.ArrayUtils.removeItem = function(array, item) 
+dvt.ArrayUtils.removeItem = function(array, item)
 {
   var index = array.indexOf(item);
   if (index > -1) {
@@ -9327,7 +9662,7 @@ dvt.ArrayUtils.removeItem = function(array, item)
  * @param {number} index index where items should be added
  * @return {array} a new array that contains a result of insert oparation
  */
-dvt.ArrayUtils.insert = function(array1, array2, index) 
+dvt.ArrayUtils.insert = function(array1, array2, index)
 {
   if (!Array.isArray(array1)) {
     return null;
@@ -9459,6 +9794,12 @@ dvt.ArrayUtils.createBooleanMap = function(array) {
 };
 
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 dvt.ResourceUtils = {
   /**
    * Substitutes the replacement objects into the specified pattern.
@@ -9471,6 +9812,12 @@ dvt.ResourceUtils = {
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Abstract class for wrapper classes for native DOM events.
  * Internal events that do not wrap native DOM events should not extend this class.
@@ -9554,13 +9901,18 @@ dvt.BaseEvent.FindDisplayable = function(target) {
   return null;
 };
 
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * @constructor
  * Platform independent class for Focus Events. This class roughly follows the DOM Level 3 API.
  * @param {FocusEvent} event The native FocusEvent
  */
-var DvtFocusEvent = function(event) 
+var DvtFocusEvent = function(event)
 {
   this.Init(event);
 };
@@ -9600,6 +9952,12 @@ DvtFocusEvent.prototype.Init = function(event)
     this.relatedTarget = dvt.BaseEvent.FindDisplayable(event.relatedTarget);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Platform independent class for Keyboard Events.
  * @constructor
@@ -9817,11 +10175,17 @@ dvt.KeyboardEvent.isUnderscore = function(event)
 
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * @constructor
  * Wrapper class for Mouse Events.  This class roughly follows the DOM Level 2 API.
  * @param {MouseEvent} event The DOM MouseEvent
  */
-dvt.MouseEvent = function(event) 
+dvt.MouseEvent = function(event)
 {
   this.Init(event);
 };
@@ -9907,6 +10271,12 @@ dvt.MouseEvent.prototype.modifyEventForIE = function(newType, newTargetElement) 
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Wrapper class for Touch Events.
  * @param {TouchEvent} event The DOM TouchEvent
@@ -10003,6 +10373,12 @@ dvt.TouchEvent.prototype.setTouchManager = function(touchManager) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * @constructor
  * Wrapper class providing access to a Touch.
  * @extends {dvt.Obj}
@@ -10042,6 +10418,12 @@ dvt.Touch.prototype.Init = function(touch) {
   this.identifier = (touch.identifier == null || isNaN(touch.identifier)) ? 1 : touch.identifier;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * @constructor
  * Keeps track of the current state of touches and fires higher-level logical events
@@ -11018,6 +11400,12 @@ dvt.TouchManager.prototype.reset = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * @constructor
  * A higher-level class that represents a single touch event.
  * The target and the relatedTarget simulate target and relatedTarget of the MouseEvent
@@ -11130,6 +11518,12 @@ dvt.ComponentTouchEvent.prototype.getNativeEvent = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Event factory for DOM events.
  * @class
  */
@@ -11170,6 +11564,12 @@ dvt.DomEventFactory.newEvent = function(nativeEvent, context) {
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Factory class for component events to be fired to framework layers. Any changes to existing event payloads requires
  * search and update in the shared JS and all framework layers.
@@ -11709,7 +12109,12 @@ dvt.EventFactory.newTimelineOverviewEvent = function(subtype, itemId, isMultiSel
   return ret;
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  * Utility functions for SVG paths taken from 3rd party sources.
@@ -11886,6 +12291,12 @@ Dvt3rdPartyPathUtils._rotatePoints = function(points) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  *   Static Utility Functions for dvt.Displayable
  *   @class dvt.DisplayableUtils
  *   @constructor
@@ -11948,7 +12359,12 @@ dvt.DisplayableUtils._setDimForced = function(obj, dim) {
   obj._dim = dim;
 };
 
-// Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /*---------------------------------------------------------------------*/
 /*  dvt.PathUtils()       Utility functions for SVG paths               */
 /*---------------------------------------------------------------------*/
@@ -12319,9 +12735,9 @@ dvt.PathUtils.getDimensions = function(aCmds)
   var x, y, x2, y2, x3, y3;
 
   var minX = Number.MAX_VALUE;
-  var maxX = Number.MIN_VALUE;
+  var maxX = -1 * Number.MAX_VALUE;
   var minY = Number.MAX_VALUE;
-  var maxY = Number.MIN_VALUE;
+  var maxY = -1 * Number.MAX_VALUE;
   var aPos = [];
   var i, j, k;
 
@@ -12716,7 +13132,12 @@ dvt.PathUtils._rectangle = function(x, y, w, h) {
   return cmd;
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  * Utility functions for polygons.
@@ -12739,9 +13160,9 @@ dvt.PolygonUtils.getDimensions = function(aPts)
   }
 
   var minX = Number.MAX_VALUE;
-  var maxX = Number.MIN_VALUE;
+  var maxX = -1 * Number.MAX_VALUE;
   var minY = Number.MAX_VALUE;
-  var maxY = Number.MIN_VALUE;
+  var maxY = -1 * Number.MAX_VALUE;
 
   var len = aPts.length;
   var x, y;
@@ -12814,7 +13235,12 @@ dvt.PolygonUtils.translate = function(points, tx, ty) {
   return ret;
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Utility functions for text.
  * @class
@@ -13207,7 +13633,7 @@ dvt.TextUtils._getCanvasTextWidth = function(context, text, cssStyle) {
  * @private
  */
 dvt.TextUtils._configureCanvas = function(context, font) {
-  // IE and Edge canvases have issues processing '-apple-system' fonts. 
+  // IE and Edge canvases have issues processing '-apple-system' fonts.
   if ((dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge')) {
     font = font.replace(/-apple-system(-\w+)*,?/g, '');
 
@@ -13277,7 +13703,12 @@ dvt.TextUtils.processAriaLabel = function(label) {
   return ret;
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  *   Static Shape Utility Functions
  *   @class dvt.SvgShapeUtils
@@ -13485,7 +13916,12 @@ dvt.SvgShapeUtils.convertPointsArray = function(arPoints) {
   return s;
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  *  Abstract base class for displayable objects.
  *  @extends {dvt.Obj}
@@ -14293,6 +14729,12 @@ dvt.Displayable.generateAriaLabel = function(shortDesc, states) {
   return desc.join(dvt.Context.ARIA_LABEL_DESC_DELIMITER);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 // File containing all draw effect (filter) related functions defined on dvt.Displayable.
 
 dvt.Displayable.prototype.addDrawEffect = function(effect)
@@ -14346,6 +14788,12 @@ dvt.Displayable.prototype._applyDrawEffects = function() {
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 // File containing all event listener related functions defined on dvt.Displayable.
 
 
@@ -14353,17 +14801,21 @@ dvt.Displayable.prototype._applyDrawEffects = function() {
  * Adds an event listener.
  * @param {string} type the event type
  * @param {function} listener the function to call
- * @param {string} useCapture whether the listener operates in the capture phase
+ * @param {object|boolean} options options for the event listener or a boolean to indicate
+ *                                 whether the listener operates in the capture phase
  * @param {object} obj instance of the object the listener is defined on
  */
-dvt.Displayable.prototype.addEvtListener = function(type, listener, useCapture, obj) {
+dvt.Displayable.prototype.addEvtListener = function(type, listener, options, obj) {
+  // Extract useCapture from options
+  var useCapture = dvt.ToolkitUtils.getUseCaptureFromOptions(options);
+
   // Store a reference to the listener
   var listenersArray = this._getListeners(type, useCapture, true);
   listenersArray.push(listener);
   listenersArray.push(obj);
 
   // Call the impl so that it can add the actual listener
-  this._addListener(type, useCapture);
+  this._addListener(type, options);
 };
 
 
@@ -14371,10 +14823,14 @@ dvt.Displayable.prototype.addEvtListener = function(type, listener, useCapture, 
  * Removes an event listener.
  * @param {string} type the event type
  * @param {function} listener the function to call
- * @param {string} useCapture whether the listener operates in the capture phase
+ * @param {object|boolean} options options for the event listener or a boolean to indicate
+ *                                 whether the listener operates in the capture phase
  * @param {object} obj instance of the object the listener is defined on
  */
-dvt.Displayable.prototype.removeEvtListener = function(type, listener, useCapture, obj) {
+dvt.Displayable.prototype.removeEvtListener = function(type, listener, options, obj) {
+  // Extract useCapture from options
+  var useCapture = dvt.ToolkitUtils.getUseCaptureFromOptions(options);
+
   // Remove the listener
   var listenersArray = this._getListeners(type, useCapture, false);
   if (listenersArray) {
@@ -14389,7 +14845,7 @@ dvt.Displayable.prototype.removeEvtListener = function(type, listener, useCaptur
   // Call the impl so that it can remove the actual listener.
   // Note that the array itself is intentionally not removed.
   if (listenersArray && listenersArray.length <= 0)
-    this._removeListener(type, useCapture);
+    this._removeListener(type, options);
 };
 
 
@@ -14397,13 +14853,14 @@ dvt.Displayable.prototype.removeEvtListener = function(type, listener, useCaptur
  * Adds listener to the DOM element.
  * @param {string} type
  * @param {function} listener
- * @param {boolean} useCapture
+ * @param {object|boolean} options options for the event listener or a boolean to indicate
+ *                                 whether the listener operates in the capture phase
  * @protected
  */
-dvt.Displayable.prototype.AddElemListener = function(type, listener, useCapture) {
-  dvt.ToolkitUtils.addDomEventListener(this.getElem(), type, listener, useCapture);
+dvt.Displayable.prototype.AddElemListener = function(type, listener, options) {
+  dvt.ToolkitUtils.addDomEventListener(this.getElem(), type, listener, options);
   if (type == dvt.TouchEvent.TOUCHEND) {
-    dvt.ToolkitUtils.addDomEventListener(this.getElem(), dvt.TouchEvent.TOUCHCANCEL, listener, useCapture);
+    dvt.ToolkitUtils.addDomEventListener(this.getElem(), dvt.TouchEvent.TOUCHCANCEL, listener, options);
   }
 };
 
@@ -14470,10 +14927,13 @@ dvt.Displayable.prototype._getListeners = function(type, useCapture, createNew) 
 /**
  * Adds an event listener.
  * @param {String} type the event type
- * @param {String} useCapture whether the listener operates in the capture phase
+ * @param {object|boolean} options options for the event listener or a boolean to indicate
+ *                                 whether the listener operates in the capture phase
  * @private
  */
-dvt.Displayable.prototype._addListener = function(type, useCapture) {
+dvt.Displayable.prototype._addListener = function(type, options) {
+  // Extract useCapture from options
+  var useCapture = dvt.ToolkitUtils.getUseCaptureFromOptions(options);
   var listener = this._getListener(useCapture);
   // on keyboard events, add the listener to the component's wrapping div, since SVG
   // DOM elements don't support keystrokes.
@@ -14495,10 +14955,10 @@ dvt.Displayable.prototype._addListener = function(type, useCapture) {
       wrappingDiv._keyboardListeners.push(this);
     }
     listener = dvt.HtmlKeyboardListenerUtils.getListener(useCapture);
-    dvt.ToolkitUtils.addDomEventListener(wrappingDiv, type, listener, useCapture);
+    dvt.ToolkitUtils.addDomEventListener(wrappingDiv, type, listener, options);
   }
   else {
-    this.AddElemListener(type, listener, useCapture);
+    this.AddElemListener(type, listener, options);
   }
 };
 
@@ -14506,10 +14966,13 @@ dvt.Displayable.prototype._addListener = function(type, useCapture) {
 /**
  * Removes an event listener.
  * @param {string} type the event type
- * @param {boolean} useCapture whether the listener operates in the capture phase
+ * @param {object|boolean} options options for the event listener or a boolean to indicate
+ *                                 whether the listener operates in the capture phase
  * @private
  */
-dvt.Displayable.prototype._removeListener = function(type, useCapture) {
+dvt.Displayable.prototype._removeListener = function(type, options) {
+  // Extract useCapture from options
+  var useCapture = dvt.ToolkitUtils.getUseCaptureFromOptions(options);
   var listener = this._getListener(useCapture);
 
   if (type == dvt.KeyboardEvent.KEYUP || type == dvt.KeyboardEvent.KEYDOWN || type == dvt.KeyboardEvent.KEYPRESS ||
@@ -14517,13 +14980,13 @@ dvt.Displayable.prototype._removeListener = function(type, useCapture) {
   {
     // Keyboard listeners are attached to the wrapping div and tracked via an array stored using _keyboardListeners.
     var wrappingDiv = this.getCtx().getStage().getSVGRoot().parentNode;
-    dvt.ToolkitUtils.removeDomEventListener(wrappingDiv, type, listener, useCapture);
+    dvt.ToolkitUtils.removeDomEventListener(wrappingDiv, type, listener, options);
     var index = wrappingDiv._keyboardListeners.indexOf(this);
     if (index !== -1)
       wrappingDiv._keyboardListeners.splice(index, 1);
   }
   else
-    dvt.ToolkitUtils.removeDomEventListener(this.getElem(), type, listener, useCapture);
+    dvt.ToolkitUtils.removeDomEventListener(this.getElem(), type, listener, options);
 };
 
 /**
@@ -14646,6 +15109,12 @@ dvt.Displayable.prototype._captureListener = function(event) {
   this.FireListener(dvtEvent, true);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 // File containing all paint (fill and stroke) related functions defined on dvt.Displayable.
 
 /**
@@ -14874,6 +15343,12 @@ dvt.Displayable.prototype._manageDefinitions = function(oldObj, newObj) {
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 // File containing all transformation related functions defined on dvt.Displayable.
 
 
@@ -15132,7 +15607,12 @@ dvt.Displayable.prototype._modifyMatrix = function(sx, sy, tx, ty, angleRads) {
   }
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Container for displayable objects.
  * @extends {dvt.Displayable}
@@ -15645,7 +16125,12 @@ dvt.Container.prototype.includeChildSubtree = function() {
   return true;
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Top level container for all displayables contained within the SVG document.  This class should not be extended.
  * @extends {dvt.Container}
@@ -15660,6 +16145,8 @@ var DvtStage = function(context, svgRoot, id) {
   this.Init(context, 'g', id);
 
   this._SVGRoot = svgRoot;// containing SVG DOM element
+
+  this.disableSelection(this._elem);
 
   //set cursor to default to avoid text cursors on text objects
   this.setCursor('default');
@@ -15685,7 +16172,24 @@ DvtStage.prototype.getSVGRoot = function() {
   return this._SVGRoot;
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * Disables text selection.
+ * Note: Originally added for . 
+ * It is also needed to support 'grabbing' cursor on Safari at panning event.
+ * @param {SVGElement} target
+ */
+DvtStage.prototype.disableSelection = function(target) {
+  target.onselectstart = function() {
+    return false;
+  };
+};
+
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  *  Abstract base class for shape displayables.
  *  @extends {dvt.Container}
@@ -16039,7 +16543,7 @@ dvt.Shape.prototype.CreateSelectedHoverStrokes = function() {
   if (!this.SelectedHoverInnerStroke)
     this.SelectedHoverInnerStroke = this.HoverInnerStroke;
   if (!this.SelectedHoverOuterStroke) {
-    this.SelectedHoverOuterStroke = new dvt.Stroke(this.SelectedOuterStroke.getColor(), this.SelectedOuterStroke.getAlpha(), 
+    this.SelectedHoverOuterStroke = new dvt.Stroke(this.SelectedOuterStroke.getColor(), this.SelectedOuterStroke.getAlpha(),
       this.SelectedOuterStroke.getWidth() + (this.HoverInnerStroke.getWidth() - this.SelectedInnerStroke.getWidth()));
   }
 };
@@ -16151,7 +16655,12 @@ dvt.Shape.prototype.copyShape = function() {
   return null;
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Abstract base class for polygon displayable that is defined by an array of points.
  * @extends {dvt.Shape}
@@ -16214,7 +16723,12 @@ DvtPolygonalShape.prototype.getDimensionsSelf = function(targetCoordinateSpace) 
   return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Circle displayable.
  * @param {dvt.Context} context
@@ -16271,7 +16785,12 @@ dvt.Circle.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
   return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
 
-// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Image displayable.
  * @param {dvt.Context} context
@@ -16424,7 +16943,12 @@ dvt.Image.prototype.setAriaProperty = function(property, value) {
     dvt.Image.superclass.setAriaProperty.call(this, 'hidden', null);
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Line displayable.
  * @param {dvt.Context} context
@@ -16601,7 +17125,12 @@ dvt.Line.prototype.setClassName = function(className, bSkipAdjustDimensions) {
   return dvt.Line.superclass.setClassName.call(this, className);
 };
 
-// Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  *  @param {dvt.Context} context
@@ -17318,7 +17847,12 @@ dvt.SimpleMarker.prototype.getMaintainAspectRatio = function() {
 };
 
 
-// Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  * @param {dvt.Context} context
@@ -17773,7 +18307,12 @@ dvt.ImageMarker.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
   return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Path displayable.
  * @param {dvt.Context} context
@@ -17885,7 +18424,12 @@ dvt.Path.prototype.GetAriaElem = function() {
 };
 
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Polygon displayable.
  * @param {dvt.Context} context
@@ -17930,7 +18474,12 @@ dvt.Polygon.prototype.GetAriaElem = function() {
   return dvt.Polygon.superclass.GetAriaElem.call(this);
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Polyline displayable.
  * @param {dvt.Context} context
@@ -17967,7 +18516,12 @@ dvt.Polyline.prototype.copyShape = function()
   return new dvt.Polyline(this.getCtx(), this.getPoints());
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Rectangle displayable.
  * @param {dvt.Context} context
@@ -18264,7 +18818,12 @@ dvt.Rect.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
   return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Creates an instance of dvt.OutputText.
  * @extends {dvt.Shape}
@@ -18377,7 +18936,7 @@ dvt.OutputText.prototype.setTextString = function(textString) {
   // Update the text node if it is already created
   var textNode = this.getElem().firstChild;
   if (textNode !== null) {
-    textNode.nodeValue = textString;//@HtmlUpdateOK
+    textNode.nodeValue = textString;//@HTMLUpdateOK
   }
   else {
     // Otherwise create it
@@ -18959,7 +19518,12 @@ dvt.OutputText.prototype._needsTextAnchorAdjustment = function() {
   return dvt.Agent.isRightToLeft(this.getCtx());
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Creates an instance of dvt.BackgroundOutputText.
  * @extends {dvt.Container}
@@ -19388,7 +19952,7 @@ dvt.BackgroundOutputText.prototype._realignBackground = function() {
     fontSize = 0;
   var yAdjustment = 0; // fudge factor for specific alignments in certain browsers
 
-  if (dvt.Agent.browser === 'chrome' && vAlign == dvt.OutputText.V_ALIGN_MIDDLE)
+  if (dvt.Agent.engine === 'blink' && vAlign == dvt.OutputText.V_ALIGN_MIDDLE)
     yAdjustment = fontSize * 0.12; // Chrome, vALign = middle, rect must be shifted up a bit
   else if ((dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge') && vAlign == dvt.OutputText.V_ALIGN_BOTTOM)
     yAdjustment = -fontSize * 0.4; // IE, vAlign = bottom, rect must be shifted down a bit
@@ -19473,7 +20037,12 @@ dvt.BackgroundOutputText.prototype.includeChildSubtree = function() {
   return false;
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Read-only text object that supports wrapping.
  * @extends {dvt.Container}
@@ -19561,12 +20130,12 @@ dvt.MultilineText.prototype.Init = function(context, textStr, x, y, id, preserve
    *  @private
    */
   this._noWrap = false;
-  
+
   /** Flag for whether or not this text will wrap on new line characters.
    *  @private
    */
   this._preserveNewLine = preserveNewLine ? preserveNewLine : false;
-  
+
   /** Optimizing preserveNewLine wrapping.
    *  Since the OutputTexts and their initial text strings will always be the
    *  same, we create them once when the textString is set.
@@ -19599,7 +20168,7 @@ dvt.MultilineText.prototype.getTextString = function() {
 dvt.MultilineText.prototype.setTextString = function(textString) {
   // Store the full string
   this._textString = (textString != null) ? String(textString) : null;
-  
+
   if (!this._textInstance) {
     // Create the primary text instance.  This instance is used to store all properties.
     this._textInstance = new dvt.OutputText(this.getCtx(), this._textString);
@@ -19611,12 +20180,12 @@ dvt.MultilineText.prototype.setTextString = function(textString) {
     this._removeAdditionalLines();
   }
 
-  if (this._preserveNewLine) { 
+  if (this._preserveNewLine) {
     // Create text objects based on \n split, and wrap text.
     this._generatePreservedLines();
     this.wrapText(Infinity, Infinity, 1, false);
   }
-  
+
   // Since this is a new text string, truncation has not occurred
   this._bTruncated = false;
 };
@@ -19915,28 +20484,28 @@ dvt.MultilineText.prototype._removeAdditionalLines = function() {
 
 /**
  * Helper function to generate and save the default OutputTexts that get
- * manipulated whens preserving new lines. Avoids having to create the elements 
+ * manipulated whens preserving new lines. Avoids having to create the elements
  * if the MultilineText is re-wrapped.
  * @private
  */
-dvt.MultilineText.prototype._generatePreservedLines = function() {  
+dvt.MultilineText.prototype._generatePreservedLines = function() {
   if (this._preserveNewLine) {
-    this._preservedLines = [];  
+    this._preservedLines = [];
     var splits = this.getTextString().split(/\n+/);
     var currentLine = this._textInstance;
     var currentString = null;
-    this._preservedLines.push(currentLine); 
-       
+    this._preservedLines.push(currentLine);
+
     for (var i = 0; i < splits.length; i++) {
-      currentString = splits[i].replace(/\s+/g,' ');  
-      currentLine.setTextString(currentString); 
-      
+      currentString = splits[i].replace(/\s+/g,' ');
+      currentLine.setTextString(currentString);
+
       if (i < splits.length - 1) {
         var newLine = currentLine.copyShape();
         this._preservedLines.push(newLine);
         currentLine = newLine;
-      }   
-    } 
+      }
+    }
   }
 };
 
@@ -19953,7 +20522,7 @@ dvt.MultilineText.prototype.__fitText = function(maxWidth, maxHeight, minChars) 
     // Clear any previous layout results
     this._textInstance.setTextString(this.getTextString());
     this._removeAdditionalLines();
-  
+
     // First try to fit the entire string in 1 line
     if (!dvt.TextUtils.fitText(this._textInstance, maxWidth, maxHeight, this, minChars)) {
       // String doesn't fit at all, remove from parent and return
@@ -19965,7 +20534,7 @@ dvt.MultilineText.prototype.__fitText = function(maxWidth, maxHeight, minChars) 
     else if (!this.isWrapEnabled()) // Accept text that fits partially
       return true;
   }
-  
+
   // Then wrap and truncate text to fit within the given parameters
   return this.wrapText(maxWidth, maxHeight, minChars, false);
 };
@@ -19978,44 +20547,44 @@ dvt.MultilineText.prototype.__fitText = function(maxWidth, maxHeight, minChars) 
  * @param {boolean=} breakOnTruncation Optional boolean to return unwrapped text if text does not fully fit in given dimensions
  * @return {boolean} false if the text cannot fit in the parameters, true otherwise.
  */
-dvt.MultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, breakOnTruncation) {  
+dvt.MultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, breakOnTruncation) {
   if (this.getLineCount() > 1) // Clear any previous wrapping results
     this._removeAdditionalLines();
-  
+
   // Calculate line height so that we can add additional lines as space allows.
   var lineHeight = this.getLineHeight();
   var lineSpace = lineHeight * dvt.MultilineText._LINE_SPACE;
-  
+
   var maxLines = this.getMaxLines();
   var availHeight = Math.min(maxHeight, maxLines * (lineHeight + lineSpace) - lineSpace) - lineHeight - lineSpace;
-  
+
   // We are currently splitting MultilineText wrapping into two exclusive behaviors
   // 1. Wrap only on new line characters. Each line truncates according to maxWidth parameter.
-  // 2. Wrap between words as needed. Number of lines is dictated by the maxHeight parameter. 
+  // 2. Wrap between words as needed. Number of lines is dictated by the maxHeight parameter.
   //    The final line will truncate if we have used all the given space
   if (this._preserveNewLine) {
     var atLeastOneLineFits = false;
     var previousLine = null;
     for (var i = 0; i < this._preservedLines.length; i++) {
       var currentLine = this._preservedLines[i];
-      
+
       // Consider text truncated and return if we still have a line, but not enough availHeight
       if (availHeight < lineSpace + lineHeight) {
         this._bTruncated = true;
         return atLeastOneLineFits;
       }
-      
+
       if (dvt.TextUtils.fitText(currentLine, maxWidth, Infinity, this, minChars)) {
         atLeastOneLineFits = true;
-        availHeight -= (lineSpace + lineHeight);    
+        availHeight -= (lineSpace + lineHeight);
         // Consider the text truncated if any line is truncated
-        if (currentLine.isTruncated() && !this.isTruncated()) 
+        if (currentLine.isTruncated() && !this.isTruncated())
           this._bTruncated = true;
-        
+
         if (i > 0) {
           this._additionalLines.push(currentLine);
           // Offset the new line from the previousLine, if none fit so far this line will be at the top
-          var offset = previousLine ? previousLine.getY() + lineSpace + lineHeight : this.getY();    
+          var offset = previousLine ? previousLine.getY() + lineSpace + lineHeight : this.getY();
           currentLine.setY(offset);
           this.addChild(currentLine);
         }
@@ -20124,7 +20693,7 @@ dvt.MultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, b
 
       isInitialSplit = false;
     }
-    
+
     return true;
   }
 };
@@ -20269,7 +20838,12 @@ dvt.MultilineText.prototype.setVertAlignment = function(align) {
 };
 
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Read-only text object that supports wrapping.
  * @extends {dvt.Container}
@@ -20301,7 +20875,7 @@ dvt.Obj.createSubclass(dvt.BackgroundMultilineText, dvt.BackgroundOutputText);
  */
 dvt.BackgroundMultilineText.prototype.Init = function(context, textStr, x, y, style, id, preserveNewLine) {
   this._preserveNewLine = preserveNewLine ? preserveNewLine : false;
-  
+
   dvt.BackgroundMultilineText.superclass.Init.call(this, context, textStr, x, y, style, id);
 };
 
@@ -20412,7 +20986,12 @@ dvt.BackgroundMultilineText.prototype.UpdateSelectionEffect = function() {
 };
 
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Use element displayable.
  * @param {dvt.Context} context
@@ -20477,6 +21056,12 @@ dvt.Use.prototype.destroy = function() {
   dvt.Use.superclass.destroy.call(this);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * @constructor
  * dvt.CSSGradient
@@ -20559,6 +21144,12 @@ dvt.CSSGradient.prototype.setRatios = function(arRatios)
 
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * @constructor
  * DvtLinearGradient
  */
@@ -20616,6 +21207,12 @@ DvtLinearGradient.prototype.setAngle = function(angle)
 };
 
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * parse gradient string into gradient object
  * @class dvt.GradientParser
@@ -20877,6 +21474,12 @@ dvt.GradientParser._startsWith = function(str, value) {
 };
 
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * @constructor
  * Represents a set of CSS styles.
@@ -22017,6 +22620,12 @@ dvt.CSSStyle.applyCssObjectToElement = function(style, element) {
 }
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Base class for JSON components.
  * @class
  * @constructor
@@ -22362,6 +22971,12 @@ dvt.BaseComponent.prototype.destroy = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Base class for JSON component defaults.
  * @class
  * @constructor
@@ -22447,7 +23062,7 @@ dvt.BaseComponentDefaults.prototype.Init = function(defaultsMap, context) {
  * Returns the base skin name for this component
  * @return {String} The base skin name for this component
  */
-dvt.BaseComponentDefaults.prototype.getBaseSkinName = function() 
+dvt.BaseComponentDefaults.prototype.getBaseSkinName = function()
 {
   return dvt.CSSStyle.SKIN_ALTA;
 };
@@ -22518,7 +23133,7 @@ dvt.BaseComponentDefaults.prototype.getDefaults = function(skin) {
  * Returns the object of keys not to be cloned.
  * @return {object} The object of keys not to be cloned
  */
-dvt.BaseComponentDefaults.prototype.getNoCloneObject = function() 
+dvt.BaseComponentDefaults.prototype.getNoCloneObject = function()
 {
   return {};
 };
@@ -22532,9 +23147,14 @@ dvt.BaseComponentDefaults.prototype.getAnimationDuration = function(options) {
   return options["styleDefaults"] ? options["styleDefaults"]["animationDuration"] : null;
 };
 
+/**
+ * @license
+ * Copyright (c) 2016 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 // DvtBaseComponentCache.js
 //
-// Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
 //
 //    NAME
 //     DvtBaseComponentCache.js
@@ -22671,6 +23291,12 @@ dvt.BaseComponentCache.prototype.putToCachedMap2D = function(mapKey, itemKeyA, i
 };
 
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * A minimalist scrollbar.
  * @class
@@ -22956,6 +23582,12 @@ dvt.SimpleScrollbar.prototype._setViewportRange = function(min, max, eventSubtyp
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * A minimalist scrollable container that can scroll either vertically or horizontally, but not both.
  * Use DvtScrollableContainer if scrolling in both directions is required.
@@ -23255,6 +23887,12 @@ dvt.SimpleScrollableContainer.prototype.hasScrollingContent = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Drag source event handler.
  * @param {dvt.Context} context
  * @class dvt.DragSource
@@ -23461,7 +24099,12 @@ dvt.DragSource.prototype.getTouchManager = function() {
   return this._touchManager;
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  * dvt.Button
@@ -23552,14 +24195,17 @@ dvt.Button.prototype.setEnabled = function(bEnabled)
   if (this._enabled != bEnabled)
   {
     this._enabled = bEnabled;
-    var clickEvent = dvt.Agent.isTouchDevice() ? dvt.TouchEvent.TOUCHSTART : dvt.MouseEvent.CLICK;
+    var isTouchDevice = dvt.Agent.isTouchDevice();
+    var clickEvent = isTouchDevice ? dvt.TouchEvent.TOUCHSTART : dvt.MouseEvent.CLICK;
+    // Set passive: false for touch start event, so that preventDefault can be called on the event.
+    var clickEventOptions = isTouchDevice ? { capture: false, passive: false } : { capture: false };
 
     if (bEnabled) {
       this.addEvtListener(dvt.MouseEvent.MOUSEOVER, this.OnMouseOver, false, this);
       this.addEvtListener(dvt.MouseEvent.MOUSEOUT, this.OnMouseOut, false, this);
       this.addEvtListener(dvt.MouseEvent.MOUSEDOWN, this.OnMouseDown, false, this);
       this.addEvtListener(dvt.MouseEvent.MOUSEUP, this.OnMouseUp, false, this);
-      this.addEvtListener(clickEvent, this.OnClick, false, this);
+      this.addEvtListener(clickEvent, this.OnClick, clickEventOptions, this);
       this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
     }
     else {
@@ -23567,7 +24213,7 @@ dvt.Button.prototype.setEnabled = function(bEnabled)
       this.removeEvtListener(dvt.MouseEvent.MOUSEOUT, this.OnMouseOut, false, this);
       this.removeEvtListener(dvt.MouseEvent.MOUSEDOWN, this.OnMouseDown, false, this);
       this.removeEvtListener(dvt.MouseEvent.MOUSEUP, this.OnMouseUp, false, this);
-      this.removeEvtListener(clickEvent, this.OnClick, false, this);
+      this.removeEvtListener(clickEvent, this.OnClick, clickEventOptions, this);
       this.setCursor(null);
     }
     // render disabled state
@@ -23969,6 +24615,12 @@ dvt.Button.prototype.handleKeyboardEvent = function(event) {
 
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * dvt.TransientButton. This adds listeners that hide and show this button based
  * on focus, blur, mouse over, and mouse out events on the current stage.
  * @param {dvt.Context} context The rendering context.
@@ -24152,6 +24804,12 @@ dvt.TransientButton.prototype.OnMouseUp = function(event)
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Simple logical object for custom datatip support.
  * @param {dvt.HtmlTooltipManager} tooltipManager
  * @param {function} tooltipFunc The callback function used to render the datatip content
@@ -24191,6 +24849,12 @@ dvt.CustomDatatipPeer.prototype.getDatatipColor = function(target) {
   return this._datatipColor;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Simple logical object for tooltip support.
  * @param {string} tooltip The tooltip to display.
@@ -24262,6 +24926,12 @@ dvt.SimpleObjPeer.prototype.getDatatipColor = function(target) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * @constructor
  */
 dvt.Agent = function() {
@@ -24278,6 +24948,7 @@ dvt.Agent.getAgentInfo = function(){
 };
 
 Object.defineProperty(dvt.Agent, 'browser', {enumerable:true, get: function() {return dvt.Agent.getAgentInfo().browser} });
+Object.defineProperty(dvt.Agent, 'engine', {enumerable:true, get: function() {return dvt.Agent.getAgentInfo().engine} });
 Object.defineProperty(dvt.Agent, 'version', {enumerable:true, get: function() {return dvt.Agent.getAgentInfo().browserVersion} });
 Object.defineProperty(dvt.Agent, 'os', {enumerable:true, get: function() {return dvt.Agent.getAgentInfo().os.toLowerCase()} });
 
@@ -24479,7 +25150,7 @@ dvt.Agent.getFocusColor = function() {
   dvt.Agent._initialize();
   if (!dvt.Agent._focusColor) {
     var focusColor;
-    if (dvt.Agent.browser === 'chrome' || dvt.Agent.browser === 'safari') {
+    if (dvt.Agent.engine === 'blink' || dvt.Agent.browser === 'safari') {
       var body = document.getElementsByTagName('body')[0];
       var tempDiv = document.createElement('div');
       body.appendChild(tempDiv);//@HTMLUpdateOK
@@ -24494,6 +25165,12 @@ dvt.Agent.getFocusColor = function() {
   return dvt.Agent._focusColor;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  *  Provides automation services for a DVT component.
  *  @param {Object} dvtComponent
@@ -24595,6 +25272,12 @@ dvt.Automation.prototype.IsTooltipElement = function(domElement) {
   return false;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Interactivity manager for selection.
   * @class dvt.SelectionHandler
@@ -24862,6 +25545,12 @@ dvt.SelectionHandler.prototype.clearSelection = function(isInitial) {
   return true;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
   * Interactivity manager for keyboard events.
   * @param {dvt.EventManager} manager The owning dvt.EventManager
@@ -25346,6 +26035,12 @@ dvt.KeyboardHandler._areEqualWithinTolerance = function(a, b)
 
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Handler used for marquee operations.
  * @class
  * @constructor
@@ -25604,6 +26299,12 @@ dvt.MarqueeHandler.prototype.getGlassPane = function() {
   return this._glassPane;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Handler used for pan and zoom operations.
  * @constructor
@@ -25890,24 +26591,6 @@ dvt.PanZoomHandler.prototype.panBy = function(dx, dy) {
       deltaX, deltaX, deltaY, deltaY);
 };
 
-
-/**
- * Sets the pan cursor.
- * @param {string} panUpCursor The URI of the cursor image for the non-dragged state.
- * @param {string} panDownCursor The URI of the cursor image for the dragged state.
- */
-dvt.PanZoomHandler.prototype.setPanCursor = function(panUpCursor, panDownCursor) {
-  // IE doesn't support cursor image with custom positioning
-  if ((dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge'))
-    return;
-
-  if (panUpCursor)
-    this._panUpCursor = 'url(' + panUpCursor + ') 8 8, auto';
-  if (panDownCursor)
-    this._panDownCursor = 'url(' + panDownCursor + ') 8 8, auto';
-};
-
-
 /**
  * Returns the appropriate cursor type.
  * @param {dvt.Point=} relPos The current cursor position relative to the stage.
@@ -25915,10 +26598,7 @@ dvt.PanZoomHandler.prototype.setPanCursor = function(panUpCursor, panDownCursor)
  */
 dvt.PanZoomHandler.prototype.getCursor = function(relPos) {
   if (relPos == null || this.isWithinBounds(relPos)) {
-    if (this._panOn)
-      return this._panDownCursor ? this._panDownCursor : 'move';
-    else
-      return this._panUpCursor ? this._panUpCursor : 'move';
+    return this._panOn ? dvt.ToolkitUtils.getGrabbingCursor() : dvt.ToolkitUtils.getGrabCursor();
   }
   else
     return 'inherit';
@@ -25934,6 +26614,12 @@ dvt.PanZoomHandler.prototype.isWithinBounds = function(relPos) {
   return this._bounds.containsPoint(pos.x, pos.y);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Interactivity handle for category rollover effects support.
  * Objects must implement DvtLogicalObject and DvtCategoricalObject to be supported by this handler.
@@ -26210,6 +26896,12 @@ dvt.CategoryRolloverHandler.prototype.setHoverDelay = function(hoverDelay) {
   this._hoverDelay = hoverDelay;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Event manager that processes low level events and sends them to the appropriate handlers.
  * @param {dvt.Context} context The platform specific context object.
@@ -28457,7 +29149,7 @@ dvt.EventManager.prototype.OnDndDragStart = function(event) {
   dvt.SvgDocumentUtils.disableMouseEvents(dragImage);
 
   // The drag image has to be in the DOM tree when being set, so we add it and remove it immediately.
-  document.body.appendChild(dragImage); // @HtmlUpdateOk
+  document.body.appendChild(dragImage); // @HTMLUpdateOK
   dvt.Context.requestAnimationFrame(function() {
     document.body.removeChild(dragImage);
   });
@@ -28765,6 +29457,12 @@ dvt.EventManager.prototype.DispatchElementEvent = function(eventType, eventDetai
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Interactivity manager for custom tooltips and menus.  The two can be visually combined.
  * @class DvtCustomTooltipManager
  * @constructor
@@ -28952,6 +29650,12 @@ DvtCustomTooltipManager._formatTextString = function(tooltip)
   return fullText;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 // Custom tooltip event handler
 /**
  * @constructor
@@ -28990,6 +29694,12 @@ DvtCustomTooltipEventHandler.prototype._handleMenuClick = function(targetObj) {
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /*--------------------------------------------------------------------*/
 /*   DvtCustomTooltip              Action tooltip Component           */
 /*--------------------------------------------------------------------*/
@@ -29238,6 +29948,12 @@ DvtCustomTooltipItem.prototype._handleMenuTimer = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * @param {dvt.Context} context
  * @param {string} domElementId
  * @constructor
@@ -29344,7 +30060,7 @@ dvt.HtmlTooltipManager.prototype._showTextAtPosition = function(x, y, text, bord
     tooltipDOM.style.height = null;
 
     // Set the text
-    tooltipDOM.innerHTML = text;//@HtmlUpdateOk
+    tooltipDOM.innerHTML = text;//@HTMLUpdateOK
   }
   else if (canModify)
     tooltipDOM = text; // the text is an element or array of elements to be appended directly
@@ -29504,7 +30220,7 @@ dvt.HtmlTooltipManager.prototype.showTooltip = function(x, y, text, shape, bTrac
 
   var tooltipElem = document.createElement('span');
   tooltipElem.className = 'OraDVTTooltipText';
-  tooltipElem.innerHTML = text;//@HtmlUpdateOK
+  tooltipElem.innerHTML = text;//@HTMLUpdateOK
   tooltipElem.style.color = dvt.HtmlTooltipManager._FONT_COLOR;
 
   if (!borderColor) {
@@ -29748,6 +30464,12 @@ dvt.HtmlTooltipManager.createElement = function(tag, style, content) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Utility class for providing keyboard listeners to add to HTML divs
  * @class dvt.HtmlKeyboardListenerUtils
  */
@@ -29837,6 +30559,12 @@ dvt.HtmlKeyboardListenerUtils._commonListener = function(event, useCapture) {
 };
 
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 // Used for rendering SVG content in to an HTML div wrapper
 /**
  * @param {dvt.Context} context
@@ -29854,7 +30582,7 @@ dvt.Obj.createSubclass(DvtHtmlRichTooltipManager, dvt.HtmlTooltipManager);
  * @param {dvt.Context} context
  * @param {string} domElementId
  */
-DvtHtmlRichTooltipManager.prototype.Init = function(context, domElementId) 
+DvtHtmlRichTooltipManager.prototype.Init = function(context, domElementId)
 {
   this._storedContexts = new Object();
   DvtHtmlRichTooltipManager.superclass.Init.call(this, context, domElementId);
@@ -29862,7 +30590,7 @@ DvtHtmlRichTooltipManager.prototype.Init = function(context, domElementId)
 
 DvtHtmlRichTooltipManager.prototype.InitContent = function(tooltip) {
   // For an svg custom tooltip, the context is the new svg context for the svg document overlay.
-  tooltip.innerHTML = '';
+  tooltip.innerHTML = ''; // @HTMLUpdateOK
   var context = new dvt.Context(tooltip, 'DvtCustomTooltip');
   this._storedContexts[this._domElementId] = context;
 };
@@ -29911,7 +30639,14 @@ DvtHtmlRichTooltipManager.prototype.hideTooltip = function()
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 return dvt;
 })();
+
   return dvt;
 });

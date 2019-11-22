@@ -42,3 +42,11 @@ export type ViewModelContext<P extends PropertiesType = PropertiesType> = {
     unique: string;
     uniqueId: string;
 };
+export interface ojBindSlot extends HTMLElement {
+    index: number;
+    name: string;
+}
+export interface ojBindTemplateSlot<D> extends HTMLElement {
+    data: D;
+    name: string;
+}

@@ -1,5 +1,5 @@
 import { ojTimeAxis } from '../ojtimeaxis';
-import { Converter } from '../ojvalidation-base';
+import Converter = require('../ojconverter');
 export function computeTableColumnHeaderHeight(table: Element, gantt: Element, axisInfo: {
     majorAxis?: {
         converter?: ojTimeAxis.Converters | Converter<string>;

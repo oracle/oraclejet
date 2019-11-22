@@ -61,13 +61,9 @@
 
    .oj-colorpalette-swatch  {
      border-width: 1px;
-     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-     {
-       border-color: var(--oj-color-palette-swatch-inner-border-color);
-     }
-     @else{
+
        border-color: $colorPaletteSwatchInnerBorderColor;
-    }
+
 
      background-clip: padding-box;
      //tell the browser to print the background-color
@@ -87,39 +83,8 @@
      -webkit-print-color-adjust: exact;
    }
 
-   @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-  {
-    .oj-colorpalette-grid .oj-colorpalette-swatchsize-lg .oj-colorpalette-swatch {
-      width:  var(--oj-color-palette-grid-swatch-lg-size);
-      height: var(--oj-color-palette-grid-swatch-lg-size);
-    }
 
-    .oj-colorpalette-grid .oj-colorpalette-swatchsize-lg.oj-colorpalette-swatch-showlabel .oj-colorpalette-swatch {
-      width:  var(--oj-color-palette-grid-swatch-xl-size);
-      height: var(--oj-color-palette-grid-swatch-xl-size);
-    }
 
-    .oj-colorpalette-grid .oj-colorpalette-swatchsize-sm .oj-colorpalette-swatch {
-      width: var(--oj-color-palette-grid-swatch-sm-size);
-      height: var(--oj-color-palette-grid-swatch-sm-size);
-    }
-
-    .oj-colorpalette-grid .oj-colorpalette-swatchsize-xs .oj-colorpalette-swatch {
-      width: var(--oj-color-palette-grid-swatch-xs-size);
-      height: var(--oj-color-palette-grid-swatch-xs-size);
-    }
-
-    .oj-colorpalette-list .oj-colorpalette-swatchsize-sm .oj-colorpalette-swatch {
-      width: var(--oj-color-palette-list-swatch-sm-width);
-      height: var(--oj-color-palette-list-swatch-sm-height);
-    }
-
-    .oj-colorpalette-list .oj-colorpalette-swatchsize-lg .oj-colorpalette-swatch {
-       width: var(--oj-color-palette-list-swatch-lg-width);
-       height: var(--oj-color-palette-list-swatch-lg-height);
-    }  
-  }
-  @else {
   
    .oj-colorpalette-grid .oj-colorpalette-swatchsize-lg .oj-colorpalette-swatch {
      width:  $colorPaletteGridSwatchLargeSize;
@@ -150,7 +115,7 @@
       width: $colorPaletteListSwatchLargeWidth;
       height: $colorPaletteListSwatchLargeHeight;
    }
- }
+
 
    /*  Hover swatch  */
    .oj-colorpalette-container .oj-listview-item.oj-hover .oj-colorpalette-swatch-container {
@@ -160,13 +125,9 @@
    /*  Selected swatch  */
    .oj-colorpalette-container .oj-selected .oj-colorpalette-swatch-container,
    .oj-colorpalette-container .oj-listview-item.oj-hover.oj-selected .oj-colorpalette-swatch-container {
-     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-     {
-       border-color: var(--oj-color-palette-swatch-outer-border-color-selected);
-     }
-     @else {
+
        border-color: $colorPaletteSwatchOuterBorderColorSelected;
-    }
+
 
    }
 
@@ -194,13 +155,9 @@
    .oj-colorpalette-swatch-text  {
      display:block;
      text-align:center;
-     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-     {
-       color: var(--oj-color-palette-text-color);
-     }
-     @else {
+
        color: $colorPaletteTextColor;       
-     }
+
      width: inherit;
      max-width: inherit;
      white-space: nowrap;
@@ -209,20 +166,13 @@
    }
 
    .oj-colorpalette-grid .oj-colorpalette-swatch-text  {
-     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-     {
-       font-size: var(--oj-color-palette-grid-font-size);
-     }
-     @else {
+
        font-size: $colorPaletteGridFontSize;       
-     }
+
    }
 
    .oj-colorpalette-list .oj-colorpalette-swatch-text  {
-     @if (not(variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true))
-     {
        font-size: $colorPaletteListFontSize;
-     }
      display: inline-block;
      @include oj-ltr() {
        margin-left: 15px;
@@ -236,13 +186,9 @@
 
    /*  Constrain text width for ellipsis generation  */
   .oj-colorpalette-grid .oj-colorpalette-swatchsize-lg .oj-colorpalette-swatch-text  {
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-    {
-      width: var(--oj-color-palette-grid-swatch-xl-size);
-    }
-    @else {
+
       width:  $colorPaletteGridSwatchXLargeSize;      
-    }
+
      /* account for border of swatch container */
      padding-left: 3px;
      padding-right: 3px;
@@ -251,13 +197,9 @@
    /*  Disabled  */
   .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch,
   .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch-text  {
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-    {
-      color: var(--oj-text-color-disabled);
-    }
-    @else {      
+
      color: $textColorDisabled;
-    }
+
      cursor: default;
   }
 
@@ -267,11 +209,13 @@
     padding: 0;
     border-width: 0;
     cursor: pointer;
+    min-height: auto;
   }
 
   .oj-colorpalette-container .oj-listview-card-layout li.oj-listview-item {
     width: auto;
     height: auto;
+    padding: 0;
     border-width: 0;
     border-color: transparent;
     border-radius: 0;
@@ -328,31 +272,19 @@
   }
 
   .oj-colorpalette.oj-warning .oj-colorpalette-container {
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-    {
-      border-width: var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width);
-      border-style: solid;
-      border-color: var(--oj-text-field-border-color-warning);
-    }
-    @else {
+
       border-width: $formControlMessagingBorderWidth;
       border-style: solid;
       border-color: $borderColorWarning;      
-    }
+
   }
 
   .oj-colorpalette.oj-invalid .oj-colorpalette-container {
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-    {
-      border-width: var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-bottom-width);
-      border-style: solid;
-      border-color: var(--oj-text-field-border-color-invalid);
-    }
-    @else {
+
       border-width: $formControlMessagingBorderWidth;
       border-style: solid;
       border-color: $borderColorError;      
-    }
+
   }
 
  }

@@ -19,63 +19,48 @@
 
     /* Styling for the timeaxis widget */
     .oj-timeaxis {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        background-color: var(--oj-time-axis-bg-color);
-        border: 1px solid var(--oj-time-axis-border-color);
-        user-select: none;
-      } @else {
+
         background-color: $dvtTimeAxisBgColor;
         border: 1px solid $dvtTimeAxisBorderColor;
         @include oj-user-select-property(none);
-      }
+
       outline: none;
     }
 
     /* Styling for the timeaxis labels */
     .oj-timeaxis-label {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        font-size: var(--oj-font-size);
-        fill: var(--oj-time-axis-label-color);
-      } @else {
+
         font-size: $fontSize;
         fill: $dvtTimeAxisLabelColor;
-      }
+
     }
 
     /* Styling for the timeaxis separators */
     .oj-timeaxis-separator {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        stroke: var(--oj-time-axis-separator-color);
-      } @else {
+
         stroke: $dvtTimeAxisSeparatorColor;
-      }
+
     }
 
     .oj-table-header-row .oj-timeaxis-separator {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        stroke: var(--oj-table-header-border-color);
-      } @else {
+
         stroke: $tableHeaderBorderColor;
-      }
+
     }
 
     .oj-datagrid-column-header-cell .oj-timeaxis-separator {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        stroke: var(--oj-collection-header-border-color);
-      } @else {
+
         stroke: $collectionHeaderBorderColor;
-      }
+
     }
 
     /* Styling border for stamping onto ojTable header case:
     All timeaxes does not have bottom border */
     .oj-table-header-row .oj-timeaxis {
       border-bottom: none;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        border-color: var(--oj-table-header-border-color);
-      } @else {
+
         border-color: $tableHeaderBorderColor;
-      }
+
     }
 
     /* Styling border for stamping onto ojDataGrid header case:
@@ -85,11 +70,9 @@
     }
 
     .oj-datagrid-column-header-cell .oj-timeaxis ~ .oj-timeaxis {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        border-top: 1px solid var(--oj-collection-header-border-color);
-      } @else { 
+
         border-top: 1px solid $collectionHeaderBorderColor;
-      }
+      
     }
   }
 }

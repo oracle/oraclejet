@@ -2,14 +2,14 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery'], function(oj, $)
 {
   "use strict";
 /* jslint browser: true*/
-/*
-** Copyright (c) 2004, 2012, Oracle and/or its affiliates. All rights reserved.
-*/
+
 
 /* global Promise:false */
 /**
@@ -43,6 +43,7 @@ oj.DomScroller = function (element, dataprovider, options) {
   this._requestCallback = options.request;
   this._errorCallback = options.error;
   this._beforeFetchCallback = options.beforeFetch;
+  this._handleScrollTopCallback = options.onScrollTop;
   this._localKeyValidator = options.localKeyValidator;
   this._registerDataSourceEventListeners();
   this._fetchTrigger = options.fetchTrigger;
@@ -50,8 +51,6 @@ oj.DomScroller = function (element, dataprovider, options) {
     this._fetchTrigger = 0;
   }
   this._initialScrollTop = this._element.scrollTop;
-  this._nextFetchTrigger = ((this._element.scrollHeight - this._element.clientHeight) / 2) +
-    this._fetchTrigger;
   this._lastFetchTrigger = 0;
   this._isScrollTriggeredByMouseWheel = false;
 
@@ -206,12 +205,18 @@ oj.DomScroller.prototype._doFetch = function (scrollTop) {
  * @private
  */
 oj.DomScroller.prototype._handleScrollerScrollTop = function (scrollTop, maxScrollTop) {
+  if (this._handleScrollTopCallback) {
+    this._handleScrollTopCallback(scrollTop);
+  }
+
   if (!this._fetchPromise && this._asyncIterator) {
-    if (isNaN(this._nextFetchTrigger)) {
+    if (maxScrollTop !== this._lastMaxScrollTop) {
       this._nextFetchTrigger = Math.max(0, (maxScrollTop - scrollTop) / 2);
+      this._lastMaxScrollTop = maxScrollTop;
     }
 
-    if (scrollTop - this._lastFetchTrigger > this._nextFetchTrigger) {
+    if (this._nextFetchTrigger != null &&
+        scrollTop - this._lastFetchTrigger > this._nextFetchTrigger) {
       this._doFetch(scrollTop);
 
       // note beforeFetchCallback would return false if the render queue is non-empty
@@ -243,11 +248,14 @@ oj.DomScroller.prototype._handleScrollerScrollTop = function (scrollTop, maxScro
  */
 oj.DomScroller.prototype.isOverflow = function () {
   var element = this._element;
-
-  if (element.scrollHeight > element.clientHeight + this._fetchTrigger) {
-    return true;
+  var diff = element.scrollHeight - (element.clientHeight + this._fetchTrigger);
+  if (diff === 1 && oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.EDGE) {
+    // hitting Edge , see https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/21405284/
+    // note this will only happen with non-height-bounded ListView with loadMoreOnScroll, see 
+    diff = 0;
   }
-  return false;
+
+  return (diff > 0);
 };
 
 /**
@@ -286,7 +294,7 @@ oj.DomScroller.prototype._fetchMoreRows = function () {
             }
 
             // we have exhausted the iterator, discard so we won't attempt to fetch from it again
-            if (result.done) {
+            if (result.done || result.maxCountLimit) {
               self._asyncIterator = null;
             }
           }
@@ -295,7 +303,8 @@ oj.DomScroller.prototype._fetchMoreRows = function () {
         return this._fetchPromise;
       }
     }
-     // we need to indicate that we've hit maxCount
+    // we need to indicate that we've hit maxCount
+    this._asyncIterator = null;
     return Promise.resolve({ maxCount: this._maxCount, maxCountLimit: true });
   }
 

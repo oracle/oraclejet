@@ -2,20 +2,15 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 "use strict";
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
 define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojpagingmodel'], function(oj, $)
 {
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -41,6 +36,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojpagingmodel'],
  * @param {Object} dataSource
  * @param {Object|null} options Options for the PagingTableDataSource.  No option is currently supported.
  * @constructor
+ * @final
  * @since 1.0
  * @ojtsignore
  */

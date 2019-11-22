@@ -2,8 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtGauge','ojs/ojlogger', 'ojs/ojvalidation-base', 'ojs/ojvalidation-number'], function(oj, $, Config, comp, DvtAttributeUtils, dvt, Logger, __ValidationBase)
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 
+'ojs/internal-deps/dvt/DvtGauge','ojs/ojlogger', 'ojs/ojconverterutils-i18n',
+'ojs/ojconverter-number', 'ojs/ojvalidation-number'], 
+function(oj, $, Config, comp, DvtAttributeUtils, dvt, Logger, ConverterUtils, NumberConverter)
 {
   "use strict";
 var __oj_led_gauge_metadata = 
@@ -784,16 +789,13 @@ var __oj_status_meter_gauge_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-/* global Logger:false, __ValidationBase:false */
+
+/* global Logger:false, ConverterUtils:false, NumberConverter:false */
 
 /**
  * @ojcomponent oj.dvtBaseGauge
  * @augments oj.dvtBaseComponent
- * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter"]}
+ * @ojtsimport {module: "ojconverter", type: "AMD", importName: "Converter"}
  * @since 0.7.0
  * @abstract
  */
@@ -806,7 +808,7 @@ oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent,
      */
     _ComponentCreate: function () {
       this._super();
-      this._SetLocaleHelpers(__ValidationBase);
+      this._SetLocaleHelpers(NumberConverter, ConverterUtils);
     },
     //* * @inheritdoc */
     _ProcessStyles: function () {
@@ -904,6 +906,7 @@ oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent,
       return subId;
     }
   }, true);
+
 
 /* global dvt:false, Config:false */
 
@@ -1201,6 +1204,7 @@ oj.__registerWidget('oj.ojDialGauge', $.oj.dvtBaseGauge,
       return auto.getMetricLabel();
     }
   });
+
 
 
 /**
@@ -1757,13 +1761,14 @@ oj.__registerWidget('oj.ojDialGauge', $.oj.dvtBaseGauge,
  * @default null
  */
 
+
 /* global dvt:false */
 
 /**
  * @ojcomponent oj.ojLedGauge
  * @augments oj.dvtBaseGauge
  * @since 0.7.0
- * @ojstatus preview
+ *
  * @ojshortdesc A LED gauge displays information graphically, highlighting a specific metric value in relation to its thresholds.
  * @ojrole img
  * @ojrole application
@@ -2093,7 +2098,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
       },
 
       /**
-       * The shape of the LED gauge. Can take the name of a built-in shape or the svg path commands for a custom shape.
+       * The shape of the LED gauge. Can take the name of a built-in shape or the SVG path commands for a custom shape.
        * @expose
        * @name type
        * @memberof oj.ojLedGauge
@@ -2190,6 +2195,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
     }
   });
 
+
 /**
  * <p>This element has no touch interaction.  </p>
  *
@@ -2247,10 +2253,10 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the gauge. (See [oj.ojLedGauge.TooltipContext]{@link oj.ojLedGauge.TooltipContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the gauge. (See [oj.ojLedGauge.TooltipContext]{@link oj.ojLedGauge.TooltipContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot tooltipTemplate
  * @ojslotitemprops oj.ojLedGauge.TooltipContext
  * @memberof oj.ojLedGauge
@@ -2264,13 +2270,14 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
  * &lt;/oj-led-gauge>
  */
 
+
 /* global dvt:false */
 
 /**
  * @ojcomponent oj.ojRatingGauge
  * @augments oj.dvtBaseGauge
  * @since 0.7.0
- * @ojstatus preview
+ *
  * @ojshortdesc A rating gauge displays information graphically, typically displaying or accepting user feedback on a product or service.
  * @ojrole img
  * @ojrole application
@@ -2376,7 +2383,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
         color: '#ED2C02',
 
         /**
-         * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
+         * The shape to be used. Can take the name of a built-in shape or the SVG path commands for a custom shape. Does not apply if a custom image is specified.
          * @expose
          * @name changedState.shape
          * @memberof! oj.ojRatingGauge
@@ -2464,7 +2471,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
         color: '#007CC8',
 
         /**
-         * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
+         * The shape to be used. Can take the name of a built-in shape or the SVG path commands for a custom shape. Does not apply if a custom image is specified.
          * @expose
          * @name hoverState.shape
          * @memberof! oj.ojRatingGauge
@@ -2578,7 +2585,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @memberof oj.ojRatingGauge
        * @ojshortdesc Read-only property used for retrieving the transient value from the component. See the Help documentation for more information.
        * @since 4.2.0
-       * @ojstatus preview
+       *
        * @readonly
        * @ojwriteback
        */
@@ -2632,7 +2639,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
         color: '#F8C15A',
 
         /**
-         * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
+         * The shape to be used. Can take the name of a built-in shape or the SVG path commands for a custom shape. Does not apply if a custom image is specified.
          * @expose
          * @name selectedState.shape
          * @memberof! oj.ojRatingGauge
@@ -2774,7 +2781,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
         color: '#C4CED7',
 
         /**
-         * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
+         * The shape to be used. Can take the name of a built-in shape or the SVG path commands for a custom shape. Does not apply if a custom image is specified.
          * @expose
          * @name unselectedState.shape
          * @memberof! oj.ojRatingGauge
@@ -2905,6 +2912,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
       }
     }
   });
+
 
 /**
  * <table class="keyboard-table">
@@ -3040,10 +3048,10 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the gauge. (See [oj.ojRatingGauge.TooltipContext]{@link oj.ojRatingGauge.TooltipContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the gauge. (See [oj.ojRatingGauge.TooltipContext]{@link oj.ojRatingGauge.TooltipContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot tooltipTemplate
  * @ojslotitemprops oj.ojRatingGauge.TooltipContext
  * @memberof oj.ojRatingGauge
@@ -3057,14 +3065,15 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
  * &lt;/oj-rating-gauge>
  */
 
+
 /* global dvt:false */
 
 /**
  * @ojcomponent oj.ojStatusMeterGauge
  * @augments oj.dvtBaseGauge
- * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter"]}
+ * @ojtsimport {module: "ojconverter", type: "AMD", importName: "Converter"}
  * @since 0.7.0
- * @ojstatus preview
+ *
  * @ojshortdesc A status meter gauge displays information graphically, highlighting a specific metric value's progress in relation to its thresholds.  Horizontal, vertical, and circular formats are supported.
  * @ojrole img
  * @ojrole application
@@ -3281,7 +3290,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
          * @expose
          * @name label.position
          * @memberof! oj.ojStatusMeterGauge
-         * @ojshortdesc Specifes the label position for horizontal and vertical gauges. See the Help documentation for more information.
+         * @ojshortdesc Specifies the label position for horizontal and vertical gauges. See the Help documentation for more information.
          * @instance
          * @type {string}
          * @ojsignature {target: "Type", value: "?"}
@@ -3356,7 +3365,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
          * @expose
          * @name metricLabel.position
          * @memberof! oj.ojStatusMeterGauge
-         * @ojshortdesc Specifes the metric label position for horizontal and vertical gauges. See the Help documentation for more information.
+         * @ojshortdesc Specifies the metric label position for horizontal and vertical gauges. See the Help documentation for more information.
          * @instance
          * @type {string}
          * @ojsignature {target: "Type", value: "?"}
@@ -3471,7 +3480,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
       orientation: 'horizontal',
 
       /**
-       * Plot Area for Status Meter Guage
+       * Plot Area for Status Meter Gauge
        * @expose
        * @name plotArea
        * @memberof oj.ojStatusMeterGauge
@@ -3571,7 +3580,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @memberof oj.ojStatusMeterGauge
        * @ojshortdesc Read-only property used for retrieving the transient value from the component. See the Help documentation for more information.
        * @since 4.2.0
-       * @ojstatus preview
+       *
        * @readonly
        * @ojwriteback
        */
@@ -3808,6 +3817,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
     }
   });
 
+
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -3951,10 +3961,10 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the gauge. (See [oj.ojStatusMeterGauge.TooltipContext]{@link oj.ojStatusMeterGauge.TooltipContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the gauge. (See [oj.ojStatusMeterGauge.TooltipContext]{@link oj.ojStatusMeterGauge.TooltipContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot tooltipTemplate
  * @ojslotitemprops oj.ojStatusMeterGauge.TooltipContext
  * @memberof oj.ojStatusMeterGauge
@@ -3973,10 +3983,10 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
  * for a circular status meter gauge.  This slot takes precedence over the center.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the gauge center. (See [oj.ojStatusMeterGauge.CenterContext]{@link oj.ojStatusMeterGauge.CenterContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the gauge center. (See [oj.ojStatusMeterGauge.CenterContext]{@link oj.ojStatusMeterGauge.CenterContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot centerTemplate
  * @ojslotitemprops oj.ojStatusMeterGauge.CenterContext
  * @memberof oj.ojStatusMeterGauge
@@ -3995,6 +4005,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
  *  &lt;/template>
  * &lt;/oj-status-meter-gauge>
  */
+
 
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.

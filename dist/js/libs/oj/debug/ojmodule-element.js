@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'knockout', 'ojs/ojcontext', 'ojs/ojcomposite', 'ojs/ojmodule'], function(oj, ko, Context, Composite)
 {
   "use strict";
@@ -40,10 +42,7 @@ var __oj_module_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global ko:false, Promise:false, Context:false */
 
@@ -53,7 +52,7 @@ var __oj_module_metadata =
  * @ojdisplayname ojModule Element
  * @ojshortdesc A module is a navigational element that manages content replacement within a particular region of the page.
  * @ojsignature {target: "Type", value: "class ojModule extends JetElement<ojModuleSettableProperties>"}
- * @ojstatus preview
+ *
 
  * @classdesc
  * <h3 id="ojModuleOverview-section">
@@ -76,14 +75,38 @@ var __oj_module_metadata =
  * to generate a configuration object for the element. See the demos and documentation for
  * the <a href="ModuleElementUtils.html">ModuleElementUtils</a> class for details on the available methods.</p>
  *
- * <h2 id="lifecycle">View Model Lifecycle
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#lifecycle"></a>
+ * <h2 id="lifecycle">View Models
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#viewmodel"></a>
  * </h2>
+ * <h3 id="lifecycle">Lifecycle
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#lifecycle"></a>
+ * </h3>
  * <p>
  * If a ViewModel is provided as a part of configuration for the oj-module element, it should implement the
  * <a href="oj.ModuleViewModel.html">ModuleViewModel</a> interface to provide lifecycle callbacks.
  * See the lifecycle methods that could be implemented on the view model
  * that will be called at each stage of the component's lifecycle.
+ * </p>
+ *
+ * <h3 id="lifecycle">Best Practices
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#bestpractice"></a>
+ * </h3>
+ * <p>
+ * We recommend using non-singleton ViewModels for modules that may contain
+ * child modules. If the parent module's ViewModel has to be a singleton,
+ * application developers have to ensure that a new view is being returned
+ * every time the child module is re-rendered (this can be achieved by binding
+ * the child module's config object to a function call).
+ * </p>
+ * <p>
+ * When the parent module is cleaning its view, it will not stop at the
+ * boundary of the child module, i.e. the entire DOM hierarchy will be cleaned.
+ * This creates problems when the cleaned child module's view is cached.
+ * To avoid this issue, only cache child modules if their parent modules are also being cached,
+ * or ensure that the child module's cache is emptied when the parent module's view is about
+ * to be cleaned (see the <a href="oj.ModuleViewModel.html#disconnected">disconnected</a> callback
+ * and the <a href="oj.ojModule.html#event:viewDisconnected">ojViewDisconnected</a> event).
+ * </p>
  */
 
 /**
@@ -287,16 +310,18 @@ function moduleViewModel(context) {
   }
 
   this.connected = function () {
-    if (isViewAttached(props && props.config)) {
-      invokeViewModelMethod(props.config.viewModel, 'connected');
-      dispatchLifecycleEvent('ojViewConnected', props.config.viewModel);
+    var currentConfig = this.config();
+    if (isViewAttached(currentConfig)) {
+      invokeViewModelMethod(currentConfig.viewModel, 'connected');
+      dispatchLifecycleEvent('ojViewConnected', currentConfig.viewModel);
     }
-  };
+  }.bind(this);
 
   this.disconnected = function () {
-    invokeViewModelMethod(props.config.viewModel, 'disconnected');
-    dispatchLifecycleEvent('ojViewDisconnected', props.config.viewModel, props.config.view);
-  };
+    var currentConfig = this.config();
+    invokeViewModelMethod(currentConfig.viewModel, 'disconnected');
+    dispatchLifecycleEvent('ojViewDisconnected', currentConfig.viewModel, currentConfig.view);
+  }.bind(this);
 }
 
 var moduleValue = '{"view":config().view, "viewModel":config().viewModel,' +
@@ -320,7 +345,7 @@ Composite.register('oj-module',
  * @memberof oj
  * @since 4.2.0
  * @export
- * @ojstatus preview
+ *
  */
 
  /**
@@ -400,7 +425,7 @@ Composite.register('oj-module',
 
 /**
  * A duck-typing interface that defines a contract for a view model consumed by the oj-module element.
- * @ojstatus preview
+ *
  * @since 7.0.0
  * @export
  * @interface ModuleViewModel
@@ -448,6 +473,41 @@ Composite.register('oj-module',
  * @memberof oj.ModuleViewModel
  * @instance
  * @ojsignature {target: "Type", value: "?(): null"}
+ */
+
+/**
+ * This optional method may be implemented on the ViewModel and will be invoked
+ * by <a href="oj.ModuleRouterAdapter.html">ModuleRouterAdapter</a> on <code>beforeStateChange</code> event
+ * assuming that oj-module is used in conjuction with ModuleRouterAdapter.
+ * <p>This method must return a Promise. When defined the method is invoked
+ * before router state change. If the Promise is resolved, then the BaseRouter will continue
+ * with the state change, otherwise (Promise rejected) the state change is vetoed and the current router state
+ * does not change.<p>
+ * <p>Note, that the method might be called at any time after the view model is created, e.g. before the corresponding view has been connected or bindings have been applied.</p>
+ * @method
+ * @since 8.0.0
+ * @name canExit
+ * @ojshortdesc A callback method that is invoked before BaseRouter state change.
+ * @memberof oj.ModuleViewModel
+ * @instance
+ * @ojsignature {target: "Type", value: "?(): Promise<void>"}
+ */
+
+ /**
+ * This optional method may be implemented on the ViewModel and will be invoked
+ * by <a href="oj.ModuleRouterAdapter.html">ModuleRouterAdapter</a> on <code>stateChange</code> event
+ * assuming that oj-module is used in conjuction with ModuleRouterAdapter.
+ * <p>If the method is present the ModuleRouterAdapter will assume that the view model knows how to handle parameter
+ * change. It will not reload the module and re-apply binding. If the method is not present the ModuleRouterAdapter
+ * will reload the module and apply the binding upon any parameter change.</p>
+ * <p>Note, that the method might be called at any time after the view model is created, e.g. before the corresponding view has been connected or bindings have been applied.</p>
+ * @method
+ * @since 8.0.0
+ * @name parametersChanged
+ * @ojshortdesc A callback method that might be invoked on BaseRouter state change.
+ * @memberof oj.ModuleViewModel
+ * @instance
+ * @ojsignature {target: "Type", value: "?(params:any): null"}
  */
 
 

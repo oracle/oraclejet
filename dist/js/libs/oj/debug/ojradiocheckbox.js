@@ -2,15 +2,14 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojs/ojcomponentcore', 'ojs/ojeditablevalue'],
 function(oj, $, Logger, Components)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global Components:false, Symbol:false */
 
@@ -202,10 +201,7 @@ oj.RadioCheckboxUtils.removeDataListener = function () {
   }
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /*!
  * JET Radio This component is private. @VERSION
  */
@@ -427,7 +423,7 @@ oj.__registerWidget('oj._ojRadioCheckbox', $.oj.baseComponent,
 
       var iElem = document.createElement('span');
       iElem.setAttribute('class', 'oj-radiocheckbox-icon');
-      this.element.wrapAll(iElem); // @HTMLUpdateOk iElem constructed locally
+      this.element.wrapAll(iElem); // @HTMLUpdateOK iElem constructed locally
 
       var self = this;
       this._focusable(this.element);
@@ -637,10 +633,10 @@ oj.__registerWidget('oj._ojRadioCheckbox', $.oj.baseComponent,
         siblingLabel = this.element.siblings().filter(labelSelector);
 
         if (siblingLabel.length !== 0) {
-          this.element.add(siblingLabel).wrapAll(ojChoiceItemSpanString); // @HTMLUpdateOk adding empty span for styling
+          this.element.add(siblingLabel).wrapAll(ojChoiceItemSpanString); // @HTMLUpdateOK adding empty span for styling
           choiceItem = this.element.parent();
         } else {
-          this.element.wrapAll(ojChoiceItemSpanString); // @HTMLUpdateOk adding empty span for styling
+          this.element.wrapAll(ojChoiceItemSpanString); // @HTMLUpdateOK adding empty span for styling
           choiceItem = this.element.parent();
         }
       }

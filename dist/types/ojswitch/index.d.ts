@@ -2,6 +2,12 @@ import { editableValue, editableValueEventMap, editableValueSettableProperties }
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojSwitch extends editableValue<boolean, ojSwitchSettableProperties> {
     disabled: boolean;
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelledBy: string | null;
     readonly: boolean;
     value: boolean;
@@ -30,6 +36,8 @@ export namespace ojSwitch {
     // tslint:disable-next-line interface-over-type-literal
     type disabledChanged = JetElementCustomEvent<ojSwitch["disabled"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojSwitch["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged = JetElementCustomEvent<ojSwitch["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged = JetElementCustomEvent<ojSwitch["readonly"]>;
@@ -40,12 +48,19 @@ export interface ojSwitchEventMap extends editableValueEventMap<boolean, ojSwitc
     'ojAnimateEnd': ojSwitch.ojAnimateEnd;
     'ojAnimateStart': ojSwitch.ojAnimateStart;
     'disabledChanged': JetElementCustomEvent<ojSwitch["disabled"]>;
+    'displayOptionsChanged': JetElementCustomEvent<ojSwitch["displayOptions"]>;
     'labelledByChanged': JetElementCustomEvent<ojSwitch["labelledBy"]>;
     'readonlyChanged': JetElementCustomEvent<ojSwitch["readonly"]>;
     'valueChanged': JetElementCustomEvent<ojSwitch["value"]>;
 }
 export interface ojSwitchSettableProperties extends editableValueSettableProperties<boolean> {
     disabled: boolean;
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelledBy: string | null;
     readonly: boolean;
     value: boolean;

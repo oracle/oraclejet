@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojchildmutationobserver', 'ojs/ojlabelledbyutils', 'ojs/ojoption'], 
 /*
 * @param {Object} oj 
@@ -17,9 +19,12 @@ var __oj_button_metadata =
     "chroming": {
       "type": "string",
       "enumValues": [
+        "borderless",
+        "callToAction",
         "full",
         "half",
-        "outlined"
+        "outlined",
+        "solid"
       ]
     },
     "disabled": {
@@ -58,9 +63,11 @@ var __oj_buttonset_many_metadata =
     "chroming": {
       "type": "string",
       "enumValues": [
+        "borderless",
         "full",
         "half",
-        "outlined"
+        "outlined",
+        "solid"
       ]
     },
     "describedBy": {
@@ -114,9 +121,11 @@ var __oj_buttonset_one_metadata =
     "chroming": {
       "type": "string",
       "enumValues": [
+        "borderless",
         "full",
         "half",
-        "outlined"
+        "outlined",
+        "solid"
       ]
     },
     "describedBy": {
@@ -170,9 +179,11 @@ var __oj_menu_button_metadata =
     "chroming": {
       "type": "string",
       "enumValues": [
+        "borderless",
         "full",
         "half",
-        "outlined"
+        "outlined",
+        "solid"
       ]
     },
     "disabled": {
@@ -205,10 +216,7 @@ var __oj_menu_button_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /* global ThemeUtils:false */
 /* global ChildMutationObserver:false */
 /* global LabelledByUtils:false */
@@ -236,12 +244,15 @@ var __oj_menu_button_metadata =
   var BASE_CLASSES = 'oj-button oj-component oj-enabled oj-default'; // oj-enabled is a state class, but convenient to include in this var instead
   var STATE_CLASSES = 'oj-hover oj-active oj-selected';
   var TYPE_CLASSES = 'oj-button-icons-only oj-button-icon-only oj-button-text-icons oj-button-text-icon-start oj-button-text-icon-end oj-button-text-only';
-  var CHROMING_CLASSES = 'oj-button-full-chrome oj-button-half-chrome oj-button-outlined-chrome';
+  var CHROMING_CLASSES = 'oj-button-full-chrome oj-button-half-chrome oj-button-outlined-chrome oj-button-cta-chrome';
 
   var _chromingMap = {
+    solid: 'oj-button-full-chrome',
+    outlined: 'oj-button-outlined-chrome',
+    borderless: 'oj-button-half-chrome',
     full: 'oj-button-full-chrome',
     half: 'oj-button-half-chrome',
-    outlined: 'oj-button-outlined-chrome'
+    callToAction: 'oj-button-cta-chrome'
   };
 
   var _interestingContainers = {
@@ -254,7 +265,7 @@ var __oj_menu_button_metadata =
  * @ojcomponent oj.ojButton
  * @augments oj.baseComponent
  * @since 0.6.0
- * @ojstatus preview
+ *
  * @ojshortdesc Buttons direct users to initiate or take actions and work with a single tap, click, or keystroke.
  * @ojrole button
  * @ojsignature [{
@@ -367,24 +378,28 @@ var __oj_menu_button_metadata =
          * @instance
          * @memberof oj.ojButton
          * @type {string}
-         * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
-         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
-         *     (This is the toolbar default in most themes.)
-         * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
+         * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI.
+         * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
+         * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
+         * @ojvalue {string} "callToAction" A Call To Action (CTA) button guides the user to take or complete the action that is the main goal of the page or page section. There should only be one CTA button on a page at any given time.
+         * @ojvalue {string} "full" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use solid instead.</span>
+         * In typical themes, full-chrome buttons always have chrome.
+         * @ojvalue {string} "half" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use borderless instead.</span>
+         * In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
          * @ojshortdesc Indicates in what states the button has chrome (background and border).
          *
          * @example <caption>Initialize the Button with the <code class="prettyprint">chroming</code> attribute specified:</caption>
-         * &lt;oj-button chroming='half'>&lt;/oj-button>
+         * &lt;oj-button chroming='borderless'>&lt;/oj-button>
          *
          * @example <caption>Get or set the <code class="prettyprint">chroming</code> property after initialization:</caption>
          * // getter
          * var chromingValue = myButton.chroming;
          *
          * // setter
-         * myButton.chroming = 'half';
+         * myButton.chroming = 'borderless';
          *
          * @example <caption>Set the default in the theme (SCSS) :</caption>
-         * $buttonChromingOptionDefault: half !default;
+         * $buttonChromingOptionDefault: borderless !default;
          */
 
         /**
@@ -394,24 +409,27 @@ var __oj_menu_button_metadata =
          * @instance
          * @memberof oj.ojMenuButton
          * @type {string}
-         * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
-         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
-         * (This is the toolbar default in most themes.)
-         * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
+         * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI.
+         * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
+         * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
+         * @ojvalue {string} "full" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use solid instead.</span>
+         * In typical themes, full-chrome buttons always have chrome.
+         * @ojvalue {string} "half" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use borderless instead.</span>
+         * In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
          * @ojshortdesc Indicates in what states the button has chrome (background and border).
          *
-         * @example <caption>Initialize the Menu Button with the <code class="prettyprint">chroming</code> attribute specified:</caption>
-         * &lt;oj-menu-button chroming='half'>&lt;/oj-menu-button>
+         * @example <caption>Initialize the Button with the <code class="prettyprint">chroming</code> attribute specified:</caption>
+         * &lt;oj-button chroming='borderless'>&lt;/oj-button>
          *
          * @example <caption>Get or set the <code class="prettyprint">chroming</code> property after initialization:</caption>
          * // getter
-         * var chromingValue = myMenuButton.chroming;
+         * var chromingValue = myButton.chroming;
          *
          * // setter
-         * myMenuButton.chroming = 'half';
+         * myButton.chroming = 'borderless';
          *
          * @example <caption>Set the default in the theme (SCSS) :</caption>
-         * $buttonChromingOptionDefault: half !default;
+         * $buttonChromingOptionDefault: borderless !default;
          */
 
         /**
@@ -421,7 +439,7 @@ var __oj_menu_button_metadata =
          * <ul>
          *   <li>If the button is in a buttonset or toolbar, then the default chroming is the current <code class="prettyprint">chroming</code> value of the nearest such container.</li>
          *   <li>Else, if <code class="prettyprint">$buttonChromingOptionDefault</code> is set in the current theme as seen in the example below, then that value is the chroming default.</li>
-         *   <li>Else, the default chroming is <code class="prettyprint">"full"</code>.</li>
+         *   <li>Else, the default chroming is <code class="prettyprint">"solid"</code>.</li>
          * </ul>
          *
          * <p>Once a value has been set on this button attribute, that value applies regardless of theme and containership.
@@ -432,7 +450,7 @@ var __oj_menu_button_metadata =
          * @since 1.2.0
          * @ojfragment buttonCommonChroming
          */
-        chroming: 'full',
+        chroming: 'solid',
 
         /**
          * {@ojinclude "name":"buttonCommonDisabled"}
@@ -786,26 +804,27 @@ var __oj_menu_button_metadata =
           self._toggleDefaultClasses();
         };
 
+        this._touchStartHandler = function () {
+          if (self._IsEffectivelyDisabled()) {
+            return;
+          }
+
+          if (activeClass) {
+            self.rootElement.classList.add(activeClass);
+          }
+          self._toggleDefaultClasses();
+
+            // don't pass "touchend touchcancel", due to semantics of one() : it's called once per event type.
+            // It's almost always touchend, not touchcancel, that is fired, so the touchend listeners would pile up.
+            // The likelihood is very small that the double edge case would occur where both endHandler is needed,
+            // AND the touch ends with touchcancel rather than touchend, and the result would only be that the hover
+            // style sticks to the button.
+          self.document.one('touchend', endHandler);
+        };
+
         if (oj.DomUtils.isTouchSupported()) {
-          this.buttonElement
-            .bind('touchstart' + this.eventNamespace, function () {
-              if (self._IsEffectivelyDisabled()) {
-                return;
-              }
-
-              if (activeClass) {
-                self.rootElement.classList.add(activeClass);
-              }
-              self._toggleDefaultClasses();
-
-                // don't pass "touchend touchcancel", due to semantics of one() : it's called once per event type.
-                // It's almost always touchend, not touchcancel, that is fired, so the touchend listeners would pile up.
-                // The likelihood is very small that the double edge case would occur where both endHandler is needed,
-                // AND the touch ends with touchcancel rather than touchend, and the result would only be that the hover
-                // style sticks to the button.
-              self.document.one('touchend', endHandler);
-            })
-            .bind('touchend' + this.eventNamespace + ' touchcancel' + this.eventNamespace, endHandler);
+          this.buttonElement[0].addEventListener('touchstart', this._touchStartHandler, { passive: true });
+          this.buttonElement.bind('touchend' + this.eventNamespace + ' touchcancel' + this.eventNamespace, endHandler);
         }
 
         this.buttonElement
@@ -1310,6 +1329,9 @@ var __oj_menu_button_metadata =
         this._removeMenuBehavior(this._getMenuNode());
         this.buttonElement[0].removeEventListener('click', this._disabledClickHandler, true);
         this.buttonElement[0].removeEventListener('click', this._ojActionClickHandler, false);
+
+        this.buttonElement[0].removeEventListener('touchstart', this._touchStartHandler, { passive: true });
+        delete this._touchStartHandler;
 
         // TBD: won't need this after the restore-attrs feature is in place.
         var elem = this.element[0];
@@ -1926,7 +1948,7 @@ var __oj_menu_button_metadata =
             .attr('aria-haspopup', true)
             .on('keydown' + this.menuEventNamespace, function (event) {
               if (event.which === $.ui.keyCode.DOWN) {
-                self._showMenu(event, 'firstItem');
+                self._toggleMenu(event, 'firstItem');
                 event.preventDefault();
                 return true;
               } else if (event.which === $.ui.keyCode.ESCAPE) {
@@ -1945,7 +1967,7 @@ var __oj_menu_button_metadata =
                 // Ideally a click (Enter/Space) would toggle (open/close) the menu without moving focus to it, per WAI-ARIA.
                 // But on IE, JAWS is not recognizing the menu on click/Enter/Space.
                 // Workaround for this, cleared with A11y team, is to move focus to menu like DownArrow. Ref .
-                self._showMenu(event, 'firstItem');
+                self._toggleMenu(event, 'firstItem');
               }
               menu.__spaceEnterDownInMenu = false;
               event.preventDefault();
@@ -2036,7 +2058,7 @@ var __oj_menu_button_metadata =
       },
 
       /*
-       * Shows the menuButton menu if there is one and we're not disabled.
+       * Toggle the menuButton menu on and off if there is one and we're not disabled.
        *
        * MenuButton types:
        * - We support menuButtons on push buttons based on <button> and <a>.
@@ -2060,15 +2082,23 @@ var __oj_menu_button_metadata =
        * param event required
        * param focus required
        */
-      _showMenu: function (event, focus) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+      _toggleMenu: function (event, focus) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
         if (this._IsEffectivelyDisabled()) {
           return;
         }
+
 
         // No need to fire click event, since not appropriate for DownArrow, and already fired for user click.
 
         var menu = this._getMenu();
         var menuElem = menu.widget();
+
+        // If the menu is already opened, click MenuButton again will close the menu.
+        if (this._menuVisible) {
+          this._dismissMenu(this._getMenuNode(), event);
+          return;
+        }
+
         menu.open(event, { launcher: this.element, initialFocus: focus });
 
         // bail if launch was cancelled by a beforeOpen listener
@@ -2124,7 +2154,7 @@ var __oj_menu_button_metadata =
 
       /*
        * Handles menu dismissals, whether or not we dismissed it ourselves.
-       * See comments on similar code in _showMenu().
+       * See comments on similar code in _toggleMenu().
        *
        * Also called by the beforeOpen listener we put on the menu, *if* the launch was by something else,
        * including our own context menu.  So if something steals our menu, we deselect the button.
@@ -2295,12 +2325,12 @@ var __oj_menu_button_metadata =
      */
 
     /**
-     * <p>The <code class="prettyprint">menu</code> menu associatied with the menu button. The <code class="prettyprint">oj-menu-button</code> element accepts a single <code class="prettyprint">oj-menu</code> element as a child with the menu slot. See the [JET Menu]{@link oj.ojMenu} for more information on setting up a menu.</p>
+     * <p>The <code class="prettyprint">menu</code> menu associated with the menu button. The <code class="prettyprint">oj-menu-button</code> element accepts a single <code class="prettyprint">oj-menu</code> element as a child with the menu slot. See the [JET Menu]{@link oj.ojMenu} for more information on setting up a menu.</p>
      *
      * @ojslot menu
      * @ojmaxitems 1
      * @memberof oj.ojMenuButton
-     * @ojshortdesc The menu associatied with the menu button. The oj-menu-button element accepts a single oj-menu element as a child with the menu slot.
+     * @ojshortdesc The menu associated with the menu button. The oj-menu-button element accepts a single oj-menu element as a child with the menu slot.
      *
      * @example <caption>Initialize the Menu Button with child content specified for the menu:</caption>
      * &lt;oj-menu-button>
@@ -2440,8 +2470,9 @@ var __oj_menu_button_metadata =
      *       <td>Makes the button small, large, or extra large. Is applied to the Button's root element.</td>
      *     </tr>
      *     <tr>
-     *       <td>oj-button-primary</td>
-     *       <td>Draws attention to the button, often identifying the primary action in a set of buttons.
+     *       <td><s>oj-button-primary</s></td>
+     *       <td><span class="important">Deprecated: this class is deprecated and will be removed in the future. Please use callToAction chroming instead.</span>
+     *           Draws attention to the button, often identifying the primary action in a set of buttons.
      *           Designed for use with a push button. In some themes, this class does nothing. Is applied to the Button's root element.</td>
      *       </td>
      *     </tr>
@@ -2467,7 +2498,7 @@ var __oj_menu_button_metadata =
  * @ojcomponent oj.ojMenuButton
  * @ojdisplayname Menu Button
  * @since 4.0.0
- * @ojstatus preview
+ *
  * @augments oj.ojButton
  * @ojshortdesc A menu button launches a menu when clicked.
  * @ojrole button
@@ -2555,7 +2586,7 @@ var __oj_menu_button_metadata =
 /**
  * @ojcomponent oj.ojButtonsetOne
  * @since 0.6.0
- * @ojstatus preview
+ *
  * @augments oj.ojButtonset
  * @ojshortdesc A buttonset one is a grouping of related buttons where only one button may be selected.
  * @ojrole button
@@ -2609,7 +2640,7 @@ var __oj_menu_button_metadata =
 /**
  * @ojcomponent oj.ojButtonsetMany
  * @since 0.6.0
- * @ojstatus preview
+ *
  * @augments oj.ojButtonset
  * @ojshortdesc A buttonset many is a grouping of related buttons where any number of buttons may be selected.
  * @ojrole button
@@ -2856,24 +2887,27 @@ var __oj_menu_button_metadata =
          * @memberof oj.ojButtonsetOne
          * @instance
          * @type {string}
-         * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
-         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. A buttonset with half-chroming will be styled to have normal button spacing. Half-chroming is recommended for buttons in a toolbar.
-         *     (This is the toolbar default in most themes.)
-         * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
+         * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI.
+         * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
+         * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
+         * @ojvalue {string} "full" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use solid instead.</span>
+         * In typical themes, full-chrome buttons always have chrome.
+         * @ojvalue {string} "half" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use borderless instead.</span>
+         * In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. A buttonset with half-chroming will be styled to have normal button spacing.
          * @ojshortdesc Indicates in what states the buttonset has chrome (background and border).
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">chroming</code> attribute specified:</caption>
-         * &lt;oj-buttonset-one chroming='half'>&lt;/oj-buttonset-one>
+         * &lt;oj-buttonset-one chroming='borderless'>&lt;/oj-buttonset-one>
          *
          * @example <caption>Get or set the <code class="prettyprint">chroming</code> property after initialization:</caption>
          * // getter
          * var chromingValue = myButtonset.chroming;
          *
          * // setter
-         * myButtonset.chroming = 'half';
+         * myButtonset.chroming = 'borderless';
          *
          * @example <caption>Set the default in the theme (SCSS) :</caption>
-         * $buttonsetChromingOptionDefault: half !default;
+         * $buttonsetChromingOptionDefault: borderless !default;
          */
         /**
          * {@ojinclude "name":"buttonsetCommonChroming"}
@@ -2882,24 +2916,27 @@ var __oj_menu_button_metadata =
          * @memberof oj.ojButtonsetMany
          * @instance
          * @type {string}
-         * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
-         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. A buttonset with half-chroming will be styled to have normal button spacing. Half-chroming is recommended for buttons in a toolbar.
-         *     (This is the toolbar default in most themes.)
-         * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
+         * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI.
+         * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
+         * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
+         * @ojvalue {string} "full" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use solid instead.</span>
+         * In typical themes, full-chrome buttons always have chrome.
+         * @ojvalue {string} "half" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use borderless instead.</span>
+         * In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. A buttonset with half-chroming will be styled to have normal button spacing.
          * @ojshortdesc Indicates in what states the buttonset has chrome (background and border).
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">chroming</code> attribute specified:</caption>
-         * &lt;oj-buttonset-many chroming='half'>&lt;/oj-buttonset-many>
+         * &lt;oj-buttonset-many chroming='borderless'>&lt;/oj-buttonset-many>
          *
          * @example <caption>Get or set the <code class="prettyprint">chroming</code> property after initialization:</caption>
          * // getter
          * var chromingValue = myButtonset.chroming;
          *
          * // setter
-         * myButtonset.chroming = 'half';
+         * myButtonset.chroming = 'borderless';
          *
          * @example <caption>Set the default in the theme (SCSS) :</caption>
-         * $buttonsetChromingOptionDefault: half !default;
+         * $buttonsetChromingOptionDefault: borderless !default;
          */
 
         /**
@@ -2912,7 +2949,7 @@ var __oj_menu_button_metadata =
          * <ul>
          *   <li>If the buttonset is in a toolbar, then the default chroming is the current value of the toolbar's [chroming]{@link oj.ojToolbar#chroming} attribute.</li>
          *   <li>Else, if <code class="prettyprint">$buttonsetChromingOptionDefault</code> is set in the current theme as seen in the example below, then that value is the chroming default.</li>
-         *   <li>Else, the default chroming is <code class="prettyprint">"full"</code>.</li>
+         *   <li>Else, the default chroming is <code class="prettyprint">"solid"</code>.</li>
          * </ul>
          *
          * <p>Once a value has been set on this buttonset attribute, that value applies regardless of theme and containership.
@@ -2923,7 +2960,7 @@ var __oj_menu_button_metadata =
          * @since 1.2.0
          * @ojfragment buttonsetCommonChroming
          */
-        chroming: 'full',
+        chroming: 'solid',
 
         /**
          * {@ojinclude "name":"buttonsetCommonDisplay"}
@@ -3105,7 +3142,7 @@ var __oj_menu_button_metadata =
          * @public
          * @instance
          * @type {string|null}
-         * @ojshortdesc Establishes a relationship between this component and another element, typically an oj-label custom element. See the Help documenation for more information.
+         * @ojshortdesc Establishes a relationship between this component and another element, typically an oj-label custom element. See the Help documentation for more information.
          *
          * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
          * // getter
@@ -3122,7 +3159,7 @@ var __oj_menu_button_metadata =
          * @public
          * @instance
          * @type {string|null}
-         * @ojshortdesc Establishes a relationship between this component and another element, typically an oj-label custom element. See the Help documenation for more information.
+         * @ojshortdesc Establishes a relationship between this component and another element, typically an oj-label custom element. See the Help documentation for more information.
          *
          * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
          * // getter
@@ -3152,7 +3189,8 @@ var __oj_menu_button_metadata =
          * @public
          * @instance
          * @type {?string}
-         * @ojshortdesc Specifies a relationship between this component and another element.
+         * @ojshortdesc buttonset's oj-label automatically sets described-by to make it accessible.
+         * It is not meant to be set by application developer.
          *
          * @example <caption>Get or set the <code class="prettyprint">describedBy</code> property after initialization:</caption>
          * // getter
@@ -3169,7 +3207,8 @@ var __oj_menu_button_metadata =
          * @public
          * @instance
          * @type {?string}
-         * @ojshortdesc Specifies a relationship between this component and another element.
+         * @ojshortdesc buttonset's oj-label automatically sets described-by to make it accessible.
+         * It is not meant to be set by application developer.
          *
          * @example <caption>Get or set the <code class="prettyprint">describedBy</code> property after initialization:</caption>
          * // getter
@@ -3179,13 +3218,11 @@ var __oj_menu_button_metadata =
          * myComp.describedBy = "someId";
          */
         /**
-         * It is used to establish a relationship between this component and another element.
-         * Typically this is not used by the application developer, but by the oj-label custom element's
-         * code. One use case is where the oj-label custom element code writes described-by
-         * on its form component for accessibility reasons.
-         * To facilitate correct screen reader behavior, the described-by attribute is
-         * copied to the aria-describedby attribute on the component's dom element.
-         *
+         * The oj-label sets the described-by attribute programmatically on the buttonset component.
+         * This attribute is not meant to be set by an application developer directly.
+         * The described-by is copied to the aria-describedby
+         * attribute on the component's inner dom element, and it is needed
+         * for accessibility.
          * @expose
          * @memberof oj.ojButtonset
          * @instance
@@ -4338,6 +4375,7 @@ var __oj_menu_button_metadata =
     }
   });
 }()); // end of Button / Buttonset wrapper function
+
 
 /* global __oj_button_metadata */
 (function () {

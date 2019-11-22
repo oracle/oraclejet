@@ -15,22 +15,6 @@
     /* listbox */
     /* --------------------------------------------------------------- */
 
-
-    /************************* oj-form-control-inherit OVERRIDES *************************/
-    // DO NOT ADD SELECTOR DEFINITIONS BEFORE THESE OVERRIDES AS SPECIFICITY ISSUES CAN ARISE
-
-    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
-    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
-    // editable datagrid cells and editable table cells
-    // -----------------------------------------------------------------------------------------
-
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
-      @include oj-form-control-inherit();
-    }
-
-    /************************* END OF oj-form-control-inherit OVERRIDES *************************/
-
-
     /*
      * applied to the dropdown
      */
@@ -38,44 +22,34 @@
     /* defines the stacking context for the listbox */
     .oj-listbox-drop-layer {
       @extend .oj-component-layer;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        z-index: var(--oj-popup-z-index);
-      }
-      @else {
+
         z-index: $popupZindex;
-      }
+
     }
 
     .oj-listbox-drop {
       @extend .oj-component-popup;
       box-sizing: border-box;
       top: 100%;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background: var(--oj-popup-bg-color);
-        border: 1px solid var(--oj-popup-border-color);
-        box-shadow: var(--oj-box-shadow-sm);
-      }
-      @else {
+
         background: $popupBgColor;
         border: 1px solid $popupBorderColor;
         @include oj-box-shadow($smallBoxShadow);
-      }
       border-top: 0;
+    }
+
+    .oj-listbox-drop.oj-listbox-searchselect {
+      display: flex;
+      flex-direction: column;
     }
 
     /*
      * applied to the dropdown when it is open above the component
      */
     .oj-listbox-drop-above {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        border-top: 1px solid var(--oj-popup-border-color);
-      }
-      @else {
+
         border-top: 1px solid $popupBorderColor;
-      }
+
       border-bottom: 0;
       // top border moves the div down 1 px when the listbox is displayed above
       margin-top: -1px;
@@ -85,26 +59,22 @@
      * applied to placeholder in the dropdown
      */
     .oj-listbox-placeholder {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        color: var(--oj-text-field-placeholder-color);
-      }
-      @else {
+
         color: $formControlPlaceholderColor;
-      }
+
     }
 
     /*
      * applied to results
      */
     .oj-listbox-results {
-      max-height: 200px;
       padding: 0;
       margin: 1px 0 2px 0;
       position: relative;
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+      max-height: 200px;
     }
 
     /*
@@ -125,17 +95,7 @@
       min-height: 2rem;
       word-wrap: break-word;
       -webkit-touch-callout: none;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        user-select: none;
-        html:not([dir="rtl"]) & {
-          padding-left: var(--oj-listbox-item-padding);
-        }
-        html[dir="rtl"] & {
-          padding-right: var(--oj-listbox-item-padding);
-        }
-      }
-      @else {
+
         @include oj-user-select-property(none);
         @include oj-ltr() {
           padding-left: $listboxItemPadding;
@@ -143,7 +103,7 @@
         @include oj-rtl() {
           padding-right: $listboxItemPadding;
         }
-      }
+
     }
 
     /*
@@ -152,136 +112,80 @@
      * like hover need to span across the entire box.
      */
     .oj-listbox-results-depth-1 > .oj-listbox-result-label {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        html:not([dir="rtl"]) & {
-          padding-left: calc(var(--oj-listbox-indent-width) + var(--oj-listbox-item-padding));
-        }
-        html[dir="rtl"] & {
-          padding-right: calc(var(--oj-listbox-indent-width) + var(--oj-listbox-item-padding));
-        }
-      }@else {
+
         @include oj-ltr() {
           padding-left: calc(#{$listboxIndentWidth} + #{$listboxItemPadding});
         }
         @include oj-rtl() {
           padding-right: calc(#{$listboxIndentWidth} + #{$listboxItemPadding});
         }
-      }
+
     }
 
     .oj-listbox-results-depth-2 > .oj-listbox-result-label {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        html:not([dir="rtl"]) & {
-          padding-left: calc(2 * var(--oj-listbox-indent-width) + var(--oj-listbox-item-padding));
-        }
-        html[dir="rtl"] & {
-          padding-right: calc(2 * var(--oj-listbox-indent-width) + var(--oj-listbox-item-padding));
-        }
-      }@else {
+
         @include oj-ltr() {
           padding-left: calc(2 * #{$listboxIndentWidth} + #{$listboxItemPadding});
         }
         @include oj-rtl() {
           padding-right: calc(2 * #{$listboxIndentWidth} + #{$listboxItemPadding});
         }
-      }
+
     }
 
     .oj-listbox-results-depth-3 > .oj-listbox-result-label {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        html:not([dir="rtl"]) & {
-          padding-left: calc(3 * var(--oj-listbox-indent-width) + var(--oj-listbox-item-padding));
-        }
-        html[dir="rtl"] & {
-          padding-right: calc(3 * var(--oj-listbox-indent-width) + var(--oj-listbox-item-padding));
-        }
-      }@else {
+
         @include oj-ltr() {
           padding-left: calc(3 * #{$listboxIndentWidth} + #{$listboxItemPadding});
         }
         @include oj-rtl() {
           padding-right: calc(3 * #{$listboxIndentWidth} + #{$listboxItemPadding});
         }
-      }
+
     }
 
     .oj-listbox-results-depth-4 > .oj-listbox-result-label {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        html:not([dir="rtl"]) & {
-          padding-left: calc(4 * var(--oj-listbox-indent-width) + var(--oj-listbox-item-padding));
-        }
-        html[dir="rtl"] & {
-          padding-right: calc(4 * var(--oj-listbox-indent-width) + var(--oj-listbox-item-padding));
-        }
-      }@else {
+
         @include oj-ltr() {
           padding-left: calc(4 * #{$listboxIndentWidth} + #{$listboxItemPadding});
         }
         @include oj-rtl() {
           padding-right: calc(4 * #{$listboxIndentWidth} + #{$listboxItemPadding});
         }
-      }
+
     }
 
     .oj-listbox-results-depth-5 > .oj-listbox-result-label {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        html:not([dir="rtl"]) & {
-          padding-left: calc(5 * var(--oj-listbox-indent-width) + var(--oj-listbox-item-padding));
-        }
-        html[dir="rtl"] & {
-          padding-right: calc(5 * var(--oj-listbox-indent-width) + var(--oj-listbox-item-padding));
-        }
-      }@else {
+
         @include oj-ltr() {
           padding-left: calc(5 * #{$listboxIndentWidth} + #{$listboxItemPadding});
         }
         @include oj-rtl() {
           padding-right: calc(5 * #{$listboxIndentWidth} + #{$listboxItemPadding});
         }
-      }
+
     }
 
     .oj-listbox-results-depth-6 > .oj-listbox-result-label {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        html:not([dir="rtl"]) & {
-          padding-left: calc(6 * var(--oj-listbox-indent-width) + var(--oj-listbox-item-padding));
-        }
-        html[dir="rtl"] & {
-          padding-right: calc(6 * var(--oj-listbox-indent-width) + var(--oj-listbox-item-padding));
-        }
-      }@else {
+
         @include oj-ltr() {
           padding-left: calc(6 * #{$listboxIndentWidth} + #{$listboxItemPadding});
         }
         @include oj-rtl() {
           padding-right: calc(6 * #{$listboxIndentWidth} + #{$listboxItemPadding});
         }
-      }
+
     }
 
     .oj-listbox-results-depth-7 > .oj-listbox-result-label {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        html:not([dir="rtl"]) & {
-          padding-left: calc(7 * var(--oj-listbox-indent-width) + var(--oj-listbox-item-padding));
-        }
-        html[dir="rtl"] & {
-          padding-right: calc(7 * var(--oj-listbox-indent-width) + var(--oj-listbox-item-padding));
-        }
-      }@else {
+
         @include oj-ltr() {
           padding-left: calc(7 * #{$listboxIndentWidth} + #{$listboxItemPadding});
         }
         @include oj-rtl() {
           padding-right: calc(7 * #{$listboxIndentWidth} + #{$listboxItemPadding});
         }
-      }
+
     }
 
     /*
@@ -305,26 +209,18 @@
      * applied to the hovered choices in the dropdown
      */
     .oj-listbox-results .oj-hover {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background: var(--oj-listbox-bg-color-focus);
-      }
-      @else {
+
         background: $listboxBgColorFocus;
-      }
+
     }
 
     /*
      * applied to disabled choices in the dropdown
      */
     .oj-listbox-results .oj-disabled {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        color: var(--oj-text-color-disabled);
-      }
-      @else {
+
         color: $textColorDisabled;
-      }
+
       display: list-item;
       cursor: default;
     }
@@ -335,6 +231,25 @@
     .oj-listbox-results .oj-selected {
       display: none;
     }
+
+    // .oj-listbox-fullscreen {
+    //   .oj-listbox-header-wrapper,
+    //   .oj-listbox-footer-wrapper {
+    //     padding: 10px 5px 10px 5px;
+    //   }
+    // }
+
+    // .oj-listbox-header-wrapper,
+    // .oj-listbox-footer-wrapper {
+    //   cursor: default;
+    //   display: flex;
+    //   flex-shrink: 0;
+    // }
+
+    // .oj-listbox-header-main,
+    // .oj-listbox-footer-main {
+    //   flex-grow: 1;
+    // }
 
     /*
      * This class is only applied transiently to measure the browser native scollbar
@@ -362,13 +277,9 @@
      */
     .oj-listbox-search-icon {
       @extend .oj-fwk-icon-magnifier;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        color: var(--oj-button-icon-color);
-      }
-      @else {
+
         color: $buttonIconColor;
-      }
+
     }
 
     /*
@@ -382,18 +293,7 @@
       overflow: hidden;
       display: inline-block;
       position: absolute;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        html:not([dir="rtl"]) & {
-          right: 0;
-          padding-right: var(--oj-listbox-item-padding);
-        }
-        html[dir="rtl"] & {
-          left: 0;
-          padding-left: var(--oj-listbox-item-padding);
-        }
-      }
-      @else {
+
         @include oj-ltr() {
           right: 0;
           padding-right: $listboxItemPadding;
@@ -402,7 +302,7 @@
           left: 0;
           padding-left: $listboxItemPadding;
         }
-      }
+
     }
 
     /*
@@ -411,20 +311,14 @@
     .oj-listbox-search {
       box-sizing: border-box;
       width: 100%;
-      display: inline-table;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-text-field-bg-color);
-        border-color: var(--oj-text-field-border-color);
-        border-width: var(--oj-text-field-border-top-width) var(--oj-text-field-border-right-width) var(--oj-text-field-border-bottom-width) var(--oj-text-field-border-left-width);
-        border-radius: var(--oj-text-field-border-radius);
-      }
-      @else {
+      display: inline-flex;
+      @include oj-form-control-text-size-adjust($formControlInputFontSize);
+
         background-color: $formControlBgColor;
         border-color: $formControlBorderColor;
         border-width: $formControlBorderWidth;
         @include oj-border-radius($formControlBorderRadius);
-      }
+
       border-style: solid;
     }
 
@@ -434,21 +328,7 @@
     .oj-listbox-input {
       box-sizing: border-box;
       width: 100%;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        color: var(--oj-text-color);
-        border-radius: var(--oj-text-field-border-radius);
-        box-shadow: none;
-        html:not([dir="rtl"]) & {
-          padding-right: 2rem;
-          padding-left: var(--oj-text-field-padding-horizontal);
-        }
-        html[dir="rtl"] & {
-          padding-left: 2rem;
-          padding-right: var(--oj-text-field-padding-horizontal);
-        }
-      }
-      @else {
+
         color: $textColor;
         @include oj-border-radius($formControlBorderRadius);
         @include oj-box-shadow(none);
@@ -460,7 +340,7 @@
           padding-left: 2rem;
           padding-right: $formControlPaddingHorizontal;
         }
-      }
+
       outline: none;
       border: 0;
       // even if the border is 0, we still need to set border radius here otherwise
@@ -470,7 +350,6 @@
       background-color: inherit;
       padding-top: 6px;
       padding-bottom: 5px;
-
      }
 
     /*
@@ -478,38 +357,28 @@
      */
     .oj-listbox-search-wrapper {
       border: 0;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        padding: var(--oj-listbox-item-padding);
-        background-color: var(--oj-text-field-bg-color);
-      }
-      @else {
+
         padding: $listboxItemPadding;
         background-color: $formControlBgColor;
-      }
+
     }
+
+    // .oj-listbox-searchselect .oj-listbox-search-wrapper {
+    //   display: flex;
+    // }
 
     /*
      * Applied to the "No matches found" result entry
      */
    .oj-listbox-no-results {
-     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-     {
-       html:not([dir="rtl"]) & {
-         padding-left: var(--oj-listbox-item-padding);
-       }
-       html[dir="rtl"] & {
-         padding-right: var(--oj-listbox-item-padding);
-       }
-     }
-     @else {
+
        @include oj-ltr() {
          padding-left: $listboxItemPadding;
        }
        @include oj-rtl() {
          padding-right: $listboxItemPadding;
        }
-     }
+
 
    }
 
@@ -517,14 +386,10 @@
      * Applied to the filter message container
      */
     .oj-listbox-filter-message-box {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        padding-left: var(--oj-listbox-item-padding);
-        padding-right: var(--oj-listbox-item-padding);
-      } @else {
+
         padding-left: $listboxItemPadding;
         padding-right: $listboxItemPadding;
-      }
+
     }
 
     /*
@@ -532,30 +397,21 @@
      */
     .oj-listbox-filter-message-text {
       line-height: 1.8rem;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        color: var(--oj-listbox-message-text-color);
-        font-size: var(--oj-font-size-sm);
-        padding-top: var(--oj-listbox-item-padding);
-        padding-bottom: var(--oj-listbox-item-padding);
-      } @else {
+
         color: $listboxMessageTextColor;
         font-size: $smallFontSize;
         padding-top: $listboxItemPadding;
         padding-bottom: $listboxItemPadding;
-      }
+
     }
 
     /*
      * Applied to the filter message separator
      */
     .oj-listbox-filter-message-separator {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        border-bottom: 1px solid var(--oj-popup-border-color);
-      } @else {
+
         border-bottom: 1px solid $popupBorderColor;
-      }
+
     }
 
     /*
@@ -601,24 +457,16 @@
 
     // apply to a hovered choice
     .oj-hicontrast .oj-listbox-results .oj-hover {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        border: 1px solid var(--oj-text-field-border-color);
-      }
-      @else {
+
         border: 1px solid $formControlBorderColor;
-      }
+
     }
 
     // apply to a disabled choice
     .oj-hicontrast .oj-listbox-results .oj-disabled {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        border: 1px dotted var(--oj-text-field-border-color);
-      }
-      @else {
+
         border: 1px dotted $formControlBorderColor;
-      }
+
     }
 
     /*
@@ -662,13 +510,9 @@
      * Applied to the listbox custonm header.
      */
     .oj-listbox-result-header {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        padding: var(--oj-listbox-item-padding) var(--oj-listbox-item-padding) 0 var(--oj-listbox-item-padding);
-      }
-      @else {
+
         padding: $listboxItemPadding $listboxItemPadding 0 $listboxItemPadding;
-      }
+
     }
 
     .oj-listbox-result-header ul {
@@ -677,13 +521,9 @@
 
     .oj-listbox-result-header a.oj-focus {
       text-decoration: underline;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        @include oj-browser-focus-outline-approximation-css-vars(var(--oj-button-text-color));
-      }
-      @else {
+
         @include oj-browser-focus-outline-approximation($buttonTextColor);
-      }
+
     }
 
     /*
@@ -692,5 +532,12 @@
     .oj-listbox-highlighter {
       font-weight: bold;
     }
+
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {
+      @include oj-form-control-inherit();
+      @include oj-form-control-inherit-background();
+      @include oj-form-control-inherit-border();
+    }
+
   }
 }

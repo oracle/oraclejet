@@ -3,12 +3,6 @@ import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, 
 export interface editableValue<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> extends baseComponent<SP> {
     describedBy: string | null;
     disabled: boolean;
-    displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
-        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-    };
     help: {
         instruction?: string;
     };
@@ -16,6 +10,7 @@ export interface editableValue<V, SP extends editableValueSettableProperties<V, 
         definition?: string;
         source?: string;
     };
+    labelEdge: 'inside' | 'none' | 'provided';
     labelHint: string;
     messagesCustom: Message[];
     readonly valid: 'valid' | 'pending' | 'invalidHidden' | 'invalidShown';
@@ -50,11 +45,11 @@ export namespace editableValue {
     // tslint:disable-next-line interface-over-type-literal
     type disabledChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["disabled"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type displayOptionsChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["displayOptions"]>;
-    // tslint:disable-next-line interface-over-type-literal
     type helpChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["help"]>;
     // tslint:disable-next-line interface-over-type-literal
     type helpHintsChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["helpHints"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["labelEdge"]>;
     // tslint:disable-next-line interface-over-type-literal
     type labelHintChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["labelHint"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -69,9 +64,9 @@ export interface editableValueEventMap<V, SP extends editableValueSettableProper
     'ojAnimateStart': editableValue.ojAnimateStart;
     'describedByChanged': JetElementCustomEvent<editableValue<V, SP, SV, RV>["describedBy"]>;
     'disabledChanged': JetElementCustomEvent<editableValue<V, SP, SV, RV>["disabled"]>;
-    'displayOptionsChanged': JetElementCustomEvent<editableValue<V, SP, SV, RV>["displayOptions"]>;
     'helpChanged': JetElementCustomEvent<editableValue<V, SP, SV, RV>["help"]>;
     'helpHintsChanged': JetElementCustomEvent<editableValue<V, SP, SV, RV>["helpHints"]>;
+    'labelEdgeChanged': JetElementCustomEvent<editableValue<V, SP, SV, RV>["labelEdge"]>;
     'labelHintChanged': JetElementCustomEvent<editableValue<V, SP, SV, RV>["labelHint"]>;
     'messagesCustomChanged': JetElementCustomEvent<editableValue<V, SP, SV, RV>["messagesCustom"]>;
     'validChanged': JetElementCustomEvent<editableValue<V, SP, SV, RV>["valid"]>;
@@ -80,12 +75,6 @@ export interface editableValueEventMap<V, SP extends editableValueSettableProper
 export interface editableValueSettableProperties<V, SV = V, RV = V> extends baseComponentSettableProperties {
     describedBy: string | null;
     disabled: boolean;
-    displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
-        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-    };
     help: {
         instruction?: string;
     };
@@ -93,6 +82,7 @@ export interface editableValueSettableProperties<V, SV = V, RV = V> extends base
         definition?: string;
         source?: string;
     };
+    labelEdge: 'inside' | 'none' | 'provided';
     labelHint: string;
     messagesCustom: Message[];
     readonly valid: 'valid' | 'pending' | 'invalidHidden' | 'invalidShown';

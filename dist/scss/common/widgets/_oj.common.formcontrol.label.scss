@@ -43,19 +43,12 @@
         // in case you use something like text-overflow: ellipsis,
         // otherwise the ellipsis won't be the same font 
         // color/size/weight as the label text.
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          color: var(--oj-label-color);
-          font-size: var(--oj-label-font-size);
-          font-weight: var(--oj-label-font-weight);
-          margin-bottom: var(--oj-label-margin-bottom);
-        }
-        @else {
+
           color: $formControlLabelColor;
           font-size: $formControlLabelFontSize;
           font-weight: $formControlLabelFontWeight;
           margin-bottom: $formControlLabelMarginBottom;
-        }
+
     }
 
     /* 
@@ -66,6 +59,13 @@
         margin-top:0;
         vertical-align: baseline;
      }
+    
+    // inside labels are always truncated
+    .oj-text-field-label-inside .oj-label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
     /* When label is block, this wrapper is needed in order 
        to float modifiers (required, help, changed) to the end of the label */
@@ -93,21 +93,6 @@
     .oj-label-required-icon {
          vertical-align: top;
     }
-    // JET is designed to be mobile first, therefore by default labels are 
-    // top aligned as this should be their position on a mobile device.
-    // When labels are on top of the field, the alta spec says the
-    // icons (required, help) come after the label. We use float to achieve this.
-    .oj-label label {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        float: left;
-        html[dir="rtl"] & {
-          float: right;
-        }
-      }
-      @else {
-        @include oj-bidi-property($property: 'float', $startOrEnd: start);
-      }
-    }
 
     // JET is designed to be mobile first, therefore by default labels are 
     // top aligned as this should be their position on a mobile device.
@@ -116,15 +101,9 @@
     // We use float to position them this way.
     .oj-label-required-icon,
     .oj-label-help-icon {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        float: right;
-        html[dir="rtl"] & {
-          float: left;
-        }
-      }
-      @else {
+
         @include oj-bidi-property($property: 'float', $startOrEnd: end);
-      }
+
          // need 6px of space between icons and label. if floating
          // end, then that means icons are after label, so we want
          // space on the left in ltr.
@@ -142,15 +121,9 @@
     // cut off.
     .oj-label-help-icon-anchor {
       text-decoration: none;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        float: right;
-        html[dir="rtl"] & {
-          float: left;
-        }
-      }
-      @else {
+
         @include oj-bidi-property($property: 'float', $startOrEnd: end);
-      }
+
         @include oj-ltr {
           padding-right: 2px;
        }
@@ -177,26 +150,16 @@
         text-overflow: ellipsis;      
         @include oj-ltr()
         {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-          {
-            padding-right: var(--oj-label-inline-gutter);
-          }
-          @else
-          {
+
             padding-right: $formControlLabelInlineGutter;
-          }
+
         }
 
         @include oj-rtl()
         {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-          {
-            padding-left: var(--oj-label-inline-gutter);
-          }
-          @else
-          {
+
             padding-left: $formControlLabelInlineGutter;
-          }
+
         }
     }
     
@@ -214,36 +177,24 @@
     .oj-label-inline {
         display: inline-block;
         vertical-align: top;
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          margin-top: var(--oj-label-inline-margin-top);
-        }
-        @else {
+
           margin-top: $formControlLabelInlineMarginTop;
-        }
+
         // box sizing required for firefox
         box-sizing: border-box;
 
         @include oj-ltr()
         {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-          {
-            padding-right: var(--oj-label-inline-gutter);            
-          }
-          @else {
+
             padding-right: $formControlLabelInlineGutter;
-          }
+
         }
 
         @include oj-rtl()
         {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-          {
-            padding-left: var(--oj-label-inline-gutter);            
-          }
-          @else {
+
             padding-left: $formControlLabelInlineGutter;
-          }
+
         }
     }
     // This is for inline text - labels and text are on the same line. We put oj-label-inline
@@ -251,48 +202,23 @@
     .oj-form-non-control-inline {
         display: inline-block;
         vertical-align: top;
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          margin-top: var(--oj-label-inline-margin-top);
-        }
-        @else {
+
           margin-top: $formControlLabelInlineMarginTop;
-        }
+
         // box sizing required for firefox
         box-sizing: border-box;
     }
-    // When labels are inline with the field, the alta spec says the
-    // icons (required, help) come before the label. 
-    // We use float to achieve this. The oj-label-inline selector tells
-    // us it is inline.
-    .oj-label-inline label {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        float: right;
-        html[dir="rtl"] & {
-          float: left;
-        }
-      }
-      @else {
-        @include oj-bidi-property($property: 'float', $startOrEnd: end);
-      }
-    }
     
     // When labels are inline with the field, the alta spec says the
-    // icons (required, help) come before the label. 
+    // icons (required, help) come before the label.
     // We float to achieve this. The oj-label-inline selector tells
     // us it is inline.
     .oj-label-inline .oj-label-required-icon,
     .oj-label-inline .oj-label-help-icon
     {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        float: left;
-        html[dir="rtl"] & {
-          float: right;
-        }
-      }
-      @else {
+
         @include oj-bidi-property($property: 'float', $startOrEnd: start);
-      }
+
       @include oj-ltr {
          margin-right: 6px;
          margin-left: 0;
@@ -303,21 +229,16 @@
       }
     }
     .oj-label-inline .oj-label-help-icon-anchor {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        float: left;
-        html[dir="rtl"] & {
-          float: right;
-        }
-      }
-      @else {
+
         @include oj-bidi-property($property: 'float', $startOrEnd: start);
-      }
+
     }
 
     .oj-label-inline.oj-label-inline-top {
       margin-top: 0;
     }
     
+    /* Deprecated since v8.0.0. JET's Accessibility team discourages access keys */
     .oj-label-accesskey {
       text-decoration: underline;
     }
@@ -328,24 +249,7 @@
     // render the label's required icon as an icon font character, else render as plain css.
     // this allows the alta theme to render an '*' icon using content css property, 
     // and alta mobile themes to render a circle w/o using content css property.
-    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-    {
-      .oj-label-required-icon:before {
-        content: var(--oj-label-required-char);
-      }
-      .oj-label-required-icon {
-        color: var(--oj-label-required-icon-color);
-        font-size: var(--oj-label-required-char-font-size);
-        font-weight: normal;
-        line-height: var(--oj-font-size);
-        font-family: inherit;
-        background-color: var(--oj-label-required-icon-background-color);
-        border-radius: var(--oj-label-required-icon-border-radius);
-        height: var(--oj-label-required-icon-height);
-        width: var(--oj-label-required-icon-width);
-      }
-    }
-    @else {
+   
       .oj-label-required-icon:before {
         content: $formControlLabelRequiredChar;
       }
@@ -377,7 +281,7 @@
           width: 4px; // px is ok since it is so small it won't make a difference if font size changes
         }
       } 
-    }
+
 
   }
 }

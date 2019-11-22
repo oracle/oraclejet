@@ -2,14 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojthemeutils', 'ojs/ojanimation', 'promise'], function(oj, ko, $, ThemeUtils, AnimationUtils)
+
+define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojthemeutils', 'ojs/ojanimation'], function(oj, ko, $, ThemeUtils, AnimationUtils)
 {
   "use strict";
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global ko:false, Promise:false, ThemeUtils:false */
 
@@ -128,14 +127,14 @@ oj.ModuleAnimations._createViewParent = function (oldView) {
     top: oldView.offsetTop + 'px'
   };
 
-  viewport.appendTo(oldView.offsetParent); // @HTMLUpdateOK; viewPort constructed above
+  viewport.appendTo(oldView.offsetParent); // @HTMLUpdateOK viewPort constructed above
   viewport.css(cssStyle);
   viewport.addClass('oj-animation-host-viewport');
 
   var host = document.createElement('div');
   host.className = 'oj-animation-host';
 
-  viewport.append(host); // @HTMLUpdateOK; host is constructed above
+  viewport.append(host); // @HTMLUpdateOK host is constructed above
 
   return host;
 };
@@ -143,15 +142,16 @@ oj.ModuleAnimations._createViewParent = function (oldView) {
 /**
   * Create and return a ModuleAnimation implementation that combines base effects from {@link oj.AnimationUtils}
   *
-  * @param {null|string|Object} oldViewEffect - an animation effect for the outgoing view.<br><br>
+  * @param {null|string|Object|function} oldViewEffect - an animation effect for the outgoing view.<br><br>
   *                              If this is null, no animation will be applied.<br>
+  *                              If this is a function, it should return a Promise that resolves when the animation ends.<br>
   *                              If this is a string, it should be one of the effect method names in oj.AnimationUtils.<br>
   *                              If this is an object, it should describe the effect:
   * @param {string} oldViewEffect.effect - the name of an effect method in oj.AnimationUtils
   * @param {*=} oldViewEffect.effectOption - any option applicable to the specific animation effect<br><br>
   *                                                 Replace <i>effectOption</i> with the actual option name.  More than one option can be specified.
   *                                                 Refer to the method description in {@link oj.AnimationUtils} for available options.
-  * @param {null|string|Object} newViewEffect - an animation effect for the incoming view.<br><br>
+  * @param {null|string|Object|function} newViewEffect - an animation effect for the incoming view.<br><br>
   *                                             This is in the same format as oldViewEffect.
   * @param {boolean} newViewOnTop - specify true to initially create the new view on top of the old view.
   *                  This is needed for certain effects such as sliding the new view in to cover the old view.
@@ -159,8 +159,8 @@ oj.ModuleAnimations._createViewParent = function (oldView) {
   * @return {Object} an implementation of the ModuleAnimation interface
   * @export
   *@ojsignature [
-  *  { target: "Type", for: "oldViewEffect", value: "{effect: AnimationUtils.AnimationMethods, [key:string]: any}|AnimationUtils.AnimationMethods|null"},
-  *  { target: "Type", for: "newViewEffect", value: "{effect: AnimationUtils.AnimationMethods, [key:string]: any}|AnimationUtils.AnimationMethods|null"},
+  *  { target: "Type", for: "oldViewEffect", value: "{effect: AnimationUtils.AnimationMethods, [key:string]: any}|AnimationUtils.AnimationMethods|((param0: Element) => Promise<void>)|null"},
+  *  { target: "Type", for: "newViewEffect", value: "{effect: AnimationUtils.AnimationMethods, [key:string]: any}|AnimationUtils.AnimationMethods|((param0: Element) => Promise<void>)|null"},
   *  { target: "Type", for: "returns", value: "oj.ModuleElementAnimation"}
   * ]
   *
@@ -195,18 +195,28 @@ oj.ModuleAnimations.createAnimation = function (oldViewEffect, newViewEffect, ne
       var promises = [];
 
       if (oldViewHost && oldViewEffect) {
-        // eslint-disable-next-line no-undef
-        promises.push(AnimationUtils.startAnimation(oldViewHost, 'close', oldViewEffect));
+        if (typeof oldViewEffect === 'function') {
+          promises.push(oldViewEffect(oldViewHost));
+        } else {
+          // eslint-disable-next-line no-undef
+          promises.push(AnimationUtils.startAnimation(oldViewHost, 'close', oldViewEffect));
+        }
       }
 
       if (newViewHost && newViewEffect) {
-        // eslint-disable-next-line no-undef
-        promises.push(AnimationUtils.startAnimation(newViewHost, 'open', newViewEffect));
+        if (typeof newViewEffect === 'function') {
+          promises.push(newViewEffect(newViewHost));
+        } else {
+          // eslint-disable-next-line no-undef
+          promises.push(AnimationUtils.startAnimation(newViewHost, 'open', newViewEffect));
+        }
       }
 
       var animatePromise = Promise.all(promises);
 
       return animatePromise.then(function () {
+        oj.ModuleAnimations._postAnimationProcess(context);
+      }).catch(function () {
         oj.ModuleAnimations._postAnimationProcess(context);
       });
     }

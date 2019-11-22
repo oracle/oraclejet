@@ -33,17 +33,12 @@
             display: block;
             // position relative is required
             position: relative;
-            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-              border: 1px solid var(--oj-collection-border-color);
-              // color to fill the empty area around cells if the databody is not filled
-              background-color: var(--oj-collection-bg-color);
-              user-select: none;
-            } @else {
+
               border: 1px solid $collectionBorderColor;
               // color to fill the empty area around cells if the databody is not filled
               background-color: $collectionBgColor;
               @include oj-user-select-property(none);
-            }
+
 
             box-sizing: border-box;
             // color to fill the empty area around cells if the databody is not filled
@@ -68,22 +63,18 @@
         .oj-datagrid-cell,
         .oj-datagrid-column-header-cell,
         .oj-datagrid-column-end-header-cell {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            width: var(--oj-collection-column-width);
-          } @else {
+
             width: $collectionColumnWidth;
-        }
+
         }
 
         /* The default row height should be set here*/
         .oj-datagrid-cell,
         .oj-datagrid-row-header-cell,
         .oj-datagrid-row-end-header-cell {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            height: var(--oj-collection-row-height);
-          } @else {
+
             height: $collectionRowHeight;
-        }
+
         }
 
         /* Styling on the row header and row end header containere*/
@@ -163,19 +154,13 @@
             //sizing and position
             position: absolute;
             //content of the header cells
-            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-              font-size: var(--oj-collection-header-font-size);
-              font-weight: var(--oj-collection-header-font-weight);
-              color: var(--oj-collection-header-text-color);
-              background-color: var(--oj-collection-header-bg-color);
-              border-color: var(--oj-collection-header-border-color);
-            } @else {
+
             font-size: $collectionHeaderFontSize;
             font-weight: $collectionHeaderFontWeight;
             color: $collectionHeaderTextColor;
             background-color: $collectionHeaderBgColor;
               border-color: $collectionHeaderBorderColor;
-            }
+
             border-style: solid;
             overflow: hidden;
             display: flex;
@@ -187,53 +172,17 @@
         .oj-datagrid-column-header-cell,
         .oj-datagrid-column-end-header-cell {
             //match the row height
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            height: var(--oj-collection-header-height);
-            padding: var(--oj-collection-cell-padding);
-            justify-content: var(--oj-collection-column-header-justify-content);
-            align-items: var(--oj-collection-column-header-align-items);
-          } @else {
+
             //match the row height
             height: $collectionHeaderHeight;
             padding: $collectionCellPadding;
             justify-content: $collectionColumnHeaderJustifyContent;
             align-items: $collectionColumnHeaderAlignItems;
-        }
+
             box-sizing: border-box;
         }
 
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-          .oj-datagrid-column-header-label.oj-datagrid-depth-2,
-          .oj-datagrid-column-end-header-label.oj-datagrid-depth-2,
-          .oj-datagrid-column-header-cell.oj-datagrid-depth-2,
-          .oj-datagrid-column-end-header-cell.oj-datagrid-depth-2 {
-            height: calc(2 * var(--oj-collection-header-height)); }
-          .oj-datagrid-column-header-label.oj-datagrid-depth-3,
-          .oj-datagrid-column-end-header-label.oj-datagrid-depth-3,
-          .oj-datagrid-column-header-cell.oj-datagrid-depth-3,
-          .oj-datagrid-column-end-header-cell.oj-datagrid-depth-3 {
-            height: calc(3 * var(--oj-collection-header-height)); }
-          .oj-datagrid-column-header-label.oj-datagrid-depth-4,
-          .oj-datagrid-column-end-header-label.oj-datagrid-depth-4,
-          .oj-datagrid-column-header-cell.oj-datagrid-depth-4,
-          .oj-datagrid-column-end-header-cell.oj-datagrid-depth-4 {
-            height: calc(4 * var(--oj-collection-header-height)); }
-          .oj-datagrid-column-header-label.oj-datagrid-depth-5,
-          .oj-datagrid-column-end-header-label.oj-datagrid-depth-5,
-          .oj-datagrid-column-header-cell.oj-datagrid-depth-5,
-          .oj-datagrid-column-end-header-cell.oj-datagrid-depth-5 {
-            height: calc(5 * var(--oj-collection-header-height)); }
-          .oj-datagrid-column-header-label.oj-datagrid-depth-6,
-          .oj-datagrid-column-end-header-label.oj-datagrid-depth-6,
-          .oj-datagrid-column-header-cell.oj-datagrid-depth-6,
-          .oj-datagrid-column-end-header-cell.oj-datagrid-depth-6 {
-            height: calc(6 * var(--oj-collection-header-height)); }
-          .oj-datagrid-column-header-label.oj-datagrid-depth-7,
-          .oj-datagrid-column-end-header-label.oj-datagrid-depth-7,
-          .oj-datagrid-column-header-cell.oj-datagrid-depth-7,
-          .oj-datagrid-column-end-header-cell.oj-datagrid-depth-7 {
-            height: calc(7 * var(--oj-collection-header-height)); }
-        } @else {
+
             .oj-datagrid-column-header-label,
             .oj-datagrid-column-end-header-label,
             .oj-datagrid-column-header-cell,
@@ -241,7 +190,7 @@
                 // Styling to provide default heights for column and columnEnd headers with depth greater than 1, depth 2 spans 2 header levels.
                 @include oj-property-multiplier($selectorName: 'oj-datagrid-depth', $propertyName: 'height', $propertyMultiplicand: $collectionHeaderHeight, $minMultiplier: 2, $maxMultiplier: 7);
             }
-        }
+
 
         .oj-datagrid-column-header-label,
         .oj-datagrid-column-end-header-label {
@@ -276,55 +225,18 @@
         .oj-datagrid-row-end-header-label,
         .oj-datagrid-row-header-cell,
         .oj-datagrid-row-end-header-cell {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            justify-content: var(--oj-collection-row-header-justify-content);
-            align-items: var(--oj-collection-row-header-align-items);
-            width: var(--oj-collection-column-width);
-            border-color: var(--oj-collection-header-border-color);
-            padding: var(--oj-collection-cell-padding);
-          } @else {
+
             justify-content: $collectionRowHeaderJustifyContent;
             align-items: $collectionRowHeaderAlignItems;
             width: $collectionColumnWidth;
             border-color: $collectionHeaderBorderColor;
             padding: $collectionCellPadding;
-          }
+
             box-sizing: border-box;
             border-style: solid;
         }
 
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-          .oj-datagrid-row-header-label.oj-datagrid-depth-2,
-          .oj-datagrid-row-end-header-label.oj-datagrid-depth-2,
-          .oj-datagrid-row-header-cell.oj-datagrid-depth-2,
-          .oj-datagrid-row-end-header-cell.oj-datagrid-depth-2 {
-            width: calc(2 * var(--oj-collection-column-width)); }
-          .oj-datagrid-row-header-label.oj-datagrid-depth-3,
-          .oj-datagrid-row-end-header-label.oj-datagrid-depth-3,
-          .oj-datagrid-row-header-cell.oj-datagrid-depth-3,
-          .oj-datagrid-row-end-header-cell.oj-datagrid-depth-3 {
-            width: calc(3 * var(--oj-collection-column-width)); }
-          .oj-datagrid-row-header-label.oj-datagrid-depth-4,
-          .oj-datagrid-row-end-header-label.oj-datagrid-depth-4,
-          .oj-datagrid-row-header-cell.oj-datagrid-depth-4,
-          .oj-datagrid-row-end-header-cell.oj-datagrid-depth-4 {
-            width: calc(4 * var(--oj-collection-column-width)); }
-          .oj-datagrid-row-header-label.oj-datagrid-depth-5,
-          .oj-datagrid-row-end-header-label.oj-datagrid-depth-5,
-          .oj-datagrid-row-header-cell.oj-datagrid-depth-5,
-          .oj-datagrid-row-end-header-cell.oj-datagrid-depth-5 {
-            width: calc(5 * var(--oj-collection-column-width)); }
-          .oj-datagrid-row-header-label.oj-datagrid-depth-6,
-          .oj-datagrid-row-end-header-label.oj-datagrid-depth-6,
-          .oj-datagrid-row-header-cell.oj-datagrid-depth-6,
-          .oj-datagrid-row-end-header-cell.oj-datagrid-depth-6 {
-            width: calc(6 * var(--oj-collection-column-width)); }
-          .oj-datagrid-row-header-label.oj-datagrid-depth-7,
-          .oj-datagrid-row-end-header-label.oj-datagrid-depth-7,
-          .oj-datagrid-row-header-cell.oj-datagrid-depth-7,
-          .oj-datagrid-row-end-header-cell.oj-datagrid-depth-7 {
-            width: calc(7 * var(--oj-collection-column-width)); }
-        }@else {
+
             .oj-datagrid-row-header-label,
             .oj-datagrid-row-end-header-label,
             .oj-datagrid-row-header-cell,
@@ -332,7 +244,7 @@
                 // Styling to provide default widths for rows and rowEnd headers with depth greater than 1, depth 2 spans 2 header levels.
                 @include oj-property-multiplier($selectorName: 'oj-datagrid-depth', $propertyName: 'width', $propertyMultiplicand: $collectionColumnWidth, $minMultiplier: 2, $maxMultiplier: 7);
             }
-        }
+
 
         .oj-datagrid-row-header-label,
         .oj-datagrid-row-end-header-label {
@@ -384,19 +296,7 @@
             // override the text and color properties in the cells
           border-style: solid;
           overflow: hidden;
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            align-items: var(--oj-collection-cell-align-items);
-            justify-content: var(--oj-collection-cell-justify-content);
-            text-align: var(--oj-collection-cell-align-text);
-            @include oj-rtl() {
-                text-align: var(--oj-collection-cell-align-text-rtl);
-            }
-            font-size: var(--oj-collection-cell-font-size);
-            color: var(--oj-collection-cell-text-color);
-            background-color: var(--oj-collection-cell-bg-color);
-            border-color: var(--oj-collection-cell-border-color);
-            padding: var(--oj-collection-cell-padding);
-          } @else {
+
             align-items: $collectionCellAlignItems;
             justify-content: $collectionCellJustifyContent;
             @include oj-justify-content-to-text-align($collectionCellJustifyContent);
@@ -406,7 +306,7 @@
             background-color: $collectionCellBgColor;
             border-color: $collectionCellBorderColor;
             padding: $collectionCellPadding;
-          }
+
             display: flex;
             @include oj-ltr() {
                 border-width: 0 1px 1px 0;
@@ -443,11 +343,9 @@
         /* Styling on databody cell outlines when they can be overwritten, to use a background color don't use the after psuedo class */
         .oj-datagrid-editable .oj-datagrid-cell.oj-focus::after,
         .oj-hicontrast .oj-datagrid.oj-datagrid-editable.oj-focus .oj-datagrid-cell.oj-focus::after {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            border: 2px solid var(--oj-collection-editable-cell-border-color-focus);
-          } @else {
+
             border: 2px solid $collectionEditableCellBorderColorFocus;
-        }
+
         }
 
         /* Styling on databody cells when they are being edited */
@@ -460,21 +358,17 @@
         /* Styling on databody cell outlines when they are being edited, to use a background color don't use the after psuedo class */
         .oj-datagrid-editable .oj-datagrid-cell.oj-datagrid-cell-edit::after,
         .oj-hicontrast .oj-datagrid.oj-datagrid-editable.oj-focus .oj-datagrid-cell.oj-datagrid-cell-edit::after {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            border: 1px solid var(--oj-collection-editable-cell-border-color-focus);
-          } @else {
+
             border: 1px solid $collectionEditableCellBorderColorFocus;
-        }
+
         }
 
         /* Styling for the selection top and bottom borders */
         .oj-datagrid-cell.oj-selected.oj-datagrid-selected-top::before,
         .oj-datagrid-cell.oj-selected.oj-datagrid-selected-bottom::before {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            border: 0 solid var(--oj-collection-cell-border-color-selected);
-          } @else {
+
           border: 0 solid $collectionCellBorderColorSelected;
-        }
+
         }
 
         // selection borders width application
@@ -505,57 +399,21 @@
 
         /* A helper class oj-datagrid-editable-padding should be appleid to editable components that should maintain padding in edit mode*/
         .oj-datagrid-editable .oj-datagrid-cell.oj-datagrid-cell-edit.oj-datagrid-cell-padding {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            padding: var(--oj-collection-cell-padding);
-          } @else {
+
             padding: $collectionCellPadding;
-        }
+
         }
 
         /* Styling on form controls stamped inside a datagrid */
         .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-          } @else {
+
           @include oj-form-control-padding-override(
-              $padding: "0 #{$collectionCellPadding} 0 #{$collectionCellPadding}");
+              $padding: "0 #{$collectionCellPadding}");
           @include oj-form-control-font-size-override(
               $fontSize: "#{$collectionCellFontSize}");
-        }
-        }
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
-            padding: 0 var(--oj-collection-cell-padding) 0 var(--oj-collection-cell-padding); }
 
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-input,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-input,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputsearch-input,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-input,
-          .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input {
-            font-size: var(--oj-collection-cell-font-size); }
         }
+
 
         .oj-datagrid-cell .oj-checkboxset .oj-checkbox-label {
             justify-content: flex-end;
@@ -578,47 +436,37 @@
         // styling is set on row or cell level for the cell and row selection case optimizations
         /* Styling on row and column banding */
         .oj-datagrid-cell.oj-datagrid-banded {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            background-color: var(--oj-collection-cell-banded-bg-color);
-          } @else {
+
             background-color: $collectionCellBandedBgColor;
-        }
+
         }
 
         /* Styling on read only datagrid cells, oj-readOnly must be applied by the application */
         .oj-datagrid-cell.oj-read-only {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            background-color: var(--oj-collection-editable-cell-bg-color-read-only);
-          } @else {
+
             background-color: $collectionEditableCellBgColorReadOnly;
-        }
+
         }
 
         /* Styling on row and cell hover */
         .oj-datagrid-cell.oj-hover {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            background-color: var(--oj-collection-cell-bg-color-hover);
-          } @else {
+
             background-color: $collectionCellBgColorHover;
-        }
+
         }
 
         /* Styling on row and cell selection */
         .oj-datagrid.oj-focus .oj-datagrid-cell.oj-selected {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            background-color: var(--oj-collection-cell-bg-color-selected);
-          } @else {
+
             background-color: $collectionCellBgColorSelected;
-        }
+
         }
 
         /* Styling on row and cell inactive selection (when the grid root is not the focus) */
         .oj-datagrid-cell.oj-selected {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            background-color: var(--oj-collection-cell-bg-color-selected-inactive);
-          } @else {
+
             background-color: $collectionCellBgColorSelectedInactive;
-        }
+
         }
 
         /* Styling on focused row and cell outlines, to use a background color don't use the after psuedo class */
@@ -630,12 +478,9 @@
             // outline falls outside of border-box so need to subtract add the dimensions
             width: calc(100% - 2px);
             height: calc(100% - 2px);
-            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-              outline: dotted 1px var(--oj-text-color-primary);
-              outline: -webkit-focus-ring-color auto;
-            } @else {
+
             @include oj-browser-focus-outline-approximation($primaryTextColor);
-            }
+
             @include oj-ltr() {
                 left: 1px;
             }
@@ -689,11 +534,9 @@
         .oj-datagrid-scroller-touch {
             transition: 0.5s;
             transition-timing-function: ease-out;
-            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-              backface-visibility: hidden;
-            } @else {
+
               @include oj-backface-visibility-property (hidden);
-            }
+
             perspective: 1000;
         }
 
@@ -701,11 +544,9 @@
         .oj-datagrid-header-label.oj-hover,
         .oj-datagrid-header-cell.oj-hover,
         .oj-datagrid-end-header-cell.oj-hover {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            background-color: var(--oj-collection-header-bg-color-hover);
-          } @else {
+
             background-color: $collectionHeaderBgColorHover;
-        }
+
         }
 
         /* Styling on the status text, such as fetching data */
@@ -729,11 +570,9 @@
         /* Styling for the empty data grid text, default only used for positioning */
         .oj-datagrid-empty-text {
             position: absolute;
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            padding: var(--oj-collection-cell-padding);
-          } @else {
+
             padding: $collectionCellPadding;
-        }
+
         }
 
         /* Styling for the corner between row and column headers and scrollbars */
@@ -743,11 +582,9 @@
         .oj-datagrid-top-corner {
             position: absolute;
             box-sizing: border-box;
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            border-color: var(--oj-collection-header-border-color);
-          } @else {
+
             border-color: $collectionHeaderBorderColor;
-          }
+
             border-style: solid;
         }
 
@@ -764,11 +601,10 @@
 
         /* Styling for the corner between scrollbars if present */
         .oj-datagrid-bottom-corner {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            background-color: var(--oj-collection-bg-color);
-          } @else {
+
+
             background-color: $collectionBgColor;
-          }
+
             @include oj-ltr() {
                 border-width: 1px 0 0 1px;
             }
@@ -809,11 +645,9 @@
             justify-content: center;
             box-sizing: border-box;
             height: 100%;
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            padding: var(--oj-collection-cell-padding);
-          } @else {
+
             padding: $collectionCellPadding;
-          }
+
             position: absolute;
             top: 0;
             @include oj-ltr() {
@@ -827,33 +661,23 @@
 
         /* Styling for the gradient for sort icons in the header */
         .oj-datagrid-sort-icon-container.oj-enabled {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            background-image: linear-gradient(to right, transparent, var(--oj-collection-header-bg-color) 40%);
-            @include oj-rtl() {
-                background-image: linear-gradient(to left, transparent, var(--oj-collection-header-bg-color) 40%);
-               }
-          } @else {
-              background-image: linear-gradient(to right, transparent, $collectionHeaderBgColor 40%);
+
+              background-image: linear-gradient(to right, rgba($collectionHeaderBgColor, 0), $collectionHeaderBgColor 40%);
               @include oj-rtl() {
-                background-image: linear-gradient(to left, transparent, $collectionHeaderBgColor 40%);
+                background-image: linear-gradient(to left, rgba($collectionHeaderBgColor, 0), $collectionHeaderBgColor 40%);
               }
-          }
+
         }
 
 
         /* Styling for the gradient for sort icons on hover in the header */
         .oj-datagrid-header-cell.oj-hover .oj-datagrid-sort-icon-container {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            background-image: linear-gradient(to right, transparent, var(--oj-collection-header-bg-color-hover) 40%);
-            @include oj-rtl() {
-                background-image: linear-gradient(to left, transparent, var(--oj-collection-header-bg-color-hover) 40%);
-              }
-            } @else {
-              background-image: linear-gradient(to right, transparent, $collectionHeaderBgColorHover 40%);
+
+              background-image: linear-gradient(to right, rgba($collectionHeaderBgColorHover, 0), $collectionHeaderBgColorHover 40%);
               @include oj-rtl() {
-                background-image: linear-gradient(to left, transparent, $collectionHeaderBgColorHover 40%);
+                background-image: linear-gradient(to left, rgba($collectionHeaderBgColorHover, 0), $collectionHeaderBgColorHover 40%);
               }
-          }
+
         }
         /* Styling for both the sort icons and click area */
         .oj-datagrid-sort-ascending-icon,
@@ -894,25 +718,19 @@
 
         /* Styling for databody drop targets when dragging rows*/
         .oj-datagrid-databody .oj-drop {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            border: 1px solid var(--oj-drop-target-color-2);
-            background-color: var(--oj-drop-target-color-1);
-          } @else {
+
             border: 1px solid $dropTarget2Color;
             background-color: $dropTarget1Color;
-        }
+
         }
 
         /* Styling for header drop targets when dragging rows*/
         .oj-datagrid-header .oj-drop,
         .oj-datagrid-end-header .oj-drop {
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            border: 1px solid var(--oj-drop-target-color-1);
-            background-color:  var(--oj-drop-target-color-2);
-          } @else {
+
             border: 1px solid $dropTarget1Color;
             background-color:  $dropTarget2Color;
-        }
+
         }
 
         /* Styling for the selection affordance icon on touch devices*/
@@ -929,15 +747,11 @@
             right: 0;
             top: 0;
             bottom: 0;
-          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-            border-radius: 50%;
-            border: 2px solid var(--oj-collection-selection-affordance-border-color);
-            background-color: var(--oj-icon-color-hover);
-          } @else {
+
             @include oj-border-radius(50%);
             border: 2px solid $collectionSelectionAffordanceBorderColor;
             background-color: $iconColorHover;
-        }
+
         }
 
         /* Styling for the selection affordance touchable area on touch devices*/

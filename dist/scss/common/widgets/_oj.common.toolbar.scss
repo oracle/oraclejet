@@ -28,19 +28,12 @@
 
         padding: 0.250em 0; //as per spec padding is only needed on top and bottom
         border-style: solid;
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          border-color: var(--oj-toolbar-border-color);
-          border-width: var(--oj-toolbar-border-width);
-          border-radius: var(--oj-border-radius-md);
-          background-color: var(--oj-toolbar-bg-color);
-        }
-        @else {
+
           border-color: $toolbarBorderColor;
           border-width: $toolbarBorderWidth;
           @include oj-border-radius($mediumBorderRadius);
           background-color: $toolbarBgColor;          
-        }
+        
     }    
 
     // override button margins
@@ -68,15 +61,11 @@
      * anywhere else in the toolbar that a separator is desirable.
      */
     .oj-toolbar-separator {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        border-left: solid 1px var(--oj-toolbar-border-color); 
-      }
-      @else {
+
         border-left: solid 1px $toolbarBorderColor; 
-      }
+
         height: 1.833em; // spec says 22px
-        display:inline-block; 
+        display:inline-block;
         vertical-align:middle;
 
         // spec says padding left/right 6px. Since element to the left of the
@@ -93,19 +82,12 @@
 
     .oj-toolbars {
         border-style: solid;
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          border-color: var(--oj-toolbar-border-color);
-          border-width: var(--oj-toolbar-border-width);
-          border-radius: var(--oj-border-radius-md);
-          background-color: var(--oj-toolbar-bg-color);
-        }
-        @else {
+
           border-color: $toolbarBorderColor;
           border-width: $toolbarBorderWidth;
           @include oj-border-radius($mediumBorderRadius);
           background-color: $toolbarBgColor;
-        }
+
 
     }
 
@@ -124,25 +106,7 @@
 
     // inside a toolbar row put a vertical separator (border) between two adjacent toolbars
     .oj-toolbar-row .oj-toolbar + .oj-toolbar {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        border-radius: 0;
-        html:not([dir="rtl"]) & {
-          border-left: 1px solid var(--oj-toolbar-border-color);
-          // Since the "toolbar divider" is a 1px border of second toolbar container,
-          // the margin-left is the spacing on the left side of the divider,
-          // and the padding-left is the spacing on the right side of the divider.
-          margin-left: 0.5em; // 6px as per spec
-          padding-left: 0.5em; // 6px as per spec
-        }
-        
-        html[dir="rtl"] & {
-          border-right: 1px solid var(--oj-toolbar-border-color);
-          margin-right:  0.5em; // 6px as per spec
-          padding-right: 0.5em; // 6px as per spec
-        }
-      }
-      @else {
+
         @include oj-border-radius(0);
         @include oj-ltr()
         {
@@ -159,39 +123,31 @@
           margin-right:  0.5em; // 6px as per spec
           padding-right: 0.5em; // 6px as per spec
         }        
-      }
+
     }
 
     // put a horizontal separator between two toolbar rows
     .oj-toolbar-row + .oj-toolbar-row {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        border-top: 1px solid var(--oj-toolbar-border-color);
-      }
-      @else {
+
         border-top: 1px solid $toolbarBorderColor;        
-      }
+
     }
 
     
     /* Apps can apply this class if a top toolbar border is desired */
     .oj-toolbar-top-border {
         border-top-width: 1px;
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-          border-radius: 0;
-        } @else {
+
           @include oj-border-radius(0);
-        }
+
     }
 
     /* Apps can apply this class if a bottom toolbar border is desired */
     .oj-toolbar-bottom-border {
         border-bottom-width: 1px;
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-          border-radius:0;
-        } @else {
+
           @include oj-border-radius(0);
-        }
+
     }
 
     // option defaults

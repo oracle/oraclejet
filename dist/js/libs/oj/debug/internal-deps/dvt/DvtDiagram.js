@@ -6,8 +6,20 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -122,7 +134,7 @@ DvtDiagramLayoutContext.prototype.removeNode = function(parent, node) {
     dvt.ArrayUtils.removeItem(this._arNodes, node);
     this._nodeCount--;
   }
-  
+
   this._nodes.delete(node.getId());
 };
 
@@ -484,7 +496,12 @@ DvtDiagramLayoutContext.prototype.getDirtyContext = function() {
   return this._dirtyContext;
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -911,7 +928,12 @@ DvtDiagramLayoutContextLink.prototype.copyFrom = function(link) {
   }
 };
 
-// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -1514,7 +1536,12 @@ DvtDiagramLayoutContextNode.prototype.copyFrom = function(node) {
   }
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -1543,7 +1570,12 @@ DvtDiagramPoint.prototype.Init = function(x, y) {
   this['y'] = ((y === null || isNaN(y)) ? 0 : y);
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 
 
@@ -1580,6 +1612,12 @@ DvtDiagramRectangle.prototype.Init = function(x, y, w, h) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Expose DvtDiagramPoint outside function wrapper via dvt.DiagramPoint
  */
 dvt.DiagramPoint = DvtDiagramPoint;
@@ -1588,6 +1626,12 @@ dvt.DiagramPoint = DvtDiagramPoint;
  */
 dvt.DiagramRectangle = DvtDiagramRectangle;
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * @param {dvt.Context} context The rendering context.
  * @param {function} callback The function that should be called to dispatch component events.
@@ -1616,6 +1660,15 @@ dvt.BaseDiagram.prototype.Init = function(context, callback, callbackObj) {
   this._linksPane = new dvt.Container(context);
   this._nodesPane = new dvt.Container(context);
   this._topPane = new dvt.Container(context);
+
+  // BUG JET-31495 - IMPOSSIBLE TO REMOVE HOVER TREATMENT AND TOOLTIP, WHEN INLINE TEMPLATE IS USED
+  // Create a layer for storing touch event source elements temporarily when needed
+  // so as to not break the events
+  if (dvt.Agent.isTouchDevice()) {
+    this._touchEventPane = new dvt.Container(context);
+    this._touchEventPane.setStyle({ display: 'none' });
+  }
+
   this.InitializeZoomLimits();
 };
 
@@ -1632,6 +1685,7 @@ dvt.BaseDiagram.prototype.InitComponentInternal = function() {
   pzc.getContentPane().addChild(this._linksPane);
   pzc.getContentPane().addChild(this._nodesPane);
   pzc.getContentPane().addChild(this._topPane);
+  this._touchEventPane && pzc.getContentPane().addChild(this._touchEventPane);
 };
 
 /**
@@ -1935,6 +1989,14 @@ dvt.BaseDiagram.prototype.setTopPane = function(topPane) {
 };
 
 /**
+ * Gets touch event pane
+ * @return {dvt.Container|null} the reference to touch event pane if it is a touch device or null
+ */
+dvt.BaseDiagram.prototype.getTouchEventPane = function() {
+  return this._touchEventPane || null;
+}
+
+/**
  * Gets bottom pane used for highlighting edge case:
  * the majority of the diagram objects should be highlighted,
  * so instead of moving highlighted objects to the top pane,
@@ -2126,26 +2188,10 @@ dvt.BaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, bSaveOffs
     var linkOffsetX = linkOffset.x, linkOffsetY = linkOffset.y;
     var points = lc.getPoints();
     if (points) {
-      //: turn list of points into path commands compatible for animating
-      if (points.length > 0 && !isNaN(points[0])) {
-        points = dvt.DiagramLinkUtils.ConvertToPath(points);
-      }
-
-      var translatedPoints = [];
-      for (var i = 0; i < points.length;) {
-        if (isNaN(points[i])) {
-          translatedPoints.push(points[i]);
-          i++;
-        }
-        else {
-          translatedPoints.push(points[i] + linkOffsetX);
-          translatedPoints.push(points[i + 1] + linkOffsetY);
-          i += 2;
-        }
-      }
-      link.setPoints(translatedPoints);
+      link.setPoints(points);
     }
-    this.ApplyLabelPosition(lc, link, new dvt.Point(-linkOffsetX, -linkOffsetY));
+    link.setTranslate(linkOffsetX, linkOffsetY);
+    this.ApplyLabelPosition(lc, link, new dvt.Point(0, 0));
   }
 
   //save viewport from layout, if specified
@@ -2310,10 +2356,16 @@ dvt.BaseDiagram.prototype.GetViewBounds = function() {
     linkId = arLinkIds[i];
     link = this.getLinkById(linkId);
     if (link && link.getVisible()) {
-      dims = link.GetLinkBounds();
       if (link.getGroupId()) {
         continue;
       }
+
+      dims = link.GetLinkBounds();
+      tx = link.getTranslateX();
+      ty = link.getTranslateY();
+      dims.x += tx;
+      dims.y += ty;
+
       if (!bounds) {
         bounds = dims;
       }
@@ -2521,7 +2573,12 @@ dvt.BaseDiagram.compareValues = function(ctx, obj1, obj2) {
   return dvt.Obj.compareValues(ctx, obj1, obj2);
 };
 
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  * @constructor
@@ -2812,6 +2869,12 @@ dvt.BaseDiagramKeyboardHandler._anglesAreEqualWithinTolerance = function(a1, a2)
 
 
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * @constructor
  * @class The base class for diagram links.
@@ -3119,7 +3182,7 @@ dvt.BaseDiagramNode.prototype.getNextNavigable = function(event) {
 /**
  * @override
  */
-dvt.BaseDiagramNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace) 
+dvt.BaseDiagramNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace)
 {
   // return the bounding box for the diagram node, in stage coordinates
   // we don't call this.getDimensions(this.getCtx().getStage() because
@@ -3141,7 +3204,7 @@ dvt.BaseDiagramNode.prototype.getKeyboardBoundingBox = function(targetCoordinate
 /**
  * @override
  */
-dvt.BaseDiagramNode.prototype.getTargetElem = function() 
+dvt.BaseDiagramNode.prototype.getTargetElem = function()
 {
   return this.getElem();
 };
@@ -3258,6 +3321,12 @@ dvt.BaseDiagramNode.prototype.getGroupId = function() {
 };
 
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * @constructor
  * @class The base class for diagram links
@@ -3889,7 +3958,7 @@ dvt.BaseDiagramLink.prototype.ReplaceConnectorColor = function(connector, stroke
       connector.setStroke(new dvt.Stroke(color, conStroke.getAlpha(), conStroke.getWidth(), conStroke.isFixedWidth(), conStroke.getDashProps()));
     }
     if (conFill) {
-      connector.setFill(conFill);
+      connector.setSolidFill(color);
     }
   }
 };
@@ -3917,7 +3986,7 @@ dvt.BaseDiagramLink.prototype.getKeyboardBoundingBox = function(targetCoordinate
 /**
  * @override
  */
-dvt.BaseDiagramLink.prototype.getTargetElem = function() 
+dvt.BaseDiagramLink.prototype.getTargetElem = function()
 {
   return this.getElem();
 };
@@ -3981,7 +4050,12 @@ dvt.BaseDiagramLink.prototype.getGroupId = function() {
   return null;
 };
 
-// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Dvt Diagram layout utils
  */
@@ -4041,7 +4115,12 @@ dvt.DiagramLayoutUtils.convertDiagramPointToPoint = function(diagramPoint) {
   }
 };
 
-// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * @constructor
  * @class The class for the link underlay
@@ -4250,6 +4329,12 @@ DvtDiagramLinkUnderlay.prototype.showUnderlayEnd = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Dvt Diagram Link Utils
  */
 dvt.DiagramLinkUtils = {
@@ -4421,6 +4506,12 @@ dvt.DiagramLinkUtils.GetControlPoints = function(points) {
   return controlPoints;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Dvt Diagram Link Connector utils
  */
@@ -4877,14 +4968,33 @@ dvt.DiagramLinkConnectorUtils.getStandardConnectorOffset = function(connectorTyp
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
+
+/**
+ * @license
+ * Copyright (c) 2017 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 //
 // $Header: dsstools/modules/dvt-shared-js/src/META-INF/bi/sharedJS/toolkit/diagram/DvtDiagramStyleUtils.js /st_jdevadf_jet.trunk/4 2017/09/08 16:48:23  Exp $
 //
 // DvtDiagramStyleUtils.js
 //
-// Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
 //
 //    NAME
 //     DvtDiagramStyleUtils.js - <one-line expansion of the name>
@@ -4965,7 +5075,7 @@ DvtDiagramStyleUtils.getNodeStyles = function(comp, nodeData, nodeDefaults) {
   if (comp.isDataProviderMode()) {
     return dvt.JsonUtils.merge(nodeData, nodeDefaults, {'_itemData': true, 'id': true, 'nodes': true});
   }
-  
+
   var convertedNodeData = DvtDiagramNode.ConvertNodeData(nodeData);
   if (comp.getOptions()['nodeProperties']) {
     var styleProps = dvt.JsonUtils.clone(comp.getOptions()['nodeProperties'](nodeData));
@@ -5050,6 +5160,12 @@ DvtDiagramStyleUtils.getAnimationOnDataChange = function(diagram) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Style related utility functions for dvt.Diagram.
  * @class
  */
@@ -5098,7 +5214,7 @@ DvtDiagramDataUtils.GetNodeOption = function(comp, node) {
     path.push(groupId);
     node = comp.getNodeById(groupId);
   }
-  
+
   // find node option using generated path
   var testId = path.pop();
   var options = [comp.getOptions()];
@@ -5111,6 +5227,13 @@ DvtDiagramDataUtils.GetNodeOption = function(comp, node) {
   }
   return options[0];
 };
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Utility functions for dvt.Diagram overview window
  * @class
@@ -5184,7 +5307,7 @@ DvtDiagramOverviewUtils.CreateOverviewContent = function(diagram, overview, widt
   var ovContent = new dvt.Container(diagram.getCtx());
   ovContent.setMouseEnabled(false);
   overview.Nodes = new (diagram.getCtx()).ojMap();
-  
+
   var rootNodes = diagram.GetRootNodeObjects();
   if (rootNodes.length > 0) {
     rootNodes.forEach(function(node) {
@@ -5210,7 +5333,7 @@ DvtDiagramOverviewUtils.CreateOverviewNode = function(diagram, overview, node, c
   DvtDiagramOverviewUtils._positionOverviewNode(node, ovNode);
   overview.Nodes.set(node.getId(), ovNode);
   container.addChild(ovNode);
-  
+
   if (node.isDisclosed()) {
     ovNode._ovChildNodePane = new dvt.Container(diagram.getCtx());
     ovNode.addChild(ovNode._ovChildNodePane);
@@ -5284,7 +5407,7 @@ DvtDiagramOverviewUtils.UpdateOverviewContent = function(diagram, overview, type
   var parentId = event['parentId'];
   var parentNode = parentId ? diagram.getNodeById(parentId) : null;
   var nodesToUpdate = [];
-  
+
   if (type == 'add') {
     //When adding child nodes from container,
     //find root parent and update the subtree.
@@ -5316,7 +5439,7 @@ DvtDiagramOverviewUtils.UpdateOverviewContent = function(diagram, overview, type
   else if (type == 'remove') {
     //When removing child nodes from container,
     //find root parent and update the subtree
-    if (parentNode) { 
+    if (parentNode) {
       var rootNode = DvtDiagramOverviewUtils._findRootNode(diagram, parentNode);
       DvtDiagramOverviewUtils._removeNode(diagram, overview, rootNode.getId());
       nodesToUpdate.push(rootNode);
@@ -5384,7 +5507,7 @@ DvtDiagramOverviewUtils.TransformFromViewportToContentCoords = function(vx, vy, 
 DvtDiagramOverviewUtils.ZoomToFitOverviewContent = function(diagram, overview, ovContent, width, height) {
   var diagram = overview.Diagram;
   var fitBounds = overview.Diagram._cachedViewBounds;
-  
+
   var dims = fitBounds ? fitBounds : diagram.GetViewBounds();
   var dz = DvtDiagramOverviewUtils._calcOverviewScale(diagram, dims, width, height);
   ovContent.setScale(dz, dz);
@@ -5402,7 +5525,7 @@ DvtDiagramOverviewUtils.ZoomToFitOverviewContent = function(diagram, overview, o
  * @param {number} width overview width
  * @param {number} height overview height
  */
-DvtDiagramOverviewUtils._calcOverviewScale = function(diagram, ztfBounds, width, height) 
+DvtDiagramOverviewUtils._calcOverviewScale = function(diagram, ztfBounds, width, height)
 {
   var cw = width - 20; //use 10px padding for the content from each side
   var ch = height - 20; //use 10px padding for the content from each side
@@ -5423,7 +5546,7 @@ DvtDiagramOverviewUtils._createOverviewNodeShape = function(diagram, node) {
   var ovIconData = diagram.Options.styleDefaults._overviewStyles.node;
   if (node.getData()['overview'])
     ovIconData = dvt.JsonUtils.merge(node.getData()['overview']['icon'], ovIconData);
-  
+
   // determine node shape using the following rules:
   // - the container shape is always 'rectangle'
   // - custom node with 'inherit' shape turns into 'rectangle', otherwise it can use built-in shape/svg path
@@ -5439,7 +5562,7 @@ DvtDiagramOverviewUtils._createOverviewNodeShape = function(diagram, node) {
   var iconWidth = dims.w;
   var iconHeight = dims.h;
   var ovNode = new dvt.SimpleMarker(diagram.getCtx(), iconShape, iconWidth / 2, iconHeight / 2, iconWidth, iconHeight, 0);
-  
+
   //apply styles - svg style and class names
   var className = node.isDisclosed() ? 'oj-diagram-overview-container-node' : 'oj-diagram-overview-node';
   if (ovIconData['svgClassName'])
@@ -5491,13 +5614,13 @@ DvtDiagramOverviewUtils._positionOverviewWindow = function(diagram, overview) {
   var overviewHeight = overview.getOverviewHeight();
   var availableWidth = diagram.Width;
   var availableHeight = diagram.Height;
-  
+
   switch(halign) {
-    case 'start': 
+    case 'start':
       halign = dvt.Agent.isRightToLeft(diagram.getCtx()) ? 'right' : 'left';
       break;
-    case 'end': 
-      halign = dvt.Agent.isRightToLeft(diagram.getCtx()) ? 'left' : 'right'; 
+    case 'end':
+      halign = dvt.Agent.isRightToLeft(diagram.getCtx()) ? 'left' : 'right';
       break;
     default: break;
   }
@@ -5545,6 +5668,13 @@ DvtDiagramOverviewUtils._updateOverviewNodes = function(diagram, overview) {
     }
   });
 };
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Overview window for diagram.
  * @param {dvt.Diagram} diagram The parent diagram who owns the overview.
@@ -5878,6 +6008,12 @@ DvtDiagramOverview.prototype.CreateAnimationClone = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * @param {dvt.Context} context The rendering context.
  * @param {function} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
@@ -5919,6 +6055,7 @@ dvt.Diagram.prototype.Init = function(context, callback, callbackObj) {
   this._allNodeIdsMap = new context.ojMap();
   this._unresolvedNodeIds = []; // used to discover end-point nodes for promoted links
   this._nodesToResolve = []; // used for resolving container nodes during breadth-first search
+  this._touchEventContentDiagramObjRef = null; // can be a reference to DvtDiagramNode or DvtDiagramLink
   this.setId('diagram'); // this is needed for animation purposes.
 };
 
@@ -6371,8 +6508,6 @@ dvt.Diagram.prototype._processContent = function(bEmptyDiagram) {
     pzc.setPanDirection(this.getPanDirection());
     pzc.setZoomingEnabled(this.IsZoomingEnabled());
     pzc.setZoomToFitEnabled(this.IsZoomingEnabled());
-    if (this.Options['_resources'])
-      pzc.setPanCursor(this.Options['_resources']['panCursorUp'], this.Options['_resources']['panCursorDown']);
   }
 
   // add overview window
@@ -6840,7 +6975,8 @@ dvt.Diagram.prototype.HandleZoomEvent = function(event) {
       break;
     case 'zoomed':
       // don't update nodes on zoomed events on touch device, since touchend might be lost when the node is rerendered
-      if (!dvt.Agent.isTouchDevice() && this.getOptions()['zoomRenderer'] && event.oldZoom !== event.newZoom) {
+      var nc = this.getOptions()['nodeContent'] || {};
+      if (!dvt.Agent.isTouchDevice() && nc['zoomRenderer'] && event.oldZoom !== event.newZoom) {
         this._nodes.forEach(function(node, nodeId, map){
           node.rerenderOnZoom(event);
         });
@@ -6849,7 +6985,8 @@ dvt.Diagram.prototype.HandleZoomEvent = function(event) {
     case 'zoomToFitEnd':
     case 'zoomEnd':
       // when on touch, call zoom renderer on zoom_end and zoom-to-fit-end
-      if (dvt.Agent.isTouchDevice() && this.getOptions()['zoomRenderer'] && event.oldZoom !== event.newZoom) {
+      var nc = this.getOptions()['nodeContent'] || {};
+      if (dvt.Agent.isTouchDevice() && nc['zoomRenderer'] && event.oldZoom !== event.newZoom) {
         this._nodes.forEach(function(node, nodeId, map){
           node.rerenderOnZoom(event);
         });
@@ -7618,8 +7755,8 @@ dvt.Diagram.prototype.ShowLinkCreationFeedback = function(event) {
     var stagePos = this._context.pageToStageCoords(event.pageX, event.pageY);
     var localPos = this.getPanZoomCanvas().getContentPane().stageToLocal({x: stagePos.x, y: stagePos.y});
     if (this._linkCreationFeedBack) {
-      var points = this._linkCreationFeedBack.getPoints();
-      this._linkCreationFeedBack.setPoints([points[0], points[1], localPos.x, localPos.y]);
+      var points = this._linkCreationFeedBack.GetCreationFeedbackPoints(localPos);
+      this._linkCreationFeedBack.setPoints(points);
     }
     else {
       var obj = this.getEventManager().DragSource.getDragObject();
@@ -8044,8 +8181,68 @@ dvt.Diagram.prototype._removeLinks = function(linksData) {
   }
 };
 
+/**
+ * Handles the touch start event
+ */
+dvt.Diagram.prototype.handleTouchStart = function() {
+  // noop: Called from HandleImmediateTouchStartInternal
+}
 
+/**
+ * Handles the touch end event
+ */
+dvt.Diagram.prototype.handleTouchEnd = function() {
+  this._clearTouchEventContent();
+  if (this._touchEventContentDiagramObjRef
+    && this._touchEventContentDiagramObjRef.handleTouchEnd) {
+    // Clear the states in the node/link as this will not be called
+    // if the event is not ended on them
+    this._touchEventContentDiagramObjRef.handleTouchEnd();
+    // Null out the reference as it need not be called again for this diagram obj
+    this._touchEventContentDiagramObjRef = null;
+  }
+}
 
+/**
+ * Stores the content in the touch event pane
+ * @param {Element|Array<Element>} content The content that has to be stored
+ * @param {DvtDiagramNode|DvtDiagramLink} diagramObj The node/link that is storing the content
+ */
+dvt.Diagram.prototype.storeTouchEventContent = function(content, diagramObj) {
+  if (!this.getTouchEventPane() || !content) {
+    return;
+  }
+
+  // We support storing only one diagram object's content at any given time.
+  this._touchEventContentDiagramObjRef = diagramObj;
+  if (content.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
+    dvt.ToolkitUtils.appendChildElem(this.getTouchEventPane().getElem(), content);
+  }
+  else if (Array.isArray(content)) {
+    content.forEach(function(node) {dvt.ToolkitUtils.appendChildElem(this.getTouchEventPane().getElem(), node);}.bind(this));
+  }
+}
+
+/**
+ * Removes the contents from the touch content pane
+ */
+dvt.Diagram.prototype._clearTouchEventContent = function() {
+  if (!this.getTouchEventPane()) {
+    return;
+  }
+  var touchEventPaneElem = this.getTouchEventPane().getElem();
+
+  while (touchEventPaneElem.firstChild) {
+    touchEventPaneElem.removeChild(touchEventPaneElem.firstChild);
+  }
+}
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Category rollover handler for Diagram
  * @param {function} callback A function that responds to component events.
@@ -8092,6 +8289,12 @@ DvtDiagramCategoryRolloverHandler.prototype.GetRolloutCallback = function(event,
   return dvt.Obj.createCallback(this, callback);
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -8198,12 +8401,17 @@ DvtDiagramDefaults.prototype.getNoCloneObject = function() {
 };
 
 
+/**
+ * @license
+ * Copyright (c) 2017 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 //
 // $Header: dsstools/modules/dvt-shared-js/src/META-INF/bi/sharedJS/toolkit/diagram/DvtDiagramDataAnimationState.js /st_jdevadf_jet.trunk/1 2017/06/19 15:30:24  Exp $
 //
 // DvtDiagramDataAminationState.js
 //
-// Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
 //
 //    NAME
 //     DvtDiagramDataAminationState.js - <one-line expansion of the name>
@@ -8476,7 +8684,7 @@ DvtDiagramDataAnimationState.prototype._addAncestorStates = function(parentId) {
   // added to to the top level or an already disclosed container
   this._wasParentDisclosed = parentNode ? parentNode.isDisclosed() : true;
   while (parentNode) {
-    var keepOriginal = dvt.BaseDiagram.compareValues(this._context, parentNode.getId(), parentId) || 
+    var keepOriginal = dvt.BaseDiagram.compareValues(this._context, parentNode.getId(), parentId) ||
     (parentNode.isDisclosed() && this._diagram.getOptions()['renderer']);
     var oldState = parentNode.getAnimationState(keepOriginal);
     this._nodes.push(oldState);
@@ -8486,6 +8694,12 @@ DvtDiagramDataAnimationState.prototype._addAncestorStates = function(parentId) {
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Animation handler for Diagram
  * @param {dvt.Context} context the platform specific context object
@@ -8571,7 +8785,7 @@ DvtDiagramDataAnimationHandler.prototype.constructAnimation = function(oldList, 
     var oldLink, newLink;
     var skip = new context.ojMap();
     var thisRef = this;
-    
+
     oldLinksMap.forEach(function(link, linkId, map){
       oldLink = link;
       newLink = newLinksMap.get(linkId);
@@ -8582,12 +8796,11 @@ DvtDiagramDataAnimationHandler.prototype.constructAnimation = function(oldList, 
           oldLink.animateDelete(thisRef);
         }
       }
-      //identical links promoted or not - update
-      else if ((!oldLink.isPromoted() && !newLink.isPromoted()) ||
-          (oldLink.isPromoted() && newLink.isPromoted() && dvt.BaseDiagram.compareValues(context, oldLink.getId(), newLink.getId()))) {
+      //identical direct links - update
+      else if (!oldLink.isPromoted() && !newLink.isPromoted()) {
         newLink.animateUpdate(thisRef, oldLink);
       }
-      //match found but one of the links is inside of promoted link - collapsed or expanded case
+      //match found but one or both of the links is inside of promoted link - collapsed, expanded or update case
       else {
         var oldLinksCount = oldLink.isPromoted() ? oldLink.getData()['_links'].length : 1;
         var newLinksCount = newLink.isPromoted() ? newLink.getData()['_links'].length : 1;
@@ -8597,13 +8810,14 @@ DvtDiagramDataAnimationHandler.prototype.constructAnimation = function(oldList, 
         else if (oldLinksCount < newLinksCount && !skip.has(newLink.getId())) { //collapse
           thisRef._constructExpandCollapseAnimation(newLink, oldLinksMap, skip, false);
         }
-        else if (oldLinksCount == newLinksCount) {
-          //a single link inside of promoted - plain update
+        else if (oldLinksCount == newLinksCount && !skip.has(newLink.getId())) {
+          //a single link inside of promoted - plain update, no need to update that link multiple times
           newLink.animateUpdate(thisRef, oldLink);
+          skip.set(newLink.getId(),true);
         }
       }
     });
-    
+
     //check for inserts
     newLinksMap.forEach(function(link, linkId, map){
       oldLink = oldLinksMap.get(linkId);
@@ -8674,7 +8888,12 @@ DvtDiagramDataAnimationHandler._expandLinksArrayToMap = function(context, linkAr
 
 
 
-// Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Event Manager for dvt.Diagram.
  * @param {dvt.Context} context The platform specific context object
@@ -9048,21 +9267,30 @@ DvtDiagramEventManager.prototype.OnMouseUp = function(event) {
  * @override
  */
 DvtDiagramEventManager.prototype.HandleImmediateTouchStartInternal = function(event) {
+  var obj = this.GetLogicalObject(event.target);
   if (this.IsDragSupported() && event.targetTouches.length == 1) {
-    var obj = this.GetLogicalObject(event.target);
     if (obj instanceof DvtDiagramNode) {
       this._setPanningEnabled(false);
     }
   }
+  if (obj instanceof DvtDiagramNode || obj instanceof DvtDiagramLink) {
+    obj.handleTouchStart();
+  }
+  this._diagram.handleTouchStart();
 };
 
 /**
  * @override
  */
 DvtDiagramEventManager.prototype.HandleImmediateTouchEndInternal = function(event) {
+  var obj = this.GetLogicalObject(event.target);
   if (this.IsDragSupported()) {
     this._setPanningEnabled(true);
   }
+  if (obj instanceof DvtDiagramNode || obj instanceof DvtDiagramLink) {
+    obj.handleTouchEnd();
+  }
+  this._diagram.handleTouchEnd();
 };
 
 /**
@@ -9199,7 +9427,12 @@ DvtDiagramEventManager.prototype._getPortElement = function(elem, selector) {
   return elem && elem.closest ? elem.closest(selector) : null;
 };
 
-// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 /**
  *  @constructor
@@ -9268,6 +9501,12 @@ DvtDiagramKeyboardHandler.prototype.GetVisibleNode = function(nodeId) {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * @constructor
  * @param {dvt.Context} context the rendering context
  * @param {dvt.Diagram} diagram the parent diagram component
@@ -9308,6 +9547,8 @@ DvtDiagramLink.prototype.Init = function(context, diagram, data, promoted) {
   DvtDiagramLink.superclass.Init.call(this, context, data['id'], diagram);
   this._data = data;
   this._isHighlighted = true;
+  this._hasContentBoundToTouchEvent = false;
+  this._contentStoredInTouchEventContainer = null;
   this.setPromoted(promoted);
   if (this.isSelectable()) {
     this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
@@ -9457,10 +9698,107 @@ DvtDiagramLink.prototype.render = function() {
  * @override
  */
 DvtDiagramLink.prototype.setPoints = function(points) {
-  if (!this._pathCmds && points) {
-    DvtDiagramLink._renderLinkShape(this.GetDiagram(), this.getData(), this);
+  var diagram = this.GetDiagram();
+  var renderer = this._getCustomRenderer('renderer');
+  if (renderer) {
+    this._customPoints = points;
+    this._applyCustomLinkContent(renderer, this._getState(), null);
   }
-  DvtDiagramLink.superclass.setPoints.call(this, points);
+  else {
+    if (!this._pathCmds && points) {
+      DvtDiagramLink._renderLinkShape(diagram, this.getData(), this);
+    }
+    DvtDiagramLink.superclass.setPoints.call(this, points);
+  }
+};
+
+/**
+ * Retrieves current state for the link
+ * @return {Object} object that contains current hovered, selected, focused states for the link
+ * @private
+ */
+DvtDiagramLink.prototype._getState = function() {
+  return {
+    'hovered': this._isShowingHoverEffect,
+    'selected': this.isSelected(),
+    'focused': this._isShowingKeyboardFocusEffect
+  };
+};
+
+/**
+ * Calls the specified renderer, adds, removes or updates content of the link
+ * @param {function} renderer custom renderer for the link state
+ * @param {Object} state object that contains curremt object state
+ * @param {Object} prevState object that contains previous object state
+ * @private
+ */
+DvtDiagramLink.prototype._applyCustomLinkContent = function(renderer, state, prevState) {
+  var contextHandler = this._diagram.getOptions()['_contextHandler'];
+  if (!contextHandler) {
+    this._diagram.Log('dvt.Diagram: could not add custom link content - context handler is undefined', 1);
+    return;
+  }
+
+  var context = contextHandler(this.isPromoted() ? 'promotedLink' : 'link',
+    this.getElem(), this._customLinkContent, null, this.getDataContext(),
+    state, prevState, this._customPoints);
+
+  var linkContent = renderer(context);
+
+  //   - support null case on updates for custom elements
+  if (!linkContent && this._customLinkContent) {
+    return;
+  }
+
+  // strip top level svg element if it is there - content created by template or
+  // custom defined content is wrapped into svg element
+  // processedContent will be saved as custom content for futute use - updates and animation
+  var processedContent = DvtDiagramLink._processLinkContent(linkContent);
+
+  //remove content if the new and old content do not match, the new content might be null
+  if (this._customLinkContent && processedContent != this._customLinkContent) {
+    // BUG: JET-31495 - IMPOSSIBLE TO REMOVE HOVER TREATMENT AND TOOLTIP, WHEN INLINE TEMPLATE IS USED
+    // When renderer function creates content which is different from the initial content, the initial content
+    // is removed from the DOM which breaks the touch events.
+    // To fix this, the initial content is added to the touch event container before it can be safely destroyed
+    // Move old contents if needed, instead of removing them.
+    var stashedOldContents = this._checkAndMoveContents();
+
+    // No need to remove contents if they are already moved.
+    if (!stashedOldContents) {
+      if (this._customLinkContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
+        this.getContainerElem().removeChild(this._customLinkContent);
+      }
+      else if (Array.isArray(this._customLinkContent)) {
+        this._customLinkContent.forEach(function(node) {this.getContainerElem().removeChild(node);}.bind(this));
+      }
+    }
+    this._customLinkContent = null;
+  }
+
+  // If the content stored in the touch event container is the new content
+  // then we need to set the _hasContentBoundToTouchEvent flag to make sure
+  // it is not removed from the DOM before the event ends.
+  if (processedContent === this._contentStoredInTouchEventContainer) {
+    this._hasContentBoundToTouchEvent = true;
+  }
+
+  // add content if neccessary
+  if (!this._customLinkContent) {
+    if (processedContent && processedContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
+      DvtDiagramLink._insertCustomElem(this, processedContent, this._labelObj);
+      this._customLinkContent = processedContent;
+    }
+    else if (processedContent && Array.isArray(processedContent)) {
+      processedContent.forEach(function(item){DvtDiagramLink._insertCustomElem(this, item, this._labelObj);}.bind(this));
+      this._customLinkContent = processedContent;
+    }
+    else { // not an svg fragment
+      this._diagram.Log('dvt.Diagram: could not add custom link content for the link ' + this.getId() + linkContent, 1);
+    }
+  }
+  // populate link path if needed
+  DvtDiagramLink._fixLinkPath(this);
 };
 
 /**
@@ -9479,7 +9817,7 @@ DvtDiagramLink._renderLinkShape = function(diagram, linkData, container) {
   var linkColor = linkData['color'];
   var linkWidth = linkData['width'];
   var linkStyle = linkData['svgStyle'] || linkData['style'];
-  var hitDetectionOffset = linkData['_hitDetectionOffset'];
+  var hitDetectionOffset = dvt.CSSStyle.toNumber(linkData['_hitDetectionOffset']);
 
   //create a transparent underlay wider than the link
   //in order to make it easier to interact with the link
@@ -9593,12 +9931,19 @@ DvtDiagramLink.createText = function(ctx, strText, style, halign, valign, bMulti
  * @override
  */
 DvtDiagramLink.prototype.setSelected = function(selected) {
+  var prevState = this._getState();
   DvtDiagramLink.superclass.setSelected.call(this, selected);
-  if (selected) {
-    this._showFeedback(this._isShowingHoverEffect, true);
+  var selectionRenderer = this._getCustomRenderer('selectionRenderer');
+  if (selectionRenderer) {
+    this._applyCustomLinkContent(selectionRenderer, this._getState(), prevState);
   }
   else {
-    this._hideFeedback();
+    if (selected) {
+      this._showFeedback(this._isShowingHoverEffect, true);
+    }
+    else {
+      this._hideFeedback();
+    }
   }
   this.UpdateAriaLabel();
 };
@@ -9623,7 +9968,7 @@ DvtDiagramLink.prototype._showFeedback = function(bHovered, bSelected) {
       this._savedStroke = this.getShape().getStroke();
     }
     var copyStroke = this.getShape().getStroke();
-    var hoverStroke = new dvt.Stroke(this.getData()['hoverInnerColor'], 
+    var hoverStroke = new dvt.Stroke(this.getData()['hoverInnerColor'],
       copyStroke.getAlpha(), copyStroke.getWidth(), copyStroke.isFixedWidth(), copyStroke.getDashProps());
     this.getShape().setStroke(hoverStroke);
     this.ReplaceConnectorColor(this.getStartConnector(), hoverStroke);
@@ -9702,12 +10047,47 @@ DvtDiagramLink.prototype.GetStyledLinkStroke = function(strokeToCopy, color, wid
 };
 
 /**
+ * Handles touch start event on this link
+ */
+DvtDiagramLink.prototype.handleTouchStart = function() {
+  // Called from HandleImmediateTouchStartInternal of DvtDiagramEventManager
+  // when a touch event is started on this link.
+  // Set the _hasContentBoundToTouchEvent flag to indicate a touch event started on the
+  // content of this link is active.
+  // This will be unset in cases like hover/zoom where the contents are moved to
+  // touch event container and the updated contents are not a part of the touch event.
+  this._hasContentBoundToTouchEvent = true;
+}
+
+/**
+ * Handles touch end event on this link
+ */
+DvtDiagramLink.prototype.handleTouchEnd = function() {
+  // Called from HandleImmediateTouchEndInternal of DvtDiagramEventManager
+  // when a touch event is ended on this link.
+  // Unset the _hasContentBoundToTouchEvent flag to indicate a touch event started on the
+  // content of this link is no more active.
+  // This is to make sure that it is unset in case like selection event
+  // where this flag is set on the handleTouchStart but never updated as
+  // the custom render would not have happened.
+  this._hasContentBoundToTouchEvent = false;
+  this._contentStoredInTouchEventContainer = null;
+}
+
+/**
  * @override
  */
 DvtDiagramLink.prototype.showHoverEffect = function() {
   if (!this._isShowingHoverEffect) {
+    var prevState = this._getState();
     this._isShowingHoverEffect = true;
-    this._showFeedback(true, this.isSelected());
+    var hoverRenderer = this._getCustomRenderer('hoverRenderer');
+    if (hoverRenderer) {
+      this._applyCustomLinkContent(hoverRenderer, this._getState(), prevState);
+    }
+    else {
+      this._showFeedback(true, this.isSelected());
+    }
   }
 };
 
@@ -9716,13 +10096,20 @@ DvtDiagramLink.prototype.showHoverEffect = function() {
  * @override
  */
 DvtDiagramLink.prototype.hideHoverEffect = function() {
-  if (this.isSelected()) {
-    this._showFeedback(false, true);
+  var prevState = this._getState();
+  this._isShowingHoverEffect = false;
+  var hoverRenderer = this._getCustomRenderer('hoverRenderer');
+  if (hoverRenderer) {
+    this._applyCustomLinkContent(hoverRenderer, this._getState(), prevState);
   }
   else {
-    this._hideFeedback();
+    if (this.isSelected()) {
+      this._showFeedback(false, true);
+    }
+    else {
+      this._hideFeedback();
+    }
   }
-  this._isShowingHoverEffect = false;
 };
 
 /**
@@ -9776,12 +10163,12 @@ DvtDiagramLink.prototype.getDataContext = function() {
       itemData = this.getData()['_links'].map(function(item){return item['_itemData']});
       data = this.getData()['_links'][0]['_noTemplate'] ? itemData :  this.getData()['_links'];
     }
-    else { 
+    else {
       data =  this.getData();
       itemData = this.getData()['_itemData'];
     }
   } else {
-    data = this.isPromoted() ? this.getData()['_links'] : this.getData()['_itemData'];  
+    data = this.isPromoted() ? this.getData()['_links'] : this.getData()['_itemData'];
   }
   var dataContext = {
     'id': this.getId(),
@@ -9890,16 +10277,28 @@ DvtDiagramLink.prototype._movingToStart = function(direction) {
  * @override
  */
 DvtDiagramLink.prototype.showKeyboardFocusEffect = function() {
+  var prevState = this._getState();
   this._isShowingKeyboardFocusEffect = true;
-  this.showHoverEffect();
+  var focusRenderer = this._getCustomRenderer('focusRenderer');
+  if (focusRenderer) {
+    this._applyCustomLinkContent(focusRenderer, this._getState(), prevState);
+  } else {
+    this.showHoverEffect();
+  }
 };
 
 /**
  * @override
  */
 DvtDiagramLink.prototype.hideKeyboardFocusEffect = function() {
+  var prevState = this._getState();
   this._isShowingKeyboardFocusEffect = false;
-  this.hideHoverEffect();
+  var focusRenderer = this._getCustomRenderer('focusRenderer');
+  if (focusRenderer) {
+    this._applyCustomLinkContent(focusRenderer, this._getState(), prevState);
+  } else {
+    this.hideHoverEffect();
+  }
 };
 
 /**
@@ -9972,6 +10371,61 @@ DvtDiagramLink.prototype.animateUpdate = function(animationHandler, oldLink, bCl
       playable.getAnimator().addProp(dvt.Animator.TYPE_STROKE, this.getShape(), this.getShape().getStroke, this.getShape().setStroke, newStroke);
     }
   }
+
+  // animate position
+  var oldTx = oldLink.getTranslateX();
+  var oldTy = oldLink.getTranslateY();
+  var newTx = this.getTranslateX();
+  var newTy = this.getTranslateY();
+  if (oldTx != newTx) {
+    this.setTranslateX(oldTx);
+    playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, this, this.getTranslateX, this.setTranslateX, newTx);
+  }
+  if (oldTy != newTy) {
+    this.setTranslateY(oldTy);
+    playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, this, this.getTranslateY, this.setTranslateY, newTy);
+  }
+
+  // animate custom content
+  if (this._getCustomRenderer('renderer')) {
+    //animate path if it is marked by the class
+    var animateFrom = oldLink.getContainerElem().querySelector('.oj-diagram-link-path');
+    var animateTo = this.getContainerElem().querySelector('.oj-diagram-link-path');
+
+    if (animateFrom && animateTo) {
+      var oldPoints = dvt.ToolkitUtils.getAttrNullNS(animateFrom, 'd');
+      var newPoints = dvt.ToolkitUtils.getAttrNullNS(animateTo, 'd');
+
+      dvt.ToolkitUtils.setAttrNullNS(animateTo, 'd', oldPoints);
+      var pointsSetter = function(points) {
+        dvt.ToolkitUtils.setAttrNullNS(animateTo, 'd', points.join(' '));
+      };
+      var pointsGetter = function(obj) {
+        var points = dvt.ToolkitUtils.getAttrNullNS(animateTo, 'd');
+        var arPoints = dvt.PathUtils.createPathArray(points);
+        return arPoints;
+      };
+      playable.getAnimator().addProp(dvt.Animator.TYPE_PATH, animateTo, pointsGetter, pointsSetter, dvt.PathUtils.createPathArray(newPoints));
+    }
+
+    //animate the rest of custom content
+    var fadeInItems = DvtDiagramLink._getFadeInCustomItems(this._customLinkContent, animateTo, animateFrom);
+    var playableExtra = new dvt.CustomAnimation(this.getCtx(), null, animationHandler.getAnimationDuration());
+    for (var ix = 0; ix < fadeInItems.length; ix++) {
+      var item = fadeInItems[ix];
+      dvt.ToolkitUtils.setAttrNullNS(item, 'opacity', '0');
+      var opacitySetter = function(val) {
+        dvt.ToolkitUtils.setAttrNullNS(this, 'opacity', val);
+      }.bind(item);
+      var opacityGetter = function(){
+        var value = dvt.ToolkitUtils.getAttrNullNS(this, 'opacity');
+        return Number(value);
+      }.bind(item);
+      playableExtra.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, item, opacityGetter, opacitySetter, 1);
+    }
+    animationHandler.add(playableExtra, DvtDiagramDataAnimationHandler.INSERT);
+  }
+
   if (bCleanUp) {
     var thisRef = this;
     dvt.Playable.appendOnEnd(playable, function() {thisRef.getParent().removeChild(thisRef);});
@@ -10015,19 +10469,26 @@ DvtDiagramLink.prototype.animateCollapse = function(animationHandler, oldLinksAr
     return;
 
   //copy points for the original link to create fake links if needed
-  var origPoints = this.getPoints().slice();
+  var origPoints = this._customPoints ? this._customPoints : this.getPoints();
+  if (Array.isArray(origPoints))
+    origPoints = origPoints.slice();
+
+  //copy translation for the original link to use on fake links
+  var origTx = this.getTranslateX(),
+      origTy = this.getTranslateY();
 
   // use first link to animate from many to promoted
   this.animateUpdate(animationHandler, oldLinksArray[0]);
 
   // create fake links to animate from many to one
-  // delete the fake liks at animation end
+  // delete the fake links at animation end
   for (var i = 1; i < oldLinksArray.length; i++) {
     var data = {'id': '_fakeLink' + i + this.getId()};
     data = dvt.JsonUtils.merge(data, this.getData());
     var fakeLink = new DvtDiagramLink(this.GetDiagram().getCtx(), this.GetDiagram(), data, true);
     fakeLink.render();
     fakeLink.setPoints(origPoints);
+    fakeLink.setTranslate(origTx, origTy);
     fakeLink.animateUpdate(animationHandler, oldLinksArray[i], true);
   }
 };
@@ -10153,7 +10614,7 @@ DvtDiagramLink.prototype.ClearDropEffect = function() {
  * @private
  */
 DvtDiagramLink.prototype._createDropEffect = function(styleClass) {
-  var hitDetectionOffset = this.getData()['_hitDetectionOffset'];
+  var hitDetectionOffset = dvt.CSSStyle.toNumber(this.getData()['_hitDetectionOffset']);
   this._dropEffect = this.CreateFeedbackUnderlay('#000000', 0, hitDetectionOffset, null, styleClass);
   this._dropEffect.setMouseEnabled(false);
   this.addChild(this._dropEffect);
@@ -10211,6 +10672,184 @@ DvtDiagramLink.prototype.getAnimationState = function() {
 };
 
 /**
+ * Helper method that searches for the path element that marked with
+ * 'oj-diagram-link-path' class and updates the value of 'd' attribute
+ * with path commands
+ * @param {dvt.Container} container parent container
+ * @private
+ */
+DvtDiagramLink._fixLinkPath = function(container) {
+  var pathElement = container.getContainerElem().querySelector('.oj-diagram-link-path');
+  if (pathElement) {
+    var points = container._customPoints;
+    var pathCommands = dvt.DiagramLinkUtils.IsPath(points) ?
+      points : dvt.DiagramLinkUtils.ConvertToPath(points);
+    pathElement.setAttributeNS(null, 'd', dvt.PathUtils.getPathString(pathCommands));
+  }
+};
+
+/**
+ * Helper function that walks the DOM up to the root element that represent custom link content and finds items
+ * and finds items that will animated with fade in animation. If the content does not have dedicated
+ * path element, then the animation will be applied on the single root element.
+ * @return {array} an array of nodes from custom content to animate using fade in animation
+ * @private
+ */
+DvtDiagramLink._getFadeInCustomItems = function(newContent, newPathNode, oldPathNode) {
+  var items = [];
+  // not using oldPathNode in the code, just need to check its existance
+  if (newPathNode && oldPathNode) {
+    // helper functions that allow to walk the DOM and find all nodes
+    // the have to be handled differently than link path element
+    var getChildren = function(node, skipMe) {
+      var children = [];
+      while (node) {
+        if(node.nodeType === 1 && node !== skipMe) {
+          children.push(node);
+        }
+        node = node.nextSibling;
+      }
+      return children;
+    };
+    // get node siblings except itself
+    var getSiblings = function(node) {
+      return getChildren(node.parentNode.firstChild, node);
+    };
+
+    // main logic
+    var testNode = newContent;
+    // update the test node if link content is an array
+    if (Array.isArray(newContent)) {
+      newContent.forEach(function(node) {
+        if (node.contains(newPathNode))
+          testNode = node;
+        else
+          items.push(node);
+      });
+    }
+    var currentNode = newPathNode;
+    while (currentNode !== testNode) {
+      items = items.concat(getSiblings(currentNode));
+      currentNode = currentNode.parentNode;
+    }
+  }
+  else if (newContent) {
+    items = Array.isArray(newContent) ? newContent : [newContent];
+  }
+  return items;
+};
+
+/**
+ * Helper function that inserts custom svg element before label element
+ * @param {dvt.Container} container parent container
+ * @param {object} svgElem custom link content as DOM element
+ * @param {dvt.OutputText|dvt.BackgroundOutputText|dvt.MultilineText} label label object
+ * @private
+ */
+DvtDiagramLink._insertCustomElem = function(container, svgElem, label) {
+  var labelElem = label ? label.getOuterElem() : null;
+  if (container) {
+    container.getContainerElem().insertBefore(svgElem, labelElem);
+  }
+};
+
+/**
+ * Finds appropriate renderer callback function.
+ * Supported renderer types - renderer, selectionRenderer, hoverRenderer, focusRenderer.
+ *
+ * @return {function|null}
+ * @private
+ */
+DvtDiagramLink.prototype._getCustomRenderer = function(type) {
+  var linkContentOpt = this._diagram.getOptions()['linkContent'];
+  var rendererFunc = null;
+  if (linkContentOpt) {
+    var baseRenderer = linkContentOpt['renderer'];
+    rendererFunc = linkContentOpt[type];
+    // we don't support selection/hover/focus renderers without base renderer
+    rendererFunc = baseRenderer && rendererFunc ? rendererFunc : baseRenderer;
+  }
+  return rendererFunc;
+};
+
+/**
+ * Builds an array of poins for link creation feedback based on existing points and
+ * current local position.
+ * @param {object} currentPos An object that contains x and y coordinate if the current mouse or touch position
+ * @return {array} an array of x and y points for the link start and link end
+ * @protected
+ */
+DvtDiagramLink.prototype.GetCreationFeedbackPoints = function(currentPos) {
+  var startPoints = this._customPoints ? this._customPoints : this.getPoints();
+  return [startPoints[0], startPoints[1], currentPos.x, currentPos.y];
+};
+
+/**
+ * Helper method processes custom link content generated by one of the link renderers.
+ * The method strips the top level 'svg' element when there is one,
+ * keeps the content intact when the root element is not 'svg'.
+ * The method returns null when content does not contain svg fragment.
+ * @param {Element|array} linkContent A DOM element or an array of elements from renderer callback
+ * @return {Element|array|null} An SVG element or an array of elements, which will be used as content of a Diagram link, null if content does not contain svg fragment.
+ * @private
+ */
+DvtDiagramLink._processLinkContent = function(linkContent) {
+  var customContent = null;
+  // svg fragment from custom defined callback with 'svg' element as root
+  if (linkContent.namespaceURI === dvt.ToolkitUtils.SVG_NS && linkContent.tagName === 'svg') {
+    customContent = [];
+    // Using Array.prototype.forEach.call() since IE11 does not support NodeList.forEach()
+    Array.prototype.forEach.call(linkContent.childNodes, function(node) {customContent.push(node)});
+  }
+  // svg fragment from custom defined callback without 'svg' element as root
+  else if (linkContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
+    customContent = linkContent;
+  }
+  // content from template - always an array of nodes or
+  // updated content from customer defined callback that was initially wrapped into svg element
+  else if (Array.isArray(linkContent)){
+    customContent = [];
+    for (var i = 0; i < linkContent.length; i++) {
+      if (linkContent[i].namespaceURI === dvt.ToolkitUtils.SVG_NS && linkContent[i].tagName === 'svg') {
+        // Using Array.prototype.forEach.call() since IE11 does not support NodeList.forEach()
+        Array.prototype.forEach.call(linkContent[i].childNodes, function(node) {customContent.push(node)});
+        break;
+      }
+      else if (linkContent[i].namespaceURI === dvt.ToolkitUtils.SVG_NS) {
+        customContent.push(linkContent[i]);
+      }
+    }
+  }
+  return Array.isArray(customContent) && customContent.length === 0 ? null : customContent;
+}
+
+/**
+ * Checks if it is needed to move the contents to the touch event pane of the diagram
+ * @returns {boolean} true if the contents are stashed, false otherwise
+ */
+DvtDiagramLink.prototype._checkAndMoveContents = function() {
+  // No need to move contents when there is no active touch event in this node
+  // from the HandleImmediateTouchStartInternal handler method of the DvtDiagramEventManager
+  if (!this._hasContentBoundToTouchEvent) {
+    return false;
+  }
+  this.GetDiagram().storeTouchEventContent(this._customLinkContent, this);
+  this._contentStoredInTouchEventContainer = this._customLinkContent;
+
+  // Reset the _hasContentBoundToTouchEvent flag since the contents are moved to the touch events pane
+  // and this links's content no longer is associated with active touch event
+  this._hasContentBoundToTouchEvent = false;
+
+  return true;
+}
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * @constructor
  * @param {dvt.Context} context the rendering context
  * @param {dvt.Diagram} diagram the parent diagram component
@@ -10244,6 +10883,8 @@ DvtDiagramNode.prototype.Init = function(context, diagram, data) {
   DvtDiagramNode.superclass.Init.call(this, context, data['id'], diagram);
   this._data = data;
   this._isHighlighted = true;
+  this._hasContentBoundToTouchEvent = false;
+  this._contentStoredInTouchEventContainer = null;
   if (this.isSelectable()) {
     this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
   }
@@ -10300,8 +10941,9 @@ DvtDiagramNode.prototype.getLabelBounds = function(forceDims) {
 DvtDiagramNode.prototype.setSelected = function(selected) {
   var prevState = this._getState();
   DvtDiagramNode.superclass.setSelected.call(this, selected);
-  if (this._diagram.getOptions()['selectionRenderer']) {
-    this._applyCustomNodeContent(this._diagram.getOptions()['selectionRenderer'], this._getState(), prevState);
+  var selectionRenderer = this._getCustomRenderer('selectionRenderer');
+  if (selectionRenderer) {
+    this._applyCustomNodeContent(selectionRenderer, this._getState(), prevState);
   }
   else {
     this.processDefaultSelectionEffect(selected);
@@ -10341,8 +10983,9 @@ DvtDiagramNode.prototype.GetIcon = function() {
 DvtDiagramNode.prototype.render = function() {
   this._cleanUp();
   var nodeData = this.getData();
-  if (this._diagram.getOptions()['renderer']) {
-    this._applyCustomNodeContent(this._diagram.getOptions()['renderer'], this._getState(), null);
+  var renderer = this._getCustomRenderer('renderer');
+  if (renderer) {
+    this._applyCustomNodeContent(renderer, this._getState(), null);
     //update container padding if the node is a disclosed container
     if (this.isDisclosed()) {
       var zoom = this.GetDiagram().getPanZoomCanvas().getZoom();
@@ -10398,7 +11041,7 @@ DvtDiagramNode.prototype._applyCustomNodeContent = function(renderer, state, pre
     var bbox = childNodePane.getDimensions();
     childContent = {'element': childNodePane.getElem(), 'w' : bbox ? bbox.w - bbox.x : null, 'h': bbox ? bbox.h - bbox.y : null};
   }
-  var context = contextHandler(this.getElem(), this._customNodeContent, childContent, nodeDataContext, state, prevState);
+  var context = contextHandler('node', this.getElem(), this._customNodeContent, childContent, nodeDataContext, state, prevState);
   var nodeContent = renderer(context);
   //   - support null case on updates for custom elements
   if (!nodeContent && this._customNodeContent && this.getCtx().isCustomElement()) {
@@ -10407,16 +11050,33 @@ DvtDiagramNode.prototype._applyCustomNodeContent = function(renderer, state, pre
 
   //remove content if the new and old content do not match, the new content might be null
   if (this._customNodeContent && nodeContent != this._customNodeContent) {
-    if (this._customNodeContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
-      this.getContainerElem().removeChild(this._customNodeContent);
-    }
-    else if (Array.isArray(this._customNodeContent)) {
-      this._customNodeContent.forEach(function(node) {this.getContainerElem().removeChild(node);}.bind(this));
-    }
-    else {
-      this.removeChild(nodeContent);
+    // BUG: JET-31495 - IMPOSSIBLE TO REMOVE HOVER TREATMENT AND TOOLTIP, WHEN INLINE TEMPLATE IS USED
+    // When renderer function creates content which is different from the initial content, the initial content
+    // is removed from the DOM which breaks the touch events.
+    // To fix this, the initial content is added to the touch event container before it can be safely destroyed
+    // Move old contents if needed, instead of removing them.
+    var stashedOldContents = this._checkAndMoveContents();
+
+    // No need to remove contents if they are already moved.
+    if (!stashedOldContents) {
+      if (this._customNodeContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
+        this.getContainerElem().removeChild(this._customNodeContent);
+      }
+      else if (Array.isArray(this._customNodeContent)) {
+        this._customNodeContent.forEach(function(node) {this.getContainerElem().removeChild(node);}.bind(this));
+      }
+      else {
+        this.removeChild(nodeContent);
+      }
     }
     this._customNodeContent = null;
+  }
+
+  // If the content stored in the touch event container is the new content
+  // then we need to set the _hasContentBoundToTouchEvent flag to make sure
+  // it is not removed from the DOM before the event ends.
+  if (nodeContent === this._contentStoredInTouchEventContainer) {
+    this._hasContentBoundToTouchEvent = true;
   }
 
   if (nodeContent && nodeContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
@@ -10737,6 +11397,34 @@ DvtDiagramNode.prototype.getSelectionShape = function() {
 };
 
 /**
+ * Handles touch start event on this node
+ */
+DvtDiagramNode.prototype.handleTouchStart = function() {
+  // Called from HandleImmediateTouchStartInternal of DvtDiagramEventManager
+  // when a touch event is started on this node.
+  // Set the _hasContentBoundToTouchEvent flag to indicate a touch event started on the
+  // content of this node is active.
+  // This will be unset in cases like hover/zoom where the contents are moved to
+  // touch event container and the updated contents are not a part of the touch event.
+  this._hasContentBoundToTouchEvent = true;
+}
+
+/**
+ * Handles touch end event on this node
+ */
+DvtDiagramNode.prototype.handleTouchEnd = function() {
+  // Called from HandleImmediateTouchEndInternal of DvtDiagramEventManager
+  // when a touch event is ended on this node.
+  // Unset the _hasContentBoundToTouchEvent flag to indicate a touch event started on the
+  // content of this node is no more active.
+  // This is to make sure that it is unset in case like selection event
+  // where this flag is set on the handleTouchStart but never updated as
+  // the custom render would not have happened.
+  this._hasContentBoundToTouchEvent = false;
+  this._contentStoredInTouchEventContainer = null;
+}
+
+/**
  * @override
  */
 DvtDiagramNode.prototype.showHoverEffect = function() {
@@ -10744,8 +11432,9 @@ DvtDiagramNode.prototype.showHoverEffect = function() {
     return;
   var prevState = this._getState();
   this._isShowingHoverEffect = true;
-  if (this._diagram.getOptions()['hoverRenderer']) {
-    this._applyCustomNodeContent(this._diagram.getOptions()['hoverRenderer'], this._getState(), prevState);
+  var hoverRenderer = this._getCustomRenderer('hoverRenderer');
+  if (hoverRenderer) {
+    this._applyCustomNodeContent(hoverRenderer, this._getState(), prevState);
   }
   else {
     this.processDefaultHoverEffect(true);
@@ -10760,8 +11449,9 @@ DvtDiagramNode.prototype.hideHoverEffect = function() {
   if (this._isShowingHoverEffect) {
     var prevState = this._getState();
     this._isShowingHoverEffect = false;
-    if (this._diagram.getOptions()['hoverRenderer']) {
-      this._applyCustomNodeContent(this._diagram.getOptions()['hoverRenderer'], this._getState(), prevState);
+    var hoverRenderer = this._getCustomRenderer('hoverRenderer');
+    if (hoverRenderer) {
+      this._applyCustomNodeContent(hoverRenderer, this._getState(), prevState);
     }
     else {
       this.processDefaultHoverEffect(false);
@@ -10936,8 +11626,9 @@ DvtDiagramNode.prototype.showKeyboardFocusEffect = function() {
     return;
   var prevState = this._getState();
   this._isShowingKeyboardFocusEffect = true;
-  if (this._diagram.getOptions()['focusRenderer']) {
-    this._applyCustomNodeContent(this._diagram.getOptions()['focusRenderer'], this._getState(), prevState);
+  var focusRenderer = this._getCustomRenderer('focusRenderer');
+  if (focusRenderer) {
+    this._applyCustomNodeContent(focusRenderer, this._getState(), prevState);
   }
   else {
     this.processDefaultFocusEffect(true);
@@ -10951,8 +11642,9 @@ DvtDiagramNode.prototype.hideKeyboardFocusEffect = function() {
   if (this.isShowingKeyboardFocusEffect()) {
     var prevState = this._getState();
     this._isShowingKeyboardFocusEffect = false;
-    if (this._diagram.getOptions()['focusRenderer']) {
-      this._applyCustomNodeContent(this._diagram.getOptions()['focusRenderer'], this._getState(), prevState);
+    var focusRenderer = this._getCustomRenderer('focusRenderer');
+    if (focusRenderer) {
+      this._applyCustomNodeContent(focusRenderer, this._getState(), prevState);
     }
     else {
       this.processDefaultFocusEffect(false);
@@ -11085,7 +11777,7 @@ DvtDiagramNode.prototype.animateUpdate = function(animationHandler, oldNode) {
       }
     }
 
-    if (this._diagram.getOptions()['renderer']) {
+    if (this._getCustomRenderer('renderer')) {
       this._animateCustomUpdate(animationHandler, oldNode);
     }
     else {
@@ -11292,10 +11984,11 @@ DvtDiagramNode.prototype._getState = function(zoom) {
  * @param {object} event zoom event
  */
 DvtDiagramNode.prototype.rerenderOnZoom = function(event) {
-  if (this._diagram.getOptions()['zoomRenderer']) {
+  var zoomRenderer = this._getCustomRenderer('zoomRenderer');
+  if (zoomRenderer) {
     var prevState = this._getState(event.oldZoom);
     var state = this._getState(event.newZoom);
-    this._applyCustomNodeContent(this._diagram.getOptions()['zoomRenderer'], state, prevState);
+    this._applyCustomNodeContent(zoomRenderer, state, prevState);
   }
 };
 
@@ -11338,7 +12031,7 @@ DvtDiagramNode.prototype.setLabelAlignments = function(halign, valign) {
  * @override
  */
 DvtDiagramNode.prototype.getContainerPadding = function() {
-  if (!this._containerPadding && this._diagram.getOptions()['renderer']) {
+  if (!this._containerPadding && this._getCustomRenderer('renderer')) {
     var zoom = this.GetDiagram().getPanZoomCanvas().getZoom();
     var nodeBoundingRect = this.getElem().getBoundingClientRect();
     var childPaneBoundingRect = this._childNodePane ? this._childNodePane.getElem().getBoundingClientRect() : null;
@@ -11867,6 +12560,52 @@ DvtDiagramNode.prototype.removeChildNodesData = function(childNodesData) {
 };
 
 /**
+ * Finds appropriate renderer callback function.
+ * Supported renderer types - renderer, selectionRenderer,
+ * hoverRenderer, focusRenderer, zoomRenderer.
+ *
+ * @return {function|null}
+ * @private
+ */
+DvtDiagramNode.prototype._getCustomRenderer = function(type) {
+  var nodeContentOpt = this._diagram.getOptions()['nodeContent'];
+  var rendererFunc = null;
+  if (nodeContentOpt) {
+    var baseRenderer = nodeContentOpt['renderer'];
+    rendererFunc = nodeContentOpt[type];
+    // we don't support selection/hover/focus renderers without base renderer
+    rendererFunc = baseRenderer && rendererFunc ? rendererFunc : null;
+  }
+  return rendererFunc;
+};
+
+/**
+ * Checks if it is needed to move the contents to the touch event pane of the diagram
+ * @returns {boolean} true if the contents are stashed, false otherwise
+ */
+DvtDiagramNode.prototype._checkAndMoveContents = function() {
+  // No need to move contents when there is no active touch event in this node
+  // from the HandleImmediateTouchStartInternal handler method of the DvtDiagramEventManager
+  if (!this._hasContentBoundToTouchEvent) {
+    return false;
+  }
+  this.GetDiagram().storeTouchEventContent(this._customNodeContent, this);
+  this._contentStoredInTouchEventContainer = this._customNodeContent;
+
+  // Reset the _hasContentBoundToTouchEvent flag since the contents are moved to the touch events pane
+  // and this node's content no longer is associated with active touch event
+  this._hasContentBoundToTouchEvent = false;
+
+  return true;
+}
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  *  Provides automation services for a DVT diagram component.
  *  @class  DvtDiagramAutomation
  *  @param {dvt.Diagram} dvtComponent
@@ -12122,6 +12861,13 @@ DvtDiagramAutomation.prototype._getLink = function(linkIndex) {
 };
 
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
   return dvt;
 });

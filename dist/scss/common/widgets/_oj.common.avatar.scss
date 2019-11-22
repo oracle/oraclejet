@@ -34,53 +34,76 @@
     .oj-avatar-background-image {
       background-size: cover;
       background-position: center center;
-      width:100%;
       border-radius:50%;
       align-self: stretch;
       align-items: center;
       justify-content: center;
       display: flex;
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      // Chrome bug 1016796 Background-image upscaling creates artifact on top/right edges
+      width: calc(100% + 2px);
+      height: calc(100% + 2px);
     }
-    .oj-avatar-outer{
+    .oj-avatar {
       border-radius: 50%;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        border: var(--oj-avatar-xxs-border-width) solid var(--oj-avatar-border-color);
-        background-color: var(--oj-avatar-border-offset-bg-color);
-      } @else {
-        border: $avatarXxsBorderWidth solid $avatarBorderColor;
-        //the padding color between border and circle
-        background-color: $avatarBorderOffsetBgColor;
-      }
-      box-sizing: border-box;
-      display:block;
-      position: relative;
-    }
-    .oj-avatar-inner {
-      border-radius: 50%;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        color: var(--oj-avatar-text-color);
-      } @else {
-        color:$avatarTextColor;
-      }
-      box-sizing: border-box;
+
+      border: $avatarXxsBorderWidth solid $avatarBorderColor;
+      color:$avatarTextColor;
+
       align-items: center;
       justify-content: center;
       display: flex;
+      position: relative;
+      background-color: $avatarInnerBgColor;
+      overflow: hidden;
     }
-    .oj-avatar-has-initials .oj-avatar-inner {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        background-color: var(--oj-avatar-inner-bg-color);
-      } @else {
-        background-color: $avatarInnerBgColor;
-      }
+    
+    //div selector present to give it priority over colored backgrounds below
+    div.oj-avatar.oj-avatar-image {
+      background-color: rgba(0, 0, 0, 0);
     }
-    .oj-avatar-outer::after {
+
+    .oj-avatar-bg-purple.oj-avatar {
+      background-color: $avatarPurple;
+      border-color: $avatarPurple;
+    }
+
+    .oj-avatar-bg-orange.oj-avatar {
+      background-color: $avatarOrange;
+      border-color: $avatarOrange;
+    }
+
+    .oj-avatar-bg-red.oj-avatar {
+      background-color: $avatarRed;
+      border-color: $avatarRed;
+    }
+
+    .oj-avatar-bg-teal.oj-avatar {
+      background-color: $avatarTeal;
+      border-color: $avatarTeal;
+    }
+
+    .oj-avatar-bg-green.oj-avatar {
+      background-color: $avatarGreen;
+      border-color: $avatarGreen;
+    }
+    .oj-avatar-bg-forest.oj-avatar {
+      background-color: $avatarForest;
+      border-color: $avatarForest;
+    }
+    .oj-avatar-bg-mauve.oj-avatar {
+      background-color: $avatarMauve;
+      border-color: $avatarMauve;
+    }
+
+    .oj-avatar::after {
       content: '';
       display: block;
       position: absolute;
       border-radius: 50%;
       border: 0px solid transparent;
-      box-sizing: border-box;
     }
 
     .oj-avatar-initials {
@@ -97,285 +120,170 @@
     }
     //To meet text contrast ratio requirement, a Filter is placed on the two
     //smallest avatars to darken the background color
-    .oj-avatar-xxs.oj-avatar-has-initials .oj-avatar-inner,
-    .oj-avatar-xs.oj-avatar-has-initials .oj-avatar-inner {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        background-image:linear-gradient(var(--oj-avatar-initials-shade-color),var(--oj-avatar-initials-shade-color));
-      } @else {
-        background-image:linear-gradient($avatarInitialsShadeColor,$avatarInitialsShadeColor);
-      }
+    .oj-avatar-xxs.oj-avatar-has-initials.oj-avatar,
+    .oj-avatar-xs.oj-avatar-has-initials.oj-avatar {
+
+        background-image:linear-gradient(rgba(0, 0, 0, $avatarInitialsShadeOpacity),rgba(0, 0, 0, $avatarInitialsShadeOpacity));
+
     }
     //Filter is placed on the border so that the background color and border
     //color are the same
-    .oj-avatar-xxs.oj-avatar-has-initials.oj-avatar-outer::after,
-    .oj-avatar-xs.oj-avatar-has-initials.oj-avatar-outer::after {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        border-color: var(--oj-avatar-initials-shade-color);
-        //needed to line up the darkening border with the normal border
-        top: calc(0px - var(--oj-avatar-xxs-border-width));
-        left: calc(0px - var(--oj-avatar-xxs-border-width));
-      } @else {
-        border-color: $avatarInitialsShadeColor;
+    .oj-avatar-xxs.oj-avatar-has-initials.oj-avatar::after,
+    .oj-avatar-xs.oj-avatar-has-initials.oj-avatar::after {
+
+        border-color: rgba(0, 0, 0, $avatarInitialsShadeOpacity);
         //needed to line up the darkening border with the normal border
         top: calc(0px - #{$avatarXxsBorderWidth});
         left: calc(0px - #{$avatarXxsBorderWidth});
-      }
+
     }
-    .oj-avatar-xxs.oj-avatar-outer {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        padding: var(--oj-avatar-xxs-border-offset);
-      } @else {
-        padding: $avatarXxsBorderOffset;
-      }
-    }
-    .oj-avatar-xxs.oj-avatar-has-initials.oj-avatar-outer::after {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        width:calc(var(--oj-avatar-xxs-inner-size) + 2 * var(--oj-avatar-xxs-border-offset) + 2 * var(--oj-avatar-xxs-border-width));
-        height:calc(var(--oj-avatar-xxs-inner-size) + 2 * var(--oj-avatar-xxs-border-offset) + 2 * var(--oj-avatar-xxs-border-width));
-        border-width: var(--oj-avatar-xxs-border-width);
-      } @else {
-        width:calc(#{$avatarXxsInnerSize} + 2 * #{$avatarXxsBorderOffset} + 2 * #{$avatarXxsBorderWidth});
-        height:calc(#{$avatarXxsInnerSize} + 2 * #{$avatarXxsBorderOffset} + 2 * #{$avatarXxsBorderWidth});
+
+    .oj-avatar-xxs.oj-avatar-has-initials.oj-avatar::after {
+
+        width:#{$avatarXxsInnerSize};
+        height:#{$avatarXxsInnerSize};
         border-width: $avatarXxsBorderWidth;
-      }
+
     }
-    .oj-avatar-xxs .oj-avatar-inner {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        font-size: var(--oj-avatar-xxs-initials-font-size);
-        width: var(--oj-avatar-xxs-inner-size);
-        height: var(--oj-avatar-xxs-inner-size);
-      } @else {
+    .oj-avatar-xxs.oj-avatar {
+
         font-size: $avatarXxsInitialsFontSize;
         width: $avatarXxsInnerSize;
         height: $avatarXxsInnerSize;
-      }
-    }
-    .oj-avatar-xxs .oj-avatar-placeholder {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        @include oj-fwk-icon-person-avatar-scale($scaleFactor: var(--oj-avatar-xxs-placeholder-scale));
-      } @else {
-        @include oj-fwk-icon-person-avatar-scale($avatarXxsPlaceholderScale);
-      }
-    }
-    .oj-avatar-group-image .oj-avatar-xxs .oj-avatar-placeholder{
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        @include oj-fwk-icon-group-avatar-scale($scaleFactor: var(--oj-avatar-xxs-placeholder-scale));
-      } @else {
-        @include oj-fwk-icon-group-avatar-scale($avatarXxsPlaceholderScale);
-      }
+
     }
 
-    .oj-avatar-xs.oj-avatar-outer {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        padding: var(--oj-avatar-xs-border-offset);
-      } @else {
-        padding: $avatarXsBorderOffset;
-      }
+    .oj-avatar-xxs .oj-avatar-placeholder {
+
+        @include oj-fwk-icon-person-avatar-scale($avatarXxsPlaceholderScale);
+
     }
-    .oj-avatar-xs.oj-avatar-has-initials.oj-avatar-outer::after {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        width:calc(var(--oj-avatar-xs-inner-size) + 2 * var(--oj-avatar-xs-border-offset) + 2 * var(--oj-avatar-xxs-border-width));
-        height:calc(var(--oj-avatar-xs-inner-size) + 2 * var(--oj-avatar-xs-border-offset) + 2 * var(--oj-avatar-xxs-border-width));
-        border-width: var(--oj-avatar-xxs-border-width);
-      } @else {
-        width:calc(#{$avatarXsInnerSize} + 2 * #{$avatarXsBorderOffset} + 2 * #{$avatarXxsBorderWidth});
-        height:calc(#{$avatarXsInnerSize} + 2 * #{$avatarXsBorderOffset} + 2 * #{$avatarXxsBorderWidth});
+    .oj-avatar-group-image .oj-avatar-xxs .oj-avatar-placeholder{
+
+        @include oj-fwk-icon-group-avatar-scale($avatarXxsPlaceholderScale);
+
+    }
+    .oj-avatar-xs.oj-avatar-has-initials.oj-avatar::after {
+
+        width:#{$avatarXsInnerSize};
+        height:#{$avatarXsInnerSize};
         border-width: $avatarXxsBorderWidth;
-      }
+
     }
-    .oj-avatar-xs .oj-avatar-inner {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        font-size: var(--oj-avatar-xs-initials-font-size);
-        width: var(--oj-avatar-xs-inner-size);
-        height: var(--oj-avatar-xs-inner-size);
-      } @else {
+    .oj-avatar-xs.oj-avatar {
+
         font-size: $avatarXsInitialsFontSize;
         width: $avatarXsInnerSize;
         height: $avatarXsInnerSize;
-      }
+
     }
+
     .oj-avatar-xs .oj-avatar-placeholder {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        @include oj-fwk-icon-person-avatar-scale($scaleFactor: var(--oj-avatar-xs-placeholder-scale));
-      } @else {
+
         @include oj-fwk-icon-person-avatar-scale($avatarXsPlaceholderScale);
-      }
+
     }
     .oj-avatar-group-image .oj-avatar-xs .oj-avatar-placeholder{
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        @include oj-fwk-icon-group-avatar-scale($scaleFactor: var(--oj-avatar-xs-placeholder-scale));
-      } @else {
+
         @include oj-fwk-icon-group-avatar-scale($avatarXsPlaceholderScale);
-      }
+
     }
-    .oj-avatar-sm.oj-avatar-outer {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        padding: var(--oj-avatar-sm-border-offset);
-      } @else {
-        padding: $avatarSmBorderOffset;
-      }
-    }
-    .oj-avatar-sm .oj-avatar-inner {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        height: var(--oj-avatar-sm-inner-size);
-        width: var(--oj-avatar-sm-inner-size);
-        font-size: var(--oj-avatar-sm-initials-font-size);
-      } @else {
+    .oj-avatar-sm.oj-avatar {
+
         height:$avatarSmInnerSize;
         width: $avatarSmInnerSize;
         font-size: $avatarSmInitialsFontSize;
-      }
+
     }
+
     .oj-avatar-sm .oj-avatar-placeholder {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        @include oj-fwk-icon-person-avatar-scale($scaleFactor: var(--oj-avatar-sm-placeholder-scale));
-      } @else {
+
         @include oj-fwk-icon-person-avatar-scale($avatarSmPlaceholderScale);
-      }
+
     }
     .oj-avatar-group-image .oj-avatar-sm .oj-avatar-placeholder{
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        @include oj-fwk-icon-group-avatar-scale($scaleFactor: var(--oj-avatar-sm-placeholder-scale));
-      } @else {
+
         @include oj-fwk-icon-group-avatar-scale($avatarSmPlaceholderScale);
-      }
+
     }
     /*Don't need to specify medium size since it is the default*/
-    .oj-avatar-outer {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        padding: var(--oj-avatar-md-border-offset);
-      } @else {
-        padding: $avatarMdBorderOffset;
-      }
-    }
-    .oj-avatar-inner {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        height: var(--oj-avatar-md-inner-size);
-        width: var(--oj-avatar-md-inner-size);
-        font-size: var(--oj-avatar-md-initials-font-size);
-      } @else {
+    .oj-avatar {
+
         height:$avatarMdInnerSize;
         width: $avatarMdInnerSize;
         font-size: $avatarMdInitialsFontSize;
-      }
+
     }
+
     .oj-avatar-placeholder {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        @include oj-fwk-icon-person-avatar-scale($scaleFactor: var(--oj-avatar-md-placeholder-scale));
-      } @else {
+
         @include oj-fwk-icon-person-avatar-scale($avatarMdPlaceholderScale);
-      }
+
     }
     .oj-avatar-group-image .oj-avatar-placeholder{
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        @include oj-fwk-icon-group-avatar-scale($scaleFactor: var(--oj-avatar-md-placeholder-scale));
-      } @else {
+
         @include oj-fwk-icon-group-avatar-scale($avatarMdPlaceholderScale);
-      }
+
     }
-    .oj-avatar-lg.oj-avatar-outer {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        padding: var(--oj-avatar-lg-border-offset);
-      } @else {
-        padding: $avatarLgBorderOffset;
-      }
-    }
-    .oj-avatar-lg .oj-avatar-inner {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        height: var(--oj-avatar-lg-inner-size);
-        width: var(--oj-avatar-lg-inner-size);
-        font-size: var(--oj-avatar-lg-initials-font-size);
-      } @else {
+    .oj-avatar-lg.oj-avatar {
+
         height:$avatarLgInnerSize;
         width: $avatarLgInnerSize;
         font-size: $avatarLgInitialsFontSize;
-      }
+
     }
+
     .oj-avatar-lg .oj-avatar-placeholder {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        @include oj-fwk-icon-person-avatar-scale($scaleFactor: var(--oj-avatar-lg-placeholder-scale));
-      } @else {
+
         @include oj-fwk-icon-person-avatar-scale($avatarLgPlaceholderScale);
-      }
+
     }
     .oj-avatar-group-image .oj-avatar-lg .oj-avatar-placeholder{
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        @include oj-fwk-icon-group-avatar-scale($scaleFactor: var(--oj-avatar-lg-placeholder-scale));
-      } @else {
+
         @include oj-fwk-icon-group-avatar-scale($avatarLgPlaceholderScale);
-      }
+
     }
-    .oj-avatar-xl.oj-avatar-outer {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        padding: var(--oj-avatar-xl-border-offset);
-      } @else {
-        padding: $avatarXlBorderOffset;
-      }
-    }
-    .oj-avatar-xl .oj-avatar-inner {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        height: var(--oj-avatar-xl-inner-size);
-        width: var(--oj-avatar-xl-inner-size);
-        font-size: var(--oj-avatar-xl-initials-font-size);
-      } @else {
+    .oj-avatar-xl.oj-avatar {
+
         height:$avatarXlInnerSize;
         width: $avatarXlInnerSize;
         font-size: $avatarXlInitialsFontSize;
-      }
+
     }
+ 
     .oj-avatar-xl .oj-avatar-placeholder {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        @include oj-fwk-icon-person-avatar-scale($scaleFactor: var(--oj-avatar-xl-placeholder-scale));
-      } @else {
+
         @include oj-fwk-icon-person-avatar-scale($avatarXlPlaceholderScale);
-      }
+
     }
     .oj-avatar-group-image .oj-avatar-xl .oj-avatar-placeholder{
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        @include oj-fwk-icon-group-avatar-scale($scaleFactor: var(--oj-avatar-xl-placeholder-scale));
-      } @else {
+
         @include oj-fwk-icon-group-avatar-scale($avatarXlPlaceholderScale);
-      }
+
     }
-    .oj-avatar-xxl.oj-avatar-outer,
-    .oj-avatar-xl.oj-avatar-outer{
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        border-width: var(--oj-avatar-xl-border-width);
-      } @else {
+    .oj-avatar-xxl.oj-avatar,
+    .oj-avatar-xl.oj-avatar{
+
         border-width: $avatarXlBorderWidth;
-      }
+
     }
-    .oj-avatar-xxl.oj-avatar-outer {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        padding: var(--oj-avatar-xxl-border-offset);
-      } @else {
-        padding: $avatarXxlBorderOffset;
-      }
-    }
-    .oj-avatar-xxl .oj-avatar-inner {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        height: var(--oj-avatar-xxl-inner-size);
-        width: var(--oj-avatar-xxl-inner-size);
-        font-size: var(--oj-avatar-xxl-initials-font-size);
-      } @else {
+    .oj-avatar-xxl.oj-avatar {
+
         height:$avatarXxlInnerSize;
         width: $avatarXxlInnerSize;
         font-size: $avatarXxlInitialsFontSize;
-      }
+
     }
+
     .oj-avatar-xxl .oj-avatar-placeholder {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        @include oj-fwk-icon-person-avatar-scale($scaleFactor: var(--oj-avatar-xxl-placeholder-scale));
-      } @else {
+
         @include oj-fwk-icon-person-avatar-scale($avatarXxlPlaceholderScale);
-      }
+
     }
     .oj-avatar-group-image .oj-avatar-xxl .oj-avatar-placeholder{
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        @include oj-fwk-icon-group-avatar-scale($scaleFactor: var(--oj-avatar-xxl-placeholder-scale));
-      } @else {
+
         @include oj-fwk-icon-group-avatar-scale($avatarXxlPlaceholderScale);
-      }
+
     }
   }
 }

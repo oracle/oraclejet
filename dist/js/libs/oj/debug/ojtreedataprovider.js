@@ -2,19 +2,15 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -24,7 +20,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj)
 
 /* jslint browser: true,devel:true*/
 /**
- * @ojstatus preview
+ *
  * @since 5.1.0
  * @export
  * @interface oj.TreeDataProvider
@@ -96,6 +92,18 @@ define(['ojs/ojcore', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj)
  * };
  * dataProvider.addEventListener("mutate", listener);
  * </code></pre>
+ *
+ * <h3 id="events-section">
+ *   Filtering
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#events-section"></a>
+ * </h3>
+ * If the TreeDataProvider instance returns a FetchCapability object when getCapability() is called
+ * for capabilityName "filter" then filtering is defined. Note that it is up to the TreeDataProvider
+ * implementation to define the exact behavior of filtering and whether the DataProvider instances returned
+ * by getChildDataProvider() define filtering as well. For example, filtering may only be defined at the
+ * root TreeDataProvider and the DataProviders returned by getChildDataProvider() would already be
+ * filtered. Or filtering may be defined the lower levels which indicates that they can be filtered.
+ * It is expected that in most cases the filterCriterion will be applied to leaf nodes of the TreeDataProvider.
  */
 oj.TreeDataProvider = function () {
 };
@@ -106,7 +114,7 @@ var TreeDataProvider = oj.TreeDataProvider;
 /**
  * Get the data provider for the children of the row identified by parentKey.
  *
- * @ojstatus preview
+ *
  * @since 5.1.0
  * @param {any} parentKey key of the row to get child data provider for.
  * @return {TreeDataProvider | null} A TreeDataProvider if the row can (but doesn't have to) have children; or null if the row cannot have children.
@@ -118,7 +126,7 @@ var TreeDataProvider = oj.TreeDataProvider;
  * @method
  * @name getChildDataProvider
  * @ojsignature {target: "Type",
- *               value: "(parentKey: any): TreeDataProvider<K, D>"}
+ *               value: "(parentKey: K): TreeDataProvider<K, D> | null"}
  */
 
 /**

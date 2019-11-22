@@ -2,16 +2,19 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore'], function(oj)
 {
   "use strict";
+
 /* global Set:false, Symbol:false */
 
 /**
  * Contains all the core functionalities of KeySet.
  * @param {(Set|Array)=} keys A set of keys to initialize this KeySet with.
- * @ojstatus preview
+ *
  * @ignore
  * @ojtsignore
  * @export

@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtThematicMap', 'ojs/ojlogger'], function(oj, $, Config, Components, DvtAttributeUtils, dvt, Logger)
 {
   "use strict";
@@ -610,10 +612,7 @@ var __oj_thematic_map_marker_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global dvt:false, Components:false, Logger:false, Config:false */
 
@@ -621,7 +620,7 @@ var __oj_thematic_map_marker_metadata =
  * @ojcomponent oj.ojThematicMap
  * @augments oj.dvtBaseComponent
  * @since 0.7.0
- * @ojstatus preview
+ *
  * @ojrole application
  * @ojshortdesc A thematic map is an interactive data visualization that displays data corresponding to geographic locations or regions.
  *              Applications are required to supply a mapProvider for a valid thematic map.
@@ -1215,12 +1214,19 @@ oj.__registerWidget('oj.ojThematicMap', $.oj.dvtBaseComponent,
          */
         propertiesKeys: {
           /**
-           * The required name of the "properties" key to use as the location id that will map a data item to a map area.
+           * The required name of the "properties" key to use as the location id that will map a data item to a map area.<br>
+           * <b>
+           *   Note that the key used for map area ids must always be populated and correspond to a unique string value.
+           *   Map areas without this key will not be rendered.
+           *   <br>
+           * </b>
+           * See the [location]{@link oj.ojThematicMapArea#location} attribute of oj-thematic-map-area for additional information.
            * @expose
            * @name mapProvider.propertiesKeys.id
            * @memberof! oj.ojThematicMap
            * @instance
            * @type {string}
+           * @ojrequired
            * @default ""
            *
            * @example <caption>See the <a href="#mapProvider">mapProvider</a> attribute for usage examples.</caption>
@@ -1437,16 +1443,22 @@ oj.__registerWidget('oj.ojThematicMap', $.oj.dvtBaseComponent,
        */
       selection: [],
       /**
-       * The type of selection behavior that is enabled on the thematic map.
+       * <p>The type of selection behavior that is enabled on the thematic map. This attribute controls the number of selections that can be made via selection gestures at any given time.
+       *
+       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the thematic map's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the thematic map's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+       *
+       * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+       *
        * @expose
        * @name selectionMode
        * @ojshortdesc Specifies the selection mode.
        * @memberof oj.ojThematicMap
        * @instance
        * @type {string}
-       * @ojvalue {string} "single"
-       * @ojvalue {string} "multiple"
-       * @ojvalue {string} "none"
+       * @ojvalue {string} "none" Selection is disabled.
+       * @ojvalue {string} "single" Only a single item can be selected at a time.
+       * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
        * @default "none"
        *
        * @example <caption>Initialize the thematic map with the
@@ -1711,7 +1723,7 @@ oj.__registerWidget('oj.ojThematicMap', $.oj.dvtBaseComponent,
            */
           opacity: 1,
           /**
-           * The default marker shape. Can take the name of a built-in shape or the svg path commands for a custom shape.
+           * The default marker shape. Can take the name of a built-in shape or the SVG path commands for a custom shape.
            * @expose
            * @name styleDefaults.dataMarkerDefaults.shape
            * @memberof! oj.ojThematicMap
@@ -2196,13 +2208,6 @@ oj.__registerWidget('oj.ojThematicMap', $.oj.dvtBaseComponent,
       if (this.options._resources == null) {
         this.options._resources = {};
       }
-
-      var resources = this.options._resources;
-      // Add cursors
-      resources.panCursorDown =
-        Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-closed.cur');
-      resources.panCursorUp =
-        Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-open.cur');
     },
 
     // @inheritdoc
@@ -2977,6 +2982,7 @@ Components.setDefaultOptions({
   }
 });
 
+
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -3194,7 +3200,7 @@ Components.setDefaultOptions({
  * @property {number=}       rotation The angle to rotate the marker in clockwise degrees around the marker center.
  * @property {"auto"|"off"}  [selectable="auto"] Specifies whether or not the marker will be selectable.
  * @property {"circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string}
- *                           [shape="circle"] Specifies the shape of a marker. Can take the name of a built-in shape or the svg path commands for a custom shape.
+ *                           [shape="circle"] Specifies the shape of a marker. Can take the name of a built-in shape or the SVG path commands for a custom shape.
  * @property {string=}       shortDesc The text that displays in the area's tooltip.
  * @property {string=}       source Specifies an URI specifying the location of the image resource to use for the marker instead of a built-in shape.
  *                                  The shape attribute is ignored if the source image is defined.
@@ -3377,22 +3383,19 @@ Components.setDefaultOptions({
  * <ul>
  *   <li>
  *      $current - an object that contains information for the current area.
- *      (See the table below for a list of properties available on $current)
+ *      (See [oj.ojThematicMap.AreaTemplateContext]{@link oj.ojThematicMap.AreaTemplateContext} or the table below for a list of properties available on $current)
  *   </li>
  *   <li>
  *      alias - if 'as' attribute was specified, the value will be used to provide an
  *      application-named alias for $current.
  *   </li>
  * </ul>
- * @ojstatus preview
+ *
  * @ojslot areaTemplate
  * @ojshortdesc The areaTemplate slot is used to specify the template for creating areas of the thematic map. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojThematicMap
- * @property {Element} componentElement The &lt;oj-thematic-map> custom element
- * @property {Object} data The data object for the current area
- * @property {number} index The zero-based index of the curent area
- * @property {any} key The key of the current area
+ * @ojslotitemprops oj.ojThematicMap.AreaTemplateContext
  *
  * @example <caption>Initialize the thematic map with an inline area template specified:</caption>
  * &lt;oj-thematic-map area-data='[[areaDataProvider]]' map-provider='[[mapProvider]]'>
@@ -3402,6 +3405,13 @@ Components.setDefaultOptions({
  *    &lt;/oj-thematic-map-area>
  *  &lt;/template>
  * &lt;/oj-thematic-map>
+ */
+/**
+ * @typedef {Object} oj.ojThematicMap.AreaTemplateContext
+ * @property {Element} componentElement The &lt;oj-thematic-map> custom element
+ * @property {Object} data The data object for the current area
+ * @property {number} index The zero-based index of the current area
+ * @property {any} key The key of the current area
  */
 
 /**
@@ -3418,22 +3428,19 @@ Components.setDefaultOptions({
  * <ul>
  *   <li>
  *      $current - an object that contains information for the current marker.
- *      (See the table below for a list of properties available on $current)
+ *      (See [oj.ojThematicMap.MarkerTemplateContext]{@link oj.ojThematicMap.MarkerTemplateContext} or the table below for a list of properties available on $current)
  *   </li>
  *   <li>
  *      alias - if 'as' attribute was specified, the value will be used to provide an
  *      application-named alias for $current.
  *   </li>
  * </ul>
- * @ojstatus preview
+ *
  * @ojslot markerTemplate
  * @ojshortdesc The markerTemplate slot is used to specify the template for creating markers of the thematic map. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojThematicMap
- * @property {Element} componentElement The &lt;oj-thematic-map> custom element
- * @property {Object} data The data object for the current marker
- * @property {number} index The zero-based index of the curent marker
- * @property {any} key The key of the current marker
+ * @ojslotitemprops oj.ojThematicMap.MarkerTemplateContext
  *
  * @example <caption>Initialize the thematic map with an inline marker template specified:</caption>
  * &lt;oj-thematic-map marker-data='[[markerDataProvider]]' map-provider='[[mapProvider]]'>
@@ -3444,7 +3451,13 @@ Components.setDefaultOptions({
  *  &lt;/template>
  * &lt;/oj-thematic-map>
  */
-
+/**
+ * @typedef {Object} oj.ojThematicMap.MarkerTemplateContext
+ * @property {Element} componentElement The &lt;oj-thematic-map> custom element
+ * @property {Object} data The data object for the current marker
+ * @property {number} index The zero-based index of the current marker
+ * @property {any} key The key of the current marker
+ */
 /**
  * <p>
  *  The <code class="prettyprint">linkTemplate</code> slot is used to specify the template for
@@ -3459,22 +3472,19 @@ Components.setDefaultOptions({
  * <ul>
  *   <li>
  *      $current - an object that contains information for the current link.
- *      (See the table below for a list of properties available on $current)
+ *      (See [oj.ojThematicMap.LinkTemplateContext]{@link oj.ojThematicMap.LinkTemplateContext} or the table below for a list of properties available on $current)
  *   </li>
  *   <li>
  *      alias - if 'as' attribute was specified, the value will be used to provide an
  *      application-named alias for $current.
  *   </li>
  * </ul>
- * @ojstatus preview
+ *
  * @ojslot linkTemplate
  * @ojshortdesc The linkTemplate slot is used to specify the template for creating links of the thematic map. See the Help documentation for more information.
  * @ojmaxitems 1
  * @memberof oj.ojThematicMap
- * @property {Element} componentElement The &lt;oj-thematic-map> custom element
- * @property {Object} data The data object for the current link
- * @property {number} index The zero-based index of the curent link
- * @property {any} key The key of the current link
+ * @ojslotitemprops oj.ojThematicMap.LinkTemplateContext
  *
  * @example <caption>Initialize the thematic map with an inline link template specified:</caption>
  * &lt;oj-thematic-map link-data='[[linkDataProvider]]' map-provider='[[mapProvider]]'>
@@ -3485,16 +3495,22 @@ Components.setDefaultOptions({
  *  &lt;/template>
  * &lt;/oj-thematic-map>
  */
-
+ /**
+  * @typedef {Object} oj.ojThematicMap.LinkTemplateContext
+  * @property {Element} componentElement The &lt;oj-thematic-map> custom element
+  * @property {Object} data The data object for the current link
+  * @property {number} index The zero-based index of the current link
+  * @property {any} key The key of the current link
+  */
  /**
  * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current item. (See [oj.ojThematicMap.TooltipContext]{@link oj.ojThematicMap.TooltipContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current item. (See [oj.ojThematicMap.TooltipContext]{@link oj.ojThematicMap.TooltipContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  *
- * @ojstatus preview
+ *
  * @ojslot tooltipTemplate
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojThematicMap.TooltipContext
@@ -3513,7 +3529,7 @@ Components.setDefaultOptions({
  * This slot takes precedence over the renderer/focusRenderer/hoverRenderer/selectionRenderer properties if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current marker. (See [oj.ojThematicMap.RendererContext]{@link oj.ojThematicMap.RendererContext} for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current marker. (See [oj.ojThematicMap.RendererContext]{@link oj.ojThematicMap.RendererContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  * <p>Additionally, add data-oj-default-focus, data-oj-default-hover and/or data-oj-default-selection attributes to the template to also render the default focus, hover and/or selection effect for the data item.</p>
  *
@@ -3532,12 +3548,13 @@ Components.setDefaultOptions({
  * &lt;/oj-thematic-map>
  */
 
+
 /**
  * @ojcomponent oj.ojThematicMapArea
  * @ojsignature {target: "Type", value:"class ojThematicMapArea extends JetElement<ojThematicMapAreaSettableProperties>"}
  * @ojslotcomponent
  * @since 5.2.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="overview">
@@ -3621,7 +3638,8 @@ Components.setDefaultOptions({
  * &lt;oj-thematic-map-area label-style='{"color":"black","fontSize":"12px"}'>&lt;/oj-thematic-map-area>
  */
 /**
- * An identifier corresponding to a Feature provided in the mapProvider geo object that this area is associated with.
+ * An identifier corresponding to a Feature provided in the mapProvider geo object that this area is associated with.<br>
+ * See the [map-provider.properties-keys.id]{@link oj.ojThematicMap#mapProvider.propertiesKeys.id} attribute of oj-thematic-map for additional information.
  * @expose
  * @name location
  * @ojshortdesc An identifier corresponding to a mapProvider "Feature" geo object that this area is associated with.
@@ -3705,12 +3723,13 @@ Components.setDefaultOptions({
  * &lt;oj-thematic-map-area svg-style='{"color": "red"}'>&lt;/oj-thematic-map-area>
  */
 
+
 /**
  * @ojcomponent oj.ojThematicMapLink
  * @ojsignature {target: "Type", value:"class ojThematicMapLink extends JetElement<ojThematicMapLinkSettableProperties>"}
  * @ojslotcomponent
  * @since 5.2.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="overview">
@@ -3813,7 +3832,7 @@ Components.setDefaultOptions({
  * @example <caption>See the <a href="#endLocation">endLocation</a> attribute for usage examples.</caption>
  */
  /**
- * The y coordinate which can represent latitude of the end point.
+ * The y coordinate which can represent longitude of the end point.
  * @expose
  * @name endLocation.y
  * @memberof! oj.ojThematicMapLink
@@ -3899,7 +3918,7 @@ Components.setDefaultOptions({
  * @example <caption>See the <a href="#startLocation">startLocation</a> attribute for usage examples.</caption>
  */
  /**
- * The y coordinate which can represent latitude of the start point.
+ * The y coordinate which can represent longitude of the start point.
  * @expose
  * @name startLocation.y
  * @memberof! oj.ojThematicMapLink
@@ -3950,12 +3969,13 @@ Components.setDefaultOptions({
  * &lt;oj-thematic-map-link width='3'>&lt;/oj-thematic-map-link>
  */
 
+
 /**
  * @ojcomponent oj.ojThematicMapMarker
  * @ojsignature {target: "Type", value:"class ojThematicMapMarker extends JetElement<ojThematicMapMarkerSettableProperties>"}
  * @ojslotcomponent
  * @since 5.2.0
- * @ojstatus preview
+ *
  *
  * @classdesc
  * <h3 id="overview">
@@ -4146,7 +4166,7 @@ Components.setDefaultOptions({
  * @type {number}
  * @ojmin 0
  * @ojmax 360
- * @ojunits degree
+ * @ojunits degrees
  * @default 0
  *
  * @example <caption>Initialize the thematic map marker with the
@@ -4169,7 +4189,7 @@ Components.setDefaultOptions({
  * &lt;oj-thematic-map-marker selectable='off'>&lt;/oj-thematic-map-marker>
  */
 /**
- * Specifies the shape of a marker. Can take the name of a built-in shape or the svg path commands for a custom shape.
+ * Specifies the shape of a marker. Can take the name of a built-in shape or the SVG path commands for a custom shape.
  * @expose
  * @name shape
  * @memberof! oj.ojThematicMapMarker
@@ -4331,6 +4351,7 @@ Components.setDefaultOptions({
  * <code class="prettyprint">y</code> attribute specified:</caption>
  * &lt;oj-thematic-map-marker y='[[$current.data.long]]'>&lt;/oj-thematic-map-marker>
  */
+
 
 /* global __oj_thematic_map_metadata:false */
 /**

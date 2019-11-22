@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojconfig', 'touchr'],
        function(oj, $, Components, Logger, Context, Config)
 {
@@ -36,10 +38,7 @@ var __oj_conveyor_belt_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /*
 ** Important:
@@ -159,20 +158,20 @@ ConveyorBeltCommon.prototype.setup = function () {
   this._mouseWheelListener = function (event) {
     self._handleMouseWheel(event);
   };
-  cbcClass._addBubbleEventListener(this._elem, 'mousewheel', this._mouseWheelListener);
-  cbcClass._addBubbleEventListener(this._elem, 'wheel', this._mouseWheelListener);
+  cbcClass._addBubbleEventListener(this._elem, 'mousewheel', this._mouseWheelListener, false);
+  cbcClass._addBubbleEventListener(this._elem, 'wheel', this._mouseWheelListener, false);
 
   // handle swipe gestures on the overflow container, which excludes the next/prev buttons
   this._touchStartListener = function (event) {
     self._handleTouchStart(event);
   };
   cbcClass._addBubbleEventListener(this._overflowContainer, 'touchstart',
-                                   this._touchStartListener);
+                                   this._touchStartListener, true);
   this._touchMoveListener = function (event) {
     self._handleTouchMove(event);
   };
   cbcClass._addBubbleEventListener(this._overflowContainer, 'touchmove',
-                                   this._touchMoveListener);
+                                   this._touchMoveListener, false);
   this._touchEndListener = function (event) {
     self._handleTouchEnd(event);
   };
@@ -217,12 +216,12 @@ ConveyorBeltCommon.prototype.destroy = function () {
 
   var elem = this._elem;
   var cbcClass = ConveyorBeltCommon;
-  cbcClass._removeBubbleEventListener(elem, 'mousewheel', this._mouseWheelListener);
-  cbcClass._removeBubbleEventListener(elem, 'wheel', this._mouseWheelListener);
+  cbcClass._removeBubbleEventListener(elem, 'mousewheel', this._mouseWheelListener, false);
+  cbcClass._removeBubbleEventListener(elem, 'wheel', this._mouseWheelListener, false);
   cbcClass._removeBubbleEventListener(this._overflowContainer, 'touchstart',
-                                      this._touchStartListener);
+                                      this._touchStartListener, true);
   cbcClass._removeBubbleEventListener(this._overflowContainer, 'touchmove',
-                                      this._touchMoveListener);
+                                      this._touchMoveListener, false);
   cbcClass._removeBubbleEventListener(this._overflowContainer, 'touchend',
                                       this._touchEndListener);
   cbcClass._removeBubbleEventListener(this._overflowContainer, 'touchcancel',
@@ -324,7 +323,7 @@ ConveyorBeltCommon.prototype._reparentChildrenToContentContainer = function (
     // (the re-attached notification will happen in setup())
     this._subtreeDetachedFunc(child);
 
-    toNode.appendChild(child); // @HtmlUpdateOK
+    toNode.appendChild(child); // @HTMLUpdateOK
 
     if (child.nodeType === 1 && this._itemStyleClass) {
       this._addStyleClassNameFunc(child, this._itemStyleClass);
@@ -347,7 +346,7 @@ ConveyorBeltCommon.prototype._reparentChildrenFromContentContainer = function (
   var children = fromNode.childNodes;
   while (children.length > 0) {
     var child = children[0];
-    toNode.appendChild(child); // @HtmlUpdateOK
+    toNode.appendChild(child); // @HTMLUpdateOK
 
     if (child.nodeType === 1 && this._itemStyleClass) {
       this._removeStyleClassNameFunc(child, this._itemStyleClass);
@@ -426,12 +425,13 @@ ConveyorBeltCommon._getCSSLengthAsInt = function (cssLength) {
  * @param {Object} node DOM node
  * @param {string} type Event type
  * @param {function(Event):void} listener Listener function
+ * @param {boolean} passive passive option for listener
  * @return {void}
  * @memberof ConveyorBeltCommon
  * @private
  */
-ConveyorBeltCommon._addBubbleEventListener = function (node, type, listener) {
-  node.addEventListener(type, listener, false);
+ConveyorBeltCommon._addBubbleEventListener = function (node, type, listener, passive) {
+  node.addEventListener(type, listener, { passive, capture: false });
 };
 
 /**
@@ -439,12 +439,13 @@ ConveyorBeltCommon._addBubbleEventListener = function (node, type, listener) {
  * @param {Object} node DOM node
  * @param {string} type Event type
  * @param {function(Event):void} listener Listener function
+ * @param {boolean} passive passive option for listener
  * @return {void}
  * @memberof ConveyorBeltCommon
  * @private
  */
-ConveyorBeltCommon._removeBubbleEventListener = function (node, type, listener) {
-  node.removeEventListener(type, listener, false);
+ConveyorBeltCommon._removeBubbleEventListener = function (node, type, listener, passive) {
+  node.removeEventListener(type, listener, { passive, capture: false });
 };
 
 /**
@@ -639,8 +640,8 @@ ConveyorBeltCommon.prototype._createInnerContainers = function () {
   // content container to elem
   this._reparentChildrenToContentContainer(elem, contentContainer);
 
-  elem.appendChild(overflowContainer); // @HtmlUpdateOK
-  overflowContainer.appendChild(contentContainer); // @HtmlUpdateOK
+  elem.appendChild(overflowContainer); // @HTMLUpdateOK
+  overflowContainer.appendChild(contentContainer); // @HTMLUpdateOK
 
   // the overflow container listens to DOM scroll events in case the scroll was triggered externally,
   // for example when the user tabs through the child content
@@ -714,10 +715,10 @@ ConveyorBeltCommon.prototype._createPrevButton = function (
     self._scrollPrev();
   });
 
-  prevButton.appendChild(icon); // @HtmlUpdateOK
+  prevButton.appendChild(icon); // @HTMLUpdateOK
 
   var elem = this._elem;
-  elem.insertBefore(prevButton, this._overflowContainer); // @HtmlUpdateOK
+  elem.insertBefore(prevButton, this._overflowContainer); // @HTMLUpdateOK
 };
 
 /**
@@ -742,10 +743,10 @@ ConveyorBeltCommon.prototype._createNextButton = function (
     self._scrollNext();
   });
 
-  nextButton.appendChild(icon); // @HtmlUpdateOK
+  nextButton.appendChild(icon); // @HTMLUpdateOK
 
   var elem = this._elem;
-  elem.appendChild(nextButton); // @HtmlUpdateOK
+  elem.appendChild(nextButton); // @HTMLUpdateOK
 };
 
 /**
@@ -1558,10 +1559,7 @@ ConveyorBeltCommon._SCROLL_SPEED = 1.1;
  */
 ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global ConveyorBeltCommon:false, Components:false, Logger:false, Config:false, Context:false */
 
@@ -1569,7 +1567,7 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
  * @ojcomponent oj.ojConveyorBelt
  * @augments oj.baseComponent
  * @since 0.6.0
- * @ojstatus preview
+ *
  * @ojshortdesc A conveyor belt manages overflow for its child elements and allows scrolling among them.
  * @class oj.ojConveyorBelt
  *
@@ -2163,7 +2161,7 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
         style.flex = '0 0 auto';
 
         var elem = this.element[0];
-        elem.appendChild(div); // @HtmlUpdateOK
+        elem.appendChild(div); // @HTMLUpdateOK
         var bCanCalcSizes = false;
         try {
           bCanCalcSizes = div.offsetWidth > 0 && div.offsetHeight > 0;
@@ -2479,6 +2477,7 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
 
     }); // end of oj.__registerWidget
 }()); // end of ConveyorBelt wrapper function
+
 
 /* global __oj_conveyor_belt_metadata:false */
 (function () {

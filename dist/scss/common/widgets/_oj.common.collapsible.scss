@@ -35,11 +35,9 @@
      * this is the default style for collapsible header
      */
     .oj-collapsible-header {
-      @if(variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      color: var(--oj-header-text-color);
-      } @else {
+
       color: $headerTextColor;
-      }
+      
       display: flex;
       align-items: center;
       position: relative;
@@ -51,11 +49,9 @@
      * this is the default style for collapsible content
      */
     .oj-collapsible-content {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      color: var(--oj-text-color);
-      } @else {
+
       color: $textColor;
-      }
+
       background-color: transparent;
       padding: 4px 0 0;
       margin: 0;
@@ -73,46 +69,36 @@
      * specify sizes for h1 - h4 collapsible header
      */
     h1.oj-collapsible-header {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      font-size: var(--oj-header-1-font-size);
-      } @else {
+
       font-size: $header1FontSize;
-      }
+
     }
 
     h2.oj-collapsible-header {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      font-size: var(--oj-header-2-font-size);
-      } @else {
+
       font-size: $header2FontSize;
-      }
+
     }
 
     h3.oj-collapsible-header {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      font-size: var(--oj-header-3-font-size);
-      } @else {
+
       font-size: $header3FontSize;
-      }
+
     }
 
     h4.oj-collapsible-header {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      font-size: var(--oj-header-4-font-size);
-      } @else {
+
       font-size: $header4FontSize;
-      }
+
     }
 
     /*
      * applied to the disabled collapsible header
      */
     .oj-collapsible.oj-disabled > .oj-collapsible-header {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      color: var(--oj-text-color-disabled);
-      } @else {
+
       color: $textColorDisabled;
-      }
+
     }
 
     /*
@@ -129,11 +115,9 @@
      * transtion properties and duration
      */
     .oj-collapsible-transition {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      transition: max-height var(--oj-collapsible-animation-duration);
-      } @else {
+
       transition: max-height $collapsibleAnimationDuration;
-      }
+
     }
 
     /*
@@ -186,11 +170,9 @@
      */
     .oj-collapsible-header .oj-collapsible-header-icon,
     .oj-collapsible-header .oj-collapsible-header-icon:hover {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      color: var(--oj-icon-color-default);
-      } @else {
+
       color: $iconColorDefault;
-      }
+
     }
 
     /*
@@ -200,11 +182,9 @@
      */
     .oj-collapsible-header.oj-hover .oj-collapsible-header-icon,
     .oj-collapsible-header .oj-collapsible-header-icon.oj-hover {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      color: var(--oj-icon-color-hover);
-      } @else {
+
       color: $iconColorHover;
-      }
+
     }
 
     /*
@@ -212,24 +192,19 @@
      */
     .oj-collapsible-header.oj-active .oj-collapsible-header-icon,
     .oj-collapsible-header .oj-collapsible-header-icon.oj-active {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-      color: var(--oj-icon-color-active);
-      } @else {
+
       color: $iconColorActive;
-      }
+
     }
 
     /*
      * For disabled header icons
      */
     .oj-collapsible.oj-disabled > .oj-collapsible-header > .oj-collapsible-header-icon {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
-        color: var(--oj-icon-color-disabled);
-        opacity: var(--oj-opacity-disabled);
-      } @else {
+
         color: $iconColorDisabled;
         opacity: $opacityDisabled;
-      }
+
     }
   }
 }

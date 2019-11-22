@@ -21,7 +21,15 @@
 
 @if $includeTableClasses != false  {
   @include module-include-once("alta.table") {
+    /* Styling for the sort ascending icon */
+    .oj-table-column-header-asc-icon {
+      @extend .oj-fwk-icon-arrow03-n;
+    }
 
+    /* Styling for the sort descending icon */
+    .oj-table-column-header-dsc-icon {
+      @extend .oj-fwk-icon-arrow03-s;
+    }
 
 
   }

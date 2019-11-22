@@ -160,7 +160,7 @@ define(['./persistenceManager', './persistenceUtils', './fetchStrategies',
             return null;
           }
         }).then(function (undoRedoDataArray) {
-          return _insertSyncManagerRequest(request, undoRedoDataArray, localVars.isCachedResponse);
+          return _insertSyncManagerRequest(request, undoRedoDataArray, localVars.isCachedResponse && !persistenceManager.isOnline());
         }).then(function () {
           cacheHandler.unregisterEndpointOptions(endpointKey);
           resolve(localVars.response);

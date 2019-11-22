@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'ojs/ojkeysetimpl'],
 /*
 * @param {Object} oj 
@@ -11,6 +13,7 @@ define(['ojs/ojcore', 'ojs/ojkeysetimpl'],
 function(oj, KeySetImpl)
 {
   "use strict";
+
 /* global KeySetImpl:false, Map:false */
 
 /**

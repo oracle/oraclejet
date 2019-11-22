@@ -39,21 +39,16 @@
     }
 
     .oj-select-select::-ms-value {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background-color: var(--oj-text-field-bg-color); 
-        color: var(--oj-text-field-input-value-color);
-      } @else {
+
         background-color: $formControlBgColor; 
         color: $formControlInputValueColor;  
-      }
+
     }
 
     .oj-select-select[disabled] {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background: var(--oj-text-field-bg-color);
-      } @else {
+
         background: $formControlBgColor;         
-      }
+
     }
 
     .oj-select .oj-select-multiple-open-icon {
@@ -69,11 +64,9 @@
     }
 
     .oj-select-native.oj-enabled .oj-select-select:active {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        background-color: var(--oj-text-field-bg-color);
-      } @else {
+
         background-color: $formControlBgColor;        
-      }    
+
     }
 
     .oj-select-native .oj-select-select[multiple] {
@@ -81,11 +74,9 @@
       overflow-y: scroll;
       padding-left: 0;
       padding-right: 0;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-        min-height: calc(var(--oj-text-field-trigger-height) * 2);
-      } @else {
+
         min-height: calc(#{$formControlTriggerHeight} * 2);        
-      }
+      
     }
 
     // windows mobile oj-select-many has a native select element with no icon, so doesn't need the padding-right here.

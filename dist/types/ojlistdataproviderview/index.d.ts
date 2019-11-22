@@ -1,9 +1,9 @@
 import { DataProvider, SortCriterion, FetchByKeysParameters, ContainsKeysResults, FetchByKeysResults, FetchByOffsetParameters, FetchByOffsetResults, DataMapping, FetchListResult, FetchListParameters,
-   FetchAttribute, AttributeFilter, CompoundFilter, FilterOperator } from '../ojdataprovider';
+   FetchAttribute, DataFilter } from '../ojdataprovider';
 declare class ListDataProviderView<K, D, Kin, Din> implements DataProvider<K, D> {
     attributes: Array<string | FetchAttribute>;
     dataMapping: DataMapping<K, D, Kin, Din>;
-    filterCriterion: AttributeFilter<D> | CompoundFilter<D> | FilterOperator<D>;
+    filterCriterion: DataFilter.Filter<D>;
     from: Kin;
     offset: number;
     sortCriteria: Array<SortCriterion<D>>;
@@ -13,7 +13,7 @@ declare class ListDataProviderView<K, D, Kin, Din> implements DataProvider<K, D>
         sortCriteria?: Array<SortCriterion<D>>;
         dataMapping?: DataMapping<K, D, Kin, Din>;
         attributes?: Array<string | FetchAttribute>;
-        filterCriterion?: AttributeFilter<D> | CompoundFilter<D> | FilterOperator<D>;
+        filterCriterion?: DataFilter.Filter<D>;
     });
     addEventListener(eventType: string, listener: EventListener): void;
     containsKeys(params: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;

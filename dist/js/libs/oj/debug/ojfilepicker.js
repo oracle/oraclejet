@@ -2,8 +2,10 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojtranslation', 'knockout', 'ojs/ojcomposite', 'ojs/ojlogger', 'ojs/ojcomponentcore'], 
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojtranslation', 'knockout', 'ojs/ojcomposite', 'ojs/ojlogger', 'ojs/ojcomponentcore', 'ojs/ojknockout'], 
 function(oj, $, Translations,  ko, Composite, Logger)
 {
   "use strict";
@@ -12,6 +14,10 @@ var __oj_file_picker_metadata =
   "properties": {
     "accept": {
       "type": "Array<string>"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
     },
     "selectOn": {
       "type": "string",
@@ -40,11 +46,13 @@ var __oj_file_picker_metadata =
     "getSubIdByNode": {}
   },
   "events": {
-    "ojSelect": {}
+    "ojSelect": {},
+    "ojBeforeSelect": {},
+    "ojInvalidSelect": {}
   },
   "extension": {}
 };
-// Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+
 /**
  * File Upload Transport Interface
  *
@@ -58,7 +66,7 @@ var __oj_file_picker_metadata =
  * <p>
  * See {@link oj.ProgressItem}
  * </p>
- * @ojstatus preview
+ *
  * @since 4.0.0
  * @export
  * @interface FileUploadTransport
@@ -102,23 +110,22 @@ var __oj_file_picker_metadata =
  */
 
 
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
-/* global ko, Logger:false, Translations:false */
+
+/* global ko, Logger:false, Translations:false, Promise:false, Composite:false*/
+
 
 /**
  * @ojcomponent oj.ojFilePicker
  * @since 4.0.0
  * @ojdisplayname File Picker
  * @ojshortdesc A file picker displays a clickable dropzone for selecting files from the device storage.
- * @ojstatus preview
+ * @ojtsimport {module: "ojmessage", type:"AMD", imported: ["ojMessage"]}
+ *
  * @class oj.ojFilePicker
  * @ojsignature {target: "Type", value:"class ojFilePicker extends JetElement<ojFilePickerSettableProperties>"}
  *
- * @ojpropertylayout {propertyGroup: "common", items: ["accept", "selectOn", "selectionMode"]}
+ * @ojpropertylayout {propertyGroup: "common", items: ["accept", "selectOn", "selectionMode", "disabled"]}
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 2
  *
@@ -128,7 +135,7 @@ var __oj_file_picker_metadata =
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#filePickerOverview-section"></a>
  * </h3>
  * <p>Description:</p>
- * <p>By default the file picker shows a clickable dropzone for selecting files for upload. However, it can be replaced with any clickable element like a button. After the files are selected, the FilePicker fires a "select" event with the selected files. Application has to specify the listener in order to do the actual upload.  The types of files accepted are controlled by the accept attribute.</p>
+ * <p>By default the file picker shows a clickable dropzone for selecting files for upload. However, it can be replaced with any clickable element like a button. After the files are selected, the FilePicker fires a "select" event with the selected files. Application has to specify the listener in order to do the actual upload.  The types of files accepted are controlled by the accept attribute.  Additional custom validation can be done through the ojBeforeSelect event.</p>
  *
  * <pre class="prettyprint">
  * <code>
@@ -210,6 +217,27 @@ var __oj_file_picker_metadata =
  */
 
 /**
+ * Disables the filepicker if set to <code class="prettyprint">true</code>.
+ * @member
+ * @name disabled
+ * @memberof oj.ojFilePicker
+ * @instance
+ * @type {boolean}
+ * @default false
+ * @ojshortdesc Disables the filepicker if set to true
+ *
+ * @example <caption>Initialize the file picker with the <code class="prettyprint">disabled</code> attribute specified:</caption>
+ * &lt;oj-file-picker disabled='true'>&lt;/oj-file-picker>
+ *
+ * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
+ * // getter
+ * var disabledValue = myFilePicker.disabled;
+ *
+ * // setter
+ * myFilePicker.disabled = true;
+ */
+
+/**
  * The type of event to select the files.
  * @member
  * @name selectOn
@@ -244,6 +272,36 @@ var __oj_file_picker_metadata =
  * @event
  * @ojshortdesc Triggered after the files are selected
  * @property {FileList} files The files that were just selected.
+ */
+
+ /**
+ * Triggered before files are selected to allow for custom validation
+ * @member
+ * @name beforeSelect
+ * @memberof oj.ojFilePicker
+ * @instance
+ * @event
+ * @ojshortdesc Triggered before files are selected to allow for custom validation
+ * @property {FileList} files The selected files
+ * @property {function} accept To perform custom validation, the application should call the accept function and pass in a Promise.  The Promise should be resolved to accept the current selection, otherwise it should be rejected with an Array<{@link oj.ojMessage.Message}> describing the reasons for rejection.
+ * @ojsignature [{target: "Type", value: "(acceptPromise:Promise<void>) => void", for: "accept", jsdocOverride: true}]
+ */
+
+ /**
+ * Triggered when invalid files are selected.  This event provides the application with a list of messages that should be displayed to give the user feedback about the
+ * problems with their selection.  This feedback can be safely cleared when a subsequent ojBeforeSelect, ojInvalidSelect, or ojSelect event is received.  Additionally the
+ * event.detail.until property may be populated with a Promise to provide short-term feedback during a user interaction (typically drag and drop); the feedback should be cleared upon resolution
+ * of this Promise.
+ * @member
+ * @name invalidSelect
+ * @memberof oj.ojFilePicker
+ * @instance
+ * @event
+ * @ojshortdesc Triggered when invalid files are selected
+ * @property {Array} messages Messages that should be displayed to the user (e.g. in an oj-messages component) describing invalid files.
+ * @property {Promise<void> | null} until This property may be populated with a Promise to provide short-term feedback during a user interaction (typically drag and drop); the feedback should be cleared upon the resolution of this Promise.
+ * @ojsignature [{target:"Type", value:"Array<oj.ojMessage.Message>", for:"messages", jsdocOverride: true}]
+
  */
 
 /**
@@ -320,11 +378,11 @@ var __oj_file_picker_metadata =
  *     </tr>
  *     <tr>
  *       <td>oj-filepicker-dropzone</td>
- *       <td>Apply to the dropzone of the file picker.</td>
+ *       <td>When using custom trigger slot content, the oj-filepicker-dropzone class can be applied to an element where drag and drop feedback should be displayed. If not specified, feedback will be displayed over the entire slot content. Note that this class only controls the visual rendering of drag and drop feedback; the entire slot content region will react to drag and drop interactions.</td>
  *     </tr>
  *     <tr>
  *       <td>oj-filepicker-text</td>
- *       <td>Apply to the dropzone text of the file picker.</td>
+ *       <td>When using custom trigger slot content, the oj-filepicker-text class can be used to apply the same text styling that is used by the default trigger slot content.</td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -332,28 +390,34 @@ var __oj_file_picker_metadata =
  * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
  * @memberof oj.ojFilePicker
  */
-
 var pickerView =
   "<input type='file' class='oj-helper-hidden'" +
-  "       data-bind=\"attr:{multiple: $properties.selectionMode == 'multiple'," +
-  '                         accept: acceptStr}">' +
+  "       :multiple=\"[[$properties.selectionMode == 'multiple']]\"" +
+  '       :accept="[[acceptStr]]">' +
   '</input>' +
   "<div class='oj-filepicker-clickable'>" +
   "  <oj-bind-slot name='trigger'>" +
-  "    <div tabindex='0'" +
-  "         class='oj-filepicker-dropzone'>" +
-  "      <p class='oj-filepicker-text' data-bind='text: defDropzoneText'></p>" +
-  '    </div>' +
+  "   <div tabindex='0'" +
+  "         :class=\"[[{'oj-filepicker-dropzone':$properties.disabled !== true, 'oj-filepicker-disabled': $properties.disabled === true}]]\">" +
+  "     <div class='oj-filepicker-text-parent'>" +
+  "       <div class='oj-filepicker-text'><oj-bind-text value='[[defPrimaryDropzoneText]]'></oj-bind-text></div>" +
+  "       <div class='oj-filepicker-secondary-text oj-typography-body-3'><oj-bind-text value='[[defSecondaryDropzoneText]]'></oj-bind-text></div>" +
+  "     </div><div class='oj-filepicker-icon oj-fwk-icon-plus oj-fwk-icon'></div></div>" +
   '  </oj-bind-slot>' +
   '</div>';
-
 function pickerViewModel(context) {
   var self = this;
   var element = context.element;
   var props = context.properties;
   var $dropzone;
+  var $dropfeedback;
+  var inDropZone;
+  var isDroppable;
   var inputElem;
   var selecting = false;
+  var dragPromiseResolver;
+  var isDisabled = props.disabled;
+  var selectOn = props.selectOn;
 
   self.acceptStr = ko.pureComputed(function () {
     var acceptProp = props.accept;
@@ -368,12 +432,21 @@ function pickerViewModel(context) {
     setSelectOn(event.detail.value);
   });
 
-  function setSelectOn(selectOn) {
+  element.addEventListener('disabledChanged', function (event) {
+    setDisabled(event.detail.value);
+  });
+
+  function setSelectOn(selOn) {
+    selectOn = selOn;
     var dropzone = $dropzone[0];
     var clickable = $(element).find('.oj-filepicker-clickable')[0];
 
     removeDragAndDropListeners(dropzone);
     removeClickListeners(clickable);
+
+    if (isDisabled) {
+      return;
+    }
 
     switch (selectOn) {
       case 'click':
@@ -395,12 +468,34 @@ function pickerViewModel(context) {
     }
   }
 
-  self.defDropzoneText = Translations.getTranslatedString('oj-ojFilePicker.dropzoneText');
+  function setDisabled(disabled) {
+    isDisabled = disabled;
+    setSelectOn(selectOn);
+    if (selectOn === 'click') {
+      return;
+    }
+    if (disabled) {
+      $dropfeedback.removeAttr('tabindex');
+    } else {
+      $dropfeedback.attr('tabindex', 0);
+    }
+  }
+
+  self.defSingleFileUploadError = Translations.getTranslatedString('oj-ojFilePicker.singleFileUploadError');
+  self.defPrimaryDropzoneText = Translations.getTranslatedString('oj-ojFilePicker.dropzonePrimaryText');
+  self.defSecondaryDropzoneText = ko.pureComputed(function () {
+    return props.selectionMode === 'single' ? Translations.getTranslatedString('oj-ojFilePicker.secondaryDropzoneText')
+          : Translations.getTranslatedString('oj-ojFilePicker.secondaryDropzoneTextMultiple');
+  }, self);
+  self.defUnknownFileType = Translations.getTranslatedString('oj-ojFilePicker.unknownFileType');
+
 
   self.bindingsApplied = function () {
     var $elem = $(element);
     $elem.addClass('oj-filepicker');
-    $dropzone = $elem.find('.oj-filepicker-dropzone');
+    $dropzone = $elem;
+    var dropzone = $elem.find('.oj-filepicker-dropzone');
+    $dropfeedback = dropzone.length > 0 ? dropzone : $dropzone;
     setSelectOn(props.selectOn);
 
     // add a change listener on the <input> element
@@ -419,26 +514,26 @@ function pickerViewModel(context) {
       'applyHighlight': true
       });
     */
-
-    if ($dropzone.length) {
-      $dropzone[0].addEventListener('focus', function () {
+    setDisabled(isDisabled);
+    if (!isDisabled) {
+      $dropfeedback[0].addEventListener('focus', function () {
         if (selecting) {
           return;
         }
 
         if (oj.DomUtils.recentPointer()) {
-          $dropzone.removeClass('oj-focus-highlight');
+          $dropfeedback.removeClass('oj-focus-highlight');
         } else {
-          $dropzone.addClass('oj-focus-highlight');
+          $dropfeedback.addClass('oj-focus-highlight');
         }
       });
 
-      $dropzone[0].addEventListener('focusout', function () {
+      $dropfeedback[0].addEventListener('focusout', function () {
         if (selecting) {
           return;
         }
 
-        $dropzone.removeClass('oj-focus-highlight');
+        $dropfeedback.removeClass('oj-focus-highlight');
       });
     }
   };
@@ -469,7 +564,17 @@ function pickerViewModel(context) {
     // if user cancelled out the file picker dialog, don't add files to upload queue
     var files = event.target.files;
     if (files.length > 0) {
-      handleFilesAdded(files, event);
+      var ai = oj.AgentUtils.getAgentInfo();
+      if (ai.browser === oj.AgentUtils.BROWSER.EDGE) { // EDGE doesn't have file dialog filtering
+        var rejected = validateTypes(files).rejected;
+        if (rejected.length > 0) {
+          fireInvalidSelectEvent(getMimeTypeValidationMessages(rejected), event, false);
+        } else {
+          handleFilesAdded(files, event);
+        }
+      } else {
+        handleFilesAdded(files, event);
+      }
     }
 
     selecting = false;
@@ -512,15 +617,31 @@ function pickerViewModel(context) {
     return false;
   }
 
-  function getAccepted(files) {
+  function validateTypes(files) {
+    var accepted = [];
+    var rejected = [];
+    var file;
+    var type = self.defUnknownFileType;
     if (files) {
       for (var i = 0; i < files.length; i++) {
-        if (!acceptFile(files[i])) {
-          return false;
+        file = files[i];
+        var name = file.name;
+        if (name) {
+          var nameSplit = name.split('.');
+          type = nameSplit.length > 1 ? '.' + nameSplit.pop() : type;
+        }
+        type = file.type ? file.type : type;
+        // If type isn't already in one of the lists, add it
+        if (!accepted.includes(type) && !rejected.includes(type)) {
+          if (acceptFile(file)) {
+            accepted.push(type);
+          } else {
+            rejected.push(type);
+          }
         }
       }
     }
-    return true;
+    return { accepted: accepted, rejected: rejected };
   }
 
   function addClickListeners(clickable) {
@@ -557,12 +678,6 @@ function pickerViewModel(context) {
     }
   }
 
-  // check the selection and accept option to filter invalid file number or types
-  function checkDroppable(files) {
-    var validCnt = element.selectionMode !== 'single' || files.length === 1;
-    return validCnt ? getAccepted(files) : validCnt;
-  }
-
   // don't add "oj-valid-drop" class here because
   // hover effect is lost when dragging over the upload text
   function handleDragEnter(event) {
@@ -574,7 +689,10 @@ function pickerViewModel(context) {
   function handleDragOver(event) {
     event.preventDefault();
     event.stopPropagation();
-
+    var dataTransfer = event.dataTransfer;
+    if (inDropZone) {
+      return;
+    }
     // NOTE: dragged files not available
     // event.dataTransfer.files = null (firefox)
     // event.dataTransfer.files.length = 0 (chrome, IE, Edge and Safari)
@@ -582,52 +700,118 @@ function pickerViewModel(context) {
     // event.dataTransfer.items = undefined (not work in IE and safari, just don't display ghost buster)
 
     //  - drag and drop to ojfilepicker fails on safari
-    var dataTransfer = event.dataTransfer;
-    var droppable = (!dataTransfer.items) || checkDroppable(dataTransfer.items);
 
-    if (droppable) {
-      // Explicitly show this is a copy.
-      dataTransfer.dropEffect = 'copy';
-      $dropzone.addClass('oj-valid-drop');
+    var ai = oj.AgentUtils.getAgentInfo();
+    inDropZone = true;
+    isDroppable = true;
+    if (ai.browser !== oj.AgentUtils.BROWSER.SAFARI && ai.browser !== oj.AgentUtils.BROWSER.IE) {
+      var files = dataTransfer.items;
+      var messages = [];
+      var selectionModeValid = validateSelectionMode(files);
+      var droppable = validateTypes(files);
+      if (selectionModeValid && droppable.rejected.length === 0) { // validation passes
+        $dropfeedback.addClass('oj-valid-drop');
+      } else {
+        isDroppable = false;
+        if (selectionModeValid) { // mimetype Validation fails
+          messages = getMimeTypeValidationMessages(droppable.rejected);
+        } else { // selected multiple files in single selection mode
+          messages.push(
+            { severity: 'error',
+              summary: self.defSingleFileUploadError });
+        }
+        fireInvalidSelectEvent(messages, event, true);
+      }
     } else {
-      // This is an invalid drop, show don't drop here cursor,
-      // NOTE: dropEffect doesn't work in Edge
-      dataTransfer.dropEffect = 'none';
+      $dropfeedback.addClass('oj-valid-drop');
     }
-    return droppable;
+  }
+
+  function validateSelectionMode(files) {
+    // False if selected multiple files when in single file selection mode
+    return element.selectionMode !== 'single' || files.length === 1;
   }
 
   function handleDragLeave(event) {
+    if (!inDropZone) {
+      return;
+    }
     event.preventDefault();
     event.stopPropagation();
-
-    $dropzone.removeClass('oj-valid-drop');
-  }
-
-  function getFileNames(files) {
-    var buf = '';
-    if (files) {
-      for (var i = 0; i < files.length; i++) {
-        buf += files[i].name + ' ';
+    if ($(event.relatedTarget).parents('.oj-filepicker').length === 0) {
+      inDropZone = false;
+      $dropfeedback.removeClass('oj-valid-drop');
+      if (!isDroppable) {
+        dragPromiseResolver();
+        dragPromiseResolver = null;
+        $dropfeedback.removeClass('oj-invalid-drop');
       }
     }
-    return buf;
   }
+
 
   function handleFileDrop(event) {
-    var files = event.dataTransfer.files;
-    var droppable = checkDroppable(files);
-    if (droppable) {
-      // add files to upload queue
-      handleFilesAdded(files, event);
-    } else {
-      Logger.warn('oj-file-picker: Files ' + getFileNames(files) +
-                     ' are not acceptable.');
+    if (inDropZone) {
+      event.preventDefault();
+      event.stopPropagation();
+      var files = createFileList(event.dataTransfer.files);
+      var ai = oj.AgentUtils.getAgentInfo();
+      if (ai.browser === oj.AgentUtils.BROWSER.SAFARI || ai.browser === oj.AgentUtils.BROWSER.IE) {
+        var messages = [];
+        if (validateSelectionMode(files)) {
+          var droppable = validateTypes(files);
+          if (droppable.rejected.length > 0) { // mimetype Validation fails
+            messages = getMimeTypeValidationMessages(droppable.rejected);
+          }
+        } else {
+          messages.push(
+            { severity: 'error',
+              summary: self.defSingleFileUploadError });
+        }
+        if (messages.length > 0) {
+          isDroppable = false;
+          fireInvalidSelectEvent(messages, event, false);
+        }
+      }
+      if (isDroppable) {
+        handleFilesAdded(files, event);
+      }
+      handleDragLeave(event);
     }
-
-    handleDragLeave(event);
   }
 
+  function getMimeTypeValidationMessages(rejected) {
+    var messages = [];
+    if (rejected.length === 1) {
+      messages.push(
+        { severity: 'error',
+          summary: Translations.getTranslatedString('oj-ojFilePicker.singleFileTypeUploadError', { fileType: rejected[0] })
+        }
+      );
+    } else {
+      messages.push(
+        { severity: 'error',
+          summary: Translations.getTranslatedString('oj-ojFilePicker.multipleFileTypeUploadError', { fileTypes: rejected.join(Translations.getTranslatedString('oj-converter.plural-separator')) })
+        }
+      );
+    }
+    return messages;
+  }
+
+  function fireInvalidSelectEvent(messages, oEvent, isDrag) {
+    if (isDrag) {
+      $dropfeedback.addClass('oj-invalid-drop');
+    }
+    var dragPromise = isDrag ? new Promise(function (resolve) {
+      dragPromiseResolver = resolve;
+    }) : null;
+    var event = new CustomEvent('ojInvalidSelect',
+      { detail: { messages: messages,
+        originalEvent: oEvent,
+        until: dragPromise }
+      });
+    element.dispatchEvent(event);
+  }
   // clone a FileList
   function createFileList(origList) {
     var descriptor = {
@@ -650,22 +834,37 @@ function pickerViewModel(context) {
     // which could be reset or changed.
     // we need to return a copy of FileList just in case apps hold on to a reference to FileList
     var list = createFileList(files);
+    var acceptPromise = Promise.resolve();
+    var acceptFunc = function (promise) {
+      acceptPromise = promise;
+    };
 
-    //  - oj_file_picker does not fire ojselect event
-    var event = new CustomEvent('ojSelect',
+
+    var beforeEvent = new CustomEvent('ojBeforeSelect',
       { detail: { files: list,
-        originalEvent: oEvent } });
-    element.dispatchEvent(event);
+        originalEvent: oEvent,
+        accept: acceptFunc } });
+    element.dispatchEvent(beforeEvent);
+    acceptPromise.then(function () {
+      // if there are no invalid files
+      var event = new CustomEvent('ojSelect',
+        { detail: { files: list,
+          originalEvent: oEvent } });
+      element.dispatchEvent(event);
+    }, function (messages) {
+      fireInvalidSelectEvent(messages, oEvent, false);
+    });
   }
 }
 /* global __oj_file_picker_metadata */
-// eslint-disable-next-line no-undef
+__oj_file_picker_metadata.extension._SHOULD_REMOVE_DISABLED = true;
 Composite.register('oj-file-picker',
   {
     view: pickerView,
     viewModel: pickerViewModel,
     metadata: __oj_file_picker_metadata
   });
+
 
 /**
  * Sets a property or a single subproperty for complex properties and notifies the component

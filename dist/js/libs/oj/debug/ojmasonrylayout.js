@@ -2,7 +2,9 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojdnd'],
        function(oj, $, Context, Config, ThemeUtils, Components, AnimationUtils, Logger)
 {
@@ -54,10 +56,7 @@ var __oj_masonry_layout_metadata =
   },
   "extension": {}
 };
-/**
- * Copyright (c) 2014, 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /*
 ** Important:
@@ -146,7 +145,7 @@ function MasonryLayoutCommon(
   var sizeDiv = document.createElement('div');
   style = sizeDiv.style;
   style.display = 'inline-block';
-  sizeDivWrapper.appendChild(sizeDiv); // @HtmlUpdateOK
+  sizeDivWrapper.appendChild(sizeDiv); // @HTMLUpdateOK
   elem.insertBefore(sizeDivWrapper, elem.firstChild); // @HTMLUpdateOK
   this._sizeDivWrapper = sizeDivWrapper;
   this._sizeDiv = sizeDiv;
@@ -733,7 +732,7 @@ MasonryLayoutCommon.prototype._queueRelayout = function () {
       // FIX : add busy state before animating a layout change
       this._busyStateResolveFunc = this._addBusyStateFunc('performing layout');
 
-      this._hideTilesTimeout = setTimeout(this._hideTilesFunc, 0); // @HtmlUpdateOK
+      this._hideTilesTimeout = setTimeout(this._hideTilesFunc, 0); // @HTMLUpdateOK
     } else if (!this._queuedRelayout) {
       this._queuedRelayout = true;
     }
@@ -1599,10 +1598,7 @@ MasonryLayoutCommon._PHASE_LAYOUT = 2;
  */
 MasonryLayoutCommon._PHASE_SHOW = 3;
 
-/**
- * Copyright (c) 2015, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /* global MasonryLayoutCommon:false, Components:false, Logger:false, Config:false, ThemeUtils:false, Context:false */
 
@@ -1610,7 +1606,7 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
  * @ojcomponent oj.ojMasonryLayout
  * @augments oj.baseComponent
  * @since 1.1.0
- * @ojstatus preview
+ *
  * @ojshortdesc A masonry layout lays out its children in a grid of tiles.
  * @class oj.ojMasonryLayout
  *
@@ -2251,7 +2247,7 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
          * @property {Element} tile  The tile that was resized.
          * @property {string} previousSizeStyleClass The previous size style
          *                                           class applied to the tile.
-         * @property {string} sizeStyleClass The new size style class applied to
+         * @property {string} sizeStyleClass The new size style class applied
          *                                   to the tile.
          */
         resize: null,
@@ -3137,7 +3133,7 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
         style.width = '10px';
         style.height = '10px';
         var elem = this.element[0];
-        elem.appendChild(div); // @HtmlUpdateOK
+        elem.appendChild(div); // @HTMLUpdateOK
         var bCanCalcSizes = false;
         try {
           bCanCalcSizes = div.offsetWidth > 0 && div.offsetHeight > 0;
@@ -4317,7 +4313,7 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
                 // append to the end
                 this._insertTileOriginalOrder(this._dropSite,
                                               tileUnderPoint._jetDataMasonryOriginalOrder);
-                elem.appendChild(this._dropSite); // @HtmlUpdateOK
+                elem.appendChild(this._dropSite); // @HTMLUpdateOK
               }
             } else {
               // insert before the tileUnderPoint
@@ -4590,6 +4586,7 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
 
 // end static members and functions ////////////////////////////////////////////
 }()); // end of MasonryLayout wrapper function
+
 
 /* global __oj_masonry_layout_metadata:false */
 (function () {

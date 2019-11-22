@@ -48,11 +48,9 @@
         .oj-listview-item.oj-hover .oj-listview-drill-icon,
         .oj-listview.oj-focus-ancestor .oj-listview-item.oj-focus .oj-listview-drill-icon,
         .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected .oj-listview-drill-icon {
-            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
-              color: var(--oj-list-view-drill-icon-color);
-            } @else {
+
               color: $listViewDrillIconColor;
-            }
+            
         }
   }
 }

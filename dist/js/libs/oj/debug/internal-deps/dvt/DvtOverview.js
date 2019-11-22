@@ -6,8 +6,20 @@ define(['./DvtToolkit'], function(dvt) {
   "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
-/** Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved. */
+
+/**
+ * @license
+ * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 dvt.OverviewUtils = new Object();
 
 dvt.OverviewUtils.supportsTouch = function()
@@ -49,6 +61,12 @@ dvt.OverviewUtils.getPositionDate = function(startTime, endTime, pos, width)
   return (number / width) + startTime;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Overview component.
  * @param {dvt.Context} context The rendering context.
@@ -1870,6 +1888,12 @@ dvt.Overview.prototype.destroy = function() {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -1914,13 +1938,19 @@ DvtOverviewDefaults.VERSION_1 = {
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Overview JSON Parser
  * @param {dvt.Overview} view The owning Overview component.
  * @class
  * @constructor
  * @extends {dvt.Obj}
  */
-dvt.OverviewParser = function(view) 
+dvt.OverviewParser = function(view)
 {
   this.Init(view);
 };
@@ -1931,7 +1961,7 @@ dvt.Obj.createSubclass(dvt.OverviewParser, dvt.Obj);
  * Initializes the component parser.
  * @param {dvt.Overview} view The dvt.Overview instance.
  */
-dvt.OverviewParser.prototype.Init = function(view) 
+dvt.OverviewParser.prototype.Init = function(view)
 {
   this._view = view;
 };
@@ -1942,7 +1972,7 @@ dvt.OverviewParser.prototype.Init = function(view)
  * @param {object} data The object describing the component.
  * @return {object} An object containing the parsed properties.
  */
-dvt.OverviewParser.prototype.parse = function(data) 
+dvt.OverviewParser.prototype.parse = function(data)
 {
   // for now all the JSON contains should be options and no data, that could change in the future.
   var options = data;
@@ -1958,7 +1988,7 @@ dvt.OverviewParser.prototype.parse = function(data)
  * @return {object} An object containing the parsed properties.
  * @protected
  */
-dvt.OverviewParser.prototype.ParseRootAttributes = function(options) 
+dvt.OverviewParser.prototype.ParseRootAttributes = function(options)
 {
   // The object that will be populated with parsed values and returned
   var ret = new Object();
@@ -2026,6 +2056,12 @@ dvt.OverviewParser.prototype.calculateWidth = function(startTime, endTime, viewp
   return number / denominator;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Overview event manager.
  * @param {dvt.Overview} overview The owning dvt.Overview.
@@ -2196,6 +2232,12 @@ DvtOverviewEventManager.prototype._onTouchDragEnd = function(event)
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Renderer for dvt.Overview.
  * @class
  */
@@ -2227,7 +2269,7 @@ DvtOverviewRenderer.renderOverview = function(overview)
   if (interactive)
   {
     DvtOverviewRenderer._createBorderAroundSlidingWindow(overview);
-    
+
     // updates the position and width of sliding window and borders around window
     DvtOverviewRenderer._updateSlidingWindow(overview);
   }
@@ -2276,7 +2318,7 @@ DvtOverviewRenderer._renderSlidingWindow = function(overview)
     if (overview.isVerticalScrollingEnabled())
     {
       var slidingWindowWidth = overview.getSlidingWindowWidth();
-      
+
       var topHandleCmds = dvt.PathUtils.moveTo(0, 0) +
           dvt.PathUtils.quadTo(3, 6, 8, 8) +
                   dvt.PathUtils.lineTo(28, 8) +
@@ -2301,7 +2343,7 @@ DvtOverviewRenderer._renderSlidingWindow = function(overview)
         topGrippy = DvtOverviewRenderer._createGrippy(overview, true);
         bottomGrippy = DvtOverviewRenderer._createGrippy(overview, true);
       }
-      
+
       topHandleBackground.setSolidFill(overview._windowBackgroundColor, 0);
       bottomHandleBackground.setSolidFill(overview._windowBackgroundColor, 0);
 
@@ -2347,7 +2389,7 @@ DvtOverviewRenderer._renderSlidingWindow = function(overview)
     if (overview.isHorizontalScrollingEnabled())
     {
       var slidingWindowHeight = overview.getSlidingWindowHeight();
-      
+
       var leftHandleCmds = dvt.PathUtils.moveTo(0, 0) +
           dvt.PathUtils.quadTo(6, 3, 8, 8) +
                   dvt.PathUtils.lineTo(8, 28) +
@@ -2372,7 +2414,7 @@ DvtOverviewRenderer._renderSlidingWindow = function(overview)
         leftGrippy = DvtOverviewRenderer._createGrippy(overview, false);
         rightGrippy = DvtOverviewRenderer._createGrippy(overview, false);
       }
-      
+
       leftHandleBackground.setSolidFill(overview._windowBackgroundColor, 0);
       rightHandleBackground.setSolidFill(overview._windowBackgroundColor, 0);
 
@@ -2759,7 +2801,7 @@ DvtOverviewRenderer._setSlidingWindowWidth = function(overview, slidingWindow, w
     var rightBackground = overview.getRightBackground();
     rightBackground.setX(rightStart);
     rightBackground.setWidth(Math.max(0, overview.Width - rightStart));
- 
+
     // updates the background resize handle for touch
     if (dvt.OverviewUtils.supportsTouch() && !overview.isFeatureOff('zoom'))
     {
@@ -2767,7 +2809,7 @@ DvtOverviewRenderer._setSlidingWindowWidth = function(overview, slidingWindow, w
       rightBackgroundHandle.setX(rightStart);
     }
   }
-  
+
   // if resize feature is off then there's nothing else to do
   if (overview.isFeatureOff('zoom'))
     return;
@@ -2798,7 +2840,7 @@ DvtOverviewRenderer._setSlidingWindowWidth = function(overview, slidingWindow, w
     topHandle.setTranslateX(handleX);
     topHandleBackground.setWidth(width);
     topGrippy.setTranslateX(grippyX);
-    
+
     var bottomHandleBackground = overview._windowBottomHandleBackground;
     var bottomHandle = overview._windowBottomHandle;
     var bottomGrippy = overview._windowBottomGrippy;
@@ -2920,12 +2962,12 @@ DvtOverviewRenderer._renderLeftAndRightFilters = function(overview, handleStart)
       leftBackground = new dvt.Rect(overview.getCtx(), 0, 0, 0, height, 'lbg');
       rightBackground = new dvt.Rect(overview.getCtx(), 0, 0, 0, height, 'rbg');
     }
- 
+
     leftBackground.setSolidFill(overview._leftFilterPanelColor, overview._leftFilterPanelAlpha);
     overview.addChild(leftBackground);
     rightBackground.setSolidFill(overview._rightFilterPanelColor, overview._rightFilterPanelAlpha);
     overview.addChild(rightBackground);
- 
+
     // the left and right background resize handle are needed for touch because the touch area for resize handle goes
     // beyond the handle and into the left and right background area, so we'll need something on top of the background
     if (dvt.OverviewUtils.supportsTouch() && handleStart != undefined)
@@ -2940,7 +2982,7 @@ DvtOverviewRenderer._renderLeftAndRightFilters = function(overview, handleStart)
         leftBackgroundResizeHandle = new dvt.Rect(overview.getCtx(), 0, 0, handleStart, height, 'lbgrh');
         rightBackgroundResizeHandle = new dvt.Rect(overview.getCtx(), 0, 0, handleStart, height, 'rbgrh');
       }
- 
+
       leftBackgroundResizeHandle.setSolidFill(overview._leftFilterPanelColor, 0);
       overview.addChild(leftBackgroundResizeHandle);
       rightBackgroundResizeHandle.setSolidFill(overview._rightFilterPanelColor, 0);
@@ -3175,6 +3217,13 @@ DvtOverviewRenderer._updateCurrentTime = function(overview)
 
   overview.addChild(line);
 };
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Style related utility functions for dvt.Overview.
  * @class
@@ -3553,6 +3602,13 @@ DvtOverviewStyleUtils.getRightFilterPanelAlpha = function(options)
   return options['style']['rightFilterPanelAlpha'];
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
   return dvt;
 });

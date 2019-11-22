@@ -2,12 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define([], function()
 {
   "use strict";
-// Copyright (c) 2011, 2013, Oracle and/or its affiliates.
-// All rights reserved.
+
 
 /* jslint browser: true*/
 

@@ -2,8 +2,10 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'promise', 
+
+define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation',
         'ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/draggable', 
         'jqueryui-amd/widgets/mouse'],
 function(oj, $, ThemeUtils, Components, AnimationUtils)
@@ -174,10 +176,6 @@ var __oj_dialog_metadata =
   "extension": {}
 };
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 /* global Components:false, ThemeUtils */
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -248,7 +246,7 @@ var __oj_dialog_metadata =
 
   /**
    * @typedef {Object} oj.ojDialog.PositionPoint
-   * @property {number} [x] Horizontal aligment offset.
+   * @property {number} [x] Horizontal alignment offset.
    * @property {number} [y] Vertical alignment offset.
    */
 
@@ -291,7 +289,6 @@ var __oj_dialog_metadata =
    * @ojrole dialog
    * @ojdisplayname Dialog
    * @ojshortdesc A dialog displays a popup window that provides information and gathers input from the application user.
-   * @ojstatus preview
    *
    * @ojpropertylayout {propertyGroup: "common", items: ["dialogTitle", "initialVisibility", "style", "modality", "dragAffordance", "cancelBehavior", "resizeBehavior"]}
    * @ojvbdefaultcolumns 12
@@ -593,7 +590,7 @@ var __oj_dialog_metadata =
            * another element. {@link oj.ojDialog.Position} defines "my" alignment "at" the alignment
            * "of" some other thing which can be "offset" by so many pixels.</p>
            *
-           * <p>The "my" and "at" properties defines aligment points relative to the dialog and other
+           * <p>The "my" and "at" properties define alignment points relative to the dialog and other
            * element.  The "my" property represents the dialog's alignment where the "at" property
            * represents the other element that can be identified by "of". The values of these properties
            * describe horizontal and vertical alignments.</p>
@@ -682,7 +679,7 @@ var __oj_dialog_metadata =
                */
         offset: {
                 /**
-                 * Horizontal aligment offset.
+                 * Horizontal alignment offset.
                  * @expose
                  * @memberof! oj.ojDialog
                  * @instance
@@ -809,7 +806,7 @@ var __oj_dialog_metadata =
          * @ojshortdesc Specifies the resizeBehavior of the dialog. See the Help documentation for more information.
          * @instance
          * @type {string}
-         * @ojvalue {string} "resizable" Thie dialog will be interactively resizable.
+         * @ojvalue {string} "resizable" The dialog will be interactively resizable.
          * @ojvalue {string} "none" The dialog will not be interactively resizable.
          * @default "resizable"
          *
@@ -936,7 +933,7 @@ var __oj_dialog_metadata =
            */
       close: null,
           /**
-           * Triggered after focus has been transfered to the dialog.
+           * Triggered after focus has been transferred to the dialog.
            *
            * @expose
            * @event
@@ -1490,11 +1487,17 @@ var __oj_dialog_metadata =
       this._setWhenReady('close');
       this._focusedElement = null;
 
+      // if the launcher is not focusable, find the closet focuable ancestor
       if (!this.opener.filter(':focusable').focus().length) {
-        // Hiding a focused element doesn't trigger blur in WebKit
-        // so in case we have nothing to focus on, explicitly blur the active element
-        // https://bugs.webkit.org/show_bug.cgi?id=47182
-        $(this.document[0].activeElement).blur();
+        var launcher = this.opener.parents().filter(':focusable');
+        if (launcher.length > 0) {
+          launcher[0].focus();
+        } else {
+           // Hiding a focused element doesn't trigger blur in WebKit
+           // so in case we have nothing to focus on, explicitly blur the active element
+           // https://bugs.webkit.org/show_bug.cgi?id=47182
+          $(this.document[0].activeElement).blur();
+        }
       }
 
       // if dialog modality is modal, check if we need
@@ -1933,7 +1936,6 @@ var __oj_dialog_metadata =
             chroming: 'half',
             label: this.getTranslatedString('labelCloseIcon'),
             icons: { start: 'oj-component-icon oj-fwk-icon-cross' } })
-          .attr('tabindex', '1')
           .appendTo(divParentElement); // @HTMLUpdateOK
 
         this.closeButtonDiv = this.closeButton[0];
@@ -2860,10 +2862,6 @@ var __oj_dialog_metadata =
     });
 }());
 
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -3992,6 +3990,7 @@ var __oj_dialog_metadata =
 
   });
 }());
+
 
 /* global __oj_dialog_metadata:false */
 (function () {

@@ -15,13 +15,9 @@
     .oj-hybrid {
 
       // suppress copy/paste and iOS mag lens
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        user-select: none;
-      }
-      @else {
+
         @include oj-user-select-property(none);
-      }
+
 
       // Turn off context menu popups
       -webkit-tap-highlight-color: transparent;
@@ -29,124 +25,72 @@
     }
     .oj-hybrid input,
     .oj-hybrid textarea {
-      // allow text selection on input and text areas@if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        user-select: text;
-      }
-      @else {
         @include oj-user-select-property(text);
-      }
+
     }
 
     // PADDING
     .oj-hybrid-padding {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        padding: var(--oj-app-layout-hybrid-padding);
-      }
-      @else {
+
         padding: $appLayoutHybridPadding;        
-      }
+
     }
     .oj-hybrid-padding-vertical {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        padding-top: var(--oj-app-layout-hybrid-padding);
-        padding-bottom: var(--oj-app-layout-hybrid-padding);
-      }
-      @else {
+
         padding-top: $appLayoutHybridPadding;
         padding-bottom: $appLayoutHybridPadding;
-      }
+
     }
     .oj-hybrid-padding-horizontal {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        padding-left: var(--oj-app-layout-hybrid-padding);
-        padding-right: var(--oj-app-layout-hybrid-padding);
-      }
-      @else {
+
         padding-left: $appLayoutHybridPadding;
         padding-right: $appLayoutHybridPadding;  
-      }
+
     }
     .oj-hybrid-padding-top {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        padding-top: var(--oj-app-layout-hybrid-padding);
-      }
-      @else {        
+
         padding-top: $appLayoutHybridPadding;
-      }
+
     }
     .oj-hybrid-padding-bottom {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        padding-bottom: var(--oj-app-layout-hybrid-padding);
-      }
-      @else {        
+
         padding-bottom: $appLayoutHybridPadding;
-      }
+
     }
     .oj-hybrid-padding-start {
       @include oj-ltr() {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          padding-left: var(--oj-app-layout-hybrid-padding);
-        }
-        @else {          
+
           padding-left: $appLayoutHybridPadding;
-        }
+
       }
       @include oj-rtl() {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          padding-right: var(--oj-app-layout-hybrid-padding);
-        }
-        @else {          
+
           padding-right: $appLayoutHybridPadding;
-        }
+
       }
     }
     .oj-hybrid-padding-end {
       @include oj-ltr() {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          padding-right: var(--oj-app-layout-hybrid-padding);
-        }
-        @else {          
+
           padding-right: $appLayoutHybridPadding;
-        }
+
       }
       @include oj-rtl() {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          padding-left: var(--oj-app-layout-hybrid-padding);
-        }
-        @else {          
+
           padding-left: $appLayoutHybridPadding;
-        }
+
       }
     }
 
     // OFFCANVAS
     .oj-hybrid-applayout-offcanvas {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        width: var(--oj-app-layout-offcanvas-width);
-        max-width: var(--oj-app-layout-offcanvas-max-width);
-        background-color: var(--oj-app-layout-hybrid-offcanvas-bg-color);
-        color: var(--oj-text-color-contrast);
-        box-shadow: 3px 2px 7px unquote('hsla(var(--oj-box-shadow-hsl),0.5)');
-      }
-      @else {
+
         width: $appLayoutOffcanvasWidth;
         max-width: $appLayoutOffcanvasMaxWidth;
         background-color: $appLayoutHybridOffcanvasBgColor;
         color: $contrastTextColor;
         @include oj-box-shadow(3px 2px 7px unquote('hsla(#{$boxShadowHsl},0.5)'));
-      }
+
       box-sizing: border-box;
     }
 
@@ -172,31 +116,20 @@
     // PAGE
     .oj-hybrid-applayout-page {
       min-height: 100vh;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-body-bg-color);
-      }
-      @else {
+
         background-color: $bodyBgColor;        
-      }
+
     }
 
     // HEADER
     .oj-hybrid-applayout-header {
       @extend %oj-flex-bar-base;
       @extend .oj-sm-align-items-center;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        box-shadow: var(--oj-app-layout-hybrid-header-box-shadow);
-        border-bottom: var(--oj-app-layout-hybrid-header-border-bottom-width) solid var(--oj-app-layout-hybrid-header-border-color);
-        background-color: var(--oj-app-layout-hybrid-header-bg-color);
-        padding: 0 var(--oj-app-layout-hybrid-padding) 0 var(--oj-app-layout-hybrid-padding);
-      }
-      @else {
+
         @include oj-box-shadow($appLayoutHybridHeaderBoxShadow);
         @if $appLayoutHybridHeaderBorderColor != null {
           border-bottom: $appLayoutHybridHeaderBorderBottomWidth solid $appLayoutHybridHeaderBorderColor;
-        }
+
         background-color: $appLayoutHybridHeaderBgColor;
         padding: 0 $appLayoutHybridPadding 0 $appLayoutHybridPadding;
       }
@@ -206,13 +139,9 @@
       // To workaround IE11 min-height and flex bug
       content: "";
       display: inline-block;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        min-height: var(--oj-app-layout-hybrid-header-min-height);
-      }
-      @else {
+
         min-height: $appLayoutHybridHeaderMinHeight;        
-      }
+
       visibility: hidden;
     }
     .oj-hybrid-applayout-header > .oj-flex-bar-start {
@@ -220,17 +149,12 @@
       @extend .oj-hybrid-padding-end;
     }
     .oj-hybrid-applayout-header-title {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        font-weight: var(--oj-app-layout-hybrid-header-title-font-weight);
-        font-size: var(--oj-app-layout-hybrid-header-title-font-size);
-        color: var(--oj-app-layout-hybrid-header-title-text-color);
-      }
-      @else {
+
+
         font-weight: $appLayoutHybridHeaderTitleFontWeight;
         font-size: $appLayoutHybridHeaderTitleFontSize;
         color: $appLayoutHybridHeaderTextColor;
-      }
+
       padding: 0;
       margin: 0;
     }
@@ -239,13 +163,9 @@
     .oj-hybrid-applayout-header-no-border {
       @extend .oj-hybrid-applayout-header;
       border-style: none;
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        box-shadow: none;
-      }
-      @else {
+
         @include oj-box-shadow(none);
-      }
+
     }
     .oj-hybrid-applayout-header .oj-button,
     .oj-hybrid-applayout-header .oj-button-button {
@@ -255,43 +175,27 @@
     .oj-hybrid-applayout-header .oj-flex-bar-start > .oj-button:first-child {
       // negative margins so we can align button image with content padding
       @include oj-ltr() {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          margin-left: calc(0px - var(--oj-button-icon-only-padding));
-        }
-        @else {
+
           margin-left: calc(0px - #{$buttonIconOnlyPadding});
-        }
+
       }
       @include oj-rtl() {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          margin-right: calc(0px - var(--oj-button-icon-only-padding));
-        }
-        @else {
+
           margin-right: calc(0px - #{$buttonIconOnlyPadding});
-        }
+
       }
     }
     .oj-hybrid-applayout-header .oj-flex-bar-end > .oj-button:last-child {
       // negative margins so we can align button image with content padding
       @include oj-ltr() {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          margin-right: calc(0px - var(--oj-button-icon-only-padding));
-        }
-        @else {
+
           margin-right: calc(0px - #{$buttonIconOnlyPadding});
-        }
+
       }
       @include oj-rtl() {
-        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-        {
-          margin-left: calc(0px - var(--oj-button-icon-only-padding));
-        }
-        @else {
+
           margin-left: calc(0px - #{$buttonIconOnlyPadding});
-        }
+
       }
     }
     /* Class used to position the application header and title for iOS hybrid
@@ -302,13 +206,9 @@
       padding-top: 20px;
       padding-top: constant(safe-area-inset-top);
       padding-top: env(safe-area-inset-top);
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        min-height: calc(var(--oj-app-layout-hybrid-header-min-height) + 20px);
-      }
-      @else {
+
         min-height: calc(#{$appLayoutHybridHeaderMinHeight} + 20px);        
-      }
+
     }
     // iOS safe area margin for header
     .oj-hybrid.oj-platform-ios.oj-platform-cordova.oj-hybrid-statusbar-spacer .oj-hybrid-applayout-header .oj-hybrid-applayout-header-title {
@@ -333,19 +233,13 @@
 
     // FOOTER
     .oj-hybrid-applayout-footer {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        min-height: var(--oj-app-layout-hybrid-footer-min-height);
-        border-top: var(--oj-app-layout-hybrid-footer-border-top-width) solid var(--oj-app-layout-hybrid-footer-border-color);
-        background-color: var(--oj-app-layout-hybrid-footer-bg-color);
-      }
-      @else {
+
         min-height: $appLayoutHybridFooterMinHeight;
         @if $appLayoutHybridFooterBorderColor != null {
           border-top: $appLayoutHybridFooterBorderTopWidth solid $appLayoutHybridFooterBorderColor;
         }
         background-color: $appLayoutHybridFooterBgColor;
-      }
+
     }
     // FOOTER TOOLBAR
     .oj-hybrid-applayout-toolbar-stretch {
@@ -361,13 +255,9 @@
     {
       flex: 1 1 auto;
       // height: 100% isn't working, but explicitly setting to a px value works
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        min-height: var(--oj-app-layout-hybrid-footer-min-height);
-      }
-      @else {
+
         min-height: $appLayoutHybridFooterMinHeight;        
-      }
+
       box-sizing: border-box;
       margin: 0;
     }
@@ -375,41 +265,27 @@
     // NAV BAR
     .oj-hybrid-applayout-navbar-page,
     .oj-hybrid-applayout-navbar-app {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        background-color: var(--oj-app-layout-hybrid-header-bg-color);
-      }
-      @else {
+
         background-color: $appLayoutHybridHeaderBgColor;        
-      }
+
     }
     .oj-applayout-fixed-top .oj-hybrid-applayout-navbar-page,
     .oj-applayout-fixed-top .oj-hybrid-applayout-navbar-app {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        box-shadow: var(--oj-app-layout-hybrid-header-box-shadow);
-        border-bottom: var(--oj-app-layout-hybrid-header-border-bottom-width) solid var(--oj-app-layout-hybrid-header-border-color);
-      }
-      @else {
+
         @include oj-box-shadow($appLayoutHybridHeaderBoxShadow);
         @if $appLayoutHybridHeaderBorderColor != null {
           border-bottom: 1px solid $appLayoutHybridHeaderBorderColor;
         }
-      }
+
     }
     .oj-applayout-fixed-bottom .oj-hybrid-applayout-navbar-page,
     .oj-applayout-fixed-bottom .oj-hybrid-applayout-navbar-app {
-      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
-      {
-        box-shadow: var(--oj-app-layout-hybrid-nav-bar-box-shadow);
-        border-top: var(--oj-app-layout-hybrid-footer-border-top-width) solid var(--oj-app-layout-hybrid-footer-border-color);
-      }
-      @else {
+
         @include oj-box-shadow($appLayoutHybridNavBarBoxShadow);
         @if $appLayoutHybridFooterBorderColor != null {
           border-top: 1px solid $appLayoutHybridFooterBorderColor;
         }
-      }
+
     }
     // iOS safe area padding for footer
     .oj-hybrid.oj-platform-ios.oj-platform-cordova.oj-hybrid-statusbar-spacer .oj-applayout-fixed-bottom .oj-hybrid-applayout-footer,

@@ -2,6 +2,12 @@ import Color = require('../ojcolor');
 import { editableValue, editableValueEventMap, editableValueSettableProperties } from '../ojeditablevalue';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojColorPalette extends editableValue<Color, ojColorPaletteSettableProperties> {
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelDisplay: 'auto' | 'off';
     labelledBy: string | null;
     layout: 'grid' | 'list';
@@ -37,6 +43,8 @@ export namespace ojColorPalette {
     }> {
     }
     // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojColorPalette["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type labelDisplayChanged = JetElementCustomEvent<ojColorPalette["labelDisplay"]>;
     // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged = JetElementCustomEvent<ojColorPalette["labelledBy"]>;
@@ -52,6 +60,7 @@ export namespace ojColorPalette {
 export interface ojColorPaletteEventMap extends editableValueEventMap<Color, ojColorPaletteSettableProperties> {
     'ojAnimateEnd': ojColorPalette.ojAnimateEnd;
     'ojAnimateStart': ojColorPalette.ojAnimateStart;
+    'displayOptionsChanged': JetElementCustomEvent<ojColorPalette["displayOptions"]>;
     'labelDisplayChanged': JetElementCustomEvent<ojColorPalette["labelDisplay"]>;
     'labelledByChanged': JetElementCustomEvent<ojColorPalette["labelledBy"]>;
     'layoutChanged': JetElementCustomEvent<ojColorPalette["layout"]>;
@@ -60,6 +69,12 @@ export interface ojColorPaletteEventMap extends editableValueEventMap<Color, ojC
     'valueChanged': JetElementCustomEvent<ojColorPalette["value"]>;
 }
 export interface ojColorPaletteSettableProperties extends editableValueSettableProperties<Color> {
+    displayOptions: {
+        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+    };
     labelDisplay: 'auto' | 'off';
     labelledBy: string | null;
     layout: 'grid' | 'list';

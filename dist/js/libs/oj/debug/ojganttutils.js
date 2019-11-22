@@ -2,23 +2,22 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore'], function (oj)
 {
   "use strict";
-/**
- * Copyright (c) 2018, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 /**
  * @namespace GanttUtils
  * @since 6.0.0
  * @export
  * @ojtsmodule
- * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter"]}
+ * @ojtsimport {module: "ojconverter", type: "AMD", importName: "Converter"}
  * @ojtsimport {module: "ojtimeaxis", type: "AMD", imported:["ojTimeAxis"]}
  * @hideconstructor
- * @ojstatus preview
+ *
  *
  * @classdesc
  * This class provides functions needed for aligning an ojTable with an ojGantt.

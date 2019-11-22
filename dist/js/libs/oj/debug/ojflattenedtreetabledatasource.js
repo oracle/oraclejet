@@ -2,14 +2,13 @@
  * @license
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
  */
+
 define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
 {
   "use strict";
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -35,6 +34,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
  *                                    <b>"disabled"</b> - Do not start initial fetch automatically.  Application will call the <a href="#fetch">fetch()</a> method to
  *                                                        start the first fetch.
  * @constructor
+ * @final
  * @since 1.0
  */
 oj.FlattenedTreeTableDataSource = function (data, options) {
@@ -284,10 +284,12 @@ oj.FlattenedTreeTableDataSource.prototype.expand = function (rowKey) {
 // eslint-disable-next-line no-unused-vars
 oj.FlattenedTreeTableDataSource.prototype.get = function (id, options) {
   // only works for expanded keys
+  var result = null;
   var rowIdx = this._data.getIndex(id);
   var row = this._rows.data[rowIdx];
-  var wrappedRow = this._wrapWritableValue(row);
-  var result = { data: wrappedRow, key: id, index: rowIdx };
+  if (row != null) {
+    result = { data: this._wrapWritableValue(row), key: id, index: rowIdx };
+  }
 
   return Promise.resolve(result);
 };

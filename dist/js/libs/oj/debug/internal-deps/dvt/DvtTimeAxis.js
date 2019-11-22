@@ -6,7 +6,20 @@ define(['./DvtToolkit'], function(dvt) {
   "use strict";
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 (function(dvt) {
+
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * TimeAxis component. Use the newInstance function to instantiate.
  * @param {dvt.Context} context The rendering context.
@@ -850,19 +863,23 @@ dvt.TimeAxis.prototype.formatDate = function(date, converter, converterType)
       // uses the system locale by default, which may be different from the app specified locale.
       // Those methods accepts a locale (and option) argument in all major browsers except Safari [OS X/iOS] 9,
       // which are supported by JET at the time of writing. In lieu of using the native JS methods, below
-      // retrieves a converter factory passed in from the JET side to create a converter for formatting
-      // the date. The converter is automatically app locale aware and works on all supported browsers.
-      if (scale == 'hours' || scale == 'minutes' || scale == 'seconds')
-        factoryOptions = {'formatType': 'datetime', 'dateFormat': 'medium', 'timeFormat': 'medium'}; // e.g. Jan 1, 2016, 5:53:39 PM
-      else
-        factoryOptions = {'formatType': 'date', 'dateFormat': 'medium'}; // e.g. Jan 1, 2016
-
-      var converterFactory = this._resources['converterFactory'];
-      if (converterFactory)
-        converter = converterFactory['createConverter'](factoryOptions);
+      // retrieves converters passed in from the JET side. The converters are automatically app locale aware and works on all supported browsers.
+      var defaultDateTimeConverter = this._resources['defaultDateTimeConverter'];
+      var defaultDateConverter = this._resources['defaultDateConverter'];
+      if (defaultDateTimeConverter && defaultDateConverter)
+      {
+        if (scale == 'hours' || scale == 'minutes' || scale == 'seconds')
+        {
+          converter = defaultDateTimeConverter;
+        }
+        else
+        {
+          converter = defaultDateConverter;
+        }
+      }
       else
       {
-        // If no factory found for some reason (should never get here in JET), use native JS Date toLocaleDateSTring/toLocaleString() methods
+        // If no converters found for some reason (should never get here in JET), use native JS Date toLocaleDateSTring/toLocaleString() methods
         // See above Note for caveats:
         var localeStringMethod = 'toLocaleDateString';
         var options = {'year': 'numeric', 'month': 'short', 'day': 'numeric'}; // e.g. Jan 1, 2016
@@ -968,15 +985,21 @@ dvt.TimeAxis.prototype.setZoomLevelOrder = function(zoomLevelOrder)
   this._zoomLevelOrder = zoomLevelOrder;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 // todo: this should be used by Timeline also
-var DvtTimeAxisCalendar = function(options) 
+var DvtTimeAxisCalendar = function(options)
 {
   this.Init(options);
 };
 
 dvt.Obj.createSubclass(DvtTimeAxisCalendar, dvt.Obj);
 
-DvtTimeAxisCalendar.prototype.Init = function() 
+DvtTimeAxisCalendar.prototype.Init = function()
 {
   this._dayInMillis = 1000 * 60 * 60 * 24;
   this._firstDayOfWeek = 0; // sunday; locale based
@@ -1102,6 +1125,12 @@ DvtTimeAxisCalendar.prototype.getAdjacentDate = function(time, scale, direction)
   return _adjacentDate;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 var DvtTimeAxisDefaults = function(context)
 {
   this.Init({'alta': DvtTimeAxisDefaults.VERSION_1}, context);
@@ -1120,7 +1149,13 @@ DvtTimeAxisDefaults.VERSION_1 = {
   'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color: #333333;')
 };
 
-var DvtTimeAxisFormatter = function(type, dateFormatStrings, locale) 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+var DvtTimeAxisFormatter = function(type, dateFormatStrings, locale)
 {
   this.Init(type, dateFormatStrings, locale);
 };
@@ -1130,7 +1165,7 @@ dvt.Obj.createSubclass(DvtTimeAxisFormatter, dvt.Obj);
 DvtTimeAxisFormatter.LONG = 0;
 DvtTimeAxisFormatter.SHORT = 1;
 
-DvtTimeAxisFormatter.prototype.Init = function(type, dateFormatStrings, locale) 
+DvtTimeAxisFormatter.prototype.Init = function(type, dateFormatStrings, locale)
 {
   this._type = type;
   this._dateFormatStrings = dateFormatStrings;
@@ -1173,7 +1208,7 @@ DvtTimeAxisFormatter.prototype.setPattern = function(scale, pattern)
   this._formats[this._type][scale] = pattern;
 };
 
-DvtTimeAxisFormatter.prototype.format = function(date, scale, timeZoneOffsets) 
+DvtTimeAxisFormatter.prototype.format = function(date, scale, timeZoneOffsets)
 {
   var mask = this._formats[this._type][scale];
   if (mask != null)
@@ -1358,6 +1393,12 @@ DvtTimeAxisFormatter.prototype.getDateFormatValue = function(date, mask, isUTC)
   }
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 var DvtTimeAxisParser = function() {};
 
 dvt.Obj.createSubclass(DvtTimeAxisParser, dvt.Obj);
@@ -1395,7 +1436,7 @@ DvtTimeAxisParser.prototype.parse = function(options)
  * @return {object} An object containing the parsed properties
  * @protected
  */
-DvtTimeAxisParser.prototype.ParseRootAttributes = function() 
+DvtTimeAxisParser.prototype.ParseRootAttributes = function()
 {
   var ret = new Object();
 
@@ -1405,6 +1446,12 @@ DvtTimeAxisParser.prototype.ParseRootAttributes = function()
   return ret;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 /**
  * Renderer for dvt.TimeAxis.
  * @class
@@ -1668,6 +1715,12 @@ DvtTimeAxisRenderer._addTick = function(context, container, x1, x2, y1, y2, stro
 };
 
 /**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
  * Style related utility functions for dvt.TimeAxis.
  * @class
  */
@@ -1868,6 +1921,13 @@ DvtTimeAxisStyleUtils.isBorderLeftVisible = function(options)
   return options['_resources'] ? options['_resources']['borderLeftVisible'] : false;
 };
 
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 })(dvt);
+
   return dvt;
 });

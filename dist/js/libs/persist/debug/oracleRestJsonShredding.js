@@ -21,6 +21,7 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
    * @static
    * @param {string} storeName Name of the Persistent Store into which the shredded data should be stored
    * @param {string|Array} idAttr The id field or array of fields in the JSON data
+   * @param {DataMapping=} dataMapping Optional dataMapping to apply to the data 
    * @return {Function} shredder The shredder function takes a Response object as
    * parameter and returns a Promise which resolves to an array of objects which have the following
    * structure:
@@ -36,7 +37,7 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
    * </pre>
    * </code>
    */
-  var getShredder = function (storeName, idAttr) {
+  var getShredder = function (storeName, idAttr, dataMapping) {
     return function (response) {
       logger.log("Offline Persistence Toolkit oracleRestJsonShredding: Shredding Response");
       var responseClone = response.clone();
@@ -78,11 +79,12 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
             logger.log("Offline Persistence Toolkit oracleRestJsonShredding: Error during shredding: " + err);
           }
         }
+        var mappedData = persistenceUtils._mapData(idArray, dataArray, dataMapping);
         return [{
             'name': storeName,
             'resourceIdentifier': resourceIdentifier,
-            'keys': idArray,
-            'data': dataArray,
+            'keys': mappedData.keys,
+            'data': mappedData.data,
             'resourceType' : resourceType
           }];
       });
@@ -95,6 +97,7 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
    * @name getUnshredder
    * @memberof oracleRestJsonShredding
    * @static
+   * @param {DataMapping=} dataMapping Optional dataMapping to apply to the data 
    * @return {Function} unshredder The unshredder function takes an array of objects 
    * and a response object as parameters. The array of objects has the following
    * structure:
@@ -111,10 +114,18 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
    * </code>
    * The unshredder returns a Promise which resolves to a Response object.
    */
-  var getUnshredder = function () {
-    return function (value, response) {
+  var getUnshredder = function (dataMapping) {
+    return function (data, response) {
       logger.log("Offline Persistence Toolkit oracleRestJsonShredding: Unshredding Response");
-      var payload = _buildPayload(value, response);
+      if (!data || data.length !== 1) {
+        throw new Error({message: 'shredded data is not in the correct format.'});
+      }
+      var unmappedData = persistenceUtils._unmapData(data[0].keys, data[0].data, dataMapping);
+      var payload = _buildPayload([{
+        'keys': unmappedData.keys,
+        'data': unmappedData.data,
+        'resourceType' : data[0].resourceType
+      }], response);
       return persistenceUtils.setResponsePayload(response, payload).then(function (response) {
         response.headers.set('x-oracle-jscpt-cache-expiration-date', '');
         return response;
@@ -123,9 +134,6 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
   }
 
   function _buildPayload (value, response) {
-    if (!value || value.length !== 1) {
-      throw new Error({message: 'shredded data is not in the correct format.'});
-    }
     var payload;
     var data = value[0].data;
     if (data && data.length === 1 && value[0].resourceType === 'single') {
