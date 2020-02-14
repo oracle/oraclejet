@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -254,8 +254,9 @@ function ExpParser() {
     }
 
     var start = context.index;
-    if (expr.substring(start, start + 8) === 'function') {
-      context.index += 8;
+    var funcEnd = context.index + 8;
+    if (expr.substring(start, funcEnd) === 'function' && !_isIdentifierPart(expr.charCodeAt(funcEnd))) {
+      context.index = funcEnd;
       return _gobbleFunction(context);
     }
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -9,7 +9,7 @@ define(['ojs/ojcore', 'ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'
   "use strict";
   var CoreRouter =
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 
 
@@ -162,6 +162,17 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
    * or null/undefined if this is the root router.
    * @export
    * @ojtsmodule
+   * @ojsignature [{target: "Type",
+   *               value: "class CoreRouter<
+   *               D extends {[key: string]: any} = {[key: string]: any}, P extends {[key: string]: any} = {[key: string]: any},
+   *               ParentD extends {[key: string]: any} = {[key: string]: any}, ParentP extends {[key: string]: any} = {[key: string]: any}>",
+   *               genericParameters: [{"name": "D", "description": "Detail object for the router state"},
+   *                                   {"name": "P", "description": "Parameters object for the router state"},
+   *                                   {"name": "ParentD", "description": "Detail object for the parent router state"},
+   *                                   {"name": "ParentP", "description": "Parameters object for the parent router state"}]},
+   *               {target: "Type", value: "Array.<CoreRouter.DetailedRouteConfig<D>|CoreRouter.RedirectedRouteConfig>", for: "routes"},
+   *               {target: "Type", value: "CoreRouter.CreateOptions<P>", for: "options"},
+   *               {target: "Type", value: "CoreRouter<ParentD, ParentP>", for: "parentRouter"}]
    * @constructor
    * @since 8.0.0
    */
@@ -193,7 +204,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
    * @type {CoreRouter.Observable<VetoableState>}
    * @ojsignature {
    *   target: 'Type',
-   *   value: 'CoreRouter.Observable<CoreRouter.VetoableState>'
+   *   value: 'CoreRouter.Observable<CoreRouter.VetoableState<D, P>>'
    * }
    * @instance
    * @export
@@ -235,7 +246,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
    * @type {CoreRouter.Observable<ActionableState>}
    * @ojsignature {
    *   target: 'Type',
-   *   value: 'CoreRouter.Observable<CoreRouter.ActionableState>'
+   *   value: 'CoreRouter.Observable<CoreRouter.ActionableState<D, P>>'
    * }
    * @instance
    * @export
@@ -388,6 +399,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
    * @method
    * @instance
    * @export
+   * @ojsignature {target: "Type", value: "Promise<CoreRouter.CoreRouterState<D, P>>", for: "returns"}
    */
 
 
@@ -520,6 +532,8 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
    * @method
    * @instance
    * @export
+   * @ojsignature [{target: "Type", value: "CoreRouter.Route<P>[]", for: "route"},
+   *               {target: "Type", value: "Promise<CoreRouter.CoreRouterState<D, P>>", for: "returns"}]
    */
 
 
@@ -753,7 +767,6 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
    * This is typically done in the viewmodel's constructor/initialize functions.
    * </p>
    * <pre class="prettyprint">
-   * viewmodel/state1.js
    * <code>
    * this.initialize = function (args) {
    *   this.childRouter = args.parentRouter.createChildRouter([
@@ -778,6 +791,13 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
    * @method
    * @instance
    * @export
+   * @ojsignature [{target:"Type", value:"<ChildD extends {[key: string]: any} = {[key: string]: any}, ChildP extends {[key: string]: any} = {[key: string]: any}>",
+   *               for:"genericTypeParameters",
+   *               genericParameters: [{"name": "ChildD", "description": "Detail object for the child router state"},
+   *                                   {"name": "ChildP", "description": "Parameters object for the child router state"}]},
+   *               {target: "Type", value: "Array.<CoreRouter.DetailedRouteConfig<ChildD>|CoreRouter.RedirectedRouteConfig>", for: "routes"},
+   *               {target: "Type", value: "CoreRouter.CreateOptions<ChildP>", for: "options"},
+   *               {target: "Type", value: "CoreRouter<ChildD, ChildP>", for: "returns"}]
    */
 
 
@@ -829,6 +849,8 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  * @property {CoreRouter.UrlAdapter=} urlAdapter The adapter which handles reading
  * and writing router states from/to the browser URL. If not specified, this will
  * default to {@link UrlPathAdapter}.
+ * @ojsignature [{target: "Type", value: "UrlAdapter<P>", for: "urlAdapter"},
+ *               {target: "Type", value: "<P = {[key: string]: any}>", for: "genericTypeParameters"}]
  */
 
 /**
@@ -841,7 +863,8 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  * match string, or a regular expression.
  * @property {object=} detail An optional detail object which is passed to
  * the route when it is navigated to.
- * @ojsignature { for: 'detail', target: 'Type', value: '{[key: string]: any}' }
+ * @ojsignature [{target: "Type", value: "D", for: "detail"},
+ *               {target: "Type", value: "<D = {[key: string]: any}>", for: "genericTypeParameters"}]
  */
 
 /**
@@ -861,6 +884,11 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  * The Route.path must match a route config which was passed
  * to the router via the {@link CoreRouter} constructor or {@link CoreRouter.createChildRouter}.
  * @interface CoreRouter.Route
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "interface Route<P extends {[key: string]: any} = {[key: string]: any}>",
+ *                genericParameters: [{"name": "P", "description": "Parameters object for the router state"}]
+ *               }]
  */
 
 /**
@@ -877,7 +905,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  * @type {object=}
  * @memberof CoreRouter.Route
  * @instance
- * @ojsignature { target: 'Type', value: '{[key: string]: any}' }
+ * @ojsignature { target: 'Type', value: 'P' }
  */
 
 /**
@@ -888,6 +916,9 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  * @property {function(): Array.<CoreRouter.Route>} getRoutesForUrl Given the
  * current browser URL, get all of the routes, starting from the root, down to
  * the last child.
+ * @ojsignature [{target: 'Type', value: '((routes: Route<P>[]) => string)', for: "getUrlForRoutes"},
+ *               {target: 'Type', value: '(() => Route<P>[])', for: "getRoutesForUrl"},
+ *               {target: "Type", value: "<P = {[key: string]: any}>", for: "genericTypeParameters"}]
  */
 
 /**
@@ -917,6 +948,8 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  * can use to return a Promise for its asynchronous activities. Invoking this
  * callback is optional, but allows for the subscriber to delay the completion
  * of the router state transition until its own asynchronous activities are done.
+ * @ojsignature [{target: "Type", value: "CoreRouterState<D, P>", for: "state"},
+ *               {target: "Type", value: "<D = {[key: string]: any}, P = {[key: string]: any}>", for: "genericTypeParameters"}]
  */
 
 /**
@@ -930,6 +963,8 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  * transition ought to be accepted (true) or rejected (false). A Promise rejection
  * will veto the state transition; any Promise resolution (or not invoking the
  * callback at all) will accept the transition.
+ * @ojsignature [{target: "Type", value: "CoreRouterState<D, P>", for: "state"},
+ *               {target: "Type", value: "<D = {[key: string]: any}, P = {[key: string]: any}>", for: "genericTypeParameters"}]
  */
 
 
@@ -939,6 +974,13 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  * the routes and associated information to which it can navigate.
  * @interface CoreRouterState
  * @ojtsnamespace CoreRouter
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "interface CoreRouterState<D extends {[key: string]: any} = {[key: string]: any}, P extends {[key: string]: any} = {[key: string]: any}>",
+ *                genericParameters: [{"name": "D", "description": "Detail object for the router state"},
+ *                                    {"name": "P", "description": "Parameters object for the router state"}]
+ *               }
+ *              ]
  */
 
 /**
@@ -956,9 +998,10 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  * The detail object for the state, if configured.
  * @name detail
  * @memberof CoreRouterState
+ * @type {Object}
  * @instance
  * @readonly
- * @ojsignature { target: 'Type', value: '{[key: string]: any}' }
+ * @ojsignature { target: 'Type', value: 'D'}
  */
 
 /**
@@ -966,9 +1009,10 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  * {@link CoreRouter.go} method.
  * @name params
  * @memberof CoreRouterState
+ * @type {Object}
  * @instance
  * @readonly
- * @ojsignature { target: 'Type', value: '{[key: string]: any}' }
+ * @ojsignature { target: 'Type', value: 'P'}
  */
 
   return CoreRouter;

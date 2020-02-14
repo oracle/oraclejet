@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -9,7 +9,7 @@ define(['ojs/ojcore', 'require', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojmetadat
   function(oj, require, Logger, Context, MetadataUtils)
 {
   "use strict";
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 
 
@@ -97,6 +97,17 @@ oj.BaseCustomElementBridge.proto = {
       this._bpResolve(provider);
     } else {
       this._bpInst = provider;
+    }
+  },
+  disposeBindingProvider: function disposeBindingProvider(element) {
+    this._bDisposed = true;
+
+    if (!this._complete && this._bConnected) {
+      // The creation busy state is normally resolved upon component creation.
+      // In the event that a component is disposed or disconnected before
+      // creation, the busy state will be resolved by the first of the
+      // disposal or disconnected callbacks that gets invoked.
+      this._resolveBusyState(element);
     }
   },
   resolveDelayedReadyPromise: function resolveDelayedReadyPromise() {
@@ -477,8 +488,20 @@ oj.BaseCustomElementBridge.proto = {
 
       var createComponentCallback = function createComponentCallback() {
         try {
-          self.CreateComponent(element);
-          self.PostCreate(element);
+          // Short circuit component creation if disposed.
+          // The state of the various flags are being reset here, but that's
+          // not critical because attempting to reconnect a disposed node
+          // is an invalid use case.
+          //
+          // The create flag is reset here.  Busy states will have been
+          // resolved in the disposal (or disconnect) callback.
+          if (!self._bDisposed) {
+            self.CreateComponent(element);
+            self.PostCreate(element);
+          } else {
+            // Reset the create flag
+            self._bCreateCalled = false;
+          }
         } catch (ex) {
           // If an error occurs during component creation, resolve the busy context and throw an error.
           self.throwError(element, 'Error while rendering component. ' + ex);
@@ -504,7 +527,13 @@ oj.BaseCustomElementBridge.proto = {
     bridge._bConnected = false;
 
     if (!bridge._complete) {
-      bridge._resolveBusyState(this);
+      if (!bridge._bDisposed) {
+        // The creation busy state is normally resolved upon component creation.
+        // In the event that a component is disposed or disconnected before
+        // creation, the busy state will be resolved by the first of the
+        // disposal or disconnected callbacks that gets invoked.
+        bridge._resolveBusyState(this);
+      }
     } else {
       bridge.HandleDetached(this);
     }
@@ -536,11 +565,11 @@ oj.BaseCustomElementBridge.proto = {
     var completeHandler = function completeHandler() {
       // If the component is disconnected, the busy state
       // must be already resolved
-      if (self._bConnected) {
+      if (!self._complete && self._bConnected) {
         self._resolveBusyState(element);
-      }
 
-      self._complete = true;
+        self._complete = true;
+      }
     };
 
     this.GetDelayedReadyPromise().getPromise().then(function () {

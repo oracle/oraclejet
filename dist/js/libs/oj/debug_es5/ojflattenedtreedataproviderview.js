@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -687,7 +687,7 @@ function () {
       var handleFetchFromAncestors = function handleFetchFromAncestors(lastParentKey, result) {
         var results = result.results;
 
-        if (self._checkCacheByOffset(finalParams) || result[self._DONE] || parentKey === null) {
+        if (self._checkCacheByOffset(finalParams) || result[self._DONE] || lastParentKey === null) {
           return Promise.resolve();
         }
 
@@ -700,7 +700,7 @@ function () {
 
         var childrenPromise = self._fetchChildrenByOffsetFromDataProvider(newParams, childDataProvider, lastEntryParentKey, finalParams);
 
-        return childrenPromise.then(handleFetchFromAncestors.bind(self, lastEntryParentKey, new self.FetchByOffsetResults(self, params, results, false)));
+        return childrenPromise.then(handleFetchFromAncestors.bind(self, lastEntryParentKey));
       };
 
       return self._fetchChildrenByOffsetFromDataProvider(params, dataprovider, parentKey, finalParams).then(handleFetchFromAncestors.bind(self, parentKey)).then(self._getFetchByOffsetResultsFromCache.bind(self, finalParams));

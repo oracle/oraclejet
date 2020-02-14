@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
 //          version in your base theme's directory,
@@ -68,8 +68,6 @@
   /* This ensures that the slider bounding box will include
    the thumb radius - important for form controls. */
 
-   margin-top: calc(#{$sliderThumbHeightActive} / 2);
-   margin-bottom: calc(#{$sliderThumbHeightActive} / 2);
    margin-right: calc(#{$sliderThumbWidthActive} / 2);
    margin-left: calc(#{$sliderThumbWidthActive} / 2);
 }
@@ -83,9 +81,8 @@
 
     margin-top: calc(#{$sliderThumbWidthActive} / 2);
     margin-bottom: calc(#{$sliderThumbWidthActive} / 2);
-    margin-right: calc(#{$sliderThumbHeightActive} / 2);
     margin-left: calc(#{$sliderThumbHeightActive} / 2);
-
+    margin-right: calc(#{$sliderThumbHeightActive} / 2);
 }
 
 // Styling for invalid state
@@ -497,32 +494,12 @@
 
 //// Color Picker ///
 
-
-
-.oj-slider-color-picker.oj-slider-horizontal {
-      /* This ensures that the slider bounding box will include
-     the thumb radius - important for form controls. */
-
-    padding-left: calc(#{$sliderColorPickerThumbWidthActive} / 2);
-    padding-right: calc(#{$sliderColorPickerThumbHeightActive} / 2);
-
-
-}
-
-.oj-slider-color-picker.oj-slider-vertical {
-
-    // Note - the height and width variables are swapped for vertical sliders.
-   padding-left: calc(#{$sliderColorPickerThumbHeightActive} / 2);
-   padding-right: calc(#{$sliderColorPickerThumbWidthActive} / 2);
-
-}
-
 .oj-slider-color-picker.oj-slider-vertical > .oj-slider-container {
 
     margin-top: calc(#{$sliderColorPickerThumbWidthActive} / 2);
     margin-bottom: calc(#{$sliderColorPickerThumbWidthActive} / 2);
-
-
+    margin-left: calc(#{$sliderColorPickerThumbHeightActive} / 2);
+    margin-right: calc(#{$sliderColorPickerThumbHeightActive} / 2);
 }
 
 .oj-slider-color-picker.oj-slider-vertical.oj-form-control .oj-slider-container {

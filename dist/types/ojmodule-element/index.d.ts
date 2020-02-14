@@ -29,10 +29,10 @@ export interface ModuleElementAnimation {
 }
 export interface ModuleViewModel {
     canExit?(): Promise<void>;
-    connected?(): null;
-    disconnected?(): null;
-    parametersChanged?(params: any): null;
-    transitionCompleted?(): null;
+    connected?(): void;
+    disconnected?(): void;
+    parametersChanged?(params: any): void;
+    transitionCompleted?(): void;
 }
 export interface ojModule extends JetElement<ojModuleSettableProperties> {
     animation: ModuleElementAnimation;

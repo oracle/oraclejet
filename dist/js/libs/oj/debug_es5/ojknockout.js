@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -9,7 +9,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'knockout', 'ojs/ojkeysetimpl',
 function(oj, $, Context, ko, KeySetImpl, KnockoutTemplateUtils, ResponsiveKnockoutUtils, Logger, BindingProviderImpl, templateEngine)
 {
   "use strict";
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 
 
@@ -1960,6 +1960,8 @@ BindingProviderImpl.addPostprocessor({
           element.removeEventListener(_ATTRIBUTE_CHANGED, attributeListener);
           attributeListener = null;
         }
+
+        oj._KnockoutBindingProvider.getInstance().__NotifyBindingsDisposed(element);
       }
 
       function setup(isComposite) {
@@ -2033,7 +2035,7 @@ BindingProviderImpl.addPostprocessor({
   };
 })();
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 
 
@@ -2889,6 +2891,16 @@ oj._KnockoutBindingProvider = function () {
 
     this._resolveWhenChildrenBindingsApplied(elem, trackOption);
   };
+  /**
+   * @ignore
+   */
+
+
+  this.__NotifyBindingsDisposed = function (elem) {
+    // This method is only called from the CustomElementBinding where we know the
+    // oj.BaseCustomElementBridge class is available
+    oj.BaseCustomElementBridge.getInstance(elem).disposeBindingProvider(elem);
+  };
 };
 /**
  * @ignore
@@ -3104,7 +3116,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   }
 })();
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 
 
@@ -4071,8 +4083,8 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * @ojcomponent oj.ojBindForEach
  * @ojshortdesc An oj-bind-for-each binds items of an array to the specified markup section. The markup section is duplicated for each array item when element is rendered.
  * @ojbindingelement
- * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojtsimport knockout
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojsignature {target: "Type",
  *               value: "class ojBindForEach<K, D> extends HTMLElement",
  *               genericParameters: [{"name": "K", "description": "Type of key when passing data via a DataProvider"},

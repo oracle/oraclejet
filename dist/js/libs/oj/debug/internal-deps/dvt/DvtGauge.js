@@ -1028,9 +1028,9 @@ DvtGaugeKeyboardHandler.prototype.processKeyDown = function(event) {
   var isR2L = dvt.Agent.isRightToLeft(this._gauge.getCtx());
   var value = this._gauge.getOptions()['value'];
   if (!this._gauge.getOptions()['readOnly']) {
-    if (keyCode == dvt.KeyboardEvent.TAB && !this._bEditing) {
-      this._bEditing = true;
-      this._oldValue = value;
+    if ((keyCode == dvt.KeyboardEvent.ENTER || keyCode == dvt.KeyboardEvent.TAB) && this._oldValue != value) {
+      this._gauge.dispatchEvent(dvt.EventFactory.newValueChangeEvent(this._oldValue, value, true));
+      this._oldValue = undefined;
     }
     else if (keyCode == dvt.KeyboardEvent.UP_ARROW || keyCode == (isR2L ? dvt.KeyboardEvent.LEFT_ARROW : dvt.KeyboardEvent.RIGHT_ARROW)) {
       this._gauge.__increaseValue();
@@ -1040,15 +1040,9 @@ DvtGaugeKeyboardHandler.prototype.processKeyDown = function(event) {
       this._gauge.__decreaseValue();
       dvt.EventManager.consumeEvent(event);
     }
-    else if (this._bEditing && (keyCode == dvt.KeyboardEvent.ENTER || keyCode == dvt.KeyboardEvent.TAB) && this._oldValue != value) {
-      this._gauge.dispatchEvent(dvt.EventFactory.newValueChangeEvent(this._oldValue, value, true));
-      if (keyCode == dvt.KeyboardEvent.TAB) {
-        this._bEditing = false;
-        this._oldValue = null;
-      }
-      else
-        this._oldValue = value;
-    }
+
+    if (this._oldValue === undefined)
+      this._oldValue = value;
   }
 };
 

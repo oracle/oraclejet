@@ -334,14 +334,16 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
     nodeData: DataProvider<K1, D1> | null;
     nodeHighlightMode: 'nodeAndIncomingLinks' | 'nodeAndOutgoingLinks' | 'nodeAndLinks' | 'node';
     overview: {
+        fitArea: 'content' | 'canvas';
         halign: 'start' | 'end' | 'center';
         height: number;
+        preserveAspectRatio: 'none' | 'meet';
         rendered: 'on' | 'off';
         valign: 'top' | 'bottom' | 'middle';
         width: number;
     };
     panDirection: 'x' | 'y' | 'auto';
-    panning: 'auto' | 'none';
+    panning: 'fixed' | 'centerContent' | 'none' | 'auto';
     promotedLinkBehavior: 'none' | 'full' | 'lazy';
     renderer: ((context: ojDiagram.RendererContext<K1, D1>) => ({
         insert: SVGElement;
@@ -935,14 +937,16 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
     nodeData: DataProvider<K1, D1> | null;
     nodeHighlightMode: 'nodeAndIncomingLinks' | 'nodeAndOutgoingLinks' | 'nodeAndLinks' | 'node';
     overview: {
+        fitArea: 'content' | 'canvas';
         halign: 'start' | 'end' | 'center';
         height: number;
+        preserveAspectRatio: 'none' | 'meet';
         rendered: 'on' | 'off';
         valign: 'top' | 'bottom' | 'middle';
         width: number;
     };
     panDirection: 'x' | 'y' | 'auto';
-    panning: 'auto' | 'none';
+    panning: 'fixed' | 'centerContent' | 'none' | 'auto';
     promotedLinkBehavior: 'none' | 'full' | 'lazy';
     renderer: ((context: ojDiagram.RendererContext<K1, D1>) => ({
         insert: SVGElement;

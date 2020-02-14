@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -444,7 +444,7 @@ Composite.register('oj-module',
  * @ojshortdesc A callback method that is invoked after the View is inserted into the DOM.
  * @memberof oj.ModuleViewModel
  * @instance
- * @ojsignature {target: "Type", value: "?(): null"}
+ * @ojsignature {target: "Type", value: "?(): void"}
  */
 
 /**
@@ -457,7 +457,7 @@ Composite.register('oj-module',
  * @ojshortdesc A callback method that is invoked after transition to the new View is complete.
  * @memberof oj.ModuleViewModel
  * @instance
- * @ojsignature {target: "Type", value: "?(): null"}
+ * @ojsignature {target: "Type", value: "?(): void"}
  */
 
 /**
@@ -472,7 +472,7 @@ Composite.register('oj-module',
  * @ojshortdesc A callback method that is invoked after View is disconnected from the DOM.
  * @memberof oj.ModuleViewModel
  * @instance
- * @ojsignature {target: "Type", value: "?(): null"}
+ * @ojsignature {target: "Type", value: "?(): void"}
  */
 
 /**
@@ -507,7 +507,7 @@ Composite.register('oj-module',
  * @ojshortdesc A callback method that might be invoked on BaseRouter state change.
  * @memberof oj.ModuleViewModel
  * @instance
- * @ojsignature {target: "Type", value: "?(params:any): null"}
+ * @ojsignature {target: "Type", value: "?(params:any): void"}
  */
 
 

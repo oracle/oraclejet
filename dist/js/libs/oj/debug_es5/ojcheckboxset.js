@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -969,6 +969,14 @@ var __oj_checkboxset_metadata =
       $(element.get(0).childNodes).filter(function () {
         return !(this.getAttribute && this.getAttribute('slot') === 'contextMenu');
       }).wrapAll("<div class='oj-checkboxset-wrapper oj-form-control-container'></div>"); // @HTMLUpdateOK
+      // if readonly, set tabindex and aria-readonly on the wrapper
+
+      if (this.options.readOnly) {
+        var domElem = this.element[0];
+        var wrapperDom = domElem.querySelector('.oj-checkboxset-wrapper');
+        wrapperDom.setAttribute('tabindex', 0);
+        wrapperDom.setAttribute('aria-readonly', 'true');
+      }
 
       this._on(this._events);
 
@@ -1860,6 +1868,16 @@ var __oj_checkboxset_metadata =
 
         case 'readOnly':
           this.options.readOnly = !!value;
+          var wrapperDom = this.element[0].querySelector('.oj-checkboxset-wrapper');
+
+          if (this.options.readOnly) {
+            wrapperDom.setAttribute('tabindex', 0);
+            wrapperDom.setAttribute('aria-readonly', 'true');
+          } else {
+            // remove tabindex and role
+            wrapperDom.removeAttribute('tabindex');
+            wrapperDom.removeAttribute('aria-readonly');
+          }
 
           this._processOjOptions();
 

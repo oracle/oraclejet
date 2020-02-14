@@ -1,29 +1,59 @@
-declare class CoreRouter {
-    beforeStateChange: CoreRouter.Observable<CoreRouter.VetoableState>;
-    currentState: CoreRouter.Observable<CoreRouter.ActionableState>;
-    constructor(routes: Array<(CoreRouter.DetailedRouteConfig | CoreRouter.RedirectedRouteConfig)>, options?: CoreRouter.CreateOptions, parentRouter?: CoreRouter);
-    createChildRouter(routes: Array<(CoreRouter.DetailedRouteConfig | CoreRouter.RedirectedRouteConfig)>, options?: CoreRouter.CreateOptions): CoreRouter;
+declare class CoreRouter<D extends {
+    [key: string]: any;
+} = {
+    [key: string]: any;
+}, P extends {
+    [key: string]: any;
+} = {
+    [key: string]: any;
+}, ParentD extends {
+    [key: string]: any;
+} = {
+    [key: string]: any;
+}, ParentP extends {
+    [key: string]: any;
+} = {
+    [key: string]: any;
+}> {
+    beforeStateChange: CoreRouter.Observable<CoreRouter.VetoableState<D, P>>;
+    currentState: CoreRouter.Observable<CoreRouter.ActionableState<D, P>>;
+    constructor(routes: Array<CoreRouter.DetailedRouteConfig<D> | CoreRouter.RedirectedRouteConfig>, options?: CoreRouter.CreateOptions<P>, parentRouter?: CoreRouter<ParentD, ParentP>);
+    createChildRouter<ChildD extends {
+        [key: string]: any;
+    } = {
+        [key: string]: any;
+    }, ChildP extends {
+        [key: string]: any;
+    } = {
+        [key: string]: any;
+    }>(routes: Array<CoreRouter.DetailedRouteConfig<ChildD> | CoreRouter.RedirectedRouteConfig>, options?: CoreRouter.CreateOptions<ChildP>): CoreRouter<ChildD, ChildP>;
     destroy(): any;
-    go(...route: CoreRouter.Route[]): Promise<CoreRouter.CoreRouterState>;
-    sync(): Promise<CoreRouter.CoreRouterState>;
+    go(...route: CoreRouter.Route<P>[]): Promise<CoreRouter.CoreRouterState<D, P>>;
+    sync(): Promise<CoreRouter.CoreRouterState<D, P>>;
 }
 declare namespace CoreRouter {
     // tslint:disable-next-line interface-over-type-literal
-    type ActionableState = {
-        state: CoreRouterState;
+    type ActionableState<D = {
+        [key: string]: any;
+    }, P = {
+        [key: string]: any;
+    }> = {
+        state: CoreRouterState<D, P>;
         complete: ((param0: Promise<any>) => void);
     };
     // tslint:disable-next-line interface-over-type-literal
-    type CreateOptions = {
+    type CreateOptions<P = {
+        [key: string]: any;
+    }> = {
         history?: 'skip';
-        urlAdapter?: UrlAdapter;
+        urlAdapter?: UrlAdapter<P>;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type DetailedRouteConfig = {
+    type DetailedRouteConfig<D = {
+        [key: string]: any;
+    }> = {
         path: string | RegExp;
-        detail?: {
-            [key: string]: any;
-        };
+        detail?: D;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Observable<T> = {
@@ -39,28 +69,40 @@ declare namespace CoreRouter {
         redirect?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type UrlAdapter = {
-        getUrlForRoutes: ((param0: Route[]) => string);
-        getRoutesForUrl: (() => Route[]);
+    type UrlAdapter<P = {
+        [key: string]: any;
+    }> = {
+        getUrlForRoutes: ((routes: Route<P>[]) => string);
+        getRoutesForUrl: (() => Route<P>[]);
     };
     // tslint:disable-next-line interface-over-type-literal
-    type VetoableState = {
-        state: CoreRouterState;
+    type VetoableState<D = {
+        [key: string]: any;
+    }, P = {
+        [key: string]: any;
+    }> = {
+        state: CoreRouterState<D, P>;
         accept: ((param0: Promise<any>) => void);
     };
-    interface Route {
-        params?: {
-            [key: string]: any;
-        };
+    interface Route<P extends {
+        [key: string]: any;
+    } = {
+        [key: string]: any;
+    }> {
+        params?: P;
         path: string;
     }
-    interface CoreRouterState {
-        readonly detail: {
-            [key: string]: any;
-        };
-        readonly params: {
-            [key: string]: any;
-        };
+    interface CoreRouterState<D extends {
+        [key: string]: any;
+    } = {
+        [key: string]: any;
+    }, P extends {
+        [key: string]: any;
+    } = {
+        [key: string]: any;
+    }> {
+        readonly detail: D;
+        readonly params: P;
         readonly path: string;
     }
 }

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -80,18 +80,23 @@ define(['knockout', 'ojs/ojlogger'], function(ko, Logger) {
  * </pre>
  * </p>
  *
+ * @param {CoreRouter} router The CoreRouter instance on which this adapter will listen for state changes.
  * @class
  * @export
  * @ojtsmodule
  * @ojtsimport {module: "ojcorerouter", type: "AMD", importName: "CoreRouter"}
+ * @ojsignature [
+ *    {target: "Type", value: "class KnockoutRouterAdapter<D extends {[key: string]: any} = {[key: string]: any}, P extends {[key: string]: any} = {[key: string]: any}>",
+ *     genericParameters: [{"name": "D", "description": "Detail object for the router state"},
+ *                         {"name": "P", "description": "Parameters object for the router state"},
+ *     ]},
+ *     {target:"Type", for: "router", value: "CoreRouter<D, P>"}
+ *  ]
  */
 // eslint-disable-next-line no-unused-vars
 class KnockoutRouterAdapter {
   /**
    * Constructor
-   * @constructor
-   * @param {CoreRouter} router The CoreRouter instance on which this adapter
-   * will listen for state changes.
    */
   constructor(router) {
     var state = ko.observable();
@@ -158,6 +163,7 @@ class KnockoutRouterAdapter {
    * @instance
    * @readonly
    * @type {ko.Observable<CoreRouter.CoreRouterState>}
+   * @ojsignature { target: 'Type', value: 'ko.Observable<CoreRouter.CoreRouterState<D, P>>'}
    */
   get state() {
     return this._observableState;

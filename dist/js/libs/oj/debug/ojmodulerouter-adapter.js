@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -30,11 +30,16 @@ define(['knockout', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 'ojs
  * to allow the pending state change to be canceled. Note that canExit() callback will be invoked on every
  * <code>beforeStateChange</code> mutation regardless whether the module path is changed or view model parameters are changed.</p>
  *
- * </p>Upon a change to the CoreRouter's <code>currentState</code> (i.e. a state change that was not canceled), ModuleRouterAdapter will load
+ * <p>Upon a change to the CoreRouter's <code>currentState</code> (i.e. a state change that was not canceled), ModuleRouterAdapter will load
  * the requested view and view model and update its <code>koObservableConfig</code> property.
  * View models may also optimize updates by implementing the <a href="oj.ModuleViewModel.html#parametersChanged">parametersChanged()</a>
  * callback. If this callback is present, CoreRouter state changes that do not result in changes to the module path will be handled
  * by invoking this callback on the already loaded view model with the new state parameter values.</p>
+ *
+ * <p>When the view model is loaded by ModuleRouterAdapter, an instance of <a href="oj.ModuleRouterAdapter.html#ViewModelParameters">ViewModelParameters</a>
+ * will be passed either to the model constructor or to the initialize method on the loaded model instance.
+ * See parameter passing contract in <a href="ModuleElementUtils.html#createConfig">ModuleElementUtils.createConfig()</a>.
+ * </p>
  *
  * <pre class="prettyprint">
  * <code>
@@ -75,6 +80,10 @@ define(['knockout', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 'ojs
  *                  <a href="oj.ModuleAnimations.html#Animations">an animation type</a> supported by ModuleAnimations
  *                  or an object that implements <a href="oj.ModuleElementAnimation.html">ModuleElementAnimation</a> interface.
  * @ojsignature [
+ *    {target: "Type", value: "class ModuleRouterAdapter<D extends {[key: string]: any} = {[key: string]: any}, P extends {[key: string]: any} = {[key: string]: any}>",
+ *     genericParameters: [{"name": "D", "description": "Detail object for the router state"},
+ *                         {"name": "P", "description": "Parameters object for the router state"}]},
+ *    {target:"Type", for: "router", value: "CoreRouter<D,P>"},
  *    {target:"Type", for: "options.animationCallback", value: "(animationContext: ModuleRouterAdapter.AnimationCallbackParameters) => ModuleAnimations.Animations|ModuleElementAnimation"},
  *    {target: "Type", for: "options.require", value: "((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)"}
  *  ]
@@ -176,7 +185,9 @@ function ModuleRouterAdapter(router, options) {
         viewModelPath: viewModelPath + modulePath,
         params: {
           parentRouter: _router,
-          params: args.state.params
+          params: args.state.params,
+          router: _router,
+          routerState: args.state
         }
       });
     } else {
@@ -247,6 +258,21 @@ function ModuleRouterAdapter(router, options) {
   * @property {any} viewModel The instance of the current ViewModel
   * @property {any} previousState Previous router state.
   * @property {any} state Current router state.
+  */
+
+ /**
+  * @typedef {Object} oj.ModuleRouterAdapter.ViewModelParameters
+  * @property {CoreRouter} parentRouter The instance of the CoreRouter, that used by the ModuleRouterAdapter instance.
+  * @property {any} params The value of CoreRouterState params property.
+  * @property {CoreRouter} router The instance of the CoreRouter, that used by the ModuleRouterAdapter instance.
+  * @property {CoreRouter.CoreRouterState} routerState The current state of CoreRouter
+  * @ojsignature [{target: "Type", value: "CoreRouter<D, P>", for: "parentRouter"},
+  *               {target: "Type", value: "P", for: "params"},
+  *               {target: "Type", value: "CoreRouter<D, P>", for: "router"},
+  *               {target: "Type", value: "CoreRouter.CoreRouterState<D, P>", for: "routerState"},
+  *               {target: "Type", value: "<D, P>", for: "genericTypeParameters"}]
+  * @ojdeprecated [{target: "property", for: "parentRouter", since: "8.1.0", description: "Use router property instead."},
+  *                 {target: "property", for: "params", since: "8.1.0", description: "Use CoreRouter.CoreRouterState.params instead."}]
   */
 }
 

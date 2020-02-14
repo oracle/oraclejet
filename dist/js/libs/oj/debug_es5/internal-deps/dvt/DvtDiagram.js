@@ -2376,11 +2376,11 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
    */
 
 
-  dvt.BaseDiagram.prototype.AdjustMinZoom = function (fitBounds) {
+  dvt.BaseDiagram.prototype.AdjustMinZoom = function () {
     if (this.getMinZoom() == 0.0) {
       // Auto adjust minzoom of panzoomcanvas
       var panZoomCanvas = this.getPanZoomCanvas();
-      var minZoomFitBounds = fitBounds ? fitBounds : this.GetViewBounds();
+      var minZoomFitBounds = this.GetViewBounds();
       var minScale = this.CalculateMinimumScale(minZoomFitBounds);
       panZoomCanvas.setMinZoom(this.GetMinZoomFactor() * Math.min(minScale, panZoomCanvas.getMaxZoom()));
       return minZoomFitBounds;
@@ -2422,6 +2422,7 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
 
 
   dvt.BaseDiagram.prototype.GetViewBounds = function () {
+    if (this._cachedViewBounds) return this._cachedViewBounds;
     var bounds = null;
     var dims;
     var tx;
@@ -2547,12 +2548,34 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
 
   dvt.BaseDiagram.prototype.ConstrainPanning = function (x, y, w, h, zoom) {
     var pzc = this.getPanZoomCanvas();
-    var halfViewportW = pzc.getSize().w / 2;
-    var halfViewportH = pzc.getSize().h / 2;
-    var minPanX = halfViewportW - (w + x) * zoom;
-    var minPanY = halfViewportH - (h + y) * zoom;
-    var maxPanX = halfViewportW - x * zoom;
-    var maxPanY = halfViewportH - y * zoom;
+    var minPanX, maxPanX, minPanY, maxPanY;
+
+    if (this.Options.panning === 'fixed') {
+      // Get pan zoom canvas and get minZoom value out of it.
+      var minZoom = pzc.getMinZoom(); // Find left corner of the content at min zoom and content is centered
+
+      var minZoomX = (pzc.getSize().w - w * minZoom) / 2 - x * minZoom;
+      var minZoomY = (pzc.getSize().h - h * minZoom) / 2 - y * minZoom; // Now find how zoom value changed from min zoom
+
+      var zoomRatio = zoom / minZoom; // When we pan all the way to the right, the left corner of displayable area is 0,0 as in min zoom.
+      // When we pan all the way to the left, lets find the corner of the displayable area
+
+      var leftCornerX = pzc.getSize().w - pzc.getSize().w * zoomRatio;
+      var leftCornerY = pzc.getSize().h - pzc.getSize().h * zoomRatio; // Now we have everything to calculate pan zoom constraints
+
+      minPanX = leftCornerX + minZoomX * zoomRatio;
+      minPanY = leftCornerY + minZoomY * zoomRatio;
+      maxPanX = minZoomX * zoomRatio;
+      maxPanY = minZoomY * zoomRatio;
+    } else {
+      //for auto and centerContent
+      var halfViewportW = pzc.getSize().w / 2;
+      var halfViewportH = pzc.getSize().h / 2;
+      minPanX = halfViewportW - (w + x) * zoom;
+      minPanY = halfViewportH - (h + y) * zoom;
+      maxPanX = halfViewportW - x * zoom;
+      maxPanY = halfViewportH - y * zoom;
+    }
 
     if (this.IsLayoutViewport()) {
       // if the viewport is specified and the viewport bounds are outside of the panning constraints,
@@ -5548,12 +5571,21 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
     var ovContent = new dvt.Container(diagram.getCtx());
     ovContent.setMouseEnabled(false);
     overview.Nodes = new (diagram.getCtx().ojMap)();
+    var contentBounds = diagram.GetViewBounds();
+    overview.ContentBounds = contentBounds ? contentBounds.clone() : null;
+    overview.StretchFactor = {
+      h: 1,
+      v: 1
+    };
     var rootNodes = diagram.GetRootNodeObjects();
 
     if (rootNodes.length > 0) {
       rootNodes.forEach(function (node) {
         DvtDiagramOverviewUtils.CreateOverviewNode(diagram, overview, node, ovContent);
       });
+
+      DvtDiagramOverviewUtils._adjustNodePositionsForAspectRatio(diagram, overview, width, height);
+
       DvtDiagramOverviewUtils.ZoomToFitOverviewContent(diagram, overview, ovContent, width, height);
     }
 
@@ -5712,18 +5744,21 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
    * Transforms a point from diagram content to viewport coordinates
    * @param {number} cx content x position
    * @param {number} cy content y position
-   * @param {dvt.Container} content overview content
+   * @param {DvtDiagramOverview} overview the overview component
    * @return {dvt.Point} point in viewport coordinates
    */
 
 
-  DvtDiagramOverviewUtils.TransformFromContentToViewportCoords = function (cx, cy, content) {
+  DvtDiagramOverviewUtils.TransformFromContentToViewportCoords = function (cx, cy, overview) {
+    var content = overview.Content;
     var tx = content.getTranslateX();
     var ty = content.getTranslateY();
     var sx = content.getScaleX();
     var sy = content.getScaleY();
-    var vx = cx * sx + tx;
-    var vy = cy * sy + ty;
+    var stretchH = overview.StretchFactor.h;
+    var stretchV = overview.StretchFactor.v;
+    var vx = cx * sx * stretchH + tx;
+    var vy = cy * sy * stretchV + ty;
     return new dvt.Point(vx, vy);
   };
   /**
@@ -5731,18 +5766,21 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
    * Transforms a point from overview viewport to diagram content coordinates
    * @param {number} vx viewport x position
    * @param {number} vy viewport y position
-   * @param {dvt.Container} content overview content
+   * @param {DvtDiagramOverview} overview the overview component
    * @return {dvt.Point} point in content coordinates
    */
 
 
-  DvtDiagramOverviewUtils.TransformFromViewportToContentCoords = function (vx, vy, content) {
+  DvtDiagramOverviewUtils.TransformFromViewportToContentCoords = function (vx, vy, overview) {
+    var content = overview.Content;
     var tx = content.getTranslateX();
     var ty = content.getTranslateY();
     var sx = content.getScaleX();
     var sy = content.getScaleY();
-    var cx = (vx - tx) / sx;
-    var cy = (vy - ty) / sy;
+    var stretchH = overview.StretchFactor.h;
+    var stretchV = overview.StretchFactor.v;
+    var cx = (vx - tx) / sx / stretchH;
+    var cy = (vy - ty) / sy / stretchV;
     return new dvt.Point(cx, cy);
   };
   /**
@@ -5757,16 +5795,179 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
 
 
   DvtDiagramOverviewUtils.ZoomToFitOverviewContent = function (diagram, overview, ovContent, width, height) {
-    var diagram = overview.Diagram;
-    var fitBounds = overview.Diagram._cachedViewBounds;
-    var dims = fitBounds ? fitBounds : diagram.GetViewBounds();
+    var dims = overview.ContentBounds;
 
-    var dz = DvtDiagramOverviewUtils._calcOverviewScale(diagram, dims, width, height);
+    var dz = DvtDiagramOverviewUtils._calcOverviewScale(diagram, dims, width, height, overview);
 
     ovContent.setScale(dz, dz);
     var tx = (width - dims.w * dz) / 2 - dims.x * dz;
     var ty = (height - dims.h * dz) / 2 - dims.y * dz;
     ovContent.setTranslate(tx, ty);
+  };
+  /** 
+   * @private
+   * @param {dvt.Diagram} diagram the parent diagram component
+   * @param {DvtDiagramOverview} overview the overview window
+   * @param {number} width overview width
+   * @param {number} height overview height
+   */
+
+
+  DvtDiagramOverviewUtils._adjustNodePositionsForAspectRatio = function (diagram, overview, width, height) {
+    if (diagram.Options.overview.preserveAspectRatio !== 'meet') {
+      var diagramBounds = diagram.GetViewBounds();
+      var ovPadding = 2 * dvt.CSSStyle.toNumber(diagram.Options.styleDefaults._overviewStyles.overviewContent.padding); // canvas meet and canvas none cases
+
+      if (diagram.Options.overview.fitArea === 'canvas') {
+        var canvasDimensions = DvtDiagramOverviewUtils._getCanvasDimensions(diagram);
+
+        var diagramRatio = canvasDimensions.w / canvasDimensions.h; // option #2
+      } else {
+        var diagramRatio = diagramBounds.w / diagramBounds.h; // option 1 is for content meet and content none
+      }
+
+      var overviewRatio = (width - ovPadding) / (height - ovPadding);
+      if (overviewRatio == diagramRatio) return; // stretch factors
+
+      var stretchFactorH = overviewRatio > diagramRatio ? overviewRatio / diagramRatio : 1;
+      var stretchFactorV = overviewRatio < diagramRatio ? diagramRatio / overviewRatio : 1; //update overview.ContentBounds
+
+      overview.ContentBounds = diagramBounds.clone();
+      overview.ContentBounds.w = overview.ContentBounds.w * stretchFactorH;
+      overview.ContentBounds.h = overview.ContentBounds.h * stretchFactorV;
+      overview.StretchFactor = {
+        h: stretchFactorH,
+        v: stretchFactorV
+      }; // adjust positions only for none 
+
+      var rootNodes = diagram.GetRootNodeObjects();
+
+      if (rootNodes.length > 0) {
+        var nodeStretchFactor = DvtDiagramOverviewUtils._getNodesStretchFactor(overview, rootNodes, overview.StretchFactor); // edge case where we don't stretch nodes because of the layout
+
+
+        if (nodeStretchFactor.h === 1 && nodeStretchFactor.v === 1) {
+          overview.ContentBounds = diagramBounds.clone();
+          overview.StretchFactor = {
+            h: 1,
+            v: 1
+          };
+          return;
+        }
+
+        rootNodes.forEach(function (node) {
+          DvtDiagramOverviewUtils._adjustNodePosition(overview.Nodes.get(node.getId()), nodeStretchFactor);
+        });
+      }
+    }
+  };
+  /**
+   * @private
+   * Get the dimension of the canvas based on panning.
+   * @param {dvt.Diagram} diagram the parent diagram component
+   * @return {dvt.Dimension} dims the dimensions of the canvas to be fit
+   */
+
+
+  DvtDiagramOverviewUtils._getCanvasDimensions = function (diagram) {
+    var dims;
+
+    if (diagram.Options.panning === 'fixed' || diagram.Options.panning === 'none') {
+      dims = new dvt.Dimension(diagram.Width, diagram.Height);
+    } else {
+      // panning is 'auto' or 'centerContent'
+      var contentDims = diagram.GetViewBounds();
+      var zoom = diagram.getPanZoomCanvas().getMinZoom();
+      dims = new dvt.Dimension(2 * contentDims.w * zoom, 2 * contentDims.h * zoom);
+    }
+
+    return dims;
+  };
+  /** 
+   * @private
+   * Set new position for the overview node based on the node centers.
+   * @param {dvt.SimpleMarker} ovNode overview node
+   * @param {number} nodeStretchFactor nodeStretchFactor
+   */
+
+
+  DvtDiagramOverviewUtils._adjustNodePosition = function (ovNode, nodeStretchFactor) {
+    var centerDims = ovNode.getCenterDimensions();
+    var currX = ovNode.getTranslateX();
+    var currY = ovNode.getTranslateY();
+
+    if (nodeStretchFactor.h > 1) {
+      var centerX = (currX + centerDims.x - nodeStretchFactor.tx) * nodeStretchFactor.h + nodeStretchFactor.tx;
+      ovNode.setTranslateX(centerX - centerDims.w * .5);
+    } else if (nodeStretchFactor.v > 1) {
+      var centerY = (currY + centerDims.y - nodeStretchFactor.ty) * nodeStretchFactor.v + nodeStretchFactor.ty;
+      ovNode.setTranslateY(centerY - centerDims.h * .5);
+    }
+  };
+  /**
+   * The method calculates vertical and horizontal stretch factors for the node centers based on the stretch factor for the entire content - overview.StretchFactor.
+   * In order to find the stretch factors for the node centers, the method iterates through the nodes, finds nodes with the leftmost and rightmost centers, and nodes with the highest and lowest centers. Then it calculates the vertical and horizontal stretch factors based on the distance between the farthest centers and dimensions of the outer nodes.
+   * If we are not satisfied with the node stretching algorithm in the future, this is the place to look and revise.
+   * @param {DvtDiagramOverview} overview the overview component
+   * @param {object} rootNodes the root nodes of the overview
+   * @param {object} stretchFactor object with horizontal stretch factor and vertical stretch factor
+   * @return {object} nodeStretchFactor
+   */
+
+
+  DvtDiagramOverviewUtils._getNodesStretchFactor = function (overview, rootNodes, stretchFactor) {
+    var nodeStretchFactor = {
+      h: 1,
+      v: 1
+    };
+
+    if (stretchFactor.h > 1) {
+      // find left-most and right-most node centers
+      var minX = Number.MAX_VALUE;
+      var maxX = -Number.MAX_VALUE;
+      var minBounds, maxBounds;
+      rootNodes.forEach(function (node) {
+        var bounds = node.getContentBounds();
+        var centerX = node.getTranslateX() + bounds.x + bounds.w * .5;
+        minBounds = centerX < minX ? bounds : minBounds;
+        maxBounds = centerX > maxX ? bounds : maxBounds;
+        minX = Math.min(centerX, minX);
+        maxX = Math.max(centerX, maxX);
+      });
+      var halfMin = minBounds.w * .5;
+      var halfMax = maxBounds.w * .5;
+      var horizontalStretch = maxX === minX ? 1 : (overview.ContentBounds.w - halfMin - halfMax) / (maxX - minX);
+      nodeStretchFactor = {
+        h: horizontalStretch,
+        v: 1,
+        tx: halfMin
+      };
+    }
+
+    if (stretchFactor.v > 1) {
+      // find most-top and most-bottom node centers
+      var minY = Number.MAX_VALUE;
+      var maxY = -Number.MAX_VALUE;
+      var minBounds, maxBounds;
+      rootNodes.forEach(function (node) {
+        var bounds = node.getContentBounds();
+        var centerY = node.getTranslateY() + bounds.y + bounds.h * .5;
+        minBounds = centerY < minY ? bounds : minBounds;
+        maxBounds = centerY > maxY ? bounds : maxBounds;
+        minY = Math.min(centerY, minY);
+        maxY = Math.max(centerY, maxY);
+      });
+      var halfMin = minBounds.h * .5;
+      var halfMax = maxBounds.h * .5;
+      var verticalStretch = maxY === minY ? 1 : (overview.ContentBounds.h - halfMin - halfMax) / (maxY - minY);
+      nodeStretchFactor = {
+        h: 1,
+        v: verticalStretch,
+        ty: halfMin
+      };
+    }
+
+    return nodeStretchFactor;
   };
   /**
    * @private
@@ -5775,13 +5976,37 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
    * @param {object} ztfBounds zoom-to-fit dimensions for the diagram content
    * @param {number} width overview width
    * @param {number} height overview height
+   * @param {DvtDiagramOverview} overview the overview component
    */
 
 
-  DvtDiagramOverviewUtils._calcOverviewScale = function (diagram, ztfBounds, width, height) {
-    var cw = width - 20; //use 10px padding for the content from each side
+  DvtDiagramOverviewUtils._calcOverviewScale = function (diagram, ztfBounds, width, height, overview) {
+    var ovPadding = 2 * dvt.CSSStyle.toNumber(diagram.Options.styleDefaults._overviewStyles.overviewContent.padding);
+    var cw = width - ovPadding; //use padding for the content from each side
 
-    var ch = height - 20; //use 10px padding for the content from each side
+    var ch = height - ovPadding; //use padding for the content from each side
+
+    if (diagram.Options.overview.fitArea === 'canvas') {
+      var diagramBounds = diagram.GetViewBounds();
+      var minZoom = diagram.getPanZoomCanvas().getMinZoom();
+
+      var canvasDims = DvtDiagramOverviewUtils._getCanvasDimensions(diagram);
+
+      var contentPadding = Math.min((canvasDims.h - diagramBounds.h * minZoom) / 2, (canvasDims.w - diagramBounds.w * minZoom) / 2); // make this variable
+
+      var stretchFactorH = overview.StretchFactor.h;
+      var stretchFactorV = overview.StretchFactor.v;
+      var vzx = cw / canvasDims.w * stretchFactorH;
+      var vzh = ch / canvasDims.h * stretchFactorV;
+      var vz = Math.min(vzx, vzh);
+      var diagramPaddingW = 2 * contentPadding * stretchFactorH * vz; // 40 = 2 * dvt.PanZoomCanvas.DEFAULT_PADDING;
+
+      var diagramPaddingH = 2 * contentPadding * stretchFactorV * vz; // 40 = 2 * dvt.PanZoomCanvas.DEFAULT_PADDING;
+
+      cw -= diagramPaddingW; // adjust for diagram/viewport padding
+
+      ch -= diagramPaddingH; // adjust for diagram/viewport padding
+    }
 
     var dzx = cw / ztfBounds.w;
     var dzy = ch / ztfBounds.h;
@@ -5924,6 +6149,8 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
         overview.Nodes.delete(nodeId);
       }
     });
+
+    DvtDiagramOverviewUtils._adjustNodePositionsForAspectRatio(diagram, overview, overview.Width, overview.Height);
   };
   /**
    * @license
@@ -6045,8 +6272,8 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
     var zoom = this.Diagram.getPanZoomCanvas().getZoom(); // maxPanX/maxPanY: bottom right point for the content with zoom adjustment corresponds to top left point in overview viewport
     // minPanX,minPanY: top left point for the content with zoom adjustment corresponds to bottom right point in overview viewport
 
-    var topLeft = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(-maxPanX / zoom, -maxPanY / zoom, this.Content);
-    var bottomRight = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(-minPanX / zoom, -minPanY / zoom, this.Content);
+    var topLeft = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(-maxPanX / zoom, -maxPanY / zoom, this);
+    var bottomRight = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(-minPanX / zoom, -minPanY / zoom, this);
     var width = this._viewportPosition.x2 - this._viewportPosition.x1;
     var height = this._viewportPosition.y2 - this._viewportPosition.y1;
     var panDirection = this.Diagram.getPanDirection();
@@ -6130,8 +6357,8 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   DvtDiagramOverview.prototype.UpdateViewport = function () {
     if (this._bCancelUpdateViewport) return;
     var newViewport = DvtDiagramOverviewUtils.CalcViewportFromMatrix(this.Diagram);
-    var topLeft = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(newViewport.x, newViewport.y, this.Content);
-    var bottomRight = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(newViewport.x + newViewport.w, newViewport.y + newViewport.h, this.Content);
+    var topLeft = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(newViewport.x, newViewport.y, this);
+    var bottomRight = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(newViewport.x + newViewport.w, newViewport.y + newViewport.h, this);
     this._viewportPosition = {
       x1: topLeft.x,
       x2: bottomRight.x,
@@ -6141,16 +6368,16 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
     this.setViewportRange(topLeft.x, bottomRight.x, topLeft.y, bottomRight.y);
   };
   /**
-   * Viewport change handler
-   * @protected
-   */
+  * Viewport change handler
+  * @protected
+  */
 
 
   DvtDiagramOverview.prototype.HandleViewportChange = function (event) {
     var newX1 = event.newX1 !== undefined ? event.newX1 : this._viewportPosition.x1;
     var newY1 = event.newY1 !== undefined ? event.newY1 : this._viewportPosition.y1;
-    var oldTopLeft = DvtDiagramOverviewUtils.TransformFromViewportToContentCoords(this._viewportPosition.x1, this._viewportPosition.y1, this.Content);
-    var newTopLeft = DvtDiagramOverviewUtils.TransformFromViewportToContentCoords(newX1, newY1, this.Content);
+    var oldTopLeft = DvtDiagramOverviewUtils.TransformFromViewportToContentCoords(this._viewportPosition.x1, this._viewportPosition.y1, this);
+    var newTopLeft = DvtDiagramOverviewUtils.TransformFromViewportToContentCoords(newX1, newY1, this);
     this._viewportPosition.x1 = newX1;
     this._viewportPosition.y1 = newY1;
     var zoom = this.Diagram.getPanZoomCanvas().getZoom();
@@ -6887,7 +7114,7 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
     var pzc = this.getPanZoomCanvas();
 
     if (!this._bRendered) {
-      this.AdjustMinZoom(this._cachedViewBounds); //: don't override a viewport returned from the layout engine
+      this.AdjustMinZoom(); //: don't override a viewport returned from the layout engine
 
       var bLayoutViewport = this.IsLayoutViewport();
       var fitBounds = bLayoutViewport ? this.GetLayoutViewport() : this._cachedViewBounds;
@@ -6895,7 +7122,7 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
       pzc.zoomToFit(null, fitBounds);
     } else if (this.IsResize() || this._partialUpdate) {
       // Update the min zoom if it's unspecified
-      var viewBounds = this.AdjustMinZoom(this._cachedViewBounds);
+      var viewBounds = this.AdjustMinZoom();
       var bLayoutViewport = this.IsLayoutViewport();
       var fitBounds = bLayoutViewport ? this.GetLayoutViewport() : viewBounds ? viewBounds : this._cachedViewBounds;
       pzc.setZoomToFitPadding(bLayoutViewport ? 0 : dvt.PanZoomCanvas.DEFAULT_PADDING);
@@ -7323,7 +7550,7 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
         if (this.IsPanningEnabled()) {
           var zoom = event.newZoom; // Calculate the new content dimensions based on the new zoom
 
-          var contentDim = this._cachedViewBounds ? this._cachedViewBounds : this.GetViewBounds();
+          var contentDim = this.GetViewBounds();
           this.ConstrainPanning(contentDim.x, contentDim.y, contentDim.w, contentDim.h, zoom);
         }
 
@@ -8833,6 +9060,10 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
     'nodeHighlightMode': 'node',
     'linkHighlightMode': 'link',
     'panning': 'none',
+    'overview': {
+      'fitArea': 'content',
+      'preserveAspectRatio': 'meet'
+    },
     'touchResponse': 'auto',
     'zooming': 'none',
     'promotedLinkBehavior': 'lazy',
@@ -8856,6 +9087,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
       '_overviewStyles': {
         'overview': {
           'backgroundColor': 'rgb(228,229,230)'
+        },
+        'overviewContent': {
+          'padding': '10px'
         },
         'viewport': {
           'backgroundColor': 'rgb(255,255,255)',

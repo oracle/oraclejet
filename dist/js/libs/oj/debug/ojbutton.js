@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -382,12 +382,11 @@ var __oj_menu_button_metadata =
          * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
          * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
          * @ojvalue {string} "callToAction" A Call To Action (CTA) button guides the user to take or complete the action that is the main goal of the page or page section. There should only be one CTA button on a page at any given time.
-         * @ojvalue {string} "full" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use solid instead.</span>
-         * In typical themes, full-chrome buttons always have chrome.
-         * @ojvalue {string} "half" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use borderless instead.</span>
-         * In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
+         * @ojvalue {string} "full" Please use solid instead. In typical themes, full-chrome buttons always have chrome.
+         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
          * @ojshortdesc Indicates in what states the button has chrome (background and border).
-         *
+         * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use solid instead."},
+         *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use borderless instead."}]
          * @example <caption>Initialize the Button with the <code class="prettyprint">chroming</code> attribute specified:</caption>
          * &lt;oj-button chroming='borderless'>&lt;/oj-button>
          *
@@ -412,11 +411,11 @@ var __oj_menu_button_metadata =
          * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI.
          * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
          * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
-         * @ojvalue {string} "full" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use solid instead.</span>
-         * In typical themes, full-chrome buttons always have chrome.
-         * @ojvalue {string} "half" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use borderless instead.</span>
-         * In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
+         * @ojvalue {string} "full" Please use solid instead. In typical themes, full-chrome buttons always have chrome.
+         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
          * @ojshortdesc Indicates in what states the button has chrome (background and border).
+         * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use solid instead."},
+         *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use borderless instead."}]
          *
          * @example <caption>Initialize the Button with the <code class="prettyprint">chroming</code> attribute specified:</caption>
          * &lt;oj-button chroming='borderless'>&lt;/oj-button>
@@ -2890,11 +2889,11 @@ var __oj_menu_button_metadata =
          * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI.
          * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
          * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
-         * @ojvalue {string} "full" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use solid instead.</span>
-         * In typical themes, full-chrome buttons always have chrome.
-         * @ojvalue {string} "half" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use borderless instead.</span>
-         * In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. A buttonset with half-chroming will be styled to have normal button spacing.
+         * @ojvalue {string} "full" Please use solid instead. In typical themes, full-chrome buttons always have chrome.
+         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
          * @ojshortdesc Indicates in what states the buttonset has chrome (background and border).
+         * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use solid instead."},
+         *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use borderless instead."}]
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">chroming</code> attribute specified:</caption>
          * &lt;oj-buttonset-one chroming='borderless'>&lt;/oj-buttonset-one>
@@ -2919,10 +2918,11 @@ var __oj_menu_button_metadata =
          * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI.
          * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
          * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
-         * @ojvalue {string} "full" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use solid instead.</span>
-         * In typical themes, full-chrome buttons always have chrome.
-         * @ojvalue {string} "half" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use borderless instead.</span>
-         * In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. A buttonset with half-chroming will be styled to have normal button spacing.
+         * @ojvalue {string} "full" Please use solid instead. In typical themes, full-chrome buttons always have chrome.
+         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
+         * @ojshortdesc Indicates in what states the button has chrome (background and border).
+         * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use solid instead."},
+         *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use borderless instead."}]
          * @ojshortdesc Indicates in what states the buttonset has chrome (background and border).
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">chroming</code> attribute specified:</caption>

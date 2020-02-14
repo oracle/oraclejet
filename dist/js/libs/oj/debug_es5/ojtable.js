@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojtranslation', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojmessaging', 'ojs/ojlogger', 'ojs/ojkeyset', 'ojdnd', 'ojs/ojdomscroller', 'ojs/ojeditablevalue', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojpopup', 'ojs/ojbutton', 'ojs/ojdatasource-common', 'ojs/ojdataprovideradapter', 'ojs/ojlistdataproviderview', 'touchr', 'ojs/ojvalidation-base'], 
-function(oj, $, Context, Config, Translations, ThemeUtils, Components, DataCollectionUtils, AnimationUtils, Message, Logger, KeySet)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojtranslation', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojmessaging', 'ojs/ojlogger', 'ojs/ojkeyset', 'ojs/ojvalidator-regexp', 'ojdnd', 'ojs/ojdomscroller', 'ojs/ojeditablevalue', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojpopup', 'ojs/ojbutton', 'ojs/ojdatasource-common', 'ojs/ojdataprovideradapter', 'ojs/ojlistdataproviderview', 'touchr'], 
+function(oj, $, Context, Config, Translations, ThemeUtils, Components, DataCollectionUtils, AnimationUtils, Message, Logger, KeySet, RegExpValidator)
 {
   "use strict";
 var __oj_table_metadata = 
@@ -3924,17 +3924,14 @@ var __oj_table_metadata =
               table.focus();
             }, 0);
           }
+        } else if (domUtils._isFF() && event.target === tableBody) {
+          // workaround for FF. In FF, the tbody is focusable even though it has
+          // tabindex -1. So we have to shift focus back to the table itself if
+          // focus is set on the tbody (ex. a shift-tab from outside the table)
+          setTimeout(function () {
+            table.focus();
+          }, 0);
         }
-      },
-
-      /*
-       * Check the keyboard state on focus
-       */
-      'focus .oj-table-column-header-acc-asc-link': function focusOjTableColumnHeaderAccAscLink(event) {
-        setTimeout(function () {
-          // delay the column/row focus just in case a column/row is clicked.
-          this._checkRowOrHeaderColumnFocus(event);
-        }.bind(this), 0);
       },
 
       /*
@@ -4261,7 +4258,7 @@ var __oj_table_metadata =
       },
 
       /*
-       * invoke a sort on the column data when the mouse clicks the ascending link
+       * invoke a sort on the column data when the mouse clicks the sort icon
        */
       'click .oj-table-sort-icon-container': function clickOjTableSortIconContainer(event) {
         var columnIdx = this._getTableDomUtils().getElementColumnIdx(event.target);
@@ -7088,10 +7085,9 @@ var __oj_table_metadata =
 
       var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
 
-      if (tableBodyRows != null && tableBodyRows.length > 0) {
+      if (tableBodyRows != null && tableBodyRows.length > 0 && tableBody.offsetHeight > 0) {
         var windowHeight = $(window).height();
-        var tableBodyRect = tableBody.getBoundingClientRect();
-        var i; // check if not visible at all
+        var tableBodyRect = tableBody.getBoundingClientRect(); // check if not visible at all
 
         if (tableBodyRect.top > windowHeight) {
           return visibleRowIdxArray;
@@ -7123,7 +7119,7 @@ var __oj_table_metadata =
             lastRowIdx = this._getTableDomUtils().getElementRowIdx(tableElemBottom);
           }
         } else {
-          var borderBottomWidth = parseInt(window.getComputedStyle(tableBody).borderBottomWidth, 10);
+          var borderBottomWidth = parseInt(window.getComputedStyle(tableBody).borderBottomWidth, 10) || 0;
           var viewportBottom = tableBodyRect.bottom >= 0 ? tableBodyRect.bottom - borderBottomWidth - 1 : 0;
           tableElemBottom = document.elementFromPoint(tableElemX, viewportBottom);
 
@@ -7136,7 +7132,7 @@ var __oj_table_metadata =
           lastRowIdx = tableBodyRows.length - 1;
         }
 
-        for (i = startRowIdx; i <= lastRowIdx; i++) {
+        for (var i = startRowIdx; i <= lastRowIdx; i++) {
           visibleRowIdxArray.push(i);
         }
       }
@@ -7638,8 +7634,8 @@ var __oj_table_metadata =
      * @private
      */
     _handleKeydownEnd: function _handleKeydownEnd(event) {
-      if (this._isTableActionableMode()) {
-        // ignore in actionable mode
+      if (this._isTableActionableMode() || this._hasEditableRow()) {
+        // ignore in actionable and editable mode
         return;
       } // pressing End focuses on last column
 
@@ -7650,15 +7646,17 @@ var __oj_table_metadata =
         var visibleIndex = this._getFirstVisibleColumnIndex(this._getColumnDefs().length - 1, false);
 
         this._setHeaderColumnFocus(visibleIndex, true, false);
-      } else if (!this._hasEditableRow()) {
+      } else {
         var focusedRowIdx = this._getFocusedRowIdx();
 
-        var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
+        if (focusedRowIdx != null) {
+          var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
 
-        var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
+          var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
 
-        if (focusedRowIdx != null && focusedRowIdx !== rowCount - 1 && rowCount > 0) {
-          this._setRowFocus(rowCount - 1, true, true, null, event);
+          if (focusedRowIdx !== rowCount - 1 && rowCount > 0) {
+            this._setRowFocus(rowCount - 1, true, true, null, event);
+          }
         }
       }
     },
@@ -7723,7 +7721,7 @@ var __oj_table_metadata =
      */
     _handleKeydownEsc: function _handleKeydownEsc(event) {
       // pressing Esc always returns focus back to the table.
-      if (this._isTableEditMode() && this._hasEditableRow()) {
+      if (this._hasEditableRow()) {
         event.preventDefault();
         event.stopPropagation();
 
@@ -7773,8 +7771,8 @@ var __oj_table_metadata =
      * @private
      */
     _handleKeydownHome: function _handleKeydownHome(event) {
-      if (this._isTableActionableMode()) {
-        // ignore in actionable mode
+      if (this._isTableActionableMode() || this._hasEditableRow()) {
+        // ignore in actionable and editable mode
         return;
       } // pressing Home focuses on first column
 
@@ -7785,7 +7783,7 @@ var __oj_table_metadata =
         var visibleIndex = this._getFirstVisibleColumnIndex(0, true);
 
         this._setHeaderColumnFocus(visibleIndex, true, false);
-      } else if (!this._hasEditableRow()) {
+      } else {
         var focusedRowIdx = this._getFocusedRowIdx();
 
         if (focusedRowIdx != null && focusedRowIdx !== 0) {
@@ -7800,8 +7798,8 @@ var __oj_table_metadata =
      * @private
      */
     _handleKeydownLeftRight: function _handleKeydownLeftRight(event, isExtend) {
-      if (this._isTableActionableMode()) {
-        // ignore in actionable mode
+      if (this._isTableActionableMode() || this._hasEditableRow()) {
+        // ignore in actionable and editable mode
         return;
       } // pressing left/right navigates the column headers
 
@@ -7814,10 +7812,12 @@ var __oj_table_metadata =
         var isLeft = this._isKeyboardKeyPressed(this._KEYBOARD_CODES._KEYBOARD_CODE_LEFT);
 
         var focusNextHeader = isRTL && isLeft || !isRTL && !isLeft;
-        var current = !isExtend || this._isNavigate ? focusedHeaderIndex : this._lastSelectedHeaderIdx;
+        var current;
 
-        if (current == null) {
+        if (!isExtend || this._isNavigate || this._lastSelectedHeaderIdx == null) {
           current = focusedHeaderIndex;
+        } else {
+          current = this._lastSelectedHeaderIdx;
         }
 
         var target = this._getNextVisibleColumnIndex(current, focusNextHeader);
@@ -7844,8 +7844,8 @@ var __oj_table_metadata =
      * @private
      */
     _handleKeydownSpacebar: function _handleKeydownSpacebar(event) {
-      if (this._isTableActionableMode() || this._isTableEditMode()) {
-        // ignore in actionable and edit mode
+      if (this._isTableActionableMode() || this._hasEditableRow()) {
+        // ignore in actionable and editable mode
         return;
       } // need to do this so that these keys don't act on the page. e.g. pressing Down would cause the
       // page to go down as well as the row to change
@@ -7858,7 +7858,7 @@ var __oj_table_metadata =
 
       if (focusedRowIdx != null) {
         this._handleSelectionGesture(focusedRowIdx, true, true);
-      } else if (!this._hasEditableRow()) {
+      } else {
         var focusedHeaderColumnIdx = this._getFocusedHeaderColumnIdx();
 
         if (focusedHeaderColumnIdx != null) {
@@ -8041,20 +8041,18 @@ var __oj_table_metadata =
         if (!event[this._KEYBOARD_CODES._KEYBOARD_MODIFIER_SHIFT]) {
           // If we are tabbing forward and the table contains tabbable
           // elements, focus on the last tabbable element.
-          if (tabbableElementsInTableCount > 0) {
-            if (!this._getTableDomUtils()._isFF()) {
-              temporaryFocus = tabbableElementsInTable[tabbableElementsInTableCount - 1];
-            } else {
-              // workaround for FF. In FF, the tbody is focusable even though it has
-              // tabindex -1. So we have to create a temporary focusable element
-              // as the last element in the table container and focus on that one.
-              temporaryFocus = document.createElement(oj.TableDomUtils.DOM_ELEMENT._A);
-              temporaryFocus.setAttribute(oj.TableDomUtils.DOM_ATTR._TABINDEX, '0');
-              temporaryFocus.setAttribute(oj.TableDomUtils.DOM_ATTR._HREF, '#');
-              temporaryFocus.classList.add(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
-              table.insertAdjacentElement('afterend', temporaryFocus);
-              this._temporaryFocusForFF = temporaryFocus;
-            }
+          if (this._getTableDomUtils()._isFF()) {
+            // workaround for FF. In FF, the tbody is focusable even though it has
+            // tabindex -1. So we have to create a temporary focusable element
+            // as the last element in the table container and focus on that one.
+            temporaryFocus = document.createElement(oj.TableDomUtils.DOM_ELEMENT._A);
+            temporaryFocus.setAttribute(oj.TableDomUtils.DOM_ATTR._TABINDEX, '0');
+            temporaryFocus.setAttribute(oj.TableDomUtils.DOM_ATTR._HREF, '#');
+            temporaryFocus.classList.add(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+            table.insertAdjacentElement('afterend', temporaryFocus);
+            this._temporaryFocusForFF = temporaryFocus;
+          } else if (tabbableElementsInTableCount > 0) {
+            temporaryFocus = tabbableElementsInTable[tabbableElementsInTableCount - 1];
           }
         } // Need to set this variable because the focus() call will
         // trigger a focusin which we do not want to handle.
@@ -8086,23 +8084,23 @@ var __oj_table_metadata =
      * @private
      */
     _handleKeydownUpDown: function _handleKeydownUpDown(event, isExtend) {
-      if (this._isTableActionableMode()) {
-        // ignore in actionable mode
+      if (this._isTableActionableMode() || this._hasEditableRow()) {
+        // ignore in actionable and editable mode
         return;
       }
 
       var focusedRowIdx = this._getFocusedRowIdx();
 
-      var focusedHeaderColumnIdx = this._getFocusedHeaderColumnIdx();
-
-      if (focusedRowIdx != null && !this._hasEditableRow()) {
+      if (focusedRowIdx != null) {
         var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
 
         var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
-        var current = !isExtend || this._isNavigate ? focusedRowIdx : this._lastSelectedRowIdx;
+        var current;
 
-        if (current == null) {
+        if (!isExtend || this._isNavigate || this._lastSelectedRowIdx == null) {
           current = focusedRowIdx;
+        } else {
+          current = this._lastSelectedRowIdx;
         }
 
         var target;
@@ -8123,23 +8121,25 @@ var __oj_table_metadata =
           this._isNavigate = true; // if row is focused then up/down navigates the rows
 
           if (target !== focusedRowIdx) {
-            var focused = this._setRowFocus(target, true, true, null, event);
-
-            if (!focused) {
+            if (!this._setRowFocus(target, true, true, null, event)) {
               return;
             }
 
             this._getTableDomUtils().getTable().focus();
-          } else if (target === focusedRowIdx && focusedRowIdx === 0 && this._isKeyboardKeyPressed(this._KEYBOARD_CODES._KEYBOARD_CODE_UP)) {
+          } else if (target === 0 && this._isKeyboardKeyPressed(this._KEYBOARD_CODES._KEYBOARD_CODE_UP)) {
             // if user is on the first row and presses up the focus on the first visible column header
             var visibleIndex = this._getFirstVisibleColumnIndex(0, true);
 
             this._setHeaderColumnFocus(visibleIndex, true, false);
           }
         }
-      } else if (focusedHeaderColumnIdx != null && this._isKeyboardKeyPressed(this._KEYBOARD_CODES._KEYBOARD_CODE_DOWN)) {
-        // if user is on a column header and pressed down then focus on the first row
-        this._setRowFocus(0, true, true, null, event);
+      } else if (this._isKeyboardKeyPressed(this._KEYBOARD_CODES._KEYBOARD_CODE_DOWN)) {
+        var focusedHeaderColumnIdx = this._getFocusedHeaderColumnIdx();
+
+        if (focusedHeaderColumnIdx != null) {
+          // if user is on a column header and pressed down then focus on the first row
+          this._setRowFocus(0, true, true, null, event);
+        }
       }
     },
 
@@ -8154,7 +8154,7 @@ var __oj_table_metadata =
         var columnIdx = this._getTableDomUtils().getElementColumnIdx(element); // add hover class if element is sort icon
 
 
-        if (element.classList.contains(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS) || element.classList.contains(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS)) {
+        if (element.classList.contains(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS) || element.classList.contains(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_ICON_CLASS)) {
           element.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._HOVER);
         } // show sort icon on hover
 
@@ -10887,8 +10887,12 @@ var __oj_table_metadata =
       if (focused != null) {
         if (!focused) {
           this._focusOutHandler($(headerColumn));
+
+          this._hideTableHeaderColumnSortIcon(columnIdx);
         } else {
           this._focusInHandler($(headerColumn));
+
+          this._showTableHeaderColumnSortIcon(columnIdx);
         }
       }
 
@@ -13936,7 +13940,7 @@ oj.TableDndContext.prototype._updateDragRowsState = function (event, newRowIndex
 
 /* jslint browser: true,devel:true*/
 
-/* global Components:false, Logger:false, Translations:false, Context:false, DataCollectionUtils:false */
+/* global Components:false, Logger:false, RegExpValidator:false, Translations:false, Context:false, DataCollectionUtils:false */
 
 /**
  * @ignore
@@ -14245,13 +14249,10 @@ oj.TableDomUtils.prototype.createContextMenuResizePopup = function (initialSize)
       displayOptions: {
         messages: ['notewindow']
       },
-      validators: [{
-        type: 'regExp',
-        options: {
-          pattern: '^[1-9][0-9]*$',
-          messageDetail: this.component.getTranslatedString('msgColumnResizeWidthValidation')
-        }
-      }]
+      validators: [new RegExpValidator({
+        pattern: '^[1-9][0-9]*$',
+        messageDetail: this.component.getTranslatedString('msgColumnResizeWidthValidation')
+      })]
     });
     $(popup).ojPopup({
       modality: 'modal',
@@ -16672,6 +16673,10 @@ oj.TableDomUtils.prototype.styleTableHeaderColumn = function (columnIdx, tableHe
   if (isNew || !tableHeaderColumn.classList.contains(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS)) {
     tableHeaderColumn.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS);
 
+    if (column.sortable === oj.TableDomUtils._OPTION_ENABLED) {
+      tableHeaderColumn.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_SORT_CLASS);
+    }
+
     if (this._isVerticalGridEnabled()) {
       if (isNew || !tableHeaderColumn.classList.contains(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS)) {
         tableHeaderColumn.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
@@ -17904,7 +17909,7 @@ oj.TableDomUtils.prototype._setHeaderColumnOverflowWidths = function () {
           if (headerColumnDiv.clientWidth > 0 && headerColumnTextDiv[0].clientWidth > headerColumnDiv.clientWidth) {
             headerColumnTextDiv[0].style[oj.TableDomUtils.CSS_PROP._WIDTH] = '';
             var headerColumnTextDivWidth = headerColumnTextDiv[0].clientWidth;
-            var newHeaderColumnTextDivWidth = headerColumnCell.clientWidth; // we only want to constrain the width.
+            var newHeaderColumnTextDivWidth = headerColumnDiv.clientWidth; // we only want to constrain the width.
 
             if (headerColumnTextDivWidth > newHeaderColumnTextDivWidth + 1) {
               headerColumnTextDiv[0].style[oj.TableDomUtils.CSS_PROP._WIDTH] = newHeaderColumnTextDivWidth + oj.TableDomUtils.CSS_VAL._PX;
@@ -17957,6 +17962,7 @@ oj.TableDomUtils.CSS_CLASSES = {
   _TABLE_SCROLL_CLASS: 'oj-table-scroll',
   _TABLE_SCROLL_VERTICAL_CLASS: 'oj-table-scroll-vertical',
   _TABLE_SCROLL_HORIZONTAL_CLASS: 'oj-table-scroll-horizontal',
+  _TABLE_SORT_CLASS: 'oj-table-sort',
   _TABLE_ELEMENT_CLASS: 'oj-table-element',
   _TABLE_FOOTER_CLASS: 'oj-table-footer',
   _TABLE_FOOTER_ROW_CLASS: 'oj-table-footer-row',

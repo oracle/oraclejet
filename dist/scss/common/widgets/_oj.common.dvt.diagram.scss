@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!
 // WARNING: do not directly import this file, instead import the
 //          version in your theme's directory,
@@ -127,6 +127,11 @@
         padding:$dvtDiagramOverviewPadding;
 
     }
+    
+    .oj-diagram-overview-content {
+      padding: $dvtDiagramOverviewContentPadding;
+    }
+
     .oj-diagram-overview-viewport {
 
         background-color:$dvtDiagramOverviewWindowBgColor;

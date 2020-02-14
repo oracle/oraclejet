@@ -1,13 +1,21 @@
 import CoreRouter = require('../ojcorerouter');
 import { ModuleElementAnimation, ModuleViewModel } from '../ojmodule-element';
 import ModuleAnimations = require('../ojmoduleanimations');
-declare class ModuleRouterAdapter {
+declare class ModuleRouterAdapter<D extends {
+    [key: string]: any;
+} = {
+    [key: string]: any;
+}, P extends {
+    [key: string]: any;
+} = {
+    [key: string]: any;
+}> {
     animation: ModuleElementAnimation;
     koObservableConfig: {
         view: Node[];
         viewModel: ModuleViewModel;
     };
-    constructor(router: CoreRouter, options?: {
+    constructor(router: CoreRouter<D, P>, options?: {
         viewPath?: string;
         viewModelPath?: string;
         pathKey?: string;
@@ -23,6 +31,13 @@ declare namespace ModuleRouterAdapter {
         viewModel: any;
         previousState: any;
         state: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ViewModelParameters<D, P> = {
+        parentRouter: CoreRouter<D, P>;
+        params: P;
+        router: CoreRouter<D, P>;
+        routerState: CoreRouter.CoreRouterState<D, P>;
     };
 }
 export = ModuleRouterAdapter;

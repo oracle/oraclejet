@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
 //          version in your base theme's directory,
@@ -78,7 +78,6 @@
       // the below styles came from the old oj-searchselect-choice class
 
       @include oj-form-control-input;
-      height: $formControlInputHeight;
       @include oj-form-control-content-no-focus-padding;
       @include oj-ltr() {
         padding-left: $formControlPaddingHorizontal;
@@ -86,6 +85,12 @@
       @include oj-rtl() {
         padding-right: $formControlPaddingHorizontal;
       }
+    }
+
+    .oj-searchselect.oj-text-field .oj-text-field-container {
+      // This is the element with the border, so the height needs to be
+      // set on this element.
+      height: $formControlInputHeight;
     }
 
     // .oj-searchselect-fullscreen .oj-searchselect-input

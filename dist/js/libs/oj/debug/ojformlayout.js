@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -507,6 +507,8 @@ function ojFormLayout(context) {
       // that as well.
       var busyContext = Context.getContext(ojForm).getBusyContext();
       busyContext.whenReady().then(function () {
+        var tmpFocusElem = document.activeElement;
+        var needsFocusRestored = false;
         // add a busy state for the oj-form div so we don't have multiple threads
         // modifying the oj-form div at the same time.
         _ojFormNotReady();
@@ -514,13 +516,24 @@ function ojFormLayout(context) {
         self._rootElementMutationObserver.disconnect();
 
         _updateOjFormDiv();
-
         if (!isInitialRender) {
           _removeAllBonusDomElements();
         }
 
         _addLabelsFromHints();
         _addAllFlexDivs();
+        if (tmpFocusElem) {
+          needsFocusRestored = oj.DomUtils.isAncestorOrSelf(element, tmpFocusElem);
+        }
+        // If the current focus is inside form layout while updating the DOM, place the focus back to the element;
+        if (!isInitialRender && needsFocusRestored) {
+          // : Since IE11 is having different render sequence of the DOM tree, it will blur out of the focused element.
+          // To avoide losing focus, we need to add setTimeout to give the broswer enough time to finish the normal sequence and then
+          // set the focus back.
+          setTimeout(function () {
+            tmpFocusElem.focus();
+          }, 0);
+        }
 
         // We are done making modifications to dom subtree elements so we should start paying attention
         // to mutations of the oj-form DIV subtree.  The mutations we care about are added elements and

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -49,17 +49,16 @@
      * Applied to the single-select box which includes the input field and the dropdown open icon
      */
     .oj-combobox-choice {
-        // TODO, We need to think about getting rid of this mixin and move the relevant style to 
-        // container
-        @include oj-form-control-input;
-        height: $formControlInputHeight;
-        @include oj-form-control-content-no-focus-padding;
-        @include oj-ltr() {
-          padding-left: $formControlPaddingHorizontal;
-        }
-        @include oj-rtl() {
-          padding-right: $formControlPaddingHorizontal;
-        }
+      // TODO, We need to think about getting rid of this mixin and move the relevant style to 
+      // container
+      @include oj-form-control-input;
+      @include oj-form-control-content-no-focus-padding;
+      @include oj-ltr() {
+        padding-left: $formControlPaddingHorizontal;
+      }
+      @include oj-rtl() {
+        padding-right: $formControlPaddingHorizontal;
+      }
 
       box-sizing: border-box;
       display: flex;
@@ -69,7 +68,12 @@
       overflow: hidden;
       white-space: nowrap;
       background-clip: padding-box;
+      // height needs to be 100% as the border and height is set on an ancestor element
+      height: 100%;
+    }
 
+    .oj-text-field .oj-combobox-multi .oj-text-field-container {
+      height: auto;
     }
 
     /* 
@@ -102,7 +106,6 @@
           opacity: 1;
           font-style: $formControlPlaceholderFontStyle;
         }   
-
     }
 
     /* Styling for readonly mode */

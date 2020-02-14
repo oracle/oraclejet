@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
 
 "use strict";
-define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojset', 'ojs/ojmap', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function(oj, $, ko, ojSet, ojMap, __DataProvider)
+define(['ojs/ojcore', 'jquery', 'ojs/ojset', 'ojs/ojmap', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function(oj, $, ojSet, ojMap, __DataProvider)
 {
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -106,15 +106,17 @@ function () {
     this.FetchListParameters =
     /*#__PURE__*/
     function () {
-      function _class6(_parent, size, sortCriteria, attributes) {
+      function _class6(_parent, size, sortCriteria, filterCriterion, attributes) {
         _classCallCheck(this, _class6);
 
         this._parent = _parent;
         this.size = size;
         this.sortCriteria = sortCriteria;
+        this.filterCriterion = filterCriterion;
         this.attributes = attributes;
         this[ArrayDataProvider._SIZE] = size;
         this[ArrayDataProvider._SORTCRITERIA] = sortCriteria;
+        this[ArrayDataProvider._FILTERCRITERION] = filterCriterion;
         this[ArrayDataProvider._ATTRIBUTES] = attributes;
       }
 
@@ -174,10 +176,10 @@ function () {
       _createClass(_class9, [{
         key: 'next',
         value: function next() {
-          var result = this._nextFunc(this._params, this._cachedOffset, this._cacheObj);
+          var resultObj = this._nextFunc(this._params, this._cachedOffset, this._cacheObj);
 
-          this._cachedOffset = this._cachedOffset + result.value[ArrayDataProvider._DATA].length;
-          return Promise.resolve(result);
+          this._cachedOffset = resultObj.offset;
+          return Promise.resolve(resultObj.result);
         }
       }]);
 
@@ -360,6 +362,7 @@ function () {
       var sortCriteria = params != null ? params[ArrayDataProvider._SORTCRITERIA] : null;
       var offset = params != null ? params[ArrayDataProvider._OFFSET] > 0 ? params[ArrayDataProvider._OFFSET] : 0 : 0;
       var fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
+      var filterCriterion = params != null ? params[ArrayDataProvider._FILTERCRITERION] : null;
 
       this._generateKeysIfNeeded();
 
@@ -367,9 +370,9 @@ function () {
       var done = true;
 
       if (params) {
-        var fetchParams = new this.FetchListParameters(this, size, sortCriteria, fetchAttributes);
+        var fetchParams = new this.FetchListParameters(this, size, sortCriteria, filterCriterion, fetchAttributes);
 
-        var iteratorResults = this._fetchFrom(fetchParams, offset);
+        var iteratorResults = this._fetchFrom(fetchParams, offset).result;
 
         var value = iteratorResults[ArrayDataProvider._VALUE];
         done = iteratorResults[ArrayDataProvider._DONE];
@@ -759,7 +762,7 @@ function () {
   }, {
     key: "_isObservableArray",
     value: function _isObservableArray(obj) {
-      return ko.isObservable(obj) && !(obj['destroyAll'] === undefined);
+      return typeof obj == 'function' && obj.subscribe && !(obj['destroyAll'] === undefined);
     }
     /**
      * Generate keys array if it wasn't passed in options.keys
@@ -866,15 +869,6 @@ function () {
 
       var mappedData = indexMap.map(function (index) {
         var row = rowData[index];
-
-        if (fetchAttributes && fetchAttributes.length > 0) {
-          var updatedData = {};
-
-          self._filterRowAttributes(fetchAttributes, row, updatedData);
-
-          row = updatedData;
-        }
-
         return row;
       });
       var mappedKeys = indexMap.map(function (index) {
@@ -892,6 +886,8 @@ function () {
 
       var resultData = [];
       var resultKeys = [];
+      var updatedOffset = 0;
+      var filteredResultData;
 
       if (params != null && params[ArrayDataProvider._FILTERCRITERION]) {
         var filterCriterion = null;
@@ -905,12 +901,17 @@ function () {
           filterCriterion = params[ArrayDataProvider._FILTERCRITERION];
         }
 
-        var i = offset;
+        var i = 0;
 
         while (resultData.length < fetchSize && i < mappedData.length) {
           if (filterCriterion.filter(mappedData[i])) {
-            resultData.push(mappedData[i]);
-            resultKeys.push(mappedKeys[i]);
+            // updatedOffset is the post-filtered offset
+            if (updatedOffset >= offset) {
+              resultData.push(mappedData[i]);
+              resultKeys.push(mappedKeys[i]);
+            }
+
+            updatedOffset++;
           }
 
           i++;
@@ -922,16 +923,34 @@ function () {
         resultKeys = mappedKeys.slice(offset, offset + fetchSize);
       }
 
+      updatedOffset = offset + resultData.length;
+      filteredResultData = resultData.map(function (row) {
+        if (fetchAttributes && fetchAttributes.length > 0) {
+          var updatedData = {};
+
+          self._filterRowAttributes(fetchAttributes, row, updatedData);
+
+          row = updatedData;
+        }
+
+        return row;
+      });
       var resultMetadata = resultKeys.map(function (value) {
         return new self.ItemMetadata(self, value);
       });
-      var result = new this.FetchListResult(this, params, resultData, resultMetadata);
+      var result = new this.FetchListResult(this, params, filteredResultData, resultMetadata);
 
       if (hasMore) {
-        return new this.AsyncIteratorYieldResult(this, result);
+        return {
+          result: new this.AsyncIteratorYieldResult(this, result),
+          offset: updatedOffset
+        };
       }
 
-      return new this.AsyncIteratorReturnResult(this, result);
+      return {
+        result: new this.AsyncIteratorReturnResult(this, result),
+        offset: updatedOffset
+      };
     }
     /**
      * Get cached index map

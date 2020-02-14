@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
 
 "use strict";
-define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojset', 'ojs/ojmap', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function(oj, $, ko, ojSet, ojMap, __DataProvider)
+define(['ojs/ojcore', 'jquery', 'ojs/ojset', 'ojs/ojmap', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function(oj, $, ojSet, ojMap, __DataProvider)
 {
 class ArrayDataProvider {
     constructor(data, options) {
@@ -58,13 +58,15 @@ class ArrayDataProvider {
             }
         };
         this.FetchListParameters = class {
-            constructor(_parent, size, sortCriteria, attributes) {
+            constructor(_parent, size, sortCriteria, filterCriterion, attributes) {
                 this._parent = _parent;
                 this.size = size;
                 this.sortCriteria = sortCriteria;
+                this.filterCriterion = filterCriterion;
                 this.attributes = attributes;
                 this[ArrayDataProvider._SIZE] = size;
                 this[ArrayDataProvider._SORTCRITERIA] = sortCriteria;
+                this[ArrayDataProvider._FILTERCRITERION] = filterCriterion;
                 this[ArrayDataProvider._ATTRIBUTES] = attributes;
             }
         };
@@ -99,9 +101,9 @@ class ArrayDataProvider {
                 this._cacheObj[ArrayDataProvider._MUTATIONSEQUENCENUM] = _parent._mutationSequenceNum;
             }
             ['next']() {
-                let result = this._nextFunc(this._params, this._cachedOffset, this._cacheObj);
-                this._cachedOffset = this._cachedOffset + result.value[ArrayDataProvider._DATA].length;
-                return Promise.resolve(result);
+                let resultObj = this._nextFunc(this._params, this._cachedOffset, this._cacheObj);
+                this._cachedOffset = resultObj.offset;
+                return Promise.resolve(resultObj.result);
             }
         };
         this.AsyncIteratorYieldResult = class {
@@ -222,12 +224,13 @@ class ArrayDataProvider {
         let sortCriteria = params != null ? params[ArrayDataProvider._SORTCRITERIA] : null;
         let offset = params != null ? params[ArrayDataProvider._OFFSET] > 0 ? params[ArrayDataProvider._OFFSET] : 0 : 0;
         let fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
+        let filterCriterion = params != null ? params[ArrayDataProvider._FILTERCRITERION] : null;
         this._generateKeysIfNeeded();
         let resultsArray = [];
         let done = true;
         if (params) {
-            let fetchParams = new this.FetchListParameters(this, size, sortCriteria, fetchAttributes);
-            let iteratorResults = this._fetchFrom(fetchParams, offset);
+            let fetchParams = new this.FetchListParameters(this, size, sortCriteria, filterCriterion, fetchAttributes);
+            let iteratorResults = this._fetchFrom(fetchParams, offset).result;
             let value = iteratorResults[ArrayDataProvider._VALUE];
             done = iteratorResults[ArrayDataProvider._DONE];
             let data = value[ArrayDataProvider._DATA];
@@ -584,7 +587,7 @@ class ArrayDataProvider {
      * Check if observableArray
      */
     _isObservableArray(obj) {
-        return ko.isObservable(obj) && !(obj['destroyAll'] === undefined);
+        return typeof obj == 'function' && obj.subscribe && !(obj['destroyAll'] === undefined);
     }
     /**
      * Generate keys array if it wasn't passed in options.keys
@@ -665,11 +668,6 @@ class ArrayDataProvider {
         let rowData = this._getRowData();
         let mappedData = indexMap.map(function (index) {
             let row = rowData[index];
-            if (fetchAttributes && fetchAttributes.length > 0) {
-                let updatedData = {};
-                self._filterRowAttributes(fetchAttributes, row, updatedData);
-                row = updatedData;
-            }
             return row;
         });
         let mappedKeys = indexMap.map(function (index) {
@@ -684,6 +682,8 @@ class ArrayDataProvider {
         }
         let resultData = [];
         let resultKeys = [];
+        let updatedOffset = 0;
+        let filteredResultData;
         if (params != null && params[ArrayDataProvider._FILTERCRITERION]) {
             let filterCriterion = null;
             if (!params[ArrayDataProvider._FILTERCRITERION].filter) {
@@ -692,11 +692,15 @@ class ArrayDataProvider {
             else {
                 filterCriterion = params[ArrayDataProvider._FILTERCRITERION];
             }
-            let i = offset;
+            let i = 0;
             while (resultData.length < fetchSize && i < mappedData.length) {
                 if (filterCriterion.filter(mappedData[i])) {
-                    resultData.push(mappedData[i]);
-                    resultKeys.push(mappedKeys[i]);
+                    // updatedOffset is the post-filtered offset
+                    if (updatedOffset >= offset) {
+                        resultData.push(mappedData[i]);
+                        resultKeys.push(mappedKeys[i]);
+                    }
+                    updatedOffset++;
                 }
                 i++;
             }
@@ -706,14 +710,23 @@ class ArrayDataProvider {
             resultData = mappedData.slice(offset, offset + fetchSize);
             resultKeys = mappedKeys.slice(offset, offset + fetchSize);
         }
+        updatedOffset = offset + resultData.length;
+        filteredResultData = resultData.map(function (row) {
+            if (fetchAttributes && fetchAttributes.length > 0) {
+                let updatedData = {};
+                self._filterRowAttributes(fetchAttributes, row, updatedData);
+                row = updatedData;
+            }
+            return row;
+        });
         let resultMetadata = resultKeys.map(function (value) {
             return new self.ItemMetadata(self, value);
         });
-        let result = new this.FetchListResult(this, params, resultData, resultMetadata);
+        let result = new this.FetchListResult(this, params, filteredResultData, resultMetadata);
         if (hasMore) {
-            return new this.AsyncIteratorYieldResult(this, result);
+            return { result: new this.AsyncIteratorYieldResult(this, result), offset: updatedOffset };
         }
-        return new this.AsyncIteratorReturnResult(this, result);
+        return { result: new this.AsyncIteratorReturnResult(this, result), offset: updatedOffset };
     }
     /**
      * Get cached index map

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -1994,6 +1994,8 @@ BindingProviderImpl.addPostprocessor(
           element.removeEventListener(_ATTRIBUTE_CHANGED, attributeListener);
           attributeListener = null;
         }
+
+        oj._KnockoutBindingProvider.getInstance().__NotifyBindingsDisposed(element);
       }
 
       function setup(isComposite) {
@@ -2879,6 +2881,15 @@ oj._KnockoutBindingProvider = function () {
     // oj.BaseCustomElementBridge class is available
     var trackOption = oj.BaseCustomElementBridge.getTrackChildrenOption(elem);
     this._resolveWhenChildrenBindingsApplied(elem, trackOption);
+  };
+
+  /**
+   * @ignore
+   */
+  this.__NotifyBindingsDisposed = function (elem) {
+    // This method is only called from the CustomElementBinding where we know the
+    // oj.BaseCustomElementBridge class is available
+    oj.BaseCustomElementBridge.getInstance(elem).disposeBindingProvider(elem);
   };
 };
 
@@ -4016,8 +4027,8 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * @ojcomponent oj.ojBindForEach
  * @ojshortdesc An oj-bind-for-each binds items of an array to the specified markup section. The markup section is duplicated for each array item when element is rendered.
  * @ojbindingelement
- * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojtsimport knockout
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojsignature {target: "Type",
  *               value: "class ojBindForEach<K, D> extends HTMLElement",
  *               genericParameters: [{"name": "K", "description": "Type of key when passing data via a DataProvider"},

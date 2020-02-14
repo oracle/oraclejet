@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -935,6 +935,13 @@ var __oj_radioset_metadata =
           return !((this.getAttribute && this.getAttribute('slot') === 'contextMenu'));
         }).wrapAll("<div class='oj-radioset-wrapper oj-form-control-container'></div>"); // @HTMLUpdateOK
 
+        // if readonly, set tabindex and aria-readonly on the wrapper
+        if (this.options.readOnly) {
+          let domElem = this.element[0];
+          let wrapperDom = domElem.querySelector('.oj-radioset-wrapper');
+          wrapperDom.setAttribute('tabindex', 0);
+          wrapperDom.setAttribute('aria-readonly', 'true');
+        }
         this._on(this._events);
         this._setup();
       },
@@ -1605,6 +1612,16 @@ var __oj_radioset_metadata =
             this._propagateDisabled(value);
             break;
           case 'readOnly':
+            var wrapperDom = this.element[0].querySelector('.oj-radioset-wrapper');
+
+            if (value) {
+              wrapperDom.setAttribute('tabindex', 0);
+              wrapperDom.setAttribute('aria-readonly', 'true');
+            } else {
+              // remove tabindex and role
+              wrapperDom.removeAttribute('tabindex');
+              wrapperDom.removeAttribute('aria-readonly');
+            }
             this._processOjOptions();
             break;
           case 'value':

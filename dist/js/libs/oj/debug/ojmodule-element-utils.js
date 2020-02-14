@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -17,11 +17,23 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojhtmlutils', 'ojs/ojlogger'], function(o
  * @name ModuleElementUtils
  *
  * @ojtsmodule
+ * @ojtsimport {module: "ojmodule-element", type: "AMD", imported: ["ModuleViewModel"]}
  * @classdesc
  * <h3>Utility methods for oj-module element</h3>
  * <p>ModuleElementUtils is a helper object that provides convenience methods for creating views, view models or entire oj-module configuration objects using RequireJS.
- * In addition to loading a view, the loadView() method also converts loaded data into an array of nodes - format accepted by oj-module.
  * </p>
+ * <h3>Conventions</h3>
+ * <h4>View</h4>
+ * <ul>
+ *  <li>Views should have .html extension.</li>
+ *  <li>In addition to loading the view, both the createView() and createConfig() methods will convert the loaded view into an array of nodes, as expected by oj-module.</li>
+ * </ul>
+ * <h4>View Model</h4>
+ * <ul>
+ *  <li>ViewModel modules should have .js extension.</li>
+ *  <li>The view model is loaded as an AMD module and the value is expected to be either a constructor function or an object - a view model instance.</li>
+ *  <li>See descriptions of the createViewModel() and createConfig() methods for details on how the loaded module is handled.</li>
+ * </ul>
  *
  * <h3> Create configuration object using createView() and createViewModel()</h3>
  * <pre class="prettyprint"><code>
@@ -66,7 +78,9 @@ oj.ModuleElementUtils = ModuleElementUtils;
  * var viewPromise = moduleElementUtils.createView({'viewPath':'views/dashboard/page.html'});
  *
  * @return {Promise} A promise that resolves into an array of DOM nodes
- * @ojsignature {target: "Type", for: "options.require", value: "((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)"}
+ * @ojsignature [
+ *   {target: "Type", for: "options.require", value: "((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)"},
+ *   {target: "Type", value: "(options: {viewPath: string, require?: ((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)}):Promise<Node[]>", jsdocOverride: true}]
  * @memberof! ModuleElementUtils
  * @static
  */
@@ -116,7 +130,10 @@ ModuleElementUtils.createView = function (options) {
  * @return {Promise} A promise that contains either model instance or a model constructor.
  *                  When the promise is resolved into a constructor, the application is responsible
  *                  for constructing the model instance before passing it to the configuration object on the oj-module.
- * @ojsignature {target: "Type", for: "options.require", value: "((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)"}
+ * @ojsignature [{target:"Type", value:"<P>", for:"genericTypeParameters"},
+ *               {target: "Type", value: "P", for: "options.params"},
+ *               {target: "Type", for: "options.require", value: "((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)"},
+ *               {target: "Type", value: "(options: {viewModelPath: string, params?: P, require?: ((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void),initialize?: 'always' | 'never' | 'ifParams'}):Promise<oj.ModuleViewModel|Function>", jsdocOverride: true}]
  * @memberof! ModuleElementUtils
  * @static
  */
@@ -177,7 +194,10 @@ ModuleElementUtils.createViewModel = function (options) {
  * var configPromise = moduleElementUtils.createConfig({ name: 'dashboard/page', params: {value:'A'} });
  *
  * @return {Promise} A promise that resolves into a configuration object for oj-module.
- * @ojsignature {target: "Type", for: "options.require", value: "((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)"}
+ * @ojsignature [{target:"Type", value:"<P>", for:"genericTypeParameters"},
+ *               {target: "Type", value: "P", for: "options.params"},
+ *               {target: "Type", for: "options.require", value: "((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)"},
+ *               {target: "Type", value: "(options: {name?: string, viewPath?: string, viewModelPath?: string, params?: P, require?: ((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)}):Promise<{view:Node[], viewModel:oj.ModuleViewModel|null}>", jsdocOverride: true}]
  * @memberof! ModuleElementUtils
  * @static
  */

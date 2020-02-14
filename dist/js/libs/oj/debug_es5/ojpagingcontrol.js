@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -511,10 +511,10 @@ var __oj_paging_control_metadata =
        * @ojshortdesc Specifies the paging mode.
        * @type {string}
        * @ojvalue {string} "page" Display paging control in pagination mode.
-       * @ojvalue {string} "loadMore" <span class="important">Deprecated: This option is deprecated and will not get feature updates or support going forward.
-       *                            Please use native component high-water mark scrolling API instead (see Table, ListView, DataGrid).
-       *                            In addition, "loadMore" is not compatible with Table, Listview, DataGrid default scroll-policy "loadMoreOnScroll".
-       *                            </span><br><br>Display paging control in high-water mark mode.
+       * @ojvalue {string} "loadMore"  Display paging control in high-water mark mode.
+       * @ojdeprecated [ {target:'propertyValue', for:'loadMore', since: '6.0.0', description: 'This option is deprecated and will not get feature updates or support going forward.
+       *                Please use native component high-water mark scrolling API instead (see Table, ListView, DataGrid).
+       *                In addition, "loadMore" is not compatible with Table, Listview, DataGrid default scroll-policy "loadMoreOnScroll".'}]
        * @default "page"
        *
        * @example <caption>Initialize the PagingControl with the <code class="prettyprint">mode</code> attribute specified:</caption>

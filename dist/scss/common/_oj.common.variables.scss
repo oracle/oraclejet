@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 @import "../utilities/oj.utilities.urls";
 @import "../utilities/oj.utilities.math";
 @import "../utilities/oj.utilities.units";
@@ -2886,6 +2886,7 @@ $dvtDiagramLinkPadding:          10px !default;
 
 $dvtDiagramOverviewBgColor:           $neutralColor7 !default;
 $dvtDiagramOverviewPadding:           0px !default;
+$dvtDiagramOverviewContentPadding:    10px !default;
 $dvtDiagramOverviewWindowBgColor:     $neutralColor1 !default;
 $dvtDiagramOverviewWindowBorderColor: $neutralColor14 !default;
 $dvtDiagramOverviewNodeBgColor:       $neutralColor14 !default;

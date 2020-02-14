@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -60,7 +60,6 @@
       // Default to no border for common due to generic changes for quiet forms
       border-width: 0;
 
-      height: $formControlTriggerHeight;
       @include oj-ltr() {
         padding-left: $formControlPaddingHorizontal;
         padding-right: 0;
@@ -78,6 +77,14 @@
       white-space: nowrap;
       background-clip: padding-box;
       text-overflow: ellipsis;
+      // height needs to be 100% as the border and height is set on an ancestor element
+      height: 100%;
+    }
+
+    // In the select one case, oj-text-field-middle div doesn't need height 100% due to the
+    // difference in dom structure
+    .oj-select-choice .oj-text-field-middle {
+      height: auto;
     }
 
     /* Styling for readonly mode */
@@ -244,7 +251,6 @@
       box-sizing: border-box;
       height: auto;
 
-      min-height: calc(#{$formControlTriggerHeight} * 1.28);
       padding: 0 $formControlPaddingHorizontal 5px;   
       @include oj-form-control-content;   
       // Default to no border for common due to generic changes for quiet forms
@@ -448,7 +454,8 @@
           padding-left: $formControlPaddingHorizontal;
         }
 
-
+      // height needs to be 100% as the border and height is set on an ancestor element
+      height: 100%;
     }
 
     /* 
@@ -657,69 +664,79 @@
 
     
 
-      .oj-text-field-label-inside .oj-select-choice {
-        border: 0;
-        background-color: transparent;
-        width: 100%;
-        min-height: $formControlInsideInputHeight;
+    .oj-text-field-label-inside .oj-select-choice {
+      border: 0;
+      background-color: transparent;
+      width: 100%;
+      min-height: $formControlInsideInputHeight;
 
-        @include oj-ltr() {
-          padding: 0;
-        }
-        @include oj-rtl() {
-          padding: 0;
-        }
-      }
-
-      .oj-text-field-label-inside .oj-combobox-input {
-        padding: $formControlInsidePaddingTop $formControlPaddingHorizontal 0;
-      }
-      
-      .oj-text-field-label-inside .oj-select-choices {
-        border: 0;
-        background-color: transparent;
-        padding: $formControlInsidePaddingTop $formControlPaddingHorizontal 5px;
-      }
-
-      .oj-text-field-label-inside .oj-select-chosen {
-        padding: $formControlInsidePaddingTop $formControlPaddingHorizontal 0;
-        margin-top: 5px;
-      }
-  
-      .oj-text-field-label-inside .oj-select-choice.oj-hover,
-      .oj-text-field-label-inside .oj-select-choices.oj-hover {
-        background-color: transparent;
-      }
-  
-      .oj-text-field-label-inside .oj-select.oj-read-only .oj-select-choice {
+      @include oj-ltr() {
         padding: 0;
-
-        @include oj-ltr() {
-          margin-left: 0;
-        }
-        @include oj-rtl() {
-          margin-right: 0;
-        }
       }
-
-      .oj-text-field-label-inside .oj-select.oj-read-only .oj-select-chosen,
-      .oj-text-field-label-inside .oj-select.oj-read-only .oj-select-choices {
-        padding-left: 0;
-        padding-right: 0
+      @include oj-rtl() {
+        padding: 0;
       }
+    }
 
-      .oj-text-field-label-inside .oj-select.oj-disabled .oj-text-field-container {
-        background-color: $formControlBgColorDisabled;
-      }
+    .oj-text-field-label-inside .oj-combobox-input {
+      padding: $formControlInsidePaddingTop $formControlPaddingHorizontal 0;
+    }
 
-      .oj-text-field-label-inside .oj-select-selected-choice {
-        @include oj-ltr() {
-          margin: 10px 6px 0 0;
-        }
-        @include oj-rtl() {
-          margin: 10px 0 0 6px;
-        }
+    .oj-text-field-label-inside .oj-select-choices {
+      border: 0;
+      background-color: transparent;
+      padding: $formControlInsidePaddingTop $formControlPaddingHorizontal 5px;
+    }
+
+    .oj-text-field-label-inside .oj-select-chosen {
+      padding: $formControlInsidePaddingTop $formControlPaddingHorizontal 0;
+      margin-top: 5px;
+    }
+
+    .oj-text-field-label-inside .oj-select-choice.oj-hover,
+    .oj-text-field-label-inside .oj-select-choices.oj-hover {
+      background-color: transparent;
+    }
+
+    .oj-text-field-label-inside .oj-select.oj-read-only .oj-select-choice {
+      padding: 0;
+
+      @include oj-ltr() {
+        margin-left: 0;
       }
+      @include oj-rtl() {
+        margin-right: 0;
+      }
+    }
+
+    .oj-text-field-label-inside .oj-select.oj-read-only .oj-select-chosen,
+    .oj-text-field-label-inside .oj-select.oj-read-only .oj-select-choices {
+      padding-left: 0;
+      padding-right: 0
+    }
+
+    .oj-text-field-label-inside .oj-select.oj-disabled .oj-text-field-container {
+      background-color: $formControlBgColorDisabled;
+    }
+
+    .oj-text-field .oj-select-multi .oj-text-field-container {
+      height: auto;
+      // The min height needs to be applied to the oj-text-field-container for .oj-select-many
+      // since the border is on the .oj-text-field-container div.
+      min-height: calc(#{$formControlTriggerHeight} * 1.28);
+    }
+    .oj-text-field .oj-select:not(.oj-select-multi) .oj-text-field-container {
+      height: $formControlTriggerHeight;
+    }
+
+    .oj-text-field-label-inside .oj-select-selected-choice {
+      @include oj-ltr() {
+        margin: 10px 6px 0 0;
+      }
+      @include oj-rtl() {
+        margin: 10px 0 0 6px;
+      }
+    }
     .oj-text-field-label-inside .oj-select,
     .oj-form-control-label-top .oj-select{
       max-width: 100%;

@@ -839,41 +839,38 @@ dvt.LinearScaleAxisValueFormatter.prototype._getScaleFactor = function(scaleName
  * Formats given value using previously computed scale factor and decimal digits count. In case that parsed value equals NaN an unformatted value is returned.
  * @override
  * @param {object} value to be formatted.
+ * @param {Object} converter The converter
  * @return {string} formatted value as string
  */
 dvt.LinearScaleAxisValueFormatter.prototype.format = function(value, converter) {
   var parsed = value != null ? parseFloat(value) : value;
-  if (typeof(parsed) == 'number') {
-    // Find the suffix for the scale factor
-    var suffix;
-    if (this._scaleFactor > 0) {
-      for (var i = 0; i < this._scaleFactor; i++) {
-        parsed /= 10;
-      }
-      suffix = this._factorToScaleMapping[this._scaleFactor].localizedSuffix;
-    }
+  if (typeof(parsed) === 'number') {
+    var scale = Math.pow(10, this._scaleFactor);
+    var scaleConverterOptions = {style: 'decimal', decimalFormat: 'short', nu: 'latn', useGrouping: false}; // Use nu to make sure the digits are latin
+    var defaultConverter = this._context.getNumberConverter(scaleConverterOptions);
 
-    // Convert the number itself
-    if (converter && converter['getAsString']) {
-      parsed = converter['getAsString'](parsed);
+    // Formatting for scale
+    var _SCALE_REGEXP = /(\d+)(.*$)/;
+    var formattedScale = defaultConverter.format(scale, scaleConverterOptions);
+    var formattedScaleParts = _SCALE_REGEXP.exec(formattedScale);
+    var suffix = formattedScaleParts[2]; // Reset the suffix
+    var formattedScaledNumber = (Number(formattedScaleParts[1]) / scale)*parsed;
+
+    // Formatting for scaled number
+    if (converter && (converter['getAsString'] || converter['format'])) {
+      formattedScaledNumber = converter['getAsString'] ? converter['getAsString'](formattedScaledNumber) : converter['format'](formattedScaledNumber); // Convert the number itself
     }
-    else if (converter && converter['format'])
-      parsed = converter['format'](parsed);
     else {
-      var defaultConverter = this._context.getNumberConverter({'minimumFractionDigits': this._decimalPlaces, 'maximumFractionDigits': this._decimalPlaces});
-      if (defaultConverter && defaultConverter['format'])
-        parsed = defaultConverter['format'](parsed);
-      else if (this._useAutoPrecision) {
-        parsed = parseFloat(new Number(parsed).toFixed(this._decimalPlaces));
-        parsed = this._formatFraction(parsed);
-      }
+      var numberConverterOptions= {style: 'decimal', minimumFractionDigits: this._decimalPlaces, maximumFractionDigits: this._decimalPlaces}; //skip nu if you want the digits in native locale digits
+      defaultConverter = this._context.getNumberConverter(numberConverterOptions);
+      formattedScaledNumber = defaultConverter.format(formattedScaledNumber, numberConverterOptions);
     }
 
     // Add the scale factor suffix, unless value is zero
     if (typeof suffix === 'string' && value != 0) {
-      parsed += suffix;
+      formattedScaledNumber += suffix;
     }
-    return parsed;
+    return formattedScaledNumber;
   }
   else {
     return value;

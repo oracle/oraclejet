@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -155,8 +155,10 @@
       visibility: visible;
     }
 
-    .oj-textarea .oj-text-field-container{
+    .oj-textarea .oj-text-field-container {
       flex-wrap: wrap;
+      // For text area, height needs to be auto, not 100%
+      height: auto;
     }
 
     .oj-text-field-counter.oj-textarea-counter-container {
@@ -223,13 +225,13 @@
       
       box-sizing: border-box;
       
-
-        height: $formControlInputHeight;
-        padding: 0 $formControlPaddingHorizontal;
-        @include oj-form-control-content-no-focus-padding;
-
-
-
+      padding: 0 $formControlPaddingHorizontal;
+      @include oj-form-control-content-no-focus-padding;
+    }
+    .oj-inputtext-nocomp,
+    .oj-inputpassword-nocomp
+    {
+      height: $formControlInputHeight;
     }
     
     // specific css for textarea-input

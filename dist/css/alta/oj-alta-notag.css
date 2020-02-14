@@ -8402,6 +8402,8 @@ table.oj-table-element.oj-table-column-header-resizing {
 .oj-table-column-header-cell {
   font-size: inherit;
   font-weight: normal;
+  padding-left: 1em;
+  padding-right: 1em;
   padding-top: 0.5em;
   padding-bottom: 0.5em;
   height: 2.75em;
@@ -8411,32 +8413,18 @@ table.oj-table-element.oj-table-column-header-resizing {
   overflow: hidden;
   box-sizing: border-box; }
   html:not([dir="rtl"]) .oj-table-column-header-cell {
-    padding-left: 1em; }
-  html[dir="rtl"] .oj-table-column-header-cell {
-    padding-right: 1em; }
-  html:not([dir="rtl"]) .oj-table-column-header-cell {
-    padding-right: 0;
     text-align: left; }
   html[dir="rtl"] .oj-table-column-header-cell {
-    padding-left: 0;
     text-align: right; }
 
 /* Grid display table styling for the column header elements. */
 .oj-table-grid-display .oj-table-column-header-cell {
-  height: 2.28571rem; }
-  html:not([dir="rtl"]) .oj-table-grid-display .oj-table-column-header-cell {
-    padding-left: 0.5em;
-    padding-right: 0.5em; }
-  html[dir="rtl"] .oj-table-grid-display .oj-table-column-header-cell {
-    padding-left: 0.5em;
-    padding-right: 0.5em; }
-
-/* Editable display table styling for the column header elements. */
-html:not([dir="rtl"]) .oj-table-editable .oj-table-column-header-cell {
+  height: 2.28571rem;
   padding-left: 0.5em;
   padding-right: 0.5em; }
 
-html[dir="rtl"] .oj-table-editable .oj-table-column-header-cell {
+/* Editable display table styling for the column header elements. */
+.oj-table-editable .oj-table-column-header-cell {
   padding-left: 0.5em;
   padding-right: 0.5em; }
 
@@ -8502,24 +8490,6 @@ html[dir="rtl"] .oj-table-column-header-cell.oj-table-column-header-drag-indicat
   float: none;
   text-overflow: inherit;
   overflow: inherit; }
-  html:not([dir="rtl"]) .oj-table-column-header {
-    padding-right: 10px; }
-  html[dir="rtl"] .oj-table-column-header {
-    padding-left: 10px; }
-
-/* Grid display table styling for the column header element. */
-html:not([dir="rtl"]) .oj-table-grid-display .oj-table-column-header {
-  padding-right: 0; }
-
-html[dir="rtl"] .oj-table-grid-display .oj-table-column-header {
-  padding-left: 0; }
-
-/* Editable display table styling for the column header element. */
-html:not([dir="rtl"]) .oj-table-editable .oj-table-column-header {
-  padding-right: 0; }
-
-html[dir="rtl"] .oj-table-editable .oj-table-column-header {
-  padding-left: 0; }
 
 /* Styling for the column header text. */
 .oj-table-column-header-text {
@@ -8528,21 +8498,24 @@ html[dir="rtl"] .oj-table-editable .oj-table-column-header {
   overflow: inherit;
   text-overflow: inherit;
   vertical-align: top; }
-  html:not([dir="rtl"]) .oj-table-column-header-text {
-    padding-right: 5px; }
-  html[dir="rtl"] .oj-table-column-header-text {
-    padding-left: 5px; }
 
-/* Grid display table styling for the column header text. */
-.oj-table-grid-display .oj-table-column-header-text {
-  padding-right: 0; }
+html:not([dir="rtl"]) .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
+  padding-right: 26px; }
 
-/* Editable display table styling for the column header text. */
-html:not([dir="rtl"]) .oj-table-editable .oj-table-column-header-text {
-  padding-right: 0px; }
+html[dir="rtl"] .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
+  padding-left: 26px; }
 
-html[dir="rtl"] .oj-table-editable .oj-table-column-header-text {
-  padding-left: 0px; }
+html:not([dir="rtl"]) .oj-table-editable .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
+  padding-right: calc(16px + 0.5em); }
+
+html[dir="rtl"] .oj-table-editable .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
+  padding-left: calc(16px + 0.5em); }
+
+html:not([dir="rtl"]) .oj-table-grid-display .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
+  padding-right: calc(16px + 0.5em); }
+
+html[dir="rtl"] .oj-table-grid-display .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
+  padding-left: calc(16px + 0.5em); }
 
 /* Styling for the sort area around the icon */
 .oj-table-sort-icon-container {
@@ -8551,28 +8524,17 @@ html[dir="rtl"] .oj-table-editable .oj-table-column-header-text {
   justify-content: center;
   box-sizing: border-box;
   height: 100%;
-  padding: 0.5em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
   position: absolute;
   top: 0;
   -webkit-user-select: none; }
   html:not([dir="rtl"]) .oj-table-sort-icon-container {
-    right: 2px; }
+    right: 0;
+    padding-left: 0.5em; }
   html[dir="rtl"] .oj-table-sort-icon-container {
-    left: 2px; }
-
-/* Grid display table styling for sort container */
-html:not([dir="rtl"]) .oj-table-grid-display .oj-table-sort-icon-container {
-  right: -0.5em; }
-
-html[dir="rtl"] .oj-table-grid-display .oj-table-sort-icon-container {
-  left: -0.5em; }
-
-/* Editable display table styling for sort container */
-html:not([dir="rtl"]) .oj-table-editable .oj-table-sort-icon-container {
-  right: -0.5em; }
-
-html[dir="rtl"] .oj-table-editable .oj-table-sort-icon-container {
-  left: -0.5em; }
+    left: 0;
+    padding-right: 0.5em; }
 
 /* Styling for the gradient for sort icons in the header */
 .oj-table-sort-icon-container.oj-enabled {
@@ -8662,13 +8624,15 @@ html[dir="rtl"] .oj-table-editable .oj-table-sort-icon-container {
 .oj-table-scroll-vertical .oj-table-body {
   display: block;
   overflow-y: auto;
-  position: relative; }
+  position: relative;
+  -webkit-overflow-scrolling: touch; }
 
 /* Styling for the table body element when table has horizontal scrollbars. */
 .oj-table-scroll-horizontal .oj-table-body {
   display: block;
   overflow-x: auto;
-  position: relative; }
+  position: relative;
+  -webkit-overflow-scrolling: touch; }
 
 /* Grid display styling for the data body element. */
 .oj-table-grid-display .oj-table-body {
@@ -8808,14 +8772,6 @@ html[dir="rtl"] .oj-table-editable .oj-table-sort-icon-container {
 /* Styling for the data cell elements in hover state. */
 .oj-table-data-cell.oj-hover {
   background-color: #f2f2f3; }
-
-/* Styling on form controls stamped inside a table */
-.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control {
-  height: 2.75em; }
-
-/* Styling on form controls stamped inside a table */
-.oj-table-grid-display .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control {
-  height: 2.28571rem; }
 
 /* Styling on form controls stamped inside a table */
 .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input,
@@ -10850,6 +10806,9 @@ oj-diagram {
   background-color: #e5e6e6;
   padding: 0px; }
 
+.oj-diagram-overview-content {
+  padding: 10px; }
+
 .oj-diagram-overview-viewport {
   background-color: white;
   border-color: #4b4d4e; }
@@ -11971,7 +11930,8 @@ html .oj-form-control {
   display: inline-flex;
   flex: 1;
   width: 1em;
-  min-width: 1em; }
+  min-width: 1em;
+  height: 100%; }
 
 /* when the label is inside or above, we must set the max-width of the component to
        100%. Otherwise some components like input text, whose max-width is decided by 
@@ -12001,7 +11961,7 @@ html .oj-form-control {
 
 /* consolidating styles - start
     */
-.oj-text-field {
+.oj-text-field:not(oj-select-one):not(oj-select-many):not(oj-combobox-one):not(oj-combobox-many) {
   display: inline-block;
   font-size: 1rem;
   /* use a width of 100% and then max and min width so that when 
@@ -12012,7 +11972,7 @@ html .oj-form-control {
   width: 100%;
   box-sizing: border-box; }
   @media screen and (max-width: 767.9px) {
-    .oj-text-field {
+    .oj-text-field:not(oj-select-one):not(oj-select-many):not(oj-combobox-one):not(oj-combobox-many) {
       -webkit-text-size-adjust: 115%; } }
 
 .oj-form-control-full-width.oj-text-field,
@@ -12024,7 +11984,8 @@ html .oj-form-control {
   box-sizing: border-box;
   font-family: inherit;
   border: 0;
-  background-color: transparent; }
+  background-color: transparent;
+  height: 100%; }
 
 /* Styling for text-align */
 .oj-form-control-text-align-right.oj-text-field .oj-text-field-input,
@@ -12090,7 +12051,8 @@ html .oj-form-control {
   overflow: hidden;
   display: flex;
   flex-direction: row;
-  align-items: center; }
+  align-items: center;
+  height: 2.28571rem; }
 
 .oj-text-field.oj-read-only .oj-text-field-container,
 .oj-text-field .oj-read-only .oj-text-field-container {
@@ -12649,7 +12611,8 @@ a.oj-inputtext-clear-icon-btn:active {
   visibility: visible; }
 
 .oj-textarea .oj-text-field-container {
-  flex-wrap: wrap; }
+  flex-wrap: wrap;
+  height: auto; }
 
 .oj-text-field-counter.oj-textarea-counter-container {
   height: 32px;
@@ -12753,7 +12716,6 @@ html[dir="rtl"] .oj-inputtext.oj-focus .oj-inputtext-clearicon-conditional .oj-i
   margin: 0;
   line-height: normal;
   box-sizing: border-box;
-  height: 2.28571rem;
   padding: 0 5px;
   padding-bottom: calc(1px - 1px + 0px); }
   .oj-inputtext-input::-moz-focus-inner,
@@ -12762,6 +12724,10 @@ html[dir="rtl"] .oj-inputtext.oj-focus .oj-inputtext-clearicon-conditional .oj-i
   .oj-inputpassword-nocomp::-moz-focus-inner {
     border: 0;
     padding: 0; }
+
+.oj-inputtext-nocomp,
+.oj-inputpassword-nocomp {
+  height: 2.28571rem; }
 
 .oj-textarea-input,
 .oj-textarea-nocomp {
@@ -12893,7 +12859,6 @@ oj-input-number:not(.oj-complete) {
   width: 1em;
   min-width: 1em;
   font-size: 100%;
-  height: 2.28571rem;
   text-align: left;
   color: rgba(0, 0, 0, 0.8);
   background-color: #fcfcfd;
@@ -12916,6 +12881,9 @@ oj-input-number:not(.oj-complete) {
     color: rgba(0, 0, 0, 0.55);
     opacity: 1;
     font-style: italic; }
+
+.oj-inputnumber .oj-inputnumber-wrapper {
+  height: 100%; }
 
 html:not([dir="rtl"]) .oj-inputnumber.oj-has-buttons .oj-inputnumber-input, html:not([dir="rtl"])
 .oj-inputnumber.oj-has-buttons .oj-text-field-middle {
@@ -13485,7 +13453,6 @@ oj-calendar:not(.oj-complete) {
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
   padding: 0 5px;
-  height: 2.28571rem;
   flex: 1;
   width: 1em;
   min-width: 1em;
@@ -13510,6 +13477,9 @@ oj-calendar:not(.oj-complete) {
   html[dir="rtl"] .oj-inputdatetime-input {
     border-width: 1px 1px 1px 0;
     border-radius: 0 2px 2px 0; }
+
+.oj-inputdatetime.oj-text-field .oj-text-field-container {
+  height: 2.28571rem; }
 
 .oj-text-field-middle .oj-inputdatetime-input {
   width: 100%;
@@ -14500,7 +14470,6 @@ oj-combobox:not(.oj-complete) {
   background-color: #fcfcfd;
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
-  height: 2.28571rem;
   padding-bottom: calc(1px - 1px + 0px);
   box-sizing: border-box;
   display: flex;
@@ -14509,7 +14478,8 @@ oj-combobox:not(.oj-complete) {
   outline: 0;
   overflow: hidden;
   white-space: nowrap;
-  background-clip: padding-box; }
+  background-clip: padding-box;
+  height: 100%; }
   html[dir="rtl"] .oj-combobox-choice {
     text-align: right; }
   .oj-combobox-choice:-ms-input-placeholder {
@@ -14528,6 +14498,9 @@ oj-combobox:not(.oj-complete) {
     padding-left: 5px; }
   html[dir="rtl"] .oj-combobox-choice {
     padding-right: 5px; }
+
+.oj-text-field .oj-combobox-multi .oj-text-field-container {
+  height: auto; }
 
 /* 
      * Applied to the input field
@@ -14991,7 +14964,6 @@ oj-searchselect:not(.oj-complete) {
   background-color: #fcfcfd;
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
-  height: 2.28571rem;
   padding-bottom: calc(1px - 1px + 0px); }
   @media screen and (max-width: 767.9px) {
     .oj-searchselect-input {
@@ -15026,6 +14998,9 @@ oj-searchselect:not(.oj-complete) {
     padding-left: 5px; }
   html[dir="rtl"] .oj-searchselect-input {
     padding-right: 5px; }
+
+.oj-searchselect.oj-text-field .oj-text-field-container {
+  height: 2.28571rem; }
 
 /*
      * Applied to the filter field on desktop and mobile.
@@ -15236,7 +15211,6 @@ oj-select:not(.oj-complete) {
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
   border-width: 0;
-  height: 2.28571rem;
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
@@ -15244,7 +15218,8 @@ oj-select:not(.oj-complete) {
   overflow: hidden;
   white-space: nowrap;
   background-clip: padding-box;
-  text-overflow: ellipsis; }
+  text-overflow: ellipsis;
+  height: 100%; }
   html[dir="rtl"] .oj-select-choice {
     text-align: right; }
   .oj-select-choice:-ms-input-placeholder {
@@ -15265,6 +15240,9 @@ oj-select:not(.oj-complete) {
   html[dir="rtl"] .oj-select-choice {
     padding-left: 0;
     padding-right: 5px; }
+
+.oj-select-choice .oj-text-field-middle {
+  height: auto; }
 
 /* Styling for readonly mode */
 .oj-select.oj-read-only .oj-select-choice,
@@ -15377,7 +15355,6 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-select-selected-choice {
 .oj-select-choices {
   box-sizing: border-box;
   height: auto;
-  min-height: calc(2.28571rem * 1.28);
   padding: 0 5px 5px;
   text-align: left;
   color: rgba(0, 0, 0, 0.8);
@@ -15557,7 +15534,8 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-select-selected-choice {
   overflow: hidden;
   text-overflow: ellipsis;
   box-sizing: border-box;
-  box-shadow: none; }
+  box-shadow: none;
+  height: 100%; }
   html:not([dir="rtl"]) .oj-select-chosen {
     padding-right: 5px; }
   html[dir="rtl"] .oj-select-chosen {
@@ -15749,6 +15727,13 @@ select.oj-select-select.oj-select-default:not([multiple]) {
 
 .oj-text-field-label-inside .oj-select.oj-disabled .oj-text-field-container {
   background-color: #ededee; }
+
+.oj-text-field .oj-select-multi .oj-text-field-container {
+  height: auto;
+  min-height: calc(2.28571rem * 1.28); }
+
+.oj-text-field .oj-select:not(.oj-select-multi) .oj-text-field-container {
+  height: 2.28571rem; }
 
 html:not([dir="rtl"]) .oj-text-field-label-inside .oj-select-selected-choice {
   margin: 10px 6px 0 0; }
@@ -16269,16 +16254,14 @@ oj-slider:not(.oj-complete) {
 .oj-slider.oj-slider-horizontal .oj-slider-container {
   /* This ensures that the slider bounding box will include
    the thumb radius - important for form controls. */
-  margin-top: calc(24px / 2);
-  margin-bottom: calc(24px / 2);
   margin-right: calc(24px / 2);
   margin-left: calc(24px / 2); }
 
 .oj-slider-vertical > .oj-slider-container {
   margin-top: calc(24px / 2);
   margin-bottom: calc(24px / 2);
-  margin-right: calc(24px / 2);
-  margin-left: calc(24px / 2); }
+  margin-left: calc(24px / 2);
+  margin-right: calc(24px / 2); }
 
 .oj-slider.oj-invalid .oj-slider-thumb {
   border-width: 2px 2px 2px 2px;
@@ -16487,19 +16470,11 @@ html[dir="rtl"] .oj-slider-vertical .oj-slider-thumb.oj-active {
 .oj-slider-block-item {
   text-align: center; }
 
-.oj-slider-color-picker.oj-slider-horizontal {
-  /* This ensures that the slider bounding box will include
-     the thumb radius - important for form controls. */
-  padding-left: calc(24px / 2);
-  padding-right: calc(24px / 2); }
-
-.oj-slider-color-picker.oj-slider-vertical {
-  padding-left: calc(24px / 2);
-  padding-right: calc(24px / 2); }
-
 .oj-slider-color-picker.oj-slider-vertical > .oj-slider-container {
   margin-top: calc(24px / 2);
-  margin-bottom: calc(24px / 2); }
+  margin-bottom: calc(24px / 2);
+  margin-left: calc(24px / 2);
+  margin-right: calc(24px / 2); }
 
 .oj-slider-color-picker.oj-slider-vertical.oj-form-control .oj-slider-container {
   min-height: calc(24px * 2); }

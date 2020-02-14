@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojarraydataprovider', 'ojs/ojeventtarget', 'ojs/ojtreedataprovider'], function(oj, $, ko)
+define(['ojs/ojcore', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarget', 'ojs/ojtreedataprovider'], function(oj, $)
 {
   "use strict";
   var ArrayDataProvider = oj['ArrayDataProvider'];
@@ -139,7 +139,7 @@ class ArrayTreeDataProvider {
         }
     }
     _subscribeObservableArray(treeData, parentKeyPath) {
-        if (!(ko.isObservable(treeData) && !(treeData['destroyAll'] === undefined))) {
+        if (!(typeof treeData == 'function' && treeData.subscribe && !(treeData['destroyAll'] === undefined))) {
             // we only support Array or ko.observableArray
             throw new Error('Invalid data type. ArrayTreeDataProvider only supports Array or observableArray.');
         }
@@ -285,7 +285,7 @@ class ArrayTreeDataProvider {
         this._mapKoArrayToSubscriptions.set(treeData, subscriptions);
     }
     _unsubscribeObservableArray(treeData) {
-        if (ko.isObservable(treeData) && !(treeData['destroyAll'] === undefined)) {
+        if (typeof treeData == 'function' && treeData.subscribe && !(treeData['destroyAll'] === undefined)) {
             var subscriptions = this._mapKoArrayToSubscriptions.get(treeData);
             if (subscriptions) {
                 subscriptions[0].dispose();

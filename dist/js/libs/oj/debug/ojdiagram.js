@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -290,6 +290,14 @@ var __oj_diagram_metadata =
     "overview": {
       "type": "object",
       "properties": {
+        "fitArea": {
+          "type": "string",
+          "enumValues": [
+            "canvas",
+            "content"
+          ],
+          "value": "content"
+        },
         "halign": {
           "type": "string",
           "enumValues": [
@@ -302,6 +310,14 @@ var __oj_diagram_metadata =
         "height": {
           "type": "number",
           "value": 100
+        },
+        "preserveAspectRatio": {
+          "type": "string",
+          "enumValues": [
+            "meet",
+            "none"
+          ],
+          "value": "meet"
         },
         "rendered": {
           "type": "string",
@@ -339,6 +355,8 @@ var __oj_diagram_metadata =
       "type": "string",
       "enumValues": [
         "auto",
+        "centerContent",
+        "fixed",
         "none"
       ],
       "value": "none"
@@ -2590,8 +2608,10 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * @memberof oj.ojDiagram
        * @instance
        * @type {string}
-       * @ojvalue {string} "auto"
-       * @ojvalue {string} "none"
+       * @ojvalue {string} "fixed" {"description": "Panning is restricted to the visible region when the diagram is rendered at minZoom."}
+       * @ojvalue {string} "centerContent" {"description": "Panning is restricted based on the current zoom level to allow any area of the content to be centered. If an overview is being rendered, the overview.fitArea property should also be set to 'content' in most situations."}
+       * @ojvalue {string} "none" {"description": "Panning is not allowed."}
+       * @ojvalue {string} "auto" {"description": "One of the other described behaviors will be chosen at runtime based on the theme, form factor etc."}
        * @default "none"
        *
        * @example <caption>Initialize the diagram with the
@@ -3584,6 +3604,30 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          */
         rendered: 'off',
         /**
+         * Specifies the region that will be scaled to fit within the overview.
+         * @expose
+         * @name overview.fitArea
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {string}
+         * @ojvalue {string} "content" {"description": "The bounding box of the Diagram nodes will be scaled to fit within the overview."}
+         * @ojvalue {string} "canvas" {"description": "The canvas (the <a href='oj.ojDiagram.html#panning'>pannable</a> area when the diagram is at minZoom) will be scaled to fit within the overview. The diagram panning property should also be set to 'fixed' in most situations."}
+         * @default "content"
+         */
+        fitArea: 'content',
+        /**
+         * Controls how the fit area is scaled within the overview.
+         * @expose
+         * @name overview.preserveAspectRatio
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {string}
+         * @ojvalue {string} "none" {"description": "The aspect ratio of the fit area may not be preserved as it is scaled to fit the overview."}
+         * @ojvalue {string} "meet" {"description": "The aspect ratio of the fit area will be preserved as it is scaled to fit the overview."}
+         * @default "meet"
+         */
+        preserveAspectRatio: 'meet',
+        /**
          * Overview window width. The width can't exceed the diagram width.
          * If the specified width exceeds the width of the diagram itself, the width of the diagram will be used instead.
          * @ojshortdesc Overview window width.
@@ -4449,6 +4493,9 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
       styleClasses['oj-diagram-overview'] = [
         { path: 'styleDefaults/_overviewStyles/overview/backgroundColor', property: 'background-color' },
         { path: 'styleDefaults/_overviewStyles/overview/padding', property: 'padding' }
+      ];
+      styleClasses['oj-diagram-overview-content'] = [
+        { path: 'styleDefaults/_overviewStyles/overviewContent/padding', property: 'padding' }
       ];
       styleClasses['oj-diagram-overview-viewport'] = [
         { path: 'styleDefaults/_overviewStyles/viewport/borderColor', property: 'border-color' },

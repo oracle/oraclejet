@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
 //          version in your base theme's directory,
@@ -178,12 +178,8 @@
        font-size: inherit;
 
        font-weight: $collectionHeaderFontWeight;
-       @include oj-ltr() {
-         padding-left: $tableHeaderPadding;
-       }
-       @include oj-rtl() {
-         padding-right: $tableHeaderPadding;
-       }
+       padding-left: $tableHeaderPadding;
+       padding-right: $tableHeaderPadding;
        padding-top: $collectionCellPadding;
        padding-bottom: $collectionCellPadding;
        height: $tableRowHeight;
@@ -193,11 +189,9 @@
        text-overflow: ellipsis;
        overflow: hidden;
        @include oj-ltr() {
-         padding-right: 0;
          text-align: left;
        }
        @include oj-rtl() {
-         padding-left: 0;
          text-align: right;
        }
        box-sizing: border-box;
@@ -207,28 +201,16 @@
     .oj-table-grid-display .oj-table-column-header-cell {
 
        height: $collectionRowHeight;
-       @include oj-ltr() {
-        padding-left: $collectionCellPadding;
-        padding-right: $collectionCellPadding;
-       }
-       @include oj-rtl() {
-        padding-left: $collectionCellPadding;
-        padding-right: $collectionCellPadding;
-       }
+       padding-left: $collectionCellPadding;
+       padding-right: $collectionCellPadding;
 
     }
 
     /* Editable display table styling for the column header elements. */
     .oj-table-editable .oj-table-column-header-cell {
 
-       @include oj-ltr() {
-         padding-left: $collectionCellPadding;
-         padding-right: $collectionCellPadding;
-       }
-       @include oj-rtl() {
-         padding-left: $collectionCellPadding;
-         padding-right: $collectionCellPadding;
-       }
+       padding-left: $collectionCellPadding;
+       padding-right: $collectionCellPadding;
 
     }
 
@@ -322,40 +304,12 @@
 
     }
 
-
-
     /* Styling for the column header element. */
     .oj-table-column-header {
       position: relative;
       float: none;
       text-overflow: inherit;
       overflow: inherit;
-      @include oj-ltr() {
-        padding-right: 10px;
-      }
-      @include oj-rtl() {
-        padding-left: 10px;
-      }
-    }
-
-    /* Grid display table styling for the column header element. */
-    .oj-table-grid-display .oj-table-column-header {
-      @include oj-ltr() {
-        padding-right: 0;
-      }
-      @include oj-rtl() {
-        padding-left: 0;
-      }
-    }
-
-    /* Editable display table styling for the column header element. */
-    .oj-table-editable .oj-table-column-header {
-      @include oj-ltr() {
-        padding-right: 0;
-      }
-      @include oj-rtl() {
-        padding-left: 0;
-      }
     }
 
     /* Styling for the column header text. */
@@ -365,26 +319,32 @@
       overflow: inherit;
       text-overflow: inherit;
       vertical-align: top;
+    }
+
+    .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
       @include oj-ltr() {
-       padding-right: 5px;
+       padding-right: 26px;
       }
       @include oj-rtl() {
-       padding-left: 5px;
+       padding-left: 26px;
       }
     }
 
-    /* Grid display table styling for the column header text. */
-    .oj-table-grid-display .oj-table-column-header-text {
-      padding-right: 0;
-    }
-
-    /* Editable display table styling for the column header text. */
-    .oj-table-editable .oj-table-column-header-text {
+    .oj-table-editable .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
       @include oj-ltr() {
-        padding-right: 0px;
+       padding-right: calc(16px + #{$collectionCellPadding});
       }
       @include oj-rtl() {
-        padding-left: 0px;
+       padding-left: calc(16px + #{$collectionCellPadding});
+      }
+    }
+
+    .oj-table-grid-display .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
+      @include oj-ltr() {
+       padding-right: calc(16px + #{$collectionCellPadding});
+      }
+      @include oj-rtl() {
+       padding-left: calc(16px + #{$collectionCellPadding});
       }
     }
 
@@ -396,39 +356,20 @@
       box-sizing: border-box;
       height: 100%;
 
-      padding: $collectionCellPadding;
+      padding-top: $collectionCellPadding;
+      padding-bottom: $collectionCellPadding;
 
       position: absolute;
       top: 0;
       -webkit-user-select: none;
       @include oj-ltr() {
-        right: 2px;
+        right: 0;
+        padding-left: $collectionCellPadding;
       }
 
       @include oj-rtl() {
-        left: 2px;
-      }
-    }
-
-    /* Grid display table styling for sort container */
-    .oj-table-grid-display .oj-table-sort-icon-container {
-      @include oj-ltr() {
-        right: -0.5em;
-      }
-
-      @include oj-rtl() {
-        left: -0.5em;
-      }
-    }
-
-    /* Editable display table styling for sort container */
-    .oj-table-editable .oj-table-sort-icon-container {
-      @include oj-ltr() {
-        right: -0.5em;
-      }
-
-      @include oj-rtl() {
-        left: -0.5em;
+        left: 0;
+        padding-right: $collectionCellPadding;
       }
     }
 
@@ -545,6 +486,8 @@
       display: block;
       overflow-y: auto;
       position: relative;
+      // enable momentum based scrolling for touch devices
+      -webkit-overflow-scrolling: touch;
     }
 
     /* Styling for the table body element when table has horizontal scrollbars. */
@@ -552,6 +495,8 @@
       display: block;
       overflow-x: auto;
       position: relative;
+      // enable momentum based scrolling for touch devices
+      -webkit-overflow-scrolling: touch;
     }
 
     /* Grid display styling for the data body element. */
@@ -747,18 +692,6 @@
     .oj-table-data-cell.oj-hover {
 
         background-color: $collectionCellBgColorHover;
-
-    }
-
-    /* Styling on form controls stamped inside a table */
-    .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control {
-      height: $tableRowHeight;
-
-    }
-
-    /* Styling on form controls stamped inside a table */
-    .oj-table-grid-display .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control {
-      height: $collectionRowHeight;
 
     }
 

@@ -155,7 +155,7 @@ export type Status = {
     type?: 'deprecated';
     since?: string;
     description?: string;
-    target?: 'propertyType' | 'parameterType' | 'returnType';
+    target?: 'propertyType' | 'propertyValue' | 'parameterType' | 'returnType';
     value?: string[];
 };
 // tslint:disable-next-line interface-over-type-literal

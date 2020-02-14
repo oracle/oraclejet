@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -1101,6 +1101,7 @@ IteratingDataProviderContentHandler.prototype.Destroy = function (completelyDest
 
   this.m_loadingIndicator = null;
   this.m_viewportCheckPromise = null;
+  this.m_checkViewportPromise = null;
 };
 /**
  * @private
@@ -1438,11 +1439,18 @@ IteratingDataProviderContentHandler.prototype._getDefaultSkeletonDimension = fun
     skeleton.style.visibility = 'hidden';
     root.appendChild(skeleton); // @HTMLUpdateOK
 
-    this.m_defaultSkeletonDim = {
+    var dim = {
       width: skeleton.offsetWidth,
       height: skeleton.offsetHeight
     };
     root.removeChild(skeleton); // @HTMLUpdateOK
+
+    if (dim.height > 0 && dim.width > 0) {
+      // cache the value only if it's valid
+      this.m_defaultSkeletonDim = dim;
+    }
+
+    return dim;
   }
 
   return this.m_defaultSkeletonDim;
@@ -1509,20 +1517,22 @@ IteratingDataProviderContentHandler.prototype.renderInitialSkeletons = function 
   // use floor to avoid triggering overflow
 
 
-  var count;
+  var count = 0;
 
   var skeletonDimension = this._getDefaultSkeletonDimension();
 
-  if (this.isCardLayout()) {
-    var margin = this._getMargin();
+  if (skeletonDimension.width > 0 && skeletonDimension.height > 0) {
+    if (this.isCardLayout()) {
+      var margin = this._getMargin();
 
-    var width = this._getRootElementWidth();
+      var width = this._getRootElementWidth();
 
-    var colCount = Math.max(1, Math.floor(width / (skeletonDimension.width + margin)));
-    var rowCount = Math.max(1, Math.floor(height / (skeletonDimension.height + margin)));
-    count = rowCount * colCount;
-  } else {
-    count = Math.max(1, Math.floor(height / skeletonDimension.height));
+      var colCount = Math.max(1, Math.floor(width / (skeletonDimension.width + margin)));
+      var rowCount = Math.max(1, Math.floor(height / (skeletonDimension.height + margin)));
+      count = rowCount * colCount;
+    } else {
+      count = Math.max(1, Math.floor(height / skeletonDimension.height));
+    }
   }
 
   var container = document.createElement('li');
@@ -1682,7 +1692,7 @@ IteratingDataProviderContentHandler.prototype._createLoadMoreSkeletons = functio
     var cardDimension = this._getCardDimension();
 
     var cardWidth = cardDimension === undefined ? this._getDefaultSkeletonDimension().width : cardDimension.width;
-    count = Math.floor(width / (cardWidth + this._getMargin()));
+    count = cardWidth === 0 ? 0 : Math.floor(width / (cardWidth + this._getMargin()));
   } else {
     count = IteratingDataProviderContentHandler.LOAD_MORE_SKELETONS_ROW_COUNT;
   }
@@ -2525,7 +2535,12 @@ IteratingDataProviderContentHandler.prototype._checkHorizontalViewport = functio
 
 
 IteratingDataProviderContentHandler.prototype.checkViewport = function () {
-  var self = this;
+  var self = this; // if we are already in the process of fetch due to checkViewport, bail
+
+  if (this.m_checkViewportPromise) {
+    return null;
+  }
+
   this.signalTaskStart('checking viewport'); // signal method task start
   // if loadMoreOnScroll then check if we have underflow and do a fetch if we do
 
@@ -2541,6 +2556,7 @@ IteratingDataProviderContentHandler.prototype.checkViewport = function () {
         // make sure listview is not destroyed yet
         if (self.m_widget != null) {
           if (result != null) {
+            self.m_checkViewportPromise = null;
             self.handleDomScrollerFetchedData(result);
           } else {
             fetchPromise = self._checkHorizontalViewport();
@@ -2548,12 +2564,16 @@ IteratingDataProviderContentHandler.prototype.checkViewport = function () {
             if (fetchPromise != null) {
               self.signalTaskStart('got promise from checking horizontal viewport');
               fetchPromise.then(function (moreResult) {
-                if (moreResult != null) {
+                self.m_checkViewportPromise = null;
+
+                if (self.m_widget != null && moreResult != null) {
                   self.handleDomScrollerFetchedData(moreResult);
                 }
 
                 self.signalTaskEnd();
               }, null);
+            } else {
+              self.m_checkViewportPromise = null;
             }
           }
 
@@ -2561,6 +2581,8 @@ IteratingDataProviderContentHandler.prototype.checkViewport = function () {
         }
       }, null);
     }
+
+    this.m_checkViewportPromise = fetchPromise;
   }
 
   this.signalTaskEnd(); // signal method task end

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -46,8 +46,6 @@
       min-width: 1em;
 
       font-size: 100%;
-      
-      height: $formControlInputHeight;
         
       @include oj-form-control-input;
       // Border is on the oj-text-field-container div
@@ -62,6 +60,11 @@
       }
 
       @include oj-form-control-content-no-focus-padding; 
+    }
+
+    // Height is on an ancestor element, so set the the height to 100%
+    .oj-inputnumber .oj-inputnumber-wrapper {
+      height: 100%;
     }
 
     // space between input and buttons, if any space specified

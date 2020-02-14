@@ -5799,7 +5799,7 @@ DvtTimelineSeries.prototype.render = function(options, width, height)
   // Apply 'Series' label for accessibility
   var desc = this.GetComponentDescription();
   if (desc) {
-    dvt.ToolkitUtils.setAttrNullNS(this.getElem(), 'role', 'group');
+    dvt.ToolkitUtils.setAttrNullNS(this.getElem(), 'role', 'img');
     dvt.ToolkitUtils.setAttrNullNS(this.getElem(), 'aria-label', dvt.TextUtils.processAriaLabel(desc));
   }
 };
@@ -6548,7 +6548,7 @@ DvtTimelineSeriesItemRenderer._renderBubble = function(item, series, container, 
   if (item.getLoc() >= 0)
     container.addChild(bubbleContainer);
 
-  bubbleContainer.setAriaRole('group');
+  bubbleContainer.setAriaRole('img');
   series._callbackObj.EventManager.associate(bubbleContainer, item);
 };
 

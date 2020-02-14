@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -918,13 +918,13 @@ LovDropdown.prototype._defaultCollectionRenderer = function (context) {
       if (context.data && oj.DataProviderFeatureChecker
         && oj.DataProviderFeatureChecker.isTreeDataProvider(context.data)) {
         // Only allow leaf nodes to be focusable/selectable
-        listView.item.focusable = (fc) => fc.leaf;
-        listView.item.selectable = (sc) => sc.leaf;
+        listView.setProperty('item.focusable', (fc) => fc.leaf);
+        listView.setProperty('item.selectable', (sc) => sc.leaf);
       }
 
       if (this._itemTemplate) {
         this._getTemplateEngineFunc().then(function (templateEngine) {
-          listView.item.renderer = this._templateItemRenderer.bind(this, templateEngine);
+          listView.setProperty('item.renderer', this._templateItemRenderer.bind(this, templateEngine));
           context.renderDone();
         }.bind(this), function (reason) {
           Logger.warn(
@@ -932,7 +932,7 @@ LovDropdown.prototype._defaultCollectionRenderer = function (context) {
           context.renderError(reason);
         });
       } else {
-        listView.item.renderer = this._defaultItemRenderer.bind(this);
+        listView.setProperty('item.renderer', this._defaultItemRenderer.bind(this));
         context.renderDone();
       }
     }.bind(this), function (reason) {
@@ -2194,7 +2194,7 @@ AbstractLovBase.prototype._fetchFromDataProvider = function (term) {
  * @augments oj.editableValue
  * @ojimportmembers oj.ojDisplayOptionsNoConverterValidatorHints
  * @since 8.0.0
- * @ojdisplayname Single-select Select
+ * @ojdisplayname Select (Single)
  * @ojshortdesc A select single is a dropdown list that supports single selection and search filtering.
  * @ojrole combobox
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "ItemMetadata"]}

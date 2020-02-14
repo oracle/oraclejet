@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -202,11 +202,10 @@ var __oj_toolbar_metadata =
          * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI.
          * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
          * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
-         * @ojvalue {string} "full" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use solid instead.</span>
-         * In typical themes, full-chrome buttons always have chrome.
-         * @ojvalue {string} "half" <span class="important">Deprecated: this value is deprecated and will be removed in the future. Please use borderless instead.</span>
-         * In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
-         *
+         * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
+         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
+         * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use solid instead."},
+         *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use borderless instead."}]
          * @example <caption>Initialize the Toolbar with the <code class="prettyprint">chroming</code> attribute specified:</caption>
          * &lt;oj-toolbar chroming='borderless'>&lt;/oj-toolbar>
          *

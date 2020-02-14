@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -3196,6 +3196,10 @@ var __oj_tree_view_metadata =
       this._resetFocus();
     },
     _changeNodeToLeaf: function _changeNodeToLeaf(item, subtree) {
+      if (item === this.element[0]) {
+        return;
+      }
+
       item.removeChild(subtree); // eslint-disable-next-line no-param-reassign
 
       item['oj-item-metadata'].leaf = true;

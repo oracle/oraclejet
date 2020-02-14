@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -2236,6 +2236,7 @@ var _ComboUtils = {
     return {
       label: itemData.label,
       value: itemData.value,
+      children: itemData.children,
       data: itemData,
       metadata: itemMetadata
     };
@@ -4852,8 +4853,6 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
         // the re-process of the event.
         this.enterKeyEventHandled = true;
       }
-    } else if (options && options.noFocus) {
-      this.close(event);
     }
   },
   // _AbstractOjChoice
@@ -4981,10 +4980,14 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
     } // Fix  - CUSTOM MESSAGES ARE BEING CLEARED WHEN THE VALUE DOESN'T CHANGE
     // If the value has not changed, bypass the call to _SetValue method in EditableValue.
     // Because we don't have to set the value again in EditableValue.
-    // Note: If there are component validation errors the value may not reflect the display value,
+    // Note:
+    // 1. If there are component validation errors the value may not reflect the display value,
     // hence set value if the component has invalid messages even if the value has not changed.
-    // If there are custom error messages set via 'messagesCustom' attribute, the value will reflect
+    // 2. If there are custom error messages set via 'messagesCustom' attribute, the value will reflect
     // the display value and so no need to set value if the value has not changed.
+    // 3. If the user is search filtering and re-selecting the same value in ojSingleCombobox (),
+    // value won't be changed.  However the display value could be modified due to search operation.
+    // So update the display value for ojSingleCombobox if the value has not changed.
 
 
     var previousVal = this.getVal();
@@ -4998,10 +5001,17 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
       // additional parameter.
       if (!oj.Object.compareValues(previousVal, [val]) || _ComboUtils.hasInvalidComponentMessages(this.ojContext)) {
         this.ojContext._SetValue([val], event, options);
+      } else if (this._classNm === 'oj-combobox' && !multiple) {
+        this.ojContext._SetDisplayValue([val]);
       }
-    } else if (!oj.Object.compareValues(previousVal, val) || _ComboUtils.hasInvalidComponentMessages(this.ojContext)) {
-      //  - select needs implementation fixes...
-      this.ojContext._SetValue(val, event, options);
+    } else {
+      // eslint-disable-next-line no-lonely-if
+      if (!oj.Object.compareValues(previousVal, val) || _ComboUtils.hasInvalidComponentMessages(this.ojContext)) {
+        //  - select needs implementation fixes...
+        this.ojContext._SetValue(val, event, options);
+      } else if (this._classNm === 'oj-combobox' && !multiple) {
+        this.ojContext._SetDisplayValue(val);
+      }
     }
   },
   getValOpts: function getValOpts() {
@@ -5818,6 +5828,17 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
   },
 
   /**
+   * Returns the selection data
+   * @instance
+   * @private
+   * @ignore
+   * @return {Object}
+   */
+  _getSelectionData: function _getSelectionData() {
+    return this.selection.data(this._elemNm);
+  },
+
+  /**
    * Returns the components wrapper under which label needs to be inserted in the inside strategy
    * @instance
    * @protected
@@ -6088,7 +6109,7 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
     // don't set focus on the select box if event target is not select element
 
 
-    if (!(event instanceof MouseEvent) || event.target === this.selection || event.target === this.search) {
+    if (event && (!(event.originalEvent instanceof MouseEvent) || event.target === this.selection || event.target === this.search)) {
       _ComboUtils._focus(this, this.selection);
     } // /remove "mouse click" listeners on spyglass
 
@@ -7186,9 +7207,11 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
       if (this.ojContext.isValid()) {
         this._resetSearchWidth();
       }
-    }
+    } // When clicking outside the combobox (including clicking on other components) triggers a blur event
+    // Should not focus the search when the trigger is a blur event.
 
-    if ((!options || !options.noFocus) && this._elemNm === 'ojcombobox') {
+
+    if ((!options || options.trigger !== 'blur') && this._elemNm === 'ojcombobox') {
       this._focusSearch();
     }
   },
@@ -7458,6 +7481,33 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
   },
 
   /**
+   * Returns the selection data
+   * @instance
+   * @private
+   * @ignore
+   * @return {Array|null}
+   */
+  _getSelectionData: function _getSelectionData() {
+    var dataArr = null;
+    var self = this;
+    var data = null;
+    var choices = this.container.find('.' + this._classNm + '-selected-choice');
+
+    if (choices) {
+      dataArr = [];
+      choices.each(function () {
+        data = $(this).data(self._elemNm);
+
+        if (data != null) {
+          dataArr.push(data);
+        }
+      });
+    }
+
+    return dataArr;
+  },
+
+  /**
    * Returns the components wrapper under which label needs to be inserted in the inside strategy
    * @instance
    * @protected
@@ -7665,7 +7715,7 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice, {
 
     _OjMultiSelect.superclass.close.apply(this, arguments);
 
-    if (event && (!(event instanceof MouseEvent) || event.target === this.selection || event.target === this.search)) {
+    if (event && (!(event.originalEvent instanceof MouseEvent) || event.target === this.selection || event.target === this.search)) {
       _ComboUtils._focus(this, this.selection);
     }
   },
@@ -7937,7 +7987,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox, {
  * @ojcomponent oj.ojComboboxOne
  * @augments oj.ojCombobox
  * @since 0.6.0
- * @ojdisplayname Single-select Combobox
+ * @ojdisplayname Combobox (One)
  * @ojshortdesc A combobox one is a dropdown list that supports single selection, text input, and search filtering.
  * @ojrole combobox
  * @ojsignature [{
@@ -8027,7 +8077,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox, {
 * @ojcomponent oj.ojComboboxMany
 * @augments oj.ojCombobox
 * @since 0.6.0
-* @ojdisplayname Multi-select Combobox
+* @ojdisplayname Combobox (Many)
 * @ojshortdesc A combobox many is a dropdown list that supports multiple selections, text input, and search filtering.
 * @ojrole combobox
 * @ojsignature [{
@@ -9195,6 +9245,7 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
      * @ojshortdesc The maximum number of results displayed in the dropdown.
      * @expose
      * @memberof oj.ojComboboxOne
+     * @since 8.0.0
      * @instance
      * @type {number}
      * @default 15
@@ -9217,6 +9268,7 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
      * @ojshortdesc The maximum number of results displayed in the dropdown.
      * @expose
      * @memberof oj.ojComboboxMany
+     * @since 8.0.0
      * @instance
      * @type {number}
      * @default 15
@@ -10345,6 +10397,47 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
     }
 
     this._resolveValueOptionsLater = false;
+  },
+
+  /**
+   * Returns the display value.
+   * @override
+   * @protected
+   * @memberof! oj.ojCombobox
+   * @return {Array|Object|null} display value of the component
+   */
+  _GetDisplayValue: function _GetDisplayValue() {
+    var displayValue = null;
+
+    var opts = _ComboUtils.getOpts(this);
+
+    var data = this.combobox._getSelectionData();
+
+    if (data != null) {
+      if (this.multiple) {
+        displayValue = [];
+
+        if (Array.isArray(data)) {
+          for (var i = 0; i < data.length; i++) {
+            displayValue.push(opts.formatSelection(data[i]));
+          }
+        } else {
+          displayValue.push(opts.formatSelection(data));
+        }
+      } else {
+        // eslint-disable-next-line no-lonely-if
+        if (Array.isArray(data) && data.length > 0) {
+          displayValue = opts.formatSelection(data[0]);
+        } else {
+          displayValue = opts.formatSelection(data);
+        }
+      }
+    } else {
+      // get the display value from editable value if the selection data is unavailable
+      displayValue = this._super();
+    }
+
+    return displayValue;
   },
 
   /**
@@ -12524,8 +12617,9 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
  * @ojcomponent oj.ojSelectOne
  * @augments oj.ojSelect
  * @since 0.6.0
- * @ojdisplayname Single Select
+ * @ojdisplayname Select (One)
  * @ojshortdesc A select one is a dropdown list that supports single selection and search filtering.
+ * @ojdeprecated {since: "8.1.0", description: "Please use &lt;oj-select-single&gt; instead."}
  * @ojrole combobox
  * @ojsignature [{
  *                target: "Type",
@@ -12608,7 +12702,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
  * @ojcomponent oj.ojSelectMany
  * @augments oj.ojSelect
  * @since 0.6.0
- * @ojdisplayname Multi Select
+ * @ojdisplayname Select (Many)
  * @ojshortdesc A select many is a dropdown list that supports multiple selections and search filtering.
  * @ojrole combobox
  * @ojsignature [{
@@ -12859,6 +12953,7 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
      * @ojshortdesc The maximum number of results displayed in the dropdown.
      * @expose
      * @memberof oj.ojSelectOne
+     * @since 8.0.0
      * @instance
      * @type {number}
      * @default 15
@@ -12881,6 +12976,7 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
      * @ojshortdesc The maximum number of results displayed in the dropdown.
      * @expose
      * @memberof oj.ojSelectMany
+     * @since 8.0.0
      * @instance
      * @type {number}
      * @default 15
@@ -14687,6 +14783,52 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
   },
 
   /**
+   * Returns the display value.
+   * @override
+   * @protected
+   * @memberof! oj.ojSelect
+   * @return {Array|Object|null} display value of the component
+   */
+  _GetDisplayValue: function _GetDisplayValue() {
+    var displayValue = null;
+
+    if (this.select) {
+      var opts = _ComboUtils.getOpts(this);
+
+      var data = this.select._getSelectionData();
+
+      if (data != null) {
+        if (this.multiple) {
+          displayValue = [];
+
+          if (Array.isArray(data)) {
+            for (var i = 0; i < data.length; i++) {
+              displayValue.push(opts.formatSelection(data[i]));
+            }
+          } else {
+            displayValue.push(opts.formatSelection(data));
+          }
+        } else {
+          // eslint-disable-next-line no-lonely-if
+          if (Array.isArray(data) && data.length > 0) {
+            displayValue = opts.formatSelection(data[0]);
+          } else {
+            displayValue = opts.formatSelection(data);
+          }
+        }
+      } else {
+        // get the display value from editable value if the selection data is unavailable
+        displayValue = this._super();
+      }
+    } else {
+      // native renderMode
+      displayValue = this._super();
+    }
+
+    return displayValue;
+  },
+
+  /**
    * <ol>
    * <li>All messages are cleared, including custom messages added by the app. </li>
    * <li>The implicit required validator is run first if the component
@@ -14780,14 +14922,8 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
   },
   // return 1st enabled option jquery object
   _nativeFindFirstEnabledOption: function _nativeFindFirstEnabledOption() {
-    // treeDataProvider
-    var enaOptions;
-
-    if (_ComboUtils.isTreeDataProvider(this.options.options)) {
-      enaOptions = this.element.find('option:not(:disabled)');
-    } else {
-      enaOptions = this.element.children('option:not(:disabled)');
-    }
+    // find all the enabled options under the element
+    var enaOptions = this.element.find('option:not(:disabled)'); // return the first enabled option
 
     return enaOptions.length > 0 ? $(enaOptions[0]) : null;
   },
@@ -14916,6 +15052,7 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
   _setOption: function _setOption(key, _value, flags) {
     var value = _value;
     var selected;
+    var hasSelectedValue;
     var self = this;
     var selfSuper = this._super;
     var multi = this.multiple;
@@ -15126,9 +15263,18 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
 
       if (this.select) {
         // make sure the value still valid
-        selected = this.select.getVal();
+        selected = this.select.getVal(); // selected value can be an Array|null for select-many, any|null for select-one and an array for select-one widget.
+        // select-many has selected values, if selected is a non-empty Array.
+        // select-one has a selected value, if selected is not null.
+        // select-one widget has a selected value, if selected array has a single non-null value.
 
-        if (_ComboUtils.getDataProvider(this.options) && selected) {
+        if (multi) {
+          hasSelectedValue = selected && selected.length !== 0;
+        } else {
+          hasSelectedValue = this._IsCustomElement() ? selected != null : selected && selected[0] != null;
+        }
+
+        if (_ComboUtils.getDataProvider(this.options) && hasSelectedValue) {
           //  - need to be able to specify the initial value of select components bound to dprv
           if (_ComboUtils.applyValueOptions(this.select, this.options)) {
             this.select.opts.options = value;
@@ -15155,19 +15301,24 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
                   self.select._updateSelectedOption(self.options.placeholder);
                 }
               } else {
-                // the selected value is no longer valid, fetch 1st item from data provider
-                _ComboUtils.fetchFirstBlockFromDataProvider(self.select.container, self.options, 1).then(function (data) {
-                  // At this point if we still don't have a selected value then default to the first item
-                  if (data && data.length > 0 && selected === self.select.getVal()) {
-                    self.select._updateSelectedOption(data[0]);
-                  } else {
-                    selfSuper.call(self, 'value', null); // update select box
+                // eslint-disable-next-line no-lonely-if
+                if (!multi) {
+                  // the selected value is no longer valid, fetch 1st item from data provider
+                  // for single select
+                  _ComboUtils.fetchFirstBlockFromDataProvider(self.select.container, self.options, 1).then(function (data) {
+                    // At this point if we still don't have a selected value then default to the first item
+                    if (data && data.length > 0 && selected === self.select.getVal()) {
+                      self.select._updateSelectedOption(data[0]);
+                    } else {
+                      selfSuper.call(self, 'value', null); // update select box
 
-                    if (!multi) {
                       self.select.text.text('');
                     }
-                  }
-                });
+                  });
+                } else {
+                  // Set the default value for multi select
+                  selfSuper.call(self, 'value', null);
+                }
               }
 
               self.select.opts.options = value;

@@ -1,7 +1,11 @@
 import CoreRouter = require('../ojcorerouter');
-declare class UrlPathAdapter implements CoreRouter.UrlAdapter {
+declare class UrlPathAdapter<P extends {
+    [key: string]: any;
+} = {
+    [key: string]: any;
+}> {
     constructor(baseUrl?: string);
-    getRoutesForUrl(url?: string): CoreRouter.Route[];
-    getUrlForRoutes(routes: CoreRouter.Route[]): string;
+    getRoutesForUrl(url?: string): Array<CoreRouter.Route<P>>;
+    getUrlForRoutes(routes: Array<CoreRouter.Route<P>>): string;
 }
 export = UrlPathAdapter;

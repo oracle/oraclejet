@@ -1,6 +1,5 @@
-/// <reference types="knockout" />
-/// <reference types='knockout'/>
 import { DataProvider } from '../ojdataprovider';
+/// <reference types='knockout'/>
 export interface ojBindForEach<K, D> extends HTMLElement {
     data: D[] | DataProvider<K, D>;
 }

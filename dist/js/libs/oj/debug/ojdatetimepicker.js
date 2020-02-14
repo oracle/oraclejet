@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -3522,8 +3522,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         //  focus to input element if the picker is showing still for the non-inline case. For the
         //  case of inline date picker, if there is a time field and already focussed (brought in when
         //  the picker was hidden), we want to update the date picker, but not set focus on it.
-        var focusOnCalendar = !(this._isInLine && this._timePicker &&
-                                this._timePicker[0] === document.activeElement);
+        var focusOnCalendar = !(this._isInLine && !this._dpDiv[0].contains(document.activeElement));
         this._updateDatepicker(focusOnCalendar);
       }
 
@@ -4537,8 +4536,9 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       this._setCurrentDate(isoString);
 
       if (this._datepickerShowing()) {
-        var focusOnCalendar = !(this._isInLine && this._timePicker &&
-                                this._timePicker[0] === document.activeElement);
+        // If the date picker is inline, and it doesn't contain the focus, then we don't need
+        // to restore it.
+        var focusOnCalendar = !(this._isInLine && !this._dpDiv[0].contains(document.activeElement));
         this._updateDatepicker(focusOnCalendar);
       }
     }
@@ -5829,11 +5829,10 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     // when developer invokes ("option", "value", oj.IntlConverterUtils.dateToLocalIso(new Date()))
     if (this._datepickerShowing()) {
       // _SetDisplayValue is called after user picks a date from picker, we dont want to bring
-      //  focus to input element if the picker is showing still for the non-inline case. For the
-      //  case of inline date picker, if the time picker field already had focus (brought in when
-      //  the picker was hidden), we want to update the date picker, but not set focus on it.
-      var focusOnCalendar = !(this._isInLine && this._timePicker &&
-                              this._timePicker[0] === document.activeElement);
+      //  focus to input element if the picker is showing still for the non-inline case.
+      // If the date picker is inline, and it doesn't contain the focus, then we don't need
+      // to restore it.
+      var focusOnCalendar = !(this._isInLine && !this._dpDiv[0].contains(document.activeElement));
       this._updateDatepicker(focusOnCalendar);
     }
   },
@@ -12349,8 +12348,9 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
     } else {
       // When the picker is inline, we should update the picker when the value changes so that
       // the selected day has the correct CSS class set.
-      var focusOnCalendar = !(this._isInLine && this._timePicker &&
-                              this._timePicker[0] === document.activeElement);
+      // If the date picker is inline, and it doesn't contain the focus, then we don't need
+      // to restore the focus.
+      var focusOnCalendar = !(this._isInLine && !this._dpDiv[0].contains(document.activeElement));
       this._updateDatepicker(focusOnCalendar);
     }
     this._switcherTimeValue = null;

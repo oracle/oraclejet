@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -119,6 +119,10 @@ var adapter = (function () {
    * @export
    * @ojtsmodule
    * @ojtsimport {module: "ojcorerouter", type: "AMD", importName: "CoreRouter"}
+   * @ojsignature {target: "Type",
+   *               value: "class UrlParamAdapter<P extends {[key: string]: any} = {[key: string]: any}>",
+   *               genericParameters: [{"name": "P", "description": "Parameters object for the router state"}]
+   *              }
    */
   function UrlParamAdapter() {
     this._pathAdapter = new UrlPathAdapter('');
@@ -133,6 +137,7 @@ var adapter = (function () {
    * @method
    * @instance
    * @export
+   * @ojsignature {target: "Type", value: "Array.<CoreRouter.Route<P>>", for: "returns"}
    */
   UrlParamAdapter.prototype.getRoutesForUrl = function () {
     var url = getRouterParamValue();
@@ -149,6 +154,7 @@ var adapter = (function () {
    * @method
    * @instance
    * @export
+   * @ojsignature {target: "Type", value: "Array.<CoreRouter.Route<P>>", for: "routes"}
    */
   UrlParamAdapter.prototype.getUrlForRoutes = function (routes) {
     var fullPath = this._pathAdapter.getUrlForRoutes(routes);

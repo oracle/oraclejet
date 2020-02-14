@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -514,7 +514,9 @@ function () {
         var payload = {};
         payload[self._PAGE] = value;
         payload[self._PREVIOUSPAGE] = self._currentPage;
-        self.dispatchEvent(new CustomEvent(self._BEFOREPAGE, payload));
+        self.dispatchEvent(new CustomEvent(self._BEFOREPAGE, {
+          detail: payload
+        }));
 
         if (options[self._PAGESIZE] != null) {
           self._pageSize = options[self._PAGESIZE];

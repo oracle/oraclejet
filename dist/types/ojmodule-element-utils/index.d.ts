@@ -1,17 +1,21 @@
-export function createConfig(options: {
+import { ModuleViewModel } from '../ojmodule-element';
+export function createConfig<P>(options: {
     name?: string;
     viewPath?: string;
     viewModelPath?: string;
+    params?: P;
     require?: ((module: string) => any) | ((modules: string[], ready?: any, errback?: any) => void);
-    params?: any;
-}): Promise<any>;
+}): Promise<{
+    view: Node[];
+    viewModel: ModuleViewModel | null;
+}>;
 export function createView(options: {
     viewPath: string;
     require?: ((module: string) => any) | ((modules: string[], ready?: any, errback?: any) => void);
-}): Promise<any>;
-export function createViewModel(options: {
+}): Promise<Node[]>;
+export function createViewModel<P>(options: {
     viewModelPath: string;
+    params?: P;
     require?: ((module: string) => any) | ((modules: string[], ready?: any, errback?: any) => void);
-    params?: any;
     initialize?: 'always' | 'never' | 'ifParams';
-}): Promise<any>;
+}): Promise<ModuleViewModel | Function>;

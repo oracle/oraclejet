@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -53,12 +53,12 @@ var oj = {
    * @global
    * @member {string} version JET version numberr
    */
-  version: '8.0.0',
+  version: '8.1.0',
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  revision: '2019-11-15_21-18-53',
+  revision: '2020-02-10_18-00-33',
 
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate

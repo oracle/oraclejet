@@ -8482,7 +8482,7 @@ html .oj-form-control {
 
 /* consolidating styles - start
   */
-.oj-text-field {
+.oj-text-field:not(oj-select-one):not(oj-select-many):not(oj-combobox-one):not(oj-combobox-many) {
   display: inline-block;
   font-size: var(--oj-text-field-input-font-size);
   /* use a width of 100% and then max and min width so that when
@@ -8493,7 +8493,7 @@ html .oj-form-control {
   width: 100%;
   box-sizing: border-box; }
   @media screen and (max-width: 599.9px) {
-    .oj-text-field {
+    .oj-text-field:not(oj-select-one):not(oj-select-many):not(oj-combobox-one):not(oj-combobox-many) {
       -webkit-text-size-adjust: var(--oj-text-field-trigger-font-size-adjust); } }
 
 .oj-form-control-full-width.oj-text-field,
@@ -8568,7 +8568,8 @@ html .oj-form-control {
   border-width: var(--oj-text-field-border-top-width) var(--oj-text-field-border-right-width) var(--oj-text-field-border-bottom-width) var(--oj-text-field-border-left-width);
   border-radius: var(--oj-text-field-border-radius);
   background-color: var(--oj-text-field-bg-color);
-  overflow: hidden; }
+  overflow: hidden;
+  height: var(--oj-text-field-input-height); }
 
 .oj-text-field.oj-read-only .oj-text-field-container,
 .oj-text-field .oj-read-only .oj-text-field-container {
@@ -9928,8 +9929,6 @@ oj-slider:not(.oj-complete) {
 .oj-slider.oj-slider-horizontal .oj-slider-container {
   /* This ensures that the slider bounding box will include
    the thumb radius - important for form controls. */
-  margin-top: calc(var(--oj-slider-thumb-height-active) / 2);
-  margin-bottom: calc(var(--oj-slider-thumb-height-active) / 2);
   margin-left: calc(var(--oj-slider-thumb-width) / 2);
   margin-right: calc(var(--oj-slider-thumb-width) / 2); }
 
@@ -10148,19 +10147,11 @@ html[dir="rtl"] .oj-slider-vertical .oj-slider-thumb.oj-active {
 .oj-slider-block-item {
   text-align: center; }
 
-.oj-slider-color-picker.oj-slider-horizontal {
-  /* This ensures that the slider bounding box will include
-     the thumb radius - important for form controls. */
-  padding-left: calc(var(--oj-slider-color-picker-thumb-width-active) / 2);
-  padding-right: calc(var(--oj-slider-color-picker-thumb-height-active) / 2); }
-
-.oj-slider-color-picker.oj-slider-vertical {
-  padding-left: calc(var(--oj-slider-color-picker-thumb-height-active) / 2);
-  padding-right: calc(var(--oj-slider-color-picker-thumb-width-active) / 2); }
-
 .oj-slider-color-picker.oj-slider-vertical > .oj-slider-container {
   margin-top: calc(var(--oj-slider-color-picker-thumb-width-active) / 2);
-  margin-bottom: calc(var(--oj-slider-color-picker-thumb-width-active) / 2); }
+  margin-bottom: calc(var(--oj-slider-color-picker-thumb-width-active) / 2);
+  margin-left: calc(var(--oj-slider-color-picker-thumb-height-active) / 2);
+  margin-right: calc(var(--oj-slider-color-picker-thumb-height-active) / 2); }
 
 .oj-slider-color-picker.oj-slider-vertical.oj-form-control .oj-slider-container {
   min-height: calc(var(--oj-slider-color-picker-thumb-width) * 2); }
@@ -10747,7 +10738,6 @@ oj-combobox:not(.oj-complete) {
   background-color: transparent;
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
-  height: var(--oj-text-field-input-height);
   padding-bottom: calc(var(--oj-text-field-input-border-bottom-width-focus) - var(--oj-text-field-border-bottom-width));
   box-sizing: border-box;
   display: flex;
@@ -10756,14 +10746,11 @@ oj-combobox:not(.oj-complete) {
   outline: 0;
   overflow: hidden;
   white-space: nowrap;
-  background-clip: padding-box; }
+  background-clip: padding-box;
+  height: 100%; }
   html[dir="rtl"] .oj-combobox-choice {
     text-align: var(--oj-text-field-text-align-rtl); }
   .oj-combobox-choice:-ms-input-placeholder {
-    color: var(--oj-text-field-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-text-field-placeholder-font-style); }
-  .oj-combobox-choice::-ms-input-placeholder {
     color: var(--oj-text-field-placeholder-color);
     opacity: 1;
     font-style: var(--oj-text-field-placeholder-font-style); }
@@ -10775,6 +10762,9 @@ oj-combobox:not(.oj-complete) {
     padding-left: var(--oj-text-field-padding-horizontal); }
   html[dir="rtl"] .oj-combobox-choice {
     padding-right: var(--oj-text-field-padding-horizontal); }
+
+.oj-text-field .oj-combobox-multi .oj-text-field-container {
+  height: auto; }
 
 /*
      * Applied to the input field
@@ -10797,10 +10787,6 @@ oj-combobox:not(.oj-complete) {
     .oj-combobox-input {
       -webkit-text-size-adjust: var(--oj-text-field-trigger-font-size-adjust); } }
   .oj-combobox-input:-ms-input-placeholder {
-    color: var(--oj-text-field-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-text-field-placeholder-font-style); }
-  .oj-combobox-input::-ms-input-placeholder {
     color: var(--oj-text-field-placeholder-color);
     opacity: 1;
     font-style: var(--oj-text-field-placeholder-font-style); }
@@ -10951,10 +10937,6 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-combobox-selected-choice {
   html[dir="rtl"] .oj-combobox-choices {
     text-align: var(--oj-text-field-text-align-rtl); }
   .oj-combobox-choices:-ms-input-placeholder {
-    color: var(--oj-text-field-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-text-field-placeholder-font-style); }
-  .oj-combobox-choices::-ms-input-placeholder {
     color: var(--oj-text-field-placeholder-color);
     opacity: 1;
     font-style: var(--oj-text-field-placeholder-font-style); }
@@ -12059,15 +12041,10 @@ oj-calendar:not(.oj-complete) {
   min-width: 1em;
   font-weight: normal;
   font-size: 100%;
-  padding: 0 var(--oj-text-field-padding-horizontal);
-  height: var(--oj-text-field-input-height); }
+  padding: 0 var(--oj-text-field-padding-horizontal); }
   html[dir="rtl"] .oj-inputdatetime-input {
     text-align: var(--oj-text-field-text-align-rtl); }
   .oj-inputdatetime-input:-ms-input-placeholder {
-    color: var(--oj-text-field-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-text-field-placeholder-font-style); }
-  .oj-inputdatetime-input::-ms-input-placeholder {
     color: var(--oj-text-field-placeholder-color);
     opacity: 1;
     font-style: var(--oj-text-field-placeholder-font-style); }
@@ -12685,6 +12662,7 @@ html[dir="rtl"] .oj-datetimepicker-switcher-buttons a:first-child {
   --oj-diagram-link-padding:                         10px;
   --oj-diagram-link-border-color-hover:              var(--oj-diagram-link-color);
   --oj-diagram-overview-padding:                      0px;
+  --oj-diagram-overview-content-padding:              10px;
   --oj-diagram-overview-bg-color:                     var(--oj-neutral-color-70);
   --oj-diagram-overview-window-bg-color:              var(--oj-neutral-color-10);
   --oj-diagram-overview-window-border-color:          var(--oj-neutral-color-170);
@@ -12756,6 +12734,9 @@ oj-diagram {
 .oj-diagram-overview {
   background-color: var(--oj-diagram-overview-bg-color);
   padding: var(--oj-diagram-overview-padding); }
+
+.oj-diagram-overview-content {
+  padding: var(--oj-diagram-overview-content-padding); }
 
 .oj-diagram-overview-viewport {
   background-color: var(--oj-diagram-overview-window-bg-color);
@@ -14760,7 +14741,6 @@ oj-input-number:not(.oj-complete) {
   width: 1em;
   min-width: 1em;
   font-size: 100%;
-  height: var(--oj-text-field-input-height);
   text-align: var(--oj-text-field-text-align);
   color: var(--oj-text-field-input-value-color);
   background-color: transparent;
@@ -14775,14 +14755,13 @@ oj-input-number:not(.oj-complete) {
     color: var(--oj-text-field-placeholder-color);
     opacity: 1;
     font-style: var(--oj-text-field-placeholder-font-style); }
-  .oj-inputnumber-input::-ms-input-placeholder {
-    color: var(--oj-text-field-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-text-field-placeholder-font-style); }
   .oj-inputnumber-input::placeholder {
     color: var(--oj-text-field-placeholder-color);
     opacity: 1;
     font-style: var(--oj-text-field-placeholder-font-style); }
+
+.oj-inputnumber .oj-inputnumber-wrapper {
+  height: 100%; }
 
 html:not([dir="rtl"]) .oj-inputnumber.oj-has-buttons .oj-inputnumber-input, html:not([dir="rtl"])
 .oj-inputnumber.oj-has-buttons .oj-text-field-middle {
@@ -14997,12 +14976,6 @@ a.oj-inputtext-clear-icon-btn:active {
     color: var(--oj-text-field-placeholder-color);
     opacity: 1;
     font-style: var(--oj-text-field-placeholder-font-style); }
-  .oj-inputtext-input::-ms-input-placeholder,
-  .oj-inputpassword-input::-ms-input-placeholder,
-  .oj-textarea-input::-ms-input-placeholder {
-    color: var(--oj-text-field-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-text-field-placeholder-font-style); }
   .oj-inputtext-input::placeholder,
   .oj-inputpassword-input::placeholder,
   .oj-textarea-input::placeholder {
@@ -15020,13 +14993,15 @@ a.oj-inputtext-clear-icon-btn:active {
 .oj-textarea-input[size] {
   width: auto; }
 
+.oj-textarea .oj-text-field-container {
+  height: auto; }
+
 .oj-inputtext-input,
 .oj-inputpassword-input {
   font-family: inherit;
   font-size: 100%;
   margin: 0;
   box-sizing: border-box;
-  height: var(--oj-text-field-input-height);
   padding: 0 var(--oj-text-field-padding-horizontal);
   padding-bottom: calc(var(--oj-text-field-input-border-bottom-width-focus) - var(--oj-text-field-border-bottom-width)); }
 
@@ -17204,10 +17179,6 @@ input.oj-pagingcontrol-nav-input.oj-inputtext-input {
     color: var(--oj-text-field-placeholder-color);
     opacity: 1;
     font-style: var(--oj-text-field-placeholder-font-style); }
-  input.oj-pagingcontrol-nav-input.oj-inputtext-input::-ms-input-placeholder {
-    color: var(--oj-text-field-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-text-field-placeholder-font-style); }
   input.oj-pagingcontrol-nav-input.oj-inputtext-input::placeholder {
     color: var(--oj-text-field-placeholder-color);
     opacity: 1;
@@ -17878,16 +17849,11 @@ oj-searchselect:not(.oj-complete) {
   background-color: transparent;
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
-  height: var(--oj-text-field-input-height);
   padding-bottom: calc(var(--oj-text-field-input-border-bottom-width-focus) - var(--oj-text-field-border-bottom-width)); }
   @media screen and (max-width: 599.9px) {
     .oj-searchselect-input {
       -webkit-text-size-adjust: var(--oj-text-field-trigger-font-size-adjust); } }
   .oj-searchselect-input:-ms-input-placeholder {
-    color: var(--oj-text-field-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-text-field-placeholder-font-style); }
-  .oj-searchselect-input::-ms-input-placeholder {
     color: var(--oj-text-field-placeholder-color);
     opacity: 1;
     font-style: var(--oj-text-field-placeholder-font-style); }
@@ -17901,10 +17867,6 @@ oj-searchselect:not(.oj-complete) {
     color: var(--oj-text-field-placeholder-color);
     opacity: 1;
     font-style: var(--oj-text-field-placeholder-font-style); }
-  .oj-searchselect-input::-ms-input-placeholder {
-    color: var(--oj-text-field-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-text-field-placeholder-font-style); }
   .oj-searchselect-input::placeholder {
     color: var(--oj-text-field-placeholder-color);
     opacity: 1;
@@ -17913,6 +17875,9 @@ oj-searchselect:not(.oj-complete) {
     padding-left: var(--oj-text-field-padding-horizontal); }
   html[dir="rtl"] .oj-searchselect-input {
     padding-right: var(--oj-text-field-padding-horizontal); }
+
+.oj-searchselect.oj-text-field .oj-text-field-container {
+  height: var(--oj-text-field-input-height); }
 
 /*
      * Applied to the filter field on desktop and mobile.
@@ -18137,7 +18102,6 @@ oj-select:not(.oj-complete) {
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
   border-width: 0;
-  height: var(--oj-text-field-trigger-height);
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
@@ -18145,14 +18109,11 @@ oj-select:not(.oj-complete) {
   overflow: hidden;
   white-space: nowrap;
   background-clip: padding-box;
-  text-overflow: ellipsis; }
+  text-overflow: ellipsis;
+  height: 100%; }
   html[dir="rtl"] .oj-select-choice {
     text-align: var(--oj-text-field-text-align-rtl); }
   .oj-select-choice:-ms-input-placeholder {
-    color: var(--oj-text-field-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-text-field-placeholder-font-style); }
-  .oj-select-choice::-ms-input-placeholder {
     color: var(--oj-text-field-placeholder-color);
     opacity: 1;
     font-style: var(--oj-text-field-placeholder-font-style); }
@@ -18275,7 +18236,6 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-select-selected-choice {
 .oj-select-choices {
   box-sizing: border-box;
   height: auto;
-  min-height: var(--oj-text-field-trigger-height);
   padding: 0 var(--oj-text-field-padding-horizontal) 5px;
   text-align: var(--oj-text-field-text-align);
   color: var(--oj-text-field-input-value-color);
@@ -18295,10 +18255,6 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-select-selected-choice {
   html[dir="rtl"] .oj-select-choices {
     text-align: var(--oj-text-field-text-align-rtl); }
   .oj-select-choices:-ms-input-placeholder {
-    color: var(--oj-text-field-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-text-field-placeholder-font-style); }
-  .oj-select-choices::-ms-input-placeholder {
     color: var(--oj-text-field-placeholder-color);
     opacity: 1;
     font-style: var(--oj-text-field-placeholder-font-style); }
@@ -18453,7 +18409,8 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-select-selected-choice {
   overflow: hidden;
   text-overflow: ellipsis;
   box-sizing: border-box;
-  box-shadow: none; }
+  box-shadow: none;
+  height: 100%; }
   html:not([dir="rtl"]) .oj-select-chosen {
     padding-right: var(--oj-text-field-padding-horizontal); }
   html[dir="rtl"] .oj-select-chosen {
@@ -18538,10 +18495,6 @@ html:not([dir="rtl"]) .oj-select-open-icon {
   html[dir="rtl"] .oj-select-select {
     text-align: var(--oj-text-field-text-align-rtl); }
   .oj-select-select:-ms-input-placeholder {
-    color: var(--oj-text-field-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-text-field-placeholder-font-style); }
-  .oj-select-select::-ms-input-placeholder {
     color: var(--oj-text-field-placeholder-color);
     opacity: 1;
     font-style: var(--oj-text-field-placeholder-font-style); }
@@ -18633,6 +18586,10 @@ select.oj-select-select.oj-select-default:not([multiple]) {
 
 .oj-text-field-label-inside .oj-select.oj-disabled .oj-text-field-container {
   background-color: var(--oj-text-field-bg-color-disabled); }
+
+.oj-text-field .oj-select-multi .oj-text-field-container {
+  height: auto;
+  min-height: var(--oj-text-field-trigger-height); }
 
 html:not([dir="rtl"]) .oj-text-field-label-inside .oj-select-selected-choice {
   margin: 10px 6px 0 0; }
@@ -20160,31 +20117,28 @@ table.oj-table-element.oj-table-column-header-resizing {
   padding-top: var(--oj-collection-cell-padding);
   padding-bottom: var(--oj-collection-cell-padding);
   height: var(--oj-table-row-height);
+  padding-left: var(--oj-table-cell-padding);
+  padding-right: var(--oj-table-cell-padding);
   float: none;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   box-sizing: border-box; }
   html:not([dir="rtl"]) .oj-table-column-header-cell {
-    padding-left: var(--oj-table-cell-padding); }
-  html[dir="rtl"] .oj-table-column-header-cell {
-    padding-right: var(--oj-table-cell-padding); }
-  html:not([dir="rtl"]) .oj-table-column-header-cell {
-    padding-right: 0;
     text-align: left; }
   html[dir="rtl"] .oj-table-column-header-cell {
-    padding-left: 0;
     text-align: right; }
 
 /* Grid display table styling for the column header elements. */
 .oj-table-grid-display .oj-table-column-header-cell {
-  height: var(--oj-collection-row-height); }
-  html:not([dir="rtl"]) .oj-table-grid-display .oj-table-column-header-cell {
-    padding-left: var(--oj-collection-cell-padding);
-    padding-right: var(--oj-collection-cell-padding); }
-  html[dir="rtl"] .oj-table-grid-display .oj-table-column-header-cell {
-    padding-left: var(--oj-collection-cell-padding);
-    padding-right: var(--oj-collection-cell-padding); }
+  height: var(--oj-collection-row-height);
+  padding-left: var(--oj-collection-cell-padding);
+  padding-right: var(--oj-collection-cell-padding); }
+
+/* Editable display table styling for the column header elements. */
+.oj-table-editable .oj-table-column-header-cell {
+  padding-left: var(--oj-collection-cell-padding);
+  padding-right: var(--oj-collection-cell-padding); }
 
 /* Styling to remove the right border of the last column header. */
 html:not([dir="rtl"]) .oj-table-column-header-cell:last-child {
@@ -20248,17 +20202,6 @@ html[dir="rtl"] .oj-table-column-header-cell.oj-table-column-header-drag-indicat
   float: none;
   text-overflow: inherit;
   overflow: inherit; }
-  html:not([dir="rtl"]) .oj-table-column-header {
-    padding-right: 10px; }
-  html[dir="rtl"] .oj-table-column-header {
-    padding-left: 10px; }
-
-/* Grid display table styling for the column header element. */
-html:not([dir="rtl"]) .oj-table-grid-display .oj-table-column-header {
-  padding-right: 0; }
-
-html[dir="rtl"] .oj-table-grid-display .oj-table-column-header {
-  padding-left: 0; }
 
 /* Styling for the column header text. */
 .oj-table-column-header-text {
@@ -20267,14 +20210,24 @@ html[dir="rtl"] .oj-table-grid-display .oj-table-column-header {
   overflow: inherit;
   text-overflow: inherit;
   vertical-align: top; }
-  html:not([dir="rtl"]) .oj-table-column-header-text {
-    padding-right: 5px; }
-  html[dir="rtl"] .oj-table-column-header-text {
-    padding-left: 5px; }
 
-/* Grid display table styling for the column header text. */
-.oj-table-grid-display .oj-table-column-header-text {
-  padding-right: 0; }
+html:not([dir="rtl"]) .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
+  padding-right: 26px; }
+
+html[dir="rtl"] .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
+  padding-left: 26px; }
+
+html:not([dir="rtl"]) .oj-table-editable .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
+  padding-right: calc(16px + var(--oj-collection-cell-padding)); }
+
+html[dir="rtl"] .oj-table-editable .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
+  padding-left: calc(16px + var(--oj-collection-cell-padding)); }
+
+html:not([dir="rtl"]) .oj-table-grid-display .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
+  padding-right: calc(16px + var(--oj-collection-cell-padding)); }
+
+html[dir="rtl"] .oj-table-grid-display .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
+  padding-left: calc(16px + var(--oj-collection-cell-padding)); }
 
 /* Styling for the sort area around the icon */
 .oj-table-sort-icon-container {
@@ -20283,28 +20236,17 @@ html[dir="rtl"] .oj-table-grid-display .oj-table-column-header {
   justify-content: center;
   box-sizing: border-box;
   height: 100%;
-  padding: var(--oj-collection-cell-padding);
+  padding-top: var(--oj-collection-cell-padding);
+  padding-bottom: var(--oj-collection-cell-padding);
   position: absolute;
   top: 0;
   -webkit-user-select: none; }
   html:not([dir="rtl"]) .oj-table-sort-icon-container {
-    right: 2px; }
+    right: 0;
+    padding-left: var(--oj-collection-cell-padding); }
   html[dir="rtl"] .oj-table-sort-icon-container {
-    left: 2px; }
-
-/* Grid display table styling for sort container */
-html:not([dir="rtl"]) .oj-table-grid-display .oj-table-sort-icon-container {
-  right: -0.5em; }
-
-html[dir="rtl"] .oj-table-grid-display .oj-table-sort-icon-container {
-  left: -0.5em; }
-
-/* Editable display table styling for sort container */
-html:not([dir="rtl"]) .oj-table-editable .oj-table-sort-icon-container {
-  right: -0.5em; }
-
-html[dir="rtl"] .oj-table-editable .oj-table-sort-icon-container {
-  left: -0.5em; }
+    left: 0;
+    padding-right: var(--oj-collection-cell-padding); }
 
 /* Styling for the gradient for sort icons in the header */
 .oj-table-sort-icon-container.oj-enabled {
@@ -20394,13 +20336,15 @@ html[dir="rtl"] .oj-table-editable .oj-table-sort-icon-container {
 .oj-table-scroll-vertical .oj-table-body {
   display: block;
   overflow-y: auto;
-  position: relative; }
+  position: relative;
+  -webkit-overflow-scrolling: touch; }
 
 /* Styling for the table body element when table has horizontal scrollbars. */
 .oj-table-scroll-horizontal .oj-table-body {
   display: block;
   overflow-x: auto;
-  position: relative; }
+  position: relative;
+  -webkit-overflow-scrolling: touch; }
 
 /* Grid display styling for the data body element. */
 .oj-table-grid-display .oj-table-body {
@@ -20540,14 +20484,6 @@ html[dir="rtl"] .oj-table-editable .oj-table-sort-icon-container {
 /* Styling for the data cell elements in hover state. */
 .oj-table-data-cell.oj-hover {
   background-color: var(--oj-collection-cell-bg-color-hover); }
-
-/* Styling on form controls stamped inside a table */
-.oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control {
-  height: var(--oj-table-row-height); }
-
-/* Styling on form controls stamped inside a table */
-.oj-table-grid-display .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control {
-  height: var(--oj-collection-row-height); }
 
 /* Styling on form controls stamped inside a table */
 .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-input,

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -475,8 +475,7 @@ oj.CollectionTableDataSource.prototype._fetchInternal = function (_options) {
       pageSize = 25;
     }
 
-    self._collection.setRangeLocal(self._startIndex, pageSize,
-    { silent: true }).then(function (actual) {
+    self._collection.setRangeLocal(self._startIndex, pageSize).then(function (actual) {
       var result;
 
         // Do not call _getRowArray if this datasource is paged,
