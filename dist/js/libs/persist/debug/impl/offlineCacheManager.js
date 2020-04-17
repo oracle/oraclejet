@@ -132,7 +132,7 @@ define(['./OfflineCache', './logger'],
       var self = this;
       var cache = self._caches[cacheName];
       if (cache) {
-        return cache.delete().then(function () {
+        return cache.clear().then(function () {
           self._cachesArray.splice(self._cachesArray.indexOf(cacheName), 1);
           delete self._caches[cacheName];
           return true;

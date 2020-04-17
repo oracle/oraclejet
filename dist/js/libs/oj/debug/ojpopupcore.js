@@ -1167,7 +1167,7 @@ oj.ZOrderUtils.getEvents = function (layer) {
  * @see oj.ZOrderUtils.addToAncestorLayer
  */
 oj.ZOrderUtils._createSurrogate = function (layer, isCustomElement) {
-  var nodeName = 'script';
+  var nodeName = 'script'; // @HTMLUpdateOK
   if (isCustomElement) {
     nodeName = 'oj-surrogate';
   }

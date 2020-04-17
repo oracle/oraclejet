@@ -266,7 +266,7 @@ define('persist/PersistenceStore',[], function () {
 
 define('persist/impl/storageUtils',['./logger'], function (logger) {
   'use strict';
-  
+
   /**
     * Helper function that checks if itemData satisfies the search criteria
     * defined by selector or not. Undefined selector means everything is
@@ -291,7 +291,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
       return _evaluateExpressionTree(expTree, itemData);
     }
   };
-   
+
   /**
    * Helper function used by {@link _satisfy} to build an expression tree
    * based on expression object for easier evaluation later.
@@ -447,6 +447,12 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
         } else {
           return (itemValue === null || itemValue === undefined);
         }
+      } else if (operator === '$in') {
+        for (var i=0; i<value.length; i++) {
+          if(value[i] ===  itemValue) {
+            return true
+          }
+        }
       } else {
         throw new Error("not a valid expression! " + expTree);
       }
@@ -485,7 +491,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
   function _isSingleSelector(token) {
     return (token === '$lt' || token === '$gt' || token === '$lte' ||
       token === '$gte' || token === '$eq' || token === '$ne' ||
-      token === '$regex' || token === '$exists');
+      token === '$regex' || token === '$exists' || token === '$in');
   };
 
   /**
@@ -500,7 +506,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
   function _isLiteral(token) {
     return (typeof(token) !== 'object');
   };
-  
+
   /**
    * Helper function that checks if the token is a string
    * @method
@@ -513,7 +519,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
   function _isString(token) {
     return (token != null && (token instanceof String || typeof token === 'string'));
   };
-  
+
   /**
    * Helper function that sets null literals to empty string for string comparison
    * @method
@@ -599,10 +605,54 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
     return returnObject;
   };
   
+  function sortRows (unsorted, sortCriteria) {
+    if (!unsorted || !Array.isArray(unsorted) || unsorted.length < 1 ||
+        !sortCriteria || !Array.isArray(sortCriteria) || !sortCriteria.length) {
+      return unsorted;
+    }
+
+    return unsorted.sort(_sortFunction(sortCriteria));
+  };
+
+  var _sortFunction = function (sortCriteria) {
+    return function (a, b) {
+      for (var index = 0; index < sortCriteria.length; index++) {
+        var sortC = sortCriteria[index];
+        var sortField;
+        var sortAsc = true;
+
+        if (typeof(sortC) === 'string') {
+          sortField = sortC;
+        } else if (typeof(sortC) === 'object'){
+          var keys = Object.keys(sortC);
+          if (!keys || keys.length !== 1) {
+            throw new Error('invalid sort criteria');
+          }
+          sortField = keys[0];
+          sortAsc = (sortC[sortField].toLowerCase() === 'asc');
+        } else {
+          throw new Error("invalid sort criteria.");
+        }
+
+        var valueA = getValue(sortField, a);
+        var valueB = getValue(sortField, b);
+        if (valueA == valueB) {
+          continue;
+        } else if (sortAsc) {
+          return (valueA < valueB ? -1 : 1);
+        } else {
+          return (valueA < valueB ? 1 : -1);
+        }
+      }
+      return 0;
+    };
+  };
+
   return {
     satisfy: satisfy,
     getValue: getValue,
-    assembleObject: assembleObject
+    assembleObject: assembleObject,
+    sortRows: sortRows
   };
 });
 
@@ -1226,31 +1276,6 @@ function immediate(task) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],4:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],5:[function(require,module,exports){
 (function (process,global){
 'use strict';
 
@@ -11463,218 +11488,32 @@ PouchDB.plugin(IDBPouch)
 module.exports = PouchDB;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":11,"argsarray":1,"events":2,"immediate":3,"inherits":4,"spark-md5":12,"uuid":6,"vuvuzela":13}],6:[function(require,module,exports){
-var v1 = require('./v1');
-var v4 = require('./v4');
-
-var uuid = v4;
-uuid.v1 = v1;
-uuid.v4 = v4;
-
-module.exports = uuid;
-
-},{"./v1":9,"./v4":10}],7:[function(require,module,exports){
-/**
- * Convert array of 16 byte values to UUID string format of the form:
- * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
- */
-var byteToHex = [];
-for (var i = 0; i < 256; ++i) {
-  byteToHex[i] = (i + 0x100).toString(16).substr(1);
-}
-
-function bytesToUuid(buf, offset) {
-  var i = offset || 0;
-  var bth = byteToHex;
-  return bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]];
-}
-
-module.exports = bytesToUuid;
-
-},{}],8:[function(require,module,exports){
-// Unique ID creation requires a high quality random # generator.  In the
-// browser this is a little complicated due to unknown quality of Math.random()
-// and inconsistent support for the `crypto` API.  We do the best we can via
-// feature-detection
-
-// getRandomValues needs to be invoked in a context where "this" is a Crypto implementation.
-var getRandomValues = (typeof(crypto) != 'undefined' && crypto.getRandomValues.bind(crypto)) ||
-                      (typeof(msCrypto) != 'undefined' && msCrypto.getRandomValues.bind(msCrypto));
-if (getRandomValues) {
-  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
-  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
-
-  module.exports = function whatwgRNG() {
-    getRandomValues(rnds8);
-    return rnds8;
+},{"_process":6,"argsarray":1,"events":2,"immediate":3,"inherits":5,"spark-md5":7,"uuid":8,"vuvuzela":13}],5:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
   };
 } else {
-  // Math.random()-based (RNG)
-  //
-  // If all else fails, use Math.random().  It's fast, but is of unspecified
-  // quality.
-  var rnds = new Array(16);
-
-  module.exports = function mathRNG() {
-    for (var i = 0, r; i < 16; i++) {
-      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
-      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
-    }
-
-    return rnds;
-  };
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
 }
 
-},{}],9:[function(require,module,exports){
-var rng = require('./lib/rng');
-var bytesToUuid = require('./lib/bytesToUuid');
-
-// **`v1()` - Generate time-based UUID**
-//
-// Inspired by https://github.com/LiosK/UUID.js
-// and http://docs.python.org/library/uuid.html
-
-var _nodeId;
-var _clockseq;
-
-// Previous uuid creation time
-var _lastMSecs = 0;
-var _lastNSecs = 0;
-
-// See https://github.com/broofa/node-uuid for API details
-function v1(options, buf, offset) {
-  var i = buf && offset || 0;
-  var b = buf || [];
-
-  options = options || {};
-  var node = options.node || _nodeId;
-  var clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq;
-
-  // node and clockseq need to be initialized to random values if they're not
-  // specified.  We do this lazily to minimize issues related to insufficient
-  // system entropy.  See #189
-  if (node == null || clockseq == null) {
-    var seedBytes = rng();
-    if (node == null) {
-      // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
-      node = _nodeId = [
-        seedBytes[0] | 0x01,
-        seedBytes[1], seedBytes[2], seedBytes[3], seedBytes[4], seedBytes[5]
-      ];
-    }
-    if (clockseq == null) {
-      // Per 4.2.2, randomize (14 bit) clockseq
-      clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 0x3fff;
-    }
-  }
-
-  // UUID timestamps are 100 nano-second units since the Gregorian epoch,
-  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
-  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
-  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
-  var msecs = options.msecs !== undefined ? options.msecs : new Date().getTime();
-
-  // Per 4.2.1.2, use count of uuid's generated during the current clock
-  // cycle to simulate higher resolution clock
-  var nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1;
-
-  // Time since last uuid creation (in msecs)
-  var dt = (msecs - _lastMSecs) + (nsecs - _lastNSecs)/10000;
-
-  // Per 4.2.1.2, Bump clockseq on clock regression
-  if (dt < 0 && options.clockseq === undefined) {
-    clockseq = clockseq + 1 & 0x3fff;
-  }
-
-  // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
-  // time interval
-  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
-    nsecs = 0;
-  }
-
-  // Per 4.2.1.2 Throw error if too many uuids are requested
-  if (nsecs >= 10000) {
-    throw new Error('uuid.v1(): Can\'t create more than 10M uuids/sec');
-  }
-
-  _lastMSecs = msecs;
-  _lastNSecs = nsecs;
-  _clockseq = clockseq;
-
-  // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
-  msecs += 12219292800000;
-
-  // `time_low`
-  var tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
-  b[i++] = tl >>> 24 & 0xff;
-  b[i++] = tl >>> 16 & 0xff;
-  b[i++] = tl >>> 8 & 0xff;
-  b[i++] = tl & 0xff;
-
-  // `time_mid`
-  var tmh = (msecs / 0x100000000 * 10000) & 0xfffffff;
-  b[i++] = tmh >>> 8 & 0xff;
-  b[i++] = tmh & 0xff;
-
-  // `time_high_and_version`
-  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
-  b[i++] = tmh >>> 16 & 0xff;
-
-  // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
-  b[i++] = clockseq >>> 8 | 0x80;
-
-  // `clock_seq_low`
-  b[i++] = clockseq & 0xff;
-
-  // `node`
-  for (var n = 0; n < 6; ++n) {
-    b[i + n] = node[n];
-  }
-
-  return buf ? buf : bytesToUuid(b);
-}
-
-module.exports = v1;
-
-},{"./lib/bytesToUuid":7,"./lib/rng":8}],10:[function(require,module,exports){
-var rng = require('./lib/rng');
-var bytesToUuid = require('./lib/bytesToUuid');
-
-function v4(options, buf, offset) {
-  var i = buf && offset || 0;
-
-  if (typeof(options) == 'string') {
-    buf = options === 'binary' ? new Array(16) : null;
-    options = null;
-  }
-  options = options || {};
-
-  var rnds = options.random || (options.rng || rng)();
-
-  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
-  rnds[6] = (rnds[6] & 0x0f) | 0x40;
-  rnds[8] = (rnds[8] & 0x3f) | 0x80;
-
-  // Copy bytes to buffer, if provided
-  if (buf) {
-    for (var ii = 0; ii < 16; ++ii) {
-      buf[i + ii] = rnds[ii];
-    }
-  }
-
-  return buf || bytesToUuid(rnds);
-}
-
-module.exports = v4;
-
-},{"./lib/bytesToUuid":7,"./lib/rng":8}],11:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -11860,7 +11699,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],12:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function (factory) {
     if (typeof exports === 'object') {
         // Node/CommonJS
@@ -12613,7 +12452,218 @@ process.umask = function() { return 0; };
     return SparkMD5;
 }));
 
-},{}],13:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
+var v1 = require('./v1');
+var v4 = require('./v4');
+
+var uuid = v4;
+uuid.v1 = v1;
+uuid.v4 = v4;
+
+module.exports = uuid;
+
+},{"./v1":11,"./v4":12}],9:[function(require,module,exports){
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+}
+
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
+  return bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]];
+}
+
+module.exports = bytesToUuid;
+
+},{}],10:[function(require,module,exports){
+// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+
+// getRandomValues needs to be invoked in a context where "this" is a Crypto implementation.
+var getRandomValues = (typeof(crypto) != 'undefined' && crypto.getRandomValues.bind(crypto)) ||
+                      (typeof(msCrypto) != 'undefined' && msCrypto.getRandomValues.bind(msCrypto));
+if (getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+
+  module.exports = function whatwgRNG() {
+    getRandomValues(rnds8);
+    return rnds8;
+  };
+} else {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var rnds = new Array(16);
+
+  module.exports = function mathRNG() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return rnds;
+  };
+}
+
+},{}],11:[function(require,module,exports){
+var rng = require('./lib/rng');
+var bytesToUuid = require('./lib/bytesToUuid');
+
+// **`v1()` - Generate time-based UUID**
+//
+// Inspired by https://github.com/LiosK/UUID.js
+// and http://docs.python.org/library/uuid.html
+
+var _nodeId;
+var _clockseq;
+
+// Previous uuid creation time
+var _lastMSecs = 0;
+var _lastNSecs = 0;
+
+// See https://github.com/broofa/node-uuid for API details
+function v1(options, buf, offset) {
+  var i = buf && offset || 0;
+  var b = buf || [];
+
+  options = options || {};
+  var node = options.node || _nodeId;
+  var clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq;
+
+  // node and clockseq need to be initialized to random values if they're not
+  // specified.  We do this lazily to minimize issues related to insufficient
+  // system entropy.  See #189
+  if (node == null || clockseq == null) {
+    var seedBytes = rng();
+    if (node == null) {
+      // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
+      node = _nodeId = [
+        seedBytes[0] | 0x01,
+        seedBytes[1], seedBytes[2], seedBytes[3], seedBytes[4], seedBytes[5]
+      ];
+    }
+    if (clockseq == null) {
+      // Per 4.2.2, randomize (14 bit) clockseq
+      clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 0x3fff;
+    }
+  }
+
+  // UUID timestamps are 100 nano-second units since the Gregorian epoch,
+  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
+  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
+  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
+  var msecs = options.msecs !== undefined ? options.msecs : new Date().getTime();
+
+  // Per 4.2.1.2, use count of uuid's generated during the current clock
+  // cycle to simulate higher resolution clock
+  var nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1;
+
+  // Time since last uuid creation (in msecs)
+  var dt = (msecs - _lastMSecs) + (nsecs - _lastNSecs)/10000;
+
+  // Per 4.2.1.2, Bump clockseq on clock regression
+  if (dt < 0 && options.clockseq === undefined) {
+    clockseq = clockseq + 1 & 0x3fff;
+  }
+
+  // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
+  // time interval
+  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
+    nsecs = 0;
+  }
+
+  // Per 4.2.1.2 Throw error if too many uuids are requested
+  if (nsecs >= 10000) {
+    throw new Error('uuid.v1(): Can\'t create more than 10M uuids/sec');
+  }
+
+  _lastMSecs = msecs;
+  _lastNSecs = nsecs;
+  _clockseq = clockseq;
+
+  // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
+  msecs += 12219292800000;
+
+  // `time_low`
+  var tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
+  b[i++] = tl >>> 24 & 0xff;
+  b[i++] = tl >>> 16 & 0xff;
+  b[i++] = tl >>> 8 & 0xff;
+  b[i++] = tl & 0xff;
+
+  // `time_mid`
+  var tmh = (msecs / 0x100000000 * 10000) & 0xfffffff;
+  b[i++] = tmh >>> 8 & 0xff;
+  b[i++] = tmh & 0xff;
+
+  // `time_high_and_version`
+  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
+  b[i++] = tmh >>> 16 & 0xff;
+
+  // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
+  b[i++] = clockseq >>> 8 | 0x80;
+
+  // `clock_seq_low`
+  b[i++] = clockseq & 0xff;
+
+  // `node`
+  for (var n = 0; n < 6; ++n) {
+    b[i + n] = node[n];
+  }
+
+  return buf ? buf : bytesToUuid(b);
+}
+
+module.exports = v1;
+
+},{"./lib/bytesToUuid":9,"./lib/rng":10}],12:[function(require,module,exports){
+var rng = require('./lib/rng');
+var bytesToUuid = require('./lib/bytesToUuid');
+
+function v4(options, buf, offset) {
+  var i = buf && offset || 0;
+
+  if (typeof(options) == 'string') {
+    buf = options === 'binary' ? new Array(16) : null;
+    options = null;
+  }
+  options = options || {};
+
+  var rnds = options.random || (options.rng || rng)();
+
+  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+  // Copy bytes to buffer, if provided
+  if (buf) {
+    for (var ii = 0; ii < 16; ++ii) {
+      buf[i + ii] = rnds[ii];
+    }
+  }
+
+  return buf || bytesToUuid(rnds);
+}
+
+module.exports = v4;
+
+},{"./lib/bytesToUuid":9,"./lib/rng":10}],13:[function(require,module,exports){
 'use strict';
 
 /**
@@ -12788,7 +12838,7 @@ exports.parse = function (str) {
   }
 };
 
-},{}]},{},[5])(5)
+},{}]},{},[4])(4)
 });
 
 /**
@@ -12823,6 +12873,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
         }
         dbOptions = dbOptions ? dbOptions : {};
         dbOptions['adapter'] = adapter.name;
+        this._dbOptions = dbOptions;
         this._db = new PouchDB(dbname, dbOptions);
       } catch (exp) {
         logger.log("Error creating PouchDB instance with adapter " + adapter + ": ", exp.message);
@@ -12830,11 +12881,26 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
         return Promise.reject(exp);
       }
     } else if (dbOptions) {
+      this._dbOptions = dbOptions;
       this._db = new PouchDB(dbname, dbOptions);
     } else {
+      this._dbOptions = null;
       this._db = new PouchDB(dbname);
     }
-    this._index = (options && options.index) ? options.index : null;
+    if (options && options.index) {
+      // pouch db automatically create index on key, no need to specifically 
+      // create it.
+      if (!Array.isArray(options.index)) {
+        logger.log("index must be an array");
+      } else {
+        this._index = options.index.filter(function(indexKey) {
+          return indexKey !== 'key';
+        });
+        if (this._index.length === 0) {
+          this._index = null;
+        }
+      }
+    }
     return this._createIndex();
   };
 
@@ -12857,7 +12923,8 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   };
 
   PouchDBPersistenceStore.prototype._isPersistenceStoreKey = function(keyName) {
-    return keyName === 'version' || keyName === 'adapter' || keyName === 'index';
+    return keyName === 'version' || keyName === 'adapter' || 
+           keyName === 'index' || keyName === 'skipMetadata';
   };
 
   PouchDBPersistenceStore.prototype._createIndex = function () {
@@ -12873,7 +12940,9 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
         }
       };
       // createIndex if using the find plugin
-      return self._db.createIndex(indexSyntax);
+      return self._db.createIndex(indexSyntax).catch(function(error) {
+        logger.error("creating index on " + self._index.toString() + " failed with error " + error);
+      });
     }
   };
 
@@ -12881,9 +12950,6 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
     logger.log("Offline Persistence Toolkit pouchDBPersistenceStore: upsert() for key: " + key);
     var self = this;
     var docId = key.toString();
-
-    var attachmentParts = [];
-    this._prepareUpsert(value, attachmentParts);
 
     return self._db.get(docId).then(function (doc) {
       // document exists already, update it if its versionIdentifier value
@@ -12895,57 +12961,43 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       }
     }).catch(function (geterr) {
       if (geterr.status === 404 && geterr.message === 'missing') {
-        return Promise.resolve();
+        return;
       } else {
         return Promise.reject(geterr);
       }
     }).then(function (existingDoc) {
-      return self._put(docId, metadata, value, expectedVersionIdentifier, attachmentParts, existingDoc);
-    }).then(function () {
-      return Promise.resolve();
+      return self._put(docId, metadata, value, expectedVersionIdentifier, existingDoc);
     });
-  };
+  }
 
   PouchDBPersistenceStore.prototype._put = function (docId, metadata, value,
                                                      expectedVersionIdentifier,
-                                                     attachmentParts, existingDoc) {
+                                                     existingDoc) {
+
+    var attachmentParts = [];
+    var fullbinaryData = this._prepareUpsert(value, attachmentParts);
+
     var dbdoc = {
       _id: docId,
+      key: docId,
       metadata: metadata,
-      value: value
+      value: fullbinaryData ? null : value
     };
 
     if (existingDoc) {
       dbdoc._rev = existingDoc._rev;
     }
-
     var self = this;
-    return self._db.put(dbdoc).then(function (addeddoc) {
-      return Promise.resolve(addeddoc);
-    }).catch(function (puterr) {
+    return self._db.put(dbdoc).then(function(addeddoc) {
+      return self._addAttachments(docId, addeddoc.rev, attachmentParts);
+    }).catch(function(puterr) {
       if (puterr.status === 409) {
         // because of the asynchroness nature, and the same resource
         // could be asked to add to the store in multiple paths, it's
-        // valid to have conflict error from pouchDB, we'll verify if
-        // this is a valid conflict or not.
-        return self._db.get(docId).then(function (conflictDoc) {
-          if (expectedVersionIdentifier) {
-            if (!_verifyVersionIdentifier(expectedVersionIdentifier, conflictDoc)) {
-              return Promise.reject({status: 409});
-            } else {
-              return Promise.resolve(conflictDoc);
-            }
-          } else {
-            return Promise.resolve(conflictDoc);
-          }
-        });
+        // valid to have conflict error from pouchDB.
       } else {
-        return Promise.reject(puterr);
+        throw puterr;
       }
-    }).then(function(finalDoc){
-      return self._addAttachments(finalDoc, attachmentParts);
-    }).then(function () {
-      return Promise.resolve();
     });
   };
 
@@ -12962,10 +13014,11 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   };
 
   // add the binary part of the value as attachment to the main document.
-  PouchDBPersistenceStore.prototype._addAttachments = function (doc, attachmentParts) {
+  PouchDBPersistenceStore.prototype._addAttachments = function (docId, docRev, attachmentParts) {
     if (!attachmentParts || !attachmentParts.length) {
       return Promise.resolve();
     } else {
+      var self = this;
       var promises = attachmentParts.map(function (attachment) {
         var blob;
         if (attachment.value instanceof Blob) {
@@ -12973,9 +13026,11 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
         } else {
           blob = new Blob([attachment.value]);
         }
-        return this._db.putAttachment(doc.id, attachment.path, doc.rev, blob, 'binary')
+        return self._db.putAttachment(docId, attachment.path, docRev, blob, 'binary')
       }, this);
-      return Promise.all(promises);
+      return Promise.all(promises).catch(function(error) {
+        logger.error("store: " + self._name + " failed add attachment for doc " + docId);
+      });
     }
   };
 
@@ -12984,10 +13039,55 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
     if (!values || !values.length) {
       return Promise.resolve();
     } else {
-      var promises = values.map(function (element) {
-        return this.upsert(element.key, element.metadata, element.value, element.expectedVersionIdentifier);
-      }, this);
-      return Promise.all(promises);
+      var self = this;
+      var docIdToAttachmentParts = {};
+      var dbpromises = values.map(function(element) {
+        var docId = element.key.toString();
+        var value = element.value;
+        var attachmentParts = [];
+        var fullbinaryData = self._prepareUpsert(value, attachmentParts);
+        if (attachmentParts.length > 0) {
+          docIdToAttachmentParts[docId] = attachmentParts;
+        }
+        var doc = {
+          _id: docId,
+          key: element.key,
+          metadata: element.metadata,
+          value: fullbinaryData ? null : value
+        };
+        return self._db.get(docId).then(function(existdoc) {
+          doc["_rev"] = existdoc["_rev"];
+          return doc;
+        }).catch(function(error) {
+          if (error.status === 404 && error.message === 'missing') {
+            // this doc does not exist yet, no need to provide revision value
+            return doc;
+          } else {
+            throw error;
+          }
+        });
+      });
+
+      return Promise.all(dbpromises).then(function(dbdocs) {
+        return self._db.bulkDocs(dbdocs);
+      }).then(function(results) {
+        var promises = [];
+        results.forEach(function(result, index) {
+          if (result["ok"]) {
+            var attachmentParts = docIdToAttachmentParts[result.id];
+            if (attachmentParts) {
+              promises.push(self._addAttachments(result.id, result.rev, attachmentParts));
+            }
+          } else if (result['status'] === 409) {
+            logger.log("conflict error");
+          }
+        });
+        if (promises.length > 0) {
+          return Promise.all(promises);
+        }
+      }).catch(function(error) {
+        logger.log("error in upsertAll");
+      });
     }
   };
 
@@ -13023,16 +13123,19 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
           // not have any operator against the binary data. 
           var satisfiedRows = result.rows.filter(function(row) {
             var doc = row.doc;
-            self._fixKey(doc);
-            if (storageUtils.satisfy(findExpression.selector, doc)) {
+            if (!_isInternalDoc(row) && storageUtils.satisfy(findExpression.selector, doc)) {
               return true;
             }
             return false;
            });
 
           if (satisfiedRows.length) {
-            var fixDocPromises = satisfiedRows.map(function(row) {
-              return self._fixBinaryValue(row.doc).then(function(fixedDoc){
+            var unsortedDocs = satisfiedRows.map(function(row) {
+              return row.doc;
+            });
+            var sortedDocs = storageUtils.sortRows(unsortedDocs, findExpression.sort);
+            var fixDocPromises = sortedDocs.map(function(doc) {
+              return self._fixBinaryValue(doc).then(function(fixedDoc){
                 if (findExpression.fields) {
                   return storageUtils.assembleObject(fixedDoc, findExpression.fields);
                 } else {
@@ -13070,7 +13173,6 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   // invoked after document is retrieved. Fix the key and binary
   // part of the value.
   PouchDBPersistenceStore.prototype._fixValue = function (doc) {
-    this._fixKey(doc);
     return this._fixBinaryValue(doc);
   };
 
@@ -13086,22 +13188,20 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       var self = this;
       var filename = Object.keys(attachments)[0];
       return self._db.getAttachment(docId, filename).then(function (blob) {
-        var paths = filename.split('.');
-        var targetValue = doc.value;
-        for (var pathIndex = 0; pathIndex < paths.length - 1; pathIndex++) {
-          targetValue = targetValue[paths[pathIndex]];
+        if (filename === 'rootpath') {
+          doc.value = blob;
+        } else {
+          var paths = filename.split('.');
+          var targetValue = doc.value;
+          for (var pathIndex = 0; pathIndex < paths.length - 1; pathIndex++) {
+            targetValue = targetValue[paths[pathIndex]];
+          }
+          targetValue[paths[paths.length - 1]] = blob;
         }
-        targetValue[paths[paths.length - 1]] = blob;
         return doc;
+      }).catch(function(error) {
+        logger.error("store: " + self._name + " error getting attachment. ");
       });
-    }
-  };
-
-  PouchDBPersistenceStore.prototype._fixKey = function (doc) {
-    var docId = doc._id || doc.id || doc.key;
-
-    if (docId) {
-      doc.key = docId;
     }
   };
 
@@ -13110,11 +13210,13 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
     var self = this;
     var docId = key.toString();
 
-    return self._db.get(docId).then(function (doc) {
-      return doc.value;
+    return self._db.get(docId, {attachments: true}).then(function (doc) {
+      return self._fixBinaryValue(doc);
+    }).then(function(fixedDoc) {
+      return fixedDoc.value;
     }).catch(function (err) {
       if (err.status === 404 && err.message === 'missing') {
-        return Promise.resolve();
+        return;
       } else {
         return Promise.reject(err);
       }
@@ -13124,6 +13226,9 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   PouchDBPersistenceStore.prototype.removeByKey = function (key) {
     logger.log("Offline Persistence Toolkit pouchDBPersistenceStore: removeByKey() for key: " + key);
     var self = this;
+    if (!key) {
+      return Promise.resolve(false);
+    }
     var docId = key.toString();
     return self._db.get(docId).then(function (doc) {
       return self._db.remove(doc);
@@ -13131,7 +13236,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       return true;
     }).catch(function (err) {
       if (err.status === 404 && err.message === 'missing') {
-        return Promise.resolve(false);
+        return false;
       } else {
         return Promise.reject(err);
       }
@@ -13147,21 +13252,27 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       modifiedExpression.fields = ['_id', '_rev'];
       return self.find(modifiedExpression).then(function (entries) {
         if (entries && entries.length) {
-           var promisesArray = entries.map(function (element) {
-             return this._db.remove(element._id, element._rev);
-           }, self);
-           return Promise.all(promisesArray);
-         } else {
-           return Promise.resolve();
-         }
-      }).then(function () {
-        return Promise.resolve();
+          var docsToDelete = entries.map(function(doc) {
+            return {'_id': doc['_id'], '_rev': doc['_rev'], '_deleted': true};
+          });
+          return self._db.bulkDocs(docsToDelete);
+        } else {
+          return;
+        }
+      }).catch(function(error) {
+        logger.error("store: " + self._name + " error deleting....");
       });
     } else {
       return self._db.destroy().then(function () {
         var dbname = self._name + self._version;
-        self._db = new PouchDB(dbname);
+        if (self._dbOptions) {
+          self._db = new PouchDB(dbname, self._dbOptions);
+        } else {
+          self._db = new PouchDB(dbname);
+        }
         return self._createIndex();
+      }).catch(function(error) {
+        logger.error("store: " + self._name + " error deleting....");
       });
     }
   };
@@ -13174,11 +13285,15 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       var rows = result.rows;
       var keysArray = [];
       if (rows && rows.length) {
-        keysArray = rows.map(function (element) {
-          return element.id;
-        });
+        for (var index = 0; index < rows.length; index++) {
+          if (!_isInternalDoc(rows[index])) {
+            keysArray.push(rows[index].id);
+          }
+        }
       }
       return keysArray;
+    }).catch(function(error) {
+      logger.error("store: " + self._name + " error getting all the docs for keys ");
     });
   };
 
@@ -13200,21 +13315,14 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       modifiedExpression.selector = {
         '_id': {'$gt': null}
       };
-    } else {
+    } else if (selector) {
       modifiedExpression.selector = selector;
     }
 
     // our key attribute maps to pouchdb documents' _id field.
     var fields = findExpression.fields;
     if (fields && fields.length) {
-      var modifiedFields = fields.map(function (x) {
-        if (x === 'key') {
-          return '_id';
-        } else {
-          return x;
-        }
-      });
-      modifiedExpression.fields = modifiedFields;
+      modifiedExpression.fields = fields;
     }
 
     return modifiedExpression;
@@ -13223,8 +13331,19 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   // prepare the value for upsert. pouchDB requires that binary part of the value
   // be added as attachment instead of as part of the value.
   PouchDBPersistenceStore.prototype._prepareUpsert = function (value, attachmentParts) {
+    if (!value) {
+      return false;
+    }
+    if ((value instanceof Blob) || (value instanceof ArrayBuffer)) {
+      attachmentParts.push({
+        path: "rootpath",
+        value: value
+      });
+      return true;
+    }
     var path = '';
     this._inspectValue(path, value, attachmentParts);
+    return false;
   };
 
   // scan the value to see if there's any binary data in it, if so, extract it out.
@@ -13269,7 +13388,20 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       }
     }).then(function() {
       return self.removeByKey(currentKey);
+    }).catch(function() {
+      logger.error("store: " + self._name + " error updating key");
     });
+  };
+
+  // when find plugin is not present, we query out all documents and run the 
+  // find ourselve. allDocs returns some internal document that pouchDB created
+  // we should ignore. For example, when the store has index configured, 
+  // pouchDB will create a document with id starting with '_design'. There is 
+  // no option provided from allDocs() call that we can use to ask pouchDB to 
+  // not return internal documents.
+  var _isInternalDoc = function(dbRow) {
+    var id = dbRow.id;
+    return id.startsWith('_design/');
   };
 
   return PouchDBPersistenceStore;
@@ -13309,7 +13441,7 @@ define('persist/pouchDBPersistenceStoreFactory',["./impl/pouchDBPersistenceStore
     function _createPersistenceStore (name, options) {
       var store = new PouchDBPersistenceStore(name);
       return store.Init(options).then(function () {
-        return Promise.resolve(store);
+        return store;
       });
     };
 
@@ -13406,9 +13538,8 @@ define('persist/fetchStrategies',['./persistenceManager', './persistenceUtils', 
               } else {
                 return responseClone;
               }
-            }).then(function (response) {
+            }).finally(function() {
               cacheHandler.unregisterEndpointOptions(endpointKey);
-              return Promise.resolve(response);
             });
           }
         }
@@ -13580,11 +13711,9 @@ define('persist/cacheStrategies',['./persistenceManager', './persistenceUtils', 
       // process the headers in order. Order matters, you want to
       // do things like re-validation before you bother persist to
       // the cache. Also, max-age takes precedence over Expires.
-      return _handleExpires(request, response).then(function (response) {
-        return _handleMaxAge(request, response);
-      }).then(function (response) {
-        return _handleIfCondMatch(request, response);
-      }).then(function (response) {
+      _handleExpires(request, response);
+      _handleMaxAge(request, response);
+      return _handleIfCondMatch(request, response).then(function (response) {
         return _handleMustRevalidate(request, response);
       }).then(function (response) {
         return _handleNoCache(request, response);
@@ -13607,7 +13736,7 @@ define('persist/cacheStrategies',['./persistenceManager', './persistenceUtils', 
       response.headers.set('x-oracle-jscpt-cache-expiration-date', expiresDate);
       logger.log("Offline Persistence Toolkit cacheStrategies: Set x-oracle-jscpt-cache-expiration-date header based on HTTP Expires header");
     }
-    return Promise.resolve(response);
+    return;
   };
   
   function _handleMaxAge(request, response) {
@@ -13629,7 +13758,7 @@ define('persist/cacheStrategies',['./persistenceManager', './persistenceUtils', 
         logger.log("Offline Persistence Toolkit cacheStrategies: Set x-oracle-jscpt-cache-expiration-date header based on HTTP max-age header");
       }
     }
-    return Promise.resolve(response);
+    return;
   };
   
   function _handleIfCondMatch(request, response) {
@@ -13961,6 +14090,7 @@ define('persist/defaultResponseProxy',['./persistenceManager', './persistenceUti
         cacheHandler.registerEndpointOptions(endpointKey, self._options);
         var requestHandler = _getRequestHandler(self, request);
         var localVars = {};
+        localVars.isReplayRequest = persistenceUtils.isReplayRequest(request);
         var requestClone = request.clone();
         logger.log("Offline Persistence Toolkit DefaultResponseProxy: Calling requestHandler for request with enpointKey: " + endpointKey);
         requestHandler.call(self, request).then(function (response) {
@@ -13986,19 +14116,26 @@ define('persist/defaultResponseProxy',['./persistenceManager', './persistenceUti
             return null;
           }
         }).then(function (undoRedoDataArray) {
-          return _insertSyncManagerRequest(request, undoRedoDataArray, localVars.isCachedResponse && !persistenceManager.isOnline());
+          if (!localVars.isReplayRequest) {
+            return _insertSyncManagerRequest(request, undoRedoDataArray, localVars.isCachedResponse && !persistenceManager.isOnline());
+          }
         }).then(function () {
           cacheHandler.unregisterEndpointOptions(endpointKey);
           resolve(localVars.response);
         }).catch(function (err) {
           logger.log("Offline Persistence Toolkit DefaultResponseProxy: Insert Response in syncManager after error for request with enpointKey: " + endpointKey);
-          _insertSyncManagerRequest(requestClone, null, true).then(function() {
+          if (!localVars.isReplayRequest) {
+            _insertSyncManagerRequest(requestClone, null, true).then(function() {
+              cacheHandler.unregisterEndpointOptions(endpointKey);
+              reject(err);
+            }, function() {
+              cacheHandler.unregisterEndpointOptions(endpointKey);
+              reject(err);
+            });
+          } else {
             cacheHandler.unregisterEndpointOptions(endpointKey);
             reject(err);
-          }, function() {
-            cacheHandler.unregisterEndpointOptions(endpointKey);
-            reject(err);
-          });
+          }
         });
       });
     };
@@ -14008,7 +14145,9 @@ define('persist/defaultResponseProxy',['./persistenceManager', './persistenceUti
       var options = self._options;
       var requestHandler = null;
 
-      if (request.method === 'POST') {
+      if (persistenceUtils.isReplayRequest(request)) {
+        requestHandler = self.handleSyncReplay;
+      } else if (request.method === 'POST') {
         requestHandler = options['requestHandlerOverride']['handlePost'];
       } else if (request.method === 'GET') {
         requestHandler = options['requestHandlerOverride']['handleGet'];
@@ -14050,6 +14189,24 @@ define('persist/defaultResponseProxy',['./persistenceManager', './persistenceUti
       } else {
         return persistenceManager.browserFetch(request);
       }
+    };
+
+    /**
+     * The request handler to handle request initiated from sync operation.
+     * It directs the request handling to browser fetch.
+     * @method
+     * @name handleSyncReplay
+     * @param {Request} request Request object
+     * @return {Promise} Returns a Promise which resolves to a Response object
+     * @private
+     * @instance
+     * @memberof! DefaultResponseProxy
+     */
+    DefaultResponseProxy.prototype.handleSyncReplay = function (request) {
+      logger.log("Offline Persistence Toolkit DefaultResponseProxy: Processing Request from Sync Replay");
+      // remove the custom header before sending the request out.
+      persistenceUtils.markReplayRequest(request, false);
+      return persistenceManager.browserFetch(request);
     };
 
     /**
@@ -14581,7 +14738,7 @@ define('persist/simpleJsonShredding',['./persistenceUtils', './impl/logger'], fu
         return persistenceUtils.setResponsePayload(response, dataContent);
       }).then(function (response) {
         response.headers.set('x-oracle-jscpt-cache-expiration-date', '');
-        return Promise.resolve(response);
+        return response;
       });
     };
   };
@@ -14733,7 +14890,7 @@ define('persist/oracleRestJsonShredding',['./persistenceUtils', './impl/logger']
         'keys': unmappedData.keys,
         'data': unmappedData.data,
         'resourceType' : data[0].resourceType
-      }], response);
+      }]);
       return persistenceUtils.setResponsePayload(response, payload).then(function (response) {
         response.headers.set('x-oracle-jscpt-cache-expiration-date', '');
         return response;
@@ -14741,7 +14898,7 @@ define('persist/oracleRestJsonShredding',['./persistenceUtils', './impl/logger']
     };
   }
 
-  function _buildPayload (value, response) {
+  function _buildPayload (value) {
     var payload;
     var data = value[0].data;
     if (data && data.length === 1 && value[0].resourceType === 'single') {
@@ -14834,7 +14991,7 @@ define('persist/simpleBinaryDataShredding',['./persistenceUtils'], function (per
       var dataContent = _retrieveDataContent(data);
       return persistenceUtils.setResponsePayload(response, dataContent).then(function (response) {
         response.headers.set('x-oracle-jscpt-cache-expiration-date', '');
-        return Promise.resolve(response);
+        return response;
       });
     };
   };
@@ -14871,14 +15028,14 @@ define('persist/simpleBinaryDataShredding',['./persistenceUtils'], function (per
 define('persist/queryHandlers',['./persistenceManager', './persistenceStoreManager', './persistenceUtils', './impl/logger', './impl/sql-where-parser.min'],
   function (persistenceManager, persistenceStoreManager, persistenceUtils, logger, sqlWhereParser) {
     'use strict';
-  
+
     /**
      * @class queryHandlers
      * @classdesc Contains out of the box query handlers.
      * @export
      * @hideconstructor
      */
-    
+
     /**
      * Returns the Oracle Rest Query Handler which handles the query parameters
      * according to the Oracle Rest Specification. Note the Oracle Rest Specification
@@ -14888,7 +15045,7 @@ define('persist/queryHandlers',['./persistenceManager', './persistenceStoreManag
      * value and returns a persistence store query. If none if provided then the
      * default is to use the ADFBc REST query parameter structure which has the form:
      * ?q=EmpId=100. Offline supports the following ADFBc operators in the expression:
-     * >, <, >=, <=, =, !=, AND, OR, LIKE. 
+     * >, <, >=, <=, =, !=, AND, OR, LIKE, IN.
      * In addition, the query handler supports the limit and offset query parameters
      * used for paging in the Oracle REST specification.
      * @method
@@ -14899,7 +15056,7 @@ define('persist/queryHandlers',['./persistenceManager', './persistenceStoreManag
      * @param {function=} createQueryExp Optional function takes URL query parameters
      * and returns a query expression which will be executed against the persistent store.
      * If null then use the ADFBc REST query parameter structure.
-     * @param {DataMapping=} dataMapping Optional dataMapping to apply to the data 
+     * @param {DataMapping=} dataMapping Optional dataMapping to apply to the data
      * @return {Function} Returns the query handler
      */
     function getOracleRestQueryHandler(storeName, createQueryExp, dataMapping) {
@@ -14960,7 +15117,7 @@ define('persist/queryHandlers',['./persistenceManager', './persistenceStoreManag
             unshredder != null) {
             return _processQuery(request, storeName, findQuery, shredder, unshredder, offset, limit).then(function(response) {
               if (!response) {
-                return Promise.resolve();
+                return;
               }
               var responseClone = response.clone();
               return responseClone.text().then(function (payload) {
@@ -14971,10 +15128,10 @@ define('persist/queryHandlers',['./persistenceManager', './persistenceStoreManag
                     if (!payloadJson.links) {
                       payloadJson.links = [{rel: 'self', href: request.url}];
                       return persistenceUtils.setResponsePayload(response, payloadJson).then(function (response) {
-                        return Promise.resolve(response);
+                        return response;
                       });
                     } else {
-                      return Promise.resolve(response);
+                      return response;
                     }
                   } catch (err) {
                   }
@@ -14987,77 +15144,66 @@ define('persist/queryHandlers',['./persistenceManager', './persistenceStoreManag
       };
     };
     
+    // 1. get the matched raw entry from cache store: it should contain key, and
+    //    response header. 
+    // 2. if we found a match:
+    //       for single resource type, we'll just get it from cache, by using cache key.
+    //       for collection resource type, we'll need to query the store, and 
+    //       construct the response.
+    // 3. if we don't find a match
+    //       get the possible id from the url, and search store on that key.
+    //       if we no possible id, or no entry found with that key, we don't have a match
+    //       if we found an object from the store, then we need to construct a response.
+    //       
     function _processQuery(request, storeName, findQuery, shredder, unshredder, offset, limit) {
-      // first check of we have a collection query or single row query
-      // collection query will always return true for cache.hasMatch()
-      // single row query will return hasMatch true if that query
-      // was executed before, if not we have to query for it
-      return persistenceManager.getCache().hasMatch(request, {ignoreSearch: true}).then(function (hasMatch) {
-        return persistenceStoreManager.openStore(storeName).then(function (store) {
-          if (hasMatch) {
-            // check if it's a single row query. If so then we don't need to
-            // do a find.
-            return persistenceManager.getCache().match(request, {ignoreSearch: true}).then(function (response) {
-              if (response.headers.get('x-oracle-jscpt-resource-type') === 'single') {
-                return Promise.resolve();
-              } else {
-                // query in the shredded data
-                return store.find(findQuery);
-              }
-            });
+      return persistenceManager.getCache()._internalMatch(request, {ignoreSearch: true, ignoreBody: true}).then(function (cacheEntryMetadata) {
+        if (cacheEntryMetadata) {
+          if (cacheEntryMetadata.resourceType === 'unknown') {
+            return null;
+          } else if (cacheEntryMetadata.resourceType === 'single') {
+            // just get the response based on key.
+            return persistenceManager.getCache()._matchByKey(request, cacheEntryMetadata.key);
           } else {
-            // this might be a single row query so we need to parse the URL for an id based query
-            var id = _getRequestUrlId(request);
-            if (id) {
-              return store.findByKey(id);
-            }
-            return Promise.resolve([]);
-          }
-        }).then(function (results) {
-          return persistenceManager.getCache().match(request, {ignoreSearch: true}).then(function (response) {
-            if (response) {
+            // we have collection type of response
+            // 1. first query from the shredded store.
+            // 2. apply offset and limit.
+            // 3. reconstruct the response
+            return persistenceStoreManager.openStore(storeName).then(function(store) {
+              if (cacheEntryMetadata.resourceIdentifierMap && 
+                  cacheEntryMetadata.resourceIdentifierMap[storeName]) {
+                _addSearchCriteria(findQuery, 'metadata.resourceIdentifier', 
+                  cacheEntryMetadata.resourceIdentifierMap[storeName]);
+              }
+              return store.find(findQuery);
+            }).then(function(results) {
               var hasMore = false;
-              var totalResults = 0;
-              if (results) {
-                totalResults = results.length;
-                if (offset
-                  && offset > 0) {
-                  if (offset < results.length)
-                  {
-                    hasMore = true;
-                  }
-                  else
-                  {
-                    hasMore = false;
-                  }
-                  results = results.slice(offset, results.length);
+              var totalResults = results.length;
+              if (offset && offset > 0) {
+                if (offset < totalResults) {
+                  results = results.slice(offset);
+                } else {
+                  results = [];
                 }
-                if (limit
-                  && limit > 0) {
-                  if (limit <= results.length)
-                  {
-                    hasMore = true;
-                  }
-                  else
-                  {
-                    hasMore = false;
-                  }
+              }
+              if (limit && limit > 0 && results.length > 0) {
+                if (limit < results.length) {
+                  hasMore = true;
                   results = results.slice(0, limit);
                 }
               }
-              return shredder(response).then(function (dataArray) {
-                var resourceType = dataArray[0].resourceType;
-                var transformedResults = {
-                  name: storeName,
-                  data: results != null ? results : dataArray[0].data,
-                  resourceType: resourceType
-                };
-                return unshredder([transformedResults], response).then(function (response) {
-                  // add limit and offset
-                  var responseClone = response.clone();
-                  return responseClone.text().then(function (payload) {
-                    if (payload != null &&
-                      payload.length > 0) {
+              var newShreddedData = {
+                name: storeName,
+                data: results,
+                resourceType: 'collection'
+              };
+              return persistenceManager.getCache()._matchByKey(
+                request, cacheEntryMetadata.key, {ignoreBody: true}
+              ).then(function(response) {    
+                return unshredder([newShreddedData], response).then(function(newResponse) {
+                  // add limit and offset to the newly constructed response.
+                  var responseClone = newResponse.clone();
+                  return responseClone.text().then(function(payload) {
+                    if (payload != null && payload.length > 0) {
                       try {
                         var payloadJson = JSON.parse(payload);
                         if (payloadJson.items != null) {
@@ -15069,51 +15215,85 @@ define('persist/queryHandlers',['./persistenceManager', './persistenceStoreManag
                           }
                           payloadJson.hasMore = hasMore;
                           payloadJson.totalResults = totalResults;
+                          return persistenceUtils.setResponsePayload(response, payloadJson);
+                        } else {
+                          return newResponse;
                         }
-                        return persistenceUtils.setResponsePayload(response, payloadJson);
                       } catch (err) {
+                        logger.log("JSON parse error on payload: " + payload);
                       }
                     } else {
-                      return response;
+                      return newResponse;
                     }
                   });
                 });
               });
-            } else if (results && Object.keys(results).length > 0) {
-              // this means have a single query result
-              var collectionUrl = _getRequestCollectionUrl(request);
-              if (collectionUrl) {
-                return persistenceUtils.requestToJSON(request).then(function (requestObj) {
-                  requestObj.url = collectionUrl;
-                  return persistenceUtils.requestFromJSON(requestObj).then(function (collectionRequest) {
-                    return persistenceManager.getCache().match(collectionRequest, {ignoreSearch: true}).then(function (response) {
-                      if (response) {
-                        var transformedResults = {
-                          name: storeName,
-                          data: [results],
-                          resourceType: 'single'
-                        };
-                        return unshredder([transformedResults], response);
-                      }
+            })
+          }
+        } else {
+          // no matched response from cache, could be
+          // 1. this is a single row query, we'll try finding that row in the 
+          //    shredded store.
+          // 2. there is just no cached response for this request at all.
+          var id = _getRequestUrlId(request);
+          if (!id) {
+            // there is just no cached response for this request.
+            return;
+          } else {
+            // check if we have shredded data for this id.
+            return persistenceStoreManager.openStore(storeName).then(function (store) {
+              return store.findByKey(id);
+            }).then(function(result) {
+              if (result) {
+                // we have an entry in the shredded store, so we can contruct
+                // a valid response by using the cached collection response shell
+                // with the single shredded data as payload.
+                var collectionUrl = _getRequestCollectionUrl(request);
+                if (collectionUrl) {
+                  return persistenceUtils.requestToJSON(request).then(function (requestObj) {
+                    requestObj.url = collectionUrl;
+                    return persistenceUtils.requestFromJSON(requestObj).then(function (collectionRequest) {
+                      return persistenceManager.getCache().match(collectionRequest, {ignoreSearch: true, ignoreBody: true}).then(function (response) {
+                        if (response) {
+                          var transformedResults = {
+                            name: storeName,
+                            data: [result],
+                            resourceType: 'single'
+                          };
+                          return unshredder([transformedResults], response);
+                        }
+                      });
                     });
                   });
-                });
+                } else {
+                  // should never come here since we are able to get id from 
+                  // the url, we should be able to get the colletion URL.
+                  return;
+                }
               } else {
-                return Promise.resolve();
+                // nothing in the shredded store, we don't have anything to return 
+                // a valid response.
+                return;
               }
-            } else {
-              return Promise.resolve();
-            }
-          });
-        });
+            });
+          }
+        }
       });
     };
-    
+
     function _createQueryFromAdfBcParams(value) {
       var findQuery = {};
 
       if (value) {
-        var parser = new sqlWhereParser();
+        // link to 3rd party API : https://www.npmjs.com/package/sql-where-parser
+        // By default sql-where-parser does not support the <> operator.
+        var config = sqlWhereParser.defaultConfig;
+        // adding the '<>' operator into the config list
+        config.operators[5]['<>'] = 2;
+        config.tokenizer.shouldTokenize.push('<>');
+        // creating a new sqlWhereParser with the config settings we just created
+        var parser = new sqlWhereParser(config);
+
         var queryExpArray = value.split(';');
         var i;
         var selectorQuery = {};
@@ -15121,13 +15301,14 @@ define('persist/queryHandlers',['./persistenceManager', './persistenceStoreManag
         var selectorQueryItem = {};
 
         for (i = 0; i < queryExpArray.length; i++) {
-          
+
           selectorQueryItem = parser.parse(queryExpArray[i], function(operatorValue, operands)
             {
               operatorValue = operatorValue.toUpperCase();
               // the LHS operand is always a value operand
               if (operatorValue != 'AND' &&
-                operatorValue != 'OR') {
+                operatorValue != 'OR' &&
+                operatorValue != ',') {
                 operands[0] = 'value.' + operands[0];
               }
               var lhsOp = operands[0];
@@ -15190,6 +15371,41 @@ define('persist/queryHandlers',['./persistenceManager', './persistenceStoreManag
                     $and: betweenOperands
                   };
                   break;
+                case '<>':
+                  returnExp[lhsOp] = {
+                    $ne: rhsOp
+                  };
+                  break;
+                case 'IS':
+                  // Checks if the rhsOp is null before constucting null case
+                  // this is to avoid mishandling 'IS NOT NULL' cases
+                  if (rhsOp === null){
+                    var nullOperand = [];
+                    nullOperand[0] = {};
+                    nullOperand[1] = {};
+                    // Rows with non-existing columns return 'undefined' instead of null in JS.
+                    // Checking both 'null' and 'undefined' since both are valid for a 'IS NULL' query
+                    nullOperand[0][lhsOp] = {$eq: null};
+                    nullOperand[1][lhsOp] = {$eq: undefined};
+                    // The 'or' statement is used to check for both null and undefined
+                    returnExp = {
+                      $or : nullOperand
+                    }
+                  }
+                  break;
+                case 'IN':
+                  returnExp[lhsOp] = {
+                    $in: [].concat(rhsOp)
+                  };
+                  break;
+                case ',':
+                  // the ',' case is due to how sql-where-parser handles comma seperated values
+                  // The returned value is used in the next operation
+                  // Example 'Location IN (1,2,3)', using the ',' case logic:
+                  // operatorValue : IN | operands : [ 'location', [3,2,1] ]
+                  // Without the ',' case logic :
+                  // operatorValue : IN | operands : [ 'location', {} ]
+                  return [rhsOp].concat(lhsOp);
               }
               return returnExp;
             });
@@ -15206,7 +15422,7 @@ define('persist/queryHandlers',['./persistenceManager', './persistenceStoreManag
         }
       return findQuery;
     };
-  
+
     /**
      * Returns the Simple Query Handler which matches the URL query parameter/value pairs
      * against the store's field/value pairs.
@@ -15246,10 +15462,10 @@ define('persist/queryHandlers',['./persistenceManager', './persistenceStoreManag
         return Promise.resolve();
       };
     };
-    
+
     function _createQueryFromUrlParams(urlParams, ignoreUrlParams) {
       var findQuery = {};
-      
+
       if (urlParams &&
         urlParams.length > 1) {
         var selectorQuery = {};
@@ -15329,11 +15545,32 @@ define('persist/queryHandlers',['./persistenceManager', './persistenceStoreManag
 
       return iterator;
     };
-    
+
+    // add more search criteria to the query.
+    function _addSearchCriteria(
+      query, // the existing query to be updated
+      name,  // the name to search against
+      value // the value to use to search against the name
+    ) {
+      var additionalSelector = {};
+      additionalSelector[name] = {'$eq': value};
+      var selector = query.selector;
+      if (!selector) {
+        query.selector = additionalSelector;
+      } else {
+        var combined = [];
+        combined.push(selector);
+        combined.push(additionalSelector);
+        query.selector = {
+          '$and': combined
+        };
+      }
+    }
+  
     function _cleanURIValue(value) {
       return decodeURIComponent(value.replace(/\+/g, ' '));
     };
-    
+
     function _getRequestUrlId(request) {
       var urlTokens = request.url.split('/');
       if (urlTokens.length > 1) {
@@ -15341,7 +15578,7 @@ define('persist/queryHandlers',['./persistenceManager', './persistenceStoreManag
       }
       return null;
     };
-    
+
     function _getRequestCollectionUrl(request) {
       var urlTokens = request.url.split('/');
       if (urlTokens.length > 1) {

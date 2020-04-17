@@ -176,7 +176,7 @@ var __oj_combobox_many_metadata =
       "type": "string"
     },
     "rawValue": {
-      "type": "string",
+      "type": "Array<string>",
       "writeback": true,
       "readOnly": true
     },
@@ -3001,7 +3001,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
       this.container.attr('style', this._getAttribute('style'));
     }
 
-    this.elementTabIndex = this._getAttribute('tabindex'); // 'opts.element' is initialized in _setup() menthod in component files
+    this.elementTabIndex = this.opts.element.attr('tabindex'); // 'opts.element' is initialized in _setup() menthod in component files
     // ojcombobox.js, ojselect.js and ojInputSearch.js.
     // swap container for the element
 
@@ -3020,12 +3020,10 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
     this.results = results;
     this.results.on('click', _ComboUtils.killEvent); //  - oghag missing label for ojselect and ojcombobox
 
-    if (!this.ojContext._IsCustomElement()) {
-      var alabel = this.ojContext.element.attr('aria-label');
+    var alabel = this._getAttribute('aria-label');
 
-      if (alabel) {
-        results.attr('aria-label', alabel);
-      }
+    if (alabel != null) {
+      this.results.attr('aria-label', alabel);
     } // if html ul element is provided, use it instead
 
 
@@ -3066,7 +3064,18 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
 
     this.container.on('click', _ComboUtils.killEvent);
 
-    _ComboUtils.installFilteredMouseMove(this.results);
+    _ComboUtils.installFilteredMouseMove(this.results); //  - CUSTOM TABINDEX DOES NOT WORK
+    // Transfer the tabindex in the created input element or the selection element
+
+
+    if (this.elementTabIndex) {
+      if (className === 'oj-select') {
+        // this.selection is available only after the _initContainer call
+        this.selection.attr('tabindex', this.elementTabIndex);
+      } else {
+        this.search.attr('tabindex', this.elementTabIndex);
+      }
+    }
 
     this._boundHighlightUnderEvent = this._bind(this._highlightUnderEvent);
 
@@ -3108,6 +3117,8 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
       if (className !== 'oj-select') {
         self.container.addClass('oj-focus');
       }
+
+      self.isSearchFocused = true;
     });
     search.on('blur', function () {
       search.removeClass(className + '-focused');
@@ -3115,6 +3126,8 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
       if (className !== 'oj-select') {
         self.container.removeClass('oj-focus');
       }
+
+      self.isSearchFocused = false;
     });
     this.dropdown.on('mouseup', resultsSelector, this._bind(function (e) {
       if ($(e.target).closest('.oj-listbox-result-selectable').length > 0) {
@@ -3185,7 +3198,8 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
         if (this.ojContext.multiple) {
           // the following code is for oj-combobox-many
           $content = null;
-          this.selection.attr('tabindex', '0');
+          this.search.removeAttr('tabindex');
+          this.selection.attr('tabindex', this.elementTabIndex || '0');
 
           if (this.ojContext.options.labelledBy) {
             // for oj-combobox-many in readonly mode, when you click on the field it is the
@@ -3216,6 +3230,11 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
       if (this._classNm === 'oj-combobox') {
         if (this.ojContext.multiple) {
           $content = null;
+
+          if (this.elementTabIndex != null) {
+            this.search.attr('tabindex', this.elementTabIndex);
+          }
+
           this.selection.removeAttr('tabindex');
           this.selection.removeAttr('aria-labelledby');
         } else {
@@ -4262,7 +4281,11 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
   },
   // _AbstractOjChoice
   // eslint-disable-next-line no-unused-vars
-  close: function close(event) {
+  close: function close(event, shouldReopenOnNewData) {
+    // This is used by the combobox to determine whether the dropdown
+    // should be reopened when new data comes
+    this.shouldReopenOnNewData = shouldReopenOnNewData === true;
+
     if (!this._opened()) {
       return;
     }
@@ -4520,7 +4543,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
     }
   },
   // _AbstractOjChoice
-  _updateResults: function _updateResults(initial) {
+  _updateResults: function _updateResults(initial, force) {
     var search = this.search;
     var self = this;
     var term = search.val();
@@ -4528,7 +4551,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
     // not applying to multi select since user can search the same term after making selection
     // it's ok for single select since the last term will be updated after selection
 
-    if (initial !== true && lastTerm && term === lastTerm && this.opts.multiple !== true) {
+    if (initial !== true && lastTerm && term === lastTerm && this.opts.multiple !== true && !force) {
       return;
     } // In IE even for chnage of placeholder fires 'input' event,
     // so in such cases we don't need to query for results.
@@ -4658,7 +4681,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
               }
             }
           } else {
-            this.close();
+            this.close(null, true);
           }
 
           this._updateMatchesCount(transtr);
@@ -4934,7 +4957,21 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
     return this.ojContext.option('value');
   },
   // _AbstractOjChoice
+  getRawValue: function getRawValue() {
+    return this.ojContext.option('rawValue');
+  },
+  // _AbstractOjChoice
   // /pass original event
+
+  /**
+   * Sets the value
+   * @instance
+   * @ignore
+   * @param {any} val The value to be set
+   * @param {jQuery.Event=} event The event at which the method is invoked
+   * @param {object} context Context
+   * @return {Promise} Result of setting the value
+   */
   setVal: function setVal(val, event, context) {
     //  - selected value got replaced once the label for initial value is available
     this.valHasChanged();
@@ -4944,7 +4981,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
 
     if (context) {
       options._context = context;
-    } //  - need to be asble to specify the initial value of select components bound to dprv
+    } //  - need to be able to specify the initial value of select components bound to dprv
 
 
     var multiple = this.ojContext.multiple;
@@ -4991,6 +5028,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
 
 
     var previousVal = this.getVal();
+    var setValueResult = null;
 
     if (!Array.isArray(val) && !this.ojContext._IsCustomElement()) {
       //  - select needs implementation fixes...
@@ -5000,7 +5038,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
       // 2. To bypass the check call this method when the value has changed and with the
       // additional parameter.
       if (!oj.Object.compareValues(previousVal, [val]) || _ComboUtils.hasInvalidComponentMessages(this.ojContext)) {
-        this.ojContext._SetValue([val], event, options);
+        setValueResult = this.ojContext._SetValue([val], event, options);
       } else if (this._classNm === 'oj-combobox' && !multiple) {
         this.ojContext._SetDisplayValue([val]);
       }
@@ -5008,11 +5046,17 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
       // eslint-disable-next-line no-lonely-if
       if (!oj.Object.compareValues(previousVal, val) || _ComboUtils.hasInvalidComponentMessages(this.ojContext)) {
         //  - select needs implementation fixes...
-        this.ojContext._SetValue(val, event, options);
+        setValueResult = this.ojContext._SetValue(val, event, options);
       } else if (this._classNm === 'oj-combobox' && !multiple) {
         this.ojContext._SetDisplayValue(val);
       }
     }
+
+    if (setValueResult instanceof Promise) {
+      return setValueResult;
+    }
+
+    return Promise.resolve(setValueResult === true);
   },
   getValOpts: function getValOpts() {
     var ojContext = this.ojContext;
@@ -5171,7 +5215,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
  * the specific language governing permissions and limitations under the Apache License and the GPL License.
  */
 
-/* global _ComboUtils:false, _AbstractOjChoice:false, Logger:false */
+/* global _ComboUtils:false, _AbstractOjChoice:false, Logger:false, Promise:false */
 
 /**
  * @private
@@ -5185,9 +5229,7 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
   },
   // _AbstractSingleChoice
   _focus: function _focus() {
-    if (this._opened()) {
-      this.close();
-    }
+    this.close();
   },
   // _AbstractSingleChoice
   _destroy: function _destroy() {
@@ -5279,11 +5321,11 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 
       case _ComboUtils.KEY.ESC:
         if (this._opened()) {
-          this._cancel(e); // prevent the page from scrolling
-
-
+          // prevent the page from scrolling
           e.preventDefault();
         }
+
+        this._cancel(e);
 
         this._userTyping = false;
         return;
@@ -5405,11 +5447,11 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     this.search.on('compositionend', this._bind(function (e) {
       this.ojContext._isComposing = false;
 
-      this.ojContext._SetRawValue(this.search.val(), e);
+      this._onSearchInputHandler(e);
     }));
     this.search.on('input', this._bind(function (e) {
       if (!this.ojContext._isComposing) {
-        this.ojContext._SetRawValue(this.search.val(), e);
+        this._onSearchInputHandler(e);
       }
     }));
     this.search.on('focus', this._bind(function () {
@@ -5445,7 +5487,10 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
             // if the value stays the same, we still want to fire valueUpdated event to support search use cases
             if (selectionData && selectionData.label === value) {
               valopt = selectionData;
-            }
+            } // Close the dropdown
+
+
+            this.close(e);
 
             this._triggerUpdateEvent(valopt, options, e);
 
@@ -5484,6 +5529,22 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     this.container.append(this.opts.element); // @HTMLUpdateOK
 
     this._setPlaceholder();
+  },
+
+  /**
+   * Handles input event and compositionend event for the search field
+   * @param {jQuery.Event} event input/compositionend event triggered on the search field
+   * @private
+   */
+  _onSearchInputHandler: function _onSearchInputHandler(event) {
+    if (this._classNm === 'oj-combobox') {
+      // When user types in something into the combobox, mark it dirty
+      // and this will be used when deciding what should be used
+      // for validation
+      this.hasUncommittedValue = true;
+    }
+
+    this.ojContext._SetRawValue(this.search.val(), event);
   },
   // _AbstractSingleChoice
   _prepareOpts: function _prepareOpts() {
@@ -5784,6 +5845,8 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 
     var val;
     var valopt = data;
+    var previousHasUncommittedValue = this.hasUncommittedValue;
+    var setValueReturn = null;
 
     if (this.id(data).length === 0) {
       val = this.ojContext._IsCustomElement() ? _ComboUtils.getValueForPlaceholder(false) : [];
@@ -5798,9 +5861,24 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
       this._skipSetValueOptions = true; //  - oj.tests.input.combobox.testcombobox display value mismatch automation failure
 
       this.setValOpts(_ComboUtils.findOptionFromResult(this, val, valopt));
-    }
+    } // Fix , 
+    // For combobox, we are using the flag hasUncommittedValue to decide on whether
+    // the label or the value would take part in validation.
+    // So, when a selection is made, this flag has to be cleared before setting the value.
 
-    this.setVal(val, event, context);
+
+    this.hasUncommittedValue = false; // setVal method returns a promise that resolves to true|false or a boolean
+
+    setValueReturn = this.setVal(val, event, context); // If the validation fails, set the hasUncommittedValue flag so as to revert it back to its
+    // original state
+
+    setValueReturn.then(this._bind(function (result) {
+      if (result === false) {
+        // The validation failed, so reset the flag
+        this.hasUncommittedValue = previousHasUncommittedValue;
+      } // Do nothing as the validation succeeded and the value is set.
+
+    }));
     this._skipSetValueOptions = false;
 
     if (event.type !== 'blur') {
@@ -5941,14 +6019,6 @@ var _OjSingleCombobox = _ComboUtils.clazz(_AbstractSingleChoice, {
       this.container.find('.oj-combobox-arrow').addClass('oj-disabled');
     }
   },
-  // eslint-disable-next-line no-unused-vars
-  close: function close(event) {
-    if (!this._opened()) {
-      return;
-    }
-
-    _OjSingleCombobox.superclass.close.apply(this, arguments);
-  },
   _opening: function _opening(event, dontUpdateResults) {
     // if beforeExpand is not cancelled
     _OjSingleCombobox.superclass._opening.apply(this, arguments);
@@ -6082,7 +6152,8 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
 
 
     if (this._enabled) {
-      this.selection.attr('tabindex', '0');
+      var elementTabIndex = this.elementTabIndex ? this.elementTabIndex : '0';
+      this.selection.attr('tabindex', elementTabIndex);
       this.container.find('.oj-select-arrow').removeClass('oj-disabled');
     } else {
       // Don't allow focus on a disabled "select"
@@ -6095,7 +6166,22 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
   close: function close(event) {
     if (!this._opened()) {
       return;
-    }
+    } //  - ojselect input field grabs focus on paste
+    // don't set focus on the select box if event target is not select element
+    // Bug JET-34119 - focus is not returned to oj-select-one after selecting an option from the dropdown
+    // return the focus to the select if the event.target is in the dropdown.
+    // We need to determine whether the focus has to be returned to the select or not
+    // If the event is of type MouseEvent or FocusEvent, it has be checked if the
+    // event target is a part of the select or its dropdown and only if it is
+    // the focus should be retained.
+    // Note: In Firefox, Safari and Edge clicking on an input element triggers a
+    // FocusEvent while in Chrome and IE11, MouseEvent will be triggered. So both
+    // has to be considered here.
+
+
+    var originalEvent = event ? event.originalEvent : null;
+    var isMouseOrFocusEvent = originalEvent instanceof MouseEvent || originalEvent instanceof FocusEvent;
+    var shouldReturnFocus = event && (!isMouseOrFocusEvent || event.target === this.selection || event.target === this.search || this.dropdown.has(event.target).length > 0);
 
     _OjSingleSelect.superclass.close.apply(this, arguments);
 
@@ -6105,11 +6191,26 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
 
     if (!this._testClear(event)) {
       this._clearSearch();
-    } //  - ojselect input field grabs focus on paste
-    // don't set focus on the select box if event target is not select element
+    } // When the dropdown is open and if the close method is invoked
+    // by clicking directly on an input element, different browsers
+    // behave differently.
+    // Some, triggers mousedown event before a focus event on the target element
+    // which results in this method being called before this.ojContext._handleAfterFocusToggle
+    // which thus results in the expected behavior. But in other browsers it is the
+    // opposite, which results in the _handleAfterFocusToggle method to be called
+    // with focusOut event before closing the dropdown. This incorrectly results in
+    // oj-focus class being added to the root element. In this case, we would have
+    // to remove the class. As the select is currently not focused and also does not
+    // have the dropdown open, it should not have oj-focus class.
 
 
-    if (event && (!(event.originalEvent instanceof MouseEvent) || event.target === this.selection || event.target === this.search)) {
+    if (this.ojContext.hasAfterToggleHandlerAddedFocusClass && !shouldReturnFocus) {
+      this.ojContext._getRootElement().classList.remove('oj-focus');
+
+      this.ojContext.hasAfterToggleHandlerAddedFocusClass = false;
+    }
+
+    if (shouldReturnFocus) {
       _ComboUtils._focus(this, this.selection);
     } // /remove "mouse click" listeners on spyglass
 
@@ -6279,11 +6380,24 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
     }
   },
   // _OjSingleSelect
+
+  /**
+   * Sets the value
+   * @instance
+   * @override
+   * @ignore
+   * @param {any} val The value to be set
+   * @param {jQuery.Event=} event The event at which the method is invoked
+   * @param {object} context Context
+   * @return {Promise} Result of setting the value
+   */
   setVal: function setVal(val, event, context) {
     // /pass original event
-    _OjSingleSelect.superclass.setVal.call(this, val, event, context);
+    var setValueReturn = _OjSingleSelect.superclass.setVal.call(this, val, event, context);
 
-    this.selection.data('selectVal', val);
+    return setValueReturn.then(this._bind(function () {
+      this.selection.data('selectVal', val);
+    }));
   },
   // _OjSingleSelect
   _containerKeydownHandler: function _containerKeydownHandler(e) {
@@ -6381,7 +6495,7 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
  * the specific language governing permissions and limitations under the Apache License and the GPL License.
  */
 
-/* global _ComboUtils:false, _AbstractOjChoice:false */
+/* global _ComboUtils:false, _AbstractOjChoice:false, Promise:false */
 
 /**
  * @private
@@ -6792,11 +6906,11 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     this.search.on('compositionend', this._bind(function (e) {
       this.ojContext._isComposing = false;
 
-      this.ojContext._SetRawValue(this.search.val(), e);
+      this._onSearchInputHandler(e);
     }));
     this.search.on('input', this._bind(function (e) {
       if (!this.ojContext._isComposing) {
-        this.ojContext._SetRawValue(this.search.val(), e);
+        this._onSearchInputHandler(e);
       }
     }));
     this.search.on('blur keyup', this._bind(function (e) {
@@ -6881,6 +6995,32 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 
     this._clearSearch();
   },
+
+  /**
+   * Handles input event and compositionend event for the search field
+   * @param {jQuery.Event} e Input event triggered on the search field
+   * @private
+   */
+  _onSearchInputHandler: function _onSearchInputHandler(e) {
+    var valueOpts = (this.getValOpts() || []).slice(0);
+    var searchText = this.search.val();
+    var rawValue = valueOpts.map(function (vo) {
+      return vo.label;
+    });
+
+    if (searchText !== '') {
+      rawValue.push(searchText);
+    }
+
+    if (this._classNm === 'oj-combobox') {
+      // When user types in something into the combobox, mark it dirty
+      // and this will be used when deciding what should be used
+      // for validation
+      this.hasUncommittedValue = true;
+    }
+
+    this.ojContext._SetRawValue(rawValue, e);
+  },
   _containerKeydownHandler: function _containerKeydownHandler(e) {
     if (!this._isInterfaceEnabled()) {
       return;
@@ -6933,58 +7073,19 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 
     this._selectChoice(null);
 
-    if (this._opened()) {
-      switch (e.which) {
-        case _ComboUtils.KEY.UP:
-        case _ComboUtils.KEY.DOWN:
-          this._moveHighlight(e.which === _ComboUtils.KEY.UP ? -1 : 1);
-
-          e.preventDefault();
-          return;
-
-        case _ComboUtils.KEY.ENTER:
-          this._selectHighlighted(null, e);
-
-          e.preventDefault(); // Fix :  PRESSING 'ENTER' WITHIN DROPDOWN SHOULD NOT PROPAGATE
-
-          e.stopPropagation();
-          return;
-
-        case _ComboUtils.KEY.TAB:
-          this.close(e);
-          return;
-
-        case _ComboUtils.KEY.ESC:
-          this._cancel(e);
-
-          e.preventDefault();
-          return;
-
-        default:
-          break;
-      } // bring up the search box if user started typing after the drop down is already opened
-      // do not close the drop down if user pressed control keys or function keys
-
-
-      if (this._userTyping === false && !(_ComboUtils.KEY.isControl(e) || _ComboUtils.KEY.isFunctionKey(e))) {
-        this._userTyping = true;
-        this.close();
-      }
-    }
-
-    if (e.which === _ComboUtils.KEY.TAB || _ComboUtils.KEY.isControl(e) || _ComboUtils.KEY.isFunctionKey(e) || e.which === _ComboUtils.KEY.ESC) {
-      return;
-    } // when user typed in text and hit enter, we don't want to open drop down
-
-
-    if (e.which === _ComboUtils.KEY.ENTER && this.search.val() && this._elemNm === 'ojcombobox') {
+    if (_ComboUtils.KEY.isControl(e) || _ComboUtils.KEY.isFunctionKey(e)) {
       return;
     }
 
     switch (e.which) {
       case _ComboUtils.KEY.UP:
       case _ComboUtils.KEY.DOWN:
-        this.open(e);
+        if (this._opened()) {
+          this._moveHighlight(e.which === _ComboUtils.KEY.UP ? -1 : 1);
+        } else {
+          this.open(e);
+        }
+
         e.preventDefault();
         return;
 
@@ -6995,12 +7096,35 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
         return;
 
       case _ComboUtils.KEY.ENTER:
-        // prevent form from being submitted
+        if (this._opened()) {
+          this._selectHighlighted(null, e); // Fix :  PRESSING 'ENTER' WITHIN DROPDOWN SHOULD NOT PROPAGATE
+
+
+          e.stopPropagation();
+        } // prevent form from being submitted
+
+
+        e.preventDefault();
+        return;
+
+      case _ComboUtils.KEY.TAB:
+        this.close(e);
+        return;
+
+      case _ComboUtils.KEY.ESC:
+        this._cancel(e);
+
         e.preventDefault();
         return;
 
       default:
         break;
+    }
+
+    if (this._opened() && this._userTyping === false) {
+      // bring up the search box if user started typing after the drop down is already opened
+      this._userTyping = true;
+      this.close();
     } // ojselect: used by select
 
 
@@ -7053,14 +7177,6 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
         });
       }
     }
-  },
-  // eslint-disable-next-line no-unused-vars
-  close: function close(event) {
-    if (!this._opened()) {
-      return;
-    }
-
-    _AbstractMultiChoice.superclass.close.apply(this, arguments);
   },
   _focus: function _focus() {
     this.close();
@@ -7143,6 +7259,8 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     var opts = _ComboUtils.getOpts(this.ojContext);
 
     var isDataProvider = opts ? _ComboUtils.isDataProvider(opts.options) : false;
+    var setValueReturn = null;
+    var previousHasUncommittedValue = this.hasUncommittedValue;
 
     if (isDataProvider) {
       // populate data/metadata for existing selections
@@ -7186,8 +7304,23 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     } // set the valueOptions data and metadata in the context
 
 
-    context = _ComboUtils.getContextWithExtraData(context, opts, valueOptionsData, valueOptionsMetadata);
-    this.setVal(val, event, context); // : component oj-combobox-many displays the list of the values - does not exclude the invalid values
+    context = _ComboUtils.getContextWithExtraData(context, opts, valueOptionsData, valueOptionsMetadata); // Fix , 
+    // For combobox, we are using the flag hasUncommittedValue to decide on whether
+    // the label or the value would take part in validation.
+    // So, when a selection is made, this flag has to be cleared before setting the value.
+
+    this.hasUncommittedValue = false; // setVal method returns a promise that resolves to true|false or a boolean
+
+    setValueReturn = this.setVal(val, event, context); // If the validation fails, set the hasUncommittedValue flag so as to revert it back to its
+    // original state
+
+    setValueReturn.then(this._bind(function (result) {
+      if (result === false) {
+        // The validation failed, so reset the flag
+        this.hasUncommittedValue = previousHasUncommittedValue;
+      } // Do nothing as the validation succeeded and the value is set.
+
+    })); // : component oj-combobox-many displays the list of the values - does not exclude the invalid values
     // If the input text is invalid, restore to initial value options
 
     if (isSelectCombobox && !this.ojContext.isValid()) {
@@ -7211,7 +7344,7 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     // Should not focus the search when the trigger is a blur event.
 
 
-    if ((!options || options.trigger !== 'blur') && this._elemNm === 'ojcombobox') {
+    if ((!options || options.trigger !== _ComboUtils.ValueChangeTriggerTypes.BLUR) && this._elemNm === 'ojcombobox') {
       this._focusSearch();
     }
   },
@@ -7397,7 +7530,7 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     this._processAriaLabelForHierarchy();
 
     if (!choices.filter('.oj-listbox-result:not(.oj-selected)').length > 0 && this._classNm !== 'oj-select') {
-      this.close();
+      this.close(null, true);
     }
   },
   _isDataSelected: function _isDataSelected(data) {
@@ -7419,6 +7552,17 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
   },
   _resetSearchWidth: function _resetSearchWidth() {// do nothing. subclass override
   },
+
+  /**
+   * Sets the value
+   * @instance
+   * @override
+   * @ignore
+   * @param {Array<any>} val The value to be set
+   * @param {jQuery.Event=} event The event at which the method is invoked
+   * @param {object} context Context
+   * @return {Promise} Result of setting the value
+   */
   setVal: function setVal(val, event, context) {
     var unique = [];
     var vals = val; //  - selected value got replaced once the label for initial value is available
@@ -7468,9 +7612,10 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 
 
     var previousVal = this.getVal();
+    var setValueResult = null;
 
     if (!oj.Object.compareValues(previousVal, unique) || _ComboUtils.hasInvalidComponentMessages(this.ojContext)) {
-      this.ojContext._SetValue(unique, event, options);
+      setValueResult = this.ojContext._SetValue(unique, event, options);
     }
 
     if (this.ojContext.isValid() || unique.length === 0) {
@@ -7478,6 +7623,12 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     }
 
     this.search.attr('aria-activedescendant', this.opts.element.attr('id'));
+
+    if (setValueResult instanceof Promise) {
+      return setValueResult;
+    }
+
+    return Promise.resolve(setValueResult === true);
   },
 
   /**
@@ -7678,6 +7829,19 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice, {
 
     return container;
   },
+  // _OjMultiSelect
+  // eslint-disable-next-line no-unused-vars
+  _enable: function _enable(enabled) {
+    _OjMultiSelect.superclass._enable.apply(this, arguments);
+
+    if (this._enabled) {
+      var elementTabIndex = this.elementTabIndex ? this.elementTabIndex : '0';
+      this.selection.attr('tabindex', elementTabIndex);
+    } else {
+      // Don't allow focus on a disabled "select"
+      this.selection.attr('tabindex', '-1');
+    }
+  },
   _containerKeydownHandler: function _containerKeydownHandler(e) {
     _OjMultiSelect.superclass._containerKeydownHandler.apply(this, arguments);
 
@@ -7711,11 +7875,41 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice, {
     // reset _userTyping after drop down is closed
     if (this._userTyping === true) {
       this._userTyping = false;
+    } // Bug JET-34119 - focus is not returned to oj-select-one after selecting an option from the dropdown
+    // return the focus to the select if the event.target is in the dropdown.
+    // We need to determine whether the focus has to be returned to the select or not
+    // If the event is of type MouseEvent or FocusEvent, it has be checked if the
+    // event target is a part of the select or its dropdown and only if it is
+    // the focus should be retained.
+    // Note: In Firefox, Safari and Edge clicking on an input element triggers a
+    // FocusEvent while in Chrome and IE11, MouseEvent will be triggered. So both
+    // has to be considered here.
+
+
+    var originalEvent = event ? event.originalEvent : null;
+    var isMouseOrFocusEvent = originalEvent instanceof MouseEvent || originalEvent instanceof FocusEvent;
+    var shouldReturnFocus = event && (!isMouseOrFocusEvent || event.target === this.selection || event.target === this.search || this.dropdown.has(event.target).length > 0);
+
+    _OjMultiSelect.superclass.close.apply(this, arguments); // When the dropdown is open and if the close method is invoked
+    // by clicking directly on an input element, different browsers
+    // behave differently.
+    // Some, triggers mousedown event before a focus event on the target element
+    // which results in this method being called before this.ojContext._handleAfterFocusToggle
+    // which thus results in the expected behavior. But in other browsers it is the
+    // opposite, which results in the _handleAfterFocusToggle method to be called
+    // with focusOut event before closing the dropdown. This incorrectly results in
+    // oj-focus class being added to the root element. In this case, we would have
+    // to remove the class. As the select is currently not focused and also does not
+    // have the dropdown open, it should not have oj-focus class.
+
+
+    if (this.ojContext.hasAfterToggleHandlerAddedFocusClass && !shouldReturnFocus) {
+      this.ojContext._getRootElement().classList.remove('oj-focus');
+
+      this.ojContext.hasAfterToggleHandlerAddedFocusClass = false;
     }
 
-    _OjMultiSelect.superclass.close.apply(this, arguments);
-
-    if (event && (!(event.originalEvent instanceof MouseEvent) || event.target === this.selection || event.target === this.search)) {
+    if (shouldReturnFocus) {
       _ComboUtils._focus(this, this.selection);
     }
   },
@@ -9296,6 +9490,28 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
     /**
      * {@ojinclude "name":"comboboxCommonRawValue"}
      *
+     * <p>
+     * The <code class="prettyprint">rawValue</code> updates on the 'input' javascript event,
+     * so the <code class="prettyprint">rawValue</code> changes as the value of the input is changed.
+     * Consider the above example of combobox. Now, if the user types in 'Edge' into the field,
+     * the <code class="prettyprint">rawValue</code> will be 'E', then 'Ed', then 'Edg', and finally 'Edge'.
+     * Then when the user blurs or presses Enter the <code class="prettyprint">value</code> property gets
+     * converted and validated (if there is a converter or validators) and then gets updated if valid.
+     * In this case, without any converter the <code class="prettyprint">value</code> will be updated to 'Edge'.
+     * </p>
+     * <p>
+     * If the user types in 'CH' instead, the <code class="prettyprint">rawValue</code> will be 'C' and then 'CH'.
+     * Now, when the user blurs or presses Enter and since the <code class="prettyprint">rawValue</code> now matches
+     * one of the keys(values) of the current set of options the <code class="prettyprint">value</code> will be
+     * updated to 'CH', while the <code class="prettyprint">rawValue</code> gets updated to 'Chrome' and the user now sees 'Chrome'
+     * in the text field.
+     * </p>
+     * <p>
+     * Note that a <code class="prettyprint">rawValueChanged</code> event will be triggered when setting
+     * the <code class="prettyprint">value</code> to 'CH' and the event payload will contain the current
+     * <code class="prettyprint">rawValue</code> as 'Chrome' and previous <code class="prettyprint">rawValue</code> as 'CH'.
+     * </p>
+     *
      * @name rawValue
      * @ojshortdesc The currently displayed text retrieved from the input field.
      * @expose
@@ -9312,13 +9528,39 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
     /**
      * {@ojinclude "name":"comboboxCommonRawValue"}
      *
+     * <p>
+     * The <code class="prettyprint">rawValue</code> updates on the 'input' javascript event,
+     * so the <code class="prettyprint">rawValue</code> changes as the value of the input is changed. The
+     * <code class="prettyprint">rawValue</code> is always an array when exists and the last element of the
+     * array represent the current text typed in the input text field.
+     * Consider the above example combobox. Now, if the user types in 'Edge' into the field,
+     * the <code class="prettyprint">rawValue</code> will be ['E'], then ['Ed'], then ['Edg'], and finally ['Edge'].
+     * Then when the user blurs or presses Enter the <code class="prettyprint">value</code> property gets
+     * converted and validated (if there is a converter or validators) and then gets updated if valid.
+     * In this case, without any converter the <code class="prettyprint">value</code> will be updated to ['Edge'].
+     * </p>
+     * <p>
+     * Then if the user continues to type in 'CH', the <code class="prettyprint">rawValue</code> will be ['Edge', 'C']
+     * and then ['Edge', 'CH']. The rawValue will contains the labels of all the selected values along with the text
+     * currently being typed in the text field. Now, when the user blurs or presses Enter and since the
+     * text now matches one of the keys(values) of the current set of options the <code class="prettyprint">value</code> will be
+     * updated to ['Edge', 'CH'], while the <code class="prettyprint">rawValue</code> gets updated to ['Edge', 'Chrome']
+     * and the user now sees two pills 'Edge' and 'Chrome'.
+     * </p>
+     * <p>
+     * Note that a <code class="prettyprint">rawValueChanged</code> event will be triggered when setting
+     * the <code class="prettyprint">value</code> and the event payload will contain the current
+     * <code class="prettyprint">rawValue</code> as ['Edge', 'Chrome'] and previous
+     * <code class="prettyprint">rawValue</code> as ['Edge', 'CH'].
+     * </p>
+     *
      * @name rawValue
      * @ojshortdesc The currently displayed text retrieved from the input field.
      * @expose
      * @access public
      * @instance
      * @memberof oj.ojComboboxMany
-     * @type {?string}
+     * @type {?Array<string>}
      * @default null
      * @since 1.2.1
      * @readonly
@@ -9329,15 +9571,18 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
      * <p>The  <code class="prettyprint">rawValue</code> is the read-only property for retrieving
      * the current value from the input field in string form. The main consumer of
      * <code class="prettyprint">rawValue</code> is a converter.</p>
-     * <p>
-     * The <code class="prettyprint">rawValue</code> updates on the 'input' javascript event,
-     * so the <code class="prettyprint">rawValue</code> changes as the value of the input is changed.
-     * If the user types in '1,200' into the field, the rawValue will be '1', then '1,', then '1,2',
-     * ..., and finally '1,200'. Then when the user blurs or presses
-     * Enter the <code class="prettyprint">value</code> property gets converted and validated
-     * (if there is a converter or validators) and then gets updated if valid.
-     * </p>
      * <p>This is a read-only attribute so page authors cannot set or change it directly.</p>
+     * <p>
+     * Consider a combobox with the following options:
+     * <pre>
+     * <code>
+     *   &lt;oj-option value="CH">Chrome&lt;/oj-option>
+     *   &lt;oj-option value="FF">Firefox&lt;/oj-option>
+     *   &lt;oj-option value="SA">Safari&lt;/oj-option>
+     *   &lt;oj-option value="OP">Opera&lt;/oj-option>
+     * </code>
+     * </pre>
+     * </p>
      *
      * @example <caption>Get the <code class="prettyprint">rawValue</code> property after initialization:</caption>
      * // getter
@@ -9983,11 +10228,31 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   },
 
   /**
+   * This method handles the labelled-by attribute change
+   *
+   * @param {string} labelledBy The id of the label element
+   * @param {string} contentElementId The id of the conetent element
+   *
    * @memberof! oj.ojCombobox
    * @instance
    * @private
    */
-  _labelledByChangedForInputComp: oj.EditableValueUtils._labelledByChangedForInputComp,
+  // eslint-disable-next-line no-unused-vars
+  _labelledByChangedForInputComp: function _labelledByChangedForInputComp(labelledBy, contentElementId) {
+    oj.EditableValueUtils._labelledByChangedForInputComp.apply(this, arguments);
+
+    if (this.combobox.results == null) {
+      return;
+    } // Update the aria-labelledby attribute of the results container
+    // Fix  - Acc error in the OATB tool
+
+
+    var defaultLabelId = this.uuid + '_Label';
+
+    var ariaLabelledBy = oj.EditableValueUtils._getOjLabelAriaLabelledBy(labelledBy, defaultLabelId);
+
+    this.combobox.results.attr('aria-labelledby', ariaLabelledBy);
+  },
 
   /**
    * Performs post processing after required option is set by taking the following steps.
@@ -10293,7 +10558,14 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
       }
 
       this.combobox.opts.options = value;
-      this.combobox.opts = this.combobox._prepareOpts(this.combobox.opts);
+      this.combobox.opts = this.combobox._prepareOpts(this.combobox.opts); // : INCONSISTENT AUTOSUGGEST VALUES DISPLAYED IN OJCOMBOBOX COMPONENT
+      // Open the dropdown when the user is still typing and the options are updated.
+
+      if (this.combobox.isSearchFocused && this.combobox.shouldReopenOnNewData || this.combobox._opened()) {
+        // This is to be treated as non-initial update as the term highlight should be done if there
+        // are matches.
+        this.combobox._updateResults(false, true);
+      }
     } else if (key === 'disabled') {
       if (value) {
         this.combobox._disable();
@@ -10624,15 +10896,70 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   validate: function validate() {
     var displayValueForSetValue = this._getDisplayValueForSetValue();
 
-    var returnValue; // returns Promise that resolves to true|false or boolean
+    var combobox = this.combobox;
+    var valueCandidate = displayValueForSetValue;
+    var valOptToResetOnFailure;
+    var returnValue;
 
-    returnValue = this._SetValue(displayValueForSetValue, null, this._VALIDATE_METHOD_OPTIONS);
+    if (combobox.hasUncommittedValue) {
+      // we need to update the valueOptions before setting the value
+      var newValOpts = null;
+      var multiple = this.multiple;
+
+      if (multiple) {
+        var lastRawValue = displayValueForSetValue[displayValueForSetValue.length - 1];
+        var val = (combobox.getVal() || []).slice(0);
+
+        var data = this._getValueOptionCandidateFromRawValue(lastRawValue);
+
+        var id = combobox.id(data);
+        var initialValOpts = (combobox.getValOpts() || []).slice(0);
+        newValOpts = initialValOpts.slice(0);
+
+        if (val.indexOf(id) === -1) {
+          newValOpts.push(data);
+          val.push(id); // : component oj-combobox-many displays the list of the values - does not exclude the invalid values
+          // ValueOption has been modified, so it should be resetted
+          // if validation fails
+
+          valOptToResetOnFailure = initialValOpts;
+        }
+
+        valueCandidate = val;
+      } else {
+        newValOpts = this._getValueOptionCandidateFromRawValue(displayValueForSetValue);
+        valueCandidate = combobox.id(newValOpts);
+      }
+
+      combobox._skipSetValueOptions = true;
+      combobox.setValOpts(newValOpts); // Since the valOpts are set, reset the hasUncommittedValue flag
+      // The newValOpts will be available in the component's valueOption
+
+      combobox.hasUncommittedValue = false;
+    } // returns Promise that resolves to true|false or boolean
+
+
+    returnValue = this._SetValue(valueCandidate, null, this._VALIDATE_METHOD_OPTIONS);
 
     if (this._IsCustomElement()) {
       if (!(returnValue instanceof Promise)) {
+        combobox._skipSetValueOptions = false;
+
+        if (!returnValue && valOptToResetOnFailure) {
+          combobox.setValOpts(valOptToResetOnFailure);
+          combobox.hasUncommittedValue = true;
+        }
+
         returnValue = Promise.resolve(returnValue ? 'valid' : 'invalid');
       } else {
         returnValue = returnValue.then(function (booleanSetValueReturn) {
+          combobox._skipSetValueOptions = false;
+
+          if (!booleanSetValueReturn && valOptToResetOnFailure) {
+            combobox.setValOpts(valOptToResetOnFailure);
+            combobox.hasUncommittedValue = true;
+          }
+
           return Promise.resolve(booleanSetValueReturn ? 'valid' : 'invalid');
         });
       }
@@ -10700,14 +11027,45 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
 
     return this._super();
   },
+
+  /**
+   * Finds the valueOption candidate for the rawValue provided.
+   * The value candidate is the value/label pair that will be set if the validation passes.
+   * There can be two cases:
+   *  1. The rawValue matches a key in the current dataprovider, then the valueOption from the
+   *     dataprovider will be the value candidate
+   *  2. Otherwise, a new valueOption will be created with value and label matching the rawValue
+   *     which will be the value candidate
+   *
+   * @param {string} rawValue The rawValue for which the value candidate has to be obtained
+   * @return {object} The valueOption candidate
+   * @memberof oj.ojCombobox
+   * @instance
+   * @private
+   */
+  _getValueOptionCandidateFromRawValue: function _getValueOptionCandidateFromRawValue(rawValue) {
+    var defaultValueOption = this.combobox.opts.manageNewEntry(rawValue);
+    return _ComboUtils.findOptionFromResult(this.combobox, rawValue, defaultValueOption);
+  },
   _getDisplayValueForSetValue: function _getDisplayValueForSetValue() {
     var displayValue = null;
     var newValue = null;
+    var hasUncommittedValue = this.combobox.hasUncommittedValue;
 
     if (this.multiple !== true) {
-      // Fix  - oj-combobox data provider options validate label copied to value
-      // getValOpts returns the current value option of the ojComboboxOne
-      displayValue = this.combobox.getValOpts() ? this.combobox.getValOpts().value : null;
+      // Fix , 
+      // Based on the state of the combobox, the return value is decided
+      // If the combobox has uncommitted value in it (i.e. rawValue does not represent the value)
+      // then the rawValue should be sent for validation, otherwise the value should be sent.
+      // This is because the value represents the key while the rawValue represent the label.
+      // So, when the combobox has uncommitted changes, then the rawValue will be the candidate for the
+      // new label. When the combobox does not have uncommitted changes, the value is already set so it has
+      // to be used for all validation purposes.
+      if (hasUncommittedValue) {
+        displayValue = this.combobox.getRawValue();
+      } else {
+        displayValue = this.combobox.getValOpts() ? this.combobox.getValOpts().value : null;
+      }
 
       if (!this._IsCustomElement()) {
         if (displayValue === undefined || displayValue === null || displayValue === '') {
@@ -14084,11 +14442,14 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
    * @memberof! oj.ojSelect
    */
   _handleAfterFocusToggle: function _handleAfterFocusToggle(element, eventType) {
+    this.hasAfterToggleHandlerAddedFocusClass = false;
+
     if (eventType === 'focusout') {
       var dropdown = this._getDropdown();
 
       if (dropdown) {
         element.classList.add('oj-focus');
+        this.hasAfterToggleHandlerAddedFocusClass = true;
       }
     }
   },
@@ -14673,6 +15034,9 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
     if (this.options.value === undefined) {
       if (!this._IsCustomElement()) {
         this.options.value = this.element.attr('value') !== undefined ? _ComboUtils.splitVal(this.element.val(), ',') : null;
+      } else {
+        // sanitize the value for custom element
+        this.options.value = null;
       }
     } else {
       // clone the value, otherwise _setDisplayValue will not be invoked on binding value to ko observableArray.
@@ -15330,11 +15694,14 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
           //  - ojselect - validator error message is not shown
           //  - ojselect tooltip no longer appears once options and value observables change
           this.select.opts.options = value;
-          this.select.opts = this.select._prepareOpts(this.select.opts); // make sure the value still valid
+          this.select.opts = this.select._prepareOpts(this.select.opts);
 
-          this.select.setValOpts(null);
+          if (!multi || hasSelectedValue) {
+            // make sure the value still valid
+            this.select.setValOpts(null);
 
-          this._super('value', selected);
+            this._super('value', selected);
+          }
         }
       } else {
         this._nativeSetOptions(value);
@@ -15357,6 +15724,12 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
 
         if (ariaLabelledBy && (!this.multiple || !_ComboUtils.isReadonly(this))) {
           this._GetContentElement().attr('aria-labelledby', ariaLabelledBy);
+        } // Update the aria-labelledby attribute of the results container
+        // Fix  - Acc error in the OATB tool
+
+
+        if (this.select != null && this.select.results != null) {
+          this.select.results.attr('aria-labelledby', ariaLabelledBy);
         } // update the required translation text
 
 
@@ -16038,6 +16411,7 @@ Components.setDefaultOptions({
 (function () {
   __oj_combobox_one_metadata.extension._WIDGET_NAME = 'ojCombobox';
   __oj_combobox_one_metadata.extension._INNER_ELEM = 'input';
+  __oj_combobox_one_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['tabindex'];
   __oj_combobox_one_metadata.extension._ALIASED_PROPS = {
     readonly: 'readOnly'
   };
@@ -16051,6 +16425,7 @@ Components.setDefaultOptions({
 (function () {
   __oj_combobox_many_metadata.extension._WIDGET_NAME = 'ojCombobox';
   __oj_combobox_many_metadata.extension._INNER_ELEM = 'input';
+  __oj_combobox_many_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['tabindex'];
   __oj_combobox_many_metadata.extension._ALIASED_PROPS = {
     readonly: 'readOnly'
   };
@@ -16064,6 +16439,7 @@ Components.setDefaultOptions({
 (function () {
   __oj_select_one_metadata.extension._WIDGET_NAME = 'ojSelect';
   __oj_select_one_metadata.extension._INNER_ELEM = 'select';
+  __oj_select_one_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['tabindex'];
   __oj_select_one_metadata.extension._ALIASED_PROPS = {
     readonly: 'readOnly'
   };
@@ -16077,6 +16453,7 @@ Components.setDefaultOptions({
 (function () {
   __oj_select_many_metadata.extension._WIDGET_NAME = 'ojSelect';
   __oj_select_many_metadata.extension._INNER_ELEM = 'select';
+  __oj_select_many_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['tabindex'];
   __oj_select_many_metadata.extension._ALIASED_PROPS = {
     readonly: 'readOnly'
   };

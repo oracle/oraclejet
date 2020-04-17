@@ -23,9 +23,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 
 /* global KeySetImpl:false, Map:false, Symbol:false */
-var ojSet =
-/*#__PURE__*/
-function () {
+var ojSet = /*#__PURE__*/function () {
   function ojSet(initialKeys) {
     _classCallCheck(this, ojSet);
 

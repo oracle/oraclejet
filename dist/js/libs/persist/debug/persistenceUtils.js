@@ -28,6 +28,39 @@ define(['./impl/logger'], function (logger) {
   };
 
   /**
+   * Return whether the Request is initiated from sync operation.
+   * @method
+   * @name isReplayRequest
+   * @memberof persistenceUtils
+   * @static
+   * @private
+   * @param {Request} request Request object
+   * @return {boolean} Returns whether it's a request initiated from sync operation.
+   */
+  function isReplayRequest(request) {
+    return request.headers.has('x-oracle-jscpt-sync-replay');
+  };
+
+  /**
+   * Mark the request as initiated from sync operation
+   * @method
+   * @name markReplayRequest
+   * @memberof persistenceUtils
+   * @static
+   * @private
+   * @param {Request} request Request object
+   * @param {boolean} replay a flag indicating whether it is a request from syn 
+   *                         operation or not.
+   */
+  function markReplayRequest(request, replay) {
+    if (replay) {
+      request.headers.set('x-oracle-jscpt-sync-replay', '');
+    } else {
+      request.headers.delete('x-oracle-jscpt-sync-replay');
+    }
+  };
+
+  /**
    * Return whether the Response has a generated ETag
    * @method
    * @name isGeneratedEtagResponse
@@ -267,8 +300,8 @@ define(['./impl/logger'], function (logger) {
     _copyProperties(data, initFromData, ['headers', 'body', 'signal']);
     var skipContentType = _copyPayloadFromJsonObj(data, initFromData);
     initFromData.headers = _createHeadersFromJsonObj(data, skipContentType);
-
-    return _createRequestFromJsonObj(data, initFromData);
+    
+    return Promise.resolve(new Request(data.url, initFromData));
   };
 
   function _copyPayloadFromJsonObj(data, targetObj) {
@@ -304,10 +337,6 @@ define(['./impl/logger'], function (logger) {
     return headers;
   };
 
-  function _createRequestFromJsonObj(data, initFromData) {
-    return Promise.resolve(new Request(data.url, initFromData));
-  };
-
   /**
    * Return a Response object constructed from the JSON object returned by
    * responseToJSON
@@ -324,7 +353,7 @@ define(['./impl/logger'], function (logger) {
     _copyProperties(data, initFromData, ['headers', 'body']);
     initFromData.headers = _createHeadersFromJsonObj(data, false);
 
-    return _createResponseFromJsonObj(data, initFromData);
+    return Promise.resolve(_createResponseFromJsonObj(data, initFromData));
   };
 
   function _createResponseFromJsonObj(data, initFromData) {
@@ -343,7 +372,7 @@ define(['./impl/logger'], function (logger) {
       response = new Response(null, initFromData);
     }
 
-    return Promise.resolve(response);
+    return response;
   };
 
   /**
@@ -650,7 +679,9 @@ define(['./impl/logger'], function (logger) {
     _derivePayloadType: _derivePayloadType,
     _mapData: _mapData,
     _unmapData: _unmapData,
-    _mapFindQuery: _mapFindQuery
+    _mapFindQuery: _mapFindQuery,
+    isReplayRequest: isReplayRequest,
+    markReplayRequest: markReplayRequest
   };
 });
 

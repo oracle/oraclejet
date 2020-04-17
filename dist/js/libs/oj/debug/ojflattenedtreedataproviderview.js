@@ -799,10 +799,10 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
  * @since 7.0.0
  * @export
  * @final
- * @class oj.FlattenedTreeDataProviderView
+ * @class FlattenedTreeDataProviderView
  * @ojtsmodule
- * @implements oj.DataProvider
- * @classdesc Provides row expander optimizations for oj.TreeDataProvider by flattening the tree.
+ * @implements DataProvider
+ * @classdesc Provides row expander optimizations for TreeDataProvider by flattening the tree.
  * <h3 id="events-section">
  *   Events
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#events-section"></a>
@@ -813,7 +813,7 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
  * </h4>
  * This event is fired when items have been added or removed from the data.
  * <p>
- * Event payload is found under <code class="prettyprint">event.detail</code>, which implements the {@link oj.DataProviderMutationEventDetail} interface.
+ * Event payload is found under <code class="prettyprint">event.detail</code>, which implements the {@link DataProviderMutationEventDetail} interface.
  * </p>
  *
  * <h4 id="event:refresh" class="name">
@@ -834,7 +834,7 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
  * dataProvider.addEventListener("mutate", listener);
  * </code></pre>
  *
- * @param {oj.TreeDataProvider} dataProvider the wrapped TreeDataProvider to flatten.
+ * @param {TreeDataProvider} dataProvider the wrapped TreeDataProvider to flatten.
  * @param {Object=} options
  * @param {KeySet=} options.expanded Optional key set to track the expansion state. To monitor the expansion state use the getExpandedObvservable method. To update the
  *   expansion state use the setExpanded method.
@@ -856,164 +856,12 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
  */
 
 /**
- * Check if there are rows containing the specified keys
- *
- *
- * @since 6.2.0
- * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
- * @return {Promise.<oj.ContainsKeysResults>} Promise which resolves to {@link oj.ContainsKeysResults}
- * @export
- * @expose
- * @memberof oj.FlattenedTreeDataProviderView
- * @instance
- * @method
- * @name containsKeys
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>"}
- */
-
-/**
- * Fetch rows by keys
- *
- *
- * @since 6.2.0
- * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
- * @return {Promise.<oj.FetchByKeysResults>} Promise which resolves to {@link oj.FetchByKeysResults}
- * @export
- * @expose
- * @memberof oj.FlattenedTreeDataProviderView
- * @instance
- * @method
- * @name fetchByKeys
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>"}
- */
-
-/**
- * Fetch rows by offset
- *
- *
- * @since 4.2.0
- * @param {oj.FetchByOffsetParameters} params Fetch by offset parameters
- * @return {Promise.<oj.FetchByOffsetResults>} Promise which resolves to {@link oj.FetchByOffsetResults}
- * @export
- * @expose
- * @memberof oj.FlattenedTreeDataProviderView
- * @instance
- * @method
- * @name fetchByOffset
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
- */
-
-/**
- * Fetch the first block of data.
- *
- *
- * @since 6.2.0
- * @param {oj.FetchListParameters=} params Fetch parameters
- * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
- * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
- * @export
- * @expose
- * @memberof oj.FlattenedTreeDataProviderView
- * @instance
- * @method
- * @name fetchFirst
- * @ojsignature {target: "Type",
- *               value: "(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
- */
-
-/**
- * Determines whether this DataProvider supports certain feature.
- *
- *
- * @since 6.2.0
- * @param {string} capabilityName capability name. Supported capability names
- *                  are determined by the underlying dataprovider.
- * @return {Object} capability information or null if unsupported
- * @export
- * @expose
- * @memberof oj.FlattenedTreeDataProviderView
- * @instance
- * @method
- * @name getCapability
- * @ojsignature {target: "Type",
- *               value: "(capabilityName: string): any"}
- */
-
-/**
- * Return the total number of rows in this dataprovider. Will return -1 if count cannot be determined.
- *
- *
- * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
- * @export
- * @expose
- * @memberof oj.FlattenedTreeDataProviderView
- * @instance
- * @method
- * @name getTotalSize
- */
-
-/**
- * Return a string that indicates if this data provider is empty
- *
- *
- * @return {"yes"|"no"|"unknown"} a string that indicates if this data provider is empty. Valid values are:
- *                  "yes": this data provider is empty.
- *                  "no": this data provider is not empty.
- *                  "unknown": it is not known if this data provider is empty until a fetch is made.
- * @export
- * @expose
- * @memberof oj.FlattenedTreeDataProviderView
- * @instance
- * @method
- * @name isEmpty
- */
-
-/**
- *
- * @export
- * @expose
- * @memberof oj.FlattenedTreeDataProviderView
- * @instance
- * @method
- * @name addEventListener
- * @ojsignature {target: "Type",
- *               value: "(eventType: string, listener: EventListener): void"}
- */
-
-/**
- *
- * @export
- * @expose
- * @memberof oj.FlattenedTreeDataProviderView
- * @instance
- * @method
- * @name removeEventListener
- * @ojsignature {target: "Type",
- *               value: "(eventType: string, listener: EventListener): void"}
- */
-
-/**
- *
- * @export
- * @expose
- * @memberof oj.FlattenedTreeDataProviderView
- * @instance
- * @method
- * @name dispatchEvent
- * @ojsignature {target: "Type",
- *               value: "(evt: Event): boolean"}
- */
-
-/**
  * Set a new expanded property on the FlattenedTreeDataProviderView.
  *
  *
  * @export
  * @expose
- * @memberof oj.FlattenedTreeDataProviderView
+ * @memberof FlattenedTreeDataProviderView
  * @instance
  * @method
  * @name setExpanded
@@ -1046,13 +894,109 @@ oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
  *
  * @export
  * @expose
- * @memberof oj.FlattenedTreeDataProviderView
+ * @memberof FlattenedTreeDataProviderView
  * @instance
  * @method
  * @name getExpandedObservable
  * @see {@link https://github.com/tc39/proposal-observable} for further information on Observable and Subscription.
  * @ojsignature {target: "Type",
  *               value: "():{ subscribe( subscriber : ((expanded: {value: KeySet<K>, completionPromise: Promise<any>}) => void) ): {unsubscribe(): void, closed(): boolean}}"}
+ */
+
+/**
+ * @inheritdoc
+ * @memberof FlattenedTreeDataProviderView
+ * @instance
+ * @method
+ * @name containsKeys
+ */
+
+/**
+ * @inheritdoc
+ * @memberof FlattenedTreeDataProviderView
+ * @instance
+ * @method
+ * @name createOptimizedKeySet
+ */
+
+/**
+ * @inheritdoc
+ * @memberof FlattenedTreeDataProviderView
+ * @instance
+ * @method
+ * @name createOptimizedKeyMap
+ */
+
+/**
+ * @inheritdoc
+ * @memberof FlattenedTreeDataProviderView
+ * @instance
+ * @method
+ * @name fetchFirst
+ */
+
+/**
+ * @inheritdoc
+ * @memberof FlattenedTreeDataProviderView
+ * @instance
+ * @method
+ * @name fetchByKeys
+ */
+
+/**
+ * @inheritdoc
+ * @memberof FlattenedTreeDataProviderView
+ * @instance
+ * @method
+ * @name fetchByOffset
+ */
+
+/**
+ * @inheritdoc
+ * @memberof FlattenedTreeDataProviderView
+ * @instance
+ * @method
+ * @name getCapability
+ */
+
+/**
+ * @inheritdoc
+ * @memberof FlattenedTreeDataProviderView
+ * @instance
+ * @method
+ * @name getTotalSize
+ */
+
+/**
+ * @inheritdoc
+ * @memberof FlattenedTreeDataProviderView
+ * @instance
+ * @method
+ * @name isEmpty
+ */
+
+/**
+ * @inheritdoc
+ * @memberof FlattenedTreeDataProviderView
+ * @instance
+ * @method
+ * @name addEventListener
+ */
+
+/**
+ * @inheritdoc
+ * @memberof FlattenedTreeDataProviderView
+ * @instance
+ * @method
+ * @name removeEventListener
+ */
+
+/**
+ * @inheritdoc
+ * @memberof FlattenedTreeDataProviderView
+ * @instance
+ * @method
+ * @name dispatchEvent
  */
 
 /**

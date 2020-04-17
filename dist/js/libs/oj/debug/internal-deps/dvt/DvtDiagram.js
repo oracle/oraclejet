@@ -5394,9 +5394,10 @@ DvtDiagramOverviewUtils.RemoveOverviewWindow = function(diagram, overview) {
  * @param {DvtDiagramOverview} overview the overview component
  */
 DvtDiagramOverviewUtils.UpdateOverviewWindow = function(diagram, overview) {
+  overview.ContentBounds = diagram.GetViewBounds();
   DvtDiagramOverviewUtils._positionOverviewWindow(diagram, overview);
   DvtDiagramOverviewUtils._updateOverviewNodes(diagram, overview);
-  
+
   if (overview.Nodes.size > 0)
     DvtDiagramOverviewUtils.ZoomToFitOverviewContent(diagram, overview, overview.Content, overview.Width, overview.Height);
   overview.UpdateViewport();
@@ -6177,6 +6178,7 @@ DvtDiagramOverview.prototype.SetAnimationParams = function(params) {
 DvtDiagramOverview.prototype.CreateAnimationClone = function() {
   var context = this.getCtx();
   var overviewClone = new dvt.Container(context, this.getId());
+  overviewClone.ContentBounds = this.Diagram.GetViewBounds();
   overviewClone.setMouseEnabled(false);
   var ovContentClone = new dvt.Container(context, 'ovContentClone');
   overviewClone.addChild(ovContentClone);
@@ -8000,6 +8002,8 @@ dvt.Diagram.prototype.HideLinkCreationFeedback = function() {
 dvt.Diagram.prototype.handleDataSourceChangeEvent = function(type, event) {
   var animationOnDataChange = DvtDiagramStyleUtils.getAnimationOnDataChange(this);
   if (animationOnDataChange !== 'none') {
+    // dispatch not ready event
+    this.dispatchEvent(dvt.EventFactory.newEvent('notready'));
     this._oldDataAnimState = new DvtDiagramDataAnimationState(this, type, event);
   }
 
@@ -10861,6 +10865,8 @@ DvtDiagramLink.prototype.getAnimationState = function() {
     'includedLinks' : includedLinks,
     'points' : this.getPoints(),
     'shape': shape,
+    'tx': this.getTranslateX(),
+    'ty': this.getTranslateY(),
     _labelObj: label
   };
   state.getId = function() {return state['id']};
@@ -10868,6 +10874,8 @@ DvtDiagramLink.prototype.getAnimationState = function() {
   state.getData = function() {return {'_links' : state['includedLinks']}};
   state.getPoints = function() {return state['points']};
   state.getShape = function() {return state['shape']};
+  state.getTranslateX = function() {return state['tx']};
+  state.getTranslateY = function() {return state['ty']};
   return state;
 };
 

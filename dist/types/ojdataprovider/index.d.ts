@@ -2,8 +2,8 @@
 export interface AttributeExprFilter<D> extends AttributeExprFilterDef<D>, BaseDataFilter<D> {
 }
 export interface AttributeExprFilterDef<D> {
-    attribute: string;
-    op: AttributeFilterOperator.AttributeOperator;
+    attribute: AttributeFilterDef.AttributeExpression | string;
+    op: AttributeFilterDef.AttributeOperator;
     value: any;
 }
 // tslint:disable-next-line no-unnecessary-class
@@ -15,8 +15,12 @@ export interface AttributeFilterCapability {
     ordering?: object;
 }
 export interface AttributeFilterDef<D> {
-    op: AttributeFilterOperator.AttributeOperator;
+    op: AttributeFilterDef.AttributeOperator;
     value: any;
+}
+export namespace AttributeFilterDef {
+    type AttributeExpression = "*";
+    type AttributeOperator = "$co" | "$eq" | "$ew" | "$pr" | "$gt" | "$ge" | "$lt" | "$le" | "$ne" | "$regex" | "$sw";
 }
 export interface AttributeFilterOperator<D> {
     attribute: string;
@@ -34,7 +38,10 @@ export interface CompoundFilter<D> extends CompoundFilterDef<D>, BaseDataFilter<
 }
 export interface CompoundFilterDef<D> {
     criteria: Array<AttributeFilterDef<D> | AttributeExprFilterDef<D> | CompoundFilterDef<D>>;
-    op: string;
+    op: CompoundFilterDef.CompoundOperator;
+}
+export namespace CompoundFilterDef {
+    type CompoundOperator = "$and" | "$or";
 }
 export interface CompoundFilterOperator<D> {
     criteria: Array<FilterOperator<D>>;
@@ -62,15 +69,18 @@ export interface DataMapping<K, D, Kin, Din> {
     unmapSortCriteria?: (sortCriteria: Array<SortCriterion<Din>>) => Array<SortCriterion<D>>;
 }
 export interface DataProvider<K, D> extends EventTarget {
+    addEventListener(eventType: string, listener: EventListener): void;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;
     createOptimizedKeySet?(initialSet?: Set<K>): Set<K>;
+    dispatchEvent(evt: Event): boolean;
     fetchByKeys(parameters: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>;
     fetchByOffset(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>;
     fetchFirst(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>;
     getCapability(capabilityName: string): any;
     getTotalSize(): Promise<number>;
     isEmpty(): 'yes' | 'no' | 'unknown';
+    removeEventListener(eventType: string, listener: EventListener): void;
 }
 export interface DataProviderAddOperationEventDetail<K, D> extends DataProviderOperationEventDetail<K, D> {
     addBeforeKeys?: K[];
@@ -102,7 +112,10 @@ export namespace FetchByKeysMixin {
 export interface FetchByKeysParameters<K> {
     attributes?: Array<string | FetchAttribute>;
     keys: Set<K>;
-    scope: 'local' | 'global';
+    scope?: FetchByKeysParameters.Scope;
+}
+export namespace FetchByKeysParameters {
+    type Scope = "local" | "global";
 }
 export interface FetchByKeysResults<K, D> {
     fetchParameters: FetchByKeysParameters<K>;
@@ -126,7 +139,7 @@ export interface FetchByOffsetResults<K, D> {
     results: Array<Item<K, D>>;
 }
 export interface FetchCapability {
-    attributeFilter: AttributeFilterCapability;
+    attributeFilter?: AttributeFilterCapability;
 }
 export interface FetchListParameters<D> {
     attributes?: Array<string | FetchAttribute>;
@@ -140,8 +153,9 @@ export interface FetchListResult<K, D> {
     metadata: Array<ItemMetadata<K>>;
 }
 export interface FilterCapability {
-    operators: string[];
-    textFilter: any;
+    attributeExpression?: AttributeFilterDef.AttributeExpression[];
+    operators?: Array<AttributeFilterDef.AttributeOperator | CompoundFilterDef.CompoundOperator>;
+    textFilter?: any;
 }
 export class FilterFactory<D> {
     getFilter(options: {

@@ -110,7 +110,7 @@ define(["../PersistenceStore", "./storageUtils", "./logger"],
         }
 
         return Promise.all(itemPromiseArray).then(function () {
-          var sorted = self._sort(unsorted, findExpression.sort);
+          var sorted = storageUtils.sortRows(unsorted, findExpression.sort);
           for (var index = 0; index < sorted.length; index++) {
             resultSet.push(self._constructReturnObject(findExpression.fields, sorted[index]));
           }
@@ -133,63 +133,6 @@ define(["../PersistenceStore", "./storageUtils", "./logger"],
         return self.removeByKey(currentKey);
       });
     };
-
-    KeyValuePersistenceStore.prototype._sort = function (unsorted, sortCriteria) {
-
-      if (!unsorted || !unsorted.length ||
-          !sortCriteria || !sortCriteria.length) {
-        return unsorted;
-      }
-
-      return unsorted.sort(this._sortFunction(sortCriteria, this));
-    };
-
-    /**
-     * Helper method that returns a function that can be used as callback
-     * to Array.sort.
-     * @method
-     * @name _sortFunction
-     * @memberof! KeyValuePersistenceStore
-     * @param {object} sortCriteria Rule that defines how sort should be
-     *                              performed.
-     * @param {object} thisArg The object that should be used as this.
-     * @returns {function} the function that is used as callback to
-     *                     Array.sort.
-     */
-    KeyValuePersistenceStore.prototype._sortFunction = function (sortCriteria, thisArg) {
-      return function (a, b) {
-        for (var index = 0; index < sortCriteria.length; index++) {
-          var sortC = sortCriteria[index];
-          var sortField;
-          var sortAsc = true;
-
-          if (typeof(sortC) === 'string') {
-            sortField = sortC;
-          } else if (typeof(sortC) === 'object'){
-            var keys = Object.keys(sortC);
-            if (!keys || keys.length !== 1) {
-              throw new Error('invalid sort criteria');
-            }
-            sortField = keys[0];
-            sortAsc = (sortC[sortField].toLowerCase() === 'asc');
-          } else {
-            throw new Error("invalid sort criteria.");
-          }
-
-          var valueA = storageUtils.getValue(sortField, a);
-          var valueB = storageUtils.getValue(sortField, b);
-          if (valueA == valueB) {
-            continue;
-          } else if (sortAsc) {
-            return (valueA < valueB ? -1 : 1);
-          } else {
-            return (valueA < valueB ? 1 : -1);
-          }
-        }
-        return 0;
-      };
-    };
-
 
     /**
      * Helper function used by {@link find} that constructs an object out from

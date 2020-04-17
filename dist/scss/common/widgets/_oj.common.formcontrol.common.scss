@@ -92,6 +92,12 @@
       // The border is on an ancestor element, so this needs to be 100% height
       height: 100%;
     }
+    // We need to override the width for .oj-form-control-inherit on the
+    // .oj-text-field-middle wrapper div so that it will not become too narrow
+    // when it is in a shrink-to-fit container like a table <td> element.
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field-middle {
+      width: 100%;
+    }
 
     /* when the label is inside or above, we must set the max-width of the component to
        100%. Otherwise some components like input text, whose max-width is decided by 
@@ -130,7 +136,7 @@
     // Bug 30595890 - regrn: select one width 7.2 > 8.0 
     // similar styles are defined on inner div for oj-select and oj-combobox,
     // so don't set the oj-text-field style on component root for oj-select and oj-combobox.
-    .oj-text-field:not(oj-select-one):not(oj-select-many):not(oj-combobox-one):not(oj-combobox-many) {
+    .oj-inputtext, .oj-inputpassword, .oj-textarea, .oj-inputnumber, .oj-inputdatetime, .oj-searchselect {
       display: inline-block;
       // because max/min width is in em the font size needs to be on this element 
       // and not on the selector that goes on the input.

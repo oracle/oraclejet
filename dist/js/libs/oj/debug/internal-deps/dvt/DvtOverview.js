@@ -1936,7 +1936,6 @@ DvtOverviewDefaults.VERSION_1 = {
     'windowBorderTopStyle': 'solid'
   }
 };
-
 /**
  * @license
  * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.

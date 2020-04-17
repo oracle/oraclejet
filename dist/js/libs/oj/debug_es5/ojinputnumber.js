@@ -3256,7 +3256,7 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
         if (value === null) {
           this.element[0].removeAttribute(attrName);
         } else {
-          this.element[0].setAttribute(attrName, value);
+          this.element[0].setAttribute(attrName, value); // @HTMLUpdateOK
         }
       }
     },

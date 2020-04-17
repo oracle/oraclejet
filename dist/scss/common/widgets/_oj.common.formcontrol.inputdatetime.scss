@@ -60,7 +60,8 @@
 
     //we still need these styles on inline components as they are not text fiedls
     .oj-inputdatetime-inline {
-        display: inline-block;   
+        display: inline-block;
+        max-width: 277px;   
     }
     
     // .oj-form-control-full-width is an override to set max-width to 100% if on the

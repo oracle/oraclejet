@@ -82,9 +82,8 @@ define(['./persistenceManager', './persistenceUtils', './impl/defaultCacheHandle
               } else {
                 return responseClone;
               }
-            }).then(function (response) {
+            }).finally(function() {
               cacheHandler.unregisterEndpointOptions(endpointKey);
-              return Promise.resolve(response);
             });
           }
         }

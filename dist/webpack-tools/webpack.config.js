@@ -1,6 +1,12 @@
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+/**
+ * @license
+ * Copyright (c) %FIRST_YEAR% 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -27,14 +33,14 @@ module.exports = {
   resolve: {
     alias: {
       // path mappings go here
-      'knockout': path.resolve(__dirname, './web/js/libs/knockout/knockout-3.4.2.debug'),
-      'jquery': path.resolve(__dirname, './web/js/libs/jquery/jquery-3.3.1'),
+      'knockout': path.resolve(__dirname, './web/js/libs/knockout/knockout-3.5.0.debug'),
+      'jquery': path.resolve(__dirname, './web/js/libs/jquery/jquery-3.4.1'),
       'jqueryui-amd': path.resolve(__dirname, './web/js/libs/jquery/jqueryui-amd-1.12.1'),
       'promise': path.resolve(__dirname, './web/js/libs/es6-promise/es6-promise'),
       'hammerjs': path.resolve(__dirname, './web/js/libs/hammer/hammer-2.0.8'),
-      'ojdnd': path.resolve(__dirname, './web/js/libs/dnd-polyfill/dnd-polyfill-1.0.0'),
-      'ojs': path.resolve(__dirname, './web/js/libs/oj/v6.0.0/debug'),
-      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/v6.0.0/resources'),
+      'ojdnd': path.resolve(__dirname, './web/js/libs/dnd-polyfill/dnd-polyfill-1.0.1'),
+      'ojs': path.resolve(__dirname, './web/js/libs/oj/v8.2.0/debug'),
+      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/v8.2.0/resources'),
       'signals': path.resolve(__dirname, './web/js/libs/js-signals/signals'),
       'touchr': path.resolve(__dirname, './web/js/libs/touchr/touchr'),
       'customElements': path.resolve(__dirname, './web/js/libs/webcomponents/custom-elements.min'),
@@ -74,7 +80,7 @@ module.exports = {
           }
         },
         // Point this setting to the root folder for the associated JET distribution (could be a CDN). Used by the oj.Config.getResourceUri() call
-        baseResourceUrl: "./web/js/libs/oj/v6.0.0"
+        baseResourceUrl: "./web/js/libs/oj/v8.2.0"
       }
     )
 

@@ -1089,7 +1089,7 @@ MessageViewModel.prototype._unregisterSwipeHandler = function () {
 MessageViewModel.prototype._scheduleAutoClose = function () {
   // Schedule auto-close if applicable
   if (this._computeAutoTimeout() > -1) {
-    this._autoCloseTimer = window.setTimeout(this._closeMessage.bind(this),
+    this._autoCloseTimer = window.setTimeout(this._closeMessage.bind(this), // @HTMLUpdateOK
                                              this._computeAutoTimeout());
   }
 };

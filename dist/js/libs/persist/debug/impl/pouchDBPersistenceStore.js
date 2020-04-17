@@ -30,6 +30,7 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
         }
         dbOptions = dbOptions ? dbOptions : {};
         dbOptions['adapter'] = adapter.name;
+        this._dbOptions = dbOptions;
         this._db = new PouchDB(dbname, dbOptions);
       } catch (exp) {
         logger.log("Error creating PouchDB instance with adapter " + adapter + ": ", exp.message);
@@ -37,11 +38,26 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
         return Promise.reject(exp);
       }
     } else if (dbOptions) {
+      this._dbOptions = dbOptions;
       this._db = new PouchDB(dbname, dbOptions);
     } else {
+      this._dbOptions = null;
       this._db = new PouchDB(dbname);
     }
-    this._index = (options && options.index) ? options.index : null;
+    if (options && options.index) {
+      // pouch db automatically create index on key, no need to specifically 
+      // create it.
+      if (!Array.isArray(options.index)) {
+        logger.log("index must be an array");
+      } else {
+        this._index = options.index.filter(function(indexKey) {
+          return indexKey !== 'key';
+        });
+        if (this._index.length === 0) {
+          this._index = null;
+        }
+      }
+    }
     return this._createIndex();
   };
 
@@ -64,7 +80,8 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
   };
 
   PouchDBPersistenceStore.prototype._isPersistenceStoreKey = function(keyName) {
-    return keyName === 'version' || keyName === 'adapter' || keyName === 'index';
+    return keyName === 'version' || keyName === 'adapter' || 
+           keyName === 'index' || keyName === 'skipMetadata';
   };
 
   PouchDBPersistenceStore.prototype._createIndex = function () {
@@ -80,7 +97,9 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
         }
       };
       // createIndex if using the find plugin
-      return self._db.createIndex(indexSyntax);
+      return self._db.createIndex(indexSyntax).catch(function(error) {
+        logger.error("creating index on " + self._index.toString() + " failed with error " + error);
+      });
     }
   };
 
@@ -88,9 +107,6 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
     logger.log("Offline Persistence Toolkit pouchDBPersistenceStore: upsert() for key: " + key);
     var self = this;
     var docId = key.toString();
-
-    var attachmentParts = [];
-    this._prepareUpsert(value, attachmentParts);
 
     return self._db.get(docId).then(function (doc) {
       // document exists already, update it if its versionIdentifier value
@@ -102,57 +118,43 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
       }
     }).catch(function (geterr) {
       if (geterr.status === 404 && geterr.message === 'missing') {
-        return Promise.resolve();
+        return;
       } else {
         return Promise.reject(geterr);
       }
     }).then(function (existingDoc) {
-      return self._put(docId, metadata, value, expectedVersionIdentifier, attachmentParts, existingDoc);
-    }).then(function () {
-      return Promise.resolve();
+      return self._put(docId, metadata, value, expectedVersionIdentifier, existingDoc);
     });
-  };
+  }
 
   PouchDBPersistenceStore.prototype._put = function (docId, metadata, value,
                                                      expectedVersionIdentifier,
-                                                     attachmentParts, existingDoc) {
+                                                     existingDoc) {
+
+    var attachmentParts = [];
+    var fullbinaryData = this._prepareUpsert(value, attachmentParts);
+
     var dbdoc = {
       _id: docId,
+      key: docId,
       metadata: metadata,
-      value: value
+      value: fullbinaryData ? null : value
     };
 
     if (existingDoc) {
       dbdoc._rev = existingDoc._rev;
     }
-
     var self = this;
-    return self._db.put(dbdoc).then(function (addeddoc) {
-      return Promise.resolve(addeddoc);
-    }).catch(function (puterr) {
+    return self._db.put(dbdoc).then(function(addeddoc) {
+      return self._addAttachments(docId, addeddoc.rev, attachmentParts);
+    }).catch(function(puterr) {
       if (puterr.status === 409) {
         // because of the asynchroness nature, and the same resource
         // could be asked to add to the store in multiple paths, it's
-        // valid to have conflict error from pouchDB, we'll verify if
-        // this is a valid conflict or not.
-        return self._db.get(docId).then(function (conflictDoc) {
-          if (expectedVersionIdentifier) {
-            if (!_verifyVersionIdentifier(expectedVersionIdentifier, conflictDoc)) {
-              return Promise.reject({status: 409});
-            } else {
-              return Promise.resolve(conflictDoc);
-            }
-          } else {
-            return Promise.resolve(conflictDoc);
-          }
-        });
+        // valid to have conflict error from pouchDB.
       } else {
-        return Promise.reject(puterr);
+        throw puterr;
       }
-    }).then(function(finalDoc){
-      return self._addAttachments(finalDoc, attachmentParts);
-    }).then(function () {
-      return Promise.resolve();
     });
   };
 
@@ -169,10 +171,11 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
   };
 
   // add the binary part of the value as attachment to the main document.
-  PouchDBPersistenceStore.prototype._addAttachments = function (doc, attachmentParts) {
+  PouchDBPersistenceStore.prototype._addAttachments = function (docId, docRev, attachmentParts) {
     if (!attachmentParts || !attachmentParts.length) {
       return Promise.resolve();
     } else {
+      var self = this;
       var promises = attachmentParts.map(function (attachment) {
         var blob;
         if (attachment.value instanceof Blob) {
@@ -180,9 +183,11 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
         } else {
           blob = new Blob([attachment.value]);
         }
-        return this._db.putAttachment(doc.id, attachment.path, doc.rev, blob, 'binary')
+        return self._db.putAttachment(docId, attachment.path, docRev, blob, 'binary')
       }, this);
-      return Promise.all(promises);
+      return Promise.all(promises).catch(function(error) {
+        logger.error("store: " + self._name + " failed add attachment for doc " + docId);
+      });
     }
   };
 
@@ -191,10 +196,55 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
     if (!values || !values.length) {
       return Promise.resolve();
     } else {
-      var promises = values.map(function (element) {
-        return this.upsert(element.key, element.metadata, element.value, element.expectedVersionIdentifier);
-      }, this);
-      return Promise.all(promises);
+      var self = this;
+      var docIdToAttachmentParts = {};
+      var dbpromises = values.map(function(element) {
+        var docId = element.key.toString();
+        var value = element.value;
+        var attachmentParts = [];
+        var fullbinaryData = self._prepareUpsert(value, attachmentParts);
+        if (attachmentParts.length > 0) {
+          docIdToAttachmentParts[docId] = attachmentParts;
+        }
+        var doc = {
+          _id: docId,
+          key: element.key,
+          metadata: element.metadata,
+          value: fullbinaryData ? null : value
+        };
+        return self._db.get(docId).then(function(existdoc) {
+          doc["_rev"] = existdoc["_rev"];
+          return doc;
+        }).catch(function(error) {
+          if (error.status === 404 && error.message === 'missing') {
+            // this doc does not exist yet, no need to provide revision value
+            return doc;
+          } else {
+            throw error;
+          }
+        });
+      });
+
+      return Promise.all(dbpromises).then(function(dbdocs) {
+        return self._db.bulkDocs(dbdocs);
+      }).then(function(results) {
+        var promises = [];
+        results.forEach(function(result, index) {
+          if (result["ok"]) {
+            var attachmentParts = docIdToAttachmentParts[result.id];
+            if (attachmentParts) {
+              promises.push(self._addAttachments(result.id, result.rev, attachmentParts));
+            }
+          } else if (result['status'] === 409) {
+            logger.log("conflict error");
+          }
+        });
+        if (promises.length > 0) {
+          return Promise.all(promises);
+        }
+      }).catch(function(error) {
+        logger.log("error in upsertAll");
+      });
     }
   };
 
@@ -230,16 +280,19 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
           // not have any operator against the binary data. 
           var satisfiedRows = result.rows.filter(function(row) {
             var doc = row.doc;
-            self._fixKey(doc);
-            if (storageUtils.satisfy(findExpression.selector, doc)) {
+            if (!_isInternalDoc(row) && storageUtils.satisfy(findExpression.selector, doc)) {
               return true;
             }
             return false;
            });
 
           if (satisfiedRows.length) {
-            var fixDocPromises = satisfiedRows.map(function(row) {
-              return self._fixBinaryValue(row.doc).then(function(fixedDoc){
+            var unsortedDocs = satisfiedRows.map(function(row) {
+              return row.doc;
+            });
+            var sortedDocs = storageUtils.sortRows(unsortedDocs, findExpression.sort);
+            var fixDocPromises = sortedDocs.map(function(doc) {
+              return self._fixBinaryValue(doc).then(function(fixedDoc){
                 if (findExpression.fields) {
                   return storageUtils.assembleObject(fixedDoc, findExpression.fields);
                 } else {
@@ -277,7 +330,6 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
   // invoked after document is retrieved. Fix the key and binary
   // part of the value.
   PouchDBPersistenceStore.prototype._fixValue = function (doc) {
-    this._fixKey(doc);
     return this._fixBinaryValue(doc);
   };
 
@@ -293,22 +345,20 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
       var self = this;
       var filename = Object.keys(attachments)[0];
       return self._db.getAttachment(docId, filename).then(function (blob) {
-        var paths = filename.split('.');
-        var targetValue = doc.value;
-        for (var pathIndex = 0; pathIndex < paths.length - 1; pathIndex++) {
-          targetValue = targetValue[paths[pathIndex]];
+        if (filename === 'rootpath') {
+          doc.value = blob;
+        } else {
+          var paths = filename.split('.');
+          var targetValue = doc.value;
+          for (var pathIndex = 0; pathIndex < paths.length - 1; pathIndex++) {
+            targetValue = targetValue[paths[pathIndex]];
+          }
+          targetValue[paths[paths.length - 1]] = blob;
         }
-        targetValue[paths[paths.length - 1]] = blob;
         return doc;
+      }).catch(function(error) {
+        logger.error("store: " + self._name + " error getting attachment. ");
       });
-    }
-  };
-
-  PouchDBPersistenceStore.prototype._fixKey = function (doc) {
-    var docId = doc._id || doc.id || doc.key;
-
-    if (docId) {
-      doc.key = docId;
     }
   };
 
@@ -317,11 +367,13 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
     var self = this;
     var docId = key.toString();
 
-    return self._db.get(docId).then(function (doc) {
-      return doc.value;
+    return self._db.get(docId, {attachments: true}).then(function (doc) {
+      return self._fixBinaryValue(doc);
+    }).then(function(fixedDoc) {
+      return fixedDoc.value;
     }).catch(function (err) {
       if (err.status === 404 && err.message === 'missing') {
-        return Promise.resolve();
+        return;
       } else {
         return Promise.reject(err);
       }
@@ -331,6 +383,9 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
   PouchDBPersistenceStore.prototype.removeByKey = function (key) {
     logger.log("Offline Persistence Toolkit pouchDBPersistenceStore: removeByKey() for key: " + key);
     var self = this;
+    if (!key) {
+      return Promise.resolve(false);
+    }
     var docId = key.toString();
     return self._db.get(docId).then(function (doc) {
       return self._db.remove(doc);
@@ -338,7 +393,7 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
       return true;
     }).catch(function (err) {
       if (err.status === 404 && err.message === 'missing') {
-        return Promise.resolve(false);
+        return false;
       } else {
         return Promise.reject(err);
       }
@@ -354,21 +409,27 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
       modifiedExpression.fields = ['_id', '_rev'];
       return self.find(modifiedExpression).then(function (entries) {
         if (entries && entries.length) {
-           var promisesArray = entries.map(function (element) {
-             return this._db.remove(element._id, element._rev);
-           }, self);
-           return Promise.all(promisesArray);
-         } else {
-           return Promise.resolve();
-         }
-      }).then(function () {
-        return Promise.resolve();
+          var docsToDelete = entries.map(function(doc) {
+            return {'_id': doc['_id'], '_rev': doc['_rev'], '_deleted': true};
+          });
+          return self._db.bulkDocs(docsToDelete);
+        } else {
+          return;
+        }
+      }).catch(function(error) {
+        logger.error("store: " + self._name + " error deleting....");
       });
     } else {
       return self._db.destroy().then(function () {
         var dbname = self._name + self._version;
-        self._db = new PouchDB(dbname);
+        if (self._dbOptions) {
+          self._db = new PouchDB(dbname, self._dbOptions);
+        } else {
+          self._db = new PouchDB(dbname);
+        }
         return self._createIndex();
+      }).catch(function(error) {
+        logger.error("store: " + self._name + " error deleting....");
       });
     }
   };
@@ -381,11 +442,15 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
       var rows = result.rows;
       var keysArray = [];
       if (rows && rows.length) {
-        keysArray = rows.map(function (element) {
-          return element.id;
-        });
+        for (var index = 0; index < rows.length; index++) {
+          if (!_isInternalDoc(rows[index])) {
+            keysArray.push(rows[index].id);
+          }
+        }
       }
       return keysArray;
+    }).catch(function(error) {
+      logger.error("store: " + self._name + " error getting all the docs for keys ");
     });
   };
 
@@ -407,21 +472,14 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
       modifiedExpression.selector = {
         '_id': {'$gt': null}
       };
-    } else {
+    } else if (selector) {
       modifiedExpression.selector = selector;
     }
 
     // our key attribute maps to pouchdb documents' _id field.
     var fields = findExpression.fields;
     if (fields && fields.length) {
-      var modifiedFields = fields.map(function (x) {
-        if (x === 'key') {
-          return '_id';
-        } else {
-          return x;
-        }
-      });
-      modifiedExpression.fields = modifiedFields;
+      modifiedExpression.fields = fields;
     }
 
     return modifiedExpression;
@@ -430,8 +488,19 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
   // prepare the value for upsert. pouchDB requires that binary part of the value
   // be added as attachment instead of as part of the value.
   PouchDBPersistenceStore.prototype._prepareUpsert = function (value, attachmentParts) {
+    if (!value) {
+      return false;
+    }
+    if ((value instanceof Blob) || (value instanceof ArrayBuffer)) {
+      attachmentParts.push({
+        path: "rootpath",
+        value: value
+      });
+      return true;
+    }
     var path = '';
     this._inspectValue(path, value, attachmentParts);
+    return false;
   };
 
   // scan the value to see if there's any binary data in it, if so, extract it out.
@@ -476,7 +545,20 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
       }
     }).then(function() {
       return self.removeByKey(currentKey);
+    }).catch(function() {
+      logger.error("store: " + self._name + " error updating key");
     });
+  };
+
+  // when find plugin is not present, we query out all documents and run the 
+  // find ourselve. allDocs returns some internal document that pouchDB created
+  // we should ignore. For example, when the store has index configured, 
+  // pouchDB will create a document with id starting with '_design'. There is 
+  // no option provided from allDocs() call that we can use to ask pouchDB to 
+  // not return internal documents.
+  var _isInternalDoc = function(dbRow) {
+    var id = dbRow.id;
+    return id.startsWith('_design/');
   };
 
   return PouchDBPersistenceStore;

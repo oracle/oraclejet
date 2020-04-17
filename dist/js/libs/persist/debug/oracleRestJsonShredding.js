@@ -125,7 +125,7 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
         'keys': unmappedData.keys,
         'data': unmappedData.data,
         'resourceType' : data[0].resourceType
-      }], response);
+      }]);
       return persistenceUtils.setResponsePayload(response, payload).then(function (response) {
         response.headers.set('x-oracle-jscpt-cache-expiration-date', '');
         return response;
@@ -133,7 +133,7 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
     };
   }
 
-  function _buildPayload (value, response) {
+  function _buildPayload (value) {
     var payload;
     var data = value[0].data;
     if (data && data.length === 1 && value[0].resourceType === 'single') {

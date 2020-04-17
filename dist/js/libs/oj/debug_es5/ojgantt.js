@@ -1406,7 +1406,6 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
     /**
      * An object with the following properties, used to define the minor time axis. This is required for the Gantt to render properly.
      * @expose
-     * @ojrequired
      * @name minorAxis
      * @ojshortdesc Specifies the minor time axis. This is required for the Gantt to render properly.
      * @memberof oj.ojGantt
@@ -3948,7 +3947,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
 /**
  * @typedef {Object} oj.ojGantt.Dependency
  * @ojimportmembers oj.ojGanttDependencyProperties
- * @property {any} id The identifier for the dependency line. This must be unique across all dependency lines in Gantt. The id should be set by the application if the <a href="#dependencyData">dependency-data</a> oj.DataProvider is not being used. The row key will be used as id in the oj.DataProvider case.
+ * @property {any} id The identifier for the dependency line. This must be unique across all dependency lines in Gantt. The id should be set by the application if the <a href="#dependencyData">dependency-data</a> DataProvider is not being used. The row key will be used as id in the  case.
  * @ojsignature [{target: "Type", value: "K1", for: "id"},
  *               {target: "Type", value: "K2", for: "predecessorTaskId"},
  *               {target: "Type", value: "K2", for: "successorTaskId"},
@@ -3975,7 +3974,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
 /**
  * @typedef {Object} oj.ojGantt.RowTask
  * @ojimportmembers oj.ojGanttTaskProperties
- * @property {any} id The identifier for the task. This must be unique across all tasks in the Gantt, and is required in order for the Gantt to properly render. The id should be set by the application if the <a href="#taskData">task-data</a> oj.DataProvider is not being used. The row key will be used as id in the oj.DataProvider case.
+ * @property {any} id The identifier for the task. This must be unique across all tasks in the Gantt, and is required in order for the Gantt to properly render. The id should be set by the application if the <a href="#taskData">task-data</a> DataProvider is not being used. The row key will be used as id in the  case.
  * @ojsignature [{target: "Type", value: "K2", for: "id"},
  *               {target: "Type", value: "<K2>", for: "genericTypeParameters"}]
  */
@@ -3992,7 +3991,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
  * @property {Element} parentElement The tooltip element. This can be used to change the tooltip border or background color.
  * @property {Object} data The data object of the hovered task.
  * @property {Object} rowData The data for the row the hovered task belongs to.
- * @property {Object|null} itemData The data provider row data object for the hovered task. This will only be set if an oj.DataProvider for <a href="#taskData">task-data</a> is being used.
+ * @property {Object|null} itemData The data provider row data object for the hovered task. This will only be set if an DataProvider for <a href="#taskData">task-data</a> is being used.
  * @property {Element} componentElement The gantt element.
  * @property {string} color The color of the hovered task.
  * @ojsignature [{target: "Type", value: "oj.ojGantt.RowTask<K2>", for: "data", jsdocOverride:true},
@@ -4005,7 +4004,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
  * @typedef {Object} oj.ojGantt.RowAxisLabelRendererContext
  * @property {Element} parentElement A parent group element that takes a custom SVG fragment as the row label content. Modifications of the parentElement are not supported.
  * @property {Object} rowData The data for the row.
- * @property {Array.<Object>|null} itemData An array of the data provider row data objects associated with the tasks belonging to the gantt row. This will only be set if an oj.DataProvider for <a href="#taskData">task-data</a> is being used.
+ * @property {Array.<Object>|null} itemData An array of the data provider row data objects associated with the tasks belonging to the gantt row. This will only be set if an DataProvider for <a href="#taskData">task-data</a> is being used.
  * @property {Element} componentElement The gantt element.
  * @property {number} maxWidth The maximum available width in px, as constrained by the row-axis.width and row-axis.max-width values. If row-axis.width is 'max-content' and row-axis.max-width is 'none', then this is -1, and the component will automatically allocate enough width space to accommodate the content.
  * @property {number} maxHeight The maximum available height in px.

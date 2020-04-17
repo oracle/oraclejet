@@ -1898,7 +1898,8 @@ var __oj_popup_metadata =
             description: ["ojPopup identified by '", this.element.attr('id'), "' is pending implicit closure."].join('')
           };
           var resolver = busyContext.addBusyState(bsOptions);
-          var delayTimer = window.setTimeout(this._resolveBusyStateAndCloseImplicitly.bind(this, resolver), 0);
+          var delayTimer = window.setTimeout(this._resolveBusyStateAndCloseImplicitly // @HTMLUpdateOK
+          .bind(this, resolver), 0);
           this._closeDelayTimer = this._resolveBusyStateAndCancelDelayedClosure.bind(this, delayTimer, resolver);
         }
       }

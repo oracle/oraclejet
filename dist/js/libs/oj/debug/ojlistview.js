@@ -3178,15 +3178,17 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
           var noDataContentRoot = document.createElement('div');
           noDataContentRoot.id = this._createSubId('empty');
           noDataContentRoot.className = 'oj-listview-no-data-container';
+
+          var root = this.GetRootElement();
+          root.append(noDataContentRoot); // @HTMLUpdateOK
+
           var self = this;
           this.signalTaskStart('run no data template');
           Config.__getTemplateEngine().then(function (engine) {
-            var root = self.GetRootElement();
             var nodes = engine.execute(root, slot[0], {}, null);
             nodes.forEach(function (node) {
               noDataContentRoot.appendChild(node);
             });
-            root.append(noDataContentRoot);
             self.m_noDataContent = noDataContentRoot;
             self.m_engine = engine;
             self.signalTaskEnd();

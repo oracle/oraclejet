@@ -4,12 +4,12 @@ import { DataProvider, SortCriterion, FetchByKeysParameters, ContainsKeysResults
 declare class PagingDataProviderView<K, D> implements DataProvider<K, D>, PagingModel {
     constructor(dataProvider: DataProvider<K, D>);
     addEventListener(eventType: string, listener: EventListener): void;
-    containsKeys(params: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
+    containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     dispatchEvent(evt: Event): boolean;
-    fetchByKeys(params: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>;
-    fetchByOffset(params: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>;
-    fetchFirst(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>;
-    getCapability(capabilityName?: string): any;
+    fetchByKeys(parameters: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>;
+    fetchByOffset(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>;
+    fetchFirst(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>;
+    getCapability(capabilityName: string): any;
     getEndItemIndex(): number;
     getGlobalIndex(value: number): number;
     getPage(): number;

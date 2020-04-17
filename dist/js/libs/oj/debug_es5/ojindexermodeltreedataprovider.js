@@ -20,9 +20,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var IndexerModelTreeDataProvider =
-/*#__PURE__*/
-function () {
+var IndexerModelTreeDataProvider = /*#__PURE__*/function () {
   function IndexerModelTreeDataProvider(data, options) {
     _classCallCheck(this, IndexerModelTreeDataProvider);
 
@@ -264,7 +262,7 @@ oj['IndexerModelTreeDataProvider'] = IndexerModelTreeDataProvider;
  * @classdesc TreeDataProvider and IndexerModel implementation that represents hierachical data available from an array of JSON objects.  This DataProvider can be used by [Indexer]{@link oj.ojIndexer} and
  *            its associated [ListView]{@link oj.ojListView}.<br><br>
  *            See the <a href="../jetCookbook.html?component=indexer&demo=characterIndexer">Indexer - Basic</a> demo for an example.<br><br>
- *            Refer to {@link oj.TreeDataProvider} for other data providers that represent hierarachical data.
+ *            Refer to {@link TreeDataProvider} for other data providers that represent hierarachical data.
  * @param {Array.<any>} data an array of data used for Indexer and ListView
  * @param {Object=} options the options set on this IndexerModelTreeProvider
  * @param {(string|Array.<string>)=} options.keyAttributes the field of the data that uniquely identifies the data.  Can be a string denoting a single key attribute or an array of strings for multiple key attributes.
@@ -275,8 +273,8 @@ oj['IndexerModelTreeDataProvider'] = IndexerModelTreeDataProvider;
  * @param {string=} options.groupingAttribute the attribute of the data where grouping is based on, mandatory if no groupingStrategy is specified.
  * @param {function(Object)=} options.groupingStrategy a callback function that takes a data and returns the section that the data belongs to.  If no groupingStrategy is specified,
  *                   then the default grouping strategy based on the first letter of the data is used.
- * @param {oj.SortComparators=} options.sortComparators a comparator function that is used to sort data within a section.
- * @param {Array.<oj.SortCriterion>=} options.implicitSort array of oj.SortCriterion used to specify sort information when the data loaded into the DataProvider is already sorted.
+ * @param {SortComparators=} options.sortComparators a comparator function that is used to sort data within a section.
+ * @param {Array.<SortCriterion>=} options.implicitSort array of SortCriterion used to specify sort information when the data loaded into the DataProvider is already sorted.
  * @ojsignature [{target: "Type",
  *               value: "class IndexerModelTreeDataProvider<K, D> implements IndexerModel, TreeDataProvider<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]},
@@ -298,7 +296,7 @@ oj['IndexerModelTreeDataProvider'] = IndexerModelTreeDataProvider;
  * @since 7.0
  * @export
  * @implements oj.IndexerModel
- * @implements oj.TreeDataProvider
+ * @implements TreeDataProvider
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["FetchByKeysParameters", "SortCriterion", "ContainsKeysResults", "FetchByKeysResults",
  * "FetchByOffsetParameters", "FetchByOffsetResults", "FetchListParameters", "FetchListResult"]}
  * @ojtsimport {module: "ojtreedataprovider", type: "AMD", importName: "TreeDataProvider"}
@@ -350,225 +348,92 @@ oj['IndexerModelTreeDataProvider'] = IndexerModelTreeDataProvider;
  *               value: "(section: oj.IndexerModel.Section): Promise<oj.IndexerModel.Section>"}
  */
 
-/** **************** TreeDataProvider *******************/
-
 /**
- * Get the data provider for the children of the row identified by parentKey.
- * @param {any} parentKey key of the row to get child data provider for.
- * @return {oj.TreeDataProvider | null} A TreeDataProvider if the row can (but doesn't have to) have children; or null if the row cannot have children.
- *   Use the <code class="prettyprint">isEmpty</code> method on the returned TreeDataProvider to determine if it currently has children.
- * @export
- * @expose
+ * @inheritdoc
  * @memberof IndexerModelTreeDataProvider
  * @instance
  * @method
  * @name getChildDataProvider
- * @ojsignature {target: "Type",
- *               value: "(parentKey: any): TreeDataProvider<K, D>"}
  */
 
 /**
- * Determines whether this DataProvider supports a certain feature.
- * @param {string} capabilityName capability name. Supported capability names are:
- *                  "fetchByKeys", "fetchByOffset", "sort", and "filter".
- * @return {Object} capability information or null if unsupported
- * <ul>
- *   <li>If capabilityName is "fetchByKeys", returns a {@link oj.FetchByKeysCapability} object.</li>
- *   <li>If capabilityName is "fetchByOffset", returns a {@link oj.FetchByOffsetCapability} object.</li>
- *   <li>If capabilityName is "sort", returns a {@link oj.SortCapability} object.</li>
- *   <li>If capabilityName is "filter", returns a {@link oj.FilterCapability} object.</li>
- * </ul>
- * @export
- * @expose
- * @memberof IndexerModelTreeDataProvider
- * @instance
- * @method
- * @name getCapability
- * @ojsignature {target: "Type",
- *               value: "(capabilityName: string): any"}
- * @example <caption>Check what kind of fetchByKeys is supported.</caption>
- * var capabilityInfo = dataprovider.getCapability('fetchByKeys');
- * if (capabilityInfo.implementation == 'iteration') {
- *   // the DataProvider supports iteration for fetchByKeys
- *   ...
- */
-
-/**
- * Return the total number of rows in this IndexerModelTreeDataProvider.
- * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
- * @export
- * @expose
- * @memberof IndexerModelTreeDataProvider
- * @instance
- * @method
- * @name getTotalSize
- * @example <caption>Get the total rows</caption>
- * dataprovider.getTotalSize().then(function(value) {
- *   if (value == -1) {
- *     // we don't know the total row count
- *   } else {
- *     // the total count
- *     console.log(value);
- * });
- */
-
-/**
- * Check if there are sections containing the specified keys
- * @param {oj.FetchByKeysParameters} parameters contains by key parameters
- * @return {Promise.<oj.ContainsKeysResults>} Returns Promise which resolves to {@link oj.ContainsKeysResults}.
- * @export
- * @expose
+ * @inheritdoc
  * @memberof IndexerModelTreeDataProvider
  * @instance
  * @method
  * @name containsKeys
- * @ojsignature {target: "Type",
- *               value: "(parameters : FetchByKeysParameters<K>) : Promise<ContainsKeysResults<K>>"}
- * @example <caption>Check if keys 1001 and 556 are contained</caption>
- * var containsKeys = [1001, 556];
- * dataprovider.containsKeys({keys: containsKeys}).then(function(value) {
- *   var results = value['results'];
- *   if (results.has(1001)) {
- *     console.log('Has key 1001');
- *   } else if (results.has(556){
- *     console.log('Has key 556');
- *   }
- * });
  */
 
 /**
- * Fetch data by specifying a set of keys.
- * @param {oj.FetchByKeysParameters} parameters fetch by key parameters
- * @return {Promise.<oj.FetchByKeysResults>} Returns Promise which resolves to {@link oj.FetchByKeysResults}.
- * @export
- * @expose
- * @memberof IndexerModelTreeDataProvider
- * @instance
- * @method
- * @name fetchByKeys
- * @ojsignature {target: "Type",
- *               value: "(parameters : FetchByKeysParameters<K>) : Promise<FetchByKeysResults<K, D>>"}
- * @example <caption>Fetch for keys 1001 and 556</caption>
- * var fetchKeys = [1001, 556];
- * dataprovider.fetchByKeys({keys: fetchKeys}).then(function(value) {
- *   // get the data for key 1001
- *   console.log(value.results.get(1001).data);
- * });
- */
-
-/**
- * Fetch data by specifying the index to start the fetch and the number of rows to fetch.
- * @param {oj.FetchByOffsetParameters} parameters fetch by offset parameters
- * @return {Promise.<oj.FetchByOffsetResults>} Returns Promise which resolves to {@link oj.FetchByOffsetResults}.
- * @export
- * @expose
- * @memberof IndexerModelTreeDataProvider
- * @instance
- * @method
- * @name fetchByOffset
- * @ojsignature {target: "Type",
- *               value: "(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
- * @example <caption>Fetch by offset 5 rows starting at index 2</caption>
- * dataprovider.fetchByOffset({size: 5, offset: 2}).then(function(value) {
- *   var results = result['results'];
- *   var data = results.map(function(value) {
- *     return value['data'];
- *   });
- *   var keys = results.map(function(value) {
- *     return value['metadata']['key'];
- *   });
- * });
- */
-
-/**
- * Get an asyncIterator which can be used to fetch a block of data.
- * @param {oj.FetchListParameters=} params fetch parameters
- * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
- * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
- * @export
- * @expose
+ * @inheritdoc
  * @memberof IndexerModelTreeDataProvider
  * @instance
  * @method
  * @name fetchFirst
- * @ojsignature {target: "Type",
- *               value: "(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
- * @example <caption>Get an asyncIterator and then fetch first block of data by executing next() on the iterator. Subsequent blocks can be fetched by executing next() again.</caption>
- * var asyncIterator = dataprovider.fetchFirst(options)[Symbol.asyncIterator]();
- * asyncIterator.next().then(function(result) {
- *   var value = result.value;
- *   var data = value.data;
- *   var keys = value.metadata.map(function(val) {
- *     return val.key;
- * });
  */
 
 /**
- * Returns a string that indicates if this data provider is empty.  Valid values are:
- * <ul>
- * <li>"yes": this data provider is empty.</li>
- * <li>"no": this data provider is not empty.</li>
- * <li>"unknown": it is not known if this data provider is empty until a fetch is made.</li>
- * </ul>
- * @return {"yes" | "no" | "unknown"} string that indicates if this data provider is empty
- * @export
- * @expose
+ * @inheritdoc
+ * @memberof IndexerModelTreeDataProvider
+ * @instance
+ * @method
+ * @name fetchByKeys
+ */
+
+/**
+ * @inheritdoc
+ * @memberof IndexerModelTreeDataProvider
+ * @instance
+ * @method
+ * @name fetchByOffset
+ */
+
+/**
+ * @inheritdoc
+ * @memberof IndexerModelTreeDataProvider
+ * @instance
+ * @method
+ * @name getCapability
+ */
+
+/**
+ * @inheritdoc
+ * @memberof IndexerModelTreeDataProvider
+ * @instance
+ * @method
+ * @name getTotalSize
+ */
+
+/**
+ * @inheritdoc
  * @memberof IndexerModelTreeDataProvider
  * @instance
  * @method
  * @name isEmpty
- * @ojsignature {target: "Type",
- *               value: "(): 'yes' | 'no' | 'unknown'"}
- * @example <caption>Check if empty</caption>
- * var isEmpty = dataprovider.isEmpty();
- * console.log('DataProvider is empty: ' + isEmpty);
  */
 
 /**
- * Add a callback function to listen for a specific event type.
- *
- * @export
- * @expose
+ * @inheritdoc
  * @memberof IndexerModelTreeDataProvider
  * @instance
  * @method
  * @name addEventListener
- * @param {string} eventType The event type to listen for.
- * @param {EventListener} listener The callback function that receives the event notification.
- * @method
- * @name addEventListener
- * @ojsignature {target: "Type",
- *               value: "(eventType: string, listener: EventListener): void"}
  */
 
 /**
- * Remove a listener previously registered with addEventListener.
- *
- * @export
- * @expose
+ * @inheritdoc
  * @memberof IndexerModelTreeDataProvider
  * @instance
  * @method
  * @name removeEventListener
- * @param {string} eventType The event type that the listener was registered for.
- * @param {EventListener} listener The callback function that was registered.
- * @ojsignature {target: "Type",
- *               value: "(eventType: string, listener: EventListener): void"}
  */
 
 /**
- * Dispatch an event and invoke any registered listeners.
- *
- * @export
- * @expose
+ * @inheritdoc
  * @memberof IndexerModelTreeDataProvider
  * @instance
  * @method
  * @name dispatchEvent
- * @param {Event} event The event object to dispatch.
- * @return {boolean} Return false if a registered listener has cancelled the event. Return true otherwise.
- * @ojsignature {target: "Type",
- *               value: "(evt: Event): boolean"}
  */
 
   return IndexerModelTreeDataProvider;

@@ -459,7 +459,14 @@ var __oj_toolbar_metadata =
     },
     // Update list of enabled buttons and refresh tabindex settings
     _refreshTabindex: function _refreshTabindex() {
-      // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+      // We need to re-select buttons because with refresh buttons in toolbar may be added/deleted.
+      if (this._IsCustomElement()) {
+        this.$buttons = $(this.element[0].querySelectorAll('oj-button, oj-menu-button, oj-buttonset-one .oj-button, oj-buttonset-many .oj-button'));
+      } else {
+        this.$buttons = this.element.find(':oj-button');
+      } // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+
+
       if (this.$buttons !== undefined) {
         // the subset of Toolbar buttons that are enabled.  Disabled buttons are not tabbable.
         if (this._IsCustomElement()) {

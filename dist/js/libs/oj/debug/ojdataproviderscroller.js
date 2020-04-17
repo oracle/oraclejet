@@ -1740,7 +1740,8 @@ IteratingDataProviderContentHandler.prototype._prepareRootElement = function () 
  * @private
  */
 IteratingDataProviderContentHandler.prototype._setFetching = function (fetching) {
-  this.m_root.setAttribute('aria-busy', fetching);
+  var root = this.m_superRoot == null ? this.m_root : this.m_superRoot;
+  root.setAttribute('aria-busy', fetching);
   this.m_fetching = fetching;
 };
 

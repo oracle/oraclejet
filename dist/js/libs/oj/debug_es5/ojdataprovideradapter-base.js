@@ -15,17 +15,13 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 
-var DataSourceAdapter =
-/*#__PURE__*/
-function () {
+var DataSourceAdapter = /*#__PURE__*/function () {
   function DataSourceAdapter(dataSource) {
     _classCallCheck(this, DataSourceAdapter);
 
     this.dataSource = dataSource;
 
-    this.AsyncIterable =
-    /*#__PURE__*/
-    function () {
+    this.AsyncIterable = /*#__PURE__*/function () {
       function _class(_asyncIterator) {
         _classCallCheck(this, _class);
 
@@ -39,9 +35,7 @@ function () {
       return _class;
     }();
 
-    this.AsyncIterator =
-    /*#__PURE__*/
-    function () {
+    this.AsyncIterator = /*#__PURE__*/function () {
       function _class2(_nextFunc, _params) {
         _classCallCheck(this, _class2);
 
@@ -62,9 +56,7 @@ function () {
       return _class2;
     }();
 
-    this.AsyncIteratorYieldResult =
-    /*#__PURE__*/
-    function () {
+    this.AsyncIteratorYieldResult = /*#__PURE__*/function () {
       function _class3(_parent, value) {
         _classCallCheck(this, _class3);
 
@@ -77,9 +69,7 @@ function () {
       return _class3;
     }();
 
-    this.AsyncIteratorReturnResult =
-    /*#__PURE__*/
-    function () {
+    this.AsyncIteratorReturnResult = /*#__PURE__*/function () {
       function _class4(_parent, value) {
         _classCallCheck(this, _class4);
 
@@ -92,9 +82,7 @@ function () {
       return _class4;
     }();
 
-    this.FetchListResult =
-    /*#__PURE__*/
-    function () {
+    this.FetchListResult = /*#__PURE__*/function () {
       function _class5(_parent, fetchParameters, data, metadata) {
         _classCallCheck(this, _class5);
 
@@ -110,9 +98,7 @@ function () {
       return _class5;
     }();
 
-    this.ItemMetadata =
-    /*#__PURE__*/
-    function () {
+    this.ItemMetadata = /*#__PURE__*/function () {
       function _class6(_parent, key) {
         _classCallCheck(this, _class6);
 
@@ -124,9 +110,7 @@ function () {
       return _class6;
     }();
 
-    this.SortCriterion =
-    /*#__PURE__*/
-    function () {
+    this.SortCriterion = /*#__PURE__*/function () {
       function _class7(_parent, attribute, direction) {
         _classCallCheck(this, _class7);
 
@@ -140,9 +124,7 @@ function () {
       return _class7;
     }();
 
-    this.DataProviderMutationEventDetail =
-    /*#__PURE__*/
-    function () {
+    this.DataProviderMutationEventDetail = /*#__PURE__*/function () {
       function _class8(_parent, add, remove, update) {
         _classCallCheck(this, _class8);
 
@@ -158,9 +140,7 @@ function () {
       return _class8;
     }();
 
-    this.DataProviderOperationEventDetail =
-    /*#__PURE__*/
-    function () {
+    this.DataProviderOperationEventDetail = /*#__PURE__*/function () {
       function _class9(_parent, keys, metadata, data, indexes) {
         _classCallCheck(this, _class9);
 
@@ -178,9 +158,7 @@ function () {
       return _class9;
     }();
 
-    this.DataProviderAddOperationEventDetail =
-    /*#__PURE__*/
-    function () {
+    this.DataProviderAddOperationEventDetail = /*#__PURE__*/function () {
       function _class10(_parent, keys, afterKeys, addBeforeKeys, parentKeys, metadata, data, indexes) {
         _classCallCheck(this, _class10);
 

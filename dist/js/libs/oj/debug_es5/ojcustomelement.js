@@ -458,8 +458,8 @@ oj.BaseCustomElementBridge.proto = {
 
     if (trackOption !== 'none') {
       // this will return a promise that will get automatically chained to the binding provider promise
-      preCreatePromise = preCreatePromise.then(function () {
-        return this._whenChildrenCreated(element);
+      preCreatePromise = preCreatePromise.then(function (bindingProvider) {
+        return this._whenChildrenCreated(element, bindingProvider);
       }.bind(this));
     }
 
@@ -704,7 +704,7 @@ oj.BaseCustomElementBridge.proto = {
     return trackedElements;
   },
   // tracks upgrade and creation of relevant children for the element
-  _whenChildrenCreated: function _whenChildrenCreated(element) {
+  _whenChildrenCreated: function _whenChildrenCreated(element, bindingProvider) {
     var _UPGRADE_MESSAGE_INTERVAL = 20000;
     var trackOption = oj.BaseCustomElementBridge.getTrackChildrenOption(element);
     var busyContext = Context.getContext(element).getBusyContext();
@@ -713,29 +713,39 @@ oj.BaseCustomElementBridge.proto = {
 
 
     var promises = trackedElements.map(function (trackedElement) {
-      // register busy state for the element
-      var resolveElementDefinedBusyState = busyContext.addBusyState({
-        description: 'Waiting for element ' + trackedElement.localName + ' to be defined.'
-      }); // setup a timer to log 'waiting' message for an element
+      // 1) if bindingProvider is null, then we don't expect to discover knockout custom components -
+      //    wait for all components to be defined, then wait for JET components to be created
+      // 2) if bindingProvider is knockout, then child JET components should already be registered -
+      //    no need to wait for whenDefined, just wait for JET components to be created
+      if (!bindingProvider) {
+        // register busy state for the element
+        var resolveElementDefinedBusyState = busyContext.addBusyState({
+          description: 'Waiting for element ' + trackedElement.localName + ' to be defined.'
+        }); // setup a timer to log 'waiting' message for an element
 
-      var timer = setInterval(function () {
-        Logger.warn('Warning: waiting for element ' + trackedElement.localName + ' to be defined.');
-      }, _UPGRADE_MESSAGE_INTERVAL); // return a promise that will be resolved, when element is defined and created
+        var timer = setInterval(function () {
+          Logger.warn('Warning: waiting for element ' + trackedElement.localName + ' to be defined.');
+        }, _UPGRADE_MESSAGE_INTERVAL); // return a promise that will be resolved, when element is defined and created
 
-      return customElements.whenDefined(trackedElement.localName).then(function () {
-        resolveElementDefinedBusyState();
-        clearInterval(timer);
+        return customElements.whenDefined(trackedElement.localName).then(function () {
+          resolveElementDefinedBusyState();
+          clearInterval(timer);
 
-        if (oj.BaseCustomElementBridge.getRegistered(trackedElement.tagName)) {
-          return oj.BaseCustomElementBridge.getInstance(trackedElement).whenCreated();
-        }
+          if (oj.BaseCustomElementBridge.getRegistered(trackedElement.tagName)) {
+            return oj.BaseCustomElementBridge.getInstance(trackedElement).whenCreated();
+          }
 
-        return null;
-      }).catch(function (error) {
-        resolveElementDefinedBusyState();
-        clearInterval(timer);
-        throw new Error('Error defining element ' + trackedElement.localName + ' : ' + error);
-      });
+          return null;
+        }).catch(function (error) {
+          resolveElementDefinedBusyState();
+          clearInterval(timer);
+          throw new Error('Error defining element ' + trackedElement.localName + ' : ' + error);
+        });
+      } else if (oj.BaseCustomElementBridge.getRegistered(trackedElement.tagName)) {
+        return oj.BaseCustomElementBridge.getInstance(trackedElement).whenCreated();
+      }
+
+      return null; // knockout binding provider, but the component is not JET component
     });
     return Promise.all(promises);
   },

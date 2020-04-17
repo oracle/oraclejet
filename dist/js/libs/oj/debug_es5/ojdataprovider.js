@@ -20,11 +20,11 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.AttributeExprFilterDef
+ * The interface for AttributeExprFilterDef
  *
  *
  * @export
- * @interface oj.AttributeExprFilterDef
+ * @interface AttributeExprFilterDef
  * @since 8.0.0
  * @ojsignature {target: "Type",
  *               value: "interface AttributeExprFilterDef<D>",
@@ -37,10 +37,10 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 8.0.0
  * @export
  * @expose
- * @memberof oj.AttributeExprFilterDef
+ * @memberof AttributeExprFilterDef
  * @instance
  * @name attribute
- * @type {string}
+ * @type {AttributeFilterDef.AttributeExpression | string}
  * @ojtsexample <caption>Attribute filter definition which filters on DepartmentId value 10</caption>
  * {op: '$eq', attribute: 'DepartmentId', value: 10}
  */
@@ -65,10 +65,10 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 8.0.0
  * @export
  * @expose
- * @memberof oj.AttributeExprFilterDef
+ * @memberof AttributeExprFilterDef
  * @instance
  * @name op
- * @type {oj.AttributeFilterOperator.AttributeOperator}
+ * @type {AttributeFilterDef.AttributeOperator}
  */
 
 /**
@@ -77,7 +77,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 8.0.0
  * @export
  * @expose
- * @memberof oj.AttributeExprFilterDef
+ * @memberof AttributeExprFilterDef
  * @instance
  * @name value
  * @type {any}
@@ -101,13 +101,13 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.AttributeExprFilter
+ * The interface for AttributeExprFilter
  *
  *
  * @export
- * @interface oj.AttributeExprFilter
- * @extends oj.AttributeExprFilterDef
- * @extends oj.BaseDataFilter
+ * @interface AttributeExprFilter
+ * @extends AttributeExprFilterDef
+ * @extends BaseDataFilter
  * @since 8.0.0
  * @ojsignature {target: "Type",
  *               value: "interface AttributeExprFilter<D> extends AttributeExprFilterDef<D>, BaseDataFilter<D>",
@@ -129,41 +129,24 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.AttributeFilterDef
- *
- *
  * @export
- * @interface oj.AttributeFilterDef
+ * @interface AttributeFilterDef
  * @since 7.0.0
  * @ojsignature {target: "Type",
  *               value: "interface AttributeFilterDef<D>",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines a kind of {@link DataFilter.FilterDef} which applies to the attributes in item data.
  */
 
 /**
- * Operator to apply for the filter. Valid operators defined in the AttributeFilterOperator union type are the strings:
- * <ul>
- *   <li>$co The entire operator value must be a substring of the attribute value for a match.</li>
- *   <li>$eq The attribute and operator values must be identical for a match.</li>
- *   <li>$ew The entire operator value must be a substring of the attribute value matching at the end of the attribute value.  This criterion is satisfied if the two strings are identical.</li>
- *   <li>$pr If the attribute has a non-empty or non-null value, or if it contains a non-empty node for complex attributes, there is a match.</li>
- *   <li>$gt If the attribute value is greater than the operator value, there is a match.</li>
- *   <li>$ge If the attribute value is greater than or equal to the operator value, there is a match.</li>
- *   <li>$lt If the attribute value is less than the operator value, there is a match.</li>
- *   <li>$le If the attribute value is less than or equal to the operator value, there is a match.</li>
- *   <li>$ne The attribute and operator values are not identical.</li>
- *   <li>$regex If the attribute value satisfies the regular expression, there is a match.</li>
- *   <li>$sw The entire operator value must be a substring of the attribute value, starting at the beginning of the attribute value.  This criterion is satisfied if the two strings are identical.</li>
- * </ul>
- *
- *
+ * Operator to apply for the filter.
  * @since 7.0.0
  * @export
  * @expose
- * @memberof oj.AttributeFilterDef
+ * @memberof AttributeFilterDef
  * @instance
  * @name op
- * @type {oj.AttributeFilterOperator.AttributeOperator}
+ * @type {AttributeFilterDef.AttributeOperator}
  */
 
 /**
@@ -174,7 +157,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 7.0.0
  * @export
  * @expose
- * @memberof oj.AttributeFilterDef
+ * @memberof AttributeFilterDef
  * @instance
  * @name value
  * @type {any}
@@ -190,6 +173,48 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  */
 
 /**
+ * AttributeOperator enum
+ * <br>
+ * <p>The operators are based on the filtering spec of the RFC 7644 SCIM
+ * protocol:
+ * <br>
+ * {@link https://tools.ietf.org/html/rfc7644#section-3.4.2|SCIM Filtering}
+ * <br>
+ * <p>
+ *
+ * @export
+ * @enum {string}
+ * @name AttributeOperator
+ * @memberof AttributeFilterDef
+ * @property {string} $co=$co The entire operator value must be a substring of the attribute value for a match.
+ * @property {string} $eq=$eq The attribute and operator values must be identical for a match.
+ * @property {string} $ew=$ew The entire operator value must be a substring of the attribute value matching at the end of the attribute value.  This criterion is satisfied if the two strings are identical.
+ * @property {string} $pr=$pr If the attribute has a non-empty or non-null value, or if it contains a non-empty node for complex attributes, there is a match.
+ * @property {string} $gt=$gt If the attribute value is greater than the operator value, there is a match.
+ * @property {string} $ge=$ge If the attribute value is greater than or equal to the operator value, there is a match.
+ * @property {string} $lt=$lt If the attribute value is less than the operator value, there is a match.
+ * @property {string} $le=$le If the attribute value is less than or equal to the operator value, there is a match.
+ * @property {string} $ne=$ne The attribute and operator values are not identical.
+ * @property {string} $regex=$regex If the attribute value satisfies the regular expression, there is a match.
+ * @property {string} $sw=$sw The entire operator value must be a substring of the attribute value, starting at the beginning of the attribute value.  This criterion is satisfied if the two strings are identical.
+ * @since 9.0.0
+ */
+
+/**
+ * AttributeExpression enum
+ * <br>
+ * <p>
+ * Attribute expressions supported
+ *
+ * @export
+ * @enum {string}
+ * @name AttributeExpression
+ * @memberof AttributeFilterDef
+ * @property {string} *=* Attribute wildcard
+ * @since 9.0.0
+ */
+
+/**
  * End of jsdoc
  */
 
@@ -204,17 +229,15 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.AttributeFilter
- *
- *
  * @export
- * @interface oj.AttributeFilter
- * @extends oj.AttributeFilterDef
- * @extends oj.BaseDataFilter
+ * @interface AttributeFilter
+ * @extends AttributeFilterDef
+ * @extends BaseDataFilter
  * @since 7.0.0
  * @ojsignature {target: "Type",
  *               value: "interface AttributeFilter<D> extends AttributeFilterDef<D>, BaseDataFilter<D>",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines a kind of {@link DataFilter.Filter} which applies to the attributes in item data.
  */
 
 /**
@@ -232,15 +255,13 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.CompoundFilterDef
- *
- *
  * @export
- * @interface oj.CompoundFilterDef
+ * @interface CompoundFilterDef
  * @since 7.0.0
  * @ojsignature {target: "Type",
  *               value: "interface CompoundFilterDef<D>",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines a kind of {@link DataFilter.FilterDef} which applies to the compound filter definitions.
  */
 
 /**
@@ -253,10 +274,10 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 7.0.0
  * @export
  * @expose
- * @memberof oj.CompoundFilterDef
+ * @memberof CompoundFilterDef
  * @instance
  * @name op
- * @type {string}
+ * @type {CompoundFilterDef.CompoundOperator}
  */
 
 /**
@@ -266,15 +287,34 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 7.0.0
  * @export
  * @expose
- * @memberof oj.CompoundFilterDef
+ * @memberof CompoundFilterDef
  * @instance
  * @name criteria
- * @type {Array.<oj.AttributeFilterDef | oj.AttributeExprFilterDef | oj.CompoundFilterDef>}
+ * @type {Array.<AttributeFilterDef | AttributeExprFilterDef | CompoundFilterDef>}
  * @ojsignature {target: "Type",
  *               value: "Array<AttributeFilterDef<D> | AttributeExprFilterDef<D> | CompoundFilterDef<D>>"}
  */
 
 /**
+ * CompoundOperator enum
+ * <br>
+ * <p>The operators are based on the filtering spec of the RFC 7644 SCIM
+ * protocol:
+ * <br>
+ * {@link https://tools.ietf.org/html/rfc7644#section-3.4.2|SCIM Filtering}
+ * <br>
+ * <p>
+ *
+ * @export
+ * @enum {string}
+ * @name CompoundOperator
+ * @memberof CompoundFilterDef
+ * @property {string} $and=$and The filter is only a match if both expressions evaluate to true.
+ * @property {string} $or=$or The filter is a match if either expression evaluates to true.
+ * @since 5.0.0
+ */
+
+/**
  * End of jsdoc
  */
 
@@ -289,17 +329,15 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.CompoundFilter
- *
- *
  * @export
- * @interface oj.CompoundFilter
- * @extends oj.CompoundFilterDef
- * @extends oj.BaseDataFilter
+ * @interface CompoundFilter
+ * @extends CompoundFilterDef
+ * @extends BaseDataFilter
  * @since 7.0.0
  * @ojsignature {target: "Type",
  *               value: "interface CompoundFilter<D> extends CompoundFilterDef<D>, BaseDataFilter<D>",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines a kind of {@link DataFilter.Filter} which applies to the compound filters.
  */
 
 /**
@@ -317,15 +355,15 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.TextFilterDef
- *
- *
  * @export
- * @interface oj.TextFilterDef
+ * @interface TextFilterDef
  * @since 8.0.0
  * @ojsignature {target: "Type",
  *               value: "interface TextFilterDef",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines a kind of {@link DataFilter.FilterDef} which applies to text filter definitions. A text filter definition
+ * specifies a string which should be used for filtering and leaves it up to the DataProvider to decide which fields are filtered
+ * and how the filtering happens (such as whether the filtering is an exact match or contains, etc).
  */
 
 /**
@@ -336,7 +374,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 8.0.0
  * @export
  * @expose
- * @memberof oj.TextFilterDef
+ * @memberof TextFilterDef
  * @instance
  * @name text
  * @type {string}
@@ -360,17 +398,17 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.TextFilter
- *
- *
  * @export
- * @interface oj.TextFilter
- * @extends oj.TextFilterDef
- * @extends oj.BaseDataFilter
+ * @interface TextFilter
+ * @extends TextFilterDef
+ * @extends BaseDataFilter
  * @since 8.0.0
  * @ojsignature {target: "Type",
  *               value: "interface TextFilter<D> extends TextFilterDef, BaseDataFilter<D>",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines a kind of {@link DataFilter.Filter} which applies to text filters. A text filter
+ * specifies a string which should be used for filtering and leaves it up to the DataProvider to decide which fields are filtered
+ * and how the filtering happens (such as whether the filtering is an exact match or contains, etc).
  */
 
 /**
@@ -388,11 +426,11 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.Filter
+ * The interface for Filter
  *
  *
  * @export
- * @interface oj.BaseDataFilter
+ * @interface BaseDataFilter
  * @since 8.0.0
  * @ojsignature {target: "Type",
  *              value: "interface BaseDataFilter<D>",
@@ -411,7 +449,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 8.0.0
  * @export
  * @expose
- * @memberof oj.BaseDataFilter
+ * @memberof BaseDataFilter
  * @instance
  * @name filter
  * @method
@@ -424,28 +462,28 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  */
 
 /**
- * The interface for oj.DataFilter
- *
- *
  * @export
- * @namespace oj.DataFilter
+ * @namespace DataFilter
  * @since 8.0.0
  * @ojsignature {target: "Type",
  *              value: "namespace DataFilter"}
+ * @classdesc Contains definitions for {@link DataFilter.Filter} used in {@link FetchListParameters#filterCriterion} and {@link FetchByOffsetParameters#filterCriterion}
  */
 
 /**
- * @typedef {Object} oj.DataFilter.FilterDef Union type of all FilterDef types.
+ * @typedef {Object} DataFilter.FilterDef Union type of all FilterDef types.
  * @ojsignature [{target: "Type",
  *               value: "AttributeFilterDef<D> | AttributeExprFilterDef<D> | CompoundFilterDef<D> | TextFilterDef"},
  *               {target:"Type", value:"<D>", for:"genericTypeParameters"}]
+ * @classdesc Union type containing {@link AttributeFilterDef}, {@link AttributeExprFilterDef}, {@link CompoundFilterDef}, and {@link TextFilterDef}
  */
 
 /**
- * @typedef {Object} oj.DataFilter.Filter Union type of all Filter types.
+ * @typedef {Object} DataFilter.Filter Union type of all Filter types.
  * @ojsignature [{target: "Type",
  *               value: "AttributeFilter<D> | AttributeExprFilter<D> | CompoundFilter<D> | TextFilter<D>"},
  *               {target:"Type", value:"<D>", for:"genericTypeParameters"}]
+ * @classdesc Union type containing {@link AttributeFilter}, {@link AttributeExprFilter}, {@link CompoundFilter}, and {@link TextFilter}
  */
 
 /**
@@ -463,15 +501,190 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.FetchByKeysParameters
+ * @export
+ * @expose
+ * @interface AttributeFilterCapability
+ * @since 6.1.0
+ * @ojsignature {target: "Type",
+ *               value: "interface AttributeFilterCapability"}
+ * @classdesc Defines the properties in the attribute property used in {@link FetchCapability}
+ */
+
+/**
+ * Optionally indicates what attribute expansion (as in the addition of more attributes) capability the DataProvider has.
+ * The exact shape of this property are determined by the DataProvider.
+ *
+ * @since 6.1.0
+ * @export
+ * @expose
+ * @memberof AttributeFilterCapability
+ * @instance
+ * @name expansion
+ * @type {object=}
+ * @ojsignature {target: "Type",
+ *               value: "?object"}
+ */
+
+/**
+ * Optionally indicates what capability the DataProvider has in terms of attribute ordering. By default there is no inherent
+ * attribute ordering on the item data property bag. The exact shape of this property are determined by the DataProvider.
  *
  *
+ * @since 6.1.0
+ * @export
+ * @expose
+ * @memberof AttributeFilterCapability
+ * @instance
+ * @name ordering
+ * @type {object=}
+ * @ojsignature {target: "Type",
+ *               value: "?object"}
+ */
+
+/**
+ * Optionally indicates what capability the DataProvider has in terms of being able to specify the item data shape.
+ * The exact shape of this property are determined by the DataProvider.
+ *
+ *
+ * @since 6.1.0
+ * @export
+ * @expose
+ * @memberof AttributeFilterCapability
+ * @instance
+ * @name defaultShape
+ * @type {object=}
+ * @ojsignature {target: "Type",
+ *               value: "?object"}
+ */
+
+/**
+ * End of jsdoc
+ */
+
+
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/* jslint browser: true,devel:true*/
+
+/**
+ * @export
+ * @interface FetchCapability
+ * @since 6.1.0
+ * @ojsignature {target: "Type",
+ *               value: "interface FetchCapability"}
+ * @classdesc Defines the result from the DataProvider method {@link DataProvider#getCapability} for capability "fetchCapability"
+ */
+
+/**
+ * Optional detailed attribute filter capability information
+ *
+ *
+ * @since 6.1.0
+ * @export
+ * @expose
+ * @memberof FetchCapability
+ * @instance
+ * @name attributeFilter
+ * @type {AttributeFilterCapability=}
+ * @ojsignature {target: "Type",
+ *               value: "?AttributeFilterCapability"}
+ */
+
+/**
+ * End of jsdoc
+ */
+
+
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/* jslint browser: true,devel:true*/
+
+/**
+ * @export
+ * @interface FilterCapability
+ * @since 5.0.0
+ * @ojsignature {target: "Type",
+ *               value: "interface FilterCapability"}
+ * @classdesc Defines the result from the DataProvider method {@link DataProvider#getCapability} for capability "filter"
+ */
+
+/**
+ * An array of supported filter operator strings. The filter operators may be for {@link AttributeFilter} or {@link CompoundFilter}.
+ *
+ *
+ * @since 5.0.0
+ * @export
+ * @expose
+ * @memberof FilterCapability
+ * @instance
+ * @name operators
+ * @type {Array.<AttributeFilterDef.AttributeOperator | CompoundFilterDef.CompoundOperator>=}
+ * @ojsignature {target: "Type",
+ *               value: "?Array.<AttributeFilterDef.AttributeOperator | CompoundFilterDef.CompoundOperator>"}
+ */
+
+/**
+ * An array of supported attribute expressions.
+ *
+ *
+ * @since 5.0.0
+ * @export
+ * @expose
+ * @memberof FilterCapability
+ * @instance
+ * @name attributeExpression
+ * @type {Array.<AttributeFilterDef.AttributeExpression>=}
+ * @ojsignature {target: "Type",
+ *               value: "?Array.<AttributeFilterDef.AttributeExpression>"}
+ */
+
+/**
+ * Existence of this property indicates that {@link TextFilter} is supported. The property value can be used convey more information to the caller.
+ *
+ *
+ * @since 8.0.0
+ * @export
+ * @expose
+ * @memberof FilterCapability
+ * @instance
+ * @name textFilter
+ * @type {any=}
+ * @ojsignature {target: "Type",
+ *               value: "?any"}
+ */
+
+/**
+ * End of jsdoc
+ */
+
+
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/* jslint browser: true,devel:true*/
+
+/**
  * @since 4.1.0
  * @export
- * @interface oj.FetchByKeysParameters
+ * @interface FetchByKeysParameters
  * @ojsignature {target: "Type",
  *               value: "interface FetchByKeysParameters<K>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}]}
+ * @classdesc Defines the parameters to the DataProvider methods {@link DataProvider#fetchByKeys} and {@link DataProvider#containsKeys}
  */
 
 /**
@@ -481,7 +694,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.FetchByKeysParameters
+ * @memberof FetchByKeysParameters
  * @instance
  * @name keys
  * @type {Set.<any>}
@@ -490,16 +703,21 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  */
 
 /**
- * Optional string describing local or global data set to fetch
+ * Optional string describing local or global data set to fetch. Local refers to the current fetched data whereas global is the entire data set.
+ * The usage is primarily directed towards selection where a selection is on a different part of the data set than that of the local data set.
  *
  *
  * @since 7.0.0
  * @export
  * @expose
- * @memberof oj.FetchByKeysParameters
+ * @memberof FetchByKeysParameters
  * @instance
  * @name scope
- * @type {"local" | "global"}
+ * @type {FetchByKeysParameters.Scope=}
+ * @ojsignature {target: "Type",
+ *               value: "?FetchByKeysParameters.Scope"}
+ * @ojsignature {target: "Type",
+ *               value: "?'local' | 'global'"}
  */
 
 /**
@@ -510,24 +728,37 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 6.1.0
  * @export
  * @expose
- * @memberof oj.FetchByKeysParameters
+ * @memberof FetchByKeysParameters
  * @instance
  * @name attributes
- * @type {Array.<string | oj.FetchAttribute>}
+ * @type {Array.<string | FetchAttribute>}
  * @ojsignature {target: "Type",
  *               value: "?Array<string | FetchAttribute>"}
  */
 
 /**
- * The interface for oj.FetchByKeysResults
+ * Scope enum
+ * <br>
+ * <p>
+ * Scope supported
  *
- *
+ * @export
+ * @enum {string}
+ * @name Scope
+ * @memberof FetchByKeysParameters
+ * @property {string} local=local Local refers to the current fetched data.
+ * @property {string} global=global Global is the entire data set
+ * @since 9.0.0
+ */
+
+/**
  * @since 4.1.0
  * @export
- * @interface oj.FetchByKeysResults
+ * @interface FetchByKeysResults
  * @ojsignature {target: "Type",
  *               value: "interface FetchByKeysResults<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
+ * @classdesc FetchByKeysResults defines the result from the DataProvider method {@link DataProvider#fetchByKeys}
  */
 
 /**
@@ -537,39 +768,37 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.FetchByKeysResults
+ * @memberof FetchByKeysResults
  * @instance
  * @name fetchParameters
- * @type {oj.FetchByKeysParameters}
+ * @type {FetchByKeysParameters}
  * @ojsignature {target: "Type",
  *               value: "FetchByKeysParameters<K>"}
  */
 
 /**
- * Map of keys and corresponding {@link oj.Item}.
+ * Map of keys and corresponding {@link Item}. The map will only contain keys which were actually found.
  *
  *
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.FetchByKeysResults
+ * @memberof FetchByKeysResults
  * @instance
  * @name results
- * @type {Map.<*, oj.Item>}
+ * @type {Map.<*, Item>}
  * @ojsignature {target: "Type",
  *               value: "Map<K, Item<K, D>>"}
  */
 
 /**
- * The interface for oj.ContainsKeysResults
- *
- *
  * @since 4.1.0
  * @export
- * @interface oj.ContainsKeysResults
+ * @interface ContainsKeysResults
  * @ojsignature {target: "Type",
  *               value: "interface ContainsKeysResults<K>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}]}
+ * @classdesc ContainsKeysResults defines the results from the DataProvider method {@link DataProvider#containsKeys}
  */
 
 /**
@@ -579,10 +808,10 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.ContainsKeysResults
+ * @memberof ContainsKeysResults
  * @instance
  * @name containsParameters
- * @type {oj.FetchByKeysParameters}
+ * @type {FetchByKeysParameters}
  * @ojsignature {target: "Type",
  *               value: "FetchByKeysParameters<K>"}
  */
@@ -594,7 +823,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.ContainsKeysResults
+ * @memberof ContainsKeysResults
  * @instance
  * @name results
  * @type {Set.<any>}
@@ -617,13 +846,13 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /* jslint browser: true,devel:true*/
 
 /**
- *
  * @since 4.1.0
  * @export
- * @interface oj.SortCriterion
+ * @interface SortCriterion
  * @ojsignature {target: "Type",
  *               value: "interface SortCriterion<D>",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines the sort criterion objects in {@link FetchListParameters#sortCriterion}
  */
 
 /**
@@ -633,7 +862,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.SortCriterion
+ * @memberof SortCriterion
  * @instance
  * @name attribute
  * @type {string}
@@ -648,7 +877,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.SortCriterion
+ * @memberof SortCriterion
  * @instance
  * @name direction
  * @type {string}
@@ -672,7 +901,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  *
  * @since 4.1.0
  * @export
- * @interface oj.DataMapping
+ * @interface DataMapping
  * @ojsignature {target: "Type",
  *               value: "interface DataMapping <K, D, Kin, Din>",
  *               genericParameters: [{"name": "K", "description": "Type of output key"}, {"name": "D", "description": "Type of output data"},
@@ -685,7 +914,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  *
  * @export
  * @expose
- * @memberof oj.DataMapping
+ * @memberof DataMapping
  * @instance
  * @name mapFields
  * @type {Function}
@@ -699,7 +928,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  *
  * @export
  * @expose
- * @memberof oj.DataMapping
+ * @memberof DataMapping
  * @instance
  * @name mapFilterCriterion
  * @type {Function}
@@ -713,7 +942,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  *
  * @export
  * @expose
- * @memberof oj.DataMapping
+ * @memberof DataMapping
  * @instance
  * @name unmapFilterCriterion
  * @type {Function}
@@ -727,7 +956,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  *
  * @export
  * @expose
- * @memberof oj.DataMapping
+ * @memberof DataMapping
  * @instance
  * @name mapSortCriteria
  * @type {Function}
@@ -741,7 +970,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  *
  * @export
  * @expose
- * @memberof oj.DataMapping
+ * @memberof DataMapping
  * @instance
  * @name unmapSortCriteria
  * @type {Function}
@@ -764,13 +993,12 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.FetchFunc
- *
  * @since 4.1.0
  * @export
  * @ojsignature {target: "Type",
  *               value: "interface FetchFunc<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines the interface for the {@link DataProvider#fetchFirst} method
  */
 
 /**
@@ -793,28 +1021,30 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.FetchListParameters
- *
- *
  * @since 4.1.0
  * @export
- * @interface oj.FetchListParameters
+ * @interface FetchListParameters
  * @ojsignature {target: "Type",
  *               value: "interface FetchListParameters<D>",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines the parameters to the DataProvider method {@link DataProvider#fetchFirst}
  */
 
 /**
- * Optional number of rows to fetch starting from offset.  If fewer than that number of rows exist, the fetch will succeed but be truncated.
+ * Optional number of rows to fetch.  If fewer than that number of rows exist, the fetch will succeed but be truncated.
+ * A value of -1 will return all rows or the maximum size supported by the DataProvider.
+ * If the size is not specified, then the DataProvider implementation will determine how many rows to return.
  *
  *
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.FetchListParameters
+ * @memberof FetchListParameters
  * @instance
  * @name size
  * @type {number=}
+ * @ojsignature {target: "Type",
+ *               value: "?number"}
  */
 
 /**
@@ -824,30 +1054,33 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.FetchListParameters
+ * @memberof FetchListParameters
  * @instance
  * @name sortCriteria
- * @type {Array.<oj.SortCriterion>}
+ * @type {Array.<SortCriterion>}
  * @ojsignature {target: "Type",
  *               value: "?Array<SortCriterion<D>>"}
+ * @ojtsexample
+ * [{attribute: 'DepartmentName', direction: 'ascending'}]
  */
 
 /**
  * Optional filter criterion to apply. The filter criterion would be composed of a
- * supported Filter such as a AttributeFilter or a CompoundFilter.
+ * supported {@link DataFilter.Filter} such as a {@link AttributeFilter}, {@link AttributeExprFilter}, {@link CompoundFilter}. {@link TextFilter}
  *
- * @example
- * The following would be a valid filterCriterion:
- * {op: '$or', criteria: [{op: '$eq', value: {name: 'Bob'}}, {op: '$gt', value: {level: 'Low'}}]}
+ * @ojtsexample
+ * let filterDef = {op: '$or', criteria: [{op: '$eq', value: {name: 'Bob'}}, {op: '$gt', value: {level: 'Low'}}]};
+ * let filter = FilterFactory.getFilter(filterDef); // create a standard filter using the filterFactory.
+ * let fetchListParam = {filterCriterion: filter, size: 5};
  *
  *
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.FetchListParameters
+ * @memberof FetchListParameters
  * @instance
  * @name filterCriterion
- * @type {oj.DataFilter.Filter}
+ * @type {DataFilter.Filter}
  * @ojsignature {target: "Type",
  *               value: "?DataFilter.Filter<D>"}
  */
@@ -860,12 +1093,17 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 6.1.0
  * @export
  * @expose
- * @memberof oj.FetchListParameters
+ * @memberof FetchListParameters
  * @instance
  * @name attributes
- * @type {Array.<string | oj.FetchAttribute>}
+ * @type {Array.<string | FetchAttribute>}
  * @ojsignature {target: "Type",
  *               value: "?Array<string | FetchAttribute>"}
+ * @ojtsexample
+ * ['!lastName', '@default'] // all attributes except lastName
+ * @ojtsexample
+ * ['!lastName', '@default', {name: 'location', attributes: ['address line 1', 'address line 2']}] // nested example
+ *
  */
 
 /**
@@ -883,28 +1121,26 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.FetchListResult
- *
- *
  * @since 4.1.0
  * @export
- * @interface oj.FetchListResult
+ * @interface FetchListResult
  * @ojsignature {target: "Type",
  *               value: "interface FetchListResult<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines the results from the DataProvider method {@link DataProvider#fetchFirst}
  */
 
 /**
- * The {@link oj.FetchListParameters} used for the fetch call
+ * The {@link FetchListParameters} used for the fetch call
  *
  *
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.FetchListResult
+ * @memberof FetchListResult
  * @instance
  * @name fetchParameters
- * @type {oj.FetchListParameters}
+ * @type {FetchListParameters}
  * @ojsignature {target: "Type",
  *               value: "FetchListParameters<D>"}
  */
@@ -916,7 +1152,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.FetchListResult
+ * @memberof FetchListResult
  * @instance
  * @name data
  * @type {Array.<Object>}
@@ -925,16 +1161,16 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  */
 
 /**
- * Array of {link@ oj.ItemMetadata} for each row
+ * Array of {link@ ItemMetadata} for each row
  *
  *
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.FetchListResult
+ * @memberof FetchListResult
  * @instance
  * @name metadata
- * @type {Array.<oj.ItemMetadata>}
+ * @type {Array.<ItemMetadata>}
  * @ojsignature {target: "Type",
  *               value: "Array<ItemMetadata<K>>"}
  */
@@ -954,16 +1190,14 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.ItemMetadata.  Note that key is the only mandatory property,
- * implementations can provide additional properties as needed.
- *
- *
  * @since 4.1.0
  * @export
- * @interface oj.ItemMetadata
+ * @interface ItemMetadata
  * @ojsignature {target: "Type",
  *               value: "interface ItemMetadata<K>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}]}
+ * @classdesc Defines the item metadata objects in {@link FetchListResult#metadata}.  Note that key is the only mandatory property,
+ * implementations can provide additional properties as needed.
  */
 
 /**
@@ -973,7 +1207,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.ItemMetadata
+ * @memberof ItemMetadata
  * @instance
  * @name key
  * @type {any}
@@ -984,6 +1218,8 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /**
  * End of jsdoc
  */
+
+
 
 
 
@@ -1030,12 +1266,12 @@ oj['AttributeFilterOperator']['AttributeOperator'] = AttributeFilterOperator.Att
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.AttributeFilterOperator
+ * The interface for AttributeFilterOperator
  *
  *
  * @export
- * @interface oj.AttributeFilterOperator
- * @extends oj.FilterOperator
+ * @interface AttributeFilterOperator
+ * @extends FilterOperator
  * @since 5.0.0
  * @ojsignature {target: "Type",
  *               value: "interface AttributeFilterOperator<D>",
@@ -1044,16 +1280,16 @@ oj['AttributeFilterOperator']['AttributeOperator'] = AttributeFilterOperator.Att
  */
 
 /**
- * Operator one of enum oj.AttributeOperator {$co, $eq, $ew, $pr, $gt, $ge, $lt, $le, $ne, $regex, $sw}
+ * Operator one of enum AttributeOperator {$co, $eq, $ew, $pr, $gt, $ge, $lt, $le, $ne, $regex, $sw}
  *
  *
  * @since 5.0.0
  * @export
  * @expose
- * @memberof oj.AttributeFilterOperator
+ * @memberof AttributeFilterOperator
  * @instance
  * @name op
- * @type {oj.AttributeFilterOperator.AttributeOperator}
+ * @type {AttributeFilterOperator.AttributeOperator}
  */
 
 /**
@@ -1063,7 +1299,7 @@ oj['AttributeFilterOperator']['AttributeOperator'] = AttributeFilterOperator.Att
  * @since 5.0.0
  * @export
  * @expose
- * @memberof oj.AttributeFilterOperator
+ * @memberof AttributeFilterOperator
  * @instance
  * @name attribute
  * @type {string}
@@ -1076,14 +1312,14 @@ oj['AttributeFilterOperator']['AttributeOperator'] = AttributeFilterOperator.Att
  * @since 5.0.0
  * @export
  * @expose
- * @memberof oj.AttributeFilterOperator
+ * @memberof AttributeFilterOperator
  * @instance
  * @name value
  * @type {any}
  */
 
 /**
- * oj.AttributeOperator enum
+ * AttributeOperator enum
  * <br>
  * <p>The operators are based on the filtering spec of the RFC 7644 SCIM
  * protocol:
@@ -1095,7 +1331,7 @@ oj['AttributeFilterOperator']['AttributeOperator'] = AttributeFilterOperator.Att
  * @export
  * @enum {string}
  * @name AttributeOperator
- * @memberof oj.AttributeFilterOperator
+ * @memberof AttributeFilterOperator
  * @property {string} $co=$co The entire operator value must be a substring of the attribute value for a match.
  * @property {string} $eq=$eq The attribute and operator values must be identical for a match.
  * @property {string} $ew=$ew The entire operator value must be a substring of the attribute value matching at the end of the attribute value.  This criterion is satisfied if the two strings are identical.
@@ -1148,12 +1384,12 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.CompoundFilterOperator
+ * The interface for CompoundFilterOperator
  *
  *
  * @export
- * @interface oj.CompoundFilterOperator
- * @extends oj.FilterOperator
+ * @interface CompoundFilterOperator
+ * @extends FilterOperator
  * @since 5.0.0
  * @ojsignature {target: "Type",
  *               value: "interface CompoundFilterOperator<D>",
@@ -1162,16 +1398,16 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  */
 
 /**
- * Operator one of enum oj.CompoundOperator {$and, $or}
+ * Operator one of enum CompoundOperator {$and, $or}
  *
  *
  * @since 5.0.0
  * @export
  * @expose
- * @memberof oj.CompoundFilterOperator
+ * @memberof CompoundFilterOperator
  * @instance
  * @name op
- * @type {oj.CompoundFilterOperator.CompoundOperator}
+ * @type {CompoundFilterOperator.CompoundOperator}
  */
 
 /**
@@ -1181,16 +1417,16 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  * @since 5.0.0
  * @export
  * @expose
- * @memberof oj.CompoundFilterOperator
+ * @memberof CompoundFilterOperator
  * @instance
  * @name criteria
- * @type {Array.<oj.FilterOperator>}
+ * @type {Array.<FilterOperator>}
  * @ojsignature {target: "Type",
  *               value: "Array<FilterOperator<D>>"}
  */
 
 /**
- * oj.CompoundOperator enum
+ * CompoundOperator enum
  * <br>
  * <p>The operators are based on the filtering spec of the RFC 7644 SCIM
  * protocol:
@@ -1202,7 +1438,7 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  * @export
  * @enum {string}
  * @name CompoundOperator
- * @memberof oj.CompoundFilterOperator
+ * @memberof CompoundFilterOperator
  * @property {string} $and=$and The filter is only a match if both expressions evaluate to true.
  * @property {string} $or=$or The filter is a match if either expression evaluates to true.
  * @since 5.0.0
@@ -1232,8 +1468,8 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  *
  * @since 4.2.0
  * @export
- * @interface oj.DataProviderAddOperationEventDetail
- * @extends oj.DataProviderOperationEventDetail
+ * @interface DataProviderAddOperationEventDetail
+ * @extends DataProviderOperationEventDetail
  * @ojsignature {target: "Type",
  *               value: "interface DataProviderAddOperationEventDetail<K, D> extends DataProviderOperationEventDetail<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
@@ -1247,7 +1483,7 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderAddOperationEventDetail
+ * @memberof DataProviderAddOperationEventDetail
  * @instance
  * @name afterKeys
  * @type {Set.<any>}
@@ -1264,7 +1500,7 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  * @since 6.0.0
  * @export
  * @expose
- * @memberof oj.DataProviderAddOperationEventDetail
+ * @memberof DataProviderAddOperationEventDetail
  * @instance
  * @name addBeforeKeys
  * @type {Array.<any>}
@@ -1284,7 +1520,7 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  * @since 6.0.0
  * @export
  * @expose
- * @memberof oj.DataProviderAddOperationEventDetail
+ * @memberof DataProviderAddOperationEventDetail
  * @instance
  * @name parentKeys
  * @type {Array.<any>}
@@ -1300,28 +1536,32 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
+function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
-var DataProviderMutationEvent =
-/*#__PURE__*/
-function (_GenericEvent) {
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+
+var DataProviderMutationEvent = /*#__PURE__*/function (_GenericEvent) {
   _inherits(DataProviderMutationEvent, _GenericEvent);
+
+  var _super = _createSuper(DataProviderMutationEvent);
 
   function DataProviderMutationEvent(detail) {
     _classCallCheck(this, DataProviderMutationEvent);
 
     var eventOptions = {};
     eventOptions[DataProviderMutationEvent._DETAIL] = detail;
-    return _possibleConstructorReturn(this, _getPrototypeOf(DataProviderMutationEvent).call(this, 'mutate', eventOptions));
+    return _super.call(this, 'mutate', eventOptions);
   }
 
   return DataProviderMutationEvent;
@@ -1344,18 +1584,16 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
 /* jslint browser: true,devel:true*/
 
 /**
- * This interface specifies as one atomic event all the mutation operations which
- * occurred. The keys for each operation must be disjoint from each other, e.g. for example
- * an add and remove cannot occur on the same item. In addition, any indexes specified must
- * be monotonically increasing.
- *
- *
  * @since 4.2.0
  * @export
- * @interface oj.DataProviderMutationEventDetail
+ * @interface DataProviderMutationEventDetail
  * @ojsignature {target: "Type",
  *               value: "interface DataProviderMutationEventDetail<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
+ * @classdesc This interface defines the payload of the {@link DataProviderMutationEvent} and specifies as one atomic event all the mutation operations which
+ * occurred. The keys for each operation must be disjoint from each other, e.g. for example
+ * an add and remove cannot occur on the same item. In addition, any indexes specified must
+ * be monotonically increasing.
  */
 
 /**
@@ -1365,10 +1603,10 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEventDetail
+ * @memberof DataProviderMutationEventDetail
  * @instance
  * @name add
- * @type {oj.DataProviderAddOperationEventDetail}
+ * @type {DataProviderAddOperationEventDetail}
  * @ojsignature {target: "Type",
  *               value: "?DataProviderAddOperationEventDetail<K, D>"}
  */
@@ -1380,10 +1618,10 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEventDetail
+ * @memberof DataProviderMutationEventDetail
  * @instance
  * @name remove
- * @type {oj.DataProviderOperationEventDetail}
+ * @type {DataProviderOperationEventDetail}
  * @ojsignature {target: "Type",
  *               value: "?DataProviderOperationEventDetail<K, D>"}
  */
@@ -1395,10 +1633,10 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEventDetail
+ * @memberof DataProviderMutationEventDetail
  * @instance
  * @name update
- * @type {oj.DataProviderOperationEventDetail}
+ * @type {DataProviderOperationEventDetail}
  * @ojsignature {target: "Type",
  *               value: "?DataProviderOperationEventDetail<K, D>"}
  */
@@ -1422,11 +1660,11 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @final
- * @class oj.DataProviderMutationEvent
+ * @class DataProviderMutationEvent
  * @implements Event
  * @ojtsnoexport
- * @classdesc Mutation event dispatched by oj.DataProvider
- * @param {oj.DataProviderMutationEventDetail} detail the event detail
+ * @classdesc Mutation event dispatched by {@link DataProvider}
+ * @param {DataProviderMutationEventDetail} detail the event detail
  * @ojsignature [{target: "Type",
  *               value: "class DataProviderMutationEvent<K, D> implements Event",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]},
@@ -1442,10 +1680,10 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name detail
- * @type {oj.DataProviderMutationEventDetail}
+ * @type {DataProviderMutationEventDetail}
  * @ojsignature {target: "Type",
  *               value: "DataProviderMutationEventDetail<K, D>"}
  */
@@ -1455,7 +1693,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name type
  * @type {string}
@@ -1466,7 +1704,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name bubbles
  * @type {boolean}
@@ -1477,7 +1715,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name cancelable
  * @type {boolean}
@@ -1488,7 +1726,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name cancelBubble
  * @type {boolean}
@@ -1499,7 +1737,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 6.0.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name composed
  * @type {boolean}
@@ -1510,7 +1748,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name currentTarget
  * @type {EventTarget}
@@ -1521,7 +1759,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name defaultPrevented
  * @type {boolean}
@@ -1532,7 +1770,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name eventPhase
  * @type {number}
@@ -1543,7 +1781,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name isTrusted
  * @type {boolean}
@@ -1554,7 +1792,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name returnValue
  * @type {boolean}
@@ -1565,7 +1803,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name srcElement
  * @type {Element | null}
@@ -1576,7 +1814,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name target
  * @type {EventTarget}
@@ -1587,7 +1825,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name timeStamp
  * @type {number}
@@ -1598,7 +1836,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name scoped
  * @type {boolean}
@@ -1609,7 +1847,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name initEvent
  * @ojsignature {target: "Type",
@@ -1621,7 +1859,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name preventDefault
  * @ojsignature {target: "Type",
@@ -1633,7 +1871,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name stopImmediatePropagation
  * @ojsignature {target: "Type",
@@ -1645,7 +1883,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name stopPropagation
  * @ojsignature {target: "Type",
@@ -1657,7 +1895,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name deepPath
  * @ojsignature {target: "Type",
@@ -1669,7 +1907,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name AT_TARGET
  * @type {number}
@@ -1680,7 +1918,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name BUBBLING_PHASE
  * @type {number}
@@ -1691,7 +1929,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name CAPTURING_PHASE
  * @type {number}
@@ -1702,7 +1940,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 6.0.0
  * @export
  * @expose
- * @memberof oj.DataProviderMutationEvent
+ * @memberof DataProviderMutationEvent
  * @instance
  * @name NONE
  * @type {number}
@@ -1728,10 +1966,11 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  *
  * @since 4.2.0
  * @export
- * @interface oj.DataProviderOperationEventDetail
+ * @interface DataProviderOperationEventDetail
  * @ojsignature {target: "Type",
  *               value: "interface DataProviderOperationEventDetail<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines the details for a particular operation in an {@link DataProviderMutationEventDetail}
  */
 
 /**
@@ -1741,7 +1980,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderOperationEventDetail
+ * @memberof DataProviderOperationEventDetail
  * @instance
  * @name keys
  * @type {Set.<any>}
@@ -1756,7 +1995,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderOperationEventDetail
+ * @memberof DataProviderOperationEventDetail
  * @instance
  * @name metadata
  * @type {Array.<ItemMetadata>}
@@ -1771,7 +2010,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderOperationEventDetail
+ * @memberof DataProviderOperationEventDetail
  * @instance
  * @name data
  * @type {Array.<Object>}
@@ -1780,19 +2019,96 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  */
 
 /**
- * Optional indexes of items involved in the operation. They are relative to after the
- * operation was completed and not the original array.
+ * Optional indexes of items involved in the operation. Indices are with respect to the DataProvider
+ * with only its implicit sort applied. Essentially, indices are the global indices (except for TreeDataProvider, please see
+ * the note below), not the indices with respect to whatever query (which might have its own sorting or filtering)
+ * fetched the items.
  *
+ * <p>For 'add' operation the indexes are relative to after the
+ * operation was completed and not the original dataset.</p>
  *
+ * <p>For 'update' operation the indexes are relative to after the
+ * operation was completed and not the original dataset.</p>
+ *
+ * <p>For 'remove' operation the indexes are relative to the original dataset.</p>
+ *
+ * <p>Note: With respect to TreeDataProvider, the index is the index at the level where the mutation occurs.
+ * That is, the index of the node among its siblings.</p>
+ * <p> Optimization can be achieved by specifying indexes for mutation events. </p>
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.DataProviderOperationEventDetail
+ * @memberof DataProviderOperationEventDetail
  * @instance
  * @name indexes
  * @type {Array.<number>}
  * @ojsignature {target: "Type",
  *               value: "?number[]"}
+ * @ojtsexample <caption>Example to illustrate indexes from array mutations</caption>
+ * let data = [{ id: 1, name: 'Amy Bartlet', title: 'Vice President' },
+ *             { id: 2, name: 'Annett Barnes', title: 'Individual  Contributer' },
+ *             { id: 3, name: 'Bobby Fisher', title: 'Individual Contributer' }];
+ * let observableArray = ko.observableArray(data);
+ * let dataProvider = new ArrayDataProvider(ko.observableArray(data), { keyAttributes: 'id' });
+ *
+ * let listener = function(event) {
+ *  // Print DataProviderEventDetail
+ * };
+ *
+ * dataProvider.addEventListener("mutate", listener);
+ *
+ * observableArray.push({ id: 4, name: ‘John schully', title: ‘Manager' });
+ * // Then the DataProviderOperationEventDetail will have Indexes as [3]
+ *
+ * observableArray.splice(2, 1, { id: 5, name: ’Scott Jhonson', title: ‘President' });
+ * // Then the DataProviderOperationEventDetail will have Indexes as [2]
+ * @ojtsexample <caption>Example to illustrate indexes with respect to ArrayTreeDataProvider</caption>
+ *
+ * let dataArray = [{
+ *                    title: "Amy Bartlet",
+ *                    id: "100"
+ *                  },
+ *                  {
+ *                    title: "Scott Fisher",
+ *                    id: "101",
+ *                    children: [{
+ *                                 title: "John Fisher",
+ *                                 id: "102"
+ *                               },
+ *                               {
+ *                                 title: "Bobby Fisher",
+ *                                 id: "103"
+ *                               }]
+ *                  },
+ *                  {
+ *                    title: "Annett Barnes",
+ *                    id: "104"
+ *                  }];
+ *
+ * createObservableArrayTree(data: Array<any>) {
+ *   let array = <any[]>[];
+ *   let observableArray = ko.observableArray(array);
+ *   for (let i = 0; i < data.length; i++) {
+ *     let newItem = data[i];
+ *     if (data[i].children) {
+ *       newItem.children = this.createObservableArrayTree(data[i].children);
+ *     }
+ *     observableArray.push(newItem);
+ *   }
+ *   return observableArray;
+ * }
+ *
+ * let observableArrayTree = createObservableArrayTree(dataArray);
+ * let dataProvider = new ArrayTreeDataProvider(observableArrayTree, { keyAttributes: 'id' });
+ * dataProvider.addEventListener('mutate', ((event: CustomEvent<any>) => {
+ *   console.log(event.detail);
+ * }) as EventListener);
+ * let index = 1;
+ *
+ * observableArrayTree()[1].children.splice(index, 1);
+ *
+ * // Output will be // { 'add': null, 'remove' : { 'indexes': [1] }, 'update': null}
+ * // Here the index 1 refers to the object with id '103'.
  */
 
 /**
@@ -1803,26 +2119,30 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
+function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
-var DataProviderRefreshEvent =
-/*#__PURE__*/
-function (_GenericEvent) {
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+
+var DataProviderRefreshEvent = /*#__PURE__*/function (_GenericEvent) {
   _inherits(DataProviderRefreshEvent, _GenericEvent);
+
+  var _super = _createSuper(DataProviderRefreshEvent);
 
   function DataProviderRefreshEvent() {
     _classCallCheck(this, DataProviderRefreshEvent);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(DataProviderRefreshEvent).call(this, 'refresh'));
+    return _super.call(this, 'refresh');
   }
 
   return DataProviderRefreshEvent;
@@ -1842,16 +2162,13 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
 /* jslint browser: true,devel:true*/
 
 /**
- * The oj.DataProviderRefreshEvent class
- *
- *
  * @since 4.1.0
  * @export
  * @final
- * @class oj.DataProviderRefreshEvent
+ * @class DataProviderRefreshEvent
  * @implements Event
  * @ojtsnoexport
- * @classdesc Refresh Event dispatched by the DataProvider. This event is fired when
+ * @classdesc Refresh Event dispatched by the {@link DataProvider}. This event is fired when
  * the data has been refreshed and components need to re-fetch the data.
  * @ojsignature {target: "Type",
  *               value: "class DataProviderRefreshEvent implements Event"}
@@ -1862,7 +2179,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name type
  * @type {string}
@@ -1873,7 +2190,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name bubbles
  * @type {boolean}
@@ -1884,7 +2201,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name cancelable
  * @type {boolean}
@@ -1895,7 +2212,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name cancelBubble
  * @type {boolean}
@@ -1906,7 +2223,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 6.0.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name composed
  * @type {boolean}
@@ -1917,7 +2234,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name currentTarget
  * @type {EventTarget}
@@ -1928,7 +2245,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name defaultPrevented
  * @type {boolean}
@@ -1939,7 +2256,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name eventPhase
  * @type {number}
@@ -1950,7 +2267,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name isTrusted
  * @type {boolean}
@@ -1961,7 +2278,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name returnValue
  * @type {boolean}
@@ -1972,7 +2289,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name srcElement
  * @type {Element | null}
@@ -1983,7 +2300,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name target
  * @type {EventTarget}
@@ -1994,7 +2311,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name timeStamp
  * @type {number}
@@ -2005,7 +2322,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name scoped
  * @type {boolean}
@@ -2016,7 +2333,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name initEvent
  * @ojsignature {target: "Type",
@@ -2028,7 +2345,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name preventDefault
  * @ojsignature {target: "Type",
@@ -2040,7 +2357,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name stopImmediatePropagation
  * @ojsignature {target: "Type",
@@ -2052,7 +2369,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name stopPropagation
  * @ojsignature {target: "Type",
@@ -2064,7 +2381,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name deepPath
  * @ojsignature {target: "Type",
@@ -2076,7 +2393,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name AT_TARGET
  * @type {number}
@@ -2087,7 +2404,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name BUBBLING_PHASE
  * @type {number}
@@ -2098,7 +2415,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name CAPTURING_PHASE
  * @type {number}
@@ -2109,7 +2426,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @since 6.0.0
  * @export
  * @expose
- * @memberof oj.DataProviderRefreshEvent
+ * @memberof DataProviderRefreshEvent
  * @instance
  * @name NONE
  * @type {number}
@@ -2133,53 +2450,162 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  *
  * @since 4.2.0
  * @export
- * @interface oj.DataProvider
+ * @interface DataProvider
  * @extends EventTarget
  * @ojsignature {target: "Type",
  *               value: "interface DataProvider<K, D> extends EventTarget",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
  * @classdesc
- * DataProvider is the basic interface for getting runtime data which JET components that display list of items (such as [oj-table]{@link oj.ojTable} and [oj-list-view]{@link oj.ojListView}) can use.
- * Please note that these APIs are public and hence the application is also allowed to call methods on it.
+ * The DataProvider interface defines the contract by which JET components retrieve data.  By exposing this contract as an interface, we allow for a range of possible data retrieval strategies, while shielding components from dependencies on any one particular implementation choice.  For example, some DataProvider implementations may get data from a local array. Others may retrieve data from a remote endpoint.  In either case, the consuming component simply interacts with the DataProvider interface and is unaware of the of the specific data retrieval approach.
  * <p>
- * JET provides some implementations of this interface, such as {@link oj.ArrayDataProvider}.
+ * The DataProvider contract has the following characteristics:
+ * <ul>
+ *   <li>Asynchronous: Even in cases where data is available synchronously (eg. the data is already in a local array), the DataProvider contract provides access to the data via asynchronous APIs.  As such, consumers are able to interact with the data in a consistent manner, regardless of how the data is retrieved.</li>
+ *   <li>Stateless: The DataProvider’s data retrieval APIs are inherently stateless.  Attempts to retrieve data are atomic and are not impacted by previous interactions with the DataProvider.  This avoids potential brittleness when multiple consumers are interacting with the same DataProvider instance.</li>
+ *   <li>Key-based: In order to ensure reliable interactions with the data set, the DataProvider contract assumes that each data item can be accessed via a unique key.  While the index can be used as a key if no viable key is available, stable keys should be used whenever possible.</li>
+ *   <li>Read only (with mutation notifications):  The base DataProvider contract does not include mutation APIs.  That is, the DataProvider contract defines APIs for reading data, not for writing data.  However, DataProvider implementations may expose their own type-specific mutation APIs, and the DataProvider contract defines an event-based mechanism for notifying consumers of data changes.</li>
+ *   <li>Filterable:  When requesting data from a DataProvider, consumers are able to specify filter criteria that area used to restrict the data set to those items that match the specified criteria.</li>
+ *   <li>Sortable:  When requesting data from a DataProvider, consumers are able to specify sort criteria that impact the ordering of the provided data.</li>
+ * </ul>
+ * <p>
+ * The DataProvider contract exposes three ways for consumers to retrieve data:
+ * <ul>
+ *   <li>Iteration: the {@link DataProvider#fetchFirst} method returns an AsyncIterable that can be used to iterate over the entire data set.  Consumers typically use this when rendering a data set.</li>
+ *   <li>By keys: the {@link DataProvider#fetchByKeys} method allows specific items to be retrieved by key.  Consumers typically use this when interacting with a subset of data (eg. for retrieving the values of the selected rows in a table component).</li>
+ *   <li>By offset: the {@link DataProvider#fetchByOffset} method allows a specific block of data to be retrieved by specifying an offset and size. Consumers typically use this for paging purposes.</li>
+ * </ul>
+ * A related interface is {@link TreeDataProvider}, which extends DataProvider. TreeDataProviders represent hierarchical data, whereas (non-tree) DataProviders represent data sets that are single-level.
+ * <p>
+ * JET provides several out-of-the-box DataProvider implementations that support the most common use cases.
+ * <br>
+ * <h4 id="description:DataProviderImplementations" class="name">
+ *   Implementations
+ * </h4>
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Class</th>
+ *       <th>Description</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>
+ *         {@link ArrayDataProvider}
+ *       </td>
+ *       <td>
+ *         Basic DataProvider implementation that takes the data from an Javascript array or ko.observableArray.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>
+ *         {@link ArrayTreeDataProvider}
+ *       </td>
+ *       <td>
+ *         Basic TreeDataProvider implementation that takes the data from an Javascript array or ko.observableArray that contains "children" property for subtree data.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>
+ *         {@link CollectionDataProvider}
+ *       </td>
+ *       <td>
+ *         DataProvider implementation that takes the data from a {@link oj.Collection} object. {@link oj.Collection} is an older class that represents data usually comes from external source such as a REST.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>
+ *         {@link DeferredDataProvider}
+ *       </td>
+ *       <td>
+ *         DataProvider implementation that takes the data from a promise that resolves to another DataProvider object.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>
+ *         {@link FlattenedTreeDataProviderView}
+ *       </td>
+ *       <td>
+ *         DataProvider implementation that wraps a TreeDataProvider object and "flattens" the hierarchical data into a single level.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>
+ *         {@link IndexerModelTreeDataProvider}
+ *       </td>
+ *       <td>
+ *         TreeDataProvider implementation that takes the data from an Javascript array that contains "children" property for subtree data. This class also implements the {@link oj.IndexerModel} interface.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>
+ *         {@link ListDataProviderView}
+ *       </td>
+ *       <td>
+ *         DataProvider implementation that wraps another DataProvider, adding data manipulation functionality such as filtering, sorting and field mapping.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>
+ *         {@link PagingDataProviderView}
+ *       </td>
+ *       <td>
+ *         DataProvider implementation that wraps another DataProvider object. This class also implements the {@link oj.PagingModel} interface so that it can be used by components that support paging.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>
+ *         {@link TreeDataProviderView}
+ *       </td>
+ *       <td>
+ *         TreeDataProvider implementation that wraps another TreeDataProvider object and exposes additional APIs. This class provides field mapping functionality for the wrapped TreeDataProvider.
+ *       </td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * <h4 id="description:DataProviderClassHierarchy" class="name">
+ *   Class Hierarchy
+ * </h4>
+ * <ul>
+ *   <li><b>Interface {@link DataProvider}</b></li>
+ *   <ul>
+ *     <li>{@link ArrayDataProvider}</li>
+ *     <li>{@link CollectionDataProvider}</li>
+ *     <li>{@link DeferredDataProvider}</li>
+ *     <li>{@link FlattenedTreeDataProviderView}</li>
+ *     <li>{@link ListDataProviderView}</li>
+ *     <li>{@link PagingDataProviderView}</li>
+ *     <li><b>Interface {@link TreeDataProvider}</b></li>
+ *       <ul>
+ *         <li>{@link ArrayTreeDataProvider}</li>
+ *         <li>{@link IndexerModelTreeDataProvider}</li>
+ *         <li>{@link TreeDataProviderView}</li>
+ *       </ul>
+ *     </li>
+ *   </ul>
+ * </ul>
  * </p><p>
- * Applications can also create their own implementations of this interface and use them with JET components that support it.  For example, an application can create a DataProvider implementation
- * that fetches data from a REST endpoint.
- * </p><p>
- * Implementation class must implement all of the interface methods.  It should also fire the events described below when appropriate, so that JET components or other consumers can respond to data change accordingly.
- * </p>
  *
  * <h3 id="events-section">
  *   Events
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#events-section"></a>
  * </h3>
- * Implementation can fire the following events by creating an instance of the event class and passing the event payload in the constructor.
+ * Implementations can fire the following events by creating an instance of the event class and passing the event payload in the constructor.
  * <h4 id="event:DataProviderMutationEvent" class="name">
- *   {@link oj.DataProviderMutationEvent}
+ *   {@link DataProviderMutationEvent}
  * </h4>
  * This event is fired when items have been added or removed from the data.
  * <p>
- * Event payload should implement the {@link oj.DataProviderMutationEventDetail} interface.
+ * Event payloads should implement the {@link DataProviderMutationEventDetail} interface.
  * </p><p>
  * Consumers can add an event listener for the "mutate" event type on the DataProvider object.
  * </p>
- * <h4 id="event:DataProviderRefreshEvent" class="name">
- *   {@link oj.DataProviderRefreshEvent}
- * </h4>
- * This event is fired when the data has been refreshed and components need to re-fetch the data.
- * <p>
- * This event contains no additional event payload.
- * </p><p>
- * Consumers can add an event listener for the "refresh" event type on the DataProvider object.
- * </p>
- *
- * <i>Example of implementation firing an oj.DataProviderMutationEvent for removed items:</i>
+ * <i>Example of implementation firing an DataProviderMutationEvent for removed items:</i>
  * <pre class="prettyprint"><code>let removeDetail = {data: removedDataArray,
  *                     indexes: removedIndexArray,
  *                     keys: removedKeySet,
  *                     metadata: removedMetadataArray};
- * this.dispatchEvent(new oj.DataProviderMutationEvent({remove: removeDetail}));
+ * this.dispatchEvent(new DataProviderMutationEvent({remove: removeDetail}));
  * </code></pre>
  *
  * <i>Example of consumer listening for the "mutate" event type:</i>
@@ -2191,6 +2617,35 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * };
  * dataProvider.addEventListener("mutate", listener);
  * </code></pre>
+ * <h4 id="event:DataProviderRefreshEvent" class="name">
+ *   {@link DataProviderRefreshEvent}
+ * </h4>
+ * This event is fired when the data has been refreshed and components need to re-fetch the data.
+ * <p>
+ * This event contains no additional event payload.
+ * </p><p>
+ * Consumers can add an event listener for the "refresh" event type on the DataProvider object.
+ * </p>
+ * <i>Example of consumer listening for the "refresh" event type:</i>
+ * <pre class="prettyprint"><code>let listener = function(event) {
+ * };
+ * dataProvider.addEventListener("refresh", listener);
+ * </code></pre>
+ * <h3 id="custom-implementations-section">
+ *   Custom Implementations
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#custom-implementations-section"></a>
+ * </h3>
+ * Applications can also create their own implementations of the DataProvider interface and use them with JET components.  For example, an application can create a DataProvider implementation
+ * that fetches data from a REST endpoint.
+ * </p><p>
+ * Implementation classes must implement all of the interface methods.  It should also fire the DataProvider events when appropriate, so that JET components or other consumers can respond to data change accordingly.
+ * </p>
+ * <p>
+ * A generic implementation of {@link DataProvider#fetchByKeys} and {@link DataProvider#containsKeys} is available from {@link FetchByKeysMixin}
+ * which can be used in custom implementations of DataProvider.
+ * It is for convenience and may not provide the most efficient implementation for your data provider.
+ * Classes that implement the DataProvider interface are encouraged to provide a more efficient implementation.
+ * </p>
  */
 oj.DataProvider = function () {};
 /**
@@ -2198,12 +2653,12 @@ oj.DataProvider = function () {};
  *
  *
  * @since 4.2.0
- * @param {oj.FetchListParameters=} params fetch parameters
- * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
+ * @param {FetchListParameters=} params fetch parameters
+ * @return {AsyncIterable.<FetchListResult>} AsyncIterable with {@link FetchListResult}
  * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
  * @export
  * @expose
- * @memberof oj.DataProvider
+ * @memberof DataProvider
  * @instance
  * @method
  * @name fetchFirst
@@ -2211,12 +2666,14 @@ oj.DataProvider = function () {};
  *               value: "(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
  * @ojtsexample <caption>Get an asyncIterator and then fetch first block of data by executing next() on the iterator. Subsequent blocks can be fetched by executing next() again.</caption>
  * let asyncIterator = dataprovider.fetchFirst(options)[Symbol.asyncIterator]();
- * asyncIterator.next().then(function(result) {
- *   let value = result.value;
- *   let data = value.data;
- *   let keys = value.metadata.map(function(val) {
- *     return val.key;
+ * let result = await asyncIterator.next();
+ * let value = result.value;
+ * let data = value.data;
+ * let keys = value.metadata.map(function(val) {
+ *   return val.key;
  * });
+ * // true or false for done
+ * let done = result.done;
  */
 
 /**
@@ -2225,18 +2682,18 @@ oj.DataProvider = function () {};
  *
  * @since 4.2.0
  * @param {string} capabilityName capability name. Defined capability names are:
- *                  "fetchByKeys", "fetchByOffset", "sort", and "filter".
+ *                  "fetchByKeys", "fetchByOffset", "sort", "fetchCapability" and "filter".
  * @return {Object} capability information or null if undefined
  * <ul>
- *   <li>If capabilityName is "fetchByKeys", returns a {@link oj.FetchByKeysCapability} object.</li>
- *   <li>If capabilityName is "fetchByOffset", returns a {@link oj.FetchByOffsetCapability} object.</li>
- *   <li>If capabilityName is "sort", returns a {@link oj.SortCapability} object.</li>
- *   <li>If capabilityName is "filter", returns a {@link oj.FilterCapability} object.</li>
- *   <li>If capabilityName is "fetchCapability", returns a {@link oj.FetchCapability} object.</li>
+ *   <li>If capabilityName is "fetchByKeys", returns a {@link FetchByKeysCapability} object.</li>
+ *   <li>If capabilityName is "fetchByOffset", returns a {@link FetchByOffsetCapability} object.</li>
+ *   <li>If capabilityName is "sort", returns a {@link SortCapability} object.</li>
+ *   <li>If capabilityName is "filter", returns a {@link FilterCapability} object.</li>
+ *   <li>If capabilityName is "fetchCapability", returns a {@link FetchCapability} object.</li>
  * </ul>
  * @export
  * @expose
- * @memberof oj.DataProvider
+ * @memberof DataProvider
  * @instance
  * @method
  * @name getCapability
@@ -2256,35 +2713,29 @@ oj.DataProvider = function () {};
  * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
  * @export
  * @expose
- * @memberof oj.DataProvider
+ * @memberof DataProvider
  * @instance
  * @method
  * @name getTotalSize
  * @ojtsexample <caption>Get the total rows</caption>
- * dataprovider.getTotalSize().then(function(value) {
- *   if (value == -1) {
- *     // we don't know the total row count
- *   } else {
- *     // the total count
- *     console.log(value);
- * });
+ * let value = await dataprovider.getTotalSize();
+ * if (value == -1) {
+ *   // we don't know the total row count
+ * } else {
+ *   // the total count
+ *   console.log(value);
  */
 
 /**
- * Fetch rows by keys
- * <p>
- * A generic implementation of this method is available from {@link oj.FetchByKeysMixin}.
- * It is for convenience and may not provide the most efficient implementation for your data provider.
- * Classes that implement the DataProvider interface are encouraged to provide a more efficient implementation.
- * </p>
+ * Fetch rows by keys. The resulting key map will only contain keys which were actually found.
  *
  *
  * @since 4.2.0
- * @param {oj.FetchByKeysParameters} parameters fetch by key parameters
- * @return {Promise.<oj.FetchByKeysResults>} Returns Promise which resolves to {@link oj.FetchByKeysResults}.
+ * @param {FetchByKeysParameters} parameters fetch by key parameters
+ * @return {Promise.<FetchByKeysResults>} Returns Promise which resolves to {@link FetchByKeysResults}.
  * @export
  * @expose
- * @memberof oj.DataProvider
+ * @memberof DataProvider
  * @instance
  * @method
  * @name fetchByKeys
@@ -2292,27 +2743,21 @@ oj.DataProvider = function () {};
  *               value: "(parameters : FetchByKeysParameters<K>) : Promise<FetchByKeysResults<K, D>>"}
  * @ojtsexample <caption>Fetch for keys 1001 and 556</caption>
  * let fetchKeys = [1001, 556];
- * dataprovider.fetchByKeys({keys: fetchKeys}).then(function(value) {
- *   // get the data for key 1001
- *   console.log(value.results.get(1001).data);
- * });
+ * let value = await dataprovider.fetchByKeys({keys: fetchKeys});
+ * // get the data for key 1001
+ * console.log(value.results.get(1001).data);
  */
 
 /**
- * Check if there are rows containing the specified keys
- * <p>
- * A generic implementation of this method is available from {@link oj.FetchByKeysMixin}.
- * It is for convenience and may not provide the most efficient implementation for your data provider.
- * Classes that implement the DataProvider interface are encouraged to provide a more efficient implementation.
- * </p>
+ * Check if there are rows containing the specified keys. The resulting key map will only contain keys which were actually found.
  *
  *
  * @since 4.2.0
- * @param {oj.FetchByKeysParameters} parameters contains by key parameters
- * @return {Promise.<oj.ContainsKeysResults>} Returns Promise which resolves to {@link oj.ContainsKeysResults}.
+ * @param {FetchByKeysParameters} parameters contains by key parameters
+ * @return {Promise.<ContainsKeysResults>} Returns Promise which resolves to {@link ContainsKeysResults}.
  * @export
  * @expose
- * @memberof oj.DataProvider
+ * @memberof DataProvider
  * @instance
  * @method
  * @name containsKeys
@@ -2320,45 +2765,43 @@ oj.DataProvider = function () {};
  *               value: "(parameters : FetchByKeysParameters<K>) : Promise<ContainsKeysResults<K>>"}
  * @ojtsexample <caption>Check if keys 1001 and 556 are contained</caption>
  * let containsKeys = [1001, 556];
- * dataprovider.containsKeys({keys: containsKeys}).then(function(value) {
- *   let results = value['results'];
- *   if (results.has(1001)) {
- *     console.log('Has key 1001');
- *   } else if (results.has(556){
- *     console.log('Has key 556');
- *   }
- * });
+ * let value = await dataprovider.containsKeys({keys: containsKeys});
+ * let results = value['results'];
+ * if (results.has(1001)) {
+ *   console.log('Has key 1001');
+ * } else if (results.has(556){
+ *   console.log('Has key 556');
+ * }
  */
 
 /**
  * Fetch rows by offset
  * <p>
- * A generic implementation of this method is available from {@link oj.FetchByOffsetMixin}.
+ * A generic implementation of this method is available from {@link FetchByOffsetMixin}.
  * It is for convenience and may not provide the most efficient implementation for your data provider.
  * Classes that implement the DataProvider interface are encouraged to provide a more efficient implementation.
  * </p>
  *
  *
  * @since 4.2.0
- * @param {oj.FetchByOffsetParameters} parameters fetch by offset parameters
- * @return {Promise.<oj.FetchByOffsetResults>} Returns Promise which resolves to {@link oj.FetchByOffsetResults}.
+ * @param {FetchByOffsetParameters} parameters fetch by offset parameters
+ * @return {Promise.<FetchByOffsetResults>} Returns Promise which resolves to {@link FetchByOffsetResults}.
  * @export
  * @expose
- * @memberof oj.DataProvider
+ * @memberof DataProvider
  * @instance
  * @method
  * @name fetchByOffset
  * @ojsignature {target: "Type",
  *               value: "(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
  * @ojtsexample <caption>Fetch by offset 5 rows starting at index 2</caption>
- * dataprovider.fetchByOffset({size: 5, offset: 2}).then(function(value) {
- *   let results = result['results'];
- *   let data = results.map(function(value) {
- *     return value['data'];
- *   });
- *   let keys = results.map(function(value) {
- *     return value['metadata']['key'];
- *   });
+ * let value = await dataprovider.fetchByOffset({size: 5, offset: 2});
+ * let results = result['results'];
+ * let data = results.map(function(value) {
+ *   return value['data'];
+ * });
+ * let keys = results.map(function(value) {
+ *   return value['metadata']['key'];
  * });
  */
 
@@ -2375,7 +2818,7 @@ oj.DataProvider = function () {};
  * @return {"yes" | "no" | "unknown"} string that indicates if this data provider is empty
  * @export
  * @expose
- * @memberof oj.DataProvider
+ * @memberof DataProvider
  * @instance
  * @method
  * @name isEmpty
@@ -2401,11 +2844,11 @@ oj.DataProvider = function () {};
  *
  *
  * @since 6.2.0
- * @param {Set.<any>=} Optionally specify an initial set of keys for the Set. If not specified, then return an empty Set.
+ * @param {Set.<any>=} initialSet Optionally specify an initial set of keys for the Set. If not specified, then return an empty Set.
  * @return {Set.<any>} Returns a Set optimized for handling keys from the DataProvider.
  * @export
  * @expose
- * @memberof oj.DataProvider
+ * @memberof DataProvider
  * @instance
  * @method
  * @name createOptimizedKeySet
@@ -2430,11 +2873,11 @@ oj.DataProvider = function () {};
  *
  *
  * @since 6.2.0
- * @param {Map.<any>=} Optionally specify an initial map of key/values for the Map. If not specified, then return an empty Map.
+ * @param {Map.<any>=} initialMap Optionally specify an initial map of key/values for the Map. If not specified, then return an empty Map.
  * @return {Map.<any>} Returns a Map optimized for handling keys from the DataProvider.
  * @export
  * @expose
- * @memberof oj.DataProvider
+ * @memberof DataProvider
  * @instance
  * @method
  * @name createOptimizedKeyMap
@@ -2442,6 +2885,54 @@ oj.DataProvider = function () {};
  *               value: "?(initialMap?: Map<K, D>): Map<K, D>"}
  * @ojtsexample <caption>create empty key Map</caption>
  * let keyMap = dataprovider.createOptimizedKeyMap();
+ */
+
+/**
+ * Add a callback function to listen for a specific event type.
+ *
+ *
+ * @export
+ * @expose
+ * @memberof DataProvider
+ * @instance
+ * @method
+ * @name addEventListener
+ * @param {string} eventType The event type to listen for.
+ * @param {EventListener} listener The callback function that receives the event notification.
+ * @ojsignature {target: "Type",
+ *               value: "(eventType: string, listener: EventListener): void"}
+ */
+
+/**
+ * Remove a listener previously registered with addEventListener.
+ *
+ *
+ * @export
+ * @expose
+ * @memberof DataProvider
+ * @instance
+ * @method
+ * @name removeEventListener
+ * @param {string} eventType The event type that the listener was registered for.
+ * @param {EventListener} listener The callback function that was registered.
+ * @ojsignature {target: "Type",
+ *               value: "(eventType: string, listener: EventListener): void"}
+ */
+
+/**
+ * Dispatch an event and invoke any registered listeners.
+ *
+ *
+ * @export
+ * @expose
+ * @memberof DataProvider
+ * @instance
+ * @method
+ * @name dispatchEvent
+ * @param {Event} event The event object to dispatch.
+ * @return {boolean} Return false if a registered listener has cancelled the event. Return true otherwise.
+ * @ojsignature {target: "Type",
+ *               value: "(evt: Event): boolean"}
  */
 
 /**
@@ -2461,14 +2952,12 @@ oj.DataProvider = function () {};
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.FetchAttribute
- *
- *
  * @since 6.1.0
  * @export
- * @interface oj.FetchAttribute
+ * @interface FetchAttribute
  * @ojsignature {target: "Type",
  *               value: "interface FetchAttribute"}
+ * @classdesc Defines the stucture of attribute objects in {@link FetchListParameters#attributes}
  */
 
 /**
@@ -2478,7 +2967,7 @@ oj.DataProvider = function () {};
  * @since 6.1.0
  * @export
  * @expose
- * @memberof oj.FetchAttribute
+ * @memberof FetchAttribute
  * @instance
  * @name name
  * @type string
@@ -2500,10 +2989,10 @@ oj.DataProvider = function () {};
  * @since 6.1.0
  * @export
  * @expose
- * @memberof oj.FetchAttribute
+ * @memberof FetchAttribute
  * @instance
  * @name attributes
- * @type {Array.<string | oj.FetchAttribute>}
+ * @type {Array.<string | FetchAttribute>}
  * @ojsignature {target: "Type",
  *               value: "?Array<string | FetchAttribute>"}
  */
@@ -2527,15 +3016,13 @@ oj.DataProvider = function () {};
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.FetchByKeysCapability
- *
- *
  * @export
- * @interface oj.FetchByKeysCapability
+ * @interface FetchByKeysCapability
  * @since 4.2.0
  * @ojsignature {target: "Type",
  *               value: "interface FetchByKeysCapability<D>",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines the result to the DataProvider method {@link DataProvider#getCapability} for capability "fetchByKeys"
  */
 
 /**
@@ -2549,7 +3036,7 @@ oj.DataProvider = function () {};
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.FetchByKeysCapability
+ * @memberof FetchByKeysCapability
  * @instance
  * @name implementation
  * @type {"iteration" | "lookup"}
@@ -2565,9 +3052,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var FetchByKeysMixin =
-/*#__PURE__*/
-function () {
+var FetchByKeysMixin = /*#__PURE__*/function () {
   function FetchByKeysMixin() {
     _classCallCheck(this, FetchByKeysMixin);
   }
@@ -2738,9 +3223,9 @@ oj['FetchByKeysMixin']['applyMixin'] = FetchByKeysMixin.applyMixin;
 /**
  *
  * @export
- * @namespace oj.FetchByKeysMixin
- * @classdesc Mixin class to provide generic implementation of fetchByKeys and containsKeys
- * methods for the {@link oj.DataProvider} interface.
+ * @namespace FetchByKeysMixin
+ * @classdesc Mixin class to provide generic implementation of {@link DataProvider#fetchByKeys} and {@link DataProvider#containsKeys}
+ * methods for the {@link DataProvider} interface.
  * <p>
  * By default, the mixin implementation will iterate through all the rows to find
  * the result.  DataProvider implementations can implement a "getIterationLimit" function
@@ -2762,7 +3247,7 @@ oj['FetchByKeysMixin']['applyMixin'] = FetchByKeysMixin.applyMixin;
  * @param {Function} derivedCtor the constructor of an existing class
  * @export
  * @expose
- * @memberof oj.FetchByKeysMixin
+ * @memberof FetchByKeysMixin
  * @method
  * @name applyMixin
  * @ojtsexample <caption>Apply the mixin in Typescript:</caption>
@@ -2776,14 +3261,14 @@ oj['FetchByKeysMixin']['applyMixin'] = FetchByKeysMixin.applyMixin;
  *   }
  * }
  *
- * oj.FetchByKeysMixin.applyMixin(CustomDataProvider);
+ * FetchByKeysMixin.applyMixin(CustomDataProvider);
  *
  * @ojtsexample <caption>Apply the mixin in Javascript:</caption>
  * function CustomDataProvider() {
  *   // Constructor implementation
  * }
  *
- * oj.FetchByKeysMixin.applyMixin(CustomDataProvider);
+ * FetchByKeysMixin.applyMixin(CustomDataProvider);
  * @ojsignature {target: "Type", value: "(derivedCtor: {new(): DataProvider<any, any>}): any;"}
  */
 
@@ -2806,15 +3291,13 @@ oj['FetchByKeysMixin']['applyMixin'] = FetchByKeysMixin.applyMixin;
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.FetchByOffsetCapability
- *
- *
  * @export
- * @interface oj.FetchByOffsetCapability
+ * @interface FetchByOffsetCapability
  * @since 4.2.0
  * @ojsignature {target: "Type",
  *               value: "interface FetchByOffsetCapability<D>",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines the result to the DataProvider method {@link DataProvider#getCapability} for capability "fetchByOffset"
  */
 
 /**
@@ -2828,7 +3311,7 @@ oj['FetchByKeysMixin']['applyMixin'] = FetchByKeysMixin.applyMixin;
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.FetchByOffsetCapability
+ * @memberof FetchByOffsetCapability
  * @instance
  * @name implementation
  * @type {"iteration" | "randomAccess"}
@@ -2844,9 +3327,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var FetchByOffsetMixin =
-/*#__PURE__*/
-function () {
+var FetchByOffsetMixin = /*#__PURE__*/function () {
   function FetchByOffsetMixin() {
     _classCallCheck(this, FetchByOffsetMixin);
   }
@@ -2995,9 +3476,9 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 /**
  *
  * @export
- * @namespace oj.FetchByOffsetMixin
- * @classdesc Mixin class to provide generic implementation of fetchByOffset
- * method for the {@link oj.DataProvider} interface.
+ * @namespace FetchByOffsetMixin
+ * @classdesc Mixin class to provide generic implementation of {@link DataProvider#fetchByOffset}
+ * method for the {@link DataProvider} interface.
  * <p>
  * By default, the mixin implementation will iterate through all the rows to find
  * the result.  DataProvider implementations can implement a "getIterationLimit" function
@@ -3019,7 +3500,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * @param {Function} derivedCtor the constructor of an existing class
  * @export
  * @expose
- * @memberof oj.FetchByOffsetMixin
+ * @memberof FetchByOffsetMixin
  * @method
  * @name applyMixin
  * @ojtsexample <caption>Apply the mixin in Typescript:</caption>
@@ -3032,14 +3513,14 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  *   }
  * }
  *
- * oj.FetchByOffsetMixin.applyMixin(CustomDataProvider);
+ * FetchByOffsetMixin.applyMixin(CustomDataProvider);
  *
  * @ojtsexample <caption>Apply the mixin in Javascript:</caption>
  * function CustomDataProvider() {
  *   // Constructor implementation
  * }
  *
- * oj.FetchByOffsetMixin.applyMixin(CustomDataProvider);
+ * FetchByOffsetMixin.applyMixin(CustomDataProvider);
  * @ojsignature {target: "Type", value: "(derivedCtor: {new(): DataProvider<any, any>}): any;"}
  */
 
@@ -3058,16 +3539,14 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.FetchByOffsetParameters
- *
- *
  * @since 4.1.0
  * @export
- * @interface oj.FetchByOffsetParameters
- * @extends oj.FetchListParameters
+ * @interface FetchByOffsetParameters
+ * @extends FetchListParameters
  * @ojsignature {target: "Type",
  *               value: "interface FetchByOffsetParameters<D> extends FetchListParameters<D>",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines the parameters to the DataProvider method {@link DataProvider#fetchByOffset}
  */
 
 /**
@@ -3077,7 +3556,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.FetchByOffsetParameters
+ * @memberof FetchByOffsetParameters
  * @instance
  * @name offset
  * @type {number}
@@ -3091,23 +3570,21 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * @since 6.1.0
  * @export
  * @expose
- * @memberof oj.FetchByOffsetParameters
+ * @memberof FetchByOffsetParameters
  * @instance
  * @name attributes
- * @type {Array.<string | oj.FetchAttribute>}
+ * @type {Array.<string | FetchAttribute>}
  * @ojsignature {target: "Type",
  *               value: "?Array<string | FetchAttribute>"}
  */
 
 /**
- * The interface for oj.FetchByOffsetResults
- *
- *
  * @since 4.1.0
  * @export
- * @interface oj.FetchByOffsetResults
+ * @interface FetchByOffsetResults
  * @ojsignature {target: "Type",
  *               value: "interface FetchByOffsetResults<K, D>"}
+ * @classdesc FetchByOffsetResults defines the result from the DataProvider method {@link DataProvider#fetchByOffset}
  */
 
 /**
@@ -3117,25 +3594,25 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.FetchByOffsetResults
+ * @memberof FetchByOffsetResults
  * @instance
  * @name fetchParameters
- * @type {oj.FetchByOffsetParameters}
+ * @type {FetchByOffsetParameters}
  * @ojsignature {target: "Type",
  *               value: "FetchByOffsetParameters<D>"}
  */
 
 /**
- * Array of {@link oj.Item}.
+ * Array of {@link Item}.
  *
  *
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.FetchByOffsetResults
+ * @memberof FetchByOffsetResults
  * @instance
  * @name results
- * @type {Array.<oj.Item>}
+ * @type {Array.<Item>}
  * @ojsignature {target: "Type",
  *               value: "Array<Item<K, D>>"}
  */
@@ -3149,7 +3626,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.FetchByOffsetResults
+ * @memberof FetchByOffsetResults
  * @instance
  * @name done
  * @type {boolean}
@@ -3163,152 +3640,11 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 
 
 
-/**
- * @preserve Copyright 2013 jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-
-/* jslint browser: true,devel:true*/
-
-/**
- * The interface for oj.FetchCapability
- *
- *
- * @export
- * @interface oj.FetchCapability
- * @since 6.1.0
- * @ojsignature {target: "Type",
- *               value: "interface FetchCapability"}
- */
-
-/**
- * Optional detailed attribute filter capability information
- *
- *
- * @since 6.1.0
- * @export
- * @expose
- * @memberof oj.FetchCapability
- * @instance
- * @name attributeFilter
- * @type {oj.AttributeFilterCapability}
- * @ojsignature {target: "Type",
- *               value: "AttributeFilterCapability"}
- */
-
-/**
- * The interface for oj.AttributeFilterCapability
- *
- *
- * @export
- * @interface oj.AttributeFilterCapability
- * @since 6.1.0
- * @ojsignature {target: "Type",
- *               value: "interface AttributeFilterCapability"}
- */
-
-/**
- * Optional attribute expansion filter capability information
- *
- *
- * @since 6.1.0
- * @export
- * @expose
- * @memberof oj.AttributeFilterCapability
- * @instance
- * @name expansion
- * @type {object=}
- */
-
-/**
- * Optional attribute ordering filter capability information
- *
- *
- * @since 6.1.0
- * @export
- * @expose
- * @memberof oj.AttributeFilterCapability
- * @instance
- * @name ordering
- * @type {object=}
- */
-
-/**
- * Optional attribute defaultShape filter capability information
- *
- *
- * @since 6.1.0
- * @export
- * @expose
- * @memberof oj.AttributeFilterCapability
- * @instance
- * @name defaultShape
- * @type {object=}
- */
-
-/**
- * End of jsdoc
- */
 
 
 
 
 
-
-
-
-
-
-
-/**
- * @preserve Copyright 2013 jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-
-/* jslint browser: true,devel:true*/
-
-/**
- * The interface for oj.FilterCapability
- *
- *
- * @export
- * @interface oj.FilterCapability
- * @since 5.0.0
- * @ojsignature {target: "Type",
- *               value: "interface FilterCapability"}
- */
-
-/**
- * An array of supported filter operator strings
- *
- *
- * @since 5.0.0
- * @export
- * @expose
- * @memberof oj.FilterCapability
- * @instance
- * @name operators
- * @type {Array.<string>}
- */
-
-/**
- * Existence of this property indicates that textFiltering is supported. The property value can be used convey more information to the caller.
- *
- *
- * @since 8.0.0
- * @export
- * @expose
- * @memberof oj.FilterCapability
- * @instance
- * @name textFilter
- * @type {any}
- */
-
-/**
- * End of jsdoc
- */
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -3317,9 +3653,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 
-var FilterImpl =
-/*#__PURE__*/
-function () {
+var FilterImpl = /*#__PURE__*/function () {
   function FilterImpl(options) {
     _classCallCheck(this, FilterImpl);
 
@@ -3477,9 +3811,7 @@ function () {
   return FilterImpl;
 }();
 
-var FilterFactory =
-/*#__PURE__*/
-function () {
+var FilterFactory = /*#__PURE__*/function () {
   function FilterFactory() {
     _classCallCheck(this, FilterFactory);
   }
@@ -3507,15 +3839,14 @@ oj['FilterFactory'] = FilterFactory;
 /* jslint browser: true,devel:true*/
 
 /**
- * The class oj.FilterFactory
- *
- *
  * @export
- * @class oj.FilterFactory
+ * @class FilterFactory
  * @since 7.0.0
  * @ojsignature {target: "Type",
  *               value: "class FilterFactory<D>"}
  * @hideconstructor
+ * @classdesc Provides the ability to construct filters which can be used for {@link FetchListParameters#filterCriterion}. Note is it not a requirement to use this
+ * factory to construct filters based on the filter definition. Applications can construct their own filters which implement the interface {@link DataFilter.Filter}
  */
 
 /**
@@ -3527,14 +3858,14 @@ oj['FilterFactory'] = FilterFactory;
  * @since 7.0.0
  * @export
  * @expose
- * @memberof oj.FilterFactory
+ * @memberof FilterFactory
  * @instance
  * @name getFilter
  * @method
  * @param {Object} options Options for the getFilter() function
- * @param {oj.DataFilter.FilterDef} options.filterDef The filter definition for the filter to be returned.
+ * @param {DataFilter.FilterDef} options.filterDef The filter definition for the filter to be returned.
  * @param {any=} options.filterOptions Options for the filter such as textFilterAttributes which lists the attributes to filter on for TextFilter.
- * @return {oj.DataFilter.Filter} Returns either an AttributeFilter, AttributeExprFilter, CompoundFilter, or TextFilter depending on whether a AttributeFilterDef or CompoundFilterDef.
+ * @return {DataFilter.Filter} Returns either an AttributeFilter, AttributeExprFilter, CompoundFilter, or TextFilter depending on whether a AttributeFilterDef or CompoundFilterDef.
  * was passed in.
  * @ojsignature {target: "Type",
  *               value: "(options: {filterDef: DataFilter.FilterDef<D>, filterOptions: any}): DataFilter.Filter<D>",
@@ -3543,9 +3874,8 @@ oj['FilterFactory'] = FilterFactory;
  * <caption>Get filter which filters on DepartmentId value 10 and then fetch filtered rows from the DataProvider</caption>
  * var filter = FilterFactory.getFilter({filterDef: {op: '$eq', value: {DepartmentId: 10}}};
  * var dataProviderAsyncIterator = dataprovider.fetchFirst({filterCriterion: filter})[Symbol.asyncIterator]();
- * dataProviderAsyncIterator.next().then(function(result)
- * {
- *   ...
+ * let result = await dataProviderAsyncIterator.next();
+ * ...
  **/
 
 /**
@@ -3565,11 +3895,11 @@ oj['FilterFactory'] = FilterFactory;
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.FilterOperator
+ * The interface for FilterOperator
  *
  *
  * @export
- * @interface oj.FilterOperator
+ * @interface FilterOperator
  * @since 5.0.0
  * @ojsignature {target: "Type",
  *               value: "interface FilterOperator<D>",
@@ -3578,16 +3908,16 @@ oj['FilterFactory'] = FilterFactory;
  */
 
 /**
- * The operator, either an oj.AttributeFilterOperator.AttributeOperator or oj.CompoundFilterOperator.CompoundOperator.
+ * The operator, either an AttributeFilterOperator.AttributeOperator or CompoundFilterOperator.CompoundOperator.
  *
  *
  * @since 5.0.0
  * @export
  * @expose
- * @memberof oj.FilterOperator
+ * @memberof FilterOperator
  * @instance
  * @name op
- * @type {oj.AttributeFilterOperator.AttributeOperator | oj.CompoundFilterOperator.CompoundOperator}
+ * @type {AttributeFilterOperator.AttributeOperator | CompoundFilterOperator.CompoundOperator}
  */
 
 /**
@@ -3597,7 +3927,7 @@ oj['FilterFactory'] = FilterFactory;
  * @since 5.0.0
  * @export
  * @expose
- * @memberof oj.FilterOperator
+ * @memberof FilterOperator
  * @instance
  * @name filter
  * @method
@@ -4080,15 +4410,13 @@ oj.FilterUtils = function () {
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.Item
- *
- *
  * @since 4.1.0
  * @export
- * @interface oj.Item
+ * @interface Item
  * @ojsignature {target: "Type",
  *               value: "interface Item<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines the items returned in the Map<K, Item<K, D>> from the DataProvider method {@link DataProvider#fetchByKeys}
  */
 
 /**
@@ -4098,10 +4426,10 @@ oj.FilterUtils = function () {
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.Item
+ * @memberof Item
  * @instance
  * @name metadata
- * @type {oj.ItemMetadata}
+ * @type {ItemMetadata}
  * @ojsignature {target: "Type",
  *               value: "ItemMetadata<K>"}
  */
@@ -4113,7 +4441,7 @@ oj.FilterUtils = function () {
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.Item
+ * @memberof Item
  * @instance
  * @name data
  * @type {Object}
@@ -4138,15 +4466,16 @@ oj.FilterUtils = function () {
 /* jslint browser: true,devel:true*/
 
 /**
- * The interface for oj.SortCapability
+ * The interface for SortCapability
  *
  *
  * @export
- * @interface oj.SortCapability
+ * @interface SortCapability
  * @since 4.2.0
  * @ojsignature {target: "Type",
  *               value: "interface SortCapability<D>",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
+ * @classdesc Defines the result from the DataProvider method {@link DataProvider#getCapability} for capability "sort"
  */
 
 /**
@@ -4161,7 +4490,7 @@ oj.FilterUtils = function () {
  * @since 4.2.0
  * @export
  * @expose
- * @memberof oj.SortCapability
+ * @memberof SortCapability
  * @instance
  * @name attributes
  * @type {"none" | "single" | "multiple"}
@@ -4182,6 +4511,8 @@ var __DataProvider = {};
 __DataProvider.FetchByKeysMixin = oj.FetchByKeysMixin;
 __DataProvider.FetchByOffsetMixin = oj.FetchByOffsetMixin;
 __DataProvider.FilterFactory = oj.FilterFactory;
+__DataProvider.DataProviderRefreshEvent = oj.DataProviderRefreshEvent;
+__DataProvider.DataProviderMutationEvent = oj.DataProviderMutationEvent;
 
   ;return __DataProvider;
 });

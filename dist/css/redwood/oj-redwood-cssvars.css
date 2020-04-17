@@ -8453,6 +8453,9 @@ html .oj-form-control {
   width: 1em;
   min-width: 1em; }
 
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field-middle {
+  width: 100%; }
+
 /* when the label is inside or above, we must set the max-width of the component to
       100%. Otherwise some components like input text, whose max-width is decided by
       oj-text-field-lg-max-width looks so different from other components like radioset

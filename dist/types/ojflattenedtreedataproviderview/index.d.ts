@@ -7,11 +7,13 @@ declare class FlattenedTreeDataProviderView<K, D> implements DataProvider<K, D> 
         expanded?: KeySet<K>;
     });
     addEventListener(eventType: string, listener: EventListener): void;
-    containsKeys(params: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
+    containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
+    createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;
+    createOptimizedKeySet?(initialSet?: Set<K>): Set<K>;
     dispatchEvent(evt: Event): boolean;
-    fetchByKeys(params: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>;
-    fetchByOffset(params: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>;
-    fetchFirst(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>;
+    fetchByKeys(parameters: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>;
+    fetchByOffset(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>;
+    fetchFirst(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>;
     getCapability(capabilityName: string): any;
     getExpandedObservable(): {
         subscribe(subscriber: ((expanded: {

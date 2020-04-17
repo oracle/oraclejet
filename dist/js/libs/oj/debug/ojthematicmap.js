@@ -3143,7 +3143,7 @@ Components.setDefaultOptions({
  * @typedef {Object} oj.ojThematicMap.Area
  * @property {Array.<string>=}       categories An array of category strings corresponding to this area. This allows highlighting and filtering of areas.
  * @property {string=}       color The area color.
- * @property {any=}          id The identifier for this area. The id should be set by the application if the oj.DataProvider is not being used. The row key will be used as id in the oj.DataProvider case.
+ * @property {any=}          id The identifier for this area. The id should be set by the application if the DataProvider is not being used. The row key will be used as id in the  case.
  * @property {string=}       label Text used for the area's label.
  * @property {Object=}       labelStyle The CSS style defining the label style for this area.
  * @property {string}        location An identifier corresponding to a Feature provided in the mapProvider geo object that this area is associated with.
@@ -3166,7 +3166,7 @@ Components.setDefaultOptions({
  * @property {string=}       endLocation.location An identifier corresponding to a Feature provided in the mapProvider geo object to be used as the end point.
  * @property {number=}       endLocation.x The x coordinate which can represent latitude of the end point.
  * @property {number=}       endLocation.y The y coordinate which can represent longitude of the end point.
- * @property {any=}          id The identifier for this link. The id should be set by the application if the oj.DataProvider is not being used. The row key will be used as id in the oj.DataProvider case.
+ * @property {any=}          id The identifier for this link. The id should be set by the application if the DataProvider is not being used. The row key will be used as id in the  case.
  * @property {"auto"|"off"}  [selectable="auto"] Specifies whether or not the link will be selectable.
  * @property {string=}       shortDesc The text that displays in the links's tooltip.
  * @property {Object}        startLocation An object used to determine the start point of the link.
@@ -3191,7 +3191,7 @@ Components.setDefaultOptions({
  * @property {Array.<string>=}       categories An array of category strings corresponding to this marker. This allows highlighting and filtering of markers.
  * @property {string=}       color The marker color.
  * @property {number=}       height The pixel height for this marker. Note that this attribute will be ignored if a value is provided to calculate marker sizes.
- * @property {any=}       id The identifier for this marker. The id should be set by the application if the oj.DataProvider is not being used. The row key will be used as id in the oj.DataProvider case.
+ * @property {any=}       id The identifier for this marker. The id should be set by the application if the DataProvider is not being used. The row key will be used as id in the  case.
  * @property {string=}       label Text used for the marker's label.
  * @property {"bottom"|"center"|"top"}       [labelPosition="center"] Determines the label position relative to the marker.
  * @property {Object=}       labelStyle The CSS style object defining the style of the marker.
@@ -3227,7 +3227,7 @@ Components.setDefaultOptions({
  * @property {Element}      componentElement The thematic map element.
  * @property {Object}       data The data object for the rendered item.
  * @property {any}          id The id of the data item.
- * @property {Object|null}  itemData The row data object for the rendered item. This will only be set if an oj.DataProvider is being used.
+ * @property {Object|null}  itemData The row data object for the rendered item. This will only be set if an DataProvider is being used.
  * @property {string}       label The label of the data item.
  * @property {string|null}  location The location of the data item which can be null if x/y are set instead.
  * @property {Element}      parentElement An element that is part of a displayed subtree on the DOM. Modifications of the parentElement are not supported.
@@ -3271,7 +3271,7 @@ Components.setDefaultOptions({
  * @property {Element} componentElement The thematic map element.
  * @property {Object|null} data The data object of the hovered item or null if the hovered item is not associated with any data.
  * @property {any|null} id The id of the hovered item or null if the hovered item if not associated with any data.
- * @property {Object|null} itemData The row data object for the hovered item. This will only be set if an oj.DataProvider is being used.
+ * @property {Object|null} itemData The row data object for the hovered item. This will only be set if an DataProvider is being used.
  * @property {string|null} label The data label of the hovered item or null if the hovered item if not associated with any data.
  * @property {string|null} location The location id of the hovered item which can be null if x/y are set instead.
  * @property {string|null} locationName The location name of the hovered item if location id is set.

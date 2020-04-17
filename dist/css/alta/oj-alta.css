@@ -12321,6 +12321,9 @@ html .oj-form-control {
   min-width: 1em;
   height: 100%; }
 
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field-middle {
+  width: 100%; }
+
 /* when the label is inside or above, we must set the max-width of the component to
        100%. Otherwise some components like input text, whose max-width is decided by 
        oj-text-field-lg-max-width looks so different from other components like radioset
@@ -12349,7 +12352,7 @@ html .oj-form-control {
 
 /* consolidating styles - start
     */
-.oj-text-field:not(oj-select-one):not(oj-select-many):not(oj-combobox-one):not(oj-combobox-many) {
+.oj-inputtext, .oj-inputpassword, .oj-textarea, .oj-inputnumber, .oj-inputdatetime, .oj-searchselect {
   display: inline-block;
   font-size: 1rem;
   /* use a width of 100% and then max and min width so that when 
@@ -12360,7 +12363,7 @@ html .oj-form-control {
   width: 100%;
   box-sizing: border-box; }
   @media screen and (max-width: 767.9px) {
-    .oj-text-field:not(oj-select-one):not(oj-select-many):not(oj-combobox-one):not(oj-combobox-many) {
+    .oj-inputtext, .oj-inputpassword, .oj-textarea, .oj-inputnumber, .oj-inputdatetime, .oj-searchselect {
       -webkit-text-size-adjust: 115%; } }
 
 .oj-form-control-full-width.oj-text-field,
@@ -13787,7 +13790,8 @@ oj-calendar:not(.oj-complete) {
       -webkit-text-size-adjust: 115%; } }
 
 .oj-inputdatetime-inline {
-  display: inline-block; }
+  display: inline-block;
+  max-width: 277px; }
 
 .oj-form-control-full-width.oj-inputdatetime,
 .oj-form-control-full-width.oj-inputdatetime-date-time,

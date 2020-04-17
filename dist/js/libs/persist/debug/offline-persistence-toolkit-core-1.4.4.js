@@ -269,6 +269,39 @@ define('persist/persistenceUtils',['./impl/logger'], function (logger) {
   };
 
   /**
+   * Return whether the Request is initiated from sync operation.
+   * @method
+   * @name isReplayRequest
+   * @memberof persistenceUtils
+   * @static
+   * @private
+   * @param {Request} request Request object
+   * @return {boolean} Returns whether it's a request initiated from sync operation.
+   */
+  function isReplayRequest(request) {
+    return request.headers.has('x-oracle-jscpt-sync-replay');
+  };
+
+  /**
+   * Mark the request as initiated from sync operation
+   * @method
+   * @name markReplayRequest
+   * @memberof persistenceUtils
+   * @static
+   * @private
+   * @param {Request} request Request object
+   * @param {boolean} replay a flag indicating whether it is a request from syn 
+   *                         operation or not.
+   */
+  function markReplayRequest(request, replay) {
+    if (replay) {
+      request.headers.set('x-oracle-jscpt-sync-replay', '');
+    } else {
+      request.headers.delete('x-oracle-jscpt-sync-replay');
+    }
+  };
+
+  /**
    * Return whether the Response has a generated ETag
    * @method
    * @name isGeneratedEtagResponse
@@ -508,8 +541,8 @@ define('persist/persistenceUtils',['./impl/logger'], function (logger) {
     _copyProperties(data, initFromData, ['headers', 'body', 'signal']);
     var skipContentType = _copyPayloadFromJsonObj(data, initFromData);
     initFromData.headers = _createHeadersFromJsonObj(data, skipContentType);
-
-    return _createRequestFromJsonObj(data, initFromData);
+    
+    return Promise.resolve(new Request(data.url, initFromData));
   };
 
   function _copyPayloadFromJsonObj(data, targetObj) {
@@ -545,10 +578,6 @@ define('persist/persistenceUtils',['./impl/logger'], function (logger) {
     return headers;
   };
 
-  function _createRequestFromJsonObj(data, initFromData) {
-    return Promise.resolve(new Request(data.url, initFromData));
-  };
-
   /**
    * Return a Response object constructed from the JSON object returned by
    * responseToJSON
@@ -565,7 +594,7 @@ define('persist/persistenceUtils',['./impl/logger'], function (logger) {
     _copyProperties(data, initFromData, ['headers', 'body']);
     initFromData.headers = _createHeadersFromJsonObj(data, false);
 
-    return _createResponseFromJsonObj(data, initFromData);
+    return Promise.resolve(_createResponseFromJsonObj(data, initFromData));
   };
 
   function _createResponseFromJsonObj(data, initFromData) {
@@ -584,7 +613,7 @@ define('persist/persistenceUtils',['./impl/logger'], function (logger) {
       response = new Response(null, initFromData);
     }
 
-    return Promise.resolve(response);
+    return response;
   };
 
   /**
@@ -891,7 +920,9 @@ define('persist/persistenceUtils',['./impl/logger'], function (logger) {
     _derivePayloadType: _derivePayloadType,
     _mapData: _mapData,
     _unmapData: _unmapData,
-    _mapFindQuery: _mapFindQuery
+    _mapFindQuery: _mapFindQuery,
+    isReplayRequest: isReplayRequest,
+    markReplayRequest: markReplayRequest
   };
 });
 
@@ -1850,7 +1881,7 @@ define('persist/PersistenceStore',[], function () {
 
 define('persist/impl/storageUtils',['./logger'], function (logger) {
   'use strict';
-  
+
   /**
     * Helper function that checks if itemData satisfies the search criteria
     * defined by selector or not. Undefined selector means everything is
@@ -1875,7 +1906,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
       return _evaluateExpressionTree(expTree, itemData);
     }
   };
-   
+
   /**
    * Helper function used by {@link _satisfy} to build an expression tree
    * based on expression object for easier evaluation later.
@@ -2031,6 +2062,12 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
         } else {
           return (itemValue === null || itemValue === undefined);
         }
+      } else if (operator === '$in') {
+        for (var i=0; i<value.length; i++) {
+          if(value[i] ===  itemValue) {
+            return true
+          }
+        }
       } else {
         throw new Error("not a valid expression! " + expTree);
       }
@@ -2069,7 +2106,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
   function _isSingleSelector(token) {
     return (token === '$lt' || token === '$gt' || token === '$lte' ||
       token === '$gte' || token === '$eq' || token === '$ne' ||
-      token === '$regex' || token === '$exists');
+      token === '$regex' || token === '$exists' || token === '$in');
   };
 
   /**
@@ -2084,7 +2121,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
   function _isLiteral(token) {
     return (typeof(token) !== 'object');
   };
-  
+
   /**
    * Helper function that checks if the token is a string
    * @method
@@ -2097,7 +2134,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
   function _isString(token) {
     return (token != null && (token instanceof String || typeof token === 'string'));
   };
-  
+
   /**
    * Helper function that sets null literals to empty string for string comparison
    * @method
@@ -2183,10 +2220,54 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
     return returnObject;
   };
   
+  function sortRows (unsorted, sortCriteria) {
+    if (!unsorted || !Array.isArray(unsorted) || unsorted.length < 1 ||
+        !sortCriteria || !Array.isArray(sortCriteria) || !sortCriteria.length) {
+      return unsorted;
+    }
+
+    return unsorted.sort(_sortFunction(sortCriteria));
+  };
+
+  var _sortFunction = function (sortCriteria) {
+    return function (a, b) {
+      for (var index = 0; index < sortCriteria.length; index++) {
+        var sortC = sortCriteria[index];
+        var sortField;
+        var sortAsc = true;
+
+        if (typeof(sortC) === 'string') {
+          sortField = sortC;
+        } else if (typeof(sortC) === 'object'){
+          var keys = Object.keys(sortC);
+          if (!keys || keys.length !== 1) {
+            throw new Error('invalid sort criteria');
+          }
+          sortField = keys[0];
+          sortAsc = (sortC[sortField].toLowerCase() === 'asc');
+        } else {
+          throw new Error("invalid sort criteria.");
+        }
+
+        var valueA = getValue(sortField, a);
+        var valueB = getValue(sortField, b);
+        if (valueA == valueB) {
+          continue;
+        } else if (sortAsc) {
+          return (valueA < valueB ? -1 : 1);
+        } else {
+          return (valueA < valueB ? 1 : -1);
+        }
+      }
+      return 0;
+    };
+  };
+
   return {
     satisfy: satisfy,
     getValue: getValue,
-    assembleObject: assembleObject
+    assembleObject: assembleObject,
+    sortRows: sortRows
   };
 });
 
@@ -2810,31 +2891,6 @@ function immediate(task) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],4:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],5:[function(require,module,exports){
 (function (process,global){
 'use strict';
 
@@ -13047,218 +13103,32 @@ PouchDB.plugin(IDBPouch)
 module.exports = PouchDB;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":11,"argsarray":1,"events":2,"immediate":3,"inherits":4,"spark-md5":12,"uuid":6,"vuvuzela":13}],6:[function(require,module,exports){
-var v1 = require('./v1');
-var v4 = require('./v4');
-
-var uuid = v4;
-uuid.v1 = v1;
-uuid.v4 = v4;
-
-module.exports = uuid;
-
-},{"./v1":9,"./v4":10}],7:[function(require,module,exports){
-/**
- * Convert array of 16 byte values to UUID string format of the form:
- * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
- */
-var byteToHex = [];
-for (var i = 0; i < 256; ++i) {
-  byteToHex[i] = (i + 0x100).toString(16).substr(1);
-}
-
-function bytesToUuid(buf, offset) {
-  var i = offset || 0;
-  var bth = byteToHex;
-  return bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]];
-}
-
-module.exports = bytesToUuid;
-
-},{}],8:[function(require,module,exports){
-// Unique ID creation requires a high quality random # generator.  In the
-// browser this is a little complicated due to unknown quality of Math.random()
-// and inconsistent support for the `crypto` API.  We do the best we can via
-// feature-detection
-
-// getRandomValues needs to be invoked in a context where "this" is a Crypto implementation.
-var getRandomValues = (typeof(crypto) != 'undefined' && crypto.getRandomValues.bind(crypto)) ||
-                      (typeof(msCrypto) != 'undefined' && msCrypto.getRandomValues.bind(msCrypto));
-if (getRandomValues) {
-  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
-  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
-
-  module.exports = function whatwgRNG() {
-    getRandomValues(rnds8);
-    return rnds8;
+},{"_process":6,"argsarray":1,"events":2,"immediate":3,"inherits":5,"spark-md5":7,"uuid":8,"vuvuzela":13}],5:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
   };
 } else {
-  // Math.random()-based (RNG)
-  //
-  // If all else fails, use Math.random().  It's fast, but is of unspecified
-  // quality.
-  var rnds = new Array(16);
-
-  module.exports = function mathRNG() {
-    for (var i = 0, r; i < 16; i++) {
-      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
-      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
-    }
-
-    return rnds;
-  };
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
 }
 
-},{}],9:[function(require,module,exports){
-var rng = require('./lib/rng');
-var bytesToUuid = require('./lib/bytesToUuid');
-
-// **`v1()` - Generate time-based UUID**
-//
-// Inspired by https://github.com/LiosK/UUID.js
-// and http://docs.python.org/library/uuid.html
-
-var _nodeId;
-var _clockseq;
-
-// Previous uuid creation time
-var _lastMSecs = 0;
-var _lastNSecs = 0;
-
-// See https://github.com/broofa/node-uuid for API details
-function v1(options, buf, offset) {
-  var i = buf && offset || 0;
-  var b = buf || [];
-
-  options = options || {};
-  var node = options.node || _nodeId;
-  var clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq;
-
-  // node and clockseq need to be initialized to random values if they're not
-  // specified.  We do this lazily to minimize issues related to insufficient
-  // system entropy.  See #189
-  if (node == null || clockseq == null) {
-    var seedBytes = rng();
-    if (node == null) {
-      // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
-      node = _nodeId = [
-        seedBytes[0] | 0x01,
-        seedBytes[1], seedBytes[2], seedBytes[3], seedBytes[4], seedBytes[5]
-      ];
-    }
-    if (clockseq == null) {
-      // Per 4.2.2, randomize (14 bit) clockseq
-      clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 0x3fff;
-    }
-  }
-
-  // UUID timestamps are 100 nano-second units since the Gregorian epoch,
-  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
-  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
-  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
-  var msecs = options.msecs !== undefined ? options.msecs : new Date().getTime();
-
-  // Per 4.2.1.2, use count of uuid's generated during the current clock
-  // cycle to simulate higher resolution clock
-  var nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1;
-
-  // Time since last uuid creation (in msecs)
-  var dt = (msecs - _lastMSecs) + (nsecs - _lastNSecs)/10000;
-
-  // Per 4.2.1.2, Bump clockseq on clock regression
-  if (dt < 0 && options.clockseq === undefined) {
-    clockseq = clockseq + 1 & 0x3fff;
-  }
-
-  // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
-  // time interval
-  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
-    nsecs = 0;
-  }
-
-  // Per 4.2.1.2 Throw error if too many uuids are requested
-  if (nsecs >= 10000) {
-    throw new Error('uuid.v1(): Can\'t create more than 10M uuids/sec');
-  }
-
-  _lastMSecs = msecs;
-  _lastNSecs = nsecs;
-  _clockseq = clockseq;
-
-  // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
-  msecs += 12219292800000;
-
-  // `time_low`
-  var tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
-  b[i++] = tl >>> 24 & 0xff;
-  b[i++] = tl >>> 16 & 0xff;
-  b[i++] = tl >>> 8 & 0xff;
-  b[i++] = tl & 0xff;
-
-  // `time_mid`
-  var tmh = (msecs / 0x100000000 * 10000) & 0xfffffff;
-  b[i++] = tmh >>> 8 & 0xff;
-  b[i++] = tmh & 0xff;
-
-  // `time_high_and_version`
-  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
-  b[i++] = tmh >>> 16 & 0xff;
-
-  // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
-  b[i++] = clockseq >>> 8 | 0x80;
-
-  // `clock_seq_low`
-  b[i++] = clockseq & 0xff;
-
-  // `node`
-  for (var n = 0; n < 6; ++n) {
-    b[i + n] = node[n];
-  }
-
-  return buf ? buf : bytesToUuid(b);
-}
-
-module.exports = v1;
-
-},{"./lib/bytesToUuid":7,"./lib/rng":8}],10:[function(require,module,exports){
-var rng = require('./lib/rng');
-var bytesToUuid = require('./lib/bytesToUuid');
-
-function v4(options, buf, offset) {
-  var i = buf && offset || 0;
-
-  if (typeof(options) == 'string') {
-    buf = options === 'binary' ? new Array(16) : null;
-    options = null;
-  }
-  options = options || {};
-
-  var rnds = options.random || (options.rng || rng)();
-
-  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
-  rnds[6] = (rnds[6] & 0x0f) | 0x40;
-  rnds[8] = (rnds[8] & 0x3f) | 0x80;
-
-  // Copy bytes to buffer, if provided
-  if (buf) {
-    for (var ii = 0; ii < 16; ++ii) {
-      buf[i + ii] = rnds[ii];
-    }
-  }
-
-  return buf || bytesToUuid(rnds);
-}
-
-module.exports = v4;
-
-},{"./lib/bytesToUuid":7,"./lib/rng":8}],11:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -13444,7 +13314,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],12:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function (factory) {
     if (typeof exports === 'object') {
         // Node/CommonJS
@@ -14197,7 +14067,218 @@ process.umask = function() { return 0; };
     return SparkMD5;
 }));
 
-},{}],13:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
+var v1 = require('./v1');
+var v4 = require('./v4');
+
+var uuid = v4;
+uuid.v1 = v1;
+uuid.v4 = v4;
+
+module.exports = uuid;
+
+},{"./v1":11,"./v4":12}],9:[function(require,module,exports){
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+}
+
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
+  return bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]];
+}
+
+module.exports = bytesToUuid;
+
+},{}],10:[function(require,module,exports){
+// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+
+// getRandomValues needs to be invoked in a context where "this" is a Crypto implementation.
+var getRandomValues = (typeof(crypto) != 'undefined' && crypto.getRandomValues.bind(crypto)) ||
+                      (typeof(msCrypto) != 'undefined' && msCrypto.getRandomValues.bind(msCrypto));
+if (getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+
+  module.exports = function whatwgRNG() {
+    getRandomValues(rnds8);
+    return rnds8;
+  };
+} else {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var rnds = new Array(16);
+
+  module.exports = function mathRNG() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return rnds;
+  };
+}
+
+},{}],11:[function(require,module,exports){
+var rng = require('./lib/rng');
+var bytesToUuid = require('./lib/bytesToUuid');
+
+// **`v1()` - Generate time-based UUID**
+//
+// Inspired by https://github.com/LiosK/UUID.js
+// and http://docs.python.org/library/uuid.html
+
+var _nodeId;
+var _clockseq;
+
+// Previous uuid creation time
+var _lastMSecs = 0;
+var _lastNSecs = 0;
+
+// See https://github.com/broofa/node-uuid for API details
+function v1(options, buf, offset) {
+  var i = buf && offset || 0;
+  var b = buf || [];
+
+  options = options || {};
+  var node = options.node || _nodeId;
+  var clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq;
+
+  // node and clockseq need to be initialized to random values if they're not
+  // specified.  We do this lazily to minimize issues related to insufficient
+  // system entropy.  See #189
+  if (node == null || clockseq == null) {
+    var seedBytes = rng();
+    if (node == null) {
+      // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
+      node = _nodeId = [
+        seedBytes[0] | 0x01,
+        seedBytes[1], seedBytes[2], seedBytes[3], seedBytes[4], seedBytes[5]
+      ];
+    }
+    if (clockseq == null) {
+      // Per 4.2.2, randomize (14 bit) clockseq
+      clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 0x3fff;
+    }
+  }
+
+  // UUID timestamps are 100 nano-second units since the Gregorian epoch,
+  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
+  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
+  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
+  var msecs = options.msecs !== undefined ? options.msecs : new Date().getTime();
+
+  // Per 4.2.1.2, use count of uuid's generated during the current clock
+  // cycle to simulate higher resolution clock
+  var nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1;
+
+  // Time since last uuid creation (in msecs)
+  var dt = (msecs - _lastMSecs) + (nsecs - _lastNSecs)/10000;
+
+  // Per 4.2.1.2, Bump clockseq on clock regression
+  if (dt < 0 && options.clockseq === undefined) {
+    clockseq = clockseq + 1 & 0x3fff;
+  }
+
+  // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
+  // time interval
+  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
+    nsecs = 0;
+  }
+
+  // Per 4.2.1.2 Throw error if too many uuids are requested
+  if (nsecs >= 10000) {
+    throw new Error('uuid.v1(): Can\'t create more than 10M uuids/sec');
+  }
+
+  _lastMSecs = msecs;
+  _lastNSecs = nsecs;
+  _clockseq = clockseq;
+
+  // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
+  msecs += 12219292800000;
+
+  // `time_low`
+  var tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
+  b[i++] = tl >>> 24 & 0xff;
+  b[i++] = tl >>> 16 & 0xff;
+  b[i++] = tl >>> 8 & 0xff;
+  b[i++] = tl & 0xff;
+
+  // `time_mid`
+  var tmh = (msecs / 0x100000000 * 10000) & 0xfffffff;
+  b[i++] = tmh >>> 8 & 0xff;
+  b[i++] = tmh & 0xff;
+
+  // `time_high_and_version`
+  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
+  b[i++] = tmh >>> 16 & 0xff;
+
+  // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
+  b[i++] = clockseq >>> 8 | 0x80;
+
+  // `clock_seq_low`
+  b[i++] = clockseq & 0xff;
+
+  // `node`
+  for (var n = 0; n < 6; ++n) {
+    b[i + n] = node[n];
+  }
+
+  return buf ? buf : bytesToUuid(b);
+}
+
+module.exports = v1;
+
+},{"./lib/bytesToUuid":9,"./lib/rng":10}],12:[function(require,module,exports){
+var rng = require('./lib/rng');
+var bytesToUuid = require('./lib/bytesToUuid');
+
+function v4(options, buf, offset) {
+  var i = buf && offset || 0;
+
+  if (typeof(options) == 'string') {
+    buf = options === 'binary' ? new Array(16) : null;
+    options = null;
+  }
+  options = options || {};
+
+  var rnds = options.random || (options.rng || rng)();
+
+  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+  // Copy bytes to buffer, if provided
+  if (buf) {
+    for (var ii = 0; ii < 16; ++ii) {
+      buf[i + ii] = rnds[ii];
+    }
+  }
+
+  return buf || bytesToUuid(rnds);
+}
+
+module.exports = v4;
+
+},{"./lib/bytesToUuid":9,"./lib/rng":10}],13:[function(require,module,exports){
 'use strict';
 
 /**
@@ -14372,7 +14453,7 @@ exports.parse = function (str) {
   }
 };
 
-},{}]},{},[5])(5)
+},{}]},{},[4])(4)
 });
 
 /**
@@ -14407,6 +14488,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
         }
         dbOptions = dbOptions ? dbOptions : {};
         dbOptions['adapter'] = adapter.name;
+        this._dbOptions = dbOptions;
         this._db = new PouchDB(dbname, dbOptions);
       } catch (exp) {
         logger.log("Error creating PouchDB instance with adapter " + adapter + ": ", exp.message);
@@ -14414,11 +14496,26 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
         return Promise.reject(exp);
       }
     } else if (dbOptions) {
+      this._dbOptions = dbOptions;
       this._db = new PouchDB(dbname, dbOptions);
     } else {
+      this._dbOptions = null;
       this._db = new PouchDB(dbname);
     }
-    this._index = (options && options.index) ? options.index : null;
+    if (options && options.index) {
+      // pouch db automatically create index on key, no need to specifically 
+      // create it.
+      if (!Array.isArray(options.index)) {
+        logger.log("index must be an array");
+      } else {
+        this._index = options.index.filter(function(indexKey) {
+          return indexKey !== 'key';
+        });
+        if (this._index.length === 0) {
+          this._index = null;
+        }
+      }
+    }
     return this._createIndex();
   };
 
@@ -14441,7 +14538,8 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   };
 
   PouchDBPersistenceStore.prototype._isPersistenceStoreKey = function(keyName) {
-    return keyName === 'version' || keyName === 'adapter' || keyName === 'index';
+    return keyName === 'version' || keyName === 'adapter' || 
+           keyName === 'index' || keyName === 'skipMetadata';
   };
 
   PouchDBPersistenceStore.prototype._createIndex = function () {
@@ -14457,7 +14555,9 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
         }
       };
       // createIndex if using the find plugin
-      return self._db.createIndex(indexSyntax);
+      return self._db.createIndex(indexSyntax).catch(function(error) {
+        logger.error("creating index on " + self._index.toString() + " failed with error " + error);
+      });
     }
   };
 
@@ -14465,9 +14565,6 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
     logger.log("Offline Persistence Toolkit pouchDBPersistenceStore: upsert() for key: " + key);
     var self = this;
     var docId = key.toString();
-
-    var attachmentParts = [];
-    this._prepareUpsert(value, attachmentParts);
 
     return self._db.get(docId).then(function (doc) {
       // document exists already, update it if its versionIdentifier value
@@ -14479,57 +14576,43 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       }
     }).catch(function (geterr) {
       if (geterr.status === 404 && geterr.message === 'missing') {
-        return Promise.resolve();
+        return;
       } else {
         return Promise.reject(geterr);
       }
     }).then(function (existingDoc) {
-      return self._put(docId, metadata, value, expectedVersionIdentifier, attachmentParts, existingDoc);
-    }).then(function () {
-      return Promise.resolve();
+      return self._put(docId, metadata, value, expectedVersionIdentifier, existingDoc);
     });
-  };
+  }
 
   PouchDBPersistenceStore.prototype._put = function (docId, metadata, value,
                                                      expectedVersionIdentifier,
-                                                     attachmentParts, existingDoc) {
+                                                     existingDoc) {
+
+    var attachmentParts = [];
+    var fullbinaryData = this._prepareUpsert(value, attachmentParts);
+
     var dbdoc = {
       _id: docId,
+      key: docId,
       metadata: metadata,
-      value: value
+      value: fullbinaryData ? null : value
     };
 
     if (existingDoc) {
       dbdoc._rev = existingDoc._rev;
     }
-
     var self = this;
-    return self._db.put(dbdoc).then(function (addeddoc) {
-      return Promise.resolve(addeddoc);
-    }).catch(function (puterr) {
+    return self._db.put(dbdoc).then(function(addeddoc) {
+      return self._addAttachments(docId, addeddoc.rev, attachmentParts);
+    }).catch(function(puterr) {
       if (puterr.status === 409) {
         // because of the asynchroness nature, and the same resource
         // could be asked to add to the store in multiple paths, it's
-        // valid to have conflict error from pouchDB, we'll verify if
-        // this is a valid conflict or not.
-        return self._db.get(docId).then(function (conflictDoc) {
-          if (expectedVersionIdentifier) {
-            if (!_verifyVersionIdentifier(expectedVersionIdentifier, conflictDoc)) {
-              return Promise.reject({status: 409});
-            } else {
-              return Promise.resolve(conflictDoc);
-            }
-          } else {
-            return Promise.resolve(conflictDoc);
-          }
-        });
+        // valid to have conflict error from pouchDB.
       } else {
-        return Promise.reject(puterr);
+        throw puterr;
       }
-    }).then(function(finalDoc){
-      return self._addAttachments(finalDoc, attachmentParts);
-    }).then(function () {
-      return Promise.resolve();
     });
   };
 
@@ -14546,10 +14629,11 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   };
 
   // add the binary part of the value as attachment to the main document.
-  PouchDBPersistenceStore.prototype._addAttachments = function (doc, attachmentParts) {
+  PouchDBPersistenceStore.prototype._addAttachments = function (docId, docRev, attachmentParts) {
     if (!attachmentParts || !attachmentParts.length) {
       return Promise.resolve();
     } else {
+      var self = this;
       var promises = attachmentParts.map(function (attachment) {
         var blob;
         if (attachment.value instanceof Blob) {
@@ -14557,9 +14641,11 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
         } else {
           blob = new Blob([attachment.value]);
         }
-        return this._db.putAttachment(doc.id, attachment.path, doc.rev, blob, 'binary')
+        return self._db.putAttachment(docId, attachment.path, docRev, blob, 'binary')
       }, this);
-      return Promise.all(promises);
+      return Promise.all(promises).catch(function(error) {
+        logger.error("store: " + self._name + " failed add attachment for doc " + docId);
+      });
     }
   };
 
@@ -14568,10 +14654,55 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
     if (!values || !values.length) {
       return Promise.resolve();
     } else {
-      var promises = values.map(function (element) {
-        return this.upsert(element.key, element.metadata, element.value, element.expectedVersionIdentifier);
-      }, this);
-      return Promise.all(promises);
+      var self = this;
+      var docIdToAttachmentParts = {};
+      var dbpromises = values.map(function(element) {
+        var docId = element.key.toString();
+        var value = element.value;
+        var attachmentParts = [];
+        var fullbinaryData = self._prepareUpsert(value, attachmentParts);
+        if (attachmentParts.length > 0) {
+          docIdToAttachmentParts[docId] = attachmentParts;
+        }
+        var doc = {
+          _id: docId,
+          key: element.key,
+          metadata: element.metadata,
+          value: fullbinaryData ? null : value
+        };
+        return self._db.get(docId).then(function(existdoc) {
+          doc["_rev"] = existdoc["_rev"];
+          return doc;
+        }).catch(function(error) {
+          if (error.status === 404 && error.message === 'missing') {
+            // this doc does not exist yet, no need to provide revision value
+            return doc;
+          } else {
+            throw error;
+          }
+        });
+      });
+
+      return Promise.all(dbpromises).then(function(dbdocs) {
+        return self._db.bulkDocs(dbdocs);
+      }).then(function(results) {
+        var promises = [];
+        results.forEach(function(result, index) {
+          if (result["ok"]) {
+            var attachmentParts = docIdToAttachmentParts[result.id];
+            if (attachmentParts) {
+              promises.push(self._addAttachments(result.id, result.rev, attachmentParts));
+            }
+          } else if (result['status'] === 409) {
+            logger.log("conflict error");
+          }
+        });
+        if (promises.length > 0) {
+          return Promise.all(promises);
+        }
+      }).catch(function(error) {
+        logger.log("error in upsertAll");
+      });
     }
   };
 
@@ -14607,16 +14738,19 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
           // not have any operator against the binary data. 
           var satisfiedRows = result.rows.filter(function(row) {
             var doc = row.doc;
-            self._fixKey(doc);
-            if (storageUtils.satisfy(findExpression.selector, doc)) {
+            if (!_isInternalDoc(row) && storageUtils.satisfy(findExpression.selector, doc)) {
               return true;
             }
             return false;
            });
 
           if (satisfiedRows.length) {
-            var fixDocPromises = satisfiedRows.map(function(row) {
-              return self._fixBinaryValue(row.doc).then(function(fixedDoc){
+            var unsortedDocs = satisfiedRows.map(function(row) {
+              return row.doc;
+            });
+            var sortedDocs = storageUtils.sortRows(unsortedDocs, findExpression.sort);
+            var fixDocPromises = sortedDocs.map(function(doc) {
+              return self._fixBinaryValue(doc).then(function(fixedDoc){
                 if (findExpression.fields) {
                   return storageUtils.assembleObject(fixedDoc, findExpression.fields);
                 } else {
@@ -14654,7 +14788,6 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   // invoked after document is retrieved. Fix the key and binary
   // part of the value.
   PouchDBPersistenceStore.prototype._fixValue = function (doc) {
-    this._fixKey(doc);
     return this._fixBinaryValue(doc);
   };
 
@@ -14670,22 +14803,20 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       var self = this;
       var filename = Object.keys(attachments)[0];
       return self._db.getAttachment(docId, filename).then(function (blob) {
-        var paths = filename.split('.');
-        var targetValue = doc.value;
-        for (var pathIndex = 0; pathIndex < paths.length - 1; pathIndex++) {
-          targetValue = targetValue[paths[pathIndex]];
+        if (filename === 'rootpath') {
+          doc.value = blob;
+        } else {
+          var paths = filename.split('.');
+          var targetValue = doc.value;
+          for (var pathIndex = 0; pathIndex < paths.length - 1; pathIndex++) {
+            targetValue = targetValue[paths[pathIndex]];
+          }
+          targetValue[paths[paths.length - 1]] = blob;
         }
-        targetValue[paths[paths.length - 1]] = blob;
         return doc;
+      }).catch(function(error) {
+        logger.error("store: " + self._name + " error getting attachment. ");
       });
-    }
-  };
-
-  PouchDBPersistenceStore.prototype._fixKey = function (doc) {
-    var docId = doc._id || doc.id || doc.key;
-
-    if (docId) {
-      doc.key = docId;
     }
   };
 
@@ -14694,11 +14825,13 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
     var self = this;
     var docId = key.toString();
 
-    return self._db.get(docId).then(function (doc) {
-      return doc.value;
+    return self._db.get(docId, {attachments: true}).then(function (doc) {
+      return self._fixBinaryValue(doc);
+    }).then(function(fixedDoc) {
+      return fixedDoc.value;
     }).catch(function (err) {
       if (err.status === 404 && err.message === 'missing') {
-        return Promise.resolve();
+        return;
       } else {
         return Promise.reject(err);
       }
@@ -14708,6 +14841,9 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   PouchDBPersistenceStore.prototype.removeByKey = function (key) {
     logger.log("Offline Persistence Toolkit pouchDBPersistenceStore: removeByKey() for key: " + key);
     var self = this;
+    if (!key) {
+      return Promise.resolve(false);
+    }
     var docId = key.toString();
     return self._db.get(docId).then(function (doc) {
       return self._db.remove(doc);
@@ -14715,7 +14851,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       return true;
     }).catch(function (err) {
       if (err.status === 404 && err.message === 'missing') {
-        return Promise.resolve(false);
+        return false;
       } else {
         return Promise.reject(err);
       }
@@ -14731,21 +14867,27 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       modifiedExpression.fields = ['_id', '_rev'];
       return self.find(modifiedExpression).then(function (entries) {
         if (entries && entries.length) {
-           var promisesArray = entries.map(function (element) {
-             return this._db.remove(element._id, element._rev);
-           }, self);
-           return Promise.all(promisesArray);
-         } else {
-           return Promise.resolve();
-         }
-      }).then(function () {
-        return Promise.resolve();
+          var docsToDelete = entries.map(function(doc) {
+            return {'_id': doc['_id'], '_rev': doc['_rev'], '_deleted': true};
+          });
+          return self._db.bulkDocs(docsToDelete);
+        } else {
+          return;
+        }
+      }).catch(function(error) {
+        logger.error("store: " + self._name + " error deleting....");
       });
     } else {
       return self._db.destroy().then(function () {
         var dbname = self._name + self._version;
-        self._db = new PouchDB(dbname);
+        if (self._dbOptions) {
+          self._db = new PouchDB(dbname, self._dbOptions);
+        } else {
+          self._db = new PouchDB(dbname);
+        }
         return self._createIndex();
+      }).catch(function(error) {
+        logger.error("store: " + self._name + " error deleting....");
       });
     }
   };
@@ -14758,11 +14900,15 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       var rows = result.rows;
       var keysArray = [];
       if (rows && rows.length) {
-        keysArray = rows.map(function (element) {
-          return element.id;
-        });
+        for (var index = 0; index < rows.length; index++) {
+          if (!_isInternalDoc(rows[index])) {
+            keysArray.push(rows[index].id);
+          }
+        }
       }
       return keysArray;
+    }).catch(function(error) {
+      logger.error("store: " + self._name + " error getting all the docs for keys ");
     });
   };
 
@@ -14784,21 +14930,14 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       modifiedExpression.selector = {
         '_id': {'$gt': null}
       };
-    } else {
+    } else if (selector) {
       modifiedExpression.selector = selector;
     }
 
     // our key attribute maps to pouchdb documents' _id field.
     var fields = findExpression.fields;
     if (fields && fields.length) {
-      var modifiedFields = fields.map(function (x) {
-        if (x === 'key') {
-          return '_id';
-        } else {
-          return x;
-        }
-      });
-      modifiedExpression.fields = modifiedFields;
+      modifiedExpression.fields = fields;
     }
 
     return modifiedExpression;
@@ -14807,8 +14946,19 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   // prepare the value for upsert. pouchDB requires that binary part of the value
   // be added as attachment instead of as part of the value.
   PouchDBPersistenceStore.prototype._prepareUpsert = function (value, attachmentParts) {
+    if (!value) {
+      return false;
+    }
+    if ((value instanceof Blob) || (value instanceof ArrayBuffer)) {
+      attachmentParts.push({
+        path: "rootpath",
+        value: value
+      });
+      return true;
+    }
     var path = '';
     this._inspectValue(path, value, attachmentParts);
+    return false;
   };
 
   // scan the value to see if there's any binary data in it, if so, extract it out.
@@ -14853,7 +15003,20 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       }
     }).then(function() {
       return self.removeByKey(currentKey);
+    }).catch(function() {
+      logger.error("store: " + self._name + " error updating key");
     });
+  };
+
+  // when find plugin is not present, we query out all documents and run the 
+  // find ourselve. allDocs returns some internal document that pouchDB created
+  // we should ignore. For example, when the store has index configured, 
+  // pouchDB will create a document with id starting with '_design'. There is 
+  // no option provided from allDocs() call that we can use to ask pouchDB to 
+  // not return internal documents.
+  var _isInternalDoc = function(dbRow) {
+    var id = dbRow.id;
+    return id.startsWith('_design/');
   };
 
   return PouchDBPersistenceStore;
@@ -14893,7 +15056,7 @@ define('persist/pouchDBPersistenceStoreFactory',["./impl/pouchDBPersistenceStore
     function _createPersistenceStore (name, options) {
       var store = new PouchDBPersistenceStore(name);
       return store.Init(options).then(function () {
-        return Promise.resolve(store);
+        return store;
       });
     };
 
@@ -15031,13 +15194,36 @@ define('persist/persistenceStoreManager',['./impl/logger', './impl/PersistenceSt
       allVersions = allVersions || {};
       allVersions[version] = store;
       self._stores[storeName] = allVersions;
-      var metadata = new PersistenceStoreMetadata(storeName, factory, Object.keys(allVersions));
-      return self._getMetadataStore().then(function(store) {
-        var encodedStoreName = self._encodeString(storeName);
-        return store.upsert(encodedStoreName, {}, Object.keys(allVersions));
-      }).then(function() {
+      if (options && options.skipMetadata) {
         return store;
-      });
+      } else {
+        return self._updateStoreMetadata(storeName, version).then(function() {
+          return store;
+        }).catch(function(error) {
+          logger.log("updating store metadata for store " + storeName + " failed");
+          return store;
+        });
+      }
+    });
+  };
+
+  PersistenceStoreManager.prototype._updateStoreMetadata = function (storeName, version) {
+    var self = this;
+    return self._getStoresMetadata(storeName).then(function(storeMetadata) {
+      var dbEntry = null;
+      if (!storeMetadata) {
+        // no metadata for this store yet, need to add an entry.
+        dbEntry = [version];
+      } else if (storeMetadata.versions.indexOf(version) < 0) {
+        // no version for this .
+        storeMetadata.versions.push(version);
+        dbEntry = storeMetadata.versions;
+      }
+      if (dbEntry) {
+        // now need to update metadata from database.
+        var encodedStoreName = self._encodeString(storeName);
+        return self._metadataStore.upsert(encodedStoreName, {}, dbEntry);
+      }
     });
   };
 
@@ -15060,7 +15246,7 @@ define('persist/persistenceStoreManager',['./impl/logger', './impl/PersistenceSt
   PersistenceStoreManager.prototype.hasStore = function (name, options) {
     var storeName = this._mapStoreName(name);
     var allVersions = this._stores[storeName];
-    if (!allVersions) {
+    if (!allVersions || Object.keys(allVersions).length === 0) {
       return false;
     } else if (!options || !options.version) {
       return true;
@@ -15089,75 +15275,79 @@ define('persist/persistenceStoreManager',['./impl/logger', './impl/PersistenceSt
     logger.log("Offline Persistence Toolkit PersistenceStoreManager: deleteStore() for name: " + name);
     var self = this;
     var storeName = this._mapStoreName(name);
-    return new Promise(function(resolve, reject) {
-      var localvars = {};
-      localvars.options = options;
-      localvars.self = self;
-      var allversions = self._stores[storeName];
-      if (!allversions) {
-        return self.getStoresMetadata().then(function(storeMetadataMap) {
-          var openStoresPromiseArray = [];
-          var storeMetadata = storeMetadataMap.get(storeName);
-          if (storeMetadata && storeMetadata.versions) {
-            storeMetadata.versions.forEach(function(version) {
-              openStoresPromiseArray.push(self.openStore(storeName, version));
-            });
+    return self._getStoresMetadata(storeName).then(function(storeMetadata) {
+      if (!storeMetadata) {
+        // no metadata for this store, could be that no store instances have 
+        // ever been created, or skipMetadata was true when the store is created;
+        var storesToDelete = [];
+        if (options && options.version) {
+          if (self._stores[storeName] && self._stores[storeName][options.version]) {
+            storesToDelete.push(self._stores[storeName][options.version]);
+            delete self._stores[storeName][options.version];
           }
-          return Promise.all(openStoresPromiseArray);
-        }).then(function() {
-          resolve(localvars);
-        });
+        } else if (self._stores[storeName]) {
+          storesToDelete = Object.values(self._stores[storeName]);
+          self._stores[storeName] = {};
+        }
+        if (storesToDelete.length) {
+          var promises = storesToDelete.map(function(store) {
+            return store.delete();
+          })
+          return Promise.all(promises).then(function() {
+            return true;
+          }).catch(function(err) {
+            logger.log("failed deleting store " + name);
+            return false;
+          });
+        } else {
+          return false;
+        }
       } else {
-        resolve(localvars);
-      }
-    }).then(function(localvars) {
-      var self = localvars.self;
-      var options = localvars.options;
-      var allversions = self._stores[storeName];
-      if (!allversions) {
-        return Promise.resolve(false);
-      } else {
-        var version = options && options.version;
-        if (version) {
-          var store = allversions[version];
-          if (!store) {
-            return Promise.resolve(false);
+        var versionsToDelete = [];
+        var remainingVersions = [];
+        var allVersions = storeMetadata.versions;
+        if (options && options.version) {
+          var index = allVersions.indexOf(options.version);
+          if (index < 0) {
+            // no such version exists.
+            remainingVersions = allVersions;
           } else {
-            logger.log("Offline Persistence Toolkit PersistenceStoreManager: Calling delete on store");
-            return store.delete().then(function () {
-              delete allversions[version];
-              return self._getMetadataStore().then(function(store) {
-                if (allversions &&  Object.keys(allversions).length > 0) {
-                  var encodedStoreName = self._encodeString(storeName);
-                  return store.upsert(encodedStoreName, null,  Object.keys(allversions));
-                } else {
-                  return store.removeByKey(storeName);
-                }
-              });
-            }).then(function() {
-              return true;
-            });
+            // only remove the asked version.
+            allVersions.splice(index, 1);
+            remainingVersions = allVersions;
+            versionsToDelete.push(options.version);
           }
         } else {
-          var mapcallback = function (origObject) {
-            return function (version) {
-              var value = origObject[version];
-              return value.delete();
-            };
-          };
-          var promises = Object.keys(allversions).map(mapcallback(allversions), this);
-          return Promise.all(promises).then(function () {
-            delete self._stores[storeName];
-            return self._getMetadataStore().then(function(store) {
-              var encodedStoreName = self._encodeString(storeName);
-              return store.removeByKey(encodedStoreName);
-            }).then(function() {
-              return true;
-            });
+          // remove all the versions.
+          versionsToDelete = allVersions;
+        }
+        if (versionsToDelete.length) {
+          var promises = versionsToDelete.map(function(version) {
+            var self = this;
+            return self.openStore(storeName, {version: version, skipMetadata: true}).then(function(store) {
+              delete self._stores[storeName][version];
+              return store.delete();
+            }); 
+          }, self);
+          return Promise.all(promises).then(function() {
+            // update metadata store.
+            var encodedStoreName = self._encodeString(storeName);
+            if (remainingVersions.length) {
+              return self._metadataStore.upsert(encodedStoreName, {}, remainingVersions);
+            } else {
+              return self._metadataStore.removeByKey(encodedStoreName);
+            }
+          }).then(function() {
+            return true;
+          }).catch(function(error) {
+            logger.log("failed deleting store " + storeName);
+            return false;
           });
+        } else {
+          return false;
         }
       }
-    })
+    });
   };
 
   /**
@@ -15170,31 +15360,48 @@ define('persist/persistenceStoreManager',['./impl/logger', './impl/PersistenceSt
    */
   PersistenceStoreManager.prototype.getStoresMetadata = function() {
     var self = this;
+    var storesMetadataMap = new Map();
     return this._getMetadataStore().then(function(store) {
-      return store.keys().then(function(encodedStoreNames) {
-        var allKeysPromiseArray = [];
-        encodedStoreNames.forEach(function(encodedStoreName) {
-          allKeysPromiseArray.push(store.findByKey(encodedStoreName).then(function(entry) {
-            var allVersionsKeys = entry;
-            var storeName = self._decodeString(encodedStoreName);
-            var factory = self._factories[storeName];
-            if (!factory) {
-              factory = self._factories[self._DEFAULT_STORE_FACTORY_NAME];
-            }
-            var metadata = new PersistenceStoreMetadata(storeName, factory, allVersionsKeys);
-            return metadata;
-          }));
+      return store.find({fields: ['key', 'value']});
+    }).then(function(entries) {
+      if (entries && entries.length > 0) {
+        entries.forEach(function(entry) {
+          var storeName = self._decodeString(entry.key);
+          var factory = self._factories[storeName];
+          if (!factory) {
+            factory = self._factories[self._DEFAULT_STORE_FACTORY_NAME];
+          }
+          storesMetadataMap.set(storeName, new PersistenceStoreMetadata(storeName, factory, entry.value));
         });
-        return Promise.all(allKeysPromiseArray);
-      }).then(function(storeMetadataArray) {
-        var storesMetadataMap = new Map();
-        storeMetadataArray.forEach(function(storeMetadata) {
-          storesMetadataMap.set(storeMetadata.name, storeMetadata);
-        });
-        return storesMetadataMap;
-      });
+      }
+      return storesMetadataMap;
+    }).catch(function(err) {
+      logger.log("error occured getting store metadata.");
+      return storesMetadataMap;
     });
-  }
+  };
+
+  // get the store information for this store.
+  PersistenceStoreManager.prototype._getStoresMetadata = function(storeName) {
+    var self = this;
+    return self._getMetadataStore().then(function(store) {
+      var encodedStoreName = self._encodeString(storeName);
+      return store.findByKey(encodedStoreName);
+    }).then(function(entry) {
+      if (entry) {
+        var factory = self._factories[storeName];
+        if (!factory) {
+          factory = self._factories[self._DEFAULT_STORE_FACTORY_NAME];
+        }
+        return new PersistenceStoreMetadata(storeName, factory, entry);
+      } else {
+        return null;
+      }
+    }).catch(function(error) {
+      logger.log("error getting store metadata for store " + storeName);
+      return null;
+    });
+  };
 
   PersistenceStoreManager.prototype._mapStoreName = function (name, options) {
     var mappedName = this._storeNameMapping[name];
@@ -15217,7 +15424,7 @@ define('persist/persistenceStoreManager',['./impl/logger', './impl/PersistenceSt
         // if not, register the pouchdb store
         this._factories[self._METADATA_STORE_NAME] = pouchDBPersistenceStoreFactory;
       }
-      return this.openStore(self._METADATA_STORE_NAME).then(function (store) {
+      return this.openStore(self._METADATA_STORE_NAME, {skipMetadata: true}).then(function (store) {
         self._metadataStore = store;
         return self._metadataStore;
       });
@@ -15339,8 +15546,11 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
     }
 
     return  shredder(response).then(function (shreddedObjArray) {
-      var shreddedData = shreddedObjArray.map(_convertShreddedData);
-      return Promise.resolve(shreddedData);
+      if (shreddedObjArray && Array.isArray(shreddedObjArray)) {
+        return shreddedObjArray.map(_convertShreddedData);
+      } else {
+        return null;
+      }
     });
   };
 
@@ -15423,7 +15633,7 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
    *                          this request into the storage.
    */
   DefaultCacheHandler.prototype._constructCacheKey = function (request, response) {
-    var key = request.url + request.method;
+    var key = request.url + "$" + request.method + "$";
     if (response) {
       var headers = response.headers;
       if (headers) {
@@ -15431,21 +15641,74 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
         if (varyValue) {
           if (varyValue === '*') {
             // * vary value means every request is absolutely unique.
-            key += (new Date()).getTime();
+            key = (new Date()).getTime()*1000 + Math.floor(Math.random() * 1000);;
           } else {
             var requestHeaders = request.headers;
             var varyFields = varyValue.split(',');
             for (var index = 0; index < varyFields.length; index++) {
               var varyField = varyFields[index];
               varyField = varyField.trim();
-              var varyValue = requestHeaders ? requestHeaders.get(varyField) : 'undefined';
-              key += varyField + '=' + varyValue;
+              var varyValue = (!requestHeaders || !requestHeaders.get(varyField)) ? 'undefined' : requestHeaders.get(varyField);
+              key += varyField + '=' + varyValue + ';';
             }
           }
         }
       }
     }
     return key;
+  };
+
+  // request: the request to match against
+  // options: options that controls the match
+  // allKeys: the possible keys to find matches from.
+  DefaultCacheHandler.prototype.getMatchedCacheKeys = function (request, options, allKeys) {
+    var urlToMatch;
+    var methodToMatch;
+
+    if (options && options.ignoreSearch) {
+      urlToMatch = extractBaseUrl(request.url);
+    } else {
+      urlToMatch = request.url;
+    }
+    if (!options || !options.ignoreMethod) {
+      methodToMatch = request.method;
+    }
+
+    return allKeys.filter(function(key) {
+      var parts = key.split("$");
+      var urlToCheck;
+      if (options && options.ignoreSearch) {
+        urlToCheck = extractBaseUrl(parts[0]);
+      } else {
+        urlToCheck = parts[0];
+      }
+      if (urlToCheck !== urlToMatch) {
+        return false;
+      }
+      if (methodToMatch && parts[1] !== methodToMatch) {
+        return false;
+      }
+      if (!options || !options.ignoreVary) {
+        var variesInKey = parts[2];
+        if (!variesInKey) {
+          return true;
+        }
+        var pairs = variesInKey.split(';');
+        if (pairs.length === 1) {
+          return false;
+        }
+        var requestHeaders = request.headers;
+        for (var index = 0; index < pairs.length - 1; index++) {
+          var pair = pairs[index];
+          var varyFieldValueToCheck = pair.split('=');
+          var varyValue = (!requestHeaders || !requestHeaders.get(varyFieldValueToCheck[0])) ? 'undefined' : requestHeaders.get(varyFieldValueToCheck[0]);
+          if (varyValue != varyFieldValueToCheck[1]) {
+            return false;
+          }
+        }
+      }
+      return true;
+    });
   };
 
   /**
@@ -15461,9 +15724,11 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
    */
   DefaultCacheHandler.prototype.constructMetadata = function (request) {
     var currentTime = (new Date()).getTime();
+    var baseUrl = extractBaseUrl(request.url);
     var metadata = {
       url:  request.url,
       method: request.method,
+      baseUrl: baseUrl,
       created: currentTime,
       lastupdated: currentTime
     };
@@ -15490,7 +15755,7 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
         // empty value then to denote this is a cached Response
         response.headers.set('x-oracle-jscpt-cache-expiration-date', '');
       }
-      return Promise.resolve(response);
+      return response;
     });
   };
 
@@ -15536,20 +15801,11 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
     }
 
     var selectorField;
-    var searchURL;
-
-    var searchStartIndex = request.url.indexOf('?');
-    if (searchStartIndex >= 0) {
-      searchURL = request.url.substring(0, searchStartIndex);
-    } else {
-      searchURL = request.url;
-    }
 
     if (ignoreSearch) {
+      var searchURL = extractBaseUrl(request.url);
       selectorField = {
-        'metadata.url': {
-          '$regex': '^' + escapeRegExp(searchURL) + '(\\?|$)'
-        }
+        'metadata.baseUrl': searchURL
       };
     } else {
       selectorField = {
@@ -15563,7 +15819,7 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
 
     var searchCriteria = {
       selector: selectorField,
-      sort: [{'metadata.created' : 'asc'}]
+      sort: ['metadata.created']
     };
 
     return searchCriteria;
@@ -15696,13 +15952,13 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
           return store.find(findExpression);
         }
       }
-      return Promise.resolve([]);
+      return [];
     }).then(function (results) {
       if (!Array.isArray(results)) {
         results = [results];
       }
       storeEntry.data = results;
-      return Promise.resolve(storeEntry);
+      return storeEntry;
     });
   };
 
@@ -15743,6 +15999,20 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
   
   var escapeRegExp = function(str) {
     return String(str).replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+  };
+  
+  var extractBaseUrl = function(fullUrl) {
+    // return the url that doesn't have query parameters in it.
+    if (!fullUrl || typeof fullUrl !== 'string') {
+      return "";
+    }
+    var pattern = /([^?]*)\?/;
+    var matchResult = pattern.exec(fullUrl);
+    if (matchResult && matchResult.length === 2) {
+      return matchResult[1];
+    } else {
+      return fullUrl;
+    }
   };
 
   return new DefaultCacheHandler();
@@ -15854,20 +16124,38 @@ define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', 
       var localVars = {};
       return _getSyncLogStorage().then(function (store) {
         localVars.store = store;
-        return _getRequestFromSyncLog(self, requestId);
-      }).then(function (request) {
-        localVars.request = request;
-        return localVars.store.removeByKey(requestId);
-      }).then(function () {
-        // Also remove the redo/undo data
-        return _getRedoUndoStorage();
-      }).then(function (redoUndoStore) {
-        return redoUndoStore.removeByKey(requestId);
-      }).then(function () {
-        return localVars.request;
+        return _getRequestFromSyncLog(requestId, store);
+      }).then(function(request) {
+        if (!request) {
+          return;
+        } else {
+          return self._internalRemoveRequest(requestId, request, localVars.store);
+        }
       });
+    }
+
+    PersistenceSyncManager.prototype._internalRemoveRequest = function (requestId, request, synclogStore) {
+      var self = this;
+      var promises = [];
+      if (!synclogStore) {
+        promises.push(_getSyncLogStorage().then(function(synclogStore) {
+          return synclogStore.removeByKey(requestId);
+        }));
+      } else {
+        promises.push(synclogStore.removeByKey(requestId));
+      }
+      if (request.method !== 'GET' && request.method !== 'HEAD') {
+        promises.push(_getRedoUndoStorage().then(function(redoUndoStore) {
+          return redoUndoStore.removeByKey(requestId);
+        }));
+      }
+      return Promise.all(promises).then(function() {
+        return request;
+      }).catch(function(error) {
+        logger.log("Offline Persistence Toolkit PersistenceSyncManager: removeRequest() error for Request with requestId: " + requestId);        
+      });;
     };
-    
+
     PersistenceSyncManager.prototype.updateRequest = function (requestId, request) {
       logger.log("Offline Persistence Toolkit PersistenceSyncManager: updateRequest() for Request with requestId: " + requestId);
       return Promise.all([_getSyncLogStorage(), 
@@ -15890,121 +16178,108 @@ define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', 
       this._syncing = true;
       var syncPromise = new Promise(function (resolve, reject) {
         self.getSyncLog().then(function (value) {
-          if (self._isOnline()) {
-            logger.log("Offline Persistence Toolkit PersistenceSyncManager: Processing sync, is online");
-            var requestId, request, requestClone, statusCode;
+          logger.log("Offline Persistence Toolkit PersistenceSyncManager: Processing sync");
+          var requestId, request, requestClone, statusCode;
+          var replayRequestArray = function (requests) {
+            if (requests.length == 0) {
+              logger.log("Offline Persistence Toolkit PersistenceSyncManager: Sync finished, no requests in sync log");
+              resolve();
+            }
+            if (requests.length > 0) {
+              logger.log("Offline Persistence Toolkit PersistenceSyncManager: Processing sync, # of requests in sync log: " + requests.length);
+              requestId = requests[0].requestId;
+              request = requests[0].request;
+              // we need to clone the request before sending it off so we
+              // can return it later in case of error
+              requestClone = request.clone();
+              logger.log("Offline Persistence Toolkit PersistenceSyncManager: Dispatching beforeSyncRequest event");
+              _dispatchEvent(self, 'beforeSyncRequest', {'requestId': requestId,
+                'request': requestClone.clone()},
+                request.url).then(function (eventResult) {
+                if (_checkStopSync(eventResult)) {
+                  logger.log("Offline Persistence Toolkit PersistenceSyncManager: Sync stopped by beforeSyncRequest event listener");
+                  resolve();
+                  return;
+                }
+                eventResult = eventResult || {};
+                if (eventResult.action !== 'skip') {
+                  if (eventResult.action === 'replay') {
+                    logger.log("Offline Persistence Toolkit PersistenceSyncManager: Replay request from beforeSyncRequest event listener");
+                    // replay the provided request instead of what's in the sync log
+                    request = eventResult.request;
+                  }                  
+                  requestClone = request.clone();
+                  _checkURL(self, request).then(function() {
+                    // mark the request as initiated from sync operation and
+                    // start the fetch to replay the request. we don't directly
+                    // use browser fetch because we want the response from the
+                    // fetch to go through cacheStrategy logic from response
+                    // proxy.
+                    persistenceUtils.markReplayRequest(request, true);
+                    logger.log("Offline Persistence Toolkit PersistenceSyncManager: Replaying request with url: " + request.url);
+                    fetch(request).then(function (response) {
+                      statusCode = response.status;
 
-            var replayRequestArray = function (requests) {
-              if (requests.length == 0) {
-                logger.log("Offline Persistence Toolkit PersistenceSyncManager: Sync finished, no requests in sync log");
-                resolve();
-              }
-              if (requests.length > 0) {
-                logger.log("Offline Persistence Toolkit PersistenceSyncManager: Processing sync, # of request in sync log: " + requests.length);
-                requestId = requests[0].requestId;
-                request = requests[0].request;
-                // we need to clone the request before sending it off so we
-                // can return it later in case of error
-                requestClone = request.clone();
-                logger.log("Offline Persistence Toolkit PersistenceSyncManager: Dispatching beforeSyncRequest event");
-                _dispatchEvent(self, 'beforeSyncRequest', {'requestId': requestId,
-                  'request': requestClone.clone()},
-                  request.url).then(function (eventResult) {
-                  if (_checkStopSync(eventResult)) {
-                    logger.log("Offline Persistence Toolkit PersistenceSyncManager: Sync stopped by beforeSyncRequest event listener");
-                    resolve();
-                    return;
-                  }
-                  eventResult = eventResult || {};
-                  if (eventResult.action !== 'skip') {
-                    if (eventResult.action === 'replay') {
-                      logger.log("Offline Persistence Toolkit PersistenceSyncManager: Replay request from beforeSyncRequest event listener");
-                      // replay the provided request instead of what's in the sync log
-                      request = eventResult.request;
-                    }                  
-                    requestClone = request.clone();
-                    _checkURL(self, request).then(function() {
-                      logger.log("Offline Persistence Toolkit PersistenceSyncManager: Replaying request with url: " + request.url);
-                      self._browserFetch(request).then(function (response) {
-                        statusCode = response.status;
-
-                        // fail for HTTP error codes 4xx and 5xx
-                        if (statusCode >= 400) {
-                          reject({'error': response.statusText,
-                            'requestId': requestId,
-                            'request': requestClone.clone(),
-                            'response': response.clone()});
-                          return;
-                        }
-                        persistenceUtils._cloneResponse(response, {url: request.url}).then(function(responseClone) {
-                          logger.log("Offline Persistence Toolkit PersistenceSyncManager: Dispatching syncRequest event");
-                          _dispatchEvent(self, 'syncRequest', {'requestId': requestId,
-                            'request': requestClone.clone(),
-                            'response': responseClone.clone()},
-                            request.url).then(function (dispatchEventResult) {
-                            if (!_checkStopSync(dispatchEventResult)) {
-                              logger.log("Offline Persistence Toolkit PersistenceSyncManager: Removing replayed request");
-                              self.removeRequest(requestId).then(function () {
-                                requests.shift();
-                                if (request.method == 'GET' ||
-                                  request.method == 'HEAD') {
-                                  persistenceUtils._cloneResponse(responseClone, {url: request.url}).then(function(responseClone) {
-                                    self._cache().put(request, responseClone).then(function () {
-                                      logger.log("Offline Persistence Toolkit PersistenceSyncManager: Replayed request/response is cached.");
-                                      replayRequestArray(requests);
-                                    });
-                                  });
-                                } else {
-                                  replayRequestArray(requests);
-                                }
-                              }, function (err) {
-                                reject({'error': err, 'requestId': requestId, 'request': requestClone.clone()});
-                              });
-                            } else {
-                              resolve();
-                            }
-                          });
-                        });
-                      }, function (err) {
-                        reject({'error': err, 'requestId': requestId, 'request': requestClone.clone()});
-                      });
-                    }, function(err) {
-                      if (err === false) {
-                        // timeout
-                        var init = {'status': 504, 'statusText': 'Preflight OPTIONS request timed out'};
-                        reject({'error': 'Preflight OPTIONS request timed out', 'requestId': requestId, 'request': requestClone.clone(), 'response': new Response(null, init)});
-                      } else {
-                        reject({'error': err, 'requestId': requestId, 'request': requestClone.clone()});
+                      // fail for HTTP error codes 4xx and 5xx
+                      if (statusCode >= 400) {
+                        reject({'error': response.statusText,
+                        'requestId': requestId,
+                          'request': requestClone.clone(),
+                          'response': response.clone()});
+                        return;
                       }
-                    });
-                  } else {
-                    // skipping, just remove the request and carry on
-                    logger.log("Offline Persistence Toolkit PersistenceSyncManager: Removing skipped request");
-                    self.removeRequest(requestId).then(function () {
-                      requests.shift();
-                      replayRequestArray(requests);
+                      persistenceUtils._cloneResponse(response, {url: request.url}).then(function(responseClone) {
+                        logger.log("Offline Persistence Toolkit PersistenceSyncManager: Dispatching syncRequest event");
+                        _dispatchEvent(self, 'syncRequest', {'requestId': requestId,
+                          'request': requestClone.clone(),
+                          'response': responseClone.clone()},
+                          request.url).then(function (dispatchEventResult) {
+                          if (!_checkStopSync(dispatchEventResult)) {
+                            logger.log("Offline Persistence Toolkit PersistenceSyncManager: Removing replayed request");
+                            self._internalRemoveRequest(requestId, request).then(function () {
+                              requests.shift();
+                              replayRequestArray(requests);
+                            }, function (err) {
+                              reject({'error': err, 'requestId': requestId, 'request': requestClone.clone()});
+                            });
+                          } else {
+                            resolve();
+                          }
+                        });
+                      });
                     }, function (err) {
                       reject({'error': err, 'requestId': requestId, 'request': requestClone.clone()});
                     });
-                  }
-                });
-              }
-            };
-            value = _reorderSyncLog(value);
-            replayRequestArray(value);
-          } else {
-            resolve();
-          }
+                  }, function(err) {
+                    if (err === false) {
+                      // timeout
+                      var init = {'status': 504, 'statusText': 'Preflight OPTIONS request timed out'};
+                      reject({'error': 'Preflight OPTIONS request timed out', 'requestId': requestId, 'request': requestClone.clone(), 'response': new Response(null, init)});
+                    } else {
+                      reject({'error': err, 'requestId': requestId, 'request': requestClone.clone()});
+                    }
+                  });
+                } else {
+                  // skipping, just remove the request and carry on
+                  logger.log("Offline Persistence Toolkit PersistenceSyncManager: Removing skipped request");
+                  self._internalRemoveRequest(requestId, request).then(function () {
+                    requests.shift();
+                    replayRequestArray(requests);
+                  }, function (err) {
+                    reject({'error': err, 'requestId': requestId, 'request': requestClone.clone()});
+                  });
+                }
+              });
+            }
+          };
+          value = _reorderSyncLog(value);
+          replayRequestArray(value);
         });
       });
-      return syncPromise.then(function (value) {
+      
+      return syncPromise.finally(function (err) {
         self._syncing = false;
         self._pingedURLs = null;
-        return value;
-      }, function (err) {
-        self._syncing = false;
-        self._pingedURLs = null;
-        return Promise.reject(err);
       });
     };
     
@@ -16118,7 +16393,7 @@ define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', 
           requestDataArray.length == 0) {
           return Promise.resolve(syncLogArray);
         } else {
-          requestId = requestDataArray[0].metadata.created.toString();
+          requestId = requestDataArray[0].key;
           requestData = requestDataArray[0].value;
           return persistenceUtils.requestFromJSON(requestData).then(function (request) {
             syncLogArray.push(_createSyncLogEntry(requestId, request));
@@ -16130,17 +16405,10 @@ define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', 
       return getRequestArray(results);
     };
 
-    function _getRequestFromSyncLog(persistenceSyncManager, requestId) {
-      var self = persistenceSyncManager;
-      return self.getSyncLog().then(function (syncLog) {
-        var i;
-        var request;
-        var syncLogCount = syncLog.length;
-        for (i = 0; i < syncLogCount; i++) {
-          if (syncLog[i].requestId === requestId) {
-            request = syncLog[i].request;
-            return request;
-          }
+    function _getRequestFromSyncLog(requestId, store) {
+      return store.findByKey(requestId).then(function(synLogRecord) {
+        if (synLogRecord) {
+          return persistenceUtils.requestFromJSON(synLogRecord);
         }
       });
     };
@@ -16149,16 +16417,11 @@ define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', 
       var findExpression = {};
       var fieldsExpression = [];
       var sortExpression = [];
-      sortExpression.push('metadata.created');
+      sortExpression.push('key');
       findExpression.sort = sortExpression;
-      fieldsExpression.push('metadata.created');
+      fieldsExpression.push('key');
       fieldsExpression.push('value');
       findExpression.fields = fieldsExpression;
-      var selectorExpression = {};
-      var existsExpression = {};
-      existsExpression['$exists'] = true;
-      selectorExpression['metadata.created'] = existsExpression;
-      findExpression.selector = selectorExpression;
 
       return findExpression;
     };
@@ -16275,7 +16538,7 @@ define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', 
     };
 
     function _getStorage(name) {
-      var options = {index: ['metadata.created']};
+      var options = {index: ['key'], skipMetadata: true};
       return persistenceStoreManager.openStore(name, options);
     };
 
@@ -16330,6 +16593,19 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
     this._name = name;
     this._storeName = storeName;
     this._store = null;
+    
+    // in-memory cache of all the keys in the store, for quick lookup.
+    this._cacheKeys = [];
+    this._createStorePromise;
+
+    // the names of all the shredded stores associated
+    // with this cache. We need them when clear() is 
+    // called since we need to clear all the shredded
+    // stores as well.
+    Object.defineProperty(this, '_STORE_NAMES_', {
+      value: '_OPT_INT_SHRED_STORE_NAMES_',
+      writable: false
+    });
   }
 
   /**
@@ -16360,17 +16636,14 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
     logger.log("Offline Persistence Toolkit OfflineCache: add()");
     var self = this;
     return fetch(request).then(function (response) {
-      var responseClone = response.clone();
-      return self.put(request, response).then(function(){
-        Promise.resolve(responseClone);
-      })
+      return self.put(request, response);
     });
   };
 
   /**
    * Bulk operation of add.
    * @method
-   * @name upsertAll
+   * @name addAll
    * @memberof! OfflineCache
    * @param {Array} requests An array of Request
    * @return {Promise} Returns a promise when all the requests in the array are handled.
@@ -16380,7 +16653,6 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
     var promises = requests.map(this.add, this);
     return Promise.all(promises);
   };
-
 
   /**
    * Find the first response in this Cache object that match the request with the options.
@@ -16414,22 +16686,125 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
     logger.log("Offline Persistence Toolkit OfflineCache: match() for Request with url: " + request.url);
     var self = this;
 
-    var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
-    var ignoreVary = (options && options.ignoreVary);
-    
-    return self._getStore().then(function(store) {
-      return store.find(searchCriteria);
-    }).then(function (cacheEntries) {
+    return self._getCacheEntries(request, options).then(function (cacheEntries) {
+      var ignoreVary = (options && options.ignoreVary);
       var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
-      return _cacheEntryToResponse(matchEntry);
-    }).then(function (results) {
-      if (results) {
-        var bodyAbstract = results[0];
-        var response = results[1];
-        return cacheHandler.fillResponseBodyWithShreddedData(request, bodyAbstract, response);
-      } else {
-        return Promise.resolve();
+      if (!matchEntry) {
+        return;
       }
+      return _cacheEntryToResponse(request, matchEntry.value.responseData, options);
+    }).catch(function(error) {
+      logger.log('error finding match for request with url: ' + request.url);
+      return;
+    });
+  };
+
+  OfflineCache.prototype._getCacheEntries = function (request, options) {
+    var self = this;
+    return this._getStore().then(function(store) {
+      var possibleKeys = cacheHandler.getMatchedCacheKeys(request, options, self._cacheKeys);
+      if (possibleKeys && possibleKeys.length) {
+        var promises = possibleKeys.map(function(key) {
+          return store.findByKey(key).then(function(value) {
+            return {key: key, value: value};
+          });
+        });
+        return Promise.all(promises);
+      } else {
+        // get the cache entries based on search criteria.
+        var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
+        searchCriteria['fields'] = ['key', 'value'];
+        return store.find(searchCriteria);
+      }
+    });
+  };
+
+  // find the response from the cache that matches the request based on
+  // cache key value.
+  OfflineCache.prototype._matchByKey = function (request, key, options) {
+    return this._getStore().then(function(store) {
+      return store.findByKey(key);
+    }).then(function(cacheData) {
+      if (!cacheData) {
+        return;
+      } else {
+        return _cacheEntryToResponse(request, cacheData.responseData, options);
+      }
+    });
+  };
+  
+  // internal match that only returns the needed metadata that includes:
+  //   key: key of the cache entry in the cache store. 
+  //   resourceType: whether the response body is a collection type of resource
+  //                 or single type of resourse
+  //   resourceIdentifier: the resourse identifier value of the cached response.
+  // This is called from queryHandler which needs the metadata information
+  // to handle the query.
+  OfflineCache.prototype._internalMatch = function (request, options) {
+    // return key and headers. always skip search, always skip body.
+    var self = this;
+    return self._getStore().then(function(store) {
+      var possibleKeys = cacheHandler.getMatchedCacheKeys(request, options, self._cacheKeys);
+      if (possibleKeys && possibleKeys.length) {
+        var promises = possibleKeys.map(function(key) {
+          return store.findByKey(key);
+        });
+        return Promise.all(promises).then(function(results) {
+          return results.map(function(result, index) {
+            return {key: possibleKeys[index], value: result};
+          });
+        });
+      } else {
+        var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
+        searchCriteria['fields'] = ['key', 'value'];
+        return store.find(searchCriteria);
+      }
+    }).then(function (cacheEntries) {
+      if (!cacheEntries) {
+        return;
+      }
+      var ignoreVary = (options && options.ignoreVary);
+      var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
+      if (matchEntry) {
+        var returnValue = {key: matchEntry.key};
+        var bodyAbstractText = matchEntry.value.responseData.bodyAbstract;
+        if (bodyAbstractText) {
+          try {
+            var bodyAbstract = JSON.parse(bodyAbstractText);
+            if (bodyAbstract) {
+              if (bodyAbstract.length === 1 && bodyAbstract[0].resourceType === 'single') {
+                returnValue.resourceType = 'single';
+              } else {
+                returnValue.resourceType = 'collection';
+              }
+              if (Array.isArray(bodyAbstract) && bodyAbstract.length > 0) {
+                var resourceIdentifierMap = {};
+                bodyAbstract.forEach(function(storeAbstract) {
+                  if (storeAbstract.resourceIdentifier) {
+                    resourceIdentifierMap[storeAbstract.name] = storeAbstract.resourceIdentifier
+                  }
+                });
+                returnValue.resourceIdentifierMap = resourceIdentifierMap;
+              }
+            } else {
+              returnValue.resourceType = 'unknown';
+            }
+          } catch (exp) {
+            logger.log('internal error: invalid body abstract');
+            return;
+          }
+        } else {
+          // this is for the case where there is no thredder, thus 
+          // no bodyAbstract.
+          returnValue.resourceType = 'unknown';
+        }
+        return returnValue;
+      } else {
+        return;
+      }
+    }).catch(function(error) {
+      logger.log('error finding match internal');
+      return;
     });
   };
 
@@ -16463,27 +16838,14 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
    */
   OfflineCache.prototype.matchAll = function (request, options) {
     logger.log("Offline Persistence Toolkit OfflineCache: matchAll() for Request with url: " + request.url);
-    var self = this;
 
-    var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
-    var ignoreVary = (options && options.ignoreVary);
-
-    return self._getStore().then(function(store) {
-      return store.find(searchCriteria);
-    }).then(function (cacheEntries) {
+    return this._getCacheEntries(request, options).then(function (cacheEntries) {
+      var ignoreVary = (options && options.ignoreVary);
       var responseDataArray = _applyVaryForAllMatches(ignoreVary, request, cacheEntries);
-      return _cacheEntriesToResponses(responseDataArray);
-    }).then(function (responseArray) {
-      if (responseArray && responseArray.length) {
-        var promises = responseArray.map(function (responseElement) {
-          var bodyAbstract = responseElement[0];
-          var response = responseElement[1];
-          return cacheHandler.fillResponseBodyWithShreddedData(request, bodyAbstract, response);
-        });
-        return Promise.all(promises);
-      } else {
-        return Promise.resolve([]);
-      }
+      return _cacheEntriesToResponses(request, responseDataArray, options);
+    }).catch(function(error) {
+      logger.log('error finding all matches for request with url: ' + request.url);
+      return;
     });
   };
   
@@ -16493,13 +16855,26 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
    */
   OfflineCache.prototype._getStore = function () {
     var self = this;
-    if (!self._store) {
-      return persistenceStoreManager.openStore(self._storeName).then(function (store) {
-        self._store = store;
+    if (self._store) {
+      return Promise.resolve(self._store);
+    }
+    if (self._createStorePromise) {
+      return self._createStorePromise;
+    } else {
+      var localStore;
+      self._createStorePromise = persistenceStoreManager.openStore(self._storeName, {
+        index: ["metadata.baseUrl", "metadata.url", "metadata.created"], 
+        skipMetadata: true
+      }).then(function (store) {
+        localStore = store;
+        return store.keys();
+      }).then(function (keys) {
+        self._cacheKeys = keys;
+        self._store = localStore;
         return self._store;
       });
+      return self._createStorePromise;
     }
-    return Promise.resolve(self._store);
   }
 
   /**
@@ -16510,17 +16885,17 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
    * @param {Array} cacheEntries An array of cache entry to be checked among.
    * @returns {Object} The first match entry.
    */
-  function _applyVaryForSingleMatch (ignoreVary, request, cacheEntries) {
-    if (cacheEntries && cacheEntries.length) {
-      for (var index = 0; index < cacheEntries.length; index++) {
-        var cacheEntry = cacheEntries[index];
-        if (_applyVaryCheck(ignoreVary, request, cacheEntry)) {
-          return cacheEntry.responseData;
-        }
-      }
-    }
-    return null;
-  };
+ function _applyVaryForSingleMatch (ignoreVary, request, cacheEntries) {
+   if (cacheEntries && cacheEntries.length) {
+     for (var index = 0; index < cacheEntries.length; index++) {
+       var cacheEntry = cacheEntries[index];
+       if (_applyVaryCheck(ignoreVary, request, cacheEntry.value)) {
+         return cacheEntry;
+       }
+     }
+   }
+   return null;
+ };
 
   /**
    * Perform vary header check and return the all entries that match the request
@@ -16534,8 +16909,8 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
   function _applyVaryForAllMatches (ignoreVary, request, cacheEntries) {
     var responseDataArray = [];
     if (cacheEntries && cacheEntries.length) {
-      var filteredArray = cacheEntries.filter(_filterByVary(ignoreVary, request));
-      responseDataArray = filteredArray.map(function (entry) {return entry.responseData;});
+      var filteredArray = cacheEntries.filter(_filterByVary(ignoreVary, request, 'value'));
+      responseDataArray = filteredArray.map(function (entry) {return entry.value.responseData;});
     }
     return responseDataArray;
   };
@@ -16601,34 +16976,50 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
    * Convert the cached response data to Response object, it handles undefined
    * response data as well.
    * @param {Object} responseData Cached response data.
+   * @param {Object} options options to control the behavior.
+   * @param {boolean} options.ignoreBody default to false. If true, don't bother
+   *                  building body from shredded data.
    * @returns {Promise} A promise that resolves to de-serialized Response object
    *                    from responseData. The promise is resolved to undefined
    *                    if responseData is undefined.
    */
-  function _cacheEntryToResponse (responseData) {
+  function _cacheEntryToResponse (request, responseData, options) {
     if (responseData) {
       logger.log("Offline Persistence Toolkit OfflineCache: Converting cached entry to Response object");
-      var promises = [];
-      var bodyAbstract = responseData.bodyAbstract;
-      if (bodyAbstract) {
-        promises.push(Promise.resolve(JSON.parse(bodyAbstract)));
-        delete responseData.bodyAbstract;
-      } else {
-        promises.push(Promise.resolve());
+      var ignoreBody = false;
+      if (options && options.ignoreBody) {
+        ignoreBody = true;
       }
-      promises.push(cacheHandler.constructResponse(responseData));
-      return Promise.all(promises);
+      var bodyAbstractText = responseData.bodyAbstract;
+
+      return cacheHandler.constructResponse(responseData).then(function(response) {
+        if (request.url != null && request.url.length > 0 &&
+            response.headers.get('x-oracle-jscpt-response-url') == null) {
+          response.headers.set('x-oracle-jscpt-response-url', request.url);
+        }
+        if (!ignoreBody && bodyAbstractText) {
+          var bodyAbstract;
+          try {
+            bodyAbstract = JSON.parse(bodyAbstractText);
+          } catch (exp) {
+            logger.error("error parsing json " + bodyAbstractText);
+          }
+          return cacheHandler.fillResponseBodyWithShreddedData(request, bodyAbstract, response);
+        } else {
+          return response;
+        }
+      });
     } else {
       return Promise.resolve();
     }
   };
 
-  function _cacheEntriesToResponses (responseDataArray) {
+  function _cacheEntriesToResponses (request, responseDataArray, options) {
     if (!responseDataArray || !responseDataArray.length) {
       return Promise.resolve();
     } else {
       var promisesArray = responseDataArray.map(function (element) {
-        return _cacheEntryToResponse(element);
+        return _cacheEntryToResponse(request, element, options);
       });
       return Promise.all(promisesArray);
     }
@@ -16647,30 +17038,83 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
   OfflineCache.prototype.put = function (request, response) {
     logger.log("Offline Persistence Toolkit OfflineCache: put() for Request with url: " + request.url);
     var self = this;
-    var promises = [];
-    promises.push(cacheHandler.constructRequestResponseCacheData(request, response));
-    promises.push(cacheHandler.shredResponse(request, response));
+    var cacheKey;
 
-    return Promise.all(promises).then(function (results) {
-      return self._getStore().then(function(store) {
-        var requestResponsePair = results[0];
-        var shreddedPayload = results[1];
-        if (!shreddedPayload) {
-          // this is the case where no shredder/unshredder is specified.
-          return store.upsert(requestResponsePair.key,
-                                    requestResponsePair.metadata,
-                                    requestResponsePair.value);
-        } else {
+    return self._getStore().then(function() {
+      return cacheHandler.constructRequestResponseCacheData(request, response);
+    }).then(function(requestResponsePair) {
+      var cacheStore = self._store;
+      cacheKey = requestResponsePair.key;
+      var hasShredder = cacheHandler.hasShredder(request);
+      if (!hasShredder) {
+        return cacheStore.upsert(requestResponsePair.key,
+                                 requestResponsePair.metadata,
+                                 requestResponsePair.value);
+      } else {
+        return cacheHandler.shredResponse(request, response).then(function(shreddedPayload) {
+          if (!shreddedPayload) {
+            // something is wrong with the shredding process. will not cache
+            // the request/response pair.
+            cacheKey = null;
+            return;
+          }
+          self._updateShreddedStoreNames(shreddedPayload.map(function(entry) {
+            return entry.name;
+          }));
           var storePromises = [];
           requestResponsePair.value.responseData.bodyAbstract = _buildBodyAbstract(shreddedPayload);
-          storePromises.push(store.upsert(requestResponsePair.key,
-                                                requestResponsePair.metadata,
-                                                requestResponsePair.value));
+          storePromises.push(cacheStore.upsert(requestResponsePair.key,
+                                               requestResponsePair.metadata,
+                                               requestResponsePair.value));
           storePromises.push(cacheHandler.cacheShreddedData(shreddedPayload));
           return Promise.all(storePromises);
+        });
+      }
+    }).then(function() {
+      if (cacheKey && self._cacheKeys.indexOf(cacheKey) < 0) {
+        self._cacheKeys.push(cacheKey);
+      }
+    }).catch(function(error) {
+      logger.error("error in cache.put() for Request with url: " + request.url);
+    });
+  };
+
+  OfflineCache.prototype._updateShreddedStoreNames = function (storeNames) {
+    if (!storeNames) {
+      localStorage.setItem(this._STORE_NAMES_, "");
+      return;
+    }
+    var storeageData = localStorage.getItem(this._STORE_NAMES_);
+    if (!storeageData) {
+      storeageData = JSON.stringify(storeNames);
+    } else {
+      var existingStoreNames;
+      try {
+        existingStoreNames = JSON.parse(storeageData);
+      } catch(exc) {
+        existingStoreNames = [];
+      }
+      storeNames.forEach(function (storeName) {
+        if (existingStoreNames.indexOf(storeName) < 0) {
+          existingStoreNames.push(storeName);
         }
       });
-    });
+      storeageData = JSON.stringify(existingStoreNames);
+    }
+    localStorage.setItem(this._STORE_NAMES_, storeageData);
+  };
+
+  OfflineCache.prototype._getShreddedStoreNames = function () {
+    var storeNames = [];
+    var storeageData = localStorage.getItem(this._STORE_NAMES_);
+    if (storeageData) {
+      try {
+        storeNames = JSON.parse(storeageData);
+      } catch (exc) {
+        logger.log("error getting shredded store names from localStorage");
+      }
+    }
+    return storeNames;
   };
 
   function _buildBodyAbstract (shreddedPayload) {
@@ -16679,13 +17123,14 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
         name: element.name,
         keys: element.keys ? element.keys.reduce(function(processedKeys, key) {
           if (key) {
-            processedKeys.push(key.toString());
+            processedKeys.push(key);
           } else {
             logger.warn("should not have undefined key in the shredded data");
           }
           return processedKeys;
         }, []) : element.keys,
-        resourceType: element.resourceType
+        resourceType: element.resourceType,
+        resourceIdentifier: element.resourceIdentifier
       };
     });
     return JSON.stringify(bodyAbstract);
@@ -16730,58 +17175,62 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
     }
     var self = this;
 
-    if (cacheHandler.hasShredder(request)) {
-      // shredder is configured for this request, needs to delete both 
-      // the cache entries and the shredded data entries.
-      var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
-      searchCriteria.fields = ['key', 'value'];
-      var ignoreVary = (options && options.ignoreVary);
-
-      var cacheStore;
-      return self._getStore().then(function(store) {
-        cacheStore = store;
-        return cacheStore.find(searchCriteria);
-      }).then(function (dataArray) {
-        if (dataArray && dataArray.length) {
-          var filteredEntries = dataArray.filter(_filterByVary(ignoreVary, request, 'value'));
-          var promises = [];
-          filteredEntries.forEach(function(entry) {
-            promises.push(cacheStore.removeByKey(entry.key));
-            if (entry.value.responseData.bodyAbstract && entry.value.responseData.bodyAbstract.length) {
-              promises.push(cacheHandler.deleteShreddedData(JSON.parse(entry.value.responseData.bodyAbstract)));
-            }
-          });
-          return Promise.all(promises).then(function() {
-            logger.log("Offline Persistence Toolkit OfflineCache: all matching entries are deleted from both the cache store and the shredded store.");
-            return true;
-          }).catch(function(error) {
-            logger.log("Offline Persistence Toolkit OfflineCache: error occurred when deleting matched cache entries.");
-            return false;
-          });
-        } else {
-          logger.log("Offline Persistence Toolkit OfflineCache: no matching entries are found from the cache.");
-          return false;
-        }
-      });
-    } else {
-      // no shredder, deleting cache entries is sufficient.
-      return self._getStore().then(function(store) {
-        return _getStoreKeys(store, request, options).then(function(keysArray) {
-          if (keysArray && keysArray.length) {
-            var promisesArray = keysArray.map(store.removeByKey, store);
-            return Promise.all(promisesArray);
+    return self._getStore().then(function(cacheStore) {
+      if (cacheHandler.hasShredder(request)) {
+        // shredder is configured for this request, needs to delete both 
+        // the cache entries and the shredded data entries.
+        var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
+        searchCriteria.fields = ['key', 'value'];
+        var ignoreVary = (options && options.ignoreVary);
+        return cacheStore.find(searchCriteria).then(function(dataArray) {
+          if (dataArray && dataArray.length) {
+            var filteredEntries = dataArray.filter(_filterByVary(ignoreVary, request, 'value'));
+            var promises = [];
+            filteredEntries.forEach(function(entry) {
+              promises.push(cacheStore.removeByKey(entry.key));
+              var index = self._cacheKeys.indexOf(entry.key);
+              if (index >= 0) {
+                self._cacheKeys.splice(index, 1);
+              }
+              if (entry.value.responseData.bodyAbstract && entry.value.responseData.bodyAbstract.length) {
+                promises.push(cacheHandler.deleteShreddedData(JSON.parse(entry.value.responseData.bodyAbstract)));
+              }
+            });
+            return Promise.all(promises).then(function() {
+              logger.log("Offline Persistence Toolkit OfflineCache: all matching entries are deleted from both the cache store and the shredded store.");
+              return true;
+            })
           } else {
             return false;
           }
         });
-      }).then(function (result) {
-        if (result && result.length) {
-          return true;
-        } else {
-          return false;
-        }
-      });
-    }
+      } else {
+        // no shredder, deleting cache entries is sufficient.
+        return _getStoreKeys(cacheStore, request, options).then(function(keysArray) {
+          if (keysArray && keysArray.length) {
+            var promisesArray = keysArray.map(function(key) {
+              var index = self._cacheKeys.indexOf(key);
+              if (index >= 0) {
+                self._cacheKeys.splice(index, 1);
+              }
+              return cacheStore.removeByKey(key);
+            });
+            return Promise.all(promisesArray);
+          } else {
+            return [];
+          }
+        }).then(function(result) {
+          if (result && result.length) {
+            return true;
+          } else {
+            return false;
+          }
+        });
+      }
+    }).catch(function(error) {
+      logger.log("Offline Persistence Toolkit OfflineCache: error occurred delete() for Request with url: " + request.url);
+      return false;
+    });
   };
 
   /**
@@ -16817,21 +17266,23 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
       logger.log("Offline Persistence Toolkit OfflineCache: keys()");
     }
     var self = this;
-    return this._getStore().then(function(store) {
-      return _getStoreKeys(store, request, options).then(function(keysArray) {
-        var requestsPromiseArray = [];
-        keysArray.forEach(function(key) {
-          requestsPromiseArray.push(store.findByKey(key).then(function(entry) {
-            return persistenceUtils.requestFromJSON(entry.requestData);
-          }));
-        });
-        return Promise.all(requestsPromiseArray);
+    return self._getStore().then(function() {
+      return _getStoreKeys(self._store, request, options);
+    }).then(function(keysArray) {
+      var requestsPromiseArray = [];
+      keysArray.forEach(function(key) {
+        requestsPromiseArray.push(self._store.findByKey(key).then(function(entry) {
+          return persistenceUtils.requestFromJSON(entry.requestData);
+        }));
       });
+      return Promise.all(requestsPromiseArray);
+    }).catch(function(error) {
+      logger.log("Offline Persistence Toolkit OfflineCache: keys() error for Request with url: " + request.url);
+      return [];
     });
   };
 
   function _getStoreKeys(store, request, options) {
-    var self = this;
     if (request) {
       // need to match with the passed-in request.
       var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
@@ -16887,14 +17338,11 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
   OfflineCache.prototype.hasMatch = function (request, options) {
     logger.log("Offline Persistence Toolkit OfflineCache: hasMatch() for Request with url: " + request.url);
     var self = this;
-    var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
-    var ignoreVary = (options && options.ignoreVary);
     
-    return self._getStore().then(function(store) {
-      return store.find(searchCriteria).then(function (cacheEntries) {
-        var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
-        return matchEntry !== null;
-      });
+    return self._getCacheEntries(request, options).then(function (cacheEntries) {
+      var ignoreVary = (options && options.ignoreVary);
+      var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
+      return matchEntry !== null;
     });
   };
 
@@ -16909,24 +17357,23 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
    */
   OfflineCache.prototype.clear = function () {
     logger.log("Offline Persistence Toolkit OfflineCache: clear()");
+
     var self = this;
-    var deletePromiseArray = [];
-    return this.keys().then(function(keys) {
-      keys.forEach(function(request, index, array) {
-        deletePromiseArray.push(self.delete(request));
+    return self._getStore().then(function(cacheStore) {
+      var deletePromiseArray = [];
+      deletePromiseArray.push(cacheStore.delete());
+      var storeNames = self._getShreddedStoreNames();
+      storeNames.forEach(function(storeName) {
+        deletePromiseArray.push(persistenceStoreManager.deleteStore(storeName));
+        return;
       });
-      return Promise.all(deletePromiseArray);
-    }).then(function(results) {
-      var failedDelete = false;
-      results.forEach(function(result) {
-        if (!result) {
-          failedDelete = true;
-        }
+      return Promise.all(deletePromiseArray).then(function(results) {
+        self._updateShreddedStoreNames(null);
+        self._cacheKeys = [];
+        return true;
       });
-      if (failedDelete) {
-        return false;
-      }
-      return true;
+    }).catch(function(error) {
+      logger.log("Offline Persistence Toolkit OfflineCache: clear() error");
     });
   };
 
@@ -17066,7 +17513,7 @@ define('persist/impl/offlineCacheManager',['./OfflineCache', './logger'],
       var self = this;
       var cache = self._caches[cacheName];
       if (cache) {
-        return cache.delete().then(function () {
+        return cache.clear().then(function () {
           self._cachesArray.splice(self._cachesArray.indexOf(cacheName), 1);
           delete self._caches[cacheName];
           return true;

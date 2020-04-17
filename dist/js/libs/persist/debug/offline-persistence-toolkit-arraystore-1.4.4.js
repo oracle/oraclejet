@@ -217,7 +217,7 @@ define('persist/PersistenceStore',[], function () {
 
 define('persist/impl/storageUtils',['./logger'], function (logger) {
   'use strict';
-  
+
   /**
     * Helper function that checks if itemData satisfies the search criteria
     * defined by selector or not. Undefined selector means everything is
@@ -242,7 +242,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
       return _evaluateExpressionTree(expTree, itemData);
     }
   };
-   
+
   /**
    * Helper function used by {@link _satisfy} to build an expression tree
    * based on expression object for easier evaluation later.
@@ -398,6 +398,12 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
         } else {
           return (itemValue === null || itemValue === undefined);
         }
+      } else if (operator === '$in') {
+        for (var i=0; i<value.length; i++) {
+          if(value[i] ===  itemValue) {
+            return true
+          }
+        }
       } else {
         throw new Error("not a valid expression! " + expTree);
       }
@@ -436,7 +442,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
   function _isSingleSelector(token) {
     return (token === '$lt' || token === '$gt' || token === '$lte' ||
       token === '$gte' || token === '$eq' || token === '$ne' ||
-      token === '$regex' || token === '$exists');
+      token === '$regex' || token === '$exists' || token === '$in');
   };
 
   /**
@@ -451,7 +457,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
   function _isLiteral(token) {
     return (typeof(token) !== 'object');
   };
-  
+
   /**
    * Helper function that checks if the token is a string
    * @method
@@ -464,7 +470,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
   function _isString(token) {
     return (token != null && (token instanceof String || typeof token === 'string'));
   };
-  
+
   /**
    * Helper function that sets null literals to empty string for string comparison
    * @method
@@ -550,10 +556,54 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
     return returnObject;
   };
   
+  function sortRows (unsorted, sortCriteria) {
+    if (!unsorted || !Array.isArray(unsorted) || unsorted.length < 1 ||
+        !sortCriteria || !Array.isArray(sortCriteria) || !sortCriteria.length) {
+      return unsorted;
+    }
+
+    return unsorted.sort(_sortFunction(sortCriteria));
+  };
+
+  var _sortFunction = function (sortCriteria) {
+    return function (a, b) {
+      for (var index = 0; index < sortCriteria.length; index++) {
+        var sortC = sortCriteria[index];
+        var sortField;
+        var sortAsc = true;
+
+        if (typeof(sortC) === 'string') {
+          sortField = sortC;
+        } else if (typeof(sortC) === 'object'){
+          var keys = Object.keys(sortC);
+          if (!keys || keys.length !== 1) {
+            throw new Error('invalid sort criteria');
+          }
+          sortField = keys[0];
+          sortAsc = (sortC[sortField].toLowerCase() === 'asc');
+        } else {
+          throw new Error("invalid sort criteria.");
+        }
+
+        var valueA = getValue(sortField, a);
+        var valueB = getValue(sortField, b);
+        if (valueA == valueB) {
+          continue;
+        } else if (sortAsc) {
+          return (valueA < valueB ? -1 : 1);
+        } else {
+          return (valueA < valueB ? 1 : -1);
+        }
+      }
+      return 0;
+    };
+  };
+
   return {
     satisfy: satisfy,
     getValue: getValue,
-    assembleObject: assembleObject
+    assembleObject: assembleObject,
+    sortRows: sortRows
   };
 });
 
@@ -670,7 +720,7 @@ define('persist/impl/keyValuePersistenceStore',["../PersistenceStore", "./storag
         }
 
         return Promise.all(itemPromiseArray).then(function () {
-          var sorted = self._sort(unsorted, findExpression.sort);
+          var sorted = storageUtils.sortRows(unsorted, findExpression.sort);
           for (var index = 0; index < sorted.length; index++) {
             resultSet.push(self._constructReturnObject(findExpression.fields, sorted[index]));
           }
@@ -693,63 +743,6 @@ define('persist/impl/keyValuePersistenceStore',["../PersistenceStore", "./storag
         return self.removeByKey(currentKey);
       });
     };
-
-    KeyValuePersistenceStore.prototype._sort = function (unsorted, sortCriteria) {
-
-      if (!unsorted || !unsorted.length ||
-          !sortCriteria || !sortCriteria.length) {
-        return unsorted;
-      }
-
-      return unsorted.sort(this._sortFunction(sortCriteria, this));
-    };
-
-    /**
-     * Helper method that returns a function that can be used as callback
-     * to Array.sort.
-     * @method
-     * @name _sortFunction
-     * @memberof! KeyValuePersistenceStore
-     * @param {object} sortCriteria Rule that defines how sort should be
-     *                              performed.
-     * @param {object} thisArg The object that should be used as this.
-     * @returns {function} the function that is used as callback to
-     *                     Array.sort.
-     */
-    KeyValuePersistenceStore.prototype._sortFunction = function (sortCriteria, thisArg) {
-      return function (a, b) {
-        for (var index = 0; index < sortCriteria.length; index++) {
-          var sortC = sortCriteria[index];
-          var sortField;
-          var sortAsc = true;
-
-          if (typeof(sortC) === 'string') {
-            sortField = sortC;
-          } else if (typeof(sortC) === 'object'){
-            var keys = Object.keys(sortC);
-            if (!keys || keys.length !== 1) {
-              throw new Error('invalid sort criteria');
-            }
-            sortField = keys[0];
-            sortAsc = (sortC[sortField].toLowerCase() === 'asc');
-          } else {
-            throw new Error("invalid sort criteria.");
-          }
-
-          var valueA = storageUtils.getValue(sortField, a);
-          var valueB = storageUtils.getValue(sortField, b);
-          if (valueA == valueB) {
-            continue;
-          } else if (sortAsc) {
-            return (valueA < valueB ? -1 : 1);
-          } else {
-            return (valueA < valueB ? 1 : -1);
-          }
-        }
-        return 0;
-      };
-    };
-
 
     /**
      * Helper function used by {@link find} that constructs an object out from

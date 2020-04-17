@@ -14,9 +14,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var DeferredDataProvider =
-/*#__PURE__*/
-function () {
+var DeferredDataProvider = /*#__PURE__*/function () {
   function DeferredDataProvider(_dataProvider, _capabilityFunc) {
     _classCallCheck(this, DeferredDataProvider);
 
@@ -24,9 +22,7 @@ function () {
     this._capabilityFunc = _capabilityFunc;
     this._DATAPROVIDER = 'dataProvider';
 
-    this.AsyncIterable =
-    /*#__PURE__*/
-    function () {
+    this.AsyncIterable = /*#__PURE__*/function () {
       function _class(_asyncIterator) {
         _classCallCheck(this, _class);
 
@@ -40,9 +36,7 @@ function () {
       return _class;
     }();
 
-    this.AsyncIterator =
-    /*#__PURE__*/
-    function () {
+    this.AsyncIterator = /*#__PURE__*/function () {
       function _class2(_asyncIteratorPromise) {
         _classCallCheck(this, _class2);
 
@@ -199,18 +193,18 @@ oj['DeferredDataProvider'] = DeferredDataProvider;
  * @since 4.2.0
  * @export
  * @final
- * @class oj.DeferredDataProvider
- * @implements oj.DataProvider
+ * @class DeferredDataProvider
+ * @implements DataProvider
  * @ojtsmodule
- * @classdesc This class implements {@link oj.DataProvider}.
+ * @classdesc This class implements {@link DataProvider}.
  *            This object represents a data provider that is created with deferred data and can be used by any component that requires a data provider that will be created with data from a Promise.
- * @param {Promise.<oj.DataProvider>} dataProvider A promise that resolves to an oj.DataProvider
- * @param {Function} capabilityFunc An function that implements {@link oj.DataProvider#getCapability}.
+ * @param {Promise.<DataProvider>} dataProvider A promise that resolves to an DataProvider
+ * @param {Function} capabilityFunc An function that implements {@link DataProvider#getCapability}.
  * @ojsignature [{target: "Type",
  *               value: "class DeferredDataProvider<K, D> implements DataProvider<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]},
  *               {target: "Type",
- *               value: "Promise<oj.DataProvider<K, D>>",
+ *               value: "Promise<DataProvider<K, D>>",
  *               for: "dataProvider"},
  *               {target: "Type",
  *               value: "(capabilityName: string)=> any",
@@ -226,153 +220,89 @@ oj['DeferredDataProvider'] = DeferredDataProvider;
  *
  * // Create a Promise that will resolve to a data provider containing the resolved data
  * var dataProviderPromise = deferredDataPromise.then(function(resolvedData){
- *  return new oj.ArrayDataProvider(resolvedData);
+ *  return new ArrayDataProvider(resolvedData);
  * });
  *
  * // Then create a DeferredDataProvider object with the promise that will resolve to a data provider,
- * // and an implemenation of {@link oj.DataProvider#getCapability}
- * var dataprovider = new oj.DeferredDataProvider(dataProviderPromise, capabilityFunc);
+ * // and an implemenation of {@link DataProvider#getCapability}
+ * var dataprovider = new DeferredDataProvider(dataProviderPromise, capabilityFunc);
  */
 
 /**
- * Check if there are rows containing the specified keys
- *
- *
- * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
- * @return {Promise.<oj.ContainsKeysResults>} Promise which resolves to {@link oj.ContainsKeysResults}
- * @export
- * @expose
- * @memberof oj.DeferredDataProvider
+ * @inheritdoc
+ * @memberof DeferredDataProvider
  * @instance
  * @method
  * @name containsKeys
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>"}
  */
 
 /**
- * Fetch rows by keys
- *
- *
- * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
- * @return {Promise.<oj.FetchByKeysResults>} Promise which resolves to {@link oj.FetchByKeysResults}
- * @export
- * @expose
- * @memberof oj.DeferredDataProvider
- * @instance
- * @method
- * @name fetchByKeys
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>"}
- */
-
-/**
- * Fetch rows by offset
- *
- *
- * @param {oj.FetchByOffsetParameters} params Fetch by offset parameters
- * @return {Promise.<oj.FetchByOffsetResults>} Promise which resolves to {@link oj.FetchByOffsetResults}
- * @export
- * @expose
- * @memberof oj.DeferredDataProvider
- * @instance
- * @method
- * @name fetchByOffset
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
- */
-
-/**
- * Fetch the first block of data.
- *
- *
- * @param {oj.FetchListParameters=} params Fetch parameters
- * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
- * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
- * @export
- * @expose
- * @memberof oj.DeferredDataProvider
+ * @inheritdoc
+ * @memberof DeferredDataProvider
  * @instance
  * @method
  * @name fetchFirst
- * @ojsignature {target: "Type",
- *               value: "(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
  */
 
 /**
- * Return the total number of rows in this dataprovider
- *
- *
- * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
- * @export
- * @expose
- * @memberof oj.DeferredDataProvider
+ * @inheritdoc
+ * @memberof DeferredDataProvider
  * @instance
  * @method
- * @name getTotalSize
+ * @name fetchByKeys
  */
 
 /**
- * Determines whether this DataProvider supports certain feature.
- *
- *
- * @param {string=} capabilityName capability name. Supported capability names are:
- *                  "fetchByKeys", "fetchByOffset", and "sort"
- * @return {any} capability information or null if unsupported
- * @export
- * @expose
- * @memberof oj.DeferredDataProvider
+ * @inheritdoc
+ * @memberof DeferredDataProvider
+ * @instance
+ * @method
+ * @name fetchByOffset
+ */
+
+/**
+ * @inheritdoc
+ * @memberof DeferredDataProvider
  * @instance
  * @method
  * @name getCapability
  */
 
 /**
- * Return a string that indicates if this data provider is empty
- *
- * @return {"yes"|"no"|"unknown"} a string that indicates if this data provider is empty. Valid values are:
- *                  "yes": this data provider is empty.
- *                  "no": this data provider is not empty.
- *                  "unknown": it is not known if this data provider is empty until it has resolved, and a fetch is made.
- * @export
- * @expose
- * @memberof oj.DeferredDataProvider
+ * @inheritdoc
+ * @memberof DeferredDataProvider
+ * @instance
+ * @method
+ * @name getTotalSize
+ */
+
+/**
+ * @inheritdoc
+ * @memberof DeferredDataProvider
  * @instance
  * @method
  * @name isEmpty
  */
 
 /**
- *
- * @param {string} eventType The event type to add listener to.
- * @param {EventListener} listener The event listener to add.
- * @export
- * @expose
- * @memberof oj.DeferredDataProvider
+ * @inheritdoc
+ * @memberof DeferredDataProvider
  * @instance
  * @method
  * @name addEventListener
  */
 
 /**
- *
- * @param {string} eventType The event type to remove listener from.
- * @param {EventListener} listener The event listener to remove.
- * @export
- * @expose
- * @memberof oj.DeferredDataProvider
+ * @inheritdoc
+ * @memberof DeferredDataProvider
  * @instance
  * @method
  * @name removeEventListener
  */
 
 /**
- *
- * @param {Event} evt The event to dispatch.
- * @return {boolean} false if the deferred data provider has not resolved or the event has been cancelled, and true otherwise.
- * @export
- * @expose
- * @memberof oj.DeferredDataProvider
+ * @inheritdoc
+ * @memberof DeferredDataProvider
  * @instance
  * @method
  * @name dispatchEvent

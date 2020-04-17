@@ -1977,7 +1977,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue, {
 
     for (var i = 0, j = attrCheck.length; i < j; i++) {
       var attr = attrCheck[i].attr;
-      var setMandatoryExists = 'setMandatory' in attrCheck[i]; // if it doesn't exist just have to check whether one should set it to a mandatory value
+      var setMandatoryExists = ('setMandatory' in attrCheck[i]); // if it doesn't exist just have to check whether one should set it to a mandatory value
 
       if (setMandatoryExists) {
         this.element.attr(attr, attrCheck[i].setMandatory);

@@ -5649,6 +5649,8 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
 
 
   DvtDiagramOverviewUtils.UpdateOverviewWindow = function (diagram, overview) {
+    overview.ContentBounds = diagram.GetViewBounds();
+
     DvtDiagramOverviewUtils._positionOverviewWindow(diagram, overview);
 
     DvtDiagramOverviewUtils._updateOverviewNodes(diagram, overview);
@@ -6471,6 +6473,7 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   DvtDiagramOverview.prototype.CreateAnimationClone = function () {
     var context = this.getCtx();
     var overviewClone = new dvt.Container(context, this.getId());
+    overviewClone.ContentBounds = this.Diagram.GetViewBounds();
     overviewClone.setMouseEnabled(false);
     var ovContentClone = new dvt.Container(context, 'ovContentClone');
     overviewClone.addChild(ovContentClone);
@@ -8472,6 +8475,8 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
     var animationOnDataChange = DvtDiagramStyleUtils.getAnimationOnDataChange(this);
 
     if (animationOnDataChange !== 'none') {
+      // dispatch not ready event
+      this.dispatchEvent(dvt.EventFactory.newEvent('notready'));
       this._oldDataAnimState = new DvtDiagramDataAnimationState(this, type, event);
     }
 
@@ -11666,6 +11671,8 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
       'includedLinks': includedLinks,
       'points': this.getPoints(),
       'shape': shape,
+      'tx': this.getTranslateX(),
+      'ty': this.getTranslateY(),
       _labelObj: label
     };
 
@@ -11689,6 +11696,14 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
 
     state.getShape = function () {
       return state['shape'];
+    };
+
+    state.getTranslateX = function () {
+      return state['tx'];
+    };
+
+    state.getTranslateY = function () {
+      return state['ty'];
     };
 
     return state;

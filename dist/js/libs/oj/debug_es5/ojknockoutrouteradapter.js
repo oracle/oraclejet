@@ -101,9 +101,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
  *  ]
  */
 // eslint-disable-next-line no-unused-vars
-var KnockoutRouterAdapter =
-/*#__PURE__*/
-function () {
+var KnockoutRouterAdapter = /*#__PURE__*/function () {
   /**
    * Constructor
    */

@@ -1,7 +1,7 @@
 Bundling JET code with Webpack
 ==============================
 
-This is a beta version of the upcoming support for using Webpack to bundle JET modules. It should be used if you are trying to generate Web-pack-specific bundles and not if you are planning to generate AMD modules and use Require.js at runtime. These tools require JET 6.0
+This plugin should be used when using Webpack to bundle JET modules. It should be used if you are trying to generate Web-pack-specific bundles and not if you are planning to generate AMD modules and use Require.js at runtime. These tools require JET 6.0 or newer.
 
 Refer to the enclosed webpack.config.js for typical configuration.
 
@@ -62,5 +62,3 @@ ModuleElementUtils (<oj-module>) example:
 Note that the 'match', 'addExtension' and 'prefix' settings for views and viewModels can be sparse. i.e. you only need to specify settings that are different from the View and ViewModel settings in ojModuleResources configuration of WebpackRequireFixupPlugin (see step 4)
 
 5) Run webpack as you would do for any other project (normally 'npx webpack').
-
-

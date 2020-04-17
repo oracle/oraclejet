@@ -985,12 +985,13 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  * @since 4.1.0
  * @export
  * @final
- * @class oj.ArrayDataProvider
- * @implements oj.DataProvider
- * @classdesc This class implements {@link oj.DataProvider}.
+ * @class ArrayDataProvider
+ * @implements DataProvider
+ * @classdesc This class implements {@link DataProvider}.
  *            Object representing data available from an array or observableArray. If a plain array is used then it is considered to be immutable.
  *            If an observableArray is used then for mutations, please use the observableArray functions or always call valueHasMutated() if
- *            mutating the underlying array. This dataprovider can be used by [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
+ *            mutating the underlying array. The decision on whether to use an array or observableArray should therefore be guided
+ *            by whether the data will be mutable. This dataprovider can be used by [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
  *            [TabBar]{@link oj.ojTabBar}, and [Table]{@link oj.ojTable}.<br><br>
  *            See the <a href="../jetCookbook.html?component=table&demo=basicTable">Table - Base Table</a> demo for an example.<br><br>
  *            The default sorting algorithm used when a sortCriteria is passed into fetchFirst is natural sort.
@@ -1005,7 +1006,7 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  * </h4>
  * This event is fired when items have been added or removed from the data.
  * <p>
- * Event payload is found under <code class="prettyprint">event.detail</code>, which implements the {@link oj.DataProviderMutationEventDetail} interface.
+ * Event payload is found under <code class="prettyprint">event.detail</code>, which implements the {@link DataProviderMutationEventDetail} interface.
  * </p>
  *
  * <h4 id="event:refresh" class="name">
@@ -1029,8 +1030,8 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  * @param {(Array|function():Array)} data data supported by the components
  *                                      <p>This can be either an Array, or a Knockout observableArray.</p>
  * @param {Object=} options Options for the ArrayDataProvider
- * @param {oj.SortComparators=} options.sortComparators Optional {@link oj.sortComparator} to use for sort.
- * @param {Array.<oj.SortCriterion>=} options.implicitSort Optional array of {@link oj.sortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
+ * @param {SortComparators=} options.sortComparators Optional {@link sortComparator} to use for sort.
+ * @param {Array.<SortCriterion>=} options.implicitSort Optional array of {@link sortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
  * This is used for cases where we would like display some indication that the data is already sorted.
  * For example, ojTable will display the column sort indicator for the corresponding column in either ascending or descending order upon initial render.
  * This option is not used for cases where we want the ArrayDataProvider to apply a sort on initial fetch.
@@ -1059,178 +1060,130 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  * "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults",
  * "FetchListResult","FetchListParameters"]}
  * @ojtsmodule
+ * @ojtsexample
+ * // First initialize an array
+ * let deptArray = [{DepartmentId: 10, DepartmentName: 'Administration', LocationId: 200},
+ *                  {DepartmentId: 20, DepartmentName: 'Marketing', LocationId: 200},
+ *                  {DepartmentId: 30, DepartmentName: 'Purchasing', LocationId: 200}];
+ * // Then create an ArrayDataProvider object with the array
+ * let dataprovider = new ArrayDataProvider(deptArray, {keyAttributes: 'DepartmentId'});
  * @example
  * // First initialize an array
  * var deptArray = [{DepartmentId: 10, DepartmentName: 'Administration', LocationId: 200},
  *                  {DepartmentId: 20, DepartmentName: 'Marketing', LocationId: 200},
  *                  {DepartmentId: 30, DepartmentName: 'Purchasing', LocationId: 200}];
  * // Then create an ArrayDataProvider object with the array
- * var dataprovider = new oj.ArrayDataProvider(deptArray, {keyAttributes: 'DepartmentId'});
+ * var dataprovider = new ArrayDataProvider(deptArray, {keyAttributes: 'DepartmentId'});
+ * @ojtsexample
+ * // Data and Key array
+ * let deptArray = [{DepartmentId: 10, DepartmentName: 'Administration', LocationId: 200},
+ *                  {DepartmentId: 20, DepartmentName: 'Marketing', LocationId: 200},
+ *                  {DepartmentId: 30, DepartmentName: 'Purchasing', LocationId: 200}];
+ * let keysArray = [10, 20, 30];
+ * let dataprovider = new ArrayDataProvider(deptArray, {keyAttributes: 'DepartmentId', keys: keysArray});
+ * @example
+ * // Data and Key array
+ * var deptArray = [{DepartmentId: 10, DepartmentName: 'Administration', LocationId: 200},
+ *                  {DepartmentId: 20, DepartmentName: 'Marketing', LocationId: 200},
+ *                  {DepartmentId: 30, DepartmentName: 'Purchasing', LocationId: 200}];
+ * var keysArray = [10, 20, 30];
+ * var dataprovider = new ArrayDataProvider(deptArray, {keyAttributes: 'DepartmentId', keys: keysArray});
  */
 
 /**
- * Check if there are rows containing the specified keys
- *
- *
- * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
- * @return {Promise.<oj.ContainsKeysResults>} Promise which resolves to {@link oj.ContainsKeysResults}
- * @export
- * @expose
- * @memberof oj.ArrayDataProvider
+ * @inheritdoc
+ * @memberof ArrayDataProvider
  * @instance
  * @method
  * @name containsKeys
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>"}
  */
 
 /**
- * Fetch rows by keys
- *
- *
- * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
- * @return {Promise.<oj.FetchByKeysResults>} Promise which resolves to {@link oj.FetchByKeysResults}
- * @export
- * @expose
- * @memberof oj.ArrayDataProvider
+ * @inheritdoc
+ * @memberof ArrayDataProvider
  * @instance
  * @method
- * @name fetchByKeys
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>"}
+ * @name createOptimizedKeySet
  */
 
 /**
- * Fetch rows by offset
- *
- *
- * @param {oj.FetchByOffsetParameters} params Fetch by offset parameters
- * @return {Promise.<oj.FetchByOffsetResults>} Promise which resolves to {@link oj.FetchByOffsetResults}
- * @export
- * @expose
- * @memberof oj.ArrayDataProvider
+ * @inheritdoc
+ * @memberof ArrayDataProvider
  * @instance
  * @method
- * @name fetchByOffset
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
+ * @name createOptimizedKeyMap
  */
 
 /**
- * Fetch the first block of data.
- *
- *
- * @param {oj.FetchListParameters=} params Fetch parameters
- * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
- * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
- * @export
- * @expose
- * @memberof oj.ArrayDataProvider
+ * @inheritdoc
+ * @memberof ArrayDataProvider
  * @instance
  * @method
  * @name fetchFirst
- * @ojsignature {target: "Type",
- *               value: "(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
  */
 
 /**
- * Determines whether this DataProvider supports certain feature.
- *
- *
- * @param {string} capabilityName capability name. Supported capability names are:
- *                  "fetchByKeys", "fetchByOffset", "sort", and "filter".
- * @return {Object} capability information or null if unsupported
- * <ul>
- *   <li>If capabilityName is "fetchByKeys", returns a {@link oj.FetchByKeysCapability} object.</li>
- *   <li>If capabilityName is "fetchByOffset", returns a {@link oj.FetchByOffsetCapability} object.</li>
- *   <li>If capabilityName is "sort", returns a {@link oj.SortCapability} object.</li>
- *   <li>If capabilityName is "filter", returns a {@link oj.FilterCapability} object.</li>
- * </ul>
- * @export
- * @expose
- * @memberof oj.ArrayDataProvider
+ * @inheritdoc
+ * @memberof ArrayDataProvider
+ * @instance
+ * @method
+ * @name fetchByKeys
+ */
+
+/**
+ * @inheritdoc
+ * @memberof ArrayDataProvider
+ * @instance
+ * @method
+ * @name fetchByOffset
+ */
+
+/**
+ * @inheritdoc
+ * @memberof ArrayDataProvider
  * @instance
  * @method
  * @name getCapability
- * @ojsignature {target: "Type",
- *               value: "(capabilityName?: string): any"}
  */
 
 /**
- * Return the total number of rows in this dataprovider
- *
- *
- * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
- * @export
- * @expose
- * @memberof oj.ArrayDataProvider
+ * @inheritdoc
+ * @memberof ArrayDataProvider
  * @instance
  * @method
  * @name getTotalSize
  */
 
 /**
- * Return a string that indicates if this data provider is empty
- *
- *
- * @return {"yes"|"no"|"unknown"} a string that indicates if this data provider is empty. Valid values are:
- *                  "yes": this data provider is empty.
- *                  "no": this data provider is not empty.
- *                  "unknown": it is not known if this data provider is empty until a fetch is made.
- * @export
- * @expose
- * @memberof oj.ArrayDataProvider
+ * @inheritdoc
+ * @memberof ArrayDataProvider
  * @instance
  * @method
  * @name isEmpty
  */
 
 /**
- * Add a callback function to listen for a specific event type.
- *
- *
- * @export
- * @expose
- * @memberof oj.ArrayDataProvider
+ * @inheritdoc
+ * @memberof ArrayDataProvider
  * @instance
  * @method
  * @name addEventListener
- * @param {string} eventType The event type to listen for.
- * @param {EventListener} listener The callback function that receives the event notification.
- * @ojsignature {target: "Type",
- *               value: "(eventType: string, listener: EventListener): void"}
  */
 
 /**
- * Remove a listener previously registered with addEventListener.
- *
- *
- * @export
- * @expose
- * @memberof oj.ArrayDataProvider
+ * @inheritdoc
+ * @memberof ArrayDataProvider
  * @instance
  * @method
  * @name removeEventListener
- * @param {string} eventType The event type that the listener was registered for.
- * @param {EventListener} listener The callback function that was registered.
- * @ojsignature {target: "Type",
- *               value: "(eventType: string, listener: EventListener): void"}
  */
 
 /**
- * Dispatch an event and invoke any registered listeners.
- *
- *
- * @export
- * @expose
- * @memberof oj.ArrayDataProvider
+ * @inheritdoc
+ * @memberof ArrayDataProvider
  * @instance
  * @method
  * @name dispatchEvent
- * @param {Event} event The event object to dispatch.
- * @return {boolean} Return false if a registered listener has cancelled the event. Return true otherwise.
- * @ojsignature {target: "Type",
- *               value: "(evt: Event): boolean"}
  */
 
 /**
@@ -1251,7 +1204,7 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  *
  * @since 4.1.0
  * @export
- * @interface oj.SortComparators
+ * @interface SortComparators
  * @ojtsnamespace ArrayDataProvider
  * @ojsignature {target: "Type",
  *               value: "interface SortComparators<D>",
@@ -1266,7 +1219,7 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.SortComparators
+ * @memberof SortComparators
  * @instance
  * @name comparators
  * @type {Map.<string, Function>}

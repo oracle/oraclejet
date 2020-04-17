@@ -3700,12 +3700,13 @@ DvtChartObjPeer.prototype._findNextNavigable = function(event) {
  * @private
  */
 DvtChartObjPeer.prototype._findNextUpSeries = function(chart, seriesIndex, groupIndex) {
+  var isStacked = DvtChartTypeUtils.isStacked(chart);
   var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
   var currentValue = DvtChartDataUtils.getCumulativeValue(chart, seriesIndex, groupIndex);
   var nextValue = null;
   var nextSeriesIndex = null;
   for (var i = 0; i < seriesCount; i++) {
-    if (!DvtChartStyleUtils.isSeriesRendered(chart, i) || DvtChartDataUtils.getValue(chart, i, groupIndex) == null)
+    if (!DvtChartStyleUtils.isSeriesRendered(chart, i) || DvtChartDataUtils.getValue(chart, i, groupIndex) == null || (isStacked && chart.getObject(i, groupIndex) == null))
       continue;
     var itemValue = DvtChartDataUtils.getCumulativeValue(chart, i, groupIndex);
     if (itemValue > currentValue || (itemValue == currentValue && i > seriesIndex)) {
@@ -3728,12 +3729,13 @@ DvtChartObjPeer.prototype._findNextUpSeries = function(chart, seriesIndex, group
  * @private
  */
 DvtChartObjPeer.prototype._findNextDownSeries = function(chart, seriesIndex, groupIndex) {
+  var isStacked = DvtChartTypeUtils.isStacked(chart);
   var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
   var currentValue = DvtChartDataUtils.getCumulativeValue(chart, seriesIndex, groupIndex);
   var nextValue = null;
   var nextSeriesIndex = null;
   for (var i = seriesCount - 1; i >= 0; i--) {
-    if (!DvtChartStyleUtils.isSeriesRendered(chart, i) || DvtChartDataUtils.getValue(chart, i, groupIndex) == null)
+    if (!DvtChartStyleUtils.isSeriesRendered(chart, i) || DvtChartDataUtils.getValue(chart, i, groupIndex) == null || (isStacked && chart.getObject(i, groupIndex) == null))
       continue;
     var itemValue = DvtChartDataUtils.getCumulativeValue(chart, i, groupIndex);
     if (itemValue < currentValue || (itemValue == currentValue && i < seriesIndex)) {
@@ -4115,7 +4117,7 @@ DvtChartDefaults.getGapHeight = function(chart, defaultHeight) {
  * @override
  */
 DvtChartDefaults.prototype.getNoCloneObject = function(chart) {
-  return {series: {items: {_itemData: true}}};
+  return {series: {items: {_itemData: true}}, data: true};
 };
 
 /**
@@ -12248,6 +12250,7 @@ dvt.Obj.createSubclass(DvtChartOverview, dvt.Overview);
  * @private
  */
 DvtChartOverview.prototype._renderChart = function(options, width, height) {
+  var noCloneOptions = this._parentChart.Defaults.getNoCloneObject();
   this._chartContainer = new dvt.Container(this.getCtx());
   this.addChild(this._chartContainer);
 
@@ -12269,7 +12272,7 @@ DvtChartOverview.prototype._renderChart = function(options, width, height) {
     'layout': {'outerGapWidth': 0, 'outerGapHeight': 0},
     '_isOverview': true
   };
-  options = dvt.JsonUtils.merge(defaultOptions, options);
+  options = dvt.JsonUtils.merge(defaultOptions, options, noCloneOptions);
 
   if (DvtChartAxisUtils.hasGroupAxis(this._parentChart))
     options['xAxis']['tickLabel']['rendered'] = 'off';
@@ -12281,7 +12284,7 @@ DvtChartOverview.prototype._renderChart = function(options, width, height) {
 
   // Set the user options override
   var userOptions = this._parentChart.getOptions()['overview']['content'];
-  options = dvt.JsonUtils.merge(userOptions, options);
+  options = dvt.JsonUtils.merge(userOptions, options, noCloneOptions);
   var isYAxisRendered = options.yAxis.rendered === "on";
   var isY2AxisRendered = options.y2Axis.rendered === "on";
 
@@ -12333,7 +12336,7 @@ DvtChartOverview.prototype._renderChart = function(options, width, height) {
  */
 DvtChartOverview.prototype.render = function(options, width, height) {
   // override styles
-  options['style'] = {
+  options.overview.style = {
     'overviewBackgroundColor': 'rgba(0,0,0,0)',
     'windowBackgroundColor': 'rgba(0,0,0,0)',
     'windowBorderTopColor': '#333333',
@@ -12347,12 +12350,12 @@ DvtChartOverview.prototype.render = function(options, width, height) {
     'handleHeight': 15,
     'handleFillColor': 'rgba(0,0,0,0)'
   };
-  options['animationOnClick'] = 'off';
+  options.overview.animationOnClick = 'off';
 
-  var windowDims = this._renderChart(options['chart'], width, height);
+  var windowDims = this._renderChart(options.chart, width, height);
 
   // now call super to render the scrollbar
-  DvtChartOverview.superclass.render.call(this, options, windowDims.w, windowDims.h);
+  DvtChartOverview.superclass.render.call(this, options.overview, windowDims.w, windowDims.h);
 };
 
 /**
@@ -27037,13 +27040,16 @@ DvtChartRenderer._renderScrollbars = function(chart, horizScrollbarDim, vertScro
 
   // Render x-axis overview scrollbar
   if (chart.overview) {
+    var noCloneOptions = chart.Defaults.getNoCloneObject();
     var ovOptions = {
-      'xMin': chart.xAxis.getLinearGlobalMin(),
-      'xMax': chart.xAxis.getLinearGlobalMax(),
-      'x1': chart.xAxis.getLinearViewportMin(),
-      'x2': chart.xAxis.getLinearViewportMax(),
-      'minimumWindowSize': chart.xAxis.getInfo().getMinimumExtent(),
-      'chart': dvt.JsonUtils.clone(options)
+      'overview': {
+        'xMin': chart.xAxis.getLinearGlobalMin(),
+        'xMax': chart.xAxis.getLinearGlobalMax(),
+        'x1': chart.xAxis.getLinearViewportMin(),
+        'x2': chart.xAxis.getLinearViewportMax(),
+        'minimumWindowSize': chart.xAxis.getInfo().getMinimumExtent()
+      },
+      'chart': dvt.JsonUtils.clone(options, null, noCloneOptions)
     };
 
     if (!DvtChartEventUtils.isZoomable(chart))
@@ -30340,7 +30346,8 @@ DvtChartPlotAreaRenderer._filterPointsForSeries = function(chart, seriesIndex) {
   if (DvtChartTypeUtils.isPolar(chart) || DvtChartStyleUtils.isRangeSeries(chart, seriesIndex))
     return;
 
-  var maxNumPts = chart.__getPlotAreaSpace().w; // one point per pixel
+  var plotAreaDims = chart.__getPlotAreaSpace();
+  var maxNumPts = DvtChartTypeUtils.isHorizontal(chart) ? plotAreaDims.h : plotAreaDims.w; // one point per pixel
   var seriesItems = DvtChartDataUtils.getSeriesItem(chart, seriesIndex)['items'];
   var isBar = DvtChartStyleUtils.getSeriesType(chart, seriesIndex) == 'bar';
   var axisInfo = chart.xAxis.getInfo();

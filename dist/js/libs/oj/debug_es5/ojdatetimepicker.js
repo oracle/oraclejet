@@ -3329,7 +3329,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       animation: animation
     }).attr('data-oj-internal', ''); // mark internal component, used in Components.getComponentElementByNode;
 
-    this.element.attr('data-oj-popup-' + this._popUpDpDiv.attr('id') + '-parent', ''); // mark parent of pop up
+    this.element.attr('data-oj-popup-' + this._popUpDpDiv.attr('id') + '-parent', ''); // mark parent of pop up @HTMLUpdateOK
 
     var pickerAttrs = this.options.pickerAttributes;
 
@@ -4014,8 +4014,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     this._triggerIcon = $triggerCalendar;
     this._triggerNode = $(triggerContainer);
 
-    this._labelValueWrapper.parentNode.insertBefore(triggerContainer, this._labelValueWrapper.nextElementSibling); // @HTMLUpdateOK
-
+    this._labelValueWrapper.parentNode.insertBefore(triggerContainer, // @HTMLUpdateOK
+    this._labelValueWrapper.nextElementSibling);
   },
   // This handler is when an user keys down with the calendar having focus
   _doCalendarKeyDown: function _doCalendarKeyDown(event) {
@@ -4162,7 +4162,14 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       cOver.removeClass(this._DAYOVER_CLASS);
     }
 
-    var datePickerCalendar = $('table.oj-datepicker-calendar', this._dpDiv);
+    var datePickerCalendar;
+
+    if (this._isMultiMonth()) {
+      datePickerCalendar = $('table.oj-datepicker-calendar.oj-focus', this._dpDiv);
+    } else {
+      datePickerCalendar = $('table.oj-datepicker-calendar', this._dpDiv);
+    }
+
     cOver = $('a.oj-enabled:contains(' + this._currentDay + ')', datePickerCalendar).filter(function () {
       return $(this).text() === cDay;
     });
@@ -4651,7 +4658,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
 
 
     $('#' + this._GetSubId(subId + this._CALENDAR_DESCRIPTION_ID)).html(this._EscapeXSS(this.options.monthWide[this._drawMonth]) + ' ' + // @HTMLUpdateOK
-    formatYear(this._drawYear, this._drawMonth)); // @HTMLUpdateOK
+    formatYear(this._drawYear, this._drawMonth));
 
     this._adjustDate(0, 0, true, period === 'M' ? 'day' : this._toYearFromView);
   },
@@ -5273,7 +5280,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         for (dow = 0; dow < 7; dow++) {
           // days of the week
           var day = (dow + parseInt(firstDay, 10)) % 7;
-          thead += "<th role='columnheader' aria-label='" + dayNames[day] + "'" + ((dow + firstDay + 6) % 7 >= 5 ? " class='oj-datepicker-week-end'" : '') + '>' + "<span title='" + dayNames[day] + "'>" + dayNamesMin[day] + '</span></th>';
+          thead += "<th role='columnheader' aria-label='" + dayNames[day] + "'" + ((dow + firstDay + 6) % 7 >= 5 ? " class='oj-datepicker-week-end'" : '') + '>' + "<span title='" + dayNames[day] + "' aria-hidden = 'true'>" + dayNamesMin[day] + '</span></th>';
         }
 
         calender += thead + "</tr></thead><tbody role='presentation'>";
@@ -7748,7 +7755,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
         animation: animation
       }).attr('data-oj-internal', ''); // mark internal component, used in Components.getComponentElementByNode;
 
-      this.element.attr('data-oj-popup-' + this._popUpWheelPicker.attr('id') + '-parent', ''); // mark parent of pop up
+      this.element.attr('data-oj-popup-' + this._popUpWheelPicker.attr('id') + '-parent', ''); // mark parent of pop up @HTMLUpdateOK
 
       if (pickerAttrs) {
         oj.EditableValueUtils.setPickerAttributes(this._popUpWheelPicker.ojPopup('widget'), pickerAttrs);
@@ -8495,8 +8502,8 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
     var _labelValueWrapper = this.element[0].parentNode;
 
     if (this._isTimePickerSupported()) {
-      _labelValueWrapper.parentNode.insertBefore(triggerContainer, _labelValueWrapper.nextElementSibling); // @HTMLUpdateOK
-
+      _labelValueWrapper.parentNode.insertBefore(triggerContainer, // @HTMLUpdateOK
+      _labelValueWrapper.nextElementSibling);
     }
   },
   _getValue: function _getValue() {
@@ -11245,7 +11252,7 @@ function WheelModel(parentModel, properties) {
         // without visually spinning the wheel.
         spinWheel.call(self);
       } else {
-        setTimeout(spinWheel.bind(self), delay);
+        setTimeout(spinWheel.bind(self), delay); // @HTMLUpdateOK
       }
     }
   }
@@ -12517,7 +12524,8 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
     elem.className = 'oj-inputdatetime-time-icon oj-clickable-icon-nocontext oj-component-icon oj-enabled oj-default';
     childDiv.appendChild(elem);
     elem = document.createElement('a');
-    elem.setAttribute('onclick', 'return false;');
+    elem.setAttribute('onclick', 'return false;'); // @HTMLUpdateOK
+
     elem.setAttribute('href', '#');
     elem.className = 'oj-enabled oj-datetimepicker-switcher-text';
     elem.setAttribute('role', 'button');
@@ -12526,7 +12534,8 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
     childDiv = document.createElement('div');
     childDiv.className = 'oj-datetimepicker-switcher-buttons';
     elem = document.createElement('a');
-    elem.setAttribute('onclick', 'return false;');
+    elem.setAttribute('onclick', 'return false;'); // @HTMLUpdateOK
+
     elem.setAttribute('href', '#');
     elem.className = 'oj-enabled';
     elem.setAttribute('data-handler', 'switchDone');
@@ -12535,7 +12544,8 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
     elem.textContent = this._EscapeXSS(this.getTranslatedString('done'));
     childDiv.appendChild(elem);
     elem = document.createElement('a');
-    elem.setAttribute('onclick', 'return false;');
+    elem.setAttribute('onclick', 'return false;'); // @HTMLUpdateOK
+
     elem.setAttribute('href', '#');
     elem.className = 'oj-enabled';
     elem.setAttribute('data-handler', 'switchCancel');
@@ -12551,6 +12561,10 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
    * @ignore
    */
   _updateSwitcherText: function _updateSwitcherText() {
+    if (!this._switcherDiv) {
+      return;
+    }
+
     var switcherText = '';
 
     if (this._isShowingDatePickerSwitcher()) {

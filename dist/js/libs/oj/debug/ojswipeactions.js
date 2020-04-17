@@ -224,6 +224,14 @@ var __oj_swipe_actions_metadata =
               self._handleAction(event);
             }
           },
+          click: function (event) {
+            // if the target is not part of content, then it must be part of the action bar
+            // we stop event from bubbling so that its host (ListView) will not try to process
+            // the click event (and select the item for example)
+            if (this.m_content && !this.m_content.contains(event.target)) {
+              event.stopPropagation();
+            }
+          },
           ojdefaultaction: function (event, _offcanvas) {
             var ojOption = $(_offcanvas.selector).children('oj-option.oj-swipetoreveal-default');
             if (ojOption.length > 0) {

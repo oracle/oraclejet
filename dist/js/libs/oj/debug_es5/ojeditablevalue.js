@@ -464,9 +464,9 @@ oj.EditableValueUtils.setPickerAttributes = function (picker, pickerAttributes) 
       var currStyle = pickerElem.getAttribute('style');
 
       if (currStyle) {
-        pickerElem.setAttribute('style', currStyle + ';' + styleValue);
+        pickerElem.setAttribute('style', currStyle + ';' + styleValue); // @HTMLUpdateOK
       } else {
-        pickerElem.setAttribute('style', styleValue);
+        pickerElem.setAttribute('style', styleValue); // @HTMLUpdateOK
       }
     }
   }

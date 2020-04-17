@@ -19,9 +19,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 /**
  * Class which provides list based optimizations
  */
-var ListDataProviderView =
-/*#__PURE__*/
-function () {
+var ListDataProviderView = /*#__PURE__*/function () {
   function ListDataProviderView(dataProvider, options) {
     _classCallCheck(this, ListDataProviderView);
 
@@ -29,9 +27,7 @@ function () {
     this.options = options;
     this._noFilterSupport = false;
 
-    this.AsyncIterable =
-    /*#__PURE__*/
-    function () {
+    this.AsyncIterable = /*#__PURE__*/function () {
       function _class(_parent, _asyncIterator) {
         _classCallCheck(this, _class);
 
@@ -46,9 +42,7 @@ function () {
       return _class;
     }();
 
-    this.AsyncIterator =
-    /*#__PURE__*/
-    function () {
+    this.AsyncIterator = /*#__PURE__*/function () {
       function _class2(_parent, _nextFunc, _params) {
         _classCallCheck(this, _class2);
 
@@ -69,9 +63,7 @@ function () {
       return _class2;
     }();
 
-    this.AsyncIteratorYieldResult =
-    /*#__PURE__*/
-    function () {
+    this.AsyncIteratorYieldResult = /*#__PURE__*/function () {
       function _class3(_parent, value) {
         _classCallCheck(this, _class3);
 
@@ -84,9 +76,7 @@ function () {
       return _class3;
     }();
 
-    this.AsyncIteratorReturnResult =
-    /*#__PURE__*/
-    function () {
+    this.AsyncIteratorReturnResult = /*#__PURE__*/function () {
       function _class4(_parent, value) {
         _classCallCheck(this, _class4);
 
@@ -99,9 +89,7 @@ function () {
       return _class4;
     }();
 
-    this.FetchListResult =
-    /*#__PURE__*/
-    function () {
+    this.FetchListResult = /*#__PURE__*/function () {
       function _class5(_parent, fetchParameters, data, metadata) {
         _classCallCheck(this, _class5);
 
@@ -117,9 +105,7 @@ function () {
       return _class5;
     }();
 
-    this.Item =
-    /*#__PURE__*/
-    function () {
+    this.Item = /*#__PURE__*/function () {
       function _class6(_parent, metadata, data) {
         _classCallCheck(this, _class6);
 
@@ -133,9 +119,7 @@ function () {
       return _class6;
     }();
 
-    this.ItemMetadata =
-    /*#__PURE__*/
-    function () {
+    this.ItemMetadata = /*#__PURE__*/function () {
       function _class7(_parent, key) {
         _classCallCheck(this, _class7);
 
@@ -147,9 +131,7 @@ function () {
       return _class7;
     }();
 
-    this.FetchListParameters =
-    /*#__PURE__*/
-    function () {
+    this.FetchListParameters = /*#__PURE__*/function () {
       function _class8(_parent, params, size, sortCriteria, filterCriterion, attributes) {
         _classCallCheck(this, _class8);
 
@@ -185,9 +167,7 @@ function () {
       return _class8;
     }();
 
-    this.FetchByKeysParameters =
-    /*#__PURE__*/
-    function () {
+    this.FetchByKeysParameters = /*#__PURE__*/function () {
       function _class9(_parent, keys, params, attributes) {
         _classCallCheck(this, _class9);
 
@@ -215,9 +195,7 @@ function () {
       return _class9;
     }();
 
-    this.FetchByOffsetParameters =
-    /*#__PURE__*/
-    function () {
+    this.FetchByOffsetParameters = /*#__PURE__*/function () {
       function _class10(_parent, offset, params, size, sortCriteria, filterCriterion, attributes) {
         _classCallCheck(this, _class10);
 
@@ -260,9 +238,7 @@ function () {
       return _class10;
     }();
 
-    this.FetchByKeysResults =
-    /*#__PURE__*/
-    function () {
+    this.FetchByKeysResults = /*#__PURE__*/function () {
       function _class11(_parent, fetchParameters, results) {
         _classCallCheck(this, _class11);
 
@@ -276,9 +252,7 @@ function () {
       return _class11;
     }();
 
-    this.ContainsKeysResults =
-    /*#__PURE__*/
-    function () {
+    this.ContainsKeysResults = /*#__PURE__*/function () {
       function _class12(_parent, containsParameters, results) {
         _classCallCheck(this, _class12);
 
@@ -292,9 +266,7 @@ function () {
       return _class12;
     }();
 
-    this.FetchByOffsetResults =
-    /*#__PURE__*/
-    function () {
+    this.FetchByOffsetResults = /*#__PURE__*/function () {
       function _class13(_parent, fetchParameters, results, done) {
         _classCallCheck(this, _class13);
 
@@ -916,19 +888,20 @@ oj.EventTargetMixin.applyMixin(ListDataProviderView);
  * @since 4.1.0
  * @export
  * @final
- * @class oj.ListDataProviderView
+ * @class ListDataProviderView
  * @ojtsmodule
- * @implements oj.DataProvider
- * @classdesc Provides list based optimizations for oj.DataProvider. Supports fetchFirst starting at arbitrary key or index offset, sortCriteria,
+ * @implements DataProvider
+ * @classdesc Provides list based optimizations for DataProvider and adds some support for providing state
+ * for certain operations. e.g supports {@link DataProvider#fetchFirst} starting at arbitrary key or index offset, sortCriteria,
  * and field mapping. Please see the select demos for examples of DataMapping [Select]{@link oj.ojSelect}
- * @param {oj.DataProvider} dataProvider the DataProvider.
+ * @param {DataProvider} dataProvider the DataProvider.
  * @param {Object=} options Options for the ListDataProviderView
  * @param {any=} options.from key to start fetching from. This will be applied first before offset is applied.
  * @param {number=} options.offset offset to start fetching from.
- * @param {Array.<oj.SortCriterion>=} options.sortCriteria {@link oj.sortCriteria} to apply to the data.
- * @param {oj.DataMapping=} options.dataMapping mapping to apply to the data.
+ * @param {Array.<SortCriterion>=} options.sortCriteria {@link SortCriterion} to apply to the data.
+ * @param {DataMapping=} options.dataMapping mapping to apply to the data.
  * @param {Array<string | FetchAttribute>=} options.attributes fetch attributes to apply
- * @param {oj.DataFilter.Filter=} options.filterCriterion filter criterion to apply. If the DataProvider does not support filtering then
+ * @param {DataFilter.Filter=} options.filterCriterion filter criterion to apply. If the DataProvider does not support filtering then
  *        ListDataProviderView will do local filtering of the data.
  * @ojsignature [{target: "Type",
  *               value: "class ListDataProviderView<K, D, Kin, Din> implements DataProvider<K, D>",
@@ -958,240 +931,195 @@ oj.EventTargetMixin.applyMixin(ListDataProviderView);
  */
 
 /**
- * Check if there are rows containing the specified keys
- *
- *
- * @since 4.1.0
- * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
- * @return {Promise.<oj.ContainsKeysResults>} Promise which resolves to {@link oj.ContainsKeysResults}
- * @export
- * @expose
- * @memberof oj.ListDataProviderView
+ * @inheritdoc
+ * @memberof ListDataProviderView
  * @instance
  * @method
  * @name containsKeys
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>"}
  */
 
 /**
- * Fetch rows by keys
- *
- *
- * @since 4.1.0
- * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
- * @return {Promise.<oj.FetchByKeysResults>} Promise which resolves to {@link oj.FetchByKeysResults}
- * @export
- * @expose
- * @memberof oj.ListDataProviderView
- * @instance
- * @method
- * @name fetchByKeys
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>"}
- */
-
-/**
- * Fetch rows by offset
- *
- *
- * @since 4.2.0
- * @param {oj.FetchByOffsetParameters} params Fetch by offset parameters
- * @return {Promise.<oj.FetchByOffsetResults>} Promise which resolves to {@link oj.FetchByOffsetResults}
- * @export
- * @expose
- * @memberof oj.ListDataProviderView
- * @instance
- * @method
- * @name fetchByOffset
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
- */
-
-/**
- * Fetch the first block of data.
- *
- *
- * @since 4.1.0
- * @param {oj.FetchListParameters=} params Fetch parameters
- * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
- * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
- * @export
- * @expose
- * @memberof oj.ListDataProviderView
+ * @inheritdoc
+ * @memberof ListDataProviderView
  * @instance
  * @method
  * @name fetchFirst
- * @ojsignature {target: "Type",
- *               value: "(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
  */
 
 /**
- * Determines whether this DataProvider supports certain feature.
- *
- *
- * @since 4.1.0
- * @param {string} capabilityName capability name. Supported capability names
- *                  are determined by the underlying dataprovider.
- * @return {Object} capability information or null if unsupported
- * @export
- * @expose
- * @memberof oj.ListDataProviderView
+ * @inheritdoc
+ * @memberof ListDataProviderView
+ * @instance
+ * @method
+ * @name fetchByKeys
+ */
+
+/**
+ * @inheritdoc
+ * @memberof ListDataProviderView
+ * @instance
+ * @method
+ * @name fetchByOffset
+ */
+
+/**
+ * @inheritdoc
+ * @memberof ListDataProviderView
  * @instance
  * @method
  * @name getCapability
- * @ojsignature {target: "Type",
- *               value: "(capabilityName: string): any"}
  */
 
 /**
- * Return the total number of rows in this dataprovider
- *
- *
- * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
- * @export
- * @expose
- * @memberof oj.ListDataProviderView
+ * @inheritdoc
+ * @memberof ListDataProviderView
  * @instance
  * @method
  * @name getTotalSize
  */
 
 /**
- * Return a string that indicates if this data provider is empty
- *
- *
- * @return {"yes"|"no"|"unknown"} a string that indicates if this data provider is empty. Valid values are:
- *                  "yes": this data provider is empty.
- *                  "no": this data provider is not empty.
- *                  "unknown": it is not known if this data provider is empty until a fetch is made.
- * @export
- * @expose
- * @memberof oj.ListDataProviderView
+ * @inheritdoc
+ * @memberof ListDataProviderView
  * @instance
  * @method
  * @name isEmpty
  */
 
 /**
- * Optional key to start fetching from.
+ * @inheritdoc
+ * @memberof ListDataProviderView
+ * @instance
+ * @method
+ * @name addEventListener
+ */
+
+/**
+ * @inheritdoc
+ * @memberof ListDataProviderView
+ * @instance
+ * @method
+ * @name removeEventListener
+ */
+
+/**
+ * @inheritdoc
+ * @memberof ListDataProviderView
+ * @instance
+ * @method
+ * @name dispatchEvent
+ */
+
+/**
+ * Optional key to start fetching from. Used to set on the ListDataProviderView instance instead of through the constructor.
  *
  *
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.ListDataProviderView
+ * @memberof ListDataProviderView
  * @instance
  * @name from
  * @type {any}
  * @ojsignature {target: "Type",
- *               value: "Kin"}
+ *               value: "?Kin"}
+ * @ojtsexample <caption>set the key to start fetching from</caption>
+ * dataprovider.from = '1234';
  */
 
 /**
- * Optional offset to start fetching from. Should be greater than or equal to zero.
+ * Optional offset to start fetching from. Used to set on the ListDataProviderView instance instead of through the constructor.. Should be greater than or equal to zero.
  * If a negative offset is used then it will be treated as zero.
  *
  *
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.ListDataProviderView
+ * @memberof ListDataProviderView
  * @instance
  * @name offset
- * @type {number}
+ * @type {number=}
+ * @ojsignature {target: "Type",
+ *               value: "?number"}
+ * @ojtsexample <caption>set the offset to start fetching from</caption>
+ * dataprovider.offset = 5;
  */
 
 /**
- * Optional sortCriteria to apply
+ * Optional sortCriteria to apply. Used to set on the ListDataProviderView instance instead of through the constructor.
  *
  *
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.ListDataProviderView
+ * @memberof ListDataProviderView
  * @instance
  * @name sortCriteria
+ * @type {Array.<SortCriterion>=}
  * @ojsignature {target: "Type",
- *               value: "Array<SortCriterion<D>>"}
+ *               value: "?Array<SortCriterion<D>>"}
+ * @ojtsexample <caption>set the sortCriteria for fetching</caption>
+ * dataprovider.sortCriteria = [{attribute: 'DepartmentName', direction: 'ascending'}];
  */
 
 /**
- * Optional dataMapping to apply
+ * Optional dataMapping to apply. Used to set on the ListDataProviderView instance instead of through the constructor.
  *
  *
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.ListDataProviderView
+ * @memberof ListDataProviderView
  * @instance
  * @name dataMapping
+ * @type {DataMapping=}
  * @ojsignature {target: "Type",
- *               value: "DataMapping<K, D, Kin, Din>"}
+ *               value: "?DataMapping<K, D, Kin, Din>"}
+ * @ojtsexample <caption>set the data mapping for fetching</caption>
+ * dataprovider.dataMapping = function (item) {
+ *   let data = item.data;
+ *   let mappedItem = {};
+ *   mappedItem.data = {};
+ *   mappedItem.data.label = data.name;
+ *   mappedItem.data.value = data.id;
+ *   mappedItem.metadata = { key: data.id };
+ *   return mappedItem;
+ * };
  */
 
 /**
- * Optional fetch attributes to apply
+ * Optional fetch attributes to apply. Used to set on the ListDataProviderView instance instead of through the constructor.
  *
  *
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.ListDataProviderView
+ * @memberof ListDataProviderView
  * @instance
  * @name attributes
+ * @type {Array<string | FetchAttribute>=}
  * @ojsignature {target: "Type",
- *               value: "Array<string | FetchAttribute>"}
+ *               value: "?Array<string | FetchAttribute>"}
+ * @ojtsexample <caption>set the attribute filter for fetching</caption>
+ * dataprovider.attributes = ['!lastName', '@default']; // all attributes except lastName
  */
 
 /**
- * Optional filter criterion to apply
+ * Optional filter criterion to apply. Used to set on the ListDataProviderView instance instead of through the constructor.
  *
  *
  * @since 7.0.0
  * @export
  * @expose
- * @memberof oj.ListDataProviderView
+ * @memberof ListDataProviderView
  * @instance
  * @name filterCriterion
+ * @type {DataFilter.Filter=}
  * @ojsignature {target: "Type",
- *               value: "DataFilter.Filter<D>"}
- */
-
-/**
- *
- * @export
- * @expose
- * @memberof oj.ListDataProviderView
- * @instance
- * @method
- * @name addEventListener
- * @ojsignature {target: "Type",
- *               value: "(eventType: string, listener: EventListener): void"}
- */
-
-/**
- *
- * @export
- * @expose
- * @memberof oj.ListDataProviderView
- * @instance
- * @method
- * @name removeEventListener
- * @ojsignature {target: "Type",
- *               value: "(eventType: string, listener: EventListener): void"}
- */
-
-/**
- *
- * @export
- * @expose
- * @memberof oj.ListDataProviderView
- * @instance
- * @method
- * @name dispatchEvent
- * @ojsignature {target: "Type",
- *               value: "(evt: Event): boolean"}
+ *               value: "?DataFilter.Filter<D>"}
+ * @ojtsexample <caption>set the filter criterion for fetching</caption>
+ * let filterDef = {op: '$or', criteria: [{op: '$eq', value: {name: 'Bob'}}, {op: '$gt', value: {level: 'Low'}}]};
+ * dataprovider.filterCriterion = FilterFactory.getFilter(filterDef); // create a standard filter using the filterFactory.
  */
 
 /**

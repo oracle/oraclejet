@@ -3885,7 +3885,8 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
      */
     _buildContextMenuItem: function _buildContextMenuItem(command, tagName) {
       var id = _MENU_CMD_MAP[command];
-      var item = $(document.createElement(tagName));
+      var item = $(document.createElement(tagName)); // @HTMLUpdateOK
+
       item.attr('id', id);
       item.attr('data-oj-command', command);
       item.append(this._buildContextMenuLabel(command, tagName === 'OJ-OPTION')); // @HTMLUpdateOK
@@ -4096,10 +4097,12 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
       var options = this.options; // setup for tiles themselves
 
       var tiles = jqElem.filter(options.reorderHandle);
-      tiles.attr(_DRAGGABLE, 'true').addClass(_OJ_DRAGGABLE); // setup for descendants of tiles
+      tiles.attr(_DRAGGABLE, 'true') // @HTMLUpdateOK
+      .addClass(_OJ_DRAGGABLE); // setup for descendants of tiles
 
       var reorderHandles = jqElem.find(options.reorderHandle);
-      reorderHandles.attr(_DRAGGABLE, 'true').addClass(_OJ_DRAGGABLE);
+      reorderHandles.attr(_DRAGGABLE, 'true') // @HTMLUpdateOK
+      .addClass(_OJ_DRAGGABLE);
     },
 
     /**

@@ -62,7 +62,7 @@ define(["./impl/pouchDBPersistenceStore"],
       }
     }
     return store.Init(storeOptions).then(function () {
-      return Promise.resolve(store);
+      return store;
     });
   }  
 

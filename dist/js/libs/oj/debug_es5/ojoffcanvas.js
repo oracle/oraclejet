@@ -1867,7 +1867,8 @@ oj.OffcanvasUtils._createSurrogate = function (layer) {
   surrogate.insertBefore(layer); // @HTMLUpdateOK
   // loosely associate the offcanvas to the surrogate element
 
-  layer.attr(oj.OffcanvasUtils.SURROGATE_ATTR, surrogateId);
+  layer.attr(oj.OffcanvasUtils.SURROGATE_ATTR, surrogateId); // @HTMLUpdateOK
+
   return surrogate;
 };
 /**
@@ -1901,7 +1902,7 @@ oj.OffcanvasUtils._restoreOrder = function (offcanvas) {
     // remove link to the surrogate element
 
     drawer.removeAttr(oj.OffcanvasUtils.SURROGATE_ATTR);
-    surrogate.remove(); // @HTMLUpdateOK
+    surrogate.remove();
   }
 };
 /**

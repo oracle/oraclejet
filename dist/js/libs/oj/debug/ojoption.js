@@ -166,7 +166,6 @@ function ojOption(context) {
  *
  * @name value
  * @ojshortdesc The value of the option.
- * @ojrequired
  * @expose
  * @memberof oj.ojOption
  * @instance

@@ -91,8 +91,11 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
     }
 
     return  shredder(response).then(function (shreddedObjArray) {
-      var shreddedData = shreddedObjArray.map(_convertShreddedData);
-      return Promise.resolve(shreddedData);
+      if (shreddedObjArray && Array.isArray(shreddedObjArray)) {
+        return shreddedObjArray.map(_convertShreddedData);
+      } else {
+        return null;
+      }
     });
   };
 
@@ -175,7 +178,7 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
    *                          this request into the storage.
    */
   DefaultCacheHandler.prototype._constructCacheKey = function (request, response) {
-    var key = request.url + request.method;
+    var key = request.url + "$" + request.method + "$";
     if (response) {
       var headers = response.headers;
       if (headers) {
@@ -183,21 +186,74 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
         if (varyValue) {
           if (varyValue === '*') {
             // * vary value means every request is absolutely unique.
-            key += (new Date()).getTime();
+            key = (new Date()).getTime()*1000 + Math.floor(Math.random() * 1000);;
           } else {
             var requestHeaders = request.headers;
             var varyFields = varyValue.split(',');
             for (var index = 0; index < varyFields.length; index++) {
               var varyField = varyFields[index];
               varyField = varyField.trim();
-              var varyValue = requestHeaders ? requestHeaders.get(varyField) : 'undefined';
-              key += varyField + '=' + varyValue;
+              var varyValue = (!requestHeaders || !requestHeaders.get(varyField)) ? 'undefined' : requestHeaders.get(varyField);
+              key += varyField + '=' + varyValue + ';';
             }
           }
         }
       }
     }
     return key;
+  };
+
+  // request: the request to match against
+  // options: options that controls the match
+  // allKeys: the possible keys to find matches from.
+  DefaultCacheHandler.prototype.getMatchedCacheKeys = function (request, options, allKeys) {
+    var urlToMatch;
+    var methodToMatch;
+
+    if (options && options.ignoreSearch) {
+      urlToMatch = extractBaseUrl(request.url);
+    } else {
+      urlToMatch = request.url;
+    }
+    if (!options || !options.ignoreMethod) {
+      methodToMatch = request.method;
+    }
+
+    return allKeys.filter(function(key) {
+      var parts = key.split("$");
+      var urlToCheck;
+      if (options && options.ignoreSearch) {
+        urlToCheck = extractBaseUrl(parts[0]);
+      } else {
+        urlToCheck = parts[0];
+      }
+      if (urlToCheck !== urlToMatch) {
+        return false;
+      }
+      if (methodToMatch && parts[1] !== methodToMatch) {
+        return false;
+      }
+      if (!options || !options.ignoreVary) {
+        var variesInKey = parts[2];
+        if (!variesInKey) {
+          return true;
+        }
+        var pairs = variesInKey.split(';');
+        if (pairs.length === 1) {
+          return false;
+        }
+        var requestHeaders = request.headers;
+        for (var index = 0; index < pairs.length - 1; index++) {
+          var pair = pairs[index];
+          var varyFieldValueToCheck = pair.split('=');
+          var varyValue = (!requestHeaders || !requestHeaders.get(varyFieldValueToCheck[0])) ? 'undefined' : requestHeaders.get(varyFieldValueToCheck[0]);
+          if (varyValue != varyFieldValueToCheck[1]) {
+            return false;
+          }
+        }
+      }
+      return true;
+    });
   };
 
   /**
@@ -213,9 +269,11 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
    */
   DefaultCacheHandler.prototype.constructMetadata = function (request) {
     var currentTime = (new Date()).getTime();
+    var baseUrl = extractBaseUrl(request.url);
     var metadata = {
       url:  request.url,
       method: request.method,
+      baseUrl: baseUrl,
       created: currentTime,
       lastupdated: currentTime
     };
@@ -242,7 +300,7 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
         // empty value then to denote this is a cached Response
         response.headers.set('x-oracle-jscpt-cache-expiration-date', '');
       }
-      return Promise.resolve(response);
+      return response;
     });
   };
 
@@ -288,20 +346,11 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
     }
 
     var selectorField;
-    var searchURL;
-
-    var searchStartIndex = request.url.indexOf('?');
-    if (searchStartIndex >= 0) {
-      searchURL = request.url.substring(0, searchStartIndex);
-    } else {
-      searchURL = request.url;
-    }
 
     if (ignoreSearch) {
+      var searchURL = extractBaseUrl(request.url);
       selectorField = {
-        'metadata.url': {
-          '$regex': '^' + escapeRegExp(searchURL) + '(\\?|$)'
-        }
+        'metadata.baseUrl': searchURL
       };
     } else {
       selectorField = {
@@ -315,7 +364,7 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
 
     var searchCriteria = {
       selector: selectorField,
-      sort: [{'metadata.created' : 'asc'}]
+      sort: ['metadata.created']
     };
 
     return searchCriteria;
@@ -448,13 +497,13 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
           return store.find(findExpression);
         }
       }
-      return Promise.resolve([]);
+      return [];
     }).then(function (results) {
       if (!Array.isArray(results)) {
         results = [results];
       }
       storeEntry.data = results;
-      return Promise.resolve(storeEntry);
+      return storeEntry;
     });
   };
 
@@ -495,6 +544,20 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
   
   var escapeRegExp = function(str) {
     return String(str).replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+  };
+  
+  var extractBaseUrl = function(fullUrl) {
+    // return the url that doesn't have query parameters in it.
+    if (!fullUrl || typeof fullUrl !== 'string') {
+      return "";
+    }
+    var pattern = /([^?]*)\?/;
+    var matchResult = pattern.exec(fullUrl);
+    if (matchResult && matchResult.length === 2) {
+      return matchResult[1];
+    } else {
+      return fullUrl;
+    }
   };
 
   return new DefaultCacheHandler();

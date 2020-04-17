@@ -7,13 +7,12 @@
 
 define(['ojs/ojcore', 'ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function(oj, Observable, UrlPathAdapter, Logger) {
   "use strict";
-  var CoreRouter =
 
 
 
 /* global Observable, Promise, UrlPathAdapter, Logger, Map */
-
-(function () {
+// eslint-disable-next-line no-unused-vars
+var corerouter = (function () {
   // Private instances
   var rootRouter;
   var urlAdapter;
@@ -972,5 +971,5 @@ define(['ojs/ojcore', 'ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'
  */
 
 
-  return CoreRouter;
+  return corerouter;
 });

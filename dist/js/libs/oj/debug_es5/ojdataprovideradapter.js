@@ -16,32 +16,34 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
-var TableDataSourceAdapter =
-/*#__PURE__*/
-function (_DataSourceAdapter) {
+function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+var TableDataSourceAdapter = /*#__PURE__*/function (_DataSourceAdapter) {
   _inherits(TableDataSourceAdapter, _DataSourceAdapter);
+
+  var _super = _createSuper(TableDataSourceAdapter);
 
   function TableDataSourceAdapter(tableDataSource) {
     var _this;
 
     _classCallCheck(this, TableDataSourceAdapter);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(TableDataSourceAdapter).call(this, tableDataSource));
+    _this = _super.call(this, tableDataSource);
     _this.tableDataSource = tableDataSource;
 
-    _this.FetchByKeysResults =
-    /*#__PURE__*/
-    function () {
+    _this.FetchByKeysResults = /*#__PURE__*/function () {
       function _class(_parent, fetchParameters, results) {
         _classCallCheck(this, _class);
 
@@ -55,9 +57,7 @@ function (_DataSourceAdapter) {
       return _class;
     }();
 
-    _this.ContainsKeysResults =
-    /*#__PURE__*/
-    function () {
+    _this.ContainsKeysResults = /*#__PURE__*/function () {
       function _class2(_parent, containsParameters, results) {
         _classCallCheck(this, _class2);
 
@@ -71,9 +71,7 @@ function (_DataSourceAdapter) {
       return _class2;
     }();
 
-    _this.Item =
-    /*#__PURE__*/
-    function () {
+    _this.Item = /*#__PURE__*/function () {
       function _class3(_parent, metadata, data) {
         _classCallCheck(this, _class3);
 
@@ -87,9 +85,7 @@ function (_DataSourceAdapter) {
       return _class3;
     }();
 
-    _this.FetchByOffsetResults =
-    /*#__PURE__*/
-    function () {
+    _this.FetchByOffsetResults = /*#__PURE__*/function () {
       function _class4(_parent, fetchParameters, results, done) {
         _classCallCheck(this, _class4);
 
@@ -105,9 +101,7 @@ function (_DataSourceAdapter) {
       return _class4;
     }();
 
-    _this.FetchListParameters =
-    /*#__PURE__*/
-    function () {
+    _this.FetchListParameters = /*#__PURE__*/function () {
       function _class5(_parent, size, sortCriteria) {
         _classCallCheck(this, _class5);
 

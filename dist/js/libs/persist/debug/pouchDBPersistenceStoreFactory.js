@@ -32,7 +32,7 @@ define(["./impl/pouchDBPersistenceStore"],
     function _createPersistenceStore (name, options) {
       var store = new PouchDBPersistenceStore(name);
       return store.Init(options).then(function () {
-        return Promise.resolve(store);
+        return store;
       });
     };
 

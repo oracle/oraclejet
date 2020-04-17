@@ -385,8 +385,8 @@ var __oj_menu_button_metadata =
          * @ojvalue {string} "full" Please use solid instead. In typical themes, full-chrome buttons always have chrome.
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
          * @ojshortdesc Indicates in what states the button has chrome (background and border).
-         * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use solid instead."},
-         *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use borderless instead."}]
+         * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value will be removed in the future. Please use borderless instead."},
+         *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value will be removed in the future. Please use solid instead."}]
          * @example <caption>Initialize the Button with the <code class="prettyprint">chroming</code> attribute specified:</caption>
          * &lt;oj-button chroming='borderless'>&lt;/oj-button>
          *
@@ -1595,7 +1595,7 @@ var __oj_menu_button_metadata =
           }
         } else {
           buttonElement.innerHTML = ''; // @HTMLUpdateOK
-          textSpan.textContent = this.options.label; // performs escaping; e.g. if label is <a>foo</a>, then text() replaces the span's contents with a text node containing that literal string (rather than setting innerHtml). @HTMLUpdateOK
+          textSpan.textContent = this.options.label;
         }
 
         // Due to FF bug (see Bugzilla's ), <button> with flex/inline-flex display doesn't work. Workaround by wrapping <button> contents with a <div> and setting the latter display flex/inline-flex
@@ -1639,7 +1639,7 @@ var __oj_menu_button_metadata =
           this._setLabelOnDomOfSpanlessButton();
         } else {
           var textSpan = this.buttonElement[0].querySelector('.oj-button-text');
-          textSpan.textContent = this.options.label; // performs escaping; e.g. if label is <a>foo</a>, then text() replaces the span's contents with a text node containing that literal string (rather than setting innerHtml). @HTMLUpdateOK
+          textSpan.textContent = this.options.label;
           this._setDisplayOptionOnDom($(textSpan));
         }
       },
@@ -3540,7 +3540,7 @@ var __oj_menu_button_metadata =
 
           input.remove();
           parentLabel.parentNode.insertBefore(option, parentLabel);  // @HTMLUpdateOK
-          parentLabel.parentNode.removeChild(parentLabel);  // @HTMLUpdateOK
+          parentLabel.parentNode.removeChild(parentLabel);
         }
       },
 
@@ -3640,7 +3640,7 @@ var __oj_menu_button_metadata =
         this._super();
 
         var elem = this.element[0];
-        elem.setAttribute(Components._OJ_CONTAINER_ATTR, this.widgetName);
+        elem.setAttribute(Components._OJ_CONTAINER_ATTR, this.widgetName); // @HTMLUpdateOK
         elem.classList.add('oj-buttonset');
         elem.classList.add('oj-component');
         this._setRole(this.options.focusManagement);
@@ -3691,6 +3691,15 @@ var __oj_menu_button_metadata =
         if (key === 'disabled') {
           this._propagateDisabled(value);
           this._refreshTabStop();
+          // If this button is inside a toolbar, the toolbar needs to be refreshed for new disabled setting
+          var $toolbarElem = $(this.element).closest('.oj-toolbar');
+          if ($toolbarElem.length) {
+            if (this._IsCustomElement()) {
+              $toolbarElem[0].refresh();
+            } else {
+              $toolbarElem.ojToolbar('refresh');
+            }
+          }
         } else if (key === 'checked') {
           // This "checked" block should run only if app called option(), but not if called because user clicked button,
           // since in the latter case, we know we passed a valid non-undefined value, and DOM is already up to date.

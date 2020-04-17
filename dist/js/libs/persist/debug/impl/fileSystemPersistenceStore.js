@@ -95,7 +95,7 @@ define(['./keyValuePersistenceStore', '../persistenceStoreManager', './logger'],
     };
 
     function _getFileIndexStorage() {
-      var options = {index: ['key']};
+      var options = {index: ['key'], skipMetadata: true};
       return persistenceStoreManager.openStore('fileIndex', options);
     };
 

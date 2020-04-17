@@ -106,7 +106,7 @@ export interface ojComboboxMany<K, D, V = any> extends ojCombobox<V[], ojCombobo
         class?: string;
     };
     placeholder: string | null;
-    readonly rawValue: string | null;
+    readonly rawValue: string[] | null;
     readOnly: boolean;
     required: boolean;
     validators: Array<Validator<V> | AsyncValidator<V>> | null;
@@ -215,7 +215,7 @@ export interface ojComboboxManySettableProperties<K, D, V = any> extends ojCombo
         class?: string;
     };
     placeholder: string | null;
-    readonly rawValue: string | null;
+    readonly rawValue: string[] | null;
     readOnly: boolean;
     required: boolean;
     validators: Array<Validator<V> | AsyncValidator<V>> | null;

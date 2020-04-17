@@ -697,7 +697,7 @@ var __oj_label_metadata =
         //    <div class="oj-label-group">(helpandrequired spans)<label></label>
         // </oj-label>
         if (this.OuterWrapper) {
-          this.uiLabel = $(this.OuterWrapper).append(
+          this.uiLabel = $(this.OuterWrapper).append( // @HTMLUpdateOK
             this.element.wrap(this._createOjLabelGroupDom()).parent()); // @HTMLUpdateOK
           this.uiLabel.addClass('oj-label oj-component');
         } else {
@@ -912,7 +912,7 @@ var __oj_label_metadata =
           tokens.push(id);
         }
         newAttributeValue = tokens.join(' ').trim();
-        elem.setAttribute(attr, newAttributeValue);
+        elem.setAttribute(attr, newAttributeValue); // @HTMLUpdateOK
       },
       /**
        * Generic function to remove a value to the element's attribute. For example, you can
@@ -943,9 +943,9 @@ var __oj_label_metadata =
         // join the tokens back together and trim whitespace
         newAttributeValue = tokens.join(' ').trim();
         if (newAttributeValue) {
-          elem.setAttribute(attr, newAttributeValue);
+          elem.setAttribute(attr, newAttributeValue); // @HTMLUpdateOK
         } else {
-          elem.setAttribute(attr, '');
+          elem.setAttribute(attr, ''); // @HTMLUpdateOK
         }
       },
       /**
@@ -1322,7 +1322,7 @@ var __oj_label_metadata =
           $contentDiv = $(contentDiv);
 
           $contentDiv.text(helpDefText);
-          this.uiLabel.append($helpDefPopupDiv);
+          this.uiLabel.append($helpDefPopupDiv); // @HTMLUpdateOK content created by us
         } else {
           // Find the div with the id, and then update the text of it.
           $helpDefPopupDiv = $(document.getElementById(this._helpDefPopupDivId));
@@ -1615,7 +1615,7 @@ var __oj_label_metadata =
                 );
 
                 var newLabelledBy = newArray.join(' ');
-                oldTarget.setAttribute(_LABELLED_BY, newLabelledBy);
+                oldTarget.setAttribute(_LABELLED_BY, newLabelledBy); // @HTMLUpdateOK
               }
             }
           }

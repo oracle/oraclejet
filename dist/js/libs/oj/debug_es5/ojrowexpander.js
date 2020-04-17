@@ -26,18 +26,18 @@ var __oj_row_expander_metadata =
           "type": "object",
           "properties": {
             "row": {
-              "type": "K"
+              "type": "any"
             },
             "column": {
-              "type": "K"
+              "type": "any"
             }
           }
         },
         "key": {
-          "type": "K"
+          "type": "any"
         },
         "parentKey": {
-          "type": "K"
+          "type": "any"
         },
         "treeDepth": {
           "type": "number"
@@ -3402,13 +3402,17 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent, {
    * @typedef {Object} oj.ojRowExpander.Context context object used by cell callbacks.
    * @property {oj.DataProvider<K, D>|null} datasource a reference to the data source object
    * @property {Object?} keys the object that contains both the row key and column key which identifies the cell
-   * @property {K} keys.row the row key
-   * @property {K} keys.column the column key
-   * @property {K?} key the row key
-   * @property {K} parentKey the parent row key
+   * @property {any} keys.row the row key
+   * @property {any} keys.column the column key
+   * @property {any?} key the row key
+   * @property {any} parentKey the parent row key
    * @property {number} treeDepth the depth of the node
    * @property {boolean} isLeaf true if it is a leaf node
-   * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
+   * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"},
+   *               {target:"Type", value:"K", for:"keys.row", jsdocOverride:true},
+   *               {target:"Type", value:"K", for:"keys.column", jsdocOverride:true},
+   *               {target:"Type", value:"K", for:"key", jsdocOverride:true},
+   *               {target:"Type", value:"K", for:"parentKey", jsdocOverride:true}]
    */
 
 });

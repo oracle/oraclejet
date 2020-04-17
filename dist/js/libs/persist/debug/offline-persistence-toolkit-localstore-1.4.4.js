@@ -217,7 +217,7 @@ define('persist/PersistenceStore',[], function () {
 
 define('persist/impl/storageUtils',['./logger'], function (logger) {
   'use strict';
-  
+
   /**
     * Helper function that checks if itemData satisfies the search criteria
     * defined by selector or not. Undefined selector means everything is
@@ -242,7 +242,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
       return _evaluateExpressionTree(expTree, itemData);
     }
   };
-   
+
   /**
    * Helper function used by {@link _satisfy} to build an expression tree
    * based on expression object for easier evaluation later.
@@ -398,6 +398,12 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
         } else {
           return (itemValue === null || itemValue === undefined);
         }
+      } else if (operator === '$in') {
+        for (var i=0; i<value.length; i++) {
+          if(value[i] ===  itemValue) {
+            return true
+          }
+        }
       } else {
         throw new Error("not a valid expression! " + expTree);
       }
@@ -436,7 +442,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
   function _isSingleSelector(token) {
     return (token === '$lt' || token === '$gt' || token === '$lte' ||
       token === '$gte' || token === '$eq' || token === '$ne' ||
-      token === '$regex' || token === '$exists');
+      token === '$regex' || token === '$exists' || token === '$in');
   };
 
   /**
@@ -451,7 +457,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
   function _isLiteral(token) {
     return (typeof(token) !== 'object');
   };
-  
+
   /**
    * Helper function that checks if the token is a string
    * @method
@@ -464,7 +470,7 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
   function _isString(token) {
     return (token != null && (token instanceof String || typeof token === 'string'));
   };
-  
+
   /**
    * Helper function that sets null literals to empty string for string comparison
    * @method
@@ -550,10 +556,54 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
     return returnObject;
   };
   
+  function sortRows (unsorted, sortCriteria) {
+    if (!unsorted || !Array.isArray(unsorted) || unsorted.length < 1 ||
+        !sortCriteria || !Array.isArray(sortCriteria) || !sortCriteria.length) {
+      return unsorted;
+    }
+
+    return unsorted.sort(_sortFunction(sortCriteria));
+  };
+
+  var _sortFunction = function (sortCriteria) {
+    return function (a, b) {
+      for (var index = 0; index < sortCriteria.length; index++) {
+        var sortC = sortCriteria[index];
+        var sortField;
+        var sortAsc = true;
+
+        if (typeof(sortC) === 'string') {
+          sortField = sortC;
+        } else if (typeof(sortC) === 'object'){
+          var keys = Object.keys(sortC);
+          if (!keys || keys.length !== 1) {
+            throw new Error('invalid sort criteria');
+          }
+          sortField = keys[0];
+          sortAsc = (sortC[sortField].toLowerCase() === 'asc');
+        } else {
+          throw new Error("invalid sort criteria.");
+        }
+
+        var valueA = getValue(sortField, a);
+        var valueB = getValue(sortField, b);
+        if (valueA == valueB) {
+          continue;
+        } else if (sortAsc) {
+          return (valueA < valueB ? -1 : 1);
+        } else {
+          return (valueA < valueB ? 1 : -1);
+        }
+      }
+      return 0;
+    };
+  };
+
   return {
     satisfy: satisfy,
     getValue: getValue,
-    assembleObject: assembleObject
+    assembleObject: assembleObject,
+    sortRows: sortRows
   };
 });
 
@@ -670,7 +720,7 @@ define('persist/impl/keyValuePersistenceStore',["../PersistenceStore", "./storag
         }
 
         return Promise.all(itemPromiseArray).then(function () {
-          var sorted = self._sort(unsorted, findExpression.sort);
+          var sorted = storageUtils.sortRows(unsorted, findExpression.sort);
           for (var index = 0; index < sorted.length; index++) {
             resultSet.push(self._constructReturnObject(findExpression.fields, sorted[index]));
           }
@@ -693,63 +743,6 @@ define('persist/impl/keyValuePersistenceStore',["../PersistenceStore", "./storag
         return self.removeByKey(currentKey);
       });
     };
-
-    KeyValuePersistenceStore.prototype._sort = function (unsorted, sortCriteria) {
-
-      if (!unsorted || !unsorted.length ||
-          !sortCriteria || !sortCriteria.length) {
-        return unsorted;
-      }
-
-      return unsorted.sort(this._sortFunction(sortCriteria, this));
-    };
-
-    /**
-     * Helper method that returns a function that can be used as callback
-     * to Array.sort.
-     * @method
-     * @name _sortFunction
-     * @memberof! KeyValuePersistenceStore
-     * @param {object} sortCriteria Rule that defines how sort should be
-     *                              performed.
-     * @param {object} thisArg The object that should be used as this.
-     * @returns {function} the function that is used as callback to
-     *                     Array.sort.
-     */
-    KeyValuePersistenceStore.prototype._sortFunction = function (sortCriteria, thisArg) {
-      return function (a, b) {
-        for (var index = 0; index < sortCriteria.length; index++) {
-          var sortC = sortCriteria[index];
-          var sortField;
-          var sortAsc = true;
-
-          if (typeof(sortC) === 'string') {
-            sortField = sortC;
-          } else if (typeof(sortC) === 'object'){
-            var keys = Object.keys(sortC);
-            if (!keys || keys.length !== 1) {
-              throw new Error('invalid sort criteria');
-            }
-            sortField = keys[0];
-            sortAsc = (sortC[sortField].toLowerCase() === 'asc');
-          } else {
-            throw new Error("invalid sort criteria.");
-          }
-
-          var valueA = storageUtils.getValue(sortField, a);
-          var valueB = storageUtils.getValue(sortField, b);
-          if (valueA == valueB) {
-            continue;
-          } else if (sortAsc) {
-            return (valueA < valueB ? -1 : 1);
-          } else {
-            return (valueA < valueB ? 1 : -1);
-          }
-        }
-        return 0;
-      };
-    };
-
 
     /**
      * Helper function used by {@link find} that constructs an object out from
@@ -904,7 +897,11 @@ define('persist/impl/localPersistenceStore',["./keyValuePersistenceStore", "./lo
 
     LocalPersistenceStore.prototype._insert = function (key, metadata, value) {
       var insertKey = this._createRawKey(key);
+      // the key passed-in could be a non-string type, we save the original 
+      // key value as well so that we could return the same key back when asked
+      // for it.
       var insertValue = {
+        key: key,
         metadata: metadata,
         value: value
       };
@@ -933,24 +930,29 @@ define('persist/impl/localPersistenceStore',["./keyValuePersistenceStore", "./lo
       return this._name + this._version + key.toString();
     };
 
-    LocalPersistenceStore.prototype._extractKey = function (rawKey) {
-      var prefix = this._name + this._version;
-      var prefixLength = prefix.length;
-      if (rawKey.indexOf(prefix) === 0) {
-        return rawKey.slice(prefixLength);
-      } else {
-        return null;
-      }
-    };
-
     LocalPersistenceStore.prototype.keys = function () {
       logger.log("Offline Persistence Toolkit localPersistenceStore: keys()");
       var allRawKeys = Object.keys(localStorage);
       var allKeys = [];
       for (var index = 0; index < allRawKeys.length; index++) {
-        var key = this._extractKey(allRawKeys[index]);
-        if (key) {
-          allKeys.push(key);
+        var prefix = this._name + this._version;
+        var rawKey = allRawKeys[index];
+        if (rawKey.indexOf(prefix) === 0) {
+          // when asked for keys, we need to return the saved original key,
+          // which might not be a string typed value. 
+          var storageData = localStorage.getItem(rawKey);
+          if (storageData) {
+            try {
+              var item = JSON.parse(storageData);
+              var key = item.key;
+              if (key) {
+                allKeys.push(key);
+              }
+            } catch (err) {
+              logger.log("data is not in valid JSON format: " + storageData);
+              continue;
+            }
+          }
         }
       }
       return Promise.resolve(allKeys);
@@ -963,7 +965,6 @@ define('persist/impl/localPersistenceStore',["./keyValuePersistenceStore", "./lo
       if (storeageData) {
         try {
           var item = JSON.parse(storeageData);
-          item.key = key;
           return Promise.resolve(item);
         } catch (err) {
           return Promise.resolve();

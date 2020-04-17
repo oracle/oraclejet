@@ -488,9 +488,9 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
  * @since 5.1.0
  * @export
  * @final
- * @class oj.ArrayTreeDataProvider
- * @implements oj.TreeDataProvider
- * @classdesc This class implements {@link oj.TreeDataProvider} and is used to represent hierachical data available from an array.<br><br>
+ * @class ArrayTreeDataProvider
+ * @implements TreeDataProvider
+ * @classdesc This class implements {@link TreeDataProvider} and is used to represent hierachical data available from an array.<br><br>
  *            Each array element represents a tree node, which can contain nested child object array for its subtree.
  *            Array elements can be in any shape and form, but is usually an object with a "children" property.  The name of the "children" property
  *            can optionaly be specified with the "childrenAttribute" option.<br><br>
@@ -517,7 +517,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
  * </h4>
  * This event is fired when items have been added or removed from the data.
  * <p>
- * Event payload is found under <code class="prettyprint">event.detail</code>, which implements the {@link oj.DataProviderMutationEventDetail} interface.
+ * Event payload is found under <code class="prettyprint">event.detail</code>, which implements the {@link DataProviderMutationEventDetail} interface.
  * </p>
  *
  * <h4 id="event:refresh" class="name">
@@ -541,8 +541,8 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
  * @param {(Array|function():Array)} data data supported by the components
  *                                      <p>This can be either an Array, or a Knockout observableArray.</p>
  * @param {Object=} options Options for the ArrayTreeDataProvider
- * @param {oj.SortComparators=} options.sortComparators Optional {@link oj.sortComparator} to use for sort.
- * @param {Array.<oj.SortCriterion>=} options.implicitSort Optional array of {@link oj.sortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
+ * @param {SortComparators=} options.sortComparators Optional {@link SortComparator} to use for sort.
+ * @param {Array.<SortCriterion>=} options.implicitSort Optional array of {@link SortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
  * @param {(string | Array.<string>)=} options.keyAttributes Optional attribute name(s) which stores the key in the data. Can be a string denoting a single key attribute or an array
  *                                                         of strings for multiple key attributes.  Dot notation can be used to specify nested attribute (e.g. 'attr.id').<br><br>
  *                      If specified, caller must ensure that the keyAttributes contains values that are either unique within the entire tree,
@@ -595,192 +595,95 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
  *                ];
  *
  * // Then create an ArrayTreeDataProvider object with the array
- * var dataprovider = new oj.ArrayTreeDataProvider(treeData, {keyAttributes: 'attr.id'});
+ * var dataprovider = new ArrayTreeDataProvider(treeData, {keyAttributes: 'attr.id'});
  */
 
 /**
- * Fetch rows by keys in the entire tree.
- *
- *
- * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
- * @return {Promise.<oj.FetchByKeysResults>} Promise which resolves to {@link oj.FetchByKeysResults}
- * @export
- * @expose
- * @memberof oj.ArrayTreeDataProvider
- * @instance
- * @method
- * @name fetchByKeys
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>"}
- */
-
-/**
- * Get a data provider for the children of the row identified by parentKey.
- *
- *
- * @param {any} parentKey key of the row to get child data provider for.
- * @return {ArrayTreeDataProvider | null} An ArrayTreeDataProvider if the row can (but doesn't have to) have children; or null if the row cannot have children.
- *   Use the <code class="prettyprint">isEmpty</code> method on the returned ArrayTreeDataProvider to determine if it currently has children.
- * @export
- * @expose
- * @memberof oj.ArrayTreeDataProvider
+ * @inheritdoc
+ * @memberof ArrayTreeDataProvider
  * @instance
  * @method
  * @name getChildDataProvider
- * @ojsignature {target: "Type",
- *               value: "(parentKey: any): ArrayTreeDataProvider<K, D>"}
  */
 
 /**
- * Check if there are rows containing the specified keys in the entire tree.
- *
- *
- * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
- * @return {Promise.<oj.ContainsKeysResults>} Promise which resolves to {@link oj.ContainsKeysResults}
- * @export
- * @expose
- * @memberof oj.ArrayTreeDataProvider
+ * @inheritdoc
+ * @memberof ArrayTreeDataProvider
  * @instance
  * @method
  * @name containsKeys
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>"}
  */
 
 /**
- * Fetch rows by offset at the top level.
- *
- *
- * @param {oj.FetchByOffsetParameters} params Fetch by offset parameters
- * @return {Promise.<oj.FetchByOffsetResults>} Promise which resolves to {@link oj.FetchByOffsetResults}
- * @export
- * @expose
- * @memberof oj.ArrayTreeDataProvider
- * @instance
- * @method
- * @name fetchByOffset
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
- */
-
-/**
- * Fetch the first set of rows at the current level.
- * <p>
- * If <code class="prettyprint">params.sortCriteria</code> is specified, the default sorting algorithm used is natural sort.
- * </p>
- *
- *
- * @param {oj.FetchListParameters=} params Fetch parameters
- * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
- * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
- * @export
- * @expose
- * @memberof oj.ArrayTreeDataProvider
+ * @inheritdoc
+ * @memberof ArrayTreeDataProvider
  * @instance
  * @method
  * @name fetchFirst
- * @ojsignature {target: "Type",
- *               value: "(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
  */
 
 /**
- * Determines whether this data provider supports certain feature.
- *
- *
- * @param {string} capabilityName capability name. Supported capability names are:
- *                  "fetchByKeys", "fetchByOffset", and "sort".
- * @return {Object} capability information or null if unsupported
- * <ul>
- *   <li>If capabilityName is "fetchByKeys", returns a {@link oj.FetchByKeysCapability} object.</li>
- *   <li>If capabilityName is "fetchByOffset", returns a {@link oj.FetchByOffsetCapability} object.</li>
- *   <li>If capabilityName is "sort", returns a {@link oj.SortCapability} object.</li>
- *   <li>If capabilityName is "filter", returns a {@link oj.FilterCapability} object.</li>
- * </ul>
- * @export
- * @expose
- * @memberof oj.ArrayTreeDataProvider
+ * @inheritdoc
+ * @memberof ArrayTreeDataProvider
+ * @instance
+ * @method
+ * @name fetchByKeys
+ */
+
+/**
+ * @inheritdoc
+ * @memberof ArrayTreeDataProvider
+ * @instance
+ * @method
+ * @name fetchByOffset
+ */
+
+/**
+ * @inheritdoc
+ * @memberof ArrayTreeDataProvider
  * @instance
  * @method
  * @name getCapability
- * @ojsignature {target: "Type",
- *               value: "(capabilityName?: string): any"}
  */
 
 /**
- * Return the total number of rows at the top level.
- *
- *
- * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
- * @export
- * @expose
- * @memberof oj.ArrayTreeDataProvider
+ * @inheritdoc
+ * @memberof ArrayTreeDataProvider
  * @instance
  * @method
  * @name getTotalSize
  */
 
 /**
- * Return a string that indicates if this data provider is empty.
- *
- *
- * @return {"yes" | "no" | "unknown"} a string that indicates if this data provider is empty. Valid values are:
- *                  "yes": this data provider is empty.
- *                  "no": this data provider is not empty.
- *                  "unknown": it is not known if this data provider is empty until a fetch is made.
- * @export
- * @expose
- * @memberof oj.ArrayTreeDataProvider
+ * @inheritdoc
+ * @memberof ArrayTreeDataProvider
  * @instance
  * @method
  * @name isEmpty
  */
 
 /**
- * Add a callback function to listen for a specific event type.
- *
- *
- * @export
- * @expose
- * @memberof oj.ArrayTreeDataProvider
+ * @inheritdoc
+ * @memberof ArrayTreeDataProvider
  * @instance
  * @method
  * @name addEventListener
- * @param {string} eventType The event type to listen for.
- * @param {EventListener} listener The callback function that receives the event notification.
- * @ojsignature {target: "Type",
- *               value: "(eventType: string, listener: EventListener): void"}
  */
 
 /**
- * Remove a listener previously registered with addEventListener.
- *
- *
- * @export
- * @expose
- * @memberof oj.ArrayTreeDataProvider
+ * @inheritdoc
+ * @memberof ArrayTreeDataProvider
  * @instance
  * @method
  * @name removeEventListener
- * @param {string} eventType The event type that the listener was registered for.
- * @param {EventListener} listener The callback function that was registered.
- * @ojsignature {target: "Type",
- *               value: "(eventType: string, listener: EventListener): void"}
  */
 
 /**
- * Dispatch an event and invoke any registered listeners.
- *
- *
- * @export
- * @expose
- * @memberof oj.ArrayTreeDataProvider
+ * @inheritdoc
+ * @memberof ArrayTreeDataProvider
  * @instance
  * @method
  * @name dispatchEvent
- * @param {Event} event The event object to dispatch.
- * @return {boolean} Return false if a registered listener has cancelled the event. Return true otherwise.
- * @ojsignature {target: "Type",
- *               value: "(evt: Event): boolean"}
  */
 
 /**

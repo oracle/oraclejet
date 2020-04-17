@@ -4715,6 +4715,8 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
       this._trigger(type, null, {
         nodeId: event.id
       });
+    } else if (type === 'notready') {
+      this._NotReady();
     } else {
       this._super(event);
     }
@@ -5379,8 +5381,8 @@ Components.setDefaultOptions({
  * @property {Element}  parentElement A parent group element that takes a custom SVG fragment as the node content. Modifications of the parentElement are not supported.
  * @property {Element}  componentElement The diagram element.
  * @property {Element|null}  rootElement Null on initial rendering or SVG element for the node.
- * @property {Object}   data The data object for the node. If oj.DataProvider is being used, this property contains template processed data.
- * @property {Object|null} itemData The row data object for the node. This will only be set if an oj.DataProvider is being used.
+ * @property {Object}   data The data object for the node. If DataProvider is being used, this property contains template processed data.
+ * @property {Object|null} itemData The row data object for the node. This will only be set if an DataProvider is being used.
  * @property {Object}   content  An object that describes child content. The object has the following properties
  * @property {Element}  content.element SVG group element that contains child nodes for the container.
  * @property {number}   content.width Width of the child content.
@@ -5414,9 +5416,9 @@ Components.setDefaultOptions({
  * @property {Element}  componentElement The diagram element.
  * @property {Element|null}  rootElement Null on initial rendering or SVG element for the link.
  * @property {Object}   data The data object for the link or an array of data objects for the promoted link.
- *                           If oj.DataProvider is being used, this property contains template processed data.
+ *                           If DataProvider is being used, this property contains template processed data.
  * @property {Object|null} itemData The row data object for the link or an array of row data objects for the promoted link.
- *                           This will only be set if an oj.DataProvider is being used.
+ *                           This will only be set if an DataProvider is being used.
  * @property {Object}   state An object that reflects the current state of the data item.
  * @property {boolean}  state.hovered True if the link is currently hovered.
  * @property {boolean}  state.selected True if the link is currently selected.

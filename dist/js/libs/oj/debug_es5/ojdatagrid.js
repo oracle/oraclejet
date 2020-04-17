@@ -1293,6 +1293,15 @@ DvtDataGrid.prototype.SetContextCallback = function (callback) {
   this.m_contextCallback = callback;
 };
 /**
+ * Set the callback for custom element
+ * @param {Function} callback a callback
+ */
+
+
+DvtDataGrid.prototype.SetCustomElementCallback = function (callback) {
+  this.m_isCustomElementCallback = callback;
+};
+/**
  * Set the callback for remove
  * @param {Function} callback a callback for the remove function
  */
@@ -2249,6 +2258,8 @@ DvtDataGrid.prototype.resetInternal = function () {
   this.m_isLongScroll = null;
   this.m_addBorderBottom = null;
   this.m_addBorderRight = null;
+
+  this._destroyEditableClone();
 };
 /**
  * DataGrid should initialize if there's no outstanding fetch, it is unitialized
@@ -3042,6 +3053,8 @@ DvtDataGrid.prototype.buildCorners = function () {
         }
       }
 
+      this.m_subtreeAttachedCallback(corner);
+
       if (this._isHeaderLabelCollision()) {
         var item = this._getHeaderByIndex(this.m_startColHeader, this.m_columnHeaderLevelCount - 1, this.m_colHeader, this.m_columnHeaderLevelCount, this.m_startColHeader);
 
@@ -3107,6 +3120,8 @@ DvtDataGrid.prototype.buildCorners = function () {
             rowHeaderScrollbarSpacer.appendChild(label); // @HTMLUpdateOK
           }
         }
+
+        this.m_subtreeAttachedCallback(rowHeaderScrollbarSpacer);
       }
     } else {
       if (this.m_rowHeaderScrollbarSpacer != null) {
@@ -3162,6 +3177,8 @@ DvtDataGrid.prototype.buildCorners = function () {
             columnHeaderScrollbarSpacer.appendChild(label); // @HTMLUpdateOK
           }
         }
+
+        this.m_subtreeAttachedCallback(columnHeaderScrollbarSpacer);
       }
     } else {
       if (this.m_columnHeaderScrollbarSpacer != null) {
@@ -5009,6 +5026,7 @@ DvtDataGrid.prototype.buildAxisHeaders = function (headerRoot, headerSet, axis, 
     headerRoot.appendChild(scroller); // @HTMLUpdateOK
   }
 
+  this.m_subtreeAttachedCallback(scroller);
   return {
     totalHeaderDimension: totalHeaderDimension,
     totalLevelDimension: totalLevelDimension,
@@ -5034,7 +5052,9 @@ DvtDataGrid.prototype._renderContent = function (renderer, context, cell, data) 
       if (content.parentNode === null || content.parentNode instanceof DocumentFragment) {
         cell.appendChild(content); // @HTMLUpdateOK
 
-        this.m_subtreeAttachedCallback(content);
+        if (!this.m_isCustomElementCallback()) {
+          this.m_subtreeAttachedCallback(content);
+        }
       } else if (content.parentNode != null) {// parent node exists, do nothing
       } else if (content.toString) {
         cell.appendChild(document.createTextNode(content.toString())); // @HTMLUpdateOK
@@ -5318,13 +5338,15 @@ DvtDataGrid.prototype.buildLevelHeaders = function (fragment, index, level, left
 
     if (this._isHeaderResizeEnabled(axis, headerContext)) {
       this._setAttribute(header, 'resizable', 'true');
-    } // Temporarily add groupingContainer or header into this.m_root to have them in active DOM before rendering contents
+    }
 
-
-    if (groupingContainer != null) {
-      this.m_root.appendChild(groupingContainer); // @HTMLUpdateOK
-    } else {
-      this.m_root.appendChild(header); // @HTMLUpdateOK
+    if (!this.m_isCustomElementCallback()) {
+      // Temporarily add groupingContainer or header into this.m_root to have them in active DOM before rendering contents
+      if (groupingContainer != null) {
+        this.m_root.appendChild(groupingContainer); // @HTMLUpdateOK
+      } else {
+        this.m_root.appendChild(header); // @HTMLUpdateOK
+      }
     }
 
     this._renderContent(renderer, headerContext, header, headerData);
@@ -6639,10 +6661,12 @@ DvtDataGrid.prototype._addCellsToFragment = function (fragment, cellSet, rowStar
             this.setElementDir(cell, left, dir);
           } else {
             this.setElementDir(cell, left - width, dir);
-          } // add cell to live DOM while rendering, row is now in live DOM so do this first
+          }
 
-
-          this.m_root.appendChild(cell); // @HTMLUpdateOK
+          if (this.m_isCustomElementCallback()) {
+            // add cell to live DOM while rendering, row is now in live DOM so do this first
+            this.m_root.appendChild(cell); // @HTMLUpdateOK
+          }
 
           this._renderContent(renderer, cellContext, cell, cellData);
 
@@ -8602,6 +8626,14 @@ DvtDataGrid.prototype.handleContextMenuGesture = function (event, eventType, cal
       // of the active cell, if right click or touch open with the context of the clicked cell
 
       if (this._isDatabodyCellActive()) {
+        // handle the case where the active element is no longer rendered (ie scrolled off viewport in virtual scroll)
+        // we may have focus loss in this case on escape key but the context menu will open. alternative is to do
+        // work that anytime focus scrolls off the screen the root node becomes focusable and will go back to the active node
+        // but this is consistant with current offscreen focus behavior.
+        if (launcher == null) {
+          launcher = element;
+        }
+
         capabilities = eventType === 'keyboard' ? this._getCellCapability(launcher) : this._getCellCapability(launcher, element);
       } else {
         // there is the case where header is active and entire row/column selected
@@ -13246,7 +13278,7 @@ DvtDataGrid.prototype._reRenderCell = function (cell, mode, classToToggle, edita
       cell.appendChild(editableClone.firstChild);
     }
 
-    delete this.m_editableClone;
+    this._destroyEditableClone();
   } else {
     this._renderContent(renderer, cellContext, cell, cellContext.data);
   }
@@ -13258,10 +13290,11 @@ DvtDataGrid.prototype._reRenderCell = function (cell, mode, classToToggle, edita
 
 
 DvtDataGrid.prototype._setEditableClone = function (element) {
-  delete this.m_editableClone;
+  this._destroyEditableClone();
 
   if (element != null) {
     var clone = element.cloneNode(false);
+    clone.removeAttribute('id');
 
     this._createUniqueId(clone);
 
@@ -13269,11 +13302,23 @@ DvtDataGrid.prototype._setEditableClone = function (element) {
     clone[this.getResources().getMappedAttribute('context')].parentElement = clone;
     this.m_root.appendChild(clone);
 
-    this._reRenderCell(clone, 'edit', this.getMappedStyle('cellEdit'), null);
+    this._reRenderCell(clone, 'edit', this.getMappedStyle('cellEdit'), null); // we can keep the editable clone around, no where should we look for it later
 
-    this.m_root.removeChild(clone);
+
+    clone.style.display = 'none';
     clone[this.getResources().getMappedAttribute('context')].parentElement = element;
     this.m_editableClone = clone;
+  }
+};
+/**
+ * Remove editable clone and cleanup
+ */
+
+
+DvtDataGrid.prototype._destroyEditableClone = function () {
+  if (this.m_editableClone) {
+    this.m_root.removeChild(this.m_editableClone);
+    delete this.m_editableClone;
   }
 };
 /**
@@ -15935,6 +15980,8 @@ DvtDataGrid.prototype._populateDatabody = function (databodyContent, fragment) {
   this._addNodesToDatabodyMap(fragment.childNodes);
 
   databodyContent.appendChild(fragment); // @HTMLUpdateOK
+
+  this.m_subtreeAttachedCallback(databodyContent);
 };
 /**
  * Empties the databody and clears the databody map
@@ -18122,7 +18169,7 @@ DvtDataGrid.prototype._getTouchSelectionAffordanceSize = function () {
 
 
 
-/* global DvtDataGrid:false */
+/* global DvtDataGrid:false, Promise:false, Context:false */
 DvtDataGrid.SORT_ANIMATION_DURATION = 800;
 /**
  * Event handler for handling mouse over event on headers.
@@ -18702,6 +18749,59 @@ DvtDataGrid.prototype.handleCellsFetchSuccessForSort = function (newRowHeaderEle
     this._signalTaskStart();
 
     this._handleSortEnd(newCellElements, newRowHeaderElements, newRowEndHeaderElements);
+  } else if (this.m_isCustomElementCallback()) {
+    this._signalTaskStart('processing sort render'); // need to add the cells to dom to render offscreen before animation
+
+
+    var cellDiv = document.createElement('div');
+    var rDiv = document.createElement('div');
+    var reDiv = document.createElement('div');
+    cellDiv.setAttribute(this.getResources().getMappedAttribute('busyContext'), ''); // @HTMLUpdateOK
+
+    rDiv.setAttribute(this.getResources().getMappedAttribute('busyContext'), ''); // @HTMLUpdateOK
+
+    reDiv.setAttribute(this.getResources().getMappedAttribute('busyContext'), ''); // @HTMLUpdateOK
+    // this is our helper hidden accessible class to hide the add/remove.
+
+    cellDiv.className = this.getMappedStyle('info');
+    rDiv.className = this.getMappedStyle('info');
+    reDiv.className = this.getMappedStyle('info');
+    cellDiv.appendChild(newCellElements); // @HTMLUpdateOK
+
+    rDiv.appendChild(newRowHeaderElements); // @HTMLUpdateOK
+
+    reDiv.appendChild(newRowEndHeaderElements); // @HTMLUpdateOK
+
+    this.m_root.appendChild(cellDiv); // @HTMLUpdateOK
+
+    this.m_root.appendChild(rDiv); // @HTMLUpdateOK
+
+    this.m_root.appendChild(reDiv); // @HTMLUpdateOK
+
+    var cellBusyContext = Context.getContext(cellDiv).getBusyContext().whenReady();
+    var rBusyContext = Context.getContext(rDiv).getBusyContext().whenReady();
+    var reBusyContext = Context.getContext(reDiv).getBusyContext().whenReady();
+    Promise.all([cellBusyContext, rBusyContext, reBusyContext]).then(function () {
+      while (cellDiv.childNodes.length > 0) {
+        newCellElements.appendChild(cellDiv.childNodes[0]); // @HTMLUpdateOK
+      }
+
+      while (rDiv.childNodes.length > 0) {
+        newRowHeaderElements.appendChild(rDiv.childNodes[0]); // @HTMLUpdateOK
+      }
+
+      while (reDiv.childNodes.length > 0) {
+        newRowEndHeaderElements.appendChild(reDiv.childNodes[0]); // @HTMLUpdateOK
+      }
+
+      this.m_root.removeChild(cellDiv);
+      this.m_root.removeChild(rDiv);
+      this.m_root.removeChild(reDiv);
+
+      this._signalTaskEnd();
+
+      this.processSortAnimationToPosition(duration, 0, 'ease-in', oldRowHeaderElements, newRowHeaderElements, oldCellElements, newCellElements, oldRowEndHeaderElements, newRowEndHeaderElements);
+    }.bind(this));
   } else {
     this.processSortAnimationToPosition(duration, 0, 'ease-in', oldRowHeaderElements, newRowHeaderElements, oldCellElements, newCellElements, oldRowEndHeaderElements, newRowEndHeaderElements);
   } // end fetch
@@ -18724,12 +18824,16 @@ DvtDataGrid.prototype._handleSortEnd = function (newCellElements, newRowHeaderEl
     headerContent = this.m_rowHeader.firstChild;
     this.m_utils.empty(headerContent);
     headerContent.appendChild(newRowHeaderElements); // @HTMLUpdateOK
+
+    this.m_subtreeAttachedCallback(headerContent);
   }
 
   if (newRowEndHeaderElements.childNodes.length > 1) {
     headerContent = this.m_rowEndHeader.firstChild;
     this.m_utils.empty(headerContent);
     headerContent.appendChild(newRowEndHeaderElements); // @HTMLUpdateOK
+
+    this.m_subtreeAttachedCallback(headerContent);
   }
 
   var databodyContent = this.m_databody.firstChild;
@@ -21803,7 +21907,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      * @property {number} extents.row the row extent
      * @property {number} extents.column the column extent
      * @property {number?} indexFromParent if flattened tree data provider, the offset from the parent key
-     * @property {K?} parentKey  if flattened tree data provider, the parent row key
+     * @property {any?} parentKey  if flattened tree data provider, the parent row key
      * @property {number?} treeDepth  if flattened tree data provider, the depth of the node
      * @property {boolean?} isLeaf if flattened tree data provider, true if it is a leaf node
      * @property {"edit"|"navigation"} mode the mode the cell is rendered in
@@ -21812,7 +21916,8 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      *               {target:"Type", value:"D", for:"data", jsdocOverride:true},
      *               {target:"Type", value:"oj.DataProvider<K, D>|null", for:"datasource", jsdocOverride:true},
      *               {target:"Type", value:"K", for:"keys.row", jsdocOverride:true},
-     *               {target:"Type", value:"K", for:"keys.column", jsdocOverride:true}]
+     *               {target:"Type", value:"K", for:"keys.column", jsdocOverride:true},
+     *               {target:"Type", value:"K", for:"parentKey", jsdocOverride:true}]
      */
 
     /**
@@ -24384,6 +24489,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
     this.grid.SetOptionCallback(this.option.bind(self));
     this.grid.SetSubtreeAttachedCallback(Components.subtreeAttached);
     this.grid.SetContextCallback(Context.getContext);
+    this.grid.SetCustomElementCallback(this._IsCustomElement.bind(self));
     this.grid.SetUpdateScrollPostionOnRefreshCallback(this._updateScrollPositionOnRefresh.bind(self));
 
     this._focusable({
@@ -25675,10 +25781,10 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
   },
 
   /**
-   * Checks if sizing is available for the grid
-   * @return {boolean} true if the root element is visible and attached to the DOM
-   * @private
-   */
+     * Checks if sizing is available for the grid
+     * @return {boolean} true if the root element is visible and attached to the DOM
+     * @private
+     */
   _isDataGridSizingAvailable: function _isDataGridSizingAvailable() {
     if (this.root.offsetParent != null) {
       return true;
@@ -27268,7 +27374,7 @@ DvtDataGrid.prototype._handleExitEditable = function (event, element) {
 
   this._setAccInfoText('accessibleNavigationMode');
 
-  delete this.m_editableClone;
+  this._destroyEditableClone();
 };
 /**
  * Enter enter mode

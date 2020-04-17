@@ -850,7 +850,6 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
     /**
      * An object with the following properties, used to define a timeline axis. This is required in order for the timeline to properly render.
      * @expose
-     * @ojrequired
      * @name minorAxis
      * @ojshortdesc An object defining the timeline minor axis.
      * @memberof oj.ojTimeline
@@ -2922,7 +2921,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
  * @property {Element} parentElement The tooltip element. This can be used to change the tooltip border or background color.
  * @property {oj.ojTimeline.SeriesItem} data The data object of the hovered item.
  * @property {oj.ojTimeline.Series} seriesData The data for the series the hovered item belongs to.
- * @property {Object|null} itemData The data provider row data object for the hovered item. This will only be set if an oj.DataProvider for <a href="#data">data</a> is being used.
+ * @property {Object|null} itemData The data provider row data object for the hovered item. This will only be set if an DataProvider for <a href="#data">data</a> is being used.
  * @property {Element} componentElement The timeline element.
  * @property {string} color The color of the hovered item.
  * @ojsignature [{target: "Type", value: "oj.ojTimeline.SeriesItem<K>", for: "data"},

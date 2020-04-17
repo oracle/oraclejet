@@ -2745,7 +2745,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @protected
    */
   SetAriaProperties: function SetAriaProperties() {
-    this.ojContext.element.attr('aria-multiselectable', false);
+    if (this._getNavigationMode() === 'tabbar') {
+      this.ojContext.element.attr('aria-multiselectable', false);
+    }
   },
 
   /**

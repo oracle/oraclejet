@@ -1,18 +1,19 @@
+import TreeDataProvider = require('../ojtreedataprovider');
 import { DataProvider, SortCriterion, FetchByKeysParameters, ContainsKeysResults, FetchByKeysResults, FetchByOffsetParameters, FetchByOffsetResults, DataMapping, FetchListResult, FetchListParameters,
    FetchAttribute } from '../ojdataprovider';
-declare class TreeDataProviderView<K, D, Kin, Din> implements DataProvider<K, D> {
-    dataMapping: DataMapping<K, D, Kin, Din>;
-    constructor(dataProvider: DataProvider<K, D>, options?: {
+declare class TreeDataProviderView<K, D, Kin, Din> implements TreeDataProvider<K, D> {
+    dataMapping?: DataMapping<K, D, Kin, Din>;
+    constructor(dataProvider: TreeDataProvider<K, D>, options?: {
         dataMapping?: DataMapping<K, D, Kin, Din>;
     });
     addEventListener(eventType: string, listener: EventListener): void;
-    containsKeys(params: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
+    containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     dispatchEvent(evt: Event): boolean;
-    fetchByKeys(params: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>;
-    fetchByOffset(params: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>;
-    fetchFirst(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>;
+    fetchByKeys(parameters: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>;
+    fetchByOffset(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>;
+    fetchFirst(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>;
     getCapability(capabilityName: string): any;
-    getChildDataProvider(parentKey: any): TreeDataProviderView<K, D, Kin, Din>;
+    getChildDataProvider(parentKey: K): TreeDataProvider<K, D> | null;
     getTotalSize(): Promise<number>;
     isEmpty(): 'yes' | 'no' | 'unknown';
     removeEventListener(eventType: string, listener: EventListener): void;

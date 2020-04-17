@@ -736,7 +736,8 @@ var __oj_label_metadata =
       // </oj-label>
 
       if (this.OuterWrapper) {
-        this.uiLabel = $(this.OuterWrapper).append(this.element.wrap(this._createOjLabelGroupDom()).parent()); // @HTMLUpdateOK
+        this.uiLabel = $(this.OuterWrapper).append( // @HTMLUpdateOK
+        this.element.wrap(this._createOjLabelGroupDom()).parent()); // @HTMLUpdateOK
 
         this.uiLabel.addClass('oj-label oj-component');
       } else {
@@ -959,7 +960,7 @@ var __oj_label_metadata =
       }
 
       newAttributeValue = tokens.join(' ').trim();
-      elem.setAttribute(attr, newAttributeValue);
+      elem.setAttribute(attr, newAttributeValue); // @HTMLUpdateOK
     },
 
     /**
@@ -992,9 +993,9 @@ var __oj_label_metadata =
       newAttributeValue = tokens.join(' ').trim();
 
       if (newAttributeValue) {
-        elem.setAttribute(attr, newAttributeValue);
+        elem.setAttribute(attr, newAttributeValue); // @HTMLUpdateOK
       } else {
-        elem.setAttribute(attr, '');
+        elem.setAttribute(attr, ''); // @HTMLUpdateOK
       }
     },
 
@@ -1379,7 +1380,7 @@ var __oj_label_metadata =
 
         $contentDiv = $(contentDiv);
         $contentDiv.text(helpDefText);
-        this.uiLabel.append($helpDefPopupDiv);
+        this.uiLabel.append($helpDefPopupDiv); // @HTMLUpdateOK content created by us
       } else {
         // Find the div with the id, and then update the text of it.
         $helpDefPopupDiv = $(document.getElementById(this._helpDefPopupDivId));
@@ -1685,7 +1686,7 @@ var __oj_label_metadata =
                 return item !== ojLabelId;
               });
               var newLabelledBy = newArray.join(' ');
-              oldTarget.setAttribute(_LABELLED_BY, newLabelledBy);
+              oldTarget.setAttribute(_LABELLED_BY, newLabelledBy); // @HTMLUpdateOK
             }
           }
         }

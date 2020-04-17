@@ -3118,7 +3118,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * @ignore
  */
 
-/* global ko:false, Symbol:false, Map:false, KeySetImpl:false, Context:false, BindingProviderImpl: false, Promise:false, templateEngine:false */
+/* global ko:false, Symbol:false, Map:false, KeySetImpl:false, Context:false, BindingProviderImpl: false, Promise:false, templateEngine:false, Logger:false */
 
 (function () {
   'use strict';
@@ -3199,6 +3199,9 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   // store a symbol for caching the pending delete info index in the data item objects
   var PENDING_DELETE_INDEX_KEY = createSymbolOrString('_ko_ffe_pending_delete_index');
 
+  // Abandoned promise rejection for data provider
+  var _ABANDONED_PROMISE_CHAIN = 'oj-bind-for-each: abandoned promise';
+
   /**
    * @constructor
    * @private
@@ -3214,6 +3217,15 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     this.indexesToDelete = [];
     this.rendering_queued = false;
     this.pendingDeletes = [];
+
+    // The headDataPromise and tailDataPromise are used to provide an order for Data Provider events:
+    // - mutate events wait for the fetch event and any previous mutate events to finish
+    // - the refresh event issued during ongoing fetch or mutation cancels ongoing chain
+    // The headDataPromise is acting as an ID for the promise chain and tailDataPromise is
+    // the latest promise in the chain of promises - used for chaining upcoming mutaition promises to it.
+    // When the entire chain is resolved, the headDataPromise and tailDataPromise should be reset to null;
+    this.headDataPromise = null;
+    this.tailDataPromise = null;
 
     // Remove existing content.
     ko.virtualElements.emptyNode(this.element);
@@ -3291,50 +3303,110 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     }
   };
 
+  // Helper function that resets head and tail promises, then the entire chain is resolved
+  // and there are no pending promises
+  OjForEach.prototype.resetChainIfCompleted = function (currentDataPromise) {
+    if (currentDataPromise === this.tailDataPromise) {
+      this.headDataPromise = null;
+      this.tailDataPromise = null;
+    }
+  };
+
+  // Helper function that processes promise rejection and rethrows an error
+  // unless the error is a valid or already caught one
+  OjForEach.prototype.promiseRejectHelper = function (reason, busyStateCallback, currentPromise) {
+    busyStateCallback();
+    this.resetChainIfCompleted(currentPromise);
+    if (reason._CAUGHT_PROMISE_REJECTION || reason.message === _ABANDONED_PROMISE_CHAIN) {
+      Logger.info(reason);
+    } else {
+      if (reason instanceof Error) {
+        // should reuse existing error to stop extra throws down the chain, can't rethrow a new one
+        // the chain gets an original error
+        // eslint-disable-next-line no-param-reassign
+        reason._CAUGHT_PROMISE_REJECTION = true;
+        throw reason;
+      }
+      throw new Error(reason);
+    }
+  };
+
   // This function is used to retrieve data from data provider - on initial update and
   // to handle refresh operation
   OjForEach.prototype.fetchData = function () {
     var busyStateCallback = this.registerBusyState();
     var iterator = this.data.fetchFirst({ size: -1 })[Symbol.asyncIterator]();
+    var dataPromiseResolve;
+    var dataPromiseReject;
+    var headPromise;
 
     // function passed to iterator.next() promise on success, until result.done is set to true
     var getProcessResultsFunc = function (changeSet, onArrayChangeCallback,
-      callbackObj, dataPromise) {
+      callbackObj) {
       return function (result) {
-        if (callbackObj.dataPromise === dataPromise) {
+        if (callbackObj.headDataPromise === headPromise) { // current promise
           var value = result.value;
           var entryIndex = changeSet.length;
           for (var i = 0; i < value.metadata.length && i < value.data.length; i++) {
             changeSet.push(valueToChangeAddItem(value.data[i], entryIndex, value.metadata[i].key));
             entryIndex += 1;
           }
-          if (result.done) {
+          if (result.done) {  // finish up
             onArrayChangeCallback.call(callbackObj, changeSet);
             busyStateCallback();
+            dataPromiseResolve();
+            callbackObj.resetChainIfCompleted(headPromise);
           } else {
-            var dataPromiseLocal = iterator.next();
-            // eslint-disable-next-line no-param-reassign
-            callbackObj.dataPromise = dataPromiseLocal;
-            dataPromiseLocal.then(
+            iterator.next().then(
               getProcessResultsFunc(changeSet, onArrayChangeCallback,
-                                    callbackObj, dataPromiseLocal),
-              function () {
+                                    callbackObj),
+              function (reason) {
                 busyStateCallback();
+                dataPromiseReject(reason);
+                callbackObj.resetChainIfCompleted(headPromise);
               });
           }
-        } else {
+        } else { // abandoned promise
           busyStateCallback();
+          dataPromiseReject(new Error(_ABANDONED_PROMISE_CHAIN));
         }
       };
     };
 
-    var dataPromiseLocal = iterator.next();
-    this.dataPromise = dataPromiseLocal;
-    dataPromiseLocal.then(
-      getProcessResultsFunc([], this.onArrayChange, this, dataPromiseLocal),
-      function () {
-        busyStateCallback();
-      });
+    // New head promise is created for the chain start.
+    // The promise will be resolved on result.done() or rejected on errors.
+    // All rejections are caught in the catch block and analyzed.
+    // The abandoned promise rejections are ignored,
+    // other rejections are thrown and marked with _CAUGHT_PROMISE_REJECTION
+    // in order to prevent rethrowing in chained promises.
+    headPromise = new Promise(function (resolve, reject) {
+      dataPromiseResolve = resolve;
+      dataPromiseReject = reject;
+      iterator.next()
+        .then(getProcessResultsFunc([], this.onArrayChange, this),
+          function (reason) {
+            busyStateCallback();
+            dataPromiseReject(reason);
+            this.resetChainIfCompleted(headPromise);
+          }.bind(this));
+    }.bind(this));
+
+    // the catch handles a case when the head promise does not have a chain and we need to catch valid rejection
+    headPromise.catch(function (reason) {
+      if (reason.message !== _ABANDONED_PROMISE_CHAIN) {
+        if (reason instanceof Error) {
+          // should reuse existing error to stop extra throws down the chain, can't rethrow a new one
+          // the chain gets an original error
+          // eslint-disable-next-line no-param-reassign
+          reason._CAUGHT_PROMISE_REJECTION = true;
+          throw reason;
+        }
+        throw new Error(reason);
+      }
+    });
+
+    this.headDataPromise = headPromise;
+    this.tailDataPromise = headPromise;
   };
 
   // This function populates an array of indexes either from event indexes or
@@ -3370,6 +3442,36 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
   // Handler that processes "mutate" event from DataProvider
   OjForEach.prototype.handleDataMutateEvent = function (event) {
+    // object that contains head and current promises, that we can't pass directly
+    // to the function through the closure scope
+    var busyStateCallback;
+    var promiseContainer = {};
+    var currentPromise;
+    var self = this;
+
+    if (this.tailDataPromise) {
+      busyStateCallback = this.registerBusyState();
+      currentPromise = this.tailDataPromise.then(
+        function () { // success
+          busyStateCallback();
+          return self.getDataMutationHelper(event, promiseContainer);
+        });
+      currentPromise.catch(function (reason) { // error handler
+        self.promiseRejectHelper(reason, busyStateCallback, currentPromise);
+      });
+    } else {
+      currentPromise = this.getDataMutationHelper(event, promiseContainer);
+      this.headDataPromise = currentPromise;
+    }
+    this.tailDataPromise = currentPromise;
+    promiseContainer.head = this.headDataPromise;
+    promiseContainer.current = currentPromise;
+  };
+
+  // Helper function that processes mutation event. If the event is asyncronous,
+  // the function returns a promise, otherwise the function just updates existing data set
+  // retruns ether Promise for async mutation or undefined for sync mutation
+  OjForEach.prototype.getDataMutationHelper = function (event, promiseContainer) {
     var addDetail = event.detail.add;
     var removeDetail = event.detail.remove;
     var updateDetail = event.detail.update;
@@ -3379,6 +3481,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     var dataIndexes;
     var busyStateCallback;
     var self = this;
+    var dataPromise;  // define the promise when data are fetched - add or update event.
 
     if (addDetail) {
       var eventData = addDetail.data;
@@ -3398,20 +3501,31 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
       if (!Array.isArray(eventData)) { // data were not sent, should fetch data using keys
         busyStateCallback = this.registerBusyState();
-        this.data.fetchByKeys({ keys: eventKeys }).then(function (keyResult) {
-          // got map of keys to oj.Item - each item is an object with data and metadata props
-          if (keyResult.results.size > 0) {
-            var _dataIndex = 0;
-            eventKeys.forEach(function (keyValue) {
-              var dataItem = keyResult.results.get(keyValue).data;
-              changes.push(valueToChangeAddItem(dataItem, getCurrentIndex(_dataIndex), keyValue));
-              _dataIndex += 1;
-            });
-            self.onArrayChange(changes);
-          }
-          busyStateCallback();
-        }, function () {
-          busyStateCallback();
+        dataPromise = this.data.fetchByKeys({ keys: eventKeys }).then(
+          function (keyResult) { // success
+            // if promise is current, retrieve records and update data set;
+            // else throw valid rejection error
+            if (promiseContainer.head === self.headDataPromise) {
+              // got map of keys to oj.Item - each item is an object with data and metadata props
+              if (keyResult.results.size > 0) {
+                var _dataIndex = 0;
+                eventKeys.forEach(function (keyValue) {
+                  var dataItem = keyResult.results.get(keyValue).data;
+                  changes.push(valueToChangeAddItem(dataItem,
+                    getCurrentIndex(_dataIndex), keyValue));
+                  _dataIndex += 1;
+                });
+                self.onArrayChange(changes);
+              }
+              busyStateCallback();
+              self.resetChainIfCompleted(promiseContainer.current);
+            } else {
+              busyStateCallback();
+              throw new Error(_ABANDONED_PROMISE_CHAIN);
+            }
+          });
+        dataPromise.catch(function (reason) {
+          self.promiseRejectHelper(reason, busyStateCallback, promiseContainer.current);
         });
       } else { // data were sent with the event, don't have to fetch them
         dataIndex = 0; // used to iterate trough eventData
@@ -3434,22 +3548,32 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
       if (!Array.isArray(updateDetail.data)) { // data were not sent, need to fetch data
         busyStateCallback = this.registerBusyState();
-        this.data.fetchByKeys({ keys: eventKeys }).then(function (keyResult) {
-          var _dataIndex = 0;
-          if (keyResult.results.size > 0) {
-            eventKeys.forEach(function (keyValue) {
-              if (dataIndexes[_dataIndex] !== undefined) {
-                var dataItem = keyResult.results.get(keyValue).data;
-                changes.push(valueToChangeDeleteItem(dataIndexes[_dataIndex]));
-                changes.push(valueToChangeAddItem(dataItem, dataIndexes[_dataIndex], keyValue));
+        dataPromise = this.data.fetchByKeys({ keys: eventKeys }).then(
+          function (keyResult) { // success
+            // if promise is current, retrieve records and update data set;
+            // else throw valid rejection error
+            if (promiseContainer.head === self.headDataPromise) {
+              var _dataIndex = 0;
+              if (keyResult.results.size > 0) {
+                eventKeys.forEach(function (keyValue) {
+                  if (dataIndexes[_dataIndex] !== undefined) {
+                    var dataItem = keyResult.results.get(keyValue).data;
+                    changes.push(valueToChangeDeleteItem(dataIndexes[_dataIndex]));
+                    changes.push(valueToChangeAddItem(dataItem, dataIndexes[_dataIndex], keyValue));
+                  }
+                  _dataIndex += 1;
+                });
+                self.onArrayChange(changes);
               }
-              _dataIndex += 1;
-            });
-            self.onArrayChange(changes);
-          }
-          busyStateCallback();
-        }, function () {
-          busyStateCallback();
+              busyStateCallback();
+              self.resetChainIfCompleted(promiseContainer.current);
+            } else {
+              busyStateCallback();
+              throw new Error(_ABANDONED_PROMISE_CHAIN);
+            }
+          });
+        dataPromise.catch(function (reason) {
+          self.promiseRejectHelper(reason, busyStateCallback, promiseContainer.current);
         });
       } else { // got event data, don't have to fetch them
         dataIndex = 0;
@@ -3467,6 +3591,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     if (changes.length > 0) {
       this.onArrayChange(changes);
     }
+    return dataPromise;
   };
 
   // Handler that processes "refresh" event from DataProvider
@@ -4071,17 +4196,17 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  */
 
 /**
- * The array or an oj.DataProvider that you wish to iterate over. Required property.
+ * The array or an DataProvider that you wish to iterate over. Required property.
  * Note that the &lt;oj-bind-for-each&gt; will dynamically update the generated
  * DOM in response to changes if the value is an observableArray, or in response
- * to oj.DataProvider events.
+ * to DataProvider events.
  * @expose
  * @name data
  * @memberof oj.ojBindForEach
- * @ojshortdesc The array or oj.DataProvider that you wish to iterate over. See  the Help documentation for more information.
+ * @ojshortdesc The array or DataProvider that you wish to iterate over. See  the Help documentation for more information.
  * @instance
  * @type {array|Object}
- * @ojsignature {target: "Type", value:"Array<D>|oj.DataProvider<K, D>", jsdocOverride:true}
+ * @ojsignature {target: "Type", value:"Array<D>|DataProvider<K, D>", jsdocOverride:true}
  */
 
  /**

@@ -7,14 +7,14 @@
 
 define(['ojs/ojcore', 'ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function(oj, Observable, UrlPathAdapter, Logger) {
   "use strict";
-  var CoreRouter =
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 
 
 /* global Observable, Promise, UrlPathAdapter, Logger, Map */
-(function () {
+// eslint-disable-next-line no-unused-vars
+var corerouter = function () {
   // Private instances
   var rootRouter;
   var urlAdapter; // noHistorySegments is used by non-tracking routers to store transitions,
@@ -838,7 +838,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
 
   return CoreRouter;
-})();
+}();
 /**
  * An object describing configuration options during the creation of a root
  * CoreRouter instance.
@@ -1015,5 +1015,5 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
  * @ojsignature { target: 'Type', value: 'P'}
  */
 
-  return CoreRouter;
+  return corerouter;
 });

@@ -37,6 +37,19 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
     this._name = name;
     this._storeName = storeName;
     this._store = null;
+    
+    // in-memory cache of all the keys in the store, for quick lookup.
+    this._cacheKeys = [];
+    this._createStorePromise;
+
+    // the names of all the shredded stores associated
+    // with this cache. We need them when clear() is 
+    // called since we need to clear all the shredded
+    // stores as well.
+    Object.defineProperty(this, '_STORE_NAMES_', {
+      value: '_OPT_INT_SHRED_STORE_NAMES_',
+      writable: false
+    });
   }
 
   /**
@@ -67,17 +80,14 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
     logger.log("Offline Persistence Toolkit OfflineCache: add()");
     var self = this;
     return fetch(request).then(function (response) {
-      var responseClone = response.clone();
-      return self.put(request, response).then(function(){
-        Promise.resolve(responseClone);
-      })
+      return self.put(request, response);
     });
   };
 
   /**
    * Bulk operation of add.
    * @method
-   * @name upsertAll
+   * @name addAll
    * @memberof! OfflineCache
    * @param {Array} requests An array of Request
    * @return {Promise} Returns a promise when all the requests in the array are handled.
@@ -87,7 +97,6 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
     var promises = requests.map(this.add, this);
     return Promise.all(promises);
   };
-
 
   /**
    * Find the first response in this Cache object that match the request with the options.
@@ -121,22 +130,125 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
     logger.log("Offline Persistence Toolkit OfflineCache: match() for Request with url: " + request.url);
     var self = this;
 
-    var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
-    var ignoreVary = (options && options.ignoreVary);
-    
-    return self._getStore().then(function(store) {
-      return store.find(searchCriteria);
-    }).then(function (cacheEntries) {
+    return self._getCacheEntries(request, options).then(function (cacheEntries) {
+      var ignoreVary = (options && options.ignoreVary);
       var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
-      return _cacheEntryToResponse(matchEntry);
-    }).then(function (results) {
-      if (results) {
-        var bodyAbstract = results[0];
-        var response = results[1];
-        return cacheHandler.fillResponseBodyWithShreddedData(request, bodyAbstract, response);
-      } else {
-        return Promise.resolve();
+      if (!matchEntry) {
+        return;
       }
+      return _cacheEntryToResponse(request, matchEntry.value.responseData, options);
+    }).catch(function(error) {
+      logger.log('error finding match for request with url: ' + request.url);
+      return;
+    });
+  };
+
+  OfflineCache.prototype._getCacheEntries = function (request, options) {
+    var self = this;
+    return this._getStore().then(function(store) {
+      var possibleKeys = cacheHandler.getMatchedCacheKeys(request, options, self._cacheKeys);
+      if (possibleKeys && possibleKeys.length) {
+        var promises = possibleKeys.map(function(key) {
+          return store.findByKey(key).then(function(value) {
+            return {key: key, value: value};
+          });
+        });
+        return Promise.all(promises);
+      } else {
+        // get the cache entries based on search criteria.
+        var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
+        searchCriteria['fields'] = ['key', 'value'];
+        return store.find(searchCriteria);
+      }
+    });
+  };
+
+  // find the response from the cache that matches the request based on
+  // cache key value.
+  OfflineCache.prototype._matchByKey = function (request, key, options) {
+    return this._getStore().then(function(store) {
+      return store.findByKey(key);
+    }).then(function(cacheData) {
+      if (!cacheData) {
+        return;
+      } else {
+        return _cacheEntryToResponse(request, cacheData.responseData, options);
+      }
+    });
+  };
+  
+  // internal match that only returns the needed metadata that includes:
+  //   key: key of the cache entry in the cache store. 
+  //   resourceType: whether the response body is a collection type of resource
+  //                 or single type of resourse
+  //   resourceIdentifier: the resourse identifier value of the cached response.
+  // This is called from queryHandler which needs the metadata information
+  // to handle the query.
+  OfflineCache.prototype._internalMatch = function (request, options) {
+    // return key and headers. always skip search, always skip body.
+    var self = this;
+    return self._getStore().then(function(store) {
+      var possibleKeys = cacheHandler.getMatchedCacheKeys(request, options, self._cacheKeys);
+      if (possibleKeys && possibleKeys.length) {
+        var promises = possibleKeys.map(function(key) {
+          return store.findByKey(key);
+        });
+        return Promise.all(promises).then(function(results) {
+          return results.map(function(result, index) {
+            return {key: possibleKeys[index], value: result};
+          });
+        });
+      } else {
+        var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
+        searchCriteria['fields'] = ['key', 'value'];
+        return store.find(searchCriteria);
+      }
+    }).then(function (cacheEntries) {
+      if (!cacheEntries) {
+        return;
+      }
+      var ignoreVary = (options && options.ignoreVary);
+      var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
+      if (matchEntry) {
+        var returnValue = {key: matchEntry.key};
+        var bodyAbstractText = matchEntry.value.responseData.bodyAbstract;
+        if (bodyAbstractText) {
+          try {
+            var bodyAbstract = JSON.parse(bodyAbstractText);
+            if (bodyAbstract) {
+              if (bodyAbstract.length === 1 && bodyAbstract[0].resourceType === 'single') {
+                returnValue.resourceType = 'single';
+              } else {
+                returnValue.resourceType = 'collection';
+              }
+              if (Array.isArray(bodyAbstract) && bodyAbstract.length > 0) {
+                var resourceIdentifierMap = {};
+                bodyAbstract.forEach(function(storeAbstract) {
+                  if (storeAbstract.resourceIdentifier) {
+                    resourceIdentifierMap[storeAbstract.name] = storeAbstract.resourceIdentifier
+                  }
+                });
+                returnValue.resourceIdentifierMap = resourceIdentifierMap;
+              }
+            } else {
+              returnValue.resourceType = 'unknown';
+            }
+          } catch (exp) {
+            logger.log('internal error: invalid body abstract');
+            return;
+          }
+        } else {
+          // this is for the case where there is no thredder, thus 
+          // no bodyAbstract.
+          returnValue.resourceType = 'unknown';
+        }
+        return returnValue;
+      } else {
+        return;
+      }
+    }).catch(function(error) {
+      logger.log('error finding match internal');
+      return;
     });
   };
 
@@ -170,27 +282,14 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
    */
   OfflineCache.prototype.matchAll = function (request, options) {
     logger.log("Offline Persistence Toolkit OfflineCache: matchAll() for Request with url: " + request.url);
-    var self = this;
 
-    var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
-    var ignoreVary = (options && options.ignoreVary);
-
-    return self._getStore().then(function(store) {
-      return store.find(searchCriteria);
-    }).then(function (cacheEntries) {
+    return this._getCacheEntries(request, options).then(function (cacheEntries) {
+      var ignoreVary = (options && options.ignoreVary);
       var responseDataArray = _applyVaryForAllMatches(ignoreVary, request, cacheEntries);
-      return _cacheEntriesToResponses(responseDataArray);
-    }).then(function (responseArray) {
-      if (responseArray && responseArray.length) {
-        var promises = responseArray.map(function (responseElement) {
-          var bodyAbstract = responseElement[0];
-          var response = responseElement[1];
-          return cacheHandler.fillResponseBodyWithShreddedData(request, bodyAbstract, response);
-        });
-        return Promise.all(promises);
-      } else {
-        return Promise.resolve([]);
-      }
+      return _cacheEntriesToResponses(request, responseDataArray, options);
+    }).catch(function(error) {
+      logger.log('error finding all matches for request with url: ' + request.url);
+      return;
     });
   };
   
@@ -200,13 +299,26 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
    */
   OfflineCache.prototype._getStore = function () {
     var self = this;
-    if (!self._store) {
-      return persistenceStoreManager.openStore(self._storeName).then(function (store) {
-        self._store = store;
+    if (self._store) {
+      return Promise.resolve(self._store);
+    }
+    if (self._createStorePromise) {
+      return self._createStorePromise;
+    } else {
+      var localStore;
+      self._createStorePromise = persistenceStoreManager.openStore(self._storeName, {
+        index: ["metadata.baseUrl", "metadata.url", "metadata.created"], 
+        skipMetadata: true
+      }).then(function (store) {
+        localStore = store;
+        return store.keys();
+      }).then(function (keys) {
+        self._cacheKeys = keys;
+        self._store = localStore;
         return self._store;
       });
+      return self._createStorePromise;
     }
-    return Promise.resolve(self._store);
   }
 
   /**
@@ -217,17 +329,17 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
    * @param {Array} cacheEntries An array of cache entry to be checked among.
    * @returns {Object} The first match entry.
    */
-  function _applyVaryForSingleMatch (ignoreVary, request, cacheEntries) {
-    if (cacheEntries && cacheEntries.length) {
-      for (var index = 0; index < cacheEntries.length; index++) {
-        var cacheEntry = cacheEntries[index];
-        if (_applyVaryCheck(ignoreVary, request, cacheEntry)) {
-          return cacheEntry.responseData;
-        }
-      }
-    }
-    return null;
-  };
+ function _applyVaryForSingleMatch (ignoreVary, request, cacheEntries) {
+   if (cacheEntries && cacheEntries.length) {
+     for (var index = 0; index < cacheEntries.length; index++) {
+       var cacheEntry = cacheEntries[index];
+       if (_applyVaryCheck(ignoreVary, request, cacheEntry.value)) {
+         return cacheEntry;
+       }
+     }
+   }
+   return null;
+ };
 
   /**
    * Perform vary header check and return the all entries that match the request
@@ -241,8 +353,8 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
   function _applyVaryForAllMatches (ignoreVary, request, cacheEntries) {
     var responseDataArray = [];
     if (cacheEntries && cacheEntries.length) {
-      var filteredArray = cacheEntries.filter(_filterByVary(ignoreVary, request));
-      responseDataArray = filteredArray.map(function (entry) {return entry.responseData;});
+      var filteredArray = cacheEntries.filter(_filterByVary(ignoreVary, request, 'value'));
+      responseDataArray = filteredArray.map(function (entry) {return entry.value.responseData;});
     }
     return responseDataArray;
   };
@@ -308,34 +420,50 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
    * Convert the cached response data to Response object, it handles undefined
    * response data as well.
    * @param {Object} responseData Cached response data.
+   * @param {Object} options options to control the behavior.
+   * @param {boolean} options.ignoreBody default to false. If true, don't bother
+   *                  building body from shredded data.
    * @returns {Promise} A promise that resolves to de-serialized Response object
    *                    from responseData. The promise is resolved to undefined
    *                    if responseData is undefined.
    */
-  function _cacheEntryToResponse (responseData) {
+  function _cacheEntryToResponse (request, responseData, options) {
     if (responseData) {
       logger.log("Offline Persistence Toolkit OfflineCache: Converting cached entry to Response object");
-      var promises = [];
-      var bodyAbstract = responseData.bodyAbstract;
-      if (bodyAbstract) {
-        promises.push(Promise.resolve(JSON.parse(bodyAbstract)));
-        delete responseData.bodyAbstract;
-      } else {
-        promises.push(Promise.resolve());
+      var ignoreBody = false;
+      if (options && options.ignoreBody) {
+        ignoreBody = true;
       }
-      promises.push(cacheHandler.constructResponse(responseData));
-      return Promise.all(promises);
+      var bodyAbstractText = responseData.bodyAbstract;
+
+      return cacheHandler.constructResponse(responseData).then(function(response) {
+        if (request.url != null && request.url.length > 0 &&
+            response.headers.get('x-oracle-jscpt-response-url') == null) {
+          response.headers.set('x-oracle-jscpt-response-url', request.url);
+        }
+        if (!ignoreBody && bodyAbstractText) {
+          var bodyAbstract;
+          try {
+            bodyAbstract = JSON.parse(bodyAbstractText);
+          } catch (exp) {
+            logger.error("error parsing json " + bodyAbstractText);
+          }
+          return cacheHandler.fillResponseBodyWithShreddedData(request, bodyAbstract, response);
+        } else {
+          return response;
+        }
+      });
     } else {
       return Promise.resolve();
     }
   };
 
-  function _cacheEntriesToResponses (responseDataArray) {
+  function _cacheEntriesToResponses (request, responseDataArray, options) {
     if (!responseDataArray || !responseDataArray.length) {
       return Promise.resolve();
     } else {
       var promisesArray = responseDataArray.map(function (element) {
-        return _cacheEntryToResponse(element);
+        return _cacheEntryToResponse(request, element, options);
       });
       return Promise.all(promisesArray);
     }
@@ -354,30 +482,83 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
   OfflineCache.prototype.put = function (request, response) {
     logger.log("Offline Persistence Toolkit OfflineCache: put() for Request with url: " + request.url);
     var self = this;
-    var promises = [];
-    promises.push(cacheHandler.constructRequestResponseCacheData(request, response));
-    promises.push(cacheHandler.shredResponse(request, response));
+    var cacheKey;
 
-    return Promise.all(promises).then(function (results) {
-      return self._getStore().then(function(store) {
-        var requestResponsePair = results[0];
-        var shreddedPayload = results[1];
-        if (!shreddedPayload) {
-          // this is the case where no shredder/unshredder is specified.
-          return store.upsert(requestResponsePair.key,
-                                    requestResponsePair.metadata,
-                                    requestResponsePair.value);
-        } else {
+    return self._getStore().then(function() {
+      return cacheHandler.constructRequestResponseCacheData(request, response);
+    }).then(function(requestResponsePair) {
+      var cacheStore = self._store;
+      cacheKey = requestResponsePair.key;
+      var hasShredder = cacheHandler.hasShredder(request);
+      if (!hasShredder) {
+        return cacheStore.upsert(requestResponsePair.key,
+                                 requestResponsePair.metadata,
+                                 requestResponsePair.value);
+      } else {
+        return cacheHandler.shredResponse(request, response).then(function(shreddedPayload) {
+          if (!shreddedPayload) {
+            // something is wrong with the shredding process. will not cache
+            // the request/response pair.
+            cacheKey = null;
+            return;
+          }
+          self._updateShreddedStoreNames(shreddedPayload.map(function(entry) {
+            return entry.name;
+          }));
           var storePromises = [];
           requestResponsePair.value.responseData.bodyAbstract = _buildBodyAbstract(shreddedPayload);
-          storePromises.push(store.upsert(requestResponsePair.key,
-                                                requestResponsePair.metadata,
-                                                requestResponsePair.value));
+          storePromises.push(cacheStore.upsert(requestResponsePair.key,
+                                               requestResponsePair.metadata,
+                                               requestResponsePair.value));
           storePromises.push(cacheHandler.cacheShreddedData(shreddedPayload));
           return Promise.all(storePromises);
+        });
+      }
+    }).then(function() {
+      if (cacheKey && self._cacheKeys.indexOf(cacheKey) < 0) {
+        self._cacheKeys.push(cacheKey);
+      }
+    }).catch(function(error) {
+      logger.error("error in cache.put() for Request with url: " + request.url);
+    });
+  };
+
+  OfflineCache.prototype._updateShreddedStoreNames = function (storeNames) {
+    if (!storeNames) {
+      localStorage.setItem(this._STORE_NAMES_, "");
+      return;
+    }
+    var storeageData = localStorage.getItem(this._STORE_NAMES_);
+    if (!storeageData) {
+      storeageData = JSON.stringify(storeNames);
+    } else {
+      var existingStoreNames;
+      try {
+        existingStoreNames = JSON.parse(storeageData);
+      } catch(exc) {
+        existingStoreNames = [];
+      }
+      storeNames.forEach(function (storeName) {
+        if (existingStoreNames.indexOf(storeName) < 0) {
+          existingStoreNames.push(storeName);
         }
       });
-    });
+      storeageData = JSON.stringify(existingStoreNames);
+    }
+    localStorage.setItem(this._STORE_NAMES_, storeageData);
+  };
+
+  OfflineCache.prototype._getShreddedStoreNames = function () {
+    var storeNames = [];
+    var storeageData = localStorage.getItem(this._STORE_NAMES_);
+    if (storeageData) {
+      try {
+        storeNames = JSON.parse(storeageData);
+      } catch (exc) {
+        logger.log("error getting shredded store names from localStorage");
+      }
+    }
+    return storeNames;
   };
 
   function _buildBodyAbstract (shreddedPayload) {
@@ -386,13 +567,14 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
         name: element.name,
         keys: element.keys ? element.keys.reduce(function(processedKeys, key) {
           if (key) {
-            processedKeys.push(key.toString());
+            processedKeys.push(key);
           } else {
             logger.warn("should not have undefined key in the shredded data");
           }
           return processedKeys;
         }, []) : element.keys,
-        resourceType: element.resourceType
+        resourceType: element.resourceType,
+        resourceIdentifier: element.resourceIdentifier
       };
     });
     return JSON.stringify(bodyAbstract);
@@ -437,58 +619,62 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
     }
     var self = this;
 
-    if (cacheHandler.hasShredder(request)) {
-      // shredder is configured for this request, needs to delete both 
-      // the cache entries and the shredded data entries.
-      var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
-      searchCriteria.fields = ['key', 'value'];
-      var ignoreVary = (options && options.ignoreVary);
-
-      var cacheStore;
-      return self._getStore().then(function(store) {
-        cacheStore = store;
-        return cacheStore.find(searchCriteria);
-      }).then(function (dataArray) {
-        if (dataArray && dataArray.length) {
-          var filteredEntries = dataArray.filter(_filterByVary(ignoreVary, request, 'value'));
-          var promises = [];
-          filteredEntries.forEach(function(entry) {
-            promises.push(cacheStore.removeByKey(entry.key));
-            if (entry.value.responseData.bodyAbstract && entry.value.responseData.bodyAbstract.length) {
-              promises.push(cacheHandler.deleteShreddedData(JSON.parse(entry.value.responseData.bodyAbstract)));
-            }
-          });
-          return Promise.all(promises).then(function() {
-            logger.log("Offline Persistence Toolkit OfflineCache: all matching entries are deleted from both the cache store and the shredded store.");
-            return true;
-          }).catch(function(error) {
-            logger.log("Offline Persistence Toolkit OfflineCache: error occurred when deleting matched cache entries.");
-            return false;
-          });
-        } else {
-          logger.log("Offline Persistence Toolkit OfflineCache: no matching entries are found from the cache.");
-          return false;
-        }
-      });
-    } else {
-      // no shredder, deleting cache entries is sufficient.
-      return self._getStore().then(function(store) {
-        return _getStoreKeys(store, request, options).then(function(keysArray) {
-          if (keysArray && keysArray.length) {
-            var promisesArray = keysArray.map(store.removeByKey, store);
-            return Promise.all(promisesArray);
+    return self._getStore().then(function(cacheStore) {
+      if (cacheHandler.hasShredder(request)) {
+        // shredder is configured for this request, needs to delete both 
+        // the cache entries and the shredded data entries.
+        var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
+        searchCriteria.fields = ['key', 'value'];
+        var ignoreVary = (options && options.ignoreVary);
+        return cacheStore.find(searchCriteria).then(function(dataArray) {
+          if (dataArray && dataArray.length) {
+            var filteredEntries = dataArray.filter(_filterByVary(ignoreVary, request, 'value'));
+            var promises = [];
+            filteredEntries.forEach(function(entry) {
+              promises.push(cacheStore.removeByKey(entry.key));
+              var index = self._cacheKeys.indexOf(entry.key);
+              if (index >= 0) {
+                self._cacheKeys.splice(index, 1);
+              }
+              if (entry.value.responseData.bodyAbstract && entry.value.responseData.bodyAbstract.length) {
+                promises.push(cacheHandler.deleteShreddedData(JSON.parse(entry.value.responseData.bodyAbstract)));
+              }
+            });
+            return Promise.all(promises).then(function() {
+              logger.log("Offline Persistence Toolkit OfflineCache: all matching entries are deleted from both the cache store and the shredded store.");
+              return true;
+            })
           } else {
             return false;
           }
         });
-      }).then(function (result) {
-        if (result && result.length) {
-          return true;
-        } else {
-          return false;
-        }
-      });
-    }
+      } else {
+        // no shredder, deleting cache entries is sufficient.
+        return _getStoreKeys(cacheStore, request, options).then(function(keysArray) {
+          if (keysArray && keysArray.length) {
+            var promisesArray = keysArray.map(function(key) {
+              var index = self._cacheKeys.indexOf(key);
+              if (index >= 0) {
+                self._cacheKeys.splice(index, 1);
+              }
+              return cacheStore.removeByKey(key);
+            });
+            return Promise.all(promisesArray);
+          } else {
+            return [];
+          }
+        }).then(function(result) {
+          if (result && result.length) {
+            return true;
+          } else {
+            return false;
+          }
+        });
+      }
+    }).catch(function(error) {
+      logger.log("Offline Persistence Toolkit OfflineCache: error occurred delete() for Request with url: " + request.url);
+      return false;
+    });
   };
 
   /**
@@ -524,21 +710,23 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
       logger.log("Offline Persistence Toolkit OfflineCache: keys()");
     }
     var self = this;
-    return this._getStore().then(function(store) {
-      return _getStoreKeys(store, request, options).then(function(keysArray) {
-        var requestsPromiseArray = [];
-        keysArray.forEach(function(key) {
-          requestsPromiseArray.push(store.findByKey(key).then(function(entry) {
-            return persistenceUtils.requestFromJSON(entry.requestData);
-          }));
-        });
-        return Promise.all(requestsPromiseArray);
+    return self._getStore().then(function() {
+      return _getStoreKeys(self._store, request, options);
+    }).then(function(keysArray) {
+      var requestsPromiseArray = [];
+      keysArray.forEach(function(key) {
+        requestsPromiseArray.push(self._store.findByKey(key).then(function(entry) {
+          return persistenceUtils.requestFromJSON(entry.requestData);
+        }));
       });
+      return Promise.all(requestsPromiseArray);
+    }).catch(function(error) {
+      logger.log("Offline Persistence Toolkit OfflineCache: keys() error for Request with url: " + request.url);
+      return [];
     });
   };
 
   function _getStoreKeys(store, request, options) {
-    var self = this;
     if (request) {
       // need to match with the passed-in request.
       var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
@@ -594,14 +782,11 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
   OfflineCache.prototype.hasMatch = function (request, options) {
     logger.log("Offline Persistence Toolkit OfflineCache: hasMatch() for Request with url: " + request.url);
     var self = this;
-    var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
-    var ignoreVary = (options && options.ignoreVary);
     
-    return self._getStore().then(function(store) {
-      return store.find(searchCriteria).then(function (cacheEntries) {
-        var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
-        return matchEntry !== null;
-      });
+    return self._getCacheEntries(request, options).then(function (cacheEntries) {
+      var ignoreVary = (options && options.ignoreVary);
+      var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
+      return matchEntry !== null;
     });
   };
 
@@ -616,24 +801,23 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
    */
   OfflineCache.prototype.clear = function () {
     logger.log("Offline Persistence Toolkit OfflineCache: clear()");
+
     var self = this;
-    var deletePromiseArray = [];
-    return this.keys().then(function(keys) {
-      keys.forEach(function(request, index, array) {
-        deletePromiseArray.push(self.delete(request));
+    return self._getStore().then(function(cacheStore) {
+      var deletePromiseArray = [];
+      deletePromiseArray.push(cacheStore.delete());
+      var storeNames = self._getShreddedStoreNames();
+      storeNames.forEach(function(storeName) {
+        deletePromiseArray.push(persistenceStoreManager.deleteStore(storeName));
+        return;
       });
-      return Promise.all(deletePromiseArray);
-    }).then(function(results) {
-      var failedDelete = false;
-      results.forEach(function(result) {
-        if (!result) {
-          failedDelete = true;
-        }
+      return Promise.all(deletePromiseArray).then(function(results) {
+        self._updateShreddedStoreNames(null);
+        self._cacheKeys = [];
+        return true;
       });
-      if (failedDelete) {
-        return false;
-      }
-      return true;
+    }).catch(function(error) {
+      logger.log("Offline Persistence Toolkit OfflineCache: clear() error");
     });
   };
 

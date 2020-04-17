@@ -348,7 +348,7 @@ LabelledByUtils._removeAriaDescribedBy = function (id) {
     // join the tokens back together and trim whitespace
     describedby = tokens.join(' ').trim();
     if (describedby) {
-      this.setAttribute('aria-describedby', describedby);
+      this.setAttribute('aria-describedby', describedby); // @HTMLUpdateOK
     } else {
       this.removeAttribute('aria-describedby');
     }

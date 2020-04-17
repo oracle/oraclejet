@@ -15,9 +15,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var PagingDataProviderView =
-/*#__PURE__*/
-function () {
+var PagingDataProviderView = /*#__PURE__*/function () {
   function PagingDataProviderView(dataProvider) {
     _classCallCheck(this, PagingDataProviderView);
 
@@ -54,9 +52,7 @@ function () {
     this._UPDATE = 'update';
     this._INDEXES = 'indexes';
 
-    this.AsyncIterable =
-    /*#__PURE__*/
-    function () {
+    this.AsyncIterable = /*#__PURE__*/function () {
       function _class(_parent, _asyncIterator) {
         _classCallCheck(this, _class);
 
@@ -71,9 +67,7 @@ function () {
       return _class;
     }();
 
-    this.AsyncIterator =
-    /*#__PURE__*/
-    function () {
+    this.AsyncIterator = /*#__PURE__*/function () {
       function _class2(_parent, _nextFunc, _params) {
         _classCallCheck(this, _class2);
 
@@ -94,9 +88,7 @@ function () {
       return _class2;
     }();
 
-    this.AsyncIteratorYieldResult =
-    /*#__PURE__*/
-    function () {
+    this.AsyncIteratorYieldResult = /*#__PURE__*/function () {
       function _class3(_parent, value) {
         _classCallCheck(this, _class3);
 
@@ -109,9 +101,7 @@ function () {
       return _class3;
     }();
 
-    this.AsyncIteratorReturnResult =
-    /*#__PURE__*/
-    function () {
+    this.AsyncIteratorReturnResult = /*#__PURE__*/function () {
       function _class4(_parent, value) {
         _classCallCheck(this, _class4);
 
@@ -124,9 +114,7 @@ function () {
       return _class4;
     }();
 
-    this.FetchListParameters =
-    /*#__PURE__*/
-    function () {
+    this.FetchListParameters = /*#__PURE__*/function () {
       function _class5(_parent, size, sortCriteria, filterCriterion) {
         _classCallCheck(this, _class5);
 
@@ -142,9 +130,7 @@ function () {
       return _class5;
     }();
 
-    this.FetchListResult =
-    /*#__PURE__*/
-    function () {
+    this.FetchListResult = /*#__PURE__*/function () {
       function _class6(_parent, fetchParameters, data, metadata) {
         _classCallCheck(this, _class6);
 
@@ -160,9 +146,7 @@ function () {
       return _class6;
     }();
 
-    this.FetchByOffsetParameters =
-    /*#__PURE__*/
-    function () {
+    this.FetchByOffsetParameters = /*#__PURE__*/function () {
       function _class7(_parent, offset, size, sortCriteria, filterCriterion) {
         _classCallCheck(this, _class7);
 
@@ -180,9 +164,7 @@ function () {
       return _class7;
     }();
 
-    this.FetchByOffsetResults =
-    /*#__PURE__*/
-    function () {
+    this.FetchByOffsetResults = /*#__PURE__*/function () {
       function _class8(_parent, fetchParameters, results, done) {
         _classCallCheck(this, _class8);
 
@@ -198,9 +180,7 @@ function () {
       return _class8;
     }();
 
-    this.FetchByKeysResults =
-    /*#__PURE__*/
-    function () {
+    this.FetchByKeysResults = /*#__PURE__*/function () {
       function _class9(_parent, fetchParameters, results) {
         _classCallCheck(this, _class9);
 
@@ -214,9 +194,7 @@ function () {
       return _class9;
     }();
 
-    this.ContainsKeysResults =
-    /*#__PURE__*/
-    function () {
+    this.ContainsKeysResults = /*#__PURE__*/function () {
       function _class10(_parent, containsParameters, results) {
         _classCallCheck(this, _class10);
 
@@ -230,9 +208,7 @@ function () {
       return _class10;
     }();
 
-    this.ItemMetadata =
-    /*#__PURE__*/
-    function () {
+    this.ItemMetadata = /*#__PURE__*/function () {
       function _class11(_parent, key) {
         _classCallCheck(this, _class11);
 
@@ -244,9 +220,7 @@ function () {
       return _class11;
     }();
 
-    this.DataProviderMutationEventDetail =
-    /*#__PURE__*/
-    function () {
+    this.DataProviderMutationEventDetail = /*#__PURE__*/function () {
       function _class12(_parent, add, remove, update) {
         _classCallCheck(this, _class12);
 
@@ -262,9 +236,7 @@ function () {
       return _class12;
     }();
 
-    this.DataProviderOperationEventDetail =
-    /*#__PURE__*/
-    function () {
+    this.DataProviderOperationEventDetail = /*#__PURE__*/function () {
       function _class13(_parent, keys, metadata, data, indexes) {
         _classCallCheck(this, _class13);
 
@@ -282,9 +254,7 @@ function () {
       return _class13;
     }();
 
-    this.DataProviderAddOperationEventDetail =
-    /*#__PURE__*/
-    function () {
+    this.DataProviderAddOperationEventDetail = /*#__PURE__*/function () {
       function _class14(_parent, keys, afterKeys, addBeforeKeys, metadata, data, indexes) {
         _classCallCheck(this, _class14);
 
@@ -1171,8 +1141,9 @@ function () {
 
             self._updateTotalSize().then(function () {
               self._mutatingTotalSize = null;
+              var length = result['results'].length;
 
-              if (result['results'].length === 0) {
+              if (length === 0) {
                 // no results so need to refresh since page has changed
                 self._mutationFunc(true);
 
@@ -1180,6 +1151,9 @@ function () {
                   pageSize: self._pageSize
                 });
               } else {
+                // need to update endItemIndex
+                self._endItemIndex = self._offset + length - 1;
+
                 self._processMutationEventsByKey(result);
 
                 self._mutationFunc(true);
@@ -1206,13 +1180,13 @@ oj.EventTargetMixin.applyMixin(PagingDataProviderView);
  *
  * @export
  * @final
- * @class oj.PagingDataProviderView
+ * @class PagingDataProviderView
  * @implements oj.PagingModel
- * @implements oj.DataProvider
- * @classdesc This class implements {@link oj.DataProvider}.
- *            Wraps a {@link oj.DataProvider} to be used with [PagingControl]{@link oj.PagingControl}.
+ * @implements DataProvider
+ * @classdesc This class implements {@link DataProvider}.
+ *            Wraps a {@link DataProvider} to be used with [PagingControl]{@link oj.PagingControl}.
  *            Supports PagingModel API.
- * @param {oj.DataProvider} dataProvider the {@link oj.DataProvider} to be wrapped.
+ * @param {DataProvider} dataProvider the {@link DataProvider} to be wrapped.
  *                                      <p>This can be either any DataProvider or a wrapped
  *                                      DataSource with a TableDataSourceAdapter. Paging DataProvider View does
  *                                      not handle DataProviders with unknown total sizes.</p>
@@ -1229,164 +1203,83 @@ oj.EventTargetMixin.applyMixin(PagingDataProviderView);
  */
 
 /**
- * Check if rows are contained by keys (default: local dataset)
- * FetchByKeysParameter scope may be set to "global" to check in global dataset
- *
- *
- * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
- * @return {Promise.<oj.ContainsKeysResults>} Promise which resolves to {@link oj.ContainsKeysResults}
- * @export
- * @expose
- * @memberof oj.PagingDataProviderView
+ * @inheritdoc
+ * @memberof PagingDataProviderView
  * @instance
  * @method
  * @name containsKeys
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>"}
  */
 
 /**
- * Fetch rows by keys (default: local dataset)
- * FetchByKeysParameter scope may be set to "global" to fetch in global dataset
- *
- * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
- * @return {Promise.<oj.FetchByKeysResults>} Promise which resolves to {@link oj.FetchByKeysResults}
- * @export
- * @expose
- * @memberof oj.PagingDataProviderView
- * @instance
- * @method
- * @name fetchByKeys
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>"}
- */
-
-/**
- * Fetch rows by offset within context of the current page data.
- *
- *
- * @param {oj.FetchByOffsetParameters} params Fetch by offset parameters
- * @return {Promise.<oj.FetchByOffsetResults>} Promise which resolves to {@link oj.FetchByOffsetResults}
- * @export
- * @expose
- * @memberof oj.PagingDataProviderView
- * @instance
- * @method
- * @name fetchByOffset
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
- */
-
-/**
- * Fetch the first block of data. Limited to scope of the current page data.
- *
- * @param {oj.FetchListParameters=} params Fetch parameters
- * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
- * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
- * @export
- * @expose
- * @memberof oj.PagingDataProviderView
+ * @inheritdoc
+ * @memberof PagingDataProviderView
  * @instance
  * @method
  * @name fetchFirst
- * @ojsignature {target: "Type",
- *               value: "(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
  */
 
 /**
- * Determines whether this DataProvider supports certain feature.
- *
- * @param {string} capabilityName capability name. Supported capability names are:
- *                  "fetchByKeys", "fetchByOffset", and "sort".
- * @return {Object} capability information or null if unsupported
- * <ul>
- *   <li>If capabilityName is "fetchByKeys", returns a {@link oj.FetchByKeysCapability} object.</li>
- *   <li>If capabilityName is "fetchByOffset", returns a {@link oj.FetchByOffsetCapability} object.</li>
- *   <li>If capabilityName is "sort", returns a {@link oj.SortCapability} object.</li>
- * </ul>
- * @export
- * @expose
- * @memberof oj.PagingDataProviderView
+ * @inheritdoc
+ * @memberof PagingDataProviderView
+ * @instance
+ * @method
+ * @name fetchByKeys
+ */
+
+/**
+ * @inheritdoc
+ * @memberof PagingDataProviderView
+ * @instance
+ * @method
+ * @name fetchByOffset
+ */
+
+/**
+ * @inheritdoc
+ * @memberof PagingDataProviderView
  * @instance
  * @method
  * @name getCapability
- * @ojsignature {target: "Type",
- *               value: "(capabilityName?: string): any"}
  */
 
 /**
- * Gets the total size of the current page data set
- *
- * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows.
- * @export
- * @expose
- * @memberof oj.PagingDataProviderView
+ * @inheritdoc
+ * @memberof PagingDataProviderView
  * @instance
  * @method
  * @name getTotalSize
  */
 
 /**
- * Return a string that indicates if this data provider is empty
- *
- * @return {"yes"|"no"|"unknown"} a string that indicates if this data provider is empty. Valid values are:
- *                  "yes": this data provider is empty.
- *                  "no": this data provider is not empty.
- *                  "unknown": it is not known if this data provider is empty until a fetch is made.
- * @export
- * @expose
- * @memberof oj.PagingDataProviderView
+ * @inheritdoc
+ * @memberof PagingDataProviderView
  * @instance
  * @method
  * @name isEmpty
  */
 
 /**
- * Add a callback function to listen for a specific event type.
- *
- *
- * @export
- * @expose
- * @memberof oj.PagingDataProviderView
+ * @inheritdoc
+ * @memberof PagingDataProviderView
  * @instance
  * @method
  * @name addEventListener
- * @param {string} eventType The event type to listen for.
- * @param {EventListener} listener The callback function that receives the event notification.
- * @ojsignature {target: "Type",
- *               value: "(eventType: string, listener: EventListener): void"}
  */
 
 /**
- * Remove a listener previously registered with addEventListener.
- *
- *
- * @export
- * @expose
- * @memberof oj.PagingDataProviderView
+ * @inheritdoc
+ * @memberof PagingDataProviderView
  * @instance
  * @method
  * @name removeEventListener
- * @param {string} eventType The event type that the listener was registered for.
- * @param {EventListener} listener The callback function that was registered.
- * @ojsignature {target: "Type",
- *               value: "(eventType: string, listener: EventListener): void"}
  */
 
 /**
- * Dispatch an event and invoke any registered listeners.
- *
- *
- * @export
- * @expose
- * @memberof oj.PagingDataProviderView
+ * @inheritdoc
+ * @memberof PagingDataProviderView
  * @instance
  * @method
  * @name dispatchEvent
- * @param {Event} event The event object to dispatch.
- * @return {boolean} Return false if a registered listener has cancelled the event. Return true otherwise.
- * @ojsignature {target: "Type",
- *               value: "(evt: Event): boolean"}
  */
 
 /**
@@ -1394,7 +1287,7 @@ oj.EventTargetMixin.applyMixin(PagingDataProviderView);
  * @return {number} The current page
  * @export
  * @expose
- * @memberof oj.PagingDataProviderView
+ * @memberof PagingDataProviderView
  * @method
  * @name getPage
  * @instance
@@ -1409,7 +1302,7 @@ oj.EventTargetMixin.applyMixin(PagingDataProviderView);
  * @return {Promise} promise object triggering done when complete..
  * @export
  * @expose
- * @memberof oj.PagingDataProviderView
+ * @memberof PagingDataProviderView
  * @method
  * @name setPage
  * @instance
@@ -1420,7 +1313,7 @@ oj.EventTargetMixin.applyMixin(PagingDataProviderView);
  * @return {number} The current page start index
  * @export
  * @expose
- * @memberof oj.PagingDataProviderView
+ * @memberof PagingDataProviderView
  * @method
  * @name getStartItemIndex
  * @instance
@@ -1431,7 +1324,7 @@ oj.EventTargetMixin.applyMixin(PagingDataProviderView);
  * @return {number} The current page end index
  * @export
  * @expose
- * @memberof oj.PagingDataProviderView
+ * @memberof PagingDataProviderView
  * @method
  * @name getEndItemIndex
  * @instance
@@ -1442,7 +1335,7 @@ oj.EventTargetMixin.applyMixin(PagingDataProviderView);
  * @return {number} The total number of pages
  * @export
  * @expose
- * @memberof oj.PagingDataProviderView
+ * @memberof PagingDataProviderView
  * @method
  * @name getPageCount
  * @instance
@@ -1453,7 +1346,7 @@ oj.EventTargetMixin.applyMixin(PagingDataProviderView);
  * Return the total number of items. Returns -1 if unknown.
  * @returns {number} total number of items
  * @expose
- * @memberof oj.PagingDataProviderView
+ * @memberof PagingDataProviderView
  * @method
  * @name totalSize
  * @instance
@@ -1467,7 +1360,7 @@ oj.EventTargetMixin.applyMixin(PagingDataProviderView);
  *                  "unknown" if the totalSize is unknown
  * @export
  * @expose
- * @memberof oj.PagingDataProviderView
+ * @memberof PagingDataProviderView
  * @method
  * @name totalSizeConfidence
  * @instance
@@ -1480,7 +1373,7 @@ oj.EventTargetMixin.applyMixin(PagingDataProviderView);
  * @return {number} The translated global index
  * @export
  * @expose
- * @memberof oj.PagingDataProviderView
+ * @memberof PagingDataProviderView
  * @method
  * @name getGlobalIndex
  * @instance

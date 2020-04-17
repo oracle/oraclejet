@@ -34,11 +34,9 @@ define(['./persistenceManager', './persistenceUtils', './impl/logger'], function
       // process the headers in order. Order matters, you want to
       // do things like re-validation before you bother persist to
       // the cache. Also, max-age takes precedence over Expires.
-      return _handleExpires(request, response).then(function (response) {
-        return _handleMaxAge(request, response);
-      }).then(function (response) {
-        return _handleIfCondMatch(request, response);
-      }).then(function (response) {
+      _handleExpires(request, response);
+      _handleMaxAge(request, response);
+      return _handleIfCondMatch(request, response).then(function (response) {
         return _handleMustRevalidate(request, response);
       }).then(function (response) {
         return _handleNoCache(request, response);
@@ -61,7 +59,7 @@ define(['./persistenceManager', './persistenceUtils', './impl/logger'], function
       response.headers.set('x-oracle-jscpt-cache-expiration-date', expiresDate);
       logger.log("Offline Persistence Toolkit cacheStrategies: Set x-oracle-jscpt-cache-expiration-date header based on HTTP Expires header");
     }
-    return Promise.resolve(response);
+    return;
   };
   
   function _handleMaxAge(request, response) {
@@ -83,7 +81,7 @@ define(['./persistenceManager', './persistenceUtils', './impl/logger'], function
         logger.log("Offline Persistence Toolkit cacheStrategies: Set x-oracle-jscpt-cache-expiration-date header based on HTTP max-age header");
       }
     }
-    return Promise.resolve(response);
+    return;
   };
   
   function _handleIfCondMatch(request, response) {

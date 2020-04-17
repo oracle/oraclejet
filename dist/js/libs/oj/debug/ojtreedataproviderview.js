@@ -80,20 +80,19 @@ oj.TreeDataProviderView = TreeDataProviderView;
  * @since 6.2.0
  * @final
  * @export
- * @class oj.TreeDataProviderView
+ * @class TreeDataProviderView
  * @ojtsmodule
- * @implements oj.DataProvider
- * @classdesc Provides list based optimizations for oj.DataProvider. Supports fetchFirst starting at arbitrary key or index offset, sortCriteria,
- * and field mapping. Please see the select demos for examples of DataMapping [Select]{@link oj.ojSelect}
- * @param {oj.DataProvider} dataProvider the DataProvider.
+ * @implements TreeDataProvider
+ * @classdesc Provides optimizations for TreeDataProvider. Supports field mapping. Please see the select demos for examples of DataMapping [Select]{@link oj.ojSelect}
+ * @param {DataProvider} dataProvider the DataProvider.
  * @param {Object=} options Options for the TreeDataProviderView
- * @param {oj.DataMapping=} options.dataMapping mapping to apply to the data.
+ * @param {DataMapping=} options.dataMapping mapping to apply to the data.
  * @ojsignature [{target: "Type",
- *               value: "class TreeDataProviderView<K, D, Kin, Din> implements DataProvider<K, D>",
+ *               value: "class TreeDataProviderView<K, D, Kin, Din> implements TreeDataProvider<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of output key"}, {"name": "D", "description": "Type of output data"},
  *                    {"name": "Kin", "description": "Type of input key"}, {"name": "Din", "description": "Type of input data"}]},
  *               {target: "Type",
- *               value: "DataProvider<K, D>",
+ *               value: "TreeDataProvider<K, D>",
  *               for: "dataProvider"},
  *               {target: "Type",
  *               value: "DataMapping<K, D, Kin, Din>",
@@ -101,139 +100,7 @@ oj.TreeDataProviderView = TreeDataProviderView;
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "SortCriterion", "FetchByKeysParameters",
  *   "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults", "DataMapping",
  *   "FetchListResult","FetchListParameters", "FetchAttribute"]}
- */
-
-/**
- * Get a data provider for the children of the row identified by parentKey.
- *
- *
- * @param {any} parentKey key of the row to get child data provider for.
- * @return {TreeDataProviderView | null} A TreeDataProviderView if the row can (but doesn't have to) have children; or null if the row cannot have children.
- *   Use the <code class="prettyprint">isEmpty</code> method on the returned TreeDataProviderView to determine if it currently has children.
- * @export
- * @expose
- * @memberof oj.TreeDataProviderView
- * @instance
- * @method
- * @name getChildDataProvider
- * @ojsignature {target: "Type",
- *               value: "(parentKey: any): TreeDataProviderView<K, D, Kin, Din>"}
- */
-
-/**
- * Check if there are rows containing the specified keys
- *
- *
- * @since 6.2.0
- * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
- * @return {Promise.<oj.ContainsKeysResults>} Promise which resolves to {@link oj.ContainsKeysResults}
- * @export
- * @expose
- * @memberof oj.TreeDataProviderView
- * @instance
- * @method
- * @name containsKeys
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>"}
- */
-
-/**
- * Fetch rows by keys
- *
- *
- * @since 6.2.0
- * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
- * @return {Promise.<oj.FetchByKeysResults>} Promise which resolves to {@link oj.FetchByKeysResults}
- * @export
- * @expose
- * @memberof oj.TreeDataProviderView
- * @instance
- * @method
- * @name fetchByKeys
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>"}
- */
-
-/**
- * Fetch rows by offset
- *
- *
- * @since 4.2.0
- * @param {oj.FetchByOffsetParameters} params Fetch by offset parameters
- * @return {Promise.<oj.FetchByOffsetResults>} Promise which resolves to {@link oj.FetchByOffsetResults}
- * @export
- * @expose
- * @memberof oj.TreeDataProviderView
- * @instance
- * @method
- * @name fetchByOffset
- * @ojsignature {target: "Type",
- *               value: "(params: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
- */
-
-/**
- * Fetch the first block of data.
- *
- *
- * @since 6.2.0
- * @param {oj.FetchListParameters=} params Fetch parameters
- * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
- * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
- * @export
- * @expose
- * @memberof oj.TreeDataProviderView
- * @instance
- * @method
- * @name fetchFirst
- * @ojsignature {target: "Type",
- *               value: "(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
- */
-
-/**
- * Determines whether this DataProvider supports certain feature.
- *
- *
- * @since 6.2.0
- * @param {string} capabilityName capability name. Supported capability names
- *                  are determined by the underlying dataprovider.
- * @return {Object} capability information or null if unsupported
- * @export
- * @expose
- * @memberof oj.TreeDataProviderView
- * @instance
- * @method
- * @name getCapability
- * @ojsignature {target: "Type",
- *               value: "(capabilityName: string): any"}
- */
-
-/**
- * Return the total number of rows in this dataprovider
- *
- *
- * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
- * @export
- * @expose
- * @memberof oj.TreeDataProviderView
- * @instance
- * @method
- * @name getTotalSize
- */
-
-/**
- * Return a string that indicates if this data provider is empty
- *
- *
- * @return {"yes"|"no"|"unknown"} a string that indicates if this data provider is empty. Valid values are:
- *                  "yes": this data provider is empty.
- *                  "no": this data provider is not empty.
- *                  "unknown": it is not known if this data provider is empty until a fetch is made.
- * @export
- * @expose
- * @memberof oj.TreeDataProviderView
- * @instance
- * @method
- * @name isEmpty
+ * @ojtsimport {module: "ojtreedataprovider", type: "AMD", importName: "TreeDataProvider"}
  */
 
 /**
@@ -243,47 +110,99 @@ oj.TreeDataProviderView = TreeDataProviderView;
  * @since 6.2.0
  * @export
  * @expose
- * @memberof oj.TreeDataProviderView
+ * @memberof TreeDataProviderView
  * @instance
  * @name dataMapping
  * @ojsignature {target: "Type",
- *               value: "DataMapping<K, D, Kin, Din>"}
+ *               value: "?DataMapping<K, D, Kin, Din>"}
  */
 
 /**
- *
- * @export
- * @expose
- * @memberof oj.TreeDataProviderView
+ * @inheritdoc
+ * @memberof TreeDataProviderView
+ * @instance
+ * @method
+ * @name getChildDataProvider
+ */
+
+/**
+ * @inheritdoc
+ * @memberof TreeDataProviderView
+ * @instance
+ * @method
+ * @name containsKeys
+ */
+
+/**
+ * @inheritdoc
+ * @memberof TreeDataProviderView
+ * @instance
+ * @method
+ * @name fetchFirst
+ */
+
+/**
+ * @inheritdoc
+ * @memberof TreeDataProviderView
+ * @instance
+ * @method
+ * @name fetchByKeys
+ */
+
+/**
+ * @inheritdoc
+ * @memberof TreeDataProviderView
+ * @instance
+ * @method
+ * @name fetchByOffset
+ */
+
+/**
+ * @inheritdoc
+ * @memberof TreeDataProviderView
+ * @instance
+ * @method
+ * @name getCapability
+ */
+
+/**
+ * @inheritdoc
+ * @memberof TreeDataProviderView
+ * @instance
+ * @method
+ * @name getTotalSize
+ */
+
+/**
+ * @inheritdoc
+ * @memberof TreeDataProviderView
+ * @instance
+ * @method
+ * @name isEmpty
+ */
+
+/**
+ * @inheritdoc
+ * @memberof TreeDataProviderView
  * @instance
  * @method
  * @name addEventListener
- * @ojsignature {target: "Type",
- *               value: "(eventType: string, listener: EventListener): void"}
  */
 
 /**
- *
- * @export
- * @expose
- * @memberof oj.TreeDataProviderView
+ * @inheritdoc
+ * @memberof TreeDataProviderView
  * @instance
  * @method
  * @name removeEventListener
- * @ojsignature {target: "Type",
- *               value: "(eventType: string, listener: EventListener): void"}
  */
 
 /**
- *
- * @export
- * @expose
- * @memberof oj.TreeDataProviderView
+ * @inheritdoc
+ * @memberof TreeDataProviderView
  * @instance
  * @method
  * @name dispatchEvent
- * @ojsignature {target: "Type",
- *               value: "(evt: Event): boolean"}
  */
 
 /**

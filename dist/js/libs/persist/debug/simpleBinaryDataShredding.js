@@ -73,7 +73,7 @@ define(['./persistenceUtils'], function (persistenceUtils) {
       var dataContent = _retrieveDataContent(data);
       return persistenceUtils.setResponsePayload(response, dataContent).then(function (response) {
         response.headers.set('x-oracle-jscpt-cache-expiration-date', '');
-        return Promise.resolve(response);
+        return response;
       });
     };
   };

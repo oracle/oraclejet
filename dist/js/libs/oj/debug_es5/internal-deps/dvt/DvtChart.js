@@ -3543,13 +3543,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
   DvtChartObjPeer.prototype._findNextUpSeries = function (chart, seriesIndex, groupIndex) {
+    var isStacked = DvtChartTypeUtils.isStacked(chart);
     var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
     var currentValue = DvtChartDataUtils.getCumulativeValue(chart, seriesIndex, groupIndex);
     var nextValue = null;
     var nextSeriesIndex = null;
 
     for (var i = 0; i < seriesCount; i++) {
-      if (!DvtChartStyleUtils.isSeriesRendered(chart, i) || DvtChartDataUtils.getValue(chart, i, groupIndex) == null) continue;
+      if (!DvtChartStyleUtils.isSeriesRendered(chart, i) || DvtChartDataUtils.getValue(chart, i, groupIndex) == null || isStacked && chart.getObject(i, groupIndex) == null) continue;
       var itemValue = DvtChartDataUtils.getCumulativeValue(chart, i, groupIndex);
 
       if (itemValue > currentValue || itemValue == currentValue && i > seriesIndex) {
@@ -3573,13 +3574,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
   DvtChartObjPeer.prototype._findNextDownSeries = function (chart, seriesIndex, groupIndex) {
+    var isStacked = DvtChartTypeUtils.isStacked(chart);
     var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
     var currentValue = DvtChartDataUtils.getCumulativeValue(chart, seriesIndex, groupIndex);
     var nextValue = null;
     var nextSeriesIndex = null;
 
     for (var i = seriesCount - 1; i >= 0; i--) {
-      if (!DvtChartStyleUtils.isSeriesRendered(chart, i) || DvtChartDataUtils.getValue(chart, i, groupIndex) == null) continue;
+      if (!DvtChartStyleUtils.isSeriesRendered(chart, i) || DvtChartDataUtils.getValue(chart, i, groupIndex) == null || isStacked && chart.getObject(i, groupIndex) == null) continue;
       var itemValue = DvtChartDataUtils.getCumulativeValue(chart, i, groupIndex);
 
       if (itemValue < currentValue || itemValue == currentValue && i < seriesIndex) {
@@ -4073,7 +4075,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         items: {
           _itemData: true
         }
-      }
+      },
+      data: true
     };
   };
   /**
@@ -11869,6 +11872,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    */
 
   DvtChartOverview.prototype._renderChart = function (options, width, height) {
+    var noCloneOptions = this._parentChart.Defaults.getNoCloneObject();
+
     this._chartContainer = new dvt.Container(this.getCtx());
     this.addChild(this._chartContainer); // Set the default options override for the overview background chart
 
@@ -11919,7 +11924,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       },
       '_isOverview': true
     };
-    options = dvt.JsonUtils.merge(defaultOptions, options);
+    options = dvt.JsonUtils.merge(defaultOptions, options, noCloneOptions);
     if (DvtChartAxisUtils.hasGroupAxis(this._parentChart)) options['xAxis']['tickLabel']['rendered'] = 'off';
 
     if (DvtChartTypeUtils.isStock(this._parentChart) && options['series'] && options['series'][0]) {
@@ -11930,7 +11935,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
     var userOptions = this._parentChart.getOptions()['overview']['content'];
 
-    options = dvt.JsonUtils.merge(userOptions, options);
+    options = dvt.JsonUtils.merge(userOptions, options, noCloneOptions);
     var isYAxisRendered = options.yAxis.rendered === "on";
     var isY2AxisRendered = options.y2Axis.rendered === "on"; // Turn off zoomAndScroll to prevent scrollbar/overview from appearing inside the overview
     // This has to be done after setting userOptions to prevent users from overriding it
@@ -11990,7 +11995,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
   DvtChartOverview.prototype.render = function (options, width, height) {
     // override styles
-    options['style'] = {
+    options.overview.style = {
       'overviewBackgroundColor': 'rgba(0,0,0,0)',
       'windowBackgroundColor': 'rgba(0,0,0,0)',
       'windowBorderTopColor': '#333333',
@@ -12004,12 +12009,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       'handleHeight': 15,
       'handleFillColor': 'rgba(0,0,0,0)'
     };
-    options['animationOnClick'] = 'off';
+    options.overview.animationOnClick = 'off';
 
-    var windowDims = this._renderChart(options['chart'], width, height); // now call super to render the scrollbar
+    var windowDims = this._renderChart(options.chart, width, height); // now call super to render the scrollbar
 
 
-    DvtChartOverview.superclass.render.call(this, options, windowDims.w, windowDims.h);
+    DvtChartOverview.superclass.render.call(this, options.overview, windowDims.w, windowDims.h);
   };
   /**
    * @override
@@ -26082,13 +26087,16 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
     if (chart.overview) {
+      var noCloneOptions = chart.Defaults.getNoCloneObject();
       var ovOptions = {
-        'xMin': chart.xAxis.getLinearGlobalMin(),
-        'xMax': chart.xAxis.getLinearGlobalMax(),
-        'x1': chart.xAxis.getLinearViewportMin(),
-        'x2': chart.xAxis.getLinearViewportMax(),
-        'minimumWindowSize': chart.xAxis.getInfo().getMinimumExtent(),
-        'chart': dvt.JsonUtils.clone(options)
+        'overview': {
+          'xMin': chart.xAxis.getLinearGlobalMin(),
+          'xMax': chart.xAxis.getLinearGlobalMax(),
+          'x1': chart.xAxis.getLinearViewportMin(),
+          'x2': chart.xAxis.getLinearViewportMax(),
+          'minimumWindowSize': chart.xAxis.getInfo().getMinimumExtent()
+        },
+        'chart': dvt.JsonUtils.clone(options, null, noCloneOptions)
       };
       if (!DvtChartEventUtils.isZoomable(chart)) ovOptions['featuresOff'] = 'zoom'; // Update min/max coords for axis label overflow
 
@@ -29022,8 +29030,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     // TODO: implement filtering for range series
     if (DvtChartTypeUtils.isPolar(chart) || DvtChartStyleUtils.isRangeSeries(chart, seriesIndex)) return;
 
-    var maxNumPts = chart.__getPlotAreaSpace().w; // one point per pixel
+    var plotAreaDims = chart.__getPlotAreaSpace();
 
+    var maxNumPts = DvtChartTypeUtils.isHorizontal(chart) ? plotAreaDims.h : plotAreaDims.w; // one point per pixel
 
     var seriesItems = DvtChartDataUtils.getSeriesItem(chart, seriesIndex)['items'];
     var isBar = DvtChartStyleUtils.getSeriesType(chart, seriesIndex) == 'bar';

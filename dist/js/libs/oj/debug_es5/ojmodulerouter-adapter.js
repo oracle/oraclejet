@@ -96,7 +96,9 @@ define(['knockout', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 'ojs
 // eslint-disable-next-line no-unused-vars
 function ModuleRouterAdapter(router, options) {
   var _router = router;
-  var _options = options;
+
+  var _options = options || {};
+
   var _prevState = null;
   var _currentState = null;
   var _configPromise = null;

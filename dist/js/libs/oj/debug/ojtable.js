@@ -3318,10 +3318,7 @@ var __oj_table_metadata =
 
       var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
 
-      if (isNaN(rowIdx) ||
-          rowIdx < 0 ||
-          (tableBodyRows != null && rowIdx >= tableBodyRows.length) ||
-          tableBodyRows == null ||
+      if (isNaN(rowIdx) || rowIdx < 0 || rowIdx >= tableBodyRows.length ||
           tableBodyRows.length === 0) {
         // validate rowIdx value
         var errSummary = this._LOGGER_MSG._ERR_REFRESHROW_INVALID_INDEX_SUMMARY;
@@ -3362,7 +3359,7 @@ var __oj_table_metadata =
 
           tableBodyRow = self._getTableDomUtils().getTableBodyRow(rowIdx);
           if (tableBodyRow) {
-            return self._finalizeRowRendering([tableBodyRow]);
+            return self._finalizeBodyRowRendering([tableBodyRow]);
           }
           // in case of null row, just resolve promise as there is no element to wait on
           return Promise.resolve(true);
@@ -4642,12 +4639,9 @@ var __oj_table_metadata =
      */
     _findRowElementByKey: function (rowKey) {
       var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-
-      if (tableBodyRows != null) {
-        for (var i = 0; i < tableBodyRows.length; i++) {
-          if (oj.KeyUtils.equals($(tableBodyRows[i]).data('rowKey'), rowKey)) {
-            return tableBodyRows[i];
-          }
+      for (var i = 0; i < tableBodyRows.length; i++) {
+        if (oj.KeyUtils.equals($(tableBodyRows[i]).data('rowKey'), rowKey)) {
+          return tableBodyRows[i];
         }
       }
       return null;
@@ -4673,10 +4667,8 @@ var __oj_table_metadata =
     _getLocalRowKeys: function () {
       var rowKeys = [];
       var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-      if (tableBodyRows != null) {
-        for (var i = 0; i < tableBodyRows.length; i++) {
-          rowKeys.push($(tableBodyRows[i]).data('rowKey'));
-        }
+      for (var i = 0; i < tableBodyRows.length; i++) {
+        rowKeys.push($(tableBodyRows[i]).data('rowKey'));
       }
       return rowKeys;
     },
@@ -5010,7 +5002,7 @@ var __oj_table_metadata =
       var row = this._findRowElementByKey(rowKey);
       if (row != null) {
         var rows = this._getTableDomUtils().getTableBodyRows();
-        if (rows != null && rows.length > 0) {
+        if (rows.length > 0) {
           return Math.max(0, row.offsetTop - rows[0].offsetTop);
         }
         // should not happen
@@ -5221,7 +5213,7 @@ var __oj_table_metadata =
      */
     _findClosestElementToTop: function (scrollPosition, currScrollTop) {
       var rows = this._getTableDomUtils().getTableBodyRows();
-      if (rows == null || rows.length === 0) {
+      if (rows.length === 0) {
         return null;
       }
 
@@ -5638,6 +5630,7 @@ var __oj_table_metadata =
     _clearDataWaitingState: function () {
       this._hideStatusMessage();
       this._dataFetching = false;
+      this._pendingFetchStale = false;
       if (this._dataResolveFunc) {
         this._dataResolveFunc();
         this._dataResolveFunc = null;
@@ -5717,7 +5710,6 @@ var __oj_table_metadata =
       if (sortedTableHeaderColumnIdx != null) {
         var domUtils = this._getTableDomUtils();
         var sortedTableHeaderColumn = domUtils.getTableHeaderColumn(sortedTableHeaderColumnIdx);
-        this._sortInfo = null;
         $(sortedTableHeaderColumn).data('sorted', null);
 
         if (columnIdx == null ||
@@ -5819,10 +5811,10 @@ var __oj_table_metadata =
           }
           if (self._IsCustomElement()) {
             return self._animateVisibleRows(addedTableBodyRows, rowIdxArray, 'add').then(function () {
-              return self._finalizeRowRendering(addedTableBodyRows);
+              return self._finalizeBodyRowRendering(addedTableBodyRows);
             });
           }
-          return self._finalizeRowRendering(addedTableBodyRows);
+          return self._finalizeBodyRowRendering(addedTableBodyRows);
         });
       }
     },
@@ -5862,10 +5854,10 @@ var __oj_table_metadata =
         self._refreshTableFooter();
         if (self._IsCustomElement()) {
           return self._animateVisibleRows(updatedTableBodyRows, rowIdxArray, 'update').then(function () {
-            return self._finalizeRowRendering(updatedTableBodyRows);
+            return self._finalizeBodyRowRendering(updatedTableBodyRows);
           });
         }
-        return self._finalizeRowRendering(updatedTableBodyRows);
+        return self._finalizeBodyRowRendering(updatedTableBodyRows);
       });
     },
 
@@ -5908,7 +5900,7 @@ var __oj_table_metadata =
           var rowIdx;
           var i;
 
-          if (tableBodyRows != null && tableBodyRows.length > 0) {
+          if (tableBodyRows.length > 0) {
             for (i = 0; i < tableBodyRows.length; i++) {
               remainingRowIdxArray.push(i);
             }
@@ -5967,13 +5959,13 @@ var __oj_table_metadata =
             // row values may have changed so refresh the footer
             self._refreshTableFooter();
             tableBodyRows = self._getTableDomUtils().getTableBodyRows();
-            if (tableBodyRows == null || tableBodyRows.length === 0) {
+            if (tableBodyRows.length === 0) {
               self._showNoDataMessage();
             }
 
             // set the currentRow to the next row if needed or clear
             if (currentRowKey != null) {
-              if (tableBodyRows == null ||
+              if (tableBodyRows.length === 0 ||
                   removeAll ||
                   currentRowIndex >= tableBodyRows.length) {
                 self._setCurrentRow(null, null, false);
@@ -6373,8 +6365,7 @@ var __oj_table_metadata =
      */
     _getRowIdxForRowKey: function (rowKey) {
       var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-
-      if (tableBodyRows != null && tableBodyRows.length > 0) {
+      if (tableBodyRows.length > 0) {
         var tableBodyRowsCount = tableBodyRows.length;
         for (var i = 0; i < tableBodyRowsCount; i++) {
           if (oj.KeyUtils.equals($(tableBodyRows[i]).data('rowKey'), rowKey)) {
@@ -6382,7 +6373,6 @@ var __oj_table_metadata =
           }
         }
       }
-
       return null;
     },
 
@@ -6394,8 +6384,7 @@ var __oj_table_metadata =
      */
     _getDataSourceRowIndexForRowKey: function (rowKey) {
       var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-
-      if (tableBodyRows != null && tableBodyRows.length > 0) {
+      if (tableBodyRows.length > 0) {
         var tableBodyRowsCount = tableBodyRows.length;
         for (var i = 0; i < tableBodyRowsCount; i++) {
           if (oj.KeyUtils.equals($(tableBodyRows[i]).data('rowKey'), rowKey)) {
@@ -6408,7 +6397,6 @@ var __oj_table_metadata =
           }
         }
       }
-
       return null;
     },
 
@@ -6490,8 +6478,7 @@ var __oj_table_metadata =
      */
     _getRowKeyForDataSourceRowIndex: function (rowIndex) {
       var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-
-      if (tableBodyRows != null && tableBodyRows.length > 0) {
+      if (tableBodyRows.length > 0) {
         var dataprovider = this._getData();
         var offset = 0;
         if (this._isPagingModelDataProvider()) {
@@ -6504,7 +6491,6 @@ var __oj_table_metadata =
           }
         }
       }
-
       return null;
     },
 
@@ -6797,7 +6783,7 @@ var __oj_table_metadata =
       var tableBody = this._getTableDomUtils().getTableBody();
       var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
 
-      if (tableBodyRows != null && tableBodyRows.length > 0 && tableBody.offsetHeight > 0) {
+      if (tableBodyRows.length > 0 && tableBody.offsetHeight > 0) {
         var windowHeight = $(window).height();
         var tableBodyRect = tableBody.getBoundingClientRect();
 
@@ -6960,14 +6946,9 @@ var __oj_table_metadata =
       } else if (menuItemCommand === 'oj-table-resize') {
         var popup = domUtils.getContextMenuResizePopup();
         popup.setAttribute('data-oj-columnIdx', columnIdx);
-        var target = headerColumn || tableBodyCell;
-        var columnWidth = target.getBoundingClientRect().width;
 
-        // getBoundingClientRect returns the border-box width, while ojtable interprets columns[].width
-        // as padding + content width, so we have to substract the border width from the ClientRect.
-        var style = window.getComputedStyle(target);
-        columnWidth = columnWidth - parseFloat(style['border-left-width']) -
-          parseFloat(style['border-right-width']);
+        var target = headerColumn || tableBodyCell;
+        var columnWidth = domUtils._getColumnWidthProperty(target);
 
         var spinner = document.getElementById(
           domUtils.getTableId() + '_resize_popup_spinner');
@@ -7038,6 +7019,7 @@ var __oj_table_metadata =
     _handleDataRefresh: function () {
       try {
         if (this._dataFetching) {
+          this._pendingFetchStale = true;
           return;
         }
         var self = this;
@@ -7050,8 +7032,6 @@ var __oj_table_metadata =
         });
       } catch (e) {
         Logger.error(e);
-      } finally {
-        this._clearDataWaitingState();
       }
     },
 
@@ -7132,7 +7112,7 @@ var __oj_table_metadata =
       var eventAfterKey;
       var metadata = null;
       var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-      var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
+      var rowCount = tableBodyRows.length;
       var i;
       var eventDataCount = eventData.length;
 
@@ -7318,7 +7298,7 @@ var __oj_table_metadata =
         var focusedRowIdx = this._getFocusedRowIdx();
         if (focusedRowIdx != null) {
           var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-          var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
+          var rowCount = tableBodyRows.length;
           if (focusedRowIdx !== rowCount - 1 && rowCount > 0) {
             this._setRowFocus(rowCount - 1, true, true, null, event);
           }
@@ -7560,68 +7540,59 @@ var __oj_table_metadata =
           } else {
             return;
           }
-        } else if ($.contains(tableBody, currentFocusElement) ||
-                   $.contains(tableHeader, currentFocusElement)) {
-          focusedElement = null;
-          var i;
-
-          if ($.contains(tableBody, currentFocusElement)) {
-            focusedElement = this._getTableDomUtils().getTableBodyRow(focusedRowIdx);
-          } else if ($.contains(tableHeader, currentFocusElement)) {
-            focusedElement = this._getTableDomUtils().getTableHeader();
-          }
+        } else if (this._tableActionableBoundaryElement) {
+          focusedElement = this._tableActionableBoundaryElement;
           tabbableElementsInFocusedElement = this._getTabbableElements(focusedElement);
 
-          if (tabbableElementsInFocusedElement.length > 0) {
-            // If only one tabbable element then stay on it
-            if (tabbableElementsInFocusedElement.length > 1) {
-              if (!event[this._KEYBOARD_CODES._KEYBOARD_MODIFIER_SHIFT]) {
-                // Tabbing on the last tabbable element will wrap back
-                var lastTabbableElementFocusedElement =
-                    tabbableElementsInFocusedElement[tabbableElementsInFocusedElement.length - 1];
+          // If only one tabbable element then stay on it
+          if (tabbableElementsInFocusedElement.length > 1) {
+            var i;
+            if (!event[this._KEYBOARD_CODES._KEYBOARD_MODIFIER_SHIFT]) {
+              // Tabbing on the last tabbable element will wrap back
+              var lastTabbableElementFocusedElement =
+                  tabbableElementsInFocusedElement[tabbableElementsInFocusedElement.length - 1];
 
-                if (currentFocusElement === lastTabbableElementFocusedElement) {
-                  $(tabbableElementsInFocusedElement[0]).focus();
-                  event.preventDefault();
-                  event.stopPropagation();
-                } else {
-                  // find which element it is
-                  for (i = 0; i < tabbableElementsInFocusedElement.length; i++) {
-                    if (currentFocusElement === tabbableElementsInFocusedElement[i]) {
-                      tabbableElementsInFocusedElement[i + 1].focus();
-                      event.preventDefault();
-                      event.stopPropagation();
-                      break;
-                    }
-                  }
-                }
+              if (currentFocusElement === lastTabbableElementFocusedElement) {
+                $(tabbableElementsInFocusedElement[0]).focus();
+                event.preventDefault();
+                event.stopPropagation();
               } else {
-                // Shift+Tabbing on the first tabbable element in a row will wrap back
-                var firstTabbableElementFocusedElement = tabbableElementsInFocusedElement[0];
-
-                if (currentFocusElement === firstTabbableElementFocusedElement) {
-                  $(tabbableElementsInFocusedElement[tabbableElementsInFocusedElement.length - 1])
-                    .focus();
-                  event.preventDefault();
-                  event.stopPropagation();
-                } else {
-                  // find which element it is
-                  for (i = 0; i < tabbableElementsInFocusedElement.length; i++) {
-                    if (currentFocusElement === tabbableElementsInFocusedElement[i]) {
-                      tabbableElementsInFocusedElement[i - 1].focus();
-                      event.preventDefault();
-                      event.stopPropagation();
-                      break;
-                    }
+                // find which element it is
+                for (i = 0; i < tabbableElementsInFocusedElement.length; i++) {
+                  if (currentFocusElement === tabbableElementsInFocusedElement[i]) {
+                    tabbableElementsInFocusedElement[i + 1].focus();
+                    event.preventDefault();
+                    event.stopPropagation();
+                    break;
                   }
                 }
               }
             } else {
-              event.preventDefault();
-              event.stopPropagation();
+              // Shift+Tabbing on the first tabbable element in a row will wrap back
+              var firstTabbableElementFocusedElement = tabbableElementsInFocusedElement[0];
+
+              if (currentFocusElement === firstTabbableElementFocusedElement) {
+                $(tabbableElementsInFocusedElement[tabbableElementsInFocusedElement.length - 1])
+                  .focus();
+                event.preventDefault();
+                event.stopPropagation();
+              } else {
+                // find which element it is
+                for (i = 0; i < tabbableElementsInFocusedElement.length; i++) {
+                  if (currentFocusElement === tabbableElementsInFocusedElement[i]) {
+                    tabbableElementsInFocusedElement[i - 1].focus();
+                    event.preventDefault();
+                    event.stopPropagation();
+                    break;
+                  }
+                }
+              }
             }
-            return;
+          } else {
+            event.preventDefault();
+            event.stopPropagation();
           }
+          return;
         }
 
         if ((focusedRowIdx != null && !this._hasEditableRow()) ||
@@ -7724,7 +7695,7 @@ var __oj_table_metadata =
       var focusedRowIdx = this._getFocusedRowIdx();
       if (focusedRowIdx != null) {
         var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-        var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
+        var rowCount = tableBodyRows.length;
         var current;
         if (!isExtend || this._isNavigate || this._lastSelectedRowIdx == null) {
           current = focusedRowIdx;
@@ -7853,27 +7824,13 @@ var __oj_table_metadata =
      */
     _handleScrollerScrollLeft: function (scrollLeft) {
       this._scrollLeft = scrollLeft;
-
       var tableHeaderRow = this._getTableDomUtils().getTableHeaderRow();
       if (tableHeaderRow) {
-        if (this._GetReadingDirection() === 'rtl') {
-          tableHeaderRow.style[oj.TableDomUtils.CSS_PROP._RIGHT] =
-            '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX;
-        } else {
-          tableHeaderRow.style[oj.TableDomUtils.CSS_PROP._LEFT] =
-            '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX;
-        }
+        oj.DomUtils.setScrollLeft(tableHeaderRow.parentNode, scrollLeft);
       }
-
       var tableFooterRow = this._getTableDomUtils().getTableFooterRow();
       if (tableFooterRow) {
-        if (this._GetReadingDirection() === 'rtl') {
-          tableFooterRow.style[oj.TableDomUtils.CSS_PROP._RIGHT] =
-            '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX;
-        } else {
-          tableFooterRow.style[oj.TableDomUtils.CSS_PROP._LEFT] =
-            '-' + scrollLeft + oj.TableDomUtils.CSS_VAL._PX;
-        }
+        oj.DomUtils.setScrollLeft(tableFooterRow.parentNode, scrollLeft);
       }
     },
 
@@ -8182,18 +8139,24 @@ var __oj_table_metadata =
               keys: keys,
               indexes: indexArray
             }, offset).then(function () {
-              self._clearDataWaitingState();
+              if (self._pendingFetchStale) {
+                self._pendingFetchStale = false;
+                self._queueTask(function () {
+                  return self._invokeDataFetchRows();
+                });
+              } else {
+                self._clearDataWaitingState();
+              }
               self._processFetchSort(value);
               if (self._isLoadMoreOnScroll()) {
                 self._registerDomScroller();
               }
-              self = null;
               resolve(result);
             });
           }, function () {
             self._clearDataWaitingState();
             var tableBodyRows = self._getTableDomUtils().getTableBodyRows();
-            if (tableBodyRows == null || tableBodyRows.length === 0) {
+            if (tableBodyRows.length === 0) {
               self._showNoDataMessage();
             }
             resolve(null);
@@ -8576,18 +8539,9 @@ var __oj_table_metadata =
         var fetchParameters = result.fetchParameters;
         var columns = this._getColumnDefs();
         var sortCriteria = fetchParameters[this._CONST_SORTCRITERIA];
-        if ((sortCriteria != null &&
-            sortCriteria.length > 0) || this._sortInfo != null) {
-          var sortAttribute;
-          var sortDirection;
-          if (this._sortInfo) {
-            sortAttribute = this._sortInfo.key;
-            sortDirection = this._sortInfo.direction === this._COLUMN_SORT_ORDER._ASCENDING;
-          } else {
-            sortAttribute = sortCriteria[0].attribute;
-            sortDirection = sortCriteria[0].direction === this._COLUMN_SORT_ORDER._ASCENDING;
-          }
-
+        if (sortCriteria != null && sortCriteria.length > 0) {
+          var sortAttribute = sortCriteria[0].attribute;
+          var sortDirection = sortCriteria[0].direction === this._COLUMN_SORT_ORDER._ASCENDING;
           this._refreshSortTableHeaderColumn(sortAttribute, sortDirection);
 
           // set the current row
@@ -8656,11 +8610,12 @@ var __oj_table_metadata =
      * @private
      */
     _refreshAll: function (resultObject, startIndex) {
+      var promiseArray = [];
       if (this._isColumnMetadataUpdated() ||
           (!this._isTableHeaderColumnsRendered() &&
            !this._isTableHeaderless())) {
         this._clearCachedMetadata();
-        this._refreshTableHeader();
+        promiseArray.push(this._refreshTableHeader());
 
         // see if we need to clear the sort. If the column we sorted on is no
         // longer there then clear it.
@@ -8682,8 +8637,10 @@ var __oj_table_metadata =
           }
         }
       }
-      this._refreshTableFooter();
-      return this._refreshTableBody(resultObject, startIndex);
+      promiseArray.push(this._refreshTableFooter());
+      promiseArray.push(this._refreshTableBody(resultObject, startIndex));
+
+      return Promise.all(promiseArray);
     },
 
     /**
@@ -8738,12 +8695,6 @@ var __oj_table_metadata =
         // store sort order on the DOM element
         $(tableHeaderColumn).data('sorted', this._COLUMN_SORT_ORDER._ASCENDING);
 
-        this._sortInfo = {
-          direction: this._COLUMN_SORT_ORDER._ASCENDING,
-          columnIdx: columnIdx,
-          key: key
-        };
-
         if (sortIcon != null) {
           sortIcon.classList.remove(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_ICON_CLASS);
           sortIcon.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS);
@@ -8757,11 +8708,6 @@ var __oj_table_metadata =
         }
         // store sort order on the DOM element
         $(tableHeaderColumn).data('sorted', this._COLUMN_SORT_ORDER._DESCENDING);
-        this._sortInfo = {
-          direction: this._COLUMN_SORT_ORDER._DESCENDING,
-          columnIdx: columnIdx,
-          key: key
-        };
         if (sortIcon != null) {
           sortIcon.classList.remove(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS);
           sortIcon.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_ICON_CLASS);
@@ -8832,8 +8778,8 @@ var __oj_table_metadata =
       }
 
       var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-      if (tableBodyRows) {
-        return this._finalizeRowRendering(tableBodyRows).then(function () {
+      if (tableBodyRows.length > 0) {
+        return this._finalizeBodyRowRendering(tableBodyRows).then(function () {
           if (isNaN(this._rowHeight) && tableBodyRows.length > 1) {
             this._rowHeight = tableBody.rows[1].offsetHeight;
           }
@@ -9018,7 +8964,7 @@ var __oj_table_metadata =
         this._getTableDomUtils().removeAllTableBodyRows();
       } else {
         tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-        if (tableBodyRows != null && tableBodyRows.length > 0) {
+        if (tableBodyRows.length > 0) {
           var tableBodyRowsCount = tableBodyRows.length;
           for (i = tableBodyRowsCount - 1; i >= startIndex; i--) {
             if (checkFocus) {
@@ -9043,7 +8989,7 @@ var __oj_table_metadata =
       tableBodyRows = tableBody.children;
 
       // if no data then bail
-      if (rows.length === 0 && (tableBodyRows == null || tableBodyRows.length === 0)) {
+      if (rows.length === 0 && tableBodyRows.length === 0) {
         this._showNoDataMessage();
       } else {
         var tableBodyDocFrag;
@@ -9062,7 +9008,10 @@ var __oj_table_metadata =
         }
 
         tableBody.style[oj.TableDomUtils.CSS_PROP._VISIBILITY] = oj.TableDomUtils.CSS_VAL._HIDDEN;
+        // clear cached dimensions to ensure table will be fully visible once render cycle completes
+        this._getTableDomUtils()._cacheDomDimensions = {};
         this._skipRefreshTableDimension = false;
+
         tableBodyDocFrag = document.createDocumentFragment();
         var rowsCount = rows.length;
         for (i = 0; i < rowsCount; i++) {
@@ -9215,7 +9164,7 @@ var __oj_table_metadata =
 
       if (!tableFooter) {
         if (this._isTableFooterless()) {
-          return;
+          return Promise.resolve();
         }
 
         // metadata could have been updated to add column headers
@@ -9299,6 +9248,7 @@ var __oj_table_metadata =
           }
         }
       }
+      return this._finalizeRowRendering([tableFooterRow]);
     },
 
     /**
@@ -9312,7 +9262,7 @@ var __oj_table_metadata =
 
       if (!tableHeader) {
         if (this._isTableHeaderless()) {
-          return;
+          return Promise.resolve();
         }
 
         // metadata could have been updated to add column headers
@@ -9427,6 +9377,7 @@ var __oj_table_metadata =
         }
         this._renderedTableHeaderColumns = true;
       }
+      return this._finalizeRowRendering([tableHeaderRow]);
     },
 
     /**
@@ -9549,8 +9500,25 @@ var __oj_table_metadata =
           }).bind(this);
         }
         // remove the event listener before adding to make sure only one is active at a time
-        $(scroller).off('scroll', this._scrollEventListener);
-        $(scroller).on('scroll', this._scrollEventListener);
+        scroller.removeEventListener('scroll', this._scrollEventListener);
+        scroller.addEventListener('scroll', this._scrollEventListener, false);
+      }
+
+      // although header region does not contain scrollbars, browser may auto-scroll when contents gain focus
+      var tableHeaderRow = this._getTableDomUtils().getTableHeaderRow();
+      if (tableHeaderRow != null) {
+        var tableHeader = tableHeaderRow.parentNode;
+        if (this._headerScrollEventListener == null) {
+          this._headerScrollEventListener = (function (event) {
+            var scrollLeft = this._getTableDomUtils().getScrollLeft(event.target);
+            if (this._scrollLeft !== scrollLeft) {
+              this._setScrollX(scrollLeft);
+            }
+          }.bind(this));
+        }
+        // remove the event listener before adding to make sure only one is active at a time
+        tableHeader.removeEventListener('scroll', this._headerScrollEventListener);
+        tableHeader.addEventListener('scroll', this._headerScrollEventListener, false);
       }
     },
 
@@ -9591,7 +9559,7 @@ var __oj_table_metadata =
             self._queueTask(function () {
               self._skipRefreshTableDimension = true;
               var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-              var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
+              var rowCount = tableBodyRows.length;
               var indexArray = [];
               for (i = 0; i < data.length; i++) {
                 indexArray[i] = rowCount + i;
@@ -9616,7 +9584,7 @@ var __oj_table_metadata =
       };
 
       var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-      var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
+      var rowCount = tableBodyRows.length;
       this._domScroller = new oj.DomScroller(
         this._getTableDomUtils().getScroller(), this._getData(), {
           asyncIterator: this._dataProviderAsyncIterator,
@@ -10350,7 +10318,7 @@ var __oj_table_metadata =
      */
     _setNextRowEditable: function (columnIdx, event) {
       var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-      var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
+      var rowCount = tableBodyRows.length;
       var editableRowIdx = this._getEditableRowIdx();
       var self = this;
 
@@ -10538,18 +10506,14 @@ var __oj_table_metadata =
      */
     _getDataSourceLastFetchedRowIndex: function () {
       var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-
-      if (tableBodyRows != null && tableBodyRows.length > 0) {
-        var tableBodyRowsCount = tableBodyRows.length;
-
+      if (tableBodyRows.length > 0) {
         var dataprovider = this._getData();
         var offset = 0;
         if (this._isPagingModelDataProvider()) {
           offset = dataprovider.getStartItemIndex();
         }
-        return (tableBodyRowsCount + offset) - 1;
+        return (tableBodyRows.length + offset) - 1;
       }
-
       return 0;
     },
 
@@ -11303,19 +11267,22 @@ var __oj_table_metadata =
 
       if (value) {
         var focusedElement = null;
+        var focusedBoundaryElement = null;
         var focusedRowIdx = this._getFocusedRowIdx();
         if (focusedRowIdx != null) {
           focusedElement = this._getTableDomUtils().getTableBodyRow(focusedRowIdx);
+          focusedBoundaryElement = focusedElement;
         }
         if (focusedElement == null) {
           var focusedHeaderColumnIdx = this._getFocusedHeaderColumnIdx();
           if (focusedHeaderColumnIdx != null) {
             focusedElement = this._getTableDomUtils().getTableHeaderColumn(focusedHeaderColumnIdx);
+            focusedBoundaryElement = this._getTableDomUtils().getTableHeaderRow();
           }
         }
         if (focusedElement != null) {
           // enable all focusable elements
-          DataCollectionUtils.enableAllFocusableElements(focusedElement);
+          DataCollectionUtils.enableAllFocusableElements(focusedBoundaryElement);
           var tabbableElementsInFocusedElement = this._getTabbableElements(focusedElement);
 
           // only set actionable mode if there are any tabbable elements in the row
@@ -11323,27 +11290,25 @@ var __oj_table_metadata =
               tabbableElementsInFocusedElement.length > 0) {
             this._tableActionableMode = value;
             this._tableActionableElement = focusedElement;
+            this._tableActionableBoundaryElement = focusedBoundaryElement;
             // set focus on the first tabbable element
             tabbableElementsInFocusedElement[0].focus();
           }
         }
       } else {
         this._tableActionableMode = false;
-        if (this._isTableEditMode()) {
-          this._tableActionableElement = null;
-        } else {
-          var tableBody = this._getTableDomUtils().getTableBody();
-          var resetFocus = $.contains(tableBody, document.activeElement);
+        var tableBody = this._getTableDomUtils().getTableBody();
+        var resetFocus = $.contains(tableBody, document.activeElement);
 
-          // disable all focusable elements
-          if (this._tableActionableElement != null) {
-            DataCollectionUtils.disableAllFocusableElements(this._tableActionableElement);
-            this._tableActionableElement = null;
-          }
-          if (resetFocus && !skipFocusReset) {
-            this._getTableDomUtils().getTable().focus();
-          }
+        // disable all focusable elements
+        if (this._tableActionableElement != null) {
+          DataCollectionUtils.disableAllFocusableElements(this._tableActionableBoundaryElement);
         }
+        if (resetFocus && !skipFocusReset) {
+          this._getTableDomUtils().getTable().focus();
+        }
+        this._tableActionableElement = null;
+        this._tableActionableBoundaryElement = null;
       }
     },
 
@@ -11650,26 +11615,23 @@ var __oj_table_metadata =
       var selected = this._getHeaderColumnSelection(columnIdx);
       var selectedRowIdxs = this._getSelectedRowIdxs();
       var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-      if (tableBodyRows != null && tableBodyRows.length > 0) {
-        var tableBodyRowsCount = tableBodyRows.length;
-        for (var i = 0; i < tableBodyRowsCount; i++) {
-          var tableBodyCell = this._getTableDomUtils().getTableBodyCell(i, columnIdx);
-          if (tableBodyCell) {
-            if (!selected) {
-              var rowSelected = false;
-              var selectedRowIdxsCount = selectedRowIdxs.length;
-              for (var j = 0; j < selectedRowIdxsCount; j++) {
-                if (i === selectedRowIdxs[j]) {
-                  rowSelected = true;
-                  break;
-                }
+      for (var i = 0; i < tableBodyRows.length; i++) {
+        var tableBodyCell = this._getTableDomUtils().getTableBodyCell(i, columnIdx);
+        if (tableBodyCell) {
+          if (!selected) {
+            var rowSelected = false;
+            var selectedRowIdxsCount = selectedRowIdxs.length;
+            for (var j = 0; j < selectedRowIdxsCount; j++) {
+              if (i === selectedRowIdxs[j]) {
+                rowSelected = true;
+                break;
               }
-              if (!rowSelected) {
-                tableBodyCell.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
-              }
-            } else {
-              tableBodyCell.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
             }
+            if (!rowSelected) {
+              tableBodyCell.classList.remove(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
+            }
+          } else {
+            tableBodyCell.classList.add(oj.TableDomUtils.MARKER_STYLE_CLASSES._SELECTED);
           }
         }
       }
@@ -11726,14 +11688,14 @@ var __oj_table_metadata =
     },
 
     /**
-     * Waits for any children components of the given rows to finish rendering.
+     * Waits for any children components of the given body rows to finish rendering.
      * Disables any and all focusable elements within those rows if not editable.
      * @param {Array<Element>} rowElements the row elements to finalize
      * @returns {Promise}
      * @private
      */
-    _finalizeRowRendering: function (rowElements) {
-      return this._waitForAllElementsToResolve(rowElements).then(function () {
+    _finalizeBodyRowRendering: function (rowElements) {
+      return this._waitForAllBodyElementsToResolve(rowElements).then(function () {
         var editableRowKey = this._hasEditableRow() ? this._getEditableRowKey() : null;
         rowElements.forEach(function (tableBodyRow) {
           var rowKey = this._getRowKey(tableBodyRow);
@@ -11747,26 +11709,51 @@ var __oj_table_metadata =
     },
 
     /**
+     * Waits for any children components of the given rows to finish rendering.
+     * Disables any and all focusable elements within those rows.
+     * @param {Array<Element>} rowElements the row elements to finalize
+     * @returns {Promise}
+     * @private
+     */
+    _finalizeRowRendering: function (rowElements) {
+      return this._waitForAllElementsToResolve(rowElements).then(function () {
+        rowElements.forEach(function (rowElement) {
+          DataCollectionUtils.disableAllFocusableElements(rowElement);
+        });
+        return Promise.resolve(true);
+      });
+    },
+
+    /**
+     * Returns a Promise which resolves when all JET elements in the array of rows have resolved
+     * @param {Array<Element>} elements Array of DOM elements
+     * @return {Promise} Promise which resolves when all child JET elements have resolved
+     * @private
+     */
+    _waitForAllBodyElementsToResolve: function (elements) {
+      // Only bother checking if there are templates/renderers defined. If not,
+      // JET elements can't be embedded in the cells so we can skip the check
+      if (elements.length > 0 && this._hasRowOrCellRendererOrTemplate()) {
+        return this._waitForAllElementsToResolve(elements);
+      }
+      return Promise.resolve();
+    },
+
+    /**
      * Returns a Promise which resolves when all JET elements in the array have resolved
      * @param {Array<Element>} elements Array of DOM elements
      * @return {Promise} Promise which resolves when all child JET elements have resolved
      * @private
      */
     _waitForAllElementsToResolve: function (elements) {
-      // Only bother checking if there are templates/renderers defined. If not,
-      // JET elements can't be embedded in the cells so we can skip the check
-      if (elements.length > 0 && this._hasRowOrCellRendererOrTemplate()) {
-        var busyContextPromiseArray = [];
-
-        elements.forEach(function (element) {
-          // Only wait on busyContext of non-null row elements. Othwerise, busy state lock can occur
-          if (element) {
-            busyContextPromiseArray.push(Context.getContext(element).getBusyContext().whenReady());
-          }
-        });
-        return Promise.all(busyContextPromiseArray);
-      }
-      return Promise.resolve();
+      var busyContextPromiseArray = [];
+      elements.forEach(function (element) {
+        // Only wait on busyContext of non-null row elements. Othwerise, busy state lock can occur
+        if (element) {
+          busyContextPromiseArray.push(Context.getContext(element).getBusyContext().whenReady());
+        }
+      });
+      return Promise.all(busyContextPromiseArray);
     },
 
     _setFinalTask: function (task) {
@@ -12366,7 +12353,7 @@ oj.TableDndContext.prototype._getOverRowIndex = function (event) {
     // If we are not in a cell and not in the indicator row, we are in an empty part
     // of the table body, so add any new row to the end.
     var tableBodyRows = domUtils.getTableBodyRows();
-    newRowIndex = tableBodyRows ? tableBodyRows.length : 0;
+    newRowIndex = tableBodyRows.length;
   }
 
   return newRowIndex;
@@ -14111,8 +14098,7 @@ oj.TableDomUtils.prototype.displayDragOverIndicatorRow = function (rowIdx, befor
     }
   } else {
     var tableBodyRows = this.getTableBodyRows();
-
-    if (tableBodyRows == null || tableBodyRows.length === 0) {
+    if (tableBodyRows.length === 0) {
       this.component._hideNoDataMessage();
     }
     this.getTableBody().appendChild(tableBodyRowDragIndicator); // @HTMLUpdateOK
@@ -14446,19 +14432,9 @@ oj.TableDomUtils.prototype.getTableBodyMessageRow = function () {
  */
 oj.TableDomUtils.prototype.getTableBodyRow = function (rowIdx) {
   var tableBodyRows = this.getTableBodyRows();
-
-  if (!tableBodyRows) {
-    return null;
-  }
-
-  if (rowIdx == null) {
-    return null;
-  }
-
-  if (tableBodyRows.length > rowIdx) {
+  if (rowIdx != null && tableBodyRows.length > rowIdx) {
     return tableBodyRows[rowIdx];
   }
-
   return null;
 };
 
@@ -14470,17 +14446,13 @@ oj.TableDomUtils.prototype.getTableBodyRow = function (rowIdx) {
 oj.TableDomUtils.prototype.getTableBodyRows = function () {
   if (!this._cachedDomTableBodyRows) {
     var tableBody = this.getTableBody();
-
     if (tableBody != null) {
-      var tableBodyRowElements = this.getTableElementsByClassName(tableBody,
+      this._cachedDomTableBodyRows = this.getTableElementsByClassName(tableBody,
         oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS);
-
-      if (tableBodyRowElements.length > 0) {
-        this._cachedDomTableBodyRows = tableBodyRowElements;
-      }
+    } else {
+      this._cachedDomTableBodyRows = [];
     }
   }
-
   return this._cachedDomTableBodyRows;
 };
 
@@ -15119,23 +15091,20 @@ oj.TableDomUtils.prototype.moveTableHeaderColumn = function (columnIdx, destIdx,
 
   var tableBodyRows = this.getTableBodyRows();
   var i;
+  for (i = 0; i < tableBodyRows.length; i++) {
+    tableBodyCell = this.getTableBodyCell(i, columnIdx, null);
 
-  if (tableBodyRows != null) {
-    for (i = 0; i < tableBodyRows.length; i++) {
-      tableBodyCell = this.getTableBodyCell(i, columnIdx, null);
+    if (tableBodyCell != null) {
+      destTableBodyCell = this.getTableBodyCell(i, destIdx, null);
+      colSpan = tableBodyCell.getAttribute(oj.TableDomUtils.DOM_ATTR._COLSPAN);
 
-      if (tableBodyCell != null) {
-        destTableBodyCell = this.getTableBodyCell(i, destIdx, null);
-        colSpan = tableBodyCell.getAttribute(oj.TableDomUtils.DOM_ATTR._COLSPAN);
-
-        if (destTableBodyCell != null &&
-            (colSpan == null || colSpan === 1)) {
-          if (afterColumn) {
-            destTableBodyCell.parentNode.insertBefore(tableBodyCell,
-                                                      destTableBodyCell.nextSibling); // @HTMLUpdateOK
-          } else {
-            destTableBodyCell.parentNode.insertBefore(tableBodyCell, destTableBodyCell); // @HTMLUpdateOK
-          }
+      if (destTableBodyCell != null &&
+          (colSpan == null || colSpan === 1)) {
+        if (afterColumn) {
+          destTableBodyCell.parentNode.insertBefore(tableBodyCell,
+                                                    destTableBodyCell.nextSibling); // @HTMLUpdateOK
+        } else {
+          destTableBodyCell.parentNode.insertBefore(tableBodyCell, destTableBodyCell); // @HTMLUpdateOK
         }
       }
     }
@@ -15254,8 +15223,7 @@ oj.TableDomUtils.prototype.removeDragOverIndicatorRow = function () {
   }
 
   var tableBodyRows = this.getTableBodyRows();
-
-  if (tableBodyRows == null || tableBodyRows.length === 0) {
+  if (tableBodyRows.length === 0) {
     this.component._showNoDataMessage();
   }
 };
@@ -15286,8 +15254,7 @@ oj.TableDomUtils.prototype.removeTableBodyRow = function (rowIdx) {
  */
 oj.TableDomUtils.prototype.removeAllTableBodyRows = function () {
   var tableBodyRows = this.getTableBodyRows();
-
-  if (tableBodyRows != null && tableBodyRows.length > 0) {
+  if (tableBodyRows.length > 0) {
     var tableBody = this.getTableBody();
     if (tableBody != null) {
       Components.subtreeDetached(tableBody);
@@ -15476,7 +15443,7 @@ oj.TableDomUtils.prototype.setTableHeaderColumnAttributes =
 oj.TableDomUtils.prototype.setTableColumnCellsClass = function (columnIdx, add, styleClass) {
   var i;
   var tableBodyRows = this.getTableBodyRows();
-  if (tableBodyRows != null && tableBodyRows.length > 0) {
+  if (tableBodyRows.length > 0) {
     if (columnIdx === null) {
       var tableBodyCells = null;
       var tableBody = this.getTableBody();
@@ -15602,12 +15569,12 @@ oj.TableDomUtils.prototype.styleTableBodyCell = function (columnIdx, tableBodyCe
     tableBodyCell.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_DATE_CELL_FORM_CONTROL_CLASS);
   }
 
-  // add the column option stuff in here since we only want to do this once when adding
-  // the table data cell class. Column option styling or class can be overridden
-  // later in a custom renderer
-  if (column != null && column.style != null &&
-      (isNew || tableBodyCell.getAttribute(oj.TableDomUtils.DOM_ATTR._STYLE) !== column.style)) {
-    tableBodyCell.setAttribute(oj.TableDomUtils.DOM_ATTR._STYLE, column.style);
+  // merge styling with existing styling in case it was specified in a custom renderer
+  var tableBodyCellStyle = tableBodyCell.getAttribute(oj.TableDomUtils.DOM_ATTR._STYLE) || {};
+  if (column != null && column.style != null && (isNew || tableBodyCellStyle !== column.style)) {
+    DataCollectionUtils.applyMergedInlineStyles(tableBodyCell,
+                                                tableBodyCellStyle,
+                                                column.style);
   }
   // Use jquery hasClass and addClass because column.className can contain multiple classes
   if (column != null && column.className != null &&
@@ -15677,6 +15644,7 @@ oj.TableDomUtils.prototype.styleTableFooter = function (tableFooter) {
   var tableFooterRow = this.getTableElementsByTagName(tableFooter,
     oj.TableDomUtils.DOM_ELEMENT._TR)[0];
   tableFooterRow.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_ROW_CLASS);
+  tableFooterRow.setAttribute(Context._OJ_CONTEXT_ATTRIBUTE, '');
 
   // ensure proper role is set for wai-aria
   tableFooter.setAttribute(oj.TableDomUtils.DOM_ATTR._ROLE, 'rowgroup');
@@ -15692,8 +15660,12 @@ oj.TableDomUtils.prototype.styleTableFooter = function (tableFooter) {
 oj.TableDomUtils.prototype.styleTableFooterCell = function (columnIdx, tableFooterCell) {
   var column = this.component._getColumnDefs()[columnIdx];
 
-  if (column.footerStyle != null) {
-    tableFooterCell.setAttribute(oj.TableDomUtils.DOM_ATTR._STYLE, column.footerStyle);
+  // merge styling with existing styling in case it was specified in a custom renderer
+  var tableFooterCellStyle = tableFooterCell.getAttribute(oj.TableDomUtils.DOM_ATTR._STYLE) || {};
+  if (column.footerStyle != null && tableFooterCellStyle !== column.footerStyle) {
+    DataCollectionUtils.applyMergedInlineStyles(tableFooterCell,
+                                                tableFooterCellStyle,
+                                                column.footerStyle);
   }
   if (!tableFooterCell.classList.contains(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS)) {
     tableFooterCell.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS);
@@ -15727,6 +15699,7 @@ oj.TableDomUtils.prototype.styleTableHeader = function (tableHeader) {
     oj.TableDomUtils.DOM_ELEMENT._TR)[0];
   tableHeaderRow.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_ROW_CLASS);
   tableHeaderRow.style[oj.TableDomUtils.CSS_PROP._POSITION] = oj.TableDomUtils.CSS_VAL._RELATIVE;
+  tableHeaderRow.setAttribute(Context._OJ_CONTEXT_ATTRIBUTE, '');
 
   // ensure proper role is set for wai-aria
   tableHeader.setAttribute(oj.TableDomUtils.DOM_ATTR._ROLE, 'rowgroup');
@@ -15750,26 +15723,28 @@ oj.TableDomUtils.prototype.styleTableHeaderColumn =
     if (isNew || !tableHeaderColumn.classList.contains(
       oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS)) {
       tableHeaderColumn.classList.add(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS);
-      if (column.sortable === oj.TableDomUtils._OPTION_ENABLED) {
-        tableHeaderColumn.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_SORT_CLASS);
+    }
+    if (column.sortable === oj.TableDomUtils._OPTION_ENABLED) {
+      tableHeaderColumn.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_SORT_CLASS);
+    }
+    if (this._isVerticalGridEnabled()) {
+      if (isNew || !tableHeaderColumn.classList.contains(
+        oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS)) {
+        tableHeaderColumn.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
       }
-      if (this._isVerticalGridEnabled()) {
-        if (isNew || !tableHeaderColumn.classList.contains(
-          oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS)) {
-          tableHeaderColumn.classList.add(oj.TableDomUtils.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
-        }
-      }
-      if (column.headerStyle != null &&
-          (isNew ||
-           tableHeaderColumn.getAttribute(oj.TableDomUtils.DOM_ATTR._STYLE) !==
-           column.headerStyle)) {
-        tableHeaderColumn.setAttribute(oj.TableDomUtils.DOM_ATTR._STYLE, column.headerStyle);
-      }
-      // Use jquery hasClass and addClass because column.headerClassName can contain multiple classes
-      if (column.headerClassName != null &&
-          (isNew || !$(tableHeaderColumn).hasClass(column.headerClassName))) {
-        $(tableHeaderColumn).addClass(column.headerClassName);
-      }
+    }
+    // merge styling with existing styling in case it was specified in a custom renderer
+    var tableHeaderColumnStyle =
+      tableHeaderColumn.getAttribute(oj.TableDomUtils.DOM_ATTR._STYLE) || {};
+    if (column.headerStyle != null && (isNew || tableHeaderColumnStyle !== column.headerStyle)) {
+      DataCollectionUtils.applyMergedInlineStyles(tableHeaderColumn,
+                                                  tableHeaderColumnStyle,
+                                                  column.headerStyle);
+    }
+    // Use jquery hasClass and addClass because column.headerClassName can contain multiple classes
+    if (column.headerClassName != null &&
+        (isNew || !$(tableHeaderColumn).hasClass(column.headerClassName))) {
+      $(tableHeaderColumn).addClass(column.headerClassName);
     }
   };
 
@@ -16069,7 +16044,7 @@ oj.TableDomUtils.prototype.refreshTableDimensions = function (width, height, ski
 
     if (this._tableWidthConstrained) {
       var tableBodyRows = this.getTableBodyRows();
-      if (tableBodyRows != null && tableBodyRows.length > 0) {
+      if (tableBodyRows.length > 0) {
         if (tableHeader != null) {
           if (actualScrollBarWidth > 0) {
             // if we have scrollbars then size the tableheader to align with the scrollbars
@@ -16093,6 +16068,8 @@ oj.TableDomUtils.prototype.refreshTableDimensions = function (width, height, ski
     if (tableFooter != null) {
       tableFooter.style[oj.TableDomUtils.CSS_PROP._TOP] =
         tableBodyHeight + oj.TableDomUtils.CSS_VAL._PX;
+      tableFooter.style[oj.TableDomUtils.CSS_PROP._WIDTH] =
+        (containerClientWidth - actualScrollBarWidth) + oj.TableDomUtils.CSS_VAL._PX;
     }
   } else if (this._isTableColumnsWidthSet()) {
     // no overflow is present, but column widths still need to be set
@@ -16444,6 +16421,7 @@ oj.TableDomUtils.prototype._removeHeaderColumnAndCellColumnWidths = function () 
     var headerColumn = this.getTableHeaderColumn(i);
     if (headerColumn != null) {
       this._applyForcedColumnWidth(headerColumn, '');
+      this.styleTableHeaderColumn(i, headerColumn);
     }
   }
 
@@ -16451,7 +16429,7 @@ oj.TableDomUtils.prototype._removeHeaderColumnAndCellColumnWidths = function () 
   this.unfreezeColumnWidths();
 
   var tableBodyRows = this.getTableBodyRows();
-  if (tableBodyRows != null && tableBodyRows.length > 0) {
+  if (tableBodyRows.length > 0) {
     for (i = 0; i < columnCount; i++) {
       var tableBodyCell;
       if (this._forcedWidthColumns != null && this._forcedWidthColumns[i] !== false) {
@@ -16459,12 +16437,14 @@ oj.TableDomUtils.prototype._removeHeaderColumnAndCellColumnWidths = function () 
           tableBodyCell = this.getTableBodyCell(j, i, null);
           if (tableBodyCell !== null) {
             this._applyForcedColumnWidth(tableBodyCell, '');
+            this.styleTableBodyCell(i, tableBodyCell);
           }
         }
       } else {
         tableBodyCell = this.getTableBodyCell(0, i, null);
         if (tableBodyCell != null) {
           this._applyForcedColumnWidth(tableBodyCell, '');
+          this.styleTableBodyCell(i, tableBodyCell);
         }
       }
     }
@@ -16474,6 +16454,7 @@ oj.TableDomUtils.prototype._removeHeaderColumnAndCellColumnWidths = function () 
     var footerCell = this.getTableFooterCell(i);
     if (footerCell != null) {
       this._applyForcedColumnWidth(footerCell, '');
+      this.styleTableFooterCell(i, footerCell);
     }
   }
 };
@@ -16551,15 +16532,38 @@ oj.TableDomUtils.prototype._applyColumnHeaderHeight = function (headerColumnCell
 };
 
 /**
+ * @param {Element} cell
  * @private
  */
-oj.TableDomUtils.prototype._getForcedColumnWidth = function (columnWidth, cellBoxStyle) {
+oj.TableDomUtils.prototype._getColumnWidthProperty = function (cell) {
+  var computedStyle = window.getComputedStyle(cell);
+  var boxStyle = this._getBoxStyle(computedStyle);
+  if (this._isIE()) {
+    // IE 11 has an issue where border-box still returns just the inner content-box width
+    return parseFloat(computedStyle.width) + boxStyle.paddingWidth;
+  }
+  return parseFloat(computedStyle.width) + ((boxStyle.boxSizing === 'border-box') ?
+    -boxStyle.borderWidth : boxStyle.paddingWidth);
+};
+
+/**
+ * @param {Object} cellCompStyle
+ * @param {number=} columnWidth
+ * @private
+ */
+oj.TableDomUtils.prototype._getForcedColumnWidth = function (cellCompStyle, columnWidth) {
   // ojtable columns width is interpreted as padding + content width, so we either have to
   // add in the border width or substract the padding width based on the box-sizing style.
-  var forcedWidth = columnWidth +
-    ((cellBoxStyle.boxSizing === 'border-box') ?
-     cellBoxStyle.borderWidth : -cellBoxStyle.paddingWidth);
-  return forcedWidth;
+  var cellBoxStyle = this._getBoxStyle(cellCompStyle);
+  if (columnWidth != null) {
+    return columnWidth + ((cellBoxStyle.boxSizing === 'border-box') ?
+      cellBoxStyle.borderWidth : -cellBoxStyle.paddingWidth);
+  } else if (this._isIE() && cellBoxStyle.boxSizing === 'border-box') {
+    // IE 11 has an issue where border-box still returns just the inner content-box width
+    return parseFloat(cellCompStyle.width) + cellBoxStyle.paddingWidth + cellBoxStyle.borderWidth;
+  }
+  // else, this is the actual width of the column, and we need a width value that will match
+  return parseFloat(cellCompStyle.width);
 };
 
 /**
@@ -16585,10 +16589,7 @@ oj.TableDomUtils.prototype._applyForcedColumnWidth = function (cell, forcedWidth
 oj.TableDomUtils.prototype._setForcedColumnWidths = function () {
   var headerCell;
   var tableBodyCell;
-  var columnCellBoxStyle;
-  var forcedColumnCellWidth;
   var footerCell;
-  var footerBoxStyle;
   var errSummary;
   var errDetail;
 
@@ -16602,6 +16603,9 @@ oj.TableDomUtils.prototype._setForcedColumnWidths = function () {
   for (var i = 0; i < columnsCount; i++) {
     var columnWidth = columns[i].width;
     if (columnWidth > 0) {
+      // reset the default styling and width at the start of each column loop
+      var columnCellCompStyle = null;
+      var forcedColumnCellWidth = null;
       if (typeof columnWidth !== 'number') {
         // invalid column width property type
         errSummary = this.component._LOGGER_MSG._ERR_WIDTH_INVALID_TYPE_SUMMARY;
@@ -16614,8 +16618,8 @@ oj.TableDomUtils.prototype._setForcedColumnWidths = function () {
       // update column header cell width
       headerCell = this.getTableHeaderColumn(i);
       if (headerCell != null) {
-        var headerBoxStyle = this._getBoxStyle(window.getComputedStyle(headerCell));
-        var forcedColumnWidth = this._getForcedColumnWidth(columnWidth, headerBoxStyle);
+        var forcedColumnWidth =
+          this._getForcedColumnWidth(window.getComputedStyle(headerCell), columnWidth);
         this._applyForcedColumnWidth(headerCell, forcedColumnWidth);
         // store forced column width in case it is needed for scrollbar adjustments later
         this._forcedWidthColumns[i] = forcedColumnWidth;
@@ -16632,15 +16636,15 @@ oj.TableDomUtils.prototype._setForcedColumnWidths = function () {
       }
       if (tableBodyCell != null) {
         if (!this.component._hasRowOrCellRendererOrTemplate(i)) {
-          columnCellBoxStyle = this._getBoxStyle(window.getComputedStyle(tableBodyCell));
-          forcedColumnCellWidth = this._getForcedColumnWidth(columnWidth, columnCellBoxStyle);
+          columnCellCompStyle = window.getComputedStyle(tableBodyCell);
+          forcedColumnCellWidth = this._getForcedColumnWidth(columnCellCompStyle, columnWidth);
         }
         for (var j = 0; j < tableBodyRows.length; j++) {
           tableBodyCell = this.getTableBodyCell(j, i, null);
           if (tableBodyCell != null) {
-            if (columnCellBoxStyle == null) {
-              var cellBoxStyle = this._getBoxStyle(window.getComputedStyle(tableBodyCell));
-              var forcedCellWidth = this._getForcedColumnWidth(columnWidth, cellBoxStyle);
+            if (columnCellCompStyle == null) {
+              var cellCompStyle = window.getComputedStyle(tableBodyCell);
+              var forcedCellWidth = this._getForcedColumnWidth(cellCompStyle, columnWidth);
               this._applyForcedColumnWidth(tableBodyCell, forcedCellWidth);
             } else {
               this._applyForcedColumnWidth(tableBodyCell, forcedColumnCellWidth);
@@ -16652,9 +16656,8 @@ oj.TableDomUtils.prototype._setForcedColumnWidths = function () {
       // update column footer cell width
       footerCell = this.getTableFooterCell(i);
       if (footerCell != null) {
-        footerBoxStyle = this._getBoxStyle(window.getComputedStyle(footerCell));
         this._applyForcedColumnWidth(footerCell,
-                                     this._getForcedColumnWidth(columnWidth, footerBoxStyle));
+          this._getForcedColumnWidth(window.getComputedStyle(footerCell), columnWidth));
       }
     } else {
       this._forcedWidthColumns[i] = false;
@@ -16786,8 +16789,7 @@ oj.TableDomUtils.prototype._setColumnWidths = function (scrollBarWidth) {
       // find column header cell width
       headerCell = this.getTableHeaderColumn(i);
       if (headerCell != null) {
-        var headerCellBoxStyle = this._getBoxStyle(window.getComputedStyle(headerCell));
-        headerWidths[i] = this._getForcedColumnWidth(headerCell.offsetWidth, headerCellBoxStyle);
+        headerWidths[i] = this._getForcedColumnWidth(window.getComputedStyle(headerCell));
 
         // also find the column header cell height
         var headerTextDiv = this.getTableElementsByClassName(headerCell,
@@ -16800,15 +16802,13 @@ oj.TableDomUtils.prototype._setColumnWidths = function (scrollBarWidth) {
       // find column table body cell widths
       tableBodyCell = this.getTableBodyCell(0, i, null);
       if (tableBodyCell != null) {
-        var cellBoxStyle = this._getBoxStyle(window.getComputedStyle(tableBodyCell));
-        cellWidths[i] = this._getForcedColumnWidth(tableBodyCell.offsetWidth, cellBoxStyle);
+        cellWidths[i] = this._getForcedColumnWidth(window.getComputedStyle(tableBodyCell));
       }
 
       // find column footer cell width
       footerCell = this.getTableFooterCell(i);
       if (footerCell != null) {
-        var footerCellBoxStyle = this._getBoxStyle(window.getComputedStyle(footerCell));
-        footerWidths[i] = this._getForcedColumnWidth(footerCell.offsetWidth, footerCellBoxStyle);
+        footerWidths[i] = this._getForcedColumnWidth(window.getComputedStyle(footerCell));
       }
     }
   }

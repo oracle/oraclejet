@@ -22,9 +22,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
  * @private
  * @export
  */
-var VComponent =
-/*#__PURE__*/
-function () {
+var VComponent = /*#__PURE__*/function () {
   function VComponent(props) {
     _classCallCheck(this, VComponent);
 

@@ -192,6 +192,57 @@ DataCollectionUtils.disableDefaultBrowserStyling = function (element) {
   element.setAttribute('x-ms-format-detection', 'none');
 };
 
+/**
+ * Merges additional styling with an element's existing styling.
+ * @param {Element} the element to apply the merged styling to
+ * @param {string} the current style string of the element
+ * @param {string} the additional style string to apply to the element
+ */
+DataCollectionUtils.applyMergedInlineStyles = function (element, initStyle, addedStyle) {
+  var addedStyleObj = DataCollectionUtils.convertStringToStyleObj(addedStyle);
+  var initStyleObj = DataCollectionUtils.convertStringToStyleObj(initStyle);
+  var mergedStyle = Object.assign({}, addedStyleObj, initStyleObj);
+  element.setAttribute('style', DataCollectionUtils.convertStyleObjToString(mergedStyle)); // @HTMLUpdateOK
+};
+
+/**
+ * Converts an HTML inline style string to a style object whose keys represent style properties
+ * and whose values represent the style values.
+ * @param {string} the HTML inline style string to be converted
+ * @private
+ */
+DataCollectionUtils.convertStringToStyleObj = function (styleString) {
+  var retObj = {};
+  if (styleString.split) {
+    var splitArr = styleString.split(';');
+    for (var i = 0; i < splitArr.length; i++) {
+      var property = splitArr[i];
+      if (property !== '') {
+        var propArr = property.split(':');
+        if (propArr.length === 2) {
+          retObj[propArr[0].trim()] = propArr[1].trim();
+        }
+      }
+    }
+  }
+  return retObj;
+};
+
+/**
+ * Converts an object whose keys represent style properties and whose values represent the style
+ * values into an HTML inline style string.
+ * @param {Object} the style object to be converted
+ * @private
+ */
+DataCollectionUtils.convertStyleObjToString = function (styleObj) {
+  var retString = '';
+  var stylePropArr = Object.keys(styleObj);
+  var styleValArr = Object.values(styleObj);
+  for (var i = 0; i < stylePropArr.length; i++) {
+    retString += stylePropArr[i] + ':' + styleValArr[i] + ';';
+  }
+  return retString;
+};
 
 /** ******************* selected KeySet related methods *****************/
 

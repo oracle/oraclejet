@@ -20,7 +20,11 @@ define(["./keyValuePersistenceStore", "./logger"],
 
     LocalPersistenceStore.prototype._insert = function (key, metadata, value) {
       var insertKey = this._createRawKey(key);
+      // the key passed-in could be a non-string type, we save the original 
+      // key value as well so that we could return the same key back when asked
+      // for it.
       var insertValue = {
+        key: key,
         metadata: metadata,
         value: value
       };
@@ -49,24 +53,29 @@ define(["./keyValuePersistenceStore", "./logger"],
       return this._name + this._version + key.toString();
     };
 
-    LocalPersistenceStore.prototype._extractKey = function (rawKey) {
-      var prefix = this._name + this._version;
-      var prefixLength = prefix.length;
-      if (rawKey.indexOf(prefix) === 0) {
-        return rawKey.slice(prefixLength);
-      } else {
-        return null;
-      }
-    };
-
     LocalPersistenceStore.prototype.keys = function () {
       logger.log("Offline Persistence Toolkit localPersistenceStore: keys()");
       var allRawKeys = Object.keys(localStorage);
       var allKeys = [];
       for (var index = 0; index < allRawKeys.length; index++) {
-        var key = this._extractKey(allRawKeys[index]);
-        if (key) {
-          allKeys.push(key);
+        var prefix = this._name + this._version;
+        var rawKey = allRawKeys[index];
+        if (rawKey.indexOf(prefix) === 0) {
+          // when asked for keys, we need to return the saved original key,
+          // which might not be a string typed value. 
+          var storageData = localStorage.getItem(rawKey);
+          if (storageData) {
+            try {
+              var item = JSON.parse(storageData);
+              var key = item.key;
+              if (key) {
+                allKeys.push(key);
+              }
+            } catch (err) {
+              logger.log("data is not in valid JSON format: " + storageData);
+              continue;
+            }
+          }
         }
       }
       return Promise.resolve(allKeys);
@@ -79,7 +88,6 @@ define(["./keyValuePersistenceStore", "./logger"],
       if (storeageData) {
         try {
           var item = JSON.parse(storeageData);
-          item.key = key;
           return Promise.resolve(item);
         } catch (err) {
           return Promise.resolve();

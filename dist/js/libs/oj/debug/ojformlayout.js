@@ -461,7 +461,7 @@ function ojFormLayout(context) {
     ojForm.classList.add('oj-form');
     ojForm.setAttribute('data-oj-context', '');
     ojForm.setAttribute('data-oj-internal', '');
-    ojForm.setAttribute(BONUS_DOM_ATTR, '');
+    ojForm.setAttribute(BONUS_DOM_ATTR, ''); // @HTMLUpdateOK
 
     // wrap the children with the div
     // we use .firstChild and not .firstElementChild so that comment
@@ -846,7 +846,7 @@ function ojFormLayout(context) {
       }
     }
     var ojLabel = document.createElement('oj-label');
-    ojLabel.setAttribute(BONUS_DOM_ATTR, '');
+    ojLabel.setAttribute(BONUS_DOM_ATTR, ''); // @HTMLUpdateOK
     ojLabel.setAttribute('data-oj-internal', '');
 
     // programmatically created elements not managed by a binding stratagy like knockout
@@ -1403,7 +1403,7 @@ function ojFormLayout(context) {
    */
   function _createDivElement(className) {
     var div = document.createElement('div');
-    div.setAttribute(BONUS_DOM_ATTR, '');
+    div.setAttribute(BONUS_DOM_ATTR, ''); // @HTMLUpdateOK
     div.setAttribute('data-oj-internal', '');
     div.classList.add(className);
     return div;
