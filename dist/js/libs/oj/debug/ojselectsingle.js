@@ -822,20 +822,6 @@ LovDropdown.prototype.renderResults = function (searchText, filterCriteria, sele
     renderPromiseReject = reject;
   });
 
-  var collectionContext = this._collectionContext;
-  collectionContext.data = this._dataProvider;
-  collectionContext.searchText = searchText;
-  collectionContext.selected = new ojkeyset.KeySetImpl([selectedValue]);
-  collectionContext.renderDone = renderPromiseResolve;
-  collectionContext.renderError = renderPromiseReject;
-
-  this._collectionRendererFunc(collectionContext);
-
-  var afterRetPromiseFunc = function () {
-    this._duringListViewInitialization = false;
-    resolveBusyState();
-  }.bind(this);
-
   var retPromise = new Promise(function (resolve, reject) {
     renderPromise.then(function () {
       // wait until the changes propagate to the collection and the collection handles the DP
@@ -844,14 +830,44 @@ LovDropdown.prototype.renderResults = function (searchText, filterCriteria, sele
       busyContext.whenReady().then(resolve, reject);
     }.bind(this), reject);
   }.bind(this));
+  // save the most recent promise so we can ignore old responses
+  this._lastRenderResultsPromise = retPromise;
+
+  var collectionContext = this._collectionContext;
+  collectionContext.data = this._dataProvider;
+  collectionContext.searchText = searchText;
+  collectionContext.selected = new ojkeyset.KeySetImpl([selectedValue]);
+
+  // JET-34871 - FILTERING DANGLING BUSY STATE
+  // if there is an existing, unresolved renderPromise, reject it now so that we don't end up with
+  // orphaned busy states
+  if (collectionContext.renderError) {
+    var contextRenderError = collectionContext.renderError;
+    this._clearContextRenderPromiseFunctions(collectionContext);
+    contextRenderError('LovDropdown.renderResults: rejecting earlier promise');
+  }
+  collectionContext.renderDone = renderPromiseResolve;
+  collectionContext.renderError = renderPromiseReject;
+
+  this._collectionRendererFunc(collectionContext);
+
+  var afterRetPromiseFunc = function () {
+    // ignore old responses
+    if (retPromise === this._lastRenderResultsPromise) {
+      this._duringListViewInitialization = false;
+    }
+    resolveBusyState();
+  }.bind(this);
 
   return retPromise.then(function () {
     afterRetPromiseFunc();
   }, function (reason) {
-    Logger.warn(
-      'Select: LovDropdown.renderResults retPromise rejected: ' + reason);
+    // ignore old responses
+    if (retPromise === this._lastRenderResultsPromise) {
+      Logger.warn('Select: LovDropdown.renderResults retPromise rejected: ' + reason);
+    }
     afterRetPromiseFunc();
-  });
+  }.bind(this));
 };
 
 LovDropdown.prototype.updateLabel = function (ariaLabelId, ariaLabel) {
@@ -867,9 +883,18 @@ LovDropdown.prototype.updateLabel = function (ariaLabelId, ariaLabel) {
   }
 };
 
+LovDropdown.prototype._clearContextRenderPromiseFunctions = function (context) {
+  // eslint-disable-next-line no-param-reassign
+  context.renderDone = null;
+  // eslint-disable-next-line no-param-reassign
+  context.renderError = null;
+};
+
 LovDropdown.prototype._defaultCollectionRenderer = function (context) {
   var listView;
   var busyContext;
+  var contextRenderDone = context.renderDone;
+  var contextRenderError = context.renderError;
   if (!this._resultsElem) {
     var $parentElem = $(context.parentElement);
     var placeholderElem = $parentElem.find('.oj-searchselect-results-placeholder')[0];
@@ -925,21 +950,25 @@ LovDropdown.prototype._defaultCollectionRenderer = function (context) {
       if (this._itemTemplate) {
         this._getTemplateEngineFunc().then(function (templateEngine) {
           listView.setProperty('item.renderer', this._templateItemRenderer.bind(this, templateEngine));
-          context.renderDone();
+          this._clearContextRenderPromiseFunctions(context);
+          contextRenderDone();
         }.bind(this), function (reason) {
           Logger.warn(
             'Select: template item renderer template engine promise rejected: ' + reason);
-          context.renderError(reason);
-        });
+          this._clearContextRenderPromiseFunctions(context);
+          contextRenderError(reason);
+        }.bind(this));
       } else {
         listView.setProperty('item.renderer', this._defaultItemRenderer.bind(this));
-        context.renderDone();
+        this._clearContextRenderPromiseFunctions(context);
+        contextRenderDone();
       }
     }.bind(this), function (reason) {
       Logger.warn(
         'Select: creating default listView busyContext promise rejected: ' + reason);
-      context.renderError(reason);
-    });
+      this._clearContextRenderPromiseFunctions(context);
+      contextRenderError(reason);
+    }.bind(this));
   } else {
     listView = this._resultsElem[0];
     // Need to wait until _SetupResources is called asynchronously on listView so that when we
@@ -949,16 +978,20 @@ LovDropdown.prototype._defaultCollectionRenderer = function (context) {
     busyContext.whenReady().then(function () {
       listView.data = context.data;
       listView.selected = context.selected;
-      context.renderDone();
-    }, function (reason) {
+      this._clearContextRenderPromiseFunctions(context);
+      contextRenderDone();
+    }.bind(this), function (reason) {
       Logger.warn(
         'Select: busyContext promise rejected before setting props on listView: ' + reason);
-      context.renderError(reason);
-    });
+      this._clearContextRenderPromiseFunctions(context);
+      contextRenderError(reason);
+    }.bind(this));
   }
 };
 
 LovDropdown.prototype._templateCollectionRenderer = function (context) {
+  var contextRenderDone = context.renderDone;
+  var contextRenderError = context.renderError;
   if (!this._resultsElem) {
     var $parentElem = $(context.parentElement);
     var placeholderElem = $parentElem.find('.oj-searchselect-results-placeholder')[0];
@@ -975,18 +1008,21 @@ LovDropdown.prototype._templateCollectionRenderer = function (context) {
       placeholderElem.parentNode.removeChild(placeholderElem);
       this._resultsElem = $parentElem.find('.oj-select-results'); // '.oj-listbox-results'
       this._resultsElem.on('click', LovUtils.killEvent);
-      context.renderDone();
+      this._clearContextRenderPromiseFunctions(context);
+      contextRenderDone();
     }.bind(this), function (reason) {
       Logger.warn(
         'Select: template collection renderer template engine promise rejected: ' + reason);
-      context.renderError(reason);
-    });
+      this._clearContextRenderPromiseFunctions(context);
+      contextRenderError(reason);
+    }.bind(this));
   } else {
     var templateContext = this._collectionTemplateContext;
     templateContext.data = context.data;
     templateContext.searchText = context.searchText;
     templateContext.selected = context.selected;
-    context.renderDone();
+    this._clearContextRenderPromiseFunctions(context);
+    contextRenderDone();
   }
 };
 
@@ -1759,7 +1795,7 @@ var AbstractLovBase = function (options) {
   this._showMainFieldFunc = options.showMainFieldFunc;
   this._setFilterFieldTextFunc = options.setFilterFieldTextFunc;
 
-  this._queryCount = 0;
+  this._lastDataProviderPromise = null;
 
   // support ko options-binding
   // init dataProvider fetchType
@@ -2031,9 +2067,6 @@ AbstractLovBase.prototype.updateResults = function (initial, focusFirstElem) {
 
 AbstractLovBase.prototype._runQuery = function (initial, term, focusFirstElem) {
   var lovDropdown = this._lovDropdown;
-  var self = this;
-  // sequence number used to drop out-of-order responses
-  var queryNumber = 0;
 
   if (this._minLength > term.length) {
     this.closeDropdown();
@@ -2041,9 +2074,6 @@ AbstractLovBase.prototype._runQuery = function (initial, term, focusFirstElem) {
   }
 
   this.openDropdown(true);
-
-  this._queryCount += 1;
-  queryNumber = this._queryCount;
 
   // lovDropdown.clearHighlight();
   if (!(term !== undefined && term !== null && (initial !== true || this._minLength > 0))) {
@@ -2066,20 +2096,21 @@ AbstractLovBase.prototype._runQuery = function (initial, term, focusFirstElem) {
     // lovDropdown.setSearchText(term);
     var fetchPromise = this._fetchFromDataProvider(term);
     fetchPromise.then(function () {
-      self._handleQueryResultsFetch(queryNumber);
-    }, function (reason) {
-      Logger.warn('Select: _fetchFromDataProvider promise was rejected: ' + reason);
-      self._handleQueryResultsFetch(queryNumber);
-    });
+      // ignore old responses
+      if (fetchPromise === this._lastDataProviderPromise) {
+        this._handleQueryResultsFetch();
+      }
+    }.bind(this), function (reason) {
+      // ignore old responses
+      if (fetchPromise === this._lastDataProviderPromise) {
+        Logger.warn('Select: _fetchFromDataProvider promise was rejected: ' + reason);
+        this._handleQueryResultsFetch();
+      }
+    }.bind(this));
   }
 };
 
-AbstractLovBase.prototype._handleQueryResultsFetch = function (queryNumber) {
-  // ignore old responses
-  if (queryNumber !== this._queryCount) {
-    return;
-  }
-
+AbstractLovBase.prototype._handleQueryResultsFetch = function () {
   // ignore a response if the oj-combobox has been closed before it was received
   if (!this.isDropdownOpen()) {
     return;
@@ -2160,7 +2191,7 @@ AbstractLovBase.prototype._fetchFromDataProvider = function (term) {
     filterCriteria = oj.FilterFactory.getFilter({ filterDef: { text: term } });
   }
 
-  var retPromise = new Promise(function (resolve) {
+  var retPromise = new Promise(function (resolve, reject) {
     // fetch data from dataProvider
     var renderPromise = this._lovDropdown.renderResults(term, filterCriteria,
       LovUtils.isValueForPlaceholder(this._value) ? null : this._value);
@@ -2171,17 +2202,25 @@ AbstractLovBase.prototype._fetchFromDataProvider = function (term) {
       }
 
       // clear busy context
-      fetchResolveFunc();
-
-      resolve();
+      fetchResolveFunc();// ignore old responses
+      if (retPromise === this._lastDataProviderPromise) {
+        resolve();
+      } else {
+        reject('AbstractLovBase._fetchFromDataProvider: rejecting earlier promise');
+      }
     }.bind(this);
     renderPromise.then(function () {
       afterRenderPromiseFunc();
     }, function (reason) {
-      Logger.warn('Select: renderResults promise was rejected: ' + reason);
+      // ignore old responses
+      if (retPromise === this._lastDataProviderPromise) {
+        Logger.warn('Select: renderResults promise was rejected: ' + reason);
+      }
       afterRenderPromiseFunc();
     });
   }.bind(this));
+  // save the most recent promise so we can ignore old data provider responses
+  this._lastDataProviderPromise = retPromise;
   return retPromise;
 };
 
@@ -3985,6 +4024,22 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     }
 
     return returnValue;
+  },
+
+  /**
+   * @override
+   * @protected
+   * @memberof! oj.ojSelect2
+   */
+  _SetValue: function (newValue, event, options) {
+    var displayValue = this._GetDisplayValue();
+    if (newValue === displayValue) {
+      // we don't want to set the displayValue as the value, so if the newValue being set matches
+      // the displayValue, use the currently set value instead
+      // eslint-disable-next-line no-param-reassign
+      newValue = this.options.value;
+    }
+    return this._super(newValue, event, options);
   },
 
   /**

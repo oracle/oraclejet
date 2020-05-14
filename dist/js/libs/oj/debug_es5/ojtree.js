@@ -274,7 +274,7 @@ oj.TreeDndContext.prototype.initDnD = function () {
     .hide() // we don't cause bogus dragLeave/dragEnter
     .appendTo('body'); // @HTMLUpdateOK
 
-    vars.ml = $('<div />') // dnd insert point marker line
+    vars.ml = $('<div></div>') // dnd insert point marker line
     .addClass(cons._OJT_DROP_MARKER_LINE).css('pointer-events', 'none') // prevent mouse events on the line, so
     .hide() // that we don't cause bogus dragLeave/dragEnter
     .appendTo('body'); // @HTMLUpdateOK
@@ -2064,14 +2064,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       scrollbarWidth = e1.width() - e2.width();
       e1.add(e2).remove();
     } else {
-      e1 = $('<div />').css({
+      e1 = $('<div></div>').css({
         width: 100,
         height: 100,
         overflow: 'auto',
         position: 'absolute',
         top: -1000,
         left: 0
-      }).prependTo('body').append('<div />') // @HTMLUpdateOK
+      }).prependTo('body').append('<div></div>') // @HTMLUpdateOK
       .find('div').css({
         width: '100%',
         height: 200
@@ -5813,7 +5813,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         obj.or.before(o); // @HTMLUpdateOK
       } else {
         if (!obj.np.children('ul').length) {
-          $('<ul />').appendTo(obj.np); // @HTMLUpdateOK
+          $('<ul></ul>').appendTo(obj.np); // @HTMLUpdateOK
         }
 
         obj.np.children('ul:eq(0)').append(o); // @HTMLUpdateOK
@@ -6129,7 +6129,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         case 'inside':
         case 'first':
           if (!obj.children('ul').length) {
-            obj.append('<ul />'); // @HTMLUpdateOK
+            obj.append('<ul></ul>'); // @HTMLUpdateOK
           }
 
           obj.children('ul').prepend(d); // @HTMLUpdateOK
@@ -6139,7 +6139,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         case 'last':
           if (!obj.children('ul').length) {
-            obj.append('<ul />'); // @HTMLUpdateOK
+            obj.append('<ul></ul>'); // @HTMLUpdateOK
           }
 
           obj.children('ul').append(d); // @HTMLUpdateOK
@@ -6149,7 +6149,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         default:
           if (!obj.children('ul').length) {
-            obj.append('<ul />'); // @HTMLUpdateOK
+            obj.append('<ul></ul>'); // @HTMLUpdateOK
           }
 
           if (!position) {
@@ -7645,7 +7645,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }
 
         var title = typeof js.title === 'string' ? js.title : ' ';
-        d = $("<li role='" + WA_TREEITEM + "' />"); // start a node
+        d = $("<li role='" + WA_TREEITEM + "' ></li>"); // start a node
 
         if (js.attr) {
           if (this._data.types.defType && !js.attr.type) {
@@ -7681,7 +7681,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }
 
         var bIns = false;
-        var tmp2 = $('<a/>');
+        var tmp2 = $('<a></a>');
         $.each(js.data, function (i, m) {
           if ($.isFunction(m)) {
             m = m.call(this, js);
@@ -7740,7 +7740,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               tmp2 = this._parseJson(js.children, obj, true);
 
               if (tmp2.length) {
-                var ul2 = $("<ul role='" + WA_GROUP + "' />");
+                var ul2 = $("<ul role='" + WA_GROUP + "' ></ul>");
                 ul2.append(tmp2); // @HTMLUpdateOK
 
                 d.append(ul2); // @HTMLUpdateOK
@@ -7752,7 +7752,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
       if (!isRecurse) {
-        var ul1 = $('<ul />');
+        var ul1 = $('<ul></ul>');
         ul1.append(d); // @HTMLUpdateOK
 
         d = ul1;
@@ -8065,7 +8065,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             var $data = $(data);
 
             if (!$data.is('ul')) {
-              $data = $('<ul />').append($data); // @HTMLUpdateOK
+              $data = $('<ul></ul>').append($data); // @HTMLUpdateOK
             }
 
             this._$container_ul.empty().append($data.children()) // @HTMLUpdateOK
@@ -8169,7 +8169,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               d = $(d);
 
               if (!d.is('ul')) {
-                d = $('<ul />').append(d); // @HTMLUpdateOK
+                d = $('<ul></ul>').append(d); // @HTMLUpdateOK
               }
 
               if (obj === -1 || !obj) {
@@ -8334,7 +8334,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         s = $(s);
 
         if (!s.is('ul')) {
-          s = $('<ul />').append(s); // @HTMLUpdateOK
+          s = $('<ul></ul>').append(s); // @HTMLUpdateOK
         }
 
         if (obj === -1 || !obj) {
@@ -10806,7 +10806,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       var w1 = obj.children('ins').width();
       var w2 = obj.find('> a:visible > ins').width() * obj.find('> a:visible > ins').length;
       var t = this.getText(obj);
-      var h1 = $('<div />', {
+      var h1 = $('<div></div>', {
         css: {
           position: 'absolute',
           top: '-200px',

@@ -27,7 +27,7 @@ define(['require', '../persistenceUtils', '../persistenceStoreManager', './defau
       logger.log("Offline Persistence Toolkit PersistenceSyncManager: addEventListener() for type: " + type + " and scope: " + scope);
       this._eventListeners.push({type: type.toLowerCase(), listener: listener, scope: scope});
     };
-    
+
     PersistenceSyncManager.prototype.removeEventListener = function (type, listener, scope) {
       logger.log("Offline Persistence Toolkit PersistenceSyncManager: removeEventListener() for type: " + type + " and scope: " + scope);
       this._eventListeners = this._eventListeners.filter(function (eventListener) {
@@ -132,13 +132,13 @@ define(['require', '../persistenceUtils', '../persistenceStoreManager', './defau
       return Promise.all(promises).then(function() {
         return request;
       }).catch(function(error) {
-        logger.log("Offline Persistence Toolkit PersistenceSyncManager: removeRequest() error for Request with requestId: " + requestId);        
+        logger.log("Offline Persistence Toolkit PersistenceSyncManager: removeRequest() error for Request with requestId: " + requestId);
       });;
     };
 
     PersistenceSyncManager.prototype.updateRequest = function (requestId, request) {
       logger.log("Offline Persistence Toolkit PersistenceSyncManager: updateRequest() for Request with requestId: " + requestId);
-      return Promise.all([_getSyncLogStorage(), 
+      return Promise.all([_getSyncLogStorage(),
         persistenceUtils.requestToJSON(request)]
         ).then(function (values) {
         var store = values[0];
@@ -187,7 +187,7 @@ define(['require', '../persistenceUtils', '../persistenceStoreManager', './defau
                     logger.log("Offline Persistence Toolkit PersistenceSyncManager: Replay request from beforeSyncRequest event listener");
                     // replay the provided request instead of what's in the sync log
                     request = eventResult.request;
-                  }                  
+                  }
                   requestClone = request.clone();
                   _checkURL(self, request).then(function() {
                     // mark the request as initiated from sync operation and
@@ -256,13 +256,13 @@ define(['require', '../persistenceUtils', '../persistenceStoreManager', './defau
           replayRequestArray(value);
         });
       });
-      
+
       return syncPromise.finally(function (err) {
         self._syncing = false;
         self._pingedURLs = null;
       });
     };
-    
+
     function _checkURL(persistenceSyncManager, request) {
       // send an OPTIONS request to the server to see if it's reachable
       var self = persistenceSyncManager;
@@ -286,7 +286,7 @@ define(['require', '../persistenceUtils', '../persistenceStoreManager', './defau
             if(preflightOptionsRequestTimeoutOption != null) {
               requestTimeout = preflightOptionsRequestTimeoutOption;
             }
-            setTimeout(function() 
+            setTimeout(function()
             {
               if (!self._repliedOptionsRequest &&
                 self._preflightOptionsRequestId == preflightOptionsRequestId) {
@@ -311,7 +311,7 @@ define(['require', '../persistenceUtils', '../persistenceStoreManager', './defau
       }
       return Promise.resolve(true);
     };
-    
+
     function _checkStopSync(syncEventResult) {
       syncEventResult = syncEventResult || {};
       return syncEventResult.action === 'stop';
@@ -446,7 +446,7 @@ define(['require', '../persistenceUtils', '../persistenceStoreManager', './defau
           operation = redoUndoDataArray[i].operation;
           undoRedoData = redoUndoDataArray[i].undoRedoData;
 
-          if (operation == 'upsert' || 
+          if (operation == 'upsert' ||
             (operation == 'remove' && isUndo)) {
             // bunch up the upserts so we can do them in bulk using upsertAll
             dataArray = [];
@@ -502,7 +502,7 @@ define(['require', '../persistenceUtils', '../persistenceStoreManager', './defau
             url == null || eventListener.scope == null);
       };
     };
-    
+
     function _callEventListener(event, eventListeners) {
       if (eventListeners.length > 0) {
         return eventListeners[0].listener(event).then(function (result) {

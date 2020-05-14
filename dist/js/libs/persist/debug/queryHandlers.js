@@ -121,18 +121,18 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
         return Promise.resolve();
       };
     };
-    
+
     // 1. get the matched raw entry from cache store: it should contain key, and
-    //    response header. 
+    //    response header.
     // 2. if we found a match:
     //       for single resource type, we'll just get it from cache, by using cache key.
-    //       for collection resource type, we'll need to query the store, and 
+    //       for collection resource type, we'll need to query the store, and
     //       construct the response.
     // 3. if we don't find a match
     //       get the possible id from the url, and search store on that key.
     //       if we no possible id, or no entry found with that key, we don't have a match
     //       if we found an object from the store, then we need to construct a response.
-    //       
+    //
     function _processQuery(request, storeName, findQuery, shredder, unshredder, offset, limit) {
       return persistenceManager.getCache()._internalMatch(request, {ignoreSearch: true, ignoreBody: true}).then(function (cacheEntryMetadata) {
         if (cacheEntryMetadata) {
@@ -147,11 +147,6 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
             // 2. apply offset and limit.
             // 3. reconstruct the response
             return persistenceStoreManager.openStore(storeName).then(function(store) {
-              if (cacheEntryMetadata.resourceIdentifierMap && 
-                  cacheEntryMetadata.resourceIdentifierMap[storeName]) {
-                _addSearchCriteria(findQuery, 'metadata.resourceIdentifier', 
-                  cacheEntryMetadata.resourceIdentifierMap[storeName]);
-              }
               return store.find(findQuery);
             }).then(function(results) {
               var hasMore = false;
@@ -176,7 +171,7 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
               };
               return persistenceManager.getCache()._matchByKey(
                 request, cacheEntryMetadata.key, {ignoreBody: true}
-              ).then(function(response) {    
+              ).then(function(response) {
                 return unshredder([newShreddedData], response).then(function(newResponse) {
                   // add limit and offset to the newly constructed response.
                   var responseClone = newResponse.clone();
@@ -210,7 +205,7 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
           }
         } else {
           // no matched response from cache, could be
-          // 1. this is a single row query, we'll try finding that row in the 
+          // 1. this is a single row query, we'll try finding that row in the
           //    shredded store.
           // 2. there is just no cached response for this request at all.
           var id = _getRequestUrlId(request);
@@ -244,12 +239,12 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
                     });
                   });
                 } else {
-                  // should never come here since we are able to get id from 
+                  // should never come here since we are able to get id from
                   // the url, we should be able to get the colletion URL.
                   return;
                 }
               } else {
-                // nothing in the shredded store, we don't have anything to return 
+                // nothing in the shredded store, we don't have anything to return
                 // a valid response.
                 return;
               }
@@ -544,7 +539,7 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
         };
       }
     }
-  
+
     function _cleanURIValue(value) {
       return decodeURIComponent(value.replace(/\+/g, ' '));
     };

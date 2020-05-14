@@ -253,7 +253,7 @@ oj.TreeDndContext.prototype.initDnD = function () {
          .hide()                              // we don't cause bogus dragLeave/dragEnter
          .appendTo('body');                   // @HTMLUpdateOK
 
-    vars.ml = $('<div />')                   // dnd insert point marker line
+    vars.ml = $('<div></div>')                   // dnd insert point marker line
          .addClass(cons._OJT_DROP_MARKER_LINE)
          .css('pointer-events', 'none')       // prevent mouse events on the line, so
          .hide()                              // that we don't cause bogus dragLeave/dragEnter
@@ -1923,7 +1923,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
       scrollbarWidth = e1.width() - e2.width();
       e1.add(e2).remove();
     } else {
-      e1 = $('<div />')
+      e1 = $('<div></div>')
         .css({
           width: 100,
           height: 100,
@@ -1933,7 +1933,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           left: 0
         })
         .prependTo('body')
-        .append('<div />') // @HTMLUpdateOK
+        .append('<div></div>') // @HTMLUpdateOK
         .find('div')
         .css({ width: '100%', height: 200 });
       scrollbarWidth = 100 - e1.width();
@@ -5489,7 +5489,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           obj.or.before(o);                             // @HTMLUpdateOK
         } else {
           if (!obj.np.children('ul').length) {
-            $('<ul />').appendTo(obj.np);              // @HTMLUpdateOK
+            $('<ul></ul>').appendTo(obj.np);              // @HTMLUpdateOK
           }
           obj.np.children('ul:eq(0)').append(o);       // @HTMLUpdateOK
         }
@@ -5803,19 +5803,19 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             break;
           case 'inside':
           case 'first' : if (!obj.children('ul').length) {
-            obj.append('<ul />');                              // @HTMLUpdateOK
+            obj.append('<ul></ul>');                              // @HTMLUpdateOK
           }
             obj.children('ul').prepend(d);                      // @HTMLUpdateOK
             tmp = obj;
             break;
           case 'last': if (!obj.children('ul').length) {
-            obj.append('<ul />');                             // @HTMLUpdateOK
+            obj.append('<ul></ul>');                             // @HTMLUpdateOK
           }
             obj.children('ul').append(d);                       // @HTMLUpdateOK
             tmp = obj;
             break;
           default: if (!obj.children('ul').length) {
-            obj.append('<ul />');                             // @HTMLUpdateOK
+            obj.append('<ul></ul>');                             // @HTMLUpdateOK
           }
             if (!position) {
               position = 0;
@@ -7174,7 +7174,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
           var title = (typeof js.title === 'string') ? js.title : ' ';
 
-          d = $("<li role='" + WA_TREEITEM + "' />");                  // start a node
+          d = $("<li role='" + WA_TREEITEM + "' ></li>");                  // start a node
 
           if (js.attr) {
             if (this._data.types.defType && (!js.attr.type)) {  // if no type and "default" type
@@ -7202,7 +7202,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
           var bIns = false;
 
-          var tmp2 = $('<a/>');
+          var tmp2 = $('<a></a>');
           $.each(js.data, function (i, m) {
             if ($.isFunction(m)) {
               m = m.call(this, js);
@@ -7256,7 +7256,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
               if ($.isArray(js.children) && js.children.length) {
                 tmp2 = this._parseJson(js.children, obj, true);
                 if (tmp2.length) {
-                  var ul2 = $("<ul role='" + WA_GROUP + "' />");
+                  var ul2 = $("<ul role='" + WA_GROUP + "' ></ul>");
                   ul2.append(tmp2);                                     // @HTMLUpdateOK
                   d.append(ul2);                                       // @HTMLUpdateOK
                 }
@@ -7266,7 +7266,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         }  // end else
 
         if (!isRecurse) {
-          var ul1 = $('<ul />');
+          var ul1 = $('<ul></ul>');
           ul1.append(d);                                                // @HTMLUpdateOK
           d = ul1;
         }
@@ -7578,7 +7578,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             if (!obj || obj === -1) {
               var $data = $(data);
               if (!$data.is('ul')) {
-                $data = $('<ul />').append($data);            // @HTMLUpdateOK
+                $data = $('<ul></ul>').append($data);            // @HTMLUpdateOK
               }
               this._$container_ul
                 .empty()
@@ -7672,7 +7672,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
               if (d) {
                 d = $(d);
                 if (!d.is('ul')) {
-                  d = $('<ul />').append(d);             // @HTMLUpdateOK
+                  d = $('<ul></ul>').append(d);             // @HTMLUpdateOK
                 }
                 if (obj === -1 || !obj) {
                   self._$container_ul.empty()
@@ -7852,7 +7852,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         if (s && s !== '' && s.toString && s.toString().replace(/^[\s\n]+$/, '') !== '') {
           s = $(s);
           if (!s.is('ul')) {
-            s = $('<ul />').append(s);                     // @HTMLUpdateOK
+            s = $('<ul></ul>').append(s);                     // @HTMLUpdateOK
           }
 
           if (obj === -1 || !obj) {
@@ -10271,7 +10271,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         var w2 = obj.find('> a:visible > ins').width() * obj.find('> a:visible > ins').length;
         var t = this.getText(obj);
 
-        var h1 = $('<div />', {
+        var h1 = $('<div></div>', {
           css: { position: 'absolute',
             top: '-200px',
             left: (rtl ? '0px' : '-1000px'),

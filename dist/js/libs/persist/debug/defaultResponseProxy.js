@@ -581,7 +581,7 @@ define(['./persistenceManager', './persistenceUtils', './fetchStrategies',
       }
       return null;
     };
-      
+
     function _getUndoRedoDataForShreddedDataItem(request, storename, shreddedDataItem) {
       var undoRedoArray = [];
       var key;
@@ -592,6 +592,11 @@ define(['./persistenceManager', './persistenceUtils', './fetchStrategies',
         if (i < dataArray.length &&
           request.method !== 'GET' &&
           request.method !== 'HEAD') {
+          // when deleting a row offline then coming online to sync
+          // it obtains a 'document deleted' doc which does not contain a key
+          if (!dataArray[i]['key']){
+            return undoRedoData(++i, dataArray);
+          }
           key = dataArray[i]['key'].toString();
 
           if (request.method !== 'DELETE') {

@@ -608,6 +608,322 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
 });
 
 
+/**
+ * Copyright (c) 2017, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+define('persist/impl/keyValuePersistenceStore',["../PersistenceStore", "./storageUtils", "./logger"],
+  function (PersistenceStore, storageUtils, logger) {
+    'use strict';
+
+    /**
+     * @class KeyValuePersistenceStore
+     * @abstract
+     * @classdesc Abstract class that Persistence Stores which implement
+     * simple key/value stores can extend from.
+     *            
+     * @extends KeyValuePersistenceStore
+     * @constructor
+     */
+    var KeyValuePersistenceStore = function (name) {
+      PersistenceStore.call(this, name);
+    }
+
+    KeyValuePersistenceStore.prototype = new PersistenceStore();
+
+    KeyValuePersistenceStore.prototype.Init = function (options) {
+      this._version = (options && options.version) || '0';
+      return Promise.resolve();
+    };
+    
+    /**
+     * Must be implemented by subclasses of KeyValuePersistenceStore
+     * @method
+     * @name getItem
+     * @memberof! KeyValuePersistenceStore
+     * @instance
+     * @param {string} key The key part of the composite key in the store to
+     *                     search for store entry.
+     * @return {Promise} Returns a Promise that resolves to the value and metadata
+     *                   identified by the specified key
+     */
+    KeyValuePersistenceStore.prototype.getItem = function (key) {
+      throw TypeError("failed in abstract function");
+    };
+    
+    /**
+     * Must be implemented by subclasses of KeyValuePersistenceStore
+     * @method
+     * @name removeByKey
+     * @memberof! KeyValuePersistenceStore
+     * @instance
+     * @override
+     * @param {string} key The key to identify the store entry that needs to be deleted.
+     * @return {Promise} Returns a Promise that is resolved when the store entry
+     *                   is deleted.
+     */
+    KeyValuePersistenceStore.prototype.removeByKey = function (key) {
+      throw TypeError("failed in abstract function");
+    };
+    
+    /**
+     * Must be implemented by subclasses of KeyValuePersistenceStore
+     * @method
+     * @name keys
+     * @memberof! KeyValuePersistenceStore
+     * @instance
+     * @override
+     * @return {Promise} Returns a Promise that resolves to an array where each
+     *                           element is the key of an entry in this store.
+     *                           The Promise should resolve to an empty array if
+     *                           there is no entries in the store.
+     */
+    KeyValuePersistenceStore.prototype.keys = function () {
+      throw TypeError("failed in abstract function");
+    };
+    
+    KeyValuePersistenceStore.prototype.findByKey = function (key) {
+      logger.log("Offline Persistence Toolkit keyValuePersistenceStore called by subclass: findByKey() with key: " + key);
+      return this.getItem(key).then(function(storageData) {
+        if (storageData) {
+          return Promise.resolve(storageData.value);
+        } else {
+          return Promise.resolve();
+        }
+      });
+    };
+
+    KeyValuePersistenceStore.prototype.find = function (findExpression) {
+      logger.log("Offline Persistence Toolkit keyValuePersistenceStore called by subclass: find() with expression: " + JSON.stringify(findExpression));
+      var self = this;
+      var resultSet = [];
+      var unsorted = [];
+      var findExpression = findExpression || {};
+
+      return this.keys().then(function (keys) {
+        var itemPromiseArray = [];
+        for (var index = 0; index < keys.length; index++) {
+          var key = keys[index];
+          if (key) {
+            itemPromiseArray.push(function (itemKey) {
+              return self.getItem(itemKey).then(function (item) {
+                if (item) {
+                  if (storageUtils.satisfy(findExpression.selector, item)) {
+                    item.key = itemKey;
+                    unsorted.push(item);
+                  }
+                }
+              });
+            }(key));
+          }
+        }
+
+        return Promise.all(itemPromiseArray).then(function () {
+          var sorted = storageUtils.sortRows(unsorted, findExpression.sort);
+          for (var index = 0; index < sorted.length; index++) {
+            resultSet.push(self._constructReturnObject(findExpression.fields, sorted[index]));
+          }
+
+          return Promise.resolve(resultSet);
+        });
+      });
+    };
+
+    KeyValuePersistenceStore.prototype.updateKey = function(currentKey, newKey) {
+      logger.log("Offline Persistence Toolkit keyValuePersistenceStore called by subclass: updateKey() with currentKey: " + currentKey + " and new key: " + newKey);
+      var self = this;
+      return this.getItem(currentKey).then(function (existingValue) {
+        if (existingValue) {
+          return self._insert(newKey, existingValue.metadata, existingValue.value);
+        } else {
+          return Promise.reject("No existing key found to update");
+        }
+      }).then(function() {
+        return self.removeByKey(currentKey);
+      });
+    };
+
+    /**
+     * Helper function used by {@link find} that constructs an object out from
+     * itemData based on fieldsExpression.
+     * @method
+     * @name _constructReturnObject
+     * @memberof! KeyValuePersistenceStore
+     * @param {Array} fieldsExpression An array of property names whose values
+     *                                 should be included in the final contructed
+     *                                 return object.
+     * @param {object} itemData The original object to construct the return object
+     *                        from.
+     * @returns {object} the object that contains all the properties defined
+     *                   in fieldsExpression array, the corresponding property
+     *                   value is obtained from itemData.
+     */
+    KeyValuePersistenceStore.prototype._constructReturnObject = function (fieldsExpression, itemData) {
+      var returnObject;
+      if (!fieldsExpression) {
+        returnObject = itemData.value;
+      } else {
+        returnObject = storageUtils.assembleObject(itemData, fieldsExpression);
+      }
+      return returnObject;
+    };
+
+    /**
+     * Helper function that returns a callback function that can be used by
+     * Array.map in {@link delete}.
+     * @method
+     * @name _removeByKeyMapCallback
+     * @memberof! KeyValuePersistenceStore
+     * @param {string} propertyName An array of Request
+     * @return {function} Returns a function that can be used as a callback
+     *                    by Array.map.
+     */
+    KeyValuePersistenceStore.prototype._removeByKeyMapCallback = function (propertyName) {
+      var self = this;
+      return function (element) {
+        var valueToOperate;
+        if (propertyName) {
+          valueToOperate = element[propertyName];
+        } else {
+          valueToOperate = element;
+        }
+        return self.removeByKey(valueToOperate);
+      };
+    };
+    
+    /**
+     * Delete the keys that satisfy the findExpression.
+     * @method
+     * @name delete
+     * @memberof! KeyValuePersistenceStore
+     * @instance
+     * @param {{selector: Object}} findExpression The expression to find matching documents to delete.
+     *                                The syntax of the expression follows standard
+     *                                MangoDB syntax. If undefined, all documents in this
+     *                                store will be deleted.
+     * <ul>
+     * <li>findExpression.selector The search criteria to find matching
+     *                                         document.</li>
+     * </ul>
+     */
+    KeyValuePersistenceStore.prototype.delete = function (deleteExpression) {
+      logger.log("Offline Persistence Toolkit keyValuePersistenceStore called by subclass: delete() with expression: " +  JSON.stringify(deleteExpression));
+      var self = this;
+
+      if (!deleteExpression) {
+        return this.deleteAll();
+      }
+
+      var modExpression = deleteExpression;
+      modExpression.fields = ['key'];
+      return self.find(modExpression).then(function (searchResults) {
+        if (searchResults && searchResults.length) {
+          var promises = searchResults.map(self._removeByKeyMapCallback('key'), self);
+          return Promise.all(promises);
+        } else {
+          return Promise.resolve();
+        }
+      });
+    };
+    
+    KeyValuePersistenceStore.prototype.deleteAll = function () {
+      logger.log("Offline Persistence Toolkit keyValuePersistenceStore called by subclass: deleteAll()");
+      var self = this;
+      var promiseArray = [];
+      var i;
+      return this.keys().then(function (keys) {
+        for (i = 0; i < keys.length; i++) {
+          promiseArray.push(self.removeByKey(keys[i]));
+        }
+        return Promise.all(promiseArray);
+      });
+    };
+    
+    KeyValuePersistenceStore.prototype.upsert = function (key, metadata, value, expectedVersionIdentifier) {
+      logger.log("Offline Persistence Toolkit keyValuePersistenceStore called by subclass: upsert() for key: " + key);
+      var self = this;
+      return this.getItem(key).then(function (existingValue) {
+        if (existingValue && expectedVersionIdentifier) {
+          var existingVersionIdentifier = existingValue.metadata.versionIdentifier;
+          if (existingVersionIdentifier !== expectedVersionIdentifier) {
+            return Promise.reject({
+              status: 409
+            });
+          } else {
+            var newVersionIdentifier = metadata.versionIdentifier;
+            if (newVersionIdentifier !== existingVersionIdentifier) {
+              return self._insert(key, metadata, value);
+            }
+            return Promise.resolve();
+          }
+        } else {
+          return self._insert(key, metadata, value);
+        }
+      });
+    };
+    
+    KeyValuePersistenceStore.prototype.upsertAll = function (dataArray) {
+      logger.log("Offline Persistence Toolkit keyValuePersistenceStore called by subclass: upsertAll()");
+      var promiseArray = [];
+      for (var index = 0; index < dataArray.length; index++) {
+        var data = dataArray[index];
+        promiseArray.push(this.upsert(data.key, data.metadata, data.value, data.expectedVersionIndentifier));
+      }
+      return Promise.all(promiseArray);
+    };
+
+    return KeyValuePersistenceStore;
+  });
+/**
+ * Copyright (c) 2017, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+define('persist/impl/PersistenceStoreMetadata',[], function () {
+  'use strict';
+  
+  /**
+   * @export
+   * @class PersistenceStoreMetadata
+   * @classdesc Class that contains the metadata for a Persistence Store. This is returned by the PersistenceStoreManager.
+   * @hideconstructor
+   */
+  var PersistenceStoreMetadata = function (name, persistenceStoreFactory, versions) {
+    this.name = name;
+    this.persistenceStoreFactory = persistenceStoreFactory;
+    this.versions = versions;
+  };
+
+  PersistenceStoreMetadata.prototype = {};
+
+  /**
+   * @export
+   * @desc The name of the PersistenceStore
+   * @memberof PersistenceStoreMetadata
+   * @type {string}
+   */
+  PersistenceStoreMetadata.prototype.name;
+  
+  /**
+   * @export
+   * @desc Instance of the PersistenceStoreFactory used to create the PersistenceStore
+   * @memberof PersistenceStoreMetadata
+   * @type {PersistenceStoreFactory}
+   */
+  PersistenceStoreMetadata.prototype.persistenceStoreFactory;
+
+  /**
+   * @export
+   * @desc An array of versions of the PersistenceStore
+   * @memberof PersistenceStoreMetadata
+   * @type {array}
+   */
+  PersistenceStoreMetadata.prototype.versions;
+
+  return PersistenceStoreMetadata;
+});
+
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define('pouchdb',[],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.PouchDB = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 'use strict';
 
@@ -12839,7 +13155,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       this._db = new PouchDB(dbname);
     }
     if (options && options.index) {
-      // pouch db automatically create index on key, no need to specifically 
+      // pouch db automatically create index on key, no need to specifically
       // create it.
       if (!Array.isArray(options.index)) {
         logger.log("index must be an array");
@@ -12874,7 +13190,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   };
 
   PouchDBPersistenceStore.prototype._isPersistenceStoreKey = function(keyName) {
-    return keyName === 'version' || keyName === 'adapter' || 
+    return keyName === 'version' || keyName === 'adapter' ||
            keyName === 'index' || keyName === 'skipMetadata';
   };
 
@@ -13045,7 +13361,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   PouchDBPersistenceStore.prototype.find = function (findExpression) {
     logger.log("Offline Persistence Toolkit pouchDBPersistenceStore: find() for expression: " +  JSON.stringify(findExpression));
     var self = this;
-    
+
     findExpression = findExpression || {};
 
     // if the find plugin is installed
@@ -13071,7 +13387,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
         if (result && result.rows && result.rows.length) {
           // filter on the rows first before _fixBinaryValue which adds binary
           // back to the document. This assumes the search criteria should
-          // not have any operator against the binary data. 
+          // not have any operator against the binary data.
           var satisfiedRows = result.rows.filter(function(row) {
             var doc = row.doc;
             if (!_isInternalDoc(row) && storageUtils.satisfy(findExpression.selector, doc)) {
@@ -13082,6 +13398,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
 
           if (satisfiedRows.length) {
             var unsortedDocs = satisfiedRows.map(function(row) {
+              self._fixKey(row.doc)
               return row.doc;
             });
             var sortedDocs = storageUtils.sortRows(unsortedDocs, findExpression.sort);
@@ -13124,6 +13441,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   // invoked after document is retrieved. Fix the key and binary
   // part of the value.
   PouchDBPersistenceStore.prototype._fixValue = function (doc) {
+    this._fixKey(doc);
     return this._fixBinaryValue(doc);
   };
 
@@ -13274,8 +13592,14 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
     var fields = findExpression.fields;
     if (fields && fields.length) {
       modifiedExpression.fields = fields;
-    }
 
+      // if the _id field is not included, it will be added to the list
+      // this is so that previous version of OPT will be compatable and
+      // still have access to the 'key' value after the find is fixed
+      if (fields.indexOf('key') !== -1 && fields.indexOf('_id') === -1){
+        modifiedExpression.fields.push('_id')
+      }
+    }
     return modifiedExpression;
   };
 
@@ -13344,15 +13668,22 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
     });
   };
 
-  // when find plugin is not present, we query out all documents and run the 
+  // when find plugin is not present, we query out all documents and run the
   // find ourselve. allDocs returns some internal document that pouchDB created
-  // we should ignore. For example, when the store has index configured, 
-  // pouchDB will create a document with id starting with '_design'. There is 
-  // no option provided from allDocs() call that we can use to ask pouchDB to 
+  // we should ignore. For example, when the store has index configured,
+  // pouchDB will create a document with id starting with '_design'. There is
+  // no option provided from allDocs() call that we can use to ask pouchDB to
   // not return internal documents.
   var _isInternalDoc = function(dbRow) {
     var id = dbRow.id;
     return id.startsWith('_design/');
+  };
+
+  PouchDBPersistenceStore.prototype._fixKey = function (doc) {
+    var docId = doc._id || doc.id || doc.key;
+    if (docId) {
+      doc.key = docId;
+    }
   };
 
   return PouchDBPersistenceStore;
@@ -13410,6 +13741,339 @@ define('persist/pouchDBPersistenceStoreFactory',["./impl/pouchDBPersistenceStore
  * All rights reserved.
  */
 
+define('persist/impl/fileSystemPersistenceStore',['./keyValuePersistenceStore', '../persistenceStoreManager', './logger'],
+  function (keyValuePersistenceStore, persistenceStoreManager, logger) {
+    'use strict';
+
+    var FileSystemPersistenceStore = function (name) {
+      keyValuePersistenceStore.call(this, name);
+      this._directoryName = _normalize(name);
+      this._directory = null;
+    }
+
+    FileSystemPersistenceStore.prototype = new keyValuePersistenceStore();
+
+    FileSystemPersistenceStore.prototype.Init = function (options) {
+      var self = this;
+      return keyValuePersistenceStore.prototype.Init.call(self, options).then(function () {
+        self._directoryName = _normalize(self._name + self._version);
+        return new Promise(function(resolve, reject) {
+          window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
+            fs.root.getDirectory(self._directoryName, {create: true}, function (dirEntry) {
+              self._directory = dirEntry;
+              resolve();
+            });
+          }, function(fileError) {
+            reject(fileError);
+          });
+        });
+      });
+    };
+
+    FileSystemPersistenceStore.prototype._insert = function (key, metadata, value) {
+      var self = this;
+      // upsert should always delete the file first otherwise we'll end up appending to file
+      return this.removeByKey(key).then(function() {
+        if (value instanceof Blob) {
+          metadata.data_type = 'Blob';
+        } else {
+          metadata.data_type = 'JSON';
+        }
+        var dirReader = self._directory.createReader();
+        return new Promise(function(resolve, reject) {
+          dirReader.readEntries(function (fileEntries) {
+            var checkFilename = function(filename) {
+              var foundFiles = fileEntries.filter(function(fileEntry) {
+                if (fileEntry.name == filename) {
+                  return true;
+                }
+                return false;
+              });
+              return foundFiles.length > 0;
+            };
+            var filename = Math.floor(Math.random() * 100000000) + '.pds'; // @randomNumberOk - Only used to internally generate file names
+            while(checkFilename(filename))
+            {
+              filename = Math.floor(Math.random() * 100000000) + '.pds'; // @randomNumberOk - Only used to internally generate file names
+            }
+            _writeFile(self, filename, key, metadata, value).then(function() {
+              resolve();
+            });
+          });
+        });
+      });
+    };
+
+    function _writeFile(self, filename, key, metadata, data) {
+      return new Promise(function(resolve, reject){
+        self._directory.getFile(filename, {create: true, exclusive: false}, function (fileEntry){
+          fileEntry.createWriter(function(fileWriter){
+            fileWriter.onwriteend = function () {
+              _updateFileIndex(key, filename, metadata).then(function() {
+                resolve();
+              });
+            };
+
+            fileWriter.onerror = function(e) {
+              reject(e);
+            };
+            if (metadata.data_type == 'JSON') {
+              data = JSON.stringify(data);
+            }
+            fileWriter.write(data);
+          });
+        });
+      });
+    };
+
+    function _updateFileIndex(key, filename, metadata) {
+      return _getFileIndexStorage().then(function(store) {
+        return store.upsert(key, metadata, {filename: filename, metadata: metadata});
+      });
+    };
+
+    function _getFileIndexStorage() {
+      var options = {index: ['key'], skipMetadata: true};
+      return persistenceStoreManager.openStore('fileIndex', options);
+    };
+
+    function _getFile(self, filename) {
+      return new Promise(function(resolve, reject){
+        self._directory.getFile(filename, {create: false, exclusive: false}, function (fileEntry) {
+           resolve(fileEntry)
+        }, function (err) {
+          if (err.code === FileError.NOT_FOUND_ERR ||
+            err.code === FileError.SYNTAX_ERR) {
+            resolve(null);
+          } else {
+            reject(err);
+          }
+        });
+      });
+    }
+
+    FileSystemPersistenceStore.prototype.getItem = function (key) {
+      logger.log("Offline Persistence Toolkit fileSystemPersistenceStore: getItem() with key: " + key);
+      var self = this;
+      return _findByKeyFileIndex(key).then(function(fileIndex) {
+        if (fileIndex) {
+          var filename = fileIndex.filename;
+          var metadata = fileIndex.metadata;
+          return _getFile(self, filename).then(function(fileEntry) {
+            if (fileEntry) {
+              return new Promise(function(resolve, reject) {
+                fileEntry.file(function (file) {
+                  var reader = new FileReader();
+                  reader.onloadend = function (e) {
+                    var value = _readBlob(this.result, 0);
+                    if (metadata.data_type == 'JSON') {
+                      var blobReader = new FileReader();
+                      blobReader.onloadend = function() {
+                        resolve({metadata: metadata, value: JSON.parse(this.result)});
+                      };
+                      blobReader.readAsText(value);
+                    } else {
+                      resolve({metadata: metadata, value: value});
+                    }
+                  };
+                  reader.readAsArrayBuffer(file);
+                }, function (fileError) {
+                  reject(fileError);
+                });
+              });
+            }
+          });
+        }
+      });
+    };
+
+    function _readBlob(arrayBuffer, pos) {
+      var dataView = new DataView(arrayBuffer.slice(pos));
+      return new Blob([dataView]);
+    }
+
+    FileSystemPersistenceStore.prototype.removeByKey = function (key) {
+      logger.log("Offline Persistence Toolkit fileSystemPersistenceStore: removeByKey() with key: " + key);
+      var self = this;
+      return _findByKeyFileIndex(key).then(function(fileIndex) {
+        if (fileIndex) {
+          return _removeByKeyFileIndex(key).then(function() {
+            return _removeFile(self, fileIndex.filename);
+          });
+        } else {
+          return Promise.resolve(false);
+        }
+      });
+    };
+
+    function _findByKeyFileIndex(key) {
+      return _getFileIndexStorage().then(function(store) {
+        return store.findByKey(key);
+      });
+    };
+
+    function _removeByKeyFileIndex(key) {
+      return _getFileIndexStorage().then(function(store) {
+        return store.removeByKey(key);
+      });
+    };
+
+    function _removeFile(self, filename) {
+      return _getFile(self, filename).then(function(fileEntry) {
+        if (fileEntry) {
+          return new Promise(function (resolve, reject) {
+            fileEntry.remove(function () {
+              resolve(true);
+            }, function (err) {
+              resolve(false);
+            });
+          });
+        } else {
+          return false;
+        }
+      });
+    };
+
+    FileSystemPersistenceStore.prototype.keys = function () {
+      logger.log("Offline Persistence Toolkit fileSystemPersistenceStore: keys()");
+      return _keysFileIndex();
+    };
+
+    function _keysFileIndex() {
+      return _getFileIndexStorage().then(function(store) {
+        return store.keys();
+      });
+    };
+
+    FileSystemPersistenceStore.prototype.deleteAll = function () {
+      logger.log("Offline Persistence Toolkit fileSystemPersistenceStore: deleteAll()");
+      var self = this;
+      return _deleteFileIndex().then(function() {
+        var promiseArray = [];
+        var dirReader = self._directory.createReader();
+        promiseArray.push(new Promise(function(resolve, reject) {
+          dirReader.readEntries(function (fileEntries) {
+            fileEntries.map(function (fileEntry) {
+              promiseArray.push(_removeFile(self, fileEntry.name));
+            });
+            resolve();
+          });
+        }));
+        return Promise.all(promiseArray);
+      });
+    };
+
+    function _deleteFileIndex() {
+      return _getFileIndexStorage().then(function(store) {
+        return store.delete();
+      });
+    };
+
+    // normalize rawname to a valid file name.
+    // 1. maximum filename length is 255 (http://unix.stackexchange.com/questions/32795/what-is-the-maximum-allowed-filename-and-folder-size-with-ecryptfs)
+    // 2. Common illegal characters as file name (https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx):
+    //    < > : " / \ | ? * ~
+    // 2. Common reserved filenames: . ..
+    // 3. reserved filenames on Windows (https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx):
+   //        CON, PRN, AUX, NUL, COM1, COM2, COM3,
+    //       COM4, COM5, COM6, COM7, COM8, COM9, LPT1, LPT2, LPT3, LPT4, LPT5,
+    //       LPT6, LPT7, LPT8, and LPT9. Also avoid these names followed
+    //       immediately by an extension; for example, NUL.txt is not recommended.
+    // 4. Unicode control code (https://en.wikipedia.org/wiki/C0_and_C1_control_codes):
+    //      C0 0x00-0x1f & C1 (0x80-0x9f)
+    function _normalize(rawname) {
+      var illegalCharExp = /[<>\:"\/\\\|\?\*\~]/g;
+      var reservedExp = /^\.+$/;
+      var reservedWindowExp = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?$/i;
+      var unicodeControlExp = /[\x00-\x1f\x80-\x9f]/g;
+      var replacement = '';
+      var maxLength = 255;
+      var replacedname1 = rawname.replace(illegalCharExp, replacement);
+      var replacedname2 = replacedname1.replace(reservedExp, replacement);
+      var replacedname3 = replacedname2.replace(reservedWindowExp, replacement);
+      var replacedname4 = replacedname3.replace(unicodeControlExp, replacement);
+      if (replacedname4.length > maxLength) {
+        return replacedname4.slice(0, maxLength);
+      } else {
+        return replacedname4;
+      };
+    };
+
+    FileSystemPersistenceStore.prototype.updateKey = function(currentKey, newKey) {
+      logger.log("Offline Persistence Toolkit FileSystemPersistenceStore: updateKey() with currentKey: " + currentKey + " and new key: " + newKey);
+      var self = this;
+      return _findByKeyFileIndex(currentKey).then(function(fileIndex) {
+        if (fileIndex) {
+          var filename = fileIndex.filename;
+          var metadata = fileIndex.metadata;
+          return _updateFileIndex(newKey, filename, metadata);
+        } else {
+          return Promise.reject("No existing key found to update");
+        }
+      }).then(function() {
+        return _removeByKeyFileIndex(currentKey);
+      });
+    };
+
+    return FileSystemPersistenceStore;
+  });
+
+/**
+ * Copyright (c) 2017, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+define('persist/fileSystemPersistenceStoreFactory',["./impl/fileSystemPersistenceStore"], function (FileSystemPersistenceStore) {
+  'use strict';
+  
+  /**
+   * @export
+   * @class FileSystemPersistenceStoreFactory
+   * @classdesc PersistenceStoreFactory that creates filesystem backed 
+   *            PersistenceStore instance. Requires the device to have the
+   *            cordova-file-plugin installed. Each PersistenceStore will be
+   *            saved as a directory and each entry in that store will be a file
+   *            in the directory. Please configure the location where the directories
+   *            will be stored in the cordova-file-plugin.
+   * @hideconstructor
+   */
+  var FileSystemPersistenceStoreFactory = (function () {
+
+    /**
+     * @method
+     * @name createPersistenceStore
+     * @memberof! FileSystemPersistenceStoreFactory
+     * @export
+     * @instance
+     * @param {string} name The name to be associated with the store.
+     * @param {object} [options] The configratuion options to be applied to the store.
+     * @param {string} [options.version] The version of the store.
+     * @return {Promise<FileSystemPersistenceStore>} returns a Promise that is resolved to a filesystem
+     * backed PersistenceStore instance.
+     */
+    
+    function _createPersistenceStore (name, options) {
+      var store = new FileSystemPersistenceStore(name);
+      return store.Init(options).then(function() {
+        return store;
+      });
+    };
+
+    return {
+      'createPersistenceStore': function (name, options) {
+        return _createPersistenceStore(name, options);
+      }
+    };
+  }());
+
+  return FileSystemPersistenceStoreFactory;
+});
+
+/**
+ * Copyright (c) 2017, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
 define('persist/persistenceStoreFactory',[], function () {
   'use strict';
   
@@ -13444,74 +14108,3 @@ define('persist/persistenceStoreFactory',[], function () {
 
   return PersistenceStoreFactory;
 });
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
-define('persist/configurablePouchDBStoreFactory',["./impl/pouchDBPersistenceStore"],
-       function(PouchDBPersistenceStore) {
-  'use strict';
-
-  /**
-   * @export
-   * @class ConfigurablePouchDBStoreFactory
-   * @classdesc PersistenceStoreFactory that creates PouchDB backed 
-   *            PersisteneStore instance based on specified configurations,
-   *            for example, the adapter to be used for the PouchDB.
-   * @param {object} [options] The optional options to be applied to every PouchDBPersistenceStore
-   *                           instances created by this factory.
-   * @param {object} [options.adapter] The adapter to be used for the underlying
-   *                                   PouchDB. Application uses this option needs
-   *                                   to make sure all necessary plugins and adapter
-   *                                   are installed.
-   * @param {string} options.adapter.name The name of the adapter to be used for the underlying
-   *                                   PouchDB.
-   * @param {object} [options.adapter.plugin] The plugin associated with the adapter to be used 
-   *                                  by the underlying PouchDB.
-   */
-  var ConfigurablePouchDBStoreFactory = function (options) {
-    this._options = options;
-  }
-
-  /**
-   * @method
-   * @name createPersistenceStore
-   * @memberof! ConfigurablePouchDBStoreFactory
-   * @export
-   * @instance
-   * @param {string} name The name to be associated with the store.
-   * @param {object} [options] The configratuion options to be applied to the store.
-   * @param {string} [options.version] The version of the store.
-   * @return {Promise<PouchDBPersistenceStore>} returns a Promise that is resolved to a PouchDB backed
-   * PersistenceStore instance with specified configurations.
-   */
-  ConfigurablePouchDBStoreFactory.prototype.createPersistenceStore = function (name, options) {
-    var store = new PouchDBPersistenceStore(name);
-    var storeOptions = this._options;
-    if (options) {
-      if (!storeOptions) {
-        storeOptions = options;
-      } else {
-        var mergedOptions = {};
-        for (var key in storeOptions) {
-          if (Object.prototype.hasOwnProperty.call(storeOptions, key)) {
-            mergedOptions[key] = storeOptions[key];
-          }
-        }
-        for (var key in options) {
-          if (Object.prototype.hasOwnProperty.call(options, key)) {
-            mergedOptions[key] = options[key];
-          }
-        }
-        storeOptions = mergedOptions;
-      }
-    }
-    return store.Init(storeOptions).then(function () {
-      return store;
-    });
-  }  
-
-  return ConfigurablePouchDBStoreFactory;
-});
-

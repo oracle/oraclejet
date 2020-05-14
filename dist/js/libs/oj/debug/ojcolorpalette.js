@@ -1505,7 +1505,8 @@ var __oj_color_palette_metadata =
         this._markup = (function () {
           return [
             "<div class='oj-colorpalette-container oj-form-control-container'>",
-            "<ul class='" + layoutClass + "'/>",
+            "<ul class='" + layoutClass + "'>",
+            '</ul>',
             '</div>'
           ].join('');
         }());

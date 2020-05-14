@@ -49,7 +49,7 @@ define(['./impl/logger'], function (logger) {
    * @static
    * @private
    * @param {Request} request Request object
-   * @param {boolean} replay a flag indicating whether it is a request from syn 
+   * @param {boolean} replay a flag indicating whether it is a request from syn
    *                         operation or not.
    */
   function markReplayRequest(request, replay) {
@@ -296,11 +296,14 @@ define(['./impl/logger'], function (logger) {
    */
   function requestFromJSON(data) {
     logger.log("Offline Persistence Toolkit persistenceUtils: requestFromJSON()");
+    if (!data){
+      return Promise.resolve();
+    }
     var initFromData = {};
     _copyProperties(data, initFromData, ['headers', 'body', 'signal']);
     var skipContentType = _copyPayloadFromJsonObj(data, initFromData);
     initFromData.headers = _createHeadersFromJsonObj(data, skipContentType);
-    
+
     return Promise.resolve(new Request(data.url, initFromData));
   };
 
@@ -655,7 +658,7 @@ define(['./impl/logger'], function (logger) {
         });
       } else {
         findQuery['value.' + filterCriterion.attribute] = {};
-        findQuery['value.' + filterCriterion.attribute][filterCriterion.op] = filterCriterion.value; 
+        findQuery['value.' + filterCriterion.attribute][filterCriterion.op] = filterCriterion.value;
       }
       return findQuery;
     }

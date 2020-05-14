@@ -2,8 +2,8 @@
   "components": {
     "oj-accordion": {
       "name": "oj-accordion",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Accordion",
       "type": "core",
       "since": "0.6.0",
@@ -15,7 +15,7 @@
         }
       },
       "description": "An accordion displays a set of collapsible child elements.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojAccordion.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojAccordion.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -178,8 +178,8 @@
     },
     "oj-avatar": {
       "name": "oj-avatar",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Avatar",
       "type": "core",
       "since": "4.0.0",
@@ -199,7 +199,7 @@
         }
       ],
       "description": "An avatar represents a person or entity as initials or an image.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojAvatar.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojAvatar.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -376,8 +376,8 @@
     },
     "oj-bind-dom": {
       "name": "oj-bind-dom",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Bind DOM",
       "type": "core",
       "since": "6.1.0",
@@ -389,7 +389,7 @@
         }
       },
       "description": "An oj-bind-dom element renders HTML content with access to passed in data properties.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojBindDom.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojBindDom.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -425,8 +425,8 @@
     },
     "oj-bind-for-each": {
       "name": "oj-bind-for-each",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Bind For Each",
       "type": "core",
       "since": "4.1.0",
@@ -438,7 +438,7 @@
         }
       },
       "description": "An oj-bind-for-each binds items of an array to the specified markup section. The markup section is duplicated for each array item when element is rendered.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojBindForEach.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojBindForEach.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -493,8 +493,8 @@
     },
     "oj-bind-if": {
       "name": "oj-bind-if",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Bind If",
       "type": "core",
       "since": "4.1.0",
@@ -506,7 +506,7 @@
         }
       },
       "description": "An oj-bind-if renders its contents only if a provided test returns true.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojBindIf.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojBindIf.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -533,8 +533,8 @@
     },
     "oj-bind-slot": {
       "name": "oj-bind-slot",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Bind Slot",
       "type": "core",
       "since": "4.1.0",
@@ -546,7 +546,7 @@
         }
       },
       "description": "An oj-bind-slot acts as a placeholder for child DOM to appear in a specified slot.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojBindSlot.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojBindSlot.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -580,8 +580,8 @@
     },
     "oj-bind-template-slot": {
       "name": "oj-bind-template-slot",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Bind Template Slot",
       "type": "core",
       "since": "5.1.0",
@@ -593,7 +593,7 @@
         }
       },
       "description": "An oj-bind-template-slot acts as a placeholder for stamped child DOM to appear in a specified slot.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojBindTemplateSlot.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojBindTemplateSlot.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -646,8 +646,8 @@
     },
     "oj-bind-text": {
       "name": "oj-bind-text",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Bind Text",
       "type": "core",
       "since": "4.1.0",
@@ -659,7 +659,7 @@
         }
       },
       "description": "An oj-bind-text binds a text node to an expression.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojBindText.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojBindText.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -680,8 +680,8 @@
     },
     "oj-button": {
       "name": "oj-button",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Button",
       "type": "core",
       "since": "0.6.0",
@@ -721,7 +721,7 @@
         }
       ],
       "description": "Buttons direct users to initiate or take actions and work with a single tap, click, or keystroke.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojButton.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojButton.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -910,8 +910,8 @@
     },
     "oj-buttonset-many": {
       "name": "oj-buttonset-many",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Buttonset Many",
       "type": "core",
       "since": "0.6.0",
@@ -937,7 +937,7 @@
         }
       ],
       "description": "A buttonset many is a grouping of related buttons where any number of buttons may be selected.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojButtonsetMany.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojButtonsetMany.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -1152,8 +1152,8 @@
     },
     "oj-buttonset-one": {
       "name": "oj-buttonset-one",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Buttonset One",
       "type": "core",
       "since": "0.6.0",
@@ -1179,7 +1179,7 @@
         }
       ],
       "description": "A buttonset one is a grouping of related buttons where only one button may be selected.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojButtonsetOne.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojButtonsetOne.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -1394,8 +1394,8 @@
     },
     "oj-chart": {
       "name": "oj-chart",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Chart",
       "type": "core",
       "since": "0.7.0",
@@ -1407,7 +1407,7 @@
         }
       },
       "description": "A chart displays information graphically, making relationships among the data easier to understand.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojChart.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojChart.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -10674,8 +10674,8 @@
     },
     "oj-chart-group": {
       "name": "oj-chart-group",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Chart Group",
       "type": "core",
       "since": "5.1.0",
@@ -10685,7 +10685,7 @@
         }
       },
       "description": "ojChartGroup",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojChartGroup.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojChartGroup.html",
       "properties": {
         "drilling": {
           "description": "Whether drilling is enabled on the group label. See the Help documentation for more information.",
@@ -10733,8 +10733,8 @@
     },
     "oj-chart-item": {
       "name": "oj-chart-item",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Chart Item",
       "type": "core",
       "since": "5.1.0",
@@ -10744,7 +10744,7 @@
         }
       },
       "description": "ojChartItem",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojChartItem.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojChartItem.html",
       "properties": {
         "borderColor": {
           "description": "The border color of the data item. For funnel and pyramid charts, it is used for the slice border.",
@@ -11432,8 +11432,8 @@
     },
     "oj-chart-series": {
       "name": "oj-chart-series",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Chart Series",
       "type": "core",
       "since": "5.1.0",
@@ -11443,7 +11443,7 @@
         }
       },
       "description": "ojChartSeries",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojChartSeries.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojChartSeries.html",
       "properties": {
         "areaColor": {
           "description": "The area color of the series. Only applies if series type is area or lineWithArea.",
@@ -11945,8 +11945,8 @@
     },
     "oj-checkboxset": {
       "name": "oj-checkboxset",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Checkbox Set",
       "type": "core",
       "since": "0.6.0",
@@ -11990,7 +11990,7 @@
         }
       ],
       "description": "A checkbox set allows the user to select one or more options from a set.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojCheckboxset.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojCheckboxset.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -12411,8 +12411,8 @@
     },
     "oj-collapsible": {
       "name": "oj-collapsible",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Collapsible",
       "type": "core",
       "since": "0.6.0",
@@ -12432,7 +12432,7 @@
         }
       ],
       "description": "A collapsible displays a header that can be expanded to show its content.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojCollapsible.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojCollapsible.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -12617,8 +12617,8 @@
     },
     "oj-color-palette": {
       "name": "oj-color-palette",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Color Palette",
       "type": "core",
       "since": "3.0.0",
@@ -12630,7 +12630,7 @@
         }
       },
       "description": "A color palette displays a set of predefined colors from which a specific color can be selected.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojColorPalette.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojColorPalette.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -13062,8 +13062,8 @@
     },
     "oj-color-spectrum": {
       "name": "oj-color-spectrum",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Color Spectrum",
       "type": "core",
       "since": "3.0.0",
@@ -13075,7 +13075,7 @@
         }
       },
       "description": "A color spectrum allows a custom color value to be specified from a display containing a saturation/luminosity spectrum, plus hue and opacity sliders.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojColorSpectrum.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojColorSpectrum.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -13437,8 +13437,8 @@
     },
     "oj-combobox-many": {
       "name": "oj-combobox-many",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Combobox (Many)",
       "type": "core",
       "since": "0.6.0",
@@ -13476,7 +13476,7 @@
         }
       ],
       "description": "A combobox many is a dropdown list that supports multiple selections, text input, and search filtering.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojComboboxMany.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojComboboxMany.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -14094,8 +14094,8 @@
     },
     "oj-combobox-one": {
       "name": "oj-combobox-one",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Combobox (One)",
       "type": "core",
       "since": "0.6.0",
@@ -14133,7 +14133,7 @@
         }
       ],
       "description": "A combobox one is a dropdown list that supports single selection, text input, and search filtering.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojComboboxOne.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojComboboxOne.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -14786,8 +14786,8 @@
     },
     "oj-conveyor-belt": {
       "name": "oj-conveyor-belt",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Conveyor Belt",
       "type": "core",
       "since": "0.6.0",
@@ -14799,7 +14799,7 @@
         }
       },
       "description": "A conveyor belt manages overflow for its child elements and allows scrolling among them.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojConveyorBelt.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojConveyorBelt.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -14909,8 +14909,8 @@
     },
     "oj-data-grid": {
       "name": "oj-data-grid",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Data Grid",
       "type": "core",
       "since": "0.6.0",
@@ -14960,7 +14960,7 @@
         }
       ],
       "description": "A data grid displays data in a cell oriented grid.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojDataGrid.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojDataGrid.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -16526,8 +16526,8 @@
     },
     "oj-date-picker": {
       "name": "oj-date-picker",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Inline Date Picker",
       "type": "core",
       "since": "4.0.0",
@@ -16565,7 +16565,7 @@
         }
       ],
       "description": "A date picker is an inline element for picking a date value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojDatePicker.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojDatePicker.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -17451,8 +17451,8 @@
     },
     "oj-date-time-picker": {
       "name": "oj-date-time-picker",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Inline Date Time Picker",
       "type": "core",
       "since": "4.0.0",
@@ -17490,7 +17490,7 @@
         }
       ],
       "description": "A date time picker is an inline element for picking a date and time value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojDateTimePicker.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojDateTimePicker.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -18453,8 +18453,8 @@
     },
     "oj-defer": {
       "name": "oj-defer",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Defer",
       "type": "core",
       "since": "4.0.0",
@@ -18464,12 +18464,12 @@
         }
       },
       "description": "Defer is used to delay applying bindings to its children until it is activated. Child elements are disconnected from the DOM tree until the parent component activates its subtree.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojDefer.html"
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojDefer.html"
     },
     "oj-diagram": {
       "name": "oj-diagram",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Diagram",
       "type": "core",
       "since": "1.1.0",
@@ -18481,7 +18481,7 @@
         }
       },
       "description": "A diagram displays a set of nodes and the links between them. The node positions and link paths are specified by an application-provided layout function.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojDiagram.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojDiagram.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -20562,8 +20562,8 @@
     },
     "oj-diagram-link": {
       "name": "oj-diagram-link",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Diagram Link",
       "type": "core",
       "since": "6.0.0",
@@ -20573,7 +20573,7 @@
         }
       },
       "description": "ojDiagramLink",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojDiagramLink.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojDiagramLink.html",
       "properties": {
         "categories": {
           "description": "An array of category strings corresponding to this link. This allows highlighting and filtering of links. By default, the label is used as the link category.",
@@ -20740,8 +20740,8 @@
     },
     "oj-diagram-node": {
       "name": "oj-diagram-node",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Diagram Node",
       "type": "core",
       "since": "6.0.0",
@@ -20751,7 +20751,7 @@
         }
       },
       "description": "ojDiagramNode",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojDiagramNode.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojDiagramNode.html",
       "properties": {
         "categories": {
           "description": "An array of category strings corresponding to this node. This allows highlighting and filtering of nodes. By default, the label is used as the node category.",
@@ -21010,8 +21010,8 @@
     },
     "oj-dialog": {
       "name": "oj-dialog",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Dialog",
       "type": "core",
       "since": "0.6.0",
@@ -21049,7 +21049,7 @@
         }
       ],
       "description": "A dialog displays a popup window that provides information and gathers input from the application user.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojDialog.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojDialog.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -21663,8 +21663,8 @@
     },
     "oj-file-picker": {
       "name": "oj-file-picker",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "File Picker",
       "type": "core",
       "since": "4.0.0",
@@ -21696,7 +21696,7 @@
         }
       ],
       "description": "A file picker displays a clickable dropzone for selecting files from the device storage.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojFilePicker.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojFilePicker.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -21910,8 +21910,8 @@
     },
     "oj-film-strip": {
       "name": "oj-film-strip",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Film Strip",
       "type": "core",
       "since": "1.1.0",
@@ -21923,7 +21923,7 @@
         }
       },
       "description": "A filmstrip lays out its children in a single row or column across logical pages and allows navigating through them.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojFilmStrip.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojFilmStrip.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -22174,8 +22174,8 @@
     },
     "oj-form-layout": {
       "name": "oj-form-layout",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Form Layout",
       "type": "core",
       "since": "4.1.0",
@@ -22187,7 +22187,7 @@
         }
       },
       "description": "A form layout manages the layout of labels and fields in a form.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojFormLayout.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojFormLayout.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -22360,8 +22360,8 @@
     },
     "oj-gantt": {
       "name": "oj-gantt",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Gantt",
       "type": "core",
       "since": "2.1.0",
@@ -22373,7 +22373,7 @@
         }
       },
       "description": "A gantt displays scheduling information graphically, making it easier to plan, coordinate, and track various tasks and resources.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojGantt.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojGantt.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -25648,8 +25648,8 @@
     },
     "oj-gantt-dependency": {
       "name": "oj-gantt-dependency",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Gantt Dependency",
       "type": "core",
       "since": "5.2.0",
@@ -25659,7 +25659,7 @@
         }
       },
       "description": "ojGanttDependency",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojGanttDependency.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojGanttDependency.html",
       "properties": {
         "predecessorTaskId": {
           "description": "The identifier for the predecessor task. This must reference a task in Gantt.",
@@ -25729,8 +25729,8 @@
     },
     "oj-gantt-row": {
       "name": "oj-gantt-row",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Gantt Row",
       "type": "core",
       "since": "5.2.0",
@@ -25740,7 +25740,7 @@
         }
       },
       "description": "ojGanttRow",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojGanttRow.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojGanttRow.html",
       "properties": {
         "label": {
           "description": "The label associated with the row.",
@@ -25760,8 +25760,8 @@
     },
     "oj-gantt-task": {
       "name": "oj-gantt-task",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Gantt Task",
       "type": "core",
       "since": "5.2.0",
@@ -25771,7 +25771,7 @@
         }
       },
       "description": "ojGanttTask",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojGanttTask.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojGanttTask.html",
       "properties": {
         "baseline": {
           "description": "Specifies the baseline of the task. When only one of 'start' or 'end' value is specified, or when 'start' and 'end' values are equal, the baseline is considered a milestone baseline.",
@@ -26027,8 +26027,8 @@
     },
     "oj-indexer": {
       "name": "oj-indexer",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Indexer",
       "type": "core",
       "since": "1.2.0",
@@ -26038,7 +26038,7 @@
         }
       },
       "description": "An indexer displays a list of sections that corresponds to group headers of a list.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojIndexer.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojIndexer.html",
       "properties": {
         "data": {
           "description": "The data provider for the Indexer.",
@@ -26151,8 +26151,8 @@
     },
     "oj-input-date": {
       "name": "oj-input-date",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Input Date",
       "type": "core",
       "since": "0.6.0",
@@ -26190,7 +26190,7 @@
         }
       ],
       "description": "An input date allows the user to enter or select a date value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojInputDate.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojInputDate.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -27093,8 +27093,8 @@
     },
     "oj-input-date-time": {
       "name": "oj-input-date-time",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Input Date Time",
       "type": "core",
       "since": "0.6.0",
@@ -27132,7 +27132,7 @@
         }
       ],
       "description": "An input date time allows the user to enter or select a date and time value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojInputDateTime.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojInputDateTime.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -28112,8 +28112,8 @@
     },
     "oj-input-number": {
       "name": "oj-input-number",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Input Number",
       "type": "core",
       "since": "0.6.0",
@@ -28151,7 +28151,7 @@
         }
       ],
       "description": "An input number allows the user to enter a number value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojInputNumber.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojInputNumber.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -28790,8 +28790,8 @@
     },
     "oj-input-password": {
       "name": "oj-input-password",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Input Password",
       "type": "core",
       "since": "0.6.0",
@@ -28803,7 +28803,7 @@
         }
       },
       "description": "An input password allows the user to enter a password.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojInputPassword.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojInputPassword.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -29273,8 +29273,8 @@
     },
     "oj-input-text": {
       "name": "oj-input-text",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Input Text",
       "type": "core",
       "since": "0.6.0",
@@ -29312,7 +29312,7 @@
         }
       ],
       "description": "An input text allows the user to enter a text value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojInputText.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojInputText.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -29916,8 +29916,8 @@
     },
     "oj-input-time": {
       "name": "oj-input-time",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Input Time",
       "type": "core",
       "since": "0.6.0",
@@ -29955,7 +29955,7 @@
         }
       ],
       "description": "An input time allows the user to enter or select a time value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojInputTime.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojInputTime.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -30702,8 +30702,8 @@
     },
     "oj-label": {
       "name": "oj-label",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Label",
       "type": "core",
       "since": "4.0.0",
@@ -30747,7 +30747,7 @@
         }
       ],
       "description": "A label is a short description of requested input.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojLabel.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojLabel.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -30878,8 +30878,8 @@
     },
     "oj-label-value": {
       "name": "oj-label-value",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Label Value",
       "type": "core",
       "since": "5.1.0",
@@ -30891,7 +30891,7 @@
         }
       },
       "description": "A label value is used to lay out a label and value, it is most commonly used in a form layout.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojLabelValue.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojLabelValue.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -31010,8 +31010,8 @@
     },
     "oj-led-gauge": {
       "name": "oj-led-gauge",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Led Gauge",
       "type": "core",
       "since": "0.7.0",
@@ -31023,7 +31023,7 @@
         }
       },
       "description": "A LED gauge displays information graphically, highlighting a specific metric value in relation to its thresholds.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojLedGauge.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojLedGauge.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -31575,8 +31575,8 @@
     },
     "oj-legend": {
       "name": "oj-legend",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Legend",
       "type": "core",
       "since": "0.7.0",
@@ -31588,7 +31588,7 @@
         }
       },
       "description": "A legend displays an interactive description of symbols, colors, etc., used in graphical information representations.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojLegend.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojLegend.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -32350,8 +32350,8 @@
     },
     "oj-legend-item": {
       "name": "oj-legend-item",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Legend Item",
       "type": "core",
       "since": "6.0.0",
@@ -32361,7 +32361,7 @@
         }
       },
       "description": "ojLegendItem",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojLegendItem.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojLegendItem.html",
       "properties": {
         "borderColor": {
           "description": "The border color of the marker. Only applies if symbolType is \"marker\" or \"lineWithMarker\".",
@@ -32643,8 +32643,8 @@
     },
     "oj-legend-section": {
       "name": "oj-legend-section",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Legend Section",
       "type": "core",
       "since": "6.0.0",
@@ -32654,7 +32654,7 @@
         }
       },
       "description": "ojLegendSection",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojLegendSection.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojLegendSection.html",
       "properties": {
         "collapsible": {
           "description": "Whether the section is collapsible. Only applies if the legend orientation is vertical.",
@@ -32716,8 +32716,8 @@
     },
     "oj-list-view": {
       "name": "oj-list-view",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "List View",
       "type": "core",
       "since": "1.1.0",
@@ -32761,7 +32761,7 @@
         }
       ],
       "description": "A list view displays data items as a list or a grid with highly interactive features.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojListView.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojListView.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -33605,8 +33605,8 @@
     },
     "oj-masonry-layout": {
       "name": "oj-masonry-layout",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Masonry Layout",
       "type": "core",
       "since": "1.1.0",
@@ -33668,7 +33668,7 @@
         }
       ],
       "description": "A masonry layout lays out its children in a grid of tiles.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojMasonryLayout.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojMasonryLayout.html",
       "properties": {
         "reorderHandle": {
           "description": "Specifies the selector of the child DOM element that can be used to reorder the child.",
@@ -33967,8 +33967,8 @@
     },
     "oj-menu": {
       "name": "oj-menu",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Menu",
       "type": "core",
       "since": "0.6.0",
@@ -33980,7 +33980,7 @@
         }
       },
       "description": "A menu displays a list of options in a popup.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojMenu.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojMenu.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -34522,8 +34522,8 @@
     },
     "oj-menu-button": {
       "name": "oj-menu-button",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Menu Button",
       "type": "core",
       "since": "4.0.0",
@@ -34563,7 +34563,7 @@
         }
       ],
       "description": "A menu button launches a menu when clicked.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojMenuButton.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojMenuButton.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -34752,8 +34752,8 @@
     },
     "oj-menu-select-many": {
       "name": "oj-menu-select-many",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Menu Multi Select",
       "type": "core",
       "since": "6.0.0",
@@ -34765,7 +34765,7 @@
         }
       },
       "description": "A menu select many allows the user to select one or more menu items from a set.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojMenuSelectMany.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojMenuSelectMany.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -34881,8 +34881,8 @@
     },
     "oj-message": {
       "name": "oj-message",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Message",
       "type": "core",
       "since": "5.0.0",
@@ -34892,7 +34892,7 @@
         }
       },
       "description": "A message conveys categorized information to the user, often regarding errors.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojMessage.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojMessage.html",
       "properties": {
         "displayOptions": {
           "description": "Specifies the display options for contents of the message.",
@@ -35195,8 +35195,8 @@
     },
     "oj-messages": {
       "name": "oj-messages",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Messages",
       "type": "core",
       "since": "5.0.0",
@@ -35216,7 +35216,7 @@
         }
       ],
       "description": "Messages manages the layout and display of child messages.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojMessages.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojMessages.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -35716,8 +35716,8 @@
     },
     "oj-module": {
       "name": "oj-module",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "ojModule Element",
       "type": "core",
       "since": "4.2.0",
@@ -35727,7 +35727,7 @@
         }
       },
       "description": "A module is a navigational element that manages content replacement within a particular region of the page.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojModule.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojModule.html",
       "properties": {
         "animation": {
           "description": "Specifies an animation object used for view transitions. See the Help documentation for more information.",
@@ -35829,8 +35829,8 @@
     },
     "oj-navigation-list": {
       "name": "oj-navigation-list",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Navigation List",
       "type": "core",
       "since": "1.1.0",
@@ -35916,7 +35916,7 @@
         }
       ],
       "description": "A navigation list allows navigation between different content sections.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojNavigationList.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojNavigationList.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -36368,8 +36368,8 @@
     },
     "oj-n-box": {
       "name": "oj-n-box",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "N Box",
       "type": "core",
       "since": "1.1.0",
@@ -36381,7 +36381,7 @@
         }
       },
       "description": "NBox is an interactive data visualization (typically found in Human Capital Management applications) in which employees are grouped and compared across two dimensions.  Each dimension can be split into multiple ranges.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojNBox.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojNBox.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -38112,8 +38112,8 @@
     },
     "oj-n-box-node": {
       "name": "oj-n-box-node",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "N Box Node",
       "type": "core",
       "since": "6.0.0",
@@ -38123,7 +38123,7 @@
         }
       },
       "description": "ojNBoxNode",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojNBoxNode.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojNBoxNode.html",
       "properties": {
         "borderColor": {
           "description": "The color of the node border.",
@@ -38574,8 +38574,8 @@
     },
     "oj-optgroup": {
       "name": "oj-optgroup",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Option Group",
       "type": "core",
       "since": "4.0.0",
@@ -38585,7 +38585,7 @@
         }
       },
       "description": "An optgroup supports grouping of child oj-option elements.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojOptgroup.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojOptgroup.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -38670,8 +38670,8 @@
     },
     "oj-option": {
       "name": "oj-option",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Option",
       "type": "core",
       "since": "4.0.0",
@@ -38681,7 +38681,7 @@
         }
       },
       "description": "An option represents a value for JET elements that display a list of values.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojOption.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojOption.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -38772,8 +38772,8 @@
     },
     "oj-paging-control": {
       "name": "oj-paging-control",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Paging Control",
       "type": "core",
       "since": "0.7.0",
@@ -38785,7 +38785,7 @@
         }
       },
       "description": "A paging control provides paging functionality for data collections.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojPagingControl.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojPagingControl.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -39288,8 +39288,8 @@
     },
     "oj-picto-chart": {
       "name": "oj-picto-chart",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Picto Chart",
       "type": "core",
       "since": "1.2.0",
@@ -39301,7 +39301,7 @@
         }
       },
       "description": "A picto chart displays information using icons to visualize an absolute number or the relative sizes of the different parts of a population.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojPictoChart.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojPictoChart.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -40017,8 +40017,8 @@
     },
     "oj-picto-chart-item": {
       "name": "oj-picto-chart-item",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Picto Chart Item",
       "type": "core",
       "since": "5.2.0",
@@ -40028,7 +40028,7 @@
         }
       },
       "description": "ojPictoChartItem",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojPictoChartItem.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojPictoChartItem.html",
       "properties": {
         "borderColor": {
           "description": "The border color of the item. Does not apply if custom image is specified.",
@@ -40205,8 +40205,8 @@
     },
     "oj-popup": {
       "name": "oj-popup",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Popup",
       "type": "core",
       "since": "1.1.0",
@@ -40226,7 +40226,7 @@
         }
       ],
       "description": "A popup temporarily 'pops up' content in the foreground.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojPopup.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojPopup.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -40754,8 +40754,8 @@
     },
     "oj-progress": {
       "name": "oj-progress",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Progress",
       "type": "core",
       "since": "1.0.0",
@@ -40787,7 +40787,7 @@
         }
       ],
       "description": "A progress allows the user to visualize the progression of an extended computer operation.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojProgress.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojProgress.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -40917,8 +40917,8 @@
     },
     "oj-progress-list": {
       "name": "oj-progress-list",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Progress List",
       "type": "core",
       "since": "4.0.0",
@@ -40937,7 +40937,7 @@
         }
       ],
       "description": "A progress list displays a list of items and their progress, it is most commonly used in conjunction with a file picker to display file upload progress.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojProgressList.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojProgressList.html",
       "propertyLayout": [
         {
           "propertyGroup": "data",
@@ -41001,8 +41001,8 @@
     },
     "oj-radioset": {
       "name": "oj-radioset",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Radioset",
       "type": "core",
       "since": "0.6.0",
@@ -41046,7 +41046,7 @@
         }
       ],
       "description": "A radio set allows the user to select one option from a set of mutually exclusive options.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojRadioset.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojRadioset.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -41468,8 +41468,8 @@
     },
     "oj-rating-gauge": {
       "name": "oj-rating-gauge",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Rating Gauge",
       "type": "core",
       "since": "0.7.0",
@@ -41481,7 +41481,7 @@
         }
       },
       "description": "A rating gauge displays information graphically, typically displaying or accepting user feedback on a product or service.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojRatingGauge.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojRatingGauge.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -42075,8 +42075,8 @@
     },
     "oj-refresher": {
       "name": "oj-refresher",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Refresher",
       "type": "core",
       "since": "5.1.0",
@@ -42096,7 +42096,7 @@
         }
       ],
       "description": "A refresher is a wrapper for attaching pull to refresh functionality to a DOM element.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojRefresher.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojRefresher.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -42214,8 +42214,8 @@
     },
     "oj-row-expander": {
       "name": "oj-row-expander",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Row Expander",
       "type": "core",
       "since": "1.0.0",
@@ -42225,7 +42225,7 @@
         }
       },
       "description": "Enable hierarchical data to be displayed in a JET Table and JET DataGrid.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojRowExpander.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojRowExpander.html",
       "properties": {
         "context": {
           "description": "The context object obtained from the column renderer (Table) or cell renderer (DataGrid)",
@@ -42407,8 +42407,8 @@
     },
     "oj-select-many": {
       "name": "oj-select-many",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Select (Many)",
       "type": "core",
       "since": "0.6.0",
@@ -42446,7 +42446,7 @@
         }
       ],
       "description": "A select many is a dropdown list that supports multiple selections and search filtering.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojSelectMany.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojSelectMany.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -43018,8 +43018,8 @@
     },
     "oj-select-one": {
       "name": "oj-select-one",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Select (One)",
       "type": "core",
       "since": "0.6.0",
@@ -43064,7 +43064,7 @@
         }
       ],
       "description": "A select one is a dropdown list that supports single selection and search filtering.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojSelectOne.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojSelectOne.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -43631,8 +43631,8 @@
     },
     "oj-select-single": {
       "name": "oj-select-single",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Select (Single)",
       "type": "core",
       "since": "8.0.0",
@@ -43670,7 +43670,7 @@
         }
       ],
       "description": "A select single is a dropdown list that supports single selection and search filtering.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojSelectSingle.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojSelectSingle.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -44187,8 +44187,8 @@
     },
     "oj-slider": {
       "name": "oj-slider",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Slider",
       "type": "core",
       "since": "0.7.0",
@@ -44214,7 +44214,7 @@
         }
       ],
       "description": "A slider allows a user to set a value by moving an indicator.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojSlider.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojSlider.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -44654,8 +44654,8 @@
     },
     "oj-spark-chart": {
       "name": "oj-spark-chart",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Spark Chart",
       "type": "core",
       "since": "0.7.0",
@@ -44667,7 +44667,7 @@
         }
       },
       "description": "A spark chart displays information graphically, typically highlighting the trend of a data set in a compact form factor.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojSparkChart.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojSparkChart.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -45428,8 +45428,8 @@
     },
     "oj-spark-chart-item": {
       "name": "oj-spark-chart-item",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Spark Chart Item",
       "type": "core",
       "since": "5.2.0",
@@ -45439,7 +45439,7 @@
         }
       },
       "description": "ojSparkChartItem",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojSparkChartItem.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojSparkChartItem.html",
       "properties": {
         "borderColor": {
           "description": "The default border color for the data items.",
@@ -45563,8 +45563,8 @@
     },
     "oj-status-meter-gauge": {
       "name": "oj-status-meter-gauge",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Status Meter Gauge",
       "type": "core",
       "since": "0.7.0",
@@ -45576,7 +45576,7 @@
         }
       },
       "description": "A status meter gauge displays information graphically, highlighting a specific metric value's progress in relation to its thresholds.  Horizontal, vertical, and circular formats are supported.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojStatusMeterGauge.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojStatusMeterGauge.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -46451,8 +46451,8 @@
     },
     "oj-sunburst": {
       "name": "oj-sunburst",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Sunburst",
       "type": "core",
       "since": "0.7.0",
@@ -46464,7 +46464,7 @@
         }
       },
       "description": "A sunburst is an interactive data visualization in which hierarchical data is represented in concentric rings.  Each ring segment is proportionally sized relative to the other segments at a given level.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojSunburst.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojSunburst.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -47555,8 +47555,8 @@
     },
     "oj-sunburst-node": {
       "name": "oj-sunburst-node",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Sunburst Node",
       "type": "core",
       "since": "6.0.0",
@@ -47566,7 +47566,7 @@
         }
       },
       "description": "ojSunburstNode",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojSunburstNode.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojSunburstNode.html",
       "properties": {
         "borderColor": {
           "description": "The border color of the node.",
@@ -47823,8 +47823,8 @@
     },
     "oj-swipe-actions": {
       "name": "oj-swipe-actions",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Swipe Actions",
       "type": "core",
       "since": "5.1.0",
@@ -47868,7 +47868,7 @@
         }
       ],
       "description": "A swipe actions component adds swipe-to-reveal functionality to elements such as items in ListView.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojSwipeActions.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojSwipeActions.html",
       "properties": {
         "translations": {
           "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
@@ -47973,8 +47973,8 @@
     },
     "oj-switch": {
       "name": "oj-switch",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Switch",
       "type": "core",
       "since": "0.7.0",
@@ -48000,7 +48000,7 @@
         }
       ],
       "description": "A switch toggles between two mutually exclusive states — on and off.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojSwitch.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojSwitch.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -48340,8 +48340,8 @@
     },
     "oj-switcher": {
       "name": "oj-switcher",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Switcher",
       "type": "core",
       "since": "4.0.0",
@@ -48353,7 +48353,7 @@
         }
       },
       "description": "A switcher dynamically decides which child element should be made visible.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojSwitcher.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojSwitcher.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -48423,8 +48423,8 @@
     },
     "oj-tab-bar": {
       "name": "oj-tab-bar",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Tab Bar",
       "type": "core",
       "since": "4.0.0",
@@ -48522,7 +48522,7 @@
         }
       ],
       "description": "A tab bar allows navigation between different content sections.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojTabBar.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojTabBar.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -49045,8 +49045,8 @@
     },
     "oj-table": {
       "name": "oj-table",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Table",
       "type": "core",
       "since": "0.6.0",
@@ -49078,7 +49078,7 @@
         }
       ],
       "description": "A table displays data items in a tabular format with highly interactive features.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojTable.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojTable.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -50433,8 +50433,8 @@
     },
     "oj-tag-cloud": {
       "name": "oj-tag-cloud",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Tag Cloud",
       "type": "core",
       "since": "1.1.0",
@@ -50446,7 +50446,7 @@
         }
       },
       "description": "A tag cloud is an interactive data visualization of textual data, where the importance of each tagged word or phrase is represented by font size or color.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojTagCloud.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojTagCloud.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -51015,8 +51015,8 @@
     },
     "oj-tag-cloud-item": {
       "name": "oj-tag-cloud-item",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Tag Cloud Item",
       "type": "core",
       "since": "5.2.0",
@@ -51026,7 +51026,7 @@
         }
       },
       "description": "ojTagCloudItem",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojTagCloudItem.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojTagCloudItem.html",
       "properties": {
         "categories": {
           "description": "An array of category strings corresponding to the tag cloud items. This allows highlighting and filtering of items.",
@@ -51090,8 +51090,8 @@
     },
     "oj-text-area": {
       "name": "oj-text-area",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Text Area",
       "type": "core",
       "since": "0.6.0",
@@ -51129,7 +51129,7 @@
         }
       ],
       "description": "A text area allows the user to enter a multi-line text value.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojTextArea.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojTextArea.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -51720,8 +51720,8 @@
     },
     "oj-thematic-map": {
       "name": "oj-thematic-map",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Thematic Map",
       "type": "core",
       "since": "0.7.0",
@@ -51733,7 +51733,7 @@
         }
       },
       "description": "A thematic map is an interactive data visualization that displays data corresponding to geographic locations or regions.\r             Applications are required to supply a mapProvider for a valid thematic map.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojThematicMap.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojThematicMap.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -53157,8 +53157,8 @@
     },
     "oj-thematic-map-area": {
       "name": "oj-thematic-map-area",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Thematic Map Area",
       "type": "core",
       "since": "5.2.0",
@@ -53168,7 +53168,7 @@
         }
       },
       "description": "ojThematicMapArea",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojThematicMapArea.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojThematicMapArea.html",
       "properties": {
         "categories": {
           "description": "An array of category strings corresponding to this area. This allows highlighting and filtering of areas. By default, the label is used as the area category.",
@@ -53259,8 +53259,8 @@
     },
     "oj-thematic-map-link": {
       "name": "oj-thematic-map-link",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Thematic Map Link",
       "type": "core",
       "since": "5.2.0",
@@ -53270,7 +53270,7 @@
         }
       },
       "description": "ojThematicMapLink",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojThematicMapLink.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojThematicMapLink.html",
       "properties": {
         "categories": {
           "description": "An array of category strings corresponding to this link. This allows highlighting and filtering of links. By default, the label is used as the link category.",
@@ -53405,8 +53405,8 @@
     },
     "oj-thematic-map-marker": {
       "name": "oj-thematic-map-marker",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Thematic Map Marker",
       "type": "core",
       "since": "5.2.0",
@@ -53416,7 +53416,7 @@
         }
       },
       "description": "ojThematicMapMarker",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojThematicMapMarker.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojThematicMapMarker.html",
       "properties": {
         "borderColor": {
           "description": "The marker border color.",
@@ -53639,8 +53639,8 @@
     },
     "oj-time-axis": {
       "name": "oj-time-axis",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Time Axis",
       "type": "core",
       "since": "2.1.0",
@@ -53652,7 +53652,7 @@
         }
       },
       "description": "A time axis displays a range of dates based on specified start and end dates and a time scale.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojTimeAxis.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojTimeAxis.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -53944,8 +53944,8 @@
     },
     "oj-timeline": {
       "name": "oj-timeline",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Timeline",
       "type": "core",
       "since": "1.1.0",
@@ -53957,7 +53957,7 @@
         }
       },
       "description": "A timeline is an interactive data visualization that displays a series of events in chronological order.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojTimeline.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojTimeline.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -55435,8 +55435,8 @@
     },
     "oj-timeline-item": {
       "name": "oj-timeline-item",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Timeline Item",
       "type": "core",
       "since": "7.0.0",
@@ -55446,7 +55446,7 @@
         }
       },
       "description": "ojTimelineItem",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojTimelineItem.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojTimelineItem.html",
       "properties": {
         "description": {
           "description": "The description text displayed on the timeline item. If not specified, no description will be shown.",
@@ -55515,8 +55515,8 @@
     },
     "oj-timeline-series": {
       "name": "oj-timeline-series",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Timeline Series",
       "type": "core",
       "since": "7.0.0",
@@ -55526,7 +55526,7 @@
         }
       },
       "description": "ojTimelineSeries",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojTimelineSeries.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojTimelineSeries.html",
       "properties": {
         "emptyText": {
           "description": "The text of an empty timeline series.",
@@ -55575,8 +55575,8 @@
     },
     "oj-toolbar": {
       "name": "oj-toolbar",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Toolbar",
       "type": "core",
       "since": "0.6.0",
@@ -55626,7 +55626,7 @@
         }
       ],
       "description": "A toolbar displays a strip of control elements such as buttons and menu buttons, often grouped by separators.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojToolbar.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojToolbar.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -55758,8 +55758,8 @@
     },
     "oj-train": {
       "name": "oj-train",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Train",
       "type": "core",
       "since": "1.0.0",
@@ -55779,7 +55779,7 @@
         }
       ],
       "description": "A train allows a user to navigate between different steps of a process.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojTrain.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojTrain.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -56002,8 +56002,8 @@
     },
     "oj-treemap": {
       "name": "oj-treemap",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Treemap",
       "type": "core",
       "since": "0.7.0",
@@ -56015,7 +56015,7 @@
         }
       },
       "description": "A tree map is an interactive data visualization in which hierarchical data is represented across two dimensions by the size and color of nested rectangular nodes.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojTreemap.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojTreemap.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -57203,8 +57203,8 @@
     },
     "oj-treemap-node": {
       "name": "oj-treemap-node",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Treemap Node",
       "type": "core",
       "since": "6.0.0",
@@ -57214,7 +57214,7 @@
         }
       },
       "description": "ojTreemapNode",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojTreemapNode.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojTreemapNode.html",
       "properties": {
         "categories": {
           "description": "An optional array of category strings corresponding to this data item. See the Help documentation for more information.",
@@ -57537,8 +57537,8 @@
     },
     "oj-tree-view": {
       "name": "oj-tree-view",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Tree View",
       "type": "core",
       "since": "4.0.0",
@@ -57564,7 +57564,7 @@
         }
       ],
       "description": "A tree view displays hierarchical relationships between items.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojTreeView.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojTreeView.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",
@@ -57985,8 +57985,8 @@
     },
     "oj-validation-group": {
       "name": "oj-validation-group",
-      "version": "8.2.0",
-      "jetVersion": "8.2.0",
+      "version": "8.3.0",
+      "jetVersion": "8.3.0",
       "displayName": "Validation Group",
       "type": "core",
       "since": "4.2.0",
@@ -57998,7 +57998,7 @@
         }
       },
       "description": "A validation group tracks and summarizes the current validity state of a group of components.",
-      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.2/reference-api/oj.ojValidationGroup.html",
+      "help": "https://docs.oracle.com/en/middleware/developer-tools/jet/8.3/reference-api/oj.ojValidationGroup.html",
       "propertyLayout": [
         {
           "propertyGroup": "common",

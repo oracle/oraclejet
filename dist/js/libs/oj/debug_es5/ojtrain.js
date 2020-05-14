@@ -407,8 +407,8 @@ var __oj_train_metadata =
      * @private
      */
     _drawButton: function _drawButton(index) {
-      var button = $('<div/>').addClass('oj-train-button');
-      var scrnRead = $('<span/>');
+      var button = $('<div></div>').addClass('oj-train-button');
+      var scrnRead = $('<span></span>');
       var self = this;
       var desc = '';
 
@@ -472,8 +472,8 @@ var __oj_train_metadata =
      */
     _drawMessageType: function _drawMessageType(index) {
       if (this._stepArray[index] && this._stepArray[index][4]) {
-        var icon = $('<div/>').addClass('oj-train-icon oj-component-icon').attr('aria-hidden', 'true');
-        var scrnRead = $('<span/>');
+        var icon = $('<div></div>').addClass('oj-train-icon oj-component-icon').attr('aria-hidden', 'true');
+        var scrnRead = $('<span></span>');
         var desc = '';
         var self = this;
         var messageType = this._stepArray[index][4];
@@ -592,7 +592,7 @@ var __oj_train_metadata =
      * @private
      */
     _drawStepNumberLabel: function _drawStepNumberLabel(index) {
-      var stepNumberLabel = $('<div/>').addClass('oj-train-button-text');
+      var stepNumberLabel = $('<div></div>').addClass('oj-train-button-text');
       stepNumberLabel.append((index + 1).toString()); // @HTMLUpdateOK
 
       var stepBackground = this._stepList.children().eq(index).find('.oj-train-button');
@@ -610,7 +610,7 @@ var __oj_train_metadata =
      */
     _drawIndividualConnectorLine: function _drawIndividualConnectorLine(index) {
       if (index !== this._stepNum - 1) {
-        var stepConnector = $('<div/>').addClass('oj-train-step-individual-connector');
+        var stepConnector = $('<div></div>').addClass('oj-train-step-individual-connector');
 
         if (index < this._selectedIndex) {
           stepConnector.addClass('oj-train-connector-before-selected-step');
@@ -630,7 +630,7 @@ var __oj_train_metadata =
      * @private
      */
     _drawStepFill: function _drawStepFill(index) {
-      var stepFill = $('<div/>');
+      var stepFill = $('<div></div>');
       stepFill.addClass('oj-train-button-connector');
 
       if (this._stepArray[index]) {
@@ -656,7 +656,7 @@ var __oj_train_metadata =
       var self = this;
 
       if (this._stepArray[index]) {
-        var labelWrapper = $('<div/>').addClass('oj-train-label-wrapper');
+        var labelWrapper = $('<div></div>').addClass('oj-train-label-wrapper');
         var label = $('<a>');
         label.text(this._stepArray[index][0]);
         var disabled = this._stepArray[index][2];

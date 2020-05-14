@@ -222,37 +222,119 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
     return allKeys.filter(function(key) {
       var parts = key.split("$");
       var urlToCheck;
-      if (options && options.ignoreSearch) {
-        urlToCheck = extractBaseUrl(parts[0]);
-      } else {
-        urlToCheck = parts[0];
-      }
-      if (urlToCheck !== urlToMatch) {
-        return false;
-      }
-      if (methodToMatch && parts[1] !== methodToMatch) {
-        return false;
-      }
-      if (!options || !options.ignoreVary) {
-        var variesInKey = parts[2];
-        if (!variesInKey) {
-          return true;
+      // check to see key was split into multiple parts based on delimiter
+      if (parts.length === 1){
+        // if only 1 part, then key may be using old key method
+        // here for compatablity with pre v1.4.1
+
+        // check if url to check is the same as the request url
+        urlToCheck = key.slice(0,urlToMatch.length);
+        if (urlToCheck !== urlToMatch) {
+            return false;
         }
-        var pairs = variesInKey.split(';');
-        if (pairs.length === 1) {
-          return false;
-        }
-        var requestHeaders = request.headers;
-        for (var index = 0; index < pairs.length - 1; index++) {
-          var pair = pairs[index];
-          var varyFieldValueToCheck = pair.split('=');
-          var varyValue = (!requestHeaders || !requestHeaders.get(varyFieldValueToCheck[0])) ? 'undefined' : requestHeaders.get(varyFieldValueToCheck[0]);
-          if (varyValue != varyFieldValueToCheck[1]) {
+
+        if (options && options.ignoreSearch) {
+          if (key[urlToMatch.length] === '/') {
             return false;
           }
         }
+        // check the for the method using indexOf only if the method
+        // needs to be matched. Slicing the key based on the length of the
+        // urlToMatch length, if the option.ignoreSearch is true, we don't know
+        // where the method is past the '?', so search the whole string. if
+        // option.ignoreSearch is false, then just check the substring of method length
+        var methodToCheck
+        if (methodToMatch){
+          if (options && options.ignoreSearch) {
+            methodToCheck = key.slice(urlToMatch.length);
+          } else {
+            methodToCheck = key.slice(urlToMatch.length,urlToMatch.length + request.method.length)
+          }
+          if(methodToCheck.indexOf(methodToMatch) === -1) {
+            return false;
+          }
+        }
+        if (!options || !options.ignoreVary) {
+          var variesInKey = key;
+          // if methodToMatch exists, split based on method then select the last instance in the array for Vary
+          // this is incase there are multiple instances of a method Keyword ie localhost.com/PUTherePUTVaryHeader
+          if (methodToMatch){
+            variesInKey = variesInKey.split(methodToMatch);
+            variesInKey = variesInKey[variesInKey.length - 1];
+          }
+          else {
+            // if method is ignored, using regular expressions to find the last instance of a method Keyword
+            // return the capture group that appears after that keyword.
+            variesInKey = getVariesRegExp(variesInKey);
+          }
+          if (!variesInKey) {
+            return true;
+          }
+
+          // split based on = to determine number of keys
+          var varyPairs = variesInKey.split('=')
+          var requestHeaders = request.headers;
+          // if only 2 items, then that is the header and value pair
+          if (varyPairs === 2){
+            var varyValue = (!requestHeaders || !requestHeaders.get(varyPairs[0])) ? 'undefined' : requestHeaders.get(varyPairs[0]);
+            if (varyValue !== varyPairs[1]) {
+              return false;
+            }
+          } else {
+            // otherwise, the header and value pair of the next header are combined like 'str1=str2str3=str4”
+            for (var index = 0; index < varyPairs.length - 1; index++) {
+              var varyFieldValueToCheck = varyPairs[index];
+              var varyValue = (!requestHeaders || !requestHeaders.get(varyFieldValueToCheck)) ? 'undefined' : requestHeaders.get(varyFieldValueToCheck);
+              // split based on varyValue provided by the header
+              var checkPairs = varyPairs[index+1].split(varyValue);
+              // if value is in the header, it splits into length of 2, where the first item is ''
+              if (checkPairs.length !== 2 && checkPairs[0] !== ''){
+                return false;
+              // must also check to make sure that the second pair does not start with a ',' otherwise
+              // that means the vary value returned does not match the original value which contained more than 1 value
+              }else if (checkPairs[1] && checkPairs[1].startsWith(',')){
+                return false;
+              } else {
+                varyPairs[index+1] = checkPairs[1];
+              }
+            }
+          }
+        }
+        return true
+      } else {
+        // use new key search
+        if (options && options.ignoreSearch) {
+          urlToCheck = extractBaseUrl(parts[0]);
+        } else {
+          urlToCheck = parts[0];
+        }
+        if (urlToCheck !== urlToMatch) {
+          return false;
+        }
+        if (methodToMatch && parts[1] !== methodToMatch) {
+          return false;
+        }
+        if (!options || !options.ignoreVary) {
+          var variesInKey = parts[2];
+          if (!variesInKey) {
+            return true;
+          }
+          var pairs = variesInKey.split(';');
+          if (pairs.length === 1) {
+            return false;
+          }
+          var requestHeaders = request.headers;
+          for (var index = 0; index < pairs.length - 1; index++) {
+            var pair = pairs[index];
+            var varyFieldValueToCheck = pair.split('=');
+            var varyValue = (!requestHeaders || !requestHeaders.get(varyFieldValueToCheck[0])) ? 'undefined' : requestHeaders.get(varyFieldValueToCheck[0]);
+            if (varyValue != varyFieldValueToCheck[1]) {
+              return false;
+            }
+          }
+        }
+        return true;
       }
-      return true;
     });
   };
 
@@ -516,7 +598,7 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
    * @instance
    * @param {bodyAbstract} request The body abstract from the cached body-less
    *                               response.
-   * @return {Promise} returns a Promise that resolve when all the shredded 
+   * @return {Promise} returns a Promise that resolve when all the shredded
    *                   data is deleted.
    */
   DefaultCacheHandler.prototype.deleteShreddedData = function (bodyAbstract) {
@@ -541,11 +623,11 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
     });
     return Promise.all(promises);
   };
-  
+
   var escapeRegExp = function(str) {
     return String(str).replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
   };
-  
+
   var extractBaseUrl = function(fullUrl) {
     // return the url that doesn't have query parameters in it.
     if (!fullUrl || typeof fullUrl !== 'string') {
@@ -555,6 +637,22 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
     var matchResult = pattern.exec(fullUrl);
     if (matchResult && matchResult.length === 2) {
       return matchResult[1];
+    } else {
+      return fullUrl;
+    }
+  };
+  var getVariesRegExp = function(fullUrl) {
+    // returns the Vary section of a if the option ignore method is applied
+    // regexp is in reversed strings with '.*?' to capture as little as possible
+    // before hitting the first instance of a method String.
+    if (!fullUrl || typeof fullUrl !== 'string') {
+      return "";
+    }
+    var reversedUrl = fullUrl.split("").reverse().join("")
+    var pattern = /(.*?)(TEG|TUP|ETELED|TSOP|HCTAP|TCENNOC|SNOITPO|ECART)/;
+    var matchResult = pattern.exec(reversedUrl);
+    if (matchResult && matchResult.length === 3) {
+      return matchResult[1].split("").reverse().join("");
     } else {
       return fullUrl;
     }

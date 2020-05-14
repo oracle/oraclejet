@@ -37,13 +37,13 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
     this._name = name;
     this._storeName = storeName;
     this._store = null;
-    
+
     // in-memory cache of all the keys in the store, for quick lookup.
     this._cacheKeys = [];
     this._createStorePromise;
 
     // the names of all the shredded stores associated
-    // with this cache. We need them when clear() is 
+    // with this cache. We need them when clear() is
     // called since we need to clear all the shredded
     // stores as well.
     Object.defineProperty(this, '_STORE_NAMES_', {
@@ -176,9 +176,9 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
       }
     });
   };
-  
+
   // internal match that only returns the needed metadata that includes:
-  //   key: key of the cache entry in the cache store. 
+  //   key: key of the cache entry in the cache store.
   //   resourceType: whether the response body is a collection type of resource
   //                 or single type of resourse
   //   resourceIdentifier: the resourse identifier value of the cached response.
@@ -221,15 +221,6 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
               } else {
                 returnValue.resourceType = 'collection';
               }
-              if (Array.isArray(bodyAbstract) && bodyAbstract.length > 0) {
-                var resourceIdentifierMap = {};
-                bodyAbstract.forEach(function(storeAbstract) {
-                  if (storeAbstract.resourceIdentifier) {
-                    resourceIdentifierMap[storeAbstract.name] = storeAbstract.resourceIdentifier
-                  }
-                });
-                returnValue.resourceIdentifierMap = resourceIdentifierMap;
-              }
             } else {
               returnValue.resourceType = 'unknown';
             }
@@ -238,7 +229,7 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
             return;
           }
         } else {
-          // this is for the case where there is no thredder, thus 
+          // this is for the case where there is no thredder, thus
           // no bodyAbstract.
           returnValue.resourceType = 'unknown';
         }
@@ -292,7 +283,7 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
       return;
     });
   };
-  
+
   /**
    * Return the persistent store.
    * @returns {Object} The persistent store.
@@ -307,7 +298,7 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
     } else {
       var localStore;
       self._createStorePromise = persistenceStoreManager.openStore(self._storeName, {
-        index: ["metadata.baseUrl", "metadata.url", "metadata.created"], 
+        index: ["metadata.baseUrl", "metadata.url", "metadata.created"],
         skipMetadata: true
       }).then(function (store) {
         localStore = store;
@@ -573,8 +564,7 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
           }
           return processedKeys;
         }, []) : element.keys,
-        resourceType: element.resourceType,
-        resourceIdentifier: element.resourceIdentifier
+        resourceType: element.resourceType
       };
     });
     return JSON.stringify(bodyAbstract);
@@ -621,7 +611,7 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
 
     return self._getStore().then(function(cacheStore) {
       if (cacheHandler.hasShredder(request)) {
-        // shredder is configured for this request, needs to delete both 
+        // shredder is configured for this request, needs to delete both
         // the cache entries and the shredded data entries.
         var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
         searchCriteria.fields = ['key', 'value'];
@@ -782,7 +772,7 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
   OfflineCache.prototype.hasMatch = function (request, options) {
     logger.log("Offline Persistence Toolkit OfflineCache: hasMatch() for Request with url: " + request.url);
     var self = this;
-    
+
     return self._getCacheEntries(request, options).then(function (cacheEntries) {
       var ignoreVary = (options && options.ignoreVary);
       var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);

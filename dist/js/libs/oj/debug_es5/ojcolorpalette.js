@@ -1583,7 +1583,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
       this._markup = function () {
-        return ["<div class='oj-colorpalette-container oj-form-control-container'>", "<ul class='" + layoutClass + "'/>", '</div>'].join('');
+        return ["<div class='oj-colorpalette-container oj-form-control-container'>", "<ul class='" + layoutClass + "'>", '</ul>', '</div>'].join('');
       }();
     },
 

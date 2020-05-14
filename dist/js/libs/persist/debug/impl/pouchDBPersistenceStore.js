@@ -45,7 +45,7 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
       this._db = new PouchDB(dbname);
     }
     if (options && options.index) {
-      // pouch db automatically create index on key, no need to specifically 
+      // pouch db automatically create index on key, no need to specifically
       // create it.
       if (!Array.isArray(options.index)) {
         logger.log("index must be an array");
@@ -80,7 +80,7 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
   };
 
   PouchDBPersistenceStore.prototype._isPersistenceStoreKey = function(keyName) {
-    return keyName === 'version' || keyName === 'adapter' || 
+    return keyName === 'version' || keyName === 'adapter' ||
            keyName === 'index' || keyName === 'skipMetadata';
   };
 
@@ -251,7 +251,7 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
   PouchDBPersistenceStore.prototype.find = function (findExpression) {
     logger.log("Offline Persistence Toolkit pouchDBPersistenceStore: find() for expression: " +  JSON.stringify(findExpression));
     var self = this;
-    
+
     findExpression = findExpression || {};
 
     // if the find plugin is installed
@@ -277,7 +277,7 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
         if (result && result.rows && result.rows.length) {
           // filter on the rows first before _fixBinaryValue which adds binary
           // back to the document. This assumes the search criteria should
-          // not have any operator against the binary data. 
+          // not have any operator against the binary data.
           var satisfiedRows = result.rows.filter(function(row) {
             var doc = row.doc;
             if (!_isInternalDoc(row) && storageUtils.satisfy(findExpression.selector, doc)) {
@@ -288,6 +288,7 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
 
           if (satisfiedRows.length) {
             var unsortedDocs = satisfiedRows.map(function(row) {
+              self._fixKey(row.doc)
               return row.doc;
             });
             var sortedDocs = storageUtils.sortRows(unsortedDocs, findExpression.sort);
@@ -330,6 +331,7 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
   // invoked after document is retrieved. Fix the key and binary
   // part of the value.
   PouchDBPersistenceStore.prototype._fixValue = function (doc) {
+    this._fixKey(doc);
     return this._fixBinaryValue(doc);
   };
 
@@ -480,8 +482,14 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
     var fields = findExpression.fields;
     if (fields && fields.length) {
       modifiedExpression.fields = fields;
-    }
 
+      // if the _id field is not included, it will be added to the list
+      // this is so that previous version of OPT will be compatable and
+      // still have access to the 'key' value after the find is fixed
+      if (fields.indexOf('key') !== -1 && fields.indexOf('_id') === -1){
+        modifiedExpression.fields.push('_id')
+      }
+    }
     return modifiedExpression;
   };
 
@@ -550,15 +558,22 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
     });
   };
 
-  // when find plugin is not present, we query out all documents and run the 
+  // when find plugin is not present, we query out all documents and run the
   // find ourselve. allDocs returns some internal document that pouchDB created
-  // we should ignore. For example, when the store has index configured, 
-  // pouchDB will create a document with id starting with '_design'. There is 
-  // no option provided from allDocs() call that we can use to ask pouchDB to 
+  // we should ignore. For example, when the store has index configured,
+  // pouchDB will create a document with id starting with '_design'. There is
+  // no option provided from allDocs() call that we can use to ask pouchDB to
   // not return internal documents.
   var _isInternalDoc = function(dbRow) {
     var id = dbRow.id;
     return id.startsWith('_design/');
+  };
+
+  PouchDBPersistenceStore.prototype._fixKey = function (doc) {
+    var docId = doc._id || doc.id || doc.key;
+    if (docId) {
+      doc.key = docId;
+    }
   };
 
   return PouchDBPersistenceStore;

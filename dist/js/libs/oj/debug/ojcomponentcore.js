@@ -6670,7 +6670,7 @@ oj.DomUtils.getScrollBarWidth = function () {
   }
 
   /** @type {jQuery} **/
-  var scrollBarMeasure = $('<div />');
+  var scrollBarMeasure = $('<div></div>');
   $(document.body).append(scrollBarMeasure); // @HTMLUpdateOK scrollBarMeasure constructed by the code above
   scrollBarMeasure.width(50).height(50)
     .css({
@@ -6680,7 +6680,7 @@ oj.DomUtils.getScrollBarWidth = function () {
     });
 
   /** @type {jQuery} **/
-  var scrollBarMeasureContent = $('<div />');
+  var scrollBarMeasureContent = $('<div></div>');
   scrollBarMeasureContent.height(1);
   scrollBarMeasure.append(scrollBarMeasureContent);  // @HTMLUpdateOK scrollBarMeasureContent constructed by the code above
 

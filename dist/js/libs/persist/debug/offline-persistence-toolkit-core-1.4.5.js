@@ -290,7 +290,7 @@ define('persist/persistenceUtils',['./impl/logger'], function (logger) {
    * @static
    * @private
    * @param {Request} request Request object
-   * @param {boolean} replay a flag indicating whether it is a request from syn 
+   * @param {boolean} replay a flag indicating whether it is a request from syn
    *                         operation or not.
    */
   function markReplayRequest(request, replay) {
@@ -537,11 +537,14 @@ define('persist/persistenceUtils',['./impl/logger'], function (logger) {
    */
   function requestFromJSON(data) {
     logger.log("Offline Persistence Toolkit persistenceUtils: requestFromJSON()");
+    if (!data){
+      return Promise.resolve();
+    }
     var initFromData = {};
     _copyProperties(data, initFromData, ['headers', 'body', 'signal']);
     var skipContentType = _copyPayloadFromJsonObj(data, initFromData);
     initFromData.headers = _createHeadersFromJsonObj(data, skipContentType);
-    
+
     return Promise.resolve(new Request(data.url, initFromData));
   };
 
@@ -896,7 +899,7 @@ define('persist/persistenceUtils',['./impl/logger'], function (logger) {
         });
       } else {
         findQuery['value.' + filterCriterion.attribute] = {};
-        findQuery['value.' + filterCriterion.attribute][filterCriterion.op] = filterCriterion.value; 
+        findQuery['value.' + filterCriterion.attribute][filterCriterion.op] = filterCriterion.value;
       }
       return findQuery;
     }
@@ -14503,7 +14506,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
       this._db = new PouchDB(dbname);
     }
     if (options && options.index) {
-      // pouch db automatically create index on key, no need to specifically 
+      // pouch db automatically create index on key, no need to specifically
       // create it.
       if (!Array.isArray(options.index)) {
         logger.log("index must be an array");
@@ -14538,7 +14541,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   };
 
   PouchDBPersistenceStore.prototype._isPersistenceStoreKey = function(keyName) {
-    return keyName === 'version' || keyName === 'adapter' || 
+    return keyName === 'version' || keyName === 'adapter' ||
            keyName === 'index' || keyName === 'skipMetadata';
   };
 
@@ -14709,7 +14712,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   PouchDBPersistenceStore.prototype.find = function (findExpression) {
     logger.log("Offline Persistence Toolkit pouchDBPersistenceStore: find() for expression: " +  JSON.stringify(findExpression));
     var self = this;
-    
+
     findExpression = findExpression || {};
 
     // if the find plugin is installed
@@ -14735,7 +14738,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
         if (result && result.rows && result.rows.length) {
           // filter on the rows first before _fixBinaryValue which adds binary
           // back to the document. This assumes the search criteria should
-          // not have any operator against the binary data. 
+          // not have any operator against the binary data.
           var satisfiedRows = result.rows.filter(function(row) {
             var doc = row.doc;
             if (!_isInternalDoc(row) && storageUtils.satisfy(findExpression.selector, doc)) {
@@ -14746,6 +14749,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
 
           if (satisfiedRows.length) {
             var unsortedDocs = satisfiedRows.map(function(row) {
+              self._fixKey(row.doc)
               return row.doc;
             });
             var sortedDocs = storageUtils.sortRows(unsortedDocs, findExpression.sort);
@@ -14788,6 +14792,7 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   // invoked after document is retrieved. Fix the key and binary
   // part of the value.
   PouchDBPersistenceStore.prototype._fixValue = function (doc) {
+    this._fixKey(doc);
     return this._fixBinaryValue(doc);
   };
 
@@ -14938,8 +14943,14 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
     var fields = findExpression.fields;
     if (fields && fields.length) {
       modifiedExpression.fields = fields;
-    }
 
+      // if the _id field is not included, it will be added to the list
+      // this is so that previous version of OPT will be compatable and
+      // still have access to the 'key' value after the find is fixed
+      if (fields.indexOf('key') !== -1 && fields.indexOf('_id') === -1){
+        modifiedExpression.fields.push('_id')
+      }
+    }
     return modifiedExpression;
   };
 
@@ -15008,15 +15019,22 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
     });
   };
 
-  // when find plugin is not present, we query out all documents and run the 
+  // when find plugin is not present, we query out all documents and run the
   // find ourselve. allDocs returns some internal document that pouchDB created
-  // we should ignore. For example, when the store has index configured, 
-  // pouchDB will create a document with id starting with '_design'. There is 
-  // no option provided from allDocs() call that we can use to ask pouchDB to 
+  // we should ignore. For example, when the store has index configured,
+  // pouchDB will create a document with id starting with '_design'. There is
+  // no option provided from allDocs() call that we can use to ask pouchDB to
   // not return internal documents.
   var _isInternalDoc = function(dbRow) {
     var id = dbRow.id;
     return id.startsWith('_design/');
+  };
+
+  PouchDBPersistenceStore.prototype._fixKey = function (doc) {
+    var docId = doc._id || doc.id || doc.key;
+    if (docId) {
+      doc.key = docId;
+    }
   };
 
   return PouchDBPersistenceStore;
@@ -15677,37 +15695,119 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
     return allKeys.filter(function(key) {
       var parts = key.split("$");
       var urlToCheck;
-      if (options && options.ignoreSearch) {
-        urlToCheck = extractBaseUrl(parts[0]);
-      } else {
-        urlToCheck = parts[0];
-      }
-      if (urlToCheck !== urlToMatch) {
-        return false;
-      }
-      if (methodToMatch && parts[1] !== methodToMatch) {
-        return false;
-      }
-      if (!options || !options.ignoreVary) {
-        var variesInKey = parts[2];
-        if (!variesInKey) {
-          return true;
+      // check to see key was split into multiple parts based on delimiter
+      if (parts.length === 1){
+        // if only 1 part, then key may be using old key method
+        // here for compatablity with pre v1.4.1
+
+        // check if url to check is the same as the request url
+        urlToCheck = key.slice(0,urlToMatch.length);
+        if (urlToCheck !== urlToMatch) {
+            return false;
         }
-        var pairs = variesInKey.split(';');
-        if (pairs.length === 1) {
-          return false;
-        }
-        var requestHeaders = request.headers;
-        for (var index = 0; index < pairs.length - 1; index++) {
-          var pair = pairs[index];
-          var varyFieldValueToCheck = pair.split('=');
-          var varyValue = (!requestHeaders || !requestHeaders.get(varyFieldValueToCheck[0])) ? 'undefined' : requestHeaders.get(varyFieldValueToCheck[0]);
-          if (varyValue != varyFieldValueToCheck[1]) {
+
+        if (options && options.ignoreSearch) {
+          if (key[urlToMatch.length] === '/') {
             return false;
           }
         }
+        // check the for the method using indexOf only if the method
+        // needs to be matched. Slicing the key based on the length of the
+        // urlToMatch length, if the option.ignoreSearch is true, we don't know
+        // where the method is past the '?', so search the whole string. if
+        // option.ignoreSearch is false, then just check the substring of method length
+        var methodToCheck
+        if (methodToMatch){
+          if (options && options.ignoreSearch) {
+            methodToCheck = key.slice(urlToMatch.length);
+          } else {
+            methodToCheck = key.slice(urlToMatch.length,urlToMatch.length + request.method.length)
+          }
+          if(methodToCheck.indexOf(methodToMatch) === -1) {
+            return false;
+          }
+        }
+        if (!options || !options.ignoreVary) {
+          var variesInKey = key;
+          // if methodToMatch exists, split based on method then select the last instance in the array for Vary
+          // this is incase there are multiple instances of a method Keyword ie localhost.com/PUTherePUTVaryHeader
+          if (methodToMatch){
+            variesInKey = variesInKey.split(methodToMatch);
+            variesInKey = variesInKey[variesInKey.length - 1];
+          }
+          else {
+            // if method is ignored, using regular expressions to find the last instance of a method Keyword
+            // return the capture group that appears after that keyword.
+            variesInKey = getVariesRegExp(variesInKey);
+          }
+          if (!variesInKey) {
+            return true;
+          }
+
+          // split based on = to determine number of keys
+          var varyPairs = variesInKey.split('=')
+          var requestHeaders = request.headers;
+          // if only 2 items, then that is the header and value pair
+          if (varyPairs === 2){
+            var varyValue = (!requestHeaders || !requestHeaders.get(varyPairs[0])) ? 'undefined' : requestHeaders.get(varyPairs[0]);
+            if (varyValue !== varyPairs[1]) {
+              return false;
+            }
+          } else {
+            // otherwise, the header and value pair of the next header are combined like 'str1=str2str3=str4”
+            for (var index = 0; index < varyPairs.length - 1; index++) {
+              var varyFieldValueToCheck = varyPairs[index];
+              var varyValue = (!requestHeaders || !requestHeaders.get(varyFieldValueToCheck)) ? 'undefined' : requestHeaders.get(varyFieldValueToCheck);
+              // split based on varyValue provided by the header
+              var checkPairs = varyPairs[index+1].split(varyValue);
+              // if value is in the header, it splits into length of 2, where the first item is ''
+              if (checkPairs.length !== 2 && checkPairs[0] !== ''){
+                return false;
+              // must also check to make sure that the second pair does not start with a ',' otherwise
+              // that means the vary value returned does not match the original value which contained more than 1 value
+              }else if (checkPairs[1] && checkPairs[1].startsWith(',')){
+                return false;
+              } else {
+                varyPairs[index+1] = checkPairs[1];
+              }
+            }
+          }
+        }
+        return true
+      } else {
+        // use new key search
+        if (options && options.ignoreSearch) {
+          urlToCheck = extractBaseUrl(parts[0]);
+        } else {
+          urlToCheck = parts[0];
+        }
+        if (urlToCheck !== urlToMatch) {
+          return false;
+        }
+        if (methodToMatch && parts[1] !== methodToMatch) {
+          return false;
+        }
+        if (!options || !options.ignoreVary) {
+          var variesInKey = parts[2];
+          if (!variesInKey) {
+            return true;
+          }
+          var pairs = variesInKey.split(';');
+          if (pairs.length === 1) {
+            return false;
+          }
+          var requestHeaders = request.headers;
+          for (var index = 0; index < pairs.length - 1; index++) {
+            var pair = pairs[index];
+            var varyFieldValueToCheck = pair.split('=');
+            var varyValue = (!requestHeaders || !requestHeaders.get(varyFieldValueToCheck[0])) ? 'undefined' : requestHeaders.get(varyFieldValueToCheck[0]);
+            if (varyValue != varyFieldValueToCheck[1]) {
+              return false;
+            }
+          }
+        }
+        return true;
       }
-      return true;
     });
   };
 
@@ -15971,7 +16071,7 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
    * @instance
    * @param {bodyAbstract} request The body abstract from the cached body-less
    *                               response.
-   * @return {Promise} returns a Promise that resolve when all the shredded 
+   * @return {Promise} returns a Promise that resolve when all the shredded
    *                   data is deleted.
    */
   DefaultCacheHandler.prototype.deleteShreddedData = function (bodyAbstract) {
@@ -15996,11 +16096,11 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
     });
     return Promise.all(promises);
   };
-  
+
   var escapeRegExp = function(str) {
     return String(str).replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
   };
-  
+
   var extractBaseUrl = function(fullUrl) {
     // return the url that doesn't have query parameters in it.
     if (!fullUrl || typeof fullUrl !== 'string') {
@@ -16010,6 +16110,22 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
     var matchResult = pattern.exec(fullUrl);
     if (matchResult && matchResult.length === 2) {
       return matchResult[1];
+    } else {
+      return fullUrl;
+    }
+  };
+  var getVariesRegExp = function(fullUrl) {
+    // returns the Vary section of a if the option ignore method is applied
+    // regexp is in reversed strings with '.*?' to capture as little as possible
+    // before hitting the first instance of a method String.
+    if (!fullUrl || typeof fullUrl !== 'string') {
+      return "";
+    }
+    var reversedUrl = fullUrl.split("").reverse().join("")
+    var pattern = /(.*?)(TEG|TUP|ETELED|TSOP|HCTAP|TCENNOC|SNOITPO|ECART)/;
+    var matchResult = pattern.exec(reversedUrl);
+    if (matchResult && matchResult.length === 3) {
+      return matchResult[1].split("").reverse().join("");
     } else {
       return fullUrl;
     }
@@ -16047,7 +16163,7 @@ define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', 
       logger.log("Offline Persistence Toolkit PersistenceSyncManager: addEventListener() for type: " + type + " and scope: " + scope);
       this._eventListeners.push({type: type.toLowerCase(), listener: listener, scope: scope});
     };
-    
+
     PersistenceSyncManager.prototype.removeEventListener = function (type, listener, scope) {
       logger.log("Offline Persistence Toolkit PersistenceSyncManager: removeEventListener() for type: " + type + " and scope: " + scope);
       this._eventListeners = this._eventListeners.filter(function (eventListener) {
@@ -16152,13 +16268,13 @@ define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', 
       return Promise.all(promises).then(function() {
         return request;
       }).catch(function(error) {
-        logger.log("Offline Persistence Toolkit PersistenceSyncManager: removeRequest() error for Request with requestId: " + requestId);        
+        logger.log("Offline Persistence Toolkit PersistenceSyncManager: removeRequest() error for Request with requestId: " + requestId);
       });;
     };
 
     PersistenceSyncManager.prototype.updateRequest = function (requestId, request) {
       logger.log("Offline Persistence Toolkit PersistenceSyncManager: updateRequest() for Request with requestId: " + requestId);
-      return Promise.all([_getSyncLogStorage(), 
+      return Promise.all([_getSyncLogStorage(),
         persistenceUtils.requestToJSON(request)]
         ).then(function (values) {
         var store = values[0];
@@ -16207,7 +16323,7 @@ define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', 
                     logger.log("Offline Persistence Toolkit PersistenceSyncManager: Replay request from beforeSyncRequest event listener");
                     // replay the provided request instead of what's in the sync log
                     request = eventResult.request;
-                  }                  
+                  }
                   requestClone = request.clone();
                   _checkURL(self, request).then(function() {
                     // mark the request as initiated from sync operation and
@@ -16276,13 +16392,13 @@ define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', 
           replayRequestArray(value);
         });
       });
-      
+
       return syncPromise.finally(function (err) {
         self._syncing = false;
         self._pingedURLs = null;
       });
     };
-    
+
     function _checkURL(persistenceSyncManager, request) {
       // send an OPTIONS request to the server to see if it's reachable
       var self = persistenceSyncManager;
@@ -16306,7 +16422,7 @@ define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', 
             if(preflightOptionsRequestTimeoutOption != null) {
               requestTimeout = preflightOptionsRequestTimeoutOption;
             }
-            setTimeout(function() 
+            setTimeout(function()
             {
               if (!self._repliedOptionsRequest &&
                 self._preflightOptionsRequestId == preflightOptionsRequestId) {
@@ -16331,7 +16447,7 @@ define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', 
       }
       return Promise.resolve(true);
     };
-    
+
     function _checkStopSync(syncEventResult) {
       syncEventResult = syncEventResult || {};
       return syncEventResult.action === 'stop';
@@ -16466,7 +16582,7 @@ define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', 
           operation = redoUndoDataArray[i].operation;
           undoRedoData = redoUndoDataArray[i].undoRedoData;
 
-          if (operation == 'upsert' || 
+          if (operation == 'upsert' ||
             (operation == 'remove' && isUndo)) {
             // bunch up the upserts so we can do them in bulk using upsertAll
             dataArray = [];
@@ -16522,7 +16638,7 @@ define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', 
             url == null || eventListener.scope == null);
       };
     };
-    
+
     function _callEventListener(event, eventListeners) {
       if (eventListeners.length > 0) {
         return eventListeners[0].listener(event).then(function (result) {
@@ -16593,13 +16709,13 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
     this._name = name;
     this._storeName = storeName;
     this._store = null;
-    
+
     // in-memory cache of all the keys in the store, for quick lookup.
     this._cacheKeys = [];
     this._createStorePromise;
 
     // the names of all the shredded stores associated
-    // with this cache. We need them when clear() is 
+    // with this cache. We need them when clear() is
     // called since we need to clear all the shredded
     // stores as well.
     Object.defineProperty(this, '_STORE_NAMES_', {
@@ -16732,9 +16848,9 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
       }
     });
   };
-  
+
   // internal match that only returns the needed metadata that includes:
-  //   key: key of the cache entry in the cache store. 
+  //   key: key of the cache entry in the cache store.
   //   resourceType: whether the response body is a collection type of resource
   //                 or single type of resourse
   //   resourceIdentifier: the resourse identifier value of the cached response.
@@ -16777,15 +16893,6 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
               } else {
                 returnValue.resourceType = 'collection';
               }
-              if (Array.isArray(bodyAbstract) && bodyAbstract.length > 0) {
-                var resourceIdentifierMap = {};
-                bodyAbstract.forEach(function(storeAbstract) {
-                  if (storeAbstract.resourceIdentifier) {
-                    resourceIdentifierMap[storeAbstract.name] = storeAbstract.resourceIdentifier
-                  }
-                });
-                returnValue.resourceIdentifierMap = resourceIdentifierMap;
-              }
             } else {
               returnValue.resourceType = 'unknown';
             }
@@ -16794,7 +16901,7 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
             return;
           }
         } else {
-          // this is for the case where there is no thredder, thus 
+          // this is for the case where there is no thredder, thus
           // no bodyAbstract.
           returnValue.resourceType = 'unknown';
         }
@@ -16848,7 +16955,7 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
       return;
     });
   };
-  
+
   /**
    * Return the persistent store.
    * @returns {Object} The persistent store.
@@ -16863,7 +16970,7 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
     } else {
       var localStore;
       self._createStorePromise = persistenceStoreManager.openStore(self._storeName, {
-        index: ["metadata.baseUrl", "metadata.url", "metadata.created"], 
+        index: ["metadata.baseUrl", "metadata.url", "metadata.created"],
         skipMetadata: true
       }).then(function (store) {
         localStore = store;
@@ -17129,8 +17236,7 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
           }
           return processedKeys;
         }, []) : element.keys,
-        resourceType: element.resourceType,
-        resourceIdentifier: element.resourceIdentifier
+        resourceType: element.resourceType
       };
     });
     return JSON.stringify(bodyAbstract);
@@ -17177,7 +17283,7 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
 
     return self._getStore().then(function(cacheStore) {
       if (cacheHandler.hasShredder(request)) {
-        // shredder is configured for this request, needs to delete both 
+        // shredder is configured for this request, needs to delete both
         // the cache entries and the shredded data entries.
         var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
         searchCriteria.fields = ['key', 'value'];
@@ -17338,7 +17444,7 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
   OfflineCache.prototype.hasMatch = function (request, options) {
     logger.log("Offline Persistence Toolkit OfflineCache: hasMatch() for Request with url: " + request.url);
     var self = this;
-    
+
     return self._getCacheEntries(request, options).then(function (cacheEntries) {
       var ignoreVary = (options && options.ignoreVary);
       var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
@@ -17379,6 +17485,7 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStor
 
   return OfflineCache;
 });
+
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
