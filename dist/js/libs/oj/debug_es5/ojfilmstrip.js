@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -380,8 +381,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
  * &lt;/oj-film-strip>
  * </code></pre>
  *
- * <p>JET FilmStrip and ConveyorBelt look similar, but are intended to be used
+ * <p id="filmStrip-conveyorBelt-section">JET FilmStrip and ConveyorBelt look similar, but are intended to be used
  * for different purposes.
+ * <a class="bookmarkable-link" title="Bookmarkable Link" href="#filmStrip-conveyorBelt-section"></a>
  * <p>Use FilmStrip when you want to:
  * <ul>
  * <li>layout a set of items across discrete logical pages</li>
@@ -608,9 +610,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   function _escapeHtml(text) {
     // let jQuery escape the text
     var jqDiv = $('<div></div>');
-    jqDiv.text(text); // @HTMLUpdateOK
-
-    return jqDiv[0].innerHTML;
+    jqDiv.text(text);
+    return jqDiv[0].innerHTML; // @HTMLUpdateOK
   } // end static members and functions ////////////////////////////////////////////
 
 
@@ -814,7 +815,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
        *                          can't go any further in the direction of navigation.
        * @ojvalue {string} "page" Navigation is not bounded between first and last page
        *                          and can go further in the direction of navigation.
-       *                          This lets user to loop around from first page to last page or
+       *                          This lets the user loop around from first page to last page, or
        *                          from last page to first page.
        * @default "off"
        * @ojshortdesc Specifies the navigation looping behavior
@@ -1534,22 +1535,22 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       var bHorizontal = this._isHorizontal();
 
       var originalItems = elem.children();
-      originalItems.addClass(_OJ_FILMSTRIP_ITEM).wrap("<div class='" + _OJ_FILMSTRIP_CONTAINER + ' ' + _OJ_FILMSTRIP_ITEM_CONTAINER + "'></div>"); // @HTMLUpdateOK
-      // need to initially specify the position on the pagesWrapper so that we can
+      originalItems.addClass(_OJ_FILMSTRIP_ITEM).wrap("<div class='" + _OJ_FILMSTRIP_CONTAINER + // @HTMLUpdateOK
+      ' ' + _OJ_FILMSTRIP_ITEM_CONTAINER + "'></div>"); // need to initially specify the position on the pagesWrapper so that we can
       // always get the value later
 
       var cssAttr = this._getCssPositionAttr();
 
-      var pagesWrapper = elem.children().wrapAll("<div class='" + _OJ_FILMSTRIP_CONTAINER + ' ' + _OJ_FILMSTRIP_PAGES_CONTAINER + "'></div>") // @HTMLUpdateOK
-      .parent().css(cssAttr, '0px');
+      var pagesWrapper = elem.children().wrapAll("<div class='" + _OJ_FILMSTRIP_CONTAINER + ' ' + // @HTMLUpdateOK
+      _OJ_FILMSTRIP_PAGES_CONTAINER + "'></div>").parent().css(cssAttr, '0px');
       this._pagesWrapper = pagesWrapper;
       var options = this.options;
 
       if (options.arrowVisibility !== _HIDDEN && options.arrowPlacement === _ADJACENT) {
         // FIX : add the oj-filmstrip-container class to the content
         // container so that it is a flexbox layout
-        this._contentWrapper = pagesWrapper.wrap("<div class='" + _OJ_FILMSTRIP_CONTAINER + " oj-filmstrip-content-container'></div>") // @HTMLUpdateOK
-        .parent();
+        this._contentWrapper = pagesWrapper.wrap("<div class='" + _OJ_FILMSTRIP_CONTAINER + // @HTMLUpdateOK
+        " oj-filmstrip-content-container'></div>").parent();
       }
 
       elem.addClass(_OJ_FILMSTRIP_CONTAINER);
@@ -2147,8 +2148,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         for (i = 0; i < items.length; i += fitCount) {
           var itemsOnPage = items.slice(i, i + fitCount); // initially hide the page container
 
-          itemsOnPage.wrapAll("<div class='" + _OJ_FILMSTRIP_CONTAINER + ' ' + _OJ_FILMSTRIP_PAGE + "' " + _ARIA_HIDDEN + "='true'></div>") // @HTMLUpdateOK
-          .parent().css('display', _NONE);
+          itemsOnPage.wrapAll("<div class='" + _OJ_FILMSTRIP_CONTAINER + ' ' + // @HTMLUpdateOK
+          _OJ_FILMSTRIP_PAGE + "' " + _ARIA_HIDDEN + "='true'></div>").parent().css('display', _NONE);
         }
 
         if (bNotifyAttach) {
@@ -2624,7 +2625,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       // notify the page that it's being hidden BEFORE actually hiding it so that
       // components can save state
       Components.subtreeHidden(page[0]);
-      page.css(_DISPLAY, _NONE).attr(_ARIA_HIDDEN, 'true'); // hide the items explicitly; unhiding will unhide them explicitly
+      page.css(_DISPLAY, _NONE).attr(_ARIA_HIDDEN, 'true'); // @HTMLUpdateOK
+      // hide the items explicitly; unhiding will unhide them explicitly
 
       var items = page.find(_PERIOD + _OJ_FILMSTRIP_ITEM).filter(this._filterNestedFilmStripsFunc);
       items.css(_DISPLAY, _NONE);

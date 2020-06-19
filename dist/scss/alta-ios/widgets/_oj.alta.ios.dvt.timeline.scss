@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 @import "../../utilities/oj.utilities";
 
 
@@ -22,36 +23,5 @@
 
 @if $includeTimelineClasses != false {
   @include module-include-once("alta.ios.timeline") {
-    .oj-timeline-zoomin-icon {
-      background-image:oj-common-image-url("dvt/common/zoom_in_16_ena.svg");
-    }
-    
-    .oj-timeline-zoomin-icon.oj-hover {
-      background-image:oj-common-image-url("dvt/common/zoom_in_16_hov.svg");
-    }
-    
-    .oj-timeline-zoomin-icon.oj-active {
-      background-image:oj-common-image-url("dvt/common/zoom_in_16_act.svg");
-    }
-    
-    .oj-timeline-zoomin-icon.oj-disabled {
-      background-image:oj-common-image-url("dvt/common/zoom_in_16_dis.svg");
-    }
-    
-    .oj-timeline-zoomout-icon {
-      background-image:oj-common-image-url("dvt/common/zoom_out_16_ena.svg");
-    }
-    
-    .oj-timeline-zoomout-icon.oj-hover {
-      background-image:oj-common-image-url("dvt/common/zoom_out_16_hov.svg");
-    }
-    
-    .oj-timeline-zoomout-icon.oj-active {
-      background-image:oj-common-image-url("dvt/common/zoom_out_16_act.svg");
-    }
-    
-    .oj-timeline-zoomout-icon.oj-disabled {
-      background-image:oj-common-image-url("dvt/common/zoom_out_16_dis.svg");
-    }
   }
 }

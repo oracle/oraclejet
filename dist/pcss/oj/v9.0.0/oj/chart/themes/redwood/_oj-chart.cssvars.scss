@@ -1,0 +1,25 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+
+@include module-include-once("redwood.variables.chart") {
+
+:root {
+    // chart
+    // ----------------------------
+    --oj-chart-axis-title-text-color:         var(--oj-core-text-color-secondary);
+    --oj-chart-axis-title-font-size:          var(--oj-typography-body-2xs-font-size);
+    --oj-chart-axis-tick-label-text-color:    var(--oj-core-text-color-secondary);
+    --oj-chart-axis-tick-label-font-size:     var(--oj-typography-body-2xs-font-size);
+    --oj-chart-stock-falling-bg-color:  var(--oj-palette-dvt-11);
+    --oj-chart-stock-range-bg-color:    var(--oj-palette-neutral-100);
+    --oj-chart-stock-rising-bg-color:   var(--oj-palette-dvt-2);
+    --oj-chart-animation-rising-icon-color:      var(--oj-palette-info-90);
+    --oj-chart-animation-falling-icon-color:    var(--oj-palette-danger-90);
+    --oj-chart-animation-marker-color:   var(--oj-palette-neutral-20);
+    --oj-chart-data-label-font-size:   var(--oj-typography-body-2xs-font-size);
+    --oj-chart-stack-label-font-size:   var(--oj-typography-body-2xs-font-size);
+}
+
+}

@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -804,11 +805,11 @@ var DvtDataGrid = function (root) {
   this.m_colHeaderHeight = null;
   this.m_colEndHeaderHeight = null;
 
-    // a mapping of style class+inline style combo to a dimension
-    // to reduce the need to do excessive offsetWidth/offsetHeight
+  // a mapping of style class+inline style combo to a dimension
+  // to reduce the need to do excessive offsetWidth/offsetHeight
   this.m_styleClassDimensionMap = { width: {}, height: {} };
 
-    // cached whether row/column count are unknown
+  // cached whether row/column count are unknown
   this.m_isEstimateRowCount = undefined;
   this.m_isEstimateColumnCount = undefined;
   this.m_stopRowFetch = false;
@@ -818,7 +819,7 @@ var DvtDataGrid = function (root) {
   this.m_stopColumnHeaderFetch = false;
   this.m_stopColumnEndHeaderFetch = false;
 
-    // not done initializing until initial headers/cells are fetched
+  // not done initializing until initial headers/cells are fetched
   this.m_initialized = false;
   this.m_shouldFocus = null;
 
@@ -961,7 +962,7 @@ DvtDataGrid.prototype._updateDataGrid = function (option, flags) {
   var obj;
 
   switch (option) {
-        // updates the data grid can make without refresh
+    // updates the data grid can make without refresh
     case 'bandingInterval':
       this._removeBanding();
       this.updateColumnBanding();
@@ -993,7 +994,7 @@ DvtDataGrid.prototype._updateDataGrid = function (option, flags) {
       this._clearSelection(null);
       break;
 
-        // just refresh
+      // just refresh
     default:
       return false;
   }
@@ -2334,14 +2335,14 @@ DvtDataGrid.prototype.buildGrid = function (root) {
     var rtl = this.getResources().isRTLMode();
 
     var returnObj = this.buildHeaders('column', this.getMappedStyle('colheader'),
-                                      this.getMappedStyle('colendheader'));
+      this.getMappedStyle('colendheader'));
     var colHeader = returnObj.root;
     var colEndHeader = returnObj.endRoot;
     root.insertBefore(colHeader, status); // @HTMLUpdateOK
     root.insertBefore(colEndHeader, status); // @HTMLUpdateOK
 
     returnObj = this.buildHeaders('row', this.getMappedStyle('rowheader'),
-                                  this.getMappedStyle('rowendheader'));
+      this.getMappedStyle('rowendheader'));
     var rowHeader = returnObj.root;
     var rowEndHeader = returnObj.endRoot;
     root.insertBefore(rowHeader, status); // @HTMLUpdateOK
@@ -2401,7 +2402,7 @@ DvtDataGrid.prototype.buildGrid = function (root) {
       var mousewheelEvent = this.m_utils.getMousewheelEvent();
       // databody listeners
       databody.addEventListener(
-                  mousewheelEvent, this.handleDatabodyMouseWheel.bind(this), { passive: false });
+        mousewheelEvent, this.handleDatabodyMouseWheel.bind(this), { passive: false });
       databody.addEventListener('mousedown', this.handleDatabodyMouseDown.bind(this), false);
       databody.addEventListener('mousemove', this.handleDatabodyMouseMove.bind(this), false);
       databody.addEventListener('mouseup', this.handleDatabodyMouseUp.bind(this), false);
@@ -2411,7 +2412,7 @@ DvtDataGrid.prototype.buildGrid = function (root) {
 
       // header listeners
       rowHeader.addEventListener(
-                  mousewheelEvent, this.handleDatabodyMouseWheel.bind(this), { passive: false });
+        mousewheelEvent, this.handleDatabodyMouseWheel.bind(this), { passive: false });
       rowHeader.addEventListener('mousedown', this.handleHeaderMouseDown.bind(this), false);
       colHeader.addEventListener('mousedown', this.handleHeaderMouseDown.bind(this), false);
       rowHeader.addEventListener('mouseover', this.handleHeaderMouseOver.bind(this), false);
@@ -2427,14 +2428,14 @@ DvtDataGrid.prototype.buildGrid = function (root) {
 
       // end header listeners
       rowEndHeader.addEventListener(
-                  mousewheelEvent, this.handleDatabodyMouseWheel.bind(this), { passive: false });
+        mousewheelEvent, this.handleDatabodyMouseWheel.bind(this), { passive: false });
       rowEndHeader.addEventListener('mousedown', this.handleHeaderMouseDown.bind(this), false);
       colEndHeader.addEventListener('mousedown', this.handleHeaderMouseDown.bind(this), false);
       rowEndHeader.addEventListener('mouseover', this.handleHeaderMouseOver.bind(this), false);
       colEndHeader.addEventListener('mouseover', this.handleHeaderMouseOver.bind(this), false);
       rowEndHeader.addEventListener('mousemove', this.handleRowHeaderMouseMove.bind(this), false);
       colEndHeader.addEventListener('mousemove',
-                                    this.handleColumnHeaderMouseMove.bind(this), false);
+        this.handleColumnHeaderMouseMove.bind(this), false);
       rowEndHeader.addEventListener('mouseup', this.handleHeaderMouseUp.bind(this), false);
       colEndHeader.addEventListener('mouseup', this.handleHeaderMouseUp.bind(this), false);
       rowEndHeader.addEventListener('mouseout', this.handleHeaderMouseOut.bind(this), false);
@@ -2588,27 +2589,27 @@ DvtDataGrid.prototype.resizeGrid = function () {
   if (this.m_endColEndHeader !== -1) {
     databodyHeight = Math.min(databodyContentHeight +
                               (isDatabodyHorizontalScrollbarRequired ? scrollbarSize : 0),
-                              availableHeight);
+    availableHeight);
     rowHeaderHeight = isDatabodyHorizontalScrollbarRequired ?
       databodyHeight - scrollbarSize : databodyHeight;
   } else {
     databodyHeight = availableHeight;
     rowHeaderHeight = Math.min(databodyContentHeight,
-                               isDatabodyHorizontalScrollbarRequired ?
-                               databodyHeight - scrollbarSize : databodyHeight);
+      isDatabodyHorizontalScrollbarRequired ?
+        databodyHeight - scrollbarSize : databodyHeight);
   }
 
   if (this.m_endRowEndHeader !== -1) {
     databodyWidth = Math.min(databodyContentWidth +
                              (isDatabodyVerticalScrollbarRequired ? scrollbarSize : 0),
-                             availableWidth);
+    availableWidth);
     columnHeaderWidth = isDatabodyVerticalScrollbarRequired ?
       databodyWidth - scrollbarSize : databodyWidth;
   } else {
     databodyWidth = availableWidth;
     columnHeaderWidth = Math.min(databodyContentWidth,
-                                 isDatabodyVerticalScrollbarRequired ?
-                                 databodyWidth - scrollbarSize : databodyWidth);
+      isDatabodyVerticalScrollbarRequired ?
+        databodyWidth - scrollbarSize : databodyWidth);
   }
 
   var rowEndHeaderDir = rowHeaderWidth + columnHeaderWidth +
@@ -2743,7 +2744,7 @@ DvtDataGrid.prototype._adjustHeaderBordersAlongAxis = function (
     }
     if (lastFunction(endHeaderIndex)) {
       this._adjustLastHeadersAlongAxis(endHeaderIndex, headerLevels, container,
-                                       startIndex, className, dimensionCheck);
+        startIndex, className, dimensionCheck);
     }
   }
 };
@@ -2809,11 +2810,11 @@ DvtDataGrid.prototype._adjustHeaderBorders = function () {
     style = this.getMappedStyle('borderVerticalNone');
     lastFunction = this._isLastColumn.bind(this);
     this._adjustHeaderBordersAlongAxis(this.m_colHeader, lastFunction, this.m_endColHeader,
-                                       widthCheck, this.m_columnHeaderScrollbarSpacer, style,
-                                       this.m_columnHeaderLevelCount, this.m_startColHeader);
+      widthCheck, this.m_columnHeaderScrollbarSpacer, style,
+      this.m_columnHeaderLevelCount, this.m_startColHeader);
     this._adjustHeaderBordersAlongAxis(this.m_colEndHeader, lastFunction, this.m_endColEndHeader,
-                                       widthCheck, this.m_bottomCorner, style,
-                                       this.m_columnEndHeaderLevelCount, this.m_startColEndHeader);
+      widthCheck, this.m_bottomCorner, style,
+      this.m_columnEndHeaderLevelCount, this.m_startColEndHeader);
   }
 
   bw = null;
@@ -2853,11 +2854,11 @@ DvtDataGrid.prototype._adjustHeaderBorders = function () {
     style = this.getMappedStyle('borderHorizontalNone');
     lastFunction = this._isLastRow.bind(this);
     this._adjustHeaderBordersAlongAxis(this.m_rowHeader, lastFunction, this.m_endRowHeader,
-                                       heightCheck, this.m_rowHeaderScrollbarSpacer, style,
-                                       this.m_rowHeaderLevelCount, this.m_startRowHeader);
+      heightCheck, this.m_rowHeaderScrollbarSpacer, style,
+      this.m_rowHeaderLevelCount, this.m_startRowHeader);
     this._adjustHeaderBordersAlongAxis(this.m_rowEndHeader, lastFunction, this.m_endRowEndHeader,
-                                       heightCheck, this.m_bottomCorner, style,
-                                       this.m_rowEndHeaderLevelCount, this.m_startRowEndHeader);
+      heightCheck, this.m_bottomCorner, style,
+      this.m_rowEndHeaderLevelCount, this.m_startRowEndHeader);
   }
 };
 
@@ -2942,9 +2943,9 @@ DvtDataGrid.prototype.buildCorners = function () {
 
       if (this._isHeaderLabelCollision()) {
         var item = this._getHeaderByIndex(this.m_startColHeader,
-                                          this.m_columnHeaderLevelCount - 1,
-                                          this.m_colHeader, this.m_columnHeaderLevelCount,
-                                          this.m_startColHeader);
+          this.m_columnHeaderLevelCount - 1,
+          this.m_colHeader, this.m_columnHeaderLevelCount,
+          this.m_startColHeader);
         var h = this.getElementHeight(item);
         this.m_colHeaderHeight += h;
         this.m_columnHeaderLevelHeights[this.m_columnHeaderLevelCount - 1] += h;
@@ -2982,11 +2983,11 @@ DvtDataGrid.prototype.buildCorners = function () {
       this.setElementWidth(rowHeaderScrollbarSpacer, this.m_rowHeaderWidth);
       if (this.m_endColEndHeader !== -1) {
         this.setElementHeight(rowHeaderScrollbarSpacer,
-                              colEndHeaderHeight +
+          colEndHeaderHeight +
                               (this.m_hasHorizontalScroller ? scrollbarSize : 0));
       } else {
         this.setElementHeight(rowHeaderScrollbarSpacer,
-                              height - rowHeaderHeight - colHeaderHeight);
+          height - rowHeaderHeight - colHeaderHeight);
       }
 
       if (this.m_rowHeaderScrollbarSpacer == null) {
@@ -2994,11 +2995,11 @@ DvtDataGrid.prototype.buildCorners = function () {
           rowHeaderScrollbarSpacer.addEventListener('touchstart', this.handleCornerMouseDown.bind(this), { passive: true });
         } else {
           rowHeaderScrollbarSpacer.addEventListener('mousedown',
-                                                    this.handleCornerMouseDown.bind(this), false);
+            this.handleCornerMouseDown.bind(this), false);
           rowHeaderScrollbarSpacer.addEventListener('mouseover',
-                                                    this.handleCornerMouseOver.bind(this), false);
+            this.handleCornerMouseOver.bind(this), false);
           rowHeaderScrollbarSpacer.addEventListener('mouseout',
-                                                    this.handleCornerMouseOut.bind(this), false);
+            this.handleCornerMouseOut.bind(this), false);
         }
 
         this.m_root.appendChild(rowHeaderScrollbarSpacer); // @HTMLUpdateOK
@@ -3037,7 +3038,7 @@ DvtDataGrid.prototype.buildCorners = function () {
       this.setElementDir(columnHeaderScrollbarSpacer, 0, 'top');
       if (this.m_endRowEndHeader !== -1) {
         this.setElementWidth(columnHeaderScrollbarSpacer,
-                             rowEndHeaderWidth + (this.m_hasVerticalScroller ? scrollbarSize : 0));
+          rowEndHeaderWidth + (this.m_hasVerticalScroller ? scrollbarSize : 0));
       } else {
         this.setElementWidth(columnHeaderScrollbarSpacer, width - colHeaderWidth - rowHeaderWidth);
       }
@@ -3048,14 +3049,14 @@ DvtDataGrid.prototype.buildCorners = function () {
           columnHeaderScrollbarSpacer.addEventListener('touchstart', this.handleCornerMouseDown.bind(this), { passive: true });
         } else {
           columnHeaderScrollbarSpacer.addEventListener('mousedown',
-                                                       this.handleCornerMouseDown.bind(this),
-                                                       false);
+            this.handleCornerMouseDown.bind(this),
+            false);
           columnHeaderScrollbarSpacer.addEventListener('mouseover',
-                                                       this.handleCornerMouseOver.bind(this),
-                                                       false);
+            this.handleCornerMouseOver.bind(this),
+            false);
           columnHeaderScrollbarSpacer.addEventListener('mouseout',
-                                                       this.handleCornerMouseOut.bind(this),
-                                                       false);
+            this.handleCornerMouseOut.bind(this),
+            false);
         }
 
         this.m_root.appendChild(columnHeaderScrollbarSpacer); // @HTMLUpdateOK
@@ -3096,14 +3097,14 @@ DvtDataGrid.prototype.buildCorners = function () {
     this.setElementDir(bottomCorner, (rowHeaderWidth + colHeaderWidth), dir);
     if (this.m_endRowEndHeader !== -1) {
       this.setElementWidth(bottomCorner,
-                           rowEndHeaderWidth + (this.m_hasVerticalScroller ? scrollbarSize : 0));
+        rowEndHeaderWidth + (this.m_hasVerticalScroller ? scrollbarSize : 0));
     } else {
       this.setElementWidth(bottomCorner, width - colHeaderWidth - rowHeaderWidth);
     }
 
     if (this.m_endColEndHeader !== -1) {
       this.setElementHeight(bottomCorner,
-                            colEndHeaderHeight +
+        colEndHeaderHeight +
                             (this.m_hasHorizontalScroller ? scrollbarSize : 0));
     } else {
       this.setElementHeight(bottomCorner, height - rowHeaderHeight - colHeaderHeight);
@@ -3152,7 +3153,7 @@ DvtDataGrid.prototype._clearScrollPositionKeys = function () {
   var newPos = this.m_options.getScrollPosition();
   newPos.rowKey = undefined;
   newPos.columnKey = undefined;
-    // do not writeback it will be updated once the sync has completed
+  // do not writeback it will be updated once the sync has completed
   this.m_setOptionCallback('scrollPosition', newPos, { _context: { internalSet: true } });
 };
 
@@ -3338,17 +3339,17 @@ DvtDataGrid.prototype._scrollToScrollPositionObject = function (scrollPositionOb
   indexFromKeyPromise.then(function (returnObj) {
     // scrollTop and s
     var newScrollX = Math.floor(self._getPositionEstimate('column', dir, columnKey,
-                                               returnObj.columnIndexFromKey,
-                                               columnIndex,
-                                               x, offsetX,
-                                               self.m_currentScrollLeft, self._getMaxRightPixel(),
-                                               self.m_avgColWidth));
+      returnObj.columnIndexFromKey,
+      columnIndex,
+      x, offsetX,
+      self.m_currentScrollLeft, self._getMaxRightPixel(),
+      self.m_avgColWidth));
     var newScrollY = Math.floor(self._getPositionEstimate('row', 'top', rowKey,
-                                               returnObj.rowIndexFromKey,
-                                               rowIndex,
-                                               y, offsetY,
-                                               self.m_currentScrollTop, self._getMaxBottomPixel(),
-                                               self.m_avgRowHeight));
+      returnObj.rowIndexFromKey,
+      rowIndex,
+      y, offsetY,
+      self.m_currentScrollTop, self._getMaxBottomPixel(),
+      self.m_avgRowHeight));
 
     // make sure scroll is not the same, and that we aren't trying to scroll
     // out of bounds if we are at the boundry.
@@ -3390,7 +3391,7 @@ DvtDataGrid.prototype._scrollToScrollPositionObject = function (scrollPositionOb
  */
 DvtDataGrid.prototype._setScrollPositionTimeout = function () {
   if (!this.m_utils.isTouchDevice()) {
-    this.pendingScrollTimeout = setTimeout(function () {
+    this.pendingScrollTimeout = setTimeout(function () { // @HTMLUpdateOK
       if (this.m_desiredScrollPositionObject != null) {
         this._signalTaskEnd('reached desired location');
       }
@@ -3790,28 +3791,22 @@ DvtDataGrid.prototype._updateAccessibleInfoString = function (info, translation,
 DvtDataGrid.prototype._isCountUnknown = function (axis) {
   var datasource = this.getDataSource();
   if (axis === 'row' || axis === 'rowEnd') {
-    if (this.m_isEstimateRowCount === undefined) {
-      var rowPrecision = datasource.getCountPrecision('row');
-      var rowCount = datasource.getCount('row');
-      if (rowPrecision === 'estimate' || rowCount < 0) {
-        this.m_isEstimateRowCount = true;
-      } else {
-        this.m_isEstimateRowCount = false;
-      }
+    var rowPrecision = datasource.getCountPrecision('row');
+    var rowCount = datasource.getCount('row');
+    if (rowPrecision === 'estimate' || rowCount < 0) {
+      this.m_isEstimateRowCount = true;
+    } else {
+      this.m_isEstimateRowCount = false;
     }
-
     return this.m_isEstimateRowCount;
   } else if (axis === 'column' || axis === 'columnEnd') {
-    if (this.m_isEstimateColumnCount === undefined) {
-      var colPrecision = datasource.getCountPrecision('column');
-      var colCount = datasource.getCount('column');
-      if (colPrecision === 'estimate' || colCount < 0) {
-        this.m_isEstimateColumnCount = true;
-      } else {
-        this.m_isEstimateColumnCount = false;
-      }
+    var colPrecision = datasource.getCountPrecision('column');
+    var colCount = datasource.getCount('column');
+    if (colPrecision === 'estimate' || colCount < 0) {
+      this.m_isEstimateColumnCount = true;
+    } else {
+      this.m_isEstimateColumnCount = false;
     }
-
     return this.m_isEstimateColumnCount;
   }
 
@@ -4208,12 +4203,12 @@ DvtDataGrid.prototype._createLabelContext = function (axis, level, data, elem) {
   labelContext.component = this;
   labelContext.datasource = this.getDataSource();
 
-    // set the parent element to the content div
+  // set the parent element to the content div
   if (elem != null) {
     labelContext.parentElement = elem;
   }
 
-    // invoke callback to allow ojDataGrid to change datagrid reference
+  // invoke callback to allow ojDataGrid to change datagrid reference
   if (this.m_createContextCallback != null) {
     this.m_createContextCallback.call(this, labelContext);
   }
@@ -4252,15 +4247,15 @@ DvtDataGrid.prototype._buildHeaderLabels = function (axis, headerSet) {
           }
           if (labelData != null) {
             var labelContext = this._createLabelContext(axis, i, labelData, label);
-            label.setAttribute(this.getResources().getMappedAttribute('container'),
-                               this.getResources().widgetName);
-            label.setAttribute(this.getResources().getMappedAttribute('busyContext'), '');
+            label.setAttribute(this.getResources().getMappedAttribute('container'), // @HTMLUpdateOK
+              this.getResources().widgetName);
+            label.setAttribute(this.getResources().getMappedAttribute('busyContext'), ''); // @HTMLUpdateOK
             this._createUniqueId(label);
             label[this.getResources().getMappedAttribute('context')] = labelContext;
 
             var inlineStyle = this.m_options.getInlineStyle(axis, labelContext, true);
             if (inlineStyle != null) {
-              label.style.cssText = inlineStyle;
+              DataCollectionUtils.applyMergedInlineStyles(label, inlineStyle, '');
             }
 
             label.className = this.getMappedStyle('headerlabel') + ' ' +
@@ -4334,8 +4329,8 @@ DvtDataGrid.prototype.buildColumnHeaders =
     returnAsFragment = false;
 
     var returnObj = this.buildAxisHeaders(headerRoot, headerSet, axis, start, count, isAppend,
-                                      insert, reference, atPixel, currentEnd, levelCount,
-                                      rootClassName, cellClassName, returnAsFragment);
+      insert, reference, atPixel, currentEnd, levelCount,
+      rootClassName, cellClassName, returnAsFragment);
 
     if (returnAsFragment) {
       return returnObj;
@@ -4358,12 +4353,12 @@ DvtDataGrid.prototype.buildColumnHeaders =
     // whether this is adding columns to the left or right
     if (!isAppend) {
       // to the left
-      this.m_startColHeader = this.m_startColHeader - count;
-      this.m_startColHeaderPixel = this.m_startColHeaderPixel - totalColumnWidth;
+      this.m_startColHeader -= count;
+      this.m_startColHeaderPixel -= totalColumnWidth;
     } else {
       // to the right, in case of long scroll this should alwats be the end header of the set
       this.m_endColHeader = (start + count) - 1;
-      this.m_endColHeaderPixel = this.m_endColHeaderPixel + totalColumnWidth;
+      this.m_endColHeaderPixel += totalColumnWidth;
     }
 
     if (totalCount === -1) {
@@ -4382,9 +4377,9 @@ DvtDataGrid.prototype.buildColumnHeaders =
     // if virtual scrolling may have to adjust at the beginning
     if (this.m_startColHeader === 0 && this.m_startColHeaderPixel !== 0) {
       this._shiftHeadersAlongAxisInContainer(headerRoot.firstChild, 0,
-                                             this.m_startColHeaderPixel * -1,
-                                             this.getResources().isRTLMode() ? 'right' : 'left',
-                                             this.getMappedStyle('colheadercell'));
+        this.m_startColHeaderPixel * -1,
+        this.getResources().isRTLMode() ? 'right' : 'left',
+        this.getMappedStyle('colheadercell'));
       this.m_endColHeaderPixel -= this.m_startColHeaderPixel;
       this.m_startColHeaderPixel = 0;
     }
@@ -4438,8 +4433,8 @@ DvtDataGrid.prototype.buildColumnEndHeaders =
     returnAsFragment = false;
 
     var returnObj = this.buildAxisHeaders(headerRoot, headerSet, axis, start, count, isAppend,
-                                      insert, reference, atPixel, currentEnd, levelCount,
-                                      rootClassName, cellClassName, returnAsFragment);
+      insert, reference, atPixel, currentEnd, levelCount,
+      rootClassName, cellClassName, returnAsFragment);
 
     if (returnAsFragment) {
       return returnObj;
@@ -4462,12 +4457,12 @@ DvtDataGrid.prototype.buildColumnEndHeaders =
     // whether this is adding columns to the left or right
     if (!isAppend) {
       // to the left
-      this.m_startColEndHeader = this.m_startColEndHeader - count;
-      this.m_startColEndHeaderPixel = this.m_startColEndHeaderPixel - totalColumnWidth;
+      this.m_startColEndHeader -= count;
+      this.m_startColEndHeaderPixel -= totalColumnWidth;
     } else {
       // to the right, in case of long scroll this should alwats be the end header of the set
       this.m_endColEndHeader = start + (count - 1);
-      this.m_endColEndHeaderPixel = this.m_endColEndHeaderPixel + totalColumnWidth;
+      this.m_endColEndHeaderPixel += totalColumnWidth;
     }
 
     if (totalCount === -1) {
@@ -4486,9 +4481,9 @@ DvtDataGrid.prototype.buildColumnEndHeaders =
     // if virtual scrolling may have to adjust at the beginning
     if (this.m_startColEndHeader === 0 && this.m_startColEndHeaderPixel !== 0) {
       this._shiftHeadersAlongAxisInContainer(headerRoot.firstChild, 0,
-                                             this.m_startColEndHeaderPixel * -1,
-                                             this.getResources().isRTLMode() ? 'right' : 'left',
-                                             this.getMappedStyle('colendheadercell'));
+        this.m_startColEndHeaderPixel * -1,
+        this.getResources().isRTLMode() ? 'right' : 'left',
+        this.getMappedStyle('colendheadercell'));
       this.m_endColEndHeaderPixel -= this.m_startColEndHeaderPixel;
       this.m_startColEndHeaderPixel = 0;
     }
@@ -4546,9 +4541,9 @@ DvtDataGrid.prototype.buildRowHeaders =
       this.getMappedStyle('headercell') + ' ' + this.getMappedStyle('rowheadercell');
 
     var returnObj = this.buildAxisHeaders(headerRoot, headerSet, axis, start, count,
-                                          isAppend, insert, reference, atPixel, currentEnd,
-                                          levelCount, rootClassName, cellClassName,
-                                          returnAsFragment);
+      isAppend, insert, reference, atPixel, currentEnd,
+      levelCount, rootClassName, cellClassName,
+      returnAsFragment);
 
     var totalRowHeight = returnObj.totalHeaderDimension;
     var totalRowWidth = returnObj.totalLevelDimension;
@@ -4579,7 +4574,7 @@ DvtDataGrid.prototype.buildRowHeaders =
       }
       // in case of a long scroll the end should always be the start plus the count - 1 for 0 indexing
       this.m_endRowHeader = start + (count - 1);
-      this.m_endRowHeaderPixel = this.m_endRowHeaderPixel + totalRowHeight;
+      this.m_endRowHeaderPixel += totalRowHeight;
     } else if (insert) {
       if (start < this.m_startRowHeader) {
         // added before the start
@@ -4587,13 +4582,13 @@ DvtDataGrid.prototype.buildRowHeaders =
         this.m_startRowHeaderPixel = Math.max(0, this.m_startRowHeaderPixel - totalRowHeight);
       }
       // update the endRowHeader and endRowheaderPixel no matter where we insert
-      this.m_endRowHeader = this.m_endRowHeader + count;
+      this.m_endRowHeader += count;
       this.m_endRowHeaderPixel = Math.max(0, this.m_endRowHeaderPixel + totalRowHeight);
       this.pushRowHeadersDown(reference, totalRowHeight);
     } else {
       this.m_startRowHeader = Math.max(0, this.m_startRowHeader - count);
       // zero maximum is handled below by realigning when appropriate
-      this.m_startRowHeaderPixel = this.m_startRowHeaderPixel - totalRowHeight;
+      this.m_startRowHeaderPixel -= totalRowHeight;
     }
 
     if (totalCount === -1) {
@@ -4612,8 +4607,8 @@ DvtDataGrid.prototype.buildRowHeaders =
     // if virtual scrolling may have to adjust at the beginning
     if (this.m_startRowHeader === 0 && this.m_startRowHeaderPixel !== 0) {
       this._shiftHeadersAlongAxisInContainer(headerRoot.firstChild, 0,
-                                             this.m_startRowHeaderPixel * -1, 'top',
-                                             this.getMappedStyle('rowheadercell'));
+        this.m_startRowHeaderPixel * -1, 'top',
+        this.getMappedStyle('rowheadercell'));
       this.m_endRowHeaderPixel -= this.m_startRowHeaderPixel;
       this.m_startRowHeaderPixel = 0;
     }
@@ -4669,8 +4664,8 @@ DvtDataGrid.prototype.buildRowEndHeaders =
       this.getMappedStyle('endheadercell') + ' ' + this.getMappedStyle('rowendheadercell');
 
     var returnObj = this.buildAxisHeaders(headerRoot, headerSet, axis, start, count, isAppend,
-                                      insert, reference, atPixel, currentEnd, levelCount,
-                                      rootClassName, cellClassName, returnAsFragment);
+      insert, reference, atPixel, currentEnd, levelCount,
+      rootClassName, cellClassName, returnAsFragment);
 
     if (returnAsFragment) {
       return returnObj;
@@ -4706,7 +4701,7 @@ DvtDataGrid.prototype.buildRowEndHeaders =
       }
       // in case of a long scroll the end should always be the start plus the count - 1 for 0 indexing
       this.m_endRowEndHeader = start + (count - 1);
-      this.m_endRowEndHeaderPixel = this.m_endRowEndHeaderPixel + totalRowHeight;
+      this.m_endRowEndHeaderPixel += totalRowHeight;
     } else if (insert) {
       if (start < this.m_startRowEndHeader) {
         // added before the start
@@ -4714,13 +4709,13 @@ DvtDataGrid.prototype.buildRowEndHeaders =
         this.m_startRowEndHeaderPixel = Math.max(0, this.m_startRowEndHeaderPixel - totalRowHeight);
       }
       // update the endRowEndHeader and endRowEndHeaderPixel no matter where we insert
-      this.m_endRowEndHeader = this.m_endRowEndHeader + count;
+      this.m_endRowEndHeader += count;
       this.m_endRowEndHeaderPixel = Math.max(0, this.m_endRowEndHeaderPixel + totalRowHeight);
       this.pushRowHeadersDown(reference, totalRowHeight);
     } else {
       this.m_startRowEndHeader = Math.max(0, this.m_startRowEndHeader - count);
       // zero maximum is handled below by realigning
-      this.m_startRowEndHeaderPixel = this.m_startRowEndHeaderPixel - totalRowHeight;
+      this.m_startRowEndHeaderPixel -= totalRowHeight;
     }
 
     if (totalCount === -1) {
@@ -4740,8 +4735,8 @@ DvtDataGrid.prototype.buildRowEndHeaders =
     // if virtual scrolling may have to adjust at the beginning
     if (this.m_startRowEndHeader === 0 && this.m_startRowEndHeaderPixel !== 0) {
       this._shiftHeadersAlongAxisInContainer(headerRoot.firstChild, 0,
-                                             this.m_startRowEndHeaderPixel * -1, 'top',
-                                             this.getMappedStyle('rowendheadercell'));
+        this.m_startRowEndHeaderPixel * -1, 'top',
+        this.getMappedStyle('rowendheadercell'));
       this.m_endRowEndHeaderPixel -= this.m_startRowEndHeaderPixel;
       this.m_startRowEndHeaderPixel = 0;
     }
@@ -4825,7 +4820,7 @@ DvtDataGrid.prototype.buildAxisHeaders = function (
     }
 
     var returnVal = this.buildLevelHeaders(fragment, index, 0, left, top, isAppend, insert,
-                                           renderer, headerSet, axis, cellClassName, levelCount);
+      renderer, headerSet, axis, cellClassName, levelCount);
     // increment the count over the extent of the header
     x += returnVal.count;
     totalHeaderDimension += returnVal.totalHeaderDimension;
@@ -5008,26 +5003,26 @@ DvtDataGrid.prototype.buildLevelHeaders = function (
   if (patchBefore && index === end + 1) {
     // get the grouping of the container at the previous index
     groupingContainer = this._getHeaderContainer(index - 1, level, 0, null,
-                                                 groupingRoot, totalLevels);
+      groupingRoot, totalLevels);
     // increment the extent stored in the grouping container
     this._setAttribute(groupingContainer, 'extent',
-                       this._getAttribute(groupingContainer, 'extent', true) + headerExtent);
+      this._getAttribute(groupingContainer, 'extent', true) + headerExtent);
     header = groupingContainer.firstChild;
     levelDimensionValue = this.getElementDir(header, levelDimension);
     // add columns to that grouping container
     for (i = 0; i < headerExtent;) {
       if (axis === 'column' || axis === 'columnEnd') {
         returnVal = this.buildLevelHeaders(groupingContainer, index + i,
-                                           level + headerDepth, dimensionToAdjustValue,
-                                           dimensionSecondValue + levelDimensionValue,
-                                           isAppend, insert, renderer, headerSet, axis,
-                                           className, totalLevels);
+          level + headerDepth, dimensionToAdjustValue,
+          dimensionSecondValue + levelDimensionValue,
+          isAppend, insert, renderer, headerSet, axis,
+          className, totalLevels);
       } else {
         returnVal = this.buildLevelHeaders(groupingContainer, index + i,
-                                           level + headerDepth,
-                                           dimensionSecondValue + levelDimensionValue,
-                                           dimensionToAdjustValue, isAppend, insert,
-                                           renderer, headerSet, axis, className, totalLevels);
+          level + headerDepth,
+          dimensionSecondValue + levelDimensionValue,
+          dimensionToAdjustValue, isAppend, insert,
+          renderer, headerSet, axis, className, totalLevels);
       }
       // increment the left and total and count and skip ahead to the next header
       dimensionToAdjustValue += returnVal.totalHeaderDimension;
@@ -5037,36 +5032,36 @@ DvtDataGrid.prototype.buildLevelHeaders = function (
     }
     // adjust the header size based on the total of the new sizes passed back
     this.setElementDir(header, this.getElementDir(header,
-                                                  headerDimension) + totalHeaderDimensionValue,
-                       headerDimension);
+      headerDimension) + totalHeaderDimensionValue,
+    headerDimension);
   } else if (patchAfter && index === start - 1) {
     // if the data source says to patch after this header
     // and the index is 1 less than what is currently in the viewport
     // get the groupingContainer and add to it
     // get the grouping of the container at the previous index
     groupingContainer = this._getHeaderContainer(index + 1, level, 0, null,
-                                                 groupingRoot, totalLevels);
+      groupingRoot, totalLevels);
     // increment the extent stored in the grouping container
     this._setAttribute(groupingContainer, 'extent',
-                       this._getAttribute(groupingContainer, 'extent', true) + headerExtent);
+      this._getAttribute(groupingContainer, 'extent', true) + headerExtent);
     // decrement the start stored in the grouping container, since inserting before
     this._setAttribute(groupingContainer, 'start',
-                       this._getAttribute(groupingContainer, 'start', true) - headerExtent);
+      this._getAttribute(groupingContainer, 'start', true) - headerExtent);
     header = groupingContainer.firstChild;
     levelDimensionValue = this.getElementDir(header, levelDimension);
     for (i = 0; i < headerExtent;) {
       if (axis === 'column' || axis === 'columnEnd') {
         returnVal = this.buildLevelHeaders(groupingContainer, index - i,
-                                           level + headerDepth, dimensionToAdjustValue,
-                                           dimensionSecondValue + levelDimensionValue,
-                                           isAppend, insert, renderer, headerSet, axis,
-                                           className, totalLevels);
+          level + headerDepth, dimensionToAdjustValue,
+          dimensionSecondValue + levelDimensionValue,
+          isAppend, insert, renderer, headerSet, axis,
+          className, totalLevels);
       } else {
         returnVal = this.buildLevelHeaders(groupingContainer, index - i,
-                                           level + headerDepth,
-                                           dimensionSecondValue + levelDimensionValue,
-                                           dimensionToAdjustValue, isAppend, insert,
-                                           renderer, headerSet, axis, className, totalLevels);
+          level + headerDepth,
+          dimensionSecondValue + levelDimensionValue,
+          dimensionToAdjustValue, isAppend, insert,
+          renderer, headerSet, axis, className, totalLevels);
       }
       dimensionToAdjustValue -= returnVal.totalHeaderDimension;
       totalHeaderDimensionValue += returnVal.totalHeaderDimension;
@@ -5074,9 +5069,9 @@ DvtDataGrid.prototype.buildLevelHeaders = function (
       i += returnVal.count;
     }
     this.setElementDir(header,
-                       this.getElementDir(header,
-                                          headerDimension) + totalHeaderDimensionValue,
-                       headerDimension);
+      this.getElementDir(header,
+        headerDimension) + totalHeaderDimensionValue,
+      headerDimension);
     this.setElementDir(header, dimensionToAdjustValue, dimensionToAdjust);
   } else {
     // get the information from the headers
@@ -5088,10 +5083,10 @@ DvtDataGrid.prototype.buildLevelHeaders = function (
 
     // build headerContext to pass to renderer
     var headerContext = this.createHeaderContext(axis, index, headerData, headerMetadata,
-                                             header, level, headerExtent, headerDepth);
-    header.setAttribute(this.getResources().getMappedAttribute('container'),
-                        this.getResources().widgetName);
-    header.setAttribute(this.getResources().getMappedAttribute('busyContext'), '');
+      header, level, headerExtent, headerDepth);
+    header.setAttribute(this.getResources().getMappedAttribute('container'), // @HTMLUpdateOK
+      this.getResources().widgetName);
+    header.setAttribute(this.getResources().getMappedAttribute('busyContext'), ''); // @HTMLUpdateOK
     this._createUniqueId(header);
     header[this.getResources().getMappedAttribute('context')] = headerContext;
     var inlineStyle = this.m_options.getInlineStyle(axis, headerContext);
@@ -5099,7 +5094,7 @@ DvtDataGrid.prototype.buildLevelHeaders = function (
 
     // add inline styles to the column header cell
     if (inlineStyle != null) {
-      header.style.cssText = inlineStyle;
+      DataCollectionUtils.applyMergedInlineStyles(header, inlineStyle, '');
     }
 
     // add class names to the column header cell
@@ -5114,7 +5109,7 @@ DvtDataGrid.prototype.buildLevelHeaders = function (
     this.setElementDir(header, dimensionToAdjustValue, dimensionToAdjust);
 
     var dimensions = this._getHeaderDimensions(header, headerDimension, levelDimension,
-       levelDimensionCache, level, dimensionAxis, headerContext.key, headerDepth);
+      levelDimensionCache, level, dimensionAxis, headerContext.key, headerDepth);
 
     levelDimensionValue = dimensions[levelDimension];
     this.setElementDir(header, levelDimensionValue, levelDimension);
@@ -5130,7 +5125,7 @@ DvtDataGrid.prototype.buildLevelHeaders = function (
       groupingContainer.className = this.getMappedStyle('groupingcontainer');
       groupingContainer.appendChild(header); // @HTMLUpdateOK
       this._setAttribute(groupingContainer, 'start',
-                         (isAppend || insert) ? index : (index - headerExtent) + 1);
+        (isAppend || insert) ? index : (index - headerExtent) + 1);
       this._setAttribute(groupingContainer, 'extent', headerExtent);
       this._setAttribute(groupingContainer, 'level', level);
     }
@@ -5150,15 +5145,15 @@ DvtDataGrid.prototype.buildLevelHeaders = function (
         var nextIndex = (isAppend || insert) ? index + i : index - i;
         if (axis === 'column' || axis === 'columnEnd') {
           returnVal = this.buildLevelHeaders(groupingContainer, nextIndex,
-                                             level + headerDepth, dimensionToAdjustValue,
-                                             dimensionSecondValue + levelDimensionValue,
-                                             isAppend, insert, renderer, headerSet, axis,
-                                             className, totalLevels);
+            level + headerDepth, dimensionToAdjustValue,
+            dimensionSecondValue + levelDimensionValue,
+            isAppend, insert, renderer, headerSet, axis,
+            className, totalLevels);
         } else {
           returnVal = this.buildLevelHeaders(groupingContainer, nextIndex, level + headerDepth,
-                                             dimensionSecondValue + levelDimensionValue,
-                                             dimensionToAdjustValue, isAppend, insert, renderer,
-                                             headerSet, axis, className, totalLevels);
+            dimensionSecondValue + levelDimensionValue,
+            dimensionToAdjustValue, isAppend, insert, renderer,
+            headerSet, axis, className, totalLevels);
         }
         headerDimensionValue = returnVal.totalHeaderDimension;
         dimensionToAdjustValue = (isAppend || insert) ?
@@ -5230,12 +5225,12 @@ DvtDataGrid.prototype.buildLevelHeaders = function (
       if (fragment.firstChild) {
         // if the firstChild is a groupingContainer just insert before it
         if (this.m_utils.containsCSSClassName(fragment.firstChild,
-                                              this.getMappedStyle('groupingcontainer'))) {
+          this.getMappedStyle('groupingcontainer'))) {
           fragment.insertBefore(groupingContainer, fragment.firstChild); // @HTMLUpdateOK
         } else if (this.m_utils.containsCSSClassName(fragment.firstChild,
-                                                     this.getMappedStyle('headercell')) ||
+          this.getMappedStyle('headercell')) ||
                    this.m_utils.containsCSSClassName(fragment.firstChild,
-                                                     this.getMappedStyle('endheadercell'))) {
+                     this.getMappedStyle('endheadercell'))) {
           // if the firstChild is a cell need to insert after it
           fragment.insertBefore(groupingContainer, fragment.firstChild.nextSibling); // @HTMLUpdateOK
         }
@@ -5243,7 +5238,7 @@ DvtDataGrid.prototype.buildLevelHeaders = function (
         fragment.appendChild(groupingContainer); // @HTMLUpdateOK
       }
     } else if (this.m_utils.containsCSSClassName(fragment,
-                                                 this.getMappedStyle('groupingcontainer'))) {
+      this.getMappedStyle('groupingcontainer'))) {
       // if the fragment itself is a grouping container insert before the other grouping containers
       fragment.insertBefore(header, fragment.firstChild.nextSibling); // @HTMLUpdateOK
     } else {
@@ -5410,7 +5405,7 @@ DvtDataGrid.prototype._getHeaderContainer =
           return headers[i];
         }
         return this._getHeaderContainer(index, level, currentLevel + headerDepth,
-                                        headers[i].childNodes, root, levelCount);
+          headers[i].childNodes, root, levelCount);
       }
     }
     return null;
@@ -5477,7 +5472,7 @@ DvtDataGrid.prototype._getAttribute = function (element, attributeKey, parse) {
  * @param {string|number|boolean} value
  */
 DvtDataGrid.prototype._setAttribute = function (element, attributeKey, value) {
-  element.setAttribute(this.getResources().getMappedAttribute(attributeKey), value);
+  element.setAttribute(this.getResources().getMappedAttribute(attributeKey), value); // @HTMLUpdateOK
 };
 
 /**
@@ -5545,9 +5540,9 @@ DvtDataGrid.prototype._getIndexesFromScrollPosition = function (scrollPosition) 
     var returnObj = {};
     if (indexesFromKey.rowIndexFromKey != null && indexesFromKey.rowIndexFromKey > 0) {
       returnObj.row = indexesFromKey.rowIndexFromKey;
-    } else if (scrollPosition.rowIndex) {
+    } else if (scrollPosition.rowIndex != null) {
       returnObj.row = scrollPosition.rowIndex;
-    } else if (scrollPosition.y) {
+    } else if (scrollPosition.y != null) {
       returnObj.row = Math.round(scrollPosition.y / self.getDefaultRowHeight());
     } else {
       returnObj.row = 0;
@@ -5555,9 +5550,9 @@ DvtDataGrid.prototype._getIndexesFromScrollPosition = function (scrollPosition) 
 
     if (indexesFromKey.columnIndexFromKey != null && indexesFromKey.columnIndexFromKey > 0) {
       returnObj.column = indexesFromKey.columnIndexFromKey;
-    } else if (scrollPosition.columnIndex) {
+    } else if (scrollPosition.columnIndex != null) {
       returnObj.column = scrollPosition.columnIndex;
-    } else if (scrollPosition.x) {
+    } else if (scrollPosition.x != null) {
       returnObj.column = Math.round(scrollPosition.x / self.getDefaultColumnWidth());
     } else {
       returnObj.column = 0;
@@ -5694,9 +5689,9 @@ DvtDataGrid.prototype.isCellFetchResponseInViewport = function (cellSet, cellRan
   var columnStart = columnRange.start;
 
   var rowReturnVal = this._getLongScrollStart(this.m_currentScrollTop,
-                                              this.m_prevScrollTop, 'row');
+    this.m_prevScrollTop, 'row');
   var columnReturnVal = this._getLongScrollStart(this.m_currentScrollLeft,
-                                                 this.m_prevScrollLeft, 'column');
+    this.m_prevScrollLeft, 'column');
 
   // return true if the viewport fits inside the fetched range
   return (rowReturnVal.start === rowStart && columnReturnVal.start === columnStart);
@@ -5841,11 +5836,11 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function (cellSet, cellRange, ro
       if (this.m_endRow !== -1 && rowCount !== 0) {
         // get the previous last row
         this._highlightCellsAlongAxis(this.m_endRow, 'row', 'index', 'remove',
-                                      ['borderHorizontalNone']);
+          ['borderHorizontalNone']);
       }
       // update row range info if neccessary
       this.m_endRow = rowStart + (rowCount - 1);
-      this.m_endRowPixel = this.m_endRowPixel + totalRowHeight;
+      this.m_endRowPixel += totalRowHeight;
     } else if (rowInsert) {
       // update row range info if neccessary
       if (rowStart < this.m_startRow) {
@@ -5854,14 +5849,14 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function (cellSet, cellRange, ro
         this.m_startRowPixel = Math.max(0, this.m_startRowPixel - totalRowHeight);
       }
       // update the endRow and endRowPixel no matter where we insert
-      this.m_endRow = this.m_endRow + rowCount;
-      this.m_endRowPixel = this.m_endRowPixel + totalRowHeight;
+      this.m_endRow += rowCount;
+      this.m_endRowPixel += totalRowHeight;
       this.pushRowsDown(rowStart + rowCount, totalRowHeight);
     } else {
       // update row range info if neccessary
-      this.m_startRow = this.m_startRow - rowCount;
+      this.m_startRow -= rowCount;
       // zero maximum is handled by realigning
-      this.m_startRowPixel = this.m_startRowPixel - totalRowHeight;
+      this.m_startRowPixel -= totalRowHeight;
     }
   } else if (columnRangeNeedsUpdate) {
     // whether this is adding cols to right (append) or left (insert)
@@ -5895,12 +5890,12 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function (cellSet, cellRange, ro
   if (columnRangeNeedsUpdate) {
     // add to left or to right
     if (columnStart < this.m_startCol) {
-      this.m_startCol = this.m_startCol - columnCount;
-      this.m_startColPixel = this.m_startColPixel - totalColumnWidth;
+      this.m_startCol -= columnCount;
+      this.m_startColPixel -= totalColumnWidth;
     } else {
       // in virtual fetch end should always be set to last
       this.m_endCol = columnStart + (columnCount - 1);
-      this.m_endColPixel = this.m_endColPixel + totalColumnWidth;
+      this.m_endColPixel += totalColumnWidth;
     }
   }
 
@@ -5980,7 +5975,7 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function (cellSet, cellRange, ro
     } else if (!this.isActionableMode() &&
                this._getActiveElement() != null &&
                !this.m_utils.containsCSSClassName(this._getActiveElement(),
-                                                  this.getMappedStyle('focus'))) {
+                 this.getMappedStyle('focus'))) {
       // highliht the active cell if we are virtualized scroll and scrolled away from the active and came back
       // also on a move event insert this will preserve the active cell
       if (this.m_shouldFocus !== true) {
@@ -6121,7 +6116,8 @@ DvtDataGrid.prototype._onTransitionEnd = function (target, handler, duration) {
  * @private
  */
 DvtDataGrid.prototype._insertRowsWithAnimation = function (
-  cellsFragment, rowHeaderFragment, rowEndHeaderFragment, rowStart, rowCount, totalRowHeight
+  cellsFragment, rowHeaderFragment, rowEndHeaderFragment, rowStart, rowCount,
+  totalRowHeight, columnStart, columnCount
 ) {
   var self = this;
   var i;
@@ -6264,11 +6260,14 @@ DvtDataGrid.prototype._insertRowsWithAnimation = function (
   this.setElementHeight(databodyContent, this.getElementHeight(databodyContent) + totalRowHeight);
   this.resizeGrid();
   this.updateRowBanding();
-
   this._refreshDatabodyMap();
 
+  if (this._isSelectionEnabled()) {
+    this.applySelection(rowStart, rowStart + rowCount, columnStart, columnStart + columnCount);
+  }
+
   var lastAnimatedElement = this._getCellByIndex(this.createIndex(rowStart + (rowCount - 1),
-                                                                  this.m_endCol));
+    this.m_endCol));
   function transitionListener() {
     self.m_stopRowFetch = false;
     if (self.m_endRowHeader !== -1) {
@@ -6299,11 +6298,11 @@ DvtDataGrid.prototype._insertRowsWithAnimation = function (
       }
       if (rowHeaderSupport) {
         self.addTransformMoveStyle(rowHeaderContent.childNodes[ii], _duration + 'ms',
-                                   0, timing, 0, 0, 0);
+          0, timing, 0, 0, 0);
       }
       if (rowEndHeaderSupport) {
         self.addTransformMoveStyle(rowEndHeaderContent.childNodes[ii], _duration + 'ms',
-                                   0, timing, 0, 0, 0);
+          0, timing, 0, 0, 0);
       }
     }
   }, 0);
@@ -6386,21 +6385,21 @@ DvtDataGrid.prototype._addCellsToFragment =
             cell = patched.cell;
             cellContext = cell[this.getResources().getMappedAttribute('context')];
           } else {
-            var cellData = cellSet.getData(indexes);
-            var cellMetadata = cellSet.getMetadata(indexes);
+            var cellData = cellSet.getData(this.createIndex(tempRowIndex, columnIndex));
+            var cellMetadata = cellSet.getMetadata(this.createIndex(tempRowIndex, columnIndex));
 
             cell = document.createElement('div');
             cellContext = this.createCellContext(indexes, cellData, cellMetadata, cell, extents);
-            cell.setAttribute(this.getResources().getMappedAttribute('container'),
-                              this.getResources().widgetName);
-            cell.setAttribute(this.getResources().getMappedAttribute('busyContext'), '');
+            cell.setAttribute(this.getResources().getMappedAttribute('container'), // @HTMLUpdateOK
+              this.getResources().widgetName);
+            cell.setAttribute(this.getResources().getMappedAttribute('busyContext'), ''); // @HTMLUpdateOK
             this._createUniqueId(cell);
             cell[this.getResources().getMappedAttribute('context')] = cellContext;
 
             // before setting our own styles, else we will overwrite them
             var inlineStyle = this.m_options.getInlineStyle('cell', cellContext);
             if (inlineStyle != null) {
-              cell.style.cssText = inlineStyle;
+              DataCollectionUtils.applyMergedInlineStyles(cell, inlineStyle, '');
             }
 
             // don't want developer setting height or width through inline styles on cell
@@ -6430,10 +6429,10 @@ DvtDataGrid.prototype._addCellsToFragment =
               var rowKey = k === 0 ?
                 cellContext.keys.row :
                 this._getKey(this._getHeaderByIndex(tempRowIndex + k, 0,
-                                                    this.m_rowHeader, this.m_rowHeaderLevelCount,
-                                                    this.m_startRowHeader), 'row');
+                  this.m_rowHeader, this.m_rowHeaderLevelCount,
+                  this.m_startRowHeader), 'row');
               heights[i + k] = this._getCellDimension(cell, tempRowIndex + k, rowKey,
-                                                      'row', 'height');
+                'row', 'height');
               height += heights[i + k];
             }
 
@@ -6442,13 +6441,13 @@ DvtDataGrid.prototype._addCellsToFragment =
 
             for (k = 0; k < extents.column; k++) {
               var columnKey = k === 0 ?
-                  cellContext.keys.column :
-                  this._getKey(this._getHeaderByIndex(columnIndex + k, 0,
-                                                      this.m_colHeader,
-                                                      this.m_columnHeaderLevelCount,
-                                                      this.m_startColHeader), 'column');
+                cellContext.keys.column :
+                this._getKey(this._getHeaderByIndex(columnIndex + k, 0,
+                  this.m_colHeader,
+                  this.m_columnHeaderLevelCount,
+                  this.m_startColHeader), 'column');
               width += this._getCellDimension(cell, columnIndex, columnKey,
-                                              'column', 'width');
+                'column', 'width');
             }
 
             // set the px width on the cell regardless of unit type currently on it
@@ -6559,10 +6558,10 @@ DvtDataGrid.prototype._updateCellDimension = function (
 
   for (var k = 1; k <= axisExtent; k++) {
     var key = this._getKey(this._getHeaderByIndex(isBefore ? axisIndex - k : axisIndex + k,
-                                                  0, header, headerLevelCount, startHeader),
-                           axis);
+      0, header, headerLevelCount, startHeader),
+    axis);
     dimensionDelta += this._getCellDimension(cell, isBefore ? axisIndex - k : axisIndex + k,
-                                             key, axis, dimension);
+      key, axis, dimension);
     for (var j = 0; j < otherAxisExtent; j++) {
       var addRowIndex;
       var addColumnIndex;
@@ -6623,16 +6622,16 @@ DvtDataGrid.prototype._patchExistingCells =
 
     if (columnIndex - 1 === this.m_endCol && patchColumnBefore) {
       return this._updateCellDimension(columnExtent, rowExtent, this.m_endCol, rowIndex,
-                                       tempArray, 'column', 'width', false);
+        tempArray, 'column', 'width', false);
     } else if (rowIndex - 1 === this.m_endRow && patchRowBefore) {
       return this._updateCellDimension(rowExtent, columnExtent, columnIndex, this.m_endRow,
-                                       tempArray, 'row', 'height', false);
+        tempArray, 'row', 'height', false);
     } else if (columnIndex + columnExtent === this.m_startCol && patchColumnAfter) {
       return this._updateCellDimension(columnExtent, rowExtent, this.m_startCol, rowIndex,
-                                       tempArray, 'column', 'width', true);
+        tempArray, 'column', 'width', true);
     } else if (rowIndex + rowExtent === this.m_startRow && patchRowAfter) {
       return this._updateCellDimension(rowExtent, columnExtent, columnIndex, this.m_startRow,
-                                       tempArray, 'row', 'height', true);
+        tempArray, 'row', 'height', true);
     }
 
     return false;
@@ -6691,12 +6690,12 @@ DvtDataGrid.prototype._getCellDimension = function (cell, index, key, axis, dime
   // initialized doesn't matter because of scroll behavior
   if (endHeader === -1) {
     var shimHeaderContext = this.createHeaderContext(axis, index, null,
-                                                     { key: key }, null, 0, 0, 1);
+      { key: key }, null, 0, 0, 1);
     var inlineStyle = this.m_options.getInlineStyle(axis, shimHeaderContext);
     var styleClass = this.m_options.getStyleClass(axis, shimHeaderContext);
     dimensionOf = document.createElement('div');
     if (inlineStyle != null) {
-      dimensionOf.style.cssText = inlineStyle;
+      DataCollectionUtils.applyMergedInlineStyles(dimensionOf, inlineStyle, '');
     }
     dimensionOf.className = headerClassName + ' ' + styleClass;
   } else {
@@ -7136,9 +7135,9 @@ DvtDataGrid.prototype.scrollDelta = function (deltaX, deltaY) {
   this._adjustScrollerSize();
 
   var scrollLeft = Math.max(0, Math.min(this._getMaxScrollWidth(),
-                                        this.m_currentScrollLeft - deltaX));
+    this.m_currentScrollLeft - deltaX));
   var scrollTop = Math.max(0, Math.min(this._getMaxScrollHeight(),
-                                       this.m_currentScrollTop - deltaY));
+    this.m_currentScrollTop - deltaY));
   this._initiateScroll(scrollLeft, scrollTop);
 };
 
@@ -7606,7 +7605,7 @@ DvtDataGrid.prototype.handleLongScroll = function (scrollLeft, scrollTop) {
     this.fetchCells(this.m_databody, startRow, startCol, null, null, {
       success: function (cellSet, cellRange) {
         this.handleCellsFetchSuccessForLongScroll(cellSet, cellRange, startRow, startCol,
-                                                  startRowPixel, startColPixel);
+          startRowPixel, startColPixel);
       }
     });
   }
@@ -7746,7 +7745,7 @@ DvtDataGrid.prototype.fillViewport = function () {
         fetchSize = Math.max(0, this.getFetchCount('row', fetchStart));
         this.fetchHeaders('row', fetchStart, this.m_rowHeader, this.m_rowEndHeader, fetchSize);
         this.fetchCells(this.m_databody, fetchStart, this.m_startCol, fetchSize,
-                        (this.m_endCol - this.m_startCol) + 1);
+          (this.m_endCol - this.m_startCol) + 1);
         return;
       }
     }
@@ -7757,7 +7756,7 @@ DvtDataGrid.prototype.fillViewport = function () {
       fetchSize = Math.max(0, this._getMaxTop() - fetchStart);
       this.fetchHeaders('row', fetchStart, this.m_rowHeader, this.m_rowEndHeader, fetchSize);
       this.fetchCells(this.m_databody, fetchStart, this.m_startCol, fetchSize,
-                      (this.m_endCol - this.m_startCol) + 1);
+        (this.m_endCol - this.m_startCol) + 1);
       return;
     }
 
@@ -7769,7 +7768,7 @@ DvtDataGrid.prototype.fillViewport = function () {
         fetchSize = Math.max(0, this.getFetchCount('column', fetchStart));
         this.fetchHeaders('column', fetchStart, this.m_colHeader, this.m_colEndHeader, fetchSize);
         this.fetchCells(this.m_databody, this.m_startRow, fetchStart,
-                        (this.m_endRow - this.m_startRow) + 1, fetchSize);
+          (this.m_endRow - this.m_startRow) + 1, fetchSize);
         return;
       }
     }
@@ -7780,7 +7779,7 @@ DvtDataGrid.prototype.fillViewport = function () {
       fetchSize = Math.max(0, this._getMaxLeft() - fetchStart);
       this.fetchHeaders('column', fetchStart, this.m_colHeader, this.m_colEndHeader, fetchSize);
       this.fetchCells(this.m_databody, this.m_startRow, fetchStart,
-                      (this.m_endRow - this.m_startRow) + 1, fetchSize);
+        (this.m_endRow - this.m_startRow) + 1, fetchSize);
     }
   }
 };
@@ -7804,8 +7803,8 @@ DvtDataGrid.prototype._getMaxLeft = function () {
  */
 DvtDataGrid.prototype._getMaxRightPixel = function () {
   return Math.max(Math.max(this.m_endColPixel,
-                           this.m_endColHeaderPixel),
-                  this.m_endColEndHeaderPixel);
+    this.m_endColHeaderPixel),
+  this.m_endColEndHeaderPixel);
 };
 
 /**
@@ -7813,8 +7812,8 @@ DvtDataGrid.prototype._getMaxRightPixel = function () {
  */
 DvtDataGrid.prototype._getMaxLeftPixel = function () {
   return Math.max(Math.max(this.m_startColPixel,
-                           this.m_startColHeaderPixel),
-                  this.m_startColEndHeaderPixel);
+    this.m_startColHeaderPixel),
+  this.m_startColEndHeaderPixel);
 };
 
 /**
@@ -7836,8 +7835,8 @@ DvtDataGrid.prototype._getMaxTop = function () {
  */
 DvtDataGrid.prototype._getMaxBottomPixel = function () {
   return Math.max(Math.max(this.m_endRowPixel,
-                           this.m_endRowHeaderPixel),
-                  this.m_endRowEndHeaderPixel);
+    this.m_endRowHeaderPixel),
+  this.m_endRowEndHeaderPixel);
 };
 
 /**
@@ -7845,8 +7844,8 @@ DvtDataGrid.prototype._getMaxBottomPixel = function () {
  */
 DvtDataGrid.prototype._getMaxTopPixel = function () {
   return Math.max(Math.max(this.m_startRowPixel,
-                           this.m_startRowHeaderPixel),
-                  this.m_startRowEndHeaderPixel);
+    this.m_startRowHeaderPixel),
+  this.m_startRowEndHeaderPixel);
 };
 
 /**
@@ -7949,20 +7948,20 @@ DvtDataGrid.prototype._removeCellsAlongAxis = function (axis, threshold, isFromE
 
   while (j <= axisEnd && j >= axisStart) {
     var key = this._getKey(this._getHeaderByIndex(j, axisLevelCount - 1, axisHeaders,
-                                                  axisLevelCount, axisStartHeader), axis);
+      axisLevelCount, axisStartHeader), axis);
     if (key == null) {
       key = this._getKey(this._getCellByIndex(axis === 'column' ?
-                                              this.createIndex(this.m_startRow, j) :
-                                              this.createIndex(j, this.m_startCol)), axis);
+        this.createIndex(this.m_startRow, j) :
+        this.createIndex(j, this.m_startCol)), axis);
     }
     var dimensionValue = this._getCellDimension(null, j, key, axis, dimension);
     if (isFromEnd ?
-        (axisEndPixel - dimensionValue - totalDimensionChange > threshold) :
-        (axisStartPixel + dimensionValue + totalDimensionChange < currentScroll - threshold)) {
+      (axisEndPixel - dimensionValue - totalDimensionChange > threshold) :
+      (axisStartPixel + dimensionValue + totalDimensionChange < currentScroll - threshold)) {
       var otherExtent;
       for (var i = otherAxisStart; i <= otherAxisEnd; i += otherExtent) {
         var cell = this._getCellByIndex(axis === 'column' ?
-                                        this.createIndex(i, j) : this.createIndex(j, i));
+          this.createIndex(i, j) : this.createIndex(j, i));
         var cellContext = cell[this.getResources().getMappedAttribute('context')];
         var axisExtent = cellContext.extents[axis];
         otherExtent = cellContext.extents[otherAxis];
@@ -7972,7 +7971,7 @@ DvtDataGrid.prototype._removeCellsAlongAxis = function (axis, threshold, isFromE
         } else {
           cellContext.extents[axis] -= 1;
           this.setElementDir(cell, this.getElementDir(cell, dimension) - dimensionValue,
-                             dimension);
+            dimension);
           if (!isFromEnd) {
             cellContext.indexes[axis] += 1;
             this.setElementDir(cell, this.getElementDir(cell, dir) + dimensionValue, dir);
@@ -8043,18 +8042,18 @@ DvtDataGrid.prototype.removeHeadersFromStartOfContainer = function (
 
   if (!isHeader) {
     var returnVal = this.removeHeadersFromStartOfContainer(element, element.firstChild,
-                                                           startPixel, threshold, className,
-                                                           dimension, dir, scrollPosition);
+      startPixel, threshold, className,
+      dimension, dir, scrollPosition);
     this._setAttribute(element, 'start',
-                       this._getAttribute(element, 'start', true) + returnVal.extentChange);
+      this._getAttribute(element, 'start', true) + returnVal.extentChange);
     this._setAttribute(element, 'extent',
-                       this._getAttribute(element, 'extent', true) - returnVal.extentChange);
+      this._getAttribute(element, 'extent', true) - returnVal.extentChange);
     this.setElementDir(header,
-                       this.getElementDir(header, dir) + returnVal.dimensionChange,
-                       dir);
+      this.getElementDir(header, dir) + returnVal.dimensionChange,
+      dir);
     this.setElementDir(header,
-                       this.getElementDir(header, dimension) - returnVal.dimensionChange,
-                       dimension);
+      this.getElementDir(header, dimension) - returnVal.dimensionChange,
+      dimension);
 
     removedHeaders += returnVal.extentChange;
     removedDimensionValue += returnVal.dimensionChange;
@@ -8101,13 +8100,13 @@ DvtDataGrid.prototype.removeHeadersFromEndOfContainer =
 
     if (!isHeader) {
       var returnVal = this.removeHeadersFromEndOfContainer(element, endPixel, threshold,
-                                                           className, dimension);
+        className, dimension);
 
       this._setAttribute(element, 'extent',
-                         this._getAttribute(element, 'extent', true) - returnVal.extentChange);
+        this._getAttribute(element, 'extent', true) - returnVal.extentChange);
       this.setElementDir(header,
-                         this.getElementDir(header, dimension) - returnVal.dimensionChange,
-                         dimension);
+        this.getElementDir(header, dimension) - returnVal.dimensionChange,
+        dimension);
 
       removedHeaders += returnVal.extentChange;
       removedHeadersDimension += returnVal.dimensionChange;
@@ -8129,13 +8128,13 @@ DvtDataGrid.prototype.removeColumnHeadersFromLeft = function () {
     colThreshold = this.getColumnThreshold();
     if (this.m_startColHeaderPixel <= this.m_currentScrollLeft - colThreshold) {
       returnVal = this.removeHeadersFromStartOfContainer(colHeaderContent, null,
-                                                         this.m_startColHeaderPixel,
-                                                         colThreshold,
-                                                         this.getMappedStyle('colheadercell'),
-                                                         'width',
-                                                         this.getResources().isRTLMode() ?
-                                                         'right' : 'left',
-                                                         this.m_currentScrollLeft);
+        this.m_startColHeaderPixel,
+        colThreshold,
+        this.getMappedStyle('colheadercell'),
+        'width',
+        this.getResources().isRTLMode() ?
+          'right' : 'left',
+        this.m_currentScrollLeft);
 
       this.m_startColHeaderPixel += returnVal.dimensionChange;
       this.m_startColHeader += returnVal.extentChange;
@@ -8147,13 +8146,13 @@ DvtDataGrid.prototype.removeColumnHeadersFromLeft = function () {
     colThreshold = this.getColumnThreshold();
     if (this.m_startColEndHeaderPixel < this.m_currentScrollLeft - colThreshold) {
       returnVal = this.removeHeadersFromStartOfContainer(colEndHeaderContent, null,
-                                                         this.m_startColEndHeaderPixel,
-                                                         colThreshold,
-                                                         this.getMappedStyle('colendheadercell'),
-                                                         'width',
-                                                         this.getResources().isRTLMode() ?
-                                                         'right' : 'left',
-                                                         this.m_currentScrollLeft);
+        this.m_startColEndHeaderPixel,
+        colThreshold,
+        this.getMappedStyle('colendheadercell'),
+        'width',
+        this.getResources().isRTLMode() ?
+          'right' : 'left',
+        this.m_currentScrollLeft);
 
       this.m_startColEndHeaderPixel += returnVal.dimensionChange;
       this.m_startColEndHeader += returnVal.extentChange;
@@ -8201,10 +8200,10 @@ DvtDataGrid.prototype.removeColumnHeadersFromRight = function () {
       }
 
       returnVal = this.removeHeadersFromEndOfContainer(colHeaderContent,
-                                                       this.m_endColHeaderPixel,
-                                                       colThreshold,
-                                                       this.getMappedStyle('colheadercell'),
-                                                       'width');
+        this.m_endColHeaderPixel,
+        colThreshold,
+        this.getMappedStyle('colheadercell'),
+        'width');
 
       this.m_endColHeaderPixel -= returnVal.dimensionChange;
       this.m_endColHeader -= returnVal.extentChange;
@@ -8221,10 +8220,10 @@ DvtDataGrid.prototype.removeColumnHeadersFromRight = function () {
       }
 
       returnVal = this.removeHeadersFromEndOfContainer(colHeaderContent,
-                                                       this.m_endColEndHeaderPixel,
-                                                       colThreshold,
-                                                       this.getMappedStyle('colendheadercell'),
-                                                       'width');
+        this.m_endColEndHeaderPixel,
+        colThreshold,
+        this.getMappedStyle('colendheadercell'),
+        'width');
 
       this.m_endColEndHeaderPixel -= returnVal.dimensionChange;
       this.m_endColEndHeader -= returnVal.extentChange;
@@ -8271,10 +8270,10 @@ DvtDataGrid.prototype.removeRowHeadersFromTop = function () {
     rowThreshold = this.getRowThreshold();
     if (!(this.m_startRowHeaderPixel >= this.m_currentScrollTop - rowThreshold)) {
       returnVal = this.removeHeadersFromStartOfContainer(rowHeaderContent, null,
-                                                         this.m_startRowHeaderPixel,
-                                                         rowThreshold,
-                                                         this.getMappedStyle('rowheadercell'),
-                                                         'height', 'top', this.m_currentScrollTop);
+        this.m_startRowHeaderPixel,
+        rowThreshold,
+        this.getMappedStyle('rowheadercell'),
+        'height', 'top', this.m_currentScrollTop);
 
       this.m_startRowHeaderPixel += returnVal.dimensionChange;
       this.m_startRowHeader += returnVal.extentChange;
@@ -8286,10 +8285,10 @@ DvtDataGrid.prototype.removeRowHeadersFromTop = function () {
     rowThreshold = this.getRowThreshold();
     if (!(this.m_startRowEndHeaderPixel >= this.m_currentScrollTop - rowThreshold)) {
       returnVal = this.removeHeadersFromStartOfContainer(rowEndHeaderContent, null,
-                                                         this.m_startRowEndHeaderPixel,
-                                                         rowThreshold,
-                                                         this.getMappedStyle('rowendheadercell'),
-                                                         'height', 'top', this.m_currentScrollTop);
+        this.m_startRowEndHeaderPixel,
+        rowThreshold,
+        this.getMappedStyle('rowendheadercell'),
+        'height', 'top', this.m_currentScrollTop);
 
       this.m_startRowEndHeaderPixel += returnVal.dimensionChange;
       this.m_startRowEndHeader += returnVal.extentChange;
@@ -8333,10 +8332,10 @@ DvtDataGrid.prototype.removeRowHeadersFromBottom = function () {
       }
 
       returnVal = this.removeHeadersFromEndOfContainer(rowHeaderContent,
-                                                       this.m_endRowHeaderPixel,
-                                                       rowThreshold,
-                                                       this.getMappedStyle('rowheadercell'),
-                                                       'height');
+        this.m_endRowHeaderPixel,
+        rowThreshold,
+        this.getMappedStyle('rowheadercell'),
+        'height');
 
       this.m_endRowHeaderPixel -= returnVal.dimensionChange;
       this.m_endRowHeader -= returnVal.extentChange;
@@ -8353,10 +8352,10 @@ DvtDataGrid.prototype.removeRowHeadersFromBottom = function () {
       }
 
       returnVal = this.removeHeadersFromEndOfContainer(rowEndHeaderContent,
-                                                       this.m_endRowEndHeaderPixel,
-                                                       rowThreshold,
-                                                       this.getMappedStyle('rowendheadercell'),
-                                                       'height');
+        this.m_endRowEndHeaderPixel,
+        rowThreshold,
+        this.getMappedStyle('rowendheadercell'),
+        'height');
 
       this.m_endRowEndHeaderPixel -= returnVal.dimensionChange;
       this.m_endRowEndHeader -= returnVal.extentChange;
@@ -9090,7 +9089,7 @@ DvtDataGrid.prototype._setCellHover = function (targetCell, addOrRemove) {
     } else if (selectionMode === 'row') {
       var index = this._getIndex(targetCell, 'row');
       var returnObj = this._getSelectionStartAndEnd(this.createIndex(index, this.m_startCol),
-                                                    this.createIndex(index, this.m_endCol), 0);
+        this.createIndex(index, this.m_endCol), 0);
       for (var i = returnObj.min.row; i <= returnObj.max.row; i++) {
         this._highlightCellsAlongAxis(i, 'row', 'index', addOrRemove, ['hover']);
       }
@@ -9129,6 +9128,11 @@ DvtDataGrid.prototype.handleDatabodyMouseMove = function (event) {
     this._handleMove(event);
   } else if (this.m_databodyDragState) {
     this.handleDatabodySelectionDrag(event);
+  } else if (this.m_headerDragState &&
+    ((this.m_selectionFrontier && this.m_selectionFrontier.axis &&
+      (this.m_selectionFrontier.axis.indexOf('row') !== -1 || this.m_selectionFrontier.axis.indexOf('column') !== -1)) ||
+    (this.m_deselectInfo && this.m_deselectInfo.axis && (this.m_deselectInfo.axis.indexOf('row') !== -1 || this.m_deselectInfo.axis.indexOf('column') !== -1)))) {
+    this.extendSelectionHeader(event.target, event, true, this.m_deselectInProgress);
   }
 };
 
@@ -9484,8 +9488,8 @@ DvtDataGrid.prototype._calculateMomentum =
       destination: Math.round(destination),
       // durations can be up to 4s currently let's cap them at 500ms
       duration: Math.min(Math.max(DvtDataGrid.MIN_SWIPE_TRANSITION_DURATION,
-                                  duration),
-                         DvtDataGrid.MAX_SWIPE_TRANSITION_DURATION),
+        duration),
+      DvtDataGrid.MAX_SWIPE_TRANSITION_DURATION),
       overScroll: overScroll
     };
   };
@@ -9501,7 +9505,7 @@ DvtDataGrid.prototype.handleTouchCancel = function (event) {
   }
   this.m_touchSelectAnchor = null;
   this.m_touchMultipleSelect = false;
-    // reset the variables back to default values
+  // reset the variables back to default values
   this.m_touchActive = false;
   this.m_startX = 0;
   this.m_startY = 0;
@@ -9748,7 +9752,7 @@ DvtDataGrid.prototype._handleSwipe = function (event, axis) {
     if (axis !== 'row' && axis !== 'rowEnd') {
       // calculate momentum
       momentumX = this._calculateMomentum(this.m_currentX, this.m_startX, duration,
-                                          this.m_currentScrollLeft, this.m_scrollWidth, rtl);
+        this.m_currentScrollLeft, this.m_scrollWidth, rtl);
       if (!isNaN(momentumX.overScroll)) {
         // don't overscroll if there's more rows to fetch
         if (momentumX.overScroll > 0 || this.m_stopColumnFetch) {
@@ -9763,7 +9767,7 @@ DvtDataGrid.prototype._handleSwipe = function (event, axis) {
     var momentumY;
     if (axis !== 'column' && axis !== 'columnEnd') {
       momentumY = this._calculateMomentum(this.m_currentY, this.m_startY, duration,
-                                          this.m_currentScrollTop, this.m_scrollHeight);
+        this.m_currentScrollTop, this.m_scrollHeight);
       if (!isNaN(momentumY.overScroll)) {
         // don't overscroll if there's more rows to fetch
         if (momentumY.overScroll > 0 || this.m_stopRowFetch) {
@@ -10209,7 +10213,7 @@ DvtDataGrid.prototype._adjustSelectionOnModelChange = function (operation, keys,
         var movedRow;
         if (this.m_options.getSelectionMode() === 'cell') {
           movedRow = this.createRange(this.m_active.indexes, this.m_active.indexes,
-                                      keys[0], keys[0]);
+            keys[0], keys[0]);
         } else {
           movedRow = this.createRange(indexes[0], indexes[0], keys[0], keys[0]);
         }
@@ -10299,9 +10303,9 @@ DvtDataGrid.prototype._handleModelInsertEvent = function (indexes, keys) {
           success: this._handleHeaderInsertsFetchSuccess
         });
         this.fetchCells(this.m_databody, indexes.row, this.m_startCol, 1,
-                        (this.m_endCol - this.m_startCol) + 1, {
-                          success: this._handleCellInsertsFetchSuccess
-                        });
+          (this.m_endCol - this.m_startCol) + 1, {
+            success: this._handleCellInsertsFetchSuccess
+          });
       }
     }
     // else if (keys['column'] != null)
@@ -10386,7 +10390,7 @@ DvtDataGrid.prototype._handleHeaderInsertsFetchSuccess =
     this.m_resizeRequired = true;
     // insert the row
     this.handleHeadersFetchSuccess(headerSet, headerRanges, endHeaderSet,
-                                   this.m_endRowHeader >= headerRanges.start);
+      this.m_endRowHeader >= headerRanges.start);
   };
 
 /**
@@ -10465,10 +10469,10 @@ DvtDataGrid.prototype._handleModelInsertRangeEvent = function (cellSet, headerSe
       while (headerCount - c > 0) {
         index = rowStart + c;
         returnVal = this.buildLevelHeaders(rowHeaderFragment, index, 0, 0,
-                                           totalRowHeight, true,
-                                           rowStart !== this.m_endRowHeader + 1,
-                                           renderer, headerSet, 'row', className,
-                                           this.m_rowHeaderLevelCount);
+          totalRowHeight, true,
+          rowStart !== this.m_endRowHeader + 1,
+          renderer, headerSet, 'row', className,
+          this.m_rowHeaderLevelCount);
         c += returnVal.count;
         totalRowHeight += returnVal.totalHeaderDimension;
       }
@@ -10487,10 +10491,10 @@ DvtDataGrid.prototype._handleModelInsertRangeEvent = function (cellSet, headerSe
       while (headerEndCount - c > 0) {
         index = rowStart + c;
         returnVal = this.buildLevelHeaders(rowEndHeaderFragment, index, 0, 0,
-                                           totalRowHeight,
-                                           true, rowStart !== this.m_endRowEndHeader + 1,
-                                           renderer, endHeaderSet, 'rowEnd', className,
-                                           this.m_rowEndHeaderLevelCount);
+          totalRowHeight,
+          true, rowStart !== this.m_endRowEndHeader + 1,
+          renderer, endHeaderSet, 'rowEnd', className,
+          this.m_rowEndHeaderLevelCount);
         c += returnVal.count;
         totalRowHeight += returnVal.totalHeaderDimension;
       }
@@ -10498,14 +10502,14 @@ DvtDataGrid.prototype._handleModelInsertRangeEvent = function (cellSet, headerSe
 
     var newCellElements = document.createDocumentFragment();
     returnVal = this._addCellsToFragment(newCellElements, cellSet, rowStart
-                                         , 0, columnStart, 0);
+      , 0, columnStart, 0);
     if (newCellElements.childNodes.length === 0 &&
         (rowHeaderFragment == null || rowHeaderFragment.childNodes.length === 0) &&
         (rowEndHeaderFragment == null || rowEndHeaderFragment.childNodes.length === 0)) {
       return;
     }
     this._insertRowsWithAnimation(newCellElements, rowHeaderFragment, rowEndHeaderFragment,
-                                  rowStart, cellSet.getCount('row'), returnVal.totalRowHeight);
+      rowStart, cellSet.getCount('row'), returnVal.totalRowHeight, columnStart, columnCount);
   } else {
     var rowRange = { axis: 'row', start: rowStart, count: rowCount };
     var columnRange = { axis: 'column', start: columnStart, count: columnCount };
@@ -10555,10 +10559,10 @@ DvtDataGrid.prototype._handleModelUpdateEvent = function (indexes, keys, cellSet
       }
 
       this.fetchCells(this.m_databody, indexes.row, this.m_startCol, 1,
-                      (this.m_endCol - this.m_startCol) + 1, {
-                        success: this._handleCellUpdatesFetchSuccess,
-                        error: this.handleCellsFetchError
-                      });
+        (this.m_endCol - this.m_startCol) + 1, {
+          success: this._handleCellUpdatesFetchSuccess,
+          error: this.handleCellsFetchError
+        });
     }
   }
 
@@ -10579,9 +10583,9 @@ DvtDataGrid.prototype._handleHeaderUpdatesFetchSuccess =
     var rowStart = headerRange.start;
 
     this._replaceHeaders(this.buildRowHeaders.bind(this), headerSet, this.m_rowHeader,
-                         rowStart, this.m_startRowHeader);
+      rowStart, this.m_startRowHeader);
     this._replaceHeaders(this.buildRowEndHeaders.bind(this), endHeaderSet, this.m_rowEndHeader,
-                         rowStart, this.m_startRowEndHeader);
+      rowStart, this.m_startRowEndHeader);
 
     var row = this.m_rowHeader.firstChild.childNodes[rowStart - this.m_startRowHeader];
 
@@ -10609,7 +10613,7 @@ DvtDataGrid.prototype._replaceHeaders = function (buildFunction, headerSet, root
     var fragment = buildFunction(root, headerSet, index, 1, true, true);
     var headerContent = root.firstChild;
     var row = headerContent.childNodes[index - start];
-    headerContent.replaceChild(fragment, row); // @HTMLUpdateOK
+    headerContent.replaceChild(fragment, row);
   }
 };
 
@@ -10775,7 +10779,7 @@ DvtDataGrid.prototype._handleModelDeleteEvent = function (indexes, keys, silent)
 
         // adjust the cell context index
         this._modifyAxisCellContextIndex('row', this.m_startRow,
-                                         (this.m_endRow - this.m_startRow) + 1, -1);
+          (this.m_endRow - this.m_startRow) + 1, -1);
 
         beforeRowsDeleted += 1;
         beforeRowsHeight += this.m_avgRowHeight;
@@ -10812,7 +10816,7 @@ DvtDataGrid.prototype._handleModelDeleteEvent = function (indexes, keys, silent)
           this.m_endRowPixel -= height;
         }
         rowHeader = this._findHeaderByKey(rowKey, this.m_rowHeader,
-                                          this.getMappedStyle('rowheadercell'));
+          this.getMappedStyle('rowheadercell'));
         if (rowHeader != null) {
           height = this.calculateRowHeaderHeight(rowHeader);
           referenceRow = rowHeader.nextSibling;
@@ -10821,7 +10825,7 @@ DvtDataGrid.prototype._handleModelDeleteEvent = function (indexes, keys, silent)
           this.m_endRowHeaderPixel -= height;
         }
         rowEndHeader = this._findHeaderByKey(rowKey, this.m_rowEndHeader,
-                                             this.getMappedStyle('rowendheadercell'));
+          this.getMappedStyle('rowendheadercell'));
         if (rowEndHeader != null) {
           height = this.calculateRowHeaderHeight(rowEndHeader);
           referenceRow = rowEndHeader.nextSibling;
@@ -10933,7 +10937,7 @@ DvtDataGrid.prototype._collapseRowsWithAnimation = function (keys) {
     rowHeadersToRemove = [];
     var referenceRowHeader =
         this._findHeaderByKey(keys[0].row, this.m_rowHeader,
-                              this.getMappedStyle('rowheadercell')).previousSibling;
+          this.getMappedStyle('rowheadercell')).previousSibling;
     row = referenceRowHeader;
     while (row) {
       if (this.getElementDir(row, 'top') + this.getElementHeight(row) < this.m_currentScrollTop) {
@@ -10948,7 +10952,7 @@ DvtDataGrid.prototype._collapseRowsWithAnimation = function (keys) {
     rowEndHeadersToRemove = [];
     var referenceRowEndHeader =
         this._findHeaderByKey(keys[0].row, this.m_rowEndHeader,
-                              this.getMappedStyle('rowendheadercell')).previousSibling;
+          this.getMappedStyle('rowendheadercell')).previousSibling;
     row = referenceRowEndHeader;
     while (row) {
       if (this.getElementDir(row, 'top') + this.getElementHeight(row) < this.m_currentScrollTop) {
@@ -10964,32 +10968,32 @@ DvtDataGrid.prototype._collapseRowsWithAnimation = function (keys) {
   for (i = 0; i < keys.length; i++) {
     var rowKey = keys[i].row;
     rowCells = this._getAxisCellsByKey(rowKey, 'row');
-    // if (rowCells.length) {
-    rowsToRemove.push(rowCells);
-    totalRowHeight += this.getElementHeight(rowCells[0]);
-    for (j = 0; j < rowCells.length; j++) {
-      this.setElementDir(rowCells[j], this.getElementDir(rowCells[j], 'top') - totalRowHeight,
-                          'top');
-      this.addTransformMoveStyle(rowCells[j], 0, 0, 'linear', 0, totalRowHeight, 0);
+    if (rowCells.length) {
+      rowsToRemove.push(rowCells);
+      totalRowHeight += this.getElementHeight(rowCells[0]);
+      for (j = 0; j < rowCells.length; j++) {
+        this.setElementDir(rowCells[j], this.getElementDir(rowCells[j], 'top') - totalRowHeight,
+          'top');
+        this.addTransformMoveStyle(rowCells[j], 0, 0, 'linear', 0, totalRowHeight, 0);
+      }
     }
-    // }
     if (rowHeaderSupport) {
       rowHeader = this._findHeaderByKey(rowKey, this.m_rowHeader,
-                                        this.getMappedStyle('rowheadercell'));
+        this.getMappedStyle('rowheadercell'));
       if (rowHeader != null) {
         rowHeadersToRemove.push(rowHeader);
         this.setElementDir(rowHeader, this.getElementDir(rowHeader, 'top') - totalRowHeight,
-                           'top');
+          'top');
         this.addTransformMoveStyle(rowHeader, 0, 0, 'linear', 0, totalRowHeight, 0);
       }
     }
     if (rowEndHeaderSupport) {
       rowEndHeader = this._findHeaderByKey(rowKey, this.m_rowEndHeader,
-                                           this.getMappedStyle('rowendheadercell'));
+        this.getMappedStyle('rowendheadercell'));
       if (rowEndHeader != null) {
         rowEndHeadersToRemove.push(rowEndHeader);
         this.setElementDir(rowEndHeader,
-                           this.getElementDir(rowEndHeader, 'top') - totalRowHeight, 'top');
+          this.getElementDir(rowEndHeader, 'top') - totalRowHeight, 'top');
         this.addTransformMoveStyle(rowEndHeader, 0, 0, 'linear', 0, totalRowHeight, 0);
       }
     }
@@ -11001,7 +11005,7 @@ DvtDataGrid.prototype._collapseRowsWithAnimation = function (keys) {
     rowCells = this._getAxisCellsByIndex(i, 'row');
     for (j = 0; j < rowCells.length; j++) {
       this.setElementDir(rowCells[j],
-                         this.getElementDir(rowCells[j], 'top') - totalRowHeight, 'top');
+        this.getElementDir(rowCells[j], 'top') - totalRowHeight, 'top');
       this.addTransformMoveStyle(rowCells[j], 0, 0, 'linear', 0, totalRowHeight, 0);
     }
     if (rowHeaderSupport) {
@@ -11012,7 +11016,7 @@ DvtDataGrid.prototype._collapseRowsWithAnimation = function (keys) {
     if (rowEndHeaderSupport) {
       rowEndHeader = rowEndHeader.nextSibling;
       this.setElementDir(rowEndHeader,
-                         this.getElementDir(rowEndHeader, 'top') - totalRowHeight, 'top');
+        this.getElementDir(rowEndHeader, 'top') - totalRowHeight, 'top');
       this.addTransformMoveStyle(rowEndHeader, 0, 0, 'linear', 0, totalRowHeight, 0);
     }
   }
@@ -11022,8 +11026,8 @@ DvtDataGrid.prototype._collapseRowsWithAnimation = function (keys) {
   function transitionListener() {
     if (rowsToRemove.length) {
       self._modifyAxisCellContextIndex('row', referenceCellsIndex + keys.length + 1,
-                                     self.m_endRow - (referenceCellsIndex + keys.length),
-                                     -1 * keys.length);
+        self.m_endRow - (referenceCellsIndex + keys.length),
+        -1 * keys.length);
     }
 
     for (var ii = 0; ii < rowsToRemove.length; ii++) {
@@ -11064,10 +11068,10 @@ DvtDataGrid.prototype._collapseRowsWithAnimation = function (keys) {
     }
     self._handleAnimationEnd();
   }
- // if (lastAnimationElement) {
+  // if (lastAnimationElement) {
   self._onTransitionEnd(lastAnimationElement, transitionListener, duration);
 
-    // animate all rows
+  // animate all rows
   this.m_animating = true;
 
   setTimeout(function () {
@@ -11079,13 +11083,13 @@ DvtDataGrid.prototype._collapseRowsWithAnimation = function (keys) {
       }
       if (rowHeaderSupport) {
         rowHeader = self._getHeaderByIndex(i, 0, self.m_rowHeader,
-                                          self.m_rowHeaderLevelCount, self.m_startRowHeader);
+          self.m_rowHeaderLevelCount, self.m_startRowHeader);
         self.addTransformMoveStyle(rowHeader, duration + 'ms', 0, 'ease-out', 0, 0, 0);
       }
       if (rowEndHeaderSupport) {
         rowEndHeader = self._getHeaderByIndex(i, 0, self.m_rowEndHeader,
-                                              self.m_rowEndHeaderLevelCount,
-                                              self.m_startRowEndHeader);
+          self.m_rowEndHeaderLevelCount,
+          self.m_startRowEndHeader);
         self.addTransformMoveStyle(rowEndHeader, duration + 'ms', 0, 'ease-out', 0, 0, 0);
       }
     }
@@ -11108,14 +11112,14 @@ DvtDataGrid.prototype._handleAnimationEnd = function () {
   for (i = 0; i < databodyContent.childNodes.length; i++) {
     this.removeTransformMoveStyle(databodyContent.childNodes[i]);
     this.changeStyleProperty(databodyContent.childNodes[i], this.getCssSupport('z-index'),
-                             null, 'remove');
+      null, 'remove');
   }
 
   if (this.m_endRowHeader !== -1) {
     for (i = 0; i < rowHeaderContent.childNodes.length; i++) {
       this.removeTransformMoveStyle(rowHeaderContent.childNodes[i]);
       this.changeStyleProperty(rowHeaderContent.childNodes[i], this.getCssSupport('z-index'),
-                               null, 'remove');
+        null, 'remove');
     }
   }
 
@@ -11123,7 +11127,7 @@ DvtDataGrid.prototype._handleAnimationEnd = function () {
     for (i = 0; i < rowEndHeaderContent.childNodes.length; i++) {
       this.removeTransformMoveStyle(rowEndHeaderContent.childNodes[i]);
       this.changeStyleProperty(rowEndHeaderContent.childNodes[i], this.getCssSupport('z-index'),
-                               null, 'remove');
+        null, 'remove');
     }
   }
   // end animation
@@ -11150,17 +11154,17 @@ DvtDataGrid.prototype._getCellOrHeaderByKey = function (key, axis) {
   if (element == null) {
     if (axis === 'row') {
       element = this._findHeaderByKey(key, this.m_rowHeader,
-                                      this.getMappedStyle('rowheadercell'));
+        this.getMappedStyle('rowheadercell'));
       if (element == null) {
         element = this._findHeaderByKey(key, this.m_rowEndHeader,
-                                        this.getMappedStyle('rowendheadercell'));
+          this.getMappedStyle('rowendheadercell'));
       }
     } else if (axis === 'column') {
       element = this._findHeaderByKey(key, this.m_colHeader,
-                                      this.getMappedStyle('colheadercell'));
+        this.getMappedStyle('colheadercell'));
       if (element == null) {
         element = this._findHeaderByKey(key, this.m_colEndHeader,
-                                        this.getMappedStyle('colendheadercell'));
+          this.getMappedStyle('colendheadercell'));
       }
     }
   }
@@ -11343,7 +11347,7 @@ DvtDataGrid.prototype._handleModelSyncEvent = function (event) {
 DvtDataGrid.prototype._setActiveByIndex =
   function (index, event, clearSelection, silent, shouldNotScroll) {
     return this._setActive(this._getCellByIndex(index), { type: 'cell', indexes: index },
-                           event, clearSelection, silent, shouldNotScroll);
+      event, clearSelection, silent, shouldNotScroll);
   };
 
 /**
@@ -11368,40 +11372,40 @@ DvtDataGrid.prototype._updateActive = function (activeObject, shouldFocus, shoul
     if (activeObject.axis === 'column') {
       if (activeObject.key != null) {
         newActiveElement = this._findHeaderByKey(activeObject.key, this.m_colHeader,
-                                                 this.getMappedStyle('colheadercell'));
+          this.getMappedStyle('colheadercell'));
       } else if (activeObject.index != null) {
         newActiveElement = this._getHeaderByIndex(activeObject.index, level,
-                                                  this.m_colHeader, this.m_columnHeaderLevelCount,
-                                                  this.m_startColHeader);
+          this.m_colHeader, this.m_columnHeaderLevelCount,
+          this.m_startColHeader);
       }
     } else if (activeObject.axis === 'row') {
       if (activeObject.key != null) {
         newActiveElement = this._findHeaderByKey(activeObject.key, this.m_rowHeader,
-                                                 this.getMappedStyle('rowheadercell'));
+          this.getMappedStyle('rowheadercell'));
       } else if (activeObject.index != null) {
         newActiveElement = this._getHeaderByIndex(activeObject.index, level,
-                                                  this.m_rowHeader, this.m_rowHeaderLevelCount,
-                                                  this.m_startRowHeader);
+          this.m_rowHeader, this.m_rowHeaderLevelCount,
+          this.m_startRowHeader);
       }
     } else if (activeObject.axis === 'columnEnd') {
       if (activeObject.key != null) {
         newActiveElement = this._findHeaderByKey(activeObject.key, this.m_colEndHeader,
-                                                 this.getMappedStyle('colendheadercell'));
+          this.getMappedStyle('colendheadercell'));
       } else if (activeObject.index != null) {
         newActiveElement = this._getHeaderByIndex(activeObject.index, level,
-                                                  this.m_colEndHeader,
-                                                  this.m_columnEndHeaderLevelCount,
-                                                  this.m_startColEndHeader);
+          this.m_colEndHeader,
+          this.m_columnEndHeaderLevelCount,
+          this.m_startColEndHeader);
       }
     } else if (activeObject.axis === 'rowEnd') {
       if (activeObject.key != null) {
         newActiveElement = this._findHeaderByKey(activeObject.key, this.m_rowEndHeader,
-                                                 this.getMappedStyle('rowendheadercell'));
+          this.getMappedStyle('rowendheadercell'));
       } else if (activeObject.index != null) {
         newActiveElement = this._getHeaderByIndex(activeObject.index, level,
-                                                  this.m_rowEndHeader,
-                                                  this.m_rowEndHeaderLevelCount,
-                                                  this.m_startRowEndHeader);
+          this.m_rowEndHeader,
+          this.m_rowEndHeaderLevelCount,
+          this.m_startRowEndHeader);
       }
     }
   }
@@ -11544,16 +11548,16 @@ DvtDataGrid.prototype._getElementFromActiveObject = function (active) {
     if (active.type === 'header') {
       if (active.axis === 'row') {
         return this._findHeaderByKey(active.key, this.m_rowHeader,
-                                     this.getMappedStyle('rowheadercell'));
+          this.getMappedStyle('rowheadercell'));
       } else if (active.axis === 'column') {
         return this._findHeaderByKey(active.key, this.m_colHeader,
-                                     this.getMappedStyle('colheadercell'));
+          this.getMappedStyle('colheadercell'));
       } else if (active.axis === 'rowEnd') {
         return this._findHeaderByKey(active.key, this.m_rowEndHeader,
-                                     this.getMappedStyle('rowendheadercell'));
+          this.getMappedStyle('rowendheadercell'));
       } else if (active.axis === 'columnEnd') {
         return this._findHeaderByKey(active.key, this.m_colEndHeader,
-                                     this.getMappedStyle('colendheadercell'));
+          this.getMappedStyle('colendheadercell'));
       }
     } else if (active.type === 'label') {
       return this._getLabel(active.axis, active.level);
@@ -11862,7 +11866,7 @@ DvtDataGrid.prototype.getCellEndIndexes = function (cell) {
   var cellIndexes = this.getCellIndexes(cell);
   var cellExtents = this.getCellExtents(cell);
   return this.createIndex(cellIndexes.row + (cellExtents.row - 1),
-                          cellIndexes.column + (cellExtents.column - 1));
+    cellIndexes.column + (cellExtents.column - 1));
 };
 
 /**
@@ -12263,22 +12267,22 @@ DvtDataGrid.prototype.getLabelledBy = function (activeObject, prevActiveObject, 
       // remove optimization
       if (prevActiveObject.axis === 'row') {
         previousElement = this._getHeaderByIndex(prevActiveObject.index, prevActiveObject.level,
-                                                 this.m_rowHeader, this.m_rowHeaderLevelCount,
-                                                 this.m_startRowHeader);
+          this.m_rowHeader, this.m_rowHeaderLevelCount,
+          this.m_startRowHeader);
       } else if (prevActiveObject.axis === 'column') {
         previousElement = this._getHeaderByIndex(prevActiveObject.index, prevActiveObject.level,
-                                                 this.m_colHeader, this.m_columnHeaderLevelCount,
-                                                 this.m_startColHeader);
+          this.m_colHeader, this.m_columnHeaderLevelCount,
+          this.m_startColHeader);
       } else if (prevActiveObject.axis === 'rowEnd') {
         previousElement = this._getHeaderByIndex(prevActiveObject.index, prevActiveObject.level,
-                                                 this.m_rowEndHeader
-                                                 , this.m_rowEndHeaderLevelCount,
-                                                 this.m_startRowEndHeader);
+          this.m_rowEndHeader
+          , this.m_rowEndHeaderLevelCount,
+          this.m_startRowEndHeader);
       } else if (prevActiveObject.axis === 'columnEnd') {
         previousElement = this._getHeaderByIndex(prevActiveObject.index, prevActiveObject.level,
-                                                 this.m_colEndHeader,
-                                                 this.m_columnEndHeaderLevelCount,
-                                                 this.m_startColEndHeader);
+          this.m_colEndHeader,
+          this.m_columnEndHeaderLevelCount,
+          this.m_startColEndHeader);
       }
     }
 
@@ -12320,22 +12324,22 @@ DvtDataGrid.prototype.getLabelledBy = function (activeObject, prevActiveObject, 
 
     // Add the header labels
     var row = this._getHeaderLabelledBy('row', this.m_rowHeader,
-                                    this.m_rowHeaderLevelCount, this.m_startRowHeader,
-                                    this.m_endRowHeader, activeObject.indexes.row,
-                                    previousRowIndex, element);
+      this.m_rowHeaderLevelCount, this.m_startRowHeader,
+      this.m_endRowHeader, activeObject.indexes.row,
+      previousRowIndex, element);
     var rowEnd = this._getHeaderLabelledBy('rowEnd', this.m_rowEndHeader,
-                                       this.m_rowEndHeaderLevelCount, this.m_startRowEndHeader,
-                                       this.m_endRowEndHeader, activeObject.indexes.row,
-                                       previousRowIndex, element);
+      this.m_rowEndHeaderLevelCount, this.m_startRowEndHeader,
+      this.m_endRowEndHeader, activeObject.indexes.row,
+      previousRowIndex, element);
     var column = this._getHeaderLabelledBy('column', this.m_colHeader,
-                                       this.m_columnHeaderLevelCount, this.m_startColHeader,
-                                       this.m_endColHeader, activeObject.indexes.column,
-                                       previousColumnIndex, element);
+      this.m_columnHeaderLevelCount, this.m_startColHeader,
+      this.m_endColHeader, activeObject.indexes.column,
+      previousColumnIndex, element);
     var columnEnd = this._getHeaderLabelledBy('columnEnd', this.m_colEndHeader,
-                                          this.m_columnEndHeaderLevelCount,
-                                          this.m_startColEndHeader,
-                                          this.m_endColEndHeader, activeObject.indexes.column,
-                                          previousColumnIndex, element);
+      this.m_columnEndHeaderLevelCount,
+      this.m_startColEndHeader,
+      this.m_endColEndHeader, activeObject.indexes.column,
+      previousColumnIndex, element);
 
     // we want extent information at the end of the readout so put it in the state info
     var rowExtent = activeObject.extents.row;
@@ -12572,7 +12576,7 @@ DvtDataGrid.prototype._createRangeStartKeyCallback =
     } else if (endIndex) {
       // new keys needed
       this._keys(endIndex,
-                 this._createRangeEndKeyCallback.bind(this, startKey, startIndex, callback));
+        this._createRangeEndKeyCallback.bind(this, startKey, startIndex, callback));
     } else {
       // create range from single key
       callback.call(this, {
@@ -12859,7 +12863,9 @@ DvtDataGrid.prototype._setEditableClone = function (element) {
  */
 DvtDataGrid.prototype._destroyEditableClone = function () {
   if (this.m_editableClone) {
-    this.m_root.removeChild(this.m_editableClone);
+    if (this.m_editableClone.parentNode != null) {
+      this.m_root.removeChild(this.m_editableClone);
+    }
     delete this.m_editableClone;
   }
 };
@@ -13029,8 +13035,8 @@ DvtDataGrid.prototype.handleLabelFocusChange = function (keyCode, event, isExten
         } else if (level === levelCount - 1) {
           newIndex = axis === 'column' ? this.m_startRowHeader : this.m_endRowHeader;
           newElement = this._getHeaderByIndex(newIndex, this.m_rowHeaderLevelCount - 1,
-                                              this.m_rowHeader, this.m_rowHeaderLevelCount,
-                                              this.m_startRowHeader);
+            this.m_rowHeader, this.m_rowHeaderLevelCount,
+            this.m_startRowHeader);
           if (this._isSelectionEnabled() && !this.m_discontiguousSelection) {
             // unhighlight and clear selection
             this._clearSelection(event);
@@ -13071,8 +13077,8 @@ DvtDataGrid.prototype.handleLabelFocusChange = function (keyCode, event, isExten
         } else if (level === levelCount - 1) {
           newIndex = axis === 'row' ? this.m_startColHeader : this.m_endColHeader;
           newElement = this._getHeaderByIndex(newIndex, this.m_columnHeaderLevelCount,
-                                              this.m_colHeader, this.m_columnHeaderLevelCount,
-                                              this.m_startColHeader);
+            this.m_colHeader, this.m_columnHeaderLevelCount,
+            this.m_startColHeader);
 
           if (newElement) {
             if (this._isSelectionEnabled() && !this.m_discontiguousSelection) {
@@ -13339,8 +13345,8 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function (keyCode, event, isExte
     case DvtDataGrid.keyCodes.RIGHT_KEY:
       if (axis === 'rowEnd' && jumpToHeaders && this.m_endRowHeader !== -1) {
         newElement = this._getHeaderByIndex(index, this.m_rowHeaderLevelCount,
-                                            this.m_rowHeader, this.m_rowHeaderLevelCount,
-                                            this.m_startRowHeader);
+          this.m_rowHeader, this.m_rowHeaderLevelCount,
+          this.m_startRowHeader);
         if (isExtend) {
           this.extendSelectionHeader(newElement, event, true);
         } else {
@@ -13359,8 +13365,8 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function (keyCode, event, isExte
         }
       } else if (axis === 'row' && jumpToHeaders && this.m_endRowEndHeader !== -1) {
         newElement = this._getHeaderByIndex(index, this.m_rowEndHeaderLevelCount,
-                                            this.m_rowEndHeader, this.m_rowEndHeaderLevelCount,
-                                            this.m_startRowEndHeader);
+          this.m_rowEndHeader, this.m_rowEndHeaderLevelCount,
+          this.m_startRowEndHeader);
         if (isExtend) {
           this.extendSelectionHeader(newElement, event, true);
         } else {
@@ -13506,7 +13512,7 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function (keyCode, event, isExte
             } else {
               newElement =
                 this._getHeaderByIndex(this._getAttribute(elem.parentNode, 'start', true) - 1,
-                                       level, root, levelCount, start);
+                  level, root, levelCount, start);
               newIndex = newElement != null ?
                 this._getAttribute(newElement.parentNode, 'start', true) : index - 1;
             }
@@ -13571,8 +13577,8 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function (keyCode, event, isExte
     case DvtDataGrid.keyCodes.DOWN_KEY:
       if (axis === 'columnEnd' && jumpToHeaders && this.m_endColHeader !== -1) {
         newElement = this._getHeaderByIndex(index, this.m_columnHeaderLevelCount,
-                                            this.m_colHeader, this.m_columnHeaderLevelCount,
-                                            this.m_startColHeader);
+          this.m_colHeader, this.m_columnHeaderLevelCount,
+          this.m_startColHeader);
         if (isExtend) {
           this.extendSelectionHeader(newElement, event, true);
         } else {
@@ -13591,9 +13597,9 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function (keyCode, event, isExte
         }
       } else if (axis === 'column' && jumpToHeaders && this.m_endColEndHeader !== -1) {
         newElement = this._getHeaderByIndex(index, this.m_columnEndHeaderLevelCount,
-                                            this.m_colEndHeader,
-                                            this.m_columnEndHeaderLevelCount,
-                                            this.m_startColEndHeader);
+          this.m_colEndHeader,
+          this.m_columnEndHeaderLevelCount,
+          this.m_startColEndHeader);
         if (isExtend) {
           this.extendSelectionHeader(newElement, event, true);
         } else {
@@ -13797,7 +13803,7 @@ DvtDataGrid.prototype._getHeaderLabelledBy =
       var columnEndHeader = this.getHeaderFromCell(element, axis);
       if (previousIndex != null) {
         previousElement = this._getHeaderByIndex(previousIndex, levelCount - 1,
-                                                 root, levelCount, start);
+          root, levelCount, start);
       }
       return this._getHeaderAndParentIds(columnEndHeader, previousElement);
     }
@@ -13993,11 +13999,11 @@ DvtDataGrid.prototype.handleFocusChange = function (
       } else if (!isExtend && changeRegions) {
         // reached the first column, go to row header if available
         header = this._getHeaderByIndex(this.m_trueIndex.row, this.m_rowHeaderLevelCount - 1,
-                                        this.m_rowHeader, this.m_rowHeaderLevelCount,
-                                        this.m_startRowHeader);
+          this.m_rowHeader, this.m_rowHeaderLevelCount,
+          this.m_startRowHeader);
         if (this.m_discontiguousSelection) {
           this.discontiguousHeaderSetActiveFromDatabody(event, 'row', header,
-                                                        this.m_rowHeaderLevelCount);
+            this.m_rowHeaderLevelCount);
         } else {
           this._setActive(header, {
             type: 'header',
@@ -14038,11 +14044,11 @@ DvtDataGrid.prototype.handleFocusChange = function (
       } else if (this.m_endRowEndHeader !== -1 && changeRegions) {
         // reached the last column, go to row end header if available
         header = this._getHeaderByIndex(this.m_trueIndex.row, this.m_rowEndHeaderLevelCount - 1,
-                                        this.m_rowEndHeader, this.m_rowEndHeaderLevelCount,
-                                        this.m_startRowEndHeader);
+          this.m_rowEndHeader, this.m_rowEndHeaderLevelCount,
+          this.m_startRowEndHeader);
         if (this.m_discontiguousSelection) {
           this.discontiguousHeaderSetActiveFromDatabody(event, 'rowEnd', header,
-                                                        this.m_rowEndHeaderLevelCount);
+            this.m_rowEndHeaderLevelCount);
         } else {
           this._setActive(header, {
             type: 'header',
@@ -14075,14 +14081,14 @@ DvtDataGrid.prototype.handleFocusChange = function (
         }
       } else if (!isExtend && changeRegions) {
         // if in multiple selection don't clear the selection
-          // reached the first row, go to column header if available
+        // reached the first row, go to column header if available
         header = this._getHeaderByIndex(this.m_trueIndex.column,
-                                          this.m_columnHeaderLevelCount - 1,
-                                          this.m_colHeader, this.m_columnHeaderLevelCount,
-                                          this.m_startColHeader);
+          this.m_columnHeaderLevelCount - 1,
+          this.m_colHeader, this.m_columnHeaderLevelCount,
+          this.m_startColHeader);
         if (this.m_discontiguousSelection) {
           this.discontiguousHeaderSetActiveFromDatabody(event, 'column', header,
-                                                          this.m_columnHeaderLevelCount);
+            this.m_columnHeaderLevelCount);
         } else {
           this._setActive(header, {
             type: 'header',
@@ -14114,12 +14120,12 @@ DvtDataGrid.prototype.handleFocusChange = function (
       } else if (this.m_endColEndHeader !== -1 && changeRegions) {
         // reached the last column, go to column end header if available
         header = this._getHeaderByIndex(this.m_trueIndex.column,
-                                        this.m_columnEndHeaderLevelCount - 1,
-                                        this.m_colEndHeader, this.m_columnEndHeaderLevelCount,
-                                        this.m_startColEndHeader);
+          this.m_columnEndHeaderLevelCount - 1,
+          this.m_colEndHeader, this.m_columnEndHeaderLevelCount,
+          this.m_startColEndHeader);
         if (this.m_discontiguousSelection) {
           this.discontiguousHeaderSetActiveFromDatabody(event, 'columnEnd', header,
-                                                        this.m_columnEndHeaderLevelCount);
+            this.m_columnEndHeaderLevelCount);
         } else {
           this._setActive(header, {
             type: 'header',
@@ -14148,7 +14154,7 @@ DvtDataGrid.prototype.handleFocusChange = function (
       // selects the last cell of the current row
       if (!this._isCountUnknown('column') && !this._isHighWatermarkScrolling()) {
         newCellIndex = this.createIndex(this.m_trueIndex.row,
-                                        Math.max(0, this.getDataSource().getCount('column') - 1));
+          Math.max(0, this.getDataSource().getCount('column') - 1));
       } else {
         newCellIndex = this.createIndex(this.m_trueIndex.row, Math.max(0, this.m_endCol));
       }
@@ -14169,7 +14175,7 @@ DvtDataGrid.prototype.handleFocusChange = function (
       // selects the last cell of the current column
       if (!this._isCountUnknown('column') && !this._isHighWatermarkScrolling()) {
         newCellIndex = this.createIndex(Math.max(0, this.getDataSource().getCount('row') - 1),
-                                        this.m_trueIndex.column);
+          this.m_trueIndex.column);
       } else {
         newCellIndex = this.createIndex(Math.max(0, this.m_endRow), this.m_trueIndex.column);
       }
@@ -14369,20 +14375,20 @@ DvtDataGrid.prototype.scrollToHeader = function (headerInfo) {
     if (axis === 'row' || axis === 'rowEnd') {
       if (axis === 'row') {
         header = this._getHeaderByIndex(index, level, this.m_rowHeader,
-                                        this.m_rowHeaderLevelCount, this.m_startRowHeader);
+          this.m_rowHeaderLevelCount, this.m_startRowHeader);
       } else {
         header = this._getHeaderByIndex(index, level, this.m_rowEndHeader,
-                                        this.m_rowEndHeaderLevelCount, this.m_startRowEndHeader);
+          this.m_rowEndHeaderLevelCount, this.m_startRowEndHeader);
       }
       headerMin = this.getElementDir(header, 'top');
       headerDiff = this.getElementHeight(header);
     } else if (axis === 'column' || axis === 'columnEnd') {
       if (axis === 'column') {
         header = this._getHeaderByIndex(index, level, this.m_colHeader,
-                                        this.m_columnHeaderLevelCount, this.m_startColHeader);
+          this.m_columnHeaderLevelCount, this.m_startColHeader);
       } else {
         header = this._getHeaderByIndex(index, level, this.m_colEndHeader,
-                                        this.m_columnEndHeaderLevelCount, this.m_startColEndHeader);
+          this.m_columnEndHeaderLevelCount, this.m_startColEndHeader);
       }
       headerMin = this.getElementDir(header, this.getResources().isRTLMode() ? 'right' : 'left');
       headerDiff = this.getElementWidth(header);
@@ -14656,9 +14662,9 @@ DvtDataGrid.prototype._handleCut = function (event, target) {
     // cut row header with row
     this.m_cutCells = this._getAxisCellsByKey(rowKey, 'row');
     this.m_cutRowHeader = this._findHeaderByKey(rowKey, this.m_rowHeader,
-                                                this.getMappedStyle('rowheadercell'));
+      this.getMappedStyle('rowheadercell'));
     this.m_cutRowEndHeader = this._findHeaderByKey(rowKey, this.m_rowEndHeader,
-                                                   this.getMappedStyle('rowendheadercell'));
+      this.getMappedStyle('rowendheadercell'));
 
     this._highlightCellsAlongAxis(rowKey, 'row', 'key', 'add', ['cut']);
     if (this.m_cutRowHeader !== null) {
@@ -14766,9 +14772,9 @@ DvtDataGrid.prototype._handleMove = function (event) {
 
     this.m_moveCells = this._getAxisCellsByIndex(this.m_moveIndex, 'row');
     this.m_moveRowHeader = this._findHeaderByKey(rowKey, this.m_rowHeader,
-                                                 this.getMappedStyle('rowheadercell'));
+      this.getMappedStyle('rowheadercell'));
     this.m_moveRowEndHeader = this._findHeaderByKey(rowKey, this.m_rowEndHeader,
-                                                    this.getMappedStyle('rowendheadercell'));
+      this.getMappedStyle('rowendheadercell'));
 
     // add the move style class to the css
     this._highlightCellsAlongAxis(this.m_moveIndex, 'row', 'index', 'add', ['drag']);
@@ -14796,22 +14802,22 @@ DvtDataGrid.prototype._handleMove = function (event) {
   // adjust the top height of the moveRow and moveRowHeader
   for (var i = 0; i < this.m_moveCells.length; i++) {
     this.setElementDir(this.m_moveCells[i],
-                       (this.getElementDir(this.m_moveCells[i], 'top') + deltaY), 'top');
+      (this.getElementDir(this.m_moveCells[i], 'top') + deltaY), 'top');
   }
   if (this.m_moveRowHeader !== null) {
     this.setElementDir(this.m_moveRowHeader,
-                       (this.getElementDir(this.m_moveRowHeader, 'top') + deltaY), 'top');
+      (this.getElementDir(this.m_moveRowHeader, 'top') + deltaY), 'top');
   }
   if (this.m_moveRowEndHeader !== null) {
     this.setElementDir(this.m_moveRowEndHeader,
-                       (this.getElementDir(this.m_moveRowEndHeader, 'top') + deltaY), 'top');
+      (this.getElementDir(this.m_moveRowEndHeader, 'top') + deltaY), 'top');
   }
 
   var nextSiblingIndex = this.m_moveIndex + 1;
   var previousSiblingIndex = this.m_moveIndex - 1;
   var nextSibling = this._getCellByIndex(this.createIndex(nextSiblingIndex, this.m_startCol));
   var previousSibling = this._getCellByIndex(this.createIndex(previousSiblingIndex,
-                                                              this.m_startCol));
+    this.m_startCol));
 
   // see if the element has crossed the halfway point of the next row
   if (nextSibling != null &&
@@ -14905,12 +14911,12 @@ DvtDataGrid.prototype._moveDropRows = function (sibling, index) {
     this.m_moveIndex += 1;
 
     if (this.m_moveRowHeader !== null) {
-      headerScroller.insertBefore(this.m_moveRowHeader,
-                                  this.m_moveRowHeader[sibling][sibling]); // @HTMLUpdateOK
+      headerScroller.insertBefore(this.m_moveRowHeader, // @HTMLUpdateOK
+        this.m_moveRowHeader[sibling][sibling]);
     }
     if (this.m_moveRowEndHeader !== null) {
-      endHeaderScroller.insertBefore(this.m_moveRowEndHeader,
-                                     this.m_moveRowEndHeader[sibling][sibling]); // @HTMLUpdateOK
+      endHeaderScroller.insertBefore(this.m_moveRowEndHeader, // @HTMLUpdateOK
+        this.m_moveRowEndHeader[sibling][sibling]);
     }
   } else {
     this._modifyAxisCellContextIndex('row', this.m_moveIndex, 1, -1);
@@ -14918,12 +14924,12 @@ DvtDataGrid.prototype._moveDropRows = function (sibling, index) {
     this.m_moveIndex -= 1;
 
     if (this.m_moveRowHeader !== null) {
-      headerScroller.insertBefore(this.m_moveRowHeader,
-                                  this.m_moveRowHeader[sibling]); // @HTMLUpdateOK
+      headerScroller.insertBefore(this.m_moveRowHeader, // @HTMLUpdateOK
+        this.m_moveRowHeader[sibling]);
     }
     if (this.m_moveRowEndHeader !== null) {
-      endHeaderScroller.insertBefore(this.m_moveRowEndHeader,
-                                     this.m_moveRowEndHeader[sibling]); // @HTMLUpdateOK
+      endHeaderScroller.insertBefore(this.m_moveRowEndHeader, // @HTMLUpdateOK
+        this.m_moveRowEndHeader[sibling]);
     }
   }
 
@@ -14980,7 +14986,7 @@ DvtDataGrid.prototype._handleMoveMouseUp = function (event, validUp) {
     if (validUp === true) {
       var insertIndex = this.m_moveIndex + 1;
       var insertKey = this._getKey(this._getCellByIndex(this.createIndex(insertIndex,
-                                                                         this.m_startCol)), 'row');
+        this.m_startCol)), 'row');
       this.getDataSource().move(moveCellKey, insertKey);
     } else {
       this.getDataSource().move(moveCellKey, moveCellKey);
@@ -15021,13 +15027,13 @@ DvtDataGrid.prototype._manageMoveCursor = function () {
     this._highlightCellsAlongAxis(prevActiveKey, 'row', 'key', 'remove', ['draggable']);
 
     var prevActiveRowHeader = this._findHeaderByKey(prevActiveKey
-                                                , this.m_rowHeader, rowHeaderStyle);
+      , this.m_rowHeader, rowHeaderStyle);
     if (this.m_utils.containsCSSClassName(prevActiveRowHeader, className)) {
       this.m_utils.removeCSSClassName(prevActiveRowHeader, className);
     }
 
     prevActiveRowHeader = this._findHeaderByKey(prevActiveKey,
-                                                this.m_rowEndHeader, rowEndHeaderStyle);
+      this.m_rowEndHeader, rowEndHeaderStyle);
     if (this.m_utils.containsCSSClassName(prevActiveRowHeader, className)) {
       this.m_utils.removeCSSClassName(prevActiveRowHeader, className);
     }
@@ -15035,7 +15041,7 @@ DvtDataGrid.prototype._manageMoveCursor = function () {
 
   if (activeKey != null) {
     var activeCells = this._getAxisCellsByKey(activeKey, 'row');
-        // if move enabled and draggable class name
+    // if move enabled and draggable class name
     if (this._isMoveOnElementEnabled(activeCells[0])) {
       this._highlightCellsAlongAxis(activeKey, 'row', 'key', 'add', ['draggable']);
 
@@ -15043,7 +15049,7 @@ DvtDataGrid.prototype._manageMoveCursor = function () {
       this.m_utils.addCSSClassName(activeRowHeader, className);
 
       var activeRowEndHeader = this._findHeaderByKey(activeKey,
-                                                 this.m_rowEndHeader, rowEndHeaderStyle);
+        this.m_rowEndHeader, rowEndHeaderStyle);
       this.m_utils.addCSSClassName(activeRowEndHeader, className);
     }
   }
@@ -15106,7 +15112,7 @@ DvtDataGrid.prototype.handleRootBlur = function (event) {
   // relatedTarget doesn't return a value in firefox and IE though there a tickets to fix.
   // We could implement a non-timeout solution that exiting and re-entering
   // the grid via tab key would not read the summary text upon re-entry (initial would work)
-  setTimeout(function () {
+  setTimeout(function () { // @HTMLUpdateOK
     if (!this.m_root.contains(document.activeElement)) {
       this.m_root.tabIndex = 0;
       var active = this._getActiveElement();
@@ -15227,7 +15233,7 @@ DvtDataGrid.prototype.addTransformMoveStyle =
     this.changeStyleProperty(target, this.getCssSupport('transition-timing-function'), timing);
     this.changeStyleProperty(target, this.getCssSupport('transition-duration'), duration);
     this.changeStyleProperty(target, this.getCssSupport('transform'),
-                             'translate3d(' + x + 'px,' + y + 'px,' + z + 'px)');
+      'translate3d(' + x + 'px,' + y + 'px,' + z + 'px)');
   };
 
 /**
@@ -15237,13 +15243,13 @@ DvtDataGrid.prototype.addTransformMoveStyle =
  */
 DvtDataGrid.prototype.removeTransformMoveStyle = function (target) {
   this.changeStyleProperty(target, this.getCssSupport('transition-delay'),
-                           null, 'remove');
+    null, 'remove');
   this.changeStyleProperty(target, this.getCssSupport('transition-timing-function'),
-                           null, 'remove');
+    null, 'remove');
   this.changeStyleProperty(target, this.getCssSupport('transition-duration'),
-                           null, 'remove');
+    null, 'remove');
   this.changeStyleProperty(target, this.getCssSupport('transform'),
-                           null, 'remove');
+    null, 'remove');
 };
 
 /**
@@ -15418,22 +15424,22 @@ DvtDataGrid.prototype._getCellOrHeaderByIndex = function (index, axis) {
   if (element == null) {
     if (axis === 'row') {
       element = this._getHeaderByIndex(index, 0,
-                                       this.m_rowHeader, this.m_rowHeaderLevelCount,
-                                       this.m_startRowHeader);
+        this.m_rowHeader, this.m_rowHeaderLevelCount,
+        this.m_startRowHeader);
       if (element == null) {
         element = this._getHeaderByIndex(index, 0,
-                                         this.m_rowEndHeader, this.m_rowEndHeaderLevelCount,
-                                         this.m_startRowEndHeader);
+          this.m_rowEndHeader, this.m_rowEndHeaderLevelCount,
+          this.m_startRowEndHeader);
       }
     }
     if (axis === 'column') {
       element = this._getHeaderByIndex(index, 0,
-                                       this.m_colHeader, this.m_columnHeaderLevelCount,
-                                       this.m_startColHeader);
+        this.m_colHeader, this.m_columnHeaderLevelCount,
+        this.m_startColHeader);
       if (element == null) {
         element = this._getHeaderByIndex(index, 0,
-                                         this.m_colEndHeader, this.m_columnEndHeaderLevelCount,
-                                         this.m_startColEndHeader);
+          this.m_colEndHeader, this.m_columnEndHeaderLevelCount,
+          this.m_startColEndHeader);
       }
     }
   }
@@ -15480,7 +15486,7 @@ DvtDataGrid.prototype._getAxisCellsByIndex = function (index, axis, breakOnFirst
 
   for (var i = start; i <= end; i += axisExtent) {
     var cell = this._getCellByIndex(this.createIndex(axis === 'row' ? index : i,
-                                                     axis === 'row' ? i : index));
+      axis === 'row' ? i : index));
     if (cell != null) {
       axisExtent = this.getCellExtents(cell)[axis === 'row' ? 'column' : 'row'];
       cells.push(cell);
@@ -16459,6 +16465,9 @@ DvtDataGrid.prototype.extendSelectionHeader = function (target, event, isExtend,
   }
 
   var targetElement = this.findCellOrHeader(target);
+  if (targetElement === null) {
+    return;
+  }
   var targetContext = targetElement[this.getResources().getMappedAttribute('context')];
   var anchor;
   var axis;
@@ -17644,7 +17653,7 @@ DvtDataGrid.prototype._doHeaderSort = function (event, header, direction) {
     this._removeSortSelection();
 
     // needed for toggle and screenreader
-    header.setAttribute(this.getResources().getMappedAttribute('sortDir'), direction);
+    header.setAttribute(this.getResources().getMappedAttribute('sortDir'), direction); // @HTMLUpdateOK
     this.m_sortInfo = { event: event, key: key, axis: axis, direction: direction };
 
     // flip the icon direction
@@ -19966,7 +19975,7 @@ DvtDataGridUtils.prototype._setMaxValuesForScrolling = function () {
     parseInt(parseFloat(window.getComputedStyle(div).height) / 2, 10);
   this.m_maxDivWidthForScrolling =
     parseInt(parseFloat(window.getComputedStyle(div).width) / 2, 10);
-  document.body.removeChild(div); // @HTMLUpdateOK
+  document.body.removeChild(div);
 };
 
 DvtDataGridUtils.prototype.calculateScrollbarSize = function () {
@@ -20726,6 +20735,8 @@ DvtDataGridOptions.prototype.getScrollPolicyOptions = function () {
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 2
  *
+ * @ojuxspecs ['data-grid']
+ *
  * @classdesc
  * <h3 id="datagridOverview-section">
  *   JET DataGrid
@@ -20967,13 +20978,6 @@ DvtDataGridOptions.prototype.getScrollPolicyOptions = function () {
  * can significantly hinder performance. If you have this case either specify a function for the template to remove conditions from the template itself or
  * use the renderer attribute.</p>
  *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
- *
  * <h3 id="contextmenu-section">
  *   Context Menu
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#contextmenu-section"></a>
@@ -21046,6 +21050,66 @@ DvtDataGridOptions.prototype.getScrollPolicyOptions = function () {
  *     </tr>
  * </tbody></table>
  */
+// -------------------------------- oj.ojDataGrid Styling start ----------------
+// ---------------- oj-[size]-justify-content(-flexjustify) ------------------
+/**
+ * Use this class on cells' and headers' className property to align your content horizontally. <br/>
+ * By default the alignment is flex-end on cells and varies on headers, see other possibilities in the Flex Layout justify section for size and flexjustify options.<br/>
+ * @ojstyletemplate oj-[size]-justify-content(-flexjustify)
+ * @ojdisplayname justify-content
+ * @memberof oj.ojDataGrid
+ * @ojstyletemplatetokens ["StylingTemplateTokens.[size]", "StylingTemplateTokens.(-flexjustify)"]
+ */
+// ---------------- oj-[size]-align-items(-flexalign) ------------------
+/**
+ * Use this class on cells' and headers' className property to align your content vertically. <br/>
+ * By default the alignment is center on cells and headers, see other possibilities in the Flex Layout align section for size and flexalign options.<br/>
+ * @ojstyletemplate oj-[size]-align-items(-flexalign)
+ * @ojdisplayname align-items
+ * @memberof oj.ojDataGrid
+ * @ojstyletemplatetokens ["StylingTemplateTokens.[size]", "StylingTemplateTokens.(-flexalign)"]
+ */
+// ---------------- oj-helper-justify-content-[left|right] ------------------
+/**
+ * Direction can be left or right. Use this class on cells' and headers' className property to align your content horizontally to the left or right. <br/>
+ * See the Helpers section for details. <br/>
+ * This handles the always one direction case that flexjustify does not.<br/>
+ * @ojstyletemplate oj-helper-justify-content-[left|right]
+ * @ojdisplayname direction
+ * @memberof oj.ojDataGrid
+ * @ojstyletemplatetokens ["StylingTemplateTokens.[left|right]"]
+ */
+// ----------------oj-datagrid-cell-no-padding or padding --------------
+/**
+ * Used to style a datagrid cell so that it has no padding or default padding.
+ * @ojstyleset padding
+ * @ojdisplayname padding
+ * @ojstylesetitems ["padding.oj-datagrid-cell-no-padding", "padding.oj-datagrid-cell-padding"]
+ * @ojstylerelation exclusive
+ * @memberof oj.ojDataGrid
+ */
+/**
+ * @ojstyleclass padding.oj-datagrid-cell-no-padding
+ * @ojshortdesc No Padding
+ * @ojdisplayname oj-datagrid-cell-no-padding
+ * @memberof! oj.ojDataGrid
+ */
+/**
+ * @ojstyleclass padding.oj-datagrid-cell-padding
+ * @ojshortdesc Default Padding
+ * @ojdisplayname oj-datagrid-cell-padding
+ * @memberof! oj.ojDataGrid
+ */
+// ---------------- oj-datagrid-depth-[1-7] ------------------
+/**
+ * Used to style the default header widths and heights. By default the datagrid supports up to depth 7. <br/>
+ * If you have headers width depth greater than 7 specify the defaults using the class name description or use apply custom style rules to the headers.<br/>
+ * @ojstyletemplate oj-datagrid-depth-[1-7]
+ * @ojdisplayname depth
+ * @memberof oj.ojDataGrid
+ * @ojstyletemplatetokens ["StylingTemplateTokens.[1-7]"]
+ */
+// -------------------------------- oj.ojDataGrid Styling end ----------------
 oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
   widgetEventPrefix: 'oj',
   options: {
@@ -23591,7 +23655,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
     this.grid.setVisibility(DvtDataGrid.VISIBILITY_STATE_RENDER);
     // required classes on init, oj-component-initnode is added by this._super
     $(this.root).addClass('oj-datagrid oj-component');
-    $(this.root).attr(Components._OJ_CONTAINER_ATTR, this.widgetName);
+    $(this.root).attr(Components._OJ_CONTAINER_ATTR, this.widgetName); // @HTMLUpdateOK
     DataCollectionUtils.disableDefaultBrowserStyling(this.root);
 
     this.redrawSet = {
@@ -24272,9 +24336,9 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
     }
 
     if (resizeMenu != null || sortMenu != null || moveMenu != null || selectMenu != null) {
-      menuContainer.append(resizeMenu)
-        .append(sortMenu)
-        .append(moveMenu)
+      menuContainer.append(resizeMenu) // @HTMLUpdateOK
+        .append(sortMenu) // @HTMLUpdateOK
+        .append(moveMenu) // @HTMLUpdateOK
         .append(selectMenu); // @HTMLUpdateOK
       menuContainer.ojMenu();
 
@@ -24299,19 +24363,19 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
   _buildContextMenuItem: function (command, useOjOption) {
     if (command === 'resize') {
       return this._buildContextMenuListItem('resize', useOjOption)
-        .append($('<ul></ul>')
-                .append(this._buildContextMenuListItem('resizeWidth', useOjOption))
-                .append(this._buildContextMenuListItem('resizeHeight', useOjOption))); // @HTMLUpdateOK
+        .append($('<ul></ul>') // @HTMLUpdateOK
+          .append(this._buildContextMenuListItem('resizeWidth', useOjOption)) // @HTMLUpdateOK
+          .append(this._buildContextMenuListItem('resizeHeight', useOjOption))); // @HTMLUpdateOK
     } else if (command === 'sortCol') {
       return this._buildContextMenuListItem('sortCol', useOjOption)
-        .append($('<ul></ul>')
-                .append(this._buildContextMenuListItem('sortColAsc', useOjOption))
-                .append(this._buildContextMenuListItem('sortColDsc', useOjOption))); // @HTMLUpdateOK
+        .append($('<ul></ul>') // @HTMLUpdateOK
+          .append(this._buildContextMenuListItem('sortColAsc', useOjOption)) // @HTMLUpdateOK
+          .append(this._buildContextMenuListItem('sortColDsc', useOjOption))); // @HTMLUpdateOK
     } else if (command === 'sortRow') {
       return this._buildContextMenuListItem('sortRow', useOjOption)
-        .append($('<ul></ul>')
-                .append(this._buildContextMenuListItem('sortRowAsc', useOjOption))
-                .append(this._buildContextMenuListItem('sortRowDsc', useOjOption))); // @HTMLUpdateOK
+        .append($('<ul></ul>') // @HTMLUpdateOK
+          .append(this._buildContextMenuListItem('sortRowAsc', useOjOption)) // @HTMLUpdateOK
+          .append(this._buildContextMenuListItem('sortRowDsc', useOjOption))); // @HTMLUpdateOK
     } else if (Object.keys(this.resources.commands).indexOf(command) !== -1) {
       return $(this._buildContextMenuListItem(command, useOjOption));
     }
@@ -24372,110 +24436,217 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
   },
 
   /**
-   * Callback from the resize dialog box, which sends the results to the grid
-   * @param {Event} event the event that triggered the dialog button press
+   * Callback from the resize popup box, which sends the results to the grid
+   * @param {Event} event the event that triggered the popup button press
    * @private
    */
   // eslint-disable-next-line no-unused-vars
   _handleResizeDialog: function (event) {
-    var value = $('#' + this.rootId + 'spinner').ojInputNumber('option', 'value');
-    $('#' + this.rootId + 'dialog').ojPopup('close');
+    var isCustomElement = this._IsCustomElement();
+    var value;
+    if (isCustomElement) {
+      value = document.getElementById(this.rootId + 'inputNumber').value;
+      document.getElementById(this.rootId + 'popup').close();
+    } else {
+      value = $('#' + this.rootId + 'inputNumber').ojInputNumber('option', 'value');
+      $('#' + this.rootId + 'popup').ojPopup('close');
+    }
     this.grid.handleContextMenuReturn(this.contextMenuEvent, this.menuItemFunction, value);
     this.contextMenuEvent.target.focus();
   },
 
-    /**
-     * Build the html for the resize dialog and add it to the root node
-     * @param {string} title the header title for the dialog
-     * @param {number} initialSize the initial size to put in the spinner
-     * @private
-     */
+  /**
+   * Build the html for the resize popup and add it to the root node
+   * @param {string} title the header title for the popup
+   * @param {number} initialSize the initial size to put in the inputNumber
+   * @private
+   */
   _buildResizeDialog: function (title, initialSize) {
-    // create the base dialog
-    var dialog = $('#' + this.rootId + 'dialog');
-    var spinner = $('#' + this.rootId + 'spinner');
-    if (dialog.length === 0 || spinner.length === 0) {
-      dialog = document.createElement('div');
-      dialog.id = (this.rootId) + 'dialog';
-      var dialogHeader = document.createElement('div');
-      var dialogBody = document.createElement('div');
-      var dialogFooter = document.createElement('div');
+    // create the base popup
+    var popup;
+    var inputNumber;
+    var isCustomElement = this._IsCustomElement();
+    var popupHeader;
+    var popupBody;
+    var popupFooter;
+    var popupCancelButton;
+    var popupOKButton;
+    var popupTitle;
+    var cancelActionHandler;
+    var self = this;
 
-      dialogHeader.className = this._getMappedStyle('popupHeader');
-      dialogBody.className = this._getMappedStyle('popupContent');
-      dialogFooter.className = this._getMappedStyle('popupFooter');
+    if (isCustomElement) {
+      inputNumber = document.getElementById(this.rootId + 'inputNumber');
+      popup = document.getElementById(this.rootId + 'popup');
+      if (popup === null || inputNumber === null) {
+        popup = document.createElement('oj-popup');
+        popup.id = (this.rootId) + 'popup';
+        popup.setAttribute('data-oj-binding-provider', 'none');
+        popup.setAttribute('initial-focus', 'firstFocusable');
 
-      dialog.appendChild(dialogHeader);  // @HTMLUpdateOK
-      dialog.appendChild(dialogBody); // @HTMLUpdateOK
-      dialog.appendChild(dialogFooter); // @HTMLUpdateOK
+        popupHeader = document.createElement('div');
+        popupBody = document.createElement('div');
+        popupFooter = document.createElement('div');
 
-        // create the dialog content
-      var dialogTitle = document.createElement('h5');
-      dialogTitle.textContent = title; // @HTMLUpdateOK
-      dialogHeader.appendChild(dialogTitle);
+        popupTitle = document.createElement('h5');
+        popupTitle.textContent = title;
+        popupHeader.appendChild(popupTitle); // @HTMLUpdateOK
 
-      spinner = document.createElement('input');
-      spinner.id = (this.rootId + 'spinner');
+        popupHeader.className = this._getMappedStyle('popupHeader');
+        popupBody.className = this._getMappedStyle('popupContent');
+        popupFooter.className = this._getMappedStyle('popupFooter');
 
-      var dialogCancelButton = document.createElement('button');
-      dialogCancelButton.id = (this.rootId + 'dialogcancel');
-      dialogCancelButton.style.margin = '5px';
+        popup.appendChild(popupHeader); // @HTMLUpdateOK
+        popup.appendChild(popupBody); // @HTMLUpdateOK
+        popup.appendChild(popupFooter); // @HTMLUpdateOK
 
-      var dialogOKButton = document.createElement('button');
-      dialogOKButton.id = (this.rootId + 'dialogsubmit');
-      dialogOKButton.style.margin = '5px';
+        inputNumber = document.createElement('oj-input-number');
+        inputNumber.id = (this.rootId + 'inputNumber');
 
-      dialogBody.appendChild(spinner); // @HTMLUpdateOK
-      dialogFooter.appendChild(dialogOKButton); // @HTMLUpdateOK
-      dialogFooter.appendChild(dialogCancelButton); // @HTMLUpdateOK
-      this.root.appendChild(dialog); // @HTMLUpdateOK
+        popupCancelButton = document.createElement('oj-button');
+        popupCancelButton.id = (this.rootId + 'popupcancel');
+        popupCancelButton.style.margin = '5px';
 
-      $(dialogCancelButton).ojButton({
-        component: 'ojButton',
-        label: this._getTranslation('labelResizeDialogCancel')
-      });
-      $(dialogOKButton).ojButton({
-        component: 'ojButton',
-        label: this._getTranslation('labelResizeDialogSubmit')
-      });
-      var cancelActionHandler = function () {
-        $(dialogOKButton).ojButton({ disabled: false });
-        $(spinner).ojInputNumber({ value: 0 });
-        $(dialog).ojPopup('close');
-      };
-      dialogCancelButton.addEventListener('click', cancelActionHandler);
-      dialogOKButton.addEventListener('click', this._handleResizeDialog.bind(this));
-      $(spinner).ojInputNumber({
-        component: 'ojInputNumber',
-        max: 1000,
-        min: 20,
-        step: 1,
-        value: initialSize
-      });
-      $(spinner).on('change', function () {
-        $(dialogOKButton).ojButton({ disabled: !$(spinner).ojInputNumber('validate') });
-      });
-      $(dialog).ojPopup({
-        initialFocus: 'firstFocusable',
-        position: {
-          my: 'center center',
-          at: 'center center',
-          collision: 'none',
-          of: $(this.root)
-        }
-      });
-      $(dialog).ojPopup('open');
-    } else {
-      spinner.ojInputNumber('option', 'value', initialSize);
-      dialog.find('.' + this._getMappedStyle('popupHeader'))[0].firstChild.textContent = title;
-      dialog.ojPopup('open');
+        popupOKButton = document.createElement('oj-button');
+        popupOKButton.id = (this.rootId + 'popupsubmit');
+        popupOKButton.style.margin = '5px';
+
+        popupBody.appendChild(inputNumber); // @HTMLUpdateOK
+        popupFooter.appendChild(popupOKButton); // @HTMLUpdateOK
+        popupFooter.appendChild(popupCancelButton); // @HTMLUpdateOK
+        this.root.appendChild(popup); // @HTMLUpdateOK
+
+        popupCancelButton.textContent = this._getTranslation('labelResizeDialogCancel');
+        popupOKButton.textContent = this._getTranslation('labelResizeDialogSubmit');
+
+        cancelActionHandler = function () {
+          popupOKButton.disabled = false;
+          inputNumber.value = 0;
+          popup.close();
+        };
+
+        popupCancelButton.addEventListener('click', cancelActionHandler);
+        popupOKButton.addEventListener('click', this._handleResizeDialog.bind(this));
+
+        inputNumber.max = 1000;
+        inputNumber.min = 20;
+        inputNumber.step = 1;
+        inputNumber.value = initialSize;
+
+        inputNumber.addEventListener('validChanged', function (event) {
+          if (event.detail.value === 'valid') {
+            popupOKButton.disabled = false;
+          } else {
+            popupOKButton.disabled = true;
+          }
+        });
+
+        var position = {
+          my: {
+            horizontal: 'center',
+            vertical: 'center'
+          },
+          at: {
+            horizontal: 'center',
+            vertical: 'center'
+          },
+          collision: 'none'
+        };
+        popup.setAttribute('position', JSON.stringify(position));
+        var busyContext = Context.getContext(popup).getBusyContext();
+        busyContext.whenReady().then(function () {
+          popup.open(self.root);
+        });
+      } else {
+        inputNumber.value = initialSize;
+        $(popup).find('.' + this._getMappedStyle('popupHeader'))[0].firstChild.textContent = title;
+        popup.open(self.root);
+      }
+    } else if (!isCustomElement) {
+      popup = $('#' + this.rootId + 'popup');
+      inputNumber = $('#' + this.rootId + 'inputNumber');
+      if (popup.length === 0 || inputNumber.length === 0) {
+        popup = document.createElement('div');
+        popup.id = (this.rootId) + 'popup';
+        popupHeader = document.createElement('div');
+        popupBody = document.createElement('div');
+        popupFooter = document.createElement('div');
+
+        popupHeader.className = this._getMappedStyle('popupHeader');
+        popupBody.className = this._getMappedStyle('popupContent');
+        popupFooter.className = this._getMappedStyle('popupFooter');
+
+        popup.appendChild(popupHeader); // @HTMLUpdateOK
+        popup.appendChild(popupBody); // @HTMLUpdateOK
+        popup.appendChild(popupFooter); // @HTMLUpdateOK
+
+        // create the popup content
+        popupTitle = document.createElement('h5');
+        popupTitle.textContent = title;
+        popupHeader.appendChild(popupTitle); // @HTMLUpdateOK
+
+        inputNumber = document.createElement('input');
+        inputNumber.id = (this.rootId + 'inputNumber');
+
+        popupCancelButton = document.createElement('button');
+        popupCancelButton.id = (this.rootId + 'popupcancel');
+        popupCancelButton.style.margin = '5px';
+
+        popupOKButton = document.createElement('button');
+        popupOKButton.id = (this.rootId + 'popupsubmit');
+        popupOKButton.style.margin = '5px';
+
+        popupBody.appendChild(inputNumber); // @HTMLUpdateOK
+        popupFooter.appendChild(popupOKButton); // @HTMLUpdateOK
+        popupFooter.appendChild(popupCancelButton); // @HTMLUpdateOK
+        this.root.appendChild(popup); // @HTMLUpdateOK
+
+        $(popupCancelButton).ojButton({
+          component: 'ojButton',
+          label: this._getTranslation('labelResizeDialogCancel')
+        });
+
+        $(popupOKButton).ojButton({
+          component: 'ojButton',
+          label: this._getTranslation('labelResizeDialogSubmit')
+        });
+        cancelActionHandler = function () {
+          $(popupOKButton).ojButton({ disabled: false });
+          $(inputNumber).ojInputNumber({ value: 0 });
+          $(popup).ojPopup('close');
+        };
+        popupCancelButton.addEventListener('click', cancelActionHandler);
+        popupOKButton.addEventListener('click', this._handleResizeDialog.bind(this));
+        $(inputNumber).ojInputNumber({
+          component: 'ojInputNumber',
+          max: 1000,
+          min: 20,
+          step: 1,
+          value: initialSize
+        });
+        $(inputNumber).on('change', function () {
+          $(popupOKButton).ojButton({ disabled: !$(inputNumber).ojInputNumber('validate') });
+        });
+        $(popup).ojPopup({
+          initialFocus: 'firstFocusable',
+          position: {
+            my: 'center center',
+            at: 'center center',
+            collision: 'none',
+            of: $(this.root)
+          }
+        });
+        $(popup).ojPopup('open');
+      } else {
+        inputNumber.ojInputNumber('option', 'value', initialSize);
+        popup.find('.' + this._getMappedStyle('popupHeader'))[0].firstChild.textContent = title;
+        popup.ojPopup('open');
+      }
     }
   },
-
   /**
    * Handle an ojselect event on a menu item, if sort call the handler on the core.
-   * If resize prompt the user with a dialog box
-   * @param {Event|CustomEvent} event event triggering context menu
+   * If resize prompt the user with a popup box
    * @param {Object=} ui an object containing the menu item that was selected
    * @private
    */
@@ -24519,7 +24690,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
       // toggle discontiguous context menu label text
       var key = this._discontiguousSelection ?
         'labelDisableNonContiguous' : 'labelEnableNonContiguous';
-      item.children().first().text(this._getTranslation(key)); // @HTMLUpdateOK
+      item.children().first().text(this._getTranslation(key));
     }
   },
 
@@ -25518,49 +25689,6 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
    * @memberof oj.ojDataGrid
    */
 
-  /**
-   * {@ojinclude "name":"ojStylingDocIntro"}
-   *
-   * <table class="generic-table styling-table">
-   *   <thead>
-   *     <tr>
-   *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-   *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>oj-[size]-justify-content-[flexjustify]</td>
-   *       <td>Use this class on cells' and headers' className property to align your content horizontally. By default the alignment is flex-end on cells and varies on headers, see other possibilities in the [Flex Layout]{@link FlexLayout} justify section for size and flexjustify options. </td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-[size]-align-items-[flexalign]</td>
-   *       <td>Use this class on cells' and headers' className property to align your content vertically. By default the alignment is center on cells and headers, see other possibilities in the [Flex Layout]{@link FlexLayout} align section for size and flexalign options.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-helper-justify-content-[direction]</td>
-   *       <td>Direction can be left or right. Use this class on cells' and headers' className align your content horizontally to the left or right. See the [Helpers]{@link Helpers} section for details. This handles the always one direction case that flexjustify does not.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-datagrid-cell-no-padding</td>
-   *       <td>Used to style a datagrid cell so that it has no padding.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-datagrid-cell-padding</td>
-   *       <td>Used to style a datagrid cell so that it has the default padding.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-datagrid-depth-[1-7]</td>
-   *       <td>Used to style the default header widths and heights. By default the datagrid supports up to depth 7. If you have headers width depth greater than 7 specify
-   *       the defaults using the class name description or use apply custom style rules to the headers.</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-   * @memberof oj.ojDataGrid
-   */
-
   // ////////////////     SUB-IDS     //////////////////
 
   /**
@@ -26036,7 +26164,12 @@ DataProviderDataGridDataSource.prototype.fetchCells = function (cellRanges,
       sortCriteria: self.currentSortCriteria });
   } else {
     if (self._asyncIterator == null || this.sortUpdated) {
+      // Create a clientId symbol that uniquely identify this consumer so that
+      // DataProvider which supports it can optimize resources
+      self._clientId = self._clientId || Symbol();
+
       self._asyncIterator = self.dataprovider.fetchFirst({
+        clientId: self._clientId,
         size: size,
         sortCriteria: self.currentSortCriteria })[Symbol.asyncIterator]();
     }

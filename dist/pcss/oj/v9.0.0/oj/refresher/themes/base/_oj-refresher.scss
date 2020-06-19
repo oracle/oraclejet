@@ -1,0 +1,139 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
+//          for example alta/widgets/_oj.alta.refresher.scss
+// !!!
+
+@import "../../../utilities/_oj.utilities.scss";
+
+  @include module-include-once("common.refresher") {
+
+    /*
+     * applied to the refresh panel
+     */
+    .oj-pulltorefresh-panel {
+      overflow: hidden;
+    }
+
+    /*
+     * applied to the content inside the pull to refresh panel
+     */
+    .oj-pulltorefresh-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+        background-color: var(--oj-refresher-bg-color);
+
+    }
+
+    /*
+     * applied animation when the height of the panel changes (during release)
+     */
+    .oj-pulltorefresh-transition {
+
+        transition: height var(--oj-refresher-animation-duration);
+
+        transition-timing-function: var(--oj-animation-ease-in-out);
+    }
+
+    /*
+     * applied to the primary text inside the pull to refresh panel
+     */
+    .oj-pulltorefresh-primary-text {
+// todo: this used to be oj-text-color-primary which made it black in alta. 
+//       wait for the redwood spec to decide if we need a pulltorefresh text vars
+        color: var(--oj-core-text-color-primary);
+
+        text-align: center;
+        margin: 0 0 10px 0;
+    }
+
+    /*
+     * applied to the secondary text inside the pull to refresh panel
+     */
+    .oj-pulltorefresh-secondary-text {
+     
+        color: var(--oj-core-text-color-secondary);
+        font-size: var(--oj-typography-body-sm-font-size);
+        line-height: var(--oj-typography-body-sm-line-height);
+
+        text-align: center;
+        margin: 0 0 20px 0;
+    }
+
+    /*
+     * applied to the container of the refresh icon inside the pull to refresh panel
+     */
+    .oj-pulltorefresh-icon-container {
+        margin: 20px 0 20px 0;
+    }
+
+    /*
+     * applied to the refresh icon inside the pull to refresh panel
+     */
+    .oj-pulltorefresh-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    // refresh icon at initial state
+    .oj-pulltorefresh-icon-initial {
+        @extend .oj-fwk-icon-spinner-00;
+    }
+
+    // refresh icon at 10% state
+    .oj-pulltorefresh-icon-10-percent {
+        @extend .oj-fwk-icon-spinner-10;
+    }
+
+    // refresh icon at 20% state
+    .oj-pulltorefresh-icon-20-percent {
+        @extend .oj-fwk-icon-spinner-20;
+    }
+
+    // refresh icon at 30% state
+    .oj-pulltorefresh-icon-30-percent {
+        @extend .oj-fwk-icon-spinner-30;
+    }
+
+    // refresh icon at 40% state
+    .oj-pulltorefresh-icon-40-percent {
+        @extend .oj-fwk-icon-spinner-40;
+    }
+
+    // refresh icon at 50% state
+    .oj-pulltorefresh-icon-50-percent {
+        @extend .oj-fwk-icon-spinner-50;
+    }
+
+    // refresh icon at 60% state
+    .oj-pulltorefresh-icon-60-percent {
+        @extend .oj-fwk-icon-spinner-60;
+    }
+
+    // refresh icon at 70% state
+    .oj-pulltorefresh-icon-70-percent {
+        @extend .oj-fwk-icon-spinner-70;
+    }
+
+    // refresh icon at 80% state
+    .oj-pulltorefresh-icon-80-percent {
+        @extend .oj-fwk-icon-spinner-80;
+    }
+
+    // refresh icon at 90% state
+    .oj-pulltorefresh-icon-90-percent {
+        @extend .oj-fwk-icon-spinner-90;
+    }
+
+    // refresh icon at 100% state
+    .oj-pulltorefresh-icon-full {
+        @include oj-icon-content(
+            $icon: oj-image-url("spinner_full.gif"),
+            $lowResProportion: 0.25
+        );
+    }
+  }

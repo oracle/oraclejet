@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -73,9 +74,9 @@ oj.TreeDndContext.prototype.handleDnDOptionChange = function (newval) {
   var reorder = dnd.reorder;
   var dragFromEnabled = dnd.dragFromEnabled;
 
-  this._dndCleanAll();       // blow away all the old settings
-  this.initDnDOpts();        // reprocess the options into dnd
-  dnd = this._dnd;          // _dnd is new so reget
+  this._dndCleanAll(); // blow away all the old settings
+  this.initDnDOpts(); // reprocess the options into dnd
+  dnd = this._dnd; // _dnd is new so reget
 
    //  If reorder or dragging ability changed, may need to remove css classes.
    //  (Only need to check for removal - if it was not set previously but is
@@ -90,7 +91,7 @@ oj.TreeDndContext.prototype.handleDnDOptionChange = function (newval) {
     }
   }
 
-  this.initDnD();       // finally re-init DnD support with new options.
+  this.initDnD(); // finally re-init DnD support with new options.
 };
 
 
@@ -242,22 +243,22 @@ oj.TreeDndContext.prototype.initDnD = function () {
   var cons = oj.TreeDndContext;
 
   if ((!dnd.dragFromEnabled) && (!dnd.dropToEnabled) && (!dnd.reorder)) {
-    return;                                 // No DnD support required
+    return; // No DnD support required
   }
 
    //  Create drag insertion ptr and line divs if they don't exist.
   if (!oj.TreeDndContext._dragMarker) {
-    vars.m =                                 // dnd insertion point marker
+    vars.m = // dnd insertion point marker
        $("<div class='oj-tree-drop-marker'><span class='oj-tree-drop-ptr oj-component-icon'>&#160;</span></div>")
-         .css('pointer-events', 'none')       // prevent mouse events on marker, so that
-         .hide()                              // we don't cause bogus dragLeave/dragEnter
-         .appendTo('body');                   // @HTMLUpdateOK
+         .css('pointer-events', 'none') // prevent mouse events on marker, so that
+         .hide() // we don't cause bogus dragLeave/dragEnter
+         .appendTo('body'); // @HTMLUpdateOK
 
-    vars.ml = $('<div></div>')                   // dnd insert point marker line
+    vars.ml = $('<div></div>') // dnd insert point marker line
          .addClass(cons._OJT_DROP_MARKER_LINE)
-         .css('pointer-events', 'none')       // prevent mouse events on the line, so
-         .hide()                              // that we don't cause bogus dragLeave/dragEnter
-         .appendTo('body');                   // @HTMLUpdateOK
+         .css('pointer-events', 'none') // prevent mouse events on the line, so
+         .hide() // that we don't cause bogus dragLeave/dragEnter
+         .appendTo('body'); // @HTMLUpdateOK
 
     oj.TreeDndContext._dragMarker = vars.m;
     oj.TreeDndContext._dragMarkerLine = vars.ml;
@@ -266,11 +267,11 @@ oj.TreeDndContext.prototype.initDnD = function () {
     vars.ml = oj.TreeDndContext._dragMarkerLine;
   }
 
-  dnd.ml_width = vars.ml.width();  // marker line width from style
+  dnd.ml_width = vars.ml.width(); // marker line width from style
 
    // Add Drag/Drop listeners
-  var div = this.component.element[0];         // containing div
-  var $ul = $(div).children('ul:eq(0)');       // containing UL
+  var div = this.component.element[0]; // containing div
+  var $ul = $(div).children('ul:eq(0)'); // containing UL
 
   if (dnd.reorder || dnd.dragFromEnabled) {
     dnd.fnDragStart = this._dragStart.bind(this);
@@ -322,8 +323,8 @@ oj.TreeDndContext.prototype._closedown = function () {
  */
 oj.TreeDndContext.prototype._dragStart = function (e) {
   var $targ = $(e.target);
-  var $node = $targ.closest('li');   // target node dragged
-  var $nodes;                        // all nodes participating in the drag
+  var $node = $targ.closest('li'); // target node dragged
+  var $nodes; // all nodes participating in the drag
   var dt = e.originalEvent.dataTransfer;
   var ret;
 
@@ -335,8 +336,8 @@ oj.TreeDndContext.prototype._dragStart = function (e) {
   //            (dnd.nodeLastEnter? dnd.nodeLastEnter.attr("id") : "null") + " lastLeft=" +
   //            (dnd.nodeLastLeft? dnd.nodeLastLeft.attr("id") : "null"), 1) ;
 
-  vars.o = null;      // no dragged node(s) yet
-  vars.r = null;      // no reference node yet
+  vars.o = null; // no dragged node(s) yet
+  vars.r = null; // no reference node yet
   dnd.nodeLastEnter = null;
   dnd.nodeLastLeft = null;
   dnd.nodeDraggedId = null;
@@ -344,13 +345,13 @@ oj.TreeDndContext.prototype._dragStart = function (e) {
 
   if (((!dnd.reorder) && (!dnd.dragFromEnabled)) ||
         $node.hasClass(TreeUtils._OJ_DISABLED) || this.component._isTreeDisabled()) {
-    e.preventDefault();          // drag not allowed.
+    e.preventDefault(); // drag not allowed.
     return undefined;
   }
 
   //  If node types have been defined, check that a move is permitted for this node type.
   if (!this.component._canTypedNodeMove($node, 'move')) {
-    return false;                 // drag not allowed.
+    return false; // drag not allowed.
   }
 
   //  Add dragged node(s) to transfer data.  If dragged node is selected,
@@ -372,16 +373,16 @@ oj.TreeDndContext.prototype._dragStart = function (e) {
     var adata = this._getDraggedItemArray($nodes);
     ret = dnd.dragStartCallback(e, { item: adata });
     if (e.isDefaultPrevented() || (typeof ret === 'boolean' && (!ret))) {
-      return ret;                             // app vetoed drag
+      return ret; // app vetoed drag
     }
 
     // If dataTypes was not specified in the drag options, check that callback
     // has created at least one.
     if ((!dnd.dragDataTypes) && (!this._checkAddedDataTypes(dt)) && (!dnd.reorder)) {
       e.preventDefault();
-      return false;                          // dragstart not permitted
+      return false; // dragstart not permitted
     }
-  }     // end if dragStart callback
+  } // end if dragStart callback
 
   // If no callback or callback did not set the effectAllowed, set default value.
   if (dt.effectAllowed === 'uninitialized') {
@@ -392,7 +393,7 @@ oj.TreeDndContext.prototype._dragStart = function (e) {
     }
   }
 
-  this._dndStartDrag($nodes, $node, e);               // final prep
+  this._dndStartDrag($nodes, $node, e); // final prep
   return undefined;
 };
 
@@ -421,13 +422,13 @@ oj.TreeDndContext.prototype._dragEnter = function (e) {
   }
 
   var $targ = $(e.target);
-  var $node = this.component._getNode($targ);    // <li> of the element entered
+  var $node = this.component._getNode($targ); // <li> of the element entered
   var dnd = this._dnd;
   var vars = dnd.vars;
   var bNode = (($node) && ($node.length > 0) && ($node.hasClass('oj-tree-node')));
   var dt = e.originalEvent.dataTransfer;
   var cons = oj.TreeDndContext;
-  var bForeignTree = false;        // true if drag from another tree
+  var bForeignTree = false; // true if drag from another tree
   var bClean = false;
   var ret;
 
@@ -440,11 +441,11 @@ oj.TreeDndContext.prototype._dragEnter = function (e) {
 
   // Ignore the UL, only interested in the nodes.
   if (bNode && (e.target.tagName === 'UL') && (e.target.getAttribute('role') === 'group')) {
-    return undefined;   // (prevents bogus insert line under top node)
+    return undefined; // (prevents bogus insert line under top node)
   }
 
   // Set dnd.foreign if the drag did not originate from this tree
-  dnd.foreign = (!dnd.dragStarted);  // no preceding _dragStart() so froms another
+  dnd.foreign = (!dnd.dragStarted); // no preceding _dragStart() so froms another
   // component which may or may not be a tree.
 
   // If over same tree, but re-order not permitted, or from a foreign tree that is
@@ -474,11 +475,11 @@ oj.TreeDndContext.prototype._dragEnter = function (e) {
       // Also since the dragend event goes to the source component, which in this case
       // is foreign, we must clean-up and hide the drop ui for this component too.
       this._dndClean();
-      return undefined;                // vetoed
+      return undefined; // vetoed
     }
   }
 
-  vars.r = false;           // no reference node yet
+  vars.r = false; // no reference node yet
 
   //  Clear last entered node classes
   if (dnd.nodeLastEnter) {
@@ -500,7 +501,7 @@ oj.TreeDndContext.prototype._dragEnter = function (e) {
   // Handle case where node(s) are being dragged from a foreign tree
   if (bForeignTree && bNode) {
     dnd.nodeLastEnter = null;
-    vars.o = 2;      // dragged foreign tree node(s) - data is in dataTransfer
+    vars.o = 2; // dragged foreign tree node(s) - data is in dataTransfer
   }
   // Handle case where a foreign object (non-tree node) is being dragged to the tree.
   if (dnd.foreign && (!bForeignTree)) {
@@ -510,7 +511,7 @@ oj.TreeDndContext.prototype._dragEnter = function (e) {
   vars.r = $node; // the reference node
   dnd.nodeLastEnter = $node;
 
-  this._dndPlacement(e, $node);     // get initial marker placement (in dnd.place)
+  this._dndPlacement(e, $node); // get initial marker placement (in dnd.place)
   if (!this._dndEnter()) {
     // Not a valid placement position
     this._clearDropClasses(vars.r);
@@ -584,10 +585,10 @@ oj.TreeDndContext.prototype._dragOver = function (e) {
   // Did _dragEnter() determine node is a drop target?
   if ((!vars.r) || (!vars.r.length)) {
     this._dndHideMarker();
-    return undefined;                 // no.
+    return undefined; // no.
   }
 
-  var $node = vars.r;           // the reference node set by _dragEnter()
+  var $node = vars.r; // the reference node set by _dragEnter()
 
   if (!$node.hasClass('oj-tree-node')) {
     this._dndHideMarker();
@@ -618,7 +619,7 @@ oj.TreeDndContext.prototype._dragOver = function (e) {
 
   if (ret === undefined) {
     if (this._isDtAcceptDataTypes(dt)) {
-      e.preventDefault();        // accept node or position beside it for a drop
+      e.preventDefault(); // accept node or position beside it for a drop
       e.stopPropagation();
     } else {
       // component rejected by dataTypes.
@@ -628,7 +629,7 @@ oj.TreeDndContext.prototype._dragOver = function (e) {
     }
   } else if (ret === false || e.isDefaultPrevented()) {
     // callback returned something
-    e.preventDefault();           // accept node or position beside it for a drop
+    e.preventDefault(); // accept node or position beside it for a drop
     e.stopPropagation();
   } else if (dnd.foreign || (!dnd.reorder)) {
        // If the source component is foreign, we must clean-up and hide the drop
@@ -679,7 +680,7 @@ oj.TreeDndContext.prototype._dragDrop = function (e) {
 
     // If reorder, handle itProceed with reorder if not vetoed
     if ((!veto) && ((!ret) || e.isDefaultPrevented())) {
-      this._dndFinishReorder(e);   // Handle same tree node movement
+      this._dndFinishReorder(e); // Handle same tree node movement
     }
   } // end if (vars.r)
 
@@ -724,8 +725,8 @@ oj.TreeDndContext.prototype._dragEnd = function (e) {
     });
   }
 
-  this._dndStopDrag();      // dragend completion
-  this._dndClean();         // clean-up/housekeeping
+  this._dndStopDrag(); // dragend completion
+  this._dndClean(); // clean-up/housekeeping
 };
 
 
@@ -738,7 +739,7 @@ oj.TreeDndContext.prototype._addInternalNode = function () {
   if (!this._internalNode) {
     this._internalNode = $("<li class='" + TreeUtils._OJ_TEMPNODE + " oj-tree-node oj-tree-leaf oj-valid-drop' id='" + TreeUtils._OJ_TEMPNODE + "'><ins class='oj-tree-icon'></ins><a href='#'><ins class='oj-tree-icon'></ins><span class='oj-tree-title'></span></a></li>");
   }
-  this.component._$container_ul.append(this._internalNode);       // @HTMLUpdateOK  (no user supplied text involved)
+  this.component._$container_ul.append(this._internalNode); // @HTMLUpdateOK  (no user supplied text involved)
 };
 
 
@@ -769,7 +770,7 @@ oj.TreeDndContext.prototype._dragLeave = function (e) {
 
   // Clean up if leaving the tree, or a non-node, or drag canceled
   if ($targ.hasClass('oj-tree') || (!bNode) || (dt.dropEffect === 'none')) {
-    this._dndLeave(e);            // clean up and hide marker(s)
+    this._dndLeave(e); // clean up and hide marker(s)
   } else {
     dnd.nodeLastLeft = $node;
   }
@@ -791,18 +792,18 @@ oj.TreeDndContext.prototype._dndEnter = function () {
 
    // this._trace("_dndEnter vars.o = " + vars.o + " vars.r = " +  vars.r) ;
 
-  dnd.prepared = false;                       // no prepMoveBlk object yet
+  dnd.prepared = false; // no prepMoveBlk object yet
   var ret = this._dndPrepare();
 
   // var ms  = s["openTimeout"] ;     // not publicly exposed
-  var ms = dnd.openTimeoutMs;    // open timeout value (ms)
+  var ms = dnd.openTimeoutMs; // open timeout value (ms)
   if (ms) {
     if (dnd.openTimer_Id) {
       clearTimeout(dnd.openTimerId);
     }
     if (vars.r && vars.r.length && vars.r.hasClass(TreeUtils._OJ_COLLAPSED)) {
        // if the node is closed - open it, then recalculate
-      dnd.openTimerId = setTimeout(this._dndOpen.bind(this), ms);     // @HTMLUpdateOK
+      dnd.openTimerId = setTimeout(this._dndOpen.bind(this), ms); // @HTMLUpdateOK
     }
   }
 
@@ -852,8 +853,8 @@ oj.TreeDndContext.prototype._dndFinishReorder = function (e) {
  */
 oj.TreeDndContext.prototype._dndFinishSelection = function (node) {
   if (node.hasClass(TreeUtils._OJ_SELECTED)) { // is node tagged from the json?
-    node.removeClass(TreeUtils._OJ_SELECTED);   // remove selected tag
-    this.component._select(node, true);         // and select it fully.
+    node.removeClass(TreeUtils._OJ_SELECTED); // remove selected tag
+    this.component._select(node, true); // and select it fully.
   }
 
   var children = this.component.getChildren(node);
@@ -898,7 +899,7 @@ oj.TreeDndContext.prototype._dndPlacement = function (e, $node) {
       }
     }
   } else {
-    dnd.place = 'after';    // reference node is the dummy placed in an empty tree
+    dnd.place = 'after'; // reference node is the dummy placed in an empty tree
   }
 };
 
@@ -1133,18 +1134,18 @@ oj.TreeDndContext.prototype._dndPrepare = function () {
 
   // See if from foreign object
   if (typeof vars.o === 'number' && (vars.o === 1 || vars.o === 2)) {
-    foreignObj = true;     // (1 = foreign tree node, 2 = non-tree node)
+    foreignObj = true; // (1 = foreign tree node, 2 = non-tree node)
   } else if (!vars.o) {
-    return false;         // no object, so can't handle.
+    return false; // no object, so can't handle.
   }
 
-  dnd.off = vars.r.offset();   // get pos of reference node relative to doc
+  dnd.off = vars.r.offset(); // get pos of reference node relative to doc
 
   if (this.component._isRtl) {
     // arrow icon is on the right of the marker line
     dnd.off.right = (dnd.off.left + vars.r.width()) - vars.r.find('>a').width() - 30;
   }
-  dnd.targ_ml_width = vars.r.find('a').width();     // get the width for the insert line
+  dnd.targ_ml_width = vars.r.find('a').width(); // get the width for the insert line
 
   if (foreignObj) {
     // This is a foreign object (and we are not directly rearranging the
@@ -1155,7 +1156,7 @@ oj.TreeDndContext.prototype._dndPrepare = function () {
     dnd.inside = (dnd.place === 'inside');
   } else {
     // Re-order - set the dnd before/after/inside booleans
-    tree._prepare_move(vars.o, vars.r, 'before');       // create a prepMoveBlk object
+    tree._prepare_move(vars.o, vars.r, 'before'); // create a prepMoveBlk object
     dnd.before = tree._checkMove();
     tree._prepare_move(vars.o, vars.r, 'after');
     dnd.after = tree._checkMove();
@@ -1168,8 +1169,8 @@ oj.TreeDndContext.prototype._dndPrepare = function () {
     }
   }
 
-  dnd.prepared = true;              // prepare has completed
-  return this._dndShowMarker();     // returns "after", "before", "inside", or false
+  dnd.prepared = true; // prepare has completed
+  return this._dndShowMarker(); // returns "after", "before", "inside", or false
 };
 
 
@@ -1185,9 +1186,9 @@ oj.TreeDndContext.prototype._dndShowMarker = function () {
   var cons = oj.TreeDndContext;
   var vars = dnd.vars;
   var rtl = this.component._isRtl;
-  var mLeft;                     // pos of marker rel to document
-  var mlLeft;                    // position of marker line rel to doc
-  var lineTop;                   // top pos of marker line rel to doc
+  var mLeft; // pos of marker rel to document
+  var mlLeft; // position of marker line rel to doc
+  var lineTop; // top pos of marker line rel to doc
   var nodeHeight = this.component._getNodeHeight();
   var r = false;
 
@@ -1216,10 +1217,10 @@ oj.TreeDndContext.prototype._dndShowMarker = function () {
 
   var pos = rtl ? (dnd.off.right - 18) : (dnd.off.left + 5);
   isParent = !this.component.isLeaf(vars.r);
-  mLeft = rtl ? (pos + dnd.targ_ml_width + 18) : pos;  // pos of marker rel to doc
-  mlLeft = rtl ? (mLeft - dnd.ml_width) : (pos + 8);      // pos of marker line rel to doc
+  mLeft = rtl ? (pos + dnd.targ_ml_width + 18) : pos; // pos of marker rel to doc
+  mlLeft = rtl ? (mLeft - dnd.ml_width) : (pos + 8); // pos of marker line rel to doc
 
-  lineTop = dnd.off.top - 3;       // set line top a small dist above the node for clarity
+  lineTop = dnd.off.top - 3; // set line top a small dist above the node for clarity
 
   switch (r) {
     case 'before':
@@ -1321,7 +1322,7 @@ oj.TreeDndContext.prototype._dndStartDrag = function ($nodes, $node, e) {
   var $cnt;
 
 
-  vars.o = $nodes;                            // internal note of the node(s) dragged
+  vars.o = $nodes; // internal note of the node(s) dragged
   vars.o.addClass(cons._OJ_DRAG);
   dnd.nodeDraggedId = $node.attr('id');
 
@@ -1406,7 +1407,7 @@ oj.TreeDndContext.prototype._setDataTypes = function (dt, $nodes) {
       dt.setData(dnd.dragDataTypes[i], data);
     }
   }
-  dt.setData(cons._DND_INTERNAL_DT, '0');           // internal id tree data
+  dt.setData(cons._DND_INTERNAL_DT, '0'); // internal id tree data
   if (dnd.pureReorder) {
     dt.setData(cons._DND_INTERNAL_DT_REORDER, '0'); // internal id for reorder
   }
@@ -1428,25 +1429,25 @@ oj.TreeDndContext.prototype._setDragImage = function (dt, $nodes) {
 
   var $dragImg = $('<div></div>');
   var ul = $("<ul style='padding:0px;margin:0;'></ul>");
-  $dragImg.append(ul);       // @HTMLUpdateOK no user input involved and
+  $dragImg.append(ul);// @HTMLUpdateOK no user input involved and
                               // only creating a drag image.
 
   for (var i = 0; i < len; i++) {
     var el = $nodes[i].cloneNode(true);
     el.style.marginLeft = 0;
     el.style.paddingLeft = 0;
-    ul.append(el);            // @HTMLUpdateOK appended elems have already
+    ul.append(el); // @HTMLUpdateOK appended elems have already
                                // been sanitized before being added to the DOM,
                                // and are only referenced here to create an image
                                // for dragging.
   }
 
   var elem = $dragImg[0];
-  document.body.appendChild(elem);    // @HTMLUpdateOK pre-sanitized elems used to create a drag image
+  document.body.appendChild(elem); // @HTMLUpdateOK pre-sanitized elems used to create a drag image
   elem.style.position = 'absolute';
   elem.style.top = '-' + ($dragImg.height() * 2) + 'px';
   elem.style.right = '0';
-  this._dragImg = elem;     // note for removal in _dragend()
+  this._dragImg = elem; // note for removal in _dragend()
   dt.setDragImage(elem, 0, 0);
 };
 
@@ -1569,19 +1570,19 @@ oj.TreeDndContext.prototype._reset = function () {
   this._dnd = _dnd;
 
   _dnd.reorder = false;
-  _dnd.pureReorder = false;        // true if reorder and not a drag source
-  _dnd.foreign = false;        // dragged obj not from this tree
+  _dnd.pureReorder = false; // true if reorder and not a drag source
+  _dnd.foreign = false; // dragged obj not from this tree
 
-  _dnd.dragStarted = false;      // startDrag received on this tree
-  _dnd.nodeDraggedId = null;       // id of node being dragged
-  _dnd.nodeLastEnter = null;       // node last entered
-  _dnd.fnDragStart = null;       // event listeners bound to 'this'
-  _dnd.fnDragEnd = null;       //   ..     ..
-  _dnd.fnDrag = null;       //   ..     ..
-  _dnd.fnDragEnter = null;       //   ..     ..
-  _dnd.fnDragOver = null;       //   ..     ..
-  _dnd.fnDragLeave = null;       //   ..     ..
-  _dnd.fnDragDrop = null;       //   ..     ..
+  _dnd.dragStarted = false; // startDrag received on this tree
+  _dnd.nodeDraggedId = null; // id of node being dragged
+  _dnd.nodeLastEnter = null; // node last entered
+  _dnd.fnDragStart = null; // event listeners bound to 'this'
+  _dnd.fnDragEnd = null; //   ..     ..
+  _dnd.fnDrag = null; //   ..     ..
+  _dnd.fnDragEnter = null; //   ..     ..
+  _dnd.fnDragOver = null; //   ..     ..
+  _dnd.fnDragLeave = null; //   ..     ..
+  _dnd.fnDragDrop = null; //   ..     ..
 
   // App callbacks and flags
   _dnd.dragFromEnabled = false;
@@ -1599,25 +1600,25 @@ oj.TreeDndContext.prototype._reset = function () {
   _dnd.inside = false;
   _dnd.before = false;
   _dnd.off = false;
-  _dnd.prepared = false;       // true when a prepMoveBlk object has been created
-  _dnd.openTimerId = false;       // open folder timeout Id from setTimeout() when dragged over
+  _dnd.prepared = false; // true when a prepMoveBlk object has been created
+  _dnd.openTimerId = false; // open folder timeout Id from setTimeout() when dragged over
   _dnd.cof = false;
   _dnd.cw = false;
   _dnd.ch = false;
 // _dnd.i1         = false ;      // not currently used
 // _dnd.i2         = false ;      // not currently used
-  _dnd.ml_width = 100;         // marker line width - updated in _initDnd() from css
-  _dnd.targ_ml_width = 100;      // marker line width of target node
-  _dnd.openTimeoutMs = 500;      // open folder timeout when dragged over
+  _dnd.ml_width = 100; // marker line width - updated in _initDnd() from css
+  _dnd.targ_ml_width = 100; // marker line width of target node
+  _dnd.openTimeoutMs = 500; // open folder timeout when dragged over
 // _dnd.defaults = { // not yet exposed
 //                    "openTimeout"  : 500
 //                    "checkTimeout" : 100 };
-  _dnd.vars = {};          // drag/drop block of vars
-  _dnd.vars.o = false;     // node(s) being dragged, or
+  _dnd.vars = {}; // drag/drop block of vars
+  _dnd.vars.o = false; // node(s) being dragged, or
                                    // 1 if foreign obj, or 2 if foreign node(s)
-  _dnd.vars.r = false;     // reference node
-  _dnd.vars.m = false;     // marker pointer div
-  _dnd.vars.ml = false;     // marker line div
+  _dnd.vars.r = false; // reference node
+  _dnd.vars.m = false; // marker pointer div
+  _dnd.vars.ml = false; // marker line div
 // _dnd.vars.sli      = undefined ;
 // _dnd.vars.sti      = undefined ;
 // _dnd.vars.dir1     = false ;
@@ -1643,25 +1644,25 @@ oj.TreeDndContext.prototype._trace = function (s) {
  * @const
  * @type {string}
  */
-oj.TreeDndContext._OJ_DRAGGABLE = 'oj-draggable';      // node is draggable
+oj.TreeDndContext._OJ_DRAGGABLE = 'oj-draggable'; // node is draggable
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.TreeDndContext._OJ_DRAG = 'oj-drag';           // node that is being dragged
+oj.TreeDndContext._OJ_DRAG = 'oj-drag'; // node that is being dragged
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.TreeDndContext._OJ_ACTIVE_DROP = 'oj-active-drop';   // over node in process of being dropped on
+oj.TreeDndContext._OJ_ACTIVE_DROP = 'oj-active-drop'; // over node in process of being dropped on
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.TreeDndContext._OJ_VALID_DROP = 'oj-valid-drop';    // over node that could be dropped on
+oj.TreeDndContext._OJ_VALID_DROP = 'oj-valid-drop'; // over node that could be dropped on
 /**
  * @private
  * @const
@@ -1673,19 +1674,19 @@ oj.TreeDndContext._OJ_INVALID_DROP = 'oj-invalid-drop'; // over node that can't 
  * @const
  * @type {string}
  */
-oj.TreeDndContext._OJ_DROP = 'oj-drop';                // nodes that are valid drop targets
+oj.TreeDndContext._OJ_DROP = 'oj-drop'; // nodes that are valid drop targets
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.TreeDndContext._OJT_DROP_MARKER = 'oj-tree-drop-marker';       // insertion point marker
+oj.TreeDndContext._OJT_DROP_MARKER = 'oj-tree-drop-marker'; // insertion point marker
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.TreeDndContext._OJT_DROP_MARKER_LINE = 'oj-tree-drop-marker-line';  // insertion point marker line
+oj.TreeDndContext._OJT_DROP_MARKER_LINE = 'oj-tree-drop-marker-line'; // insertion point marker line
 
 
 // --------------------------//
@@ -1726,31 +1727,31 @@ oj.TreeDndContext._DND_DATATYPES = 'dataTypes';
  * @const
  * @type {string}
  */
-oj.TreeDndContext._DND_DRAGSTART_CB = 'dragStart';      // callbacks
+oj.TreeDndContext._DND_DRAGSTART_CB = 'dragStart'; // callbacks
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.TreeDndContext._DND_DRAGDRAG_CB = 'drag';           //   . .
+oj.TreeDndContext._DND_DRAGDRAG_CB = 'drag'; //   . .
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.TreeDndContext._DND_DRAGEND_CB = 'dragEnd';        //   . .
+oj.TreeDndContext._DND_DRAGEND_CB = 'dragEnd'; //   . .
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.TreeDndContext._DND_DROPDRAGENTER_CB = 'dragEnter';  //   . .
+oj.TreeDndContext._DND_DROPDRAGENTER_CB = 'dragEnter'; //   . .
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.TreeDndContext._DND_DROPDRAGOVER_CB = 'dragOver';  //   . .
+oj.TreeDndContext._DND_DROPDRAGOVER_CB = 'dragOver'; //   . .
 /**
   * @private
   * @const
@@ -1762,19 +1763,19 @@ oj.TreeDndContext._DND_DROPDRAGLEAVE_CB = 'dragLeave'; //   . .
   * @const
   * @type {string}
  */
-oj.TreeDndContext._DND_DROPDROP_CB = 'drop';          //   . .
+oj.TreeDndContext._DND_DROPDROP_CB = 'drop'; //   . .
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.TreeDndContext._DND_INTERNAL_DT = '_ojtree';    // internal data type for tree data
+oj.TreeDndContext._DND_INTERNAL_DT = '_ojtree'; // internal data type for tree data
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.TreeDndContext._DND_INTERNAL_DT_REORDER = '_ojtreereorder';   // internal data type for reorder
+oj.TreeDndContext._DND_INTERNAL_DT_REORDER = '_ojtreereorder'; // internal data type for reorder
 
 
 
@@ -1916,7 +1917,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
     if (/msie/.test(navigator.userAgent.toLowerCase())) {
       e1 = $('<textarea cols="10" rows="2"></textarea>')
         .css({ position: 'absolute', top: -1000, left: 0 })
-        .appendTo('body');  // @HTMLUpdateOK
+        .appendTo('body'); // @HTMLUpdateOK
       e2 = $('<textarea cols="10" rows="2" style="overflow: hidden;"></textarea>')
         .css({ position: 'absolute', top: -1000, left: 0 })
         .appendTo('body'); // @HTMLUpdateOK
@@ -1932,7 +1933,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           top: -1000,
           left: 0
         })
-        .prependTo('body')
+        .prependTo('body') // @HTMLUpdateOK
         .append('<div></div>') // @HTMLUpdateOK
         .find('div')
         .css({ width: '100%', height: 200 });
@@ -1972,41 +1973,41 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
     }
     var key = e.which;
     switch (key) {
-      case 32:                      // Space
+      case 32: // Space
         s += 'space';
         break;
-      case 37:                      // Left arrow
+      case 37: // Left arrow
         s += 'left';
         break;
-      case 38:                      // Up arrow
+      case 38: // Up arrow
         s += 'up';
         break;
-      case 39:                      // Right arrow
+      case 39: // Right arrow
         s += 'right';
         break;
-      case 40:                      // Down arrow
+      case 40: // Down arrow
         s += 'down';
         break;
-      case 46:                      // Delete
+      case 46: // Delete
         s += 'del';
         break;
-      case 33:                      // Page Up
+      case 33: // Page Up
         s += 'pgup';
         break;
-      case 34:                      // Page Down
+      case 34: // Page Down
         s += 'pgdn';
         break;
-      case 35:                      // End
+      case 35: // End
         s += 'end';
         break;
-      case 36:                      // Home
+      case 36: // Home
         s += 'home';
         break;
-      case 56:                      // asterisk
-        s = '*';            // remove the shift required to get *
+      case 56: // asterisk
+        s = '*'; // remove the shift required to get *
         break;
-      case 113:                     // F2
-      case 121:                     // F10
+      case 113: // F2
+      case 121: // F10
 /*
       case 112:                     // F1
       case 114:                     // F3
@@ -2036,16 +2037,16 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         obj._this._data.ui.touchEvent = false; // ensure touchEvent flag is off
         if (s === 'shift+f10') { // note the active node if shift+F10
           obj._this._data.menu.activeNode = obj._this._data.ui.hovered;
-            //  - if no hovered node (maybe a click and then mouse off the
+            // if no hovered node (maybe a click and then mouse off the
             // node), use the last selected node.
-          if (!obj._this._data.menu.activeNode) { // 
-            obj._this._data.menu.activeNode = obj._this._data.ui.lastSelected;  // 
+          if (!obj._this._data.menu.activeNode) {
+            obj._this._data.menu.activeNode = obj._this._data.ui.lastSelected;
           }
         } else if (obj._handler[s]) { // check if matching handler function
           e.preventDefault();
-          retHandler = obj._handler[s].call(obj._this, e);   // handle the keystroke(s)
+          retHandler = obj._handler[s].call(obj._this, e); // handle the keystroke(s)
         }
-        return false;                          // break out of $.each
+        return false; // break out of $.each
       }
       return undefined;
     });
@@ -2108,14 +2109,14 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
       if (tmp.styleSheet) {
         if (isNew) {
-          document.getElementsByTagName('head')[0].appendChild(tmp);  // @HTMLUpdateOK
+          document.getElementsByTagName('head')[0].appendChild(tmp); // @HTMLUpdateOK
           tmp.styleSheet.cssText = opts.str;
         } else {
           tmp.styleSheet.cssText = tmp.styleSheet.cssText + ' ' + opts.str;
         }
       } else {
-        tmp.appendChild(document.createTextNode(opts.str));           // @HTMLUpdateOK
-        document.getElementsByTagName('head')[0].appendChild(tmp);    // @HTMLUpdateOK
+        tmp.appendChild(document.createTextNode(opts.str)); // @HTMLUpdateOK
+        document.getElementsByTagName('head')[0].appendChild(tmp); // @HTMLUpdateOK
       }
 
       return tmp.sheet || tmp.styleSheet;
@@ -2151,7 +2152,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
   /**
    * @private
    */
-  var _instance = -1;      // current Tree instance id
+  var _instance = -1; // current Tree instance id
 
 
   /**
@@ -2768,7 +2769,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
          */
         initExpanded: null,
 
-        initLoaded: [],                  // suppressed per design review
+        initLoaded: [], // suppressed per design review
 
         /** An array of node elements that are currently selected. If the array is modified
          * by an application, the selected node status of the tree is modified to match the array
@@ -3656,7 +3657,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
          */
         rename: null
 
-      },   // end options
+      }, // end options
 
 
      /*---------------*/
@@ -3701,7 +3702,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
         node.removeClass(TreeUtils._OJ_EXPANDED)
             .addClass(TreeUtils._OJ_COLLAPSED)
-            .attr(WA_EXPANDED, 'false');
+            .attr(WA_EXPANDED, 'false'); // @HTMLUpdateOK
         $(node.children()[0])
               .removeClass(TreeUtils._OJ_SELECTED)
               .addClass('oj-default');
@@ -3714,7 +3715,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
                            "' is animating.");
 
         if ((!skipAnim) && dur) {
-          this._slide(node, true);     // slideUp
+          this._slide(node, true); // slideUp
         } else {
           this._transitionEnd($(node.children('UL')[0]), node);
         }
@@ -3743,15 +3744,15 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         }
 
         if (bSlideUp) {
-          hNow = $ul[0].offsetHeight;        // collapse
+          hNow = $ul[0].offsetHeight; // collapse
           hFinal = 0;
         } else { // expand
           hNow = 0;
           hFinal = this._getElemHeight($ul[0]);
         }
 
-        $ul.css('max-height', hNow + 'px');       // set the current height
-        this._overflow = $ul.css('overflow');     // note for reset in _transitionEnd()
+        $ul.css('max-height', hNow + 'px'); // set the current height
+        this._overflow = $ul.css('overflow'); // note for reset in _transitionEnd()
         $ul.css('overflow', 'hidden');
 
         if (!bSlideUp) {
@@ -3759,8 +3760,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         }
 
         setTimeout(function () {
-          $ul.addClass('oj-tree-transition');       // enable transitioning on max-height
-          $ul.css('max-height', hFinal + 'px');    // start the transition
+          $ul.addClass('oj-tree-transition'); // enable transitioning on max-height
+          $ul.css('max-height', hFinal + 'px'); // start the transition
         }, 20);
       },
 
@@ -3776,25 +3777,25 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
         parent.removeChild(el);
 
-        var disp = el.style.display;                   // note display
-        el.style.display = 'block';                 // set - it might be 'none'
-        div.append(el);                            // @HTMLUpdateOK
-        this._$container[0].appendChild(div[0]);   // @HTMLUpdateOK
+        var disp = el.style.display; // note display
+        el.style.display = 'block'; // set - it might be 'none'
+        div.append(el); // @HTMLUpdateOK
+        this._$container[0].appendChild(div[0]); // @HTMLUpdateOK
 
         var h = (el.offsetHeight || el.scrollHeight);
 
         // Restore DOM
-        el.style.display = disp;                    // reset orig display
+        el.style.display = disp; // reset orig display
         this._$container[0].removeChild(div[0]);
         div[0].removeChild(el);
         if (nextSib) {
-          parent.insertBefore(el, nextSib);         // @HTMLUpdateOK
+          parent.insertBefore(el, nextSib); // @HTMLUpdateOK
         } else {
-          parent.appendChild(el);                  // @HTMLUpdateOK
+          parent.appendChild(el); // @HTMLUpdateOK
         }
 
         // return h ;
-        return h + 10;    // TDO why is this a few pixels too little.  It causes
+        return h + 10; // TDO why is this a few pixels too little.  It causes
                          // a small jump at the end of the transition when the
                          // ul style is set to 'block'
       },
@@ -3828,14 +3829,14 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
       _transitionEnd: function ($ul, node) {
         var op;
 
-        if (node.hasClass(TreeUtils._OJ_COLLAPSED)) {   // end collapse
-          op = 'c';       // collapse op
+        if (node.hasClass(TreeUtils._OJ_COLLAPSED)) { // end collapse
+          op = 'c'; // collapse op
           $ul[0].style.display = 'none';
-          $ul.css('max-height', '');   // JRM
+          $ul.css('max-height', '');
           this._emitEvent({ obj: node }, 'collapse');
           this.after_close(node);
         } else { // end expand
-          op = 'e';       // expand op
+          op = 'e'; // expand op
           $ul[0].style.display = 'block';
           $ul.css('max-height', '');
           this._emitEvent({ obj: node }, 'expand');
@@ -3843,7 +3844,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         }
 
         if (this._overflow) {
-          $ul.css('overflow', this._overflow);         // restore, 'hidden' was set in _slide()
+          $ul.css('overflow', this._overflow); // restore, 'hidden' was set in _slide()
           this._overflow = null;
         }
 
@@ -3888,7 +3889,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           subject = node[0];
         }
 
-        var objs = node.find('li.oj-expanded');     // find child nodes that are open
+        var objs = node.find('li.oj-expanded'); // find child nodes that are open
         if (objs.length) {
           objs.each(function () {
             _this.collapse(this, !anim);
@@ -3896,7 +3897,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         }
 
         if (subject) { // if subject node is also expanded
-          this.collapse(subject, !anim);         // include it in the list
+          this.collapse(subject, !anim); // include it in the list
           objs.splice(0, 0, subject);
         }
 
@@ -3940,7 +3941,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
       expanded: function (nodes, skipAnim) {
         var _this = this;
 
-        if (nodes && $.type(nodes) === 'array') {    // setter
+        if (nodes && $.type(nodes) === 'array') { // setter
           if (this._data.core.locked) {
             return null;
           }
@@ -4015,7 +4016,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        * @memberof oj.ojTree
        */
       deselect: function (node) {
-        var prevSelections = this.options.selection.slice(0);  // make new array for optionChange event
+        var prevSelections = this.options.selection.slice(0); // make new array for optionChange event
 
         this._deselect(node);
         this._fireOptionChangeEvent('selection', prevSelections, null, null);
@@ -4037,7 +4038,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           return;
         }
 
-        var prevSelections = this.options.selection.slice(0);  // make new array for optionChange event
+        var prevSelections = this.options.selection.slice(0); // make new array for optionChange event
 
         this._deselectAll(context);
         this._fireOptionChangeEvent('selection', prevSelections, null, null);
@@ -4081,7 +4082,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         } else {
           this._select(node, true);
         }
-        return true;         // selection was toggled
+        return true; // selection was toggled
       },
 
       /** Returns true if the node is collapsed, else false.
@@ -4174,7 +4175,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         var ar = $.isArray(data);
 
         if ((!ar) || (data.length === 1)) {
-          node = this._createNode(refnode, position, ar ? data[0] : data);   // single node
+          node = this._createNode(refnode, position, ar ? data[0] : data); // single node
           // Check if this node has a selected tag applied temporarily by dnd dragStart,
           // and if so apply the selection state to the node
           this._getDndContext()._dndFinishSelection(node);
@@ -4358,7 +4359,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        * @memberof oj.ojTree
        */
       getRoot: function () {
-        return this._$container.children('ul:eq(0)');    // return the top <ul>
+        return this._$container.children('ul:eq(0)'); // return the top <ul>
       },
 
       /**  Refreshes the tree or a node.
@@ -4485,17 +4486,17 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        <p>
       */
       getContextByNode: function (node) {
-        node = (node == null ? 0 : node);  // don't give getNode() null/undefined
-        node = this._getNode(node);  // validate node reference (returns jQ wrapped node, -1, null)
+        node = (node == null ? 0 : node); // don't give getNode() null/undefined
+        node = this._getNode(node); // validate node reference (returns jQ wrapped node, -1, null)
         var bNode = (node !== -1 && (node.length > 0));
         var bTree = (node === -1);
 
         if (bNode || bTree) {
           return {
             subId: bNode ? OJT_NODE : OJT_TREE,
-            item: bNode ? node[0] : null,               // <li>
-            node: bNode ? node : false,                 // jQuery wrapped <li>
-            leaf: bNode ? this._isLeaf(node) : false    // true/false
+            item: bNode ? node[0] : null, // <li>
+            node: bNode ? node : false, // jQuery wrapped <li>
+            leaf: bNode ? this._isLeaf(node) : false // true/false
           };
         }
         return null;
@@ -4607,8 +4608,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           return undefined;
         }
 
-        var toTop = (alignTo === 'top');     // default is 'bottom'
-        setActive = !!setActive;           // default is false
+        var toTop = (alignTo === 'top'); // default is 'bottom'
+        setActive = !!setActive; // default is false
 
         if (setActive) {
           this._$container_ul.focus();
@@ -4630,27 +4631,27 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
       _ComponentCreate: function () {
         this._super();
 
-        this._index = this._newIndex();                    // index for this instance
-        this._elemId = this.element.attr('id');             // tree element id
+        this._index = this._newIndex(); // index for this instance
+        this._elemId = this.element.attr('id'); // tree element id
         if (this._elemId === undefined) {
           this._elemId = 'oj-tree-' + this._getIndex();
           this.element.attr('id', this._elemId);
         }
-        this._$container = this.element;                        // the containing <div>
-        this._$container_ul = null;                                // the containing <ul>
-        this._data = {};                                  // working data
-        this._tds = null;                                // Tree DataSource
+        this._$container = this.element; // the containing <div>
+        this._$container_ul = null; // the containing <ul>
+        this._data = {}; // working data
+        this._tds = null; // Tree DataSource
         this._isRtl = this._GetReadingDirection() === 'rtl';
         this._isTouch = oj.DomUtils.isTouchSupported();
-        this._initTree();                                          // initialize data structures
-        this._animDuration = this._getAnimDuration();             // get css $treeAnimationDuration value
+        this._initTree(); // initialize data structures
+        this._animDuration = this._getAnimDuration(); // get css $treeAnimationDuration value
         if (this._animDuration) {
           var ai = oj.AgentUtils.getAgentInfo();
           this._isSafari = (ai.browser === oj.AgentUtils.BROWSER.SAFARI);
           this._proxyTransitionEndHandler = this._transitionEndHandler.bind(this);
         }
         this._busyStack = [];
-        this._start();                                             // build/display the tree
+        this._start(); // build/display the tree
       },
 
       /**
@@ -4659,15 +4660,15 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        */
       _destroy: function () {
         this._resolveBusyContext();
-        this._clearTree();    // Clean out the DOM.  After this, the tree markup has
+        this._clearTree(); // Clean out the DOM.  After this, the tree markup has
         // been removed from the div, and all event handlers
         // removed.
 
         // If the tree was constructed from existing user markup found in the div,
         // reinstate that markup to reset the div to its original state pre tree create.
         if (this._data.html.markup_ul) {
-          this._unTransformElemIds(this._data.html.markup_ul);   // reset to original user id's
-          this._$container.append(this._data.html.markup_ul);        // @HTMLUpdateOK
+          this._unTransformElemIds(this._data.html.markup_ul); // reset to original user id's
+          this._$container.append(this._data.html.markup_ul); // @HTMLUpdateOK
           this._data.html.markup_div.remove();
           this._data.html.markup_div = false;
           this._data.html.useExistingMarkup = false;
@@ -4693,8 +4694,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           } else {
             newval = (newval && newval.length) ? newval : [];
           }
-          this._data.core.suppressSelectEvent = true;    // don't want select/deselect to fire selection change
-          this._handleSelectionOptionChange(newval);     // apply selection/deselection
+          this._data.core.suppressSelectEvent = true; // don't want select/deselect to fire selection change
+          this._handleSelectionOptionChange(newval); // apply selection/deselection
           this._data.core.suppressSelectEvent = false;
           newval = this._getSelected();
           // optionChange event will be fired when super is called below.
@@ -4738,15 +4739,15 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           this._super(key, newval, flags);
           this._initDSOpts();
           this._initDataSource();
-          this._initExpandedOpts();     // reset the nodes to be initially expanded
-          this._loadNodes();            // start node loading from the datasource
-          return;                       // super has already been called
+          this._initExpandedOpts(); // reset the nodes to be initially expanded
+          this._loadNodes(); // start node loading from the datasource
+          return; // super has already been called
         } else if (key === 'dnd') {
           this._super(key, newval, flags);
           this._getDndContext().handleDnDOptionChange(newval);
-          return;                       // super has already been called
+          return; // super has already been called
         } else if (key === 'emptyText') {
-          newval = this._escapeHtml(newval);   // escape the text for security
+          newval = this._escapeHtml(newval); // escape the text for security
         }
         this._super(key, newval, flags);
       },
@@ -4873,7 +4874,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        */
       _clearTree: function () {
         if (this._TreeDndContext) {
-          this._TreeDndContext._closedown();   // clear DnD support
+          this._TreeDndContext._closedown(); // clear DnD support
           this._TreeDndContext = null;
         }
 
@@ -4889,13 +4890,13 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             return this.className.replace(/oj-tree[^ ]*|$/ig, '');
           });
 
-        var cl = this._$container.attr('class');    // if jQuery has left us with a
-        cl = cl.trim();                              // class of blanks, remove it.
+        var cl = this._$container.attr('class'); // if jQuery has left us with a
+        cl = cl.trim(); // class of blanks, remove it.
         if (cl.length === 0) {
           this._$container.removeAttr('class');
         }
 
-        _removeKeyFilter(this._$container_ul);      // remove keyboard listener because
+        _removeKeyFilter(this._$container_ul); // remove keyboard listener because
         // _$container_ul will be removed
         $(document).unbind('.oj-tree-' + n)
           .undelegate('.oj-tree-' + n);
@@ -5167,7 +5168,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
         curState = this._$container_ul.hasClass(TreeUtils._OJ_DISABLED);
         if (!curState) {
-          curState = false;      // in case undefined
+          curState = false; // in case undefined
         }
 
         if (curState !== newval) {
@@ -5214,8 +5215,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        *  @private
        */
       _handleSelectionOptionChange: function (newSels) {
-        var sels = newSels.slice(0);                       // working copy
-        var cur = [];                                     // xfer valid selection args to this
+        var sels = newSels.slice(0); // working copy
+        var cur = []; // xfer valid selection args to this
         var _this = this;
 
         // Convert the new array to jQuery wrapped node elements (thereby changing any
@@ -5249,7 +5250,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           }
         });
 
-        this._setSelected(cur, null);      //  Select all nodes in the new selection array
+        this._setSelected(cur, null); //  Select all nodes in the new selection array
       },
 
 
@@ -5278,8 +5279,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         r = ((r === -1) || (!r)) ? -1 : this._getNode(r);
 
         // Get tree component's involved
-        this._reference(o, p);               // for node being moved
-        p.rt = this;                          // for reference node
+        this._reference(o, p); // for node being moved
+        p.rt = this; // for reference node
 
         p.o = p.ot._getNode(o);
         p.r = r;
@@ -5486,12 +5487,12 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         }
 
         if (obj.or.length) {
-          obj.or.before(o);                             // @HTMLUpdateOK
+          obj.or.before(o); // @HTMLUpdateOK
         } else {
           if (!obj.np.children('ul').length) {
-            $('<ul></ul>').appendTo(obj.np);              // @HTMLUpdateOK
+            $('<ul></ul>').appendTo(obj.np); // @HTMLUpdateOK
           }
-          obj.np.children('ul:eq(0)').append(o);       // @HTMLUpdateOK
+          obj.np.children('ul:eq(0)').append(o); // @HTMLUpdateOK
         }
 
         try {
@@ -5551,7 +5552,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        */
       _getType: function (node) {
         var n = null;
-        var t = this.options.types;             // are types defined?
+        var t = this.options.types; // are types defined?
 
         if (t) {
           n = this._getNode(node);
@@ -5574,7 +5575,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           var tattr = s.attr;
           var types = s.types;
           if (tattr && types && types[str]) {
-            node.attr(tattr, str);
+            node.attr(tattr, str); // @HTMLUpdateOK
             node.addClass(OJT_TYPE);
             // this._emitEvent({ "obj" : node, "type" : str}, "settype", true);
             ret = true;
@@ -5596,7 +5597,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         if (types) {
           types = types.types;
           if (types) {
-            var type = this._getType($node);            // "type" attr name for node
+            var type = this._getType($node); // "type" attr name for node
             if (((types[type] && typeof types[type][func] !== 'undefined') ||
                  (types.default && typeof types.default[func] !== 'undefined')) &&
                 (this._check(func, $node) === false)) {
@@ -5711,7 +5712,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         obj.removeClass(OJT_LAST)
           .addClass(OJT_NODE)
           .addClass(dndClasses)
-          .attr(draggableAttr, draggableAttrVal)
+          .attr(draggableAttr, draggableAttrVal) // @HTMLUpdateOK
           .filter('li:last-child')
           .addClass(OJT_LAST)
           .end()
@@ -5719,9 +5720,9 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           .not('.oj-expanded')
           .removeClass(OJT_LEAF)
           .addClass(TreeUtils._OJ_COLLAPSED)
-          .attr(WA_EXPANDED, 'false');
+          .attr(WA_EXPANDED, 'false'); // @HTMLUpdateOK
 
-        obj.not('.oj-expanded, .oj-collapsed')     // clean leaf nodes
+        obj.not('.oj-expanded, .oj-collapsed') // clean leaf nodes
           .addClass(OJT_LEAF)
           .children('ul')
           .remove();
@@ -5742,8 +5743,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             disc.removeClass(OJT_NICON);
           }
 
-          if (typeAttr && t.attr(typeAttr)) {      // if user has declared a node type
-            t.addClass(OJT_TYPE);                 // give the node our type class.
+          if (typeAttr && t.attr(typeAttr)) { // if user has declared a node type
+            t.addClass(OJT_TYPE); // give the node our type class.
           }
         });
 
@@ -5779,9 +5780,9 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         //  Parse the JSON
         js = this._parseJson(js);
         if (!js) {
-          return null;              // parse failed!
+          return null; // parse failed!
         }
-        js = js.children();         // remove the wrapping <ul> added by _parseJson()
+        js = js.children(); // remove the wrapping <ul> added by _parseJson()
         var d = $(js[0]);
 
         if (obj === -1) {
@@ -5795,36 +5796,36 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         }
 
         switch (position) {
-          case 'before': obj.before(d);                                      // @HTMLUpdateOK
+          case 'before': obj.before(d); // @HTMLUpdateOK
             tmp = this._getParent(obj);
             break;
-          case 'after' : obj.after(d);                                       // @HTMLUpdateOK
+          case 'after' : obj.after(d); // @HTMLUpdateOK
             tmp = this._getParent(obj);
             break;
           case 'inside':
           case 'first' : if (!obj.children('ul').length) {
-            obj.append('<ul></ul>');                              // @HTMLUpdateOK
+            obj.append('<ul></ul>'); // @HTMLUpdateOK
           }
-            obj.children('ul').prepend(d);                      // @HTMLUpdateOK
+            obj.children('ul').prepend(d); // @HTMLUpdateOK
             tmp = obj;
             break;
           case 'last': if (!obj.children('ul').length) {
-            obj.append('<ul></ul>');                             // @HTMLUpdateOK
+            obj.append('<ul></ul>'); // @HTMLUpdateOK
           }
-            obj.children('ul').append(d);                       // @HTMLUpdateOK
+            obj.children('ul').append(d); // @HTMLUpdateOK
             tmp = obj;
             break;
           default: if (!obj.children('ul').length) {
-            obj.append('<ul></ul>');                             // @HTMLUpdateOK
+            obj.append('<ul></ul>'); // @HTMLUpdateOK
           }
             if (!position) {
               position = 0;
             }
             tmp = obj.children('ul').children('li').eq(position);
             if (tmp.length) {
-              tmp.before(d);                                    // @HTMLUpdateOK
+              tmp.before(d); // @HTMLUpdateOK
             } else {
-              obj.children('ul').append(d);                     // @HTMLUpdateOK
+              obj.children('ul').append(d); // @HTMLUpdateOK
             }
             tmp = obj;
             break;
@@ -5907,7 +5908,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 //         }
           obj.removeClass(TreeUtils._OJ_COLLAPSED)
               .addClass(TreeUtils._OJ_EXPANDED)
-              .attr(WA_EXPANDED, 'true')
+              .attr(WA_EXPANDED, 'true') // @HTMLUpdateOK
               .children('a')
               .removeClass(OJT_LOADING);
           $(obj.children()[0])
@@ -5922,7 +5923,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
                              obj.attr('id') + "' is animating.");
 
           if ((!skipAnim) && dur) {
-            this._slide(obj, false);       // slideDown
+            this._slide(obj, false); // slideDown
           } else {
             this._transitionEnd($(obj.children('UL')[0]), obj);
           }
@@ -5988,10 +5989,10 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
       _select: function (node, check, e) {
         var core = this._data.core;
         var ui = this._data.ui;
-        var selectMode = core.selectMode;      // 0 = no select, 1 to n, or -1 = multi-select
+        var selectMode = core.selectMode; // 0 = no select, 1 to n, or -1 = multi-select
 
         if (selectMode === 0) {
-          return false;                         //  selection not permitted by option
+          return false; //  selection not permitted by option
         }
 
         node = this._getNode(node);
@@ -6023,8 +6024,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         //  Establish whether the select should happen, and deselect where necessary.
 
         var s = this.options;
-        var selMultMod = ui.defaults.selectMultipleModifier;   // to remove - not published
-        var selRangeMod = ui.defaults.selectRangeModifier;      // not yet published
+        var selMultMod = ui.defaults.selectMultipleModifier; // to remove - not published
+        var selRangeMod = ui.defaults.selectRangeModifier; // not yet published
         var disSelChildren = ui.defaults.disableSelectingChildren; // not yet published
         var isMultiple = (selMultMod === 'on' ||
                           (selMultMod !== false && e && oj.DomUtils.isMetaKeyPressed(e)));
@@ -6061,15 +6062,15 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
               }
               break;
 
-            case (ui.touchEvent && selectMode === -1) :  // touch and multi-select mode
-              ui.touchEvent = false;                  // prevent race, when we call toggleselect()
-              this.toggleSelect(node);             // call into public API, want event
+            case (ui.touchEvent && selectMode === -1) : // touch and multi-select mode
+              ui.touchEvent = false; // prevent race, when we call toggleselect()
+              this.toggleSelect(node); // call into public API, want event
               proceed = false;
               break;
 
             case (isSelected && !isMultiple):
               if (!e) { // if via api, nothing to do - node is
-                break;                       // already selected.
+                break; // already selected.
               }
               this._deselectAll();
               if (!ui.spacebar) { // only kbd toggles selected status
@@ -6079,23 +6080,23 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
               break;
 
             case (!isSelected && !isMultiple):
-              if (e) {                                          // if mouse click
+              if (e) { // if mouse click
                 if (ui.selected && (ui.selected.length === 1)) {
-                  this._deselect(ui.selected);                 // clear the selection
+                  this._deselect(ui.selected); // clear the selection
                 } else {
-                  this._deselectAll(ui.selected);              // clear all selections
+                  this._deselectAll(ui.selected); // clear all selections
                 }
-              } else   // if (this._data.core.selectMode == -1 || this._data.core.selectMode > 0)  {
+              } else // if (this._data.core.selectMode == -1 || this._data.core.selectMode > 0)  {
                 if (selectMode === 1) {
-                  this._deselect(ui.selected);            // clear the selection
-                } else if (selectMode > 1) {                  // TDO check if the selected count will exceed the
-                  this._deselectAll();                       // the selectMode count. Do we veto this select?
+                  this._deselect(ui.selected); // clear the selection
+                } else if (selectMode > 1) { // TDO check if the selected count will exceed the
+                  this._deselectAll(); // the selectMode count. Do we veto this select?
                 }
               proceed = true;
               break;
 
             case (isSelected && isMultiple):
-              this.deselect(node);                      // call into public API, want event
+              this.deselect(node); // call into public API, want event
               break;
 
             case (!isSelected && isMultiple):
@@ -6117,8 +6118,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             ui.lastSelected = node;
           }
           node.children('a').addClass(TreeUtils._OJ_SELECTED);
-          node.attr(WA_SELECTED, 'true');
-          bRet = true;                      // selection performed
+          node.attr(WA_SELECTED, 'true'); // @HTMLUpdateOK
+          bRet = true; // selection performed
 
           if (s.selectedParentExpand) {
             node.parents('.oj-collapsed').each(function () {
@@ -6181,7 +6182,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
         ret.not('.oj-disabled');
         if (ret.length === 0) {
-          return;                // nothing selected
+          return; // nothing selected
         }
 
         var _this = this;
@@ -6249,9 +6250,9 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         var par = elem.parent();
         var bOpen = par.hasClass(TreeUtils._OJ_EXPANDED);
         var bClosed = par.hasClass(TreeUtils._OJ_COLLAPSED);
-        if (bOpen || bClosed) {                    // only care about disclosure
-          if (bHover) {                            // <ins>'s of a disclosable
-            elem.addClass(TreeUtils._OJ_HOVER);    // parent node.
+        if (bOpen || bClosed) { // only care about disclosure
+          if (bHover) { // <ins>'s of a disclosable
+            elem.addClass(TreeUtils._OJ_HOVER); // parent node.
             elem.removeClass('oj-default');
             elem.removeClass(TreeUtils._OJ_SELECTED);
           } else {
@@ -6267,9 +6268,9 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        *  @private
        */
       _hover: function (node) {
-        if (this._data.menu.activeNode) {     // TDO. why is this needed for shift-f10 on a node
-          return;                            // near the bottom. A bogus mousenter for a node
-        }                                     // near the middle is received
+        if (this._data.menu.activeNode) { // TDO. why is this needed for shift-f10 on a node
+          return; // near the bottom. A bogus mousenter for a node
+        } // near the middle is received
 
         node = this._getNode(node);
         if ((!node.length) || node.hasClass(TreeUtils._OJ_DISABLED) || this._data.core.locked) {
@@ -6290,7 +6291,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         }
 
         this._data.ui.hovered = node.children('a').addClass(TreeUtils._OJ_HOVER).parent();
-        this._$container_ul.attr(WA_ACTIVEDESCENDANT, this._data.ui.hovered.attr('id'));
+        this._$container_ul.attr(WA_ACTIVEDESCENDANT, this._data.ui.hovered.attr('id')); // @HTMLUpdateOK
         this._fix_scroll(node);
         this._emitEvent({ obj: node }, 'hover');
       },
@@ -6300,9 +6301,9 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        *  @private
        */
       _dehover: function () {
-        if (this._data.menu.activeNode) {     // TDO. why is this needed for shift-f10 on a node
-          return;                            // near the bottom. A bogus mousenter for a node
-        }                                     // near the middle is received
+        if (this._data.menu.activeNode) { // TDO. why is this needed for shift-f10 on a node
+          return; // near the bottom. A bogus mousenter for a node
+        } // near the middle is received
 
         var obj = this._data.ui.hovered;
 
@@ -6315,9 +6316,9 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
         var p = obj.find('a.oj-hover');
         if (!p.length) {
-          p = this._$container_ul.find('a.oj-hover');    // final check in case we get out of sync?
+          p = this._$container_ul.find('a.oj-hover'); // final check in case we get out of sync?
           if (!p.length) {
-            return;                                      // no hover, ignore.
+            return; // no hover, ignore.
           }
         }
         p = p.removeClass(TreeUtils._OJ_HOVER).parent();
@@ -6370,7 +6371,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           node.children('UL').remove();
         } else {
           this._$container_ul.empty();
-          this._processExistingMarkup();    // if existing markup, reprocess in case it changed
+          this._processExistingMarkup(); // if existing markup, reprocess in case it changed
         }
         this._load_node(node, function () {
           _this._emitEvent({ obj: origTarg }, 'refresh');
@@ -6424,7 +6425,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             _this._expand(val, false, true);
           });
         }
-        this._emitEvent({}, 'reopen', true);     // this event will also cause selections to be tried.
+        this._emitEvent({}, 'reopen', true); // this event will also cause selections to be tried.
       },
 
 
@@ -6486,12 +6487,12 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         if (this._data.ds.type !== DS_NONE && this._data.ds.type !== DS_ERROR) {
           // Construct the tree
           this._load_node(-1,
-                          function () {                         // success func
-                            this._loaded();        // emit ojloaded event
-                            this._reload_nodes();  // handle initExpanded, etc
+                          function () { // success func
+                            this._loaded(); // emit ojloaded event
+                            this._reload_nodes(); // handle initExpanded, etc
                           });
         } else {
-          this._applyEmptyText();     //  Use emptyText option if defined.
+          this._applyEmptyText(); //  Use emptyText option if defined.
           this._loaded();
         }
       },
@@ -6570,12 +6571,12 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
       _load_node_J: function (obj, successCallback, errorCallback) {
         var _this = this;
         this._loadNodeJson(
-          obj,                             // node or -1 for tree
+          obj, // node or -1 for tree
           function () { // success func
             _this._emitEvent({ obj: _this._getNode(obj) }, 'load_node', true);
             successCallback.call(this);
           },
-          errorCallback);                        // error func
+          errorCallback); // error func
       },
 
       /**
@@ -6650,7 +6651,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         });
         // Clear selection option
         if (s && s.length) {
-          this.options.selection.length = 0;  // forget the noted selections
+          this.options.selection.length = 0; // forget the noted selections
           this._data.ui.selected.length = $();
         }
 
@@ -6711,7 +6712,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         return {
           i: this._getIndex(),
           h: this._$container.children('ul').clone(true),
-          d: this.data                    // TDO ???
+          d: this.data // TDO ???
         };
       },
 
@@ -6748,7 +6749,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           if (bTree) {
             d = this._parseJson(rslt.js, obj);
             if (d) {
-              this._$container_ul.empty().append(d.children());      // @HTMLUpdateOK
+              this._$container_ul.empty().append(d.children()); // @HTMLUpdateOK
               this._cleanNode();
             } else if (this._data.ds.correctState) {
               this._$container_ul.empty();
@@ -6762,14 +6763,14 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           if (d) {
             if (bTree) {
               var $u = this._$container_ul;
-              $u.empty().append(d.children());                     // @HTMLUpdateOK
-              $u.attr(WA_ROLE, WA_TREE).attr(WA_LABELLEDBY, this._elemId).attr('tabindex', '0')
+              $u.empty().append(d.children()); // @HTMLUpdateOK
+              $u.attr(WA_ROLE, WA_TREE).attr(WA_LABELLEDBY, this._elemId).attr('tabindex', '0') // @HTMLUpdateOK
                 .css('outline', 'none');
               if (this._data.core.selectMode === -1) {
                 $u.attr('aria-multiselectable', true);
               }
             } else {
-              obj.append(d).children('a.oj-tree-loading').removeClass(OJT_LOADING);   // @HTMLUpdateOK
+              obj.append(d).children('a.oj-tree-loading').removeClass(OJT_LOADING); // @HTMLUpdateOK
               obj.removeData('oj-tree-is-loading');
             }
 
@@ -6822,18 +6823,18 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         var cc = ds.getChildCount(parentKey);
         if (cc > 0) {
           range.count = cc;
-          ds.fetchChildren(parentKey, range,              // get the JsonNodeSet
+          ds.fetchChildren(parentKey, range, // get the JsonNodeSet
             { // callbacks
               success: function (jns) {
                 var c = jns.getCount();
 
                 for (var i = 0; i < c; i++) {
                   node = {};
-                  var attr = jns.getData(i);           // get the attribute list to be applied
+                  var attr = jns.getData(i); // get the attribute list to be applied
                   if (attr) {
                     node.attr = attr;
                   }
-                  node.title = jns.m_nodes[i].title;         // wait for chadwick
+                  node.title = jns.m_nodes[i].title; // wait for chadwick
                   if (attr.metadata) {
                     node.metadata = jns.m_nodes[i].metadata; // wait for chadwick
                   }
@@ -6858,7 +6859,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
               }
             });
         } else {
-          rslt.success = true;   // DS was empty.  Will not treat this as an error,
+          rslt.success = true; // DS was empty.  Will not treat this as an error,
                                   // because we did not have any failures.
         }
         return rslt;
@@ -6895,7 +6896,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        *  @private
        */
       _loadNodeJson: function (obj, successCallback, errorCallback) {
-        var s = this._getOptions().data;        // work on a copy of the options to avoid
+        var s = this._getOptions().data; // work on a copy of the options to avoid
         var errorFunc = function () {};
         var successFunc = function () {};
         var data = (s && s.data) || null;
@@ -6960,9 +6961,9 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
                 }
               } else {
                 if (obj === -1 || !obj) {
-                  this._$container_ul.empty().append(d.children());    // @HTMLUpdateOK
+                  this._$container_ul.empty().append(d.children()); // @HTMLUpdateOK
                 } else {
-                  obj.append(d).children('a.oj-tree-loading').removeClass(OJT_LOADING);   // @HTMLUpdateOK
+                  obj.append(d).children('a.oj-tree-loading').removeClass(OJT_LOADING); // @HTMLUpdateOK
                   obj.removeData('oj-tree-is-loading');
                 }
                 this._cleanNode(obj);
@@ -6978,7 +6979,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             if (!obj || obj === -1) {
               var d2 = this._parseJson(data, obj);
               if (d2) {
-                this._$container_ul.empty().append(d2.children());    // @HTMLUpdateOK
+                this._$container_ul.empty().append(d2.children()); // @HTMLUpdateOK
                 this._cleanNode();
               } else if (this._data.ds.correctState) {
                 this._$container_ul.empty();
@@ -6993,17 +6994,17 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
             // AJAX error function
             errorFunc = function (x, status, e) {
-              var self = this.ctx;                      // get the tree's this
+              var self = this.ctx; // get the tree's this
               // console.log("Ajax FAIL JSON id='" + this.id + "' obj.id=" +
               //              ((obj === -1)? -1 : obj.attr("id")) + " url=" + this.url);
 
-              self._noteLoadFailureId(this.id, true);   // add id to load failure list
+              self._noteLoadFailureId(this.id, true); // add id to load failure list
               self._removeFromBusyStack('j', ((obj === -1) ? -1 : obj.attr('id')));
               self._resolveIfBusyStackEmpty();
 
-              var ef = self._getOptions().data.ajax.error;  // reget the options
+              var ef = self._getOptions().data.ajax.error; // reget the options
               if (ef) { // without our updated ajax
-                ef.call(self, status, e, x);                         // changes to avoid forever loop
+                ef.call(self, status, e, x); // changes to avoid forever loop
               }
               if (obj !== -1 && obj.length) {
                 obj.children('a.oj-tree-loading').removeClass(OJT_LOADING);
@@ -7013,8 +7014,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
                 }
               } else if ((status === 'error') ||
                          (status === 'success' && self._data.ds.correctState)) {
-                self._$container_ul.empty();             // remove tree loading icon/node
-                self._applyEmptyText();  // no tree data
+                self._$container_ul.empty(); // remove tree loading icon/node
+                self._applyEmptyText(); // no tree data
               }
               if (errorCallback) {
                 errorCallback.call(self);
@@ -7024,18 +7025,18 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             // AJAX success function
             successFunc = function (d, status, x) {
               // 'this' is the context ptr
-              var self = this.ctx;      // get the tree's this
+              var self = this.ctx; // get the tree's this
 
               // console.log("Ajax SUCCESS JSON id='" + this.id + "' obj.id=" +
               //              ((obj === -1)? -1 : obj.attr("id")) + " url=" + this.url);
 
-              self._noteLoadFailureId(this.id, false);    // if this id is the failure list, remove it
+              self._noteLoadFailureId(this.id, false); // if this id is the failure list, remove it
               self._removeFromBusyStack('j', this.id);
 
               // Reget the options without our updated ajax changes to avoid forever loop
               var sf = self._getOptions().data.ajax.success;
               if (sf) {
-                d = sf.call(self, d, status, x) || d;  // call app success function
+                d = sf.call(self, d, status, x) || d; // call app success function
               }
 
               // Check if all whitespace since JSON.parse() will barf on this.
@@ -7052,18 +7053,18 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
                 }
               }
 
-              d = self._parseJson(d, obj);        // parse json and get a $(ul)
+              d = self._parseJson(d, obj); // parse json and get a $(ul)
               if (d) {
                 if (obj === -1 || !obj) {
                   var $u = self._$container_ul;
-                  $u.empty().append(d.children());                                         // @HTMLUpdateOK
-                  $u.attr(WA_ROLE, WA_TREE).attr(WA_LABELLEDBY, self._elemId)
+                  $u.empty().append(d.children()); // @HTMLUpdateOK
+                  $u.attr(WA_ROLE, WA_TREE).attr(WA_LABELLEDBY, self._elemId) // @HTMLUpdateOK
                     .attr('tabindex', '0').css('outline', 'none');
                   if (self._data.core.selectMode === -1) {
                     $u.attr('aria-multiselectable', true);
                   }
                 } else {
-                  obj.append(d).children('a.oj-tree-loading').removeClass(OJT_LOADING);   // @HTMLUpdateOK
+                  obj.append(d).children('a.oj-tree-loading').removeClass(OJT_LOADING); // @HTMLUpdateOK
                   obj.removeData('oj-tree-is-loading');
                 }
 
@@ -7119,11 +7120,11 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
               s.ajax.data = s.ajax.data.call(this, obj);
             }
             $.ajax(s.ajax);
-            break;                 // end case
+            break; // end case
 
           default:
             break;
-        }   // end switch
+        } // end switch
       },
 
       /**
@@ -7150,17 +7151,17 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           }
         }
 
-        if ($.isArray(js)) {             // array of ojects ?
+        if ($.isArray(js)) { // array of ojects ?
           d = $('<ul>');
           if (!js.length) {
             return false;
           }
 
           var len = js.length;
-          for (var j = 0; j < len; j++) {       // recurse until we have an individual node obj
+          for (var j = 0; j < len; j++) { // recurse until we have an individual node obj
             var tmp = this._parseJson(js[j], obj, true);
             if (tmp.length) {
-              d = d.append(tmp);                        // @HTMLUpdateOK
+              d = d.append(tmp); // @HTMLUpdateOK
             }
           }
 
@@ -7174,26 +7175,26 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
           var title = (typeof js.title === 'string') ? js.title : ' ';
 
-          d = $("<li role='" + WA_TREEITEM + "' ></li>");                  // start a node
+          d = $("<li role='" + WA_TREEITEM + "' ></li>"); // start a node
 
           if (js.attr) {
-            if (this._data.types.defType && (!js.attr.type)) {  // if no type and "default" type
-              js.attr.type = 'oj-tree-deftype';                 // defined, add default type
+            if (this._data.types.defType && (!js.attr.type)) { // if no type and "default" type
+              js.attr.type = 'oj-tree-deftype'; // defined, add default type
               d.addClass(OJT_TYPE);
             }
-            d.attr(js.attr);       // apply attr's to the <li>
+            d.attr(js.attr); // apply attr's to the <li>
           }
-          if (js.metadata) {      // apply any user defined arbitrary data for the <li>
+          if (js.metadata) { // apply any user defined arbitrary data for the <li>
             d.data(js.metadata);
           }
 
           // js.state     // not published - per Design Review
           // Used internally only for DnD
-          if (js.children && js.children.length === 0) {    // length zero means lazy load
+          if (js.children && js.children.length === 0) { // length zero means lazy load
             d.addClass(TreeUtils._OJ_COLLAPSED);
           }
           if (js.state && (js.state === 's')) {
-            d.addClass(TreeUtils._OJ_SELECTED);    // Added as a flag, see _dndFinish()
+            d.addClass(TreeUtils._OJ_SELECTED); // Added as a flag, see _dndFinish()
           }
 
           if (!js.data) {
@@ -7223,10 +7224,10 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
             if (!bIns) {
               var sp = $("<span class='" + OJT_TITLE + "'>");
-              sp[0].textContent = title;       // per securty post-impl
+              sp[0].textContent = title; // per securty post-impl
 
               tmp2.prepend("<ins class='oj-tree-icon " + OJT_NICON + // @HTMLUpdateOK
-                           " oj-component-icon'>&#160;</ins>", sp);    // node icon
+                           " oj-component-icon'>&#160;</ins>", sp); // node icon
               bIns = true;
             }
             if (!m.icon && js.icon) {
@@ -7241,13 +7242,13 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             }
           });
 
-          d.append(tmp2);            // append the <a> and its children to the <li>                    //@HTMLUpdateOK
-          d.prepend("<ins class='" + OJ_DISC + "'>&#160;</ins>");      // potential disclosure icon   //@HTMLUpdateOK
+          d.append(tmp2); // append the <a> and its children to the <li>                    //@HTMLUpdateOK
+          d.prepend("<ins class='" + OJ_DISC + "'>&#160;</ins>"); // potential disclosure icon   //@HTMLUpdateOK
 
           if (js.children) {
             if (this._data.ds.progressiveRender && js.state !== 'expanded') {
               d.addClass(TreeUtils._OJ_COLLAPSED)
-                .attr(WA_EXPANDED, 'false')
+                .attr(WA_EXPANDED, 'false') // @HTMLUpdateOK
                 .data(OJT_CHILDREN, js.children);
             } else {
               if (this._data.ds.progressiveUnload) {
@@ -7257,17 +7258,17 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
                 tmp2 = this._parseJson(js.children, obj, true);
                 if (tmp2.length) {
                   var ul2 = $("<ul role='" + WA_GROUP + "' ></ul>");
-                  ul2.append(tmp2);                                     // @HTMLUpdateOK
-                  d.append(ul2);                                       // @HTMLUpdateOK
+                  ul2.append(tmp2); // @HTMLUpdateOK
+                  d.append(ul2); // @HTMLUpdateOK
                 }
               }
             }
           }
-        }  // end else
+        } // end else
 
         if (!isRecurse) {
           var ul1 = $('<ul></ul>');
-          ul1.append(d);                                                // @HTMLUpdateOK
+          ul1.append(d); // @HTMLUpdateOK
           d = ul1;
         }
 
@@ -7299,7 +7300,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           var sAttr;
           var li = $(this);
           var tmp1 = {};
-          var uattr = _this._noteUserAttrs(li);   // get list of user added attr's
+          var uattr = _this._noteUserAttrs(li); // get list of user added attr's
 
           if (liAttr.length || (uattr && uattr.length)) {
             tmp1.attr = {};
@@ -7433,7 +7434,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        *  @return {Array | null} An array of user attr names, else null
        */
       _noteUserAttrs: function ($node) {
-        var attrs = $node[0].attributes;    // get the LI's attributes
+        var attrs = $node[0].attributes; // get the LI's attributes
         var ar;
 
         if (attrs && attrs.length) {
@@ -7446,8 +7447,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
               attr = attr.name;
               var j;
               for (j = 0; j < len; j++) {
-                if ((ATTR_IGN[j] === attr) || (attr.indexOf('aria-') === 0)) {  // closure compiler is not allowing startsWith!
-                  break;                   // ignore if in our excluded list
+                if ((ATTR_IGN[j] === attr) || (attr.indexOf('aria-') === 0)) {
+                  break; // ignore if in our excluded list
                 }
               }
               if (j >= len) {
@@ -7508,7 +7509,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        *   @private
        */
       _loadNodeHtml: function (obj, successCallback, errorCallback) {
-        var s = this._getOptions().data;        // work on a copy of the options to avoid
+        var s = this._getOptions().data; // work on a copy of the options to avoid
         var errorFunc = function () {};
         var successFunc = function () {};
         var data = (s && s.data) || null;
@@ -7538,13 +7539,13 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             if (!obj || obj === -1) {
               this._$container_ul
                 .empty()
-                .append(this._data.html.cloneMarkup)      // @HTMLUpdateOK
+                .append(this._data.html.cloneMarkup) // @HTMLUpdateOK
                 .find('li, a')
                 .filter(function () {
                   return (!this.firstChild || !this.firstChild.tagName ||
                           this.firstChild.tagName !== 'INS');
                 })
-                .prepend("<ins class='oj-tree-icon' >&#160;</ins>")          // @HTMLUpdateOK
+                .prepend("<ins class='oj-tree-icon' >&#160;</ins>") // @HTMLUpdateOK
                 .end()
                 .filter('a')
                 .children('ins:first-child')
@@ -7562,12 +7563,12 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
               this._insertHtmlTextSpan(this._$container_ul);
 
               if (this._data.types.defType) { // if "default" type defined
-                this._addDefType(this._$container_ul);   // apply to nodes with no asooc type
+                this._addDefType(this._$container_ul); // apply to nodes with no asooc type
               }
 
               this._cleanNode();
-              this._$container_ul.find('ul').attr(WA_ROLE, WA_GROUP);
-              this._$container_ul.find('li').attr(WA_ROLE, WA_TREEITEM);
+              this._$container_ul.find('ul').attr(WA_ROLE, WA_GROUP); // @HTMLUpdateOK
+              this._$container_ul.find('li').attr(WA_ROLE, WA_TREEITEM); // @HTMLUpdateOK
             }
             if (successCallback) {
               successCallback.call(this);
@@ -7578,17 +7579,17 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             if (!obj || obj === -1) {
               var $data = $(data);
               if (!$data.is('ul')) {
-                $data = $('<ul></ul>').append($data);            // @HTMLUpdateOK
+                $data = $('<ul></ul>').append($data); // @HTMLUpdateOK
               }
               this._$container_ul
                 .empty()
-                .append($data.children())                   // @HTMLUpdateOK
+                .append($data.children()) // @HTMLUpdateOK
                 .find('li, a')
                 .filter(function () {
                   return (!this.firstChild || !this.firstChild.tagName ||
                           this.firstChild.tagName !== 'INS');
                 })
-                .prepend("<ins class='oj-tree-icon'>&#160;</ins>")   // @HTMLUpdateOK
+                .prepend("<ins class='oj-tree-icon'>&#160;</ins>") // @HTMLUpdateOK
                 .end()
                 .filter('a')
                 .children('ins:first-child')
@@ -7605,12 +7606,12 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
               this._insertHtmlTextSpan(this._$container_ul);
 
               if (this._data.types.defType) { // if "default" type defined
-                this._addDefType(this._$container_ul);   // apply to nodes with no asooc type
+                this._addDefType(this._$container_ul); // apply to nodes with no asooc type
               }
 
               this._cleanNode();
-              this._$container_ul.find('ul').attr(WA_ROLE, WA_GROUP);
-              this._$container_ul.find('li').attr(WA_ROLE, WA_TREEITEM);
+              this._$container_ul.find('ul').attr(WA_ROLE, WA_GROUP); // @HTMLUpdateOK
+              this._$container_ul.find('li').attr(WA_ROLE, WA_TREEITEM); // @HTMLUpdateOK
             }
             if (successCallback) {
               successCallback.call(this);
@@ -7622,18 +7623,18 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             obj = this._getNode(obj);
             // AJAX error function
             errorFunc = function (x, status, e) {
-              var self = this.ctx;                      // get the tree's this
+              var self = this.ctx; // get the tree's this
               // console.log("Ajax FAIL HTML id='" + this.id + "' obj.id=" +
               //              ((obj === -1)? -1 : obj.attr("id")) + " url=" + this.url);
 
-              self._noteLoadFailureId(this.id, true);   // add id to load failure list
+              self._noteLoadFailureId(this.id, true); // add id to load failure list
 
               self._removeFromBusyStack('j', ((obj === -1) ? -1 : obj.attr('id')));
               self._resolveIfBusyStackEmpty();
 
-              var ef = self._getOptions().data.ajax.error;  // reget the options
+              var ef = self._getOptions().data.ajax.error; // reget the options
               if (ef) { // without our updated ajax
-                ef.call(self, x, status, e);                         // changes to avoid forever loop
+                ef.call(self, x, status, e); // changes to avoid forever loop
               }
 
               if (obj !== -1 && obj.length) {
@@ -7644,7 +7645,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
                 }
               } else if (status === 'success' && self._data.ds.correctState) {
                 self._$container_ul.empty();
-                self._applyEmptyText();  // no tree data
+                self._applyEmptyText(); // no tree data
               }
               if (errorCallback) {
                 errorCallback.call(self);
@@ -7652,13 +7653,13 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             };
 
             successFunc = function (d, status, x) {
-              var self = this.ctx;                      // get the tree's this
+              var self = this.ctx; // get the tree's this
               var parent;
 
-              self._noteLoadFailureId(this.id, false);  // if this id is in the failure list, remove
+              self._noteLoadFailureId(this.id, false); // if this id is in the failure list, remove
               self._removeFromBusyStack('j', ((obj === -1) ? -1 : obj.attr('id')));
 
-              var sf = self._getOptions().data.ajax.success;  // reget the options
+              var sf = self._getOptions().data.ajax.success; // reget the options
               if (sf) { // without our updated ajax
                 d = sf.call(self, d, status, x) || d; // changes to avoid forever loop
               }
@@ -7672,17 +7673,17 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
               if (d) {
                 d = $(d);
                 if (!d.is('ul')) {
-                  d = $('<ul></ul>').append(d);             // @HTMLUpdateOK
+                  d = $('<ul></ul>').append(d); // @HTMLUpdateOK
                 }
                 if (obj === -1 || !obj) {
                   self._$container_ul.empty()
-                    .append(d.children())               // @HTMLUpdateOK
+                    .append(d.children()) // @HTMLUpdateOK
                     .find('li, a')
                     .filter(function () {
                       return !self.firstChild || !self.firstChild.tagName ||
                         self.firstChild.tagName !== 'INS';
                     })
-                    .prepend("<ins class='oj-tree-icon'>&#160;</ins>")    // @HTMLUpdateOK
+                    .prepend("<ins class='oj-tree-icon'>&#160;</ins>") // @HTMLUpdateOK
                     .end()
                     .filter('a')
                     .children('ins:first-child')
@@ -7701,14 +7702,14 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
                   self._removeEmptyUL(obj);
 
-                  obj.append(d)                           // @HTMLUpdateOK
+                  obj.append(d) // @HTMLUpdateOK
                     .children('ul')
                     .find('li, a')
                     .filter(function () {
                       return (!self.firstChild || !self.firstChild.tagName ||
                               self.firstChild.tagName !== 'INS');
                     })
-                    .prepend("<ins class='oj-tree-icon'>&#160;</ins>")     // @HTMLUpdateOK
+                    .prepend("<ins class='oj-tree-icon'>&#160;</ins>") // @HTMLUpdateOK
                     .end()
                     .filter('a')
                     .children('ins:first-child')
@@ -7765,8 +7766,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
                     successCallback.call(self);
                   }
                 }
-                self._$container_ul.find('ul').attr(WA_ROLE, WA_GROUP);
-                self._$container_ul.find('li').attr(WA_ROLE, WA_TREEITEM);
+                self._$container_ul.find('ul').attr(WA_ROLE, WA_GROUP); // @HTMLUpdateOK
+                self._$container_ul.find('li').attr(WA_ROLE, WA_TREEITEM); // @HTMLUpdateOK
               }
               return undefined;
             };
@@ -7852,18 +7853,18 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         if (s && s !== '' && s.toString && s.toString().replace(/^[\s\n]+$/, '') !== '') {
           s = $(s);
           if (!s.is('ul')) {
-            s = $('<ul></ul>').append(s);                     // @HTMLUpdateOK
+            s = $('<ul></ul>').append(s); // @HTMLUpdateOK
           }
 
           if (obj === -1 || !obj) {
             this._$container_ul.empty()
-              .append(s.children())       // @HTMLUpdateOK
+              .append(s.children()) // @HTMLUpdateOK
               .find('li, a')
               .filter(function () {
                 return (!this.firstChild || !this.firstChild.tagName ||
                         this.firstChild.tagName !== 'INS');
               })
-              .prepend("<ins class='oj-tree-icon oj-tree-disclosure-icon'>&#160;</ins>")  // @HTMLUpdateOK
+              .prepend("<ins class='oj-tree-icon oj-tree-disclosure-icon'>&#160;</ins>") // @HTMLUpdateOK
               .end()
               .filter('a')
               .children('ins:first-child')
@@ -7887,14 +7888,14 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             this._addDefType(this._$container_ul);
           } else {
             obj.children('a.oj-tree-loading').removeClass(OJT_LOADING);
-            obj.append(s)                                                    // @HTMLUpdateOK
+            obj.append(s) // @HTMLUpdateOK
               .children('ul')
               .find('li, a')
               .filter(function () {
                 return !this.firstChild || !this.firstChild.tagName ||
                   this.firstChild.tagName !== 'INS';
               })
-              .prepend("<ins class='oj-tree-icon'>&#160;</ins>")         // @HTMLUpdateOK
+              .prepend("<ins class='oj-tree-icon'>&#160;</ins>") // @HTMLUpdateOK
               .end()
               .filter('a')
               .children('ins:first-child')
@@ -7952,10 +7953,10 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        */
       _insertHtmlTextSpan: function (elem) {
         $.each(elem.find('li a'), function (i, val) {
-          var ih = val.innerHTML;                    // @HTMLUpdateOK
+          var ih = val.innerHTML; // @HTMLUpdateOK
           ih = ih.replace('ins>', "ins><span class='" + OJT_TITLE + "'>");
           ih += '</span>';
-          val.innerHTML = ih;                        // @HTMLUpdateOK
+          val.innerHTML = ih; // @HTMLUpdateOK
         });
       },
 
@@ -7971,7 +7972,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           $.each(obj.find('li'), function (i, val) {
             val = $(val);
             if (!val.attr(typeAttr)) {
-              val.attr(typeAttr, 'oj-tree-deftype').addClass(OJT_TYPE);
+              val.attr(typeAttr, 'oj-tree-deftype').addClass(OJT_TYPE); // @HTMLUpdateOK
             }
           });
         }
@@ -8078,11 +8079,11 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             }
             var n = _this._$container.find(val);
             if (n.length) { // is node in the tree
-              if (!_this.isExpanded(val)) {  // and not expanded
-                current.push(val);               // yes.
+              if (!_this.isExpanded(val)) { // and not expanded
+                current.push(val); // yes.
               }
             } else {
-              remaining.push(val);               // no.
+              remaining.push(val); // no.
             }
             return undefined;
           });
@@ -8090,13 +8091,13 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           if (current.length) {
             this._data.core.toLoad = remaining;
             $.each(current, function (i, val) {
-              if (!_this._isLoaded(val)) {        // if load not loaded,
+              if (!_this._isLoaded(val)) { // if load not loaded,
                 _this._load_node(
-                  val,               // load it.
-                  function () { _this._reload_nodes(true); },    // success func
-                  function () { _this._reload_nodes(true); }     // error func
+                  val, // load it.
+                  function () { _this._reload_nodes(true); }, // success func
+                  function () { _this._reload_nodes(true); } // error func
                 );
-                bDone = false;        // note we're not complete yet since we just loaded a node
+                bDone = false; // note we're not complete yet since we just loaded a node
               }
             });
           }
@@ -8108,7 +8109,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         if (this._data.core.toExpand.length) {
           $.each(this._data.core.toExpand, function (i, val) {
             if (!_this.isExpanded(val)) {
-              _this._expand(val, false, true);      // no animation for initExpand
+              _this._expand(val, false, true); // no animation for initExpand
             }
           });
         }
@@ -8124,7 +8125,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             _this._resolveIfBusyStackEmpty(); // there may be nothing to expand
           }, 50);
           this._data.core.refreshing = false;
-          this._reopen();                      // check expanded and selections
+          this._reopen(); // check expanded and selections
         }
       },
 
@@ -8351,7 +8352,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         eventdata.inst = inst;
 
         if (isBefore) {
-          var func = data.func;      // target method
+          var func = data.func; // target method
           eventdata.func = func;
           eventdata.args = args;
           if (func === 'rename') {
@@ -8360,27 +8361,27 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           }
         } else if (isPublic) {
           if (evname === 'move') {
-            eventdata.position = data.p;      // position relative to the reference node
-            eventdata.reference = data.r;      // the reference node
-            eventdata.data = data;        // (req'd internally)
+            eventdata.position = data.p; // position relative to the reference node
+            eventdata.reference = data.r; // the reference node
+            eventdata.data = data; // (req'd internally)
           } else if (evname === 'rename') {
-            eventdata.title = data.title;      // the new node title to be
-            eventdata.prevTitle = data.prevTitle;  // the current title
+            eventdata.title = data.title; // the new node title to be
+            eventdata.prevTitle = data.prevTitle; // the current title
           } else if (evname === 'remove') { // node was deleted via context menu
             eventdata.parent = data.parent; // parent node
-            eventdata.prev = data.prev;   // the "previous" node
+            eventdata.prev = data.prev; // the "previous" node
           } else if (evname === 'delete') { // node was deleted via context menu
-            eventdata.prev = data.prev;    // (req'd internally) - the "previous" node
-            eventdata.parent = data.parent;  // parent node
+            eventdata.prev = data.prev; // (req'd internally) - the "previous" node
+            eventdata.parent = data.parent; // parent node
           } else if (evname === 'expandAll' ||
                      evname === 'collapseAll' ||
                      evname === 'deselectAll') {
-            eventdata.targ = data.targ;    // the target of the op (node or -1)
+            eventdata.targ = data.targ; // the target of the op (node or -1)
           } else if (evname === 'loaded') {
             eventdata.item = -1;
           } else if (evname === 'paste') {
-            eventdata.position = data.p;      // position relative to the reference node
-            eventdata.reference = data.r;      // the reference node
+            eventdata.position = data.p; // position relative to the reference node
+            eventdata.reference = data.r; // the reference node
           }
         }
 
@@ -8390,12 +8391,12 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           if (isBefore) {
             //  console.log("Event " + evname + ") " + eventdata["func"] + " returned " + rslt);
             if (typeof bContinue !== 'undefined') {
-              bContinue = !!bContinue;         // returns true/false/undefined
+              bContinue = !!bContinue; // returns true/false/undefined
             }
             return bContinue;
           }
         } else {
-          this._$container.trigger(evname, eventdata);    // internal event
+          this._$container.trigger(evname, eventdata); // internal event
         }
         return undefined;
       },
@@ -8421,9 +8422,9 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             this.option(key, newVal, { _context: { originalEvent: origEvent,
               internalSet: true
             },
-              changed: true     // don't need comparison check
+              changed: true // don't need comparison check
             });
-          }    // end if "selection"
+          } // end if "selection"
         }
       },
 
@@ -8449,7 +8450,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         //  Create the outer <ul> with a temporary <li> saying "Loading..."
 
         this._$container
-          .html("<ul role='tree' tabindex='0' class='oj-tree-list' style='outline:none'" +       // @HTMLUpdateOK
+          .html("<ul role='tree' tabindex='0' class='oj-tree-list' style='outline:none'" + // @HTMLUpdateOK
                 ((this._data.core.selectMode === -1) ? " aria-multiselectable='true'" : '') +
                 ' ' + WA_LABELLEDBY + "='" + this._elemId + "'" +
                 "><li class='oj-tree-last oj-tree-leaf'><ins class='oj-tree-icon'>&#160;</ins><a class='oj-tree-loading' href='#'><ins class='oj-tree-icon'>&#160;</ins>" +
@@ -8498,7 +8499,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
                     })
           .bind('mousedown.ojtree', function (event) {
             this._setFocus();
-            // . If IE11, need preventDefault() to avoid weird
+            // If IE11, need preventDefault() to avoid weird
             // shift-click highlighting. Not done if HTML5 drag/drop is supported
             if (event.shiftKey) {
               if (!(this._getDndContext() && this._getDndContext().isDragEnabled())) {
@@ -8523,9 +8524,9 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
         this._$container_ul
           .focus(function () {
-            if (this._data.ui.disclosureClick) {         // if very first action is
-              this._data.ui.disclosureClick = false;    // mousedown on a disclosure icon
-              return false;                              // don't set hover (and prevent jump to top of list)
+            if (this._data.ui.disclosureClick) { // if very first action is
+              this._data.ui.disclosureClick = false; // mousedown on a disclosure icon
+              return false; // don't set hover (and prevent jump to top of list)
             }
 
             this._data.ui.focused = true;
@@ -8533,7 +8534,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
             // Tree has gained focus, highlight a node as current.
             // If no last "current" or selected, will default to the top node.
-            if (this._data.ui.hovered) { // . Check if mouse is over a node, before defaulting to another node as described above.
+            if (this._data.ui.hovered) { // Check if mouse is over a node, before defaulting to another node as described above.
               n = this._data.ui.hovered;
             } else if (this._data.ui.lastHovered) {
               this._data.ui.hovered = this._data.ui.lastHovered;
@@ -8551,7 +8552,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
               // want color change for selected inactive to selected
               this._$container_ul.find('a.oj-selected').removeClass(OJT_INACTIVE);
             }
-            return false;    // prevent jump to top of list
+            return false; // prevent jump to top of list
           }.bind(this)
                 )
           .blur(function () {
@@ -8584,9 +8585,9 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             }, this));
        }
 */
-        this._emitEvent({}, 'init', true);  // Tree is now init'd (but nodes have not yet been added)
+        this._emitEvent({}, 'init', true); // Tree is now init'd (but nodes have not yet been added)
 
-        this._loadNodes();                 // start node loading from the datasource
+        this._loadNodes(); // start node loading from the datasource
 
         //  Tree div is now constructed, note if context menu has been set.
         if (this._data.menu.usermenu) {
@@ -8610,7 +8611,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
       _initCore: function () {
         this._data.core.locked = false;
 
-        this._$container.addClass('oj-tree oj-tree-' + this._getIndex());     // TDO
+        this._$container.addClass('oj-tree oj-tree-' + this._getIndex()); // TDO
 
         this._$container.css('outline', 'none');
         this._$container.css('MozUserSelect', 'none');
@@ -8633,7 +8634,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
         if (a && ($.type(a) === 'array') && a.length > 0) {
           this._data.ui.toSelect = a;
-          this.options.selection = [];  // will be updated when the selections are performed
+          this.options.selection = []; // will be updated when the selections are performed
         }
 
         // Bind to events
@@ -8647,7 +8648,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 //               }
 
                this._data.ui.touchEvent = true;
-               this._handleNodeTapClick(event);   // select the node, or toggle if multi-select
+               this._handleNodeTapClick(event); // select the node, or toggle if multi-select
 
                  //  Since this is a tap, no node is hovered
                if (!$(event.currentTarget).hasClass(OJT_LOADING)) {
@@ -8743,7 +8744,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
                 ui.prev.each(function () {
                   if (this.parentNode) {
                     _this.select(this);
-                    return false;   // if return false is removed all prev nodes will be selected
+                    return false; // if return false is removed all prev nodes will be selected
                   }
                   return undefined;
                 });
@@ -8796,7 +8797,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        */
       _initTreeData: function () {
         if (this._data.ds.type === DS_TREE) {
-          this._tds = (this.options.data || null);     // the tree data source
+          this._tds = (this.options.data || null); // the tree data source
           this._load_node = this._load_node_DS;
           this._isLoaded = this._isLoaded_DS;
           this._refresh = this._refresh_DS;
@@ -8831,7 +8832,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           return;
         }
 
-        this._processExistingMarkup();         // check for existing markup in the div
+        this._processExistingMarkup(); // check for existing markup in the div
 
         this._load_node = this._load_node_H;
         this._isLoaded = this._isLoaded_H;
@@ -8848,8 +8849,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           return;
         }
 
-        if (!this._data.html.markup_ul) {  // first time find the user <ul>
-          this._data.html.markup_ul = this._$container.find(' > ul');          // user's <ul>
+        if (!this._data.html.markup_ul) { // first time find the user <ul>
+          this._data.html.markup_ul = this._$container.find(' > ul'); // user's <ul>
 
           // Move the user <ul> in the tree div to another div so that it is still in the DOM,
           // and can be located by the app, changed, and refresh() called if desired, and so it
@@ -8859,8 +8860,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           // therefore be duplicated.
           // TDO - we need to have a better way to do this.
 
-          this._data.html.markup = this._data.html.markup_ul.find(' > li');   // user's <li>'s
-          this._data.html.cloneMarkup = this._data.html.markup.clone(true);        // our clone of the <li>'s
+          this._data.html.markup = this._data.html.markup_ul.find(' > li'); // user's <li>'s
+          this._data.html.cloneMarkup = this._data.html.markup.clone(true); // our clone of the <li>'s
 
           // this used to use html() and clean the whitespace, but this way any attached data was lost
           // remove white space from LI node - otherwise nodes appear a bit to the right
@@ -8872,12 +8873,12 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             .remove();
 
 
-          this._transformElemIds(this._data.html.markup_ul);     // make user's markup id's unique
+          this._transformElemIds(this._data.html.markup_ul); // make user's markup id's unique
 
           this._data.html.markup_div = $("<div id='" +
                                          USER_UL_ID_PREFIX + this._getIndex() +
-                                         "' style='display:none'>").append(this._data.html.markup_ul);   // @HTMLUpdateOK
-          this._$container.after(this._data.html.markup_div);                                           // @HTMLUpdateOK
+                                         "' style='display:none'>").append(this._data.html.markup_ul); // @HTMLUpdateOK
+          this._$container.after(this._data.html.markup_div); // @HTMLUpdateOK
         }
       },
 
@@ -8908,7 +8909,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         $nodes.each(function (i, node) {
           var id = node.getAttribute('id');
           var n = id.indexOf('_');
-          id = id.substr(n + 1);             // original user id follows the underscore
+          id = id.substr(n + 1); // original user id follows the underscore
           node.setAttribute('id', id);
         });
       },
@@ -9009,7 +9010,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
               if (tp.icon.image || tp.icon.position) {
                 if (i === 'default') {
-                  _this._data.types.defType = true;     // note that the "default" type has been defined       iconsCss += '.oj-tree-' + _this._getIndex() + ' a > .oj-tree-icon { ';
+                  _this._data.types.defType = true; // note that the "default" type has been defined       iconsCss += '.oj-tree-' + _this._getIndex() + ' a > .oj-tree-icon { ';
                   iconsCss += '.oj-tree-' + _this._getIndex() +
                     ' .oj-tree-list li.oj-tree-type a > .oj-tree-node-icon { ';
                   iconsCss += _this._addTypeCss(tp, iconsCss);
@@ -9138,7 +9139,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         // are in place via Max and Jim, this whole mechanism will change.
 
         if ((!newVal) && (!this.options.contextMenu)) {
-          menu = this._$container.attr('contextmenu');   // check for attribute
+          menu = this._$container.attr('contextmenu'); // check for attribute
           if (menu) {
             this.options.contextMenu = '#' + menu;
           }
@@ -9149,12 +9150,12 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           return;
         }
 
-        var $m = $(menu);                    // get the user's <ul> list
+        var $m = $(menu); // get the user's <ul> list
         if ($m.length > 0) {
-          $m.css('display', 'none');         // ensure it's not visible
+          $m.css('display', 'none'); // ensure it's not visible
           var dm = this._data.menu;
           dm.$container = $m;
-          dm.usermenu = true;              // have a context menu
+          dm.usermenu = true; // have a context menu
         }
 
         if (this._data.menu.usermenu) { // if we have a context menu
@@ -9224,10 +9225,10 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         }
 
         //  Get the tree node acted on
-        //  - if no hovered node, use the last selected node
+        // if no hovered node, use the last selected node
         this._data.menu.node = keyboard ? (this._data.ui.hovered || this._data.menu.activeNode) :
           $(event.target);
-        this._data.menu.activeNode = null;    // clear keyboard active node
+        this._data.menu.activeNode = null; // clear keyboard active node
 
         if (!this._data.menu.node) { // is there an active (hovered) or last selected node ?
           event.preventDefault();
@@ -9238,7 +9239,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         if (!keyboard) {
           var $origTarg = $(event.originalEvent.target);
           if ($origTarg.is('LI') || $origTarg.hasClass(OJT_TREE) || $origTarg.is('UL')) {
-            return;   // no context menu
+            return; // no context menu
           }
         }
 
@@ -9251,7 +9252,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         if (keyboard) {
           // Set position relative to the node in the SHIFT+F10 case.
           // Set here to avoid conflicting with user override in "before open" event
-          var textElem = this._data.menu.node.find('.oj-tree-title')[0];  // the node text <span>
+          var textElem = this._data.menu.node.find('.oj-tree-title')[0]; // the node text <span>
           openOptions.position = { of: textElem };
         }
 
@@ -9311,7 +9312,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
         this._data.themes.icons = this.options.icons;
 
-        this._initExpandedOpts();             // (updates this._data.coreToExpand)
+        this._initExpandedOpts(); // (updates this._data.coreToExpand)
         this._data.core.toLoad = this.options.initLoaded;
       },
 
@@ -9342,18 +9343,18 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           var ot = $.type(s);
           if (ot === 'string') {
             if (this._isHtml(s)) {
-              this._data.ds.type = DS_HTML;          // we have an non-Tree DS html source
+              this._data.ds.type = DS_HTML; // we have an non-Tree DS html source
             } else {
-              this._data.ds.type = DS_JSON;          // we have a non-tree DS json source
+              this._data.ds.type = DS_JSON; // we have a non-tree DS json source
               this._initJsonOpts();
             }
           } else if (ot === 'array') {
             //  we have an array of local json objects
-            this._data.ds.type = DS_JSON;          // we have a non-tree DS json source
+            this._data.ds.type = DS_JSON; // we have a non-tree DS json source
           } else if (ot === 'object') {
             try { // don't crash if no jsontreedatasource
               if (s instanceof oj.JsonTreeDataSource) {
-                this._data.ds.type = DS_TREE;          // we have a tree DS source
+                this._data.ds.type = DS_TREE; // we have a tree DS source
               }
             } catch (e) {
               this._data.ds.type = DS_ERROR;
@@ -9361,7 +9362,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             if (this._data.ds.type !== DS_TREE) {
               try { // don't crash if no data source
                 if (s instanceof oj.CollectionTreeDataSource) {
-                  this._data.ds.type = DS_COLLECTION;   // we have a tree DS source
+                  this._data.ds.type = DS_COLLECTION; // we have a tree DS source
                 }
               } catch (e) {
                 this._data.ds.type = DS_ERROR;
@@ -9374,15 +9375,15 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
               var dt = s.dataType;
               if (dt) {
                 if (dt === 'json') {
-                  this._data.ds.type = DS_JSON;    // we have a non-tree DS json source
+                  this._data.ds.type = DS_JSON; // we have a non-tree DS json source
                   this._initJsonOpts();
                 } else if (dt === 'html') {
-                  this._data.ds.type = DS_HTML;    // we have a non-tree DS html source
+                  this._data.ds.type = DS_HTML; // we have a non-tree DS html source
                   this._initHtmlOpts();
                 }
               } else {
                 s.dataType = 'json';
-                this._data.ds.type = DS_JSON;      // we have a non-tree DS json source
+                this._data.ds.type = DS_JSON; // we have a non-tree DS json source
                 this._initJsonOpts();
               }
             }
@@ -9490,33 +9491,33 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         //  Core
         data.core = {
           initLoaded: [],
-          selectMode: 1,          //  0 = no selection, 1, 2 ..., or -1 for unlimited
+          selectMode: 1, //  0 = no selection, 1, 2 ..., or -1 for unlimited
           load_open: false,
           li_height: 0,
           toExpand: false,
           toLoad: false,
-          prepMoveBlk: {},         // for the _moveNode function
+          prepMoveBlk: {}, // for the _moveNode function
           suppressSelectEvent: false, // used for batching up optionChange events
-          strings: {}          // translated/escaped strings
+          strings: {} // translated/escaped strings
         };
 
         // UI
         data.ui = {
-          selected: $(),        // selected node jquery list
+          selected: $(), // selected node jquery list
           lastSelected: false,
-          hovered: null,       // currently hovered
-          lastHovered: null,       // last hovered before blur
-          disclosureClick: false,      // used for 1st time disclosure click
-          toSelect: null,       // initial selection in options:selection
-          opacity: 1,          // used by disable/_lock()
-          spacebar: false,      // true if select caused by keybd (toggles)
-          focused: false,      // tree has focus
-          animDurDiv: null,       // div used to get animation duration
-          touchEvent: false       // true if touch event
+          hovered: null, // currently hovered
+          lastHovered: null, // last hovered before blur
+          disclosureClick: false, // used for 1st time disclosure click
+          toSelect: null, // initial selection in options:selection
+          opacity: 1, // used by disable/_lock()
+          spacebar: false, // true if select caused by keybd (toggles)
+          focused: false, // tree has focus
+          animDurDiv: null, // div used to get animation duration
+          touchEvent: false // true if touch event
         };
 
         data.ui.defaults = { // default values not yet published or suppressed design committee
-          selectMultipleModifier: 'ctrl',      // on, or ctrl, shift, alt
+          selectMultipleModifier: 'ctrl', // on, or ctrl, shift, alt
           selectRangeModifier: 'shift',
           disableSelectingChildren: false
         };
@@ -9525,8 +9526,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         //  Creating/renaming/removing/moving via context menu
 
         data.crrm = {};
-        data.crrm.cp_nodes = false;     // nodes that have been copy'd
-        data.crrm.ct_nodes = false;     // node(s) that have been cut
+        data.crrm.cp_nodes = false; // nodes that have been copy'd
+        data.crrm.ct_nodes = false; // node(s) that have been cut
         data.crrm.defaults = {
           inputWidthLimit: 200,
           move: {
@@ -9538,22 +9539,22 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             }
           }
         };
-        data.crrm.prepMoveBlk = {};   // for the move node function
+        data.crrm.prepMoveBlk = {}; // for the move node function
 
         // Data Source
 
         data.ds = {};
-        data.ds.progressiveRender = false;       // options not currently exposed
+        data.ds.progressiveRender = false; // options not currently exposed
         data.ds.progressiveUnload = false;
         data.ds.correctState = true;
 
-        data.ds.type = DS_NONE;     // type of data source (DS_TREE, DS_JSON, DS_HTML)
+        data.ds.type = DS_NONE; // type of data source (DS_TREE, DS_JSON, DS_HTML)
 
         //  json data source
 
         data.json = {};
         data.json.defaults = {
-          data: false,   // `data` can be a function:
+          data: false, // `data` can be a function:
           //  accepts two arguments - node being loaded
           //  and a callback to pass the result to,
           //  & ajax won't be supported
@@ -9564,15 +9565,15 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
         data.html = {};
         data.html.defaults = {
-          data: false,   // `data` can be a function:
+          data: false, // `data` can be a function:
           ajax: false
         };
 
-        data.html.useExistingMarkup = false;  // true == use existing div markup
-        data.html.markup_ul = false;  // user's <ul>
-        data.html.markup_div = false;  // the added div used to store user's <ul>
-        data.html.markup = false;  // the user's markup ( <li>'s )
-        data.html.cloneMarkup = false;  // our clone of user's orig markup <li's>
+        data.html.useExistingMarkup = false; // true == use existing div markup
+        data.html.markup_ul = false; // user's <ul>
+        data.html.markup_div = false; // the added div used to store user's <ul>
+        data.html.markup = false; // the user's markup ( <li>'s )
+        data.html.cloneMarkup = false; // our clone of user's orig markup <li's>
 
 
         //  Themes
@@ -9584,19 +9585,19 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         data.themes.url = false;
 
         data.themes.themes_loaded = [];
-        data.themes._themes = false;   // path to themes folder - if false it will be autodetected
+        data.themes._themes = false; // path to themes folder - if false it will be autodetected
 
         //  Types
 
         data.types = {};
         data.types.attachTo = [];
-        data.types.defType = false;                    // true if "default" type defined
+        data.types.defType = false; // true if "default" type defined
         data.types.defaults = { //  Options not published in V1
-          maxChildren: -1,     // defines max number of root nodes
+          maxChildren: -1, // defines max number of root nodes
           // (-1 = unlimited, -2 = disable maxChildren checking)
-          maxDepth: -1,     //  maximum depth of the tree
-          validChildren: 'all',  // defines valid node types for the root nodes
-          useData: false,  // whether to use $.data     TDO
+          maxDepth: -1, //  maximum depth of the tree
+          validChildren: 'all', // defines valid node types for the root nodes
+          useData: false, // whether to use $.data     TDO
           attr: 'type', // attr name in <li> where type is stored
           types: { // a list of types
             default: { // the default type
@@ -9614,13 +9615,13 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         //  Context menu
 
         data.menu = {};
-        data.menu.usermenu = false;   // user has supplied an ojMenu id if true
-        data.menu.$container = false;   // the menu <ul>
-        data.menu.$elemPaste = false;   // the menu "Paste" element
-        data.menu.$elemPasteAfter = false;   // the menu "Paste" After element
-        data.menu.$elemPasteBefore = false;   // the menu "Paste Before" element
-        data.menu.node = false;   // the tree node the menu was activated on
-        data.menu.activeNode = false;   // active node for shift-F10
+        data.menu.usermenu = false; // user has supplied an ojMenu id if true
+        data.menu.$container = false; // the menu <ul>
+        data.menu.$elemPaste = false; // the menu "Paste" element
+        data.menu.$elemPasteAfter = false; // the menu "Paste" After element
+        data.menu.$elemPasteBefore = false; // the menu "Paste Before" element
+        data.menu.node = false; // the tree node the menu was activated on
+        data.menu.activeNode = false; // active node for shift-F10
 
 
         //  Keyboard support
@@ -9662,7 +9663,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        *  @private
        */
       _setFocus: function () { // undocumented per Design Review
-/*                                        // 
+/*
        if (this._isFocused()) {
           return;
        }
@@ -9883,7 +9884,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
         space: function () { // toggle hovered node select status
           if (this._data.ui.hovered) {
-            this._data.ui.spacebar = true;      // note keyboard - so click will toggle
+            this._data.ui.spacebar = true; // note keyboard - so click will toggle
             this._data.ui.hovered.children('a:eq(0)').click();
             this._data.ui.spacebar = false;
           }
@@ -9938,12 +9939,12 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             // Batch up the optionChange/selection events so that the final result is
             // fired in the optionChange event (rather than individual events).
             this._data.core.suppressSelectEvent = true;
-            prevSelections = this.options.selection.slice(0);  // make new array for optionChange event
+            prevSelections = this.options.selection.slice(0); // make new array for optionChange event
 
             hover = hover[0];
-            $.each(nodes, function (i, node) {         // select from top
-              if (node === hover) {                 // until we find our
-                bContinue = false;                // starting node
+            $.each(nodes, function (i, node) { // select from top
+              if (node === hover) { // until we find our
+                bContinue = false; // starting node
               }
               _this._select(node, true);
               return bContinue;
@@ -9969,12 +9970,12 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             // Will batch up the optionChange/selection events so that the final result is fired in
             // the optionChange event (rather than individual events).
             this._data.core.suppressSelectEvent = true;
-            prevSelections = this.options.selection.slice(0);  // make new array for optionChange event
+            prevSelections = this.options.selection.slice(0); // make new array for optionChange event
 
             hover = hover[0];
             $.each(l, function (i, node) {
-              if (!bFound) {                        // select to bottom from
-                bFound = (node === hover);           // last selected node
+              if (!bFound) { // select to bottom from
+                bFound = (node === hover); // last selected node
               }
               if (bFound && (!_this._isSelected(node))) {
                 _this._select(node, true);
@@ -10023,8 +10024,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         listItems.each(function () {
           var cmd;
           if ($(this).children('a').length === 0) {
-            cmd = $(this).attr('data-oj-command').split('oj-tree-');                // get cut/paste, etc
-            $(this).replaceWith(_this._buildContextMenuItem(cmd[cmd.length - 1]));    // @HTMLUpdateOK
+            cmd = $(this).attr('data-oj-command').split('oj-tree-'); // get cut/paste, etc
+            $(this).replaceWith(_this._buildContextMenuItem(cmd[cmd.length - 1])); // @HTMLUpdateOK
             if ($(this).hasClass('oj-menu-divider')) {
               $(this).removeClass('oj-menu-divider')
                 .addClass('oj-menu-item');
@@ -10125,7 +10126,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         // If node is selected, then will cut all selected nodes, else just the one node.
         obj = obj.closest('li');
         if (this._isSelected(obj)) {
-          obj = null;        // _getNode() will now return all selected nodes
+          obj = null; // _getNode() will now return all selected nodes
         }
 
         obj = this._getNode(obj, true);
@@ -10147,7 +10148,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         // If node is selected, then will copy all selected nodes, else just the one node.
         obj = obj.closest('li');
         if (this._isSelected(obj)) {
-          obj = null;        // _getNode() will now return all selected nodes
+          obj = null; // _getNode() will now return all selected nodes
         }
         obj = this._getNode(obj, true);
         if (!obj || !obj.length) {
@@ -10277,9 +10278,9 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             left: (rtl ? '0px' : '-1000px'),
             visibility: 'hidden'
           }
-        }).appendTo('body');               // @HTMLUpdateOK
+        }).appendTo('body'); // @HTMLUpdateOK
 
-        var h2 = obj.css('position', 'relative').append(         // @HTMLUpdateOK
+        var h2 = obj.css('position', 'relative').append( // @HTMLUpdateOK
           $('<input />', {
             value: t,
             class: 'oj-tree-rename-input',
@@ -10304,8 +10305,8 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
                 v = t;
               }
               h1.remove();
-              i.remove();                    // rollback purposes
-              this._set_text(obj, t);        // rollback purposes
+              i.remove(); // rollback purposes
+              this._set_text(obj, t); // rollback purposes
               if (v !== t) { // if different node text, perform rename with prior before event
                 this._renameNode(obj, v);
               }
@@ -10429,16 +10430,16 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        *  @private
        */
       _applyEmptyText: function () {
-        var txt = this.options.emptyText;                   // has app set new text
+        var txt = this.options.emptyText; // has app set new text
 
         if (typeof txt !== 'string') {
-          txt = this._getString(TRANSKEY_NODATA);            // no, get default value.
+          txt = this._getString(TRANSKEY_NODATA); // no, get default value.
         }
         if (txt && txt.length > 0) {
           var $u = this._$container_ul;
-          var $d = $("<li class='oj-tree-empty'></li>");   // no <a>, not interactive
+          var $d = $("<li class='oj-tree-empty'></li>"); // no <a>, not interactive
           $d[0].textContent = txt;
-          $u.empty().append($d);                             // @HTMLUpdateOK
+          $u.empty().append($d); // @HTMLUpdateOK
         }
       },
 
@@ -10484,13 +10485,13 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           a[0] = a[0].trim();
           if (a[0] === 'oj-tree-node') {
             a[1] = a[1].trim();
-            var c = a[1].charAt(0);                  // should be ' or "
+            var c = a[1].charAt(0); // should be ' or "
             var i = a[1].indexOf(c, 1);
             if (i >= 0) {
               var sNode = a[1].substring(1, i).trim();
 
               a[2] = a[2].trim();
-              c = a[2].charAt(0);                // should be ' or "
+              c = a[2].charAt(0); // should be ' or "
               i = a[2].indexOf(c, 1);
               if (i >= 0) {
                 var sKey = a[2].substring(1, i).trim();
@@ -10602,7 +10603,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
       _getString: function (key) {
         var oStrings = this._data.core.strings;
 
-        var s = oStrings[key];                          // have we already escaped this string?
+        var s = oStrings[key]; // have we already escaped this string?
         if (!s) { // no
           s = this.getTranslatedString(key);
           s = this._escapeHtml(s);
@@ -10617,7 +10618,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        */
       _escapeHtml: function (text) {
         var div = document.createElement('div');
-        $(div).text(text);                         // escape the text
+        $(div).text(text); // escape the text
         return div.textContent;
       },
 
@@ -10645,13 +10646,13 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
           if (!$div) {
             $div = $("<div id='ojtree-comp-animduration'><span class='oj-tree-transition'>dummy</span></div>");
             this._data.ui.animDurDiv = $div;
-            $('body').append($div);   // must be <body>, doesn't work if _$container used and not attached to the DOM //@HTMLUpdateOK
+            $('body').append($div); // must be <body>, doesn't work if _$container used and not attached to the DOM //@HTMLUpdateOK
           }
           var span = $div[0].childNodes[0];
           var val = window.getComputedStyle(span);
           if (val.transitionDuration) {
             val = val.transitionDuration;
-          } else if (val['-webkit-transition-duration']) {   // need this for windows safari
+          } else if (val['-webkit-transition-duration']) { // need this for windows safari
             val = val['-webkit-transition-duration'];
           } else {
             val = 0;
@@ -10679,7 +10680,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
             }
           }
         }
-        return ret;        // return milliseconds
+        return ret; // return milliseconds
       },
 
 
@@ -10913,7 +10914,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
        * @memberof oj.ojTree
        */
 
-    });    // end    $.registerWidget("oj.ojTree", ...
+    }); // end    $.registerWidget("oj.ojTree", ...
 }());
 
 });

@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -98,7 +99,6 @@ class IndexerModelTreeDataProvider {
         }
         return Promise.resolve(section);
     }
-    ;
     /** **************** TreeDataProvider *******************/
     getChildDataProvider(parentKey, options) {
         if (parentKey === null) {
@@ -132,9 +132,11 @@ class IndexerModelTreeDataProvider {
             else {
                 childData = [];
             }
-            return new ArrayTreeDataProvider(childData, { keyAttributes: this.options.keyAttributes,
+            return new ArrayTreeDataProvider(childData, {
+                keyAttributes: this.options.keyAttributes,
                 sortComparators: this.options.sortComparators,
-                implicitSort: this.options.implicitSort });
+                implicitSort: this.options.implicitSort
+            });
         }
         return null;
     }

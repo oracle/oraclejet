@@ -1,0 +1,24 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+@include module-include-once("redwood.variables.indexer") {
+
+:root {
+
+  // indexer
+  // ----------------------------
+  --oj-indexer-item-width:            1.5rem;
+  --oj-indexer-item-height:           1rem;
+  --oj-indexer-abbr-item-height:      1rem;
+  --oj-indexer-text-color:            var(--oj-core-text-color-primary);
+  --oj-indexer-text-decoration:       none;
+  --oj-indexer-font-size:             var(--oj-typography-body-sm-font-size);
+  --oj-indexer-font-weight:           normal;
+  --oj-indexer-text-decoration-hover: none;
+  --oj-indexer-text-color-disabled:   var(--oj-core-text-color-disabled);
+
+  
+}
+
+}

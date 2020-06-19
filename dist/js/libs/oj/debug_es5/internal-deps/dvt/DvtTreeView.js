@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['./DvtToolkit'], function(dvt) {
   "use strict";
@@ -8,15 +9,17 @@ define(['./DvtToolkit'], function(dvt) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function (dvt) {
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -272,8 +275,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -336,8 +340,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -414,8 +419,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -492,8 +498,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -824,8 +831,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1764,8 +1772,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1850,8 +1859,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -2065,8 +2075,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -2093,7 +2104,7 @@ define(['./DvtToolkit'], function(dvt) {
 
   DvtTreeNode._DEFAULT_FILL_COLOR = '#000000';
   DvtTreeNode._DEFAULT_TEXT_SIZE = 11;
-  DvtTreeNode.__NODE_SELECTED_SHADOW = new dvt.Shadow('#000000', 2, 5, 5, 45, 0.5);
+  DvtTreeNode.__NODE_SELECTED_SHADOW = new dvt.Shadow(Math.sqrt(2), Math.sqrt(2), 5 / 3, 'rgba(0, 0, 0, 0.5)');
   /**
    * @param {DvtTreeView} treeView The DvtTreeView that owns this node.
    * @param {object} props The properties for the node.
@@ -2980,8 +2991,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3056,8 +3068,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3125,8 +3138,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3358,8 +3372,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3399,8 +3414,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3469,8 +3485,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3624,8 +3641,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3682,10 +3700,11 @@ define(['./DvtToolkit'], function(dvt) {
     var rootNode = this._treeView.getRootNode(); // check if we have a button
 
 
-    var isButton = displayable instanceof dvt.Button;
+    var isButton = displayable instanceof dvt.Button || displayable instanceof dvt.IconButton;
+    var parent = displayable.getParent();
 
-    if (displayable.getParent() instanceof dvt.Button) {
-      displayable = displayable.getParent();
+    if (parent instanceof dvt.Button || parent instanceof dvt.IconButton) {
+      displayable = parent;
       isButton = true;
     }
 
@@ -3936,8 +3955,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4409,8 +4429,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5252,7 +5273,7 @@ define(['./DvtToolkit'], function(dvt) {
   /**
    * Creates and positions the isolate or restore button for this node.
    * @param {dvt.Container} container The container for the button.
-   * @return {dvt.Button}
+   * @return {dvt.IconButton}
    * @private
    */
 
@@ -5425,13 +5446,17 @@ define(['./DvtToolkit'], function(dvt) {
   DvtTreemapNode.prototype.ApplyHeaderTextStyle = function (text, styleType) {
     var textStyle = []; // Top Level Header is Bold
 
-    if (this.GetDepth() <= 1 && this.getView().__getMaxDepth() >= 3) textStyle.push(new dvt.CSSStyle('font-weight:bold;')); // Header Default Style
+    if (this.GetDepth() <= 1 && this.getView().__getMaxDepth() >= 3) textStyle.push(new dvt.CSSStyle('font-weight:bold;')); // Header style defaults from CSS
 
-    textStyle.push(this.getView().getOptions()['nodeDefaults']['header'][styleType]); // Header UseNodeColor for Non-Hover/Selected Labels
+    textStyle.push(this.getView().getOptions()['nodeDefaults']['header']["_labelStyle"]); // Header Default styles
 
-    if (this._bHeaderUseNodeColor && (styleType == 'labelStyle' || styleType == '_drillableLabelStyle')) textStyle.push(new dvt.CSSStyle('color: ' + DvtTreeNode.GetNodeTextColor(this))); // Header Label Style
+    textStyle.push(this.getView().getOptions()['nodeDefaults']['header'][styleType]); // Header Label Style
 
-    if (this._headerLabelStyle) textStyle.push(this._headerLabelStyle);
+    if (this._headerLabelStyle) textStyle.push(this._headerLabelStyle); //User defined Options
+
+    textStyle.push(new dvt.CSSStyle(this.getView().getOptions()['nodeDefaults']['header']["labelStyle"])); // Header UseNodeColor for Non-Hover/Selected Labels
+
+    if (this._bHeaderUseNodeColor && (styleType == 'labelStyle' || styleType == '_drillableLabelStyle')) textStyle.push(new dvt.CSSStyle('color: ' + DvtTreeNode.GetNodeTextColor(this)));
     text.setCSSStyle(dvt.CSSStyle.mergeStyles(textStyle));
   };
   /**
@@ -5583,25 +5608,7 @@ define(['./DvtToolkit'], function(dvt) {
 
 
   DvtTreemapNode.prototype._getIsolateButton = function () {
-    var context = this.getView().getCtx(); // Get the resources from the view
-
-    var bRtl = dvt.Agent.isRightToLeft(this._context);
-    var resources = this.getView().getOptions()['_resources'];
-    var upImage = bRtl && resources['isolateRtl'] ? resources['isolateRtl'] : resources['isolate'];
-    var overImage = bRtl && resources['isolateOverRtl'] ? resources['isolateOverRtl'] : resources['isolateOver'];
-    var downImage = bRtl && resources['isolateDownRtl'] ? resources['isolateDownRtl'] : resources['isolateDown']; // Initialize the button states
-
-    var upState = new dvt.Image(context, upImage, 0, 0, DvtTreemapNode._ISOLATE_ICON_SIZE, DvtTreemapNode._ISOLATE_ICON_SIZE);
-    var overState = new dvt.Image(context, overImage, 0, 0, DvtTreemapNode._ISOLATE_ICON_SIZE, DvtTreemapNode._ISOLATE_ICON_SIZE);
-    var downState = new dvt.Image(context, downImage, 0, 0, DvtTreemapNode._ISOLATE_ICON_SIZE, DvtTreemapNode._ISOLATE_ICON_SIZE); // Have to add a transparent fill so that IE9 can capture the mouse events ()
-
-    upState.setInvisibleFill();
-    overState.setInvisibleFill();
-    downState.setInvisibleFill(); // Create button and hook up click listener
-
-    var button = new dvt.Button(context, upState, overState, downState);
-    button.addEvtListener(dvt.MouseEvent.CLICK, this.__isolateNode, false, this);
-    return button;
+    return this._getButtonHelper('isolate', this.__isolateNode);
   };
   /**
    * Returns the restore button for use on the node header.
@@ -5611,24 +5618,21 @@ define(['./DvtToolkit'], function(dvt) {
 
 
   DvtTreemapNode.prototype._getRestoreButton = function () {
-    var context = this.getView().getCtx(); // Get the resources from the view
+    return this._getButtonHelper('restore', this.__restoreNode);
+  };
 
-    var bRtl = dvt.Agent.isRightToLeft(this._context);
+  DvtTreemapNode.prototype._getButtonHelper = function (resourceKey, callback) {
+    var context = this.getView().getCtx(); // icon
+
     var resources = this.getView().getOptions()['_resources'];
-    var upImage = bRtl && resources['restoreRtl'] ? resources['restoreRtl'] : resources['restore'];
-    var overImage = bRtl && resources['restoreOverRtl'] ? resources['restoreOverRtl'] : resources['restoreOver'];
-    var downImage = bRtl && resources['restoreDownRtl'] ? resources['restoreDownRtl'] : resources['restoreDown']; // Initialize the button states
+    var iconClass = resources[resourceKey];
+    var iconStyle = dvt.ToolkitUtils.getIconStyle(context, iconClass); // Create button and hook up click listener
 
-    var upState = new dvt.Image(context, upImage, 0, 0, DvtTreemapNode._ISOLATE_ICON_SIZE, DvtTreemapNode._ISOLATE_ICON_SIZE);
-    var overState = new dvt.Image(context, overImage, 0, 0, DvtTreemapNode._ISOLATE_ICON_SIZE, DvtTreemapNode._ISOLATE_ICON_SIZE);
-    var downState = new dvt.Image(context, downImage, 0, 0, DvtTreemapNode._ISOLATE_ICON_SIZE, DvtTreemapNode._ISOLATE_ICON_SIZE); // Have to add a transparent fill so that IE9 can capture the mouse events ()
-
-    upState.setInvisibleFill();
-    overState.setInvisibleFill();
-    downState.setInvisibleFill(); // Create button and hook up click listener
-
-    var button = new dvt.Button(context, upState, overState, downState);
-    button.addEvtListener(dvt.MouseEvent.CLICK, this.__restoreNode, false, this);
+    var button = new dvt.IconButton(context, 'borderless', {
+      style: iconStyle,
+      size: DvtTreemapNode._ISOLATE_ICON_SIZE
+    });
+    button.addEvtListener(dvt.MouseEvent.CLICK, callback, false, this);
     return button;
   };
   /**
@@ -5694,7 +5698,7 @@ define(['./DvtToolkit'], function(dvt) {
 
 
   DvtTreemapNode.prototype.getDatatip = function (target, x, y) {
-    if (target && target instanceof dvt.Button) return null; // tooltip is displayed for isolate button
+    if (target && target instanceof dvt.IconButton) return null; // tooltip is displayed for isolate button
     else return DvtTreemapNode.superclass.getDatatip.call(this, target, x, y);
   };
   /**
@@ -5703,7 +5707,7 @@ define(['./DvtToolkit'], function(dvt) {
 
 
   DvtTreemapNode.prototype.getDatatipColor = function (target) {
-    if (target && target instanceof dvt.Button) return null; // tooltip is displayed for isolate button
+    if (target && target instanceof dvt.IconButton) return null; // tooltip is displayed for isolate button
     else return DvtTreemapNode.superclass.getDatatipColor.call(this, target);
   };
   /**
@@ -5712,7 +5716,7 @@ define(['./DvtToolkit'], function(dvt) {
 
 
   DvtTreemapNode.prototype.getTooltip = function (target) {
-    if (target && target instanceof dvt.Button) return this.getView().getOptions().translations[this.__isIsolated() ? 'tooltipRestore' : 'tooltipIsolate'];else return null;
+    if (target && target instanceof dvt.IconButton) return this.getView().getOptions().translations[this.__isIsolated() ? 'tooltipRestore' : 'tooltipIsolate'];else return null;
   };
   /**
    * @override
@@ -5838,8 +5842,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5927,8 +5932,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6153,8 +6159,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6250,8 +6257,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6290,8 +6298,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6334,14 +6343,11 @@ define(['./DvtToolkit'], function(dvt) {
 
     return eventConsumed;
   };
-
-  DvtTreemapEventManager.prototype.isClearMenuAllowed = function () {
-    return false;
-  };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6378,16 +6384,16 @@ define(['./DvtToolkit'], function(dvt) {
         'hoverInnerColor': '#d6d7d8',
         'isolate': 'auto',
         'labelHalign': 'start',
-        'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color:#252525;'),
+        '_labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color:#252525;'),
         'selectedBackgroundColor': '#dae9f5',
         'selectedInnerColor': '#FFFFFF',
         'selectedOuterColor': '#000000',
         'useNodeColor': 'off',
-        '_hoverLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color:#252525;'),
-        '_selectedLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color:#252525;'),
-        '_drillableLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color:#145c9e;'),
-        '_drillableHoverLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color:#145c9e;'),
-        '_drillableSelectedLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color:#145c9e;')
+        '_hoverLabelStyle': new dvt.CSSStyle('color:#252525;'),
+        '_selectedLabelStyle': new dvt.CSSStyle('color:#252525;'),
+        '_drillableLabelStyle': new dvt.CSSStyle('color:#145c9e;'),
+        '_drillableHoverLabelStyle': new dvt.CSSStyle('color:#145c9e;'),
+        '_drillableSelectedLabelStyle': new dvt.CSSStyle('color:#145c9e;')
       },
       'hoverColor': '#ebeced',
       'groupLabelDisplay': 'header',
@@ -6402,8 +6408,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6878,8 +6885,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -7582,7 +7590,7 @@ define(['./DvtToolkit'], function(dvt) {
   /**
    * Creates and positions the expand or collapse button button for this node.
    * @param {dvt.Container} container The container for the button.
-   * @return {dvt.Button}
+   * @return {dvt.IconButton}
    * @private
    */
 
@@ -7603,7 +7611,7 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * Positions the expand or collapse button button for this node.
-   * @param {dvt.Button} button
+   * @param {dvt.IconButton} button
    * @private
    */
 
@@ -7876,21 +7884,7 @@ define(['./DvtToolkit'], function(dvt) {
 
 
   DvtSunburstNode.prototype._getExpandButton = function () {
-    var context = this.getView().getCtx(); // Get the resources from the view
-
-    var resources = this.getView().getOptions()['_resources']; // Initialize the button states
-
-    var upState = new dvt.Image(context, resources['expand'], 0, 0, DvtSunburstNode._EXPAND_ICON_SIZE, DvtSunburstNode._EXPAND_ICON_SIZE);
-    var overState = new dvt.Image(context, resources['expandOver'], 0, 0, DvtSunburstNode._EXPAND_ICON_SIZE, DvtSunburstNode._EXPAND_ICON_SIZE);
-    var downState = new dvt.Image(context, resources['expandDown'], 0, 0, DvtSunburstNode._EXPAND_ICON_SIZE, DvtSunburstNode._EXPAND_ICON_SIZE); // Have to add a transparent fill so that IE9 can capture the mouse events ()
-
-    upState.setInvisibleFill();
-    overState.setInvisibleFill();
-    downState.setInvisibleFill(); // Create button and hook up click listener
-
-    var button = new dvt.Button(context, upState, overState, downState);
-    button.setCallback(this.expandCollapse, this);
-    return button;
+    return this._getButtonHelper('expand');
   };
   /**
    * Returns the collapse button.
@@ -7900,21 +7894,32 @@ define(['./DvtToolkit'], function(dvt) {
 
 
   DvtSunburstNode.prototype._getCollapseButton = function () {
-    var context = this.getView().getCtx(); // Get the resources from the view
+    return this._getButtonHelper('collapse');
+  };
 
-    var resources = this.getView().getOptions()['_resources']; // Initialize the button states
+  DvtSunburstNode.prototype._getButtonHelper = function (resourceKey) {
+    var context = this.getView().getCtx();
+    var half = DvtSunburstNode._EXPAND_ICON_SIZE / 2;
+    var background = new dvt.Circle(context, half, half, half + 2); // icon
 
-    var upState = new dvt.Image(context, resources['collapse'], 0, 0, DvtSunburstNode._EXPAND_ICON_SIZE, DvtSunburstNode._EXPAND_ICON_SIZE);
-    var overState = new dvt.Image(context, resources['collapseOver'], 0, 0, DvtSunburstNode._EXPAND_ICON_SIZE, DvtSunburstNode._EXPAND_ICON_SIZE);
-    var downState = new dvt.Image(context, resources['collapseDown'], 0, 0, DvtSunburstNode._EXPAND_ICON_SIZE, DvtSunburstNode._EXPAND_ICON_SIZE); // Have to add a transparent fill so that IE9 can capture the mouse events ()
+    var resources = this.getView().getOptions()['_resources'];
+    var iconClass = resources[resourceKey];
+    var iconStyle = dvt.ToolkitUtils.getIconStyle(context, iconClass); // Create button and hook up click listener
 
-    upState.setInvisibleFill();
-    overState.setInvisibleFill();
-    downState.setInvisibleFill(); // Create button and hook up click listener
-
-    var button = new dvt.Button(context, upState, overState, downState);
-    button.setCallback(this.expandCollapse, this);
+    var button = new dvt.IconButton(context, 'outlined', {
+      style: iconStyle,
+      size: DvtSunburstNode._EXPAND_ICON_SIZE
+    }, background, null, this.expandCollapse, this);
     return button;
+  };
+  /**
+   * Returns true if this node is isolated
+   * @return {Boolean} true if this node is isolated, false otherwise
+   */
+
+
+  DvtTreemapNode.prototype.__isIsolated = function () {
+    return this._bIsolated;
   };
   /**
    * Delegate to the view to handle the event
@@ -8118,8 +8123,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -8232,8 +8238,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -8376,8 +8383,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -8420,8 +8428,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 })(dvt);

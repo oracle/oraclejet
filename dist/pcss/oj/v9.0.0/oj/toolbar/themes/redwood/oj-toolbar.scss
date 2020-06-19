@@ -1,0 +1,11 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+// todo: should we really be importing helpers for every component?
+@import "../../../theme/themes/redwood/oj-helpers.scss"; 
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+
+@import "_oj-toolbar.servervars.scss";
+@import "_oj-toolbar.cssvars.scss";
+@import "../base/_oj-toolbar.scss"; 

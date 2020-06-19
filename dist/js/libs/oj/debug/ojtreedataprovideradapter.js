@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -40,7 +41,7 @@ class TreeDataSourceAdapter extends DataSourceAdapter {
     isEmpty() {
         var count = this.treeDataSource.getChildCount();
         if (count === -1) {
-            return "unknown";
+            return 'unknown';
         }
         return count > 0 ? 'no' : 'yes';
     }
@@ -65,25 +66,28 @@ class TreeDataSourceAdapter extends DataSourceAdapter {
         if (params != null && params[TreeDataSourceAdapter._SORTCRITERIA] != null) {
             let attribute = params[TreeDataSourceAdapter._SORTCRITERIA][0][TreeDataSourceAdapter._ATTRIBUTE];
             let direction = params[TreeDataSourceAdapter._SORTCRITERIA][0][TreeDataSourceAdapter._DIRECTION];
-            return function (attribute, direction) {
+            return (function (attribute, direction) {
                 return function (params, fetchFirst) {
                     if (fetchFirst) {
                         let sortParam = {};
                         sortParam[TreeDataSourceAdapter._KEY] = attribute;
                         sortParam[TreeDataSourceAdapter._DIRECTION] = direction;
                         return new Promise(function (resolve, reject) {
-                            self.treeDataSource.sort(sortParam, { success: function () {
+                            self.treeDataSource.sort(sortParam, {
+                                success: function () {
                                     resolve(self._getTreeDataSourceFetch(params)(params));
-                                }, error: function (err) {
+                                },
+                                error: function (err) {
                                     reject(err);
-                                } });
+                                }
+                            });
                         });
                     }
                     else {
                         return self._getTreeDataSourceFetch(params)(params);
                     }
                 };
-            }(attribute, direction);
+            })(attribute, direction);
         }
         else {
             return this._getTreeDataSourceFetch(params);
@@ -96,14 +100,17 @@ class TreeDataSourceAdapter extends DataSourceAdapter {
         let self = this;
         return function (params, fetchFirst) {
             let sortCriteria = self.treeDataSource.getSortCriteria();
-            if (sortCriteria != null && sortCriteria[TreeDataSourceAdapter._DIRECTION] != 'none' && params[TreeDataSourceAdapter._SORTCRITERIA] == null) {
+            if (sortCriteria != null &&
+                sortCriteria[TreeDataSourceAdapter._DIRECTION] != 'none' &&
+                params[TreeDataSourceAdapter._SORTCRITERIA] == null) {
                 params[TreeDataSourceAdapter._SORTCRITERIA] = [];
                 let sortCriterion = new self.SortCriterion(self, sortCriteria[TreeDataSourceAdapter._KEY], sortCriteria[TreeDataSourceAdapter._DIRECTION]);
                 params[TreeDataSourceAdapter._SORTCRITERIA].push(sortCriterion);
             }
             self._isFetching = true;
             return new Promise(function (resolve, reject) {
-                self.treeDataSource.fetchChildren(self._parentKey, { start: 0, end: -1 }, { success: function (nodeSet) {
+                self.treeDataSource.fetchChildren(self._parentKey, { start: 0, end: -1 }, {
+                    success: function (nodeSet) {
                         self._isFetching = false;
                         let resultData = [];
                         let resultMetadata = [];
@@ -120,10 +127,12 @@ class TreeDataSourceAdapter extends DataSourceAdapter {
                             resultMetadata.push(new self.ItemMetadata(self, metadata[TreeDataSourceAdapter._KEY]));
                         }
                         resolve(new self.AsyncIteratorReturnResult(self, new self.FetchListResult(self, params, resultData, resultMetadata)));
-                    }, error: function (error) {
+                    },
+                    error: function (error) {
                         self._isFetching = false;
                         reject(error);
-                    } });
+                    }
+                });
             });
         };
     }

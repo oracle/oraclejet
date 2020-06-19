@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['./DvtToolkit'], function(dvt) {
   "use strict";
@@ -8,16 +9,18 @@ define(['./DvtToolkit'], function(dvt) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function(dvt) {
 
 /**
  * @license
- * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2011 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 dvt.OverviewUtils = new Object();
@@ -63,8 +66,9 @@ dvt.OverviewUtils.getPositionDate = function(startTime, endTime, pos, width)
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -344,12 +348,10 @@ dvt.Overview.prototype._applyParsedProperties = function(props)
 
   this._handleTextureColor = DvtOverviewStyleUtils.getHandleTextureColor(this.Options);
   this._handleFillColor = DvtOverviewStyleUtils.getHandleFillColor(this.Options);
-  this._horHandleBackgroundImage = DvtOverviewStyleUtils.getHandleBackgroundImage(this.Options, false);
-  this._horHandleWidth = DvtOverviewStyleUtils.getHandleWidth(this.Options, false);
-  this._horHandleHeight = DvtOverviewStyleUtils.getHandleHeight(this.Options, false);
-  this._vertHandleBackgroundImage = DvtOverviewStyleUtils.getHandleBackgroundImage(this.Options, true);
-  this._vertHandleWidth = DvtOverviewStyleUtils.getHandleWidth(this.Options, true);
-  this._vertHandleHeight = DvtOverviewStyleUtils.getHandleHeight(this.Options, true);
+  this._horHandleBackgroundClass = DvtOverviewStyleUtils.getHandleBackgroundClass(this.Options, false);
+  this._horHandleSize = DvtOverviewStyleUtils.getHandleSize(this.Options, false);
+  this._vertHandleBackgroundClass = DvtOverviewStyleUtils.getHandleBackgroundClass(this.Options, true);
+  this._vertHandleSize = DvtOverviewStyleUtils.getHandleSize(this.Options, true);
 
   this._overviewBackgroundColor = DvtOverviewStyleUtils.getOverviewBackgroundColor(this.Options);
   this._currentTimeIndicatorColor = DvtOverviewStyleUtils.getCurrentTimeIndicatorColor(this.Options);
@@ -1889,8 +1891,9 @@ dvt.Overview.prototype.destroy = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1936,10 +1939,12 @@ DvtOverviewDefaults.VERSION_1 = {
     'windowBorderTopStyle': 'solid'
   }
 };
+
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -2057,8 +2062,9 @@ dvt.OverviewParser.prototype.calculateWidth = function(startTime, endTime, viewp
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -2232,8 +2238,9 @@ DvtOverviewEventManager.prototype._onTouchDragEnd = function(event)
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -2332,7 +2339,7 @@ DvtOverviewRenderer._renderSlidingWindow = function(overview)
       var bottomHandleBackground = new dvt.Rect(overview.getCtx(), 0, 0, slidingWindowWidth, handleSize, 'bhb');
       cursor = 'row-resize';
 
-      if (overview._vertHandleBackgroundImage)
+      if (overview._vertHandleBackgroundClass)
       {
         var topGrippy = DvtOverviewRenderer._createGrippyImage(overview, slidingWindowWidth, grippySize, true);
         var bottomGrippy = DvtOverviewRenderer._createGrippyImage(overview, slidingWindowWidth, grippySize, true);
@@ -2403,7 +2410,7 @@ DvtOverviewRenderer._renderSlidingWindow = function(overview)
       var rightHandleBackground = new dvt.Rect(overview.getCtx(), handleStart, 0, handleSize, slidingWindowHeight, 'rhb');
       var cursor = 'col-resize';
 
-      if (overview._horHandleBackgroundImage)
+      if (overview._horHandleBackgroundClass)
       {
         var leftGrippy = DvtOverviewRenderer._createGrippyImage(overview, grippySize, slidingWindowHeight, false);
         var rightGrippy = DvtOverviewRenderer._createGrippyImage(overview, grippySize, slidingWindowHeight, false);
@@ -2476,18 +2483,26 @@ DvtOverviewRenderer._renderSlidingWindow = function(overview)
  */
 DvtOverviewRenderer._createGrippyImage = function(overview, width, height, isVertical)
 {
+  var ctx = overview.getCtx();
   if (!isVertical)
   {
-    var posX = (width - overview._horHandleWidth) / 2;
-    var grippy = new dvt.Image(overview.getCtx(), overview._horHandleBackgroundImage, posX, 0, overview._horHandleWidth, overview._horHandleHeight, 'hgrpy');
+    var posX = width / 2;
+    var iconStyle = dvt.ToolkitUtils.getIconStyle(ctx, overview._horHandleBackgroundClass);
+    var grippy = dvt.OutputText.createIcon(ctx, {style: iconStyle, size: overview._horHandleSize, pos: {x: posX, y: 0}});
+    grippy.setId('hgrpy');
   }
   else
   {
-    var posY = (height - overview._vertHandleHeight) / 2;
-    grippy = new dvt.Image(overview.getCtx(), overview._vertHandleBackgroundImage, 0, posY, overview._vertHandleWidth, overview._vertHandleHeight, 'vgrpy');
+    var posY = height / 2;
+    var iconStyle = dvt.ToolkitUtils.getIconStyle(ctx, overview._vertHandleBackgroundClass);
+    var grippy = dvt.OutputText.createIcon(ctx, {style: iconStyle, size: overview._vertHandleSize, pos: {x: 0, y: posY}});
+    grippy.setId('vgrpy');
   }
   grippy.setMouseEnabled(false);
-  return grippy;
+  // wrap in a container so that subsequent translates can be applied
+  var container = new dvt.Container(ctx);
+  container.addChild(grippy);
+  return container;
 };
 
 /**
@@ -2827,8 +2842,8 @@ DvtOverviewRenderer._setSlidingWindowWidth = function(overview, slidingWindow, w
   if (overview.isVerticalScrollingEnabled())
   {
     var handleX = (slidingWindow.getWidth() - 36) / 2;
-    if (overview._vertHandleBackgroundImage)
-      var grippyX = (width - overview._vertHandleWidth) / 2;
+    if (overview._vertHandleBackgroundClass)
+      var grippyX = width / 2;
     else
       grippyX = handleX;
 
@@ -2871,8 +2886,8 @@ DvtOverviewRenderer._setSlidingWindowHeight = function(overview, slidingWindow, 
   if (overview.isHorizontalScrollingEnabled())
   {
     var handleY = (height - 36) / 2;
-    if (overview._horHandleBackgroundImage)
-      var grippyY = (height - overview._horHandleHeight) / 2;
+    if (overview._horHandleBackgroundClass)
+      var grippyY = height / 2;
     else
       grippyY = handleY;
 
@@ -3219,8 +3234,9 @@ DvtOverviewRenderer._updateCurrentTime = function(overview)
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -3272,74 +3288,50 @@ DvtOverviewStyleUtils.getHandleTextureColor = function(options)
 };
 
 /**
- * Gets the handle background image.
+ * Gets the handle background class.
  * @param {object} options The object containing data and specifications for the component.
  * @param {boolean} isVertical Whether or not this is the vertical handle.
- * @return {string} The handle background image.
+ * @return {string} The handle background class.
  */
-DvtOverviewStyleUtils.getHandleBackgroundImage = function(options, isVertical)
+DvtOverviewStyleUtils.getHandleBackgroundClass = function(options, isVertical)
 {
   if (!isVertical)
   {
-    if (options['_hbi'] != null)
-      return options['_hbi'];
+    if (options['_hbc'] != null)
+      return options['_hbc'];
     else
-      return options['style']['handleBackgroundImage'];
+      return options['style']['handleBackgroundClass'];
   }
   else
   {
-    if (options['_vhbi'] != null)
-      return options['_vhbi'];
+    if (options['_vhbc'] != null)
+      return options['_vhbc'];
     else
-      return options['style']['vertHandleBackgroundImage'];
+      return options['style']['vertHandleBackgroundClass'];
   }
 };
 
 /**
- * Gets the handle width.
+ * Gets the handle size.
  * @param {object} options The object containing data and specifications for the component.
  * @param {boolean} isVertical Whether or not this is the vertical handle.
- * @return {number} The handle width.
+ * @return {number} The handle size.
  */
-DvtOverviewStyleUtils.getHandleWidth = function(options, isVertical)
+DvtOverviewStyleUtils.getHandleSize = function(options, isVertical)
 {
   if (!isVertical)
   {
-    if (options['_hw'] != null)
-      return options['_hw'];
+    if (options['_hs'] != null)
+      return options['_hs'];
     else
-      return options['style']['handleWidth'];
+      return options['style']['handleSize'];
   }
   else
   {
-    if (options['_vhw'] != null)
-      return options['_vhw'];
+    if (options['_vhs'] != null)
+      return options['_vhs'];
     else
-      return options['style']['vertHandleWidth'];
-  }
-};
-
-/**
- * Gets the handle height.
- * @param {object} options The object containing data and specifications for the component.
- * @param {boolean} isVertical Whether or not this is the vertical handle.
- * @return {number} The handle height.
- */
-DvtOverviewStyleUtils.getHandleHeight = function(options, isVertical)
-{
-  if (!isVertical)
-  {
-    if (options['_hh'] != null)
-      return options['_hh'];
-    else
-      return options['style']['handleHeight'];
-  }
-  else
-  {
-    if (options['_vhh'] != null)
-      return options['_vhh'];
-    else
-      return options['style']['vertHandleHeight'];
+      return options['style']['vertHandleSize'];
   }
 };
 
@@ -3603,8 +3595,9 @@ DvtOverviewStyleUtils.getRightFilterPanelAlpha = function(options)
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 })(dvt);

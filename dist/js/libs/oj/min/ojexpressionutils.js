@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(["ojs/ojcore","ojs/ojconfig"],function(t,n){"use strict";function e(){}return e.getExpressionInfo=function(n){return t.__AttributeUtils.getExpressionInfo(n)},e.createGenericExpressionEvaluator=function(t){var e=n.getExpressionEvaluator();if(e){var r=e.createEvaluator(t).evaluate;return function(t){return r([t])}}return new Function("context","with(context){return "+t+";}")},e});
+define(["ojs/ojcore","ojs/ojconfig"],function(t,e){"use strict";function n(){}return n.getExpressionInfo=function(e){return t.__AttributeUtils.getExpressionInfo(e)},n.createGenericExpressionEvaluator=function(t){var n,r=e.getExpressionEvaluator();if(r){var o=r.createEvaluator(t).evaluate;return function(t){return o([t])}}try{n=new Function("context","with(context){return "+t+";}")}catch(e){throw new Error(e.message+' in expression "'+t+'"')}return n},n});

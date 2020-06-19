@@ -1,16 +1,18 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
 define(['ojs/ojcore', 'ojs/ojtranslation', 'jquery', 'ojs/ojmessaging', 'ojs/ojlogger', 'ojs/ojmetadatautils',
         'ojs/ojdefaultsutils', 'ojs/ojcustomelement', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-amd/keycode', 'jqueryui-amd/focusable', 
-        'jqueryui-amd/tabbable'], 
-  function(oj, Translations, $, Message, Logger, MetadataUtils, DefaultsUtils)
+        'jqueryui-amd/tabbable', 'ojs/ojdomutils', 'ojs/ojfocusutils'], 
+  function(oj, Translations, $, Message, Logger, MetadataUtils, defaults)
 {
   "use strict";
+  var DefaultsUtils = defaults.DefaultsUtils;
 
 
 /**
@@ -242,7 +244,7 @@ oj.Components.subtreeDetached = function (node) {
  * All oj-defer elements in the entire subtree will be activated. Note that subtreeShown currently notifies the entire
  * subtree as well. This generally means that only non-nested oj-defer elements make sense in a subtree.
  *
- * @param {!Element} node - the root of the subtree
+ * @param {!Node} node - the root of the subtree
  * @param {Object=} options Options to control subtreeShown
  * @param {boolean} options.initialRender The index at which to start fetching records.
  * @see oj.Components.subtreeHidden
@@ -252,15 +254,19 @@ oj.Components.subtreeDetached = function (node) {
 
 
 oj.Components.subtreeShown = function (node, options) {
+  var _node = $(node)[0]; // Strip possible jQuery wrapper
+
+  if (_node.nodeType !== Node.ELEMENT_NODE) {
+    return;
+  }
+
   var _options = options || {};
 
   var isInitialRender = _options.initialRender;
 
   if (!isInitialRender) {
-    oj.DomUtils.fixResizeListeners(node);
+    oj.DomUtils.fixResizeListeners(_node);
   }
-
-  var _node = $(node)[0]; // Strip possible jQuery wrapper
 
   unmarkSubtreeHidden(_node);
 
@@ -277,7 +283,7 @@ oj.Components.subtreeShown = function (node, options) {
  * This method should be called by the application after the subtree has been hidden programmatically, such as
  * when JQuery's .hide() method is called.
  *
- * @param {!Element} node - the root of the subtree
+ * @param {!Node} node - the root of the subtree
  * @see oj.Components.subtreeShown
  * @return {void}
  * @export
@@ -286,6 +292,10 @@ oj.Components.subtreeShown = function (node, options) {
 
 oj.Components.subtreeHidden = function (node) {
   var _node = $(node)[0]; // Strip possible jQuery wrapper
+
+  if (_node.nodeType !== Node.ELEMENT_NODE) {
+    return;
+  }
 
   _applyHideShowToComponents(_node, function (instance) {
     instance._NotifyHidden();
@@ -607,7 +617,7 @@ function _applyHideShowToComponents(subtreeRoot, jqCallback, activateDefer) {
         return false; // Walked up to document.  Not hidden
       }
 
-      if (node.classList.contains(_OJ_SUBTREE_HIDDEN_CLASS)) {
+      if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains(_OJ_SUBTREE_HIDDEN_CLASS)) {
         return true;
       }
 
@@ -646,9 +656,9 @@ function _applyHideShowToComponents(subtreeRoot, jqCallback, activateDefer) {
     return shownNodes;
   }
 
-  function processFunc(node) {
-    if (jqCallback && node.classList.contains(_OJ_COMPONENT_NODE_CLASS)) {
-      var jelem = $(node);
+  function processFunc(element) {
+    if (jqCallback && element.classList.contains(_OJ_COMPONENT_NODE_CLASS)) {
+      var jelem = $(element);
       var names = jelem.data(_OJ_WIDGET_NAMES_DATA);
 
       if (names != null) {
@@ -662,8 +672,12 @@ function _applyHideShowToComponents(subtreeRoot, jqCallback, activateDefer) {
       }
     }
 
-    if (activateDefer && node.tagName.toLowerCase() === 'oj-defer') {
-      node._activate();
+    if (activateDefer && element.tagName.toLowerCase() === 'oj-defer') {
+      if (element._activate) {
+        element._activate();
+      } else {
+        throw new Error('subtreeShown called before module ojs/ojdefer was loaded');
+      }
     }
   }
 
@@ -1120,9 +1134,9 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
           var currStyle = widget.attr('style');
 
           if (currStyle) {
-            widget.attr('style', currStyle + ';' + styleValue);
+            widget.attr('style', currStyle + ';' + styleValue); // @HTMLUpdateOK
           } else {
-            widget.attr('style', styleValue);
+            widget.attr('style', styleValue); // @HTMLUpdateOK
           }
         } // make shallow copy, remove class and style from the copy, and set all
         // remaining attrs on the element.  Currently id is the only remaining attr
@@ -1533,7 +1547,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
 
           for (i = 0; i < attributeKeys.length; i++) {
             var attribute = attributeKeys[i];
-            element.attr(attribute, attributes[attribute].attr);
+            element.attr(attribute, attributes[attribute].attr); // @HTMLUpdateOK
           }
         }
       });
@@ -3540,18 +3554,17 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
       }
 
       if (this.connectedState === undefined) {
-        var self = this;
-        Promise.resolve().then(function () {
-          if (self.connectedState === state) {
+        window.queueMicrotask(function () {
+          if (this.connectedState === state) {
             if (state === _STATE_CONNECTED) {
-              self._SetupResources();
+              this._SetupResources();
             } else {
-              self._ReleaseResources();
+              this._ReleaseResources();
             }
           }
 
-          self.connectedState = undefined;
-        });
+          this.connectedState = undefined;
+        }.bind(this));
       }
 
       this.connectedState = state;
@@ -3607,41 +3620,6 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
     GetFocusElement: function GetFocusElement() {
       return this.element[0];
     }
-    /**
-     * <p>The following CSS classes can be applied by the page author as needed.
-     *
-     * @ojfragment ojStylingDocIntro - For use in the Styling section of the JSDoc, above the table of CSS classes .
-     * @memberof oj.baseComponent
-     */
-
-    /**
-     * Class
-     *
-     * @ojfragment ojStylingDocClassHeader - For use in the "Class" <th> in the Styling section of the JSDoc.
-     * @memberof oj.baseComponent
-     */
-
-    /**
-     * Can be applied to
-     *
-     * @ojfragment ojStylingDocApplyHeader - For use in the "Can be applied to" <th> in the Styling section of the JSDoc.
-     * @memberof oj.baseComponent
-     */
-
-    /**
-     * Description
-     *
-     * @ojfragment ojStylingDocDescriptionHeader - For use in the "Description" <th> in the Styling section of the JSDoc.
-     * @memberof oj.baseComponent
-     */
-
-    /**
-     * Example
-     *
-     * @ojfragment ojStylingDocExampleHeader - For use in the "Example" <th> in the Styling section of the JSDoc.
-     * @memberof oj.baseComponent
-     */
-
     /**
      * Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app
      * developer needs per-instance control.
@@ -4115,7 +4093,8 @@ oj.ComponentMessaging._STRATEGY_TYPE = {
   PLACEHOLDER: 'placeholder',
   INLINE: 'inline',
   LABEL_EDGE_INSIDE: 'inside',
-  LABEL_EDGE_INSIDE_FORM_CNTRL: 'insideformcontrol'
+  LABEL_EDGE_INSIDE_FORM_CNTRL: 'insideformcontrol',
+  USER_ASSISTANCE_INLINE: 'userassistanceinline'
 };
 /**
  * Tracks the messaging strategy callback function by type, used to instantiate messaging strategies.
@@ -4253,7 +4232,7 @@ oj.ComponentMessaging.prototype.close = function () {
  * e.g., In PopupComponentMessaging.js:
  *  oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW,
  *                              oj.PopupMessagingStrategy
- * @param {Array.<string>|undefined} artifactsForType (e.g., 'messages', 'title', 'validatorHints')
+ * @param {Array.<string>|undefined} artifactsForType (e.g., 'messages', 'helpInstruction', 'validatorHints')
  *
  * @private
  * @instance
@@ -4338,54 +4317,53 @@ oj.ComponentMessaging.prototype._isActive = function () {
 };
 /**
  * Returns a key/value array: strategyTypes -> array of artifacts using that strategyType.
- * where artifacts is 'messages', 'converterHint', 'validatorHint', 'title';
+ * where artifacts is 'messages', 'converterHint', 'validatorHint', 'helpInstruction';
  * e.g.,
- * artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW] = ['messages', 'converterHints']
- * artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.NONE] = ['validatorHints']
+ * strategyToArtifacts[oj.ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW] = ['messages', 'converterHints']
+ * strategyToArtifacts[oj.ComponentMessaging._STRATEGY_TYPE.NONE] = ['validatorHints']
  * The types of messaging content for which displayOptions can be configured include
- * messages, converterHint, validatorHint and title.
+ * messages, converterHint, validatorHint and helpInstruction.
  * The displayOptions for each type is specified either as an array of strings or a string.
  * When an array is specified the first display option takes precedence over the second and so on,
  * so we will only have ONE display type per artifact.
  */
 
 
-oj.ComponentMessaging.prototype._getResolvedMessagingDisplayOptions = function () {
-  var artifactsByDisplayType = {};
-  var artifactDisplayTypeResolved = false;
+oj.ComponentMessaging.prototype._getResolvedMessagingDisplayOptions = function (messagingPreferences) {
+  var strategyToArtifacts = {};
+  var artifactStrategyTypeResolved = false;
   var options = this._component.options;
-  var messagingPreferences = this._component.options.displayOptions || {};
   var $messagingPreferences = {};
   var self = this; // first resolve primary display options for each artifact.
   // E.g. at the end of this loop you should have something like this
-  // {messages: 'notewindow', converterHint: 'placeholder', validatorHint: 'notewindow', title: 'none'}
+  // {messages: 'notewindow', converterHint: 'placeholder', validatorHint: 'notewindow', helpInstruction: 'none'}
 
   var keys = Object.keys(messagingPreferences);
 
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
     var strategyTypes = messagingPreferences[key]; // loop over array of strategyTypes preferred for artifact.
-    // artifacts are 'messages', 'converterHint', 'validatorHint', 'title'
+    // artifacts are 'messages', 'converterHint', 'validatorHint', 'helpInstruction'
 
-    artifactDisplayTypeResolved = false;
+    artifactStrategyTypeResolved = false;
     var artifact = key + ''; // we take either array or string values for displayOptions.
 
     if (Array.isArray(strategyTypes)) {
       for (var j = 0; j < strategyTypes.length; j++) {
         var strategyType = strategyTypes[j];
 
-        if (!artifactDisplayTypeResolved) {
-          artifactDisplayTypeResolved = self._resolveDisplayTypeForArtifact(artifact, strategyType, options, $messagingPreferences);
+        if (!artifactStrategyTypeResolved) {
+          artifactStrategyTypeResolved = self._resolveStrategyTypeForArtifact(artifact, strategyType, options, $messagingPreferences);
         }
       }
     } else if (typeof strategyTypes === 'string') {
-      if (!artifactDisplayTypeResolved) {
-        artifactDisplayTypeResolved = self._resolveDisplayTypeForArtifact(artifact, strategyTypes, options, $messagingPreferences);
+      if (!artifactStrategyTypeResolved) {
+        artifactStrategyTypeResolved = self._resolveStrategyTypeForArtifact(artifact, strategyTypes, options, $messagingPreferences);
       }
     } // if we couldn't resolve then use "none". E.g., validationHint: ['none']
 
 
-    if (!artifactDisplayTypeResolved) {
+    if (!artifactStrategyTypeResolved) {
       $messagingPreferences[artifact] = oj.ComponentMessaging._STRATEGY_TYPE.NONE;
     }
   } // update the label creation strategy
@@ -4400,16 +4378,90 @@ oj.ComponentMessaging.prototype._getResolvedMessagingDisplayOptions = function (
 
 
   $.each(oj.ComponentMessaging._STRATEGY_TYPE, function (type, name) {
-    artifactsByDisplayType[name] = [];
+    strategyToArtifacts[name] = [];
   });
   $.each($messagingPreferences, function (_artifact, _strategyType) {
     // an artifact eventually resolves to one strategyType.
-    artifactsByDisplayType[_strategyType].push(_artifact);
+    strategyToArtifacts[_strategyType].push(_artifact);
   }); // The keys to the object is the DisplayType, like inline, inside,
   // insideFormControl, none, notewindow, placeholder.
   // The artifacts are things like converterHint, label.
 
-  return artifactsByDisplayType;
+  return strategyToArtifacts;
+};
+/**
+ * This function is used when the component's user assistance option should be used.
+ * The component.display-options is used only to see if 'none' is specified.
+ * display-options is ignored otherwise for the Redwood theme (via a theming variable).
+ *
+ * This function returns a key/value array: strategyTypes -> array of artifacts
+ * using that strategyType. where artifacts is
+ * 'messages', 'converterHint', 'validatorHint', 'helpInstruction';
+ * e.g., {userAssistanceInline: ['messages', 'helpInstruction'],
+ *        none: ['validationHint']
+ * Note: the only strategies for inline are userAssistanceInline and none (and the label strategies)
+ * The types of messaging content that can be configured include
+ * messages, converterHint, validatorHint and helpInstruction.
+ */
+
+
+oj.ComponentMessaging.prototype._getUserAssistanceStrategyToArtifactsObj = function () {
+  var strategyToArtifacts = {};
+  var options = this._component.options;
+  var componentDisplayOptions = options.displayOptions || {};
+  var artifactPiecesToStrategyObj = {};
+  var self = this; // componentDisplayOptions will be an Object like this:
+  // {messages:['inline'], converterHint:['placeholder','notewindow'],
+  // validatorHint:['notewindow], helpInstruction:['notewindow']
+  // If we are looking at the user-assistance-density attribute on the component,
+  // then all we care about from the displayOptions attribute is whether or not there
+  // is a 'none' for any of these 'artifacts'. Like, is validatorHint:'none'? If so, do not
+  // render the validatorHint. Otherwise render it how the user-assistance-density says to.
+  //
+  // first resolve primary display options for each artifact.
+  // E.g. at the end of this loop you should have something like this
+  // {messages: 'userassistanceinline', validatorHint:
+  // 'userassistanceinline', helpInstruction: 'none'}
+
+  var keys = Object.keys(componentDisplayOptions);
+
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    var strategyTypes = componentDisplayOptions[key]; // loop over array of strategyTypes preferred for artifact.
+    // artifacts are 'messages', 'converterHint', 'validatorHint', 'helpInstruction'
+
+    var artifact = key + ''; // we only look at 'string' for 'none'.
+
+    if (typeof strategyTypes === 'string' && strategyTypes === 'none') {
+      artifactPiecesToStrategyObj[artifact] = oj.ComponentMessaging._STRATEGY_TYPE.NONE;
+    } else {
+      // put it in the user assistance inline
+      artifactPiecesToStrategyObj[artifact] = oj.ComponentMessaging._STRATEGY_TYPE.USER_ASSISTANCE_INLINE;
+    }
+  } // update the label creation strategy
+  // at this point, artifactPiecesToStrategyObj may have an Object like:
+  // {converterHint:'none',
+  // helpInstruction:'userassistanceinline', messages:'userassistanceinline', validatorHint:'none'}
+  // After the call to _addLabelStrategy, it might be added
+  // labelEdge:'top'
+
+
+  self._addLabelStrategy(artifactPiecesToStrategyObj); // collate by strategyType -> artifact. but first reset
+
+
+  Object.keys(oj.ComponentMessaging._STRATEGY_TYPE).forEach(function (key) {
+    var value = oj.ComponentMessaging._STRATEGY_TYPE[key];
+    strategyToArtifacts[value] = [];
+  });
+  Object.keys(artifactPiecesToStrategyObj).forEach(function (key) {
+    var _strategyType = artifactPiecesToStrategyObj[key];
+
+    strategyToArtifacts[_strategyType].push(key);
+  }); // This returns an Object with all the StrategyTypes as keys and the
+  // 'artifacts' as values, like {none:['validationHint'], 'userAssistanceInline':['messages', 'helpInstruction']
+  // inside:['labelEdge']}
+
+  return strategyToArtifacts;
 }; // Note:
 // Each LabelStrategy is self-registering., e.g., InsideFormControlLabelStrategy registers itself
 // by calling oj.ComponentMessaging.registerMessagingStrategy.
@@ -4422,16 +4474,16 @@ oj.ComponentMessaging.prototype._addLabelStrategy = function ($messagingPreferen
 
   var strategyTypeLabelEdge = this._component._ResolveLabelEdgeStrategyType();
 
-  var artifactDisplayTypeResolved = self._resolveDisplayTypeForArtifact(artifactKey, strategyTypeLabelEdge, this._component.options, $messagingPreferences);
+  var artifactStrategyTypeResolved = self._resolveStrategyTypeForArtifact(artifactKey, strategyTypeLabelEdge, this._component.options, $messagingPreferences);
 
-  if (!artifactDisplayTypeResolved) {
+  if (!artifactStrategyTypeResolved) {
     // eslint-disable-next-line no-param-reassign
     $messagingPreferences[artifactKey] = oj.ComponentMessaging._STRATEGY_TYPE.NONE;
   }
 };
 
-oj.ComponentMessaging.prototype._resolveDisplayTypeForArtifact = function (artifact, strategyType, options, $messagingPreferences) {
-  var artifactDisplayTypeResolved = false;
+oj.ComponentMessaging.prototype._resolveStrategyTypeForArtifact = function (artifact, strategyType, options, $messagingPreferences) {
+  var artifactStrategyTypeResolved = false;
   var compPH = options.placeholder;
 
   switch (strategyType) {
@@ -4448,16 +4500,16 @@ oj.ComponentMessaging.prototype._resolveDisplayTypeForArtifact = function (artif
         // otherwise we use 'none'. E.g.,
         // {'converterHint': ['placeholder', 'notewindow']} // use notewindow
         // {'converterHint': ['placeholder']}               // use none
-        if (!artifactDisplayTypeResolved) {
+        if (!artifactStrategyTypeResolved) {
           if (!compPH) {
             // eslint-disable-next-line no-param-reassign
             $messagingPreferences[artifact] = strategyType;
-            artifactDisplayTypeResolved = true;
+            artifactStrategyTypeResolved = true;
           }
         }
       } else {// strategyType 'placeholder' is not supported on other artifacts
         // ignore if present
-        // TODO: In the future we may want to support configuring validatorHint ot title as
+        // TODO: In the future we may want to support configuring validatorHint ot helpInstruction as
         // placeholder as well.
       }
 
@@ -4466,10 +4518,10 @@ oj.ComponentMessaging.prototype._resolveDisplayTypeForArtifact = function (artif
 
     case oj.ComponentMessaging._STRATEGY_TYPE.INLINE:
       if (artifact === 'messages') {
-        if (!artifactDisplayTypeResolved) {
+        if (!artifactStrategyTypeResolved) {
           // eslint-disable-next-line no-param-reassign
           $messagingPreferences[artifact] = strategyType;
-          artifactDisplayTypeResolved = true;
+          artifactStrategyTypeResolved = true;
         }
       } else {// strategyType 'inline' is not supported on other artifacts
         // ignore if present
@@ -4479,43 +4531,54 @@ oj.ComponentMessaging.prototype._resolveDisplayTypeForArtifact = function (artif
 
     case oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE:
     case oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL:
-      if (artifact === 'labelEdge' && !artifactDisplayTypeResolved && !oj.StringUtils.isEmptyOrUndefined(options.labelHint)) {
+      if (artifact === 'labelEdge' && !artifactStrategyTypeResolved && !oj.StringUtils.isEmptyOrUndefined(options.labelHint)) {
         // eslint-disable-next-line no-param-reassign
         $messagingPreferences[artifact] = strategyType;
-        artifactDisplayTypeResolved = true;
+        artifactStrategyTypeResolved = true;
       }
 
       break;
 
     default:
-      if (!artifactDisplayTypeResolved && artifact !== 'labelEdge') {
+      if (!artifactStrategyTypeResolved && artifact !== 'labelEdge') {
         // eslint-disable-next-line no-param-reassign
         $messagingPreferences[artifact] = strategyType;
-        artifactDisplayTypeResolved = true;
+        artifactStrategyTypeResolved = true;
       }
 
       break;
   }
 
-  return artifactDisplayTypeResolved;
+  return artifactStrategyTypeResolved;
 };
 /**
- * Creates messaging strategies for the component based on the displayOptions.
+ * Creates messaging strategies for the component.
+ * As of v9.0 form components have a user-assistance-density attribute in addition
+ * to the existing display-options. For Redwood UX we look at the user-assistance-density
+ * which is efficient or compact and the app will have all its 'user assistance' (i.e., help instruction,
+ * hint, messages) inline, or if compact it is in popups.
+ * For bw compatibility/Alta we continue to look at display-options
+ * like display-options.help-instruction that could be notewindow,
+ * and for display-options.messages that could be inline, etc.
+ * BOTH will look at display-options for validationHint/messages for 'none'
+ * because we still want to be able to turn these off.
  * @private
  */
 
 
 oj.ComponentMessaging.prototype._initializeMessagingStrategies = function () {
-  var artifactsByDisplayType = this._getResolvedMessagingDisplayOptions();
+  var strategyToArtifacts = this._strategyToArtifacts();
 
-  var displayInNoteWindow = artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW];
-  var displayNone = artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.NONE];
-  var displayInPlaceholder = artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER];
-  var displayInline = artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.INLINE]; // these are input components
+  var displayInNoteWindow = strategyToArtifacts[oj.ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW];
+  var displayNone = strategyToArtifacts[oj.ComponentMessaging._STRATEGY_TYPE.NONE];
+  var displayInPlaceholder = strategyToArtifacts[oj.ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER];
+  var displayInline = strategyToArtifacts[oj.ComponentMessaging._STRATEGY_TYPE.INLINE]; // these are input components
 
-  var displayLabelEdgeInsideTextField = artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE]; // these are form controls that aren't inputs, like radioset
+  var displayLabelEdgeInsideTextField = strategyToArtifacts[oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE]; // these are form controls that aren't inputs, like radioset
 
-  var displayLabelEdgeInsideFormControl = artifactsByDisplayType[oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL];
+  var displayLabelEdgeInsideFormControl = strategyToArtifacts[oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL]; // these are for user assistance inline that is used in the Redwood theme
+
+  var displayUserAssistanceInline = strategyToArtifacts[oj.ComponentMessaging._STRATEGY_TYPE.USER_ASSISTANCE_INLINE];
   var messagingStrategies = {};
 
   if (displayInNoteWindow.length > 0) {
@@ -4531,9 +4594,13 @@ oj.ComponentMessaging.prototype._initializeMessagingStrategies = function () {
   }
 
   if (displayInline.length > 0) {
-    // displayInPlaceholder is an array of the artifacts that want to be displayed in placeholder
-    // e.g., 'converterHints'
+    // displayInline is an array of the artifacts that want to be displayed in inline
+    // e.g., 'messages'
     messagingStrategies[oj.ComponentMessaging._STRATEGY_TYPE.INLINE] = this._createMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.INLINE, displayInline);
+  }
+
+  if (displayUserAssistanceInline.length > 0) {
+    messagingStrategies[oj.ComponentMessaging._STRATEGY_TYPE.USER_ASSISTANCE_INLINE] = this._createMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.USER_ASSISTANCE_INLINE, displayUserAssistanceInline);
   } // Create one of these strategies for whatever labelEdge we are using currently
 
 
@@ -4547,20 +4614,20 @@ oj.ComponentMessaging.prototype._initializeMessagingStrategies = function () {
   this._strategies = messagingStrategies;
 };
 /**
- * Reinitializes component messaging with new messagingDisplayOptions.
+ * Reinitializes component messaging.
  *
  * @private
  */
 
 
 oj.ComponentMessaging.prototype._reactivate = function () {
-  var artifactsByDisplayType = this._getResolvedMessagingDisplayOptions();
+  var strategyToArtifacts = this._strategyToArtifacts();
 
   var strategy;
   var cm = this; // for every strategyType being requested either create the messaging strategy for the type or
   // reuse existing strategy if it has already been created.
 
-  $.each(artifactsByDisplayType, function (type, artifactsForType) {
+  $.each(strategyToArtifacts, function (type, artifactsForType) {
     // eslint-disable-next-line no-param-reassign
     type += ''; // coerce to avoid GCC warning
 
@@ -4585,6 +4652,37 @@ oj.ComponentMessaging.prototype._reactivate = function () {
       delete cm._strategies[type];
     }
   });
+};
+/**
+ * get strategy to artifacts
+ * we do different things depending on whether we are using displayOptions
+ * or the user-assistance-density attribute.
+ *
+ * @private
+ */
+
+
+oj.ComponentMessaging.prototype._strategyToArtifacts = function () {
+  var strategyToArtifacts;
+
+  var resolvedUserAssistance = this._component._getResolvedUserAssistance();
+
+  if (resolvedUserAssistance !== 'compact' && resolvedUserAssistance !== 'displayOptions') {
+    strategyToArtifacts = this._getUserAssistanceStrategyToArtifactsObj();
+  } else {
+    var options = this._component.options;
+    var messagingPreferences = options.displayOptions || {};
+
+    if (resolvedUserAssistance === 'compact') {
+      // for 'compact' set displayOptions.messages to notewindow.
+      messagingPreferences.messages = 'notewindow';
+      strategyToArtifacts = this._getResolvedMessagingDisplayOptions(messagingPreferences);
+    } else {
+      strategyToArtifacts = this._getResolvedMessagingDisplayOptions(messagingPreferences);
+    }
+  }
+
+  return strategyToArtifacts;
 };
 /**
  * A base messaging strategy class that is initialized with a set of displayOptions. This object
@@ -4759,6 +4857,16 @@ oj.MessagingStrategy.prototype.GetConverterHint = function () {
 };
 
 oj.MessagingStrategy.prototype.GetValidatorHints = function () {
+  var component = this.GetComponent(); // Async validators hints are retrieved only when they are needed to be shown to the user.
+  // So instead of calling _initAsyncValidatorMessagingHint when the component is created,
+  // it is called here when validator hints are first shown to the user.
+
+  if (component && !component._initAsyncMessaging && component._initAsyncValidatorMessagingHint) {
+    component._initAsyncMessaging = true;
+
+    component._initAsyncValidatorMessagingHint();
+  }
+
   var hints = [];
 
   var mc = this._getMessagingContent();
@@ -4771,7 +4879,7 @@ oj.MessagingStrategy.prototype.GetValidatorHints = function () {
 };
 /**
  * Gets the short description.
- * @return {string} title or ""
+ * @return {string} helpInstruction or ""
  * @private
  */
 
@@ -4803,6 +4911,23 @@ oj.MessagingStrategy.prototype.HasMessages = function () {
   var messages = this.GetMessages();
   return !!(messages && messages.length > 0);
 };
+/**
+ * The following explains what this._displayOptions is in the following methods --
+ * When the Strategy is created, like the PopupComponentMessaging strategy, it gets passed
+ * in what artifacts it needs to display, like 'messages' or 'validatorHint'.
+ * The default in alta is to show 'helpInstruction' and 'validatorHint' in 'notewindow'.
+ * The api is displayOptions.helpInstruction = 'notewindow' and
+ * displayOptions.validatorHint = 'notewindow', and this gets consolidated the other way,
+ * notewindow: [helpInstruction, validatorHint], where notewindow is the PopupComponentStrategy.
+ * For Redwood, we look at the user-assistance-density attribute, and by default the displayOptions
+ * will be 'messages', 'helpInstruction' and 'validatorHint'.
+ * 'helpInstruction', 'helpDefinition' and 'helpSource' are
+ * shown if the attributes are set.
+ * The user can turn off helpInstruction by not having a help instruction option.
+ * The user can turn off messages and/or validationHint by setting its display-options to none, like
+ * display-options.validatorHint = 'none'.
+ */
+
 
 oj.MessagingStrategy.prototype.ShowMessages = function () {
   return this._displayOptions.indexOf('messages') !== -1;
@@ -4829,6 +4954,98 @@ oj.MessagingStrategy.prototype.ShowTitle = function () {
 
 oj.MessagingStrategy.prototype.IsInvalid = function () {
   return this.GetValidityState().isInvalid();
+};
+/**
+ * Create an id to put on the root dom element that holds the inline messaging content,
+ * then add aria-describedby on the component on the appropriate dom node(s).
+ * This makes it so the screen reader user knows the messaging content is connected to the launcher.
+ * @memberof oj.MessagingStrategy
+ * @param {Element} containerRoot
+ * @instance
+ * @private
+ */
+
+
+oj.MessagingStrategy.prototype.AddAriaDescribedByForInlineMessaging = function (containerRoot) {
+  // create an id on the div holding the inline messaging.
+  // add aria-describedby to the launcher to associate the launcher and the inline message
+  var $contentElems = this.GetContentElement();
+  oj.Assert.assertPrototype($contentElems, $);
+  var containerRootId = $(containerRoot).uniqueId()[0].getAttribute('id');
+  $contentElems.each(function () {
+    // get ariaAttr that is on the content element(s)
+    var ariaAttributeValue = this.getAttribute('aria-describedby'); // split into tokens
+
+    var tokens = ariaAttributeValue ? ariaAttributeValue.split(/\s+/) : []; // Get index that id is in the tokens, if at all.
+
+    var index = tokens.indexOf(containerRootId); // push id into tokens if it isn't already there
+
+    if (index === -1) {
+      tokens.push(containerRootId);
+    } // join the tokens together
+
+
+    var newValue = tokens.join(' ').trim();
+    this.setAttribute('aria-describedby', newValue); // @HTMLUpdateOK
+  });
+};
+/**
+ * @memberof oj.MessagingStrategy
+ * @param {Element} containerRoot
+ * @instance
+ * @private
+ */
+
+
+oj.MessagingStrategy.prototype.AddDescribedByToElement = function (elem, id) {
+  var attr = 'described-by';
+  var currentAttributeValue = elem.getAttribute(attr);
+  var newAttributeValue;
+  var tokens = currentAttributeValue ? currentAttributeValue.split(/\s+/) : []; // Get index that id is in the tokens, if at all.
+
+  var index = tokens.indexOf(id); // add id if it isn't already there
+
+  if (index === -1) {
+    tokens.push(id);
+  }
+
+  newAttributeValue = tokens.join(' ').trim();
+  elem.setAttribute(attr, newAttributeValue); // @HTMLUpdateOK
+};
+/**
+ * Removes the aria-describedby from the launcher that was added by AddAriaDescribedByForInlineMessaging
+ * @param {Element} containerRoot
+ * @memberof oj.MessagingStrategy
+ * @instance
+ * @private
+ */
+
+
+oj.MessagingStrategy.prototype.RemoveAriaDescribedByForInlineMessaging = function (containerRoot) {
+  var $contentElems = this.GetContentElement();
+  oj.Assert.assertPrototype($contentElems, $);
+  var containerRootId = containerRoot.getAttribute('id');
+  $contentElems.each(function () {
+    // get ariaAttr that is on the content element(s)
+    var ariaAttributeValue = this.getAttribute('aria-describedby'); // split into tokens
+
+    var tokens = ariaAttributeValue ? ariaAttributeValue.split(/\s+/) : []; // Get index that id is in the tokens, if at all.
+
+    var index = tokens.indexOf(containerRootId); // remove id if it is there.
+
+    if (index !== -1) {
+      // remove that from the tokens array
+      tokens.splice(index, 1);
+    }
+
+    var newValue = tokens.join(' ').trim();
+
+    if (newValue) {
+      this.setAttribute('aria-describedby', newValue); // @HTMLUpdateOK
+    } else {
+      this.removeAttribute('aria-describedby');
+    }
+  });
 };
 /**
  * Gets the messagingContent stored in ComponentMessaging instance
@@ -5294,7 +5511,8 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
         var attr = transferAttrs[i];
 
         if (element.hasAttribute(attr)) {
-          this._WIDGET_ELEM.setAttribute(attr, element.getAttribute(attr)); // Remove attribute from custom element after transfering value to inner element
+          this._WIDGET_ELEM.setAttribute(attr, element.getAttribute(attr)); // @HTMLUpdateOK
+          // Remove attribute from custom element after transfering value to inner element
           // Set a flag so we know that we're removing the attribute, not app so
           // that on attribute changed we don't remove it again
 
@@ -5323,12 +5541,12 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
 
 
     var getFocusEventPropagator = function getFocusEventPropagator(type) {
-      return function () {
+      return function (event) {
         // Ensure that the target is the custom element, not the inner element, so create
         // a new event and dispatch on the custom element.
-        var focusEvent = document.createEvent('UIEvent');
-        focusEvent.initEvent(type, false, false);
-        element.dispatchEvent(focusEvent);
+        element.dispatchEvent(new FocusEvent(type, {
+          relatedTarget: event.relatedTarget
+        }));
       };
     };
 
@@ -5457,7 +5675,8 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
         // When we transfer the attribute the app will not be able to remove the
         // attribute from the DOM, we will recommend binding the value if the value
         // needs to be toggled.
-        this._WIDGET_ELEM.setAttribute(attr, newValue); // Remove attribute from custom element after transfering value to inner element
+        this._WIDGET_ELEM.setAttribute(attr, newValue); // @HTMLUpdateOK
+        // Remove attribute from custom element after transfering value to inner element
         // Set a flag so we know that we're removing the attribute, not app so
         // that on attribute changed we don't remove it again
 
@@ -5542,7 +5761,7 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
         try {
           coercedValue = oj.__AttributeUtils.coerceValue(elem, attrName, value, propMeta.type);
         } catch (ex) {
-          this.throwError(elem, ex);
+          this.throwError(elem, 'Error parsing attribute value.', ex);
         }
 
         return coercedValue;
@@ -5588,9 +5807,11 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
     if (value == null || value === false) {
       this._WIDGET_ELEM.removeAttribute(attribute);
     } else if (value === true) {
-      this._WIDGET_ELEM.setAttribute(attribute, '');
+      this._WIDGET_ELEM.setAttribute(attribute, ''); // @HTMLUpdateOK
+
     } else {
-      this._WIDGET_ELEM.setAttribute(attribute, value);
+      this._WIDGET_ELEM.setAttribute(attribute, value); // @HTMLUpdateOK
+
     }
   },
   _setupPropertyAccumulator: function _setupPropertyAccumulator(element, widgetOptions) {
@@ -5821,7 +6042,8 @@ oj.CustomElementBridge._getWidgetElement = function (element, innerTagName) {
     if (firstChild && firstChild.tagName.toLowerCase() === innerTagName) {
       widgetElem = firstChild;
     } else {
-      widgetElem = document.createElement(innerTagName); // Make a copy of the custom element children before appending the inner element
+      widgetElem = document.createElement(innerTagName); // @HTMLUpdateOK
+      // Make a copy of the custom element children before appending the inner element
 
       var children = [];
       var nodeList = element.childNodes;
@@ -6198,1459 +6420,6 @@ oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto, {
 
 
 /**
- * DOM utilities.
- * @ignore
- */
-oj.DomUtils = {};
-oj.DomUtils._HTML_START_TAG = '\x3chtml\x3e';
-oj.DomUtils._HTML_END_TAG = '\x3c/html\x3e';
-oj.DomUtils._LEGAL_ELEMENTS = {
-  SPAN: 1,
-  B: 1,
-  I: 1,
-  EM: 1,
-  BR: 1,
-  HR: 1,
-  LI: 1,
-  OL: 1,
-  UL: 1,
-  P: 1,
-  TT: 1,
-  BIG: 1,
-  SMALL: 1,
-  PRE: 1
-};
-oj.DomUtils._LEGAL_ATTRIBUTES = {
-  class: 1,
-  style: 1
-};
-/**
- * Returns true if the value is null or if the trimmed value is of zero length.
- *
- * @param {string|null} content
- * @return {boolean} true if the string is wrapped in <html> tag.
- */
-
-oj.DomUtils.isHTMLContent = function (content) {
-  if (content.indexOf(oj.DomUtils._HTML_START_TAG) === 0 && content.lastIndexOf(oj.DomUtils._HTML_END_TAG) === content.length - 7) {
-    return true;
-  }
-
-  return false;
-};
-
-oj.DomUtils.cleanHtml = function (value) {
-  var offSpan = $(document.createElement('span')).get(0);
-  offSpan.innerHTML = value; // @HTMLUpdateOK safe manipulation
-
-  if (value && value.indexOf('\x3c') >= 0) {
-    oj.DomUtils._cleanElementHtml(offSpan);
-  }
-
-  return offSpan;
-};
-
-oj.DomUtils._cleanElementHtml = function (node) {
-  var children = node.childNodes;
-
-  for (var count = children.length - 1; count >= 0; count--) {
-    var child = children.item(count);
-
-    if (child && child.nodeType === 1) {
-      if (oj.DomUtils._LEGAL_ELEMENTS[child.nodeName]) {
-        var attrs = child.attributes;
-
-        for (var i = attrs.length - 1; i >= 0; i--) {
-          var attr = attrs[i]; // jquery - the .attr() method returns undefined for attributes that have not been set.
-
-          var childHasAttr = $(child).attr(attr.name) !== undefined;
-
-          if (childHasAttr) {
-            if (!oj.DomUtils._LEGAL_ATTRIBUTES[attr.name]) {
-              child.removeAttribute(attr.nodeName);
-            }
-          }
-        }
-
-        oj.DomUtils._cleanElementHtml(child);
-      } else if (child) {
-        node.removeChild(child);
-      }
-    }
-  }
-};
-/**
- * Checks to see if the "ancestorNode" is a ancestor of "node".
- *
- * @param {!Element} ancestorNode dom subtree to check to see if the target node exists
- * @param {!Element} node target node to check to see if it exists within a subtree rooted at the ancestorNode
- * @return {boolean} <code>true</code> if the "ancestorNode" is a ancestor of "node".
- */
-
-
-oj.DomUtils.isAncestor = function (ancestorNode, node) {
-  // These can cause problems in IE11: sometimes the node is just an "empty" object
-  // oj.Assert.assertDomElement(ancestorNode);
-  // oj.Assert.assertDomElement(node);
-  var parentNode = node.parentNode;
-
-  while (parentNode) {
-    if (parentNode === ancestorNode) {
-      return true;
-    }
-
-    parentNode = parentNode.parentNode;
-  }
-
-  return false;
-};
-/**
- * Checks to see if the "ancestorNode" is a ancestor of "node" or if they are the same.
- *
- * @param {!Element} ancestorNode dom subtree to check to see if the target node exists
- * @param {!Element} node target node to check to see if it exists within a subtree rooted at the ancestorNode
- * @return {boolean} <code>true</code> if the "ancestorNode" is a ancestor of "node" or if they are the same
- */
-
-
-oj.DomUtils.isAncestorOrSelf = function (ancestorNode, node) {
-  // These can cause problems in IE11: sometimes the node is just an "empty" object
-  // oj.Assert.assertDomElement(ancestorNode);
-  // oj.Assert.assertDomElement(node);
-  return node === ancestorNode ? true : oj.DomUtils.isAncestor(ancestorNode, node);
-};
-/**
- * Adds a resize listener for a block or inline-block element
- * @param {!Element} elem - node where the listener should be added
- * @param {!Function} listener - listener to be added. The listener will receive
- * two parameters: 1) the new width in pixels; 2) the new height in pixels
- * @param {number=} collapseEventTimeout - timeout in milliseconds for collapsing
- * multiple resize events into one
- * @export
- */
-
-
-oj.DomUtils.addResizeListener = function (elem, listener, collapseEventTimeout) {
-  var jelem = $(elem);
-  var tracker = jelem.data(oj.DomUtils._RESIZE_TRACKER_KEY);
-
-  if (tracker == null) {
-    tracker = new oj.DomUtils._ResizeTracker(elem);
-    jelem.data(oj.DomUtils._RESIZE_TRACKER_KEY, tracker);
-    tracker.start();
-  }
-
-  tracker.addListener(listener, collapseEventTimeout);
-};
-/**
- * Removes a resize listener
- * @param {!Element} elem - node whose listener should be removed
- * @param {!Function} listener - listener to be removed
- * @export
- */
-
-
-oj.DomUtils.removeResizeListener = function (elem, listener) {
-  var jelem = $(elem);
-  var tracker = jelem.data(oj.DomUtils._RESIZE_TRACKER_KEY);
-
-  if (tracker != null) {
-    tracker.removeListener(listener);
-
-    if (tracker.isEmpty()) {
-      tracker.stop();
-      jelem.removeData(oj.DomUtils._RESIZE_TRACKER_KEY);
-    }
-  }
-};
-/**
- * Fixes resize listeners after a subtree has been connected to the DOM or after
- * its display:none stayle has been removed
- * @param {!Element} subtreeRoot - subtree root
- */
-
-
-oj.DomUtils.fixResizeListeners = function (subtreeRoot) {
-  $(subtreeRoot).find('.oj-helper-detect-expansion').parent().each(function (index, div) {
-    var tracker = $(div).data(oj.DomUtils._RESIZE_TRACKER_KEY);
-
-    if (tracker != null) {
-      tracker.init(true);
-    }
-  });
-};
-/**
- * Determines whether a special 'meta' key was pressed when the event was fired.
- * For Mac OS, the 'meta' key is mapped to the 'Command' key, for all other platforms it is mapped
- * to the 'Control' key.
- * Note that this method will only work for the events that support .ctrlKey and .metaKey fields.
- * @param {!Object} evt - the event
- * @return true if the meta key is pressed, false otherwise
- */
-
-
-oj.DomUtils.isMetaKeyPressed = function (evt) {
-  var agentInfo = oj.AgentUtils.getAgentInfo();
-  return oj.AgentUtils.OS.MAC === agentInfo.os ? evt.metaKey : evt.ctrlKey;
-};
-/**
- * Dispatches an event on the element
- * @param {!Element} element
- * @param {!Event} evt event object
- */
-
-
-oj.DomUtils.dispatchEvent = function (element, evt) {
-  // Workaround for Mozilla issue #329509 - dispatchEvent() throws an error if
-  // the element is disabled and disconnected
-  // Also, IE simply ignores the .dispatchEvent() call for disabled elements
-  var dis = 'disabled';
-  var oldDisabled = element[dis];
-
-  try {
-    // eslint-disable-next-line no-param-reassign
-    element[dis] = false;
-    element.dispatchEvent(evt);
-  } finally {
-    // eslint-disable-next-line no-param-reassign
-    element[dis] = oldDisabled;
-  }
-};
-/**
- * @private
- */
-
-
-oj.DomUtils._invokeAfterPaint = (window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || function (fn) {
-  return window.setTimeout(fn, 0);
-}).bind(window);
-/**
- * @private
- */
-
-
-oj.DomUtils._cancelInvokeAfterPaint = (window.cancelAnimationFrame || window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || function (id) {
-  return window.clearTimeout(id);
-}).bind(window);
-/**
- * Utility class for tracking resize events for a given element and  sispatching them
- * to listeners
- * @constructor
- * @ignore
- * @private
- */
-
-
-oj.DomUtils._ResizeTracker = function (div) {
-  var _listeners = $.Callbacks();
-
-  var _collapsingManagers = [];
-  var _collapsingListeners = [];
-  var _RETRY_MAX_COUNT = 2;
-  var _retrySetScroll = 0;
-  var _invokeId = null;
-  var _oldWidth = null;
-  var _oldHeight = null;
-  var _detectExpansion = null;
-  var _detectContraction = null;
-  var _resizeListener = null;
-  var _scrollListener = null;
-
-  this.addListener = function (listener, collapseEventTimeout) {
-    if (collapseEventTimeout === undefined || collapseEventTimeout === 0) {
-      _listeners.add(listener);
-    } else {
-      _collapsingManagers.push(new oj.DomUtils._collapsingListenerManager(listener, collapseEventTimeout));
-
-      _collapsingListeners.push(listener);
-    }
-  };
-
-  this.removeListener = function (listener) {
-    var index = _collapsingListeners.indexOf(listener);
-
-    if (index >= 0) {
-      _collapsingListeners.splice(index, 1);
-
-      var removed = _collapsingManagers.splice(index, 1);
-
-      removed[0].stop();
-    } else {
-      _listeners.remove(listener);
-    }
-  };
-
-  this.isEmpty = function () {
-    return !_listeners.has() && _collapsingListeners.length === 0;
-  };
-
-  this.start = function () {
-    _scrollListener = _handleScroll.bind(this); // : Use native onresize support on teh DIV in IE9/10 and  since no scroll events are fired on the
-    // contraction/expansion DIVs in IE9
-
-    if (div.attachEvent) {
-      _resizeListener = _handleResize.bind(this);
-      div.attachEvent('onresize', _resizeListener);
-    } else {
-      var firstChild = div.childNodes[0]; // This child DIV will track expansion events. It is meant to be 1px taller and wider than the DIV
-      // whose resize events we are tracking. After we set its scrollTop and scrollLeft to 1, any increate in size
-      // will fire a scroll event
-
-      _detectExpansion = document.createElement('div');
-      _detectExpansion.className = 'oj-helper-detect-expansion';
-      var expansionChild = document.createElement('div');
-
-      _detectExpansion.appendChild(expansionChild); // @HTMLUpdateOK expansionChild constructed by the code above
-
-
-      if (firstChild != null) {
-        div.insertBefore(_detectExpansion, firstChild); // @HTMLUpdateOK _detectExpansion constructed by the code above
-      } else {
-        div.appendChild(_detectExpansion); // @HTMLUpdateOK _detectExpansion constructed by the code above
-      }
-
-      _detectExpansion.addEventListener('scroll', _scrollListener, false); // This child DIV will track contraction events. Its height and width are set to 200%. After we set its scrollTop and
-      // scrollLeft to the current height and width of its parent, any decrease in size will fire a scroll event
-
-
-      _detectContraction = document.createElement('div');
-      _detectContraction.className = 'oj-helper-detect-contraction';
-      var contractionChild = document.createElement('div');
-      contractionChild.style.width = '200%';
-      contractionChild.style.height = '200%';
-
-      _detectContraction.appendChild(contractionChild); // @HTMLUpdateOK contractionChild constructed by the code above
-
-
-      div.insertBefore(_detectContraction, _detectExpansion); // @HTMLUpdateOK _detectContraction constructed by the code above
-
-      _detectContraction.addEventListener('scroll', _scrollListener, false);
-
-      this.init(false);
-    }
-  };
-
-  this.stop = function () {
-    if (_invokeId != null) {
-      oj.DomUtils._cancelInvokeAfterPaint(_invokeId);
-
-      _invokeId = null;
-    }
-
-    if (_detectExpansion != null) {
-      _detectExpansion.removeEventListener('scroll', _scrollListener);
-
-      _detectContraction.removeEventListener('scroll', _scrollListener); // Check before removing to prevent CustomElement polyfill from throwing
-      // a NotFoundError when removeChild is called with an element not in the DOM
-
-
-      if (_detectExpansion.parentNode) {
-        div.removeChild(_detectExpansion);
-      }
-
-      if (_detectContraction.parentNode) {
-        div.removeChild(_detectContraction);
-      }
-    } else {
-      // assume IE9/10
-      div.detachEvent('onresize', _resizeListener);
-    }
-  };
-
-  this.init = function (isFixup) {
-    var adjusted = _checkSize(isFixup);
-
-    if (isFixup && !adjusted && _detectExpansion.offsetParent != null) {
-      _adjust(_oldWidth, _oldHeight);
-    }
-  };
-
-  function _checkSize(fireEvent) {
-    var adjusted = false;
-
-    if (_detectExpansion.offsetParent != null) {
-      var newWidth = _detectExpansion.offsetWidth;
-      var newHeight = _detectExpansion.offsetHeight;
-
-      if (_oldWidth !== newWidth || _oldHeight !== newHeight) {
-        _retrySetScroll = _RETRY_MAX_COUNT;
-
-        _adjust(newWidth, newHeight);
-
-        adjusted = true;
-
-        if (fireEvent) {
-          _notifyListeners(true);
-        }
-      }
-    }
-
-    return adjusted;
-  }
-
-  function _notifyListeners(useAfterPaint) {
-    var newWidth = div.offsetWidth;
-    var newHeight = div.offsetHeight;
-
-    if (_listeners.has()) {
-      if (!useAfterPaint) {
-        _listeners.fire(newWidth, newHeight);
-      } else {
-        if (_invokeId !== null) {
-          oj.DomUtils._cancelInvokeAfterPaint(_invokeId);
-        }
-
-        _invokeId = oj.DomUtils._invokeAfterPaint(function () {
-          _invokeId = null;
-
-          _listeners.fire(newWidth, newHeight);
-        });
-      }
-    }
-
-    for (var i = 0; i < _collapsingManagers.length; i++) {
-      _collapsingManagers[i].getCallback()(newWidth, newHeight);
-    }
-  }
-
-  function _handleScroll(evt) {
-    evt.stopPropagation();
-
-    if (!_checkSize(true)) {
-      // Workaround for the WebKit issue where scrollLeft gets reset to 0 without the DIV being expanded
-      // We will retry to the set the scrollTop only twice to avoid infinite loops
-      if (_retrySetScroll > 0 && _detectExpansion.offsetParent != null && (_detectExpansion.scrollLeft === 0 || _detectExpansion.scrollTop === 0)) {
-        _retrySetScroll -= 1;
-
-        _adjust(_oldWidth, _oldHeight);
-      }
-    }
-  }
-
-  function _handleResize() {
-    _notifyListeners(false);
-  }
-
-  function _adjust(width, height) {
-    _oldWidth = width;
-    _oldHeight = height;
-    var expansionChildStyle = _detectExpansion.firstChild.style;
-    var delta = 1; // The following loop is a workaround for the WebKit issue with zoom < 100% -
-    // the scrollTop/Left gets reset to 0 because it gets computed to a value less than 1px.
-    // We will try up to the delta of 5 to support scaling down to 20% of the original size
-
-    do {
-      expansionChildStyle.width = width + delta + 'px';
-      expansionChildStyle.height = height + delta + 'px';
-      _detectExpansion.scrollLeft = delta;
-      _detectExpansion.scrollTop = delta;
-      delta += 1;
-    } while ((_detectExpansion.scrollTop === 0 || _detectExpansion.scrollLeft === 0) && delta <= 5);
-
-    _detectContraction.scrollLeft = width;
-    _detectContraction.scrollTop = height;
-  }
-};
-
-oj.DomUtils._RESIZE_TRACKER_KEY = '_ojResizeTracker';
-/**
- * Returns true if the name is a valid identifier
- *
- * @param {string} name
- * @return {boolean} true if the name is a valid identifier
- */
-
-oj.DomUtils.isValidIdentifier = function (name) {
-  return /^[A-Za-z][0-9A-Z_a-z-]*$/.test(name);
-};
-/**
- * @constructor
- * @ignore
- */
-
-
-oj.DomUtils._collapsingListenerManager = function (originalCallback, timeout) {
-  var _lastArgs = null;
-  var _timerId = null;
-
-  var _timerCallback = function _timerCallback() {
-    originalCallback.apply(null, _lastArgs);
-    _timerId = null;
-  };
-
-  var _callback = function _callback() {
-    _lastArgs = Array.prototype.slice.call(arguments);
-
-    if (_timerId == null) {
-      _timerId = window.setTimeout(_timerCallback, timeout);
-    }
-  };
-
-  this.getCallback = function () {
-    return _callback;
-  };
-
-  this.stop = function () {
-    if (_timerId != null) {
-      window.clearTimeout(_timerId);
-      _timerId = null;
-    }
-  };
-};
-/**
- * @return {boolean} true if touch is supported
- */
-
-
-oj.DomUtils.isTouchSupported = function () {
-  return 'ontouchstart' in window || // C, FF, Safari, Edge
-  navigator.msMaxTouchPoints > 0 // IE10
-  || navigator.maxTouchPoints > 0; // IE11
-};
-/**
- * @ignore
- */
-
-
-oj.DomUtils.setInKoCleanExternal = function (node) {
-  oj.DomUtils._koCleanNode = node;
-};
-/**
- * Delegates to JQuery's unwrap() if the component's node is not currently
- * being removed by Knockout
- * @param {Object} locator
- * @param {Object=} replaceLocator - locator to be replaced. I fthis parameter is ommitted,
- * the parent node will be replaced
- * @ignore
- */
-
-
-oj.DomUtils.unwrap = function (locator, replaceLocator) {
-  var koCleanNode = oj.DomUtils._koCleanNode;
-
-  if (koCleanNode) {
-    if (locator.get(0) === koCleanNode) {
-      // skip unwrap
-      return;
-    }
-  }
-
-  if (replaceLocator) {
-    replaceLocator.replaceWith(locator); // @HTMLUpdateOK
-  } else {
-    locator.unwrap();
-  }
-};
-/**
- * Determines if the mouse event target is on browser chrome - i.e. "scrollbar".
- * If the event is not a mouse event with a clientX and clientY, the resultant will
- * be false.
- *
- * @param {Event} event native dom event
- * @returns {boolean} <code>true</code> if the target of the mouse event is browser
- *          chrome such as scrollbars.
- * @public
- */
-
-
-oj.DomUtils.isChromeEvent = function (event) {
-  /**
-   * @param {Event} event
-   * @return {boolean}
-   */
-  function _isChromeEventGecko(_event) {
-    // assume that if we can't access the original target of the event, then it's because
-    // the target was implemented in XUL and is part of the chrome;
-    try {
-      return !_event.originalTarget.localName;
-    } catch (e) {
-      return true;
-    }
-  }
-  /**
-   * @param {Event} event
-   * @return {boolean}
-   */
-
-
-  function _isChromeEventIE(_event) {
-    /*
-      //IE has a specific API for this but doesn't seem to want to work in automation.
-      //The webkit method works in IE too.  Using that over componentFromPoint but leaving
-      //the code for future reference.
-      //
-      var target = event.target;
-      var chromePart = target.componentFromPoint(event.clientX, event.clientY);
-      if (oj.StringUtils.isEmpty(chromePart))
-        return false;
-      else
-        return true;
-    */
-    return _isChromeEventWebkit(_event);
-  }
-  /**
-   * @param {Event} event
-   * @return {boolean}
-   */
-
-
-  function _isChromeEventWebkit(_event) {
-    var domTarget = _event.target;
-    var target = $(domTarget);
-    var pos = domTarget.getBoundingClientRect();
-    var sbw = oj.DomUtils.getScrollBarWidth();
-    var isLTR = oj.DomUtils.getReadingDirection() === 'ltr';
-
-    if (isLTR && (domTarget.nodeName === 'HTML' || target.css('overflow-x') !== 'visible') && _event.clientX > pos.right - sbw) {
-      return true;
-    } else if (!isLTR && domTarget.nodeName === 'HTML' && _event.clientX > pos.left - sbw) {
-      // ltr scrollbar is always on the right
-      return true;
-    } else if (!isLTR && target.css('overflow-x') !== 'visible' && _event.clientX < pos.left + sbw) {
-      // RTL scrollbar on the document is still on the right
-      return true;
-    } else if ((domTarget.nodeName === 'HTML' || target.css('overflow-y') !== 'visible') && _event.clientY > pos.bottom - sbw) {
-      // RTL scrollbar not on the document is on the left
-      return true;
-    } // below the scrollbar
-
-
-    return false;
-  } // verify event is a mouse event
-
-
-  if (!('clientX' in event) || !('clientY' in event)) {
-    return false;
-  }
-
-  var agentInfo = oj.AgentUtils.getAgentInfo();
-
-  if (oj.AgentUtils.OS.ANDROID === agentInfo.os || oj.AgentUtils.OS.IOS === agentInfo.os) {
-    return false;
-  }
-
-  if (oj.AgentUtils.ENGINE.GECKO === agentInfo.engine) {
-    return _isChromeEventGecko(event);
-  } else if (oj.AgentUtils.ENGINE.WEBKIT === agentInfo.engine || oj.AgentUtils.ENGINE.BLINK === agentInfo.engine) {
-    return _isChromeEventWebkit(event);
-  }
-
-  if (oj.AgentUtils.BROWSER.IE === agentInfo.browser) {
-    return _isChromeEventIE(event);
-  }
-
-  return false;
-};
-/**
- * @returns {number} width of the browser scrollbar
- */
-
-
-oj.DomUtils.getScrollBarWidth = function () {
-  var scrollBarWidth = oj.DomUtils._scrollBarWidth;
-
-  if ($.isNumeric(scrollBarWidth)) {
-    return scrollBarWidth;
-  }
-  /** @type {jQuery} **/
-
-
-  var scrollBarMeasure = $('<div></div>');
-  $(document.body).append(scrollBarMeasure); // @HTMLUpdateOK scrollBarMeasure constructed by the code above
-
-  scrollBarMeasure.width(50).height(50).css({
-    overflow: 'scroll',
-    visibility: 'hidden',
-    position: 'absolute'
-  });
-  /** @type {jQuery} **/
-
-  var scrollBarMeasureContent = $('<div></div>');
-  scrollBarMeasureContent.height(1);
-  scrollBarMeasure.append(scrollBarMeasureContent); // @HTMLUpdateOK scrollBarMeasureContent constructed by the code above
-
-  var insideWidth = scrollBarMeasureContent.width();
-  var outsideWitdh = scrollBarMeasure.width();
-  scrollBarMeasure.remove();
-  scrollBarWidth = outsideWitdh - insideWidth;
-  oj.DomUtils._scrollBarWidth = scrollBarWidth;
-  return scrollBarWidth;
-};
-/**
- * @returns {string!} "rtl" or "ltr"
- */
-
-
-oj.DomUtils.getReadingDirection = function () {
-  var dir = document.documentElement.getAttribute('dir');
-
-  if (dir) {
-    dir = dir.toLowerCase();
-  }
-
-  return dir === 'rtl' ? 'rtl' : 'ltr';
-};
-/**
- * Retrieve the bidi independent position of the horizontal scroll position that
- * is consistent across all browsers.
- * @param {Element} elem the element to retrieve the scrollLeft from
- * @return {number} the element's scrollLeft
- */
-
-
-oj.DomUtils.getScrollLeft = function (elem) {
-  if (oj.DomUtils.getReadingDirection() === 'rtl') {
-    var browser = oj.AgentUtils.getAgentInfo().browser;
-
-    if (browser === oj.AgentUtils.BROWSER.FIREFOX || browser === oj.AgentUtils.BROWSER.IE || browser === oj.AgentUtils.BROWSER.EDGE) {
-      return Math.abs(elem.scrollLeft);
-    } // webkit
-
-
-    return Math.max(0, elem.scrollWidth - elem.clientWidth - elem.scrollLeft);
-  }
-
-  return elem.scrollLeft;
-};
-/**
- * Sets the bidi independent position of the horizontal scroll position that
- * is consistent across all browsers.
- * @param {Element} elem the element to set the scrollLeft on
- * @param {number} scrollLeft the element's new scrollLeft
- */
-
-
-oj.DomUtils.setScrollLeft = function (elem, scrollLeft) {
-  if (oj.DomUtils.getReadingDirection() === 'rtl') {
-    var browser = oj.AgentUtils.getAgentInfo().browser;
-
-    if (browser === oj.AgentUtils.BROWSER.FIREFOX) {
-      // see mozilla , even though it's marked as fixed, they basically
-      // did not change anything.  It still expects a negative value for RTL
-      // eslint-disable-next-line no-param-reassign
-      elem.scrollLeft = -scrollLeft;
-    } else if (browser === oj.AgentUtils.BROWSER.IE || browser === oj.AgentUtils.BROWSER.EDGE) {
-      // eslint-disable-next-line no-param-reassign
-      elem.scrollLeft = scrollLeft;
-    } else {
-      // webkit
-      // eslint-disable-next-line no-param-reassign
-      elem.scrollLeft = Math.max(0, elem.scrollWidth - elem.clientWidth - scrollLeft);
-    }
-  } else {
-    // eslint-disable-next-line no-param-reassign
-    elem.scrollLeft = scrollLeft;
-  }
-};
-/**
- * Converts a CSS length attribute into a integer value.
- * Conversion errors or non-number will result in a zero
- * resultant.
- *
- * @param {?} cssLength style attribute
- * @return {number} value as integer
- */
-
-
-oj.DomUtils.getCSSLengthAsInt = function (cssLength) {
-  if (!isNaN(cssLength)) {
-    return parseInt(cssLength, 10);
-  }
-
-  if (cssLength && cssLength.length > 0 && cssLength !== 'auto') {
-    var intLength = parseInt(cssLength, 10);
-
-    if (isNaN(intLength)) {
-      intLength = 0;
-    }
-
-    return intLength;
-  }
-
-  return 0;
-};
-/**
- * Converts a CSS attribute into a float value.
- * Conversion errors or non-number will result in a zero
- * resultant.
- *
- * @param {?} cssLength style attribute
- * @return {number} value as integer
- */
-
-
-oj.DomUtils.getCSSLengthAsFloat = function (cssLength) {
-  if (!isNaN(cssLength)) {
-    return parseFloat(cssLength);
-  }
-
-  if (cssLength && cssLength.length > 0) {
-    var floatLength = parseFloat(cssLength);
-
-    if (isNaN(floatLength)) {
-      floatLength = 0;
-    }
-
-    return floatLength;
-  }
-
-  return 0;
-};
-/**
- * Key used to store the logical parent of the popup element
- * as a jQuery data property. The logical parent refers the launcher of a popup.
- * @const
- * @private
- * @type {string}
- */
-
-
-oj.DomUtils._LOGICAL_PARENT_DATA = 'oj-logical-parent';
-/**
- * This method returns the launcher of a popup when it's open.
- * Returns undefined otherwise.
- *
- * @param {jQuery} element jquery element
- * @returns {any}
- * @see #setLogicalParent
- */
-
-oj.DomUtils.getLogicalParent = function (element) {
-  if (element) {
-    return element.data(oj.DomUtils._LOGICAL_PARENT_DATA);
-  }
-
-  return undefined;
-};
-/**
- * Set the logical parent as a jQuery data property
- *
- * @param {jQuery} element jquery element
- * @param {jQuery | null} parent jquery element
- * @see #getLogicalParent
- */
-
-
-oj.DomUtils.setLogicalParent = function (element, parent) {
-  if (!element) {
-    return;
-  }
-
-  if (parent === null) {
-    element.removeData(oj.DomUtils._LOGICAL_PARENT_DATA);
-  } else {
-    element.data(oj.DomUtils._LOGICAL_PARENT_DATA, parent);
-  }
-};
-/**
- * Checks to see if the "ancestorNode" is a logical ancestor of "node"
- *
- * @param {!Element} ancestorNode dom subtree to check to see if the target node exists
- * @param {!Element} node target node to check to see if it exists within a subtree rooted at the ancestorNode
- * @return {boolean} <code>true</code> if the "ancestorNode" is a logical ancestor of "node" or if they are the same
- */
-
-
-oj.DomUtils.isLogicalAncestorOrSelf = function (ancestorNode, node) {
-  oj.Assert.assertDomElement(ancestorNode);
-  oj.Assert.assertDomElement(node);
-  var parentNode = node;
-
-  while (parentNode) {
-    if (parentNode === ancestorNode) {
-      return true;
-    }
-
-    var logicalParent = oj.DomUtils.getLogicalParent($(parentNode));
-
-    if (logicalParent) {
-      parentNode = logicalParent[0];
-    } else {
-      parentNode = parentNode.parentNode;
-    }
-  }
-
-  return false;
-};
-/**
- * Checks whether the href represents a safe URL
- * @param {!string} href - HREF to test
- * @param {Array=} whitelist - optional list of the allowed protocols. Protocol name has to use lowercase letters and
- * be followed by a ':'. If the parameter is ommitted, ['http:', 'https:'] will be used
- * @throws {Exception} an error if the HREF represents an invalid URL
- * @ignore
- */
-
-
-oj.DomUtils.validateURL = function (href, whitelist) {
-  var allowed = whitelist || ['http:', 'https:'];
-  var link = document.createElement('a');
-  link.href = href;
-  var protocol = link.protocol;
-
-  if (protocol != null) {
-    protocol = protocol.toLowerCase();
-  } // if it isn't on the allowed list and it isn't '', throw an error.
-  // IE11 returns '' for hrefs like 'abc', other browsers return 'https'
-  // and we want to allow hrefs like 'abc' since those are relative urls.
-
-
-  if (allowed.indexOf(protocol) < 0 && protocol !== '') {
-    throw new Error(protocol + ' is not a valid URL protocol');
-  }
-};
-/**
- * Cancels native context menu events for hybrid mobile applications.
- * @private
- */
-
-
-oj.DomUtils._supressNativeContextMenu = function () {
-  if ($(document.body).hasClass('oj-hybrid')) {
-    document.body.addEventListener('contextmenu', function (event) {
-      event.preventDefault();
-    }, true);
-  }
-};
-
-oj.DomUtils._supressNativeContextMenu(); // standard duration of a pressHold gesture.  Point of reference: default
-// JQ Mobile threshold to be a press-and-hold is 750ms.
-
-
-oj.DomUtils.PRESS_HOLD_THRESHOLD = 750; // ------------------------------------------------------------------------------------------------
-// Recent touch end
-// ------------------------------------------------------------------------------------------------
-
-/**
- * Returns true if a touchend or touchcancel has been detected anywhere in the document in the last 500 ms.
- * Note: This function adds event listeners only once per document load.
- *
- * @return {boolean} boolean indicating whether a touch has recently been detected
- */
-
-oj.DomUtils.recentTouchEnd = function () {
-  // This function is immediately executed and returns the recentTouchEnd function
-  // and therefore only execute once per document load.
-  var touchTimestamp = 0;
-  var TOUCH_THRESHOLD = 500;
-
-  function _touchEndHandler() {
-    touchTimestamp = Date.now();
-  } // --- Document listeners ---
-
-
-  document.addEventListener('touchend', _touchEndHandler, true);
-  document.addEventListener('touchcancel', _touchEndHandler, true); // --- The function assigned to oj.DomUtils.recentTouchEnd ---
-
-  return function () {
-    // must be at least 300 for the "300ms" delay
-    return Date.now() - touchTimestamp < TOUCH_THRESHOLD;
-  };
-}();
-/**
- * Returns true if a touchstart has been detected anywhere in the document in the last 800 ms.
- * Note: This function adds event listeners only once per document load.
- *
- * @return {boolean} boolean indicating whether a touch has recently been detected
- */
-
-
-oj.DomUtils.recentTouchStart = function () {
-  // This function is immediately executed and returns the recentTouchStart function
-  // and therefore only execute once per document load.
-  var touchTimestamp = 0; // 800 because this is used to ignore mouseenter and focusin on 'press', and a 'press'
-  // is usually detected after 750ms.
-
-  var TOUCH_THRESHOLD = oj.DomUtils.PRESS_HOLD_THRESHOLD + 50;
-
-  function _touchStartHandler() {
-    touchTimestamp = Date.now();
-  } // --- Document listeners ---
-
-
-  document.addEventListener('touchstart', _touchStartHandler, {
-    passive: true,
-    capture: true
-  }); // --- The function assigned to oj.DomUtils.recentTouchStart ---
-
-  return function () {
-    // must be at least TOUCH_THRESHOLD for the  delay
-    return Date.now() - touchTimestamp < TOUCH_THRESHOLD;
-  };
-}(); // ------------------------------------------------------------------------------------------------
-// Recent pointer
-// ------------------------------------------------------------------------------------------------
-
-/**
- * Returns true if a touchstart, touchend, mousedown, or mouseup has been detected anywhere in the
- * document in the last n ms, where n is calibrated across a variety of platforms to make this API
- * a maximally reliable indicator of whether the code now running was likely "caused by" the
- * specified touch and mouse interaction, vs. some other thing (e.g. mousemove, keyboard, or page
- * load).  E.g. the makeFocusable() / _focusable() mechanism uses this API to vary the focus theming
- * depending on whether the element was focused via keyboard or pointer.
- *
- * @return {boolean} boolean indicating whether a mouse button or finger has recently been down or up
- */
-
-
-oj.DomUtils.recentPointer = function () {
-  // The comments in this function are tailored to the makeFocusable() usage.
-  // - Let "pointer down" mean mousedown or touchstart, and "pointer up" likewise.  (Not MS pointer events.)
-  // - Event order can be 1) mousedown>focus>mouseup (like push buttons) or 2) mousedown>mouseup>focus (like toggle buttons).
-  // - For 2, semantics for "focus caused by pointer" must be "if pointer interaction in last n ms," rather than "if pointer is currently down".
-  // - Those "last n ms" semantics are preferred for 1 as well, rather than relying on pointer up to cancel a state set by pointer down,
-  //   since if the pointer up is never received, we'd get stuck in an inaccessible state.
-  // - So both pointer down and pointer up set a timestamp, and recentPointer() returns true if Date.now() is within n ms of that timestamp,
-  //   where n is higher for touchstart per below.
-  // Timestamp of last mousedown/up or touchstart/end. Initial value of 0 (1/1/1970) guarantees that if element is focused before any
-  // mouse/touch interaction, then recentPointer() is false, so focus ring appears as desired.
-  var pointerTimestamp = 0;
-  var pointerTimestampIsTouchStart; // whether the latest timestamp is for touchstart vs. touchend/mouse
-  // On Edge (Surface Win10), the lag from the up event to resulting programmatic focus is routinely ~350ms, even when the 300ms "tap delay" has
-  // been prevented and confirmed to be absent.  (In Chrome on same device the same lag is ~10 ms.)  So use 600ms to be safe.  Even on Chrome,
-  // the lag from the down/up event to natively induced focus can routinely be well into the 1xx ms range. Can exceed 600 if needed. There is no
-  // need for a tight bound; if there was pointer interaction in the last second or so, it's perfectly reasonable to suppress the focus ring.
-
-  var POINTER_THRESHOLD_CUSHION = 600; // If the number of millis since the last pointer down or up is < this threshold, then recentPointer() considers it recent and returns true.
-  // See also TOUCHSTART_THRESHOLD.
-
-  var POINTER_THRESHOLD = POINTER_THRESHOLD_CUSHION; // For touchstart only, use 750+600ms so that focus set by a 750ms pressHold gesture (e.g. context menu) is recognized as touch-related.  Same
-  // 600ms padding as for POINTER_THRESHOLD.  A high threshold is OK, as it is used only for actual pressHolds (and the unusual case where the
-  // pointer up is never received), since for normal clicks and taps, the pointerUp replaces the "1350ms after touchstart" policy with a "600ms
-  // after pointerUp" policy. On Edge and desktop FF (desktop version runs on hybrid devices like Surface), which lack touchstart, context menus
-  // are launched by the contextmenu event, which happen after the pointer up in both browsers, so the fact that we're using the higher
-  // threshold only for touchstart should not be a problem there.
-
-  var TOUCHSTART_THRESHOLD = oj.DomUtils.PRESS_HOLD_THRESHOLD + POINTER_THRESHOLD_CUSHION; // --- Document listeners ---
-  // Use capture phase to make sure we hear the events before someone cancels them
-
-  document.addEventListener('mousedown', function () {
-    // If the mousedown immediately follows a touchstart, i.e. if it seems to be the compatibility mousedown
-    // corresponding to the touchstart, then we want to consider it a "recent pointer activity" until the end time
-    // that is max(touchstartTime + TOUCHSTART_THRESHOLD, now + POINTER_THRESHOLD), where now is mousedownTime in this
-    // case.  (I.e. it would defeat the purpose if the inevitable mousedown replaced the longer touchstart threshold with
-    // a shorter one.)  We don't do this in the touchend/mouseup listeners, as those obviously happen after the pressHold
-    // is over, in which case the following analysis applies:
-    // - If the pressHold was < PRESS_HOLD_THRESHOLD ms,
-    // - then the higher TOUCHSTART_THRESHOLD is not needed or relevant, since anything focused on pressHold
-    //   (like a context menu) never happened,
-    // - else the touchend/mouseup happened > PRESS_HOLD_THRESHOLD ms after the touchstart, so in the max() above,
-    //   the 2nd quantity is always bigger (later).
-    var now = Date.now();
-
-    if (!pointerTimestampIsTouchStart || now > pointerTimestamp + oj.DomUtils.PRESS_HOLD_THRESHOLD) {
-      pointerTimestamp = now;
-      pointerTimestampIsTouchStart = false;
-    }
-  }, true);
-  document.addEventListener('touchstart', function () {
-    pointerTimestamp = Date.now();
-    pointerTimestampIsTouchStart = true;
-  }, {
-    passive: true,
-    capture: true
-  });
-  document.addEventListener('mouseup', function () {
-    pointerTimestamp = Date.now();
-    pointerTimestampIsTouchStart = false;
-  }, true);
-  document.addEventListener('touchend', function () {
-    pointerTimestamp = Date.now();
-    pointerTimestampIsTouchStart = false;
-  }, true); // --- The function assigned to oj.DomUtils.recentPointer ---
-
-  return function () {
-    var millisSincePointer = Date.now() - pointerTimestamp;
-    var threshold = pointerTimestampIsTouchStart ? TOUCHSTART_THRESHOLD : POINTER_THRESHOLD;
-    var isRecent = millisSincePointer < threshold;
-    return isRecent;
-  };
-}(); // ------------------------------------------------------------------------------------------------
-// Utility for suppressing focus ring for mouse/touch interaction, but not KB or other interaction:
-// ------------------------------------------------------------------------------------------------
-
-/**
- * This API works like baseComponent's _focusable() API (see its detailed JSDoc), with the
- * similarities and differences listed below.  This API is intended for non-component callers;
- * components should typically call the baseComponent API via this._focusable().
- *
- * Comparison to baseComponent._focusable() :
- *
- * - This function's "options" param must be an object.  Only baseComponent._focusable()
- *   supports the backward-compatibility syntax where the options param can be the element.
- * - Same usage of oj-focus, oj-focus-highlight, and $focusHighlightPolicy.
- * - Same required invariant that oj-focus-highlight must not be set if oj-focus is not set.
- * - Same parameters with same semantics, plus the additional "component" and "remove" params
- *   discussed below.
- * - New options.component param, which takes a JET component instance.  (When a component is
- *   involved, typically that component should call this._focusable() rather than calling this
- *   version of the method directly.)
- *
- * If options.component is specified, then the following things work like the baseComponent
- * version of this API:
- *
- * - If the specified element is in the component subtree,
- *   then the classes will automatically be removed when the component is
- *   destroyed/disabled/detached, as detailed in the baseComponent JSDoc,
- *   else the caller has the same responsibility to remove the classes at those times.
- * - Same rules as to whether listeners are automatically cleaned up, or suppressed when the
- *   component is disabled, vs. being the caller's responsibility to handle those things.
- *
- * If options.component is NOT specified (for non-component callers), then those things are
- * the caller's responsibility.  Specifically:
- *
- * - Class removal can be done directly, as needed.
- * - To remove the listeners, see the following.
- *
- * Listener removal:
- *
- * - If options.component was specified, see above.
- * - Else if options.setupHandlers was specified, then only the caller knows what listeners were
- *   registered and how, so it is the caller's responsibility to remove them directly when needed.
- * - The remaining case is that options.component and options.setupHandlers were not specified.
- *   To remove from element e both the 2 classes and all listeners applied to e by all previous
- *   invocations of makeFocusable() where these options were not specified,
- *   call makeFocusable( {'element': e, 'remove': true} ).
- */
-// If this is named focusable(), Closure Compiler generates a warning, and fails to rename the function in minified code,
-// which suggests that focusable (not just _focusable) is apparently externed somewhere (although not in
-// 3rdparty\jquery\externs\jquery-1.8.js, main\javascript\externs.js, or build\tools\closure\compiler.jar\externs.zip\),
-// perhaps for JQUI's :focusable selector.  So name it makeFocusable().
-
-
-oj.DomUtils.makeFocusable = function () {
-  var nextId = 0; // used for unique namespace, for "remove" functionality
-  // This private var is shared by all callers that use makeFocusable() and don't supply their own focus highlight policy.
-  // If the oj-focus-config SASS object ever acquires a 2nd field, should continue to call pJFFF() only once, statically.
-
-  var FOCUS_HIGHLIGHT_POLICY = (oj.ThemeUtils.parseJSONFromFontFamily('oj-focus-config') || {}).focusHighlightPolicy;
-  /**
-   * @param {function()} focusPolicyCallback Optional getter passed to makeFocusable() by callers wishing to get use a caller-
-   *   specific focus policy mechanism instead of the built-in mechanism.
-   * @param {function()} recentPointerCallback Optional function passed to makeFocusable() by callers wishing to use a caller-
-   *   specific mechanism in addition to the built-in mechanism.
-   * @return {boolean} boolean indicating whether it is appropriate to apply the <code class="prettyprint">oj-focus-highlight</code>
-   *   CSS class for a focus happening at the time of this method call.
-   */
-
-  var shouldApplyFocusHighlight = function shouldApplyFocusHighlight(focusPolicyCallback, recentPointerCallback) {
-    var focusHighlightPolicy = focusPolicyCallback ? focusPolicyCallback() : FOCUS_HIGHLIGHT_POLICY;
-
-    switch (focusHighlightPolicy) {
-      case 'all':
-        return true;
-
-      case 'none':
-        return false;
-
-      default:
-        // "nonPointer" or no value provided (e.g. SASS var missing)
-        return !(oj.DomUtils.recentPointer() || recentPointerCallback && recentPointerCallback());
-    }
-  }; // the function assigned to oj.DomUtils.makeFocusable
-
-
-  var makeFocusable = function makeFocusable(options) {
-    var element = options.element;
-    var dataKey = 'ojFocusable';
-    var namespacePrefix = '.' + dataKey;
-    var namespaceSeparator = ' ' + namespacePrefix;
-
-    if (options.remove) {
-      element.removeClass('oj-focus oj-focus-highlight'); // id's of listeners needing removal
-
-      var ids = element.data(dataKey);
-
-      if (ids == null) {
-        return;
-      } // map ids to namespaces.  "2" -> ".ojFocusable2".  "2,7" -> ".ojFocusable2 .ojFocusable7"
-
-
-      var namespaces = namespacePrefix + ('' + ids).split(',').join(namespaceSeparator);
-      element.off(namespaces) // remove the listeners
-      .removeData(dataKey); // clear list of listener id's needing removal
-
-      return;
-    }
-
-    var afterToggle = options.afterToggle || $.noop;
-
-    function applyOnlyFocus(_element) {
-      _element.addClass('oj-focus');
-
-      afterToggle('focusin');
-    }
-
-    function applyBothClasses(_element) {
-      _element.addClass('oj-focus');
-
-      if (shouldApplyFocusHighlight(options.getFocusHighlightPolicy, options.recentPointer)) {
-        _element.addClass('oj-focus-highlight');
-      }
-
-      afterToggle('focusin');
-    }
-
-    var addClasses = options.applyHighlight ? applyBothClasses : applyOnlyFocus;
-
-    function removeClasses(_element) {
-      _element.removeClass('oj-focus oj-focus-highlight');
-
-      afterToggle('focusout');
-    }
-
-    var hasFocus = false;
-
-    var setupHandlers = options.setupHandlers || function (focusInHandler, focusOutHandler) {
-      var component = options.component;
-
-      var focusInListener = function focusInListener(event) {
-        focusInHandler($(event.currentTarget));
-        hasFocus = true;
-      };
-
-      var focusOutListener = function focusOutListener(event) {
-        // We should only do this once, even though this event may fire multiple times.
-        if (hasFocus) {
-          focusOutHandler($(event.currentTarget));
-          hasFocus = false;
-        }
-      };
-
-      if (component) {
-        component._on(element, {
-          focusin: focusInListener,
-          focusout: focusOutListener
-        });
-      } else {
-        // neither options.component nor options.setupHandlers were passed, so we must provide a
-        // way for the caller to remove the listeners.  That's done via the "remove" param, which
-        // uses the namespaces that we stash via data().
-        var id = nextId;
-        nextId += 1; // list of id's of existing listeners needing removal
-
-        var _ids = element.data(dataKey); // append id to that list, or start new list if first one
-
-
-        element.data(dataKey, _ids == null ? id : _ids + ',' + id); // add listeners namespaced by that id
-
-        var handlers = {};
-        var namespace = namespacePrefix + id;
-        handlers['focusin' + namespace] = focusInListener;
-        handlers['focusout' + namespace] = focusOutListener;
-        element.on(handlers);
-      }
-    };
-
-    setupHandlers(addClasses, removeClasses);
-  };
-
-  return makeFocusable;
-}();
-
-/* jslint browser: true*/
-
-
-
-/**
- * Focus utilities.
- * @ignore
- */
-oj.FocusUtils = {};
-oj.FocusUtils._TABBABLE = ':tabbable,iframe'; // These functions inspired by AdfFocusUtils
-
-/**
- * Tests whether the specified element contains the keyboard focus.
- * @param {!Element} element Element for which to check if it contains focus.
- * @returns {boolean} True if the element contains focus, false otherwise.
- */
-
-oj.FocusUtils.containsFocus = function (element) {
-  var activeElem = document.activeElement; // FIX : if either elem is undefined, just return false
-
-  if (!element || !activeElem) {
-    return false;
-  }
-
-  return oj.DomUtils.isAncestorOrSelf(element, activeElem);
-};
-/**
- * Sets focus to the specified element.
- * @param {!Element} element Element to focus.
- */
-
-
-oj.FocusUtils.focusElement = function (element) {
-  element.focus();
-};
-/**
- * Sets focus to the first tabbable element inside the given element, which
- * may be the given element itself.
- * @param {!Element} element Element to start searching for a tabbable element in.
- * @returns {Element} The DOM element that was focused, if any.
- */
-
-
-oj.FocusUtils.focusFirstTabStop = function (element) {
-  var focusElement = oj.FocusUtils.getFirstTabStop(element);
-
-  if (focusElement) {
-    oj.FocusUtils.focusElement(focusElement);
-  }
-
-  return focusElement;
-};
-/**
- * Return true if the activeElement is the first tabbable. Used to ensure that tabbing cycles through dialogs/popups.
- * @param {!Element} element Element containing tabbable elements.
- * @returns {boolean} <code>true</code> if the active element is the first tabbable.
- */
-
-
-oj.FocusUtils.isFirstActiveElement = function (element) {
-  var jqElem = $(element);
-  var jqFocusables = jqElem.find(oj.FocusUtils._TABBABLE);
-  if (jqFocusables == null || jqFocusables.length === 0) return false;
-  var first = jqFocusables[0];
-  if (document.activeElement === first) return true; //
-  // Return true if the activeElement is in the "first tabble set".
-  // Check to see if the first tabbable and the active element are members
-  // of the same radio set.
-  // If this is the case, then return true.
-  //
-
-  if (first.name === document.activeElement.name && first.type === 'radio' && document.activeElement.type === 'radio') {
-    return true;
-  }
-
-  return false;
-};
-/**
- * Return true if the activeElement is the last tabbable. Used to ensure that tabbing cycles through dialogs/popups.
- * @param {!Element} element Element containing tabbable elements.
- * @returns {boolean} <code>true</code> if the active element is the last tabbable.
- */
-
-
-oj.FocusUtils.isLastActiveElement = function (element) {
-  var jqElem = $(element);
-  var jqFocusables = jqElem.find(oj.FocusUtils._TABBABLE);
-  if (jqFocusables == null || jqFocusables.length === 0) return false;
-  var last = jqFocusables[jqFocusables.length - 1];
-  if (document.activeElement === last) return true; //
-  // Return true if the activeElement is in the "first tabble set".
-  // Check to see if the last tabbable and the active element are members
-  // of the same radio set.
-  // If this is the case, then return true.
-  //
-
-  if (last.name === document.activeElement.name && last.type === 'radio' && document.activeElement.type === 'radio') {
-    return true;
-  }
-
-  return false;
-};
-/**
- * Get the first tabbable element inside the given element, which may be the
- * given element itself.
- * @param {!Element} element Element to start searching for a tabbable element in.
- * @returns {Element} The first tabbable element inside the given element.
- */
-
-
-oj.FocusUtils.getFirstTabStop = function (element) {
-  var jqElem = $(element);
-
-  if (jqElem.is(oj.FocusUtils._TABBABLE)) {
-    return element;
-  }
-
-  var jqFocusables = jqElem.find(oj.FocusUtils._TABBABLE);
-
-  if (jqFocusables && jqFocusables.length > 0) {
-    //
-    // Handle set-based content (radiosets).
-    // Return the first selected radioset item.
-    // Note that there are two cases
-    //   Common case - a single radioset
-    //   Other case - multiple radiosets
-    // In both cases we return the first selected radioset item.
-    //
-    if (jqFocusables[0].classList.contains('oj-radio')) {
-      var selectedItem = jqFocusables.filter('.oj-selected.oj-radio');
-
-      if (selectedItem && selectedItem.length) {
-        return selectedItem[0];
-      }
-
-      return jqFocusables[0];
-    }
-
-    return jqFocusables[0];
-  }
-
-  return null;
-};
-/**
- * Get the last tabbable element inside the given element, which may be the
- * given element itself.
- * @param {!Element} element Element to start searching for a tabbable element in.
- * @returns {Element} The last tabbable element inside the given element.
- */
-
-
-oj.FocusUtils.getLastTabStop = function (element) {
-  var jqElem = $(element);
-  var jqFocusables = jqElem.find(oj.FocusUtils._TABBABLE);
-
-  if (jqFocusables && jqFocusables.length > 0) {
-    //
-    // Handle set-based content (radiosets).
-    // Return the last selected radioset item.
-    //
-    if (jqFocusables[jqFocusables.length - 1].classList.contains('oj-radio')) {
-      var selectedItem = jqFocusables.filter('.oj-selected.oj-radio');
-
-      if (selectedItem && selectedItem.length) {
-        return selectedItem[selectedItem.length - 1];
-      }
-
-      return jqFocusables[jqFocusables.length - 1];
-    }
-
-    return jqFocusables[jqFocusables.length - 1];
-  }
-
-  return null;
-};
-/**
- * Extends the jquery ":focusable" pseudo selector check for a Safari browser specific
- * exception - an anchor element not having a tabindex attribute.
- *
- * @param {Element} element target dom element to test if it will take focus
- * @returns {boolean} <code>true</code> if the target element is focusable
- */
-
-
-oj.FocusUtils.isFocusable = function (element) {
-  if ($(element).is(':focusable')) {
-    // An anchor element in safari will not take focus unless it has a tabindex.
-    // http://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#Clicking_and_focus
-    if (element.nodeName === 'A' && !element.hasAttribute('tabindex') && oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.SAFARI) {
-      return false;
-    }
-
-    return true;
-  }
-
-  return false;
-};
-
-/* jslint browser: true*/
-
-
-
-/**
  * Gesture utilities provided internally for JET components, currently only context menu gesture are available.
  * Moved from ojcomponentcore and made into static methods.
  * @ignore
@@ -7850,7 +6619,8 @@ oj.GestureUtils.startDetectContextMenuGesture = function (rootNode, callback) {
       touchPageX = firstTouch.pageX;
       touchPageY = firstTouch.pageY;
       touchInProgress = true;
-      contextMenuPressHoldTimer = setTimeout(launch.bind(undefined, event, 'touch', true), pressHoldThreshold); // eslint-disable-next-line no-param-reassign
+      contextMenuPressHoldTimer = setTimeout(launch.bind(undefined, event, 'touch', true), pressHoldThreshold); // @HTMLUpdateOK
+      // eslint-disable-next-line no-param-reassign
 
       rootNode._contextMenuPressHoldTimer = contextMenuPressHoldTimer;
     }

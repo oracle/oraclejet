@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function($, dvt) {
   "use strict";
@@ -8,15 +9,17 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function (dvt) {
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -506,8 +509,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -945,8 +949,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1571,8 +1576,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1603,8 +1609,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1642,8 +1649,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1660,8 +1668,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   dvt.DiagramRectangle = DvtDiagramRectangle;
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -2715,8 +2724,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3009,8 +3019,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3043,6 +3054,16 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
     this._bDisclosed = false;
     this._selected = false;
     this._selectable = true;
+  };
+  /**
+   * Returns the node displayable (itself).
+   *
+   * @return {dvt.Displayable} displayable
+   */
+
+
+  dvt.BaseDiagramNode.prototype.getDisplayable = function () {
+    return this;
   };
   /**
    * Gets parent diagram
@@ -3494,8 +3515,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3527,6 +3549,16 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
     this._diagram = diagram;
     this._selected = false;
     this._selectable = true;
+  };
+  /**
+   * Returns the link displayable (itself).
+   *
+   * @return {dvt.Displayable} displayable
+   */
+
+
+  dvt.BaseDiagramLink.prototype.getDisplayable = function () {
+    return this;
   };
   /**
    * Gets parent diagram
@@ -4284,8 +4316,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4345,8 +4378,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4558,8 +4592,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4752,8 +4787,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5193,8 +5229,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5202,15 +5239,17 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function (dvt) {
   /**
    * @license
-   * Copyright (c) 2017 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2017 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
   //
@@ -5411,8 +5450,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5490,8 +5530,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5806,7 +5847,7 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
     var ty = (height - dims.h * dz) / 2 - dims.y * dz;
     ovContent.setTranslate(tx, ty);
   };
-  /** 
+  /**
    * @private
    * @param {dvt.Diagram} diagram the parent diagram component
    * @param {DvtDiagramOverview} overview the overview window
@@ -5840,7 +5881,7 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
       overview.StretchFactor = {
         h: stretchFactorH,
         v: stretchFactorV
-      }; // adjust positions only for none 
+      }; // adjust positions only for none
 
       var rootNodes = diagram.GetRootNodeObjects();
 
@@ -5885,7 +5926,7 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
 
     return dims;
   };
-  /** 
+  /**
    * @private
    * Set new position for the overview node based on the node centers.
    * @param {dvt.SimpleMarker} ovNode overview node
@@ -6156,8 +6197,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6499,8 +6541,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -7334,6 +7377,18 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
       var point = this.getLayoutOffset();
       var currentViewport = new dvt.DiagramRectangle(viewportRect.x - point.x, viewportRect.y - point.y, viewportRect.w, viewportRect.h);
       layoutContext.setCurrentViewport(currentViewport);
+    }
+
+    if (this.Options.panZoomState != null) {
+      var cxVal = this.Options.panZoomState.centerX;
+      var cyVal = this.Options.panZoomState.centerY;
+      var zoom = this.Options.panZoomState.zoom;
+      var x = cxVal - this.Width * .5 / zoom;
+      var y = cyVal - this.Height * .5 / zoom;
+      var w = this.Width / zoom;
+      var h = this.Height / zoom;
+      var viewport = new dvt.Rectangle(x, y, w, h);
+      layoutContext.setViewport(viewport);
     }
 
     if (layoutFunc && typeof layoutFunc == 'function') {
@@ -8970,8 +9025,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -9029,8 +9085,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -9161,8 +9218,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) 2017 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2017 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
   //
@@ -9487,8 +9545,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -9690,8 +9749,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -10317,8 +10377,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -10399,8 +10460,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -11898,8 +11960,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -11917,6 +11980,8 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
 
   dvt.Obj.createSubclass(DvtDiagramNode, dvt.BaseDiagramNode, 'DvtDiagramNode');
+  DvtDiagramNode.LTR_BUTTON_PATH = 'M1 0 19 0 A 1 1 0 0 1 19 1 L 1 19 A 1 1 0 0 1 0 19 L 0 1 A 1 1 0 0 1 1 0z';
+  DvtDiagramNode.RTL_BUTTON_PATH = 'M1 0 19 0 A 1 1 0 0 1 20 1 L 20 19 A 1 1 0 0 1 19 19 L 1 1 A 1 1 0 0 1 1 0z';
   /**
    * Returns a new instance of DvtDiagramNode
    * @param {dvt.Diagram} diagram the parent diagram
@@ -13406,29 +13471,32 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
       return;
     }
 
-    var iconEna, iconOvr, iconDwn;
+    var context = diagram.getCtx();
+    var rtl = dvt.Agent.isRightToLeft(context);
     var options = diagram.getOptions();
+    var commands = rtl ? DvtDiagramNode.RTL_BUTTON_PATH : DvtDiagramNode.LTR_BUTTON_PATH;
+    var buttonWidth = 20;
+    var strokeWidth = 1;
+    var background = new dvt.Path(context, commands);
+    var iconResources = options._resources[container.isDisclosed() ? 'collapse' : 'expand'];
+    var iconStyle = dvt.ToolkitUtils.getIconStyle(context, iconResources.icon);
+    var yPos = iconResources.width / 2 + 1; // Position icon slightly off center to better align with triangle container
 
-    if (container.isDisclosed()) {
-      iconEna = options['_resources']['collapse_ena'];
-      iconOvr = options['_resources']['collapse_ovr'];
-      iconDwn = options['_resources']['collapse_dwn'];
-    } else {
-      iconEna = options['_resources']['expand_ena'];
-      iconOvr = options['_resources']['expand_ovr'];
-      iconDwn = options['_resources']['expand_dwn'];
-    }
-
-    var imgEna = new dvt.Image(diagram.getCtx(), iconEna['src'], 0, 0, iconEna['width'], iconEna['height']);
-    var imgOvr = new dvt.Image(diagram.getCtx(), iconOvr['src'], 0, 0, iconOvr['width'], iconOvr['height']);
-    var imgDwn = new dvt.Image(diagram.getCtx(), iconDwn['src'], 0, 0, iconDwn['width'], iconDwn['height']);
-    var containerButton = new dvt.Button(diagram.getCtx(), imgEna, imgOvr, imgDwn, null, null, container.handleDisclosure, container);
+    var xPos = rtl ? buttonWidth - yPos : yPos;
+    var containerButton = new dvt.IconButton(diagram.getCtx(), 'outlined', {
+      style: iconStyle,
+      size: iconResources.width,
+      pos: {
+        x: xPos,
+        y: yPos
+      }
+    }, background, null, container.handleDisclosure, container);
     container.addChild(containerButton);
     var contentDims = container.getContentBounds(true);
 
     if (contentDims) {
-      var x = dvt.Agent.isRightToLeft(diagram.getCtx()) ? contentDims.x + contentDims.w - iconEna['width'] : contentDims.x;
-      var y = contentDims.y;
+      var x = rtl ? contentDims.x + contentDims.w - buttonWidth - strokeWidth / 2 : contentDims.x + strokeWidth / 2;
+      var y = contentDims.y + strokeWidth / 2;
       containerButton.setTranslate(x, y);
     }
 
@@ -13829,8 +13897,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -14123,8 +14192,9 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 

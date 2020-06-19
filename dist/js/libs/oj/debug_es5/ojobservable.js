@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -32,13 +33,13 @@ var BehaviorSubject = function BehaviorSubject(value) {
 BehaviorSubject.prototype.subscribe = function (onNextOrSubscriber, onError, onComplete) {
   var subscriber = onNextOrSubscriber;
 
-  if (typeof subscriber === "function") {
+  if (typeof subscriber === 'function') {
     subscriber = {
       next: onNextOrSubscriber,
       error: onError,
       complete: onComplete
     };
-  } else if (_typeof(subscriber) !== "object") {
+  } else if (_typeof(subscriber) !== 'object') {
     subscriber = {};
   }
 
@@ -61,8 +62,6 @@ BehaviorSubject.prototype.next = function (value) {
   for (var i = 0; i < len; i++) {
     copy[i].next(value);
   }
-
-  ;
 };
 
 var SubjectSubscription = function SubjectSubscription(subject, subscriber) {

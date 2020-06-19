@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -187,12 +188,22 @@ class ListDataProviderView {
                 this[ListDataProviderView._DONE] = done;
             }
         };
-        this[ListDataProviderView._FROM] = this.options == null ? null : this.options[ListDataProviderView._FROM];
-        this[ListDataProviderView._OFFSET] = this.options == null ? 0 : this.options[ListDataProviderView._OFFSET] > 0 ? this.options[ListDataProviderView._OFFSET] : 0;
-        this[ListDataProviderView._SORTCRITERIA] = this.options == null ? null : this.options[ListDataProviderView._SORTCRITERIA];
-        this[ListDataProviderView._DATAMAPPING] = this.options == null ? null : this.options[ListDataProviderView._DATAMAPPING];
-        this[ListDataProviderView._FETCHATTRIBUTES] = this.options == null ? null : this.options[ListDataProviderView._FETCHATTRIBUTES];
-        this[ListDataProviderView._FILTERCRITERION] = this.options == null ? null : this.options[ListDataProviderView._FILTERCRITERION];
+        this[ListDataProviderView._FROM] =
+            this.options == null ? null : this.options[ListDataProviderView._FROM];
+        this[ListDataProviderView._OFFSET] =
+            this.options == null
+                ? 0
+                : this.options[ListDataProviderView._OFFSET] > 0
+                    ? this.options[ListDataProviderView._OFFSET]
+                    : 0;
+        this[ListDataProviderView._SORTCRITERIA] =
+            this.options == null ? null : this.options[ListDataProviderView._SORTCRITERIA];
+        this[ListDataProviderView._DATAMAPPING] =
+            this.options == null ? null : this.options[ListDataProviderView._DATAMAPPING];
+        this[ListDataProviderView._FETCHATTRIBUTES] =
+            this.options == null ? null : this.options[ListDataProviderView._FETCHATTRIBUTES];
+        this[ListDataProviderView._FILTERCRITERION] =
+            this.options == null ? null : this.options[ListDataProviderView._FILTERCRITERION];
         this._addEventListeners(dataProvider);
         if (dataProvider.getCapability && !dataProvider.getCapability('filter')) {
             this._noFilterSupport = true;
@@ -201,7 +212,7 @@ class ListDataProviderView {
     containsKeys(params) {
         let self = this;
         if (this.dataProvider[ListDataProviderView._CONTAINSKEYS]) {
-            return this.dataProvider[ListDataProviderView._CONTAINSKEYS](params);
+            return (this.dataProvider[ListDataProviderView._CONTAINSKEYS](params));
         }
         else {
             return this.fetchByKeys(params).then(function (fetchByKeysResult) {
@@ -299,10 +310,9 @@ class ListDataProviderView {
             fetchAttributes = this[ListDataProviderView._FETCHATTRIBUTES];
         }
         let self = this;
-        if (self[ListDataProviderView._FROM] == null &&
-            self[ListDataProviderView._OFFSET] > 0) {
+        if (self[ListDataProviderView._FROM] == null && self[ListDataProviderView._OFFSET] > 0) {
             let offset = self[ListDataProviderView._OFFSET];
-            return new this.AsyncIterable(this, new this.AsyncIterator(this, function (cachedData) {
+            return new this.AsyncIterable(this, new this.AsyncIterator(this, (function (cachedData) {
                 return function () {
                     let updatedParams = new self.FetchByOffsetParameters(self, offset, null, size, mappedSortCriteria, mappedFilterCriterion, fetchAttributes);
                     return self.dataProvider[ListDataProviderView._FETCHBYOFFSET](updatedParams).then(function (result) {
@@ -318,24 +328,28 @@ class ListDataProviderView {
                             return value[ListDataProviderView._METADATA];
                         });
                         let resultFetchParams = result[ListDataProviderView._FETCHPARAMETERS];
-                        let resultSortCriteria = resultFetchParams != null ? resultFetchParams[ListDataProviderView._SORTCRITERIA] : null;
-                        let resultFilterCriterion = resultFetchParams != null ? resultFetchParams[ListDataProviderView._FILTERCRITERION] : null;
+                        let resultSortCriteria = resultFetchParams != null
+                            ? resultFetchParams[ListDataProviderView._SORTCRITERIA]
+                            : null;
+                        let resultFilterCriterion = resultFetchParams != null
+                            ? resultFetchParams[ListDataProviderView._FILTERCRITERION]
+                            : null;
                         let unmappedResultSortCriteria = self._getUnmappedSortCriteria(resultSortCriteria);
                         let unmappedResultFilterCriterion = self._getUnmappedFilterCriterion(resultFilterCriterion);
                         let resultParams = new self.FetchByOffsetParameters(self, self[ListDataProviderView._OFFSET], null, size, unmappedResultSortCriteria, unmappedResultFilterCriterion);
                         // if the dataprovider supports fetchByOffset then we use that to do an offset based fetch
                         if (cachedData[ListDataProviderView._DONE]) {
-                            return Promise.resolve(new self.AsyncIteratorReturnResult(self, new self.FetchListResult(self, resultParams, data, metadata)));
+                            return Promise.resolve((new self.AsyncIteratorReturnResult(self, new self.FetchListResult(self, resultParams, data, metadata))));
                         }
-                        return Promise.resolve(new self.AsyncIteratorYieldResult(self, new self.FetchListResult(self, resultParams, data, metadata)));
+                        return Promise.resolve((new self.AsyncIteratorYieldResult(self, new self.FetchListResult(self, resultParams, data, metadata))));
                     });
                 };
-            }(cachedData), params));
+            })(cachedData), params));
         }
         else {
             let updatedParams = new this.FetchListParameters(this, params, size, mappedSortCriteria, mappedFilterCriterion, fetchAttributes);
             let cachedAsyncIterator = this.dataProvider[ListDataProviderView._FETCHFIRST](updatedParams)[Symbol.asyncIterator]();
-            return new this.AsyncIterable(this, new this.AsyncIterator(this, function (cachedData, cachedAsyncIterator) {
+            return new this.AsyncIterable(this, new this.AsyncIterator(this, (function (cachedData, cachedAsyncIterator) {
                 return function () {
                     return cachedAsyncIterator.next().then(function (result) {
                         let data = result[ListDataProviderView._VALUE][ListDataProviderView._DATA];
@@ -353,17 +367,24 @@ class ListDataProviderView {
                         let size = params != null ? params[ListDataProviderView._SIZE] : null;
                         let offset = params != null ? params[ListDataProviderView._OFFSET] : null;
                         let resultFetchParams = result[ListDataProviderView._VALUE][ListDataProviderView._FETCHPARAMETERS];
-                        let resultSortCriteria = resultFetchParams != null ? resultFetchParams[ListDataProviderView._SORTCRITERIA] : null;
-                        let resultFilterCriterion = resultFetchParams != null ? resultFetchParams[ListDataProviderView._FILTERCRITERION] : null;
+                        let resultSortCriteria = resultFetchParams != null
+                            ? resultFetchParams[ListDataProviderView._SORTCRITERIA]
+                            : null;
+                        let resultFilterCriterion = resultFetchParams != null
+                            ? resultFetchParams[ListDataProviderView._FILTERCRITERION]
+                            : null;
                         let unmappedResultSortCriteria = self._getUnmappedSortCriteria(resultSortCriteria);
                         let unmappedResultFilterCriterion = self._getUnmappedFilterCriterion(resultFilterCriterion);
                         let resultParams = new self.FetchListParameters(self, params, size, unmappedResultSortCriteria, unmappedResultFilterCriterion);
-                        return self._fetchUntilKey(resultParams, self[ListDataProviderView._FROM], cachedData, cachedAsyncIterator).then(function () {
-                            return self._fetchUntilOffset(resultParams, self[ListDataProviderView._OFFSET] + cachedData[ListDataProviderView._STARTINDEX], data.length, cachedData, cachedAsyncIterator);
+                        return self
+                            ._fetchUntilKey(resultParams, self[ListDataProviderView._FROM], cachedData, cachedAsyncIterator)
+                            .then(function () {
+                            return self._fetchUntilOffset(resultParams, self[ListDataProviderView._OFFSET] +
+                                cachedData[ListDataProviderView._STARTINDEX], data.length, cachedData, cachedAsyncIterator);
                         });
                     });
                 };
-            }(cachedData, cachedAsyncIterator), params));
+            })(cachedData, cachedAsyncIterator), params));
         }
     }
     getCapability(capabilityName) {
@@ -392,7 +413,7 @@ class ListDataProviderView {
                 if (!resultMap.has(findKey)) {
                     keys.map(function (key, index) {
                         if (oj.Object.compareValues(key, findKey)) {
-                            resultMap.set(findKey, new self.Item(self, metadata[index], data[index]));
+                            resultMap.set(findKey, (new self.Item(self, metadata[index], data[index])));
                         }
                     });
                 }
@@ -451,7 +472,11 @@ class ListDataProviderView {
      */
     _fetchUntilOffset(params, offset, resultSize, cachedData, cachedAsyncIterator) {
         let self = this;
-        let fetchSize = params != null ? params[ListDataProviderView._SIZE] > 0 ? params[ListDataProviderView._SIZE] : resultSize : resultSize;
+        let fetchSize = params != null
+            ? params[ListDataProviderView._SIZE] > 0
+                ? params[ListDataProviderView._SIZE]
+                : resultSize
+            : resultSize;
         offset = offset > 0 ? offset : 0;
         let cachedItems = cachedData[ListDataProviderView._ITEMS].slice(offset, offset + fetchSize);
         if (this._noFilterSupport) {
@@ -477,7 +502,8 @@ class ListDataProviderView {
                 });
             }
             else {
-                cachedData[ListDataProviderView._STARTINDEX] = cachedData[ListDataProviderView._STARTINDEX] + cachedItems.length;
+                cachedData[ListDataProviderView._STARTINDEX] =
+                    cachedData[ListDataProviderView._STARTINDEX] + cachedItems.length;
                 let data = cachedItems.map(function (item) {
                     return item[ListDataProviderView._DATA];
                 });
@@ -488,7 +514,8 @@ class ListDataProviderView {
             }
         }
         else {
-            cachedData[ListDataProviderView._STARTINDEX] = cachedData[ListDataProviderView._STARTINDEX] + cachedItems.length;
+            cachedData[ListDataProviderView._STARTINDEX] =
+                cachedData[ListDataProviderView._STARTINDEX] + cachedItems.length;
             let data = cachedItems.map(function (item) {
                 return item[ListDataProviderView._DATA];
             });

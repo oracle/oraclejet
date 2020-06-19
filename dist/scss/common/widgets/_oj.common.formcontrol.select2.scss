@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
 //          version in your base theme's directory,
@@ -112,8 +113,8 @@
       position: absolute;
       top: 0;
       left: 0;
-      bottom: 0;
       right: 0;
+      padding: inherit;
     }
     .oj-searchselect .oj-searchselect-filter.oj-form-control {
       margin-bottom: 0;
@@ -144,20 +145,38 @@
 
     /* Styling for readonly mode */
 
-    /* don't show dropdown trigger */
-    .oj-searchselect.oj-read-only .oj-searchselect-arrow {
+    /* don't show dropdown trigger or mobile clear value icon */
+    .oj-searchselect.oj-read-only .oj-searchselect-arrow,
+    .oj-searchselect.oj-read-only .oj-searchselect-clear-value {
+      display: none;
+    }
+    
+    /* don't show mobile clear value icon when field is required */
+    .oj-searchselect.oj-required .oj-searchselect-clear-value {
       display: none;
     }
 
     /*
-     * Applied to the single-select drop down arrow
+     * Applied to the single-select drop down arrow and mobile clear value icon
      */
-    .oj-searchselect-arrow {
+    .oj-searchselect-arrow,
+    .oj-searchselect-clear-value {
       cursor: pointer;
     }
 
+    /*
+     * Only show either the dropdown arrow or the clear value icon on mobile depending on whether
+     * a value is selected.
+     */
+    .oj-searchselect-mobile.oj-searchselect-no-value .oj-searchselect-clear-value,
+    .oj-searchselect-mobile.oj-disabled .oj-searchselect-clear-value,
+    .oj-searchselect-mobile:not(.oj-searchselect-no-value):not(.oj-disabled):not(.oj-required) .oj-searchselect-arrow {
+      display: none;
+    }
+ 
     .oj-searchselect-arrow,
-    .oj-searchselect-filter-indicator {
+    .oj-searchselect-clear-value,
+    .oj-searchselect-back-button {
       box-sizing: border-box;
       display: inline-flex;
       text-align: center;
@@ -168,7 +187,8 @@
     }
 
     .oj-searchselect-arrow:hover, .oj-searchselect-arrow:focus,
-    .oj-searchselect-filter-indicator:hover, .oj-searchselect-filter-indicator:focus {
+    .oj-searchselect-clear-value:hover, .oj-searchselect-clear-value:focus,
+    .oj-searchselect-back-button:hover, .oj-searchselect-back-button:focus {
       text-decoration: none;
     }
 
@@ -180,7 +200,8 @@
       @include oj-form-control-content-disabled;
     }
 
-    .oj-searchselect.oj-disabled .oj-searchselect-arrow {
+    .oj-searchselect.oj-disabled .oj-searchselect-arrow,
+    .oj-searchselect.oj-disabled .oj-searchselect-clear-value  {
       cursor: default;
       background-color: $formControlBgColorDisabled;
     }
@@ -200,7 +221,8 @@
       opacity: 1;
     }
 
-    .oj-searchselect.oj-loading .oj-searchselect-arrow {
+    .oj-searchselect.oj-loading .oj-searchselect-arrow,
+    .oj-searchselect.oj-loading .oj-searchselect-clear-value {
       display: none;
     }
 
@@ -208,12 +230,7 @@
      * Applied to results collection element
      */
     .oj-select-results {
-      padding: 0;
-      margin: 1px 0 2px 0;
-      position: relative;
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+      @extend .oj-listbox-results-base;
     }
 
     // .oj-listbox-fullscreen .oj-select-results {
@@ -221,10 +238,6 @@
     //   flex-grow: 1;
     // }
 
-    .oj-searchselect-cancel {
-      align-self: flex-end;
-      flex-shrink: 0;
-    }
 
 
     /* icon */
@@ -235,7 +248,17 @@
      */
     .oj-searchselect-open-icon {
       @extend .oj-fwk-icon-arrow02-s;
+    }
 
+    /*
+     * Applied to the single-select mobile clear value icon
+     */
+    .oj-searchselect-clear-value-icon {
+      @extend .oj-fwk-icon-cross03;
+    }
+    
+    .oj-searchselect-open-icon,
+    .oj-searchselect-clear-value-icon {
       line-height: inherit;
       padding-right: 5px;
       padding-left: 5px;
@@ -246,10 +269,10 @@
     }
 
     /*
-     * Applied to the single-select mobile filter field magnifying glass icon
+     * Applied to the single-select mobile filter field back icon
      */
-    .oj-searchselect-filter-indicator-icon {
-      @extend .oj-fwk-icon-magnifier;
+    .oj-searchselect-back-icon {
+      @extend .oj-fwk-icon-caret-start;
 
       line-height: inherit;
       padding-right: 5px;
@@ -260,25 +283,24 @@
      * Applied to the container of the no data template shown in the default listView.
      */
     .oj-searchselect-no-results-container {
-      padding: 40px 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
+      display: none;
+      height: 0;
+    }
+    
+    /**
+     * Applied to the default list view if no results are found
+     */
+    .oj-listbox-searchselect-no-results .oj-select-results {
+      display: none;
     }
 
-    /*
-     * Applied to the first line of text in the no data template shown in the default listView.
-     */
-    .oj-searchselect-no-results-line1 {
-      padding: 10px;
-    }
-
-    /*
-     * Applied to the second line of text in the no data template shown in the default listView.
-     */
-    .oj-searchselect-no-results-line2 {
-      font-size: .8rem;
+    /* Styling on collection selection */
+    .oj-listbox-searchselect .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected,
+    .oj-listbox-searchselect .oj-listview-item.oj-selected,
+    .oj-listbox-searchselect .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-data-cell.oj-selected,
+    .oj-listbox-searchselect .oj-table:not(.oj-focus) .oj-table-data-cell.oj-selected {
+      // show hover color instead of selection color
+      background-color: $collectionCellBgColorHover;
     }
 
     // The oj-form-control-inherit selector on an ancestor indicates that the form control should
@@ -295,7 +317,8 @@
       }
     }
 
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-searchselect-arrow {
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-searchselect-arrow,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-searchselect-clear-value {
       align-self: stretch;
     }
 

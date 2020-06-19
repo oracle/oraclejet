@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -18,6 +19,7 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojlogger', 'ojs/ojcontext'], function(oj,
  * @ojtsmodule
  * @ojtsignore
  * @since 1.1
+ * @ojdeprecated {since: '9.0.0', description: 'Replace ModuleBinding and ojModule with oj-module element.'}
  */
 oj.ModuleBinding = {}; // Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
 // eslint-disable-next-line no-unused-vars
@@ -450,6 +452,7 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
                 childBindingContext.$slotCounts = undefined;
                 childBindingContext.$unique = undefined;
                 childBindingContext.$uniqueId = undefined;
+                childBindingContext.$provided = undefined;
               }
 
               _applyBindingsToNodes(targetElement, nodes[0], childBindingContext, cacheHolder);
@@ -1232,6 +1235,7 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
  * @ojtsignore
  * @ojtsmodule
  * @name ojModule
+ * @ojdeprecated {since: '9.0.0', description: 'Replace ojModule with oj-module element.'}
  */
 
 /**

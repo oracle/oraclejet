@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -173,6 +174,8 @@ var __oj_messages_metadata =
  * @ojvbdefaultcolumns 2
  * @ojvbmincolumns 1
  *
+ * @ojuxspecs ['messages']
+ *
  * @classdesc
  * <h3 id="messageOverview-section">
  *   JET Messages
@@ -253,15 +256,21 @@ var __oj_messages_metadata =
  * </h3>
  *
  * {@ojinclude "name":"keyboardDoc"}
- *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- * <p> The following CSS classes can be applied by the page author as needed.</p>
- *
- * {@ojinclude "name":"stylingDoc"}
  */
+// --------------------------------------------------- oj.ojMessages Styling Start -----------------------------------------------------------
+// ---------------- oj-messages-inline-remove-bottom-border --------------
+
+/**
+* Inline messages will include a bottom border so that the messages section is demarcated from the contents below it. If this border is not desirable for certain page layouts, it can be removed by setting this marker class on oj-messages.
+* @ojstyleclass oj-messages-inline-remove-bottom-border
+* @ojdisplayname No Border
+* @memberof oj.ojMessages
+* @ojtsexample
+* &lt;oj-messages class="oj-messages-inline-remove-bottom-border">
+*   &lt;!-- Content -->
+* &lt;/oj-messages>
+*/
+// --------------------------------------------------- oj.ojMessages Styling Start -----------------------------------------------------------
 
 /**
  * <table class="keyboard-table">
@@ -295,29 +304,6 @@ var __oj_messages_metadata =
  * </table>
  *
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
- * @memberof oj.ojMessages
- */
-
-/**
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>Class</th>
- *       <th>Description</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-messages-inline-remove-bottom-border</td>
- *       <td>Inline messages will include a bottom border so that the messages section is demarcated
- *            from the contents below it. If this border is not desirable for certain page layouts,
- *            it can be removed by setting this marker class on oj-messages.
-  *       </td>
- *     </tr>
- *   </tbody>
- * </table>
- *
- * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
  * @memberof oj.ojMessages
  */
 // Attributes
@@ -1156,7 +1142,8 @@ MessagesViewModel.prototype._updateLiveRegionAndContainer = function (message) {
   var category = !message.category ? translations[severity] : message.category;
   var options = {
     category: category,
-    summary: message.summary
+    summary: message.summary,
+    detail: message.detail
   };
 
   var liveRegion = this._getLiveRegion();
@@ -1517,9 +1504,10 @@ MessagesViewModel.prototype._isOverlayOpen = function () {
 MessagesViewModel._overlayEventsListener = function (element, event) {
   if (event.defaultPrevented) {
     return;
-  }
+  } // keyCode is deprecated and it's not supported on some browsers.
 
-  if (event.keyCode === $.ui.keyCode.TAB) {
+
+  if (event.keyCode === $.ui.keyCode.TAB || event.key === 'Tab') {
     var target = event.target;
     var nodes = element.find(':tabbable');
 
@@ -1824,8 +1812,9 @@ MessagesViewModel.NAVIGATION_TRACKER = {
 
 
     var messagesContainerIds = this._messagesContainerIds; // F6 keypress
+    // keyCode is deprecated and it's not supported on some browsers.
 
-    if (event.type === 'keydown' && event.keyCode === 117 && messagesContainerIds.length > 0) {
+    if (event.type === 'keydown' && (event.keyCode === 117 || event.key === 'F6') && messagesContainerIds.length > 0) {
       // Look to see if the event target is already within a message area.  If focus is within
       // do nothing as the F6 listener on the mesage area will handle.
       var s = this._indexOfFocusWithin(event.target);
@@ -1885,10 +1874,11 @@ MessagesViewModel.NAVIGATION_TRACKER = {
         // attached to visible message components.  Tracks previous focus.
         this._addPriorFocusCache(id, prevActiveElement);
       }
-    } else if (event.type === 'keydown' && (event.keyCode === 117 || event.keyCode === $.ui.keyCode.ESCAPE)) {
+    } else if (event.type === 'keydown' && (event.keyCode === 117 || event.keyCode === $.ui.keyCode.ESCAPE || event.key === 'F6' || event.key === 'Escape')) {
       // F6 or ESC keypress from within the content of the messages container will toggle focus back
       // to to what had prior focus. An attempt is made to fixup the navigate even if arriving
       // using the mouse or touch.
+      // keyCode is deprecated and it's not supported on some browsers.
       if (this.togglePreviousFocus(id)) {
         event.preventDefault();
       }

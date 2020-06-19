@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -80,7 +81,7 @@ oj.ModuleElementUtils = ModuleElementUtils;
  * @return {Promise} A promise that resolves into an array of DOM nodes
  * @ojsignature [
  *   {target: "Type", for: "options.require", value: "((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)"},
- *   {target: "Type", value: "(options: {viewPath: string, require?: ((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)}):Promise<Node[]>", jsdocOverride: true}]
+ *   {target: "Type", value: "(options: {viewPath: string, require?: ((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)}):Promise<Node[]>"}]
  * @memberof! ModuleElementUtils
  * @static
  */
@@ -133,7 +134,7 @@ ModuleElementUtils.createView = function (options) {
  * @ojsignature [{target:"Type", value:"<P>", for:"genericTypeParameters"},
  *               {target: "Type", value: "P", for: "options.params"},
  *               {target: "Type", for: "options.require", value: "((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)"},
- *               {target: "Type", value: "(options: {viewModelPath: string, params?: P, require?: ((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void),initialize?: 'always' | 'never' | 'ifParams'}):Promise<oj.ModuleViewModel|Function>", jsdocOverride: true}]
+ *               {target: "Type", value: "(options: {viewModelPath: string, params?: P, require?: ((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void),initialize?: 'always' | 'never' | 'ifParams'}):Promise<oj.ModuleViewModel|Function>"}]
  * @memberof! ModuleElementUtils
  * @static
  */
@@ -197,7 +198,7 @@ ModuleElementUtils.createViewModel = function (options) {
  * @ojsignature [{target:"Type", value:"<P>", for:"genericTypeParameters"},
  *               {target: "Type", value: "P", for: "options.params"},
  *               {target: "Type", for: "options.require", value: "((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)"},
- *               {target: "Type", value: "(options: {name?: string, viewPath?: string, viewModelPath?: string, params?: P, require?: ((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)}):Promise<{view:Node[], viewModel:oj.ModuleViewModel|null}>", jsdocOverride: true}]
+ *               {target: "Type", value: "(options: {name?: string, viewPath?: string, viewModelPath?: string, params?: P, require?: ((module: string)=> any)|((modules: string[], ready?: any, errback?: any)=> void)}):Promise<{view:Node[], viewModel:oj.ModuleViewModel|null}>"}]
  * @memberof! ModuleElementUtils
  * @static
  */

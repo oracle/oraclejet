@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -305,6 +306,8 @@ var __oj_menu_metadata =
    * @ojvbdefaultcolumns 2
    * @ojvbmincolumns 1
    *
+   * @ojuxspecs ['menu']
+   *
    * @classdesc
    * <h3 id="menuOverview-section">
    *   JET Menu
@@ -333,9 +336,6 @@ var __oj_menu_metadata =
    * &lt;/oj-menu>
    * </code></pre>
    *
-   * <p>JET Menus are not intended to be scrollable, as large, unwieldy menus are not good UX.  Ideally menus should have a manageable number of items; if this is not
-   * possible, then it is preferable to organize contents into submenus, rather than introducing scrolling.
-   *
    *
    * <h3 id="popup-section">
    *   Popup Menus
@@ -346,9 +346,6 @@ var __oj_menu_metadata =
    * or similar functionality.  It is not intended to sit inline on the page.  See also the [JET NavigationList]{@link oj.ojNavigationList} component.
    *
    * <p>For this reason, the component is automatically hidden until it is opened.  However, this styling is not applied until the component is initialized.
-   * To avoid a FOUC (flash of unstyled content), applications are encouraged to apply <code class="prettyprint">style="display:none"</code> to the menu markup,
-   * as shown in the above code sample.
-   *
    *
    * <h3 id="submenus-section">
    *   Submenus
@@ -411,6 +408,17 @@ var __oj_menu_metadata =
    *     <code class="prettyprint">"dismiss"</code>.</li>
    * </ul>
    *
+   *
+   * <h3 id="scrolling-section">
+   *   Scrolling
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#scrolling-section"></a>
+   * </h3>
+   *
+   * <p>JET Menus is scrollable when the menu is long. However, scrolling isn't supported on below scenarios: </p>
+   * <ul>
+   * <li>Scrolling is not supported on Submenus.
+   * <li>Scrolling is not supported on phone due to some themes supporting downward swipe dismissal on Sheet Menus. Please check details on <a href="#dismissal-section">Dismissal</a> section.</li>
+   * </ul>
    *
    * <h3 id="touch-section">
    *   Touch End User Information
@@ -1026,7 +1034,7 @@ var __oj_menu_metadata =
        * @instance
        * @ojcancelable
        * @ojbubbles
-       * @property {"open"|"close"} action The action that is starting the animation.
+       * @property {"open"|"close"} action The action that is starting the animation.<br><br>
        *            The number of actions can vary from element to element.
        *            Suggested values are:
        *                    <ul>
@@ -1079,7 +1087,7 @@ var __oj_menu_metadata =
        * @ojcancelable
        * @ojbubbles
        * @property {!Element} element target of animation
-       * @property {"open"|"close"} action The action that is ending the animation.
+       * @property {"open"|"close"} action The action that is ending the animation.<br><br>
        *                   The number of actions can vary from element to element.
        *                   Suggested values are:
        *                    <ul>
@@ -1276,7 +1284,7 @@ var __oj_menu_metadata =
       if (!this._IsCustomElement()) {
         this._createAsTopLevelMenu();
       } else {
-        this.element.hide();  // insist menu is initially hidden
+        this.element.hide(); // insist menu is initially hidden
         // fixup the position option if custom element menu or submenu
         var options = this.options;
         options.openOptions.position = oj.PositionUtils.coerceToJet(options.openOptions.position);
@@ -1508,7 +1516,7 @@ var __oj_menu_metadata =
 
     _createAsSubmenu: function () {
       // set special container name as this should have submenu defaults
-      this.element.attr(Components._OJ_CONTAINER_ATTR, this.widgetName);
+      this.element.attr(Components._OJ_CONTAINER_ATTR, this.widgetName); // @HTMLUpdateOK
 
       this.element
         .uniqueId()
@@ -1748,6 +1756,8 @@ var __oj_menu_metadata =
           customAnchor.removeAttr('aria-disabled');
         }
       }
+      // Update menu padding each time an ojOption is updated
+      this._updateMenuPadding(this.element);
     },
 
     // Helper method to position start icons
@@ -1758,9 +1768,12 @@ var __oj_menu_metadata =
       } else {
         marginProperty = 'margin-left';
       }
-
-      var margin = parseInt($(node).css(marginProperty), 10);
-        // margins are negative for start icons
+      var margin = Number($(node).attr('data-oj-default-margin'));
+      if (isNaN(margin)) {
+        margin = parseInt($(node).css(marginProperty), 10);
+        $(node).attr('data-oj-default-margin', margin);
+      }
+      // margins are negative for start icons
       this._startIconWidth = -1 * margin;
       $(node).css(marginProperty, (margin * (count - index)) + 'px');
     },
@@ -1776,8 +1789,11 @@ var __oj_menu_metadata =
         marginProperty = 'margin-right';
         widthProperty = 'margin-left';
       }
-
-      var margin = parseInt($(node).css(marginProperty), 10);
+      var margin = Number($(node).attr('data-oj-default-margin'));
+      if (isNaN(margin)) {
+        margin = parseInt($(node).css(marginProperty), 10);
+        $(node).attr('data-oj-default-margin', margin);
+      }
       // margins are negative for end icons
       this._endIconWidth = -1 * parseInt($(node).css(widthProperty), 10);
       $(node).css(marginProperty, (margin + (this._endIconWidth * (count - index - 1))) + 'px');
@@ -1812,7 +1828,11 @@ var __oj_menu_metadata =
       }
 
       anchors.each(function () {
-        var padding = parseInt($(this).css(paddingProperty), 10);
+        var padding = Number($(this).attr('data-oj-default-padding'));
+        if (isNaN(padding)) {
+          padding = parseInt($(this).css(paddingProperty), 10);
+          $(this).attr('data-oj-default-padding', padding);
+        }
         $(this).css(paddingProperty, (padding + (iconWidth * (count - 1))) + 'px');
       });
     },
@@ -1847,10 +1867,10 @@ var __oj_menu_metadata =
           // - Event is a touchstart (which may or may not become a pressHold) or left/middle mousedown, unless (event is in launcher and this is not a context menu).  "Unless" clause needed for menuButton.
           // - Event is focusing something outside of both the menu and launcher.
           // - Event is a context-menu-launching event other than pressHold.  (i.e. right-click or CM keys)
-          if (!$(event.target).closest(menu.element).length &&  // if event target is outside of menu element AND one of the following is true then close the menu.
+          if (!$(event.target).closest(menu.element).length && // if event target is outside of menu element AND one of the following is true then close the menu.
               (event.type === 'keydown' ||
-               (event.type === 'mousedown' && event.which === 3) ||  // 1. if it's a context-menu-launching event other than pressHold (see event.which on outer if)
-               !$(event.target).closest(menu._launcher).length ||  // 2. When focus is moved on to other than launcher or left/middle mousedown or touchstart on element other than launcher
+               (event.type === 'mousedown' && event.which === 3) || // 1. if it's a context-menu-launching event other than pressHold (see event.which on outer if)
+               !$(event.target).closest(menu._launcher).length || // 2. When focus is moved on to other than launcher or left/middle mousedown or touchstart on element other than launcher
                (menu._launcherClickShouldDismiss &&
                 ((event.type === 'mousedown' && event.which !== 3) ||
                  event.type === 'touchstart')))) { // 3. If event is a (left/middle-mousedown or touchstart) on launcher and current menu is contextmenu (see )
@@ -2090,7 +2110,7 @@ var __oj_menu_metadata =
             this._focus(event, match);
             if (match.length > 1) {
               this.previousFilter = character;
-              this.filterTimer = setTimeout(function () {
+              this.filterTimer = setTimeout(function () { // @HTMLUpdateOK
                 delete this.previousFilter;
               }.bind(this), 1000);
             } else {
@@ -2185,8 +2205,7 @@ var __oj_menu_metadata =
     _reposition: function () {
       function isMenuLargerThanViewport(domElement) {
         var rect = domElement.getBoundingClientRect();
-        return rect.width > document.documentElement.clientWidth ||
-               rect.height > document.documentElement.clientHeight;
+        return rect.width > document.documentElement.clientWidth;
       }
 
       var element = this.element;
@@ -2197,6 +2216,9 @@ var __oj_menu_metadata =
 
       // reevaluate open menu positions
       var position = element.data(_POSITION_DATA);
+      element[0].style.maxHeight = '';
+      element[0].style.overflowY = '';
+      this._updateMenuMaxHeight();
       element.position(position);
 
       // Do the same for open submenus.  Don't bother with the position.of check this time, since
@@ -2305,7 +2327,7 @@ var __oj_menu_metadata =
 
       if (addIcon) {
         var submenuIcon = $('<span>');
-        submenuIcon   // separate stmt rather than chaining, since GCC can't tell that this is the setter overload of .data().
+        submenuIcon // separate stmt rather than chaining, since GCC can't tell that this is the setter overload of .data().
           .addClass('oj-menu-submenu-icon oj-component-icon')
           .data('oj-ojMenu-submenu-icon', true); // TODO: can't we just look for the class at destroy time rather than adding this data?
 
@@ -2975,20 +2997,19 @@ var __oj_menu_metadata =
           // vary by launch when there are submenus.
           this.element.addClass('oj-menu-dropdown').removeClass('oj-menu-sheet');
           modality = _DROPDOWN_MODALITY;
-
           var openOptionsPosition =
             oj.PositionUtils.normalizeHorizontalAlignment(menuOpenOptions.position, this.isRtl);
           // convert the position option back to JQuery format if custom element menu or submenu
           if (this._IsCustomElement()) {
             // fixup the position option if custom element menu or submenu
-            // eslint-disable-next-line no-param-reassign
             openOptionsPosition =
               oj.PositionUtils.coerceToJet(openOptionsPosition, this.options.openOptions.position);
+            this._referenceOpenPosition = openOptionsPosition;
             position = oj.PositionUtils.coerceToJqUi(openOptionsPosition);
           } else {
+            this._referenceOpenPosition = openOptionsPosition;
             position = openOptionsPosition;
           }
-
           position.of = oj.PositionUtils.normalizePositionOf(position.of, launcher, menuEvent);
         } else { // sheet menu, implying no submenus
           this.element.addClass('oj-menu-sheet').removeClass('oj-menu-dropdown');
@@ -3110,12 +3131,23 @@ var __oj_menu_metadata =
       var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
       var position = psOptions[oj.PopupService.OPTION.POSITION];
       var context = psOptions[oj.PopupService.OPTION.CONTEXT];
-
       var event = context.event;
       var isDropDown = context.isDropDown;
       var initialFocus = context.initialFocus;
-
+      // Clear out css value before each open to make sure correct calculation of overflow
+      // Needs to happen before show()
+      rootElement[0].style.maxHeight = '';
+      rootElement[0].style.overflowY = '';
       rootElement.show();
+      position = this._checkBrowserVerticalScollBar(context, position);
+      // get menu height and launcher height before adjusting max height so we don't need to get it from every reposition call
+      this.rootHeight = rootElement[0].offsetHeight;
+      if (position.of.type === 'click') {
+        this.launcherHeight = position.of.clientY;
+      } else {
+        this.launcherHeight = context.launcher[0].getBoundingClientRect().bottom;
+      }
+      this._updateMenuMaxHeight();
       rootElement.position(position);
       // establish this._focusSkipLink, if iOS or Android
       this._initVoiceOverAssist(initialFocus);
@@ -3137,6 +3169,47 @@ var __oj_menu_metadata =
       }
 
       return promise;
+    },
+    // If the browser has vertical scroll bar, we need to reserve the scrollbar width before position calculation
+    // since jqueryui position api does not calculate scrollbar correctly
+    _checkBrowserVerticalScollBar: function (context, position) {
+      var launcher = context.launcher;
+      var scrollbarWidth = $.position.scrollbarWidth();
+      // check if browser has vertical scroll bar
+      var hasBrowserOverflowY = window.innerWidth > document.documentElement.clientWidth;
+      // check if the space for menu is enough
+      var isOverflowSmallerThanScrollbar = window.innerWidth -
+                                           launcher[0].offsetLeft -
+                                           this.element[0].offsetWidth < scrollbarWidth;
+      if (!hasBrowserOverflowY || !isOverflowSmallerThanScrollbar) {
+        return position;
+      }
+      this._referenceOpenPosition.offset.x = scrollbarWidth * -1;
+      if (this._IsCustomElement()) {
+        var newPo = oj.PositionUtils.coerceToJqUi(this._referenceOpenPosition);
+        return Object.assign(position, { my: newPo.my });
+      }
+      return Object.assign(position, { offset: { my: scrollbarWidth * -1 } });
+    },
+    // JET-36321: Scroll fix for v9.x. Needs to update when implementing redwood scrolling(JET-32432)
+    // Not supported for sheetmenu or submenu
+    _updateMenuMaxHeight: function () {
+      var elem = this.element[0];
+      var isDropdown = this._isDropDown(this.options.openOptions.display);
+      var hasSubmenu = elem.querySelectorAll('oj-menu').length;
+      // Max height will apply will only certain condition
+      if (hasSubmenu ||
+         !isDropdown ||
+        this.rootHeight < window.innerHeight) return;
+      // Leave some space between menu and viewport edge
+      var bottomPadding = 25;
+      var menuHeight = window.innerHeight - this.launcherHeight - bottomPadding;
+      // MaxHeight will be at least bottomPadding
+      if (menuHeight < bottomPadding) {
+        menuHeight = bottomPadding;
+      }
+      elem.style.maxHeight = menuHeight + 'px';
+      elem.style.overflowY = 'scroll';
     },
 
     /**
@@ -3818,8 +3891,8 @@ var __oj_menu_metadata =
      */
     _getCancelDom: function () {
       if (!this._cancelDom) {
-        var divider = $('<li></li>', this.document[0]); // @HTMLUpdateOK trusted string
-        var a = $("<a href='#'></a>", this.document[0]) // @HTMLUpdateOK trusted string
+        var divider = $('<li></li>', this.document[0]); // trusted string
+        var a = $("<a href='#'></a>", this.document[0]) // trusted string
                 .text(this.options.translations.labelCancel);
         $("<span class='oj-menu-item-icon oj-component-icon oj-menu-cancel-icon'></span>",
           this.document[0])

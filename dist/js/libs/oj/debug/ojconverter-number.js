@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -479,6 +480,9 @@ IntlNumberConverter.prototype.Init = function (options) {
 
 
 // Returns the wrapped number converter implementation object.
+// FA is overriding our ojs/ojconverter-datetime bundle and needs to define this function
+// or else they will get an error.
+// Do not rename. TODO: Ideally we will remove the need for them to have to define this function.
 IntlNumberConverter.prototype._getWrapped = function () {
   if (!this._wrapped) {
     this._wrapped = OraNumberConverter.getInstance();
@@ -685,6 +689,9 @@ IntlNumberConverter.prototype.resolvedOptions = function () {
  * Processes the error returned by the converter implementation and throws a oj.ConverterError
  * instance.
  *
+ * FA is overriding our ojs/ojconverter-datetime bundle and needs to define this function
+ * or else they will get an error.
+ * Do not rename. TODO: Ideally we will remove the need for them to have to define this function.
  * @param {Error} e
  * @param {String|string|Number|number|Object=} value
  * @throws an instance of oj.ConverterError
@@ -774,6 +781,9 @@ IntlNumberConverter.prototype._processConverterError = function (e, value) {
 // example. For example, if the converter's style is decimal and decimalFormat is short,
 // this.format(12345.98765) returns 12K, and we show 12K in the error message as an example
 // of what they should type in.
+// FA is overriding our ojs/ojconverter-datetime bundle and needs to define this function
+// or else they will get an error.
+// Do not rename. TODO: Ideally we will remove the need for them to have to define this function.
 IntlNumberConverter.prototype._getHintValue = function () {
   var value = '';
   try {
@@ -2159,8 +2169,7 @@ var OraNumberConverter = (function () {
 
   function _throwNaNException(style, numberSettings, errStr) {
     var code;
-    var msg = 'Unparsable number ' + errStr + ' The expected number ' +
-        'pattern is ' + numberSettings.pat;
+    var msg = 'Enter a number in this format:' + numberSettings.pat;
     switch (style) {
       case 'decimal' :
         code = 'decimalFormatMismatch';

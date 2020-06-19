@@ -1,0 +1,344 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.formcontrol.formlayout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.scss";
+
+@import "_oj-form-layout.mixins.scss"; 
+
+  @include module-include-once("common.formlayout.element") {
+    // default custom element to block
+    oj-form-layout {
+      display: block;
+    }
+    
+    @include common-formlayout-selectors();
+
+    // Generate the style classes for oj-form-layout custom element component.
+    // Currently, we only have the common cases, but in the future, we may add
+    // oj-form-layout element specific selectors here.
+
+      @include oj-form-layout-common($selectorPrefix: "oj-formlayout",
+                                     $labelInlineGutter: '--oj-form-layout-label-inline-gutter-padding', 
+                                     $labelInlineAlign: '--oj-form-layout-label-inline-text-align', 
+                                     $fieldInlineAlign: '--oj-form-layout-field-inline-text-align');
+
+
+    .oj-formlayout-max-cols-1:not(.oj-formlayout-full-width) {
+      max-width: var(--oj-form-layout-column-max-width);
+    }
+
+    .oj-formlayout-max-cols-2:not(.oj-formlayout-full-width) {
+      max-width: calc(2 * var(--oj-form-layout-column-max-width));
+    }
+
+    .oj-formlayout-max-cols-3:not(.oj-formlayout-full-width) {
+      max-width: calc(3 * var(--oj-form-layout-column-max-width));
+    }
+
+    .oj-formlayout-max-cols-4:not(.oj-formlayout-full-width) {
+      max-width: calc(4 * var(--oj-form-layout-column-max-width));
+    }
+
+    .oj-formlayout-max-cols-5:not(.oj-formlayout-full-width) {
+      max-width: calc(5 * var(--oj-form-layout-column-max-width));
+    }
+
+    .oj-formlayout-max-cols-6:not(.oj-formlayout-full-width) {
+      max-width: calc(6 * var(--oj-form-layout-column-max-width));
+    }
+
+    .oj-formlayout-max-cols-1:not(.oj-formlayout-full-width) > .oj-form.oj-formlayout-labels-inline:not(.oj-formlayout-form-across) {
+      max-width: var(--oj-form-layout-start-label-column-max-width);
+    }
+
+    .oj-formlayout-max-cols-2:not(.oj-formlayout-full-width) > .oj-form.oj-formlayout-labels-inline:not(.oj-formlayout-form-across) {
+      max-width: calc(2 * var(--oj-form-layout-start-label-column-max-width));
+    }
+
+    .oj-formlayout-max-cols-3:not(.oj-formlayout-full-width) > .oj-form.oj-formlayout-labels-inline:not(.oj-formlayout-form-across) {
+      max-width: calc(3 * var(--oj-form-layout-start-label-column-max-width));
+    }
+
+    .oj-formlayout-max-cols-4:not(.oj-formlayout-full-width) > .oj-form.oj-formlayout-labels-inline:not(.oj-formlayout-form-across) {
+      max-width: calc(4 * var(--oj-form-layout-start-label-column-max-width));
+    }
+
+    .oj-formlayout-max-cols-5:not(.oj-formlayout-full-width) > .oj-form.oj-formlayout-labels-inline:not(.oj-formlayout-form-across) {
+      max-width: calc(5 * var(--oj-form-layout-start-label-column-max-width));
+    }
+
+    .oj-formlayout-max-cols-6:not(.oj-formlayout-full-width) > .oj-form.oj-formlayout-labels-inline:not(.oj-formlayout-form-across) {
+      max-width: calc(6 * var(--oj-form-layout-start-label-column-max-width));
+    }
+
+
+    // this is just for oj-form-layout component, not form layout in general.
+    oj-form-layout > .oj-form {
+      padding-left: var(--oj-form-layout-horizontal-margin);
+      padding-right: var(--oj-form-layout-horizontal-margin);
+    }
+    // Nested forms layouts need no horizontal margin
+    oj-form-layout >.oj-form > .oj-flex > .oj-flex-item > oj-form-layout > .oj-form {
+      padding-left: 0px;
+      padding-right: 0px;
+    }
+    
+    // in direction row, things are a little more complex, so we need to apply spacing
+    // to the flex-item divs.
+    oj-form-layout.oj-formlayout-form-across > .oj-form {
+      padding-left: 0px;
+      padding-right: 0px;
+      column-gap: 0px;
+    }
+    
+    // When labels are inline, we shouldn't ever wrap as it produces difficult
+    // to understand layouts.
+    .oj-formlayout-labels-inline > .oj-flex  {
+      flex-wrap: nowrap;
+    }
+
+    .oj-formlayout-form-across > .oj-flex > .oj-flex-item:first-child {
+      @include oj-ltr {
+        padding-left: var(--oj-form-layout-horizontal-margin);
+      }
+      @include oj-rtl(){
+        padding-right: var(--oj-form-layout-horizontal-margin);
+      }
+    }
+    .oj-formlayout-form-across > .oj-flex > .oj-flex-item:last-child {
+      @include oj-ltr {
+        padding-right: var(--oj-form-layout-horizontal-margin);
+      }
+      @include oj-rtl(){
+        padding-left: var(--oj-form-layout-horizontal-margin);
+      }
+    }
+    // this is an oj-form-layout specific case, where the label flex item is set to 0px and the oj-label and
+    // the component share the same
+    // In this case, we need to apply the padding-left to the even (element/value) flex item (beyond the 2)
+    // in the 'across' case where you have multiple fields in the same row you need padding between the 1st 
+    // field and the second label
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item:nth-child(odd),
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(odd) {
+        html:not([dir="rtl"]) & {
+          padding-left: 0px;
+        }
+        html[dir="rtl"] & {
+          padding-right: 0px;
+        }
+    }
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item,
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(2) {
+      html:not([dir="rtl"]) & {
+        padding-left: calc(var(--oj-form-layout-column-gutter) / 2);
+      }
+      html[dir="rtl"] & {
+        padding-right: calc(var(--oj-form-layout-column-gutter) / 2);
+      }
+    }
+    // The left/right margin goes on the second oj-flex-item element for label comps.
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item:nth-child(2),
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(2) {
+      html:not([dir="rtl"]) & {
+        padding-left: var(--oj-form-layout-horizontal-margin);
+      }
+      html[dir="rtl"] & {
+        padding-right:  var(--oj-form-layout-horizontal-margin);
+      }
+    }
+  
+    // For this case, we need the padding applied to the appropriate oj-label-value elements
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:last-child {
+      padding-left: calc(var(--oj-form-layout-column-gutter) / 2);
+      padding-right: calc(var(--oj-form-layout-column-gutter) / 2);
+    }
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:first-child {
+      html:not([dir="rtl"]) & {
+        padding-left: calc(var(--oj-form-layout-column-gutter) / 2);
+      }
+      html[dir="rtl"] & {
+        padding-right: calc(var(--oj-form-layout-column-gutter) / 2);
+      }
+    }
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:nth-child(2) > .oj-label-value > .oj-flex > .oj-flex-item:first-child {
+      html:not([dir="rtl"]) & {
+        padding-left: calc(var(--oj-form-layout-horizontal-margin) / 2);
+      }
+      html[dir="rtl"] & {
+        padding-right: calc(var(--oj-form-layout-horizontal-margin) / 2);
+      }
+    }
+    // we need to remove the padding for the inline label case on the last flex-item div
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:last-child {
+      html:not([dir="rtl"]) & {
+        padding-left: 0px;
+      }
+      html[dir="rtl"] & {
+        padding-right: 0px;
+      }
+    }
+    // This is the oj-label-value child case
+    // We need to remove the padding here, or oj-label-value can't properly align its content
+    // to the parent oj-form-layout
+    .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-labelvalue.oj-flex-item {
+      padding-left: 0px;
+      padding-right: 0px;
+    }
+    .oj-formlayout-form-across.oj-formlayout-labels-inline > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(odd) {
+      html:not([dir="rtl"]) & {
+        padding-left: 0px;
+      }
+      html[dir="rtl"] & {
+        padding-right: 0px;
+      }
+    }
+
+    // Nested form layout need some horizontal margin/column gutter love as well
+    // Get rid of the horizontal marging/column gutter on the parent form layout
+    .oj-form-layout > .oj-form > .oj-flex > .oj-formlayout-nested-formlayout > .oj-form-layout > .oj-form,
+    .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item {
+      padding-left: 0px;
+      padding-right: 0px;
+    }
+    // direction == column
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:nth-child(even) > .oj-form-layout > .oj-form {
+      padding-left: calc(var(--oj-form-layout-column-gutter) / 2);
+      padding-right: calc(var(--oj-form-layout-column-gutter) / 2);
+    }
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:nth-child(2) > .oj-form-layout > .oj-form {
+      html:not([dir="rtl"]) & {
+        padding-left: var(--oj-form-layout-horizontal-margin);
+      }
+      html[dir="rtl"] & {
+        padding-right: var(--oj-form-layout-horizontal-margin);
+      }
+    }
+    // direction == row
+    .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across {
+      padding-left: 0px;
+      padding-right: 0px;
+    }
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:first-child,
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(2) {
+      html:not([dir="rtl"]) & {
+        padding-left: calc(var(--oj-form-layout-column-gutter) / 2);
+      }
+      html[dir="rtl"] & {
+        padding-right: calc(var(--oj-form-layout-column-gutter) / 2);
+      }
+    }
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+      html:not([dir="rtl"]) & {
+        padding-right: calc(var(--oj-form-layout-column-gutter) / 2);
+      }
+      html[dir="rtl"] & {
+        padding-left: calc(var(--oj-form-layout-column-gutter) / 2);
+      }
+    }
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:nth-child(2) > .oj-form-layout > .oj-form.oj-formlayout-form-across.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:first-child,
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:nth-child(2) > .oj-form-layout > .oj-form.oj-formlayout-form-across:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(2) {
+      html:not([dir="rtl"]) & {
+        padding-left: var(--oj-form-layout-horizontal-margin);
+      }
+      html[dir="rtl"] & {
+        padding-right: var(--oj-form-layout-horizontal-margin);
+      }
+    }
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:last-child > .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-flex-item:last-child {
+      @include oj-ltr {
+        padding-right: var(--oj-form-layout-horizontal-margin);
+      }
+      @include oj-rtl(){
+        padding-left: var(--oj-form-layout-horizontal-margin);
+      }
+    }
+
+    // If the oj-label-value is the first or last, use the horizontal margin instead of column gutter
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:nth-child(2) > .oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:first-child {
+      html:not([dir="rtl"]) & {
+        padding-left: var(--oj-form-layout-horizontal-margin);
+      }
+      html[dir="rtl"] & {
+        padding-right: var(--oj-form-layout-horizontal-margin);
+      }
+    }
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:nth-child(2) > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:first-child {
+      html:not([dir="rtl"]) & {
+        padding-left: 0px;
+      }
+      html[dir="rtl"] & {
+        padding-right: 0px;
+      }
+    }
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:nth-child(2) > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:last-child {
+      html:not([dir="rtl"]) & {
+        padding-left: var(--oj-form-layout-horizontal-margin);
+      }
+      html[dir="rtl"] & {
+        padding-right: var(--oj-form-layout-horizontal-margin);
+      }
+    }
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:last-child > .oj-label-value > .oj-flex > .oj-flex-item:last-child {
+      html:not([dir="rtl"]) & {
+        padding-right: var(--oj-form-layout-horizontal-margin);
+      }
+      html[dir="rtl"] & {
+        padding-left: var(--oj-form-layout-horizontal-margin);
+      }
+    }
+
+  // For labels on top and direction row, we need padding on both sides, so add padding to the other side here.
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item {
+      padding-right: calc(var(--oj-form-layout-column-gutter) / 2);
+      padding-left: calc(var(--oj-form-layout-column-gutter) / 2);
+    }
+
+    
+
+    // oj-label-value doesn't need the row divider margin, as it isn't a true row, so remove the padding
+    .oj-label-value.oj-form > .oj-flex {
+      padding-top: 0;
+    }
+
+    // When the components are placed inside a oj-lable-value, it adds a margin from the flex selector.
+    // Form layout always adds a margin for its own flex children. This was causing
+    // double margin for label-value
+    // Also, nested oj-form-layout has a similar issue
+    .oj-form.oj-label-value > .oj-flex > .oj-flex-item:nth-child(even),
+    .oj-form.oj-label-value > .oj-flex > .oj-flex-item:last-child,
+    .oj-form > .oj-flex > .oj-flex-item.oj-formlayout-nested-formlayout:nth-child(even),
+    .oj-form > .oj-flex > .oj-flex-item.oj-formlayout-nested-formlayout:last-child {
+      margin: 0;
+    }
+
+    $formLayoutDefaultOptions: ();
+
+    @if ($formLayoutLabelEdgeDefault != null) {
+        $formLayoutDefaultOptions: map-merge($formLayoutDefaultOptions, (labelEdge: $formLayoutLabelEdgeDefault));
+    }
+    @if ($formLayoutLabelGenerationDefault != null) {
+      $formLayoutDefaultOptions: map-merge($formLayoutDefaultOptions, (labelGeneration: $formLayoutLabelGenerationDefault));
+    }
+    @if ($formLayoutColspanWrapDefault != null) {
+      $formLayoutDefaultOptions: map-merge($formLayoutDefaultOptions, (colspanWrap: $formLayoutColspanWrapDefault));
+    }
+    @if ($formLayoutDirectionDefault != null){
+      $formLayoutDefaultOptions: map-merge($formLayoutDefaultOptions, ("direction": $formLayoutDirectionDefault));
+    }
+
+    .oj-form-layout-option-defaults {
+        font-family: oj-json-from-map($formLayoutDefaultOptions) !important;
+    }
+  }
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  @if $initialVisibility == hidden {
+    oj-form-layout:not(.oj-complete) {
+      visibility: hidden;
+    }
+  }

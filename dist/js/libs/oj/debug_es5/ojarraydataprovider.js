@@ -1,12 +1,14 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojset', 'ojs/ojmap', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function(oj, $, ojSet, ojMap, __DataProvider)
+define(['ojs/ojcore', 'jquery', 'ojs/ojset', 'ojs/ojmap', 'ojs/ojdataprovider', 'ojs/ojlogger', 'ojs/ojeventtarget'],
+function(oj, $, ojSet, ojMap, __DataProvider, Logger)
 {
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -148,7 +150,10 @@ var ArrayDataProvider = /*#__PURE__*/function () {
         this._nextFunc = _nextFunc;
         this._params = _params;
         this._offset = _offset;
-        this._cachedOffset = _offset;
+        this._clientId = _params && _params.clientId || Symbol();
+
+        _parent._mapClientIdToOffset.set(this._clientId, _offset);
+
         this._cacheObj = {};
         this._cacheObj[ArrayDataProvider._MUTATIONSEQUENCENUM] = _parent._mutationSequenceNum;
       }
@@ -156,9 +161,12 @@ var ArrayDataProvider = /*#__PURE__*/function () {
       _createClass(_class9, [{
         key: 'next',
         value: function next() {
-          var resultObj = this._nextFunc(this._params, this._cachedOffset, this._cacheObj);
+          var cachedOffset = this._parent._mapClientIdToOffset.get(this._clientId);
 
-          this._cachedOffset = resultObj.offset;
+          var resultObj = this._nextFunc(this._params, cachedOffset, this._cacheObj);
+
+          this._parent._mapClientIdToOffset.set(this._clientId, resultObj.offset);
+
           return Promise.resolve(resultObj.result);
         }
       }]);
@@ -251,6 +259,7 @@ var ArrayDataProvider = /*#__PURE__*/function () {
     this._cachedIndexMap = [];
     this._sequenceNum = 0;
     this._mutationSequenceNum = 0;
+    this._mapClientIdToOffset = new Map();
 
     this._subscribeObservableArray(data);
 
@@ -464,6 +473,32 @@ var ArrayDataProvider = /*#__PURE__*/function () {
       return keyIndex;
     }
     /**
+     * Adjust the last offset for iterators.
+     */
+
+  }, {
+    key: "_adjustIteratorOffset",
+    value: function _adjustIteratorOffset(changes) {
+      var _this = this;
+
+      this._mapClientIdToOffset.forEach(function (offset, clientId) {
+        var addCount = 0;
+        var deleteCount = 0;
+        changes.forEach(function (change) {
+          // only count the changes below the last offset
+          if (change['index'] < offset) {
+            if (change['status'] === 'deleted') {
+              ++deleteCount;
+            } else if (change['status'] === 'added') {
+              ++addCount;
+            }
+          }
+        });
+
+        _this._mapClientIdToOffset.set(clientId, offset + addCount - deleteCount);
+      });
+    }
+    /**
      * If observableArray, then subscribe to it
      */
 
@@ -489,6 +524,8 @@ var ArrayDataProvider = /*#__PURE__*/function () {
               indexArray = [],
               metadataArray = [],
               afterKeyArray = [];
+          var addCount = 0;
+          var deleteCount = 0;
           self._mutationSequenceNum++; // first check if we only have adds or only have deletes
 
           var onlyAdds = true;
@@ -496,10 +533,15 @@ var ArrayDataProvider = /*#__PURE__*/function () {
           changes.forEach(function (change) {
             if (change['status'] === 'deleted') {
               onlyAdds = false;
+              ++deleteCount;
             } else if (change['status'] === 'added') {
               onlyDeletes = false;
+              ++addCount;
             }
-          });
+          }); // Adjust the last offset for iterators
+
+          self._adjustIteratorOffset(changes);
+
           var updatedIndexes = [];
           var removeDuplicate = [];
           var operationUpdateEventDetail = null;
@@ -608,6 +650,13 @@ var ArrayDataProvider = /*#__PURE__*/function () {
                   self._keys.splice(changes[i].index, 0, id);
                 } else if (isInitiallyEmpty || self._indexOfKey(id) === -1) {
                   self._keys.splice(changes[i].index, 0, id);
+                } else if (!generatedKeys) {
+                  // If we get here, we have a duplicate key and the _keys array has not just been generated.
+                  // In this case we log a warning but should add the key to the _keys array to keep
+                  // it in sync with the data array.  It is up to the app to ensure key uniqueness.
+                  Logger.warn('added row has duplicate key ' + id);
+
+                  self._keys.splice(changes[i].index, 0, id);
                 }
 
                 keyArray.push(id);
@@ -709,21 +758,34 @@ var ArrayDataProvider = /*#__PURE__*/function () {
   }, {
     key: "_hasSamePropValue",
     value: function _hasSamePropValue(operationEventDetail1, operationEventDetail2, prop) {
-      var hasSameValue = false;
+      var errStr = '_hasSamePropValue is true';
 
-      if (operationEventDetail1 && operationEventDetail1[prop]) {
-        operationEventDetail1[prop].forEach(function (prop1) {
-          if (!hasSameValue && operationEventDetail2 && operationEventDetail2[prop]) {
-            operationEventDetail2[prop].forEach(function (prop2) {
-              if (!hasSameValue && oj.Object.compareValues(prop1, prop2)) {
-                hasSameValue = true;
-              }
-            });
-          }
-        });
+      try {
+        if (operationEventDetail1 && operationEventDetail1[prop]) {
+          operationEventDetail1[prop].forEach(function (prop1) {
+            if (operationEventDetail2 && operationEventDetail2[prop]) {
+              operationEventDetail2[prop].forEach(function (prop2) {
+                if (oj.Object.compareValues(prop1, prop2)) {
+                  // We can return true as soon as we find the first pair of values that are the same.
+                  // However, there is no way to break out of a forEach loop other than throwing error,
+                  // and there is no alternative way to iterate through a Set other than forEach.
+                  throw errStr;
+                }
+              });
+            }
+          });
+        }
+      } catch (e) {
+        if (e === errStr) {
+          // If this is the error we threw, return true
+          return true;
+        } else {
+          // For other errors, just re-throw it
+          throw e;
+        }
       }
 
-      return hasSameValue;
+      return false;
     }
     /**
      * Check if observableArray
@@ -794,12 +856,12 @@ var ArrayDataProvider = /*#__PURE__*/function () {
         return null;
       }
     }
-  }, {
-    key: "_getVal",
-
     /**
      * Get value for attribute
      */
+
+  }, {
+    key: "_getVal",
     value: function _getVal(val, attr) {
       if (typeof val[attr] == 'function') {
         return val[attr]();
@@ -807,24 +869,24 @@ var ArrayDataProvider = /*#__PURE__*/function () {
 
       return val[attr];
     }
-  }, {
-    key: "_getAllVals",
-
     /**
      * Get all values in a row
      */
+
+  }, {
+    key: "_getAllVals",
     value: function _getAllVals(val) {
       var self = this;
       return Object.keys(val).map(function (key) {
         return self._getVal(val, key);
       });
     }
-  }, {
-    key: "_fetchFrom",
-
     /**
      * Fetch from offset
      */
+
+  }, {
+    key: "_fetchFrom",
     value: function _fetchFrom(params, offset, cacheObj) {
       var self = this;
       var fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
@@ -860,17 +922,13 @@ var ArrayDataProvider = /*#__PURE__*/function () {
       var filteredResultData;
 
       if (params != null && params[ArrayDataProvider._FILTERCRITERION]) {
-        var filterCriterion = null;
+        var filterCriterion = null; // Always call getFilter to get a Filter instance, so any ArrayDataProvider options such as textFilterAttributes will work.
+        // This effectively ignore any "filter" property passed in filterCriterion.
 
-        if (!params[ArrayDataProvider._FILTERCRITERION].filter) {
-          filterCriterion = __DataProvider.FilterFactory.getFilter({
-            filterDef: params[ArrayDataProvider._FILTERCRITERION],
-            filterOptions: this.options
-          });
-        } else {
-          filterCriterion = params[ArrayDataProvider._FILTERCRITERION];
-        }
-
+        filterCriterion = __DataProvider.FilterFactory.getFilter({
+          filterDef: params[ArrayDataProvider._FILTERCRITERION],
+          filterOptions: this.options
+        });
         var i = 0;
 
         while (resultData.length < fetchSize && i < mappedData.length) {
@@ -1010,13 +1068,13 @@ var ArrayDataProvider = /*#__PURE__*/function () {
 
             if (direction == 'ascending') {
               compareResult = strX.localeCompare(strY, undefined, {
-                'numeric': true,
-                'sensitivity': 'base'
+                numeric: true,
+                sensitivity: 'base'
               });
             } else {
               compareResult = strY.localeCompare(strX, undefined, {
-                'numeric': true,
-                'sensitivity': 'base'
+                numeric: true,
+                sensitivity: 'base'
               });
             }
 
@@ -1275,7 +1333,7 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  *            mutating the underlying array. The decision on whether to use an array or observableArray should therefore be guided
  *            by whether the data will be mutable. This dataprovider can be used by [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
  *            [TabBar]{@link oj.ojTabBar}, and [Table]{@link oj.ojTable}.<br><br>
- *            See the <a href="../jetCookbook.html?component=table&demo=basicTable">Table - Base Table</a> demo for an example.<br><br>
+ *            See the <a href="../jetCookbook.html?component=arrayDataProvider&demo=keys">ArrayDataProvider</a>, <a href="../jetCookbook.html?component=table&demo=basicTable">Table - Base Table</a> demo for an example.<br><br>
  *            The default sorting algorithm used when a sortCriteria is passed into fetchFirst is natural sort.
  *
  * <h3 id="events-section">

@@ -1,0 +1,14 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+// RADIO and CHECKBOX
+//-----------------------------------------------------------------------------
+// The input html element can be hidden the radio/checkbox rendered as an image instead
+// values are 'html' and 'backgroundImage'.
+$radioCheckboxRenderInputAs: backgroundImage !default;
+
+// The label can be rendered before or after the input/image.
+//todo
+$radioCheckboxLabelPosition: end !default;
+// todo: there's a row height css variable
+$radioCheckboxRowHeight: 1.9rem !default;

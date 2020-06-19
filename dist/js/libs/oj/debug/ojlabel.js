@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -68,7 +69,7 @@ var __oj_label_metadata =
 };
 
 
-/* global Hammer:false, Logger:false, Context:false */
+/* global Promise:false, Hammer:false, Logger:false, Context:false */
 
 (function () {
   /**
@@ -165,11 +166,6 @@ var __oj_label_metadata =
    * </h3>
    *
    * {@ojinclude "name":"keyboardDoc"}
-   * <h3 id="styling-section">
-   *   Styling
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
-   * </h3>
-   * {@ojinclude "name":"stylingDoc"}
    * <h3 id="a11y-section">
    *   Accessibility
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
@@ -190,7 +186,75 @@ var __oj_label_metadata =
    * @ojpropertylayout {propertyGroup: "common", items: ["for", "showRequired"]}
    * @ojvbdefaultcolumns 3
    * @ojvbmincolumns 1
+   *
+   * @ojuxspecs ['label']
    */
+  // --------------------------------------------------- oj.ojLabel Styling Start -----------------------------------------------------------
+  // ---------------- oj-focus-highlight --------------
+  /**
+  * Under normal circumstances this class is applied automatically.
+  * It is documented here for the rare cases that an app developer needs per-instance control.<br/><br/>
+  * The oj-focus-highlight class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.<br/><br/>
+  * The application-level behavior for this component is controlled in the theme by the <code class="prettyprint"><span class="pln">$focusHighlightPolicy </span></code>SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:<br/><br/>
+  * <code class="prettyprint"><span class="pln">nonPointer: </span></code>oj-focus-highlight is applied only when focus is not the result of pointer interaction. Most themes default to this value.<br/>
+  * <code class="prettyprint"><span class="pln">all: </span></code> oj-focus-highlight is applied regardless of the focus mechanism.<br/>
+  * <code class="prettyprint"><span class="pln">none: </span></code> oj-focus-highlight is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.<br/><br/>
+  * To change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed.<br/>
+  * @ojstyleclass oj-focus-highlight
+  * @ojdisplayname Focus Styling
+  * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
+  * @memberof oj.ojLabel
+  * @ojtsexample
+  * &lt;oj-label class="oj-focus-highlight">
+  *   &lt;!-- Content -->
+  * &lt;/oj-label>
+  */
+  // ---------------- oj-label-accesskey --------------
+  /**
+  * Use this in a span around a single text character in the oj-label's text. It styles the character in a way that indicates to the user that this character is the accesskey. <br/>
+  * Use this in conjunction with the HTML accesskey attribute on the oj-label element.<br/>
+  * @ojstyleclass oj-label-accesskey
+  * @ojdisplayname AccessKey
+  * @memberof oj.ojLabel
+  * @ojdeprecated [{since: "6.0.0", description: "JET's accessibility team discourages access keys, so this styleclass has been deprecated."}]
+  * @ojtsexample
+  * &lt;oj-label class="oj-label-accesskey">
+  *   &lt;!-- Content -->
+  * &lt;/oj-label>
+  */
+ // ---------------- oj-label-nowrap --------------
+  /**
+  * Place on the oj-label element to have it not wrap when you don't want to use the responsive design classes (e.g., oj-md-labels-nowrap or oj-md-label-nowrap).
+  * @ojstyleclass oj-label-nowrap
+  * @ojdisplayname No Wrap
+  * @memberof oj.ojLabel
+  * @ojtsexample
+  * &lt;oj-label class="oj-label-nowrap">
+  *   &lt;!-- Content -->
+  * &lt;/oj-label>
+  */
+ // ---------------- oj-label-inline --------------
+  /**
+  * Place on the oj-label element to inline the label with the sibling DOM element when you don't want to use the responsive design classes (e.g., oj-md-labels-inline).
+  * @ojstyleclass oj-label-inline
+  * @ojdisplayname Inline
+  * @memberof oj.ojLabel
+  * @ojtsexample
+  * &lt;oj-label class="oj-label-inline">
+  *   &lt;!-- Content -->
+  * &lt;/oj-label>
+  */
+ // ---------------- oj-label-inline-top --------------
+  /**
+  * Place on the oj-label element together with oj-label-inline to inline the label with the sibling DOM element and have zero margin-top.
+  * @ojstyleclass oj-label-inline-top
+  * @ojdisplayname Inline Top
+  * @memberof oj.ojLabel
+  * @ojtsexample
+  * &lt;oj-label class="oj-label-inline-top">
+  *   &lt;!-- Content -->
+  * &lt;/oj-label>
+  */
   oj.__registerWidget('oj.ojLabel', $.oj.baseComponent,
     {
       version: '1.0.0',
@@ -498,7 +562,7 @@ var __oj_label_metadata =
         // And if there isn't an data-oj-input-id attribute set on oj-label yet,
         // set that.
         if (forOption && this._isCustomElement) {
-          // get the targetElement in a setTimeout.
+          // get the targetElement
           // do this in next tick, otherwise there can be timing issues with bindings resolving
           // and the 'id' on the form component may not be resolved in time for oj-label to find
           // it - if oj-label is before the oj form component.
@@ -511,7 +575,7 @@ var __oj_label_metadata =
           var labelledByResolved = busyContext.addBusyState(
             { description: "The oj-label id='" +
             this.OuterWrapper.id + "' is looking for its form component with id " + forOption });
-          setTimeout(function () {
+          Promise.resolve().then(() => {
             self._targetElement = document.getElementById(forOption);
             if (self._targetElement) {
               targetElement = self._targetElement;
@@ -533,7 +597,7 @@ var __oj_label_metadata =
               Logger.info('could not find an element with forOption ' + forOption);
             }
             labelledByResolved();
-          }, 0);
+          });
         } else if (this._isCustomElement && this.options.labelId) {
           // no 'for' option.
           // look for aria-labelledby to support using
@@ -653,34 +717,65 @@ var __oj_label_metadata =
             break;
           case 'data-oj-set-id':
             // This is set by set components like oj-radioset, oj-checkboxset, etc.
-            this._targetElement = document.getElementById(newValue);
-            var targetElement = this._targetElement;
-            // we need to wait a tick because for oj-radioset,
-            // it sets 'data-oj-set-id' on oj-label
-            // which in turn sets 'described-by' on oj-radioset. And if we didn't wait a
-            // tick, the attribute is written fine, but the describedBy option change is lost.
-            // The testcase is this:
-            // create an ojLabel with knockout where order is label and wrapped radioset
-            var needsHelpIcon = this._needsHelpIcon();
-            var needsRequiredIcon = this.options.showRequired;
-            if (needsHelpIcon || needsRequiredIcon) {
-              var busyContext = Context.getContext(this.OuterWrapper).getBusyContext();
-              var describedByResolved = busyContext.addBusyState(
-                { description: 'The oj-label is writing described-by on its target.' });
-              var self = this;
-              setTimeout(function () {
-                if (needsHelpIcon) {
-                  self._addHelpSpanIdOnTarget(self.helpSpanId, targetElement);
-                }
-                if (self.options.showRequired) {
-                  self._addRequiredDescribedByOnCustomFormElement(targetElement);
-                }
-                describedByResolved();
-              }, 0);
+            if (oldValue && !newValue) {
+              // remove 'data-oj-set-id' from the label so remove the describedby info too.
+              let previousTarget = document.getElementById(oldValue);
+              this._removeDescribedByWithPrefix(previousTarget, this.OuterWrapper.id);
+            } else {
+              this._targetElement = document.getElementById(newValue);
+              var targetElement = this._targetElement;
+              // we need to wait a tick because for oj-radioset,
+              // it sets 'data-oj-set-id' on oj-label
+              // which in turn sets 'described-by' on oj-radioset. And if we didn't wait a
+              // tick, the attribute is written fine, but the describedBy option change is lost.
+              // The testcase is this:
+              // create an ojLabel with knockout where order is label and wrapped radioset
+              var needsHelpIcon = this._needsHelpIcon();
+              var needsRequiredIcon = this.options.showRequired;
+              if (needsHelpIcon || needsRequiredIcon) {
+                var busyContext = Context.getContext(this.OuterWrapper).getBusyContext();
+                var describedByResolved = busyContext.addBusyState(
+                  { description: 'The oj-label is writing described-by on its target.' });
+                var self = this;
+                Promise.resolve().then(() => {
+                  if (needsHelpIcon) {
+                    self._addHelpSpanIdOnTarget(self.helpSpanId, targetElement);
+                  }
+                  if (self.options.showRequired) {
+                    self._addRequiredDescribedByOnCustomFormElement(targetElement);
+                  }
+                  describedByResolved();
+                });
+              }
             }
             break;
           default:
             break;
+        }
+      },
+    /**
+     * Remove the id that starts with the prefix from the element's described-by attribute.
+     * @param {Element} element the element, like oj-radioset
+     * @param {string} prefix prefix of the described-by value to remove.
+     * @private
+     * @memberof oj.ojLabel
+     */
+      _removeDescribedByWithPrefix: function (element, prefix) {
+        var describedBy;
+        var tokens;
+
+        describedBy = element.getAttribute('described-by');
+        // split into tokens
+        tokens = describedBy ? describedBy.split(/\s+/) : [];
+        tokens = tokens.filter(function (item) {
+          return item.indexOf(prefix) === -1;
+        });
+        // join the tokens back together and trim whitespace
+        describedBy = tokens.join(' ').trim();
+        if (describedBy) {
+          element.setAttribute('described-by', describedBy);
+        } else {
+          element.removeAttribute('described-by');
         }
       },
       /**
@@ -1309,7 +1404,7 @@ var __oj_label_metadata =
         if (!this._helpDefPopupDivId) {
           // create a root node to bind to the popup
           helpDefPopupDiv = document.createElement('div');
-          helpDefPopupDiv.className = 'oj-help-popup';
+          helpDefPopupDiv.className = 'oj-label-help-popup';
           helpDefPopupDiv.style.display = 'none';
           $helpDefPopupDiv = $(helpDefPopupDiv);
           $helpDefPopupDiv.uniqueId();
@@ -1317,7 +1412,7 @@ var __oj_label_metadata =
 
           // create a content node
           contentDiv = document.createElement('div');
-          contentDiv.className = 'oj-help-popup-container';
+          contentDiv.className = 'oj-label-help-popup-container';
           helpDefPopupDiv.appendChild(contentDiv); // @HTMLUpdateOK created contentDiv ourselves
           $contentDiv = $(contentDiv);
 
@@ -1327,7 +1422,7 @@ var __oj_label_metadata =
           // Find the div with the id, and then update the text of it.
           $helpDefPopupDiv = $(document.getElementById(this._helpDefPopupDivId));
           if ($helpDefPopupDiv.length) {
-            $contentDiv = $helpDefPopupDiv.find('.oj-help-popup-container').first();
+            $contentDiv = $helpDefPopupDiv.find('.oj-label-help-popup-container').first();
             $contentDiv.text(helpDefText);
           }
         }
@@ -1820,51 +1915,7 @@ var __oj_label_metadata =
        * @instance
        */
 
-      /**
-       * {@ojinclude "name":"ojStylingDocIntro"}
-       *
-       * <table class="generic-table styling-table">
-       *   <thead>
-       *     <tr>
-       *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-       *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>oj-focus-highlight</td>
-       *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
-       *     </tr>
-       *     <tr>
-       *       <td style="text-decoration:line-through">oj-label-accesskey</td>
-       *       <td><span style="color:red">Deprecated</span> JET's
-       *       accessibility team discourages access keys, so
-       *       this styleclass has been deprecated.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>oj-label-nowrap</td>
-       *       <td>place on the oj-label element to have it not wrap
-       *       when you don't want to use the responsive design classes
-       *       (e.g., oj-md-labels-nowrap or oj-md-label-nowrap).</td>
-       *     </tr>
-       *     <tr>
-       *       <td>oj-label-inline</td>
-       *       <td>place on the oj-label element to inline the label with the sibling dom element
-       *       when you don't want to use the responsive design classes (e.g., oj-md-labels-inline).</td>
-       *     </tr>
-       *     <tr>
-       *       <td>oj-label-inline-top</td>
-       *       <td>place on the oj-label element together with oj-label-inline
-       *       to inline the label with the
-       *       sibling dom element and have zero margin-top.</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-       * @memberof oj.ojLabel
-       * @instance
-       */
+
     });
 
   // ////////////////     SUB-IDS     //////////////////

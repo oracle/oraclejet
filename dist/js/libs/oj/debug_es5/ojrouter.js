@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -12,7 +13,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
 
 /* jslint browser: true*/
 
-/* global oj, ko, Promise, signals, Logger:false */
+/* global ko, Promise, signals, Logger:false */
 
 /**
  * The ojRouter module.
@@ -1323,9 +1324,10 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
    * @constructor
    * @hideconstructor
    * @export
+   * @ojtsimport {module: "ojrouterstate", type: "AMD", imported:["RouterState"]}
    * @ojtsimport knockout
    * @ojtsimport signals
-   * @ojtsimport {module: "ojrouterstate", type: "AMD", imported:["RouterState"]}
+   * @ojdeprecated {since: '9.0.0', description: 'Use CoreRouter instead'}
    */
 
 
@@ -1883,7 +1885,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       for (var i = 0; i < rootRouter._childRouters.length; i++) {
         var sr = rootRouter._childRouters[i];
 
-        if (sId === sr._parentState) {
+        if (sId === sr.parent.stateId()) {
           subRouter = sr;
           break;
         }

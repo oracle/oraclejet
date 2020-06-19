@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -146,7 +147,7 @@
       align-items: center;
       justify-content: flex-end;
     }
-    
+
     .oj-textarea .oj-text-field-counter .oj-textarea-counter-el {
       visibility: hidden;
     }
@@ -161,12 +162,16 @@
       height: auto;
     }
 
+    .oj-text-field.oj-textarea.oj-disabled .oj-text-field-container {
+      background-color: $formControlBgColorDisabled;
+    }
+
     .oj-text-field-counter.oj-textarea-counter-container {
       height: 32px;
       width: 100%;
       padding: 0 8px;
     }
-
+    
     .oj-inputtext.oj-focus .oj-inputtext-clearicon-conditional .oj-inputtext-input, 
     .oj-inputtext.oj-hover .oj-inputtext-clearicon-conditional .oj-inputtext-input, 
     .oj-inputtext .oj-inputtext-clearicon-visible .oj-inputtext-input {
@@ -334,7 +339,7 @@
     .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputtext-nocomp:not([disabled]),
     .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputpassword-nocomp:not([disabled]),
     .oj-form-control-inherit:not(.oj-form-control-default) .oj-textarea-nocomp:not([disabled]) {
-      @include oj-form-control-inherit-background();
+      @include oj-form-control-inherit-background(); 
     }
 
     // if a focus border width is set reset it back to 0
@@ -357,14 +362,21 @@
     }
 
     .oj-text-field-label-inside .oj-textarea-input {
-      padding: $formControlInsideTextareaPaddingTop $formControlPaddingHorizontal 0;
+      padding: 0 $formControlPaddingHorizontal;
+      margin-top: $formControlInsideTextareaMarginTop;
       // Since, textarea is an inline-block element, it was leaving a gap between itself and it's parent. fixed it by changing it to block
       display: block; 
     }
 
-    // The padding top for textarea should still be the same when it is in read-only mode.
+    // Min-height is set on container element and we don't want min-height on the field input because we are using rows. 
+    // If the other selector is removed, this selector can be removed. 
+    .oj-text-field-label-inside .oj-textarea-input.oj-text-field-input {
+      min-height: 0;
+    }
+
+    // The margin top for textarea should still be the same when it is in read-only mode.
     .oj-text-field-label-inside.oj-textarea.oj-read-only .oj-textarea-input {
-      padding-top: $formControlInsideTextareaPaddingTop;
+      margin-top: $formControlInsideTextareaMarginTop;
     }
 
     .oj-text-field-label-inside.oj-textarea:not(.oj-disabled) .oj-label{

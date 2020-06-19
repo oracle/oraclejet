@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -28,7 +29,9 @@ class ojSet {
             });
         }
         Object.defineProperty(this, 'size', {
-            get: function () { return this._set.size; }
+            get: function () {
+                return this._set.size;
+            }
         });
         this[Symbol.iterator] = function () {
             return this._set[Symbol.iterator]();
@@ -38,7 +41,6 @@ class ojSet {
         this._set.clear();
         this._keyset._keys.clear();
     }
-    ;
     delete(key) {
         var theKey = this._keyset.get(key);
         if (theKey === this._keyset.NOT_A_KEY) {
@@ -47,27 +49,21 @@ class ojSet {
         this._keyset._keys.delete(theKey);
         return this._set.delete(theKey);
     }
-    ;
     forEach(callbackfn, thisArg) {
         this._set.forEach(callbackfn, thisArg);
     }
-    ;
     keys() {
         return this._set.keys();
     }
-    ;
     values() {
         return this._set.values();
     }
-    ;
     entries() {
         return this._set.entries();
     }
-    ;
     has(key) {
         return this._keyset.has(key);
     }
-    ;
     add(key) {
         var theKey = this._keyset.get(key);
         if (theKey === this._keyset.NOT_A_KEY) {
@@ -76,11 +72,9 @@ class ojSet {
         }
         return this;
     }
-    ;
     get [Symbol.toStringTag]() {
         return Set[Symbol.toStringTag]();
     }
-    ;
 }
 
 ;return ojSet;

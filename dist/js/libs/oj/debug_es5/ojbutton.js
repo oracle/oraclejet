@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -279,6 +280,8 @@ var __oj_menu_button_metadata =
    * @ojvbdefaultcolumns 2
    * @ojvbmincolumns 1
    *
+   * @ojuxspecs ['button']
+   *
    * @classdesc
    * <h3 id="buttonOverview-section">
    *   JET Button
@@ -341,14 +344,6 @@ var __oj_menu_button_metadata =
    * <p>For accessibility, a JET Button must always have its default slot filled, even if it is <a href="#display">icon-only</a>.
    *
    * {@ojinclude "name":"accessibilityCommon"}
-   *
-   *
-   * <h3 id="styling-section">
-   *   Styling
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"stylingDoc"}
    *
    *
    * <h3 id="perf-section">
@@ -416,8 +411,8 @@ var __oj_menu_button_metadata =
        * @ojvalue {string} "full" Please use solid instead. In typical themes, full-chrome buttons always have chrome.
        * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
        * @ojshortdesc Indicates in what states the button has chrome (background and border).
-       * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use solid instead."},
-       *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use borderless instead."}]
+       * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value will be removed in the future. Please use borderless instead."},
+       *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value will be removed in the future. Please use solid instead."}]
        *
        * @example <caption>Initialize the Button with the <code class="prettyprint">chroming</code> attribute specified:</caption>
        * &lt;oj-button chroming='borderless'>&lt;/oj-button>
@@ -617,9 +612,6 @@ var __oj_menu_button_metadata =
        *
        * <p>The <code class="prettyprint">start</code> and <code class="prettyprint">end</code> properties accept one or more
        * style class names (as seen in the examples), or <code class="prettyprint">null</code>, indicating "no icon."
-       * <p>The default start value is null and the default end values is
-       * <code class="prettyprint">"oj-component-icon oj-button-menu-dropdown-icon"</code> if this is a menu button, and
-       * <code class="prettyprint">null</code> otherwise.  See the <code class="prettyprint">menu</code> option.
        *
        * @ignore
        * @expose
@@ -662,8 +654,6 @@ var __oj_menu_button_metadata =
 
         /**
          * <p>The end icon of the button.  See the top-level <code class="prettyprint">icons</code> option for details.
-         * The default is <code class="prettyprint">"oj-component-icon oj-button-menu-dropdown-icon"</code> if this is a menu button, and
-         * <code class="prettyprint">null</code> otherwise.  See the <code class="prettyprint">menu</code> option.
          * @ignore
          * @expose
          * @alias icons.end
@@ -1248,7 +1238,13 @@ var __oj_menu_button_metadata =
 
               if (slots.endIcon === undefined) {
                 var dropDownElem = document.createElement('span');
-                dropDownElem.className = 'oj-button-icon oj-end oj-component-icon oj-button-menu-dropdown-icon';
+                var dropdownIconClass = 'oj-button-menu-dropdown-icon';
+
+                if (slots.startIcon === undefined && self.options.display === 'icons') {
+                  dropdownIconClass = 'oj-button-menu-dropdown-nostartslot-icon';
+                }
+
+                dropDownElem.className = 'oj-button-icon oj-end oj-component-icon ' + dropdownIconClass;
                 dropDownElem.setAttribute('slot', 'endIcon');
                 elem.insertBefore(dropDownElem, node); // @HTMLUpdateOK
               }
@@ -1688,7 +1684,9 @@ var __oj_menu_button_metadata =
     _setTextSpanIdAndLabelledBy: function _setTextSpanIdAndLabelledBy(textSpan) {
       $(textSpan).uniqueId(); // assign id so that this.element can have "aria-labelledby" attribute pointing to the textspan
 
-      this.element[0].setAttribute('aria-labelledby', textSpan.getAttribute('id'));
+      if (!this.element[0].hasAttribute('aria-label') && !this.element[0].hasAttribute('aria-labelledby')) {
+        this.element[0].setAttribute('aria-labelledby', textSpan.getAttribute('id'));
+      }
     },
 
     /*
@@ -2538,47 +2536,6 @@ var __oj_menu_button_metadata =
      * @instance
      */
 
-    /**
-     * {@ojinclude "name":"ojStylingDocIntro"}
-     *
-     * <table class="generic-table styling-table">
-     *   <thead>
-     *     <tr>
-     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>oj-button-sm<br>
-     *           oj-button-lg<br>
-     *           oj-button-xl</td>
-     *       <td>Makes the button small, large, or extra large. Is applied to the Button's root element.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><s>oj-button-primary</s></td>
-     *       <td><span class="important">Deprecated: this class is deprecated and will be removed in the future. Please use callToAction chroming instead.</span>
-     *           Draws attention to the button, often identifying the primary action in a set of buttons.
-     *           Designed for use with a push button. In some themes, this class does nothing. Is applied to the Button's root element.</td>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-button-confirm</td>
-     *       <td>Identifies an action to confirm. Designed for use with a push button. Is applied to the Button's root element.</td>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-focus-highlight</td>
-     *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-     * @memberof oj.ojButton
-     * @instance
-     */
-
   });
   /**
    * @ojcomponent oj.ojMenuButton
@@ -2592,6 +2549,8 @@ var __oj_menu_button_metadata =
    * @ojpropertylayout {propertyGroup: "common", items: ["display", "chroming", "disabled"]}
    * @ojvbdefaultcolumns 2
    * @ojvbmincolumns 1
+   *
+   * @ojuxspecs ['menu-button']
    *
    * @classdesc
    * <h3 id="menubuttonOverview-section">
@@ -2645,13 +2604,6 @@ var __oj_menu_button_metadata =
    * {@ojinclude "name":"accessibilityCommon"}
    *
    *
-   * <h3 id="styling-section">
-   *   Styling
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"stylingDoc"}
-   *
    *
    * <h3 id="perf-section">
    *   Performance
@@ -2682,6 +2634,8 @@ var __oj_menu_button_metadata =
    * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
    * @ojvbdefaultcolumns 12
    * @ojvbmincolumns 1
+   *
+   * @ojuxspecs ['toggle-button']
    *
    * @classdesc
    * <h3 id="buttonsetOverview-section">
@@ -2722,6 +2676,34 @@ var __oj_menu_button_metadata =
    *   &lt;/oj-buttonset-one>
    * </code></pre>
    */
+  // --------------------------------------------------- oj.ojButtonsetOne Styling Start ------------------------------------------------------------
+
+  /**
+   * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+   */
+  // -----------------oj-buttonset-width-auto --------------
+
+  /**
+  * <p>Forces Buttonset Buttons' widths to be determined by the total width of their icons and label contents, overriding any theming defaults.</p>
+  * <p>Optionally, specify the overall width of the Buttonset for further width control.</p>
+  * <p>Can be applied to Buttonset's root element, or on an ancestor such as Toolbar or document.</p>
+  * @ojstyleclass oj-buttonset-width-auto
+  * @ojshortdesc Sets button set width to content size.
+  * @ojdisplayname Auto-Width
+  * @memberof oj.ojButtonsetOne
+  */
+  // ----------------- oj-buttonset-width-equal --------------
+
+  /**
+  * <p>Forces Buttonset Buttons' widths to be equal, overriding any theming defaults.</p>
+  * <p>Note that the overall width of the Buttonset defaults to 100%; set the max-width (recommended) or width of the Buttonset for further width control.</p>
+  * <p>Can be applied to Buttonset's root element, or on an ancestor such as Toolbar or document.</p>
+  * @ojstyleclass oj-buttonset-width-equal
+  * @ojshortdesc Sets button set width to be equal.
+  * @ojdisplayname Equal Width
+  * @memberof oj.ojButtonsetOne
+  */
+  // --------------------------------------------------- oj.ojButtonsetOne Styling End ------------------------------------------------------------
 
   /**
    * @ojcomponent oj.ojButtonsetMany
@@ -2736,6 +2718,8 @@ var __oj_menu_button_metadata =
    * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
    * @ojvbdefaultcolumns 12
    * @ojvbmincolumns 1
+   *
+   * @ojuxspecs ['toggle-button']
    *
    * @classdesc
    * <h3 id="buttonsetOverview-section">
@@ -2776,6 +2760,34 @@ var __oj_menu_button_metadata =
    *   &lt;/oj-buttonset-many>
    * </code></pre>
    */
+  // --------------------------------------------------- oj.ojButtonsetMany Styling Start ------------------------------------------------------------
+
+  /**
+   * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+   */
+  // ----------------- oj-buttonset-width-auto --------------
+
+  /**
+  * <p>Forces Buttonset Buttons' widths to be determined by the total width of their icons and label contents, overriding any theming defaults.</p>
+  * <p>Optionally, specify the overall width of the Buttonset for further width control.</p>
+  * <p>Can be applied to Buttonset's root element, or on an ancestor such as Toolbar or document.</p>
+  * @ojstyleclass oj-buttonset-width-auto
+  * @ojshortdesc Sets button set width to content size.
+  * @ojdisplayname Auto-Width
+  * @memberof oj.ojButtonsetMany
+  */
+  // ----------------- oj-buttonset-width-equal --------------
+
+  /**
+  * <p>Forces Buttonset Buttons' widths to be equal, overriding any theming defaults.</p>
+  * <p>Note that the overall width of the Buttonset defaults to 100%; set the max-width (recommended) or width of the Buttonset for further width control.</p>
+  * <p>Can be applied to Buttonset's root element, or on an ancestor such as Toolbar or document.</p>
+  * @ojstyleclass oj-buttonset-width-equal
+  * @ojshortdesc Sets button set width to be equal.
+  * @ojdisplayname Equal Width
+  * @memberof oj.ojButtonsetMany
+  */
+  // --------------------------------------------------- oj.ojButtonsetMany Styling End ------------------------------------------------------------
 
   /**
    * @ojcomponent oj.ojButtonset
@@ -2839,13 +2851,6 @@ var __oj_menu_button_metadata =
    * required of enabled content, it cannot be used to convey meaningful information.<p>
    *
    *
-   * <h3 id="styling-section">
-   *   Styling
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"stylingDoc"}
-   *
    * <h3 id="rtl-section">
    *   Reading direction
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
@@ -2867,6 +2872,96 @@ var __oj_menu_button_metadata =
    * @memberof oj.ojButtonset
    * @instance
    */
+  // ---------------------------------- Styling oj-button ------------------------------------
+
+  /**
+   * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+   */
+  // ---------------- oj-button size --------------
+
+  /**
+  * Makes the button small, large, or extra large.<br>
+  * The class is applied to the Button's root element.
+  * @ojstyleset button-size
+  * @ojdisplayname Button Size
+  * @ojstylesetitems ["button-size.oj-button-sm", "button-size.oj-button-lg", "button-size.oj-button-xl"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojButton
+  * @ojtsexample
+  * &lt;oj-button class="oj-button-sm">
+  *    &lt;!--  content -->
+  * &lt;/oj-button>
+  */
+
+  /**
+  * @ojstyleclass button-size.oj-button-sm
+  * @ojshortdesc Makes the button small.
+  * @ojdisplayname Small
+  * @memberof! oj.ojButton
+   */
+
+  /**
+  * @ojstyleclass button-size.oj-button-lg
+  * @ojshortdesc Makes the button large.
+  * @ojdisplayname Large
+  * @memberof! oj.ojButton
+  */
+
+  /**
+  * @ojstyleclass button-size.oj-button-xl
+  * @ojshortdesc Makes the button extra large.
+  * @ojdisplayname X-Large
+  * @ojdeprecated [{since: "9.0.0", description: "This class will be removed in the future."}]
+  * @memberof! oj.ojButton
+  */
+  // ---------------- oj-button-primary --------------
+
+  /**
+  * Draws attention to the button, often identifying the primary action in a set of buttons. Designed for use with a push button. In some themes, this class does nothing.<br>
+  * The class is applied to the Button's root element.
+  * @ojstyleclass oj-button-primary
+  * @ojdisplayname Primary
+  * @ojdeprecated [{since: "8.0.0", description: "This class will be removed in the future. Please use 'callToAction' chroming instead."}]
+  * @memberof oj.ojButton
+  * @ojtsexample
+  * &lt;oj-button class="oj-button-primary">
+  *    &lt;!--  content -->
+  * &lt;/oj-button>
+  */
+  // ---------------- oj-button-confirm --------------
+
+  /**
+  * Identifies an action to confirm. Designed for use with a push button.<br>
+  * This class is applied to the Button's root element.
+  * @ojstyleclass oj-button-confirm
+  * @ojdisplayname Confirm
+  * @ojdeprecated [{since: "9.0.0", description: "This class will be removed in the future."}]
+  * @memberof oj.ojButton
+  * @ojtsexample
+  * &lt;oj-button class="oj-button-confirm">
+  *    &lt;!--  content -->
+  * &lt;/oj-button>
+  */
+  // ---------------- oj-focus-highlight --------------
+
+  /**
+  * Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app developer needs per-instance control.<br/><br/>
+  * The <code class="prettyprint"><span>oj-focus-highlight</span></code> class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.<br/><br/>
+  * The application-level behavior for this component is controlled in the theme by the <code class="prettyprint"><span class="pln">$focusHighlightPolicy </span></code>SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:<br/><br/>
+  * <code class="prettyprint"><span class="pln">nonPointer: </span></code>oj-focus-highlight is applied only when focus is not the result of pointer interaction. Most themes default to this value.<br/>
+  * <code class="prettyprint"><span class="pln">all: </span></code> oj-focus-highlight is applied regardless of the focus mechanism.<br/>
+  * <code class="prettyprint"><span class="pln">none: </span></code> oj-focus-highlight is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.<br/><br/>
+  * To change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed.<br/>
+  * @ojstyleclass oj-focus-highlight
+  * @ojdisplayname Focus Styling
+  * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
+  * @memberof oj.ojButton
+  * @ojtsexample
+  * &lt;oj-button class="oj-focus-highlight">
+  *    &lt;!--  content -->
+  * &lt;/oj-button>
+  */
+  // ---------------------------------- Styling oj-button end------------------------------------
 
 
   oj.__registerWidget('oj.ojButtonset', $.oj.baseComponent, {
@@ -2973,14 +3068,15 @@ var __oj_menu_button_metadata =
        * @memberof oj.ojButtonsetOne
        * @instance
        * @type {string}
-       * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI.
+       * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI. Note that this option is not supported in the Redwood theme.
        * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
        * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
        * @ojvalue {string} "full" Please use solid instead. In typical themes, full-chrome buttons always have chrome.
        * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
        * @ojshortdesc Indicates in what states the buttonset has chrome (background and border).
-       * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use solid instead."},
-       *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use borderless instead."}]
+       * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value will be removed in the future. Please use borderless instead."},
+       *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value will be removed in the future. Please use solid instead."}]
+       *
        *
        * @example <caption>Initialize the Buttonset with the <code class="prettyprint">chroming</code> attribute specified:</caption>
        * &lt;oj-buttonset-one chroming='borderless'>&lt;/oj-buttonset-one>
@@ -3003,14 +3099,14 @@ var __oj_menu_button_metadata =
        * @memberof oj.ojButtonsetMany
        * @instance
        * @type {string}
-       * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI.
+       * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI. Note that this option is not supported in the Redwood theme.
        * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
        * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
        * @ojvalue {string} "full" Please use solid instead. In typical themes, full-chrome buttons always have chrome.
        * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
        * @ojshortdesc Indicates in what states the button has chrome (background and border).
-       * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use solid instead."},
-       *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use borderless instead."}]
+       * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value will be removed in the future. Please use borderless instead."},
+       *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value will be removed in the future. Please use solid instead."}]
        * @ojshortdesc Indicates in what states the buttonset has chrome (background and border).
        *
        * @example <caption>Initialize the Buttonset with the <code class="prettyprint">chroming</code> attribute specified:</caption>
@@ -3813,10 +3909,10 @@ var __oj_menu_button_metadata =
       } else if (key === 'labelledBy') {
         var $elem = this.element;
 
-        this._updateLabelledBy($elem[0], oldValue, value, $elem);
+        this._labelledByUpdatedForSet($elem[0].id, oldValue, value, $elem);
       } else if (key === 'describedBy') {
         // This sets the aria-describedby on the correct dom node
-        this._updateDescribedBy(oldValue, value);
+        this._describedByUpdated(oldValue, value);
       }
     },
     // TODO: JSDoc says: "refresh() is required ... after a change to the disabled status of any of the buttons in the buttonset."  Instead, shouldn't
@@ -3938,17 +4034,13 @@ var __oj_menu_button_metadata =
 
       this.element.uniqueId(); // copy labelledBy to aria-labelledBy
 
-      this._updateLabelledBy(elem, null, this.options.labelledBy, this.element); // set describedby on the element as aria-describedby
+      this._labelledByUpdatedForSet(elem.id, null, this.options.labelledBy, this.element); // set describedby on the element as aria-describedby
 
 
       var describedBy = this.options.describedBy;
 
       if (describedBy) {
-        var eachIdArray = describedBy.split(/\s+/);
-
-        for (var j = 0; j < eachIdArray.length; j++) {
-          this._addAriaDescribedBy(eachIdArray[j]);
-        }
+        this._describedByUpdated(describedBy);
       }
     },
 
@@ -3960,15 +4052,7 @@ var __oj_menu_button_metadata =
      * @instance
      * @private
      */
-    _updateLabelledBy: LabelledByUtils._updateLabelledBy,
-
-    /**
-     * Add the aria-describedby on the content element(s) if it isn't already there.
-     * @memberof oj.ojButtonset
-     * @instance
-     * @private
-     */
-    _addAriaDescribedBy: LabelledByUtils._addAriaDescribedBy,
+    _labelledByUpdatedForSet: LabelledByUtils._labelledByUpdatedForSet,
 
     /**
      * When describedBy changes, we need to update the aria-described attribute.
@@ -3976,16 +4060,7 @@ var __oj_menu_button_metadata =
      * @instance
      * @private
      */
-    _updateDescribedBy: LabelledByUtils._updateDescribedBy,
-
-    /**
-     * Remove the aria-describedby from the content element(s)
-     *
-     * @memberof oj.ojButtonset
-     * @instance
-     * @private
-     */
-    _removeAriaDescribedBy: LabelledByUtils._removeAriaDescribedBy,
+    _describedByUpdated: LabelledByUtils._describedByUpdated,
 
     /**
      * Returns a jquery object of the elements representing the
@@ -4282,42 +4357,6 @@ var __oj_menu_button_metadata =
      * @instance
      */
 
-    /**
-     * {@ojinclude "name":"ojStylingDocIntro"}
-     *
-     * <table class="generic-table styling-table">
-     *   <thead>
-     *     <tr>
-     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>oj-buttonset-width-auto</td>
-       *       <td>Forces Buttonset Buttons' widths to be determined by the total width of their icons and label contents,
-     *           overriding any theming defaults.
-     *           <p>Optionally, specify the overall width of the Buttonset for further width control.</p>
-     *           <p>Can be applied to Buttonset's root element, or on an ancestor such as Toolbar or document.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-buttonset-width-equal</td>
-     *       <td>Forces Buttonset Buttons' widths to be equal, overriding any theming defaults.
-     *           <p>Note that the overall width of the Buttonset defaults to 100%; set the
-     *              <code class="prettyprint">max-width</code> (recommended) or
-     *              <code class="prettyprint">width</code> of the Buttonset for further width control.
-     *           <p>Can be applied to Buttonset's root element, or on an ancestor such as Toolbar or document.
-     *       </td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-     * @memberof oj.ojButtonset
-     * @instance
-    */
-
   }); // SECURITY NOTE: To avoid injection attacks, do NOT compute the class via string concatenation, i.e. don't do "oj-button-" + chroming + "-chrome"
 
 
@@ -4484,7 +4523,7 @@ var __oj_menu_button_metadata =
 (function () {
   __oj_button_metadata.extension._WIDGET_NAME = 'ojButton';
   __oj_button_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
-  __oj_button_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['href'];
+  __oj_button_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['href', 'aria-label', 'aria-labelledby'];
   oj.CustomElementBridge.register('oj-button', {
     metadata: __oj_button_metadata,
     innerDomFunction: function innerDomFunction(element) {
@@ -4498,7 +4537,7 @@ var __oj_menu_button_metadata =
 (function () {
   __oj_menu_button_metadata.extension._WIDGET_NAME = 'ojButton';
   __oj_menu_button_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
-  __oj_menu_button_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['href'];
+  __oj_menu_button_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['href', 'aria-label', 'aria-labelledby'];
   oj.CustomElementBridge.register('oj-menu-button', {
     metadata: __oj_menu_button_metadata,
     innerDomFunction: function innerDomFunction(element) {

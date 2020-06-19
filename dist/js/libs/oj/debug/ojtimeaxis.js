@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -158,6 +159,8 @@ var __oj_time_axis_metadata =
  * @ojpropertylayout {propertyGroup: "common", items: ["start", "end", "scale", "style"]}
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 6
+ *
+ * @ojuxspecs ['data-visualization-time-axis']
  *
  * @classdesc
  * <h3 id="TimeAxisOverview-section">

@@ -1,0 +1,41 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+@import "../../../tags/themes/redwood/_oj-tags.cssvars.scss";
+
+  @include module-include-once("redwood.variables.timeline") {
+
+:root {
+  
+    // timeline
+    // ----------------------------
+    --oj-timeline-reference-object-color:                var(--oj-palette-danger-100);
+    --oj-timeline-border-color:                          var(--oj-palette-neutral-50);
+        
+    --oj-timeline-item-bg-color:                         var(--oj-palette-neutral-0);            
+    --oj-timeline-item-border-color:                     var(--oj-palette-neutral-160);             
+    --oj-timeline-item-border-color-hover:               var(--oj-palette-brand-70);             
+    --oj-timeline-item-border-color-selected:            var(--oj-dvt-item-outer-border-color-selected);             
+    --oj-timeline-item-description-color:                var(--oj-core-text-color-primary);              
+    --oj-timeline-item-title-color:                      var(--oj-core-text-color-secondary);  
+              
+    --oj-timeline-major-axis-label-color:                var(--oj-core-text-color-secondary);              
+    --oj-timeline-major-axis-separator-color:            var(--oj-palette-neutral-100);  
+             
+    --oj-timeline-minor-axis-bg-color:                   var(--oj-palette-neutral-40);              
+    --oj-timeline-minor-axis-border-color:               var(--oj-palette-neutral-50);              
+    --oj-timeline-minor-axis-label-color:                var(--oj-core-text-color-primary);              
+    --oj-timeline-minor-axis-separator-color:            var(--oj-timeline-major-axis-separator-color); 
+               
+    --oj-timeline-overview-bg-color:                     var(--oj-palette-neutral-50);              
+    --oj-timeline-overview-label-color:                  var(--oj-core-text-color-secondary);              
+    --oj-timeline-overview-window-bg-color:              var(--oj-palette-neutral-0);              
+    --oj-timeline-overview-window-border-color:          var(--oj-palette-neutral-170);    
+            
+    --oj-timeline-series-bg-color:                       var(--oj-palette-neutral-20);              
+    --oj-timeline-series-label-color:                    var(--oj-header-text-color);              
+    --oj-timeline-series-empty-text-color:               var(--oj-dvt-no-data-message-color);              
+
+}
+
+}

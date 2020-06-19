@@ -1,0 +1,45 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+  @include module-include-once("redwood.variables.radiocheckbox") {
+ 
+:root {
+ 
+  // radioset and checkboxset
+  // --------------------------
+ 
+  --oj-radio-checkbox-width:                     auto;
+  --oj-radio-checkbox-align-items:               flex-start;
+  --oj-radio-checkbox-row-height:                1.5rem;
+  --oj-radio-checkbox-row-padding:               0.34375rem;
+  --oj-radio-checkbox-input-size:                1rem;
+  --oj-radio-checkbox-border-color:              1px solid transparent;
+ 
+  --oj-radio-checkbox-input-color-unselected:    var(--oj-palette-neutral-190);
+  --oj-radio-checkbox-input-color-selected:      var(--oj-palette-neutral-190);
+  --oj-radio-checkbox-input-color-disabled:      rgba(var(--oj-palette-neutral-rgb-190),var(--oj-palette-opacity-low));
+ 
+  --oj-radio-checkbox-transform-active:          scale(0.75);
+  --oj-radio-checkbox-transform-enabled:         scale(1);
+  --oj-radio-checkbox-transition-active:         transform 0.1s var(--oj-animation-ease-in-out);
+  --oj-radio-checkbox-transition-selected:       transform 0.15s var(--oj-animation-ease-in-out);
+  --oj-radio-checkbox-transition-unselected:     transform 0.3s var(--oj-animation-ease-in-out);
+ 
+  --oj-radio-checkbox-label-to-edge-padding:     0;
+  --oj-radio-checkbox-input-to-label-padding:    0.5rem;
+  --oj-radio-checkbox-input-to-edge-padding:     0;
+  --oj-radio-checkbox-direction-row-inline-padding: 1.75rem;
+ 
+  --oj-radio-checkbox-label-color:               var(--oj-core-text-color-primary);
+  --oj-radio-checkbox-label-color-selected:      var(--oj-radio-checkbox-label-color);
+  --oj-radio-checkbox-set-border-width:          0px;
+ 
+  --oj-radio-checkbox-set-bg-color:              transparent;
+  --oj-radio-checkbox-set-border-color:          transparent;
+  --oj-radio-checkbox-item-divider-color:        transparent;
+ 
+  --oj-radio-checkbox-item-bg-color-active:      transparent;
+  --oj-radio-checkbox-item-divider-color-active: transparent;
+ 
+}
+}

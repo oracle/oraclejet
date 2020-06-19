@@ -1,3055 +1,3181 @@
-/**
- * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * @ignore
- */
+define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'ojs/ojcustomelement'], function (exports, oj, Context, ojdefaultsutils, ojcustomelement) { 'use strict';
 
-"use strict";
-define(['ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojmetadatautils',  'ojs/ojlogger', 
-        'ojs/ojdefaultsutils', 'ojs/ojcustomelement'], 
-        function(oj, Context, MetadataUtils, Logger, DefaultsUtils)
-{
-
-/**
- * @private
- * @export
- */
-class VComponent {
-    constructor(props) {
-        this.props = props;
-        this.state = {};
-        this._patching = false;
-        this._isCustomElementFirst = false;
-        // Components should instantiate their internal state and
-        // bind event handlers in constructor
-    }
     /**
-     * Registers the given VComponent constructor as a custom element. The component
-     * should implement the static tagName and metadata properties.
-     * @param constr The VComponent constructor
-     * @return void
+     * @license
+     * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+     * The Universal Permissive License (UPL), Version 1.0
+     * as shown at https://oss.oracle.com/licenses/upl/
      * @ignore
      */
-    static register(constr) {
-        VirtualElementBridge.register(constr);
-    }
+
     /**
-     * An optional component lifecycle method called after the
-     * render method when all changes have been propagated to the DOM.
-     * Additional DOM manipulation can be done here.
-     * @return {void}
+     * Class decorator for VComponent custom elements. Takes the tag name
+     * of the custom element.
+     * @param {string} tagName The custom element tag name
+     * @return {Function}
+     * @name customElement
+     * @function
+     * @memberof! VComponent
+     * @ojdecorator
      */
-    postRender() { }
+
     /**
-     * An optional lifecycle method called before the
-     * render method with the new props. Components
-     * should return the new state object or null if no changes are needed.
-     * @param props {Object} The new component properties
+     * Property decorator for VComponent properties whose default value is determined at
+     * runtime and returned via the getter method passed to the decorator.
+     * @param {Function} defaultGetter The method to call to retrieve the default value
+     * @return {Function}
+     * @name dynamicDefault
+     * @function
+     * @memberof! VComponent
+     * @ojdecorator
+     */
+
+    /**
+     * Property decorator for VComponent properties which the component may update with
+     * new values. Takes an optional object with a readOnly key that should be true if the
+     * property is only updated by the component.
+     * @param {object=} options The options for this decorator
+     * @param {boolean} options.readOnly True if only the component can update the property
+     * @return {Function}
+     * @name _writeback
+     * @function
+     * @memberof! VComponent
+     * @ojdecorator
+     * @ignore
+     */
+
+    /**
+     * Method decorator for VComponent methods that should be exposed on the custom element.
+     * Non decorated VComponent methods will not be made available on the custom element.
+     * @return {Function}
+     * @name method
+     * @function
+     * @memberof! VComponent
+     * @ojdecorator
+     */
+
+    /**
+     * Property decorator for VComponent properties which are not component properties,
+     * but are global properties that the VComponent wishes to get updates for, e.g. tabIndex or aria-label.
+     * @return {Function}
+     * @name rootProperty
+     * @function
+     * @memberof! VComponent
+     * @ojdecorator
+     */
+
+    /**
+     * Method decorator for VComponent that binds a specified method to the component instance ('this')
+     * and passes provided options to the addEventListener()/removeEventListener() calls, when the method is used as a listener.
+     * @param {object=} options Listener options, e.g. {passive:true}
+     * @return {Function}
+     * @name listener
+     * @ojsignature {target: "Type", for: "options", value: "{capture?: boolean = false, passive?: boolean}"}
+     * @function
+     * @memberof! VComponent
+     * @ojdecorator
+     */
+
+    /**
+     * Property decorator for VComponent event callback properties to indicate they bubble.
+     * @param {object=} options The options for this decorator
+     * @param {boolean} options.bubbles True if only the component can update the property
+     * @return {Function}
+     * @name event
+     * @function
+     * @memberof! VComponent
+     * @ojdecorator
+     */
+
+    /**
+     * @license
+     * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+     * The Universal Permissive License (UPL), Version 1.0
+     * as shown at https://oss.oracle.com/licenses/upl/
+     * @ignore
+     */
+
+    /**
+     * @class VComponent
+     * @param {Object} props The passed in component properties
+     * @ojsignature [{
+     *                target: "Type",
+     *                value: "abstract class VComponent<P extends object = any, S extends object = any>",
+     *                genericParameters: [{"name": "P", "description": "Type of the props object"},
+     *                                    {"name": "S", "description": "Type of the state object"}]
+     *               },
+     *               {target: "Type", value: "Readonly<P>", for: "props"}]
+     * @constructor
+     * @since 9.0.0
+     * @ojtsimport {module: "ojmetadata", type: "AMD", importName:"MetadataTypes"}
+     * @ojmodule ojvcomponent
+     * @classdesc The VComponent base class provides a mechanism for defining JET
+     * <a href="CompositeOverview.html">Custom Components</a>.
+     * Like the JET <a href="ComponentTypeOverview.html#corecomponents">Core Components</a>
+     * and composite components, VComponent-based components
+     * are exposed as custom elements. From the application developer’s perspective, these
+     * custom elements are (essentially) indistinguishable from JET’s other component types.
+     * Where VComponents differ is in the component implementation strategy: VComponents produce
+     * content via virtual DOM rendering.
+     * <p>
+     * To create a new VComponent-based custom component, the component author typically does the following:
+     * <ul>
+     *   <li>Implements a class that extends VComponent. This class must be authored in TypeScript.</li>
+     *   <li>Overrides the <a href="#render">render()</a> method to return a virtual DOM representation
+     *       of the component’s content.</li>
+     *   <li>Sets the &#64;customElement() decorator with the custom element tag name passed in as a parameter.</li>
+     *   <li>Defines the public contract of the custom element.
+     *   <ul>
+     *     <li><b>Properties: </b>defined as members of the Props class.</li>
+     *     <li><b>Methods: </b>defined as methods of the VComponent class and marked for exposure on the custom element using the &#64;method() decorator.</li>
+     *     <li><b>Events: </b>defined as members of the Props class using the naming convention on[EventName] and having type
+     *     <a href="#Action">Action</a> or <a href="#CancelableAction">CancelableAction</a>.</li>
+     *     <li><b>Slots: </b>defined as members of the Props class having type <a href="#Slot">Slot</a>.</li>
+     *   </ul>
+     * </ul>
+     * </p>
+     * <p>
+     * Given the above, JET generates an HTMLElement subclass and registers this as a custom
+     * element with the browser. These VComponent-based custom elements can then be used anywhere
+     * that other JET components are used, and application developers can leverage typical JET
+     * functionality such as data binding, slotting, etc.
+     * </p>
+     * <p>
+     * A minimal VComponent subclass is shown below:
+     * </p>
+     * <pre class="prettyprint"><code>
+     * import { h, VComponent, customElement } from "ojs/ojvcomponent";
+     * import "ojs/ojavatar";
+     *
+     * class Props {
+     *   initials?: string = '';
+     *   fullName?: string = '';
+     *   department?: 'Billing' | 'Sales' | 'Engineering';
+     *   rank?: Rank = { level: 1, title: 'entry level' };
+     * }
+     *
+     * type Rank = {
+     *   level: number,
+     *   title: string
+     * };
+     *
+     * &#64;customElement('oj-sample-employee')
+     * export class SampleEmployee extends VComponent&lt;Props> {
+     *
+     *   protected render(): VComponent.VNode {
+     *     return (
+     *       &lt;div>
+     *         &lt;oj-avatar initials={this.props.initials} />
+     *         &lt;span>{this.props.fullName}&lt;/span>
+     *       &lt;/div>
+     *     );
+     *   }
+     * }
+     * </code></pre>
+     *
+     * <h3 id="rendering">
+     *  Rendering
+     *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#rendering"></a>
+     * </h3>
+     * <p>
+     * Every VComponent class must provide an implementation of the <a href="#render">render()</a> method.
+     * This method returns a tree of virtual DOM nodes that represents the component's content.
+     * The return value can take one of two forms:
+     * <ol>
+     *   <li>The render function can return a single virtual DOM node representing the root
+     *       custom element and any child content specified as virtual DOM children.  If the
+     *       component needs to modify root attributes, needs to set a ref callback on the root
+     *       custom element, or contains multiple virtual DOM children, this return value form
+     *       <i>must</i> be used.
+     *   <li>If the component's content consists of a single virtual DOM child, a single virtual
+     *       DOM node representing the child node may be returned, omitting a node representing
+     *       the root custom element.</li>
+     * </ol>
+     * While it is always acceptable to include a virtual DOM node representing the root
+     * custom element as in #1, the return form in #2 is supported as a convenience.  In many cases, the root
+     * virutal DOM node can be omitted.
+     * </p>
+     * <p>
+     * Virtual DOM nodes are plain old JavaScript objects that specify the node type
+     * (typically the element’s tag name), properties and children. This information is
+     * used by the underlying virtual DOM engine to produce live DOM (i.e. by calling
+     * document.createElement()).
+     * </p>
+     * <p>
+     * Virtual DOM nodes can be created in one of two ways:
+     * <ul>
+     *   <li>By calling the virtual DOM node factory function, which is exported
+     *    from the ojs/ojvcomponent module under the name "h".  The <code>h</code>
+     *    factory function takes the type, properties and children and returns a
+     *    virtual DOM node.</li>
+     *   <li>Declaratively via TSX (a TypeScript flavor of JSX).</li>
+     * </ul>
+     * </p>
+     * <p>
+     * The latter approach is strongly preferred as it results in more readable code. A build-time transformation step
+     * will ultimately convert the TSX markup into calls to <code>h()</code> that will be executed at run-time.
+     * </p>
+     * <p>
+     * Note that in either case, the virtual DOM factory function must be imported as
+     * an import named "h".
+     * </p>
+     * <p>
+     * The <a href="#render">render()</a> method will be called whenever component state or properties change to return the new VDOM. The virtual
+     * component will then diff the VDOM and patch the live DOM with updates. As custom elements,
+     * these virtual components are used in the same way as other JET components, supporting data binding
+     * and slotting.
+     * </p>
+     * <p>
+     *
+     * <h3 id="jsx">
+     *  JSX Syntax
+     *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#jsx"></a>
+     * </h3>
+     * <p>
+     * Virtual component render functions support the use of JSX which is an XML
+     * syntax that looks similar to HTML, but supports a different attribute syntax.
+     * </p>
+     *
+     * <h4>JSX Attributes</h4>
+     * <p>
+     * Component properties, global HTMLElement properties, event listeners, ref, and key attributes
+     * can all be specified using the virtual component JSX attribute syntax. JSX expects the
+     * <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a>
+     * property names for all JSX attributes except for class and for. In cases where an attribute does not have an
+     * equivalent property on the HTMLElement (data-, aria-, role, etc), the attribute name
+     * should be used. The style attribute is special cased and only supports object values
+     * e.g. style={ {color: 'blue', fontSize: '12px'} }. Primitive JSX attribute values can
+     * be set directly using the equal operator, or within {...} brackets for JavaScript values
+     * e.g. the style example above.</p>
+     *
+     * The JET <a href="CustomElementOverview.html#ce-databind-syntax-section">data binding syntax</a>
+     * using double curly or square brackets is not supported when using JSX.  Additionally, subproperty
+     * syntax (e.g. complexProperty.subProperty={...}) is not supported; when dealing with complex-typed properties,
+     * the full value must be specified (i.e. complexProperty={ {subProperty: ...} }).
+     * </p>
+     *
+     * <h4>class</h4>
+     * <p>
+     * The class JSX attribute supports space delimited class names in addition to an
+     * Object whose keys are individual style classes and whose values are booleans to determine
+     * whether those style classes should be present in the DOM.
+     * (e.g. class={ {'oj-hover': isHovered} }).
+     * </p>
+     *
+     * <h4>Event Listeners</h4>
+     * <p>
+     * Event listeners follow a 'on'[EventName] naming syntax e.g.
+     * onClick={clickListener} and unlike data bound on-click listeners set on the root
+     * custom element, JSX event listeners will only receive a single event parameter.
+     * Use the &#64;listener decorator to bind an event listener to the component instance - 'this'.
+     * The &#64;listener decorator accepts an options object that would be passed to the
+     * DOM addEventListener() method for specifying capture or passive listeners.
+     *
+     * </p>
+     * <pre class="prettyprint"><code>
+     * import { h, VComponent, customElement, listener } from "ojs/ojvcomponent";
+     *
+     * &#64;customElement('oj-sample-component')
+     * export class SampleComponent extends VComponent {
+     *
+     *   &#64;listener({ passive: true })
+     *   private _touchStartHandler(event) {
+     *     // handler code
+     *   }
+     *
+     *   protected render(): VComponent.VNode {
+     *     return (
+     *       &lt;div onTouchstart={this._touchStartHandler}>
+     *         &hellip;
+     *       &lt;/div>
+     *     );
+     *   }
+     * }
+     * </code></pre>
+     *
+     * <h4 id="refs">
+     *  Refs
+     *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#refs"></a>
+     * </h4>
+     * <p>
+     * While we recommend that rendering is done declaratively, for use cases where
+     * a reference to a DOM node is necessary, a ref attribute
+     * along with a callback can be set on the virtual node within the render function.
+     * The callback function will be called with either a DOM node when using the element syntax
+     * or a VComponent instance when using the class syntax after the node has been inserted
+     * into the DOM. The ref callback will be called again with null when the node has been
+     * unmounted. See the <a href="#lifecycle">lifecycle doc</a> for ref callback
+     * ordering in relation to other lifecycle methods.
+     * </p>
+     * <pre class="prettyprint"><code>
+     * import { h, VComponent, customElement } from "ojs/ojvcomponent";
+     *
+     * &#64;customElement('oj-sample-component')
+     * export class SampleComponent extends VComponent {
+     *   private _scrollingDiv: HTMLDivElement;
+     *
+     *   protected render(): VComponent.VNode {
+     *     return (
+     *       &lt;div ref={this._setScrollingDiv}>
+     *         &hellip;
+     *       &lt;/div>
+     *     );
+     *   }
+     *
+     *   protected mounted(): void {
+     *     this._adjustScrollingDiv();
+     *   }
+     *
+     *   protected updated(oldProps: Readonly&lt;Props>, oldState: Readonly&lt;State>): void
+     *     this._adjustScrollingDiv();
+     *   }
+     *
+     *   private _setScrollingDiv = (elem) => {
+     *     this._scrollingDiv = elem as HTMLDivElement;
+     *   }
+     *
+     *   private _adjustScrollingDiv(): void {
+     *     // Perform some calculations
+     *     &hellip;
+     *     this._scrollingDiv.style.height = calculatedValue;
+     *   }
+     *
+     * }
+     * </code></pre>
+     *
+     * <h4>Keys</h4>
+     * <p>
+     * When rendering lists of virtual nodes, it may be beneficial to set key attributes
+     * in JSX to help distinguish between insertions, deletions, and updates. Without keys,
+     * the VComponent diffing logic will compare the old and new virtual node lists in order,
+     * so an insertion before the first virtual node will result in a diff for all subsequent
+     * virtual nodes without the key attribute. The key can be of type string or number.
+     * </p>
+     *
+     * <h4>Root Attributes</h4>
+     * <p>
+     * In general, we do not recommend modifying core HTML properties on the custom element to
+     * avoid overriding application set values. However in cases where this is necessary
+     * (e.g. moving or copying attributes for accessibility), authors should register properties
+     * they plan to update or listen to changes from as members of their Props class, marked with the &#64;rootProperty decorator.
+     * These root properties will then be populated in the component's <code>this.props</code> object as
+     * long as they are present in the live DOM; unlike component properties, no default values will be made available
+     * in <code>this.props</code> for root properties. When rendering, only core HTML properties that are specifically marked with the &#64;rootProperty decorator will be
+     * reflected in the live DOM on the root custom element; any other core HTML properties will be ignored.
+     * Components will be notified of changes to root properties similar to component properties and trigger a rerender.
+     * </p>
+     *
+     * <p>
+     * Style and class properties can be set on the root custom element and are applied additively to the application-provided
+     * style and class.  Event listeners can be added using the on[PropertyName] syntax in the root element within the component's
+     * <a href="#render">render()</a> method and will be added or removed using the DOM's addEventListener and removeEventListener methods.
+     * Style, class, and event listeners can always be specified on the root custom element and do not need to be declared
+     * as members of the Props class unlike other root properties.
+     * </p>
+     *
+     * <pre class="prettyprint"><code>
+     *   protected render(): VComponent.VNode {
+     *     return (
+     *       &lt;oj-sample-component onClick={this._clickListener} style={ {color: red} } class='my-class-name'>
+     *         &lt;div>&hellip;&lt;/div>
+     *       &lt;/oj-sample-component>
+     *     );
+     *   }
+     * </code></pre>
+     *
+     * <p>
+     * Components often need to generate unique IDs for internal DOM. The <a href="#uniqueId">uniqueId()</a> method can
+     * be called to retrieve an id that is unique to the component instance (matching the live DOM if it has been specified)
+     * that can be used e.g. as a prefix for IDs on internal DOM.
+     * </p>
+     *
+     * <h3 id="updates">
+     *  State Updates
+     *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#updates"></a>
+     * </h3>
+     * <p>
+     * Components may track internal state that is not reflected through their
+     * properties. There is a state mechanism for supporting this. Components
+     * should initialize their state objects in their constructors. After that,
+     * components should treat their <code>this.state</code> objects as immutable
+     * and call <a href="#updateState">updateState</a> to request a
+     * state update.
+     * </p>
+     * <p> The updateState() method does not immediately update the state of the component,
+     * it just puts the update in a queue to be processed later. The framework will batch
+     * multiple updates together to make rendering more efficient. It will schedule
+     * the change and rerender the component. Consider using function callback instead
+     * of an object when updating the state in order to avoid stale data for the state.
+     * Calls to updateState() will only cause the component to rerender if the end result
+     * differs from the original state.
+     * </p>
+     * <pre class="prettyprint"><code>
+     * import { h, VComponent, customElement } from "ojs/ojvcomponent";
+     *
+     * class Props { &hellip; }
+     *
+     * type State = {
+     *   foo: boolean,
+     *   bar: boolean
+     * }
+     *
+     * &#64;customElement('oj-sample-component')
+     * export class SampleComponent extends VComponent&lt;Props, State> {
+     *   constructor(props: Readonly&lt;Props>) {
+     *     // State should be instantiated in the constructor
+     *     this.state = {
+     *       foo: true,
+     *       bar: false
+     *     }
+     *   }
+     *
+     *   &#64;listener()
+     *   private _handleClick() {
+     *     // Update state in response to user interaction, triggering a
+     *     // re-render.
+     *     this.updateState({ foo: false });
+     *   }
+     * }
+     * </code></pre>
+     *
+     * <h3 id="defaults">
+     *  Default Values
+     *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#defaults"></a>
+     * </h3>
+     * <p>
+     * Static default values for components can be provided using direct value assignments
+     * on the corresponding members in the Props class.  In addition, dynamic default values
+     * can be specified using the &#64;dynamicDefault() decorator with a parameter representing
+     * a method that should be called to retrieve the default value at runtime.</p>
+     *
+     * <p>Object- or Array-typed default values will recursively frozen before being returned
+     * as property values to prevent subsequent modification.  Any Objects that are not POJOs
+     * <i>will not be frozen</i> (including references to them inside other Objects or Arrays) and
+     * it is the component's responsibility to ensure that default values of this type (e.g. class instances)
+     * are immutable.
+     * </p>
+     * <pre class="prettyprint"><code>
+     * import { h, VComponent, customElement, dynamicDefault } from "ojs/ojvcomponent";
+     *
+     * function computeDynamicDefault(): string { &hellip; }
+     *
+     * class Props {
+     *   primitiveProperty?: number = 0;
+     *   complexProperty?: {index: number} = {index: 0};
+     *   classProperty?: MyType = new ImmutableMyTypeImpl();
+     *   &#64;dynamicDefault(computeDynamicDefault) dynamicProperty?: string;
+     * }
+     *
+     * &#64;customElement('oj-sample-component')
+     * export class SampleComponent extends VComponent&lt;Props> {
+     *   &hellip;
+     * }
+     * </code></pre>
+     *
+     * <h3 id="lifecycle">
+     *  Lifecycle Methods
+     *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#lifecycle"></a>
+     * </h3>
+     * <p>
+     * In addition to the required render method, virtual components have several optional lifecycle
+     * methods that give the component hooks to setup/cleanup global listeners, do geometry management,
+     * and update state. See the API doc for each lifecycle method for details.
+     * </p>
+     *
+     * <h4>Mount</h4>
+     * <ul>
+     *   <li><a href="#VComponent">constructor()</a></li>
+     *   <li>(static) <a href="#initStateFromProps">initStateFromProps()</a></li>
+     *   <li><a href="#render">render()</a></li>
+     *   <li><a href="#refs">ref callbacks</a></li>
+     *   <li><a href="#mounted">mounted()</a></li>
+     * </ul>
+     *
+     * <h4>Update</h4>
+     * <ul>
+     *   <li>(static) <a href="#updateStateFromProps">updateStateFromProps()</a></li>
+     *   <li><a href="#render">render()</a></li>
+     *   <li><a href="#refs">ref callbacks</a></li>
+     *   <li><a href="#update">updated()</a></li>
+     * </ul>
+     *
+     * <h4>Unmount</h4>
+     * <ul>
+     *   <li><a href="#unmounted">unmounted()</a></li>
+     *   <li><a href="#refs">ref callbacks</a></li>
+     *
+     * </ul>
+     *
+     * <h3 id="slots">
+     *  Slotting
+     *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#slots"></a>
+     * </h3>
+     * <p>
+     * Component authors declare their expected slots as members of their Props class.  The various slot types are exposed as follows:
+     * <ul>
+     *   <li>Default slot - exposed through the <code>children</code> member with type <code><a href="#VNode">VNode</a>[]</code>.</li>
+     *   <li>Ordinary slot - exposed through a member with type <code><a href="#Slot">Slot</a></code> whose name corresponds to the slot name.</li>
+     *   <li>Template slots - exposed through a member with type <code><a href="#Slot">Slot&lt;SlotContextType></a></code> whose name corresponds to the slot name.  <code>SlotContextType</code> represents the data type for this template slot (corresponding to the type of the $current object).</li>
+     *   <li>Dynamic slots - any slots that are not explicitly declared as one of the three previous types will be exposed in a Map of type <code><a href="#DynamicSlots">DynamicSlots</a></code>.  This may be useful in cases where the set of expected slots cannot be statically defined, but is determined
+     *       by the component through other means at runtime.  The dynamic slot map may contain either ordinary slots or template slots.</li>
+     * </ul>
+     * Note that in all of the cases above, the component author must declare the corresponding properties in their Props class in order to receive access to slot content.
+     * </p>
+     * <p>
+     * During component rendering, default slot content can simply be inlined as with any other virtual DOM content.  Components can test for the existence of the <code>children</code> property to decide whether to render default content.
+     * </p>
+     * <pre class="prettyprint"><code>
+     * class Props {
+     *   children?: VNode[];
+     * }
+     *
+     * &#64;customElement('oj-sample-component')
+     * export class SampleComponent extends VComponent&lt;Props> {
+     *
+     *   protected render(): VComponent.VNode {
+     *     return (
+     *       &lt;div style="border-style: solid; width:200px;">
+     *         { this.props.children || &lt;span>Default Content&lt;/span> }
+     *       &lt;/div>
+     *     );
+     *   }
+     * }
+     * </code></pre>
+     * <p>
+     * Ordinary slots are exposed as render functions at runtime and can simply be called to retrieved the corresponding content.
+     * </p>
+     * <pre class="prettyprint"><code>
+     * class Props {
+     *   header?: Slot;
+     * }
+     *
+     * &#64;customElement('oj-sample-component')
+     * export class SampleComponent extends VComponent&lt;Props> {
+     *
+     *   protected render(): VComponent.VNode {
+     *     return (
+     *       &lt;div style="border-style: solid; width:200px;">
+     *         { this.props.header?.() || &lt;span>Default Header Content&lt;/span> }
+     *       &lt;/div>
+     *     );
+     *   }
+     * }
+     * </code></pre>
+     * <p>
+     * Template slots are also exposed as render functions at runtime, but additional take an argument representing the template data.
+     * </p>
+     * <pre class="prettyprint"><code>
+     * type Item {
+     *   index: number;
+     *   text: string;
+     * }
+     *
+     * class Props {
+     *   itemTemplate?: Slot&lt;Item>;
+     *   items?: string[];
+     * }
+     *
+     * &#64;customElement('oj-sample-component')
+     * export class SampleComponent extends VComponent&lt;Props> {
+     *
+     *   protected render(): VComponent.VNode {
+     *     return (
+     *       const templateFunction = this.itemTemplate || this._defaultTemplate;
+     *       &lt;ul>
+     *         items.map( (item, index) =>
+     *           &lt;li>
+     *             { templateFunction({index: index, text: item}) }
+     *           &lt;/li>);
+     *       &lt;/ul>
+     *     );
+     *   }
+     * }
+     * </code></pre>
+     * <p>
+     * Dynamic slots are rendered exactly like ordinary and template slots once the component determines what slot to render.
+     * </p>
+     * <pre class="prettyprint"><code>
+     * class Props {
+     *   cards?: DynamicSlots;
+     *   currentCard: string;
+     * }
+     *
+     * &#64;customElement('oj-sample-component')
+     * export class SampleComponent extends VComponent&lt;Props> {
+     *
+     *   protected render(): VComponent.VNode {
+     *     return (
+     *       &lt;div style="border-style: solid; width:200px;">
+     *         { this.props.cards?.[this.props.currentCard]?.() }
+     *       &lt;/div>
+     *     );
+     *  }
+     * }
+     * </code></pre>
+     *
+     * <h3 id="perf">
+     *  Performance Considerations
+     *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf"></a>
+     * </h3>
+     * <p>
+     * Every time a component's render function is called, everything contained is created anew.
+     * As a result, complex properties (e.g. non-primitive values like Object types, event listeners),
+     * should be created outside of the render function's scope. Otherwise, e.g. the component would
+     * be specifying a different instance of an event listener each time the component is rendered
+     * which would result in unnecessary DOM changes. Event listeners should be declared as instance functions
+     * marked with the &#64;listener decorator which will ensure that they are property bound.
+     * Non-primitive values should be saved in variables
+     * outside of the render function.
+     * </p>
+     * <pre class="prettyprint"><code>
+     * import { h, VComponent, customElement, listener } from "ojs/ojvcomponent";
+     *
+     * class Props {&hellip;}
+     *
+     * &#64;customElement('oj-sample-collection')
+     * export class SampleCollection extends VComponent&lt;Props> {
+     *   constructor(props: Readonly&lt;Props>) {
+     *     super(props);
+     *   }
+     *
+     *   &#64;listener()
+     *   private _handleClick(event) { &hellip; }
+     *
+     *   protected render(): VComponent.VNode {
+     *     return (
+     *       &lt;div onClick={this._handleClick}/>
+     *     );
+     *   }
+     * }
+     * </code></pre>
+     */
+
+    // TYPEDEFS
+
+    /**
+    * @typedef {Function} VComponent.Action
+    * @ojsignature [{target:"Type", value:"<Detail extends object = {}>", for:"genericTypeParameters"},
+    *               {target: "Type", value: "(detail?: Detail) => void"}]
+    */
+
+    /**
+    * @typedef {Function} VComponent.CancelableAction
+    * @ojsignature [{target:"Type", value:"<Detail extends object = {}>", for:"genericTypeParameters"},
+    *               {target: "Type", value: "(detail?: Detail) => Promise<void>"}]
+    */
+
+    /**
+    * @typedef {Object} VComponent.DynamicSlots
+    * @ojsignature [{target:"Type", value:"<Data = undefined>", for:"genericTypeParameters"},
+    *               {target: "Type", value: "Record<string, VComponent.Slot<Data>" }]
+    */
+
+    /**
+    * @typedef {Function} VComponent.Slot
+    * @ojsignature [{target:"Type", value:"<Data = undefined>", for:"genericTypeParameters"},
+    *               {target: "Type", value: "(data?: Data) => VComponent.VNode[]"}]
+    */
+
+    /**
+     * @typedef {Object} VComponent.VComponentClass
+     * @ojsignature [{target:"Type", value:"<P>", for:"genericTypeParameters"},
+     *               {target: "Type", value: "new (props: P) => VComponent<P, any>"}]
+     */
+
+    /**
+     * @typedef {Object} VComponent.RenderFunction
+     * @ojsignature [{target:"Type", value:"<P>", for:"genericTypeParameters"},
+     *               {target: "Type", value: "(props: P, content: VComponent.VNode[]) => VComponent.VNode"}]
+     */
+
+    /**
+     * @typedef {Object} VComponent.VNodeType
+     * @ojsignature [{target:"Type", value:"<P>", for:"genericTypeParameters"},
+     *               {target: "Type", value: "string | VComponent.VComponentClass<P> | VComponent.RenderFunction<P>"}]
+     */
+
+    // STATIC METHODS
+
+    /**
+     * Creates a virtual node for an HTML element of the given type, props, and children.
+     * @function h
+     * @memberof VComponent
+     * @param {any} type An HTML or SVG tag name
+     * @param {Object} props The properties to set in the real DOM node
+     * @param {...Object} children Optional child DOM
+     * @ojsignature [{target:"Type", value:"<P>", for:"genericTypeParameters"},
+     *               {target: "Type", value: "VComponent.VNodeType<P>", for: "type"},
+     *               {target: "Type", value: "P", for: "props"},
+     *               {target: "Type", value: "Array<VComponent.VNode|Node>", for: "children"},
+     *               {target: "Type", value: "VComponent.VNode", for: "returns"}]
+     * @return {Object}
+     * @expose
+     * @ignore
+     */
+
+
+    /**
+     * Utility to convert a JSX 'class' attribute value to an object for easier component
+     * manipulation.
+     * <pre class="prettyprint"><code>
+     * import { h, VComponent, classPropToObject } from "ojs/ojvcomponent";
+     *
+     * class Props {
+     *   class?: string | object = {};
+     * }
+     *
+     * export class SampleComponent extends VComponent&lt;Props> {
+     *   protected render(): VComponent.VNode {
+     *     // Make a copy of the readonly return value from classPropToObject and add additional classes
+     *     const classObj = Object.assign({}, classPropToObject(this.props.class), { newClass: true }
+     *     return (
+     *       &lt;div class={ classObj } />
+     *     );
+     *   }
+     * }
+     * </code></pre>
+     * @function classPropToObject
+     * @memberof VComponent
+     * @param {string|object|null} classProp An HTML or SVG tag name
+     * @ojsignature [{target: "Type", value: "Readonly<object>", for: "returns"}]
+     * @return {Object}
+     * @expose
+     * @ignore
+     */
+
+
+    /**
+     * An optional static lifecycle method used to initialize derived state.
+     * Called before the render method on the first flow through the
+     * lifecycle. Components should return a partial state that will be merged
+     * into any state that was initialized in the constructor, or null if
+     * no changes are needed.
+     *
+     * @function initStateFromProps
+     * @memberof VComponent
+     * @param {Object} props The component's initial properties
+     * @param {Object} state The component's initial state
      * @return {Object|null}
+     * @ojsignature [{target: "Type", value: "Readonly<P>", for: "props"},
+     *              {target: "Type", value: "Readonly<S>", for: "state"},
+     *              {target: "Type", value: "Partial<S>|null", for: "returns"}]
+     * @ojprotected
+     * @expose
      */
-    updateStateFromProps(props) {
-        return null;
-    }
+
     /**
-     * An optional component lifecycle method called after the
+     * An optional static lifecycle method used to update derived state.
+     * Called before the render method on update flows through the lifecycle.
+     * Components should return either a partial state that will be merged
+     * into component state or null if no changes are needed. Logic that relies on old
+     * and new state or property values should be done in <a href="#update">updated()</a>
+     * instead.
+     * @function updateStateFromProps
+     * @memberof VComponent
+     * @param {Object} props The new component properties
+     * @param {Object} state The new state
+     * @return {Object|null}
+     * @ojsignature [{target: "Type", value: "Readonly<P>", for: "props"},
+     *              {target: "Type", value: "Readonly<S>", for: "state"},
+     *              {target: "Type", value: "Partial<S>|null", for: "returns"}]
+     * @ojprotected
+     * @expose
+     */
+
+    // INSTANCE PROPERTIES
+
+    /**
+     * The passed in component properties. This property should not be directly modified e.g.
+     * this.props = {} or this.props.someProp = 'foo'.
+     * @name props
+     * @memberof VComponent
+     * @type {Object}
+     * @default {}
+     * @ojsignature [{target: "Type", value: "Readonly<P>"}]
+     * @ojprotected
+     * @instance
+     * @expose
+     */
+
+    /**
+     * The component state. State updates should be done through the updateState or updateStateFromProps methods
+     * and not by direct modification of this property in order to ensure that the component
+     * is rerendered.
+     * @expose
+     * @name state
+     * @memberof VComponent
+     * @type {Object}
+     * @default {}
+     * @ojsignature [{target: "Type", value: "Readonly<S>"}]
+     * @ojprotected
+     * @instance
+     */
+
+    // INSTANCE METHODS
+
+    /**
+     * Required lifecycle method which returns the component's virtual subtree.
+     * @function render
+     * @return {VComponent.VNode}
+     *
+     * @memberof VComponent
+     * @ojprotected
+     * @abstract
+     * @instance
+     * @expose
+     */
+
+    /**
+     * An optional lifecycle method called after the
      * virtual component has been initially rendered and inserted into the
      * DOM. Data fetches and global listeners can be added here.
-     * This will not be called for reparenting cases.
+     * This will not be called for reparenting cases. State and property
+     * updates should be done here instead of the constructor.
+     * @function mounted
      * @return {void}
+     *
+     * @memberof VComponent
+     * @ojprotected
+     * @instance
+     * @expose
      */
-    mounted() { }
+
+    /**
+     * An optional component lifecycle method called after the
+     * render method in updating (state or property change) cases.
+     * Additional DOM manipulation can be done here. State and property
+     * updates that need access to old and values should also be done here.
+     * Note that when updating state or property in updated(),
+     * the component should compare old and new values.
+     * @function updated
+     * @param {Object} oldProps The previous value of the component properties.
+     * @param {Object} oldState The previous value of the component state.
+     * @return {void}
+     * @ojsignature [{target: "Type", value: "Readonly<P>", for: "oldProps"},
+     *               {target: "Type", value: "Readonly<S>", for: "oldState"},
+     *              {target: "Type", value: "void", for: "returns"}]
+     *
+     * @memberof VComponent
+     * @ojprotected
+     * @instance
+     * @expose
+     */
+
     /**
      * An optional component lifecycle method called after the
      * virtual component has been removed from the DOM. This will not
      * be called for reparenting cases. Global listener cleanup can
      * be done here.
+     * @function unmounted
      * @return {void}
+     *
+     * @memberof VComponent
+     * @ojprotected
+     * @instance
+     * @expose
      */
-    unmounted() { }
-    // Other Component Methods
+
     /**
-     * Returns either the slotted live DOM nodes for the given slot or the virtual children
-     * representing the default content for that slot. The default slot should be referenced
-     * using the empty string ('').
-     * @param slotName {string}
-     * @param defaultContent {any}
-     * @return {any}
-     * @protected
-     */
-    slot(slotName = '', defaultContent) {
-        // This method should only be called in subclass' Render()
-        // function meaning that mount() would have been called
-        // and the slot map should have already been populated.
-        if (this._slotMap) {
-            return this._slotMap[slotName] || defaultContent;
-        }
-        else {
-            throw new Error("Cannot access slot map before mount has been called");
-        }
-    }
-    /**
-     * Returns either the passed id or a unique string that can be used for
-     * a prefix on child elements. This method can only be called after the VComponent
+     * The <a href="#uniqueId">uniqueId()</a> method can
+     * be called to retrieve an id that is unique to the component instance (matching the live DOM if it has been specified)
+     * that can be used e.g. as a prefix for IDs on internal DOM.
+     *
+     * For components needing to generate a unique ID for internal DOM, this utility method
+     * will return either the id set on the VComponent by the parent or a unique string that
+     * can be used for a prefix for child elements if one wasn't set by the parent.
+     * This method can only be called after the VComponent
      * has been instantiated and will return undefined if called from the constructor.
+     * @function uniqueId
      * @return {string}
-     */
-    uniqueId() {
-        // _uniqueId is set by the bridge and petit-dom where we have access to the element id
-        return this._uniqueId;
-    }
-    /**
-     * Updates a writeback component property. The shouldRender flag allows the component
-     * to decided whether an asynchronous rerender should be queued, e.g. rawValue update may want
-     * to skip rerender.
-     * @param prop {string} The property to update
-     * @param value {any} The new property value
-     * @param shouldRender {boolean} True if this property change should trigger a component rerender
-     * @return void
-     * @protected
-     */
-    updateProperty(prop, value, shouldRender = true) {
-        this._getCallback('updateProperty')(prop, value, shouldRender);
-    }
-    /**
-     * Updates an internal component state. State updates always trigger an asynchronous rerender.
-     * @param state {string} The state to update
-     * @param value {any} The new state value
-     * @return void
-     * @protected
-     */
-    updateState(state, value) {
-        this.state[state] = value;
-        this._getCallback('queueRender')(this._ref);
-    }
-    /**
-     * Fires a component action.  In the custom element-first case, this will result in a CustomEvent
-     * being dispatched.  In the VComponent-first case, this will directly invoke the registered action
-     * listener, if one is present.
      *
-     * @param type {string} The type of the action
-     * @param detail {Object} The detail object containing the properties associated with the action
-     * @return void
-     * @protected
+     * @memberof VComponent
+     * @ojprotected
+     * @instance
+     * @expose
      */
-    fireAction(type, detail) {
-        this._getCallback('fireAction')(type, detail);
-    }
-    // Bridge and petit-dom Methods
+
     /**
-     * Called by the VirtualElementBridge during the browser's connected
-     * callback to instantiate the virtual component and generate the component subtree for
-     * the custom element-first case.
-     * @param props {Object} The current component properties
-     * @param content {Array<Node>|null} The component slot children if any.
-     * @param rootElem {HTMLElement} The custom element
-     * @param controlledRootProps {Object} The current controlled root properties on the DOM node
-     * @return void
-     * @ignore
+     * Updates an internal component state. State updates always trigger an asynchronous rerender.<br/>
+     * Note that the method accepts either partial state for the component or a callback that
+     * returns a partial state.
+     * The callback receives up-to-date component state and property values and can be
+     * used to dynamically compute the next state. State updates that rely on state or
+     * property values should use the callback form to ensure the latest values are used.
+     * @function updateState
+     * @param {Object | function} state Accepts a partial state object or a callback that returns
+     *                  a partial state object that will be merged into component state.
+     *                  The updater function takes a reference to the component state
+     *                  at the time the change is being applied and the component properties object.
+     * @return {void}
+     * @ojsignature {target: "Type", value: "((state: Readonly<S>, props: Readonly<P>) => Partial<S>) | Partial<S>", for: "state"}
+     * @memberof VComponent
+     * @ojprotected
+     * @instance
+     * @expose
      */
-    mountContent(props, content, rootElem, controlledRootProps) {
-        this._isCustomElementFirst = true;
-        this._ref = rootElem;
-        this._vnode = this._renderForMount(props, content);
-        // Set the _node on the vnode so that mount() has access to
-        // the root custom element and doesn't attempt to re-create
-        // it.
-        this._vnode._node = rootElem;
-        this._patching = true;
-        try {
-            // Patches controlled props
-            PetitDom.mountComponentContent(this._vnode, controlledRootProps);
-        }
-        finally {
-            this._patching = false;
-        }
-    }
+
     /**
-     * Called by petit-dom when the constructor is passed to the h function instead of
-     * a custom element tag name. This will be called instead of mountContent.
-     * @param props {Object} The current component properties.
-     * @param uncontrolledRootProps {Object} The uncontrolled root properties.
-     * @param content {Array<Object>|null} The virtual component slot children if any.
-     * @return {HTMLElement}
-     * @ignore
-     */
-    mount(props, uncontrolledRootProps, content) {
-        this._vnode = this._renderForMount(props, content);
-        // Patches uncontrolled props followed by component props
-        const mountNode = this._ref = PetitDom.mountComponent(this._vnode, uncontrolledRootProps);
-        // Stash a reference of the virtual component onto the DOM node
-        // so we don't regenerate the class during the connected callback
-        Object.defineProperty(mountNode, '_vcomp', { value: this, enumerable: false });
-        return mountNode;
-    }
-    /**
-     * Called by petit-dom for the VComponent first case.
-     * @param props Object The current component properties
-     * @param uncontrolledRootProps {Object} The uncontrolled root properties.
-     * @param oldUncontrolledRootProps {Object} The uncontrolled root properties.
-     * @return void
-     * @ignore
-     */
-    patch(props, uncontrolledRootProps, oldUncontrolledRootProps) {
-        const oldVnode = this._vnode;
-        this._vnode = this._renderForPatch(props);
-        // We use this (hacky) patching flag to avoid recursive calls
-        // to updateUI from the component's attributeChangedCallback.
-        this._patching = true;
-        try {
-            PetitDom.patchComponent(this._vnode, oldVnode, uncontrolledRootProps, oldUncontrolledRootProps);
-        }
-        finally {
-            this._patching = false;
-        }
-        this._postRenderForPatch();
-    }
-    /**
-     * Called by the VirtualElementBridge for the custom element first case.
-     * @param props Object The current component properties
-     * @param controlledRootProps {Object} The current controlled root properties on the DOM node
-     * @return void
-     * @ignore
-     */
-    patchContent(props, controlledRootProps) {
-        const oldVnode = this._vnode;
-        this._vnode = this._renderForPatch(props);
-        // We use this (hacky) patching flag to avoid recursive calls
-        // to updateUI from the component's attributeChangedCallback.
-        this._patching = true;
-        try {
-            PetitDom.patchComponentContent(this._vnode, oldVnode, controlledRootProps);
-        }
-        finally {
-            this._patching = false;
-        }
-        this._postRenderForPatch();
-    }
-    /**
-     * Called by VirtualElementBridge to short-circuit attribute change processing and
-     * render queueing while we're in the midst of patching.
-     * TODO: can we get rid of this by having VirtualElementBridge short-circuit most things
-     * when the component is VComponent-first?
-     * @return {boolean}
-     * @ignore
-     */
-    isPatching() {
-        return this._patching;
-    }
-    /**
-     * Called by VirtualElementBridge to override the VComponent's builtin callback functions
-     * when CustomElement-first
+     * Updates a writeback component property. Note that a property update does not
+     * trigger a component render.
+     * @function _updateProperty
+     * @param {string} prop The name of the property
+     * @param {any} value The new property value
+     * @return {void}
+     * @ojsignature [{target: "Type", value: "keyof P", for: "prop"},
+     *               {target: "Type", value: "P[keyof P]", for: "value"}]
      *
-     * @param callbacks {Object}
+     * @memberof VComponent
+     * @ojprotected
+     * @instance
      * @ignore
      */
-    setCallbacks(callbacks) {
-        this._callbacks = callbacks;
-    }
-    /**
-     * Called by VirtualElementBridge to determine whether this VComponent was created
-     * CustomElement-first or VComponent-first
-     *
-     * @return {boolean}
-     * @ignore
-     */
-    isCustomElementFirst() {
-        return this._isCustomElementFirst;
-    }
-    /**
-     * Called by petit-dom when the constructor is passed to the h function instead of
-     * a custom element tag name when the node is removed by petit-dom.
-     * @param node {HTMLElement} The custom element to unmount
-     * @return void
-     * @ignore
-     */
-    unmount(node) {
-        PetitDom.unmount(this._vnode);
-        this.unmounted();
-    }
-    // Private Helper Methods
-    /**
-     * Returns the slot map of slot name to slotted child elements for a given set
-     * of child nodes. If the given element has no children, this method returns an
-     * empty object. Note that the default slot name is mapped to the empty string.
-     * @param {Array} childNodes An array of virtual nodes
-     * @return {Object} A map of the child elements for a given custom element
-     * @private
-     */
-    static _getSlotMap(childNodes) {
-        const slotMap = {};
-        childNodes.forEach(function (vnode) {
-            const slot = vnode.props.slot || '';
-            if (!slotMap[slot]) {
-                slotMap[slot] = [];
-            }
-            // Generate the slotMap with the virtual node or the real DOM node.
-            // petit-dom knows how to deal with both.
-            slotMap[slot].push(vnode._refNode || vnode);
-        });
-        return slotMap;
-    }
-    /**
-     * Common setup for mount and mountContent.
-     * @param props The current component properties
-     * @param content {Array<Object>|null} The virtual component slot children if any.
-     * @return {Object}
-     * @private
-     */
-    _renderForMount(props, content) {
-        // Before rendering content, generate the slot map given any slot content.
-        // Note that we do not need to create a storage node for virtual nodes
-        if (!this._slotMap && content) {
-            this._slotMap = VComponent._getSlotMap(Array.isArray(content) ? content : [content]);
+
+    const EMPTYO = Object.freeze({});
+    function classPropToObject(classProp) {
+        if (!classProp) {
+            return EMPTYO;
         }
-        return this._renderForUpdate(props);
-    }
-    /**
-     * Common setup for patch and patchContent.
-     * @param props The current component properties
-     * @return {Object}
-     * @private
-     */
-    _renderForPatch(props) {
-        const vnode = this._renderForUpdate(props);
-        // Set the node to the root element that was passed in if not already
-        // set. PetitDom.patch will set _node, but other code paths will not.
-        vnode._node = this._ref;
-        return vnode;
-    }
-    /**
-     * Common post render hook for patch and patchContent.
-     * Moves unslotted nodes after patching and calls the postRender
-     * lifecycle hook.
-     * @private
-     */
-    _postRenderForPatch() {
-        this._getCallback('storeUnslottedNodes')(this._slotMap);
-        this.postRender();
-    }
-    /**
-     * Calls lifecycle hooks, updates this.props, and renders the new
-     * virtual node for the VComponent when props are updated.
-     * @param props The current component properties
-     * @return {Object}
-     * @ignore
-     */
-    _renderForUpdate(props) {
-        const newState = this.updateStateFromProps(props);
-        if (newState) {
-            this.state = newState;
-        }
-        this.props = props;
-        return this._verifiedRender();
-    }
-    /**
-     * Gets the named callback function (either from builtin callbacks or from overrides provided
-     * by the VirtualElementBridge)
-     * @param name {'updateProperty'|'queueRender'|'fireAction'|'storeUnslottedNodes'} The callback to retrieve
-     * @return function
-     * @private
-     */
-    _getCallback(name) {
-        if (!this._callbacks) {
-            this._callbacks = this._getBuiltInCallbacks();
-        }
-        return this._callbacks[name];
-    }
-    /**
-     * Gets on object containing the built-in callback functions for the VComponent-first case
-     * @return Object
-     * @private
-     */
-    _getBuiltInCallbacks() {
-        const callbacks = {
-            updateProperty: function (prop, value, shouldRender) {
-                this.fireAction(prop + 'Changed', { value: value, previousValue: this.props[prop], updatedFrom: 'internal' });
-            }.bind(this),
-            queueRender: function (element) {
-                // TODO: Use busy state abstraction once JET-29316 is implemented
-                if (!this._busyStateCallbackForRender && !this.isPatching()) {
-                    var busyContext = Context.getContext(element).getBusyContext();
-                    this._busyStateCallbackForRender = busyContext.addBusyState({
-                        description: this.props.id + ' is waiting to render.'
-                    });
-                    window.requestAnimationFrame(function () {
-                        try {
-                            // We are not passing the other two parameters for uncontrolled root props since the
-                            // VComponent queueRender case is only called by updateState for the VComponent-first case which would
-                            // not have any effect on uncontrolled properties.
-                            this.patch(this.props);
-                        }
-                        catch (error) {
-                            throw error;
-                        }
-                        finally {
-                            this._busyStateCallbackForRender();
-                            this._busyStateCallbackForRender = null;
-                        }
-                    }.bind(this));
+        if (typeof classProp === 'string') {
+            return classProp.split(' ').reduce((acc, val) => {
+                if (val) {
+                    acc[val] = true;
                 }
-            }.bind(this),
-            fireAction: function (type, detail) {
-                // look for an action listener and call it directly
-                const listenerProp = oj.__AttributeUtils.eventTypeToEventListenerProperty(type);
-                const listener = this.props[listenerProp];
-                if (listener) {
-                    listener({ type: type, detail: detail });
-                }
-            }.bind(this),
-            storeUnslottedNodes: function (slotMap) {
-                // No storage node for VComponent-first cases so we don't need to worry about moving
-                // any unslotted nodes to the storage node.
-            }
+                return acc;
+            }, {});
+        }
+        return classProp;
+    }
+
+    var PetitDom;
+    (function (PetitDom) {
+        PetitDom.LISTENER_OPTIONS_SYMBOL = Symbol();
+        const SKIPKEYS = new Set(['key', 'ref', 'children']);
+        const isArray = Array.isArray;
+        const isVNode = function isVNode(c) {
+            return c && (c.type != null || c._text != null || c._node);
         };
-        callbacks['_vcomp'] = true;
-        return callbacks;
-    }
-    /**
-     * Checks a property to see if it is allowed on the root element
-     * @param prop {string} The property name to check
-     * @return boolean
-     * @private
-     */
-    _isValidRootProp(prop) {
-        // The properties being verified are the ones the VComponent is rendering on the root custom element.
-        // We expect this to be a small set and include only:
-        // 1) controlled properties
-        // 2) DOM listeners
-        // 3) className
-        // 4) style
-        var verifiedRootPropMap = this.constructor['metadata']['verifiedControlledPropsMap'] || {};
-        return prop === 'className' || prop === 'style' || verifiedRootPropMap[prop] ||
-            oj.__AttributeUtils.eventListenerPropertyToEventType(prop) !== null;
-    }
-    /**
-     * Checks a set of root custom element properties and warns/removes uncontrolled properties.
-     * @param props {Object} The root custom element properties to verify
-     * @return void
-     * @private
-     */
-    _verifyProps(props) {
-        for (var prop in props) {
-            if (!this._isValidRootProp(prop)) {
-                Logger.warn("Component can only render controlled global properties or DOM event listeners on the root custom element. " +
-                    prop + " will not be rendered.");
-                delete props[prop];
+        const isComponent = function isComponent(c) {
+            return (c === null || c === void 0 ? void 0 : c.mount) && (c === null || c === void 0 ? void 0 : c.patch) && (c === null || c === void 0 ? void 0 : c.unmount);
+        };
+        function h(type, props, ...args) {
+            let content, isSVG = false, isVComponent = false, isCustomElement;
+            if (typeof type !== 'string') {
+                isVComponent = typeof type === 'function' && isComponent(type.prototype);
+                isCustomElement = isVComponent && type.prototype.mountContent;
+                content = args;
+            }
+            else {
+                isSVG = type === 'svg';
+                isCustomElement = !isSVG && oj.ElementUtils.isValidCustomElementName(type);
+                const len = args.length;
+                if (len === 1) {
+                    const contArg = args[0];
+                    if (isArray(contArg)) {
+                        content = maybeFlatten(contArg, isSVG);
+                    }
+                    else if (isVNode(contArg)) {
+                        contArg.isSVG = isSVG;
+                        content = [contArg];
+                    }
+                    else {
+                        content = [{ _text: contArg == null ? '' : contArg }];
+                    }
+                }
+                else if (len > 1) {
+                    content = maybeFlatten(args, isSVG);
+                }
+                else {
+                    content = args;
+                }
+            }
+            const needsWritableProps = isVComponent || isCustomElement;
+            return {
+                type: type,
+                isSVG: isSVG,
+                isComponent: isVComponent,
+                isCustomElement: isCustomElement,
+                key: props === null || props === void 0 ? void 0 : props.key,
+                props: props || (needsWritableProps ? Object.create(null) : EMPTYO),
+                content: content,
+                ref: props === null || props === void 0 ? void 0 : props.ref
+            };
+        }
+        PetitDom.h = h;
+        function maybeFlatten(arr, isSVG) {
+            for (let i = 0; i < arr.length; i++) {
+                const ch = arr[i];
+                if (isArray(ch)) {
+                    return flattenChildren(arr, i, arr.slice(0, i), isSVG);
+                }
+                else if (!isVNode(ch)) {
+                    arr[i] = { _text: ch == null ? '' : ch };
+                }
+                else if (isSVG && !ch.isSVG) {
+                    ch.isSVG = true;
+                }
+            }
+            return arr;
+        }
+        function flattenChildren(children, start, arr, isSVG) {
+            for (let i = start; i < children.length; i++) {
+                const ch = children[i];
+                if (isArray(ch)) {
+                    flattenChildren(ch, 0, arr, isSVG);
+                }
+                else if (isVNode(ch)) {
+                    if (isSVG && !ch.isSVG) {
+                        ch.isSVG = true;
+                    }
+                    arr.push(ch);
+                }
+                else if (ch == null || typeof ch === 'string') {
+                    arr.push({ _text: ch == null ? '' : ch });
+                }
+                else {
+                    arr.push(ch);
+                }
+            }
+            return arr;
+        }
+        const SVG_NS = 'http://www.w3.org/2000/svg';
+        const XLINK_NS = 'http://www.w3.org/1999/xlink';
+        const NS_ATTRS = {
+            show: XLINK_NS,
+            actuate: XLINK_NS,
+            href: XLINK_NS
+        };
+        function defShouldUpdate(p1, p2, c1, c2) {
+            if (c1 !== c2)
+                return true;
+            for (let key in p1) {
+                if (p1[key] !== p2[key])
+                    return true;
+            }
+            return false;
+        }
+        function mountCustomElement(vnode, uncontrolledRootProps) {
+            const type = vnode.type, props = vnode.props, content = vnode.content;
+            const node = document.createElement(type);
+            patchDOM(node, uncontrolledRootProps, null, true);
+            patchDOM(node, props, null, true);
+            appendChildren(node, content);
+            vnode._node = node;
+            return node;
+        }
+        PetitDom.mountCustomElement = mountCustomElement;
+        function mountCustomElementContent(vnode, controlledRootProps) {
+            const node = vnode._node;
+            patchDOM(node, vnode.props, controlledRootProps, true);
+            appendChildren(node, vnode.content);
+            patchRef(vnode.ref, node);
+        }
+        PetitDom.mountCustomElementContent = mountCustomElementContent;
+        function mount(c, isVComponent = false) {
+            let node;
+            if (c._node) {
+                return c._node;
+            }
+            else if (c._text != null) {
+                node = document.createTextNode(c._text);
+            }
+            else {
+                const type = c.type, props = c.props, content = c.content, isSVG = c.isSVG;
+                if (typeof type === 'string') {
+                    if (!isSVG) {
+                        node = document.createElement(type);
+                    }
+                    else {
+                        node = document.createElementNS(SVG_NS, type);
+                    }
+                    patchDOM(node, props, null, isVComponent || c.isCustomElement);
+                    if (isTemplateElement(node)) {
+                        appendChildrenForTemplate(node, content);
+                    }
+                    else {
+                        appendChildren(node, content);
+                    }
+                }
+                else if (typeof type === 'function') {
+                    if (c.isComponent) {
+                        let instance;
+                        const constr = type;
+                        const splitProps = sortControlled(constr, props, c.isCustomElement);
+                        c._uncontrolled = splitProps.uncontrolled;
+                        instance = new constr(splitProps.controlled);
+                        instance._uniqueId = oj.__AttributeUtils.getUniqueId(props.id);
+                        node = instance.mount(splitProps.controlled, content, splitProps.uncontrolled);
+                        c._data = instance;
+                    }
+                    else {
+                        const render = type;
+                        const vnode = render(props, content);
+                        node = mount(vnode);
+                        c._data = vnode;
+                    }
+                }
+            }
+            if (node == null) {
+                throw new Error('Unknown node type!');
+            }
+            c._node = node;
+            return node;
+        }
+        PetitDom.mount = mount;
+        function mountForTemplate(c) {
+            let node;
+            if (c._text != null) {
+                node = document.createTextNode(c._text);
+            }
+            else {
+                const type = c.type, props = c.props, content = c.content, isSVG = c.isSVG;
+                if (typeof type === 'string') {
+                    if (!isSVG) {
+                        node = document.createElement(type);
+                    }
+                    else {
+                        node = document.createElementNS(SVG_NS, type);
+                    }
+                    patchDOMForTemplate(node, props, null, c.isCustomElement);
+                    appendChildrenForTemplate(node, content);
+                }
+            }
+            if (node == null) {
+                throw new Error('content inside <template> elements is limited to HTML elements and text');
+            }
+            c._node = node;
+            return node;
+        }
+        function isTemplateElement(node) {
+            return node.nodeName === 'TEMPLATE';
+        }
+        function afterMountHooks(vnode) {
+            if (vnode.isComponent) {
+                const vcomp = vnode._data;
+                patchRef(vnode.ref, vcomp);
+                patchRef(vcomp._vnode.props.ref, vnode._node);
+                if (!vnode.isCustomElement) {
+                    vcomp.mounted();
+                }
+            }
+            else if (typeof vnode.type !== 'function') {
+                patchRef(vnode.ref, vnode._node);
             }
         }
+        function appendChildren(parent, children, start = 0, end = children.length - 1, oldch = null) {
+            while (start <= end) {
+                const ch = children[start++];
+                if (ch._node) {
+                    const node = ch._node;
+                    insertBeforeChild(parent, ch, oldch);
+                    if (node.nodeType === 1 && oj.Components) {
+                        oj.Components.subtreeShown(node);
+                    }
+                }
+                else {
+                    insertBeforeChild(parent, ch, oldch);
+                }
+            }
+        }
+        function appendChildrenForTemplate(parent, children, start = 0, end = children.length - 1, oldch = null) {
+            while (start <= end) {
+                const ch = children[start++];
+                mountForTemplate(ch);
+                insertBeforeChild(parent, ch, oldch);
+            }
+        }
+        function removeChildren(parent, children, start = 0, end = children.length - 1) {
+            let cleared = void 0;
+            if (parent.childNodes.length === end - start + 1) {
+                parent.textContent = '';
+                cleared = true;
+            }
+            while (start <= end) {
+                let ch = children[start++];
+                if (!cleared) {
+                    removeAndUnmountChild(parent, ch);
+                }
+            }
+        }
+        function unmount(ch) {
+            if (isArray(ch)) {
+                for (let i = 0; i < ch.length; i++) {
+                    unmount(ch[i]);
+                }
+            }
+            else {
+                if (ch.isComponent) {
+                    const vcomp = ch._data;
+                    vcomp.unmount(ch._node);
+                }
+                else if (ch.content != null) {
+                    unmount(ch.content);
+                }
+                if (ch.isComponent || typeof ch.type !== 'function') {
+                    patchRef(ch.ref, null);
+                }
+            }
+        }
+        PetitDom.unmount = unmount;
+        function isControlledProp(constr, prop) {
+            var _a, _b;
+            const meta = constr.metadata;
+            return ((_b = (_a = meta === null || meta === void 0 ? void 0 : meta.extension) === null || _a === void 0 ? void 0 : _a._ROOT_PROPS_MAP) === null || _b === void 0 ? void 0 : _b[prop]) != null;
+        }
+        function isListener(prop) {
+            return oj.__AttributeUtils.eventListenerPropertyToEventType(prop) !== null;
+        }
+        function sortControlled(constr, props, isCustomElement) {
+            const staticDefaults = ojdefaultsutils.DefaultsUtils.getStaticDefaults(constr, constr.metadata, true);
+            const splitProps = {
+                controlled: Object.create(staticDefaults),
+                uncontrolled: {}
+            };
+            for (let propName in props) {
+                const value = props[propName];
+                if (value !== undefined) {
+                    if (!isCustomElement ||
+                        !oj.__AttributeUtils.isGlobalOrData(propName) ||
+                        isControlledProp(constr, propName)) {
+                        splitProps.controlled[propName] = value;
+                    }
+                    else {
+                        splitProps.uncontrolled[propName] = value;
+                    }
+                }
+            }
+            return splitProps;
+        }
+        function patchDOM(el, props, oldProps, isVComponent) {
+            if (props) {
+                addOrUpdateProps(el, props, oldProps || EMPTYO, isVComponent);
+            }
+            if (oldProps) {
+                removeOldProps(el, props || EMPTYO, oldProps, isVComponent);
+            }
+        }
+        function patchDOMForTemplate(el, props, oldProps, isCustomElement) {
+            if (props) {
+                const propKeys = Object.keys(props);
+                propKeys.forEach(function (key) {
+                    if (SKIPKEYS.has(key)) {
+                        return;
+                    }
+                    const value = props[key];
+                    el.setAttribute(key, value);
+                });
+            }
+            if (oldProps) {
+            }
+        }
+        function addOrUpdateProps(el, props, oldProps, isVComponent) {
+            const propKeys = Object.keys(props);
+            propKeys.forEach(function (key) {
+                if (SKIPKEYS.has(key)) {
+                    return;
+                }
+                const value = props[key];
+                const oldValue = oldProps[key];
+                if (value !== oldValue) {
+                    if (key === 'style') {
+                        patchProperties(el.style, value || EMPTYO, oldValue || EMPTYO, '');
+                    }
+                    else if (key === 'class') {
+                        patchClassName(el, value, oldValue, isVComponent);
+                    }
+                    else if (!maybePatchListener(el, key, value, oldValue) &&
+                        !maybePatchAttribute(el, key, value, isVComponent)) {
+                        el[key] = value;
+                    }
+                }
+            });
+        }
+        function removeOldProps(el, props, oldProps, isVComponent) {
+            const propKeys = Object.keys(oldProps);
+            propKeys.forEach(function (key) {
+                if (key === 'key' || key === 'ref') {
+                    return;
+                }
+                const oldValue = oldProps[key];
+                if (!(key in props)) {
+                    if (key === 'style') {
+                        patchProperties(el.style, EMPTYO, oldValue || EMPTYO, '');
+                    }
+                    else if (key === 'class') {
+                        patchClassName(el, null, oldValue, isVComponent);
+                    }
+                    else if (!maybePatchListener(el, key, null, oldValue) &&
+                        !maybePatchAttribute(el, key, null, isVComponent)) {
+                        el[key] = undefined;
+                    }
+                }
+            });
+        }
+        function patchProperties(propertyHolder, props, oldProps, unsetValue) {
+            for (let key in props) {
+                const oldv = oldProps[key];
+                const newv = props[key];
+                if (oldv !== newv) {
+                    propertyHolder[key] = newv;
+                }
+            }
+            for (let key in oldProps) {
+                if (!(key in props)) {
+                    propertyHolder[key] = unsetValue;
+                }
+            }
+        }
+        function patchClassName(el, value, oldValue, isVComponent) {
+            if (isVComponent) {
+                patchClassNameAsMap(el, value, oldValue);
+            }
+            else {
+                patchClassNameAsString(el, value);
+            }
+        }
+        function patchClassNameAsString(el, value) {
+            if (value) {
+                const classStr = typeof value === 'object'
+                    ? Object.keys(value)
+                        .filter((key) => value[key])
+                        .join(' ')
+                    : value;
+                el.setAttribute('class', classStr);
+            }
+            else {
+                el.removeAttribute('class');
+            }
+        }
+        function patchClassNameAsMap(el, value, oldValue) {
+            const oldValueMap = classPropToObject(oldValue);
+            const valueMap = classPropToObject(value);
+            for (let key in oldValueMap) {
+                if (oldValueMap[key] && !valueMap[key]) {
+                    el.classList.remove(key);
+                }
+            }
+            for (let key in valueMap) {
+                if (valueMap[key] && !oldValueMap[key]) {
+                    el.classList.add(key);
+                }
+            }
+        }
+        function maybePatchListener(el, key, value, oldValue) {
+            if (value || oldValue) {
+                const eventType = eventListenerPropertyToEventType(key);
+                if (eventType) {
+                    patchListener(el, eventType, value, oldValue);
+                    return true;
+                }
+            }
+            return false;
+        }
+        function patchListener(el, eventType, value, oldValue) {
+            if (oldValue) {
+                el.removeEventListener(eventType, oldValue, oldValue[PetitDom.LISTENER_OPTIONS_SYMBOL]);
+            }
+            if (value) {
+                el.addEventListener(eventType, value, value[PetitDom.LISTENER_OPTIONS_SYMBOL]);
+            }
+        }
+        function maybePatchAttribute(el, key, value, isVComponent) {
+            if ((isVComponent && oj.__AttributeUtils.isGlobalOrData(key)) ||
+                (!isVComponent && key !== 'value' && key !== 'checked')) {
+                const attr = oj.__AttributeUtils.getNativeAttr(key);
+                if (value === true) {
+                    el.setAttribute(attr, '');
+                }
+                else if (value === false) {
+                    el.removeAttribute(attr);
+                }
+                else {
+                    if (value != null) {
+                        const ns = NS_ATTRS[attr];
+                        if (ns !== undefined) {
+                            el.setAttributeNS(ns, attr, value);
+                        }
+                        else {
+                            el.setAttribute(attr, value);
+                        }
+                    }
+                    else {
+                        el.removeAttribute(attr);
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+        function eventListenerPropertyToEventType(property) {
+            if (/^on[A-Z]/.test(property)) {
+                return property.substr(2, 1).toLowerCase() + property.substr(3);
+            }
+            return null;
+        }
+        function patchCustomElement(newch, oldch, uncontrolledRootProps, oldUncontrolledRootProps) {
+            const parentNode = oldch._node;
+            if (oldch === newch) {
+                return;
+            }
+            patchDOM(parentNode, uncontrolledRootProps, oldUncontrolledRootProps, true);
+            patchDOM(parentNode, newch.props, oldch.props, true);
+            diffChildren(parentNode, newch.content, oldch.content);
+            patchRef(newch.ref, parentNode, oldch.ref);
+        }
+        PetitDom.patchCustomElement = patchCustomElement;
+        function patchCustomElementContent(newch, oldch, controlledRootProps) {
+            const parentNode = oldch._node;
+            if (oldch === newch) {
+                return;
+            }
+            const oldRootProps = {};
+            const oldProps = oldch.props;
+            for (let prop in oldProps) {
+                if (isListener(prop) || prop === 'class' || prop === 'style') {
+                    oldRootProps[prop] = oldProps[prop];
+                }
+            }
+            Object.assign(oldRootProps, controlledRootProps);
+            patchDOM(parentNode, newch.props, oldRootProps, true);
+            diffChildren(parentNode, newch.content, oldch.content);
+            patchRef(newch.ref, parentNode, oldch.ref);
+        }
+        PetitDom.patchCustomElementContent = patchCustomElementContent;
+        function patch(newch, oldch, parent, isVComponent = false) {
+            let childNode = oldch._node;
+            if (oldch === newch) {
+                return childNode;
+            }
+            if (isTemplateElement(childNode)) {
+                newch._node = childNode;
+                return childNode;
+            }
+            if (newch._node) {
+                if (childNode !== newch._node) {
+                    replaceAndUnmountChild(parent, newch, oldch);
+                }
+                return newch._node;
+            }
+            let t1, t2;
+            if ((t1 = oldch._text) != null && (t2 = newch._text) != null) {
+                if (t1 !== t2) {
+                    childNode.nodeValue = t2;
+                }
+            }
+            else if (oldch.type === newch.type && oldch.isSVG === newch.isSVG) {
+                const type = oldch.type;
+                if (typeof type === 'function') {
+                    if (oldch.isComponent) {
+                        const vcomp = oldch._data;
+                        const constr = type;
+                        const splitProps = sortControlled(constr, newch.props, newch.isCustomElement);
+                        newch._uncontrolled = splitProps.uncontrolled;
+                        vcomp.patch(splitProps.controlled, newch.content, splitProps.uncontrolled, oldch._uncontrolled);
+                        newch._data = vcomp;
+                        patchRef(newch.ref, vcomp, oldch.ref);
+                    }
+                    else {
+                        const shouldUpdateFn = type['shouldUpdate'] || defShouldUpdate;
+                        if (shouldUpdateFn(newch.props, oldch.props, newch.content, oldch.content)) {
+                            const render = type;
+                            const vnode = render(newch.props, newch.content);
+                            childNode = patch(vnode, oldch._data, parent);
+                            newch._data = vnode;
+                        }
+                        else {
+                            newch._data = oldch._data;
+                        }
+                    }
+                }
+                else if (typeof type === 'string') {
+                    if (oldch.isCustomElement && contentChangeRequiresRemount(newch.content, oldch.content)) {
+                        childNode = replaceAndUnmountChild(parent, newch, oldch);
+                    }
+                    else {
+                        patchDOM(childNode, newch.props, oldch.props, isVComponent || oldch.isCustomElement);
+                        diffChildren(childNode, newch.content, oldch.content);
+                        patchRef(newch.ref, childNode, oldch.ref);
+                    }
+                }
+                else {
+                    throw new Error(`Error while patching. Unknown node type '${type}'.`);
+                }
+            }
+            else {
+                if (parent) {
+                    childNode = replaceAndUnmountChild(parent, newch, oldch);
+                }
+            }
+            newch._node = childNode;
+            return childNode;
+        }
+        PetitDom.patch = patch;
+        function canPatch(v1, v2) {
+            return (v1.key == null && v2.key == null) || v1.key === v2.key;
+        }
+        function diffChildren(parent, children, oldChildren, newStart = 0, newEnd = children.length - 1, oldStart = 0, oldEnd = oldChildren.length - 1) {
+            if (children === oldChildren)
+                return;
+            let oldCh;
+            let k = diffCommonPrefix(children, oldChildren, newStart, newEnd, oldStart, oldEnd, canPatch, parent);
+            newStart += k;
+            oldStart += k;
+            k = diffCommonSufffix(children, oldChildren, newStart, newEnd, oldStart, oldEnd, canPatch, parent);
+            newEnd -= k;
+            oldEnd -= k;
+            if (newStart > newEnd && oldStart > oldEnd) {
+                return;
+            }
+            if (newStart <= newEnd && oldStart > oldEnd) {
+                oldCh = oldChildren[oldStart];
+                appendChildren(parent, children, newStart, newEnd, oldCh);
+                return;
+            }
+            if (oldStart <= oldEnd && newStart > newEnd) {
+                removeChildren(parent, oldChildren, oldStart, oldEnd);
+                return;
+            }
+            const oldRem = oldEnd - oldStart + 1;
+            const newRem = newEnd - newStart + 1;
+            k = -1;
+            if (oldRem < newRem) {
+                k = indexOf(children, oldChildren, newStart, newEnd, oldStart, oldEnd, canPatch);
+                if (k >= 0) {
+                    oldCh = oldChildren[oldStart];
+                    appendChildren(parent, children, newStart, k - 1, oldCh);
+                    const upperLimit = k + oldRem;
+                    newStart = k;
+                    while (newStart < upperLimit) {
+                        patch(children[newStart++], oldChildren[oldStart++], parent);
+                    }
+                    const oldChSibling = oldChildren[oldEnd + 1];
+                    appendChildren(parent, children, newStart, newEnd, oldChSibling);
+                    return;
+                }
+            }
+            else if (oldRem > newRem) {
+                k = indexOf(oldChildren, children, oldStart, oldEnd, newStart, newEnd, canPatch);
+                if (k >= 0) {
+                    removeChildren(parent, oldChildren, oldStart, k - 1);
+                    const upperLimit = k + newRem;
+                    oldStart = k;
+                    while (oldStart < upperLimit) {
+                        patch(children[newStart++], oldChildren[oldStart++], parent);
+                    }
+                    removeChildren(parent, oldChildren, oldStart, oldEnd);
+                    return;
+                }
+            }
+            if (oldStart === oldEnd) {
+                removeAndUnmountChild(parent, oldChildren[oldStart]);
+                appendChildren(parent, children, newStart, newEnd, oldChildren[oldStart + 1]);
+                return;
+            }
+            if (newStart === newEnd) {
+                removeChildren(parent, oldChildren, oldStart, oldEnd);
+                insertBeforeChild(parent, children[newStart], oldChildren[oldEnd + 1]);
+                return;
+            }
+            const failed = diffOND(parent, children, oldChildren, newStart, newEnd, oldStart, oldEnd);
+            if (failed)
+                diffWithMap(parent, children, oldChildren, newStart, newEnd, oldStart, oldEnd);
+        }
+        function diffCommonPrefix(s1, s2, start1, end1, start2, end2, eq, parent) {
+            let k = 0, c1, c2;
+            while (start1 <= end1 && start2 <= end2 && eq((c1 = s1[start1]), (c2 = s2[start2]))) {
+                if (parent)
+                    patch(c1, c2, parent);
+                start1++;
+                start2++;
+                k++;
+            }
+            return k;
+        }
+        function diffCommonSufffix(s1, s2, start1, end1, start2, end2, eq, parent) {
+            let k = 0, c1, c2;
+            while (start1 <= end1 && start2 <= end2 && eq((c1 = s1[end1]), (c2 = s2[end2]))) {
+                if (parent)
+                    patch(c1, c2, parent);
+                end1--;
+                end2--;
+                k++;
+            }
+            return k;
+        }
+        const PATCH = 2;
+        const INSERTION = 4;
+        const DELETION = 8;
+        function diffOND(parent, children, oldChildren, newStart = 0, newEnd = children.length - 1, oldStart = 0, oldEnd = oldChildren.length - 1) {
+            const rows = newEnd - newStart + 1;
+            const cols = oldEnd - oldStart + 1;
+            const dmax = rows + cols;
+            const v = [];
+            let d, k, r, c, pv, cv, pd;
+            outer: for (d = 0; d <= dmax; d++) {
+                if (d > 50)
+                    return true;
+                pd = d - 1;
+                pv = d ? v[d - 1] : [0, 0];
+                cv = v[d] = [];
+                for (k = -d; k <= d; k += 2) {
+                    if (k === -d || (k !== d && pv[pd + k - 1] < pv[pd + k + 1])) {
+                        c = pv[pd + k + 1];
+                    }
+                    else {
+                        c = pv[pd + k - 1] + 1;
+                    }
+                    r = c - k;
+                    while (c < cols &&
+                        r < rows &&
+                        canPatch(oldChildren[oldStart + c], children[newStart + r])) {
+                        c++;
+                        r++;
+                    }
+                    if (c === cols && r === rows) {
+                        break outer;
+                    }
+                    cv[d + k] = c;
+                }
+            }
+            const diff = Array(d / 2 + dmax / 2);
+            const deleteMap = {};
+            let oldCh;
+            let diffIdx = diff.length - 1;
+            for (d = v.length - 1; d >= 0; d--) {
+                while (c > 0 &&
+                    r > 0 &&
+                    canPatch(oldChildren[oldStart + c - 1], children[newStart + r - 1])) {
+                    diff[diffIdx--] = PATCH;
+                    c--;
+                    r--;
+                }
+                if (!d)
+                    break;
+                pd = d - 1;
+                pv = d ? v[d - 1] : [0, 0];
+                k = c - r;
+                if (k === -d || (k !== d && pv[pd + k - 1] < pv[pd + k + 1])) {
+                    r--;
+                    diff[diffIdx--] = INSERTION;
+                }
+                else {
+                    c--;
+                    diff[diffIdx--] = DELETION;
+                    oldCh = oldChildren[oldStart + c];
+                    if (oldCh.key != null) {
+                        deleteMap[oldCh.key] = oldStart + c;
+                    }
+                }
+            }
+            applyDiff(parent, diff, children, oldChildren, newStart, oldStart, deleteMap);
+        }
+        function applyDiff(parent, diff, children, oldChildren, newStart, oldStart, deleteMap) {
+            const moveMap = {};
+            for (let i = 0, oldChIdx = oldStart; i < diff.length; i++) {
+                const _op = diff[i];
+                if (_op === PATCH) {
+                    oldChIdx++;
+                }
+                else if (_op === DELETION) {
+                    const oldCh = oldChildren[oldChIdx++];
+                    if (oldCh.key == null || moveMap[oldCh.key] == null) {
+                        removeAndUnmountChild(parent, oldCh);
+                    }
+                }
+            }
+            for (let i = 0, chIdx = newStart, oldChIdx = oldStart; i < diff.length; i++) {
+                const op = diff[i];
+                let mounted = false;
+                if (op === PATCH) {
+                    patch(children[chIdx++], oldChildren[oldChIdx++], parent);
+                }
+                else if (op === INSERTION) {
+                    const ch = children[chIdx++];
+                    let oldMatchIdx = null;
+                    if (ch.key != null) {
+                        oldMatchIdx = deleteMap[ch.key];
+                    }
+                    if (oldMatchIdx != null) {
+                        patch(ch, oldChildren[oldMatchIdx], parent);
+                        moveMap[ch.key] = oldMatchIdx;
+                    }
+                    insertBeforeChild(parent, ch, oldChIdx < oldChildren.length ? oldChildren[oldChIdx] : null);
+                }
+                else if (op === DELETION) {
+                    oldChIdx++;
+                }
+            }
+        }
+        function diffWithMap(parent, children, oldChildren, newStart, newEnd, oldStart, oldEnd) {
+            const newLen = newEnd - newStart + 1;
+            const oldLen = oldEnd - oldStart + 1;
+            const minLen = Math.min(newLen, oldLen);
+            const tresh = Array(minLen + 1);
+            tresh[0] = -1;
+            for (let i = 1; i < tresh.length; i++) {
+                tresh[i] = oldEnd + 1;
+            }
+            const link = Array(minLen);
+            const keymap = {}, unkeyed = [];
+            for (let i = oldStart; i <= oldEnd; i++) {
+                let oldCh = oldChildren[i];
+                let key = oldCh.key;
+                if (key != null) {
+                    keymap[key] = i;
+                }
+                else {
+                    unkeyed.push(i);
+                }
+            }
+            let idxUnkeyed = 0;
+            for (let i = newStart; i <= newEnd; i++) {
+                const ch = children[i];
+                const idxInOld = ch.key == null ? unkeyed[idxUnkeyed++] : keymap[ch.key];
+                if (idxInOld != null) {
+                    let k = findK(tresh, idxInOld);
+                    if (k >= 0) {
+                        tresh[k] = idxInOld;
+                        link[k] = { newi: i, oldi: idxInOld, prev: link[k - 1] };
+                    }
+                }
+            }
+            let k = tresh.length - 1;
+            while (tresh[k] > oldEnd) {
+                k--;
+            }
+            let ptr = link[k];
+            const diff = Array(oldLen + newLen - k);
+            let curNewi = newEnd, curOldi = oldEnd;
+            let d = diff.length - 1;
+            while (ptr) {
+                let _ptr = ptr, newi = _ptr.newi, oldi = _ptr.oldi;
+                while (curNewi > newi) {
+                    diff[d--] = INSERTION;
+                    curNewi--;
+                }
+                while (curOldi > oldi) {
+                    diff[d--] = DELETION;
+                    curOldi--;
+                }
+                diff[d--] = PATCH;
+                curNewi--;
+                curOldi--;
+                ptr = ptr.prev;
+            }
+            while (curNewi >= newStart) {
+                diff[d--] = INSERTION;
+                curNewi--;
+            }
+            while (curOldi >= oldStart) {
+                diff[d--] = DELETION;
+                curOldi--;
+            }
+            applyDiff(parent, diff, children, oldChildren, newStart, oldStart, keymap);
+        }
+        function findK(ktr, j) {
+            let lo = 1;
+            let hi = ktr.length - 1;
+            while (lo <= hi) {
+                let mid = Math.ceil((lo + hi) / 2);
+                if (j < ktr[mid])
+                    hi = mid - 1;
+                else
+                    lo = mid + 1;
+            }
+            return lo;
+        }
+        function indexOf(a, suba, aStart, aEnd, subaStart, subaEnd, eq) {
+            let j = subaStart, k = -1;
+            const subaLen = subaEnd - subaStart + 1;
+            while (aStart <= aEnd && aEnd - aStart + 1 >= subaLen) {
+                if (eq(a[aStart], suba[j])) {
+                    if (k < 0)
+                        k = aStart;
+                    j++;
+                    if (j > subaEnd)
+                        return k;
+                }
+                else {
+                    k = -1;
+                    j = subaStart;
+                }
+                aStart++;
+            }
+            return -1;
+        }
+        function contentChangeRequiresRemount(content, oldContent) {
+            if (content === oldContent) {
+                return false;
+            }
+            if (content.length !== oldContent.length) {
+                return true;
+            }
+            return content.some(function (node, index) {
+                var _a, _b;
+                const oldNode = oldContent[index];
+                if (node.type !== oldNode.type) {
+                    return true;
+                }
+                return ((_a = node.props) === null || _a === void 0 ? void 0 : _a.slot) !== ((_b = oldNode.props) === null || _b === void 0 ? void 0 : _b.slot);
+            });
+        }
+        function replaceAndUnmountChild(parent, newch, oldch) {
+            if (oldch._clean) {
+                oldch._clean();
+            }
+            const needsMount = newch._node == null;
+            if (needsMount) {
+                mount(newch);
+            }
+            const newNode = newch._node;
+            getDomContainer(parent).replaceChild(newNode, oldch._node);
+            unmount(oldch);
+            oldch._node = newNode;
+            if (needsMount) {
+                afterMountHooks(newch);
+            }
+            return newNode;
+        }
+        function removeAndUnmountChild(parent, oldch) {
+            if (oldch._clean) {
+                oldch._clean();
+            }
+            getDomContainer(parent).removeChild(oldch._node);
+            unmount(oldch);
+        }
+        function insertBeforeChild(parent, newch, oldch) {
+            const needsMount = newch._node == null;
+            if (needsMount) {
+                mount(newch);
+            }
+            const newNode = newch._node;
+            getDomContainer(parent).insertBefore(newNode, (oldch === null || oldch === void 0 ? void 0 : oldch._node) || null);
+            if (needsMount) {
+                afterMountHooks(newch);
+            }
+        }
+        function patchRef(newRefCallback, ref, oldRefCallback = null) {
+            if (oldRefCallback !== newRefCallback) {
+                if (typeof oldRefCallback === 'function') {
+                    oldRefCallback(null);
+                }
+                if (typeof newRefCallback === 'function') {
+                    newRefCallback(ref);
+                }
+            }
+        }
+        function getDomContainer(node) {
+            if (isTemplateElement(node)) {
+                const content = node.content;
+                if (content) {
+                    return content;
+                }
+            }
+            return node;
+        }
+    })(PetitDom || (PetitDom = {}));
+
+    class VComponent {
+        constructor(props) {
+            this._pendingPropsUpdate = false;
+            this.props = props;
+        }
+        updated(oldProps, oldState) { }
+        mounted() { }
+        unmounted() { }
+        uniqueId() {
+            return this._uniqueId;
+        }
+        _updateProperty(prop, value, shouldRender = false) {
+            if (this.props[prop] !== value) {
+                this._getCallback('_updateProperty')(prop, value, shouldRender);
+            }
+        }
+        updateState(state) {
+            if (!this._pendingStateUpdaters) {
+                this._pendingStateUpdaters = [];
+            }
+            this._pendingStateUpdaters.push(state);
+            this.queueRender(this._ref, 'stateUpdate');
+        }
+        mount(props, content, uncontrolledRootProps = {}) {
+            this._vnode = this._renderForMount(props, content);
+            return (this._ref = PetitDom.mount(this._vnode, true));
+        }
+        patch(props, content, uncontrolledRootProps, oldUncontrolledRootProps) {
+            const oldProps = this.props;
+            const oldState = this.state;
+            const oldVnode = this._vnode;
+            this._vnode = this._renderForPatch(props, content);
+            PetitDom.patch(this._vnode, oldVnode, this._ref.parentNode, true);
+            this.updated(oldProps, oldState);
+        }
+        unmount(node) {
+            PetitDom.unmount(this._vnode);
+            this.unmounted();
+        }
+        queueRender(element, reason) {
+            var _a, _b;
+            if ((_b = (_a = this).isPatching) === null || _b === void 0 ? void 0 : _b.call(_a))
+                return;
+            if (reason === 'propsUpdate') {
+                this._pendingPropsUpdate = true;
+            }
+            if (!this._busyStateCallbackForRender) {
+                var busyContext = Context.getContext(element).getBusyContext();
+                this._busyStateCallbackForRender = busyContext.addBusyState({
+                    description: this.uniqueId() + ' is waiting to render.'
+                });
+                window.requestAnimationFrame(() => {
+                    const busyStateCallbackForRender = this._busyStateCallbackForRender;
+                    const pendingPropsUpdate = this._pendingPropsUpdate;
+                    const pendingStateUpdaters = this._pendingStateUpdaters;
+                    this._busyStateCallbackForRender = null;
+                    this._pendingPropsUpdate = false;
+                    this._pendingStateUpdaters = null;
+                    try {
+                        const props = this._getCallback('getPropsForRender')();
+                        const newState = this._doUpdateState(props, pendingStateUpdaters);
+                        if (pendingPropsUpdate || (newState && !this._areStatesEqual(this.state, newState))) {
+                            this._pendingState = newState;
+                            this._getCallback('patch')(props, this._ref.parentNode);
+                        }
+                    }
+                    catch (error) {
+                        throw error;
+                    }
+                    finally {
+                        busyStateCallbackForRender();
+                        this._pendingState = null;
+                    }
+                });
+            }
+        }
+        _renderForMount(props, content) {
+            if (this.state) {
+                const initStateFromProps = this.constructor.initStateFromProps;
+                if (initStateFromProps) {
+                    const newPartialState = initStateFromProps.call(this.constructor, props, this.state);
+                    this.state = this._getNewState(newPartialState);
+                }
+            }
+            return this._render(props, content);
+        }
+        _renderForPatch(props, content) {
+            if (this.state) {
+                const updateStateFromProps = this.constructor.updateStateFromProps;
+                let newPartialState;
+                if (updateStateFromProps) {
+                    newPartialState = updateStateFromProps.call(this.constructor, props, this._pendingState || this.state, this.props);
+                }
+                this.state = this._getNewState(newPartialState, this._pendingState);
+            }
+            const vnode = this._render(props, content);
+            return vnode;
+        }
+        _render(props, content) {
+            if (content && content.length) {
+                Object.assign(props, this._getCallback('convertChildrenToSlotProps')(content));
+            }
+            this.props = props;
+            return this.render();
+        }
+        _doUpdateState(props, updaters) {
+            if (!updaters || updaters.length === 0) {
+                return null;
+            }
+            const newState = updaters.reduce((acc, updater) => {
+                const updatedState = typeof updater === 'function' ? updater(acc, props) : updater;
+                return Object.assign(acc, updatedState);
+            }, Object.assign({}, this.state));
+            return newState;
+        }
+        _areStatesEqual(oldState, newState) {
+            return Object.keys(newState).every((key) => oldState[key] === newState[key]);
+        }
+        _getCallback(name) {
+            if (!this._callbacks) {
+                this._callbacks = this._getBuiltInCallbacks();
+            }
+            return this._callbacks[name];
+        }
+        _getBuiltInCallbacks() {
+            const callbacks = {
+                _updateProperty: (prop, value) => {
+                    var _a, _b;
+                    const changedEvent = oj.__AttributeUtils.propertyNameToChangeEventType(prop);
+                    const changedProp = oj.__AttributeUtils.eventTypeToEventListenerProperty(changedEvent);
+                    (_b = (_a = this.props)[changedProp]) === null || _b === void 0 ? void 0 : _b.call(_a, {
+                        value,
+                        previousValue: this.props[prop],
+                        updatedFrom: 'internal'
+                    });
+                },
+                getPropsForRender: () => {
+                    return this.props;
+                },
+                patch: (props, parent) => {
+                    this.patch(props, parent);
+                },
+                convertChildrenToSlotProps: function (children) {
+                    return { children };
+                }
+            };
+            callbacks['_vcomp'] = true;
+            return callbacks;
+        }
+        _getNewState(newPartialState, pendingState = null) {
+            if (newPartialState || pendingState) {
+                return Object.assign({}, pendingState || this.state, newPartialState);
+            }
+            return this.state;
+        }
     }
+    const h = PetitDom.h;
+
     /**
-     * Calls the component's render method and verifies/removes illegal properties
-     * from the resulting virtual node's properties, reutnring the verified virtual
-     * node after.
-     * @return {Object}
+     * @license
+     * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+     * The Universal Permissive License (UPL), Version 1.0
+     * as shown at https://oss.oracle.com/licenses/upl/
+     * @ignore
+     */
+
+    /**
+     * @class
+     * @ignore
+     */
+    const VirtualElementBridge = {};
+    VirtualElementBridge._DEFAULT_SLOT_PROP = 'children';
+
+    /**
+     * Prototype for the JET component definitional bridge instance
+     */
+    VirtualElementBridge.proto = Object.create(oj.BaseCustomElementBridge.proto);
+
+    oj.CollectionUtils.copyInto(VirtualElementBridge.proto, {
+      AddComponentMethods: function (proto) {
+        // eslint-disable-next-line no-param-reassign
+        proto.setProperty = function (prop, value) {
+          var bridge = oj.BaseCustomElementBridge.getInstance(this);
+          if (!bridge.SaveEarlyPropertySet(prop, value)) {
+            bridge.SetProperty(this, prop, value, this, true);
+          }
+        };
+        // eslint-disable-next-line no-param-reassign
+        proto.getProperty = function (prop) {
+          // 'this' is the property object we pass to the definitional element contructor to track internal property changes
+          var bridge = oj.BaseCustomElementBridge.getInstance(this);
+          return bridge.GetProperty(this, prop, this);
+        };
+      },
+
+      AttributeChangedCallback: function (attr, oldValue, newValue) {
+        // Invoke callback on the superclass
+        oj.BaseCustomElementBridge.proto.AttributeChangedCallback.call(this, attr, oldValue, newValue);
+
+        // The browser triggers this callback even if old and new values are the same
+        // so we should do an equality check ourselves to prevent extra work
+        if (oldValue !== newValue) {
+          // VComponents need to update _LIVE_CONTROLLED_PROPS even during the patching case
+          var bridge = oj.BaseCustomElementBridge.getInstance(this);
+          // If we haven't already called HandleAttributeChanged in superclass, check to see
+          // if we should call it to update _LIVE_CONTROLLED_PROPS for attributes updated during
+          // the VComponent render() patching cycle
+          if (!bridge.ShouldHandleAttributeChanged(this) &&
+            oj.BaseCustomElementBridge.proto.ShouldHandleAttributeChanged.call(bridge, this)) {
+            var vcomp = this._vcomp;
+            if (!vcomp || vcomp.isCustomElementFirst()) {
+              bridge.HandleAttributeChanged(this, attr, oldValue, newValue);
+            }
+          }
+        }
+      },
+
+      CreateComponent: function (element) {
+        if (!element._vcomp) {
+          if (oj.Components) {
+            oj.Components.unmarkPendingSubtreeHidden(element);
+          }
+          var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName);
+
+          var slotMap = oj.BaseCustomElementBridge.getSlotMap(element);
+
+          // Initialize controlled root properties now that we know bindings have resolved and
+          // data bound global attributes should be resolved.
+          this._initializeControlledProps(element);
+
+          var vprops = this._getVComponentProps();
+          var vcomp = new descriptor._CONSTRUCTOR(vprops);
+          // Cache a uniqueID on the vcomponent instance
+          vcomp._uniqueId = oj.__AttributeUtils.getUniqueId(element.id);
+
+          Object.defineProperty(element, '_vcomp',
+            { value: vcomp, enumerable: false });
+          vcomp.setCallbacks(this._getCallbacks(element));
+          this._mountCustomElement(element, element._vcomp, vprops, slotMap);
+        }
+
+        element._vcomp.mounted();
+
+        // Set flag when we can fire property change events
+        this.__READY_TO_FIRE = true;
+
+        // Resolve the component busy state
+        this.resolveDelayedReadyPromise();
+      },
+
+      // eslint-disable-next-line no-unused-vars
+      DefineMethodCallback: function (proto, method, methodMeta) {
+        // eslint-disable-next-line no-param-reassign
+        proto[method] = function () {
+          // The VComponent is asynchronously instantiated by CreateComponent so we
+          // need to check that this has happened before we call any methods defined on it.
+          // Custom elements are upgraded synchronously meaning the method will be available
+          // on the HTMLElement, but we tell applications to wait on the component busy context
+          // before accessing properties and methods due to the asynch CreateComponent call.
+          if (!this._vcomp) {
+            var bridge = oj.BaseCustomElementBridge.getInstance(this);
+            bridge.throwError(this, 'Cannot access methods before element is upgraded.');
+          }
+          return this._vcomp[method].apply(this._vcomp, arguments);
+        };
+      },
+
+      DefinePropertyCallback: function (proto, property, propertyMeta) {
+        /**
+         * Property sets are processed differently whether they are coming from the application
+         * or interally from the component. All outer application sets will be processed synchronously
+         * since that would be the expected behavior, while internal component sets will be processed
+         * asynchronously. This allows the application to update a property, like oj-table's selection,
+         * which will then cause the component to update an associated property first-selected-row and
+         * trigger the [property]Changed events after all the properties have been updated. Otherwise,
+         * the application will receive a selectionChanged event when the firstSelectedRow property could
+         * be out of sync. Rendering is done asynchronously regardless of whether an application or component update
+         * occured.
+         * @param {any} value The property value to set
+         * @param {boolean} bOuterSet True if the set is coming from the custom element
+         *                            instead of the bridge's _PROPS_PROXY
+         */
+        function set(value, bOuterSet) {
+          var propertyUpdate = {
+            isOuter: bOuterSet,
+            name: property,
+            value: value,
+            meta: propertyMeta
+          };
+          // For 9.0.0, making property mutations synchronous whether they're internal or external
+          // (renders will still be async).  This means when updating multiple properties that the
+          // property change events will be fired after each mutation rather than after all mutations
+          // This will be revisited in the future.
+          this._BRIDGE._updateProperty(this._ELEMENT, propertyUpdate, true);
+        }
+
+        function innerSet(value) {
+          set.bind(this)(value, false);
+        }
+
+        // Called on the custom element
+        function outerSet(value) {
+          // VComponent-first elements should only be updated by its parent during rendering
+          // and not through the live DOM updates. We will ignore outer sets
+          // for VComponent-first elements to avoid being out of sync with the
+          // state the parent believes its child to be in.
+          var vcomp = this._vcomp;
+          var bridge = oj.BaseCustomElementBridge.getInstance(this);
+          if (!vcomp || vcomp.isCustomElementFirst()) {
+            set.bind(bridge._PROPS_PROXY)(value, true);
+          } else if (vcomp && !vcomp.isCustomElementFirst()) {
+            bridge.throwError(this, 'Cannot set properties on a VComponent-first element.');
+          }
+        }
+
+        function get() {
+          var value = this._BRIDGE._PROPS[property];
+          // If the attribute has not been set, return the default value
+          if (value === undefined) {
+            value = this._BRIDGE._getDefaultValue(property, propertyMeta);
+            this._BRIDGE._PROPS[property] = value;
+          }
+          return value;
+        }
+
+        function innerGet() {
+          return get.bind(this)();
+        }
+
+        // Called on the custom element
+        function outerGet() {
+          var vcomp = this._vcomp;
+          // VComponent-first elements should only be updated by its parent during rendering
+          // and not through the live DOM updates. We will ignore outer gets
+          // for VComponent-first elements, since they are an implementation detail of the parent element
+          // and should not be interacted with in the DOM. This case will be treated as an unsupported error case
+          // and always return undefined.
+          if (vcomp && !vcomp.isCustomElementFirst()) {
+            return undefined;
+          }
+          var bridge = oj.BaseCustomElementBridge.getInstance(this);
+          return get.bind(bridge._PROPS_PROXY)();
+        }
+
+        // Don't add event listener properties for inner props
+        if (!propertyMeta._derived) {
+          oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto._propsProto, property,
+            innerGet, innerSet);
+        }
+        oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto, property, outerGet, outerSet);
+      },
+
+      GetAttributes: function (metadata) {
+        var attrs = oj.BaseCustomElementBridge.proto.GetAttributes.call(this, metadata);
+
+        // Components can indicate additional global attributes they want to be notified about
+        // via metadata. These attributes can be used by the component to then update the root
+        // global attributes.
+        var rootPropsMap = metadata.extension && metadata.extension._ROOT_PROPS_MAP;
+        if (rootPropsMap) {
+          Object.keys(rootPropsMap).forEach(function (prop) {
+            attrs.push(oj.__AttributeUtils.getGlobalAttrForProp(prop));
+          });
+        }
+        return attrs;
+      },
+
+      // This setting is involved in tracking child elements used for slots
+      // for VComponents created as custom elements. The method is called when the
+      // element is connected to the DOM, but it is not created yet.
+      // Tracking children is prevented for vcomp-first elements, since such elements are
+      // rendered first and children are already passed to them through props.
+      // The GetTrackChildrenOption() is called on mount operation for already rendered component.
+      // If tracking is not prevented at this point, the component would wait for its internal content.
+      GetTrackChildrenOption: function (element) {
+        return element._vcomp ? 'none' : 'immediate';
+      },
+
+      ShouldHandleAttributeChanged: function (element) {
+        if (!oj.BaseCustomElementBridge.proto.ShouldHandleAttributeChanged.call(this, element)) {
+          return false;
+        }
+
+        // We only care about attribute change notifications if we're CustomElement-first,
+        // since we need to re-render if the application has modified a controlled root property
+        // directly on a custom element.
+        //
+        // Note that if the vcomp has not yet been created, we allow attribute changed
+        // processing to continue, as BaseCustomElementBridge has binding-related work
+        // that it may need to perform.
+        var vcomp = element._vcomp;
+        return !vcomp || (vcomp.isCustomElementFirst() && !vcomp.isPatching());
+      },
+
+      HandleAttributeChanged: function (element, attr, oldValue, newValue) {
+        var vcomp = element._vcomp;
+        var rootPropsMap = this._EXTENSION._ROOT_PROPS_MAP;
+        if (vcomp && rootPropsMap) {
+          var prop = oj.__AttributeUtils.getGlobalPropForAttr(attr) || attr;
+          if (rootPropsMap[prop] && oldValue !== newValue) {
+            // Get the property value if there is one so we pass the correctly typed value
+            // to the VComponent unless that value is null in which case we should remove
+            // the property from controlled props since this will get merged to the VComponent's
+            // this.props and we don't pass values into this.props if undefined.
+            if (newValue == null) {
+              delete this._LIVE_CONTROLLED_PROPS[prop];
+              // Only update the _VCOMP_CONTROLLED_PROPS if the update was not triggered
+              // by the vcomponent during patching
+              if (!vcomp.isPatching()) {
+                delete this._VCOMP_CONTROLLED_PROPS[prop];
+              }
+            } else {
+              var propValue = element[prop];
+              this._LIVE_CONTROLLED_PROPS[prop] = propValue != null ? propValue : newValue;
+              if (!vcomp.isPatching()) {
+                this._VCOMP_CONTROLLED_PROPS[prop] = this._LIVE_CONTROLLED_PROPS[prop];
+              }
+            }
+
+            // Only rerender if we're not updating during a VComponent patching of controlled
+            // global properties
+            if (!vcomp.isPatching()) {
+              this._queueRender(element);
+            }
+          }
+        }
+      },
+
+      // eslint-disable-next-line no-unused-vars
+      HandleReattached: function (element) {
+        this._verifyConnectDisconnect(element, 1);
+      },
+
+      // eslint-disable-next-line no-unused-vars
+      HandleDetached: function (element) {
+        this._verifyConnectDisconnect(element, 0);
+      },
+
+      _verifyConnectDisconnect: function (element, state) {
+        if (this._verifyingState === -1) {
+          window.queueMicrotask(function () {
+            // This checks that we don't call any lifecycle hooks
+            // for reparent case where _verifyingState has been
+            // updated but the initial state we called
+            // this Promise with is different
+            if (this._verifyingState === state) {
+              if (this._verifyingState === 0) {
+                element._vcomp.unmounted();
+              } else {
+                element._vcomp.mounted();
+              }
+            }
+            this._verifyingState = -1;
+          }.bind(this));
+        }
+        this._verifyingState = state;
+      },
+
+      InitializeElement: function (element) {
+        if (!element._vcomp) {
+          if (oj.Components) {
+            oj.Components.markPendingSubtreeHidden(element);
+          }
+          oj.BaseCustomElementBridge.__InitProperties(element, element);
+          // After initializing properties from DOM attributes, go through
+          // event metadata and add appropriate callbacks
+          this.InitializeEventCallbacks(element);
+        }
+      },
+
+      InitializePrototype: function (proto) {
+        // Invoke callback on the superclass
+        oj.BaseCustomElementBridge.proto.InitializePrototype.call(this, proto);
+
+        Object.defineProperty(proto, '_propsProto', { value: {} });
+      },
+
+      InitializeBridge: function (element, descriptor) {
+        // Invoke callback on the superclass
+        oj.BaseCustomElementBridge.proto.InitializeBridge.call(this, element, descriptor);
+
+        // Flag used to detect a verified connected/disconnected state
+        // -1 = not verifying
+        // 0 = disconnected
+        // 1 = connected
+        this._verifyingState = -1;
+
+        this._EXTENSION = this.METADATA.extension || {};
+
+        this._CONSTRUCTOR = descriptor._CONSTRUCTOR;
+
+        // For tracking all properties (source of truth for property storage)
+        this._PROPS = {};
+
+        // Stores any requested property updates, gets processed synchronously for outer sets, but asynch for inner sets
+        this._PROP_CHANGE_QUEUE = [];
+        // Stores property change events that are waiting to be fired.  When multiple property updates are being processed in _PROP_CHANGE_QUEUE,
+        // events are stored in _PROP_CHANGE_EVENT_QUEUE until property updates have been reflected, then all events are fired
+        this._PROP_CHANGE_EVENT_QUEUE = [];
+
+        // Has getters/setters and calls to set properties on this._PROPS
+        if (element._propsProto) {
+          this._PROPS_PROXY = Object.create(element._propsProto);
+          this._PROPS_PROXY._BRIDGE = this;
+          this._PROPS_PROXY._ELEMENT = element;
+        }
+
+        // We need to maintain two sets of controlled properties in the bridge. One set of controlled properties
+        // should always reflect the current state of the DOM even after internal changes that occur during
+        // patching and a second version that does not reflect the internal changes that we merge to the props
+        // we pass to the VComponent for rendering. This former collection is what petit-dom will use as the
+        // 'old' root props for patching. This will allow petit-dom to correctly respond to both application and
+        // VComponent updates to controlled properties.
+        this._LIVE_CONTROLLED_PROPS = {};
+        this._VCOMP_CONTROLLED_PROPS = {};
+      },
+
+      InitializeEventCallbacks: function (element) {
+        const eventsMeta = this.METADATA.events;
+        if (eventsMeta) {
+          Object.keys(eventsMeta).forEach(event => {
+            const eventMeta = eventsMeta[event];
+            const eventProp = oj.__AttributeUtils.eventTypeToEventListenerProperty(event);
+            this._PROPS[eventProp] = (detailObj) => {
+              const detail = Object.assign({}, detailObj);
+              // If we're firing a cancelable event, inject an accept function into
+              // the event detail so the consumer can asynchronously cancel the event.
+              // We only support an asynchronously cancelable event at the moment.
+              const cancelable = !!eventMeta.cancelable;
+              const acceptPromises = [];
+              if (cancelable) {
+                detail.accept = promise => { acceptPromises.push(promise); };
+              }
+
+              const eventDescriptor = { detail, bubbles: !!eventMeta.bubbles, cancelable };
+              const customEvent = new CustomEvent(event, eventDescriptor);
+              element.dispatchEvent(customEvent);
+              if (cancelable) {
+                return customEvent.defaultPrevented ? Promise.reject() :
+                  Promise.all(acceptPromises)
+                    .then(() => Promise.resolve(), (reason) => Promise.reject(reason));
+              }
+              return undefined;
+            };
+          });
+        }
+      },
+
+      PlaybackEarlyPropertySets: function (element) {
+        if (!element._vcomp) {
+          oj.BaseCustomElementBridge.proto.PlaybackEarlyPropertySets.call(this, element);
+        }
+      },
+
+      GetPreCreatePromise: function (element) {
+        var promise = oj.BaseCustomElementBridge.proto.GetPreCreatePromise.call(this, element);
+
+        // If the template engine has not yet been loaded, and we have have some template elements as direct children,
+        // chain the base class's pre-create promise with the promise for the template engine becoming
+        // loaded and cached
+        // eslint-disable-next-line no-use-before-define
+        if (!_cachedTemplateEngine && _hasDirectTemplateChildren(element)) {
+          promise = promise.then(function () {
+            return _getTemplateEnginePromise();
+          });
+        }
+        return promise;
+      },
+
+      ValidateAndSetProperty: function (propNameFun, componentProps, property, value, element) {
+        var _value = this.ValidatePropertySet(element, property, value);
+        VirtualElementBridge.__SetProperty(propNameFun, componentProps, property, _value);
+      },
+
+      _mountCustomElement: function (element, vcomp, vprops, slotMap) {
+        // Cache the slot content because custom elements don't support reslotting
+        this._content = VirtualElementBridge._processSlotContent(element, slotMap);
+        // Make a copy of the controlled props so we get a snapshot before mounting.
+        // We want to avoid the case where a VComponent updates the custom element
+        // controlled properties during mount and the controlled props are updated
+        // before a queued render is called.
+        var controlledPropsCopy = Object.assign({}, this._LIVE_CONTROLLED_PROPS);
+        // mountContent appends child nodes to element
+        vcomp.mountContent(vprops, this._content, element, controlledPropsCopy);
+      },
+
+      /**
+       * Property update callback to pass to VComponent.  Delegates to _PROPS_PROXY
+       * which calls the inner set methods
+       * @param {HTMLElement} element The custom element to process a property change for
+       * @param {string} prop The property to update
+       * @param {any} value The new property value
+       * @return void
+       * @private
+       */
+      _queuePropertyUpdate: function (element, prop, value, queueRender) {
+        this._PROPS_PROXY[prop] = value;
+
+        if (queueRender) {
+          this._queueRender(element);
+        }
+      },
+
+      /**
+       * Pushes a property update to the queue. Processes the queue synchronously or asynchronously based on the specified flag.
+       * Called by both inner and outer sets.
+       *
+       * @param {HTMLElement} element The custom element to process a property change for
+       * @param {Object} propertyUpdate An object containing isOuter, name, value, meta keys
+       * @param {boolean} sync whether to process the property synchronously
+       * @private
+       */
+      _updateProperty: function (element, propertyUpdate, sync) {
+        this._PROP_CHANGE_QUEUE.push(propertyUpdate);
+        // Process the property set queue immediately for outer sets, but asynchronously for inner sets
+        if (sync) {
+          this._processPropertyQueue(element);
+        } else if (!this._propsProcessingQueued) {
+          // We do not need to add a busy state here because
+          // the properties are processed as microtasks and
+          // should be completed by the time the application
+          // needs to interact with the component
+          this._propsProcessingQueued = true;
+          window.queueMicrotask(function () {
+            this._processPropertyQueue(element);
+            this._propsProcessingQueued = false;
+          }.bind(this));
+        }
+      },
+
+      /**
+       * Process and apply the current set of property updates.
+       * @param {HTMLElement} element The custom element to process a property change for
+       * @return void
+       * @private
+       */
+      _processPropertyQueue: function (element) {
+        var propertyUpdate = this._PROP_CHANGE_QUEUE.shift();
+        while (propertyUpdate) {
+          var name = propertyUpdate.name;
+          var value = propertyUpdate.value;
+          var meta = propertyUpdate.meta;
+          // Properties can be set before the component is created. These early
+          // sets are actually saved until after component creation and played back.
+          if (!this.SaveEarlyPropertySet(name, value)) {
+            var previousValue = this._PROPS[name];
+            if (!oj.BaseCustomElementBridge.__CompareOptionValues(name, meta,
+              value, previousValue)) {
+              // Skip validation for inner sets so we don't throw an error when updating readOnly
+              // writeable properties
+              if (propertyUpdate.isOuter) {
+                value = this.ValidatePropertySet(element, name, value);
+              }
+              // Instead of updating undefined in our property bag, delete the key
+              // so later when we copy props for vcomponent rendering, we can use
+              // Object.assign without overriding default values when the value is undefined
+              if (value === undefined) {
+                delete this._PROPS[name];
+              } else {
+                this._PROPS[name] = value;
+              }
+              // Queue a property change event to fire
+              propertyUpdate.previousValue = previousValue;
+              this._PROP_CHANGE_EVENT_QUEUE.push(propertyUpdate);
+
+              // This will get called before connected callback so short circuit render for that case
+              // Only force render for outer sets, internal sets can optionally trigger renders and will
+              // be queued separately by the VComponent
+              if (element._vcomp && propertyUpdate.isOuter) {
+                this._queueRender(element);
+              }
+            }
+          }
+          propertyUpdate = this._PROP_CHANGE_QUEUE.shift();
+        }
+        this._firePropertyChangeEvents(element);
+      },
+
+      /**
+       * Processes the current property changed queue and fires the appropriate
+       * [property]Changed event from the custom element.
+       * @param {HTMLElement} element The custom element to fire a [property]Changed event for
+       * @return void
+       * @private
+       */
+      _firePropertyChangeEvents: function (element) {
+        var propertyUpdate = this._PROP_CHANGE_EVENT_QUEUE.shift();
+        while (propertyUpdate) {
+          oj.BaseCustomElementBridge.__FirePropertyChangeEvent(
+            element, propertyUpdate.name, propertyUpdate.value, propertyUpdate.previousValue, propertyUpdate.isOuter ? 'external' : 'internal'
+          );
+          propertyUpdate = this._PROP_CHANGE_EVENT_QUEUE.shift();
+        }
+      },
+
+      /**
+       * Registers an asynchronous component render as a result of a state or property update.
+       * @param {HTMLElement} element The custom element to queue a render for
+       * @return void
+       * @private
+       */
+      _queueRender: function (element) {
+        element._vcomp.queueRender(element, 'propsUpdate');
+      },
+
+      /**
+       * We need to make a copy of the properties any time we hand off props to the vcomp,
+       * as we mutate our own copy and vcomp should not be exposed to these changes
+       * (until we hand off a new copy). We will also augment the props we pass to the vcomp
+       * with any controlled properties and slots the component has registered.
+       * @private
+       */
+      _getVComponentProps: function () {
+        var staticDefaults = ojdefaultsutils.DefaultsUtils.getStaticDefaults(this._CONSTRUCTOR, this.METADATA, true);
+        var propsCopy = Object.create(staticDefaults);
+
+        // Copy the current root props into this.props so component can initialize property dependent state
+        return Object.assign(propsCopy, this._PROPS, this._VCOMP_CONTROLLED_PROPS);
+      },
+
+      /**
+       * Returns an object containing override callbacks for VComponent functionality so that we can
+       * cause different behavior for the custom element-first case.
+       *
+       * @private
+       */
+      _getCallbacks: function (element) {
+        return {
+          _updateProperty: this._queuePropertyUpdate.bind(this, element),
+          getPropsForRender: () => {
+            return this._getVComponentProps();
+          },
+          patch: (props) => {
+            // The errors thrown by the VComponent logic after a busy state
+            // is registered in the queueRender() method will be caught by queueRender()
+            // try-catch block. The caller will resolve the busy state for that case.
+            var controlledPropsCopy = Object.assign({}, this._LIVE_CONTROLLED_PROPS);
+            element._vcomp.patchContent(props, controlledPropsCopy, this._content);
+
+            // Store unslotted nodes
+            VirtualElementBridge._storeUnslottedNodes(element, this._slotVNodes);
+          },
+          convertChildrenToSlotProps: children => {
+            // Only process children after initial render for the custom element first case
+            if (!this._slotProps) {
+              // Save the slot nodes so we can store unslotted nodes after render
+              this._slotVNodes = children;
+
+              // Generate the map of slot property names to vnode arrays
+              var slotMap = _generateSlotMap(children, this.METADATA, this._EXTENSION);
+
+              // Convert to map of slot property names as the right types
+              // 1) VNode[] for default children property
+              // 2) () => VNode[] for named non template slots
+              // 3) (context) => VNode[] for template slots
+              this._slotProps = _generateSlotPropsMap(element, slotMap);
+            }
+            return this._slotProps;
+          }
+        };
+      },
+
+      /**
+       * Initializes controlled roop props based on the controlled properties specified in the metadata
+       * and the attributes of the specified element
+       * @param {HTMLElement} element
+       * @private
+       */
+      _initializeControlledProps: function (element) {
+        var rootPropsMap = this._EXTENSION._ROOT_PROPS_MAP;
+        if (rootPropsMap) {
+          var liveRootProps = this._LIVE_CONTROLLED_PROPS;
+          var vcompRootProps = this._VCOMP_CONTROLLED_PROPS;
+          Object.keys(rootPropsMap).forEach(function (prop) {
+            var attr = oj.__AttributeUtils.getGlobalAttrForProp(prop);
+            if (element.hasAttribute(attr)) {
+              // Try and get the property so the type is correct, if not available
+              // get the attribute value, e.g. data-, aria-, tabindex (since property is tabIndex)
+              var propValue = element[prop];
+              liveRootProps[prop] = propValue != null ? propValue : element.getAttribute(attr);
+              vcompRootProps[prop] = liveRootProps[prop];
+            }
+          });
+        }
+      },
+
+      _getDefaultValue: function (property) {
+        // A read only copy of the default value
+        return ojdefaultsutils.DefaultsUtils.getFrozenDefault(property, this._CONSTRUCTOR, this.METADATA);
+      },
+    });
+
+    /**
+     * @export
+     */
+    VirtualElementBridge.register = function (tagName, constr) {
+      var metadata = constr.metadata;
+      var descriptor = {};
+      descriptor[oj.BaseCustomElementBridge.DESC_KEY_META] = metadata;
+      descriptor._CONSTRUCTOR = constr;
+
+      if (oj.BaseCustomElementBridge.__Register(tagName, descriptor, VirtualElementBridge.proto)) {
+        customElements.define(tagName.toLowerCase(),
+          VirtualElementBridge.proto.getClass(descriptor));
+      }
+    };
+
+    /**
      * @private
      */
-    _verifiedRender() {
-        const vnode = this.render();
-        this._verifyProps(vnode.props);
-        return vnode;
-    }
-}
-
-
-/* global vdom:false, Promise:false, Context:false, DefaultsUtils:false, Logger:false*/
-/* eslint-disable global-require */
-
-/**
- * @class
- * @ignore
- */
-oj.VirtualElementBridge = {};
-// Make this a module-local var so we don't have to use oj in VComponent
-// eslint-disable-next-line no-unused-vars
-var VirtualElementBridge = oj.VirtualElementBridge;
-
-/**
- * Prototype for the JET component definitional bridge instance
- */
-oj.VirtualElementBridge.proto = Object.create(oj.BaseCustomElementBridge.proto);
-
-oj.CollectionUtils.copyInto(oj.VirtualElementBridge.proto, {
-  AddComponentMethods: function (proto) {
-    // eslint-disable-next-line no-param-reassign
-    proto.setProperty = function (prop, value) {
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      if (!bridge.SaveEarlyPropertySet(prop, value)) {
-        bridge.SetProperty(this, prop, value, this, true);
-      }
-    };
-    // eslint-disable-next-line no-param-reassign
-    proto.getProperty = function (prop) {
-      // 'this' is the property object we pass to the definitional element contructor to track internal property changes
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      return bridge.GetProperty(this, prop, this);
-    };
-  },
-
-  AttributeChangedCallback: function (attr, oldValue, newValue) {
-    // Invoke callback on the superclass
-    oj.BaseCustomElementBridge.proto.AttributeChangedCallback.call(this, attr, oldValue, newValue);
-
-    // The browser triggers this callback even if old and new values are the same
-    // so we should do an equality check ourselves to prevent extra work
-    if (oldValue !== newValue) {
-      // VComponents need to update _LIVE_CONTROLLED_PROPS even during the patching case
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      // If we haven't already called HandleAttributeChanged in superclass, check to see
-      // if we should call it to update _LIVE_CONTROLLED_PROPS for attributes updated during
-      // the VComponent render() patching cycle
-      if (!bridge.ShouldHandleAttributeChanged(this) &&
-        oj.BaseCustomElementBridge.proto.ShouldHandleAttributeChanged.call(bridge, this)) {
-        var vcomp = this._vcomp;
-        if (!vcomp || vcomp.isCustomElementFirst()) {
-          bridge.HandleAttributeChanged(this, attr, oldValue, newValue);
+    function _hasDirectTemplateChildren(element) {
+      var childNodeList = element.childNodes;
+      for (var i = 0; i < childNodeList.length; i++) {
+        var child = childNodeList[i];
+        if (child.localName === 'template') {
+          return true;
         }
       }
-    }
-  },
-
-  CreateComponent: function (element) {
-    if (!element._vcomp) {
-      if (oj.Components) {
-        oj.Components.unmarkPendingSubtreeHidden(element);
-      }
-      var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName);
-
-      var slotMap = oj.BaseCustomElementBridge.getSlotMap(element);
-
-      this._storePropsDerivedFromSlots(element, slotMap);
-
-      // Initialize controlled root properties now that we know bindings have resolved and
-      // data bound global attributes should be resolved.
-      this._initializeControlledProps(element);
-
-      var vprops = this._getVComponentProps();
-      var vcomp = new descriptor._CONSTRUCTOR(vprops);
-      // Cache a uniqueID on the vcomponent instance
-      vcomp._uniqueId = oj.__AttributeUtils.getUniqueId(element.id);
-
-      Object.defineProperty(element, '_vcomp',
-        { value: vcomp, enumerable: false });
-      vcomp.setCallbacks(this._getCallbacks(element));
-      this._mountComponent(element, element._vcomp, vprops, slotMap);
-    }
-
-    element._vcomp.mounted();
-
-    // The bridge handles calling postRender after connected while the
-    // VComponent handles postRender after patching since patching can be
-    // triggered by DOM or virtually by the parent, but in all cases we have
-    // a live DOM node so it is safe to call postRender after patch
-    element._vcomp.postRender();
-
-    // Set flag when we can fire property change events
-    this.__READY_TO_FIRE = true;
-
-    // Resolve the component busy state
-    this.resolveDelayedReadyPromise();
-  },
-
-  // eslint-disable-next-line no-unused-vars
-  DefineMethodCallback: function (proto, method, methodMeta) {
-    // eslint-disable-next-line no-param-reassign
-    proto[method] = function () {
-      // The VComponent is asynchronously instantiated by CreateComponent so we
-      // need to check that this has happened before we call any methods defined on it.
-      // Custom elements are upgraded synchronously meaning the method will be available
-      // on the HTMLElement, but we tell applications to wait on the component busy context
-      // before accessing properties and methods due to the asynch CreateComponent call.
-      if (!this._vcomp) {
-        var bridge = oj.BaseCustomElementBridge.getInstance(this);
-        bridge.throwError(this, 'Cannot access methods before element is upgraded.');
-      }
-      return this._vcomp[method].apply(this._vcomp, arguments);
-    };
-  },
-
-  DefinePropertyCallback: function (proto, property, propertyMeta) {
-    /**
-     * Property sets are processed differently whether they are coming from the application
-     * or interally from the component. All outer application sets will be processed synchronously
-     * since that would be the expected behavior, while internal component sets will be processed
-     * asynchronously. This allows the application to update a property, like oj-table's selection,
-     * which will then cause the component to update an associated property first-selected-row and
-     * trigger the [property]Changed events after all the properties have been updated. Otherwise,
-     * the application will receive a selectionChanged event when the firstSelectedRow property could
-     * be out of sync. Rendering is done asynchronously regardless of whether an application or component update
-     * occured.
-     * @param {any} value The property value to set
-     * @param {boolean} bOuterSet True if the set is coming from the custom element
-     *                            instead of the bridge's _PROPS_PROXY
-     */
-    function set(value, bOuterSet) {
-      var propertyUpdate = {
-        isOuter: bOuterSet,
-        name: property,
-        value: value,
-        meta: propertyMeta
-      };
-      this._BRIDGE._updateProperty(this._ELEMENT, propertyUpdate, bOuterSet);
-    }
-
-    function innerSet(value) {
-      set.bind(this)(value, false);
-    }
-
-    // Called on the custom element
-    function outerSet(value) {
-      // VComponent-first elements should only be updated by its parent during rendering
-      // and not through the live DOM updates. We will ignore outer sets
-      // for VComponent-first elements to avoid being out of sync with the
-      // state the parent believes its child to be in.
-      var vcomp = this._vcomp;
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      if (!vcomp || vcomp.isCustomElementFirst()) {
-        set.bind(bridge._PROPS_PROXY)(value, true);
-      } else if (vcomp && !vcomp.isCustomElementFirst()) {
-        bridge.throwError(this, 'Cannot set properties on a VComponent-first element.');
-      }
-    }
-
-    function get() {
-      var value = this._BRIDGE._PROPS[property];
-      // If the attribute has not been set, return the default value
-      if (value === undefined) {
-        value = this._BRIDGE._getDefaultValue(property, propertyMeta);
-        this._BRIDGE._PROPS[property] = value;
-      }
-      return value;
-    }
-
-    function innerGet() {
-      return get.bind(this)();
-    }
-
-    // Called on the custom element
-    function outerGet() {
-      var vcomp = this._vcomp;
-      // VComponent-first elements should only be updated by its parent during rendering
-      // and not through the live DOM updates. We will ignore outer gets
-      // for VComponent-first elements, since they are an implementation detail of the parent element
-      // and should not be interacted with in the DOM. This case will be treated as an unsupported error case
-      // and always return undefined.
-      if (vcomp && !vcomp.isCustomElementFirst()) {
-        return undefined;
-      }
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      return get.bind(bridge._PROPS_PROXY)();
-    }
-
-    // Don't add event listener properties for inner props
-    if (!propertyMeta._derived) {
-      oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto._propsProto, property,
-                                                               innerGet, innerSet);
-    }
-    oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto, property, outerGet, outerSet);
-  },
-
-  GetAttributes: function (metadata) {
-    var attrs = oj.BaseCustomElementBridge.proto.GetAttributes.call(this, metadata);
-
-    // Components can indicate additional global attributes they want to be notified about
-    // via metadata. These attributes can be used by the component to then update the root
-    // global attributes.
-    if (metadata.verifiedControlledPropsMap) {
-      Object.keys(metadata.verifiedControlledPropsMap).forEach(function (prop) {
-        attrs.push(oj.__AttributeUtils.getGlobalAttrForProp(prop));
-      });
-    }
-    return attrs;
-  },
-
-  ShouldHandleAttributeChanged: function (element) {
-    if (!oj.BaseCustomElementBridge.proto.ShouldHandleAttributeChanged.call(this, element)) {
       return false;
     }
 
-    // We only care about attribute change notifications if we're CustomElement-first,
-    // since we need to re-render if the application has modified a controlled root property
-    // directly on a custom element.
-    //
-    // Note that if the vcomp has not yet been created, we allow attribute changed
-    // processing to continue, as BaseCustomElementBridge has binding-related work
-    // that it may need to perform.
-    var vcomp = element._vcomp;
-    return !vcomp || (vcomp.isCustomElementFirst() && !vcomp.isPatching());
-  },
+    /**
+     * @private
+     */
+    var _cachedTemplateEngine;
 
-  HandleAttributeChanged: function (element, attr, oldValue, newValue) {
-    var vcomp = element._vcomp;
-    var rootPropsMap = this.METADATA.verifiedControlledPropsMap;
-    if (vcomp && rootPropsMap) {
-      var prop = oj.__AttributeUtils.getGlobalPropForAttr(attr) || attr;
-      if (rootPropsMap[prop] && oldValue !== newValue) {
-        // Get the property value if there is one so we pass the correctly typed value
-        // to the VComponent unless that value is null in which case we should remove
-        // the property from controlled props since this will get merged to the VComponent's
-        // this.props and we don't pass values into this.props if undefined.
-        if (newValue == null) {
-          delete this._LIVE_CONTROLLED_PROPS[prop];
-          // Only update the _VCOMP_CONTROLLED_PROPS if the update was not triggered
-          // by the vcomponent during patching
-          if (!vcomp.isPatching()) {
-            delete this._VCOMP_CONTROLLED_PROPS[prop];
-          }
-        } else {
-          var propValue = element[prop];
-          this._LIVE_CONTROLLED_PROPS[prop] = propValue != null ? propValue : newValue;
-          if (!vcomp.isPatching()) {
-            this._VCOMP_CONTROLLED_PROPS[prop] = this._LIVE_CONTROLLED_PROPS[prop];
-          }
+    /**
+     * @private
+     */
+    function _getTemplateEnginePromise() {
+      return new Promise(
+        function (resolve, reject) {
+          require(['ojs/ojtemplateengine'],
+            function (eng) {
+              _cachedTemplateEngine = eng;
+              resolve(eng);
+            },
+            reject);
         }
-
-        // Only rerender if we're not updating during a VComponent patching of controlled
-        // global properties
-        if (!vcomp.isPatching()) {
-          this._queueRender(element);
-        }
-      }
-    }
-  },
-
-  // eslint-disable-next-line no-unused-vars
-  HandleReattached: function (element) {
-    this._verifyConnectDisconnect(element, 1);
-  },
-
-  // eslint-disable-next-line no-unused-vars
-  HandleDetached: function (element) {
-    this._verifyConnectDisconnect(element, 0);
-  },
-
-  _verifyConnectDisconnect: function (element, state) {
-    if (this._verifyingState === -1) {
-      Promise.resolve().then(function () {
-        // This checks that we don't call any lifecycle hooks
-        // for reparent case where _verifyingState has been
-        // updated but the initial state we called
-        // this Promise with is different
-        if (this._verifyingState === state) {
-          if (this._verifyingState === 0) {
-            element._vcomp.unmounted();
-          } else {
-            element._vcomp.mounted();
-          }
-        }
-        this._verifyingState = -1;
-      }.bind(this));
-    }
-    this._verifyingState = state;
-  },
-
-  InitializeElement: function (element) {
-    if (!element._vcomp) {
-      if (oj.Components) {
-        oj.Components.markPendingSubtreeHidden(element);
-      }
-      oj.BaseCustomElementBridge.__InitProperties(element, element);
-    }
-  },
-
-  InitializePrototype: function (proto) {
-    // Invoke callback on the superclass
-    oj.BaseCustomElementBridge.proto.InitializePrototype.call(this, proto);
-
-    Object.defineProperty(proto, '_propsProto', { value: {} });
-  },
-
-  InitializeBridge: function (element, descriptor) {
-    // Invoke callback on the superclass
-    oj.BaseCustomElementBridge.proto.InitializeBridge.call(this, element, descriptor);
-
-    // Flag used to detect a verified connected/disconnected state
-    // -1 = not verifying
-    // 0 = disconnected
-    // 1 = connected
-    this._verifyingState = -1;
-
-    this._EXTENSION = this.METADATA.extension || {};
-
-    this._CONSTRUCTOR = descriptor._CONSTRUCTOR;
-
-    // For tracking all properties (source of truth for property storage)
-    this._PROPS = {};
-
-    // Stores any requested property updates, gets processed synchronously for outer sets, but asynch for inner sets
-    this._PROP_CHANGE_QUEUE = [];
-    // Stores property change events that are waiting to be fired.  When multiple property updates are being processed in _PROP_CHANGE_QUEUE,
-    // events are stored in _PROP_CHANGE_EVENT_QUEUE until property updates have been reflected, then all events are fired
-    this._PROP_CHANGE_EVENT_QUEUE = [];
-
-    // Has getters/setters and calls to set properties on this._PROPS
-    if (element._propsProto) {
-      this._PROPS_PROXY = Object.create(element._propsProto);
-      this._PROPS_PROXY._BRIDGE = this;
-      this._PROPS_PROXY._ELEMENT = element;
-    }
-
-    // We need to maintain two sets of controlled properties in the bridge. One set of controlled properties
-    // should always reflect the current state of the DOM even after internal changes that occur during
-    // patching and a second version that does not reflect the internal changes that we merge to the props
-    // we pass to the VComponent for rendering. This former collection is what petit-dom will use as the
-    // 'old' root props for patching. This will allow petit-dom to correctly respond to both application and
-    // VComponent updates to controlled properties.
-    this._LIVE_CONTROLLED_PROPS = {};
-    this._VCOMP_CONTROLLED_PROPS = {};
-  },
-
-  PlaybackEarlyPropertySets: function (element) {
-    if (!element._vcomp) {
-      oj.BaseCustomElementBridge.proto.PlaybackEarlyPropertySets.call(this, element);
-    }
-  },
-
-  GetPreCreatePromise: function (element) {
-    var promise = oj.BaseCustomElementBridge.proto.GetPreCreatePromise.call(this, element);
-
-    // If the template engine has not yet been loaded, and we have have some template elements as direct children,
-    // chain the base class's pre-create promise with the promise for the template engine becoming
-    // loaded and cached
-    // eslint-disable-next-line no-use-before-define
-    if (!_cachedTemplateEngine && _hasDirectTemplateChildren(element)) {
-      promise = promise.then(function () {
-        return _getTemplateEnginePromise();
-      });
-    }
-    return promise;
-  },
-
-  ValidateAndSetProperty: function (propNameFun, componentProps, property, value, element) {
-    var _value = this.ValidatePropertySet(element, property, value);
-    oj.VirtualElementBridge.__SetProperty(propNameFun, componentProps, property, _value);
-  },
-
-  _mountComponent: function (element, vcomp, vprops, slotMap) {
-    var content = oj.VirtualElementBridge._processSlotContent(element, slotMap);
-    // Make a copy of the controlled props so we get a snapshot before mounting.
-    // We want to avoid the case where a VComponent updates the custom element
-    // controlled properties during mount and the controlled props are updated
-    // before a queued render is called.
-    var controlledPropsCopy = Object.assign({}, this._LIVE_CONTROLLED_PROPS);
-    // mountContent appends child nodes to element
-    vcomp.mountContent(vprops, content, element, controlledPropsCopy);
-  },
-
-  /**
-   * Property update callback to pass to VComponent.  Delegates to _PROPS_PROXY
-   * which calls the inner set methods
-   * @param {HTMLElement} element The custom element to process a property change for
-   * @param {string} prop The property to update
-   * @param {any} value The new property value
-   * @param {boolean} queueRender whether to queue a render
-   * @return void
-   * @private
-   */
-  _queuePropertyUpdate: function (element, prop, value, queueRender) {
-    this._PROPS_PROXY[prop] = value;
-    if (queueRender) {
-      this._queueRender(element);
-    }
-  },
-
-  /**
-   * Pushes a property update to the queue. Processes the queue synchronously or asynchronously based on the specified flag.
-   * Called by both inner and outer sets.
-   *
-   * @param {HTMLElement} element The custom element to process a property change for
-   * @param {Object} propertyUpdate An object containing isOuter, name, value, meta keys
-   * @param {boolean} sync whether to process the property synchronously
-   * @private
-   */
-  _updateProperty: function (element, propertyUpdate, sync) {
-    this._PROP_CHANGE_QUEUE.push(propertyUpdate);
-    // Process the property set queue immediately for outer sets, but asynchronously for inner sets
-    if (sync) {
-      this._processPropertyQueue(element);
-    } else if (!this._propsProcessingQueued) {
-      // We do not need to add a busy state here because
-      // the properties are processed as microtasks and
-      // should be completed by the time the application
-      // needs to interact with the component
-      this._propsProcessingQueued = true;
-      Promise.resolve().then(function () {
-        this._processPropertyQueue(element);
-        this._propsProcessingQueued = false;
-      }.bind(this));
-    }
-  },
-
-  /**
-   * Process and apply the current set of property updates.
-   * @param {HTMLElement} element The custom element to process a property change for
-   * @return void
-   * @private
-   */
-  _processPropertyQueue: function (element) {
-    var propertyUpdate = this._PROP_CHANGE_QUEUE.shift();
-    while (propertyUpdate) {
-      var name = propertyUpdate.name;
-      var value = propertyUpdate.value;
-      var meta = propertyUpdate.meta;
-      // Properties can be set before the component is created. These early
-      // sets are actually saved until after component creation and played back.
-      if (!this.SaveEarlyPropertySet(name, value)) {
-        var previousValue = this._PROPS[name];
-        if (!oj.BaseCustomElementBridge.__CompareOptionValues(name, meta,
-                                                              value, previousValue)) {
-          // Skip validation for inner sets so we don't throw an error when updating readOnly
-          // writeable properties
-          if (propertyUpdate.isOuter) {
-            value = this.ValidatePropertySet(element, name, value);
-          }
-          // Instead of updating undefined in our property bag, delete the key
-          // so later when we copy props for vcomponent rendering, we can use
-          // Object.assign without overriding default values when the value is undefined
-          if (value === undefined) {
-            delete this._PROPS[name];
-          } else {
-            this._PROPS[name] = value;
-          }
-          // Queue a property change event to fire
-          propertyUpdate.previousValue = previousValue;
-          this._PROP_CHANGE_EVENT_QUEUE.push(propertyUpdate);
-
-          // This will get called before connected callback so short circuit render for that case
-          // Only force render for outer sets, internal sets can optionally trigger renders and will
-          // be queued separately by the VComponent
-          if (element._vcomp && propertyUpdate.isOuter) {
-            this._queueRender(element);
-          }
-        }
-      }
-      propertyUpdate = this._PROP_CHANGE_QUEUE.shift();
-    }
-    this._firePropertyChangeEvents(element);
-  },
-
-  /**
-   * Processes the current property changed queue and fires the appropriate
-   * [property]Changed event from the custom element.
-   * @param {HTMLElement} element The custom element to fire a [property]Changed event for
-   * @return void
-   * @private
-   */
-  _firePropertyChangeEvents: function (element) {
-    var propertyUpdate = this._PROP_CHANGE_EVENT_QUEUE.shift();
-    while (propertyUpdate) {
-      oj.BaseCustomElementBridge.__FirePropertyChangeEvent(
-        element, propertyUpdate.name, propertyUpdate.value, propertyUpdate.previousValue, propertyUpdate.isOuter ? 'external' : 'internal'
       );
-      propertyUpdate = this._PROP_CHANGE_EVENT_QUEUE.shift();
     }
-  },
 
-  /**
-   * Registers an asynchronous component render as a result of a state or property update.
-   * @param {HTMLElement} element The custom element to queue a render for
-   * @return void
-   * @private
-   */
-  _queueRender: function (element) {
-    if (!this._busyStateCallbackForRender && !element._vcomp.isPatching()) {
-      var busyContext = Context.getContext(element).getBusyContext();
-      this._busyStateCallbackForRender = busyContext.addBusyState({
-        description: oj.BaseCustomElementBridge.getElementInfo(element) + ' is waiting to render.'
-      });
-      window.requestAnimationFrame(function () {
-        var vprops = this._getVComponentProps();
-        try {
-          // We can't control if an error is thrown by the VComponent logic after a busy state
-          // is registered and we give up the execution thread, but we can at least try and catch
-          // errors thrown while patching and resolve the busy state for that case.
-          var controlledPropsCopy = Object.assign({}, this._LIVE_CONTROLLED_PROPS);
-          element._vcomp.patchContent(vprops, controlledPropsCopy);
-        } catch (error) {
-          throw error;
-        } finally {
-          this._busyStateCallbackForRender();
-          this._busyStateCallbackForRender = null;
+    /**
+     * Creates a storage node for a custom element, moves all slot content to
+     * the storage node and returns an Array of virtual nodes representing the
+     * slot content or null if the custom element has no slot content.
+     * @param {Element} element The custom element
+     * @param {Object} slotMap
+     * @return {Array}
+     * @private
+     */
+    VirtualElementBridge._processSlotContent = function (element, slotMap) {
+      var content = [];
+      if (element.childNodes) {
+        // Needed to replicate what shadow DOM does since we don't have a
+        // shadow root to hide slot content that do not map to a component
+        // defined slot.
+        if (!element._nodeStorage) {
+          // eslint-disable-next-line no-param-reassign
+          element._nodeStorage = document.createElement('div');
+          // eslint-disable-next-line no-param-reassign
+          element._nodeStorage.style.display = 'none';
+          element.appendChild(element._nodeStorage);
         }
-      }.bind(this));
-    }
-  },
+        // Array of virtual nodes we will pass to the VComponent mountContent method
+        var assignableNodes = [];
 
-  /**
-   * We need to make a copy of the properties any time we hand off props to the vcomp,
-   * as we mutate our own copy and vcomp should not be exposed to these changes
-   * (until we hand off a new copy). We will also augment the props we pass to the vcomp
-   * with any controlled properties and slots the component has registered.
-   * @private
-   */
-  _getVComponentProps: function () {
-    var staticDefaults = DefaultsUtils.getStaticDefaults(this._CONSTRUCTOR, true);
-    var propsCopy = staticDefaults ? Object.create(staticDefaults) : {};
+        var entries = Object.entries(slotMap);
+        entries.forEach(function (entry) {
+          var slot = entry[0];
+          entry[1].forEach(
+            function (node) {
+              // Create a lightweight virtual node that contains a reference
+              // back to the original slot content and slot value
+              content.push(_wrapNode(node, slot));
+              assignableNodes.push(node);
+            });
+        });
 
-    // Copy the current root props into this.props so component can initialize property dependent state
-    // Also copy properties that were derived from slots (i.e. template renderers)
-    Object.assign(propsCopy, this._PROPS, this._VCOMP_CONTROLLED_PROPS,
-      this._getPropsDerivedFromSlots());
+        assignableNodes.forEach(function (assignableNode) {
+          element._nodeStorage.appendChild(assignableNode); // @HTMLUpdateOK
+          // Notifies JET components inside nodeStorage that they have been hidden
+          // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
+          if (oj.Components) {
+            oj.Components.subtreeHidden(assignableNode);
+          }
+        });
+      }
+      return content;
+    };
 
-    DefaultsUtils.applyDynamicDefaults(this._CONSTRUCTOR, propsCopy);
-    return propsCopy;
-  },
+    /**
+     * @param {function} propNameFun A function that returns the actual property name to use, e.g. an alias
+     * @param {Object} componentProps The object to set the new property value on which is the
+     *                                element for outer property sets and the property bag for inner sets.
+     * @param {string} property The property name
+     * @param {Object} value The value to set for the property
+     * @ignore
+     */
+    VirtualElementBridge.__SetProperty = function (propNameFun, componentProps, property, value) {
+      var propsObj = componentProps;
+      var propPath = property.split('.');
+      var branchedProps;
+      // Set subproperty, initializing parent objects along the way unless the top level
+      // property is not defined since setting it to an empty object will trigger a property changed
+      // event. Instead, branch and set at the end. We only have listeners on top level properties
+      // so setting a subproperty will not trigger a property changed event along the way.
+      var topProp = propNameFun(propPath[0]);
+      if (propPath.length > 1 && !componentProps[topProp]) {
+        branchedProps = {};
+        propsObj = branchedProps;
+      }
 
-  /**
-   * Returns an object containing override callbacks for VComponent functionality so that we can
-   * cause different behavior for the custom element-first case.
-   *
-   * @private
-   */
-  _getCallbacks: function (element) {
-    var metadata = this.METADATA;
-    return {
-      updateProperty: this._queuePropertyUpdate.bind(this, element),
-      queueRender: this._queueRender.bind(this),
-      fireAction: function (type, detail) {
-        var eventsMetadata = metadata.events || {};
-        var eventMetadata = eventsMetadata[type] || {};
-        var descriptor = {
-          detail: detail,
-          bubbles: !!eventMetadata.bubbles,
-          cancelable: !!eventMetadata.cancelable
-        };
-        element.dispatchEvent(new CustomEvent(type, descriptor));
-      },
-      storeUnslottedNodes: function (slotMap) {
-        oj.VirtualElementBridge._storeUnslottedNodes(element, slotMap);
+      // Walk to the correct location
+      for (var i = 0; i < propPath.length; i++) {
+        var subprop = propNameFun(propPath[i]);
+        var objValue = propsObj[subprop];
+        if (i === propPath.length - 1) {
+          propsObj[subprop] = value;
+        } else if (!objValue) {
+          propsObj[subprop] = {};
+        } else if (Object.isFrozen(objValue)) {
+          // If value is frozen, make a copy since we freeze default values
+          propsObj[subprop] = oj.CollectionUtils.copyInto({}, objValue, undefined, true);
+        }
+        propsObj = propsObj[subprop];
+      }
+
+      // Update the original component properties if we branched
+      if (branchedProps) {
+        // eslint-disable-next-line no-param-reassign
+        componentProps[topProp] = branchedProps[topProp];
       }
     };
-  },
 
-  /**
-   * Initializes controlled roop props based on the controlled properties specified in the metadata
-   * and the attributes of the specified element
-   * @param {HTMLElement} element
-   * @private
-   */
-  _initializeControlledProps: function (element) {
-    var rootPropsMap = this.METADATA.verifiedControlledPropsMap;
-    if (rootPropsMap) {
-      var liveRootProps = this._LIVE_CONTROLLED_PROPS;
-      var vcompRootProps = this._VCOMP_CONTROLLED_PROPS;
-      Object.keys(rootPropsMap).forEach(function (prop) {
-        var attr = oj.__AttributeUtils.getGlobalAttrForProp(prop);
-        if (element.hasAttribute(attr)) {
-          // Try and get the property so the type is correct, if not available
-          // get the attribute value, e.g. data-, aria-, tabindex (since property is tabIndex)
-          var propValue = element[prop];
-          liveRootProps[prop] = propValue != null ? propValue : element.getAttribute(attr);
-          vcompRootProps[prop] = liveRootProps[prop];
-        }
-      });
-    }
-  },
-  /**
-   * Saves slot-derived properties on the bridge instance
-   * @param {Element} hostElement
-   * @param {Object} slotMap
-   * @private
-   */
-  _storePropsDerivedFromSlots: function (hostElement, slotMap) {
-    this._propsFromSlots = this._getInlineTemplatesAsRendererProps(hostElement, slotMap);
-  },
-  /**
-   * Returns properties previously intiazlized by _storePropsDerivedFromSlots()
-   * @return {Object} slot-derived proeprties
-   * @private
-   */
-  _getPropsDerivedFromSlots: function () {
-    return this._propsFromSlots;
-  },
-  /**
-   * Converts inline templates to renderer functions
-   * @param {Element} hostElement
-   * @param {Object} slotMap
-   * @return {Object|null} an object with property names as keys and renderer functions as values or null if there are none
-   * @private
-   */
-  _getInlineTemplatesAsRendererProps: function (hostElement, slotMap) {
-    var renderers = null;
-    var slots = this.METADATA.slots;
-    if (slots) {
-      var entries = Object.entries(slots);
-      entries.forEach(
-        function (entry) {
-          if (_isTemplateSlot(entry[1])) {
-            var name = entry[0];
-            var templateNodes = slotMap[name];
-            if (templateNodes) {
-              renderers = renderers || {};
-              renderers[_getRendererPropertyName(name)] =
-                  _createTemplateRenderer(hostElement, templateNodes[0]);
-            }
-          }
-        }
-      );
-    }
-    return renderers;
-  },
-
-  _getDefaultValue: function (property) {
-    // The VComponent defaults object contains metadata and dynamic defaults
-    var defaults = DefaultsUtils.getDefaults(this._CONSTRUCTOR, this.METADATA, true);
-    return defaults[property];
-  },
-});
-
-
-/**
- * @export
- */
-oj.VirtualElementBridge.register = function (constr) {
-  var tagName = constr.tagName;
-  var metadata = constr.metadata;
-  var descriptor = {};
-  descriptor[oj.BaseCustomElementBridge.DESC_KEY_META] = metadata;
-  descriptor._CONSTRUCTOR = constr;
-
-  if (oj.BaseCustomElementBridge.__Register(tagName, descriptor, oj.VirtualElementBridge.proto)) {
-    var controlledRootProps = metadata.controlledRootProperties;
-    if (controlledRootProps) {
-      metadata.verifiedControlledPropsMap =
-        _getVerifiedControlledPropsMap(controlledRootProps, tagName);
-    }
-
-    customElements.define(tagName.toLowerCase(),
-                          oj.VirtualElementBridge.proto.getClass(descriptor));
-  }
-};
-
-/**
- * @private
- */
-function _getVerifiedControlledPropsMap(controlledRootProps, tagName) {
-  // Turn these props into a map for faster look up later,
-  // filtering out invalid controlled properties
-  var rootPropsMap = {};
-  controlledRootProps.forEach(function (prop) {
-    if (prop === 'id' || prop === 'className' || prop === 'style') {
-      Logger.warn('"' + prop +
-        '" cannot be registered as a controlled root property and will be ignored for ' + tagName);
-      return;
-    }
-    rootPropsMap[prop] = true;
-  });
-  return rootPropsMap;
-}
-
-/**
- * @private
- */
-function _hasDirectTemplateChildren(element) {
-  var childNodeList = element.childNodes;
-  for (var i = 0; i < childNodeList.length; i++) {
-    var child = childNodeList[i];
-    if (child.localName === 'template') {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * @private
- */
-function _isTemplateSlot(metadataVal) {
-  return metadataVal && metadataVal.data;
-}
-
-/**
- * @private
- */
-function _getRendererPropertyName(slotName) {
-  return slotName.replace(/(Template)?$/, 'Renderer');
-}
-
-/**
- * @private
- */
-var _cachedTemplateEngine;
-
-/**
- * @private
- */
-function _getTemplateEnginePromise() {
-  return new Promise(
-    function (resolve, reject) {
-      require(['ojs/ojtemplateengine'],
-        function (eng) {
-          _cachedTemplateEngine = eng;
-          resolve(eng);
-        },
-        reject);
-    }
-  );
-}
-
-/**
- * @private
- */
-function _createTemplateRenderer(hostElement, template) {
-  if (!_cachedTemplateEngine) {
-    throw new Error('Unexpected call to _createTemplateRenderer');
-  }
-  return function (datacontext) {
-    return _cachedTemplateEngine.execute(hostElement, template, datacontext);
-  };
-}
-
-/**
- * Creates a storage node for a custom element, moves all slot content to
- * the storage node and returns an Array of virtual nodes representing the
- * slot content or null if the custom element has no slot content.
- * @param {Element} element The custom element
- * @param {Object} slotMap
- * @return {Array|null}
- * @private
- */
-oj.VirtualElementBridge._processSlotContent = function (element, slotMap) {
-  if (element.childNodes) {
-    // Needed to replicate what shadow DOM does since we don't have a
-    // shadow root to hide slot content that do not map to a component
-    // defined slot.
-    if (!element._nodeStorage) {
-      // eslint-disable-next-line no-param-reassign
-      element._nodeStorage = document.createElement('div');
-      // eslint-disable-next-line no-param-reassign
-      element._nodeStorage.style.display = 'none';
-      element.appendChild(element._nodeStorage);
-    }
-    // Array of virtual nodes we will pass to the VComponent mountContent method
-    var content = [];
-    var assignableNodes = [];
-
-    var entries = Object.entries(slotMap);
-    entries.forEach(function (entry) {
-      var slot = entry[0];
-      entry[1].forEach(
-        function (node) {
-          // Create a lightweight virtual node that contains a reference
-          // back to the original slot content and slot value
-          content.push({
-            _refNode: node,
-            props: { slot: slot }
-          });
-          assignableNodes.push(node);
-        });
-    });
-
-    assignableNodes.forEach(function (assignableNode) {
-      element._nodeStorage.appendChild(assignableNode); // @HTMLUpdateOK
-    });
-    // Notifies JET components inside nodeStorage that they have been hidden
-    // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-    if (oj.Components) {
-      oj.Components.subtreeHidden(element._nodeStorage);
-    }
-    return content;
-  }
-  return null;
-};
-
-/**
- * @param {function} propNameFun A function that returns the actual property name to use, e.g. an alias
- * @param {Object} componentProps The object to set the new property value on which is the
- *                                element for outer property sets and the property bag for inner sets.
- * @param {string} property The property name
- * @param {Object} value The value to set for the property
- * @ignore
- */
-oj.VirtualElementBridge.__SetProperty = function (propNameFun, componentProps, property, value) {
-  var propsObj = componentProps;
-  var propPath = property.split('.');
-  var branchedProps;
-  // Set subproperty, initializing parent objects along the way unless the top level
-  // property is not defined since setting it to an empty object will trigger a property changed
-  // event. Instead, branch and set at the end. We only have listeners on top level properties
-  // so setting a subproperty will not trigger a property changed event along the way.
-  var topProp = propNameFun(propPath[0]);
-  if (propPath.length > 1 && !componentProps[topProp]) {
-    branchedProps = {};
-    propsObj = branchedProps;
-  }
-
-  // Walk to the correct location
-  for (var i = 0; i < propPath.length; i++) {
-    var subprop = propNameFun(propPath[i]);
-    var objValue = propsObj[subprop];
-    if (i === propPath.length - 1) {
-      propsObj[subprop] = value;
-    } else if (!objValue) {
-      propsObj[subprop] = {};
-    } else if (Object.isFrozen(objValue)) {
-      // If value is frozen, make a copy since we freeze default values
-      propsObj[subprop] = oj.CollectionUtils.copyInto({}, objValue, undefined, true);
-    }
-    propsObj = propsObj[subprop];
-  }
-
-  // Update the original component properties if we branched
-  if (branchedProps) {
-    // eslint-disable-next-line no-param-reassign
-    componentProps[topProp] = branchedProps[topProp];
-  }
-};
-
-/**
- * Given a custom element and its slotMap, checks all slotted nodes to see
- * if they were removed during patching and moves that node to the storage node.
- * Otherwise, unslotted content will get an unmounted call and knockout variables
- * receiving updates when not attached to the DOM will become out of sync.
- * @param {Element} element The custom element
- * @param {Object} slotMap The current slotMap for the element
- * @return {void}
- * @private
- */
-oj.VirtualElementBridge._storeUnslottedNodes = function (element, slotMap) {
-  if (element._nodeStorage) {
-    var entries = Object.entries(slotMap);
-    entries.forEach(function (entry) {
-      entry[1].forEach(
-        function (node) {
+    /**
+     * Given a custom element and its slotMap, checks all slotted nodes to see
+     * if they were removed during patching and moves that node to the storage node.
+     * Otherwise, unslotted content will get an unmounted call and knockout variables
+     * receiving updates when not attached to the DOM will become out of sync.
+     * @param {Element} element The custom element
+     * @param {Array} slotVNodes The current array of slot vnodes for the element
+     * @return {void}
+     * @private
+     */
+    VirtualElementBridge._storeUnslottedNodes = function (element, slotVNodes) {
+      if (slotVNodes && element._nodeStorage) {
+        slotVNodes.forEach(function (vnode) {
+          var node = vnode._node;
           // Check to see if the node has been disconnected in the last rerender
           // and move to the storage node and notify that node that it's been hidden.
           // Petit-dom handles calling subtreeShown when appending children into DOM.
-          if (!element.contains(node)) {
+          if (!node.isConnected) {
             element._nodeStorage.appendChild(node);
             if (oj.Components) {
               oj.Components.subtreeHidden(node);
             }
           }
         });
-    });
-  }
-};
-
-
-/**
- * @license
- * petit-dom - v0.2.2
- * https://github.com/yelouafi/petit-dom
- * Copyright (C) 2017 Yassine Elouafi;
- * Licensed under the MIT license
- *
- * Modification notice: The code is obtained from https://github.com/yelouafi/petit-dom
- * and modified by Oracle JET team to be included into Oracle JET project.
- * @ignore
- */
-
-/* eslint-disable */
-var PetitDom = (function () {
-
-  var EMPTYO = Object.freeze({});
-  var EMPTYAR = Object.freeze([]);
-  var isArray = Array.isArray;
-  var isVNode = function isVNode(c) {
-    return c && (c._vnode != null || c._text != null);
-  };
-  var isComponent = function isComponent(c) {
-    return c && c.mount && c.patch && c.unmount;
-  };
-
-  function h(type, props, contArg) {
-    var content,
-        args,
-        i,
-        isSVG = false;
-    var len = arguments.length - 2;
-
-    if (typeof type !== "string") {
-      if (len === 1) {
-        content = contArg;
-      } else if (len > 1) {
-        args = Array(len);
-        for (i = 0; i < len; i++) {
-          args[i] = arguments[i + 2];
-        }
-        content = args;
       }
-    } else {
-      isSVG = type === "svg";
-      if (len === 1) {
-        if (isArray(contArg)) {
-          content = maybeFlatten(contArg, isSVG);
-        } else if (isVNode(contArg)) {
-          contArg.isSVG = isSVG;
-          content = [contArg];
-        } else if (contArg instanceof Node) {
-          content = [contArg];
-        } else {
-          content = [{ _text: contArg == null ? "" : contArg }];
-        }
-      } else if (len > 1) {
-        args = Array(len);
-        for (i = 0; i < len; i++) {
-          args[i] = arguments[i + 2];
-        }
-        content = maybeFlatten(args, isSVG);
-      } else {
-        content = EMPTYAR;
-      }
-    }
-
-    return {
-      _vnode: true,
-      isSVG: isSVG,
-      type: type,
-      key: props && props.key || null,
-      props: props || EMPTYO,
-      content: content
     };
-  }
-
-  function maybeFlatten(arr, isSVG) {
-    for (var i = 0; i < arr.length; i++) {
-      var ch = arr[i];
-      if (isArray(ch)) {
-        return flattenChildren(arr, i, arr.slice(0, i), isSVG);
-      } else if (ch instanceof Node) {
-        arr[i] = ch;
-      } else if (!isVNode(ch)) {
-        arr[i] = { _text: ch == null ? "" : ch };
-      } else if (isSVG && !ch.isSVG) {
-        ch.isSVG = true;
-      }
-    }
-    return arr;
-  }
-
-  function flattenChildren(children, start, arr, isSVG) {
-    for (var i = start; i < children.length; i++) {
-      var ch = children[i];
-      if (isArray(ch)) {
-        flattenChildren(ch, 0, arr, isSVG);
-      } else if (ch instanceof Node) {
-        arr.push(ch);
-      } else if (isVNode(ch)) {
-        if (isSVG && !ch.isSVG) {
-          ch.isSVG = true;
-        }
-        arr.push(ch);
-      } else if (ch == null || typeof ch === 'string') {
-        arr.push({ _text: ch == null ? "" : ch });
-      } else {
-        arr.push(ch);
-      }
-    }
-    return arr;
-  }
-
-  var SVG_NS = "http://www.w3.org/2000/svg";
-  /**
-    TODO: activate full namespaced attributes (not supported in JSX)
-    const XML_NS = "http://www.w3.org/XML/1998/namespace"
-  **/
-  var XLINK_NS = "http://www.w3.org/1999/xlink";
-  var NS_ATTRS = {
-    show: XLINK_NS,
-    actuate: XLINK_NS,
-    href: XLINK_NS
-  };
-
-  function defShouldUpdate(p1, p2, c1, c2) {
-    if (c1 !== c2) return true;
-    for (var key in p1) {
-      if (p1[key] !== p2[key]) return true;
-    }
-    return false;
-  }
-
-  // Called by the VComponent for mounting the virtual node in the VComponent-frst case.
-  // Handles patching of both the uncontrolled root properties set by a parent
-  // and the controlled root properties rendered by the VComponent.
-  function mountComponent(vnode, uncontrolledRootProps) {
-    var type = vnode.type,
-      props = vnode.props,
-      content = vnode.content;
-
-    var node = document.createElement(type);
-    // Patch the uncontrolled global properties we stashed on the VComponent
-    // instance onto the root custom element
-    patchDOM(node, uncontrolledRootProps, null, true);
-    // Then we patch the properties that the vnode specifies
-    patchDOM(node, props, null, true);
-
-    mountChildren(node, content);
-
-    vnode._node = node;
-    return node;
-  }
-
-  // Called by the VComponent for mounting the virtual node in the custom element-frst case.
-  // Handles patching of the controlled root properties rendered by the VComponent.
-  function mountComponentContent(vnode, controlledRootProps) {
-    var node = vnode._node;
-    // Update only the controlled properties and DOM listeners, all other properties
-    // came from the custom element and are already current.
-    // The vnode.props should contain only the controlled global properties and event
-    // listeners. We have a verification step in VComponent that's run before this method
-    // is called.
-    patchDOM(node, vnode.props, controlledRootProps, true);
-    mountChildren(node, vnode.content);
-  }
-
-  function mount(c) {
-    var node;
-    if (c._text != null) {
-      node = document.createTextNode(c._text);
-    } else if (c._vnode === true) {
-      var type = c.type,
-          props = c.props,
-          content = c.content,
-          isSVG = c.isSVG;
-
-      if (typeof type === "string") {
-        // TODO : {is} for custom elements
-        if (!isSVG) {
-          node = document.createElement(type);
-        } else {
-          node = document.createElementNS(SVG_NS, type);
-        }
-        var isCustomElement = oj.ElementUtils.isValidCustomElementName(type);
-        patchDOM(node, props, null, isCustomElement);
-        mountChildren(node, content);
-      } else if (typeof type === "function") {
-        if (isComponent(type.prototype)) {
-          var splitProps = sortControlled(type, props);
-          c._uncontrolled = splitProps.uncontrolled;
-          var instance = new type(splitProps.controlled);
-          // Generate and cache a uniqueId on the vcomponent instance
-          instance._uniqueId = oj.__AttributeUtils.getUniqueId(splitProps.uncontrolled.id);
-          // When rendering VComponent-first, petit-dom creates a new instance of the VComponent
-          // and calls mount(). The VComponent's mount method will call its render(), passing the
-          // new vnode to petit-dom's patchComponent().
-          node = instance.mount(splitProps.controlled, splitProps.uncontrolled, content);
-          c._data = instance;
-        } else {
-          var vnode = type(props, content);
-          node = mount(vnode);
-          c._data = vnode;
-        }
-      }
-    }
-    if (node == null) {
-      throw new Error("Unkown node type!");
-    }
-    c._node = node;
-    return node;
-  }
-
-  function mountChildren(node, content) {
-    if (!content) {
-      return;
-    }
-    if (!isArray(content)) {
-      var isDomNode  = content instanceof Node;
-      var childNode = isDomNode  ? content : mount(content);
-      node.appendChild(childNode);
-      // Avoid calling subtree shown on text nodes
-      if (isDomNode && ch.nodeType === 1 && oj.Components) {
-        oj.Components.subtreeShown(childNode);
-      }
-    } else {
-      appendChildren(node, content);
-    }
-  }
-
-  function appendChildren(parent, children) {
-    var start = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-    var end = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : children.length - 1;
-    var beforeNode = arguments[4];
-
-    while (start <= end) {
-      var ch = children[start++];
-      // Check to see if child is a vdom or a live DOM node
-      var isDomNode  = ch instanceof Node;
-      var content = isDomNode  ? ch : mount(ch);
-      parent.insertBefore(content, beforeNode); // @HTMLUpdateOK
-      // Notifies JET components in node that they have been shown
-      // For upstream or indirect dependency we will still rely components
-      // being registered on the oj namespace.
-      // Avoid calling subtree shown on text nodes
-      if (isDomNode && ch.nodeType === 1 && oj.Components) {
-        oj.Components.subtreeShown(content);
-      }
-    }
-  }
-
-  function removeChildren(parent, children) {
-    var start = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-    var end = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : children.length - 1;
-
-    var cleared = void 0;
-    if (parent.childNodes.length === end - start + 1) {
-      parent.textContent = "";
-      cleared = true;
-    }
-    while (start <= end) {
-      var ch = children[start++];
-      if (!cleared) parent.removeChild(ch._node);
-      unmount(ch);
-    }
-  }
-
-  function unmount(ch) {
-    if (isArray(ch)) {
-      for (var i = 0; i < ch.length; i++) {
-        unmount(ch[i]);
-      }
-    } else if (ch._vnode === true) {
-      if (typeof ch.type === "function" && isComponent(ch.type.prototype)) {
-        ch._data.unmount(ch._node);
-      } else if (ch.content != null) {
-        unmount(ch.content);
-      }
-    }
-  }
-
-  function isControlledProp(constr, prop) {
-    var meta = constr.metadata;
-    if (meta && meta.verifiedControlledPropsMap) {
-      return meta.verifiedControlledPropsMap[prop] != null;
-    }
-    return false;
-  }
-
-  function isListener(prop) {
-    return oj.__AttributeUtils.eventListenerPropertyToEventType(prop) !== null;
-  }
-
-  function sortControlled(constr, props) {
-    // Create the controlled properties from the static defaults object
-    // and then iterate over props which should be a smaller set.
-    var staticDefaults = DefaultsUtils.getStaticDefaults(constr, true);
-    var splitProps = {
-      controlled: Object.create(staticDefaults),
-      uncontrolled: {}
-    };
-
-    // Check the root properties and log a warning if the VComponent
-    // tries to set an uncontrolled global property that isn't an event
-    // listener.
-    for (var propName in props) {
-      var value = props[propName];
-      // Undefined values shouldn't override default values
-      if (value !== undefined) {
-        if (!oj.__AttributeUtils.isGlobalOrData(propName) || isControlledProp(constr, propName)) {
-          splitProps.controlled[propName] = value;
-        } else {
-          splitProps.uncontrolled[propName] = value;
-        }
-      }
-    }
-
-    // Even though static metadata defaults override dynamic defaults, because
-    // dynamic default getters don't have a setter, we can't use Object.assign
-    // so we iterate over those keys last.
-    DefaultsUtils.applyDynamicDefaults(constr, splitProps.controlled);
-    return splitProps;
-  }
-
-  function patchDOM(el, props, oldProps, isCustomElement) {
-    if (props) {
-      addOrUpdateProps(el, props, oldProps || EMPTYO, isCustomElement);
-    }
-
-    if (oldProps) {
-      removeOldProps(el, props || EMPTYO, oldProps, isCustomElement);
-    }
-  }
-
-  function addOrUpdateProps(el, props, oldProps, isCustomElement) {
-    // We only set global attributes, everything else is set as property
-    // or is an event listener.  Style is special-cased
-    var propKeys = Object.keys(props);
-    propKeys.forEach(function(key) {
-      var value = props[key];
-      var oldValue = oldProps[key];
-      if (value !== oldValue) {
-        if (key === 'style') {
-          // To be compliant with CSP's unsafe-inline restrictions, we always want to set
-          // style properties individually vs. setting the entire style attribute
-          patchProperties(el.style, value || EMPTYO, oldValue || EMPTYO, '');
-        } else if (isCustomElement && key === 'className') {
-          // For custom elements, call el.classList.add/remove to avoid overriding
-          // framework and application set classes. Set as attribute for all other elements.
-          patchClassName(el, value, oldValue);
-        } else if (!maybePatchListener(el, key, value, oldValue) &&
-          !maybePatchAttribute(el, key, value, isCustomElement)) {
-          /*
-           * We care about the following two cases:
-           * 1) Standard HTML attributes which includes all attributes on native elements
-           *    and global attributes on custom elements. We will always do attribute
-           *    sets for this case with special handling for:
-           *    a) the null/undefined property which will result in removing the attribute
-           *    b) property names that don't  match the attribute name, e.g. className -> class and htmlFor -> for
-           *    c) input elements' value property which is initially populated from the attribute value
-           *       but not sync'd after which we will always set as a property
-           * 2) Everything else. We will always do property sets for this case.
-           */
-          el[key] = value;
-        }
-      }
-    });
-  }
-
-  function removeOldProps(el, props, oldProps, isCustomElement) {
-    var propKeys = Object.keys(oldProps);
-    propKeys.forEach(function(key) {
-      var oldValue = oldProps[key];
-      if (!(key in props)) {
-        if (key === 'style') {
-          patchProperties(el.style, EMPTYO, oldValue || EMPTYO, '');
-        } else if (isCustomElement && key === 'className') {
-          patchClassName(el, null, oldValue);
-        } else if (!maybePatchListener(el, key, null, oldValue) &&
-          !maybePatchAttribute(el, key, null, isCustomElement)) {
-          el[key] = undefined;
-        }
-      }
-    });
-  }
-
-  function patchProperties(propertyHolder, props, oldProps, unsetValue) {
-    for (var key in props) {
-      var oldv = oldProps[key];
-      var newv = props[key];
-      if (oldv !== newv) {
-        propertyHolder[key] = newv;
-      }
-    }
-    for (var key in oldProps) {
-      if (!(key in props)) {
-        propertyHolder[key] = unsetValue;
-      }
-    }
-  }
-
-  function patchClassName(el, value, oldValue) {
-    // TODO we think the list of classes should be
-    // short but should look into optimizing for performance
-    // by using Set difference in the future
-    if (oldValue) {
-      var oldClassList = oldValue.split(' ');
-      oldClassList.forEach(function (className) {
-        if (className) {
-          el.classList.remove(className);
-        }
-      });
-    }
-    if (value) {
-      var newClassList = value.split(' ');
-      newClassList.forEach(function (className) {
-        if (className) {
-          el.classList.add(className)
-        }
-      });
-    }
-  }
-
-  function maybePatchListener(el, key, value, oldValue) {
-    var type = typeof value;
-    var oldType = typeof oldValue;
-    if (type === 'function' || oldType === 'function' ||
-        (value != null && value.listener) || (oldValue != null && oldValue.listener)) {
-      var eventType = eventListenerPropertyToEventType(key);
-      if (eventType) {
-        patchListener(el, eventType, value, oldValue);
-        return true;
-      }
-    }
-    return false;
-  }
-
-  function patchListener(el, eventType, value, oldValue) {
-    if (oldValue) {
-      el.removeEventListener(eventType, oldValue.listener ? oldValue.listener : oldValue, oldValue.options);
-    }
-    if (value) {
-      el.addEventListener(eventType, value.listener ? value.listener : value, value.options);
-    }
-  }
-
-  function maybePatchAttribute(el, key, value, isCustomElement) {
-    // The checked attribute while boolean, only reflects the inital DOM
-    // so we need to use the checked property to update (Bug 30288985)
-    if ((isCustomElement && oj.__AttributeUtils.isGlobalOrData(key)) ||
-        (!isCustomElement && key !== 'value' && key !== 'checked')) {
-      var attr = oj.__AttributeUtils.getNativeAttr(key);
-      if (value === true) {
-        el.setAttribute(attr, "");
-      } else if (value === false) {
-        el.removeAttribute(attr);
-      } else {
-        if (value != null) {
-          var ns = NS_ATTRS[attr];
-          if (ns !== undefined) {
-            el.setAttributeNS(ns, attr, value);
-          } else {
-            el.setAttribute(attr, value);
-          }
-        } else {
-          el.removeAttribute(attr);
-        }
-      }
-      return true;
-    }
-    return false;
-  }
-
-  function eventListenerPropertyToEventType(property) {
-    if (/^on[A-Z]/.test(property)) {
-      return property.substr(2, 1).toLowerCase() + property.substr(3);
-    }
-    return null;
-  }
-
-  // Called by the VComponent for patching in the VComponent-frst case.
-  // Handles patching of both the uncontrolled root properties set by a parent
-  // and the controlled root properties rendered by the VComponent.
-  function patchComponent(newch, oldch, uncontrolledRootProps, oldUncontrolledRootProps) {
-    var childNode = oldch._node;
-    if (oldch === newch) {
-      return childNode;
-    }
-    patchDOM(childNode, uncontrolledRootProps, oldUncontrolledRootProps, true);
-    patchDOM(childNode, newch.props, oldch.props, true);
-    patchContent(childNode, newch.content, oldch.content);
-  }
-
-  // Called by the VComponent for patching in the custom element-frst case.
-  // Handles patching of the controlled root properties rendered by the VComponent.
-  function patchComponentContent(newch, oldch, controlledRootProps) {
-    var childNode = oldch._node;
-    if (oldch === newch) {
-      return childNode;
-    }
-
-    // Generate the root props to diff against. This set should include
-    // the current controlled properties set on the DOM node and style/className/listeners
-    // from oldch.props.
-    var oldRootProps = {};
-    var oldProps = oldch.props;
-    for (var prop in oldProps) {
-      if (isListener(prop) || prop === 'className' || prop === 'style') {
-        oldRootProps[prop] = oldProps[prop];
-      }
-    }
-    Object.assign(oldRootProps, controlledRootProps);
-
-    // Update only the controlled properties and DOM listeners, all other properties
-    // came from the custom element and are already current.
-    // The newch.props should contain only the controlled global properties and event
-    // listeners. We have a verification step in VComponent that's run before this method
-    // is called.
-    patchDOM(childNode, newch.props, oldRootProps, true);
-    patchContent(childNode, newch.content, oldch.content);
-  }
-
-  function patch(newch, oldch, parent) {
-    var childNode = oldch._node;
-
-    if (oldch === newch) {
-      return childNode;
-    }
-
-    var t1, t2;
-    if ((t1 = oldch._text) != null && (t2 = newch._text) != null) {
-      if (t1 !== t2) {
-        childNode.nodeValue = t2;
-      }
-    } else if (oldch.type === newch.type && oldch.isSVG === newch.isSVG) {
-      var type = oldch.type;
-
-      if (typeof type === "function") {
-        if (isComponent(type.prototype)) {
-          var instance = oldch._data;
-
-          var newSplitProps = sortControlled(type, newch.props);
-          // cache for the next time patch is called
-          newch._uncontrolled = newSplitProps.uncontrolled;
-          // When rendering VComponent-first, petit-dom calls patch() on the VComponent instance.
-          // The VComponent's patch method will then call its render(), passing the new vnode to
-          // petit-dom's patchComponent().
-          instance.patch(newSplitProps.controlled, newSplitProps.uncontrolled, oldch._uncontrolled);
-          newch._data = instance;
-        } else {
-          var shouldUpdateFn = type.shouldUpdate || defShouldUpdate;
-          if (shouldUpdateFn(newch.props, oldch.props, newch.content, oldch.content)) {
-            var vnode = type(newch.props, newch.content);
-            childNode = patch(vnode, oldch._data, parent);
-            newch._data = vnode;
-          } else {
-            newch._data = oldch._data;
-          }
-        }
-      } else if (typeof type === "string") {
-        var isCustomElement = oj.ElementUtils.isValidCustomElementName(type);
-        if (contentChangeRequiresRemount(newch.content, oldch.content)) {
-          // Remount the custom element (recreate the component) for certain slot changes
-          childNode = mount(newch);
-          parent.replaceChild(childNode, oldch._node);
-          unmount(oldch);
-        }
-        else {
-          patchDOM(childNode, newch.props, oldch.props, isCustomElement);
-          patchContent(childNode, newch.content, oldch.content);
-        }
-
-      } else if (oldch instanceof Node && newch instanceof Node) {
-        if (oldch !== newch && parent) {
-          parent.replaceChild(newch, oldch);
-        }
-      } else {
-        throw new Error("Unknown node type! " + type);
-      }
-    } else {
-      childNode = mount(newch);
-      if (parent) {
-        parent.replaceChild(childNode, oldch._node);
-      }
-      unmount(oldch);
-    }
-
-    newch._node = childNode;
-    return childNode;
-  }
-
-  function patchContent(parent, content, oldContent) {
-    if (!isArray(content) && !isArray(oldContent)) {
-      if (content !== oldContent) {
-        patch(content, oldContent, parent);
-      }
-    } else if (isArray(content) && isArray(oldContent)) {
-      diffChildren(parent, content, oldContent);
-    } else {
-      removeChildren(parent, oldContent, 0, oldContent.length - 1);
-      appendChildren(parent, content);
-    }
-  }
-
-  function canPatch(v1, v2) {
-    return v1.key === v2.key;
-  }
-
-  function diffChildren(parent, children, oldChildren) {
-    var newStart = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
-    var newEnd = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : children.length - 1;
-    var oldStart = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 0;
-    var oldEnd = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : oldChildren.length - 1;
-
-    if (children === oldChildren) return;
-    var oldCh;
 
     /**
-      Before applying the diff algorithm we try some preprocessing optimizations
-      to reduce the cost
-      See https://neil.fraser.name/writing/diff/ for the full details.
-        In the following : indel = INsertion/DELetion
-    **/
-
-    // common prefix/suffix
-
-    var k = diffCommonPrefix(children, oldChildren, newStart, newEnd, oldStart, oldEnd, canPatch, parent);
-    newStart += k;
-    oldStart += k;
-
-    k = diffCommonSufffix(children, oldChildren, newStart, newEnd, oldStart, oldEnd, canPatch, parent);
-    newEnd -= k;
-    oldEnd -= k;
-
-    if (newStart > newEnd && oldStart > oldEnd) {
-      return;
+     * Helper function that takes a DOM node and wraps it in a lightweight vnode object
+     * @param {Element} node The DOM node to wrap
+     * @param {string?} slot An optional slot name for the vnode props. This can be different
+     *                       from the slot attribute value and is only needed for children that
+     *                       will be passed as content to the VComponent mount/patch methods
+     *                       See oj.BaseCustomElementBridge.getSlotAssignment() for slot name details.
+     * @return {object}
+     * @private
+     */
+    function _wrapNode(node, slot) {
+      switch (node.nodeType) {
+        // Comment nodes are not considered slottable, but
+        // we need these in the template case. For normal slots,
+        // the map we get from the bridge shouldn't contain any comment
+        // nodes. We don't care about DOM updates in that case since it's
+        // not supported. For template slots, if the root node is an
+        // oj-bind-if for example, we want that to work correctly when udpates
+        // occur.
+        case Node.COMMENT_NODE:
+          return { _node: node };
+        case Node.TEXT_NODE:
+          return { _text: node.nodeValue, _node: node };
+        case Node.ELEMENT_NODE:
+          var content = [];
+          // Wrap child nodes for petit-dom patching.
+          // There is no reslotting, but the component may slot
+          // a different child node on subsequent renders (e.g. oj-switcher tab switching)
+          // so we need to ensure the vnode is as 'real' as possible to ensure the DOM
+          // will be updated correctly during patching.
+          node.childNodes.forEach(
+            function (childNode) {
+              // These are just child nodes of the slotted parent node so we don't need to pass
+              // a slot for the child
+              var wrappedChild = _wrapNode(childNode);
+              // Skip non text/element nodes like comment nodes
+              if (wrappedChild) {
+                content.push(wrappedChild);
+              }
+            });
+          var vnode = {
+            type: node.tagName.toLowerCase(),
+            _node: node,
+            props: node,
+            content: content
+          };
+          // IE does not have slot property support so the slot attribute will not
+          // get mapped to a slot property. We will need to populate it ourselves.
+          if (slot != null && vnode.props.slot !== slot) {
+            vnode.props.slot = slot;
+          }
+          return vnode;
+        default:
+          return null;
+      }
     }
 
-    // simple indel: one of the 2 sequences is empty after common prefix/suffix removal
-
-    // old sequence is empty -> insertion
-    if (newStart <= newEnd && oldStart > oldEnd) {
-      oldCh = oldChildren[oldStart];
-      appendChildren(parent, children, newStart, newEnd, oldCh && oldCh._node);
-      return;
+    /**
+     * Helper function that unwraps a DOM node from a vnode
+     * @param {object} vnode The vnode to unwrap
+     * @return {Element}
+     * @private
+     */
+    function _unwrapNode(vnode) {
+      return vnode && vnode._node;
     }
 
-    // new sequence is empty -> deletion
-    if (oldStart <= oldEnd && newStart > newEnd) {
-      removeChildren(parent, oldChildren, oldStart, oldEnd);
-      return;
-    }
+    /**
+     * Generates a slot property map of VNode[]
+     * @param {Array} children The vnodes to process
+     * @param {object} metadata The component metadata
+     * @return {object}
+     * @private
+     */
+    function _generateSlotMap(children, metadata, ext) {
+      var slots = metadata.slots || {};
+      var dynamicSlotProp = ext._DYNAMIC_SLOT_PROP;
+      var slotMap = {};
 
-    // 2 simple indels: the shortest sequence is a subsequence of the longest
-    var oldRem = oldEnd - oldStart + 1;
-    var newRem = newEnd - newStart + 1;
-    k = -1;
-    if (oldRem < newRem) {
-      k = indexOf(children, oldChildren, newStart, newEnd, oldStart, oldEnd, canPatch);
-      if (k >= 0) {
-        oldCh = oldChildren[oldStart];
-        appendChildren(parent, children, newStart, k - 1, oldCh._node);
-        var upperLimit = k + oldRem;
-        newStart = k;
-        while (newStart < upperLimit) {
-          patch(children[newStart++], oldChildren[oldStart++]);
+      children.forEach(function (vnode) {
+        // Text nodes and comment nodes don't have a vnode.props
+        // field and always map to the default slot. Note that normally
+        // comment nodes aren't slottable, but we need them for the template case.
+        var slot = vnode.props ? vnode.props.slot : '';
+        // If slot name is defined check to see if it exists in the metadata as a named slot. If it doesn't
+        // then it may be a dynamic slot so stash it as under the slot property for dynamic slots.
+        let slotProp = VirtualElementBridge._DEFAULT_SLOT_PROP;
+        if (slot) {
+          slotProp = slots[slot] ? slot : dynamicSlotProp;
         }
-        oldCh = oldChildren[oldEnd];
-        appendChildren(parent, children, newStart, newEnd, oldCh && oldCh._node.nextSibling);
-        return;
-      }
-    } else if (oldRem > newRem) {
-      k = indexOf(oldChildren, children, oldStart, oldEnd, newStart, newEnd, canPatch);
-      if (k >= 0) {
-        removeChildren(parent, oldChildren, oldStart, k - 1);
-        upperLimit = k + newRem;
-        oldStart = k;
-        while (oldStart < upperLimit) {
-          patch(children[newStart++], oldChildren[oldStart++]);
+
+        if (slotProp === dynamicSlotProp) {
+          // Stop processing if node doesn't match any named slots and component
+          // does not define a dynamic slot.
+          if (!dynamicSlotProp) {
+            return;
+          }
+          // Dynamic slots
+          if (!slotMap[slotProp]) {
+            slotMap[slotProp] = { [slot]: [] };
+          }
+          if (!slotMap[slotProp][slot]) {
+            slotMap[slotProp][slot] = [];
+          }
+          slotMap[slotProp][slot].push(vnode);
+        } else if (slotProp) {
+          // Named and default slots
+          if (!slotMap[slotProp]) {
+            slotMap[slotProp] = [];
+          }
+          slotMap[slotProp].push(vnode);
         }
-        removeChildren(parent, oldChildren, oldStart, oldEnd);
-        return;
-      }
+      });
+      return slotMap;
     }
 
-    // fast case: difference between the 2 sequences is only one item
-    if (oldStart === oldEnd) {
-      var node = oldChildren[oldStart]._node;
-      appendChildren(parent, children, newStart, newEnd, node);
-      parent.removeChild(node);
-      unmount(node);
-      return;
-    }
-    if (newStart === newEnd) {
-      parent.insertBefore(mount(children[newStart]), oldChildren[oldStart]._node); // @HTMLUpdateOK
-      removeChildren(parent, oldChildren, oldStart, oldEnd);
-      return;
-    }
-
-    /*
-      last preopt
-      if we can find a subsequence that's at least half the longest sequence the it's guaranteed to
-      be the longest common subsequence. This allows us to find the lcs using a simple O(N) algorithm
-    */
-    var hm;
-    /*var oldShorter = oldRem < newRem;
-    if (oldShorter) {
-      hm = diffHalfMatch(
-        children,
-        oldChildren,
-        newStart,
-        newEnd,
-        oldStart,
-        oldEnd,
-        canPatch
-      );
-    } else {
-      hm = diffHalfMatch(
-        oldChildren,
-        children,
-        oldStart,
-        oldEnd,
-        newStart,
-        newEnd,
-        canPatch
-      );
-    }
-    if (hm) {
-      var newStartHm = oldShorter ? hm.start1 : hm.start2;
-      var newEndHm = newStartHm + hm.length - 1;
-      var oldStartHm = oldShorter ? hm.start2 : hm.start1;
-      var oldEndHm = oldStartHm + hm.length - 1;
-      for (var i = newStartHm, j = oldStartHm; i <= newEndHm; i++, j++) {
-        patch(children[i], oldChildren[j], parent);
-      }
-      diffChildren(
-        parent,
-        children,
-        oldChildren,
-        newStart,
-        newStartHm - 1,
-        oldStart,
-        oldStartHm - 1
-      );
-      diffChildren(
-        parent,
-        children,
-        oldChildren,
-        newEndHm + 1,
-        newEnd,
-        oldEndHm + 1,
-        oldEnd
-      );
-      return;
-    }*/
-
-    /*
-      Run the diff algorithm
-      First try the O(ND) algorithm. If O(ND) cost is high (Too match diffs between the 2 seqs)
-      then fallback to Map lookup based algorithm
-    */
-    if (!hm) {
-      var failed = diffOND(parent, children, oldChildren, newStart, newEnd, oldStart, oldEnd);
-      if (failed) diffWithMap(parent, children, oldChildren, newStart, newEnd, oldStart, oldEnd);
-    }
-  }
-
-  function diffCommonPrefix(s1, s2, start1, end1, start2, end2, eq, parent) {
-    var k = 0,
-        c1,
-        c2;
-    while (start1 <= end1 && start2 <= end2 && eq(c1 = s1[start1], c2 = s2[start2])) {
-      if (parent) patch(c1, c2, parent);
-      start1++;
-      start2++;
-      k++;
-    }
-    return k;
-  }
-
-  function diffCommonSufffix(s1, s2, start1, end1, start2, end2, eq, parent) {
-    var k = 0,
-        c1,
-        c2;
-    while (start1 <= end1 && start2 <= end2 && eq(c1 = s1[end1], c2 = s2[end2])) {
-      if (parent) patch(c1, c2, parent);
-      end1--;
-      end2--;
-      k++;
-    }
-    return k;
-  }
-  /*
-  function diffHalfMatch(s1, s2, start1, end1, start2, end2, eq) {
-    var len1 = end1 - start1 + 1;
-    var len2 = end2 - start2 + 1;
-
-    if (len1 < 2 || len2 < 1) {
-      return null;
-    }
-
-    var hm1 = halfMatchInt(start1 + Math.ceil(len1 / 4));
-    var hm2 = halfMatchInt(start1 + Math.ceil(len1 / 2));
-    return !hm1 && !hm2
-      ? null
-      : !hm1 ? hm2 : !hm2 ? hm1 : hm1.length > hm2.length ? hm1 : hm2;
-
-    function halfMatchInt(seedStart) {
-      var seedEnd = seedStart + Math.floor(len1 / 4);
-      var j = start2 - 1;
-      var bestCS = { length: 0 };
-      while (
-        j < end2 &&
-        (j = indexOf(s2, s1, j + 1, end2, seedStart, seedEnd, eq)) !== -1
-      ) {
-        var prefixLen = diffCommonPrefix(s1, s2, seedStart, end1, j, end2, eq);
-        var suffixLen = diffCommonSufffix(
-          s1,
-          s2,
-          start1,
-          seedStart - 1,
-          start2,
-          j - 1,
-          eq
-        );
-        if (bestCS.length < prefixLen + suffixLen) {
-          bestCS.start1 = seedStart - suffixLen;
-          bestCS.start2 = j - suffixLen;
-          bestCS.length = prefixLen + suffixLen;
-        }
-      }
-      return bestCS.length >= len1 / 2 ? bestCS : null;
-    }
-  }
-  */
-  var PATCH = 2;
-  var INSERTION = 4;
-  var DELETION = 8;
-
-  /**
-    Find the shortest edit script between the old and new sequences
-    This is equivalent to finding the shortest path in the edit graph of the 2 sequences
-    see "An O(ND) Difference Algorithm and Its Variations" at
-    http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.4.6927&rep=rep1&type=pdf
-  **/
-  function diffOND(parent, children, oldChildren) {
-    var newStart = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
-    var newEnd = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : children.length - 1;
-    var oldStart = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 0;
-    var oldEnd = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : oldChildren.length - 1;
-
-    var rows = newEnd - newStart + 1;
-    var cols = oldEnd - oldStart + 1;
-    var dmax = rows + cols;
-
-    var v = [];
-    var d, k, r, c, pv, cv, pd;
-    outer: for (d = 0; d <= dmax; d++) {
-      if (d > 50) return true;
-      pd = d - 1;
-      pv = d ? v[d - 1] : [0, 0];
-      cv = v[d] = [];
-      for (k = -d; k <= d; k += 2) {
-        if (k === -d || k !== d && pv[pd + k - 1] < pv[pd + k + 1]) {
-          c = pv[pd + k + 1];
+    /**
+     * Converts a slot map to the correct slot property types
+     * @param {Element} element The custom element
+     * @param {object} slotMap The slot map to process
+     * @return {object}
+     * @private
+     */
+    function _generateSlotPropsMap(element, slotMap) {
+      var propsMap = {};
+      Object.keys(slotMap).forEach(slot => {
+        var slotContent = slotMap[slot];
+        // The default slot is returned as VNode[], but all others are returned as render functions
+        if (slot === VirtualElementBridge._DEFAULT_SLOT_PROP) {
+          propsMap[slot] = slotContent;
+        } else if (Array.isArray(slotContent)) {
+          propsMap[slot] = getSlotRenderFunc(element, slotContent);
         } else {
-          c = pv[pd + k - 1] + 1;
+          // Dynamic slot case
+          if (!propsMap[slot]) {
+            propsMap[slot] = {};
+          }
+          Object.keys(slotContent).forEach(dynSlot => {
+            propsMap[slot][dynSlot] = getSlotRenderFunc(element, slotContent[dynSlot]);
+          });
         }
-        r = c - k;
-        while (c < cols && r < rows && canPatch(oldChildren[oldStart + c], children[newStart + r])) {
-          c++;
-          r++;
+      });
+      return propsMap;
+    }
+
+    /**
+     * Helper to create a slot render function and lazily execute a template engine
+     * if a context object is passed to the slot render, returning the vnodes otherwise.
+     * @param {Element} element The custom element
+     * @param {object} vnodes The vnode array to return/process for the slot
+     * @return {object}
+     * @private
+     */
+    function getSlotRenderFunc(element, vnodes) {
+      return function (context) {
+        // Dynamically check to see if the slot render function was called with
+        // a context object. If it was and the slot node is a template node,
+        // execute the template engine and wrap the resulting DOM nodes. Otherwise
+        // return the vnodes directly.
+        if (context) {
+          var templateNode = _unwrapNode(vnodes[0]);
+          if (templateNode.nodeName === 'TEMPLATE') {
+            if (!_cachedTemplateEngine) {
+              throw new Error('Unexpected call to render a template slot');
+            }
+            var domNodes = _cachedTemplateEngine.execute(element, templateNode, context);
+            return domNodes.map(node => {
+              const vnode = _wrapNode(node);
+              // Pass a reference to the template engine's clean method so
+              // petit-dom can call it before removing any template nodes from the DOM
+              vnode._clean = _cachedTemplateEngine.clean.bind(null, node);
+              return vnode;
+            });
+          }
         }
-        if (c === cols && r === rows) {
-          break outer;
-        }
-        cv[d + k] = c;
-      }
+        return vnodes;
+      };
     }
 
-    var diff = Array(d / 2 + dmax / 2);
-    var deleteMap = {};
-    var oldCh;
-    var diffIdx = diff.length - 1;
-    for (d = v.length - 1; d >= 0; d--) {
-      while (c > 0 && r > 0 && canPatch(oldChildren[oldStart + c - 1], children[newStart + r - 1])) {
-        // diagonal edge = equality
-        diff[diffIdx--] = PATCH;
-        c--;
-        r--;
-      }
-      if (!d) break;
-      pd = d - 1;
-      pv = d ? v[d - 1] : [0, 0];
-      k = c - r;
-      if (k === -d || k !== d && pv[pd + k - 1] < pv[pd + k + 1]) {
-        // vertical edge = insertion
-        r--;
-        diff[diffIdx--] = INSERTION;
-      } else {
-        // horizontal edge = deletion
-        c--;
-        diff[diffIdx--] = DELETION;
-        oldCh = oldChildren[oldStart + c];
-        if (oldCh.key != null) {
-          deleteMap[oldCh.key] = oldStart + c;
-        }
-      }
+    function customElement(tagName) {
+        return function (constructor) {
+            const componentRender = constructor.prototype.render;
+            constructor.prototype.render = function () {
+                let vnode = componentRender.call(this);
+                if (vnode.type !== tagName) {
+                    vnode = PetitDom.h(tagName, null, vnode);
+                }
+                _verifyProps(vnode.props, constructor['metadata']);
+                return vnode;
+            };
+            constructor.prototype.mount = function (props, content, uncontrolledRootProps) {
+                this._vnode = this._renderForMount(props, content);
+                const mountNode = (this._ref = PetitDom.mountCustomElement(this._vnode, uncontrolledRootProps));
+                Object.defineProperty(mountNode, '_vcomp', { value: this, enumerable: false });
+                return mountNode;
+            };
+            constructor.prototype.patch = function (props, content, uncontrolledRootProps, oldUncontrolledRootProps) {
+                const oldProps = this.props;
+                const oldState = this.state;
+                const oldVnode = this._vnode;
+                this._vnode = this._renderForPatch(props, content);
+                this._vnode['_node'] = this._ref;
+                this._patching = true;
+                try {
+                    PetitDom.patchCustomElement(this._vnode, oldVnode, uncontrolledRootProps, oldUncontrolledRootProps);
+                }
+                finally {
+                    this._patching = false;
+                }
+                this.updated(oldProps, oldState);
+            };
+            constructor.prototype.mountContent = function (props, content, rootElem, controlledRootProps) {
+                this._isCustomElementFirst = true;
+                this._ref = rootElem;
+                this._vnode = this._renderForMount(props, content);
+                this._vnode._node = rootElem;
+                this._patching = true;
+                try {
+                    PetitDom.mountCustomElementContent(this._vnode, controlledRootProps);
+                }
+                finally {
+                    this._patching = false;
+                }
+            };
+            constructor.prototype.patchContent = function (props, controlledRootProps, content) {
+                const oldProps = this.props;
+                const oldState = this.state;
+                const oldVnode = this._vnode;
+                this._vnode = this._renderForPatch(props, content);
+                this._vnode['_node'] = this._ref;
+                this._patching = true;
+                try {
+                    PetitDom.patchCustomElementContent(this._vnode, oldVnode, controlledRootProps);
+                }
+                finally {
+                    this._patching = false;
+                }
+                this.updated(oldProps, oldState);
+            };
+            constructor.prototype.setCallbacks = function (callbacks) {
+                this._callbacks = callbacks;
+            };
+            constructor.prototype.isCustomElementFirst = function () {
+                return this._isCustomElementFirst === true;
+            };
+            constructor.prototype.isPatching = function () {
+                return this._patching;
+            };
+            function _isValidRootProp(prop, metadata) {
+                var _a;
+                var allowedProps = {
+                    class: true,
+                    style: true,
+                    ref: true,
+                    key: true
+                };
+                var verifiedRootPropMap = ((_a = metadata.extension) === null || _a === void 0 ? void 0 : _a['_ROOT_PROPS_MAP']) || {};
+                return (allowedProps[prop] ||
+                    verifiedRootPropMap[prop] ||
+                    oj.__AttributeUtils.eventListenerPropertyToEventType(prop) !== null);
+            }
+            function _verifyProps(props, metadata) {
+                for (var prop in props) {
+                    if (!_isValidRootProp(prop, metadata)) {
+                        throw new Error('Component can only render controlled global properties or DOM event listeners on the root custom element. ' +
+                            prop +
+                            ' will not be rendered.');
+                    }
+                }
+            }
+            VirtualElementBridge.register(tagName, constructor);
+        };
     }
 
-    applyDiff(parent, diff, children, oldChildren, newStart, oldStart, deleteMap);
-  }
-
-  function applyDiff(parent, diff, children, oldChildren, newStart, oldStart, deleteMap) {
-    var ch,
-        oldCh,
-        node,
-        oldMatchIdx,
-        moveMap = {};
-    for (var i = 0, chIdx = newStart, oldChIdx = oldStart; i < diff.length; i++) {
-      var op = diff[i];
-      if (op === PATCH) {
-        patch(children[chIdx++], oldChildren[oldChIdx++], parent);
-      } else if (op === INSERTION) {
-        ch = children[chIdx++];
-        oldMatchIdx = null;
-        if (ch.key != null) {
-          oldMatchIdx = deleteMap[ch.key];
-        }
-        if (oldMatchIdx != null) {
-          node = patch(ch, oldChildren[oldMatchIdx]);
-          moveMap[ch.key] = oldMatchIdx;
-        } else {
-          node = mount(ch);
-        }
-        parent.insertBefore(node, oldChIdx < oldChildren.length ? oldChildren[oldChIdx]._node : null); // @HTMLUpdateOK
-      } else if (op === DELETION) {
-        oldChIdx++;
-      }
+    function listener(options) {
+        return function (target, key, descriptor) {
+            let fn = descriptor === null || descriptor === void 0 ? void 0 : descriptor.value;
+            return {
+                configurable: true,
+                get() {
+                    const boundFn = fn.bind(this);
+                    boundFn[PetitDom.LISTENER_OPTIONS_SYMBOL] = options;
+                    Object.defineProperty(this, key, {
+                        configurable: true,
+                        get() {
+                            return boundFn;
+                        },
+                        set(value) {
+                            fn = value;
+                            delete this[key];
+                        }
+                    });
+                    return boundFn;
+                },
+                set(value) {
+                    fn = value;
+                }
+            };
+        };
     }
 
-    for (i = 0, oldChIdx = oldStart; i < diff.length; i++) {
-      var _op = diff[i];
-      if (_op === PATCH) {
-        oldChIdx++;
-      } else if (_op === DELETION) {
-        oldCh = oldChildren[oldChIdx++];
-        if (oldCh.key == null || moveMap[oldCh.key] == null) {
-          parent.removeChild(oldCh._node);
-          unmount(oldCh);
-        }
-      }
-    }
-  }
-
-  /**
-    A simplified implementation of Hunt-Szymanski algorithm
-    see "A Fast Algorithm for Computing Longest Common Subsequences"
-    http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.608.1614&rep=rep1&type=pdf
-    This implementation supposes keys are unique so we only use
-    simple object maps to build the match list
-  **/
-  function diffWithMap(parent, children, oldChildren, newStart, newEnd, oldStart, oldEnd) {
-    var keymap = {},
-        unkeyed = [],
-        idxUnkeyed = 0,
-        ch,
-        oldCh,
-        k,
-        idxInOld,
-        key;
-
-    var newLen = newEnd - newStart + 1;
-    var oldLen = oldEnd - oldStart + 1;
-    var minLen = Math.min(newLen, oldLen);
-    var tresh = Array(minLen + 1);
-    tresh[0] = -1;
-
-    for (var i = 1; i < tresh.length; i++) {
-      tresh[i] = oldEnd + 1;
-    }
-    var link = Array(minLen);
-
-    for (i = oldStart; i <= oldEnd; i++) {
-      oldCh = oldChildren[i];
-      key = oldCh.key;
-      if (key != null) {
-        keymap[key] = i;
-      } else {
-        unkeyed.push(i);
-      }
+    function dynamicDefault(defaultGetter) {
+        return (target, propertyKey) => {
+            const key = Symbol();
+            return {
+                get() {
+                    const value = this[key];
+                    return value === undefined ? defaultGetter() : value;
+                },
+                set(value) {
+                    this[key] = value;
+                }
+            };
+        };
     }
 
-    for (i = newStart; i <= newEnd; i++) {
-      ch = children[i];
-      idxInOld = ch.key == null ? unkeyed[idxUnkeyed++] : keymap[ch.key];
-      if (idxInOld != null) {
-        k = findK(tresh, idxInOld);
-        if (k >= 0) {
-          tresh[k] = idxInOld;
-          link[k] = { newi: i, oldi: idxInOld, prev: link[k - 1] };
-        }
-      }
+    function method() {
+        return function (target, propertyKey, descriptor) { };
+    }
+    function rootProperty() {
+        return (target, propertyKey) => { };
+    }
+    function _writeback({ readOnly: boolean } = { readOnly: false }) {
+        return (target, propertyKey) => { };
+    }
+    function event({ bubbles: boolean } = { bubbles: false }) {
+        return (target, propertyKey) => { };
     }
 
-    k = tresh.length - 1;
-    while (tresh[k] > oldEnd) {
-      k--;
-    }var ptr = link[k];
-    var diff = Array(oldLen + newLen - k);
-    var curNewi = newEnd,
-        curOldi = oldEnd;
-    var d = diff.length - 1;
-    while (ptr) {
-      var _ptr = ptr,
-          newi = _ptr.newi,
-          oldi = _ptr.oldi;
+    exports.VComponent = VComponent;
+    exports._writeback = _writeback;
+    exports.classPropToObject = classPropToObject;
+    exports.customElement = customElement;
+    exports.dynamicDefault = dynamicDefault;
+    exports.event = event;
+    exports.h = h;
+    exports.listener = listener;
+    exports.method = method;
+    exports.rootProperty = rootProperty;
 
-      while (curNewi > newi) {
-        diff[d--] = INSERTION;
-        curNewi--;
-      }
-      while (curOldi > oldi) {
-        diff[d--] = DELETION;
-        curOldi--;
-      }
-      diff[d--] = PATCH;
-      curNewi--;
-      curOldi--;
-      ptr = ptr.prev;
-    }
-    while (curNewi >= newStart) {
-      diff[d--] = INSERTION;
-      curNewi--;
-    }
-    while (curOldi >= oldStart) {
-      diff[d--] = DELETION;
-      curOldi--;
-    }
-    applyDiff(parent, diff, children, oldChildren, newStart, oldStart, keymap);
-  }
+    Object.defineProperty(exports, '__esModule', { value: true });
 
-  function findK(ktr, j) {
-    var lo = 1;
-    var hi = ktr.length - 1;
-    while (lo <= hi) {
-      var mid = Math.ceil((lo + hi) / 2);
-      if (j < ktr[mid]) hi = mid - 1;else lo = mid + 1;
-    }
-    return lo;
-  }
-
-  function indexOf(a, suba, aStart, aEnd, subaStart, subaEnd, eq) {
-    var j = subaStart,
-        k = -1;
-    var subaLen = subaEnd - subaStart + 1;
-    while (aStart <= aEnd && aEnd - aStart + 1 >= subaLen) {
-      if (eq(a[aStart], suba[j])) {
-        if (k < 0) k = aStart;
-        j++;
-        if (j > subaEnd) return k;
-      } else {
-        k = -1;
-        j = subaStart;
-      }
-      aStart++;
-    }
-    return -1;
-  }
-
-  /**
-   * Determines whether a change in the custom element's slots requires a remount (full re-render)
-   * of that custom element
-   * @param {any} content
-   * @param {any} oldContent
-   * @return true if the slot change requires a remount, false otherwise
-   * @ignore
-   */
-  function contentChangeRequiresRemount(content, oldContent) {
-    if (content === oldContent) {
-      return false;
-    }
-    // We are not checking for null/undedined contentt and oldContent
-    // because PetitDOM would already 'bomb' in that case (see the patch() method
-    // called by patchContent() for the non-array case)
-    content = isArray(content)? content: [content];
-    oldContent = isArray(oldContent)? oldContent: [oldContent];
-    if (content.length !== oldContent.length) {
-      return true;
-    }
-    return content.some(function(node, index) {
-      var oldNode = oldContent[index];
-      if (node.type !== oldNode.type) {
-        return true;
-      }
-      var props = node.props || EMPTYO;
-      var oldProps = oldNode.props || EMPTYO;
-      return props.slot !== oldProps.slot;
-    });
-  }
-
-  return {
-    h: h,
-    mountComponent: mountComponent,
-    mountComponentContent: mountComponentContent,
-    patchComponent: patchComponent,
-    patchComponentContent: patchComponentContent,
-    unmount: unmount
-  }
-}());
-
-
-
-/**
- * @ignore
- * @class VComponent
- * @param {Object} props The passed in component properties
- * @ojsignature [{
- *                target: "Type",
- *                value: "class VComponent<S, P>",
- *                genericParameters: [{"name": "S", "description": "Type of the state object"},
- *                                    {"name": "P", "description": "Type of the props object"}]
- *               },
- *               {
- *                target: "Type",
- *                value: "VComponentSettableProperties<S, P>",
- *                for: "SettableProperties"
- *               },
- *               {target: "Type", value: "P", for: "props"}]
- * @constructor
- * @since 8.0.0
- * @ojtsimport {module: "ojmetadata", type: "AMD", importName:"MetadataTypes"}
- *
- * @classdesc The VComponent base class provides a mechanism for defining JET
- * <a href="CompositeOverview.html">Custom Components</a>.
- * Like the JET <a href="ComponentTypeOverview.html#corecomponents">Core Components</a>
- * and composite components, VComponent-based components
- * are exposed as custom elements. From the application developer’s perspective, these
- * custom elements are (essentially) indistinguishable from JET’s other component types.
- * Where VComponents differ is in the component implementation strategy: VComponents produce
- * content via virtual DOM rendering.
- *
- * To create a new VComponent-based custom component, the component author does the following:
- * <ul>
- *   <li>Implements a class that extends VComponent. This class is typically authored in TypeScript.</li>
- *   <li>Overrides the <a href="#render">render()</a> method to return a virtual DOM representation
- *       of the component’s content.</li>
- *   <li>Defines the tag name for the custom element via the static <a href="#tagName">tagName</a> property.</li>
- *   <li>Defines the public contract (properties, methods, events, slots) of the custom element
- *       via the static <a href="#metadata">metadata</a> property.</li>
- *   <li>Registers the class via a call to <a href="#register">VComponent.register()</a>.</li>
- * </ul>
- *
- * Given the above, JET generates an HTMLElement subclass and registers this as a custom
- * element with the browser. These VComponent-based custom elements can then be used anywhere
- * that other JET components are used, and application developers can leverage typical JET
- * functionality such as data binding, property writeback, slotting, etc.
- *
- * A minimal VComponent subclass is shown below:
- * <pre class="prettyprint"><code>
- * declare var define: RequireDefine;
- * // Needed for Babel
- * //** @jsx VComponent.h *&sol;
- * define(['ojs/ojvcomponent', 'text!./component.json', 'ojs/ojavatar'],
- *   function (VComponent, meta) {
- *
- *   class SampleEmployee extends VComponent {
- *     static readonly tagName = 'sample-employee';
- *     static readonly metadata = JSON.parse(meta);
- *
- *     render() {
- *       return (
- *         &lt;SampleEmployee.tagName>
- *           &lt;div>
- *             &lt;oj-avatar initials={this.props.initials} />
- *             &lt;span>{this.props.fullName}&lt;/span>
- *           &lt;/div>
- *         &lt;/SampleEmployee.tagName>
- *       );
- *     }
- *   }
- *   VComponent.register(SampleEmployee)
- *   return SampleEmployee;
- * });
- * </code></pre>
- *
- * <h3 id="render">
- *  Rendering
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#render"></a>
- * </h3>
- * Every VComponent class must provide an implementation of the <a href="#render">render()</a> method.
- * This method returns a tree of virtual DOM nodes that represent the component content,
- * with the root node of the tree representing the component’s own root custom element.
- *
- * Virtual DOM nodes are plain old JavaScript objects that specify the node type
- * (typically the element’s tag name), properties and children. This information is
- * used by the underlying virtual DOM engine to produce live DOM (ie. by calling
- * document.createElement()).
- *
- * Virtual DOM nodes can be created in one of two ways:
- * <ul>
- *   <li>By calling the <a href="#h">VComponent.h()</a> function and passing in the type, properties and children.</li>
- *   <li>Declaratively via TSX (a TypeScript flavor of JSX).</li>
- * </ul>
- *
- * The latter approach is strongly preferred as it results in more readable code. However, this does
- * require a build-time transformation step to convert the TSX markup into VComponent.h() calls.
- *
- * The <a href="#render">render()</a> method will be called whenever component state or properties change to return the new VDOM. The virtual
- * component will then diff the VDOM and patch the live DOM with updates. As custom elements,
- * these virtual components are used in the same way as other JET components, supporting data binding, property writeback,
- * and slotting.
- *
- * <h3 id="jsx">
- *  JSX Syntax
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#jsx"></a>
- * </h3>
- * Virtual component render functions support the use of JSX which is an XML
- * syntax that looks similar to HTML, but supports a different attribute syntax.
- * <h4>JSX Attributes</h4>
- * The virtual component JSX attribute syntax expects the
- * <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a>
- * property names for all JSX attributes meaning that while the majority of attributes will
- * look similar to their HTML counterparts, there will be some cases where they will differ
- * e.g. className and htmlFor. In cases where an attribute does not have an
- * equivalent property on the HTMLElement (data-, aria-, role, etc), the attribute name
- * should be used. The style attribute is special cased and only supports object values
- * e.g. style={ {color: 'blue', fontSize: '12px'} }. Primitive JSX attribute values can
- * be set directly using the equal operator, or within {...} brackets for JavaScript values
- * e.g. the style example above. The JET
- * <a href="CustomElementOverview.html#ce-databind-syntax-section">data binding syntax</a>
- * using double curly or square brackets is not supported when using JSX.
- *
- * <h4>Root Attributes</h4>
- * In general, we do not recommend modifying core HTML properties on the custom element to
- * avoid overriding application set values. However in cases where this is necessary
- * (e.g. moving or copying attributes for accessibility), authors should register properties
- * they plan to control in an array in the <b>controlledRootProperties</b> key in the component
- * metadata. Any root properties not registered as a controlled property will be ignored.
- * The exceptions are style, className, id properties and event listeners. Event listeners
- * can be added using the on[PropertyName] syntax in the root element within the component's
- * <a href="#render">render()</a> method. These properties do not need to be registered in <b>controlledRootProperties</b>
- * metadata and will be added or removed using the DOM's addEventListener and removeEventListener methods.
- * A unique ID will be made available to all components in this.props so components will not
- * need to register id as a controlled property to access the custom element's value.
- * Components will be notified of changes for properties registered in <b>controlledRootProperties</b>
- * similar to component properties and trigger a rerender. These properties will also be made
- * available in the component's this.props object. Note that unlike component properties
- * which will return the default value in this.props, if a root property is not present in
- * the live DOM, it will not be made available in this.props.
- *
- * <h4>Event Listeners</h4>
- * Event listeners follow a 'on'[EventName] naming syntax e.g.
- * onClick={clickListener} and unlike data bound on-click listeners set on the root
- * custom element, JSX event listeners will only receive a single event parameter.
- * Listener properties can take either the event listener directly or an object with
- * listener and options keys where options is the object that would be passed to the
- * DOM addEventListener method for specifying capture or passive listeners. When passing
- * an object to listener properties, we recommend caching the object in the constructor
- * instead of recreating it on each render call for performance reasons.
- * <pre class="prettyprint"><code>
- * class SampleComponent extends VComponent {
- *   constructor(protected props) {
- *     super(props);
- *     this.touchStartHandler = function (event) {...}.bind(this);
- *     this.touchStartObj = {
- *       listener: this.touchStartHandler,
- *       options: { passive: true }
- *     };
- *   }
- *
- *   render() {
- *     return (
- *       &lt;SampleComponent.tagName>
- *         &lt;div onTouchStart={this.touchStartObj}>
- *           ...
- *         &lt;/div>
- *       &lt;/SampleComponent.tagName>
- *     );
- *   }
- * }
- * </code></pre>
- *
- * <h3 id="updates">
- *  State and Property Updates
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#updates"></a>
- * </h3>
- * Components should never directly modify their own component properties.
- * They should instead call the
- * <a href="#updateProperty">updateProperty(prop, value, shouldRender)</a> method
- * to request a property update. The framework will then schedule the change and
- * a rerender (unless shouldRender is set to false, e.g. if updating the rawValue
- * property) with the new property set.
- *
- * Components may also track internal state that's not reflected through their
- * properties. There is a state mechanism for supporting this. Components
- * should initialize their state objects in their constructors. After that,
- * components should use the
- * <a href="#updateState">updateState</a> or
- * <a href="#updateStateFromProps">updateStateFromProps</a> methods to request a state
- * update. The framework will then schedule the change and rerender the component.
- *
- * <h3 id="defaults">
- *  Dynamic Defaults
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#defaults"></a>
- * </h3>
- * In addition to specifying default values in metadata, VComponents can implement an
- * optional static getDynamicDefaults() method on their component to return an object
- * that has dynamic getters for properties with defaults that can only be determined at
- * runtime or are non-JSON-typed. If a default value for a property is specified in the
- * object returned by getDynamicDefaults(), a default value should not be provided
- * in the metadata. If one is found, the metadata default value will always override
- * the dynamic default value. Note that if the return value is of Object or Array type,
- * we recommend deep freezing the value to prevent modification by the application.
- * <pre class="prettyprint"><code>
- * class SampleComponent extends VComponent {
- *   ...
- *
- *   static getDynamicDefaults() {
- *     return {
- *       get birthDate() {
- *         return new Date('January 1, 1999');
- *       }
- *     }
- *   }
- * }
- * </code></pre>
- *
- * <h3 id="lifecycle">
- *  Lifecycle Methods
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#lifecycle"></a>
- * </h3>
- * In addition to the required render method, virtual components have several optional lifecycle
- * methods that give the component hooks to setup global listeners, geometry management, state updates,
- * and cleanup. See the API doc for each lifecycle method for details.
- *
- * <h4>Mount</h4>
- * <ul>
- *   <li><a href="#VComponent">constructor()</a></li>
- *   <li><a href="#updateStateFromProps">updateStateFromProps()</a></li>
- *   <li><a href="#render">render()</a></li>
- *   <li><a href="#mounted">mounted()</a></li>
- *   <li><a href="#postRender">postRender()</a></li>
- * </ul>
- *
- * <h4>Update</h4>
- * <ul>
- *   <li><a href="#updateStateFromProps">updateStateFromProps()</a></li>
- *   <li><a href="#render">render()</a></li>
- *   <li><a href="#postRender">postRender()</a></li>
- * </ul>
- *
- * <h4>Unmount</h4>
- * <ul>
- *   <li><a href="#unmounted">unmounted()</a></li>
- * </ul>
- *
- * <h3 id="slots">
- *  Slotting
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#slots"></a>
- * </h3>
- * Component authors can define where slot content goes by calling the
- * <a href="#slot">slot(slotName, defaultContent)</a> method on the VComponent instance.
- * The slot method returns an array of slot children for the given slot name, which the
- * component author can use to index into for stamping out additional DOM around slot
- * content or to limit the number of slot children for a slot. Unslotted content, e.g. those
- * not matching a slot name, will remain in the DOM, but not be visible.
- * <pre class="prettyprint"><code>
- * render() {
- *   return (
- *     &lt;MyComponent.tagName>
- *       &lt;div style="border-style: solid; width:200px;">
- *         {this.slot('main', <span>Default Content</span>)[this.props.index]}
- *       &lt;/div>
- *     &lt;/MyComponent.tagName>
- *   );
- * }
- * </code></pre>
- *
- * <h3 id="templates">
- *  Inline Templates
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#templates"></a>
- * </h3>
- * Components that wish to support passing special context, e.g. row context for data rows, to an
- * application-provided template, can do so by exposing template slots.
- * Template slot wiring is done automatically when the component does the following in its metadata:
- * <ul>
- *  <li>Expose a slot following the [slotName]Template syntax, e.g. itemTemplate.</li>
- *  <li>Document the <a href="http://jet/trunk/jsdocs/MetadataTypes.html#ComponentMetadataSlots">data</a>
- *    property for the slot, representing the properties available to the template content in the $current property.
- *  <li>Expose a property following the [slotName]Renderer syntax where the slot name should match the one defined
- *    for the [slotName]Template, e.g. itemRenderer.</li>
- *  <li>The application can provide either a function via the [slotName]Renderer property (preferred for performance)
- *   or a template with the [slotName]Template slot name. If the application provides a <code>&lt;template></code> element
- *   matching the template slot name, the VComponent will be passed a renderer in the corresponding this.props.[slotName]Renderer property.
- *   If both a template and renderer are specified, the template will take precedence.</li>
- *  <li>The component should call the [slotName]Renderer in its render() method passing it an object with the properties
- *   defined in the slot's data metadata property to get its slot content.</li>
- * </ul>
- * <pre class="prettyprint"><code>
- * &lt;sample-collection>
- *   &lt;template slot="itemTemplate">
- *     &lt;div>
- *      &lt;oj-bind-text value="[[$current.value]]">&lt;/oj-bind-text>
- *     &lt;/div>
- *   &lt;/template>
- * &lt;/sample-collection>
- * </code></pre>
- * <pre class="prettyprint"><code>
- * class SampleCollection extends VComponent {
- *   ...
- *   static readonly metadata = {
- *     "properties": {
- *       "itemRenderer": {
- *         "type": "Function"
- *         ...
- *       }
- *     },
- *     ...
- *     "slots": {
- *        "itemTemplate": {
- *          "description": "The itemTemplate slot is used to specify the template for rendering each item in the list.",
- *          "data": {
- *            "value": {
- *              "description": "The value from the stamped out data row.",
- *              "type": "string"
- *            }
- *          }
- *        }
- *     }
- *   }
- *
- *   render() {
- *     const fetchedData = this.state.fetchedData;
- *     const templateRenderer = this.props.itemRenderer;
- *     if (!templateRenderer) {
- *       return this._defaultRenderer(data);
- *     }
- *     return (
- *       &lt;SampleCollection.tagName>
- *         &lt;div>
- *           { data.map(row => { return <p>{templateRenderer({ value: row.value })}</p>; }) }
- *         &lt;/div>
- *       &lt;/SampleCollection.tagName>
- *     );
- *   }
- * }
- * </code></pre>
- *
- * <h3 id="perf">
- *  Performance Considerations
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf"></a>
- * </h3>
- * Every time a component's render function is called, everything contained is created anew.
- * As a result, complex properties (e.g. non-primitive values like Object types, event listeners),
- * should be created outside of the render function's scope. Otherwise, e.g. the component would
- * be specifying a different instance of an event listener each time the component is rendered
- * which would result in unnecessary DOM changes. Event listeners should be bound in the constructor
- * and just referred to in the render function.  Non-primitive values should be saved in variables
- * outside of the render function.
- * <pre class="prettyprint"><code>
- * class MyComponent extends VComponent {
- *   constructor(protected props) {
- *     super(props);
- *     this._handleClick = this._handleClick.bind(this);
- *   }
- *
- *   _handleClick(event) {...}
- *
- *   render() {
- *     return (
- *       &lt;MyComponent.tagName>
- *         &lt;div onClick={this._handleClick}/>
- *       &lt;/MyComponent.tagName>);
- *   }
- * }
- * </code></pre>
- */
-
- // TYPEDEFS
-
- /**
-  * @typedef {Object} VComponent.VNode
-  * @property {string} type The tagName of the element
-  * @property {any?} key Identifier used to track the virtual node on the next patch
-  * @property {Object} props The properties to render into the DOM
-  * @property {Array<VComponent.VNode>|Array<Node>} content The child content of the virtual node
-  *   which could be an array of virtual nodes or an array of DOM nodes if the content is application
-  *   passed slot content
-  * @ojsignature [{target: "Type", value: "{ [key: string]: any }", for: "props"}]
-  */
-
- // STATIC PROPERTIES
-
-/**
- * The component metadata describing its properties, methods, slots, and events. See the
- * typedef for the full description of metadata keys.
- * @name metadata
- * @memberof VComponent
- * @type {Object}
- * @default undefined
- * @ojsignature [{target: "Type", value: "MetadataTypes.ComponentMetadata"}]
- * @expose
- */
-
-/**
- * The custom element tag name that the virtual component will be registered with in the DOM.
- * A correctly namespaced value must be provided.
- * @name tagName
- * @memberof VComponent
- * @type {string}
- * @default undefined
- * @expose
- */
-
- // STATIC METHODS
-/**
- * Creates a virtual node for an HTML element of the given type, props, and children.
- * @function h
- * @memberof VComponent
- * @param {string} type An HTML or SVG tag name
- * @param {Object} props The properties to set in the real DOM node
- * @param {...Object} ...children Optional child DOM
- * @ojsignature [{target: "Type", value: "P", for: "props"},
- *               {target: "Type", value: "VComponent.VNode", for: "children"},
- *               {target: "Type", value: "VComponent.VNode", for: "returns"}]
- * @return {void}
- * @expose
- */
-
-/**
- * Registers the given VComponent constructor as a custom element. The component
- * should implement the static tagName and metadata properties.
- * @function register
- * @memberof VComponent
- * @param {Function} constr The VComponent constructor to register
- * @return {void}
- * @ojsignature [{target: "Type", value: "Function<VComponent>", for: "constr"}]
- * @expose
- */
-
-/**
- * An optional method that can return an object with non JSON compatible default values or
- * getters for properties with dynamic default values, e.g. theme dependent properties.
- * If a default for a property is also found in metadata, the dynamic value will be ignored.
- * @function getDynamicDefaults
- * @return {Object|null}
- * @ojsignature [{target: "Type", value: "{ [key: string]: any } | null", for: "returns"}]
- * @memberof VComponent
- * @expose
- */
-
- // INSTANCE PROPERTIES
-/**
- * The passed in component properties. This property should not be directly modified e.g.
- * this.props = {} or this.props.someProp = 'foo'. Internal updates for writeback properties
- * should be done through the updateProperty method.
- * @name props
- * @memberof VComponent
- * @type {Object}
- * @default {}
- * @ojsignature [{target: "Type", value: "P"}]
- * @ojprotected
- * @instance
- * @expose
- */
-
-/**
- * The component state. State updates should be done through the updateState or updateStateFromProps methods
- * and not by direct modification of this property in order to ensure that the component
- * is rerendered.
- * @expose
- * @name state
- * @memberof VComponent
- * @type {Object}
- * @default {}
- * @ojsignature [{target: "Type", value: "S"}]
- * @ojprotected
- * @instance
- */
-
- // INSTANCE METHODS
-
-/**
- * An optional lifecycle method called before the render method with the new props.
- * Components should return the new state object or null if no changes are needed.
- * @function updateStateFromProps
- * @param {Object} props The new component properties
- * @return {Object|nul}
- * @ojsignature [{target: "Type", value: "P", for: "props"},
- *              {target: "Type", value: "S|null", for: "returns"}]
- *
- * @memberof VComponent
- * @ojprotected
- * @instance
- * @expose
- */
-
-/**
- * Required lifecycle method which returns the component's virtual subtree.
- * @function render
- * @return {void}
- *
- * @memberof VComponent
- * @ojprotected
- * @abstract
- * @instance
- * @expose
- */
-
-/**
- * An optional lifecycle method called after the
- * virtual component has been initially rendered and inserted into the
- * DOM. Data fetches and global listeners can be added here.
- * This will not be called for reparenting cases.
- * @function mounted
- * @return {void}
- *
- * @memberof VComponent
- * @ojprotected
- * @instance
- * @expose
- */
-
-/**
- * An optional component lifecycle method called after the
- * virtual component has been removed from the DOM. This will not
- * be called for reparenting cases. Global listener cleanup can
- * be done here.
- * @function unmounted
- * @return {void}
- *
- * @memberof VComponent
- * @ojprotected
- * @instance
- * @expose
- */
-
-/**
- * An optional component lifecycle method called after the
- * render method when all changes have been propagated to the DOM.
- * Additional DOM manipulation can be done here. This method is called
- * after component instantiation in addition to component updates.
- * @function postRender
- * @return {void}
- *
- * @memberof VComponent
- * @ojprotected
- * @instance
- * @expose
- */
-
-/**
- * Dispatches a CustomEvent with the given type and detail field.
- * @function fireAction
- * @param {string} type The action type
- * @param {Object} detail The detail object that would get passed to an event's detail property
- * @return {void}
- * @ojsignature [{target: "Type", value: "{ [key: string]: any }", for: "detail"}]
- *
- * @memberof VComponent
- * @ojprotected
- * @instance
- * @expose
- */
-
-/**
- * Returns either the slotted live DOM nodes for the given slot or the virtual children
- * representing the default content for that slot. The default slot should be referenced
- * using the empty string ('').
- * @function slot
- * @param {string} slotName The name of the slot to look up
- * @param {Array<VComponent.VNode>} defaultContent The backup content for a slot in the case no slot children are provided.
- * @return {Array<VComponent.VNode|Node>}
- *
- * @memberof VComponent
- * @ojprotected
- * @instance
- * @expose
- */
-
-/**
- * Returns either the passed id or a unique string that can be used for
- * a prefix on child elements. This method can only be called after the VComponent
- * has been instantiated and will return undefined if called from the constructor.
- * @function uniqueId
- * @return {string}
- *
- * @memberof VComponent
- * @ojprotected
- * @instance
- * @expose
- */
-
-/**
- * Updates an internal component state. State updates always trigger an asynchronous rerender.
- * @function updateState
- * @param {string} state The name of the state property
- * @param {any} value The new state property value
- * @return {void}
- *
- * @memberof VComponent
- * @ojprotected
- * @instance
- * @expose
- */
-
-/**
- * Updates a writeback component property. The shouldRender flag allows the component
- * to decided whether an asynchronous rerender should be queued, e.g. rawValue update may want
- * to skip rerender.
- * @function updateProperty
- * @param {string} prop The name of the property
- * @param {any} value The new property value
- * @param {boolean} [shouldRender = true] True if the property update should trigger a rerender
- * @return {void}
- *
- * @memberof VComponent
- * @ojprotected
- * @instance
- * @expose
- */
-
-
-VComponent.h = PetitDom.h;
-return VComponent;
 });

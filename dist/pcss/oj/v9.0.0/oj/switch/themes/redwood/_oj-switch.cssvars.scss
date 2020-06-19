@@ -1,0 +1,123 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+// import dependencies
+@import "../../../text-field/themes/redwood/_oj-text-field.cssvars.scss";
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+  @include module-include-once("redwood.variables.switch") {
+
+:root {
+
+  // switch
+  // ------------------------------
+
+  --oj-switch-track-height:                         1.25rem;
+  --oj-switch-track-width:                          2.25rem;
+  --oj-switch-track-border-radius:                  0.375rem;
+  --oj-switch-track-transitions:                    background-color 0.2s linear 0.1s, opacity 0.2s linear 0.1s, border-color 0.2s linear 0.1s;
+
+  --oj-switch-thumb-to-track-horizontal-margin:     0.125rem;
+  
+  --oj-switch-thumb-transition-active:              height var(--oj-animation-duration-xshort) var(--oj-animation-ease-in-out), width var(--oj-animation-duration-xshort) var(--oj-animation-ease-in-out);
+  --oj-switch-thumb-transition-selected:            height var(--oj-animation-duration-medium) var(--oj-animation-ease-out), width var(--oj-animation-duration-medium) var(--oj-animation-ease-out), left var(--oj-animation-duration-medium) var(--oj-animation-ease-out);
+  --oj-switch-thumb-transition-deselected:          height var(--oj-animation-duration-long) var(--oj-animation-ease-out), width var(--oj-animation-duration-long) var(--oj-animation-ease-out), right var(--oj-animation-duration-long) var(--oj-animation-ease-out);
+
+  // off
+  --oj-switch-track-bg-color:                       var(--oj-palette-neutral-90);
+  --oj-switch-track-border-color:                   var(--oj-palette-neutral-90);
+  --oj-switch-track-border-width:                   0px;
+  --oj-switch-thumb-bg-color:                       var(--oj-palette-neutral-0);
+  --oj-switch-thumb-border-color:                   var(--oj-palette-neutral-0);
+  --oj-switch-thumb-height:                         calc(var(--oj-switch-track-height) - 0.25rem);
+  --oj-switch-thumb-width:                          var(--oj-switch-thumb-height);
+  --oj-switch-thumb-border-width:                   1px;
+  --oj-switch-thumb-border-radius:                  0.25rem;
+  --oj-switch-thumb-box-shadow:                     0px 0.125rem 0.25rem 0px hsla(var(--oj-core-box-shadow-hsl),0.1);
+  // on
+  --oj-switch-track-bg-color-selected:              var(--oj-palette-brand-100);
+  --oj-switch-track-border-color-selected:          var(--oj-palette-brand-100);
+  --oj-switch-thumb-bg-color-selected:              var(--oj-palette-neutral-0);
+  --oj-switch-thumb-border-color-selected:          var(--oj-palette-neutral-0);
+  --oj-switch-thumb-height-selected:                var(--oj-switch-thumb-height);
+  --oj-switch-thumb-width-selected:                 var(--oj-switch-thumb-width);
+  --oj-switch-thumb-box-shadow-selected:            var(--oj-switch-thumb-box-shadow);
+
+  // off hover
+  --oj-switch-track-bg-color-hover:                 rgba(var(--oj-palette-neutral-rgb-170), var(--oj-palette-opacity-medium));
+  --oj-switch-track-border-color-hover:             rgba(var(--oj-palette-neutral-rgb-170), var(--oj-palette-opacity-medium));
+  --oj-switch-thumb-bg-color-hover:                 var(--oj-palette-neutral-10);
+  --oj-switch-thumb-border-color-hover:             var(--oj-palette-neutral-10);
+  --oj-switch-thumb-height-hover:                   var(--oj-switch-thumb-height);
+  --oj-switch-thumb-width-hover:                    var(--oj-switch-thumb-width);
+  --oj-switch-thumb-border-width-hover:             1px;
+
+  // on hover
+  --oj-switch-track-bg-color-selected-hover:        var(--oj-palette-brand-110);
+  --oj-switch-track-border-color-selected-hover:    var(--oj-palette-brand-110);
+  --oj-switch-thumb-bg-color-selected-hover:        var(--oj-palette-neutral-10);
+  --oj-switch-thumb-border-color-selected-hover:    var(--oj-palette-neutral-10);
+  --oj-switch-thumb-height-selected-hover:          var(--oj-switch-thumb-height);
+  --oj-switch-thumb-width-selected-hover:           var(--oj-switch-thumb-width);
+  --oj-switch-thumb-border-width-selected-hover:    1px;
+
+  // off active
+  --oj-switch-track-bg-color-active:                rgba(var(--oj-palette-neutral-rgb-170), 0.68);
+  --oj-switch-track-border-color-active:            rgba(var(--oj-palette-neutral-rgb-170), 0.68);
+  --oj-switch-thumb-bg-color-active:                var(--oj-palette-neutral-10);
+  --oj-switch-thumb-border-color-active:            var(--oj-palette-neutral-10);
+  --oj-switch-thumb-height-active:                  var(--oj-switch-thumb-height);
+  --oj-switch-thumb-width-active:                   var(--oj-switch-thumb-width);
+  --oj-switch-thumb-border-width-active:            1px;
+  --oj-switch-thumb-border-radius-active:           0.1875rem;
+
+  // on active
+  --oj-switch-track-bg-color-selected-active:       var(--oj-palette-brand-120);
+  --oj-switch-track-border-color-selected-active:   var(--oj-palette-brand-120);
+  --oj-switch-thumb-bg-color-selected-active:       var(--oj-palette-neutral-10);
+  --oj-switch-thumb-border-color-selected-active:   var(--oj-palette-neutral-10);
+  --oj-switch-thumb-height-selected-active:         var(--oj-switch-thumb-height);
+  --oj-switch-thumb-width-selected-active:          var(--oj-switch-thumb-width);
+  --oj-switch-thumb-border-width-selected-active:   1px;
+  --oj-switch-thumb-border-radius-selected-active:  0.1875rem;
+
+  // readonly off
+  --oj-switch-track-bg-color-readonly:              transparent;
+  --oj-switch-track-border-color-readonly:          transparent;
+  --oj-switch-track-border-width-readonly:          0;
+  --oj-switch-thumb-bg-color-readonly:              transparent;
+  --oj-switch-thumb-border-color-readonly:          transparent;
+  --oj-switch-thumb-height-readonly:                var(--oj-switch-thumb-height);
+  --oj-switch-thumb-width-readonly:                 var(--oj-switch-thumb-width);
+  --oj-switch-thumb-border-width-readonly:          0;
+
+
+  // readonly on
+  --oj-switch-track-bg-color-selected-readonly:     transparent;
+  --oj-switch-track-border-color-selected-readonly: transparent;
+  --oj-switch-thumb-bg-color-selected-readonly:     transparent;
+  --oj-switch-thumb-border-color-selected-readonly: transparent;
+  --oj-switch-thumb-height-selected-readonly:       var(--oj-switch-thumb-height);
+  --oj-switch-thumb-width-selected-readonly:        var(--oj-switch-thumb-width);
+  --oj-switch-text-color-selected-readonly:         var(--oj-core-text-color-primary);
+
+  // disabled off
+  --oj-switch-track-bg-color-disabled:              rgba(var(--oj-palette-neutral-rgb-90), var(--oj-palette-opacity-low));
+  --oj-switch-track-border-color-disabled:          rgba(var(--oj-palette-neutral-rgb-90), var(--oj-palette-opacity-low));
+  --oj-switch-thumb-bg-color-disabled:              var(--oj-palette-neutral-0);
+  --oj-switch-thumb-border-color-disabled:          var(--oj-palette-neutral-0);
+  --oj-switch-thumb-height-disabled:                var(--oj-switch-thumb-height);
+  --oj-switch-thumb-width-disabled:                 var(--oj-switch-thumb-width);
+
+  // disabled on
+  --oj-switch-track-bg-color-selected-disabled:     rgba(var(--oj-palette-brand-rgb-100), var(--oj-palette-opacity-low));
+  --oj-switch-track-border-color-selected-disabled: rgba(var(--oj-palette-brand-rgb-100), var(--oj-palette-opacity-low));
+  --oj-switch-thumb-bg-color-selected-disabled:     var(--oj-palette-neutral-0);
+  --oj-switch-thumb-border-color-selected-disabled: var(--oj-palette-neutral-0);
+  --oj-switch-thumb-height-selected-disabled:       var(--oj-switch-thumb-height);
+  --oj-switch-thumb-width-selected-disabled:        var(--oj-switch-thumb-width);
+
+
+}
+
+}

@@ -1,0 +1,26 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../utilities/oj.utilities";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeSelectorClasses != false {
+  $includeRadiosetClasses: true !global;
+}
+
+// ----- end dependencies ---------
+
+// currently checkboxset and radioset are defined in one file, 
+// so just import the alta radioset file.
+@import "oj.alta.formcontrol.radioset";
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.selector.scss";
+
+@if $includeSelectorClasses != false {
+  @include module-include-once("alta.selector") {
+    
+  }
+}

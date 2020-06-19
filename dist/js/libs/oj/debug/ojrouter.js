@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -10,7 +11,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
   "use strict";
 
 /* jslint browser: true*/
-/* global oj, ko, Promise, signals, Logger:false */
+/* global ko, Promise, signals, Logger:false */
 
 /**
  * The ojRouter module.
@@ -579,7 +580,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
    */
   function _StateChange(router, value) {
     this.router = router;
-    this.value = value;     // the value is also the stateId
+    this.value = value; // the value is also the stateId
   }
 
   /**
@@ -1262,9 +1263,10 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
    * @constructor
    * @hideconstructor
    * @export
+   * @ojtsimport {module: "ojrouterstate", type: "AMD", imported:["RouterState"]}
    * @ojtsimport knockout
    * @ojtsimport signals
-   * @ojtsimport {module: "ojrouterstate", type: "AMD", imported:["RouterState"]}
+   * @ojdeprecated {since: '9.0.0', description: 'Use CoreRouter instead'}
    */
   oj.Router = function (key, parentRouter, parentState) {
     var router = this;
@@ -1806,7 +1808,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
     if (sId) {
       for (var i = 0; i < rootRouter._childRouters.length; i++) {
         var sr = rootRouter._childRouters[i];
-        if (sId === sr._parentState) {
+        if (sId === sr.parent.stateId()) {
           subRouter = sr;
           break;
         }
@@ -2736,7 +2738,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       parser.href = baseUrlProp;
 
       var path = parser.pathname;
-      path = path.replace(/^([^/])/, '/$1');  // Should always start with slash (for IE)
+      path = path.replace(/^([^/])/, '/$1'); // Should always start with slash (for IE)
 
       // Normalize the base path. Always ends with a '/'
       if (path.slice(-1) !== '/') {

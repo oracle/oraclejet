@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -265,6 +266,9 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function (section) {
    *
    * @ojshortdesc An indexer displays a list of sections that corresponds to group headers of a list.
    * @ojrole slider
+   *
+   * @ojuxspecs ['indexer']
+   *
    * @classdesc
    * <h3 id="indexerOverview-section">
    *   JET Indexer Component
@@ -593,7 +597,7 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function (section) {
           container = $(this.OuterWrapper);
         } else {
           container = $(document.createElement('div'));
-          this.element.parent()[0].replaceChild(container[0], this.element[0]); // @HTMLUpdateOK
+          this.element.parent()[0].replaceChild(container[0], this.element[0]);
         }
         container.addClass('oj-indexer oj-component');
         container.prepend(this.element); // @HTMLUpdateOK
@@ -623,11 +627,16 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function (section) {
         var first = this._createItem(sections[0], missingSections);
         root.append(first); // @HTMLUpdateOK
 
-        var itemHeight = first.outerHeight();
+        // remove abbr first otherwise it will affect item height
+        this._getIndexerContainer().removeClass('oj-indexer-abbr');
+        if (this.m_itemHeight == null) {
+          this.m_itemHeight = first.outerHeight();
+        }
+        // safeguard this.m_itemHeight from being 0, which shouldn't happen
+        var itemHeight = Math.max(1, this.m_itemHeight);
         var max = Math.floor(height / itemHeight);
 
         // first +1 is to include the '#', second +1 is to include rendering of the symbol between letters
-        this._getIndexerContainer().removeClass('oj-indexer-abbr');
         var skip = Math.floor((sections.length + 1) / max) + 1;
         if (skip > 1) {
             // the height of item is a little different
@@ -655,6 +664,10 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function (section) {
         var others = this._createItem(sectionOthers);
         others.attr('data-others', 'true');
         root.append(others); // @HTMLUpdateOK
+
+        if (this.m_height == null) {
+          this.m_height = height;
+        }
       },
 
       /**
@@ -1078,8 +1091,9 @@ oj.ListViewIndexerModel.prototype._findGroupHeader = function (section) {
        * @private
        */
       _handleResize: function (width, height) {
-        if (width > 0 && height > 0) {
+        if (height > 0 && height !== this.m_height) {
           this.refresh();
+          this.m_height = height;
         }
       }
 
@@ -1235,6 +1249,7 @@ oj.IndexerModel.SECTION_OTHERS = {
 (function () {
   __oj_indexer_metadata.extension._WIDGET_NAME = 'ojIndexer';
   __oj_indexer_metadata.extension._INNER_ELEM = 'ul';
+  __oj_indexer_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-label', 'aria-labelledby'];
   oj.CustomElementBridge.register('oj-indexer', { metadata: __oj_indexer_metadata });
 }());
 

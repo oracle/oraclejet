@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -132,13 +133,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojlogger', 'ojs/ojcompo
  * var resolveFunc = busyContext.addBusyState({"description": "Animation in progress"});
  * oj.AnimationUtils.slideOut(element).then(resolveFunc);
  * </code></pre>
- *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
  *
  * @namespace
  * @ojtsmodule
@@ -1986,30 +1980,18 @@ oj.AnimationUtils.animateHero = function (element, options) {
  * in the DOM tree after animateHero is called. If desired, applications can use this information to adjust the animation.
  * For example, if the destination element takes a long time to appear, a shorter animation may be used.
  */
-
+// --------------------------------------------------- oj.AnimationUtils Styling Start -----------------------------------------------------------
+// ---------------- oj-animation-backface --------------
 /**
- * <p>The following CSS classes can be applied by the page author as needed.</p>
- *
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>Class</th>
- *       <th>Description</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-animation-backface</td>
- *       <td>This is used by the "flipIn" and "flipOut" methods when the "flipTarget" option is set to "children"
- *           to flip the children of an element that represents the two faces of a card.
- *           The child element that represents the back face must have the "oj-animation-backface" marker class.</td>
- *     </tr>
- *   </tbody>
- * </table>
- *
- * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
- * @memberof oj.AnimationUtils
- */
+* This is used by the "flipIn" and "flipOut" methods when the "flipTarget" option is set to "children" to flip the children of an element that represents the two faces of a card. <br/>
+* The child element that represents the back face must have the "oj-animation-backface" marker class.
+* @ojstyleclass oj-animation-backface
+* @ojdisplayname Animation Backface
+* @ojshortdesc Apply to the child element representing the back face of a card element that can be flipped. See the Help documentation for more information.
+* @ojstyleselector div
+* @memberof oj.AnimationUtils
+*/
+// --------------------------------------------------- oj.AnimationUtils Styling End -----------------------------------------------------------
 
   return oj.AnimationUtils;
 });

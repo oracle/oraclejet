@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function($, dvt) {
   "use strict";
@@ -8,16 +9,18 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function(dvt) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -498,8 +501,9 @@ DvtDiagramLayoutContext.prototype.getDirtyContext = function() {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -930,8 +934,9 @@ DvtDiagramLayoutContextLink.prototype.copyFrom = function(link) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -1538,8 +1543,9 @@ DvtDiagramLayoutContextNode.prototype.copyFrom = function(node) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -1572,8 +1578,9 @@ DvtDiagramPoint.prototype.Init = function(x, y) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -1613,8 +1620,9 @@ DvtDiagramRectangle.prototype.Init = function(x, y, w, h) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1628,8 +1636,9 @@ dvt.DiagramRectangle = DvtDiagramRectangle;
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -2327,7 +2336,7 @@ dvt.BaseDiagram.prototype.GetViewBounds = function() {
   var linkId;
   var bx;
   var by;
-  
+
   var arNodeIds = this.GetAllRoots();
   for (var i = 0; i < arNodeIds.length; i++) {
     nodeId = arNodeIds[i];
@@ -2464,7 +2473,7 @@ dvt.BaseDiagram.prototype.ConstrainPanning = function(x, y, w, h, zoom) {
     minPanY = halfViewportH - (h + y) * zoom;
     maxPanX = halfViewportW - x * zoom;
     maxPanY = halfViewportH - y * zoom;
-  } 
+  }
   if (this.IsLayoutViewport()) {
     // if the viewport is specified and the viewport bounds are outside of the panning constraints,
     // adjust the constraints symmetrically to include the viewport bounds
@@ -2598,8 +2607,9 @@ dvt.BaseDiagram.compareValues = function(ctx, obj1, obj2) {
 
 /**
  * @license
- * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2011 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -2894,8 +2904,9 @@ dvt.BaseDiagramKeyboardHandler._anglesAreEqualWithinTolerance = function(a1, a2)
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -2926,6 +2937,15 @@ dvt.BaseDiagramNode.prototype.Init = function(context, nodeId, diagram) {
   this._selected = false;
   this._selectable = true;
 };
+
+/**
+ * Returns the node displayable (itself).
+ *
+ * @return {dvt.Displayable} displayable
+ */
+dvt.BaseDiagramNode.prototype.getDisplayable = function() {
+  return this;
+}
 
 /**
  * Gets parent diagram
@@ -3346,8 +3366,9 @@ dvt.BaseDiagramNode.prototype.getGroupId = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -3377,6 +3398,15 @@ dvt.BaseDiagramLink.prototype.Init = function(context, linkId, diagram) {
   this._selected = false;
   this._selectable = true;
 };
+
+/**
+ * Returns the link displayable (itself).
+ *
+ * @return {dvt.Displayable} displayable
+ */
+dvt.BaseDiagramLink.prototype.getDisplayable = function() {
+  return this;
+}
 
 /**
  * Gets parent diagram
@@ -4075,8 +4105,9 @@ dvt.BaseDiagramLink.prototype.getGroupId = function() {
 
 /**
  * @license
- * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2011 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4140,8 +4171,9 @@ dvt.DiagramLayoutUtils.convertDiagramPointToPoint = function(diagramPoint) {
 
 /**
  * @license
- * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2011 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4353,8 +4385,9 @@ DvtDiagramLinkUnderlay.prototype.showUnderlayEnd = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4531,8 +4564,9 @@ dvt.DiagramLinkUtils.GetControlPoints = function(points) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4993,24 +5027,27 @@ dvt.DiagramLinkConnectorUtils.getStandardConnectorOffset = function(connectorTyp
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 })(dvt);
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function(dvt) {
 
 /**
  * @license
- * Copyright (c) 2017 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2017 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 //
@@ -5184,8 +5221,9 @@ DvtDiagramStyleUtils.getAnimationOnDataChange = function(diagram) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -5253,8 +5291,9 @@ DvtDiagramDataUtils.GetNodeOption = function(comp, node) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -5303,7 +5342,7 @@ DvtDiagramOverviewUtils.CreateOverviewWindow = function(diagram) {
   // give clip path an extra space
   clipPath.addRect(overview.getTranslateX() -1, overview.getTranslateY() -1, ovWidth + 2, ovHeight + 2);
   overview.setClipPath(clipPath);
-  overview.UpdateViewport();  
+  overview.UpdateViewport();
 
   // place a rectangle on top of the overview window to show overview boundaries,
   // when viewport is larger than overview
@@ -5547,7 +5586,7 @@ DvtDiagramOverviewUtils.ZoomToFitOverviewContent = function(diagram, overview, o
   ovContent.setTranslate(tx, ty);
 };
 
-/** 
+/**
  * @private
  * @param {dvt.Diagram} diagram the parent diagram component
  * @param {DvtDiagramOverview} overview the overview window
@@ -5559,7 +5598,7 @@ DvtDiagramOverviewUtils._adjustNodePositionsForAspectRatio = function (diagram, 
     var diagramBounds = diagram.GetViewBounds();
     var ovPadding = 2 * dvt.CSSStyle.toNumber(diagram.Options.styleDefaults._overviewStyles.overviewContent.padding);
     // canvas meet and canvas none cases
-    if (diagram.Options.overview.fitArea === 'canvas') { 
+    if (diagram.Options.overview.fitArea === 'canvas') {
       var canvasDimensions = DvtDiagramOverviewUtils._getCanvasDimensions(diagram);
       var diagramRatio = canvasDimensions.w/ canvasDimensions.h; // option #2
     }
@@ -5569,33 +5608,33 @@ DvtDiagramOverviewUtils._adjustNodePositionsForAspectRatio = function (diagram, 
     var overviewRatio = (width - ovPadding)/(height - ovPadding);
     if (overviewRatio == diagramRatio)
       return;
-    
+
     // stretch factors
     var stretchFactorH = overviewRatio > diagramRatio ? overviewRatio / diagramRatio : 1;
     var stretchFactorV = overviewRatio < diagramRatio ? diagramRatio / overviewRatio : 1;
-  
+
     //update overview.ContentBounds
     overview.ContentBounds = diagramBounds.clone();
     overview.ContentBounds.w = overview.ContentBounds.w * stretchFactorH;
     overview.ContentBounds.h = overview.ContentBounds.h * stretchFactorV;
     overview.StretchFactor = { h: stretchFactorH, v: stretchFactorV };
-  
-    // adjust positions only for none 
+
+    // adjust positions only for none
     var rootNodes = diagram.GetRootNodeObjects();
     if (rootNodes.length > 0) {
       var nodeStretchFactor = DvtDiagramOverviewUtils._getNodesStretchFactor(overview, rootNodes, overview.StretchFactor);
-      
+
       // edge case where we don't stretch nodes because of the layout
       if (nodeStretchFactor.h === 1 && nodeStretchFactor.v === 1) {
         overview.ContentBounds = diagramBounds.clone();
         overview.StretchFactor = {h : 1, v : 1};
         return;
       }
-      
+
       rootNodes.forEach(function(node) {
         DvtDiagramOverviewUtils._adjustNodePosition(overview.Nodes.get(node.getId()), nodeStretchFactor);
       });
-    }  
+    }
   }
 };
 
@@ -5610,7 +5649,7 @@ DvtDiagramOverviewUtils._getCanvasDimensions = function (diagram) {
   var dims;
   if (diagram.Options.panning === 'fixed' || diagram.Options.panning === 'none') {
     dims = new dvt.Dimension(diagram.Width, diagram.Height);
-  } 
+  }
   else { // panning is 'auto' or 'centerContent'
     var contentDims =  diagram.GetViewBounds();
     var zoom = diagram.getPanZoomCanvas().getMinZoom();
@@ -5619,7 +5658,7 @@ DvtDiagramOverviewUtils._getCanvasDimensions = function (diagram) {
   return dims;
 }
 
-/** 
+/**
  * @private
  * Set new position for the overview node based on the node centers.
  * @param {dvt.SimpleMarker} ovNode overview node
@@ -5653,7 +5692,7 @@ DvtDiagramOverviewUtils._getNodesStretchFactor = function(overview, rootNodes, s
   var nodeStretchFactor = { h: 1, v: 1};
   if (stretchFactor.h > 1) {
     // find left-most and right-most node centers
-    var minX = Number.MAX_VALUE; 
+    var minX = Number.MAX_VALUE;
     var maxX = -Number.MAX_VALUE;
     var minBounds, maxBounds;
     rootNodes.forEach(function(node) {
@@ -5671,7 +5710,7 @@ DvtDiagramOverviewUtils._getNodesStretchFactor = function(overview, rootNodes, s
   }
   if (stretchFactor.v > 1) {
     // find most-top and most-bottom node centers
-    var minY = Number.MAX_VALUE; 
+    var minY = Number.MAX_VALUE;
     var maxY = -Number.MAX_VALUE;
     var minBounds, maxBounds;
     rootNodes.forEach(function(node) {
@@ -5864,8 +5903,9 @@ DvtDiagramOverviewUtils._updateOverviewNodes = function(diagram, overview) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -6204,8 +6244,9 @@ DvtDiagramOverview.prototype.CreateAnimationClone = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -6972,6 +7013,18 @@ dvt.Diagram.prototype.layout = function() {
     var point = this.getLayoutOffset();
     var currentViewport = new dvt.DiagramRectangle(viewportRect.x - point.x, viewportRect.y - point.y, viewportRect.w, viewportRect.h);
     layoutContext.setCurrentViewport(currentViewport);
+  }
+
+  if (this.Options.panZoomState != null) {
+    var cxVal = this.Options.panZoomState.centerX;
+    var cyVal = this.Options.panZoomState.centerY;
+    var zoom = this.Options.panZoomState.zoom;
+    var x = cxVal - this.Width*.5/zoom;
+    var y = cyVal - this.Height*.5/zoom;
+    var w = this.Width / zoom;
+    var h = this.Height / zoom;
+    var viewport = new dvt.Rectangle(x, y, w, h);
+    layoutContext.setViewport(viewport);
   }
 
   if (layoutFunc && typeof layoutFunc == 'function') {
@@ -8436,8 +8489,9 @@ dvt.Diagram.prototype._clearTouchEventContent = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -8488,8 +8542,9 @@ DvtDiagramCategoryRolloverHandler.prototype.GetRolloutCallback = function(event,
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -8607,8 +8662,9 @@ DvtDiagramDefaults.prototype.getNoCloneObject = function() {
 
 /**
  * @license
- * Copyright (c) 2017 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2017 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 //
@@ -8900,8 +8956,9 @@ DvtDiagramDataAnimationState.prototype._addAncestorStates = function(parentId) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -9094,8 +9151,9 @@ DvtDiagramDataAnimationHandler._expandLinksArrayToMap = function(context, linkAr
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -9633,8 +9691,9 @@ DvtDiagramEventManager.prototype._getPortElement = function(elem, selector) {
 
 /**
  * @license
- * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2011 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -9706,8 +9765,9 @@ DvtDiagramKeyboardHandler.prototype.GetVisibleNode = function(nodeId) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -11053,8 +11113,9 @@ DvtDiagramLink.prototype._checkAndMoveContents = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -11069,6 +11130,10 @@ var DvtDiagramNode = function(context, diagram, nodeData) {
 };
 
 dvt.Obj.createSubclass(DvtDiagramNode, dvt.BaseDiagramNode, 'DvtDiagramNode');
+
+DvtDiagramNode.LTR_BUTTON_PATH = 'M1 0 19 0 A 1 1 0 0 1 19 1 L 1 19 A 1 1 0 0 1 0 19 L 0 1 A 1 1 0 0 1 1 0z';
+DvtDiagramNode.RTL_BUTTON_PATH = 'M1 0 19 0 A 1 1 0 0 1 20 1 L 20 19 A 1 1 0 0 1 19 19 L 1 1 A 1 1 0 0 1 1 0z';
+
 
 /**
  * Returns a new instance of DvtDiagramNode
@@ -12457,28 +12522,24 @@ DvtDiagramNode._renderContainerButton = function(diagram, nodeData, container) {
   if (!container.isContainer() || nodeData['showDisclosure'] == 'off') {
     return;
   }
-  var iconEna, iconOvr, iconDwn;
+  var context = diagram.getCtx();
+  var rtl = dvt.Agent.isRightToLeft(context);
   var options = diagram.getOptions();
-  if (container.isDisclosed()) {
-    iconEna = options['_resources']['collapse_ena'];
-    iconOvr = options['_resources']['collapse_ovr'];
-    iconDwn = options['_resources']['collapse_dwn'];
-  }
-  else {
-    iconEna = options['_resources']['expand_ena'];
-    iconOvr = options['_resources']['expand_ovr'];
-    iconDwn = options['_resources']['expand_dwn'];
-  }
-  var imgEna = new dvt.Image(diagram.getCtx(), iconEna['src'], 0, 0, iconEna['width'], iconEna['height']);
-  var imgOvr = new dvt.Image(diagram.getCtx(), iconOvr['src'], 0, 0, iconOvr['width'], iconOvr['height']);
-  var imgDwn = new dvt.Image(diagram.getCtx(), iconDwn['src'], 0, 0, iconDwn['width'], iconDwn['height']);
-  var containerButton = new dvt.Button(diagram.getCtx(), imgEna, imgOvr, imgDwn, null, null, container.handleDisclosure, container);
+  var commands = rtl ? DvtDiagramNode.RTL_BUTTON_PATH : DvtDiagramNode.LTR_BUTTON_PATH;
+  var buttonWidth = 20;
+  var strokeWidth = 1;
+  var background = new dvt.Path(context, commands);
+  var iconResources = options._resources[container.isDisclosed() ? 'collapse' : 'expand'];
+  var iconStyle = dvt.ToolkitUtils.getIconStyle(context, iconResources.icon);
+  var yPos = iconResources.width / 2 + 1;  // Position icon slightly off center to better align with triangle container
+  var xPos = rtl ? buttonWidth - yPos : yPos;
+  var containerButton = new dvt.IconButton(diagram.getCtx(), 'outlined', {style: iconStyle, size: iconResources.width, pos: {x: xPos, y: yPos}}, background, null, container.handleDisclosure, container);
 
   container.addChild(containerButton);
   var contentDims = container.getContentBounds(true);
   if (contentDims) {
-    var x = dvt.Agent.isRightToLeft(diagram.getCtx()) ? contentDims.x + contentDims.w - iconEna['width'] : contentDims.x;
-    var y = contentDims.y;
+    var x = rtl ? contentDims.x + contentDims.w - buttonWidth - strokeWidth / 2 : contentDims.x + strokeWidth / 2;
+    var y = contentDims.y + strokeWidth / 2;
     containerButton.setTranslate(x, y);
   }
   container._containerButton = containerButton;
@@ -12809,8 +12870,9 @@ DvtDiagramNode.prototype._checkAndMoveContents = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -13071,8 +13133,9 @@ DvtDiagramAutomation.prototype._getLink = function(linkIndex) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 })(dvt);

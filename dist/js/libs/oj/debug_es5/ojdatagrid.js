@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -3519,6 +3520,7 @@ DvtDataGrid.prototype._scrollToScrollPositionObject = function (scrollPositionOb
 DvtDataGrid.prototype._setScrollPositionTimeout = function () {
   if (!this.m_utils.isTouchDevice()) {
     this.pendingScrollTimeout = setTimeout(function () {
+      // @HTMLUpdateOK
       if (this.m_desiredScrollPositionObject != null) {
         this._signalTaskEnd('reached desired location');
       }
@@ -3960,28 +3962,24 @@ DvtDataGrid.prototype._isCountUnknown = function (axis) {
   var datasource = this.getDataSource();
 
   if (axis === 'row' || axis === 'rowEnd') {
-    if (this.m_isEstimateRowCount === undefined) {
-      var rowPrecision = datasource.getCountPrecision('row');
-      var rowCount = datasource.getCount('row');
+    var rowPrecision = datasource.getCountPrecision('row');
+    var rowCount = datasource.getCount('row');
 
-      if (rowPrecision === 'estimate' || rowCount < 0) {
-        this.m_isEstimateRowCount = true;
-      } else {
-        this.m_isEstimateRowCount = false;
-      }
+    if (rowPrecision === 'estimate' || rowCount < 0) {
+      this.m_isEstimateRowCount = true;
+    } else {
+      this.m_isEstimateRowCount = false;
     }
 
     return this.m_isEstimateRowCount;
   } else if (axis === 'column' || axis === 'columnEnd') {
-    if (this.m_isEstimateColumnCount === undefined) {
-      var colPrecision = datasource.getCountPrecision('column');
-      var colCount = datasource.getCount('column');
+    var colPrecision = datasource.getCountPrecision('column');
+    var colCount = datasource.getCount('column');
 
-      if (colPrecision === 'estimate' || colCount < 0) {
-        this.m_isEstimateColumnCount = true;
-      } else {
-        this.m_isEstimateColumnCount = false;
-      }
+    if (colPrecision === 'estimate' || colCount < 0) {
+      this.m_isEstimateColumnCount = true;
+    } else {
+      this.m_isEstimateColumnCount = false;
     }
 
     return this.m_isEstimateColumnCount;
@@ -4447,8 +4445,9 @@ DvtDataGrid.prototype._buildHeaderLabels = function (axis, headerSet) {
           if (labelData != null) {
             var labelContext = this._createLabelContext(axis, i, labelData, label);
 
-            label.setAttribute(this.getResources().getMappedAttribute('container'), this.getResources().widgetName);
-            label.setAttribute(this.getResources().getMappedAttribute('busyContext'), '');
+            label.setAttribute(this.getResources().getMappedAttribute('container'), // @HTMLUpdateOK
+            this.getResources().widgetName);
+            label.setAttribute(this.getResources().getMappedAttribute('busyContext'), ''); // @HTMLUpdateOK
 
             this._createUniqueId(label);
 
@@ -4456,7 +4455,7 @@ DvtDataGrid.prototype._buildHeaderLabels = function (axis, headerSet) {
             var inlineStyle = this.m_options.getInlineStyle(axis, labelContext, true);
 
             if (inlineStyle != null) {
-              label.style.cssText = inlineStyle;
+              DataCollectionUtils.applyMergedInlineStyles(label, inlineStyle, '');
             }
 
             label.className = this.getMappedStyle('headerlabel') + ' ' + this.getMappedStyle(axis.toLowerCase() + 'headerlabel');
@@ -4554,12 +4553,12 @@ DvtDataGrid.prototype.buildColumnHeaders = function (headerRoot, headerSet, star
 
   if (!isAppend) {
     // to the left
-    this.m_startColHeader = this.m_startColHeader - count;
-    this.m_startColHeaderPixel = this.m_startColHeaderPixel - totalColumnWidth;
+    this.m_startColHeader -= count;
+    this.m_startColHeaderPixel -= totalColumnWidth;
   } else {
     // to the right, in case of long scroll this should alwats be the end header of the set
     this.m_endColHeader = start + count - 1;
-    this.m_endColHeaderPixel = this.m_endColHeaderPixel + totalColumnWidth;
+    this.m_endColHeaderPixel += totalColumnWidth;
   }
 
   if (totalCount === -1) {
@@ -4650,12 +4649,12 @@ DvtDataGrid.prototype.buildColumnEndHeaders = function (headerRoot, headerSet, s
 
   if (!isAppend) {
     // to the left
-    this.m_startColEndHeader = this.m_startColEndHeader - count;
-    this.m_startColEndHeaderPixel = this.m_startColEndHeaderPixel - totalColumnWidth;
+    this.m_startColEndHeader -= count;
+    this.m_startColEndHeaderPixel -= totalColumnWidth;
   } else {
     // to the right, in case of long scroll this should alwats be the end header of the set
     this.m_endColEndHeader = start + (count - 1);
-    this.m_endColEndHeaderPixel = this.m_endColEndHeaderPixel + totalColumnWidth;
+    this.m_endColEndHeaderPixel += totalColumnWidth;
   }
 
   if (totalCount === -1) {
@@ -4759,7 +4758,7 @@ DvtDataGrid.prototype.buildRowHeaders = function (headerRoot, headerSet, start, 
 
 
     this.m_endRowHeader = start + (count - 1);
-    this.m_endRowHeaderPixel = this.m_endRowHeaderPixel + totalRowHeight;
+    this.m_endRowHeaderPixel += totalRowHeight;
   } else if (insert) {
     if (start < this.m_startRowHeader) {
       // added before the start
@@ -4768,13 +4767,13 @@ DvtDataGrid.prototype.buildRowHeaders = function (headerRoot, headerSet, start, 
     } // update the endRowHeader and endRowheaderPixel no matter where we insert
 
 
-    this.m_endRowHeader = this.m_endRowHeader + count;
+    this.m_endRowHeader += count;
     this.m_endRowHeaderPixel = Math.max(0, this.m_endRowHeaderPixel + totalRowHeight);
     this.pushRowHeadersDown(reference, totalRowHeight);
   } else {
     this.m_startRowHeader = Math.max(0, this.m_startRowHeader - count); // zero maximum is handled below by realigning when appropriate
 
-    this.m_startRowHeaderPixel = this.m_startRowHeaderPixel - totalRowHeight;
+    this.m_startRowHeaderPixel -= totalRowHeight;
   }
 
   if (totalCount === -1) {
@@ -4883,7 +4882,7 @@ DvtDataGrid.prototype.buildRowEndHeaders = function (headerRoot, headerSet, star
 
 
     this.m_endRowEndHeader = start + (count - 1);
-    this.m_endRowEndHeaderPixel = this.m_endRowEndHeaderPixel + totalRowHeight;
+    this.m_endRowEndHeaderPixel += totalRowHeight;
   } else if (insert) {
     if (start < this.m_startRowEndHeader) {
       // added before the start
@@ -4892,13 +4891,13 @@ DvtDataGrid.prototype.buildRowEndHeaders = function (headerRoot, headerSet, star
     } // update the endRowEndHeader and endRowEndHeaderPixel no matter where we insert
 
 
-    this.m_endRowEndHeader = this.m_endRowEndHeader + count;
+    this.m_endRowEndHeader += count;
     this.m_endRowEndHeaderPixel = Math.max(0, this.m_endRowEndHeaderPixel + totalRowHeight);
     this.pushRowHeadersDown(reference, totalRowHeight);
   } else {
     this.m_startRowEndHeader = Math.max(0, this.m_startRowEndHeader - count); // zero maximum is handled below by realigning
 
-    this.m_startRowEndHeaderPixel = this.m_startRowEndHeaderPixel - totalRowHeight;
+    this.m_startRowEndHeaderPixel -= totalRowHeight;
   }
 
   if (totalCount === -1) {
@@ -5243,8 +5242,9 @@ DvtDataGrid.prototype.buildLevelHeaders = function (fragment, index, level, left
     header = document.createElement('div'); // build headerContext to pass to renderer
 
     var headerContext = this.createHeaderContext(axis, index, headerData, headerMetadata, header, level, headerExtent, headerDepth);
-    header.setAttribute(this.getResources().getMappedAttribute('container'), this.getResources().widgetName);
-    header.setAttribute(this.getResources().getMappedAttribute('busyContext'), '');
+    header.setAttribute(this.getResources().getMappedAttribute('container'), // @HTMLUpdateOK
+    this.getResources().widgetName);
+    header.setAttribute(this.getResources().getMappedAttribute('busyContext'), ''); // @HTMLUpdateOK
 
     this._createUniqueId(header);
 
@@ -5253,7 +5253,7 @@ DvtDataGrid.prototype.buildLevelHeaders = function (fragment, index, level, left
     var styleClass = this.m_options.getStyleClass(axis, headerContext); // add inline styles to the column header cell
 
     if (inlineStyle != null) {
-      header.style.cssText = inlineStyle;
+      DataCollectionUtils.applyMergedInlineStyles(header, inlineStyle, '');
     } // add class names to the column header cell
 
 
@@ -5649,7 +5649,7 @@ DvtDataGrid.prototype._getAttribute = function (element, attributeKey, parse) {
 
 
 DvtDataGrid.prototype._setAttribute = function (element, attributeKey, value) {
-  element.setAttribute(this.getResources().getMappedAttribute(attributeKey), value);
+  element.setAttribute(this.getResources().getMappedAttribute(attributeKey), value); // @HTMLUpdateOK
 };
 /**
  * Build the databody, fetching cells as well
@@ -5725,9 +5725,9 @@ DvtDataGrid.prototype._getIndexesFromScrollPosition = function (scrollPosition) 
 
     if (indexesFromKey.rowIndexFromKey != null && indexesFromKey.rowIndexFromKey > 0) {
       returnObj.row = indexesFromKey.rowIndexFromKey;
-    } else if (scrollPosition.rowIndex) {
+    } else if (scrollPosition.rowIndex != null) {
       returnObj.row = scrollPosition.rowIndex;
-    } else if (scrollPosition.y) {
+    } else if (scrollPosition.y != null) {
       returnObj.row = Math.round(scrollPosition.y / self.getDefaultRowHeight());
     } else {
       returnObj.row = 0;
@@ -5735,9 +5735,9 @@ DvtDataGrid.prototype._getIndexesFromScrollPosition = function (scrollPosition) 
 
     if (indexesFromKey.columnIndexFromKey != null && indexesFromKey.columnIndexFromKey > 0) {
       returnObj.column = indexesFromKey.columnIndexFromKey;
-    } else if (scrollPosition.columnIndex) {
+    } else if (scrollPosition.columnIndex != null) {
       returnObj.column = scrollPosition.columnIndex;
-    } else if (scrollPosition.x) {
+    } else if (scrollPosition.x != null) {
       returnObj.column = Math.round(scrollPosition.x / self.getDefaultColumnWidth());
     } else {
       returnObj.column = 0;
@@ -6010,7 +6010,7 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function (cellSet, cellRange, ro
 
 
       this.m_endRow = rowStart + (rowCount - 1);
-      this.m_endRowPixel = this.m_endRowPixel + totalRowHeight;
+      this.m_endRowPixel += totalRowHeight;
     } else if (rowInsert) {
       // update row range info if neccessary
       if (rowStart < this.m_startRow) {
@@ -6020,14 +6020,14 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function (cellSet, cellRange, ro
       } // update the endRow and endRowPixel no matter where we insert
 
 
-      this.m_endRow = this.m_endRow + rowCount;
-      this.m_endRowPixel = this.m_endRowPixel + totalRowHeight;
+      this.m_endRow += rowCount;
+      this.m_endRowPixel += totalRowHeight;
       this.pushRowsDown(rowStart + rowCount, totalRowHeight);
     } else {
       // update row range info if neccessary
-      this.m_startRow = this.m_startRow - rowCount; // zero maximum is handled by realigning
+      this.m_startRow -= rowCount; // zero maximum is handled by realigning
 
-      this.m_startRowPixel = this.m_startRowPixel - totalRowHeight;
+      this.m_startRowPixel -= totalRowHeight;
     }
   } else if (columnRangeNeedsUpdate) {
     // whether this is adding cols to right (append) or left (insert)
@@ -6060,12 +6060,12 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function (cellSet, cellRange, ro
   if (columnRangeNeedsUpdate) {
     // add to left or to right
     if (columnStart < this.m_startCol) {
-      this.m_startCol = this.m_startCol - columnCount;
-      this.m_startColPixel = this.m_startColPixel - totalColumnWidth;
+      this.m_startCol -= columnCount;
+      this.m_startColPixel -= totalColumnWidth;
     } else {
       // in virtual fetch end should always be set to last
       this.m_endCol = columnStart + (columnCount - 1);
-      this.m_endColPixel = this.m_endColPixel + totalColumnWidth;
+      this.m_endColPixel += totalColumnWidth;
     }
   }
 
@@ -6297,7 +6297,7 @@ DvtDataGrid.prototype._onTransitionEnd = function (target, handler, duration) {
  */
 
 
-DvtDataGrid.prototype._insertRowsWithAnimation = function (cellsFragment, rowHeaderFragment, rowEndHeaderFragment, rowStart, rowCount, totalRowHeight) {
+DvtDataGrid.prototype._insertRowsWithAnimation = function (cellsFragment, rowHeaderFragment, rowEndHeaderFragment, rowStart, rowCount, totalRowHeight, columnStart, columnCount) {
   var self = this;
   var i;
   var rowHeaderContent;
@@ -6445,6 +6445,10 @@ DvtDataGrid.prototype._insertRowsWithAnimation = function (cellsFragment, rowHea
 
   this._refreshDatabodyMap();
 
+  if (this._isSelectionEnabled()) {
+    this.applySelection(rowStart, rowStart + rowCount, columnStart, columnStart + columnCount);
+  }
+
   var lastAnimatedElement = this._getCellByIndex(this.createIndex(rowStart + (rowCount - 1), this.m_endCol));
 
   function transitionListener() {
@@ -6579,12 +6583,13 @@ DvtDataGrid.prototype._addCellsToFragment = function (fragment, cellSet, rowStar
           cell = patched.cell;
           cellContext = cell[this.getResources().getMappedAttribute('context')];
         } else {
-          var cellData = cellSet.getData(indexes);
-          var cellMetadata = cellSet.getMetadata(indexes);
+          var cellData = cellSet.getData(this.createIndex(tempRowIndex, columnIndex));
+          var cellMetadata = cellSet.getMetadata(this.createIndex(tempRowIndex, columnIndex));
           cell = document.createElement('div');
           cellContext = this.createCellContext(indexes, cellData, cellMetadata, cell, extents);
-          cell.setAttribute(this.getResources().getMappedAttribute('container'), this.getResources().widgetName);
-          cell.setAttribute(this.getResources().getMappedAttribute('busyContext'), '');
+          cell.setAttribute(this.getResources().getMappedAttribute('container'), // @HTMLUpdateOK
+          this.getResources().widgetName);
+          cell.setAttribute(this.getResources().getMappedAttribute('busyContext'), ''); // @HTMLUpdateOK
 
           this._createUniqueId(cell);
 
@@ -6593,7 +6598,7 @@ DvtDataGrid.prototype._addCellsToFragment = function (fragment, cellSet, rowStar
           var inlineStyle = this.m_options.getInlineStyle('cell', cellContext);
 
           if (inlineStyle != null) {
-            cell.style.cssText = inlineStyle;
+            DataCollectionUtils.applyMergedInlineStyles(cell, inlineStyle, '');
           } // don't want developer setting height or width through inline styles on cell
           // should be done through header styles, or through the stylesheet
 
@@ -6878,7 +6883,7 @@ DvtDataGrid.prototype._getCellDimension = function (cell, index, key, axis, dime
     dimensionOf = document.createElement('div');
 
     if (inlineStyle != null) {
-      dimensionOf.style.cssText = inlineStyle;
+      DataCollectionUtils.applyMergedInlineStyles(dimensionOf, inlineStyle, '');
     }
 
     dimensionOf.className = headerClassName + ' ' + styleClass;
@@ -9380,6 +9385,8 @@ DvtDataGrid.prototype.handleDatabodyMouseMove = function (event) {
     this._handleMove(event);
   } else if (this.m_databodyDragState) {
     this.handleDatabodySelectionDrag(event);
+  } else if (this.m_headerDragState && (this.m_selectionFrontier && this.m_selectionFrontier.axis && (this.m_selectionFrontier.axis.indexOf('row') !== -1 || this.m_selectionFrontier.axis.indexOf('column') !== -1) || this.m_deselectInfo && this.m_deselectInfo.axis && (this.m_deselectInfo.axis.indexOf('row') !== -1 || this.m_deselectInfo.axis.indexOf('column') !== -1))) {
+    this.extendSelectionHeader(event.target, event, true, this.m_deselectInProgress);
   }
 };
 /**
@@ -10820,7 +10827,7 @@ DvtDataGrid.prototype._handleModelInsertRangeEvent = function (cellSet, headerSe
       return;
     }
 
-    this._insertRowsWithAnimation(newCellElements, rowHeaderFragment, rowEndHeaderFragment, rowStart, cellSet.getCount('row'), returnVal.totalRowHeight);
+    this._insertRowsWithAnimation(newCellElements, rowHeaderFragment, rowEndHeaderFragment, rowStart, cellSet.getCount('row'), returnVal.totalRowHeight, columnStart, columnCount);
   } else {
     var rowRange = {
       axis: 'row',
@@ -10935,7 +10942,7 @@ DvtDataGrid.prototype._replaceHeaders = function (buildFunction, headerSet, root
     var fragment = buildFunction(root, headerSet, index, 1, true, true);
     var headerContent = root.firstChild;
     var row = headerContent.childNodes[index - start];
-    headerContent.replaceChild(fragment, row); // @HTMLUpdateOK
+    headerContent.replaceChild(fragment, row);
   }
 };
 /**
@@ -11319,16 +11326,17 @@ DvtDataGrid.prototype._collapseRowsWithAnimation = function (keys) {
 
   for (i = 0; i < keys.length; i++) {
     var rowKey = keys[i].row;
-    rowCells = this._getAxisCellsByKey(rowKey, 'row'); // if (rowCells.length) {
+    rowCells = this._getAxisCellsByKey(rowKey, 'row');
 
-    rowsToRemove.push(rowCells);
-    totalRowHeight += this.getElementHeight(rowCells[0]);
+    if (rowCells.length) {
+      rowsToRemove.push(rowCells);
+      totalRowHeight += this.getElementHeight(rowCells[0]);
 
-    for (j = 0; j < rowCells.length; j++) {
-      this.setElementDir(rowCells[j], this.getElementDir(rowCells[j], 'top') - totalRowHeight, 'top');
-      this.addTransformMoveStyle(rowCells[j], 0, 0, 'linear', 0, totalRowHeight, 0);
-    } // }
-
+      for (j = 0; j < rowCells.length; j++) {
+        this.setElementDir(rowCells[j], this.getElementDir(rowCells[j], 'top') - totalRowHeight, 'top');
+        this.addTransformMoveStyle(rowCells[j], 0, 0, 'linear', 0, totalRowHeight, 0);
+      }
+    }
 
     if (rowHeaderSupport) {
       rowHeader = this._findHeaderByKey(rowKey, this.m_rowHeader, this.getMappedStyle('rowheadercell'));
@@ -13317,7 +13325,10 @@ DvtDataGrid.prototype._setEditableClone = function (element) {
 
 DvtDataGrid.prototype._destroyEditableClone = function () {
   if (this.m_editableClone) {
-    this.m_root.removeChild(this.m_editableClone);
+    if (this.m_editableClone.parentNode != null) {
+      this.m_root.removeChild(this.m_editableClone);
+    }
+
     delete this.m_editableClone;
   }
 };
@@ -15556,11 +15567,13 @@ DvtDataGrid.prototype._moveDropRows = function (sibling, index) {
     this.m_moveIndex += 1;
 
     if (this.m_moveRowHeader !== null) {
-      headerScroller.insertBefore(this.m_moveRowHeader, this.m_moveRowHeader[sibling][sibling]); // @HTMLUpdateOK
+      headerScroller.insertBefore(this.m_moveRowHeader, // @HTMLUpdateOK
+      this.m_moveRowHeader[sibling][sibling]);
     }
 
     if (this.m_moveRowEndHeader !== null) {
-      endHeaderScroller.insertBefore(this.m_moveRowEndHeader, this.m_moveRowEndHeader[sibling][sibling]); // @HTMLUpdateOK
+      endHeaderScroller.insertBefore(this.m_moveRowEndHeader, // @HTMLUpdateOK
+      this.m_moveRowEndHeader[sibling][sibling]);
     }
   } else {
     this._modifyAxisCellContextIndex('row', this.m_moveIndex, 1, -1);
@@ -15570,11 +15583,13 @@ DvtDataGrid.prototype._moveDropRows = function (sibling, index) {
     this.m_moveIndex -= 1;
 
     if (this.m_moveRowHeader !== null) {
-      headerScroller.insertBefore(this.m_moveRowHeader, this.m_moveRowHeader[sibling]); // @HTMLUpdateOK
+      headerScroller.insertBefore(this.m_moveRowHeader, // @HTMLUpdateOK
+      this.m_moveRowHeader[sibling]);
     }
 
     if (this.m_moveRowEndHeader !== null) {
-      endHeaderScroller.insertBefore(this.m_moveRowEndHeader, this.m_moveRowEndHeader[sibling]); // @HTMLUpdateOK
+      endHeaderScroller.insertBefore(this.m_moveRowEndHeader, // @HTMLUpdateOK
+      this.m_moveRowEndHeader[sibling]);
     }
   }
 
@@ -15772,6 +15787,7 @@ DvtDataGrid.prototype.handleRootBlur = function (event) {
   // We could implement a non-timeout solution that exiting and re-entering
   // the grid via tab key would not read the summary text upon re-entry (initial would work)
   setTimeout(function () {
+    // @HTMLUpdateOK
     if (!this.m_root.contains(document.activeElement)) {
       this.m_root.tabIndex = 0;
 
@@ -17228,6 +17244,11 @@ DvtDataGrid.prototype.extendSelectionHeader = function (target, event, isExtend,
   }
 
   var targetElement = this.findCellOrHeader(target);
+
+  if (targetElement === null) {
+    return;
+  }
+
   var targetContext = targetElement[this.getResources().getMappedAttribute('context')];
   var anchor;
   var axis;
@@ -18412,7 +18433,8 @@ DvtDataGrid.prototype._doHeaderSort = function (event, header, direction) {
     this._removeSortSelection(); // needed for toggle and screenreader
 
 
-    header.setAttribute(this.getResources().getMappedAttribute('sortDir'), direction);
+    header.setAttribute(this.getResources().getMappedAttribute('sortDir'), direction); // @HTMLUpdateOK
+
     this.m_sortInfo = {
       event: event,
       key: key,
@@ -20750,7 +20772,7 @@ DvtDataGridUtils.prototype._setMaxValuesForScrolling = function () {
 
   this.m_maxDivHeightForScrolling = parseInt(parseFloat(window.getComputedStyle(div).height) / 2, 10);
   this.m_maxDivWidthForScrolling = parseInt(parseFloat(window.getComputedStyle(div).width) / 2, 10);
-  document.body.removeChild(div); // @HTMLUpdateOK
+  document.body.removeChild(div);
 };
 
 DvtDataGridUtils.prototype.calculateScrollbarSize = function () {
@@ -21565,6 +21587,8 @@ DvtDataGridOptions.prototype.getScrollPolicyOptions = function () {
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 2
  *
+ * @ojuxspecs ['data-grid']
+ *
  * @classdesc
  * <h3 id="datagridOverview-section">
  *   JET DataGrid
@@ -21806,13 +21830,6 @@ DvtDataGridOptions.prototype.getScrollPolicyOptions = function () {
  * can significantly hinder performance. If you have this case either specify a function for the template to remove conditions from the template itself or
  * use the renderer attribute.</p>
  *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
- *
  * <h3 id="contextmenu-section">
  *   Context Menu
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#contextmenu-section"></a>
@@ -21885,6 +21902,73 @@ DvtDataGridOptions.prototype.getScrollPolicyOptions = function () {
  *     </tr>
  * </tbody></table>
  */
+// -------------------------------- oj.ojDataGrid Styling start ----------------
+// ---------------- oj-[size]-justify-content(-flexjustify) ------------------
+
+/**
+ * Use this class on cells' and headers' className property to align your content horizontally. <br/>
+ * By default the alignment is flex-end on cells and varies on headers, see other possibilities in the Flex Layout justify section for size and flexjustify options.<br/>
+ * @ojstyletemplate oj-[size]-justify-content(-flexjustify)
+ * @ojdisplayname justify-content
+ * @memberof oj.ojDataGrid
+ * @ojstyletemplatetokens ["StylingTemplateTokens.[size]", "StylingTemplateTokens.(-flexjustify)"]
+ */
+// ---------------- oj-[size]-align-items(-flexalign) ------------------
+
+/**
+ * Use this class on cells' and headers' className property to align your content vertically. <br/>
+ * By default the alignment is center on cells and headers, see other possibilities in the Flex Layout align section for size and flexalign options.<br/>
+ * @ojstyletemplate oj-[size]-align-items(-flexalign)
+ * @ojdisplayname align-items
+ * @memberof oj.ojDataGrid
+ * @ojstyletemplatetokens ["StylingTemplateTokens.[size]", "StylingTemplateTokens.(-flexalign)"]
+ */
+// ---------------- oj-helper-justify-content-[left|right] ------------------
+
+/**
+ * Direction can be left or right. Use this class on cells' and headers' className property to align your content horizontally to the left or right. <br/>
+ * See the Helpers section for details. <br/>
+ * This handles the always one direction case that flexjustify does not.<br/>
+ * @ojstyletemplate oj-helper-justify-content-[left|right]
+ * @ojdisplayname direction
+ * @memberof oj.ojDataGrid
+ * @ojstyletemplatetokens ["StylingTemplateTokens.[left|right]"]
+ */
+// ----------------oj-datagrid-cell-no-padding or padding --------------
+
+/**
+ * Used to style a datagrid cell so that it has no padding or default padding.
+ * @ojstyleset padding
+ * @ojdisplayname padding
+ * @ojstylesetitems ["padding.oj-datagrid-cell-no-padding", "padding.oj-datagrid-cell-padding"]
+ * @ojstylerelation exclusive
+ * @memberof oj.ojDataGrid
+ */
+
+/**
+ * @ojstyleclass padding.oj-datagrid-cell-no-padding
+ * @ojshortdesc No Padding
+ * @ojdisplayname oj-datagrid-cell-no-padding
+ * @memberof! oj.ojDataGrid
+ */
+
+/**
+ * @ojstyleclass padding.oj-datagrid-cell-padding
+ * @ojshortdesc Default Padding
+ * @ojdisplayname oj-datagrid-cell-padding
+ * @memberof! oj.ojDataGrid
+ */
+// ---------------- oj-datagrid-depth-[1-7] ------------------
+
+/**
+ * Used to style the default header widths and heights. By default the datagrid supports up to depth 7. <br/>
+ * If you have headers width depth greater than 7 specify the defaults using the class name description or use apply custom style rules to the headers.<br/>
+ * @ojstyletemplate oj-datagrid-depth-[1-7]
+ * @ojdisplayname depth
+ * @memberof oj.ojDataGrid
+ * @ojstyletemplatetokens ["StylingTemplateTokens.[1-7]"]
+ */
+// -------------------------------- oj.ojDataGrid Styling end ----------------
 oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
   widgetEventPrefix: 'oj',
   options: {
@@ -24432,7 +24516,8 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
     this.grid.setVisibility(DvtDataGrid.VISIBILITY_STATE_RENDER); // required classes on init, oj-component-initnode is added by this._super
 
     $(this.root).addClass('oj-datagrid oj-component');
-    $(this.root).attr(Components._OJ_CONTAINER_ATTR, this.widgetName);
+    $(this.root).attr(Components._OJ_CONTAINER_ATTR, this.widgetName); // @HTMLUpdateOK
+
     DataCollectionUtils.disableDefaultBrowserStyling(this.root);
     this.redrawSet = {
       data: 'all',
@@ -25141,7 +25226,10 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
     }
 
     if (resizeMenu != null || sortMenu != null || moveMenu != null || selectMenu != null) {
-      menuContainer.append(resizeMenu).append(sortMenu).append(moveMenu).append(selectMenu); // @HTMLUpdateOK
+      menuContainer.append(resizeMenu) // @HTMLUpdateOK
+      .append(sortMenu) // @HTMLUpdateOK
+      .append(moveMenu) // @HTMLUpdateOK
+      .append(selectMenu); // @HTMLUpdateOK
 
       menuContainer.ojMenu(); // keep track of the fact that we're using our own context menu
       // this way on refresh we know that we should remove the contextMenu option
@@ -25167,11 +25255,17 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
    */
   _buildContextMenuItem: function _buildContextMenuItem(command, useOjOption) {
     if (command === 'resize') {
-      return this._buildContextMenuListItem('resize', useOjOption).append($('<ul></ul>').append(this._buildContextMenuListItem('resizeWidth', useOjOption)).append(this._buildContextMenuListItem('resizeHeight', useOjOption))); // @HTMLUpdateOK
+      return this._buildContextMenuListItem('resize', useOjOption).append($('<ul></ul>') // @HTMLUpdateOK
+      .append(this._buildContextMenuListItem('resizeWidth', useOjOption)) // @HTMLUpdateOK
+      .append(this._buildContextMenuListItem('resizeHeight', useOjOption))); // @HTMLUpdateOK
     } else if (command === 'sortCol') {
-      return this._buildContextMenuListItem('sortCol', useOjOption).append($('<ul></ul>').append(this._buildContextMenuListItem('sortColAsc', useOjOption)).append(this._buildContextMenuListItem('sortColDsc', useOjOption))); // @HTMLUpdateOK
+      return this._buildContextMenuListItem('sortCol', useOjOption).append($('<ul></ul>') // @HTMLUpdateOK
+      .append(this._buildContextMenuListItem('sortColAsc', useOjOption)) // @HTMLUpdateOK
+      .append(this._buildContextMenuListItem('sortColDsc', useOjOption))); // @HTMLUpdateOK
     } else if (command === 'sortRow') {
-      return this._buildContextMenuListItem('sortRow', useOjOption).append($('<ul></ul>').append(this._buildContextMenuListItem('sortRowAsc', useOjOption)).append(this._buildContextMenuListItem('sortRowDsc', useOjOption))); // @HTMLUpdateOK
+      return this._buildContextMenuListItem('sortRow', useOjOption).append($('<ul></ul>') // @HTMLUpdateOK
+      .append(this._buildContextMenuListItem('sortRowAsc', useOjOption)) // @HTMLUpdateOK
+      .append(this._buildContextMenuListItem('sortRowDsc', useOjOption))); // @HTMLUpdateOK
     } else if (Object.keys(this.resources.commands).indexOf(command) !== -1) {
       return $(this._buildContextMenuListItem(command, useOjOption));
     }
@@ -25239,119 +25333,228 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
   },
 
   /**
-   * Callback from the resize dialog box, which sends the results to the grid
-   * @param {Event} event the event that triggered the dialog button press
+   * Callback from the resize popup box, which sends the results to the grid
+   * @param {Event} event the event that triggered the popup button press
    * @private
    */
   // eslint-disable-next-line no-unused-vars
   _handleResizeDialog: function _handleResizeDialog(event) {
-    var value = $('#' + this.rootId + 'spinner').ojInputNumber('option', 'value');
-    $('#' + this.rootId + 'dialog').ojPopup('close');
+    var isCustomElement = this._IsCustomElement();
+
+    var value;
+
+    if (isCustomElement) {
+      value = document.getElementById(this.rootId + 'inputNumber').value;
+      document.getElementById(this.rootId + 'popup').close();
+    } else {
+      value = $('#' + this.rootId + 'inputNumber').ojInputNumber('option', 'value');
+      $('#' + this.rootId + 'popup').ojPopup('close');
+    }
+
     this.grid.handleContextMenuReturn(this.contextMenuEvent, this.menuItemFunction, value);
     this.contextMenuEvent.target.focus();
   },
 
   /**
-   * Build the html for the resize dialog and add it to the root node
-   * @param {string} title the header title for the dialog
-   * @param {number} initialSize the initial size to put in the spinner
+   * Build the html for the resize popup and add it to the root node
+   * @param {string} title the header title for the popup
+   * @param {number} initialSize the initial size to put in the inputNumber
    * @private
    */
   _buildResizeDialog: function _buildResizeDialog(title, initialSize) {
-    // create the base dialog
-    var dialog = $('#' + this.rootId + 'dialog');
-    var spinner = $('#' + this.rootId + 'spinner');
+    // create the base popup
+    var popup;
+    var inputNumber;
 
-    if (dialog.length === 0 || spinner.length === 0) {
-      dialog = document.createElement('div');
-      dialog.id = this.rootId + 'dialog';
-      var dialogHeader = document.createElement('div');
-      var dialogBody = document.createElement('div');
-      var dialogFooter = document.createElement('div');
-      dialogHeader.className = this._getMappedStyle('popupHeader');
-      dialogBody.className = this._getMappedStyle('popupContent');
-      dialogFooter.className = this._getMappedStyle('popupFooter');
-      dialog.appendChild(dialogHeader); // @HTMLUpdateOK
+    var isCustomElement = this._IsCustomElement();
 
-      dialog.appendChild(dialogBody); // @HTMLUpdateOK
+    var popupHeader;
+    var popupBody;
+    var popupFooter;
+    var popupCancelButton;
+    var popupOKButton;
+    var popupTitle;
+    var cancelActionHandler;
+    var self = this;
 
-      dialog.appendChild(dialogFooter); // @HTMLUpdateOK
-      // create the dialog content
+    if (isCustomElement) {
+      inputNumber = document.getElementById(this.rootId + 'inputNumber');
+      popup = document.getElementById(this.rootId + 'popup');
 
-      var dialogTitle = document.createElement('h5');
-      dialogTitle.textContent = title; // @HTMLUpdateOK
+      if (popup === null || inputNumber === null) {
+        popup = document.createElement('oj-popup');
+        popup.id = this.rootId + 'popup';
+        popup.setAttribute('data-oj-binding-provider', 'none');
+        popup.setAttribute('initial-focus', 'firstFocusable');
+        popupHeader = document.createElement('div');
+        popupBody = document.createElement('div');
+        popupFooter = document.createElement('div');
+        popupTitle = document.createElement('h5');
+        popupTitle.textContent = title;
+        popupHeader.appendChild(popupTitle); // @HTMLUpdateOK
 
-      dialogHeader.appendChild(dialogTitle);
-      spinner = document.createElement('input');
-      spinner.id = this.rootId + 'spinner';
-      var dialogCancelButton = document.createElement('button');
-      dialogCancelButton.id = this.rootId + 'dialogcancel';
-      dialogCancelButton.style.margin = '5px';
-      var dialogOKButton = document.createElement('button');
-      dialogOKButton.id = this.rootId + 'dialogsubmit';
-      dialogOKButton.style.margin = '5px';
-      dialogBody.appendChild(spinner); // @HTMLUpdateOK
+        popupHeader.className = this._getMappedStyle('popupHeader');
+        popupBody.className = this._getMappedStyle('popupContent');
+        popupFooter.className = this._getMappedStyle('popupFooter');
+        popup.appendChild(popupHeader); // @HTMLUpdateOK
 
-      dialogFooter.appendChild(dialogOKButton); // @HTMLUpdateOK
+        popup.appendChild(popupBody); // @HTMLUpdateOK
 
-      dialogFooter.appendChild(dialogCancelButton); // @HTMLUpdateOK
+        popup.appendChild(popupFooter); // @HTMLUpdateOK
 
-      this.root.appendChild(dialog); // @HTMLUpdateOK
+        inputNumber = document.createElement('oj-input-number');
+        inputNumber.id = this.rootId + 'inputNumber';
+        popupCancelButton = document.createElement('oj-button');
+        popupCancelButton.id = this.rootId + 'popupcancel';
+        popupCancelButton.style.margin = '5px';
+        popupOKButton = document.createElement('oj-button');
+        popupOKButton.id = this.rootId + 'popupsubmit';
+        popupOKButton.style.margin = '5px';
+        popupBody.appendChild(inputNumber); // @HTMLUpdateOK
 
-      $(dialogCancelButton).ojButton({
-        component: 'ojButton',
-        label: this._getTranslation('labelResizeDialogCancel')
-      });
-      $(dialogOKButton).ojButton({
-        component: 'ojButton',
-        label: this._getTranslation('labelResizeDialogSubmit')
-      });
+        popupFooter.appendChild(popupOKButton); // @HTMLUpdateOK
 
-      var cancelActionHandler = function cancelActionHandler() {
-        $(dialogOKButton).ojButton({
-          disabled: false
+        popupFooter.appendChild(popupCancelButton); // @HTMLUpdateOK
+
+        this.root.appendChild(popup); // @HTMLUpdateOK
+
+        popupCancelButton.textContent = this._getTranslation('labelResizeDialogCancel');
+        popupOKButton.textContent = this._getTranslation('labelResizeDialogSubmit');
+
+        cancelActionHandler = function cancelActionHandler() {
+          popupOKButton.disabled = false;
+          inputNumber.value = 0;
+          popup.close();
+        };
+
+        popupCancelButton.addEventListener('click', cancelActionHandler);
+        popupOKButton.addEventListener('click', this._handleResizeDialog.bind(this));
+        inputNumber.max = 1000;
+        inputNumber.min = 20;
+        inputNumber.step = 1;
+        inputNumber.value = initialSize;
+        inputNumber.addEventListener('validChanged', function (event) {
+          if (event.detail.value === 'valid') {
+            popupOKButton.disabled = false;
+          } else {
+            popupOKButton.disabled = true;
+          }
         });
-        $(spinner).ojInputNumber({
-          value: 0
+        var position = {
+          my: {
+            horizontal: 'center',
+            vertical: 'center'
+          },
+          at: {
+            horizontal: 'center',
+            vertical: 'center'
+          },
+          collision: 'none'
+        };
+        popup.setAttribute('position', JSON.stringify(position));
+        var busyContext = Context.getContext(popup).getBusyContext();
+        busyContext.whenReady().then(function () {
+          popup.open(self.root);
         });
-        $(dialog).ojPopup('close');
-      };
+      } else {
+        inputNumber.value = initialSize;
+        $(popup).find('.' + this._getMappedStyle('popupHeader'))[0].firstChild.textContent = title;
+        popup.open(self.root);
+      }
+    } else if (!isCustomElement) {
+      popup = $('#' + this.rootId + 'popup');
+      inputNumber = $('#' + this.rootId + 'inputNumber');
 
-      dialogCancelButton.addEventListener('click', cancelActionHandler);
-      dialogOKButton.addEventListener('click', this._handleResizeDialog.bind(this));
-      $(spinner).ojInputNumber({
-        component: 'ojInputNumber',
-        max: 1000,
-        min: 20,
-        step: 1,
-        value: initialSize
-      });
-      $(spinner).on('change', function () {
-        $(dialogOKButton).ojButton({
-          disabled: !$(spinner).ojInputNumber('validate')
+      if (popup.length === 0 || inputNumber.length === 0) {
+        popup = document.createElement('div');
+        popup.id = this.rootId + 'popup';
+        popupHeader = document.createElement('div');
+        popupBody = document.createElement('div');
+        popupFooter = document.createElement('div');
+        popupHeader.className = this._getMappedStyle('popupHeader');
+        popupBody.className = this._getMappedStyle('popupContent');
+        popupFooter.className = this._getMappedStyle('popupFooter');
+        popup.appendChild(popupHeader); // @HTMLUpdateOK
+
+        popup.appendChild(popupBody); // @HTMLUpdateOK
+
+        popup.appendChild(popupFooter); // @HTMLUpdateOK
+        // create the popup content
+
+        popupTitle = document.createElement('h5');
+        popupTitle.textContent = title;
+        popupHeader.appendChild(popupTitle); // @HTMLUpdateOK
+
+        inputNumber = document.createElement('input');
+        inputNumber.id = this.rootId + 'inputNumber';
+        popupCancelButton = document.createElement('button');
+        popupCancelButton.id = this.rootId + 'popupcancel';
+        popupCancelButton.style.margin = '5px';
+        popupOKButton = document.createElement('button');
+        popupOKButton.id = this.rootId + 'popupsubmit';
+        popupOKButton.style.margin = '5px';
+        popupBody.appendChild(inputNumber); // @HTMLUpdateOK
+
+        popupFooter.appendChild(popupOKButton); // @HTMLUpdateOK
+
+        popupFooter.appendChild(popupCancelButton); // @HTMLUpdateOK
+
+        this.root.appendChild(popup); // @HTMLUpdateOK
+
+        $(popupCancelButton).ojButton({
+          component: 'ojButton',
+          label: this._getTranslation('labelResizeDialogCancel')
         });
-      });
-      $(dialog).ojPopup({
-        initialFocus: 'firstFocusable',
-        position: {
-          my: 'center center',
-          at: 'center center',
-          collision: 'none',
-          of: $(this.root)
-        }
-      });
-      $(dialog).ojPopup('open');
-    } else {
-      spinner.ojInputNumber('option', 'value', initialSize);
-      dialog.find('.' + this._getMappedStyle('popupHeader'))[0].firstChild.textContent = title;
-      dialog.ojPopup('open');
+        $(popupOKButton).ojButton({
+          component: 'ojButton',
+          label: this._getTranslation('labelResizeDialogSubmit')
+        });
+
+        cancelActionHandler = function cancelActionHandler() {
+          $(popupOKButton).ojButton({
+            disabled: false
+          });
+          $(inputNumber).ojInputNumber({
+            value: 0
+          });
+          $(popup).ojPopup('close');
+        };
+
+        popupCancelButton.addEventListener('click', cancelActionHandler);
+        popupOKButton.addEventListener('click', this._handleResizeDialog.bind(this));
+        $(inputNumber).ojInputNumber({
+          component: 'ojInputNumber',
+          max: 1000,
+          min: 20,
+          step: 1,
+          value: initialSize
+        });
+        $(inputNumber).on('change', function () {
+          $(popupOKButton).ojButton({
+            disabled: !$(inputNumber).ojInputNumber('validate')
+          });
+        });
+        $(popup).ojPopup({
+          initialFocus: 'firstFocusable',
+          position: {
+            my: 'center center',
+            at: 'center center',
+            collision: 'none',
+            of: $(this.root)
+          }
+        });
+        $(popup).ojPopup('open');
+      } else {
+        inputNumber.ojInputNumber('option', 'value', initialSize);
+        popup.find('.' + this._getMappedStyle('popupHeader'))[0].firstChild.textContent = title;
+        popup.ojPopup('open');
+      }
     }
   },
 
   /**
    * Handle an ojselect event on a menu item, if sort call the handler on the core.
-   * If resize prompt the user with a dialog box
-   * @param {Event|CustomEvent} event event triggering context menu
+   * If resize prompt the user with a popup box
    * @param {Object=} ui an object containing the menu item that was selected
    * @private
    */
@@ -25389,7 +25592,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
       this.grid.handleContextMenuReturn(this.contextMenuEvent, this.menuItemFunction, this._discontiguousSelection); // toggle discontiguous context menu label text
 
       var key = this._discontiguousSelection ? 'labelDisableNonContiguous' : 'labelEnableNonContiguous';
-      item.children().first().text(this._getTranslation(key)); // @HTMLUpdateOK
+      item.children().first().text(this._getTranslation(key));
     }
   },
 
@@ -26392,49 +26595,6 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
    * @memberof oj.ojDataGrid
    */
-
-  /**
-   * {@ojinclude "name":"ojStylingDocIntro"}
-   *
-   * <table class="generic-table styling-table">
-   *   <thead>
-   *     <tr>
-   *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-   *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>oj-[size]-justify-content-[flexjustify]</td>
-   *       <td>Use this class on cells' and headers' className property to align your content horizontally. By default the alignment is flex-end on cells and varies on headers, see other possibilities in the [Flex Layout]{@link FlexLayout} justify section for size and flexjustify options. </td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-[size]-align-items-[flexalign]</td>
-   *       <td>Use this class on cells' and headers' className property to align your content vertically. By default the alignment is center on cells and headers, see other possibilities in the [Flex Layout]{@link FlexLayout} align section for size and flexalign options.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-helper-justify-content-[direction]</td>
-   *       <td>Direction can be left or right. Use this class on cells' and headers' className align your content horizontally to the left or right. See the [Helpers]{@link Helpers} section for details. This handles the always one direction case that flexjustify does not.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-datagrid-cell-no-padding</td>
-   *       <td>Used to style a datagrid cell so that it has no padding.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-datagrid-cell-padding</td>
-   *       <td>Used to style a datagrid cell so that it has the default padding.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-datagrid-depth-[1-7]</td>
-   *       <td>Used to style the default header widths and heights. By default the datagrid supports up to depth 7. If you have headers width depth greater than 7 specify
-   *       the defaults using the class name description or use apply custom style rules to the headers.</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-   * @memberof oj.ojDataGrid
-   */
   // ////////////////     SUB-IDS     //////////////////
 
   /**
@@ -26972,7 +27132,11 @@ DataProviderDataGridDataSource.prototype.fetchCells = function (cellRanges, call
     });
   } else {
     if (self._asyncIterator == null || this.sortUpdated) {
+      // Create a clientId symbol that uniquely identify this consumer so that
+      // DataProvider which supports it can optimize resources
+      self._clientId = self._clientId || Symbol();
       self._asyncIterator = self.dataprovider.fetchFirst({
+        clientId: self._clientId,
         size: size,
         sortCriteria: self.currentSortCriteria
       })[Symbol.asyncIterator]();

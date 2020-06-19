@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -38,85 +39,184 @@ var LabelledByUtils = {};
 LabelledByUtils.CUSTOM_LABEL_ELEMENT_ID = '|label';
 
 /**
- * For custom element only. Only called from the 'set' components, like oj-radioset.
- * When labelledBy changes, we need to update the aria-labelledby attribute.
- * Note: If labelledBy changes from a value to null, we should still remove the oldValue from
- * aria-labelledby.
- * Note: This way isn't perfect since it assumes the internal label's id is oj-label id
- * + '|label'. Used by oj-radioset, oj-checkboxset, oj-color*, oj-buttonset
- * @param {Element} rootElement the root element, like oj-radioset. It must have an id.
- * @param {string|null} originalValue the old value of the labelledBy option
- * @param {string|null} value the new value of the labelledBy option.
- * @param {jQuery} $elems jquery Object containing the node(s) to add/remove aria-labelledby to.
+ * On form component initialization and when form component's 'labelledBy' property changes,
+ * call this function to update aria-labelledby on the rootElement of the 'set' component
+ * and update aria-describedby on the inputs when labelledBy changes.
+ * For custom element only.
+ * Only call for the 'set' components, like oj-radioset, oj-color-palette.
+ *
+ * Background of how oj-label and 'set' components are linked together for accessibility:
+ * --------------------------------------------------------------------------------------
+ * An application developer links oj-label with a 'set' component like this:
+ * <oj-label id='foo'> to <oj-checkboxset labelled-by='foo'>
+ *
+ * We render the aria and data-oj- attributes on the correct dom like this:
+ * <oj-label id='foo' data-oj-set-id='cb'><span id="foo|label_helpIcon"<label id='foo|label'>
+ * <oj-checkboxset id='cb' labelled-by='foo' aria-labelledby='foo|label' described-by='foo|label_helpIcon'>
+ * <input aria-describedby='foo|label_helpIcon'>
+ *
+ * In steps:
+ * 1. App developer adds labelled-by on its set form component to link them
+ * 2. On init, set form component calls _labelledByUpdatedForSet
+ * 2a. this writes labelledBy to aria-labelledby on $focusElem,
+ * making sure not to override any existing ids
+ * 2b. this writes data-oj-set-id onto oj-label
+ * 3. oj-label gets notified of data-oj-set-id change and uses it to find the form component
+ * using document.getElementById (we want to avoid dom attribute searches for performance reasons)
+ * 4. if it has a required/help icon oj-label writes described-by on the set form component,
+ * which in turn calls _describedByUpdated.
+ * 4a. writes aria-describedby onto its content element to point
+ * to the icon text via _describedByUpdated
+ * ---------------------------------------------------------------------------------------
+ * Note: input form components are linked to the label via for/id. In that case, oj-label
+ * finds the form component with document.getElementById(for), writes labelled-by on the form
+ * component which in turn writes oj-data-input-id on the label to let the oj-label know what to
+ * write for 'for' on its internal label element.
+ * this does not happen here. It happens in EditableValueUtils.
+ * @param {string} componentId id of the form component.
+ * @param {string|null} originalLabelledBy the old value of the labelledBy option
+ * @param {string|null} newLabelledBy the new value of the labelledBy option.
+ * @param {jQuery} $focusElem jquery Object containing the node(s)
+ * to add/remove aria-labelledby to.
+ * For 'set' components this is the root element, not the individual inputs.
  * @private
  * @ignore
  */
-LabelledByUtils._updateLabelledBy = function (rootElement, originalValue, value, $elems) {
-  var suffix = LabelledByUtils.CUSTOM_LABEL_ELEMENT_ID;
+LabelledByUtils._labelledByUpdatedForSet = function (
+  componentId, originalLabelledBy, newLabelledBy, $focusElem) {
+  if (!originalLabelledBy && !newLabelledBy) {
+    // nothing to update. return
+    return;
+  }
+
+  if (!this._IsCustomElement()) {
+    return;
+  }
+  var _updateLabelledBySetAdd = function ($el, labelId, args) {
+    const suffix = LabelledByUtils.CUSTOM_LABEL_ELEMENT_ID;
+    LabelledByUtils._addAriaLabelledBy($el, labelId + suffix);
+    LabelledByUtils._addSetIdOnLabel(labelId, args.componentId);
+  };
+
+  var _updateLabelledBySetRemove = function ($el, labelId, args) {
+    const suffix = LabelledByUtils.CUSTOM_LABEL_ELEMENT_ID;
+    LabelledByUtils._removeAriaLabelledBy($el, labelId + suffix);
+    LabelledByUtils._removeSetIdOnLabel(labelId, args.componentId);
+  };
+
+  // callbacks for what needs to happen when the set form component's labelledBy property changes.
+  var callbackObj = {
+    callbackAdd: _updateLabelledBySetAdd,
+    callbackRemove: _updateLabelledBySetRemove,
+    args: { componentId: componentId }
+  };
+
+  LabelledByUtils._byUpdatedTemplate(originalLabelledBy, newLabelledBy, $focusElem, callbackObj);
+};
+
+/**
+ * On initialization and when form component's 'describedBy' property changes,
+ * call this function to update the aria-describedby attribute on the content elements.
+ * oj-label writes described-by onto the form component if it has a help icon or required icon
+ * for set components.
+ * @param {string|null} originalDescribedBy the old value of the 'describedBy' property.
+ * This can be a space-delimited list of ids.
+ * @param {string|null} newDescribedBy the new value of the 'describedBy' property. This can
+ * be a space-delimited list of ids.
+ * @param {jQuery} $focusElem jquery Object containing the node(s)
+ * to add/remove aria-describedby to. This is the content element usually.
+ * @private
+ * @ignore
+ */
+LabelledByUtils._describedByUpdated = function (originalDescribedBy, newDescribedBy,
+  $focusElem = this._GetContentElement()) {
+  if (!originalDescribedBy && !newDescribedBy) {
+    // nothing to update. return
+    return;
+  }
+  var _addAriaDescribedBy = function ($elems, id) {
+    LabelledByUtils._addRemoveAriaBy($elems, 'aria-describedby', id, true);
+  };
+  var _removeAriaDescribedBy = function ($elems, id) {
+    LabelledByUtils._addRemoveAriaBy($elems, 'aria-describedby', id, false);
+  };
+
+  // callbacks for what needs to happen when the form compnent's describedBy property changes.
+  var callbackObj = {
+    callbackAdd: _addAriaDescribedBy,
+    callbackRemove: _removeAriaDescribedBy
+  };
+
+  LabelledByUtils._byUpdatedTemplate(originalDescribedBy, newDescribedBy, $focusElem, callbackObj);
+};
+
+
+// Helper functions only called from within this file.
+
+/**
+ * Code that gets called when labelledBy or describedBy is updated that does the parsing
+ * of the space-delimited attributes and figures out what ids are added and what ids are removed
+ * from the originalValue to the newValue. Then it calls the callbackObj's functions to do the
+ * particular work.
+ * This function's main purpose is to reduce code duplication in this file in _describedByUpdated
+ * and _LabelledByUpdated.
+ * @param {string|null} originalValue the old value of the labelledBy/describedBy option
+ * @param {string|null} newValue the new value of the labelledBy/describedBy option.
+ * @param {jQuery} $focusElem jquery Object containing the node(s)
+ * to add/remove aria-* to to.
+ * @param {Object} callbackObj with parameters 'callbackAdd', 'callbackRemove' and optional 'args'
+ * for additional arguments the callback function may need.
+ * @private
+ * @ignore
+ *
+ */
+LabelledByUtils._byUpdatedTemplate = function (
+  originalValue, newValue, $focusElem, callbackObj) {
   var byId;
   var tokens;
   var originalTokens;
   var i;
 
-  if (!this._IsCustomElement()) {
-    return;
-  }
-
-  // originalValue is the 'old' value of labelledBy and value is the 'new' value of
-  // labelledBy. The most likely use case if originalValue is null. Check for that first.
-  if (!originalValue && value) {
-    // value can be a space-separated list of ids, so we need to split it and add the suffix
+  // The most likely use case if originalLabelledBy is null. Check for that first.
+  if (!originalValue && newValue) {
+    // newValue can be a space-separated list of ids, so we need to split it and add the suffix
     // to each one and put it back into a space-separated list.
-    // same thing as above, but for 'value'.
-    tokens = value.split(/\s+/);
+    tokens = newValue.split(/\s+/);
     for (i = 0; i < tokens.length; i++) {
       byId = tokens[i];
-      // this adds one id at a time to aria-labelledBy attribute. It
-      // makes sure there are not duplicates.
-      LabelledByUtils._addAriaLabelledBy($elems, byId + suffix);
-      // this sets data-oj-set-id on oj-label which in turn sets
-      // described-by on oj-radioset or other 'set' form component.
-      LabelledByUtils._addSetIdOnLabel(byId, rootElement.id);
+      callbackObj.callbackAdd.call(this, $focusElem, byId, callbackObj.args);
     }
-  } else if (originalValue && !value) {
-    // if  original value has a value and value doesn't, remove all
-    // value can be a space-separated list of ids, so we need to split it and add the suffix
-    // to each one and put it back into a space-separated list.
-    // same thing as above, but for 'value'.
+  } else if (originalValue && !newValue) {
+    // remove all
     tokens = originalValue.split(/\s+/);
     for (i = 0; i < tokens.length; i++) {
       byId = tokens[i];
-      // this adds/removes one id at a time to aria-labelledBy attribute. It
-      // makes sure there are not duplicates.
-      LabelledByUtils._removeAriaLabelledBy($elems, byId + suffix);
-      LabelledByUtils._removeDescribedByWithPrefix(rootElement, byId + '|');
+      callbackObj.callbackRemove.call(this, $focusElem, byId, callbackObj.args);
     }
-  } else if (originalValue && value) {
-    // if both original value and value have values, then we should figure out which are the
-    // same and ignore them, and remove the ones from original value that are unique and
-    // add the ones for value that are unique.
-    tokens = value.split(/\s+/);
+  } else if (originalValue && newValue) {
+    // if both have values, then we should figure out which are the
+    // same and ignore them, and remove the ones from originalLabelledBy that are unique and
+    // add the ones for newLabelledBy that are unique.
+    tokens = newValue.split(/\s+/);
     originalTokens = originalValue.split(/\s+/);
     for (i = 0; i < originalTokens.length; i++) {
       byId = originalTokens[i];
-      if (value.indexOf(byId) === -1) {
+      if (newValue.indexOf(byId) === -1) {
         // not in both, so remove it (add the suffix)
-        LabelledByUtils._removeAriaLabelledBy($elems, byId + suffix);
-        LabelledByUtils._removeDescribedByWithPrefix(rootElement, byId + '|');
+        callbackObj.callbackRemove.call(this, $focusElem, byId, callbackObj.args);
       }
     }
     for (i = 0; i < tokens.length; i++) {
       byId = tokens[i];
       if (originalValue.indexOf(byId) === -1) {
         // not in both, so add it (add the suffix)
-        LabelledByUtils._addAriaLabelledBy($elems, byId + suffix);
-        LabelledByUtils._addSetIdOnLabel(byId, rootElement.id);
+        callbackObj.callbackAdd.call(this, $focusElem, byId, callbackObj.args);
       }
     }
   }
 };
 
-/** .
+/**
  * Add the id to the widget's aria-labelledby attribute.
  * @param {jQuery} $elems the jquery element(s) that represents the node on which aria-labelledby is
  * @param {string} id id to add to aria-labelledby
@@ -124,41 +224,7 @@ LabelledByUtils._updateLabelledBy = function (rootElement, originalValue, value,
  * @ignore
  */
 LabelledByUtils._addAriaLabelledBy = function ($elems, id) {
-  var index;
-
-  $elems.each(function () {
-    var labelledBy = this.getAttribute('aria-labelledby');
-    var tokens;
-
-    tokens = labelledBy ? labelledBy.split(/\s+/) : [];
-    // Get index that id is in the tokens, if at all.
-    index = tokens.indexOf(id);
-    // add id if it isn't already there
-    if (index === -1) {
-      tokens.push(id);
-    }
-    labelledBy = tokens.join(' ').trim();
-    if (labelledBy == null) {
-      this.removeAttribute('aria-labelledBy');
-    } else {
-      this.setAttribute('aria-labelledBy', labelledBy);
-    }
-  });
-};
-
-/** .
- * Add 'data-oj-set-id' on oj-label, which in turn will
- * set described-by back on the Form component.
- * @param {string} ojLabelId the oj-label element's id.
- * @param {string} formComponentId the id of the form component
- * @private
- * @ignore
- */
-LabelledByUtils._addSetIdOnLabel = function (ojLabelId, formComponentId) {
-  var ojLabel = document.getElementById(ojLabelId);
-  if (ojLabel && !ojLabel.getAttribute('data-oj-set-id')) {
-    ojLabel.setAttribute('data-oj-set-id', formComponentId);
-  }
+  LabelledByUtils._addRemoveAriaBy($elems, 'aria-labelledby', id, true);
 };
 
 /**
@@ -169,192 +235,77 @@ LabelledByUtils._addSetIdOnLabel = function (ojLabelId, formComponentId) {
  * @ignore
  */
 LabelledByUtils._removeAriaLabelledBy = function ($elems, id) {
-  var labelledBy;
+  LabelledByUtils._addRemoveAriaBy($elems, 'aria-labelledby', id, false);
+};
 
+/**
+ * Add 'data-oj-set-id' on oj-label, which in turn will
+ * set described-by back on the Form component.
+ * @param {string} ojLabelId the oj-label element's id.
+ * @param {string} formComponentId the id of the form component
+ * @private
+ * @ignore
+ */
+LabelledByUtils._addSetIdOnLabel = function (ojLabelId, formComponentId) {
+  var ojLabel = document.getElementById(ojLabelId);
+  if (ojLabel) {
+    if (!ojLabel.getAttribute('data-oj-set-id')) {
+      ojLabel.setAttribute('data-oj-set-id', formComponentId);
+    }
+  }
+};
+
+/**
+ * Remove 'data-oj-set-id' on oj-label, which in turn will
+ * set described-by back on the Form component.
+ * @param {string} ojLabelId the oj-label element's id.
+ * @param {string} formComponentId the id of the form component
+ * @param {boolean} add true if you want to add, false if you want to remove.
+ * @private
+ * @ignore
+ */
+LabelledByUtils._removeSetIdOnLabel = function (ojLabelId) {
+  var ojLabel = document.getElementById(ojLabelId);
+  if (ojLabel) {
+    if (ojLabel.getAttribute('data-oj-set-id')) {
+      ojLabel.removeAttribute('data-oj-set-id');
+    }
+  }
+};
+
+/**
+ * Add or remove the aria- from the element(s).
+ * @param {JQuery} $elems jquery Object containing the node(s) to add/remove ariaAttr to.
+ * @param {string} ariaAttr aria attribute name 'aria-describedby' or 'aria-labelledby'
+ * @param {string} id one id to add or remove to 'aria-describedby' or 'aria-labelledby'
+ * @param {boolean} add if true, it will add the id, otherwise it will remove it.
+ * @private
+ * @ignore
+ *
+ */
+LabelledByUtils._addRemoveAriaBy = function ($elems, ariaAttr, id, add) {
   $elems.each(function () {
-    var index;
-    var tokens;
-
-    // get aria-labelledby that is on the element(s)
-    labelledBy = this.getAttribute('aria-labelledby');
+    // get ariaAttr that is on the content element(s)
+    let ariaAttributeValue = this.getAttribute(ariaAttr);
     // split into tokens
-    tokens = labelledBy ? labelledBy.split(/\s+/) : [];
+    let tokens = ariaAttributeValue ? ariaAttributeValue.split(/\s+/) : [];
     // Get index that id is in the tokens, if at all.
-    index = tokens.indexOf(id);
-    // remove that from the tokens array
-    if (index !== -1) {
-      tokens.splice(index, 1);
-    }
-    // join the tokens back together and trim whitespace
-    labelledBy = tokens.join(' ').trim();
-    if (labelledBy) {
-      this.setAttribute('aria-labelledby', labelledBy);
-    } else {
-      this.removeAttribute('aria-labelledby');
-    }
-  });
-};
-
-/**
- * Remove the id that starts with the prefix from the element's described-by attribute.
- * @param {Element} element the element, like oj-radioset
- * @param {string} prefix prefix of the described-by value to remove.
- * @private
- * @ignore
- */
-LabelledByUtils._removeDescribedByWithPrefix = function (element, prefix) {
-  var describedBy;
-  var tokens;
-
-  describedBy = element.getAttribute('described-by');
-  // split into tokens
-  tokens = describedBy ? describedBy.split(/\s+/) : [];
-  tokens = tokens.filter(function (item) {
-    return item.indexOf(prefix) === -1;
-  });
-  // join the tokens back together and trim whitespace
-  describedBy = tokens.join(' ').trim();
-  if (describedBy) {
-    element.setAttribute('described-by', describedBy);
-  } else {
-    element.removeAttribute('described-by');
-  }
-};
-
-/** For custom element only.
- * When describedBy changes, we need to update the aria-described attribute.
- * @param {string|null} originalValue the old value of the labelledBy option
- * @param {string|null} value the new value of the labelledBy option.
- * @private
- * @ignore
- */
-LabelledByUtils._updateDescribedBy = function (originalValue, value) {
-  var byId;
-  var tokens;
-  var originalTokens;
-  var i;
-
-  if (!this._IsCustomElement()) {
-    return;
-  }
-
-  // originalValue is the 'old' value of describedBy and value is the 'new' value of
-  // describedBy. The most likely use case if originalValue is null. Check for that first.
-  if (!originalValue && value) {
-    // value can be a space-separated list of ids, so we need to split it
-    // to each one and put it back into a space-separated list.
-    // same thing as above, but for 'value'.
-    tokens = value.split(/\s+/);
-    for (i = 0; i < tokens.length; i++) {
-      byId = tokens[i];
-      // this adds one id at a time to aria-labelledBy attribute. It
-      // makes sure there are not duplicates.
-      this._addAriaDescribedBy(byId);
-    }
-  } else if (originalValue && !value) {
-    // if  original value has a value and value doesn't, remove all
-    // value can be a space-separated list of ids, so we need to split it
-    // to each one and put it back into a space-separated list.
-    // same thing as above, but for 'value'.
-    tokens = originalValue.split(/\s+/);
-    for (i = 0; i < tokens.length; i++) {
-      byId = tokens[i];
-      // this adds/removes one id at a time to aria-labelledBy attribute. It
-      // makes sure there are not duplicates.
-      this._removeAriaDescribedBy(byId);
-    }
-  } else if (originalValue && value) {
-    // if both original value and value have values, then we should figure out which are the
-    // same and ignore them, and remove the ones from original value that are unique and
-    // add the ones for value that are unique.
-    tokens = value.split(/\s+/);
-    originalTokens = originalValue.split(/\s+/);
-    for (i = 0; i < originalTokens.length; i++) {
-      byId = originalTokens[i];
-      if (value.indexOf(byId) === -1) {
-        // not in both, so remove it
-        this._removeAriaDescribedBy(byId);
-      }
-    }
-    for (i = 0; i < tokens.length; i++) {
-      byId = tokens[i];
-      if (originalValue.indexOf(byId) === -1) {
-        // not in both, so add it
-        this._addAriaDescribedBy(byId);
-      }
-    }
-  }
-};
-
-/**
- * Add the aria-describedby on the content element(s) if it isn't already there.
- *
- * @param {string} id the id for aria-describedby
- * @private
- * @ignore
- *
- */
-LabelledByUtils._addAriaDescribedBy = function (id) {
-  var contentElements = this._GetContentElement();
-  var index;
-
-  contentElements.each(function () {
-    var describedby = this.getAttribute('aria-describedby');
-    var tokens;
-
-    tokens = describedby ? describedby.split(/\s+/) : [];
-        // Get index that id is in the tokens, if at all.
-    index = tokens.indexOf(id);
-    // add id if it isn't already there
-    if (index === -1) {
+    let index = tokens.indexOf(id);
+    // add id if it isn't already there, remove id if it is there.
+    if (add && (index === -1)) {
       tokens.push(id);
-    }
-    describedby = tokens.join(' ').trim();
-
-    if (describedby == null) {
-      this.removeAttribute('aria-describedby');
-    } else {
-      this.setAttribute('aria-describedby', describedby);
-    }
-  });
-};
-
-/**
- * Remove the aria-describedby from the content element(s).
- *
- * @param {string} id the id for aria-describedby
- * @private
- * @ignore
- *
- */
-LabelledByUtils._removeAriaDescribedBy = function (id) {
-  var contentElements = this._GetContentElement();
-
-  contentElements.each(function () {
-    var describedby;
-    var index;
-    var tokens;
-
-    // get aria-describedby that is on the content element(s)
-    describedby = this.getAttribute('aria-describedby');
-    // split into tokens
-    tokens = describedby ? describedby.split(/\s+/) : [];
-    // Get index that id is in the tokens, if at all.
-    index = tokens.indexOf(id);
-    // remove that from the tokens array
-    if (index !== -1) {
+    } else if (!add && (index !== -1)) {
+      // remove that from the tokens array
       tokens.splice(index, 1);
     }
-    // join the tokens back together and trim whitespace
-    describedby = tokens.join(' ').trim();
-    if (describedby) {
-      this.setAttribute('aria-describedby', describedby); // @HTMLUpdateOK
+    let newValue = tokens.join(' ').trim();
+    if (newValue) {
+      this.setAttribute(ariaAttr, newValue); // @HTMLUpdateOK
     } else {
-      this.removeAttribute('aria-describedby');
+      this.removeAttribute(ariaAttr);
     }
   });
 };
-
 
   ;return LabelledByUtils;
 });

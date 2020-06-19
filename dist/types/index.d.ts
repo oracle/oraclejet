@@ -1,9 +1,13 @@
-// Type definitions for oraclejet 6.1
-// Project: https://github.com/oracle/oraclejet
-// Definitions by: Naizam Olakara <https://github.com/nolakara>
-//                 Jing Wu <https://github.com/jingxwu>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.9
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
+import './oj-jsx-interfaces';
+import './oj-requirejs-plugins';
 import { Model, Collection } from './ojmodel';
 export namespace oj {
     let revision: string;
@@ -42,6 +46,13 @@ export interface GenericSetter<SP> {
 export interface JetElement<SP> extends HTMLElement, GenericSetter<SP> {
     set<K extends keyof SP>(propertyName: K, propertyValue: SP[K]): void;
     unset(propertyName: keyof SP): void;
+    addEventListener<T extends keyof HTMLElementEventMap>(type: T, listener: (this: HTMLElement, ev: HTMLElementEventMap[T]) => any, useCapture?: boolean): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    getProperty<T extends keyof JetSettableProperties>(property: T): JetElement<SP>[T];
+    getProperty(property: string): any;
+    setProperty<T extends keyof JetSettableProperties>(property: T, value: JetSettableProperties[T]): void;
+    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, JetSettableProperties>): void;
+    setProperties(properties: JetSettableProperties): void;
 }
 export interface JetElementCustomEvent<V> extends CustomEvent<{
     value: V;

@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -3371,6 +3372,8 @@ oj.ChartDataProviderHandler.prototype._sortGroups = function (groupsArray) {
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 1
  *
+ * @ojuxspecs ['charts-bar-line-area-and-combo', 'data-visualization-range-chart', 'data-visualization-pie', 'data-visualization-polar-chart', 'data-visualization-funnel', 'data-visualization-pyramid', 'data-visualization-stock-chart', 'data-visualization-common']
+ *
  * @classdesc
  * <h3 id="chartOverview-section">
  *   JET Chart
@@ -3675,6 +3678,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @expose
        * @name selectionMode
        * @memberof oj.ojChart
+       * @ojshortdesc The type of selection behavior that is enabled on the chart. See the Help documentation for more information.
        * @instance
        * @type {string}
        * @ojvalue {string} "none" Selection is disabled.
@@ -3698,10 +3702,11 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @default "user"
        */
       /**
-       * The chart type.
+       * The chart type. By default, the first three series of "combo" chart are assigned '<i>bar'</i>, <i>'line'</i>, and <i>'area'</i> type respectively and then the type repeats, i.e sucessive series will be of types '<i>bar'</i>, <i>'line'</i>, and <i>'area'</i> and so on. To customize individual series, see <a href="oj.ojChartSeries.html#type"> oj-chart-series </a> for more details.
        * @expose
        * @name type
        * @memberof oj.ojChart
+       * @ojshortdesc Specifies the chart type. See the Help documentation for more information.
        * @instance
        * @type {string}
        * @ojvalue {string} "line"
@@ -4121,8 +4126,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        */
       /**
        * The CSS style object defining the style of the label.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
        * @expose
        * @name pieCenter.labelStyle
+       * @ojshortdesc The CSS style object defining the style of the label.
        * @memberof! oj.ojChart
        * @instance
        * @type {Object}
@@ -4240,6 +4247,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @expose
        * @name xAxis.referenceObjects[].type
        * @memberof! oj.ojChart
+       * @ojshortdesc The type of reference object being shown. See the Help documentation for more information.
        * @instance
        * @type {string}
        * @ojvalue {string} "area"
@@ -4302,6 +4310,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        */
       /**
        * The CSS inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
+       * Only SVG CSS style properties are supported.
        * @expose
        * @name xAxis.referenceObjects[].svgStyle
        * @memberof! oj.ojChart
@@ -4316,6 +4325,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @expose
        * @name xAxis.referenceObjects[].value
        * @memberof! oj.ojChart
+       * @ojshortdesc The value of a line reference object. This property defines a constant value across the entire reference object. See the Help documentation for more information.
        * @instance
        * @type {number|string}
        * @default null
@@ -4325,6 +4335,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @expose
        * @name xAxis.referenceObjects[].low
        * @memberof! oj.ojChart
+       * @ojshortdesc The low value of an area reference object. See the Help documentation for more information.
        * @instance
        * @type {number|string}
        * @default null
@@ -4334,6 +4345,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @expose
        * @name xAxis.referenceObjects[].high
        * @memberof! oj.ojChart
+       * @ojshortdesc The high value of an area reference object. See the Help documentation for more information.
        * @instance
        * @type {number|string}
        * @default null
@@ -4441,8 +4453,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        */
       /**
        * The CSS style object defining the style of the axis title. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping of the title.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
        * @expose
        * @name xAxis.titleStyle
+       * @ojshortdesc The CSS style object defining the style of the axis title.
        * @memberof! oj.ojChart
        * @instance
        * @type {Object}
@@ -4470,8 +4484,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        */
       /**
        * The CSS style object defining the style of the labels. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping of categorical labels.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
        * @expose
        * @name xAxis.tickLabel.style
+       * @ojshortdesc The CSS style object defining the style of the labels.
        * @memberof! oj.ojChart
        * @instance
        * @type {Object}
@@ -4848,6 +4864,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @expose
        * @name yAxis.referenceObjects[].type
        * @memberof! oj.ojChart
+       * @ojshortdesc The type of reference object being shown. See the Help documentation for more information.
        * @instance
        * @type {string}
        * @ojvalue {string} "area"
@@ -4926,6 +4943,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        */
       /**
        * The CSS inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
+       * Only SVG CSS style properties are supported.
        * @expose
        * @name yAxis.referenceObjects[].svgStyle
        * @memberof! oj.ojChart
@@ -4940,24 +4958,27 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @expose
        * @name yAxis.referenceObjects[].value
        * @memberof! oj.ojChart
+       * @ojshortdesc The value of a line reference object. This property defines a constant value across the entire reference object. See the Help documentation for more information.
        * @instance
        * @type {number}
        * @default null
        */
       /**
-       * The low value of a area reference object. This property defines a constant value across the entire reference area and is ignored if the <a href="#yAxis.referenceObjects[].items">items</a> property is specified. See <a href="#yAxis.referenceObjects[].type">yAxis.referenceObjects[].type</a> for more details.
+       * The low value of an area reference object. This property defines a constant value across the entire reference area and is ignored if the <a href="#yAxis.referenceObjects[].items">items</a> property is specified. See <a href="#yAxis.referenceObjects[].type">yAxis.referenceObjects[].type</a> for more details.
        * @expose
        * @name yAxis.referenceObjects[].low
        * @memberof! oj.ojChart
+       * @ojshortdesc The low value of an area reference object. This property defines a constant value across the entire reference area. See the Help documentation for more information.
        * @instance
        * @type {number}
        * @default null
        */
       /**
-       * The high value of a area reference object. This property defines a constant value across the entire reference area and is ignored if the <a href="#yAxis.referenceObjects[].items">items</a> property is specified.  See <a href="#yAxis.referenceObjects[].type">yAxis.referenceObjects[].type</a> for more details.
+       * The high value of an area reference object. This property defines a constant value across the entire reference area and is ignored if the <a href="#yAxis.referenceObjects[].items">items</a> property is specified.  See <a href="#yAxis.referenceObjects[].type">yAxis.referenceObjects[].type</a> for more details.
        * @expose
        * @name yAxis.referenceObjects[].high
        * @memberof! oj.ojChart
+       * @ojshortdesc The high value of an area reference object. This property defines a constant value across the entire reference area. See the Help documentation for more information.
        * @instance
        * @type {number}
        * @default null
@@ -5112,8 +5133,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        */
       /**
        * The CSS style object defining the style of the axis title. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping of the title.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
        * @expose
        * @name yAxis.titleStyle
+       * @ojshortdesc The CSS style object defining the style of the axis title.
        * @memberof! oj.ojChart
        * @instance
        * @type {Object}
@@ -5152,8 +5175,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        */
       /**
        * The CSS style object defining the style of the labels.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration. Polar chart axis also supports backgroundColor.
        * @expose
        * @name yAxis.tickLabel.style
+       * @ojshortdesc The CSS style object defining the style of the labels.
        * @memberof! oj.ojChart
        * @instance
        * @type {Object}
@@ -5500,6 +5525,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @expose
        * @name y2Axis.referenceObjects[].type
        * @memberof! oj.ojChart
+       * @ojshortdesc The type of reference object being shown. See the Help documentation for more information.
        * @instance
        * @type {string}
        * @ojvalue {string} "area"
@@ -5578,6 +5604,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        */
       /**
        * The CSS inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
+       * Only SVG CSS style properties are supported.
        * @expose
        * @name y2Axis.referenceObjects[].svgStyle
        * @memberof! oj.ojChart
@@ -5592,6 +5619,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @expose
        * @name y2Axis.referenceObjects[].value
        * @memberof! oj.ojChart
+       * @ojshortdesc The value of a line reference object. This property defines a constant value across the entire reference line. See the Help documentation for more information.
        * @instance
        * @type {number}
        * @default null
@@ -5601,6 +5629,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @expose
        * @name y2Axis.referenceObjects[].low
        * @memberof! oj.ojChart
+       * @ojshortdesc The low value of an area reference object. This property defines a constant value across the entire reference area. See the Help documentation for more information.
        * @instance
        * @type {number}
        * @default null
@@ -5610,6 +5639,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @expose
        * @name y2Axis.referenceObjects[].high
        * @memberof! oj.ojChart
+       * @ojshortdesc The high value of an area reference object. This property defines a constant value across the entire reference area. See the Help documentation for more information.
        * @instance
        * @type {number}
        * @default null
@@ -5764,8 +5794,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       */
       /**
       * The CSS style object defining the style of the axis title. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping of the title.
+      * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, maxWidth, textDecoration.
       * @expose
       * @name y2Axis.titleStyle
+      * @ojshortdesc The CSS style object defining the style of the axis title.
       * @memberof! oj.ojChart
       * @instance
       * @type {Object}
@@ -5804,8 +5836,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       */
       /**
       * The CSS style object defining the style of the labels.
+      * The following style properties are supported: backgroundColor, color, cursor, fontFamily, fontSize, fontStyle, fontWeight, maxWidth, textDecoration.
       * @expose
       * @name y2Axis.tickLabel.style
+      * @ojshortdesc The CSS style object defining the style of the labels.
       * @memberof! oj.ojChart
       * @instance
       * @type {Object}
@@ -6192,8 +6226,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       */
       /**
       * The CSS style object defining the style of the section title.
+      * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
       * @expose
       * @name legend.seriesSection.titleStyle
+      * @ojshortdesc The CSS style object defining the style of the section title.
       * @memberof! oj.ojChart
       * @instance
       * @type {Object}
@@ -6233,8 +6269,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       */
       /**
       * The CSS style object defining the style of the section title.
+      * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
       * @expose
       * @name legend.referenceObjectSection.titleStyle
+      * @ojshortdesc The CSS style object defining the style of the section title.
       * @memberof! oj.ojChart
       * @instance
       * @type {Object}
@@ -6308,8 +6346,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       */
       /**
       * The CSS style object defining the style of the legend text.
+      * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
       * @expose
       * @name legend.textStyle
+      * @ojshortdesc The CSS style object defining the style of the legend text.
       * @memberof! oj.ojChart
       * @instance
       * @type {Object}
@@ -6350,8 +6390,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       */
       /**
       * The CSS style object defining the style of the title.
+      * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
       * @expose
       * @name legend.titleStyle
+      * @ojshortdesc The CSS style object defining the style of the title.
       * @memberof! oj.ojChart
       * @instance
       * @type {Object}
@@ -6716,8 +6758,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        */
       /**
        * The CSS style object defining the style of the data label text. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
        * @expose
        * @name styleDefaults.dataLabelStyle
+       * @ojshortdesc The CSS style object defining the style of the data label. See the Help documentation for more information.
        * @memberof! oj.ojChart
        * @instance
        * @type {Object|Array.<Object>}
@@ -6738,8 +6782,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        */
       /**
        * The CSS style object defining the style of the stack label. Only applies to stacked bar charts.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
        * @expose
        * @name styleDefaults.stackLabelStyle
+       * @ojshortdesc The CSS style object defining the style of the stack label.
        * @memberof! oj.ojChart
        * @instance
        * @type {Object}
@@ -6780,8 +6826,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        */
       /**
        * The CSS style object defining the style of the labels in the tooltip.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
        * @expose
        * @name styleDefaults.tooltipLabelStyle
+       * @ojshortdesc The CSS style object defining the style of the labels in the tooltip.
        * @memberof! oj.ojChart
        * @instance
        * @type {Object}
@@ -6790,8 +6838,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        */
       /**
        * The CSS style object defining the style of the values in the tooltip.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
        * @expose
        * @name styleDefaults.tooltipValueStyle
+       * @ojshortdesc The CSS style object defining the style of the values in the tooltip.
        * @memberof! oj.ojChart
        * @instance
        * @type {Object}
@@ -6918,8 +6968,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        */
       /**
        * The CSS inline style to apply to the whisker stems.
+       * Only SVG CSS style properties are supported.
        * @expose
        * @name styleDefaults.boxPlot.whiskerSvgStyle
+       * @ojshortdesc The CSS inline style to apply to the whisker stems.
        * @memberof! oj.ojChart
        * @instance
        * @type {Object}
@@ -6937,7 +6989,9 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        */
       /**
        * The CSS inline style to apply to the whisker ends.
+       * Only SVG CSS style properties are supported.
        * @expose
+       * @ojshortdesc The CSS inline style to apply to the whisker ends.
        * @name styleDefaults.boxPlot.whiskerEndSvgStyle
        * @memberof! oj.ojChart
        * @instance
@@ -6965,6 +7019,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        */
       /**
        * The CSS inline style to apply to the median line.
+       * Only SVG CSS style properties are supported.
        * @expose
        * @name styleDefaults.boxPlot.medianSvgStyle
        * @memberof! oj.ojChart
@@ -8596,8 +8651,6 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
         { path: 'styleDefaults/stockRangeColor', property: 'background-color' };
       styleClasses['oj-chart-stock-rising'] =
         { path: 'styleDefaults/stockRisingColor', property: 'background-color' };
-      styleClasses['oj-chart-tooltip-label'] =
-        { path: 'styleDefaults/tooltipLabelStyle', property: 'TEXT' };
       styleClasses['oj-chart-xaxis-tick-label'] =
         { path: 'xAxis/tickLabel/style', property: 'TEXT' };
       styleClasses['oj-chart-xaxis-title'] =
@@ -8736,23 +8789,12 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       var resources = this.options._resources;
 
       // Add images
-      // TODO these should be defined in the skin instead
-      resources.overviewGrippy =
-        Config.getResourceUrl('resources/internal-deps/dvt/chart/drag_horizontal.png');
+      resources.overviewGrippy = 'oj-fwk-icon oj-fwk-icon-drag-horizontal';
 
-      // Drag button images
-      resources.panUp = 'oj-chart-pan-icon';
-      resources.panUpHover = 'oj-chart-pan-icon oj-hover';
-      resources.panDown = 'oj-chart-pan-icon oj-active';
-      resources.panDownHover = 'oj-chart-pan-icon oj-hover oj-active';
-      resources.selectUp = 'oj-chart-select-icon';
-      resources.selectUpHover = 'oj-chart-select-icon oj-hover';
-      resources.selectDown = 'oj-chart-select-icon oj-active';
-      resources.selectDownHover = 'oj-chart-select-icon oj-hover oj-active';
-      resources.zoomUp = 'oj-chart-zoom-icon';
-      resources.zoomUpHover = 'oj-chart-zoom-icon oj-hover';
-      resources.zoomDown = 'oj-chart-zoom-icon oj-active';
-      resources.zoomDownHover = 'oj-chart-zoom-icon oj-hover oj-active';
+      // Drag button icons
+      resources.pan = 'oj-fwk-icon oj-fwk-icon-pan';
+      resources.select = 'oj-fwk-icon oj-fwk-icon-marquee';
+      resources.zoom = 'oj-fwk-icon oj-fwk-icon-magnifier';
     },
 
     /**
@@ -9281,7 +9323,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @property {number} innerBounds.y The y coordinate of the rectangle inscribed in the center area, relative to the top, left corner of the element.
  * @property {number} innerBounds.width The width of the rectangle inscribed in the center area.
  * @property {number} innerBounds.height The height of the rectangle inscribed in the center area.
- * @property {Object} labelStyle The CSS style object defining the style of the label.
+ * @property {Object} labelStyle The CSS style object defining the style of the label. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
  * @property {string} label The pieCenter label.
  * @property {number} totalValue The total of all values in the pie chart.
  * @property {Element} componentElement The chart element.
@@ -9404,7 +9446,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 * @property {Array.<Object>=} sections An array of nested legend sections.
 * @property {string=} title The title of the legend section.
 * @property {"center"|"end"|"start"} [titleHalign="start"] The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
-* @property {Object=} titleStyle The CSS style object defining the style of the section title.
+* @property {Object=} titleStyle The CSS style object defining the style of the section title. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
 * @ojsignature [{target: "Type", value: "Array.<oj.ojChart.LegendItem>=", for: "items", jsdocOverride: true},
 *               {target: "Type", value: "CSSStyleDeclaration=", for: "titleStyle", jsdocOverride: true},
 *               {target: "Type", value: "Array.<oj.ojChart.LegendSection>=", for: "sections", jsdocOverride: true}]
@@ -9417,7 +9459,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @property {Array.<string>=} categories An array of categories for the legend item. Legend items currently only support a single category. If no category is specified, this defaults to the id or text of the legend item.
  * @property {"hidden"|"visible"} [categoryVisibility="visible"] Defines whether the legend item corresponds to visible data items. A hollow symbol is shown if the value is "hidden".
  * @property {string=} color The color of the legend symbol (line or marker). When symbolType is "lineWithMarker", this attribute defines the line color and the markerColor attribute defines the marker color.
- * @property {string=} id The id of the legend item, which is provided as part of the context for events fired by the legend. If not specified, the id defaults to the text of the legend item if a DataProvider is not being used. For the DataProvider case, the key for the node will be used as the id.
+ * @property {string=} id The id of the legend item, which is provided as part of the context for events fired by the legend. If not specified, the default depends upon whether a DataProvider is being used.<br><br>For the DataProvider case, the key for the node will be used as the default id. Otherwise, the id defaults to the text of the legend item.
  * @property {"dashed"|"dotted"|"solid"} [lineStyle="solid"] The line style. Only applies when the symbolType is "line" or "lineWithMarker".
  * @property {number=} lineWidth The line width in pixels. Only applies when the symbolType is "line" or "lineWithMarker".
  * @property {string=} markerColor The color of the marker, if different than the line color. Only applies if the symbolType is "lineWithMarker".
@@ -9495,7 +9537,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  */
 
  /**
- * <p>The <code class="prettyprint">seriesTemplate</code> slot is used to specify the template for generating the series properties of the chart. The slot content must be a &lt;template> element.
+ * <p>The <code class="prettyprint">seriesTemplate</code> slot is used to specify the template for generating the series properties of the chart. The slot content must be a single &lt;template> element.
  * The content of the template should only be one &lt;oj-chart-series> element.See the [oj-chart-series]{@link oj.ojChartSeries} doc for more details.</p>
  * <p>When the template is executed for each series, it will have access to the chart's binding context containing the following properties:</p>
  * <ul>
@@ -9523,7 +9565,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  */
 
  /**
- * <p>The <code class="prettyprint">groupTemplate</code> slot is used to specify the template for generating the group properties of the chart. The slot content must be a &lt;template> element.
+ * <p>The <code class="prettyprint">groupTemplate</code> slot is used to specify the template for generating the group properties of the chart. The slot content must be a single &lt;template> element.
  * The content of the template should only be one &lt;oj-chart-group> element. See the [oj-chart-group]{@link oj.ojChartGroup} doc for more details.</p>
  * <p>When the template is executed for each group, it will have access to the chart's binding context containing the following properties:</p>
  * <ul>
@@ -9550,7 +9592,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  */
 
 /**
- * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
+ * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content. The slot content must be a single &lt;template> element.
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
@@ -9559,6 +9601,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  *
  *
  * @ojslot tooltipTemplate
+ * @ojmaxitems 1
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojChart.TooltipContext
  * @memberof oj.ojChart
@@ -9574,7 +9617,8 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 
 /**
  * <p>The <code class="prettyprint">pieCenterTemplate</code> slot is used to specify custom center content
- * for a pie chart.  This slot takes precedence over the pieCenter.renderer property if specified.
+ * for a pie chart. The slot content must be a single &lt;template> element.
+ * This slot takes precedence over the pieCenter.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
  *   <li>$current - an object that contains information for the pie center. (See [oj.ojChart.PieCenterContext]{@link oj.ojChart.PieCenterContext} or the table below for a list of properties available on $current) </li>
@@ -9582,6 +9626,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  *
  *
  * @ojslot pieCenterTemplate
+ * @ojmaxitems 1
  * @ojshortdesc The pieCenterTemplate slot is used to specify custom center content for a pie chart. This slot takes precedence over the pieCenter.renderer property if specified. See the Help documentation for more information.
  * @ojslotitemprops oj.ojChart.PieCenterContext
  * @memberof oj.ojChart
@@ -9764,6 +9809,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 
 /**
  * @ojcomponent oj.ojChartGroup
+ * @ojshortdesc The oj-chart-group element is used to declare group properties. See the Help documentation for more information.
  * @ojimportmembers oj.ojChartGroupProperties
  * @ojslotcomponent
  * @ojsignature {target: "Type", value:"class ojChartGroup extends JetElement<ojChartGroupSettableProperties>"}
@@ -9796,6 +9842,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 
 /**
  * @ojcomponent oj.ojChartItem
+ * @ojshortdesc The oj-chart-item element is used to declare item properties. See the Help documentation for more information.
  * @ojimportmembers oj.ojChartItemProperties
  * @ojsignature {target: "Type", value:"class ojChartItem extends JetElement<ojChartItemSettableProperties>"}
  * @ojslotcomponent
@@ -9860,6 +9907,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 
 /**
  * @ojcomponent oj.ojChartSeries
+ * @ojshortdesc The oj-chart-series element is used to declare series properties. See the Help documentation for more information.
  * @ojimportmembers oj.ojChartSeriesProperties
  * @ojslotcomponent
  * @ojsignature {target: "Type", value:"class ojChartSeries extends JetElement<ojChartSeriesSettableProperties>"}
@@ -10221,6 +10269,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
       areaSvgClassName: '',
     /**
      * The inline style to apply if the type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
+     * Only SVG CSS style properties are supported.
      * @expose
      * @name areaSvgStyle
      * @ojshortdesc The inline style to apply if type is "area" or "lineWithArea".
@@ -10266,6 +10315,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
       svgClassName: '',
     /**
      * The inline style to apply to the data items. For type lineWithArea, this style will only be applied to the line if areaSvgStyle is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips, it's recommended to also pass a representative color to the color attribute.
+     * Only SVG CSS style properties are supported.
      * @expose
      * @name svgStyle
      * @ojshortdesc The inline style to apply to the data items. If type is "lineWithArea", this style will only be applied to the line if areaSvgStyle is also specified. See the Help documentation for more information.
@@ -10780,7 +10830,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  * @property {"square"|"circle"|"diamond"|"plus"|"triangleDown"|"triangleUp"|"human"|"star"|"auto"|string} markerShape="auto" The shape of the data markers. Can take the name of a built-in shape or the SVG path commands for a custom shape. Only applies to line and area spark charts.
  * @property {number} markerSize The size of the data markers in pixels. Only applies to line and area spark charts.
  * @property {string} svgClassName The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
- * @property {Object} svgStyle The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
+ * @property {Object} svgStyle The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute. Only SVG CSS style properties are supported.
  * @property {number} value The value of the data item.
  * @ojsignature {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true}
  */
@@ -10849,7 +10899,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  * @property {"front"|"back"=} location="back"  The location of the reference object relative to the data items.
  * @property {number=} low The low value of a reference area.
  * @property {string=} svgClassName The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties.
- * @property {Object=} svgStyle The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties.
+ * @property {Object=} svgStyle The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. Only SVG CSS style properties are supported.
  * @property {"area"|"line"=} type="line" The type of reference object being shown.
  * @property {number=} value The value of a reference line.
  * @ojsignature {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true}
@@ -10885,6 +10935,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
 
 /**
  * @ojcomponent oj.ojSparkChartItem
+ * @ojshortdesc The oj-spark-chart-item element is used to declare properties for spark chart items. See the Help documentation for more information.
  * @ojsignature {target: "Type", value:"class ojSparkChartItem extends JetElement<ojSparkChartItemSettableProperties>"}
  * @ojslotcomponent
  * @since 5.2.0
@@ -11050,6 +11101,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  */
 /**
  * The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
+ * Only SVG CSS style properties are supported.
  * @expose
  * @name svgStyle
  * @ojshortdesc The inline style to apply to the data item. See the Help documentation for more information.

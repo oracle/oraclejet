@@ -1,11 +1,12 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
-define(['ojs/ojexpparser', 'ojs/ojcore-base'], function(ExpParser, oj)
+define(['ojs/ojexpparser', 'ojs/ojcore-base', 'ojs/ojkoshared'], function(ExpParser, oj)
 {
   "use strict";
 
@@ -18,7 +19,7 @@ define(['ojs/ojexpparser', 'ojs/ojcore-base'], function(ExpParser, oj)
 // under MIT License
 //
 
-/* global ExpParser: true, oj: true */
+/* global ExpParser: true */
 
 /**
  * @class oj.CspExpressionEvaluator

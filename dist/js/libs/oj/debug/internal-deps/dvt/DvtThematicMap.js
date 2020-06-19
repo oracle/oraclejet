@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   "use strict";
@@ -8,16 +9,18 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function(dvt) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -449,6 +452,7 @@ dvt.ThematicMap.prototype._render = function(pzcContainer, cpContainer) {
   this._touchEventLayer && pzcContainer.addChild(this._touchEventLayer);
 
   // Render all point layers and the first area layer
+  var areaLayerDim;
   var pzcMatrix = this._pzc.getContentPane().getMatrix();
   this._areaLayerRendered = false;
   for (var i = 0; i < this._layers.length; i++) {
@@ -458,6 +462,16 @@ dvt.ThematicMap.prototype._render = function(pzcContainer, cpContainer) {
       if (!this._areaLayerRendered && layer instanceof DvtMapAreaLayer) {
         this._areaLayerRendered = true;
         this._areaLayer = layer;
+        // DvtMapAreaLayer.prototype.getLayerDim() calls getBBox which causes forced synchronous layout(reflow).
+        // The dimensions are cached in the DvtMapAreaLayer.prototype._layerDim after it is calculated for the
+        // first time.
+        // To avoid a performance bottleneck here, this has to be done when we have the least number of elements
+        // in the DOM. DvtThematicMapJsonParser.prototype.parse() and DvtThematicMapJsonParser.prototype._parseAreaLayer()
+        // guarantees that the first entry in the this._layers is the map area layer and hence, doing the initial
+        // layout before rendering data points (which could be large) provides a significant performance improvement.
+        // We need no worry about the subsequent DvtMapAreaLayer.prototype.getLayerDim() calls as the dimensions
+        // are returned from the cached value and will not cause layout(reflow).
+        areaLayerDim = layer.getLayerDim();
       }
     }
   }
@@ -482,7 +496,7 @@ dvt.ThematicMap.prototype._render = function(pzcContainer, cpContainer) {
 
   // Zoom to fit before initial render animations so animations will look correct
   // Additional zooming for initialZooming will be applied after animations are complete
-  this._pzc.zoomToFit(null, this._areaLayer.getLayerDim());
+  this._pzc.zoomToFit(null, areaLayerDim);
 
   // Get the current zoom of the canvas to set min canvas zoom to fit component in viewport
   this._updateZoomLimits();
@@ -1147,8 +1161,9 @@ dvt.ThematicMap.prototype._clearTouchEventContent = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1293,8 +1308,9 @@ DvtThematicMapDefaults.prototype.getAnimationDuration = function(options)
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1482,8 +1498,9 @@ DvtThematicMapAutomation.prototype._getDataLayerId = function(dataLayerId) {
 
 /**
  * @license
- * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2011 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1637,8 +1654,9 @@ DvtSelectablePath.prototype.handleZoomEvent = function(pzcMatrix) {
 
 /**
  * @license
- * Copyright (c) 2015 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2015 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1841,8 +1859,9 @@ DvtCustomDataItem.prototype.fireKeyboardListener = function(event) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 // For MAF this != window and we want to use this
@@ -2277,8 +2296,9 @@ DvtBaseMapManager.getLayerIds = function(baseMapName, layerName) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -2323,8 +2343,9 @@ DvtThematicMapCategoryWrapper.prototype.getDisplayables = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -2549,8 +2570,9 @@ DvtMapLabel.prototype.reset = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -3363,8 +3385,9 @@ DvtMapObjPeer.prototype._checkAndMoveContents = function(rootElem) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -3479,8 +3502,9 @@ DvtMapAreaPeer.prototype.__recenter = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -3660,8 +3684,9 @@ DvtMapLinkPeer.prototype.animateUpdate = function(handler, oldObj) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -3865,8 +3890,9 @@ DvtMapArea.prototype.HandleZoomEvent = function(pzcMatrix) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4124,8 +4150,9 @@ DvtMapLayer.prototype.destroy = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4554,8 +4581,9 @@ DvtMapAreaLayer.prototype.HandleZoomEvent = function(event, pzcMatrix) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 var DvtMapDataLayer = function(tmap, parentLayer, clientId, eventHandler, options) {
@@ -5089,8 +5117,9 @@ DvtMapDataLayer.prototype.getNavigableLinksForNodeId = function(markerId) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -5290,8 +5319,9 @@ DvtThematicMapKeyboardHandler.getFirstNavigableLink = function(marker, event, li
 
 /**
  * @license
- * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2011 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -5579,8 +5609,9 @@ DvtThematicMapEventManager.prototype.ShowFocusEffect = function(event, obj) {
 
 /**
  * @license
- * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2011 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -5627,6 +5658,10 @@ DvtThematicMapJsonParser.prototype.parse = function(options) {
     this._mapProvider = mapProvider;
   this._parseMapProperties(options);
   this._parseStyles(options['styleDefaults']);
+  // The map area layer should to be parsed before the data layers.
+  // This is to guarantee that the map area layer is the first one to be rendered.
+  // This is needed for improving the performance of the tmap by avoiding a performance
+  // bottleneck due to layout in the function dvt.ThematicMap.prototype._render.
   this._parseAreaLayer(options['areaLayers']);
   this.ParseDataLayers(options['pointDataLayers'], null, null, false);
 };
@@ -5715,6 +5750,10 @@ DvtThematicMapJsonParser.prototype._parseAreaLayer = function(areaLayers) {
   mapLayer.setLayerCSSStyle(this._areaLayerStyle);
   mapLayer.setDropSiteCSSStyle(this._areaDropSiteStyle);
 
+  // The map area layer has to be added before adding the data layers.
+  // This is to guarantee that the map layer is the first one to be rendered.
+  // This is needed for improving the performance of the tmap by avoiding performance
+  // bottleneck in the function dvt.ThematicMap.prototype._render.
   this._tmap.addLayer(mapLayer);
   // parse data layers
   if (areaLayer['areaDataLayer'])
@@ -6578,8 +6617,9 @@ DvtThematicMapJsonParser._getLocationName = function(basemap, dataLayer, data) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -7225,8 +7265,9 @@ DvtThematicMapProjections._getInverseRobinsonProjection = function(x, y) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -7554,8 +7595,9 @@ DvtMapProviderUtils._pathToPolygon = function(path) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 })(dvt);

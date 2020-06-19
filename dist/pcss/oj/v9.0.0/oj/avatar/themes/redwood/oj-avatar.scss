@@ -1,0 +1,51 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../theme/themes/redwood/oj-helpers.scss";
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+
+// ----- end dependencies ---------
+
+
+@import "_oj-avatar.cssvars.scss";
+// import classes defined in the common directory
+@import "../base/_oj-avatar.scss";
+
+.oj-avatar-bg-green .oj-avatar-background-image {
+    background-image: oj-image-url("ava-green.png");
+  }
+
+  .oj-avatar-background-image {
+    background-image: oj-image-url('ava-neutral.png');
+  }
+
+  .oj-avatar-bg-purple .oj-avatar-background-image {
+    background-image: oj-image-url('ava-purple.png');
+  }
+
+  .oj-avatar-bg-red .oj-avatar-background-image {
+    background-image: oj-image-url('ava-red.png');
+  }
+
+  .oj-avatar-bg-teal .oj-avatar-background-image {
+    background-image: oj-image-url('ava-teal.png');
+  }
+
+  .oj-avatar-bg-orange .oj-avatar-background-image {
+    background-image: oj-image-url('ava-orange.png');
+  }
+  .oj-avatar-bg-forest .oj-avatar-background-image {
+    background-image: oj-image-url('ava-forest.png');
+  }
+  .oj-avatar-bg-mauve .oj-avatar-background-image {
+    background-image: oj-image-url('ava-mauve.png');
+  }

@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -43,10 +44,6 @@ var __oj_color_spectrum_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -117,6 +114,15 @@ var __oj_color_spectrum_metadata =
           "type": "string"
         }
       }
+    },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
     },
     "valid": {
       "type": "string",
@@ -275,6 +281,8 @@ var __oj_color_spectrum_metadata =
    * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
    * @ojvbdefaultcolumns 4
    * @ojvbmincolumns 4
+   *
+   * @ojuxspecs ['color-spectrum']
    *
    * @classdesc
    * <h3 id="colorSpectrumOverview-section">
@@ -545,7 +553,7 @@ var __oj_color_spectrum_metadata =
 
       this._super();
 
-      this._updateLabelledBy(this.element[0], null, this.options.labelledBy, this._$spectrumThumb); // custom element's use oj-label.
+      this._labelledByUpdatedForSet(this.element[0].id, null, this.options.labelledBy, this._$spectrumThumb); // custom element's use oj-label.
 
 
       if (!this._IsCustomElement()) {
@@ -600,7 +608,7 @@ var __oj_color_spectrum_metadata =
 
         case 'labelledBy':
           // remove the old one and add the new one
-          this._updateLabelledBy(this.element[0], originalValue, newval, this._$spectrumThumb);
+          this._labelledByUpdatedForSet(this.element[0].id, originalValue, newval, this._$spectrumThumb);
 
           break;
 
@@ -655,7 +663,7 @@ var __oj_color_spectrum_metadata =
      * @instance
      * @private
      */
-    _updateLabelledBy: LabelledByUtils._updateLabelledBy,
+    _labelledByUpdatedForSet: LabelledByUtils._labelledByUpdatedForSet,
 
     /**
      * @memberof oj.ojColorSpectrum
@@ -1529,6 +1537,9 @@ var __oj_color_spectrum_metadata =
         step: 1,
         value: this._hueVal,
         orientation: 'vertical',
+        displayOptions: {
+          messages: 'none'
+        },
         optionChange: this._onSliderOptionChange.bind(this),
         rootAttributes: {
           class: 'oj-slider-color-picker'
@@ -1542,6 +1553,9 @@ var __oj_color_spectrum_metadata =
         step: 0.01,
         value: this._alphaVal,
         orientation: 'horizontal',
+        displayOptions: {
+          messages: 'none'
+        },
         optionChange: this._onSliderOptionChange.bind(this),
         rootAttributes: {
           class: 'oj-slider-color-picker'
@@ -2189,7 +2203,24 @@ var __oj_color_spectrum_metadata =
 (function () {
   __oj_color_spectrum_metadata.extension._WIDGET_NAME = 'ojColorSpectrum';
   oj.CustomElementBridge.register('oj-color-spectrum', {
-    metadata: __oj_color_spectrum_metadata
+    metadata: oj.CollectionUtils.mergeDeep(__oj_color_spectrum_metadata, {
+      properties: {
+        readonly: {
+          binding: {
+            consume: {
+              name: 'readonly'
+            }
+          }
+        },
+        userAssistanceDensity: {
+          binding: {
+            consume: {
+              name: 'userAssistanceDensity'
+            }
+          }
+        }
+      }
+    })
   });
 })();
 

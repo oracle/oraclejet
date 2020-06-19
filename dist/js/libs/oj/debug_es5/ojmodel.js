@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -1599,7 +1600,7 @@ oj.Collection.prototype._pushModels = function (model) {
 
   this._pushModel(model);
 
-  this.lruCount = this.lruCount + 1;
+  this.lruCount += 1;
   model.SetIndex(this._getModelsLength() - 1);
 };
 /**
@@ -1611,7 +1612,7 @@ oj.Collection.prototype._reduceLRU = function (removed) {
   if (removed) {
     for (var i = 0; i < removed.length; i++) {
       if (removed[i]) {
-        this.lruCount = this.lruCount - 1;
+        this.lruCount -= 1;
       }
     }
   }
@@ -1746,7 +1747,7 @@ oj.Collection.prototype._insertModelIndex = function (start) {
   // Up all the indices of models with index greater than start
   for (var i = 0; i < this._modelIndices.length; i++) {
     if (this._modelIndices[i] >= start) {
-      this._modelIndices[i] = this._modelIndices[i] + 1;
+      this._modelIndices[i] += 1;
     }
   } // Now add the new one
 
@@ -1801,7 +1802,7 @@ oj.Collection.prototype._setModel = function (index, model) {
 
   if (!oldModel) {
     // Newly "inserted" model
-    this.lruCount = this.lruCount + 1;
+    this.lruCount += 1;
   }
 
   this._setChangeAt(index, 1);
@@ -1835,7 +1836,7 @@ oj.Collection.prototype._clearOutModels = function (n) {
     model = this._getModel(index);
 
     if (!(model && model.hasChanged())) {
-      this.lruCount = this.lruCount - 1;
+      this.lruCount -= 1;
 
       if (index > -1) {
         // this._getModels()[index] = undefined;
@@ -3504,7 +3505,7 @@ oj.Collection.prototype._addPromise = function (promiseTask) {
   } // Track the number we have left to resolve
 
 
-  this._promiseCount = this._promiseCount + 1; // Chain this new promise callback task to the end of the list
+  this._promiseCount += 1; // Chain this new promise callback task to the end of the list
 
   this._promises = this._promises.then(promiseTask.bind(self)).then(function (arg) {
     // Resolved successfully--decrement our count and clean up if we have none left to resolve
@@ -8775,8 +8776,6 @@ oj.ajax = function (settings) {
 
 /* jslint browser: true*/
 
-/* global jQuery:false*/
-
 /**
  * @export
  * @class oj.OAuth
@@ -9060,7 +9059,7 @@ oj.OAuth._base64_encode = function (a) {
 
 /* jslint browser: true*/
 
-/* global jQuery:false, Config:false*/
+/* global Config:false*/
 
 /**
  * @private

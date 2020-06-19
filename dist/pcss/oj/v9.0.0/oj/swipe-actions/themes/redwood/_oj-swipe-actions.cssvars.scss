@@ -1,0 +1,24 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+// import dependencies
+
+  @include module-include-once("redwood.variables.swipeactions") {
+
+:root {
+  // swipe actions
+  // ----------------------------
+  --oj-swipe-actions-text-color:           var(--oj-core-text-color-primary-contrast);
+  --oj-swipe-actions-animation-duration:   var(--oj-animation-duration-long);
+  --oj-swipe-actions-item-width:           4rem;
+  --oj-swipe-actions-icon-to-text-padding: var(--oj-core-spacing-3x);
+
+  --oj-swipe-actions-default-bg-color:     var(--oj-palette-brand-110);
+  --oj-swipe-actions-neutral-bg-color:     var(--oj-palette-neutral-120);
+  --oj-swipe-actions-attention-bg-color:   var(--oj-palette-info-100);
+  --oj-swipe-actions-danger-bg-color:      var(--oj-palette-danger-100);
+
+  
+}
+
+}

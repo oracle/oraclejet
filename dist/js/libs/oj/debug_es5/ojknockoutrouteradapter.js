@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -92,6 +93,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
  * @export
  * @ojtsmodule
  * @ojtsimport {module: "ojcorerouter", type: "AMD", importName: "CoreRouter"}
+ * @ojtsimport knockout
  * @ojsignature [
  *    {target: "Type", value: "class KnockoutRouterAdapter<D extends {[key: string]: any} = {[key: string]: any}, P extends {[key: string]: any} = {[key: string]: any}>",
  *     genericParameters: [{"name": "D", "description": "Detail object for the router state"},

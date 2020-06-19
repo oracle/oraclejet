@@ -1,0 +1,66 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+// import dependencies
+@import "../../../text-field/themes/redwood/_oj-text-field.cssvars.scss";
+
+  @include module-include-once("redwood.variables.slider") {
+
+:root {
+// todo: they want a 'halo' on hover, focus, and active, possibly we could do it with a box shadow, need to see if there are animations. glow is neutral 70, 30% opacity, size is 44x44
+
+// todo: go to http://jet.us.oracle.com/trunk/jetCookbook.html?component=slider&demo=slider&mode=redwood, there's a css bug that causes a scroll bar to show up in redwood. I think the cause is in rt\src\main\pcss\oj\slider\pcss\_oj-slider.scss _oj-slider.scss 
+// the calc for left and right is wrong in the class below,  
+// seems like it should be calc(0px - (var(--oj-slider-thumb-width) / 2));
+// when the slider is horizontal, and then fix it for vertical as well
+// .oj-slider-bar:after {
+//    left: calc(0px - (36px / 2) + (var(--oj-slider-bar-thickness) / 2));
+//    right: calc(0px - (36px / 2) + (var(--oj-slider-bar-thickness) / 2));
+
+
+  // slider
+  // ---------------------------
+  --oj-slider-thumb-width:                 1.25rem;
+  --oj-slider-thumb-height:                1.25rem;
+  --oj-slider-thumb-width-active:          var(--oj-slider-thumb-width);
+  --oj-slider-thumb-height-active:         var(--oj-slider-thumb-height);
+  --oj-slider-thumb-border-radius:         0.375rem;
+  --oj-slider-thumb-border-width:          0.125rem;
+  --oj-slider-thumb-box-shadow:            none;
+  --oj-slider-thumb-box-shadow-active:     var(--oj-slider-thumb-box-shadow);
+  --oj-slider-thumb-box-shadow-hover:      var(--oj-slider-thumb-box-shadow);
+
+  --oj-slider-thumb-bg-color:              var(--oj-palette-neutral-10);
+  --oj-slider-thumb-border-color:          var(--oj-palette-neutral-190);
+  --oj-slider-thumb-bg-color-hover:        var(--oj-palette-neutral-30);
+  --oj-slider-thumb-bg-color-active:       var(--oj-palette-neutral-40);
+  --oj-slider-thumb-border-color-active:   var(--oj-palette-neutral-190);
+  --oj-slider-thumb-bg-color-disabled:     var(--oj-palette-neutral-10);
+  --oj-slider-thumb-border-color-disabled: rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-low));
+
+  --oj-slider-bar-thickness:               2px;
+  // todo: slider bar has a border radius: 1px;
+  --oj-slider-bar-bg-color:                rgba(var(--oj-palette-neutral-rgb-170), 0.15);
+  --oj-slider-bar-value-bg-color:          var(--oj-palette-neutral-180);
+  --oj-slider-bar-value-bg-color-active:   var(--oj-slider-bar-value-bg-color);
+  --oj-slider-bar-bg-color-disabled:       rgba(var(--oj-palette-neutral-rgb-170), 0.15);
+  --oj-slider-bar-value-bg-color-disabled: rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-low));
+
+
+// todo for Gab: should the slider color vars be in a separate file?
+
+  --oj-slider-color-picker-thumb-width:         1rem;
+  --oj-slider-color-picker-thumb-height:        var(--oj-slider-color-picker-thumb-width);
+  --oj-slider-color-picker-thumb-width-active:  1.5rem;
+  --oj-slider-color-picker-thumb-height-active: var(--oj-slider-color-picker-thumb-width-active);
+  --oj-slider-color-picker-thumb-border-radius: 1.0625rem;
+  --oj-slider-color-picker-thumb-border-width:  0.125rem;
+  --oj-slider-color-picker-thumb-border-color:  var(--oj-palette-neutral-0);
+  --oj-slider-color-picker-thumb-box-shadow:    1px 1px 5px 0 hsla(var(--oj-core-box-shadow-hsl),0.4);
+
+  --oj-slider-color-picker-bar-thickness:      1rem;
+  
+}
+
+}

@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -130,6 +131,8 @@ var __oj_message_metadata =
  * @ojshortdesc A message conveys categorized information to the user, often regarding errors.
  *
  * @ojsignature {target: "Type", value:"class ojMessage extends JetElement<ojMessageSettableProperties>"}
+ *
+ * @ojuxspecs ['messages']
  *
  * @classdesc
  * <h3 id="messageOverview-section">
@@ -482,13 +485,15 @@ var __oj_message_metadata =
  *          application level using this theme variable (SCSS) :</caption>
  * $messageAutoTimeoutCloseIconDisplay: block !default;
  *
+ * @ojshortdesc Specifies the UI affordance provided to end users to be able to close the message. See the Help documentation for more information.
+ *
  * @expose
  * @type {string}
  * @name message.closeAffordance
- * @ojvalue {string} "none" no UI affordance is provided to close the message. Application has to
+ * @ojvalue {string} "none" No UI affordance is provided to close the message. Application has to
  * call the close() method to dismiss the message
- * @ojvalue {string} "defaults" use implicit affordance to best suit the native theme, efficient use
- * of available space and screen touch capabilities. A close 'X' icon is displayed in all cases
+ * @ojvalue {string} "defaults" Use implicit affordance to best suit the native theme, efficient use
+ * of available space, and screen touch capabilities.<br><br>A close 'X' icon is displayed in all cases
  * except in the case when the message is set to auto-timeout when using mobile themes. The display
  * of the close icon can be further controlled by using the theme variables as noted below. See
  * keyboard and touch end user information sections in this document for interaction options.
@@ -917,7 +922,7 @@ var _MESSAGE_VIEW =
   '      </oj-bind-if>' +
   '      <oj-bind-if test="[[hasCloseAffordance]]">' +
   '        <div :class="[[computedMessageCloseSelectors]]">' +
-  '          <oj-button display="icons" chroming="half" on-click="[[handleCloseIcon]]">' +
+  '          <oj-button display="icons" chroming="borderless" on-click="[[handleCloseIcon]]">' +
   '            <span slot="startIcon" class="oj-fwk-icon oj-fwk-icon-cross"></span>' +
   '            <span>' +
   '              <oj-bind-text value="[[computedLabelCloseIcon]]"></oj-bind-text>' +
@@ -1477,7 +1482,8 @@ MessageViewModel.prototype._handleKeydown = function (event) {
     return;
   }
 
-  if (event.keyCode === $.ui.keyCode.ESCAPE) {
+  // keyCode is deprecated and it's not supported on some browsers.
+  if ((event.keyCode === $.ui.keyCode.ESCAPE) || event.key === 'Escape') {
     event.preventDefault();
     this._closeMessage(event);
   }

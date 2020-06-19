@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -2071,7 +2072,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         position: 'absolute',
         top: -1000,
         left: 0
-      }).prependTo('body').append('<div></div>') // @HTMLUpdateOK
+      }).prependTo('body') // @HTMLUpdateOK
+      .append('<div></div>') // @HTMLUpdateOK
       .find('div').css({
         width: '100%',
         height: 200
@@ -2210,12 +2212,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         if (s === 'shift+f10') {
           // note the active node if shift+F10
-          obj._this._data.menu.activeNode = obj._this._data.ui.hovered; //  - if no hovered node (maybe a click and then mouse off the
+          obj._this._data.menu.activeNode = obj._this._data.ui.hovered; // if no hovered node (maybe a click and then mouse off the
           // node), use the last selected node.
 
           if (!obj._this._data.menu.activeNode) {
-            // 
-            obj._this._data.menu.activeNode = obj._this._data.ui.lastSelected; // 
+            obj._this._data.menu.activeNode = obj._this._data.ui.lastSelected;
           }
         } else if (obj._handler[s]) {
           // check if matching handler function
@@ -3889,7 +3890,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       //      }
 
 
-      node.removeClass(TreeUtils._OJ_EXPANDED).addClass(TreeUtils._OJ_COLLAPSED).attr(WA_EXPANDED, 'false');
+      node.removeClass(TreeUtils._OJ_EXPANDED).addClass(TreeUtils._OJ_COLLAPSED).attr(WA_EXPANDED, 'false'); // @HTMLUpdateOK
+
       $(node.children()[0]).removeClass(TreeUtils._OJ_SELECTED).addClass('oj-default');
 
       this._busyStack.push({
@@ -4026,7 +4028,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         op = 'c'; // collapse op
 
         $ul[0].style.display = 'none';
-        $ul.css('max-height', ''); // JRM
+        $ul.css('max-height', '');
 
         this._emitEvent({
           obj: node
@@ -5898,7 +5900,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         var types = s.types;
 
         if (tattr && types && types[str]) {
-          node.attr(tattr, str);
+          node.attr(tattr, str); // @HTMLUpdateOK
+
           node.addClass(OJT_TYPE); // this._emitEvent({ "obj" : node, "type" : str}, "settype", true);
 
           ret = true;
@@ -6038,7 +6041,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       obj = obj && obj !== -1 ? $(obj) : this._$container_ul;
       obj = obj.is('li') ? obj.find('li').addBack() : obj.find('li');
-      obj.removeClass(OJT_LAST).addClass(OJT_NODE).addClass(dndClasses).attr(draggableAttr, draggableAttrVal).filter('li:last-child').addClass(OJT_LAST).end().filter(':has(li)').not('.oj-expanded').removeClass(OJT_LEAF).addClass(TreeUtils._OJ_COLLAPSED).attr(WA_EXPANDED, 'false');
+      obj.removeClass(OJT_LAST).addClass(OJT_NODE).addClass(dndClasses).attr(draggableAttr, draggableAttrVal) // @HTMLUpdateOK
+      .filter('li:last-child').addClass(OJT_LAST).end().filter(':has(li)').not('.oj-expanded').removeClass(OJT_LEAF).addClass(TreeUtils._OJ_COLLAPSED).attr(WA_EXPANDED, 'false'); // @HTMLUpdateOK
+
       obj.not('.oj-expanded, .oj-collapsed') // clean leaf nodes
       .addClass(OJT_LEAF).children('ul').remove();
       var typeAttr = this.options.types ? this.options.types.attr : false;
@@ -6250,7 +6255,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         //         }
 
 
-        obj.removeClass(TreeUtils._OJ_COLLAPSED).addClass(TreeUtils._OJ_EXPANDED).attr(WA_EXPANDED, 'true').children('a').removeClass(OJT_LOADING);
+        obj.removeClass(TreeUtils._OJ_COLLAPSED).addClass(TreeUtils._OJ_EXPANDED).attr(WA_EXPANDED, 'true') // @HTMLUpdateOK
+        .children('a').removeClass(OJT_LOADING);
         $(obj.children()[0]).removeClass(TreeUtils._OJ_SELECTED).addClass('oj-default');
 
         this._busyStack.push({
@@ -6484,7 +6490,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }
 
         node.children('a').addClass(TreeUtils._OJ_SELECTED);
-        node.attr(WA_SELECTED, 'true');
+        node.attr(WA_SELECTED, 'true'); // @HTMLUpdateOK
+
         bRet = true; // selection performed
 
         if (s.selectedParentExpand) {
@@ -6676,7 +6683,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       this._data.ui.hovered = node.children('a').addClass(TreeUtils._OJ_HOVER).parent();
 
-      this._$container_ul.attr(WA_ACTIVEDESCENDANT, this._data.ui.hovered.attr('id'));
+      this._$container_ul.attr(WA_ACTIVEDESCENDANT, this._data.ui.hovered.attr('id')); // @HTMLUpdateOK
+
 
       this._fix_scroll(node);
 
@@ -7170,7 +7178,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             var $u = this._$container_ul;
             $u.empty().append(d.children()); // @HTMLUpdateOK
 
-            $u.attr(WA_ROLE, WA_TREE).attr(WA_LABELLEDBY, this._elemId).attr('tabindex', '0').css('outline', 'none');
+            $u.attr(WA_ROLE, WA_TREE).attr(WA_LABELLEDBY, this._elemId).attr('tabindex', '0') // @HTMLUpdateOK
+            .css('outline', 'none');
 
             if (this._data.core.selectMode === -1) {
               $u.attr('aria-multiselectable', true);
@@ -7507,7 +7516,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
                 var $u = self._$container_ul;
                 $u.empty().append(d.children()); // @HTMLUpdateOK
 
-                $u.attr(WA_ROLE, WA_TREE).attr(WA_LABELLEDBY, self._elemId).attr('tabindex', '0').css('outline', 'none');
+                $u.attr(WA_ROLE, WA_TREE).attr(WA_LABELLEDBY, self._elemId) // @HTMLUpdateOK
+                .attr('tabindex', '0').css('outline', 'none');
 
                 if (self._data.core.selectMode === -1) {
                   $u.attr('aria-multiselectable', true);
@@ -7730,7 +7740,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         if (js.children) {
           if (this._data.ds.progressiveRender && js.state !== 'expanded') {
-            d.addClass(TreeUtils._OJ_COLLAPSED).attr(WA_EXPANDED, 'false').data(OJT_CHILDREN, js.children);
+            d.addClass(TreeUtils._OJ_COLLAPSED).attr(WA_EXPANDED, 'false') // @HTMLUpdateOK
+            .data(OJT_CHILDREN, js.children);
           } else {
             if (this._data.ds.progressiveUnload) {
               d.data(OJT_CHILDREN, js.children);
@@ -7933,7 +7944,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
             for (j = 0; j < len; j++) {
               if (ATTR_IGN[j] === attr || attr.indexOf('aria-') === 0) {
-                // closure compiler is not allowing startsWith!
                 break; // ignore if in our excluded list
               }
             }
@@ -8049,9 +8059,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
             this._cleanNode();
 
-            this._$container_ul.find('ul').attr(WA_ROLE, WA_GROUP);
+            this._$container_ul.find('ul').attr(WA_ROLE, WA_GROUP); // @HTMLUpdateOK
 
-            this._$container_ul.find('li').attr(WA_ROLE, WA_TREEITEM);
+
+            this._$container_ul.find('li').attr(WA_ROLE, WA_TREEITEM); // @HTMLUpdateOK
+
           }
 
           if (successCallback) {
@@ -8087,9 +8099,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
             this._cleanNode();
 
-            this._$container_ul.find('ul').attr(WA_ROLE, WA_GROUP);
+            this._$container_ul.find('ul').attr(WA_ROLE, WA_GROUP); // @HTMLUpdateOK
 
-            this._$container_ul.find('li').attr(WA_ROLE, WA_TREEITEM);
+
+            this._$container_ul.find('li').attr(WA_ROLE, WA_TREEITEM); // @HTMLUpdateOK
+
           }
 
           if (successCallback) {
@@ -8244,9 +8258,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
                 }
               }
 
-              self._$container_ul.find('ul').attr(WA_ROLE, WA_GROUP);
+              self._$container_ul.find('ul').attr(WA_ROLE, WA_GROUP); // @HTMLUpdateOK
 
-              self._$container_ul.find('li').attr(WA_ROLE, WA_TREEITEM);
+
+              self._$container_ul.find('li').attr(WA_ROLE, WA_TREEITEM); // @HTMLUpdateOK
+
             }
 
             return undefined;
@@ -8435,7 +8451,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           val = $(val);
 
           if (!val.attr(typeAttr)) {
-            val.attr(typeAttr, 'oj-tree-deftype').addClass(OJT_TYPE);
+            val.attr(typeAttr, 'oj-tree-deftype').addClass(OJT_TYPE); // @HTMLUpdateOK
           }
         });
       }
@@ -8960,7 +8976,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         var trgt = $(event.target);
         trgt.removeClass(TreeUtils._OJ_SELECTED).addClass('oj-default');
       }).bind('mousedown.ojtree', function (event) {
-        this._setFocus(); // . If IE11, need preventDefault() to avoid weird
+        this._setFocus(); // If IE11, need preventDefault() to avoid weird
         // shift-click highlighting. Not done if HTML5 drag/drop is supported
 
 
@@ -8998,7 +9014,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         // If no last "current" or selected, will default to the top node.
 
         if (this._data.ui.hovered) {
-          // . Check if mouse is over a node, before defaulting to another node as described above.
+          // Check if mouse is over a node, before defaulting to another node as described above.
           n = this._data.ui.hovered;
         } else if (this._data.ui.lastHovered) {
           this._data.ui.hovered = this._data.ui.lastHovered;
@@ -9697,7 +9713,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       if (event.type !== 'contextmenu' && !keyboard && eventType !== 'touch') {
         return;
       } //  Get the tree node acted on
-      //  - if no hovered node, use the last selected node
+      // if no hovered node, use the last selected node
 
 
       this._data.menu.node = keyboard ? this._data.ui.hovered || this._data.menu.activeNode : $(event.target);
@@ -10160,7 +10176,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      */
     _setFocus: function _setFocus() {// undocumented per Design Review
 
-      /*                                        // 
+      /*
              if (this._isFocused()) {
                 return;
              }

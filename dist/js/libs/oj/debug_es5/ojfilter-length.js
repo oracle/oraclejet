@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -67,7 +68,7 @@ var LengthFilter = /*#__PURE__*/function () {
           // increments surrogateLength
           for (var i = 0; i < codeUnitLength; i++) {
             // eslint-disable-next-line no-bitwise
-            if ((text.charCodeAt(i) & 0xF800) === 0xD800) {
+            if ((text.charCodeAt(i) & 0xf800) === 0xd800) {
               surrogateLength += 1;
             }
           } // e.g., if the string is two supplementary characters, codeUnitLength is 4, and the

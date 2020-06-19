@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -24,7 +25,9 @@ var __oj_defer_metadata =
   BindingProviderImpl.addPostprocessor({
     nodeHasBindings: function nodeHasBindings(node, _wrappedReturn) {
       var wrappedReturn = _wrappedReturn;
-      return wrappedReturn || node.nodeType === 1 && node.nodeName.toLowerCase() === 'oj-defer';
+      return wrappedReturn || node.nodeType === 1 &&
+      /* istanbul ignore next: nodeHasBindings only called for non-elements */
+      node.nodeName.toLowerCase() === 'oj-defer';
     },
     getBindingAccessors: function getBindingAccessors(node, bindingContext, _wrappedReturn) {
       var wrappedReturn = _wrappedReturn;
@@ -32,7 +35,9 @@ var __oj_defer_metadata =
       if (node.nodeType === 1 && node.nodeName.toLowerCase() === 'oj-defer') {
         wrappedReturn = wrappedReturn || {};
 
-        wrappedReturn._ojDefer_ = function () {};
+        wrappedReturn._ojDefer_ =
+        /* istanbul ignore next: binding handler doesn't call valueAccessor */
+        function () {};
       }
 
       return wrappedReturn;
@@ -135,6 +140,8 @@ ko.bindingHandlers._ojDefer_ = {
           });
         } else {
           // if we have stashed away children, put them back
+
+          /* istanbul ignore else: Can only have saved nodes iff there is a deferred binding */
           if (this._savedChildNodes) {
             this.appendChild(this._savedChildNodes);
             delete this._savedChildNodes;
@@ -150,6 +157,7 @@ ko.bindingHandlers._ojDefer_ = {
     var constructorFunc = function constructorFunc() {
       var reflect = window.Reflect;
       var ret;
+      /* istanbul ignore else: window.Reflect available everywhere except on IE11 */
 
       if (typeof reflect !== 'undefined') {
         ret = reflect.construct(HTMLElement, [], this.constructor);

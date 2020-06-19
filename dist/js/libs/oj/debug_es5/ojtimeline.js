@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -2507,64 +2508,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
     styleClasses['oj-timeline-tooltip-label'] = {
       path: 'styleDefaults/tooltipLabelStyle',
       property: 'TEXT'
-    }; // Zoom Control Icons
-
-    styleClasses['oj-timeline-zoomin-icon'] = [{
-      path: '_resources/zoomIn_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomIn_bc',
-      property: 'border-color'
-    }];
-    styleClasses['oj-timeline-zoomin-icon oj-hover'] = [{
-      path: '_resources/zoomIn_h_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomIn_h_bc',
-      property: 'border-color'
-    }];
-    styleClasses['oj-timeline-zoomin-icon oj-active'] = [{
-      path: '_resources/zoomIn_a_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomIn_a_bc',
-      property: 'border-color'
-    }];
-    styleClasses['oj-timeline-zoomin-icon oj-disabled'] = [{
-      path: '_resources/zoomIn_d_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomIn_d_bc',
-      property: 'border-color'
-    }];
-    styleClasses['oj-timeline-zoomout-icon'] = [{
-      path: '_resources/zoomOut_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomOut_bc',
-      property: 'border-color'
-    }];
-    styleClasses['oj-timeline-zoomout-icon oj-hover'] = [{
-      path: '_resources/zoomOut_h_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomOut_h_bc',
-      property: 'border-color'
-    }];
-    styleClasses['oj-timeline-zoomout-icon oj-active'] = [{
-      path: '_resources/zoomOut_a_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomOut_a_bc',
-      property: 'border-color'
-    }];
-    styleClasses['oj-timeline-zoomout-icon oj-disabled'] = [{
-      path: '_resources/zoomOut_d_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomOut_d_bc',
-      property: 'border-color'
-    }];
+    };
     return styleClasses;
   },
   // @inheritdoc
@@ -2592,17 +2536,11 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
     };
     resources.converterVert = converterVert; // Zoom control icons
 
-    resources.zoomIn = 'oj-timeline-zoomin-icon';
-    resources.zoomIn_h = 'oj-timeline-zoomin-icon oj-hover';
-    resources.zoomIn_a = 'oj-timeline-zoomin-icon oj-active';
-    resources.zoomIn_d = 'oj-timeline-zoomin-icon oj-disabled';
-    resources.zoomOut = 'oj-timeline-zoomout-icon';
-    resources.zoomOut_h = 'oj-timeline-zoomout-icon oj-hover';
-    resources.zoomOut_a = 'oj-timeline-zoomout-icon oj-active';
-    resources.zoomOut_d = 'oj-timeline-zoomout-icon oj-disabled'; // Overview icons
+    resources.zoomIn = 'oj-fwk-icon oj-fwk-icon-plus';
+    resources.zoomOut = 'oj-fwk-icon oj-fwk-icon-minus'; // Overview icons
 
-    resources.overviewHandleHor = 'oj-timeline-overview-window-handle-horizontal';
-    resources.overviewHandleVert = 'oj-timeline-overview-window-handle-vertical';
+    resources.overviewHandleHor = 'oj-fwk-icon oj-fwk-icon-drag-horizontal';
+    resources.overviewHandleVert = 'oj-fwk-icon oj-fwk-icon-drag-vertical';
   },
   // @inheritdoc
   _GetComponentDeferredDataPaths: function _GetComponentDeferredDataPaths() {
@@ -2951,7 +2889,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
 // Slots
 
 /**
- * <p>The <code class="prettyprint">seriesTemplate</code> slot is used to specify the template for generating the series properties of the timeline. The slot content must be a &lt;template> element.
+ * <p>The <code class="prettyprint">seriesTemplate</code> slot is used to specify the template for generating the series properties of the timeline. The slot content must be a single &lt;template> element.
  * The content of the template should only be one &lt;oj-timeline-series> element.See the [oj-timeline-series]{@link oj.ojTimelineSeries} doc for more details.
  * See also the <a href="#itemTemplate">itemTemplate</a> regarding showing empty series. Note that the series will render following the order in which they are found in the data.</p>
  * <p>When the template is executed for each series, it will have access to the timeline's binding context containing the following properties:</p>
@@ -2975,7 +2913,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
  */
 
 /**
- * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the timeline. The slot content must be a &lt;template> element.
+ * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the timeline. The slot content must be a single &lt;template> element.
  * The content of the template should only be one &lt;oj-timeline-item> element. The reference data provider is that of the <a href="#data">data</a> attribute.
  * See the [oj-timeline-item]{@link oj.ojTimelineItem} doc for more details.
  * The [series-id]{@link oj.ojTimelineItem#seriesId} is optional if there is only one series; otherwise it must be specified.
@@ -3003,7 +2941,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
  */
 
 /**
- * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
+ * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content. The slot content must be a single &lt;template> element.
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
@@ -3012,6 +2950,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
  *
  *
  * @ojslot tooltipTemplate
+ * @ojmaxitems 1
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojTimeline.TooltipContext
  * @memberof oj.ojTimeline

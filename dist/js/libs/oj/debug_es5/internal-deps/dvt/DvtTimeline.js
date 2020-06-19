@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'], function(dvt) {
   "use strict";
@@ -8,15 +9,17 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function (dvt) {
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -879,8 +882,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -970,8 +974,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1105,8 +1110,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1221,8 +1227,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1346,8 +1353,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) 2012 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2012 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1508,8 +1516,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1517,15 +1526,17 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function (dvt) {
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
   var DvtTimeUtils = new Object();
@@ -1562,8 +1573,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1651,8 +1663,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1774,8 +1787,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -2282,15 +2296,13 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
     }
 
     if (this._resources['overviewHandleVert']) {
-      overviewOptions['_vhbi'] = this._resources['overviewHandleVert'];
-      overviewOptions['_vhw'] = 15;
-      overviewOptions['_vhh'] = 3;
+      overviewOptions['_vhbc'] = this._resources['overviewHandleVert'];
+      overviewOptions['_vhs'] = 16;
     }
 
     if (this._resources['overviewHandleHor']) {
-      overviewOptions['_hbi'] = this._resources['overviewHandleHor'];
-      overviewOptions['_hw'] = 3;
-      overviewOptions['_hh'] = 15;
+      overviewOptions['_hbc'] = this._resources['overviewHandleHor'];
+      overviewOptions['_hs'] = 16;
     }
 
     overviewOptions['axisTicks'] = this._getOverviewAxisOptions();
@@ -3000,8 +3012,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3079,8 +3092,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3151,15 +3165,15 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
         'emptyTextStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'font-weight: normal; color: #333333; white-space: nowrap;'),
         'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_13 + 'font-weight: bold; color: #252525; white-space: nowrap;')
       },
-      '_tooltipStyle': new dvt.CSSStyle('border-collapse: separate; border-spacing: 2px; overflow: hidden; display: block;'),
-      'tooltipLabelStyle': new dvt.CSSStyle('color: #666666; padding: 0px 2px; white-space: nowrap;'),
-      'tooltipValueStyle': new dvt.CSSStyle('color: #333333; padding: 0px 2px;')
+      'tooltipLabelStyle': new dvt.CSSStyle(''),
+      'tooltipValueStyle': new dvt.CSSStyle('')
     }
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3227,8 +3241,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3845,33 +3860,11 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
     var zoomControlProperties = {
       'zoomInProps': {
         'imageSize': 16,
-        'cssUrl': resources['zoomIn'],
-        'cssUrlHover': resources['zoomIn_h'],
-        'cssUrlActive': resources['zoomIn_a'],
-        'cssUrlDisabled': resources['zoomIn_d'],
-        'enabledBackgroundColor': DvtTimelineStyleUtils.getZoomInButtonBackgroundColor(resources),
-        'enabledBorderColor': DvtTimelineStyleUtils.getZoomInButtonBorderColor(resources),
-        'hoverBackgroundColor': DvtTimelineStyleUtils.getZoomInButtonHoverBackgroundColor(resources),
-        'hoverBorderColor': DvtTimelineStyleUtils.getZoomInButtonHoverBorderColor(resources),
-        'activeBackgroundColor': DvtTimelineStyleUtils.getZoomInButtonActiveBackgroundColor(resources),
-        'activeBorderColor': DvtTimelineStyleUtils.getZoomInButtonActiveBorderColor(resources),
-        'disabledBackgroundColor': DvtTimelineStyleUtils.getZoomInButtonDisabledBackgroundColor(resources),
-        'disabledBorderColor': DvtTimelineStyleUtils.getZoomInButtonDisabledBorderColor(resources)
+        'class': resources['zoomIn']
       },
       'zoomOutProps': {
         'imageSize': 16,
-        'cssUrl': resources['zoomOut'],
-        'cssUrlHover': resources['zoomOut_h'],
-        'cssUrlActive': resources['zoomOut_a'],
-        'cssUrlDisabled': resources['zoomOut_d'],
-        'enabledBackgroundColor': DvtTimelineStyleUtils.getZoomOutButtonBackgroundColor(resources),
-        'enabledBorderColor': DvtTimelineStyleUtils.getZoomOutButtonBorderColor(resources),
-        'hoverBackgroundColor': DvtTimelineStyleUtils.getZoomOutButtonHoverBackgroundColor(resources),
-        'hoverBorderColor': DvtTimelineStyleUtils.getZoomOutButtonHoverBorderColor(resources),
-        'activeBackgroundColor': DvtTimelineStyleUtils.getZoomOutButtonActiveBackgroundColor(resources),
-        'activeBorderColor': DvtTimelineStyleUtils.getZoomOutButtonActiveBorderColor(resources),
-        'disabledBackgroundColor': DvtTimelineStyleUtils.getZoomOutButtonDisabledBackgroundColor(resources),
-        'disabledBorderColor': DvtTimelineStyleUtils.getZoomOutButtonDisabledBorderColor(resources)
+        'class': resources['zoomOut']
       }
     };
 
@@ -3949,8 +3942,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4151,20 +4145,6 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
    */
 
   DvtTimelineStyleUtils._DEFAULT_THUMBNAIL_HEIGHT = 32;
-  /**
-   * The default zoom control background color.
-   * @const
-   * @private
-   */
-
-  DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR = '#ffffff';
-  /**
-   * The default zoom control border color.
-   * @const
-   * @private
-   */
-
-  DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR = '#d6d7d8';
   /**
    * The default zoom control diameter.
    * @const
@@ -4657,169 +4637,10 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
     return dvt.CSSStyle.getTimeMilliseconds(options['styleDefaults']['animationDuration']) / 1000;
   };
   /**
-   * Returns the zoom control background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control background color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomInButtonBackgroundColor = function (options) {
-    if (options['zoomIn_bgc']) return options['zoomIn_bgc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control active background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control active background color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomInButtonActiveBackgroundColor = function (options) {
-    if (options['zoomIn_a_bgc']) return options['zoomIn_a_bgc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control hover background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control hover background color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomInButtonHoverBackgroundColor = function (options) {
-    if (options['zoomIn_h_bgc']) return options['zoomIn_h_bgc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control disabled background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control disabled background color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomInButtonDisabledBackgroundColor = function (options) {
-    if (options['zoomIn_d_bgc']) return options['zoomIn_d_bgc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control border color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomInButtonBorderColor = function (options) {
-    if (options['zoomIn_bc']) return options['zoomIn_bc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
-   * Returns the zoom control active border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control active border color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomInButtonActiveBorderColor = function (options) {
-    if (options['zoomIn_a_bc']) return options['zoomIn_a_bc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
-   * Returns the zoom control hover border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control hover border color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomInButtonHoverBorderColor = function (options) {
-    if (options['zoomIn_h_bc']) return options['zoomIn_h_bc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
-   * Returns the zoom control disabled border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control disabled border color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomInButtonDisabledBorderColor = function (options) {
-    if (options['zoomIn_d_bc']) return options['zoomIn_d_bc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
-   * Returns the zoom control background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control background color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomOutButtonBackgroundColor = function (options) {
-    if (options['zoomOut_bgc']) return options['zoomOut_bgc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control active background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control active background color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomOutButtonActiveBackgroundColor = function (options) {
-    if (options['zoomOut_a_bgc']) return options['zoomOut_a_bgc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control hover background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control hover background color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomOutButtonHoverBackgroundColor = function (options) {
-    if (options['zoomOut_h_bgc']) return options['zoomOut_h_bgc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control disabled background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control disabled background color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomOutButtonDisabledBackgroundColor = function (options) {
-    if (options['zoomOut_d_bgc']) return options['zoomOut_d_bgc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control border color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomOutButtonBorderColor = function (options) {
-    if (options['zoomOut_bc']) return options['zoomOut_bc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
-   * Returns the zoom control active border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control active border color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomOutButtonActiveBorderColor = function (options) {
-    if (options['zoomOut_a_bc']) return options['zoomOut_a_bc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
-   * Returns the zoom control hover border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control hover border color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomOutButtonHoverBorderColor = function (options) {
-    if (options['zoomOut_h_bc']) return options['zoomOut_h_bc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
-   * Returns the zoom control disabled border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control disabled border color.
-   */
-
-
-  DvtTimelineStyleUtils.getZoomOutButtonDisabledBorderColor = function (options) {
-    if (options['zoomOut_d_bc']) return options['zoomOut_d_bc'];else return DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5359,8 +5180,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5472,8 +5294,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6018,8 +5841,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6541,8 +6365,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6734,8 +6559,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -7321,8 +7147,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -7411,7 +7238,7 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
     // Don't render tooltip if empty
     if (datatipRows.length === 0) return null; // Add outer table tags
 
-    if (isTabular) return dvt.HtmlTooltipManager.createElement('table', timeline.getOptions()['styleDefaults']['_tooltipStyle'], datatipRows);else return datatipRows.join('');
+    if (isTabular) return dvt.HtmlTooltipManager.createElement('table', null, datatipRows, ['oj-dvt-datatip-table']);else return datatipRows.join('');
   };
   /**
    * Adds the item strings to the datatip.
@@ -7475,10 +7302,7 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
     value = DvtTimelineTooltipUtils.formatValue(timeline, type, valueFormat, value);
 
     if (isTabular) {
-      var isRTL = dvt.Agent.isRightToLeft(timeline.getCtx());
-      options['tooltipLabelStyle'].setStyle(dvt.CSSStyle.TEXT_ALIGN, isRTL ? 'left' : 'right');
-      options['tooltipValueStyle'].setStyle(dvt.CSSStyle.TEXT_ALIGN, isRTL ? 'right' : 'left');
-      var tds = [dvt.HtmlTooltipManager.createElement('td', options['tooltipLabelStyle'], tooltipLabel), dvt.HtmlTooltipManager.createElement('td', options['tooltipValueStyle'], value)];
+      var tds = [dvt.HtmlTooltipManager.createElement('td', options['tooltipLabelStyle'], tooltipLabel, ['oj-dvt-datatip-label']), dvt.HtmlTooltipManager.createElement('td', options['tooltipValueStyle'], value, ['oj-dvt-datatip-value'])];
       datatipRows.push(dvt.HtmlTooltipManager.createElement('tr', null, tds));
     } else {
       datatipRows.push((datatipRows.length > 0 ? '<br>' : '') + dvt.ResourceUtils.format(translations.labelAndValue, [tooltipLabel, value]));
@@ -7528,8 +7352,9 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 

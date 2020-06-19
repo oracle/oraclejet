@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -372,7 +373,7 @@ var FlattenedTreeDataProviderView = /*#__PURE__*/function () {
             addAfterKeySet.add(addEvent.addBeforeKeys[index]);
             addKeySet.add(addEvent.metadata[index].key);
 
-            self._incrementIteratorOffset();
+            self._incrementIteratorOffset(newIndex);
           }
         });
         operationAddEventDetail = new self.DataProviderAddOperationEventDetail(self, addKeySet, addAfterKeySet, addBeforeKeys, addMetadataArray, addDataArray, addIndexArray);
@@ -574,7 +575,7 @@ var FlattenedTreeDataProviderView = /*#__PURE__*/function () {
     key: "_isSameCriteria",
     value: function _isSameCriteria(sortCriteria, filterCriterion) {
       if (sortCriteria) {
-        if (!this._currentSortCriteria || sortCriteria[0]["attribute"] != this._currentSortCriteria[0]["attribute"] || sortCriteria[0]["direction"] != this._currentSortCriteria[0]["direction"]) {
+        if (!this._currentSortCriteria || sortCriteria[0]['attribute'] != this._currentSortCriteria[0]['attribute'] || sortCriteria[0]['direction'] != this._currentSortCriteria[0]['direction']) {
           return false;
         }
       } else {
@@ -584,7 +585,7 @@ var FlattenedTreeDataProviderView = /*#__PURE__*/function () {
       }
 
       if (filterCriterion) {
-        if (!this._currentFilterCriteria || filterCriterion[0]["op"] != this._currentFilterCriteria[0]["op"] || filterCriterion[0]["filter"] != this._currentFilterCriteria[0]["filter"]) {
+        if (!this._currentFilterCriteria || filterCriterion[0]['op'] != this._currentFilterCriteria[0]['op'] || filterCriterion[0]['filter'] != this._currentFilterCriteria[0]['filter']) {
           return false;
         }
       } else {
@@ -609,7 +610,17 @@ var FlattenedTreeDataProviderView = /*#__PURE__*/function () {
     value: function _getFetchByOffsetResultsFromCache(params) {
       var data = this._cache.slice(params[this._OFFSET], params[this._SIZE] === -1 ? undefined : params[this._OFFSET] + params[this._SIZE]);
 
-      return new this.FetchByOffsetResults(this, params, data, false);
+      var done = false;
+
+      if (data.length == 0) {
+        if (this._lastParams && this._lastParams == params) {
+          done = true;
+        } else {
+          this._lastParams = params;
+        }
+      }
+
+      return new this.FetchByOffsetResults(this, params, data, done);
     }
   }, {
     key: "_clearCache",
@@ -970,7 +981,7 @@ var FlattenedTreeDataProviderView = /*#__PURE__*/function () {
               indexArray.push(insertIndex + index);
               afterKey = item.metadata.key;
 
-              self._incrementIteratorOffset();
+              self._incrementIteratorOffset(insertIndex);
             });
           }
         });
@@ -1018,16 +1029,18 @@ var FlattenedTreeDataProviderView = /*#__PURE__*/function () {
     }
   }, {
     key: "_incrementIteratorOffset",
-    value: function _incrementIteratorOffset() {
+    value: function _incrementIteratorOffset(index) {
       var self = this;
 
       self._iterators.forEach(function (offset, iterator) {
-        self._iterators.set(iterator, offset + 1);
+        if (index < offset) {
+          self._iterators.set(iterator, offset + 1);
+        }
       });
     }
     /**
-    * Return an empty Set which is optimized to store keys
-    */
+     * Return an empty Set which is optimized to store keys
+     */
 
   }, {
     key: "createOptimizedKeySet",

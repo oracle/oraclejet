@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
 import MetadataTypes = require('../ojmetadata');
 export function getComponentMetadata(name: string): MetadataTypes.ComponentMetadata | null;
 export function register<P extends PropertiesType = PropertiesType>(name: string, descriptor: {

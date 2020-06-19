@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -69,13 +70,6 @@ function(oj, $, Hammer, Context, ThemeUtils, Components, Logger)
  *     </tr>
  *   </tbody>
  * </table>
- *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -996,7 +990,7 @@ oj.OffcanvasUtils._setVisible = function (selector, _visible, edge) {
  *
  * @export
  * @param {Object} offcanvas An Object contains the properties in the following table.
- * @property {string} offcanvas.selector JQ selector identifying the offcanvas
+ * @property {string} offcanvas.selector Document selector identifying the offcanvas element
  * @property {('start'|'end'|'top'|'bottom')=} offcanvas.edge the edge of the offcanvas, valid values are start, end, top, bottom. This property is optional if the offcanvas element has a "oj-offcanvas-" + <edge> class specified.
  * @property {string|null} offcanvas.query the media query determine when the offcanvas is fixed inside the viewport.
  * @return {void}
@@ -1046,7 +1040,7 @@ oj.OffcanvasUtils.setupResponsive = function (offcanvas) {
  *
  * @export
  * @param {Object} offcanvas An Object contains the properties in the following table.
- * @property {string} offcanvas.selector JQ selector identifying the offcanvas
+ * @property {string} offcanvas.selector Document selector identifying the offcanvas element
  * @return {void}
  * @memberof oj.OffcanvasUtils
  *
@@ -1533,8 +1527,8 @@ oj.OffcanvasUtils._closeOldDrawer = function (offcanvas, resolve, reject, drawer
  *
  * @export
  * @param {Object} offcanvas An Object contains the properties in the following table.
- * @property {string} offcanvas.selector JQ selector identifying the offcanvas.
- * @property {string} offcanvas.content JQ selector identifying the main content.
+ * @property {string} offcanvas.selector Document selector identifying the offcanvas element.
+ * @property {string} offcanvas.content Document selector identifying the main content.
  * @property {('start'|'end'|'top'|'bottom')=} offcanvas.edge the edge of the offcanvas, valid values are start, end, top, bottom. This property is optional if the offcanvas element has a "oj-offcanvas-" + <edge> class specified.
  * @property {('push'|'overlay')=} offcanvas.displayMode how to show the offcanvas, valid values are push or overlay. Default: defined by theme.
  * @property {('focusLoss'|'none')=} offcanvas.autoDismiss close behavior, valid values are focusLoss and none. If autoDismiss is default(focusLoss) then any click outside the offcanvas will close it.
@@ -1664,7 +1658,7 @@ oj.OffcanvasUtils.open = function (offcanvas) {
  *
  * @export
  * @param {Object} offcanvas An Object contains the properties in the following table.
- * @property {string} offcanvas.selector JQ selector identifying the offcanvas
+ * @property {string} offcanvas.selector Document selector identifying the offcanvas element
  * @return {Promise.<boolean>} A promise that is resolved to boolean true when all transitions have completed. The promise is rejected if the ojbeforeclose event is vetoed.
  * @see #open
  * @see #toggle
@@ -1780,8 +1774,8 @@ oj.OffcanvasUtils._close = function (selector, animation) {
  *
  * @export
  * @param {Object} offcanvas An Object contains the properties in the following table.
- * @property {string} offcanvas.selector JQ selector identifying the offcanvas.
- * @property {string} offcanvas.content JQ selector identifying the main content.
+ * @property {string} offcanvas.selector Document selector identifying the offcanvas element.
+ * @property {string} offcanvas.content Document selector identifying the main content.
  * @property {('start'|'end'|'top'|'bottom')=} offcanvas.edge the edge of the offcanvas, valid values are start, end, top, bottom. This property is optional if the offcanvas element has a "oj-offcanvas-" + <edge> class specified.
  * @property {('push'|'overlay')=} offcanvas.displayMode how to show the offcanvas, valid values are push or overlay. Default: defined by theme.
  * @property {('focusLoss'|'none')=} offcanvas.autoDismiss close behavior, valid values are focusLoss and none. If autoDismiss is default(focusLoss) then any click outside the offcanvas will close it.
@@ -1962,7 +1956,7 @@ oj.OffcanvasUtils._removeModality = function (offcanvas) {
  *
  * @export
  * @param {Object} offcanvas An Object contains the properties in the following table.
- * @property {string} offcanvas.selector JQ selector identifying the offcanvas
+ * @property {string} offcanvas.selector Document selector identifying the offcanvas element
  * @property {('start'|'end'|'top'|'bottom')=} offcanvas.edge the edge of the offcanvas, valid values are start, end. This property is optional if the offcanvas element has a "oj-offcanvas-" + <edge> class specified.
  * @property {string=} offcanvas.size size width of the offcanvas.  Default to the computed width of the offcanvas.
  * @return {void}
@@ -2280,7 +2274,7 @@ oj.OffcanvasUtils._animateWrapperAndDrawer = function (wrapper, drawer, edge, si
  *
  * @export
  * @param {Object} offcanvas An Object contains the properties in the following table.
- * @property {string} offcanvas.selector JQ selector identifying the offcanvas
+ * @property {string} offcanvas.selector Document selector identifying the offcanvas element
  * @return {void}
  * @see #setupPanToReveal
  *
@@ -2353,55 +2347,86 @@ oj.OffcanvasUtils.tearDownPanToReveal = function (offcanvas) {
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.OffcanvasUtils
  */
+// -------------------- Styling start ------------------------
+// ------------------------------ oj-offcanvas-outer-wrapper ---------------------------------
 
 /**
- * <p>The following CSS classes can be applied by the page author as needed.</p>
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>Class</th>
- *       <th>Description</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-offcanvas-outer-wrapper</td>
- *       <td>Applied to the outer most element of the offcanvas.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-offcanvas-page</td>
- *       <td>Applied to the outer wrapper of the page level offcanvas.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-offcanvas-inner-wrapper</td>
- *       <td><span style="color:red">Deprecated</span>. Please remove the inner wrapper.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-offcanvas-start</td>
- *       <td>Applied to the offcanvas on the start edge.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-offcanvas-end</td>
- *       <td>Applied to the offcanvas on the end edge.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-offcanvas-top</td>
- *       <td>Applied to the offcanvas on the top edge.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-offcanvas-bottom</td>
- *       <td>Applied to the offcanvas on the bottom edge.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-offcanvas-overlay-shadow</td>
- *       <td>Add this marker class to an overlay offcanvas to show a drop shadow when it is open.</td>
- *     </tr>
- *   </tbody>
- * </table>
- *
- * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+ * Applied to the outer most element of the offcanvas.
+ * @ojstyleclass oj-offcanvas-outer-wrapper
+ * @ojdisplayname Off-canvas Outer Wrapper
+ * @ojstyleselector div
  * @memberof oj.OffcanvasUtils
  */
+// ------------------------------ oj-offcanvas-page ---------------------------------
+
+/**
+ * Applied to the outer wrapper of the page level offcanvas.
+ * @ojstyleclass oj-offcanvas-page
+ * @ojdisplayname Off-canvas Page
+ * @ojstyleselector .oj-offcanvas-outer-wrapper
+ * @memberof oj.OffcanvasUtils
+ */
+// ------------------------------ oj-offcanvas-inner-wrapper ---------------------------------
+
+/**
+ * Applied to the inner wrapper of the page level offcanvas.
+ * @ojstyleclass oj-offcanvas-inner-wrapper
+ * @ojdisplayname Off-canvas Inner Wrapper
+ * @memberof oj.OffcanvasUtils
+ * @ojdeprecated [{since: "6.0.0", description: "Offcanvas inner wrapper is no longer supported."}]
+ */
+// ------------------------------ oj-offcanvas-overlay-shadow ---------------------------------
+
+/**
+ * Add this marker class to an overlay offcanvas to show a drop shadow when it is open.
+ * @ojstyleclass oj-offcanvas-overlay-shadow
+ * @ojdisplayname Off-canvas Drop Shadow
+ * @ojstyleselector .oj-offcanvas-outer-wrapper > div
+ * @memberof oj.OffcanvasUtils
+ */
+// ---------------- oj-offcanvas-edge --------------
+
+/**
+ * Specifies the default for applying the offcanvas on the given edge.
+ * @ojstyleset offcanvas-edge
+ * @ojdisplayname Off-canvas Edge
+ * @ojstylesetitems ["offcanvas-edge.oj-offcanvas-start", "offcanvas-edge.oj-offcanvas-end", "offcanvas-edge.oj-offcanvas-top", "offcanvas-edge.oj-offcanvas-bottom"]
+ * @ojstylerelation exclusive
+ * @memberof oj.OffcanvasUtils
+ */
+
+/**
+ * @ojstyleclass offcanvas-edge.oj-offcanvas-start
+ * @ojdisplayname Off-canvas Start Edge
+ * @ojshortdesc Default to applying the offcanvas to the start edge.
+ * @ojstyleselector .oj-offcanvas-outer-wrapper > div
+ * @memberof! oj.OffcanvasUtils
+ */
+
+/**
+ * @ojstyleclass offcanvas-edge.oj-offcanvas-end
+ * @ojdisplayname Off-canvas End Edge
+ * @ojshortdesc Default to applying the offcanvas to the end edge.
+ * @ojstyleselector .oj-offcanvas-outer-wrapper > div
+ * @memberof! oj.OffcanvasUtils
+ */
+
+/**
+ * @ojstyleclass offcanvas-edge.oj-offcanvas-top
+ * @ojdisplayname Off-canvas Top Edge
+ * @ojshortdesc Default to applying the offcanvas to the top edge.
+ * @ojstyleselector .oj-offcanvas-outer-wrapper > div
+ * @memberof! oj.OffcanvasUtils
+ */
+
+/**
+ * @ojstyleclass offcanvas-edge.oj-offcanvas-bottom
+ * @ojdisplayname Off-canvas Bottom Edge
+ * @ojshortdesc Default to applying the offcanvas to the bottom edge.
+ * @ojstyleselector .oj-offcanvas-outer-wrapper > div
+ * @memberof! oj.OffcanvasUtils
+ */
+// -------------------- Styling end ------------------------
 
   ;return OffcanvasUtils;
 });

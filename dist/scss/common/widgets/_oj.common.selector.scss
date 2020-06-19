@@ -1,0 +1,73 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../utilities/oj.utilities";
+
+// set up include variables before importing dependencies
+@if $includeSelectorClasses != false {
+    $includeRadiosetClasses: true !global;
+}
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.formcontrol.radioset";
+@if $includeSelectorClasses != false  {
+
+    @include module-include-once("common.selector") {
+        // This is to prevent the flash of unstyled content before the html becomes JET components.
+        @if $initialVisibility == hidden {
+            oj-selector:not(.oj-complete) {
+                visibility: hidden;
+            }
+        }
+        // Hover enabled un selected icon
+        .oj-selector:hover .oj-selector-wrapper:not(.oj-selected){
+            @extend .oj-fwk-icon-cbsingle-hover-unselected !optional; 
+            width: $selectorWidth;
+            height: $selectorHeight;
+            margin: $selectorMargin;
+        }
+        // Hover enabled selected icon
+        .oj-selector:hover .oj-selector-wrapper.oj-selected{
+            @extend .oj-fwk-icon-cbsingle-hover-selected !optional;
+            width: $selectorWidth;
+            height: $selectorHeight;
+            margin: $selectorMargin;
+        }
+        
+        .oj-selector:active .oj-selector-wrapper:not(.oj-selected){
+            @extend .oj-fwk-icon-checkbox-pressed-unselected !optional;
+        }
+    
+        .oj-selector:active .oj-selector-wrapper.oj-selected{
+            @extend .oj-fwk-icon-checkbox-pressed-selected !optional;
+        }
+        
+        .oj-selector .oj-selector-wrapper:not(.oj-selected){
+            @extend .oj-fwk-icon-checkbox-tristate-unselected !optional;
+        }
+
+        .oj-selector .oj-selector-wrapper.oj-selected{
+            @extend .oj-fwk-icon-checkbox-tristate-selected !optional;
+        }
+
+        .oj-selector {
+            width: calc(2 * #{$selectorMargin} + #{$selectorWidth});
+            height: calc(2 * #{$selectorMargin} + #{$selectorHeight});
+            display: block;
+        }
+    
+        // Set margins and padding
+        .oj-selector .oj-selector-wrapper {    
+            display: inline-block;
+            width: $selectorWidth;
+            height: $selectorHeight;
+            margin: $selectorMargin;
+        }
+    
+        .oj-selector .oj-selector-wrapper .oj-selectorbox{
+            width: calc(2 * #{$selectorMargin} + #{$selectorWidth});
+            height: calc(2 * #{$selectorMargin} + #{$selectorHeight});
+            opacity: 0;
+            margin: calc(-1 * #{$selectorMargin});
+        }
+    }
+}

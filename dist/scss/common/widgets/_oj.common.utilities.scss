@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
 //          version in your base theme's directory,
@@ -27,25 +28,28 @@
 
 
     //colors
-
+    .oj-text-color-primary,
     .oj-text-primary-color {
 
         color: $primaryTextColor;
 
     }
 
+    .oj-text-color-secondary,
     .oj-text-secondary-color {
 
         color: $secondaryTextColor;
 
     }
 
+    .oj-text-color-tertiary,
     .oj-text-tertiary-color {
 
         color: $tertiaryTextColor;
 
     }
 
+    .oj-text-color-disabled,
     .oj-text-disabled-color {
 
         color: $textColorDisabled;
@@ -303,6 +307,199 @@
         }
 
     }
+
+    // CSS for new utilities classes for boreder, box shadows and border radius
+  
+    .oj-border {
+      border: 1px solid $panelBorderColor !important;
+    }
+  
+    .oj-border-top {
+      border-top: 1px solid $panelBorderColor !important;
+    }
+  
+    .oj-border-bottom {
+      border-bottom: 1px solid $panelBorderColor !important;
+    }
+  
+    .oj-border-start {
+      @include oj-ltr() {
+        border-left: 1px solid $panelBorderColor !important;
+      }
+      @include oj-rtl() {
+        border-right: 1px solid $panelBorderColor !important;
+      }
+    }
+  
+    .oj-border-end {
+      @include oj-ltr() {
+        border-right: 1px solid $panelBorderColor !important;
+      }
+      @include oj-rtl() {
+        border-left: 1px solid $panelBorderColor !important;
+      }
+    }
+    
+    //Divider
+  
+    .oj-divider-top {
+      border-top-width: 1px;
+      border-top-color: $panelBorderColor;
+      border-top-style: solid;
+      }
+      
+    .oj-divider-top.oj-divider-padding {
+      padding-top: $dividerMargin;
+      }
+      
+    .oj-divider-top.oj-divider-margin {
+      margin-top:  $dividerMargin;
+      }
+  
+    .oj-divider-bottom {
+      border-bottom-width: 1px;
+      border-bottom-color:  $panelBorderColor;
+      border-bottom-style: solid;
+     }
+  
+    .oj-divider-bottom.oj-divider-padding {
+      padding-bottom : $dividerMargin;
+     }
+  
+    .oj-divider-bottom.oj-divider-margin {
+      margin-bottom: $dividerMargin;
+      }
+  
+  
+    .oj-divider-start{
+      @include oj-ltr() {
+        border-left-width: 1px;
+        border-left-color: $panelBorderColor;
+        border-left-style: solid;
+        
+      }
+      @include oj-rtl() {
+        border-right-width: 1px;
+        border-right-color: $panelBorderColor;
+        border-right-style: solid;
+        }
+    }
+  
+    .oj-divider-start.oj-divider-padding
+    {
+      @include oj-ltr() {
+      padding-left : $dividerMargin;
+      }
+      @include oj-rtl() {
+        padding-right : $dividerMargin;
+      }
+  
+    }
+    
+    .oj-divider-start.oj-divider-margin
+    {
+      @include oj-ltr() {
+      margin-left : $dividerMargin;
+      }
+      @include oj-rtl() {
+        margin-right : $dividerMargin;
+      }
+    }
+    
+   
+    .oj-divider-end{
+      @include oj-ltr() {
+        border-right-width: 1px;
+        border-right-color: $panelBorderColor;
+        border-right-style: solid;
+        
+      }
+      @include oj-rtl() {
+        border-left-width: 1px;
+        border-left-color: $panelBorderColor;
+        border-left-style: solid;
+        }
+    }
+  
+    .oj-divider-end.oj-divider-padding
+    {
+      @include oj-ltr() {
+      padding-right: $dividerMargin;
+      }
+      @include oj-rtl() {
+        padding-left : $dividerMargin;
+      }
+  
+    }
+    
+    .oj-divider-end.oj-divider-margin
+    {
+      @include oj-ltr() {
+      margin-right : $dividerMargin;
+      }
+      @include oj-rtl() {
+        margin-left : $dividerMargin;
+      }
+    }
+
+
+    .oj-bg-neutral-0 {
+      background-color: $neutralColor1 !important; 
+    }
+      
+    .oj-bg-neutral-10 {
+      background-color: $neutralColor2 !important; 
+    }
+  
+    .oj-bg-neutral-20 {
+      background-color: $neutralColor3 !important;
+    }
+    
+    .oj-bg-neutral-30 {
+      background-color: $neutralColor4 !important;
+    }
+    
+    .oj-bg-danger-10 {
+      background-color: $accentColorDanger1 !important;
+    }
+
+    .oj-bg-danger-30 {
+      background-color: $accentColorDanger2 !important;
+    }
+
+    .oj-bg-warning-10 {
+      background-color: $accentColorAttention1 !important;
+    }
+
+    .oj-bg-warning-30 {
+      background-color: $accentColorAttention2 !important;
+    }
+
+    
+    .oj-bg-success-10 {
+      background-color: $accentColorConfirmation1 !important;
+    }
+
+    .oj-bg-success-30 {
+      background-color: $accentColorConfirmation1 !important;
+    }
+
+    .oj-bg-info-10 {
+      background-color: $accentColorInfo1 !important;
+    }
+
+    .oj-bg-info-30 {
+      background-color: $accentColorInfo2 !important;
+    }
+
+    
+    .oj-bg-brand-10 {
+      background-color: $brandColorLight5  !important;
+    }
+    .oj-bg-brand-30 {
+      background-color: $brandColorLight3 !important;
+    }
+
 
   }
 }

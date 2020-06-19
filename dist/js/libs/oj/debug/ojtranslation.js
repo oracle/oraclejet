@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -173,12 +174,12 @@ Translations._getResourceString = function (key) {
   // even though we start with a valid bundle it's possible that part or all of the key is invalid,
   // so check we have a valid bundle in the for loop
   // if we have a key like a.b.c
-  for (var index = 0; index < keys.length && bundle; index++) {
+  for (var index = 0; index < keys.length && bundle != null; index++) {
     var subkey = keys[index];
     bundle = bundle[subkey];
   }
 
-  return bundle || null;
+  return bundle != null ? bundle : null;
 };
 
 Translations._format = function (formatString, parameters) {

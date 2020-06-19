@@ -1,16 +1,17 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdatasource-common'], 
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojdatasource-common'], 
 /*
 * @param {Object} oj 
 * @param {jQuery} $
 */
-function(oj, $, Components)
+function(oj, $, Components, logger)
 {
   "use strict";
 var __oj_row_expander_metadata = 
@@ -226,7 +227,7 @@ oj.FlattenedNodeSet.prototype.getCount = function () {
     // account when calculating total count
 
     if (this.m_start != null) {
-      this.m_count = this.m_count - this.m_start;
+      this.m_count -= this.m_start;
     }
   }
 
@@ -2379,6 +2380,8 @@ oj.FlattenedTreeDataSource.prototype.getCapability = function (feature) {
 
 /* global Components:false */
 
+/* global logger:false */
+
 /**
  * @ojcomponent oj.ojRowExpander
  * @augments oj.baseComponent
@@ -2398,6 +2401,9 @@ oj.FlattenedTreeDataSource.prototype.getCapability = function (feature) {
  *               }
  *              ]
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
+ *
+ * @ojuxspecs ['row-expander']
+ *
  * @classdesc
  * <h3 id="rowexpanderOverview-section">
  *   JET RowExpander
@@ -2558,7 +2564,13 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent, {
    */
   _initContent: function _initContent() {
     var self = this;
-    var context = this.options.context; // component now widget constructor or non existent
+    var context = this.options.context;
+
+    if (context === null) {
+      logger.warn('Context is not setup for the rowExpander');
+      return;
+    } // component now widget constructor or non existent
+
 
     if (context.component != null) {
       this.component = typeof context.component === 'function' ? context.component('instance') : context.component;

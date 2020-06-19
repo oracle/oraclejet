@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -354,8 +355,9 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
  * &lt;/oj-film-strip>
  * </code></pre>
  *
- * <p>JET FilmStrip and ConveyorBelt look similar, but are intended to be used
+ * <p id="filmStrip-conveyorBelt-section">JET FilmStrip and ConveyorBelt look similar, but are intended to be used
  * for different purposes.
+ * <a class="bookmarkable-link" title="Bookmarkable Link" href="#filmStrip-conveyorBelt-section"></a>
  * <p>Use FilmStrip when you want to:
  * <ul>
  * <li>layout a set of items across discrete logical pages</li>
@@ -591,8 +593,8 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
   function _escapeHtml(text) {
     // let jQuery escape the text
     var jqDiv = $('<div></div>');
-    jqDiv.text(text); // @HTMLUpdateOK
-    return jqDiv[0].innerHTML;
+    jqDiv.text(text);
+    return jqDiv[0].innerHTML; // @HTMLUpdateOK
   }
 
   // end static members and functions ////////////////////////////////////////////
@@ -798,7 +800,7 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
          *                          can't go any further in the direction of navigation.
          * @ojvalue {string} "page" Navigation is not bounded between first and last page
          *                          and can go further in the direction of navigation.
-         *                          This lets user to loop around from first page to last page or
+         *                          This lets the user loop around from first page to last page, or
          *                          from last page to first page.
          * @default "off"
          * @ojshortdesc Specifies the navigation looping behavior
@@ -1467,15 +1469,15 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
 
         originalItems
           .addClass(_OJ_FILMSTRIP_ITEM)
-          .wrap("<div class='" + _OJ_FILMSTRIP_CONTAINER +
-                ' ' + _OJ_FILMSTRIP_ITEM_CONTAINER + "'></div>"); // @HTMLUpdateOK
+          .wrap("<div class='" + _OJ_FILMSTRIP_CONTAINER + // @HTMLUpdateOK
+                ' ' + _OJ_FILMSTRIP_ITEM_CONTAINER + "'></div>");
 
         // need to initially specify the position on the pagesWrapper so that we can
         // always get the value later
         var cssAttr = this._getCssPositionAttr();
         var pagesWrapper = elem.children()
-            .wrapAll("<div class='" + _OJ_FILMSTRIP_CONTAINER + ' ' +
-                     _OJ_FILMSTRIP_PAGES_CONTAINER + "'></div>") // @HTMLUpdateOK
+            .wrapAll("<div class='" + _OJ_FILMSTRIP_CONTAINER + ' ' + // @HTMLUpdateOK
+                     _OJ_FILMSTRIP_PAGES_CONTAINER + "'></div>")
             .parent().css(cssAttr, '0px');
         this._pagesWrapper = pagesWrapper;
 
@@ -1485,8 +1487,8 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           // FIX : add the oj-filmstrip-container class to the content
           // container so that it is a flexbox layout
           this._contentWrapper = pagesWrapper
-            .wrap("<div class='" + _OJ_FILMSTRIP_CONTAINER +
-                  " oj-filmstrip-content-container'></div>") // @HTMLUpdateOK
+            .wrap("<div class='" + _OJ_FILMSTRIP_CONTAINER + // @HTMLUpdateOK
+                  " oj-filmstrip-content-container'></div>")
             .parent();
         }
 
@@ -1500,7 +1502,7 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         var pageInfoElem = this._createPageInfoElem();
         var elementId = elem.attr('id');
         var pageInfoId = pageInfoElem.attr('id');
-        elem.append(pageInfoElem);    // @HTMLUpdateOK
+        elem.append(pageInfoElem); // @HTMLUpdateOK
         elem.attr('aria-labelledby', elementId + ' ' + pageInfoId);
         this._pageInfoElem = pageInfoElem;
 
@@ -1557,11 +1559,11 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         // _unwrapChildren
         originalItems
           .removeClass(_OJ_FILMSTRIP_ITEM) // original children
-          .unwrap()                        // remove item containers
-          .unwrap();                       // remove pages container
+          .unwrap() // remove item containers
+          .unwrap(); // remove pages container
         this._pagesWrapper = null;
         if (this._contentWrapper) {
-          originalItems.unwrap();          // remove content container
+          originalItems.unwrap(); // remove content container
           this._contentWrapper = null;
         }
 
@@ -2049,8 +2051,8 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           for (i = 0; i < items.length; i += fitCount) {
             var itemsOnPage = items.slice(i, i + fitCount);
             // initially hide the page container
-            itemsOnPage.wrapAll("<div class='" + _OJ_FILMSTRIP_CONTAINER + ' ' +
-                                _OJ_FILMSTRIP_PAGE + "' " + _ARIA_HIDDEN + "='true'></div>") // @HTMLUpdateOK
+            itemsOnPage.wrapAll("<div class='" + _OJ_FILMSTRIP_CONTAINER + ' ' + // @HTMLUpdateOK
+                                _OJ_FILMSTRIP_PAGE + "' " + _ARIA_HIDDEN + "='true'></div>")
                                 .parent().css('display', _NONE);
           }
 
@@ -2491,7 +2493,7 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
 
         page
           .css(_DISPLAY, _NONE)
-          .attr(_ARIA_HIDDEN, 'true');
+          .attr(_ARIA_HIDDEN, 'true'); // @HTMLUpdateOK
 
         // hide the items explicitly; unhiding will unhide them explicitly
         var items =

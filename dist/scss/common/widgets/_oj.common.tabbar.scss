@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
 //          version in your base theme's directory,
@@ -833,6 +834,10 @@
         .oj-tabbar-horizontal.oj-tabbar-item-text-wrap .oj-tabbar-item {
                 flex: 1 1 auto;
         }
+        .oj-tabbar-horizontal.oj-condense .oj-tabbar-item
+        {
+          flex: 0 0 auto;
+        }
 
         /* This is due to bug in IE 11 where setting flex-shrink:0 is needed to avoid truncation in item text which is needed for overflow feature. This work around breaks text-wrap functionality so enabling this only when no text wrap. We can remove this once IE 11 support dropped and can update docs saying text-wrap is supported with overflow. */
 
@@ -880,7 +885,7 @@
           @media #{$responsiveQueryLargeUp} {
             .oj-tabbar-horizontal.oj-lg-condense .oj-tabbar-item
             {
-              flex: 0 1 auto;
+              flex: 0 0 auto;
             }
             .oj-tabbar-horizontal.oj-lg-justify-content-center .oj-tabbar-element {
                 justify-content: center;

@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -303,6 +304,8 @@ var __oj_popup_metadata =
    * @ojvbdefaultcolumns 2
    * @ojvbmincolumns 1
    *
+   * @ojuxspecs ['popup']
+   *
    * @classdesc
    * <h3 id="popupOverview-section">
    *   JET Popup Component
@@ -435,13 +438,6 @@ var __oj_popup_metadata =
    *        these overflow elements to reset their scrollTop.</li>
    *  </ol>
    *
-   * <h3 id="styling-section">
-   *   Styling
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"stylingDoc"}
-   *
    * <h3 id="eventHandling-section">
    *   Event Handling
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#eventHandling-section"></a>
@@ -459,6 +455,28 @@ var __oj_popup_metadata =
    *  <li>ojOpen(event) - Triggered after the popup has been made visible.</li>
    * </ul>
    */
+  // --------------------------------------------------- oj.ojPopup Styling Start -----------------------------------------------------------
+  // ---------------- oj-focus-highlight --------------
+
+  /**
+  * Under normal circumstances this class is applied automatically.
+  * It is documented here for the rare cases that an app developer needs per-instance control.<br/><br/>
+  * The oj-focus-highlight class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.<br/><br/>
+  * The application-level behavior for this component is controlled in the theme by the <code class="prettyprint"><span class="pln">$focusHighlightPolicy </span></code>SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:<br/><br/>
+  * <code class="prettyprint"><span class="pln">nonPointer: </span></code>oj-focus-highlight is applied only when focus is not the result of pointer interaction. Most themes default to this value.<br/>
+  * <code class="prettyprint"><span class="pln">all: </span></code> oj-focus-highlight is applied regardless of the focus mechanism.<br/>
+  * <code class="prettyprint"><span class="pln">none: </span></code> oj-focus-highlight is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.<br/><br/>
+  * To change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed.<br/>
+  * @ojstyleclass oj-focus-highlight
+  * @ojdisplayname Focus Styling
+  * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
+  * @memberof oj.ojPopup
+  * @ojtsexample
+  * &lt;oj-popup class="oj-focus-highlight">
+  *   &lt;!-- Content -->
+  * &lt;/oj-popup>
+  */
+  // --------------------------------------------------- oj.ojPopup Styling end -----------------------------------------------------------
 
   oj.__registerWidget('oj.ojPopup', $.oj.baseComponent, {
     widgetEventPrefix: 'oj',
@@ -940,7 +958,7 @@ var __oj_popup_metadata =
        * @instance
        * @ojcancelable
        * @ojbubbles
-       * @property {"open"|"close"} action The action that is starting the animation.
+       * @property {"open"|"close"} action The action that is starting the animation.<br><br>
        *            The number of actions can vary from component to component.
        *            Suggested values are:
        *                    <ul>
@@ -986,7 +1004,7 @@ var __oj_popup_metadata =
        * @ojcancelable
        * @ojbubbles
        * @property {!Element} element target of animation
-       * @property {"open"|"close"} action The action that is ending the animation.
+       * @property {"open"|"close"} action The action that is ending the animation.<br><br>
        *                   The number of actions can vary from component to component.
        *                   Suggested values are:
        *                    <ul>
@@ -2119,8 +2137,9 @@ var __oj_popup_metadata =
       if (event.keyCode === $.ui.keyCode.ESCAPE && (this._isFocusInPopup(target) || this._isFocusInLauncher(target))) {
         event.preventDefault();
         this.close();
-      } else if (event.keyCode === 117) {
+      } else if (event.keyCode === 117 || event.key === 'F6') {
         // F6 - toggle focus to launcher or popup
+        // keyCode is deprecated and it's not supported on some browsers.
         if (this._isFocusInPopup(target)) {
           // If this is a modeless popup, toggle focus to the launcher;
           // otherwise, close the popup as we can't set focus under the
@@ -2572,6 +2591,14 @@ var __oj_popup_metadata =
 })(); // Fragments:
 
 /**
+ * <p>The <code class="prettyprint">&lt;oj-popup></code> accepts
+ * any DOM elements in its Default slot but only tracks the validity
+ * state of any JET custom element descendents that contain the valid property.
+ * @ojchild Default
+ * @memberof oj.ojPopup
+ */
+
+/**
  * <table class="keyboard-table">
  *   <thead>
  *     <tr>
@@ -2630,37 +2657,6 @@ var __oj_popup_metadata =
  * </table>
  *
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
- * @memberof oj.ojPopup
- */
-
-/**
- * {@ojinclude "name":"ojStylingDocIntro"}
- *
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
- *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
- *       <th>{@ojinclude "name":"ojStylingDocExampleHeader"}</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-focus-highlight</td>
- *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
- *       <td>
- * <pre class="prettyprint">
- * <code>&lt;oj-popup class="oj-focus-highlight">
- *  &lt;input id="blueopt" type="checkbox" value="blue">
- *  &lt;label for="blueopt">Blue&lt;/label>
- * &lt;/oj-popup>
- * </code></pre>
- *       </td>
- *     </tr>
- *   </tbody>
- * </table>
- *
- * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
  * @memberof oj.ojPopup
  */
 

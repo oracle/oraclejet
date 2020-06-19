@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -93,10 +94,11 @@ ResponsiveKnockoutUtils.createMediaQueryObservable = function (queryString) {
         // hides the content without using display:none.
         // However we don't want screen readers to read
         // this so setting aria-hidden to true.
-        $('body').append('<div aria-hidden="true" class="oj-helper-hidden-accessible ' + selector + '">'); // @HTMLUpdateOK
+        $('body').append('<div aria-hidden="true" class="oj-helper-hidden-accessible ' + // @HTMLUpdateOK
+        selector + '">');
       }
 
-      $('.' + selector).text(new Date().getMilliseconds().toString()); // @HTMLUpdateOK
+      $('.' + selector).text(new Date().getMilliseconds().toString());
     });
   }
 

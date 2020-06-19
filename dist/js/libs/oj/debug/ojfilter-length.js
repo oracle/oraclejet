@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -14,23 +15,22 @@ class LengthFilter {
     constructor(options) {
         this.options = options;
         if (!options.max) {
-            throw new Error("length filter's max option cannot be less than 1. max option is " +
-                options.max);
+            throw new Error("length filter's max option cannot be less than 1. max option is " + options.max);
         }
         // check that the max make sense, otherwise throw an error
         if (isNaN(options.max)) {
             throw new Error("length filter's max option is not a number. max option is " + options.max);
         }
         if (options.max !== null && options.max < 1) {
-            throw new Error("length filter's max option cannot be less than 1. max option is " +
-                options.max);
+            throw new Error("length filter's max option cannot be less than 1. max option is " + options.max);
         }
-        options.countBy = (options.countBy === undefined) ?
-            'codePoint' : options.countBy;
+        options.countBy = options.countBy === undefined ? 'codePoint' : options.countBy;
     }
     filter(currentRawValue, proposedRawValue) {
         let proposedValueLength = this.calcLength(proposedRawValue);
-        return proposedValueLength <= this.options.max ? proposedRawValue : currentRawValue.slice(0, this.options.max);
+        return proposedValueLength <= this.options.max
+            ? proposedRawValue
+            : currentRawValue.slice(0, this.options.max);
     }
     calcLength(text) {
         let countBy = this.options.countBy;
@@ -50,7 +50,7 @@ class LengthFilter {
                 // increments surrogateLength
                 for (let i = 0; i < codeUnitLength; i++) {
                     // eslint-disable-next-line no-bitwise
-                    if ((text.charCodeAt(i) & 0xF800) === 0xD800) {
+                    if ((text.charCodeAt(i) & 0xf800) === 0xd800) {
                         surrogateLength += 1;
                     }
                 }
@@ -58,7 +58,7 @@ class LengthFilter {
                 // surrogateLength is 4, so we will return two.
                 // oj.Assert.assert(surrogateLength % 2 === 0,
                 // 'the number of surrogate chars must be an even number.');
-                length = (codeUnitLength - (surrogateLength / 2));
+                length = codeUnitLength - surrogateLength / 2;
                 break;
             case 'codeUnit':
             default:

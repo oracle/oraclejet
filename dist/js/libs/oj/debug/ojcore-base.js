@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -21,7 +22,6 @@ define(['require', 'ojs/ojlogger', 'polyfills'], function(require, Logger)
 
 
 /* jslint browser: true*/
-/* global self:true */
 
 /**
  * Defines the oj namespace
@@ -53,17 +53,29 @@ var oj = {
    * @global
    * @member {string} version JET version numberr
    */
-  version: '8.3.0',
+  version: '9.0.0',
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  revision: '2020-05-12_18-00-29',
+  revision: '2020-06-11_18-43-20',
 
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
   noConflict: function () {
     _scope.oj = _oldVal;
+  },
+
+  /**
+   * Adds a property to the "oj" namespace. This is used by ES6 modules to set
+   * legacy exported objects onto the import "oj" namespace, since modifying the
+   * original imported object isn't allowed under ES6.
+   * @param {string} name The property name, such as "PopupService"
+   * @param {object} value The value to set for the property
+   * @private
+   */
+  _registerLegacyNamespaceProp: function (name, value) {
+    this[name] = value;
   }
 };
 
@@ -675,6 +687,31 @@ oj.CollectionUtils.copyInto = function (
 
 
 /**
+ * A simpler alternative to copyInto()
+ * @param {Object} target - target collection
+ * @param Array{Object} - one or more sources to merge into the target
+ * @ignore
+ */
+oj.CollectionUtils.mergeDeep = function (target, ...sources) {
+  if (!sources.length) return target;
+  const isPlain = oj.CollectionUtils.isPlainObject;
+  const merge = oj.CollectionUtils.mergeDeep;
+  const source = sources.shift();
+  if (isPlain(target) && isPlain(source)) {
+    Object.keys(source).forEach(key => {
+      if (isPlain(source[key])) {
+        if (!target[key]) Object.assign(target, { [key]: {} });
+        merge(target[key], source[key]);
+      } else {
+        Object.assign(target, { [key]: source[key] });
+      }
+    });
+  }
+  return merge(target, ...sources);
+};
+
+
+/**
  * Checks whether the object is a direct instance of Object
  * @param {Object} obj - object to test
  *
@@ -820,7 +857,7 @@ oj.Object.prototype.constructor = oj.Object;
 oj.Object.createSubclass = function (
   extendingClass,
   baseClass,
-  typeName) {  // optional name to name this class
+  typeName) { // optional name to name this class
   oj.Assert.assertFunction(extendingClass);
   oj.Assert.assertFunctionOrNull(baseClass);
   oj.Assert.assertStringOrNull(typeName);
@@ -1475,35 +1512,40 @@ oj.StringUtils.hashCode = function (str) {
 
 
   /**
+   * This list should be kept in sync with typings/jsx-interfaces.d.ts
+   *
    * This list provides a map of global property to attribute names
    * where the attribute name is used for both key and value if no property
    * exists. We start with the list of global attributes found here:
-   * https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
+   * https://html.spec.whatwg.org/multipage/dom.html#global-attributes
    * and check those against the Element and HTMLElement specs to determine
-   * the property name if different. This list is not exhaustive of all Element
-   * and HTMLElement properties.
+   * the property name if different:
+   * https://dom.spec.whatwg.org/#interface-element
+   * https://html.spec.whatwg.org/multipage/dom.html#htmlelement
+   * This list is not exhaustive of all Element and HTMLElement properties.
    * @ignore
    */
   // eslint-disable-next-line no-unused-vars
   var _GLOBAL_PROPS = {
     accessKey: 'accesskey',
     autocapitalize: 'autocapitalize',
-    className: 'class',
+    autofocus: 'autofocus',
+    class: 'class', // We support class instead of className for JSX
     contentEditable: 'contenteditable',
-    contextMenu: 'contextmenu',
     dir: 'dir',
     draggable: 'draggable',
-    dropzone: 'dropzone',
+    enterKeyHint: 'enterkeyhint',
     hidden: 'hidden',
     id: 'id',
     inputMode: 'inputmode',
     is: 'is',
-    itemId: 'itemid',
-    itemProp: 'itemprop',
-    itemRef: 'itemref',
-    itemScope: 'itemscope',
-    itemType: 'itemtype',
+    itemid: 'itemid',
+    itemprop: 'itemprop',
+    itemref: 'itemref',
+    itemscope: 'itemscope',
+    itemtype: 'itemtype',
     lang: 'lang',
+    nonce: 'nonce',
     role: 'role',
     slot: 'slot',
     spellcheck: 'spellcheck',
@@ -1522,70 +1564,33 @@ oj.StringUtils.hashCode = function (str) {
    */
   // eslint-disable-next-line no-unused-vars
   var _NATIVE_PROPS = {
-    aLink: 'alink',
     acceptCharset: 'accept-charset',
     allowFullscreen: 'allowfullscreen',
     allowPaymentRequest: 'allowpaymentrequest',
-    bgColor: 'bgcolor',
-    cellPadding: 'cellpadding',
-    cellSpacing: 'cellspacing',
-    ch: 'char',
-    chOff: 'charoff',
-    codeBase: 'codebase',
-    codeType: 'codetype',
     colSpan: 'colspan',
-    controlsList: 'controlslist',
     crossOrigin: 'crossorigin',
     dateTime: 'datetime',
-    defaultChecked: 'checked',
-    defaultMuted: 'muted',
-    defaultSelected: 'selected',
-    defaultValue: 'value',
     dirName: 'dirname',
-    disablePictureInPicture: 'disablepictureinpicture',
-    disableRemotePlayback: 'disableremoteplayback',
     encoding: 'enctype',
     formAction: 'formaction',
     formEnctype: 'formenctype',
     formMethod: 'formmethod',
     formNoValidate: 'formnovalidate',
     formTarget: 'formtarget',
-    frameBorder: 'frameborder',
-    htmlFor: 'for',
+    for: 'for', // We support for instead of htmlFor for JSX
     httpEquiv: 'http-equiv',
     imageSizes: 'imagesizes',
     imageSrcset: 'imagesrcset',
     inputMode: 'inputmode',
     isMap: 'ismap',
-    longDesc: 'longdesc',
-    marginHeight: 'marginheight',
-    marginWidth: 'marginwidth',
     maxLength: 'maxlength',
     minLength: 'minlength',
-    noHref: 'nohref',
     noModule: 'nomodule',
-    noResize: 'noresize',
-    noShade: 'noshade',
     noValidate: 'novalidate',
-    noWrap: 'nowrap',
     readOnly: 'readonly',
     referrerPolicy: 'referrerpolicy',
-    relList: 'rel',
     rowSpan: 'rowspan',
     useMap: 'usemap',
-    vAlign: 'valign',
-    vLink: 'vlink',
-    valueType: 'valuetype',
-    Methods: 'methods',
-    borderColor: 'bordercolor',
-    frameSpacing: 'framespacing',
-    hideFocus: 'hidefocus',
-    msKeySystem: 'mskeysystem',
-    msPlayToDisabled: 'x-ms-playtodisabled',
-    msPlayToPreferredSourceUri: 'x-ms-playtopreferredsourceuri',
-    msPlayToPrimary: 'x-ms-playtoprimary',
-    mozOpaque: 'moz-opaque',
-    typeMustMatch: 'typemustmatch'
   };
 
 
@@ -1824,8 +1829,8 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
   // Checks that a string either starts with 'object' or contains '|object'
   var _OBJ_TYPE_EXP = /(^object)|(\|object)/;
 
-  var _ARRAY_VALUE_EXP = /\s*\[[^]*\]\s*/;
-  var _OBJ_VALUE_EXP = /\s*\{[^]*\}\s*/;
+  var _ARRAY_VALUE_EXP = /^\s*\[[^]*\]\s*$/;
+  var _OBJ_VALUE_EXP = /^\s*\{[^]*\}\s*$/;
 
   // Check for {{..}} and [[..]] at the beginning of strings to avoid matching
   // any usages mid string
@@ -1951,10 +1956,10 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
    * @private
    */
   oj.__AttributeUtils.coerceValue = function (elem, attr, value, type) {
+    var tagName = elem.tagName.toLowerCase();
     if (!type) {
-      throw new Error('Unable to parse ' + attr + "='" + value + "' for " +
-                      elem + ' with id ' + elem.id +
-                      ' . This attribute only supports data bound values. Check the API doc for supported types');
+      throw new Error(`Unable to parse ${attr}='${value}' for ${tagName} with id '${elem.id}'. \
+        This attribute only supports data bound values. Check the API doc for supported types`);
     }
 
     // We only support primitive types and JSON objects for coerced properties.
@@ -1974,9 +1979,8 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
       try {
         return JSON.parse(value);
       } catch (ex) {
-        throw new Error('Unable to parse ' + attr + "='" + value + "' for " +
-                        elem.tagName + ' with id ' + elem.id +
-                        ' to a JSON Object. Check the value for correct JSON syntax, e.g. double quoted strings. ' + ex);
+        throw new Error(`Unable to parse ${attr}='${value}' for ${tagName} with id '${elem.id}' \
+          to a JSON Object. Check the value for correct JSON syntax, e.g. double quoted strings. ${ex}`);
       }
     } else if (typeLwr === 'boolean') {
       return oj.__AttributeUtils.coerceBooleanValue(elem, attr, value, type);
@@ -1984,16 +1988,17 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
       if (!isNaN(value)) {
         return Number(value);
       }
-    } else {
-      var typeAr = type.split('|');
+    } else if (typeLwr === 'any') {
       // The any type will return a string if not matched as an object or array in first check
-      if (typeAr.indexOf('string') !== -1 || typeLwr === 'any') {
+      return value;
+    } else {
+      var typeAr = typeLwr.split('|').filter(item => item.trim() === 'string');
+      if (typeAr.length > 0) {
         return value;
       }
     }
-
-    throw new Error('Unable to parse ' + attr + "='" + value + "' for " +
-                    elem + ' with id ' + elem.id + ' to a ' + type + '.');
+    throw new Error(`Unable to parse ${attr}='${value}' for ${tagName} with id '${elem.id}' \
+      to a ${type}.`);
   };
 
   /**
@@ -2026,23 +2031,13 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
   };
 
   /**
-   * Returns true if the given property name maps to a global attribute.
-   * For global attributes with no property getter, this method will check
-   * the attribute name, but does not handle data- and aria- dash cases.
-   * @param {string} prop The property name to check
-   * @return {boolean}
-   */
-  oj.__AttributeUtils.isGlobal = function (prop) {
-    // TODO: watch out for performance of hasOwnProperty given how often we expect isGlobal to be called
-    return Object.prototype.hasOwnProperty.call(_GLOBAL_PROPS, prop);
-  };
-
-  /**
   * Returns true if the given property name maps to a global attribute.
   * For global attributes with no property getter, this method will check
   * the attribute name and handle data- and aria- dash cases.
   * @param {string} prop The property name to check
   * @return {boolean}
+  * @private
+  * @ignore
   */
   oj.__AttributeUtils.isGlobalOrData = function (prop) {
     // TODO: watch out for performance of hasOwnProperty given how often we expect isGlobal to be called
@@ -2054,8 +2049,10 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
    * be global and will return the attribute syntax or the original value which could be
    * the global attribute name that does not have a property equivalent, e.g.
    * data- or aria-.
+   * @ignore
    * @param {string} prop The property name to check
    * @return {string}
+   * @private
    */
   oj.__AttributeUtils.getGlobalAttrForProp = function (prop) {
     return _GLOBAL_PROPS[prop] || prop;
@@ -2066,8 +2063,10 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
    * to be global and will return the attribute syntax or the original value which could be
    * the global attribute name that does not have a property equivalent, e.g.
    * data- or aria-.
+   * @ignore
    * @param {string} attr The attribute name to check
    * @return {string}
+   * @private
    */
   oj.__AttributeUtils.getGlobalPropForAttr = function (attr) {
     return _GLOBAL_ATTRS[attr] || attr;
@@ -2077,8 +2076,10 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
    * This method assumes that the given attribute name has already been confirmed
    * to be come from a native HTML element and will return the attribute name if
    * different from the property name for any native HTML element or the original value.
+   * @ignore
    * @param {string} prop The property name to check
    * @return {string}
+   * @private
    */
   oj.__AttributeUtils.getNativeAttr = function (prop) {
     return _NATIVE_PROPS[prop] || prop;
@@ -2090,8 +2091,10 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
   /**
    * Returns either the passed id or a unique string that can be used for
    * a custom element id.
+   * @ignore
    * @param {string} id
    * @return {string}
+   * @private
    */
   oj.__AttributeUtils.getUniqueId = function (id) {
     if (id) {
@@ -2103,6 +2106,15 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
   };
 }());
 
+
+
+/* global Promise:false Map:false */
+
+/**
+ * NOTE: When adding a new polyfill, please include a description of what the
+ * polyfill is for, the source and any copyright info, along with the browsers
+ * it is needed for.
+ */
 
 
 (function () {
@@ -2120,7 +2132,7 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
           do { // eslint-disable-line no-cond-assign
             i = matches.length;
             while (--i >= 0 && matches.item(i) !== el) {} // eslint-disable-line no-plusplus, no-empty
-          } while ((i < 0) && (el = el.parentElement));
+          } while ((i < 0) && (el = el.parentElement)); // eslint-disable-line no-cond-assign
           return el;
         };
   }
@@ -2210,6 +2222,271 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern) {
       nativePrototype.addEventListener = polyfill(nativePrototype.addEventListener);
       nativePrototype.removeEventListener = polyfill(nativePrototype.removeEventListener);
     }
+  }
+}());
+
+(function () {
+  /**
+   * @license
+   * Code taken from
+   * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/queueMicrotask
+   * under "When queueMicrotask() isn't available".
+   * @ignore
+   */
+  if (typeof window !== 'undefined' && typeof window.queueMicrotask !== 'function') {
+    // check for window being undefined for WebWorker cases
+    window.queueMicrotask = function (callback) {
+      Promise.resolve()
+        .then(callback)
+        .catch(function (e) {
+          setTimeout(function () { throw e; });
+        });
+    };
+  }
+}());
+
+/* The custom element (webcomponents) support requires the native CustomEvent
+ * object.  This polyfill provides CustomEvent implementation for browsers that
+ * don't support it yet.
+ */
+(function () {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  // defaultPrevented is broken in IE.
+  // https://connect.microsoft.com/IE/feedback/details/790389/event-defaultprevented-returns-false-after-preventdefault-was-called
+  var workingDefaultPrevented = (function () {
+    var e = document.createEvent('Event');
+    e.initEvent('foo', true, true);
+    e.preventDefault();
+    return e.defaultPrevented;
+  }());
+
+  if (!workingDefaultPrevented) {
+    var origPreventDefault = Event.prototype.preventDefault;
+    Event.prototype.preventDefault = function () {
+      if (!this.cancelable) {
+        return;
+      }
+
+      origPreventDefault.call(this);
+
+      Object.defineProperty(this, 'defaultPrevented', {
+        get: function () {
+          return true;
+        },
+        configurable: true
+      });
+    };
+  }
+
+  if (typeof window.CustomEvent === 'function') {
+    return;
+  }
+
+  function CustomEvent(event, params) {
+    // eslint-disable-next-line no-param-reassign
+    params = params || { bubbles: false, cancelable: false, detail: undefined };
+
+    var evt = document.createEvent('CustomEvent');
+
+    evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+    return evt;
+  }
+
+  CustomEvent.prototype = Object.getPrototypeOf(new CustomEvent('bogusEvent'));
+
+  window.CustomEvent = CustomEvent;
+}());
+
+/**
+ * Polyfill FocusEvent constructor for IE.
+ */
+(function () {
+  if (typeof window === 'undefined' || typeof window.FocusEvent === 'function') {
+    return;
+  }
+
+  // Note that since we can only use initEvent, we don't have a way to
+  // polyfill the optional param to specify a relatedTarget for the FocusEvent.
+  function FocusEvent(type) {
+    var evt = document.createEvent('FocusEvent');
+    evt.initEvent(type, false, false);
+    return evt;
+  }
+
+  FocusEvent.prototype = Object.getPrototypeOf(new FocusEvent('focus'));
+  window.FocusEvent = FocusEvent;
+}());
+
+/* This polyfill implements a proposed Microsoft standard [1] for effective yielding.
+ * With the setImmediate global function, developers can yield control flow to the
+ * user agent before running script.  The yield is similar to the setTimeout function
+ * in that it is evaluated in the macrotask queue.  However, the setTimeout often has
+ * a minimum delay and is also subject to long delays when the browser is placed in the
+ * background.  The setImmediate function implemented by this polyfill invokes the
+ * callback in the "next-tick" after the current macrotask queue has been exhausted.
+ *
+ * [1] https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/setImmediate/Overview.html
+ *
+ * The strategy for the polyfill implementation uses the window.postMessage API for
+ * creating a context for calling the target function evaulated as a macrotask. This
+ * plugin will not work in a webworker where the window object doesn't exist.
+ */
+(function () {
+  if (typeof window === 'undefined' || window.setImmediate || !window.postMessage) {
+    return;
+  }
+
+  var _setImmediateMap;
+
+  var _setImmediateCounter;
+  function _nextId() {
+    if (isNaN(_setImmediateCounter)) {
+      _setImmediateCounter = 0;
+    }
+
+    _setImmediateCounter += 1;
+    return _setImmediateCounter;
+  }
+
+  // postMessage "message" event listener for the setImmediate impl
+  function _nextTickHandler(event) {
+    var data = event.data;
+    if (!data || data.message !== 'oj-setImmediate') {
+      return;
+    }
+
+    var id = data.id;
+    var entry = _setImmediateMap.get(id);
+    clearImmediateImpl(id);
+
+    if (entry) {
+      var callback = entry.callback;
+      var args = entry.args;
+      callback.apply(window, args);
+    }
+  }
+
+  function setImmediateImpl() {
+    var callback = arguments[0];
+    var slice = Array.prototype.slice;
+    var args = slice.call(arguments, 1);
+
+    oj.Assert.assertFunction(callback);
+
+    var id = _nextId();
+
+    if (!_setImmediateMap) {
+      _setImmediateMap = new Map();
+    }
+
+    _setImmediateMap.set(id, { callback: callback, args: args });
+
+    if (_setImmediateMap.size === 1) {
+      window.addEventListener('message', _nextTickHandler);
+    }
+
+    window.postMessage({ id: id, message: 'oj-setImmediate' }, '*');
+    return id;
+  }
+
+  function clearImmediateImpl(id) {
+    if (!_setImmediateMap) {
+      return;
+    }
+
+    _setImmediateMap.delete(id);
+
+    if (_setImmediateMap.size < 1) {
+      window.removeEventListener('message', _nextTickHandler);
+      _setImmediateMap = null;
+    }
+  }
+
+  window.setImmediate = setImmediateImpl;
+  window.clearImmediate = clearImmediateImpl;
+}());
+
+(function () {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  if (window.Symbol) {
+    if (!window.Symbol.asyncIterator) {
+      window.Symbol.asyncIterator = 'asyncIterator';
+    }
+
+    if (!window.Symbol.iterator) {
+      window.Symbol.iterator = 'iterator';
+    }
+  } else {
+    window.Symbol = {};
+    window.Symbol.asyncIterator = 'asyncIterator';
+    window.Symbol.iterator = 'iterator';
+  }
+}());
+
+(function () {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  if (new window.Set([0]).size === 0) {
+    var NativeSet = window.Set;
+    // eslint-disable-next-line no-inner-declarations
+    function Set(iterable) {
+      var set = new NativeSet();
+      if (iterable) {
+        iterable.forEach(set.add, set);
+      }
+      return set;
+    }
+    Set.prototype = NativeSet.prototype;
+    // eslint-disable-next-line no-extend-native
+    Set.prototype.constructor = Set;
+    window.Set = Set;
+  }
+}());
+
+(function () {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  // IE11 supports Array.forEach
+  if (window.NodeList && !NodeList.prototype.forEach) {
+    NodeList.prototype.forEach = Array.prototype.forEach;
+  }
+
+  if (window.DOMTokenList && !DOMTokenList.prototype.forEach) {
+    DOMTokenList.prototype.forEach = Array.prototype.forEach;
+  }
+}());
+
+/**
+ * Node.isConnected polyfill for IE and EdgeHTML
+ * 2020-02-04
+ * By Eli Grey, https://eligrey.com
+ * Public domain.
+ * From: https://developer.mozilla.org/en-US/docs/Web/API/Node/isConnected
+ */
+(function () {
+  if (typeof window === 'undefined' || window.Node === 'undefined') {
+    return;
+  }
+
+  if (!('isConnected' in Node.prototype)) {
+    Object.defineProperty(Node.prototype, 'isConnected', {
+      get() {
+        return (
+          !this.ownerDocument ||
+          // eslint-disable-next-line no-bitwise
+          !(this.ownerDocument.compareDocumentPosition(this) & this.DOCUMENT_POSITION_DISCONNECTED)
+        );
+      },
+    });
   }
 }());
 
@@ -2377,219 +2654,6 @@ oj.KeyUtils.equals = function (key1, key2) {
   // ex: generate hash with key and compare hash value instead
   return oj.Object.compareValues(key1, key2);
 };
-
-
-/* global Map:false */
-
-/* The custom element (webcomponents) support requires the native CustomEvent
- * object.  This polyfill provides CustomEvent implementation for browsers that
- * don't support it yet.
- */
-(function () {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  // defaultPrevented is broken in IE.
-  // https://connect.microsoft.com/IE/feedback/details/790389/event-defaultprevented-returns-false-after-preventdefault-was-called
-  var workingDefaultPrevented = (function () {
-    var e = document.createEvent('Event');
-    e.initEvent('foo', true, true);
-    e.preventDefault();
-    return e.defaultPrevented;
-  }());
-
-  if (!workingDefaultPrevented) {
-    var origPreventDefault = Event.prototype.preventDefault;
-    Event.prototype.preventDefault = function () {
-      if (!this.cancelable) {
-        return;
-      }
-
-      origPreventDefault.call(this);
-
-      Object.defineProperty(this, 'defaultPrevented', {
-        get: function () {
-          return true;
-        },
-        configurable: true
-      });
-    };
-  }
-
-  if (typeof window.CustomEvent === 'function') {
-    return;
-  }
-
-  function CustomEvent(event, params) {
-    // eslint-disable-next-line no-param-reassign
-    params = params || { bubbles: false, cancelable: false, detail: undefined };
-
-    var evt = document.createEvent('CustomEvent');
-
-    evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
-    return evt;
-  }
-
-  CustomEvent.prototype = Object.getPrototypeOf(new CustomEvent('bogusEvent'));
-
-  window.CustomEvent = CustomEvent;
-}());
-
-/* This polyfill implements a proposed Microsoft standard [1] for effective yielding.
- * With the setImmediate global function, developers can yield control flow to the
- * user agent before running script.  The yield is similar to the setTimeout function
- * in that it is evaluated in the macrotask queue.  However, the setTimeout often has
- * a minimum delay and is also subject to long delays when the browser is placed in the
- * background.  The setImmediate function implemented by this polyfill invokes the
- * callback in the "next-tick" after the current macrotask queue has been exhausted.
- *
- * [1] https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/setImmediate/Overview.html
- *
- * The strategy for the polyfill implementation uses the window.postMessage API for
- * creating a context for calling the target function evaulated as a macrotask. This
- * plugin will not work in a webworker where the window object doesn't exist.
- */
-(function () {
-  if (typeof window === 'undefined' || window.setImmediate || !window.postMessage) {
-    return;
-  }
-
-  var _setImmediateMap;
-
-  var _setImmediateCounter;
-  function _nextId() {
-    if (isNaN(_setImmediateCounter)) {
-      _setImmediateCounter = 0;
-    }
-
-    _setImmediateCounter += 1;
-    return _setImmediateCounter;
-  }
-
-  // postMessage "message" event listener for the setImmediate impl
-  function _nextTickHandler(event) {
-    var data = event.data;
-    if (!data || data.message !== 'oj-setImmediate') {
-      return;
-    }
-
-    var id = data.id;
-    var entry = _setImmediateMap.get(id);
-    clearImmediateImpl(id);
-
-    if (entry) {
-      var callback = entry.callback;
-      var args = entry.args;
-      callback.apply(window, args);
-    }
-  }
-
-  function setImmediateImpl() {
-    var callback = arguments[0];
-    var slice = Array.prototype.slice;
-    var args = slice.call(arguments, 1);
-
-    oj.Assert.assertFunction(callback);
-
-    var id = _nextId();
-
-    if (!_setImmediateMap) {
-      _setImmediateMap = new Map();
-    }
-
-    _setImmediateMap.set(id, { callback: callback, args: args });
-
-    if (_setImmediateMap.size === 1) {
-      window.addEventListener('message', _nextTickHandler);
-    }
-
-    window.postMessage({ id: id, message: 'oj-setImmediate' }, '*');
-    return id;
-  }
-
-  function clearImmediateImpl(id) {
-    if (!_setImmediateMap) {
-      return;
-    }
-
-    _setImmediateMap.delete(id);
-
-    if (_setImmediateMap.size < 1) {
-      window.removeEventListener('message', _nextTickHandler);
-      _setImmediateMap = null;
-    }
-  }
-
-  window.setImmediate = setImmediateImpl;
-  window.clearImmediate = clearImmediateImpl;
-}());
-
-(function () {
-  if (typeof window === 'undefined' || window.__extends) {
-    return;
-  }
-
-  var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf; // || // Now available everywhere including IE11
-        // ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        // function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-      extendStatics(d, b);
-      /**
-       * @constructor
-       */
-      function __() {
-        this.constructor = d;
-      }
-      // eslint-disable-next-line no-param-reassign
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-  }());
-
-  window.__extends = __extends;
-}());
-
-(function () {
-  if (typeof window === 'undefined') {
-    return;
-  }
-  if (window.Symbol) {
-    if (!window.Symbol.asyncIterator) {
-      window.Symbol.asyncIterator = 'asyncIterator';
-    }
-
-    if (!window.Symbol.iterator) {
-      window.Symbol.iterator = 'iterator';
-    }
-  } else {
-    window.Symbol = {};
-    window.Symbol.asyncIterator = 'asyncIterator';
-    window.Symbol.iterator = 'iterator';
-  }
-}());
-
-(function () {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  if (new window.Set([0]).size === 0) {
-    var NativeSet = window.Set;
-    // eslint-disable-next-line no-inner-declarations
-    function Set(iterable) {
-      var set = new NativeSet();
-      if (iterable) {
-        iterable.forEach(set.add, set);
-      }
-      return set;
-    }
-    Set.prototype = NativeSet.prototype;
-    // eslint-disable-next-line no-extend-native
-    Set.prototype.constructor = Set;
-    window.Set = Set;
-  }
-}());
 
 
 

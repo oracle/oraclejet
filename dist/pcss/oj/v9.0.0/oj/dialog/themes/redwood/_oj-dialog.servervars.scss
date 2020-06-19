@@ -1,0 +1,14 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+
+// DIALOG
+//-----------------------------------------------------------------------------
+// animation theme defaults
+$dialogOpenAnimation: ((effect: "zoomIn"), "fadeIn") !default;
+$dialogCloseAnimation: ((effect: "zoomOut"), "fadeOut") !default;
+// ojDialog resizeBehavior, cancelBehavior, and dragAffordance options
+// default to the programmatic settings.
+$dialogResizeBehaviorOptionDefault: none !default;
+$dialogCancelBehaviorOptionDefault: none !default;
+$dialogDragAffordanceOptionDefault: none !default;

@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
 import { DataProvider } from '../ojdataprovider';
 import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettableProperties } from '../ojdvt-base';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
@@ -45,6 +53,7 @@ export interface ojNBox<K, D extends ojNBox.Node<K> | any> extends dvtBaseCompon
             borderWidth: number;
             color: string;
             iconDefaults: {
+                background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'mauve' | 'purple';
                 borderColor: string;
                 borderRadius: string;
                 borderWidth: number;
@@ -242,6 +251,8 @@ export namespace ojNBox {
                'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
             shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
             source?: string;
+            initials?: string;
+            background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'mauve' | 'purple';
             svgClassName?: string;
             svgStyle?: CSSStyleDeclaration;
             width?: number;
@@ -376,6 +387,7 @@ export interface ojNBoxSettableProperties<K, D extends ojNBox.Node<K> | any> ext
             borderWidth: number;
             color: string;
             iconDefaults: {
+                background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'mauve' | 'purple';
                 borderColor: string;
                 borderRadius: string;
                 borderWidth: number;
@@ -452,11 +464,13 @@ export interface ojNBoxNode extends JetElement<ojNBoxNodeSettableProperties> {
     column: string;
     groupCategory?: string;
     icon?: {
+        background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'mauve' | 'purple';
         borderColor?: string;
         borderRadius?: string;
         borderWidth: number;
         color?: string;
         height?: number | null;
+        initials: string;
         opacity: number;
         pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' |
            'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
@@ -561,11 +575,13 @@ export interface ojNBoxNodeSettableProperties extends JetSettableProperties {
     column: string;
     groupCategory?: string;
     icon?: {
+        background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'mauve' | 'purple';
         borderColor?: string;
         borderRadius?: string;
         borderWidth: number;
         color?: string;
         height?: number | null;
+        initials: string;
         opacity: number;
         pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' |
            'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';

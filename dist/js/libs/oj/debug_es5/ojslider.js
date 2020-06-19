@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -14,6 +15,177 @@ function(oj, $)
 {
 "use strict";
 //%COMPONENT_METADATA%
+var __oj_range_slider_metadata = 
+{
+  "properties": {
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "labelEdge": {
+      "type": "string",
+      "enumValues": [
+        "inside",
+        "none",
+        "provided"
+      ]
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "labelledBy": {
+      "type": "string"
+    },
+    "max": {
+      "type": "number"
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "min": {
+      "type": "number"
+    },
+    "orientation": {
+      "type": "string",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ],
+      "value": "horizontal"
+    },
+    "step": {
+      "type": "number",
+      "value": 1
+    },
+    "transientValue": {
+      "type": "object",
+      "writeback": true,
+      "readOnly": true,
+      "properties": {
+        "end": {
+          "type": "number"
+        },
+        "start": {
+          "type": "number"
+        }
+      }
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "startEnd": {
+          "type": "string"
+        }
+      }
+    },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "value": {
+      "type": "object",
+      "writeback": true,
+      "properties": {
+        "end": {
+          "type": "number"
+        },
+        "start": {
+          "type": "number"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
 var __oj_slider_metadata = 
 {
   "properties": {
@@ -48,10 +220,6 @@ var __oj_slider_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -153,6 +321,15 @@ var __oj_slider_metadata =
       ],
       "value": "fromMin"
     },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
+    },
     "valid": {
       "type": "string",
       "writeback": true,
@@ -200,6 +377,149 @@ var __oj_slider_metadata =
    *
    * Depends:
    *  jquery.ui.widget.js
+   */
+
+  /**
+   * @ojcomponent oj.ojRangeSlider
+   * @ojdisplayname Range Slider
+   * @augments oj.editableValue
+   * @ojimportmembers oj.ojDisplayOptions
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojRangeSlider extends editableValue<Object|null, ojRangeSliderSettableProperties>"
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojRangeSliderSettableProperties extends editableValueSettableProperties<Object|null>",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
+   * @ojrole rangeslider
+   * @since 8.2.0
+   * @ojshortdesc A range-slider allows a user to set a value range by moving the indicators.
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "type", "orientation", "min", "max", "step", "disabled"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+   * @ojvbdefaultcolumns 3
+   * @ojvbmincolumns 3
+   *
+   * @ojuxspecs ['slider']
+   *
+   * @classdesc
+   * <h3 id="sliderOverview-section">
+   *   JET Range Slider Component
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#sliderOverview-section"></a>
+   * </h3>
+   * <p>Description: The oj-range-slider component enhances an HTML
+   * <code class="prettyprint">input</code> element into an interactive range-slider.
+   * </p>
+   * The numerical <code class="prettyprint">value</code> attribute determines the
+   * current value of the range-slider, and thus affects the position of the range-slider thumb.
+   * The value should be between the <code class="prettyprint">min</code> and
+   * <code class="prettyprint">max</code> attribute values.
+   * </p>
+   * The <code class="prettyprint">step</code> attribute of the range-slider specifies the
+   * interval between thumb stops. For example,
+   * if <code class="prettyprint">min</code>  is set to 0 and
+   * <code class="prettyprint">max</code>
+   * is set to 10, a <code class="prettyprint">step</code> value of 2 would allow the thumb
+   * to be positioned at 0, 2, 4, 6, 8, and 10.
+   * </p>
+   * The <code class="prettyprint">orientation</code> attribute defaults to
+   * <code class="prettyprint">"horizontal"</code>.
+   * Set <code class="prettyprint">orientation</code> to
+   * <code class="prettyprint">"vertical"</code> for a vertical range-slider (one where the thumb
+   * travels along the vertical axis).
+   * </p>
+   * The <code class="prettyprint">type</code> attribute is used to effect the rendered
+   * style of the range-slider.
+   * The <code class="prettyprint">type</code> attribute defaults to
+   * <code class="prettyprint">"fromMin"</code>, which will style the value bar from the minimum
+   * value to the range-slider thumb.
+   * The <code class="prettyprint">type</code> attribute to either "single" or "fromMax" -
+   * this will alter the rendered style of the range-slider's bar value.
+   * </p>
+   * Set the <code class="prettyprint">disabled</code> attribute
+   * <code class="prettyprint">true</code> to display a range-slider that displays a value but does
+   * not allow interaction.
+   * </p>
+   * Use <code class="prettyprint">style </code> attributes on the
+   * <code class="prettyprint">oj-range-slider </code> element to set a horizontal range-slider's
+   * width or a vertical range-slider's height.
+   * </p>
+   * Use the <code class="prettyprint">transient-value</code> attribute to access
+   * range-slider value changes during range-slider thumb repositioning.
+   * </p>
+   * Note that the <code class="prettyprint">range</code> value for the
+   * <code class="prettyprint">type</code> attribute
+   * is not part of the initial (4.0) release of the custom element range-slider.
+   * </p>
+   * <h3 id="touch-section">
+   *   Touch End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"touchDoc"}
+   *
+   * <h3 id="keyboard-section">
+   *   Keyboard End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"keyboardDoc"}
+   *
+   * <h3 id="accessibility-section">
+   *   Accessibility
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+   * </h3>
+   * <p>
+   * The range-slider component is accessible - it sets and maintains the appropriate aria- attributes,
+   * including <code class="prettyprint">aria-valuenow</code>,
+   * <code class="prettyprint">aria-valuemax</code>,
+   * <code class="prettyprint">aria-valuemin</code>
+   * and <code class="prettyprint">aria-orientation</code>.
+   * <h3 id="label-section">
+   *   Label and Range Slider
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
+   * </h3>
+   * <p>
+   * It is up to the application developer to associate the oj-label to the oj-range-slider element.
+   * For accessibility, you should associate a oj-label element with the oj-range-slider element
+   * by putting an <code class="prettyprint">id</code> on the oj-range-slider element, and then setting the
+   * <code class="prettyprint">for</code> attribute on the oj-label to be the range-slider element's id.
+   * </p>
+   * </p>
+   * In addition, the range-slider thumb element can be accessed programmatically.
+   * This approach may be necessary to ensure accessibility conformance.
+   * For example, if the range-slider controls another element that is in a remote area of the page,
+   * then the <code class="prettyprint">aria-controls</code> attribute for the range-slider thumb
+   * should be set.
+   *
+   * <p>
+   * Consider an example where you may need to set additional attributes for accessibility reasons.
+   * Suppose there is another component that is in a remote area of the page
+   * that controlled by the range-slider.
+   * Assume that the <code class="prettyprint">id</code> of the remote element is
+   * "idOfRemoteElement".
+   * Below we show how to access the thumb element in order to set the
+   * <code class="prettyprint">aria-controls</code> attribute of the thumb to point to the
+   * id ("idOfRemoteElement") of the remote html element:
+   *
+   * <pre class="prettyprint">
+   * <code>
+   *     var thumb0 = myComponent.querySelectorAll('.oj-range-slider-thumb')[0];
+   *     thumb0.setAttribute(aria-controls, "idOfRemoteElement");
+   * </code></pre>
+   * {@ojinclude "name":"accessibilityDisabledEditableValue"}
+   *
+   * @example <caption>Declare the oj-slider component with no attributes specified:</caption>
+   * &lt;oj-range-slider>&lt;/oj-range-slider>
+   *
+   * @example <caption>Initialize the range-slider with a few attributes:</caption>
+   * &lt;oj-range-slider value=10 max=100 min=0 step=2>&lt;/oj-range-slider>
+   *
+   * @example <caption>Initialize a component attribute via component binding:</caption>
+   * &lt;oj-range-slider value="{{currentValue}}">&lt;/oj-range-slider>
    */
 
   /**
@@ -328,19 +648,12 @@ var __oj_slider_metadata =
    * id ("idOfRemoteElement") of the remote html element:
    *
    * <pre class="prettyprint">
+   *
    * <code>
    *     var thumb0 = myComponent.querySelectorAll('.oj-slider-thumb')[0];
    *     thumb0.setAttribute(aria-controls, "idOfRemoteElement");
    * </code></pre>
    * {@ojinclude "name":"accessibilityDisabledEditableValue"}
-   *
-   * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
-   *
-   * <h3 id="styling-section">
-   *   Styling
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
-   * </h3>
-   * {@ojinclude "name":"stylingDoc"}
    *
    * @example <caption>Declare the oj-slider component with no attributes specified:</caption>
    * &lt;oj-slider>&lt;/oj-slider>
@@ -351,6 +664,95 @@ var __oj_slider_metadata =
    * @example <caption>Initialize a component attribute via component binding:</caption>
    * &lt;oj-slider value="{{currentValue}}">&lt;/oj-slider>
    */
+  // --------------------------------------------------- oj.ojSlider Styling Start -----------------------------------------------------------
+  // ---------------- oj-focus-highlight --------------
+
+  /**
+  * Under normal circumstances this class is applied automatically.
+  * It is documented here for the rare cases that an app developer needs per-instance control.<br/><br/>
+  * The oj-focus-highlight class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.<br/><br/>
+  * The application-level behavior for this component is controlled in the theme by the <code class="prettyprint"><span class="pln">$focusHighlightPolicy </span></code>SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:<br/><br/>
+  * <code class="prettyprint"><span class="pln">nonPointer: </span></code>oj-focus-highlight is applied only when focus is not the result of pointer interaction. Most themes default to this value.<br/>
+  * <code class="prettyprint"><span class="pln">all: </span></code> oj-focus-highlight is applied regardless of the focus mechanism.<br/>
+  * <code class="prettyprint"><span class="pln">none: </span></code> oj-focus-highlight is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.<br/><br/>
+  * To change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed.<br/>
+  * @ojstyleclass oj-focus-highlight
+  * @ojdisplayname Focus Styling
+  * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
+  * @memberof oj.ojSlider
+  * @ojtsexample
+  * &lt;oj-slider class="oj-focus-highlight">
+  *   &lt;!-- Content -->
+  * &lt;/oj-slider>
+  */
+  // ---------------- oj-form-control-full-width --------------
+
+  /**
+  * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
+  * @ojstyleclass oj-form-control-full-width
+  * @ojdisplayname Full Width
+  * @memberof oj.ojSlider
+  * @ojtsexample
+  * &lt;oj-slider class="oj-form-control-full-width">
+  * &lt;/oj-slider>
+  */
+  // ---------------- oj-form-control max-width --------------
+
+  /**
+  * In the Redwood theme the default max width of a text field is 100%.
+  * These max width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-max-width
+  * @ojdisplayname Max Width
+  * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojSlider
+  * @ojtsexample
+  * &lt;oj-slider class="oj-form-control-max-width-md">&lt;/oj-slider>
+  */
+
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+  * @ojshortdesc Sets the max width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojSlider
+   */
+
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+  * @ojshortdesc Sets the max width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojSlider
+   */
+  // ---------------- oj-form-control width --------------
+
+  /**
+  * In the Redwood theme the default width of a text field is 100%.
+  * These width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-width
+  * @ojdisplayname Width
+  * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojSlider
+  * @ojtsexample
+  * &lt;oj-slider class="oj-form-control-width-md">&lt;/oj-slider>
+  */
+
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-sm
+  * @ojshortdesc Sets the width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojSlider
+   */
+
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-md
+  * @ojshortdesc Sets the width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojSlider
+   */
+  // --------------------------------------------------- oj.ojSlider Styling end -----------------------------------------------------------
   oj.__registerWidget('oj.ojSlider', $.oj.editableValue, {
     defaultElement: '<input>',
     version: '1.0.1',
@@ -386,6 +788,7 @@ var __oj_slider_metadata =
        * myComp.labelledBy = "labelId";
        *
        * @expose
+       * @name labelledBy
        * @ojshortdesc The oj-label sets the labelledBy property
        * programmatically on the form component.
        * @type {string|null}
@@ -395,6 +798,47 @@ var __oj_slider_metadata =
        * @since 7.0.0
        * @memberof oj.ojSlider
        */
+
+      /**
+       * <p>
+       * The oj-label sets the labelledBy property programmatically on the form component
+       * to make it easy for the form component to find its oj-label component (a
+       * document.getElementById call.)
+       * </p>
+       * <p>
+       * The application developer should use the 'for'/'id api
+       * to link the oj-label with the form component;
+       * the 'for' on the oj-label to point to the 'id' on the input form component.
+       * This is the most performant way for the oj-label to find its form component.
+       * </p>
+       *
+       * @example <caption>Initialize component with <code class="prettyprint">for</code> attribute:</caption>
+       * &lt;oj-label for="rangeSliderId">Name:&lt;/oj-label>
+       * &lt;oj-range-slider id="rangeSliderId">
+       * &lt;/oj-range-slider>
+       * // ojLabel then writes the labelled-by attribute on the oj-range-slider.
+       * &lt;oj-label id="labelId" for="rangeSliderId">Name:&lt;/oj-label>
+       * &lt;oj-range-slider id="rangeSliderId" labelled-by"labelId">
+       * &lt;/oj-range-slider>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
+       * // getter
+       * var labelledBy = myComp.labelledBy;
+       *
+       * // setter
+       * myComp.labelledBy = "labelId";
+       *
+       * @expose
+       * @name labelledBy
+       * @ojshortdesc The oj-label sets the labelledBy property
+       * programmatically on the form component.
+       * @type {string|null}
+       * @default null
+       * @public
+       * @instance
+       * @since 8.2.0
+       * @memberof oj.ojRangeSlider
+       */
       labelledBy: null,
 
       /**
@@ -403,6 +847,7 @@ var __oj_slider_metadata =
        * <code class="prettyprint">min</code>, or else an Error is thrown during
        * initialization.
        * @expose
+       * @name max
        * @memberof oj.ojSlider
        * @ojshortdesc The maximum value of the slider. See the Help documentation for more information.
        * @instance
@@ -419,6 +864,29 @@ var __oj_slider_metadata =
        * // Setter
        * myComponent.max = 100;
        */
+
+      /**
+       * The maximum value of the range slider.
+       * The <code class="prettyprint">max</code> must not be less than the
+       * <code class="prettyprint">min</code>, or else an Error is thrown during
+       * initialization.
+       * @expose
+       * @memberof oj.ojRangeSlider
+       * @ojshortdesc The maximum value of the range slider. See the Help documentation for more information.
+       * @instance
+       * @type {?number}
+       * @default null
+       * @since 8.2.0
+       * @example <caption>Initialize the range slider with the
+       * <code class="prettyprint">max</code> attribute:</caption>
+       * &lt;oj-range-slider max=100>&lt;/oj-range-slider>
+       * @example <caption>Get or set the <code class="prettyprint">max</code> property after initialization:</caption>
+       * // Getter
+       * var max = myComponent.max;
+       *
+       * // Setter
+       * myComponent.max = 100;
+       */
       max: 100,
 
       /**
@@ -427,6 +895,7 @@ var __oj_slider_metadata =
        * <code class="prettyprint">max</code>, or else an Error is thrown during
        * initialization.
        * @expose
+       * @name min
        * @memberof oj.ojSlider
        * @ojshortdesc The minimum value of the slider. See the Help documentation for more information.
        * @instance
@@ -444,13 +913,38 @@ var __oj_slider_metadata =
        * myComponent.min = 0;
        *
        */
+
+      /**
+       * The minimum value of the range slider.
+       * The <code class="prettyprint">min</code> must not be greater than the
+       * <code class="prettyprint">max</code>, or else an Error is thrown during
+       * initialization.
+       * @expose
+       * @memberof oj.ojRangeSlider
+       * @ojshortdesc The minimum value of the range slider. See the Help documentation for more information.
+       * @instance
+       * @type {?number}
+       * @default null
+       * @since 8.2.0
+       * @example <caption>Initialize the range slider with the
+       * <code class="prettyprint">min</code> attribute:</caption>
+       * &lt;oj-range-slider min=0>&lt;/oj-range-slider>
+       * @example <caption>Get or set the <code class="prettyprint">min</code> property after initialization:</caption>
+       * // Getter
+       * var min = myComponent.min;
+       *
+       * // Setter
+       * myComponent.min = 0;
+       *
+       */
       min: 0,
 
       /**
        * Specify the orientation of the slider.
        *
        * @expose
-       * @memberof! oj.ojSlider
+       * @name orientation
+       * @memberof oj.ojSlider
        * @ojshortdesc Specifies the orientation of the slider.
        * @instance
        * @type {string}
@@ -472,6 +966,34 @@ var __oj_slider_metadata =
        * myComponent.orientation = "vertical";
        *
        */
+
+      /**
+       * Specify the orientation of the range slider.
+       *
+       * @expose
+       * @name orientation
+       * @memberof oj.ojRangeSlider
+       * @ojshortdesc Specifies the orientation of the range slider.
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "horizontal" Orient the range slider horizontally.
+       * @ojvalue {string} "vertical" Orient the range slider vertically.
+       * @default "horizontal"
+       * @since 8.2.0
+       *
+       * @example <caption>Initialize the range slider with the
+       * <code class="prettyprint">orientation</code> attribute:</caption>
+        * &lt;oj-range-slider orientation="vertical">&lt;/oj-range-slider>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">orientation</code>
+       * property after initialization:</caption>
+       * // Getter
+       * var orientation = myComponent.orientation;
+       *
+       * // Setter
+       * myComponent.orientation = "vertical";
+       *
+       */
       orientation: 'horizontal',
 
       /**
@@ -482,7 +1004,12 @@ var __oj_slider_metadata =
        * attribute is used as its initial value if it exists, when the attribute is not explicitly
        * set. When neither is set, <code class="prettyprint">readOnly </code>
        * defaults to false.
-       *
+       * <p>
+       * The oj-form-layout provides its readonly attribute value and the form components
+       * consume it if it is not already set explicitly.
+       * For example, if oj-form-layout is set to readonly='true',
+       * all the form components it contains will be readonly='true' by default.
+       * </p>
        * @example <caption>Initialize component with <code class="prettyprint">readOnly</code>
        * attribute:</caption>
         * &lt;oj-slider readOnly="true">&lt;/oj-slider>
@@ -499,6 +1026,33 @@ var __oj_slider_metadata =
        * @default false
        * @instance
        * @memberof oj.ojSlider
+       */
+
+      /**
+       * readOnly is private - more UX design is necessary to support readonly across
+       * components.
+       * Whether the component is readOnly. The element's
+       * <code class="prettyprint">readOnly</code>
+       * attribute is used as its initial value if it exists, when the attribute is not explicitly
+       * set. When neither is set, <code class="prettyprint">readOnly </code>
+       * defaults to false.
+       *
+       * @example <caption>Initialize component with <code class="prettyprint">readOnly</code>
+       * attribute:</caption>
+        * &lt;oj-range-slider readOnly="true">&lt;/oj-range-slider>
+       * @example <caption>Get or set the <code class="prettyprint">readOnly</code> property after initialization:</caption>
+       * // Getter
+       * var readOnly = myComponent.readOnly;
+       *
+       * // Setter
+       * myComponent.readOnly = true;
+       *
+       *
+       * @private
+       * @type {?boolean}
+       * @default false
+       * @instance
+       * @memberof oj.ojRangeSlider
        */
       readOnly: false,
 
@@ -527,6 +1081,32 @@ var __oj_slider_metadata =
        * @instance
        * @memberof oj.ojSlider
        */
+
+      /**
+       * Whether the component is disabled. The
+       * <code class="prettyprint">disabled</code> attribute is used as its initial
+       * value if it exists, when the attribute is not explicitly set. When neither is set,
+       * <code class="prettyprint">disabled </code>
+       * defaults to false.
+       *
+       * @example <caption>Initialize the slider with
+       * <code class="prettyprint">disabled</code> attribute:</caption>
+        * &lt;oj-range-slider disabled="true">&lt;/oj-range-slider>
+       * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
+       * // Getter
+       * var disabled = myComponent.disabled;
+       *
+       * // Setter
+       * myComponent.disabled = true;
+       *
+       * @ojshortdesc Specifies whether the component is disabled. The default is false.
+       * @expose
+       * @type {boolean}
+       * @default false
+       * @since 8.2.0
+       * @instance
+       * @memberof oj.ojRangeSlider
+       */
       disabled: false,
 
       /**
@@ -535,6 +1115,7 @@ var __oj_slider_metadata =
        * The full specified value of the range (max - min) should be divisible by step.
        *
        * @expose
+       * @name step
        * @instance
        * @type {?number}
        * @default 1
@@ -553,12 +1134,38 @@ var __oj_slider_metadata =
        * myComponent.step = 10;
        *
        **/
+
+      /**
+       * Determines the size or amount of each interval or step the range slider takes
+       * between min and max.
+       * The full specified value of the range (max - min) should be divisible by step.
+       *
+       * @expose
+       * @instance
+       * @type {?number}
+       * @default 1
+       * @since 8.2.0
+       * @memberof oj.ojRangeSlider
+       * @ojshortdesc Specifies the amount to increase or decrease the value when moving in step increments. See the Help documentation for more information.
+       *
+       * @example <caption>Initialize the range slider with the
+       * <code class="prettyprint">step</code> attribute:</caption>
+       * &lt;oj-range-slider step=10>&lt;/oj-range-slider>
+       * @example <caption>Get or set the <code class="prettyprint">step</code> property after initialization:</caption>
+       * // Getter
+       * var step = myComponent.step;
+       *
+       * // Setter
+       * myComponent.step = 10;
+       *
+       **/
       step: 1,
 
       /**
        * The slider type determines how the value is represented in the UI.
        *
        * @expose
+       * @name type
        * @type {?string}
        * @ojvalue {string} "fromMin" A single-thumb slider where the value bar goes from
        * the slider min to the slider thumb.
@@ -569,6 +1176,7 @@ var __oj_slider_metadata =
        * @default "fromMin"
        * @since 0.7.0
        * @instance
+       * @member
        * @memberof oj.ojSlider
        * @ojshortdesc The slider type specifies how the slider value is represented.
        *
@@ -603,6 +1211,8 @@ var __oj_slider_metadata =
        * // Setter
        * myComponent.value = 10;
        *
+       * @member
+       * @name value
        * @ojshortdesc The numerical value of the slider.
        * @expose
        * @access public
@@ -615,6 +1225,65 @@ var __oj_slider_metadata =
        * @ojshortdesc The numerical value of the slider.
        * @type {?number}
        */
+
+      /**
+       * The numerical range value of the range-slider.
+       *
+       * @example <caption>Initialize the range-slider with the
+       * <code class="prettyprint">value</code> attribute:</caption>
+        * &lt;oj-range-slider value={start:10, end:40} >&lt;/oj-range-slider>
+       * @example <caption>Get or set <code class="prettyprint">value</code> property
+       * after initialization:</caption>
+       * // Getter
+       * var value = myComponent.value;
+       *
+       * // Setter
+       * myComponent.value = {start:10, end: 40};
+       *
+       * @member
+       * @name value
+       * @ojshortdesc The numerical range value of the range-slider.
+       * @expose
+       * @access public
+       * @instance
+       * @default null
+       * @since 8.2.0
+       * @ojwriteback
+       * @ojeventgroup common
+       * @memberof oj.ojRangeSlider
+       * @ojshortdesc The numerical value of the range-slider.
+       * @type {Object|null}
+       */
+      // value: {
+
+      /**
+       * Start value of the range selected.
+       *
+       * @expose
+       * @name value.start
+       * @ojshortdesc Specifies the start value of the range selected.
+       * @memberof! oj.ojRangeSlider
+       * @instance
+       * @type {number|null}
+       * @default null
+       * @since 8.2.0
+       */
+      // start: null,
+
+      /**
+       * End value of the range selected.
+       *
+       * @expose
+       * @name value.end
+       * @ojshortdesc Specifies the end value of the range selected.
+       * @memberof! oj.ojRangeSlider
+       * @instance
+       * @type {number|null}
+       * @default null
+       * @since 8.2.0
+       */
+      // end: null
+      // },
       value: 0,
 
       /**
@@ -629,7 +1298,7 @@ var __oj_slider_metadata =
        * </p>
        * <p>This is a read-only attribute so page authors cannot set or change it directly.</p>
        * @expose
-       * @alias transientValue
+       * @name transientValue
        * @ojshortdesc Read-only property used for retrieving the transient value from the component. See the Help documentation for more information.
        * @access public
        * @instance
@@ -639,6 +1308,57 @@ var __oj_slider_metadata =
        * @since 5.0
        * @readonly
        *
+       */
+
+      /**
+       * <p>The  <code class="prettyprint">transientValue</code> is the read-only attribute for
+       * retrieving the transient value from the range slider.</p>
+       * <p>
+       * The <code class="prettyprint">transientValue</code> updates to display the transient
+       * changes of the slider thumb value (subject to the step constraints). The difference
+       * in behavior is <code class="prettyprint">transientValue</code> will be updated
+       * as the thumb is sliding, where as <code class="prettyprint">value</code>
+       * is updated only after the thumb is released (or after a key press).
+       * </p>
+       * <p>This is a read-only attribute so page authors cannot set or change it directly.</p>
+       * @expose
+       * @name transientValue
+       * @ojshortdesc Read-only property used for retrieving the transient value from the component. See the Help documentation for more information.
+       * @access public
+       * @instance
+       * @ojwriteback
+       * @memberof oj.ojRangeSlider
+       * @type {Object|null}
+       * @since 8.2.0
+       * @readonly
+       *
+       */
+
+      /**
+       * Start value of the range selected.
+       *
+       * @expose
+       * @name transientValue.start
+       * @ojshortdesc Specifies the start transientValue of the range selected.
+       * @memberof! oj.ojRangeSlider
+       * @instance
+       * @type {number|null}
+       * @default null
+       * @since 8.2.0
+       */
+      // start: null,
+
+      /**
+       * End value of the range selected.
+       *
+       * @expose
+       * @name transientValue.end
+       * @ojshortdesc Specifies the end transientValue of the range selected.
+       * @memberof! oj.ojRangeSlider
+       * @instance
+       * @type {number|null}
+       * @default null
+       * @since 8.2.0
        */
       rawValue: undefined
     },
@@ -745,6 +1465,17 @@ var __oj_slider_metadata =
     _componentSetup: function _componentSetup() {
       this._newMultiValue = [];
       this._thumbIndex = null;
+
+      if (this._isCustomRangeSlider()) {
+        this.options.type = 'range';
+
+        if (typeof this.options.value === 'number') {
+          this.options.value = {
+            start: null,
+            end: null
+          };
+        }
+      }
 
       if (this.options.type === 'range') {
         this._multipleThumbs = true;
@@ -1135,7 +1866,29 @@ var __oj_slider_metadata =
     _buildValueOption: function _buildValueOption() {
       var options = this.options;
 
-      if (options.type) {
+      if (this._isCustomRangeSlider()) {
+        if (options.value === null) {
+          this.options.value = {
+            start: this._valueMin(),
+            end: this._valueMax()
+          };
+        } else {
+          if (options.value.start === null || options.value.start === undefined) {
+            this.options.value.start = this._valueMin();
+          }
+
+          if (options.value.end === null || options.value.end === undefined) {
+            this.options.value.end = this._valueMax();
+          }
+
+          this.option('value', this.options.value, {
+            _context: {
+              writeback: true,
+              internalSet: true
+            }
+          });
+        }
+      } else if (options.type) {
         if (this.options.value == null) {
           //
           // If the value options was never set,
@@ -1178,9 +1931,10 @@ var __oj_slider_metadata =
       var classes = '';
 
       if (options.type) {
-        //
+        var that = this; //
         // Define the range (value bar) div
         //
+
         this._range = $('<div></div>'); // Give the bar an id.
 
         $(this._range).attr('id', this._getBarValueId());
@@ -1191,8 +1945,6 @@ var __oj_slider_metadata =
         classes = 'oj-slider-range oj-slider-bar-value'; //
         // Like the bar background, clicking on the bar value also repositions the thumb.
         //
-
-        var that = this;
 
         this._range.on('mousedown' + that.eventNamespace, function (event) {
           that._repositionThumb(event);
@@ -1313,8 +2065,7 @@ var __oj_slider_metadata =
     // This is only called when we completely destroy the slider (_destroy).
     //
     _unwrapSlider: function _unwrapSlider() {
-      oj.DomUtils.unwrap(this.element, this._elementWrapped); // @HTMLUpdateOK
-
+      oj.DomUtils.unwrap(this.element, this._elementWrapped);
       this.element.css('display', this._inputElementOriginalDisplay);
 
       this._RestoreAttributes(this.element);
@@ -1508,7 +2259,7 @@ var __oj_slider_metadata =
     // Return the active thumb
     _getActiveThumb: function _getActiveThumb() {
       if (this._multipleThumbs) {
-        return $(this._thumbs[this._thumbIndex]);
+        return $(this._thumbs[this._thumbIndex ? this._thumbIndex : 0]);
       }
 
       return this._thumb;
@@ -1576,11 +2327,21 @@ var __oj_slider_metadata =
     // (We ensure that we do not go past the value of the other thumb).
     //
     _getNewThumbValueLimited: function _getNewThumbValueLimited(index, newVal, otherVal) {
-      if (this.options.value.length === 2 && (index === 0 && newVal > otherVal || index === 1 && newVal < otherVal)) {
-        return otherVal;
+      var returnVal;
+
+      if (this._isCustomRangeSlider()) {
+        if (this.options.value.start !== null && this.options.value.end !== null && (index === 0 && newVal > otherVal || index === 1 && newVal < otherVal)) {
+          returnVal = otherVal;
+        } else {
+          returnVal = newVal;
+        }
+      } else if (this.options.value.length === 2 && (index === 0 && newVal > otherVal || index === 1 && newVal < otherVal)) {
+        returnVal = otherVal;
+      } else {
+        returnVal = newVal;
       }
 
-      return newVal;
+      return returnVal;
     },
     _slide: function _slide(event, index, newValParam, rawOnly) {
       var otherVal;
@@ -1590,9 +2351,7 @@ var __oj_slider_metadata =
 
         var newVal = this._getNewThumbValueLimited(index, newValParam, otherVal);
 
-        if (newVal !== this._getMultiValues(index)) {
-          this._setMultiValue(event, index, newVal, rawOnly);
-        }
+        this._setMultiValue(event, index, newVal, rawOnly);
       } else {
         // This case handles a single value
         // sets slider thumb value
@@ -1645,17 +2404,35 @@ var __oj_slider_metadata =
     //
     _getNewValues: function _getNewValues(index, newValue) {
       var vals;
-      var i;
-      vals = this.options.value.slice();
 
-      for (i = 0; i < vals.length; i++) {
-        vals[i] = this._trimAlignValue(vals[i]);
-      } // assume newValue is trim aligned
-      // Assign only if it is the thumb that is actually sliding
+      if (this._isCustomRangeSlider()) {
+        vals = {};
+        vals.start = this._trimAlignValue(this.options.value.start);
+        vals.end = this._trimAlignValue(this.options.value.end);
+
+        if (index === this._thumbIndex) {
+          if (index === 0) {
+            vals.start = newValue;
+          }
+
+          if (index === 1) {
+            vals.end = newValue;
+          }
+        }
+      } else {
+        vals = [];
+        var i;
+        vals = this.options.value.slice();
+
+        for (i = 0; i < vals.length; i++) {
+          vals[i] = this._trimAlignValue(vals[i]);
+        } // assume newValue is trim aligned
+        // Assign only if it is the thumb that is actually sliding
 
 
-      if (index === this._thumbIndex) {
-        vals[index] = newValue;
+        if (index === this._thumbIndex) {
+          vals[index] = newValue;
+        }
       }
 
       return vals;
@@ -1693,13 +2470,52 @@ var __oj_slider_metadata =
       var coercedValue;
 
       if (key === 'value') {
-        if (Array.isArray(value)) {
+        if (this._isCustomRangeSlider()) {
+          if (value instanceof Object) {
+            this._checkStartEnd(value.start, value.end);
+
+            if (!isNaN(value.start)) {
+              this._multipleThumbs = true;
+              coercedValue = value;
+              var keys = Object.keys(value); // verify that the values are all within range.
+
+              for (var j = 0; j < keys.length; j++) {
+                this._checkValueBounds(coercedValue[keys[j]], this._valueMin(), this._valueMax());
+              }
+            } else {
+              //
+              // Don't set multipleThumbs if the value is not a number
+              // (as would be the case for an error code)
+              //
+              coercedValue = this._parse(key, value.start); // verify that the new value is within range.
+
+              this._checkValueBounds(coercedValue, this._valueMin(), this._valueMax());
+            }
+          } else {
+            // Only coerce values for widget syntax,
+            coercedValue = {
+              start: this._valueMin(),
+              end: this._valueMax()
+            };
+            this.options.value = {
+              start: this._valueMin(),
+              end: this._valueMax()
+            }; // verify that the new value is within range.
+            // this._checkValueBounds(coercedValue, this._valueMin(), this._valueMax());
+
+            var coercedValueKeys = Object.keys(coercedValue); // verify that the values are all within range.
+
+            for (var index = 0; index < coercedValueKeys.length; index++) {
+              this._checkValueBounds(coercedValue[coercedValueKeys[index]], this._valueMin(), this._valueMax());
+            }
+          }
+        } else if (Array.isArray(value)) {
           if (!isNaN(value[0])) {
             this._multipleThumbs = true;
             coercedValue = value; // verify that the array values are all within range.
 
-            for (var index = 0; index < coercedValue.length; index++) {
-              this._checkValueBounds(coercedValue[index], this._valueMin(), this._valueMax());
+            for (var i = 0; i < coercedValue.length; i++) {
+              this._checkValueBounds(coercedValue[i], this._valueMin(), this._valueMax());
             }
           } else {
             //
@@ -1723,9 +2539,7 @@ var __oj_slider_metadata =
 
           this._checkValueBounds(coercedValue, this._valueMin(), this._valueMax());
         }
-      }
-
-      if (key === 'max' || key === 'min') {
+      } else if (key === 'max' || key === 'min') {
         // Only coerce values for widget syntax,
         // since the framework handles this for custom elements.
         if (!this._IsCustomElement()) {
@@ -1748,11 +2562,25 @@ var __oj_slider_metadata =
             }
           } else {
             if (this._getMultiValues(0) < coercedValue) {
-              this._super('value', [coercedValue, this._getMultiValues(1)], flags);
+              if (this._isCustomRangeSlider()) {
+                this._super('value', {
+                  start: coercedValue,
+                  end: this._getMultiValues(1)
+                }, flags);
+              } else {
+                this._super('value', [coercedValue, this._getMultiValues(1)], flags);
+              }
             }
 
             if (this._getMultiValues(1) < coercedValue) {
-              this._super('value', [this._getMultiValues(0), coercedValue], flags);
+              if (this._isCustomRangeSlider()) {
+                this._super('value', {
+                  start: this._getMultiValues(0),
+                  end: coercedValue
+                }, flags);
+              } else {
+                this._super('value', [this._getMultiValues(0), coercedValue], flags);
+              }
             }
           }
         } else if (key === 'max') {
@@ -1765,11 +2593,25 @@ var __oj_slider_metadata =
             }
           } else {
             if (this._getMultiValues(0) > coercedValue) {
-              this._super('value', [coercedValue, this._getMultiValues(1)], flags);
+              if (this._isCustomRangeSlider()) {
+                this._super('value', {
+                  start: coercedValue,
+                  end: this._getMultiValues(1)
+                }, flags);
+              } else {
+                this._super('value', [coercedValue, this._getMultiValues(1)], flags);
+              }
             }
 
             if (this._getMultiValues(1) > coercedValue) {
-              this._super('value', [this._getMultiValues(0), coercedValue], flags);
+              if (this._isCustomRangeSlider()) {
+                this._super('value', {
+                  start: this._getMultiValues(0),
+                  end: coercedValue
+                }, flags);
+              } else {
+                this._super('value', [this._getMultiValues(0), coercedValue], flags);
+              }
             }
           }
         }
@@ -1870,6 +2712,17 @@ var __oj_slider_metadata =
       val = this._trimAlignValue(val);
       return val;
     },
+    _isCustomRangeSlider: function _isCustomRangeSlider() {
+      if (this._IsCustomElement()) {
+        var rootElem = this.element[0].parentNode;
+
+        if (rootElem.tagName === 'OJ-RANGE-SLIDER') {
+          return true;
+        }
+      }
+
+      return false;
+    },
     //
     // Internal values getter
     //
@@ -1877,9 +2730,29 @@ var __oj_slider_metadata =
     // _getValuesAligned( index ) returns single value trimmed by min and max, aligned by step
     //
     _getValuesAligned: function _getValuesAligned(index) {
-      var val = this._trimAlignValue(this.options.value[index]);
+      var result = null;
 
-      return val;
+      if (this._isCustomRangeSlider()) {
+        var val;
+
+        if (index === 0) {
+          if (this.options.value.start !== undefined && this.options.value.start !== null) {
+            val = this.options.value.start;
+          } else {
+            val = this._valueMin();
+          }
+        } else if (this.options.value.end !== undefined && this.options.value.end !== null) {
+          val = this.options.value.end;
+        } else {
+          val = this._valueMax();
+        }
+
+        result = this._trimAlignValue(val);
+      } else {
+        result = this._trimAlignValue(this.options.value[index]);
+      }
+
+      return result;
     },
     //
     // Return the step-aligned value that val is closest to, between (inclusive) min and max
@@ -1965,7 +2838,9 @@ var __oj_slider_metadata =
       var valPercent;
       var value;
       var valueMin;
-      var valueMax; //
+      var valueMax;
+      var startThumb;
+      var endThumb; //
       // Multiple thumbs case.
       //
 
@@ -1989,7 +2864,8 @@ var __oj_slider_metadata =
           }
 
           if (i === 0) {
-            // if the min thumb is at the max, set its zindex to 1
+            startThumb = thumb; // if the min thumb is at the max, set its zindex to 1
+
             if (valPercent === 100) {
               thumb.css({
                 zIndex: 1
@@ -1999,6 +2875,8 @@ var __oj_slider_metadata =
                 zIndex: ''
               });
             }
+          } else {
+            endThumb = thumb;
           }
 
           if (!thumb.hasClass('oj-active')) {
@@ -2009,6 +2887,24 @@ var __oj_slider_metadata =
 
           this._setRangeMultiThumb(valPercent, i);
         }, this);
+
+        if (startThumb.hasClass('oj-focus')) {
+          startThumb.css({
+            zIndex: 1
+          });
+          endThumb.css({
+            zIndex: ''
+          });
+        }
+
+        if (endThumb.hasClass('oj-focus')) {
+          startThumb.css({
+            zIndex: ''
+          });
+          endThumb.css({
+            zIndex: 1
+          });
+        }
       } else {
         //
         // Scalar value (single thumb)
@@ -2401,6 +3297,10 @@ var __oj_slider_metadata =
         }
       }
 
+      if (this._isCustomRangeSlider()) {
+        this._checkStartEnd(opts.value.start, opts.value.end);
+      }
+
       this._checkMinMax(opts.min, opts.max); // Make sure value is within min and max
 
 
@@ -2431,6 +3331,14 @@ var __oj_slider_metadata =
       if (min != null && max != null) {
         if (min >= max) {
           throw new Error(this.getTranslatedString('maxMin'));
+        }
+      }
+    },
+    // throw an error if value.start > value.end
+    _checkStartEnd: function _checkStartEnd(start, end) {
+      if (start != null && end != null) {
+        if (start > end) {
+          throw new Error(this.getTranslatedString('startEnd'));
         }
       }
     },
@@ -2787,6 +3695,34 @@ var __oj_slider_metadata =
      */
 
     /**
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Target</th>
+     *       <th>Gesture</th>
+     *       <th>Action</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>Range Slider Bar</td>
+     *       <td><kbd>Tap</kbd></td>
+     *       <td>Reposition the thumb.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>Range Slider Thumb</td>
+     *       <td><kbd>Swipe</kbd></td>
+     *       <td>Reposition the thumb.</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @ojfragment touchDoc - Used in touch gesture section of classdesc,
+     * and standalone gesture doc
+     * @memberof oj.ojRangeSlider
+     */
+
+    /**
      * The JET slider supports keyboard actions for thumb movement:
      *
      * <p>
@@ -2868,44 +3804,84 @@ var __oj_slider_metadata =
      */
 
     /**
-     * {@ojinclude "name":"ojStylingDocIntro"}
+     * The JET slider supports keyboard actions for thumb movement:
      *
-     * <table class="generic-table styling-table">
+     * <p>
+     * <table class="keyboard-table">
      *   <thead>
      *     <tr>
-     *       <th>Class</th>
-     *       <th>Description</th>
+     *        <th>Target</th>
+     *       <th>Key</th>
+     *       <th>Use</th>
      *     </tr>
      *   </thead>
      *   <tbody>
      *     <tr>
-     *       <td>oj-focus-highlight</td>
-     *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
+     *       <td>Range Slider</td>
+     *       <td><kbd>Tab</kbd></td>
+     *       <td> Places focus on the range slider component.
+     *        If hints, title or messages exist in a notewindow, pop up the notewindow.
      *     </tr>
-     *   </tbody>
-     * </table>
-       * <p>The form control style classes can be applied to the component, or an ancestor element. When
-     * applied to an ancestor element, all form components that support the style classes will be affected.
-     *
-     * <table class="generic-table styling-table">
-     *   <thead>
      *     <tr>
-     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>oj-form-control-full-width</td>
-     *       <td>Changes the max-width to 100% so that form components will occupy
-     *           all the available horizontal space
+     *       <td>Range Slider</td>
+     *       <td><kbd>RightArrow</kbd></td>
+     *       <td>Scrolls right on a horizontal range slider, scrolls up on a vertical range slider.
      *       </td>
      *     </tr>
-     *   </tbody>
+     *     <tr>
+     *       <td>Range Slider</td>
+     *       <td><kbd>LeftArrow</kbd></td>
+     *       <td>Scrolls left on a horizontal range slider, scrolls down on a vertical range slider.
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>Range Slider</td>
+     *       <td><kbd>UpArrow</kbd></td>
+     *       <td>Scrolls right on a horizontal range slider, scrolls up on a vertical range slider.
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>Range Slider</td>
+     *       <td><kbd>DownArrow</kbd></td>
+     *       <td>Scrolls left on a horizontal range slider,
+     *        scrolls down on a vertical range slider.
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>Range Slider</td>
+     *       <td><kbd>PageUp</kbd></td>
+     *       <td>Scrolls one page right on a horizontal range slider,
+     *        scrolls one page up on a vertical range slider. <br>
+     *       A page is defined as 20% of the range of the range slider.
+     *     </td>
+     *     </tr>
+     *     <tr>
+     *       <td>Range Slider</td>
+     *       <td><kbd>PageDown</kbd></td>
+     *       <td>Scrolls one page left on a horizontal range slider,
+     *       scrolls one page down on a vertical range slider.
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>Range Slider</td>
+     *       <td><kbd>End</kbd></td>
+     *       <td>Scrolls to the right end on a horizontal range slider, scrolls to the bottom on a
+     * vertical range slider.
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>Range Slider</td>
+     *       <td><kbd>Home</kbd></td>
+     *       <td>Scrolls to the left end on a horizontal range slider, scrolls to the top on a
+     * vertical range slider.
+     *       </td>
+     *     </tr>
+     * </tbody>
      * </table>
      *
-     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-     * @memberof oj.ojSlider
+     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone
+     * gesture doc
+     * @memberof oj.ojRangeSlider
      */
     // / ///////////////     SUB-IDS     //////////////////
 
@@ -2948,10 +3924,35 @@ var __oj_slider_metadata =
 
 /* global __oj_slider_metadata */
 (function () {
+  var bindingMeta = {
+    properties: {
+      readonly: {
+        binding: {
+          consume: {
+            name: 'readonly'
+          }
+        }
+      },
+      userAssistanceDensity: {
+        binding: {
+          consume: {
+            name: 'userAssistanceDensity'
+          }
+        }
+      }
+    }
+  };
   __oj_slider_metadata.extension._WIDGET_NAME = 'ojSlider';
   __oj_slider_metadata.extension._INNER_ELEM = 'input';
   oj.CustomElementBridge.register('oj-slider', {
-    metadata: __oj_slider_metadata
+    metadata: oj.CollectionUtils.mergeDeep(__oj_slider_metadata, bindingMeta)
+  });
+  /* global __oj_range_slider_metadata */
+
+  __oj_range_slider_metadata.extension._WIDGET_NAME = 'ojSlider';
+  __oj_range_slider_metadata.extension._INNER_ELEM = 'input';
+  oj.CustomElementBridge.register('oj-range-slider', {
+    metadata: oj.CollectionUtils.mergeDeep(__oj_range_slider_metadata, bindingMeta)
   });
 })();
 

@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -366,6 +367,8 @@ var __oj_legend_section_metadata =
  * @ojpropertylayout {propertyGroup: "data", items: ["data"]}
  * @ojvbdefaultcolumns 2
  * @ojvbmincolumns 1
+ *
+ * @ojuxspecs ['legend']
  *
  * @classdesc
  * <h3 id="legendOverview-section">
@@ -771,7 +774,8 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
       symbolWidth: 0,
 
       /**
-       * The CSS style object defining the style of the legend item text. The default value comes from the CSS and varies based on theme.
+       * The CSS style object defining the style of the legend item text.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
        * @expose
        * @name textStyle
        * @ojshortdesc The CSS style object defining the style of the legend item text.
@@ -893,7 +897,6 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
     _GetChildStyleClasses: function () {
       var styleClasses = this._super();
       styleClasses['oj-legend'] = { path: 'textStyle', property: 'TEXT' };
-      styleClasses['oj-legend-title'] = { path: 'titleStyle', property: 'TEXT' };
       styleClasses['oj-legend-section-title'] = { path: '_sectionTitleStyle', property: 'TEXT' };
       return styleClasses;
     },
@@ -925,12 +928,9 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
       var resources = this.options._resources;
 
       // Add images
-      resources.closedEnabled = 'oj-legend-section-close-icon';
-      resources.closedOver = 'oj-legend-section-close-icon oj-hover';
-      resources.closedDown = 'oj-legend-section-close-icon oj-active';
-      resources.openEnabled = 'oj-legend-section-open-icon';
-      resources.openOver = 'oj-legend-section-open-icon oj-hover';
-      resources.openDown = 'oj-legend-section-open-icon oj-active';
+      var rtl = this._GetReadingDirection() === 'rtl';
+      resources.closed = `oj-fwk-icon oj-fwk-icon-arrow-${rtl ? 'w' : 'e'}`;
+      resources.open = `oj-fwk-icon oj-fwk-icon-arrow-${rtl ? 'sw' : 'se'}`;
     },
 
     //* * @inheritdoc */
@@ -1240,7 +1240,7 @@ Components.setDefaultOptions({
 * @property {Array.<Object>=} sections An array of nested legend sections.
 * @property {string=} title The title of the legend section.
 * @property {"center"|"end"|"start"} [titleHalign="start"] The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
-* @property {Object=} titleStyle The CSS style object defining the style of the section title.
+* @property {Object=} titleStyle The CSS style object defining the style of the section title. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
 * @ojsignature [{target: "Type", value: "K", for: "id"},
 *               {target: "Type", value: "Array.<oj.ojLegend.Item<K>>", for: "items", jsdocOverride: true},
 *               {target: "Type", value: "Array.<oj.ojLegend.Section<K>>", for: "sections", jsdocOverride: true},
@@ -1262,12 +1262,12 @@ Components.setDefaultOptions({
  * @property {string=} markerColor The color of the marker, if different than the line color. Only applies if the symbolType is "lineWithMarker".
  * @property {"circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string} [markerShape="square"] The shape of the marker. Only applies if symbolType is "marker" or "lineWithMarker". Can take the name of a built-in shape or the SVG path commands for a custom shape. Does not apply if a custom image is specified.
  * @property {string=} markerSvgClassName The CSS style class to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
- * @property {Object=} markerSvgStyle The inline style to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
+ * @property {Object=} markerSvgStyle The inline style to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute. Only SVG CSS style properties are supported.
  * @property {"largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"|"none"|"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle"} [pattern="none"] The pattern used to fill the marker. Only applies if symbolType is "marker" or "lineWithMarker".
  * @property {string=} shortDesc The description of this legend item. This is used for accessibility and for customizing the tooltip text.
  * @property {string=} source The URI of the image of the legend symbol.
  * @property {string=} svgClassName The CSS style class to apply to the legend item. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @property {Object=} svgStyle The inline style to apply to the legend item. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
+ * @property {Object=} svgStyle The inline style to apply to the legend item. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute. Only SVG CSS style properties are supported.
  * @property {"image"|"line"|"lineWithMarker"|"marker"} [symbolType="marker"] The type of legend symbol to display.
  * @property {string=} text The legend item text.
  * @ojsignature [{target: "Type", value: "K", for: "id"},
@@ -1448,6 +1448,7 @@ Components.setDefaultOptions({
 
 /**
  * @ojcomponent oj.ojLegendItem
+ * @ojshortdesc The oj-legend-item element is used to declare properties for legend items. See the Help documentation for more information.
  * @ojsignature {target: "Type", value:"class ojLegendItem extends JetElement<ojLegendItemSettableProperties>"}
  * @ojslotcomponent
  * @since 6.0.0
@@ -1579,7 +1580,8 @@ Components.setDefaultOptions({
  * @type {number=}
  */
 /**
- * The CSS style class to apply to the legend item. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
+ * The CSS style class to apply to the legend item symbol. This style class and <code> svg-style </code> will override any other styling specified through the options except for <code>marker-svg-style</code> and <code>marker-svg-class-name</code>.
+ * For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
  * @expose
  * @name svgClassName
  * @memberof! oj.ojLegendItem
@@ -1589,7 +1591,9 @@ Components.setDefaultOptions({
  * @default ""
  */
 /**
- * The inline style to apply to the legend item. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
+ * The inline style to apply to the legend item symbol. This inline style and <code> svg-class-name </code> will override any other styling specified through the options except for <code>marker-svg-style</code> and <code>marker-svg-class-name</code>.
+ * For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
+ * Only SVG CSS style properties are supported.
  * @expose
  * @name svgStyle
  * @memberof! oj.ojLegendItem
@@ -1599,7 +1603,7 @@ Components.setDefaultOptions({
  * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
  */
 /**
- * The CSS style class to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
+ * The CSS style class to apply to the marker of the legend item symbol. This style class and <code> marker-svg-style </code> will override any other styling specified for the marker. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
  * @expose
  * @name markerSvgClassName
  * @memberof! oj.ojLegendItem
@@ -1609,7 +1613,8 @@ Components.setDefaultOptions({
  * @default ""
  */
 /**
- * The inline style to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
+ * The inline style to apply to the marker of the legend item symbol. This inline style and <code> marker-svg-class-name </code> will override any other styling specified for the marker. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
+ * Only SVG CSS style properties are supported.
  * @expose
  * @name markerSvgStyle
  * @memberof! oj.ojLegendItem
@@ -1674,6 +1679,7 @@ Components.setDefaultOptions({
 
 /**
  * @ojcomponent oj.ojLegendSection
+ * @ojshortdesc The oj-legend-section element is used to declare properties for legend sections. See the Help documentation for more information.
  * @ojsignature {target: "Type", value:"class ojLegendSection extends JetElement<ojLegendSectionSettableProperties>"}
  * @ojslotcomponent
  * @since 6.0.0
@@ -1726,6 +1732,7 @@ Components.setDefaultOptions({
  */
 /**
  * The CSS style object defining the style of the section title.
+ * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
  * @expose
  * @name textStyle
  * @memberof! oj.ojLegendSection

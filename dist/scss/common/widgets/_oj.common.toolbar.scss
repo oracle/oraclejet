@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -42,17 +43,33 @@
     }
 
     // spec says 4px spacing between non-separator elements in toolbar
-    .oj-toolbar > .oj-button,
-    .oj-toolbar > .oj-buttonset-multi {
-        margin-left: 0;
-        margin-right: 0.333em; // equals 4px in size 12 font
+    .oj-toolbar > .oj-button:not(:first-child), 
+    .oj-toolbar > .oj-buttonset:not(:first-child)
+    {   
+      @include oj-ltr() {    
+      margin-left : 0.125rem;
+      }
+      @include oj-rtl()
+      {
+        margin-right : 0.125rem;
+      }  
     }
+    .oj-toolbar > .oj-button:not(:last-child),   
+    .oj-toolbar > .oj-buttonset:not(:last-child)
+     {
+      @include oj-ltr() {
+       margin-right: 0.125rem;
+      }
+      @include oj-rtl()
+      {
+        margin-left : 0.125rem;
+      }
 
-    // Remove hardcoded 4px right margin from last element of toolbar
-    .oj-toolbar > .oj-buttonset-last,
-    .oj-toolbar > .oj-buttonset-multi:last-child {
-        margin-right: 0;
-    }
+     }
+     .oj-toolbar .oj-buttonset-multi.oj-button-outlined-chrome:not(.oj-buttonset-width-auto):not(.oj-buttonset-width-equal){
+      width: initial;
+     }  
+    
 
     /* Apps can apply this class to a span to get a toolbar separator.  
      * To make it accessible, the span should also have 
@@ -63,7 +80,6 @@
     .oj-toolbar-separator {
 
         border-left: solid 1px $toolbarBorderColor; 
-
         height: 1.833em; // spec says 22px
         display:inline-block;
         vertical-align:middle;
@@ -72,8 +88,8 @@
         // separator has margin-right of 4px (see above), only need 2px of 
         // margin-left for the separator. 
         // Has to be margin, not padding, since the border is the separator.
-        margin-left: 0.167em; // equals 2px. see above
-        margin-right: 0.5em; // equals 6px. see above.
+        margin: 0 .25rem;
+      
     }
 
     /* To layout multiple toolbars, an element with .oj-toolbars can contain 1 or more elements 
@@ -82,20 +98,17 @@
 
     .oj-toolbars {
         border-style: solid;
-
-          border-color: $toolbarBorderColor;
-          border-width: $toolbarBorderWidth;
-          @include oj-border-radius($mediumBorderRadius);
-          background-color: $toolbarBgColor;
-
-
-    }
+        border-color: $toolbarBorderColor;
+        border-width: $toolbarBorderWidth;
+        @include oj-border-radius($mediumBorderRadius);
+        background-color: $toolbarBgColor;
+      }
 
     .oj-toolbar-row {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-    }
+     }
 
     // when a toolbar is inside a toolbar row the toolbar row will do the chroming, if any
     .oj-toolbar-row .oj-toolbar {
@@ -166,4 +179,3 @@
 
   }
 }
- 

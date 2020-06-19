@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -477,7 +478,14 @@ OraI18nUtils.isoToLocalDate = function (isoString) {
 OraI18nUtils._isoToLocalDateIgnoreTimezone = function (isoString) {
   var datetime = OraI18nUtils._IsoStrParts(isoString);
 
-  return new Date(datetime[0], datetime[1] - 1, datetime[2], datetime[3], datetime[4], datetime[5], datetime[6]);
+  var date = new Date(datetime[0], datetime[1] - 1, datetime[2], datetime[3], datetime[4], datetime[5], datetime[6]); // As per the documentation:
+  // new Date(year, monthIndex [, day [, hours [, minutes [, seconds [, milliseconds]]]]]);
+  // year - Integer value representing the year and
+  // values from 0 to 99 map to the years 1900 to 1999; all other values are the actual year.
+  // Use Date.prototype.setFullYear to create dates between the years 0 and 99.
+
+  date.setFullYear(datetime[0]);
+  return date;
 };
 
 OraI18nUtils._IsoStrParts = function (isoString) {

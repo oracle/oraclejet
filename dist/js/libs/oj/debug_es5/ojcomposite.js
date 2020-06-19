@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -427,7 +428,7 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto, {
       bridge.resolveDelayedReadyPromise();
     }).catch(function (reason) {
       // Resolve the busy state if the activated Promise is rejected
-      bridge.throwError(element, reason);
+      bridge.throwError(element, 'Error while creating component.', reason);
     });
   },
   DefineMethodCallback: function DefineMethodCallback(proto, method, methodMeta) {
@@ -524,9 +525,10 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto, {
   GetMetadata: function GetMetadata(descriptor) {
     // Composites have a public getMetadata API so we cannot directly modify the
     // original metadata object when we add additional info for on[PropertyName] properties
-    return descriptor._metadata;
+    return descriptor._metadata || {};
   },
-  GetTrackChildrenOption: function GetTrackChildrenOption() {
+  // eslint-disable-next-line no-unused-vars
+  GetTrackChildrenOption: function GetTrackChildrenOption(element) {
     return 'immediate';
   },
   HandleDetached: function HandleDetached(element) {
@@ -1865,9 +1867,10 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  * <p>
  *  Metadata for a <a href="CustomElementOverview.html">JET Web Component</a> consists of a JSON formatted object which defines the
  *  properties, methods, slots, and events fired by that component. <b>The names of the JET Web Component's properties, events,
- *  and methods should avoid collision with the existing <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a>
+ *  and methods should avoid collision with the existing <a href="https://html.spec.whatwg.org/multipage/dom.html#htmlelement">HTMLElement</a>
  *  properties, events, and methods. Additionally, the JET Web Component should not re-define any
- *  <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes">global attributes</a> or events.</b>
+ *  <a href="https://html.spec.whatwg.org/multipage/dom.html#global-attributes">global attributes or events</a>.
+ *  Please refer to the <a href="https://html.spec.whatwg.org/multipage/">HTML Living Standard</a> for the latest guidance.</b>
  * </p>
  *
  * <p>
@@ -1984,7 +1987,7 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *     </tr>
  *   </tbody>
  * </table>
- * <h6>Note:</h6>
+ * <h6 class="notoc">Note:</h6>
  * By convention, the slot name for a component's Default slot is the empty string:  <code>""</code>.
  *
  * @ojfragment metadataOverviewDoc

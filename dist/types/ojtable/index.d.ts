@@ -1,3 +1,12 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
+import CommonTypes = require('../ojcommontypes');
 import { KeySet } from '../ojkeyset';
 import { DataProvider } from '../ojdataprovider';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
@@ -14,18 +23,13 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
             insert: HTMLElement | string;
         } | void) | null;
         footerStyle?: string | null;
-        footerTemplate?: {
-            componentElement: Element;
-        };
+        footerTemplate?: string | null;
         headerClassName?: string | null;
         headerRenderer?: ((context: ojTable.HeaderRendererContext<K, D>) => {
             insert: HTMLElement | string;
         } | void) | null;
         headerStyle?: string | null;
-        headerTemplate?: {
-            componentElement: Element;
-            data: object;
-        };
+        headerTemplate?: string | null;
         headerText?: string | null;
         id?: string | null;
         renderer?: ((context: ojTable.ColumnsRendererContext<K, D>) => {
@@ -35,15 +39,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         sortProperty?: string | null;
         sortable?: 'auto' | 'enabled' | 'disabled';
         style?: string | null;
-        template?: {
-            componentElement: Element;
-            data: object;
-            row: object;
-            index: number;
-            columnIndex: number;
-            key: any;
-            mode: string;
-        };
+        template?: string | null;
         width?: number | null;
     }> | null;
     columnsDefault: {
@@ -54,18 +50,13 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
             insert: HTMLElement | string;
         } | void) | null;
         footerStyle?: string | null;
-        footerTemplate?: {
-            componentElement: Element;
-        };
+        footerTemplate?: string | null;
         headerClassName?: string | null;
         headerRenderer?: ((context: ojTable.HeaderRendererContext<K, D>) => {
             insert: HTMLElement | string;
         } | void) | null;
         headerStyle?: string | null;
-        headerTemplate?: {
-            componentElement: Element;
-            data: object;
-        };
+        headerTemplate?: string | null;
         headerText?: string | null;
         renderer?: ((context: ojTable.ColumnsRendererContext<K, D>) => {
             insert: HTMLElement | string;
@@ -74,15 +65,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         sortProperty?: string | null;
         sortable?: 'auto' | 'enabled' | 'disabled';
         style?: string | null;
-        template?: {
-            componentElement: Element;
-            data: object;
-            row: object;
-            index: number;
-            columnIndex: number;
-            key: any;
-            mode: string;
-        };
+        template?: string | null;
         width?: number | null;
     };
     currentRow: ojTable.CurrentRow<K> | null;
@@ -119,7 +102,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     };
     editMode: 'none' | 'rowEdit';
     editRow: ojTable.EditRow<K> | null;
-    readonly firstSelectedRow: object;
+    readonly firstSelectedRow: CommonTypes.ItemContext<K, D>;
     horizontalGridVisible: 'auto' | 'enabled' | 'disabled';
     rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => string | HTMLElement | void) | null;
     scrollPolicy: 'auto' | 'loadAll' | 'loadMoreOnScroll';
@@ -149,8 +132,12 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     selectionRequired: boolean;
     verticalGridVisible: 'auto' | 'enabled' | 'disabled';
     translations: {
+        accessibleColumnContext?: string;
+        accessibleColumnHeaderContext?: string;
+        accessibleRowContext?: string;
         accessibleSortAscending?: string;
         accessibleSortDescending?: string;
+        accessibleStateSelected?: string;
         labelAccSelectionAffordanceBottom?: string;
         labelAccSelectionAffordanceTop?: string;
         labelDisableNonContiguousSelection?: string;
@@ -219,14 +206,32 @@ export namespace ojTable {
         [propName: string]: any;
     }> {
     }
-    interface ojBeforeRowEdit extends CustomEvent<{
-        rowContext: object;
+    interface ojBeforeRowEdit<K, D> extends CustomEvent<{
+        rowContext: {
+            componentElement: Element;
+            parentElement: Element;
+            datasource: DataProvider<K, D> | null;
+            mode: 'edit' | 'navigation';
+            status: ContextStatus<K>;
+        };
         [propName: string]: any;
     }> {
     }
-    interface ojBeforeRowEditEnd extends CustomEvent<{
-        rowContext: object;
-        cancelEdit: object;
+    interface ojBeforeRowEditEnd<K, D> extends CustomEvent<{
+        rowContext: {
+            componentElement: Element;
+            parentElement: Element;
+            datasource: DataProvider<K, D> | null;
+            mode: 'edit' | 'navigation';
+            status: ContextStatus<K>;
+        };
+        cancelEdit: boolean;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojRowAction<K, D> extends CustomEvent<{
+        context: CommonTypes.ItemContext<K, D>;
+        originalEvent: Event;
         [propName: string]: any;
     }> {
     }
@@ -279,6 +284,16 @@ export namespace ojTable {
     // tslint:disable-next-line interface-over-type-literal
     type verticalGridVisibleChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["verticalGridVisible"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type CellTemplateContext = {
+        componentElement: Element;
+        data: any;
+        row: any;
+        index: number;
+        columnIndex: number;
+        key: any;
+        mode: 'edit' | 'navigation';
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type ColumnSelectionEnd<K> = {
         endIndex: {
             column: number;
@@ -319,11 +334,9 @@ export namespace ojTable {
         };
         columnIndex: number;
         componentElement: Element;
-        data: D;
+        data: any;
         parentElement: Element;
-        row: {
-            [name: string]: any;
-        };
+        row: D;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ContextStatus<K> = {
@@ -373,10 +386,14 @@ export namespace ojTable {
         parentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type FooterTemplateContext = {
+        componentElement: Element;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type HeaderRendererContext<K, D> = {
         columnIndex: number;
-        columnHeaderDefaultRenderer?: ((param0: object, param1: ((param0: object) => void)) => void);
-        columnHeaderSortableIconRenderer?: ((param0: object, param1: ((param0: object) => void)) => void);
+        columnHeaderDefaultRenderer?: ((param0: object, param1: ((param0: Element) => void)) => void);
+        columnHeaderSortableIconRenderer?: ((param0: object, param1: ((param0: Element) => void)) => void);
         componentElement: Element;
         data: string;
         headerContext: {
@@ -385,11 +402,14 @@ export namespace ojTable {
         parentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type HeaderTemplateContext = {
+        componentElement: Element;
+        data: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type RowRendererContext<K, D> = {
         componentElement: Element;
-        data: {
-            [name: string]: any;
-        };
+        data: D;
         parentElement: Element;
         rowContext: {
             datasource: DataProvider<K, D> | null;
@@ -429,13 +449,23 @@ export namespace ojTable {
             row: K;
         };
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RowTemplateContext = {
+        componentElement: Element;
+        data: any;
+        index: number;
+        key: any;
+        rowContext: object;
+        mode: 'edit' | 'navigation';
+    };
 }
 export interface ojTableEventMap<K, D> extends baseComponentEventMap<ojTableSettableProperties<K, D>> {
     'ojAnimateEnd': ojTable.ojAnimateEnd;
     'ojAnimateStart': ojTable.ojAnimateStart;
     'ojBeforeCurrentRow': ojTable.ojBeforeCurrentRow<K>;
-    'ojBeforeRowEdit': ojTable.ojBeforeRowEdit;
-    'ojBeforeRowEditEnd': ojTable.ojBeforeRowEditEnd;
+    'ojBeforeRowEdit': ojTable.ojBeforeRowEdit<K, D>;
+    'ojBeforeRowEditEnd': ojTable.ojBeforeRowEditEnd<K, D>;
+    'ojRowAction': ojTable.ojRowAction<K, D>;
     'ojSort': ojTable.ojSort;
     'accessibilityChanged': JetElementCustomEvent<ojTable<K, D>["accessibility"]>;
     'asChanged': JetElementCustomEvent<ojTable<K, D>["as"]>;
@@ -472,18 +502,13 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
             insert: HTMLElement | string;
         } | void) | null;
         footerStyle?: string | null;
-        footerTemplate?: {
-            componentElement: Element;
-        };
+        footerTemplate?: string | null;
         headerClassName?: string | null;
         headerRenderer?: ((context: ojTable.HeaderRendererContext<K, D>) => {
             insert: HTMLElement | string;
         } | void) | null;
         headerStyle?: string | null;
-        headerTemplate?: {
-            componentElement: Element;
-            data: object;
-        };
+        headerTemplate?: string | null;
         headerText?: string | null;
         id?: string | null;
         renderer?: ((context: ojTable.ColumnsRendererContext<K, D>) => {
@@ -493,15 +518,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         sortProperty?: string | null;
         sortable?: 'auto' | 'enabled' | 'disabled';
         style?: string | null;
-        template?: {
-            componentElement: Element;
-            data: object;
-            row: object;
-            index: number;
-            columnIndex: number;
-            key: any;
-            mode: string;
-        };
+        template?: string | null;
         width?: number | null;
     }> | null;
     columnsDefault: {
@@ -512,18 +529,13 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
             insert: HTMLElement | string;
         } | void) | null;
         footerStyle?: string | null;
-        footerTemplate?: {
-            componentElement: Element;
-        };
+        footerTemplate?: string | null;
         headerClassName?: string | null;
         headerRenderer?: ((context: ojTable.HeaderRendererContext<K, D>) => {
             insert: HTMLElement | string;
         } | void) | null;
         headerStyle?: string | null;
-        headerTemplate?: {
-            componentElement: Element;
-            data: object;
-        };
+        headerTemplate?: string | null;
         headerText?: string | null;
         renderer?: ((context: ojTable.ColumnsRendererContext<K, D>) => {
             insert: HTMLElement | string;
@@ -532,15 +544,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         sortProperty?: string | null;
         sortable?: 'auto' | 'enabled' | 'disabled';
         style?: string | null;
-        template?: {
-            componentElement: Element;
-            data: object;
-            row: object;
-            index: number;
-            columnIndex: number;
-            key: any;
-            mode: string;
-        };
+        template?: string | null;
         width?: number | null;
     };
     currentRow: ojTable.CurrentRow<K> | null;
@@ -577,7 +581,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     };
     editMode: 'none' | 'rowEdit';
     editRow: ojTable.EditRow<K> | null;
-    readonly firstSelectedRow: object;
+    readonly firstSelectedRow: CommonTypes.ItemContext<K, D>;
     horizontalGridVisible: 'auto' | 'enabled' | 'disabled';
     rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => string | HTMLElement | void) | null;
     scrollPolicy: 'auto' | 'loadAll' | 'loadMoreOnScroll';
@@ -607,8 +611,12 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     selectionRequired: boolean;
     verticalGridVisible: 'auto' | 'enabled' | 'disabled';
     translations: {
+        accessibleColumnContext?: string;
+        accessibleColumnHeaderContext?: string;
+        accessibleRowContext?: string;
         accessibleSortAscending?: string;
         accessibleSortDescending?: string;
+        accessibleStateSelected?: string;
         labelAccSelectionAffordanceBottom?: string;
         labelAccSelectionAffordanceTop?: string;
         labelDisableNonContiguousSelection?: string;

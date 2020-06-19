@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -262,6 +263,8 @@ var __oj_tag_cloud_item_metadata =
  * @ojpropertylayout {propertyGroup: "data", items: ["data", "selection"]}
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 6
+ *
+ * @ojuxspecs ['tag-cloud']
  *
  * @classdesc
  * <h3 id="tagCloudOverview-section">
@@ -760,7 +763,8 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
          */
         hoverBehaviorDelay: 200,
         /**
-         * The CSS style object defining the style of the items. The default value comes from the CSS and varies based on theme.
+         * The CSS style object defining the style of the items.
+         * Only SVG CSS style properties are supported.
          * @expose
          * @name styleDefaults.svgStyle
          * @ojshortdesc The CSS style object defining the style of the items.
@@ -1078,7 +1082,7 @@ Components.setDefaultOptions({
  * @property {any=} id The item id should be set by the application if the DataProvider is not being used. The row key will be used as id in the DataProvider case.
  * @property {string} label The text of the item.
  * @property {string=} shortDesc The description of the item. This is used for customizing the tooltip text.
- * @property {Object=} svgStyle The CSS style object defining the style of the item text.
+ * @property {Object=} svgStyle The CSS style object defining the style of the item text. Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
  * @property {string=} svgClassName The CSS style class defining the style of the item text.
  * @property {string=} url The url this item references.
  * @property {number} value The value of this item which will be used to scale its font-size within the tag cloud.
@@ -1154,7 +1158,7 @@ Components.setDefaultOptions({
  */
 
  /**
- * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the tag cloud. The slot content must be a &lt;template> element.
+ * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the tag cloud. The slot content must be a single &lt;template> element.
  * <p>When the template is executed for each item, it will have access to the tag cloud's binding context and the following properties:</p>
  * <ul>
  *   <li>$current - an object that contains information for the current item. (See [oj.ojTagCloud.ItemTemplateContext]{@link oj.ojTagCloud.ItemTemplateContext} or the table below for a list of properties available on $current) </li>
@@ -1183,7 +1187,7 @@ Components.setDefaultOptions({
  */
 
 /**
- * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
+ * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content. The slot content must be a single &lt;template> element.
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
@@ -1192,6 +1196,7 @@ Components.setDefaultOptions({
  *
  *
  * @ojslot tooltipTemplate
+ * @ojmaxitems 1
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojTagCloud.TooltipContext
  * @memberof oj.ojTagCloud
@@ -1241,6 +1246,7 @@ Components.setDefaultOptions({
 
 /**
  * @ojcomponent oj.ojTagCloudItem
+ * @ojshortdesc The oj-tag-cloud-item element is used to declare properties for tag cloud items. See the Help documentation for more information.
  * @ojsignature {target: "Type", value:"class ojTagCloudItem extends JetElement<ojTagCloudItemSettableProperties>"}
  * @ojslotcomponent
  * @since 5.2.0
@@ -1338,6 +1344,7 @@ Components.setDefaultOptions({
  */
 /**
  * The CSS style object defining the style of the item text.
+ * Only SVG CSS style properties are supported.
  * @expose
  * @name svgStyle
  * @memberof! oj.ojTagCloudItem

@@ -1,0 +1,20 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+// LIST VIEW
+//-----------------------------------------------------------------------------
+// animations
+$listViewAddAnimation:         ((effect: "expand"), "fadeIn") !default;
+$listViewRemoveAnimation:      ((effect: "collapse"), "fadeOut") !default;
+$listViewUpdateAnimation:      (effect: "fadeIn") !default;
+$listViewExpandAnimation:      (effect: "expand") !default;
+$listViewCollapseAnimation:    (effect: "collapse") !default;
+$listViewPointerUpAnimation:   (effect: "ripple") !default;
+
+// gridlines
+$listViewGridlinesItemOptionDefault:   hidden !default;
+$listViewGridlinesTopOptionDefault:    hidden !default;
+$listViewGridlinesBottomOptionDefault: hidden !default;
+
+// load indicator
+$listViewLoadIndicator: skeleton !default;

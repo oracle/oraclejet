@@ -1,12 +1,13 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview'], 
-function(oj, $, Context, ThemeUtils, TimerUtils, Components, Logger)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption'], 
+function(oj, $, Context, ListDataProviderView, TreeDataProviderView, ThemeUtils, TimerUtils, Components, Logger)
 {
   "use strict";
 var __oj_combobox_many_metadata = 
@@ -50,10 +51,6 @@ var __oj_combobox_many_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -220,6 +217,15 @@ var __oj_combobox_many_metadata =
         }
       }
     },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
+    },
     "valid": {
       "type": "string",
       "writeback": true,
@@ -302,10 +308,6 @@ var __oj_combobox_one_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -480,6 +482,15 @@ var __oj_combobox_one_metadata =
         }
       }
     },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
+    },
     "valid": {
       "type": "string",
       "writeback": true,
@@ -564,10 +575,6 @@ var __oj_select_many_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -724,6 +731,15 @@ var __oj_select_many_metadata =
           "type": "string"
         }
       }
+    },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
     },
     "valid": {
       "type": "string",
@@ -796,10 +812,6 @@ var __oj_select_one_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -957,6 +969,15 @@ var __oj_select_one_metadata =
         }
       }
     },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
+    },
     "valid": {
       "type": "string",
       "writeback": true,
@@ -1023,7 +1044,7 @@ var __oj_select_one_metadata =
  * the specific language governing permissions and limitations under the Apache License and the GPL License.
  */
 
-/* global Promise:false, Symbol:false, TimerUtils:false, Context:false */
+/* global Promise:false, Symbol:false, TimerUtils:false, Context:false, ListDataProviderView:false, TreeDataProviderView:false */
 
 /**
  * @private
@@ -1073,30 +1094,30 @@ var _ComboUtils = {
   },
 
   /*
-   * The default fetch size from the data provider
-   */
+     * The default fetch size from the data provider
+     */
   DEFAULT_FETCH_SIZE: 15,
 
   /*
-   * The default fetch size to fetch all the data from the data provider
-   */
+     * The default fetch size to fetch all the data from the data provider
+     */
   DEFAULT_FETCH_ALL_SIZE: -1,
 
   /*
-   * The fetch size from the data provider for local filtering
-   */
+     * The fetch size from the data provider for local filtering
+     */
   FILTERING_FETCH_SIZE_MIN: 100,
   FILTERING_FETCH_SIZE_MAX: 500,
 
   /*
-   * The fetch size factor based on maximumResultCount for local filtering
-   */
+     * The fetch size factor based on maximumResultCount for local filtering
+     */
   FILTERING_FETCH_SIZE_MRC_TIMES: 7,
 
   /*
-   * The default delay in milliseconds between when a keystroke occurs
-   * and when a search is performed to get the filtered options.
-   */
+     * The default delay in milliseconds between when a keystroke occurs
+     * and when a search is performed to get the filtered options.
+     */
   DEFAULT_QUERY_DELAY: 70,
   ValueChangeTriggerTypes: {
     ENTER_PRESSED: 'enter_pressed',
@@ -1121,9 +1142,9 @@ var _ComboUtils = {
   // _ComboUtils
 
   /*
-   * 4-10 times faster .each replacement
-   * it overrides jQuery context of element on each iteration
-   */
+     * 4-10 times faster .each replacement
+     * it overrides jQuery context of element on each iteration
+     */
   each2: function each2(list, c) {
     var j = $.isFunction(list[0]) ? $(list[0]()) : $(list[0]);
     var i = -1;
@@ -1153,9 +1174,9 @@ var _ComboUtils = {
   // _ComboUtils
 
   /*
-   * Splits the string into an array of values, trimming each value.
-   * An empty array is returned for nulls or empty
-   */
+     * Splits the string into an array of values, trimming each value.
+     * An empty array is returned for nulls or empty
+     */
   splitVal: function splitVal(string, separator) {
     var val;
     var i;
@@ -1217,17 +1238,27 @@ var _ComboUtils = {
     keycode > 185 && keycode < 193 || // ;=,-./` (in order)
     keycode > 218 && keycode < 223)) {
       // [\]' (in order)
-      // Numpad keys return different keyCodes for the numbers
-      // String.fromCharCode would return 'a' for '1' and so forth
-      // Need to convert those keyCodes to regular number keyCodes
-      if (keycode >= 96 && keycode <= 105) {
-        keycode -= 48;
-      }
+      // JET-30104 - typing ">" in oj-select-one filter, causes a different character to appear
+      // KeyboardEvent.keyCode is deprecated in favor of KeyboardEvent.key & KeyboardEvent.code
+      // For our use case, KeyboardEvent.key property returns the value of the key pressed by the user,
+      // taking into consideration the state of modifier keys such as Shift as well as the keyboard locale and layout
+      // Even though it has cross-browser compatibility, it is better to have a fallback mechanism.
+      if (event.key != null) {
+        searchText = event.key;
+      } else {
+        // fallback to using keyCode
+        // Numpad keys return different keyCodes for the numbers
+        // String.fromCharCode would return 'a' for '1' and so forth
+        // Need to convert those keyCodes to regular number keyCodes
+        if (keycode >= 96 && keycode <= 105) {
+          keycode -= 48;
+        }
 
-      searchText = String.fromCharCode(keycode); // keydown event always return uppercase letter
+        searchText = String.fromCharCode(keycode); // keydown event always return uppercase letter
 
-      if (!event.shiftKey) {
-        searchText = searchText.toLowerCase();
+        if (!event.shiftKey) {
+          searchText = searchText.toLowerCase();
+        }
       } //  - select and combobox stop keyboard event propegation
 
 
@@ -1236,14 +1267,28 @@ var _ComboUtils = {
 
     return searchText;
   },
+
+  /**
+   * Escapes the special characters from the expression
+   *
+   * @param {string} exp
+   * @return {string} The escaped and valid regexp string literal
+   *
+   * @memberof! _ComboUtils
+   * @static
+   * @ignore
+   */
+  escapeRegExp: function escapeRegExp(exp) {
+    return exp.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&');
+  },
   // _ComboUtils
 
   /*
-   * filters mouse events so an event is fired only if the mouse moved.
-   *
-   * filters out mouse events that occur when mouse is stationary but
-   * the elements under the pointer are scrolled.
-   */
+     * filters mouse events so an event is fired only if the mouse moved.
+     *
+     * filters out mouse events that occur when mouse is stationary but
+     * the elements under the pointer are scrolled.
+     */
   installFilteredMouseMove: function installFilteredMouseMove(element) {
     element.on('mousemove', function (e) {
       var lastpos = _ComboUtils.lastMousePosition;
@@ -1277,8 +1322,8 @@ var _ComboUtils = {
 
     var resolveBusyState = _ComboUtils._addBusyState(widget.container, 'setting focus');
     /* set the focus in a timeout - that way the focus is set after the processing
-       of the current event has finished - which seems like the only reliable way
-       to set focus */
+         of the current event has finished - which seems like the only reliable way
+         to set focus */
 
 
     var timer = TimerUtils.getTimer(40);
@@ -1288,11 +1333,11 @@ var _ComboUtils = {
       var range;
       $el.focus();
       /* make sure el received focus so we do not error out when trying to manipulate the caret.
-         sometimes modals or others listeners may steal it after its set */
+             sometimes modals or others listeners may steal it after its set */
 
       if ($el.is(':visible') && el === document.activeElement) {
         /* after the focus is set move the caret to the end, necessary when we val()
-           just before setting focus */
+               just before setting focus */
         if (el.setSelectionRange) {
           el.setSelectionRange(pos, pos);
         } else if (el.createTextRange) {
@@ -1337,8 +1382,8 @@ var _ComboUtils = {
   // _ComboUtils
 
   /*
-   * Produces a query function that works with a local array
-   */
+     * Produces a query function that works with a local array
+     */
   local: function local(options, optKeys) {
     var data = options; // data elements
 
@@ -1966,11 +2011,11 @@ var _ComboUtils = {
   },
 
   /*  - need to be able to specify the initial value of select components bound to dprv
-   * If both dataProvider and valueOption[s] are specified, use valueOption[s[ for display values.
-   * If valueOption[s] is not specified or a selected value is missing then we will fetch the real data
-   * from the dataProvider like before.
-   * return true if valueOption[s] is applied, false otherwise
-   */
+     * If both dataProvider and valueOption[s] are specified, use valueOption[s[ for display values.
+     * If valueOption[s] is not specified or a selected value is missing then we will fetch the real data
+     * from the dataProvider like before.
+     * return true if valueOption[s] is applied, false otherwise
+     */
   applyValueOptions: function applyValueOptions(context, options) {
     if (context && !context.ojContext._resolveValueOptionsLater && (context._classNm === 'oj-combobox' || context._classNm === 'oj-select')) {
       var isMultiple = context.ojContext.multiple;
@@ -2004,61 +2049,65 @@ var _ComboUtils = {
   },
 
   /*
-   * If dataProvider is used and optionsKeys is specified,
-   * wrap a ListViewDataProviderView or TreeViewDataProviderView around it
-   * and save the wrapper
-   */
+     * If dataProvider is used,
+     * wrap a ListViewDataProviderView or TreeViewDataProviderView around it
+     * and save the wrapper
+     */
   wrapDataProviderIfNeeded: function wrapDataProviderIfNeeded(widget, opts) {
     var wOptions = widget.options;
     var dataProvider = wOptions.options;
 
     if (_ComboUtils.isDataProvider(dataProvider)) {
       var wrapper;
-      var optionsKeys = wOptions.optionsKeys;
+      var optionsKeys = wOptions.optionsKeys || {};
 
-      if (optionsKeys && (optionsKeys.label != null || optionsKeys.value != null)) {
-        var isTree = _ComboUtils.isTreeDataProvider(dataProvider);
-
-        if (isTree && !(dataProvider instanceof oj.TreeDataProviderView) || !isTree && !(dataProvider instanceof oj.ListDataProviderView)) {
-          var mapFields = function mapFields(item) {
-            var data = item.data;
-            var mappedItem = {};
-            mappedItem.data = {}; // copy all the fields
-
-            var keys = Object.keys(data);
-
-            for (var i = 0; i < keys.length; i++) {
-              var key = keys[i];
-              mappedItem.data[key] = data[key];
-            } // map label field
+      var isTree = _ComboUtils.isTreeDataProvider(dataProvider); // Wrap the data provider in a TreeDataProviderView or ListDataProviderView
 
 
-            if (optionsKeys.label != null) {
-              mappedItem.data.label = data[optionsKeys.label];
-            } // map value field
+      if (isTree && !(dataProvider instanceof oj.TreeDataProviderView) || !isTree && !(dataProvider instanceof oj.ListDataProviderView)) {
+        var mapFields = function mapFields(item) {
+          var data = item.data;
+          var mappedItem = {};
+          mappedItem.data = {}; // copy all the fields
+
+          var keys = Object.keys(data);
+
+          for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            var value = data[key];
+            mappedItem.data[key] = value;
+          } // map label field
+          //  COMBO-BOX TRIGGERS VALUE CHANGE WITH LABEL IF OPTIONS-KEYS.LABEL POINTS AT NUMBER FIELD
+          // Enforce label to be always strings
 
 
-            if (optionsKeys.value != null) {
-              mappedItem.data.value = data[optionsKeys.value];
-            }
-
-            mappedItem.metadata = {
-              key: data[optionsKeys.value]
-            };
-            return mappedItem;
-          }; // create ListDataProviderView or TreeDataProviderView with dataMapping
+          if (optionsKeys.label != null) {
+            mappedItem.data.label = String(data[optionsKeys.label]);
+          } else if (data.label != null) {
+            mappedItem.data.label = String(data.label);
+          } // map value field
 
 
-          wrapper = isTree ? new oj.TreeDataProviderView(dataProvider, {
-            dataMapping: {
-              mapFields: mapFields
-            }
-          }) : new oj.ListDataProviderView(dataProvider, {
-            dataMapping: {
-              mapFields: mapFields
-            }
-          });
-        }
+          if (optionsKeys.value != null) {
+            mappedItem.data.value = data[optionsKeys.value];
+          }
+
+          mappedItem.metadata = {
+            key: data[optionsKeys.value || 'value']
+          };
+          return mappedItem;
+        }; // create ListDataProviderView or TreeDataProviderView with dataMapping
+
+
+        wrapper = isTree ? new TreeDataProviderView(dataProvider, {
+          dataMapping: {
+            mapFields: mapFields
+          }
+        }) : new ListDataProviderView(dataProvider, {
+          dataMapping: {
+            mapFields: mapFields
+          }
+        });
       } // save the data provider or wrapper
 
 
@@ -2074,9 +2123,9 @@ var _ComboUtils = {
   },
 
   /**
-   * get display label. If label is missing, String(value) will be returned
-   * @private
-   */
+     * get display label. If label is missing, String(value) will be returned
+     * @private
+     */
   getLabel: function getLabel(item) {
     //  - number converter with comboboxes fails on zero value entry
     // if label is null or undefined use value
@@ -2084,9 +2133,9 @@ var _ComboUtils = {
   },
 
   /**
-   * data provider event handler
-   * @private
-   */
+     * data provider event handler
+     * @private
+     */
   _handleDataProviderEvents: function _handleDataProviderEvents(widget, event) {
     if (event.type === 'mutate') {
       if (event.detail.remove != null) {
@@ -2113,8 +2162,8 @@ var _ComboUtils = {
   },
 
   /*
-   * Add data provider event listeners
-   */
+     * Add data provider event listeners
+     */
   addDataProviderEventListeners: function addDataProviderEventListeners(widget) {
     var dataProvider = _ComboUtils.getDataProvider(widget.options);
 
@@ -2131,8 +2180,8 @@ var _ComboUtils = {
   },
 
   /*
-   * Remove data provider event listeners
-   */
+     * Remove data provider event listeners
+     */
   removeDataProviderEventListeners: function removeDataProviderEventListeners(widget) {
     var dataProvider = _ComboUtils.getDataProvider(widget.options);
 
@@ -2183,8 +2232,7 @@ var _ComboUtils = {
         container._loadingIndicatorCount = undefined;
 
         if (container._saveLoadingIndicator != null) {
-          container._saveLoadingIndicator.remove(); // @HTMLUpdateOK
-
+          container._saveLoadingIndicator.remove();
 
           container._saveLoadingIndicator = undefined;
         }
@@ -2236,6 +2284,7 @@ var _ComboUtils = {
     return {
       label: itemData.label,
       value: itemData.value,
+      disabled: itemData.disabled,
       children: itemData.children,
       data: itemData,
       metadata: itemMetadata
@@ -2450,10 +2499,12 @@ var _ComboUtils = {
 
 
         if (filterSupportsRegex) {
+          var escapedTerm = _ComboUtils.escapeRegExp(query.term);
+
           fetchListParms.filterCriterion = {
             op: $regex,
             attribute: attrName,
-            value: new RegExp(query.term, 'i')
+            value: new RegExp(escapedTerm, 'i')
           };
         } else {
           // if no regex support just fallback to $co
@@ -2739,8 +2790,8 @@ var _ComboUtils = {
   },
 
   /*
-   * Produces a query function that works with a remote data
-   */
+     * Produces a query function that works with a remote data
+     */
   remote: function remote(options, optKeys) {
     return function (query) {
       var context = {
@@ -2771,10 +2822,10 @@ var _ComboUtils = {
   // _ComboUtils
 
   /*
-   * Maps the optionsKeys and options array and creates the array of
-   * Label-Value objects. If options array is local data then
-   * it filters the result array based on the term entered in the search field.
-   */
+     * Maps the optionsKeys and options array and creates the array of
+     * Label-Value objects. If options array is local data then
+     * it filters the result array based on the term entered in the search field.
+     */
   _processData: function _processData(query, data, collection, keys, isLocal, text) {
     var group;
     var datum = data[0]; // key mappings
@@ -2834,8 +2885,8 @@ var _ComboUtils = {
   // _ComboUtils
 
   /*
-   * Creates a new class
-   */
+     * Creates a new class
+     */
   clazz: function clazz(SuperClass, methods) {
     var constructor = function constructor() {};
 
@@ -2855,9 +2906,9 @@ var _ComboUtils = {
   // _ComboUtils
 
   /* ER 29805293 - lov: when bound to dp impl selecting an item from dropdown must provide data
-   * when the multichoice component is initialized or when an item is selected, options data is saved in item pills
-   * get the data saved in item pills for the passed val
-   */
+     * when the multichoice component is initialized or when an item is selected, options data is saved in item pills
+     * get the data saved in item pills for the passed val
+     */
   getSelectedOptionData: function getSelectedOptionData(context, val) {
     if (context.ojContext.multiple && context.selection) {
       var item;
@@ -2936,7 +2987,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
   _bind: function _bind(func) {
     var self = this;
     return function () {
-      func.apply(self, arguments);
+      return func.apply(self, arguments);
     };
   },
   // _AbstractOjChoice
@@ -2971,43 +3022,21 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
     this.opts = opts;
     this.id = opts.id;
     this.headerInitialized = false;
-    this.isOjOption = this.ojContext._IsCustomElement() && !opts.options && opts.element.find('oj-option').length > 0; // destroy if called on an existing component
+    this.isOjOption = this.ojContext._IsCustomElement() && !opts.options && opts.element.find('oj-option').length > 0; // 'opts.element' is initialized in _setup() method in component files
+    // ojcombobox.js, ojselect.js and ojInputSearch.js.
+    // destroy if called on an existing component
 
     if (opts.element.data(elemName) !== undefined && opts.element.data(elemName) !== null) {
       opts.element.data(elemName)._destroy();
     }
 
-    this.container = this._createContainer();
-    this.container.find('.oj-listbox-drop').css('display', 'none'); //  - ojselect - rootAttributes are not propagated to generated jet component
+    this._prepareContainer(); // This prepares the container and sets this.container and this.containerSelector
+    // cache the body so future lookups are cheap
 
-    var rootAttr = opts.rootAttributes;
-    this.containerId = rootAttr && rootAttr.id ? rootAttr.id : 'ojChoiceId_' + (this._getAttribute('id') || 'autogen' + _ComboUtils.nextUid()); // eslint-disable-next-line no-useless-escape
-
-    this.containerSelector = '#' + this.containerId.replace(/([;&,\.\+\*\~':"\!\^#$%@\[\]\(\)=>\|])/g, '\\$1'); // @HTMLUpdateOK
-
-    this.container.attr('id', this.containerId); // cache the body so future lookups are cheap
 
     this.body = _ComboUtils.thunk(function () {
       return opts.element.closest('body');
-    }); // We’re copying the style attribute over from the outer element to
-    // the container. Normally setting the style attribute would
-    // trigger a CSP inline style violation. However, we won’t hit this
-    // because when CSP is enabled, the outer element won’t have a style
-    // attribute and thus attr(‘style’) won’t be called.
-
-    var style = this._getAttribute('style');
-
-    if (style) {
-      this.container.attr('style', this._getAttribute('style'));
-    }
-
-    this.elementTabIndex = this.opts.element.attr('tabindex'); // 'opts.element' is initialized in _setup() menthod in component files
-    // ojcombobox.js, ojselect.js and ojInputSearch.js.
-    // swap container for the element
-
-    this.opts.element.data(elemName, this).attr('tabindex', '-1').before(this.container); // @HTMLUpdateOK
-
-    this.container.data(elemName, this);
+    });
     this.dropdown = this.container.find('.oj-listbox-drop');
     this.dropdown.data('ojlistbox', this); //  - let the ojselect popup accept the custom css class name from the component
 
@@ -3020,7 +3049,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
     this.results = results;
     this.results.on('click', _ComboUtils.killEvent); //  - oghag missing label for ojselect and ojcombobox
 
-    var alabel = this._getAttribute('aria-label');
+    var alabel = this._getTransferredAttribute('aria-label');
 
     if (alabel != null) {
       this.results.attr('aria-label', alabel);
@@ -3170,7 +3199,14 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
       disabled = false;
     }
 
-    this._enable(!disabled); // Calculate size of scrollbar
+    this._enable(!disabled); // create the readonlyDiv
+
+
+    if (readonly) {
+      var input = this.container.find('.oj-combobox-input');
+
+      this.ojContext._createOrUpdateReadonlyDiv(input[0]);
+    } // Calculate size of scrollbar
 
 
     _ComboUtils.scrollBarDimensions = _ComboUtils.scrollBarDimensions || _ComboUtils.measureScrollbar();
@@ -3185,6 +3221,210 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
 
 
     this.applyReadonlyState();
+  },
+
+  /**
+     * Creates content elements and this method should be overridden by all the children
+     * and they should return their own collection of HTML elements that represents their
+     * own content
+     *
+     * @return {jQuery} The collection of HTML elements that represent the content
+     *
+     * @memberof! _AbstractOjChoice
+     * @instance
+     * @protected
+     */
+  _CreateContentElements: function _CreateContentElements() {
+    return null;
+  },
+
+  /**
+     * Configure slots for custom elements.
+     * This is noop by default and children that support slots should
+     * override this method.
+     * Children that implements this method should also implement
+     * _RestoreSlots method to ensure that slot elements are returned to
+     * their original place when calling destroy method.
+     *
+     * @memberof! _AbstractOjChoice
+     * @instance
+     * @protected
+     */
+  _ConfigureSlots: function _ConfigureSlots() {},
+
+  /**
+     * Restores slots for custom elements.
+     * This is noop by default and children that support slots should
+     * override this method.
+     * Children that implements _ConfigureSlots method should also implement
+     * this method to ensure that slot elements are returned to
+     * their original place when calling destroy method.
+     *
+     * @memberof! _AbstractOjChoice
+     * @instance
+     * @protected
+     */
+  _RestoreSlots: function _RestoreSlots() {},
+
+  /**
+     * Creates container for widgets
+     *
+     * @return {jQuery} The created container
+     *
+     * @memberof! _AbstractOjChoice
+     * @instance
+     * @private
+     */
+  _createContainerForWidget: function _createContainerForWidget() {
+    var container = $(document.createElement('div'));
+
+    var content = this._CreateContentElements(); // method defined by child classes
+
+
+    container.attr('class', this._COMPONENT_CLASSLIST); // member initialized by child classes
+
+    container.append(content); // @HTMLUpdateOK
+
+    return container;
+  },
+
+  /**
+     * Prepares the container and initializes member variable related to the
+     * container.
+     *
+     * @memberof! _AbstractOjChoice
+     * @instance
+     * @private
+     */
+  _prepareContainer: function _prepareContainer() {
+    var container;
+    var containerId;
+    var containerSelector;
+    var elementName;
+    var elementTabIndex;
+
+    if (this.ojContext._IsCustomElement()) {
+      container = this._prepareContainerForCustomElement();
+    } else {
+      container = this._prepareContainerForWidget();
+    } // now the container is the outer most element of the component
+    // For custom elements, it will be oj custom element where as for widgets it will be the
+    // container created by this._createContainerForWidget which is appended to the parent of the inner element.
+
+
+    container.find('.oj-listbox-drop').css('display', 'none');
+    containerId = this._getOrCreateContainerId(container); // eslint-disable-next-line no-useless-escape
+
+    containerSelector = '#' + containerId.replace(/([;&,\.\+\*\~':"\!\^#$%@\[\]\(\)=>\|])/g, '\\$1');
+    elementTabIndex = this.opts.element.attr('tabindex');
+    elementName = this._elemNm;
+    this.opts.element.data(elementName, this).attr('tabindex', '-1'); // @HTMLUpdateOK
+
+    container.data(elementName, this); // initialize instance members
+
+    this.container = container;
+    this.containerId = containerId;
+    this.containerSelector = containerSelector;
+    this.elementTabIndex = elementTabIndex; // Configure slots only after the instance memeber container is initialized
+
+    this._ConfigureSlots();
+  },
+
+  /**
+     * Appends the created container for custom element
+     *
+     * @return {jQuery} The reference to the container with the appended content
+     *
+     * @memberof! _AbstractOjChoice
+     * @instance
+     * @private
+     */
+  _prepareContainerForCustomElement: function _prepareContainerForCustomElement() {
+    var _outerWrapper = this.ojContext.OuterWrapper;
+
+    var _content = this._CreateContentElements(); // method defined by child classes
+
+
+    var _containerClass = this._COMPONENT_CLASSLIST; // member initialized by child classes
+
+    var _container; // For custom element, the outer wrapper will be the container
+
+
+    _container = $(_outerWrapper); // Apply the class from the container param
+
+    _container.addClass(_containerClass);
+
+    _container.prepend(_content); // @HTMLUpdateOK
+
+
+    return _container;
+  },
+
+  /**
+     * Appends the created container for widget
+     *
+     * @return {jQuery} The reference to the container with the appended content
+     *
+     * @memberof! _AbstractOjChoice
+     * @instance
+     * @private
+     */
+  _prepareContainerForWidget: function _prepareContainerForWidget() {
+    var _element = this.opts.element;
+
+    var _container = this._createContainerForWidget();
+
+    var style; // For widgets, the container is swapped with the element
+
+    _element.before(_container); // @HTMLUpdateOK
+
+
+    _container.append(_element); // @HTMLUpdateOK
+    // We’re copying the style attribute over from the outer element to
+    // the container. Normally setting the style attribute would
+    // trigger a CSP inline style violation. However, we won’t hit this
+    // because when CSP is enabled, the outer element won’t have a style
+    // attribute and thus attr(‘style’) won’t be called.
+
+
+    style = this._getAttribute('style');
+
+    if (style) {
+      _container.attr('style', style); // @HTMLUpdateOK
+
+    }
+
+    return _container;
+  },
+
+  /**
+     * Retrieves ID of the container and if one is not available, an ID will be created
+     *
+     * @param {jQuery} container The container element
+     * @return {string} The container ID that was retrieved or created
+     *
+     * @memberof! _AbstractOjChoice
+     * @instance
+     * @private
+     */
+  _getOrCreateContainerId: function _getOrCreateContainerId(container) {
+    var containerId;
+
+    if (this.ojContext._IsCustomElement()) {
+      containerId = this._getAttribute('id');
+
+      if (!containerId) {
+        containerId = this._classNm + '-' + _ComboUtils.nextUid();
+        container.attr('id', containerId);
+      }
+    } else {
+      //  - ojselect - rootAttributes are not propagated to generated jet component
+      var rootAttributes = this.opts.rootAttributes;
+      containerId = rootAttributes && rootAttributes.id ? rootAttributes.id : 'ojChoiceId_' + (this._getAttribute('id') || this._classNm + _ComboUtils.nextUid());
+      container.attr('id', containerId);
+    }
+
+    return containerId;
   },
   // _AbstractOjChoice
   // Readonly support
@@ -3214,7 +3454,9 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
             }
           }
         } else {
-          $content.attr('readonly', true);
+          $content.attr('readonly', true); // create readonly div if it doesn't exist.
+
+          this.ojContext._createOrUpdateReadonlyDiv($content[0]);
         }
       } else if (this._classNm === 'oj-select') {
         $content.attr('aria-readonly', 'true');
@@ -3251,6 +3493,33 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
     }
 
     this._enableInterface();
+  },
+
+  /**
+   * Syncs the aria-label of the content elemnt with the dropdown
+   *
+   * @memberof! _AbstractOjChoice
+   * @instance
+   * @public
+   * @ignore
+   */
+  updateAriaLabelIfNeeded: function updateAriaLabelIfNeeded() {
+    // labelEdge and labelHint are only for custom element
+    if (!this.ojContext._IsCustomElement()) {
+      return;
+    } // aria-label will be set on the content element
+    // sync it with the dropdown
+
+
+    var alabel = this._contentElement.attr('aria-label');
+
+    if (alabel) {
+      // Update dropdown
+      this.results.attr('aria-label', alabel);
+    } else {
+      // Update dropdown
+      this.results.removeAttr('aria-label');
+    }
   },
   // _AbstractOjChoice
   _clickAwayHandler: function _clickAwayHandler(event) {
@@ -3308,18 +3577,11 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
 
     if (ojcomp !== undefined) {
       if (this.ojContext._IsCustomElement()) {
-        // remove touchstart listener from dropdown
-        ojcomp.dropdown[0].removeEventListener('touchstart', this._delegatedDropdownTouchStartListener, {
-          passive: true
-        });
-        delete this._delegatedDropdownTouchStartListener;
-      } // Move the element outside the container to its original place
+        this._cleanUpContainerForCustomElement();
+      } else {
+        this._cleanUpContainerForWidget();
+      }
 
-
-      ojcomp.container.after(element); // @HTMLUpdateOK
-
-      ojcomp.container.remove();
-      ojcomp.dropdown.remove();
       element.removeAttr('aria-hidden').removeData(this._elemNm).off('.' + this._classNm).prop('autofocus', this.autofocus || false);
 
       if (this.elementTabIndex) {
@@ -3333,11 +3595,52 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
       element.show();
     }
   },
+
+  /**
+     * Cleans up the container for widget
+     *
+     * @memberof! _AbstractOjChoice
+     * @instance
+     * @private
+     */
+  _cleanUpContainerForWidget: function _cleanUpContainerForWidget() {
+    var element = this.opts.element;
+    var ojcomp = element.data(this._elemNm); // Move the element outside the container to its original place
+
+    ojcomp.container.after(element); // @HTMLUpdateOK
+
+    ojcomp.container.remove();
+    ojcomp.dropdown.remove();
+  },
+
+  /**
+     * Cleans up the container for custom element
+     *
+     * @memberof! _AbstractOjChoice
+     * @instance
+     * @private
+     */
+  _cleanUpContainerForCustomElement: function _cleanUpContainerForCustomElement() {
+    var element = this.opts.element;
+    var ojcomp = element.data(this._elemNm); // remove touchstart listener from dropdown
+
+    ojcomp.dropdown[0].removeEventListener('touchstart', this._delegatedDropdownTouchStartListener, {
+      passive: true
+    });
+    delete this._delegatedDropdownTouchStartListener;
+    ojcomp.container.empty();
+    ojcomp.container.off('click');
+    ojcomp.container.append(element); // @HTMLUpdateOK
+    // : COMBOBOX CUSTOM END SLOT DISAPPEARED ON REFRESH AND DEFAULT END SLOT IS SHOWN
+    // If end slot was provided, move it back to its original place
+
+    this._RestoreSlots();
+  },
   // _AbstractOjChoice
 
   /*
-   * unwrap oj-option and oj-optgroup
-   */
+     * unwrap oj-option and oj-optgroup
+     */
   _unwrapOjOptions: function _unwrapOjOptions(list) {
     var children = list.children();
     var elem;
@@ -3373,8 +3676,8 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
   // _AbstractOjChoice
 
   /*
-   * Clean up the html list provided by app
-   */
+     * Clean up the html list provided by app
+     */
   _cleanupList: function _cleanupList(list) {
     if (list && list.is('ul')) {
       list.removeClass('oj-listbox-results oj-listbox-result-sub');
@@ -3410,8 +3713,8 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
   // _AbstractOjChoice
 
   /*
-   * Processes option/optgroup/li element and return data object
-   */
+     * Processes option/optgroup/li element and return data object
+     */
   _optionToData: function _optionToData(element) {
     if (element.is('option') || element.is('oj-option')) {
       return {
@@ -3467,8 +3770,8 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
   // _AbstractOjChoice
 
   /*
-   * Prepares the option items to display in the drop down
-   */
+     * Prepares the option items to display in the drop down
+     */
   _prepareOpts: function _prepareOpts(_opts) {
     var opts = _opts;
     var element;
@@ -3583,8 +3886,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
                   var middleclone = middlebit.cloneNode(true);
                   spannode.appendChild(middleclone); // @HTMLUpdateOK
 
-                  middlebit.parentNode.replaceChild(spannode, middlebit); // @HTMLUpdateOK
-
+                  middlebit.parentNode.replaceChild(spannode, middlebit);
                   skip = 1;
                 }
               } else if (_node.nodeType === 1 && _node.childNodes && !/(script|style)/i.test(_node.tagName)) {
@@ -3703,8 +4005,14 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
 
           for (i = 0, l = results.length; i < l; i++) {
             result = results[i];
-            disabled = result.disabled === true;
-            selectable = isTreeDataProvider ? !result._jetUnSelectable : !disabled && id(result) !== undefined;
+            disabled = result.disabled === true; // Bug JET-31662 - ISSUE WITH AUTOMATIC SCROLLING IN A JET SELECT LIST WITH A LARGE CUSTOMER-SUPPLIED DATA SET
+            // A node will be selectable only if it is a leaf node. For a node to be a leaf node, when using a
+            // tree data provider, it should have not have the flag _jetUnSelectable set. When using an
+            // observable array, it should not be disabled, should have a non-null value and should not have
+            // any children. If result.children is not null, we consider the node be a parent node. This means
+            // even if it is an empty array, we still treat it as a parent node with no children.
+
+            selectable = isTreeDataProvider ? !result._jetUnSelectable : !disabled && id(result) != null && result.children == null;
             var isList = result.element && $(result.element[0]).is('li');
             node = isList ? $(result.element[0]) : $('<li></li>');
 
@@ -3769,7 +4077,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
                     // Insert a text node for the label attribute
                     var labelText = content.getAttribute('label');
                     var textNode = document.createTextNode(labelText);
-                    content.insertBefore(textNode, content.firstChild);
+                    content.insertBefore(textNode, content.firstChild); // @HTMLUpdateOK
                   }
                 }
               } // process children
@@ -4108,11 +4416,6 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
   _opened: function _opened() {
     return this.container.hasClass('oj-listbox-dropdown-open');
   },
-  // return the element one which we want to position the listbox-dropdown. We don't
-  // want it to be the container because we add the inline messages to the container
-  // and if we line up to the container when it has inline messages, the dropdown
-  // appears after the inline messages. We want it to always appear next to the input,
-  // which is the first child of the container.
   // _AbstractOjChoice
   _getDropdownPositionElement: function _getDropdownPositionElement() {
     return this.container[0].querySelector('.oj-text-field-container');
@@ -4191,12 +4494,12 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
   // _AbstractOjChoice
 
   /**
-   * Opens the dropdown
-   *
-   * @return {boolean} whether or not dropdown was opened. This method will return false if, for example,
-   * the dropdown is already open, or if the 'open' event listener on the element called preventDefault().
-   * @ignore
-   */
+     * Opens the dropdown
+     *
+     * @return {boolean} whether or not dropdown was opened. This method will return false if, for example,
+     * the dropdown is already open, or if the 'open' event listener on the element called preventDefault().
+     * @ignore
+     */
   open: function open(e, dontUpdateResults) {
     if (!this._shouldOpen(e)) {
       return false;
@@ -4336,8 +4639,10 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
     } else {
       this.dropdown.detach();
       this.results.empty();
-    } // /select: accessibility
+    }
 
+    this.dropdown.appendTo(this.container); // @HTMLUpdateOK
+    // /select: accessibility
 
     this._getActiveContainer().attr('aria-expanded', false);
 
@@ -4865,11 +5170,26 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
       options = options || {};
       options.trigger = _ComboUtils.ValueChangeTriggerTypes.OPTION_SELECTED;
 
-      this._onSelect(data, options, event);
+      var onSelectReturn = this._onSelect(data, options, event);
 
-      this._triggerUpdateEvent(data, options, event);
+      if (onSelectReturn instanceof Promise) {
+        onSelectReturn.then(this._bind(function (result) {
+          if (result) {
+            // trigger events only if the value is set
+            this._triggerUpdateEvent(data, options, event);
 
-      this._triggerValueUpdatedEvent(data, previousValue);
+            this._triggerValueUpdatedEvent(data, previousValue);
+          }
+        }));
+      } else if (onSelectReturn !== false) {
+        // Need to trigger the events even when onSelectReturn is null
+        // as the events should be triggered even when setting the same value again
+        this._triggerUpdateEvent(data, options, event);
+
+        this._triggerValueUpdatedEvent(data, previousValue);
+      } // no need to wait for _onSelect to be resolved for as the
+      // setting the flag is response to the event and not setting the value.
+
 
       if (event && event.type === 'keydown') {
         // This flag will be used in "keyup" event handler to avoid
@@ -4918,8 +5238,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
         attrs = style.split(';');
 
         for (i = 0, l = attrs.length; i < l; i++) {
-          attr = attrs[i].replace(/\s/g, ''); // @HTMLUpdateOK
-
+          attr = attrs[i].replace(/\s/g, '');
           matches = attr.match(/^width:(([-+]?([0-9]*\.)?[0-9]+)(px|em|ex|%|in|cm|mm|pt|pc))/i);
 
           if (matches !== null && matches.length >= 1) {
@@ -4964,14 +5283,17 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
   // /pass original event
 
   /**
-   * Sets the value
-   * @instance
-   * @ignore
-   * @param {any} val The value to be set
-   * @param {jQuery.Event=} event The event at which the method is invoked
-   * @param {object} context Context
-   * @return {Promise} Result of setting the value
-   */
+     * Sets the value
+     * @instance
+     * @ignore
+     * @param {any} val The value to be set
+     * @param {jQuery.Event=} event The event at which the method is invoked
+     * @param {object} context Context
+     * @return {Promise|boolean|null} Result of setting the value
+     *                                * Promise when using async validators
+     *                                * boolean when using sync validators / when setting the value without validators
+     *                                * null when setValue is not invoked since there was no change in the value
+     */
   setVal: function setVal(val, event, context) {
     //  - selected value got replaced once the label for initial value is available
     this.valHasChanged();
@@ -5052,11 +5374,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
       }
     }
 
-    if (setValueResult instanceof Promise) {
-      return setValueResult;
-    }
-
-    return Promise.resolve(setValueResult === true);
+    return setValueResult;
   },
   getValOpts: function getValOpts() {
     var ojContext = this.ojContext;
@@ -5111,6 +5429,20 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
   // _AbstractOjChoice
   _getAttribute: function _getAttribute(id) {
     return this.opts.ojContext._IsCustomElement() ? this.opts.ojContext.OuterWrapper.getAttribute(id) : this.opts.element.attr(id);
+  },
+
+  /**
+   * Retrieves the value of the attributed transferred by the framework.
+   *
+   * @param {string} id The attribute whose value has to be retrieved
+   * @return {string?} The value of the attribute if specified
+   *
+   * @memberof! _AbstractOjChoice
+   * @instance
+   * @private
+   */
+  _getTransferredAttribute: function _getTransferredAttribute(id) {
+    return this.opts.element.attr(id);
   },
   // _AbstractOjChoice
   _showSearchBox: function _showSearchBox(searchText) {
@@ -5351,8 +5683,14 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 
     var rootAttr = this.opts.rootAttributes;
     var idSuffix = rootAttr && rootAttr.id ? rootAttr.id : this._getAttribute('id') || _ComboUtils.nextUid();
+
+    var ariaLabel = this._getTransferredAttribute('aria-label');
+
+    var ariaControls = this._getTransferredAttribute('aria-controls');
+
     var selection = container.find('.' + this._classNm + '-choice');
-    this.selection = selection; //  - ojselect missing id attribute on oj-select-choice div
+    this.selection = selection;
+    this._contentElement = this._elemNm === 'ojcombobox' ? this.search : this.selection; //  - ojselect missing id attribute on oj-select-choice div
 
     selection.attr('id', this._classNm + '-choice-' + idSuffix); // add aria associations
 
@@ -5388,19 +5726,19 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
       }
     }
 
-    if (this._getAttribute('aria-label')) {
-      this.search.attr('aria-label', this._getAttribute('aria-label'));
+    if (ariaLabel) {
+      this.search.attr('aria-label', ariaLabel);
     }
 
-    if (this._getAttribute('aria-controls')) {
-      this.search.attr('aria-controls', this._getAttribute('aria-controls'));
+    if (ariaControls) {
+      this.search.attr('aria-controls', ariaControls);
     }
 
     selection.on('keydown', this._bind(this._containerKeydownHandler)); // selection.on("keyup-change input", this._bind(this._containerKeyupHandler));
 
     selection.on('mousedown', this._bind(function (e) {
-      // if the mousedown target is the end slot, do nothing
-      if (e.target.getAttribute('slot') === 'end' || $(this._endSlot).find(e.target).length > 0) {
+      // if the mousedown target is the end slot or if the interface is not enabled, do nothing
+      if (e.target.getAttribute('slot') === 'end' || $(this._endSlot).find(e.target).length > 0 || !this._isInterfaceEnabled()) {
         return;
       } // /prevent user from focusing on disabled select
 
@@ -5476,12 +5814,25 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
           var previousValue = this.getVal();
 
           if (!selectionData && value !== '' || selectionData && selectionData.label !== value || !this.ojContext.isValid() && value !== this._previousDisplayValue) {
-            this._onSelect(valopt, options, e);
+            var onSelectReturn = this._onSelect(valopt, options, e);
 
             if (e.type !== 'blur') {
-              this._triggerUpdateEvent(valopt, options, e);
+              if (onSelectReturn instanceof Promise) {
+                onSelectReturn.then(this._bind(function (result) {
+                  if (result) {
+                    // trigger events only if the value is set
+                    this._triggerUpdateEvent(valopt, options, e);
 
-              this._triggerValueUpdatedEvent(valopt, previousValue);
+                    this._triggerValueUpdatedEvent(valopt, previousValue);
+                  }
+                }));
+              } else if (onSelectReturn !== false) {
+                // Need to trigger the events even when onSelectReturn is null
+                // as the events should be triggered even when setting the same value again
+                this._triggerUpdateEvent(valopt, options, e);
+
+                this._triggerValueUpdatedEvent(valopt, previousValue);
+              }
             }
           } else if (e.type === 'keyup') {
             // if the value stays the same, we still want to fire valueUpdated event to support search use cases
@@ -5514,11 +5865,15 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
             }
           }
         }
-      }
+      } // Clear up the focus classes on blur event
 
-      this.search.removeClass(this._classNm + '-focused');
-      this.container.removeClass('oj-focus'); // Clearing the flag which is set while processing the keydown event
+
+      if (e.type === 'blur') {
+        this.search.removeClass(this._classNm + '-focused');
+        this.container.removeClass('oj-focus');
+      } // Clearing the flag which is set while processing the keydown event
       // in _selectHighlighted() method.
+
 
       this.enterKeyEventHandled = false;
     }));
@@ -5526,7 +5881,6 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     this._initContainerWidth();
 
     this.opts.element.hide().attr('aria-hidden', true);
-    this.container.append(this.opts.element); // @HTMLUpdateOK
 
     this._setPlaceholder();
   },
@@ -5657,7 +6011,7 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 
           var match = null;
 
-          if (!id) {
+          if (id == null) {
             var optionsKeys = self.ojContext.options.optionsKeys;
 
             if (tagName === 'select' && !self.ojContext._HasPlaceholderSet() && (!optionsKeys || !optionsKeys.value && !optionsKeys.label)) {
@@ -5795,7 +6149,7 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     _ComboUtils.each2(highlightableChoices, function (i, elm) {
       var valueItem = self._getValueItem();
 
-      if (valueItem && oj.Object.compareValues(valueItem, self.id(elm.data(self._elemNm)))) {
+      if (valueItem != null && oj.Object.compareValues(valueItem, self.id(elm.data(self._elemNm)))) {
         selected = i;
         return false;
       }
@@ -5814,10 +6168,25 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     this._processAriaLabelForHierarchy();
   },
   // _AbstractSingleChoice
-  // /pass original event
+
+  /**
+   * Handles when a selection is made by the user
+   *
+   * @param {object} data A valueOption object for the currect selection
+   * @param {object} options Options for _onSelect method on how to handle the event
+   * @param {jQuery.Event=} event The event at which the method is invoked
+   * @return {Promise|boolean|null} Result of setting the value
+   *                                * Promise when using async validators
+   *                                * boolean when using sync validators / when setting the value without validators
+   *                                * null when setValue is not invoked since there was no change in the value
+   *
+   * @memberof! _AbstractSingleChoice
+   * @instance
+   * @private
+   */
   _onSelect: function _onSelect(data, options, event) {
     if (!this._triggerSelect(data)) {
-      return;
+      return false;
     }
 
     var context;
@@ -5847,6 +6216,7 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     var valopt = data;
     var previousHasUncommittedValue = this.hasUncommittedValue;
     var setValueReturn = null;
+    var returnValue = null;
 
     if (this.id(data).length === 0) {
       val = this.ojContext._IsCustomElement() ? _ComboUtils.getValueForPlaceholder(false) : [];
@@ -5869,21 +6239,55 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 
     this.hasUncommittedValue = false; // setVal method returns a promise that resolves to true|false or a boolean
 
-    setValueReturn = this.setVal(val, event, context); // If the validation fails, set the hasUncommittedValue flag so as to revert it back to its
-    // original state
+    setValueReturn = this.setVal(val, event, context);
 
-    setValueReturn.then(this._bind(function (result) {
-      if (result === false) {
-        // The validation failed, so reset the flag
-        this.hasUncommittedValue = previousHasUncommittedValue;
-      } // Do nothing as the validation succeeded and the value is set.
+    if (setValueReturn instanceof Promise) {
+      returnValue = setValueReturn.then(this._bind(function (result) {
+        this._onSelectAfterSetVal(result, previousHasUncommittedValue); // return the result of the validation, which can use by methods
+        // that rely on the result of _onSelect call.
 
-    }));
-    this._skipSetValueOptions = false;
+
+        return result;
+      }));
+    } else {
+      // Sanitize the setValueReturn to be boolean.
+      // we can treat null as a passed case, since it represents that
+      // the value is already the selected values and a valid one.
+      var result = setValueReturn !== false;
+
+      this._onSelectAfterSetVal(result, previousHasUncommittedValue);
+
+      returnValue = setValueReturn;
+    } // need not to wait for the validation to complete as the following
+    // operations are a response to the event and not for setting the value.
+
 
     if (event.type !== 'blur') {
       this._focusSearch();
     }
+
+    return returnValue;
+  },
+
+  /**
+   * Performs operations that has to be done after the setVal call in _onSelect
+   *
+   * @param {boolean} result The result of the setVal call
+   * @param {boolean} previousHasUncommittedValue The initial hasCommittedValue flag value
+   *
+   * @memberof! _AbstractSingleChoice
+   * @instance
+   * @private
+   */
+  _onSelectAfterSetVal: function _onSelectAfterSetVal(result, previousHasUncommittedValue) {
+    // If the validation fails, set the hasUncommittedValue flag so as to revert it back to its
+    // original state
+    if (result === false) {
+      // The validation failed, so reset the flag
+      this.hasUncommittedValue = previousHasUncommittedValue;
+    }
+
+    this._skipSetValueOptions = false;
   },
   // _AbstractSingleChoice
   _clearSearch: function _clearSearch() {
@@ -5957,30 +6361,72 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 var _OjSingleCombobox = _ComboUtils.clazz(_AbstractSingleChoice, {
   _elemNm: 'ojcombobox',
   _classNm: 'oj-combobox',
-  _createContainer: function _createContainer() {
-    var container = $(document.createElement('div')).attr({
-      class: 'oj-combobox oj-component'
-    }).html([// @HTMLUpdateOK
-    "<div class='oj-text-field-container' role='presentation'>", "  <div class='oj-combobox-choice' tabindex='-1' role='presentation'>", "   <div class='oj-text-field-middle'>", "     <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off'", "       spellcheck='false' class='oj-combobox-input' role='combobox' aria-expanded='false' aria-autocomplete='list' />", '   </div>', "   <abbr class='oj-combobox-clear-entry' role='presentation'></abbr>", "   <span class='oj-combobox-divider' role='presentation'></span>", "   <a class='oj-combobox-arrow oj-combobox-icon oj-component-icon oj-clickable-icon-nocontext oj-combobox-open-icon'", "       role='button' aria-label='expand'></a>", '  </div>', '</div>', "<div class='oj-listbox-drop' role='presentation'>", "   <ul class='oj-listbox-results' role='listbox'>", '   </ul>', '</div>', "<div role='region' class='oj-helper-hidden-accessible oj-listbox-liveregion' aria-live='polite'></div>"].join('')); // @HTMLUpdateOK
-    // if end slot is provided, use the slot instead
+  _COMPONENT_CLASSLIST: 'oj-combobox oj-component',
 
-    if (this.ojContext._IsCustomElement()) {
-      var slotMap = oj.BaseCustomElementBridge.getSlotMap(this.ojContext.OuterWrapper);
-      var endSlot = slotMap.end;
+  /**
+   * Creates children elements for oj-combobox-one
+   *
+   * @return {jQuery} The collection of HTML elements that represent the content
+   *
+   * @memberof! _OjSingleCombobox
+   * @instance
+   * @protected
+   * @override
+   */
+  _CreateContentElements: function _CreateContentElements() {
+    var contentStructure = ["<div class='oj-text-field-container' role='presentation'>", "  <div class='oj-combobox-choice' tabindex='-1' role='presentation'>", "   <div class='oj-text-field-middle'>", "     <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off'", "       spellcheck='false' class='oj-combobox-input' role='combobox' aria-expanded='false' aria-autocomplete='list' />", '   </div>', "   <abbr class='oj-combobox-clear-entry' role='presentation'></abbr>", "   <span class='oj-combobox-divider' role='presentation'></span>", "   <a class='oj-combobox-arrow oj-combobox-icon oj-component-icon oj-clickable-icon-nocontext oj-combobox-open-icon'", "       role='button' aria-label='expand'></a>", '  </div>', '</div>', "<div class='oj-listbox-drop' role='presentation'>", "   <ul class='oj-listbox-results' role='listbox'>", '   </ul>', '</div>', "<div class='oj-helper-hidden-accessible oj-listbox-liveregion' aria-live='polite'></div>"];
+    var container = $(contentStructure.join(''));
+    return container;
+  },
 
-      if (endSlot) {
-        // remove the divider
-        container.find('.oj-combobox-divider').remove(); // remove the default arrow anchor
-
-        container.find('.oj-combobox-arrow').remove(); // append the slot at the end
-
-        container.find('.oj-combobox-choice').append(endSlot); // @HTMLUpdateOK
-
-        this._endSlot = endSlot;
-      }
+  /**
+   * Configures slots for oj-combobox-one
+   *
+   * @memberof! _OjSingleCombobox
+   * @instance
+   * @protected
+   * @override
+   */
+  _ConfigureSlots: function _ConfigureSlots() {
+    // The container should be initialized before calling this method
+    if (this.container == null || !this.ojContext._IsCustomElement()) {
+      return;
     }
 
-    return container;
+    var container = this.container; // container is always a jQuery object of custom-element
+
+    var slotMap = oj.BaseCustomElementBridge.getSlotMap(container[0]);
+    var endSlot = slotMap.end;
+
+    if (endSlot) {
+      // remove the divider
+      container.find('.oj-combobox-divider').remove(); // remove the default arrow anchor
+
+      container.find('.oj-combobox-arrow').remove(); // append the slot at the end
+
+      container.find('.oj-combobox-choice').append(endSlot); // @HTMLUpdateOK
+
+      this._endSlot = endSlot;
+    }
+  },
+
+  /**
+   * Restores slots for oj-combobox-one
+   *
+   * @memberof! _OjSingleCombobox
+   * @instance
+   * @protected
+   * @override
+   */
+  _RestoreSlots: function _RestoreSlots() {
+    var _endSlot = this._endSlot;
+
+    if (_endSlot != null && this.container != null && this.ojContext._IsCustomElement()) {
+      this.container.append(_endSlot); // @HTMLUpdateOK
+    } // Clear the reference to the dom element
+
+
+    this._endSlot = null;
   },
   _triggerValueUpdatedEvent: function _triggerValueUpdatedEvent(data, previousValue) {
     if (!this.ojContext._IsCustomElement()) {
@@ -6023,6 +6469,8 @@ var _OjSingleCombobox = _ComboUtils.clazz(_AbstractSingleChoice, {
     // if beforeExpand is not cancelled
     _OjSingleCombobox.superclass._opening.apply(this, arguments);
 
+    this._focusSearch();
+
     if (!dontUpdateResults) {
       this._updateResults(true);
     }
@@ -6043,6 +6491,7 @@ var _OjSingleCombobox = _ComboUtils.clazz(_AbstractSingleChoice, {
   _updateSelection: function _updateSelection(data) {
     var formatted;
     var item = [];
+    var text;
     this.selection.data(this._elemNm, data);
 
     if (data !== null && data.length !== 0) {
@@ -6054,11 +6503,23 @@ var _OjSingleCombobox = _ComboUtils.clazz(_AbstractSingleChoice, {
 
       this.search.removeClass(this._classNm + '-default');
       item.push(data);
+      text = formatted;
     } else {
       // data will be null only when user set it programmatically.
       this.search.val('');
 
       this._setPlaceholder();
+
+      text = '';
+    } // keep readonly div's content in sync
+
+
+    if (this.ojContext.options.readOnly) {
+      var readonlyElem = this.ojContext._getReadonlyDiv();
+
+      if (readonlyElem) {
+        readonlyElem.textContent = text;
+      }
     } // Storing this data so that it will be used when setting the display value.
 
 
@@ -6127,7 +6588,7 @@ var _OjSingleCombobox = _ComboUtils.clazz(_AbstractSingleChoice, {
  * the specific language governing permissions and limitations under the Apache License and the GPL License.
  */
 
-/* global _ComboUtils:false, _AbstractSingleChoice:false */
+/* global _ComboUtils:false, _AbstractSingleChoice:false, Promise:false */
 
 /**
  * @private
@@ -6136,14 +6597,21 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
   _elemNm: 'ojselect',
   _classNm: 'oj-select',
   _userTyping: false,
-  // _OjSingleSelect
-  _createContainer: function _createContainer() {
-    var container = $(document.createElement('div')).attr({
-      class: 'oj-select oj-component'
-    }).html([// @HTMLUpdateOK
-    "<div class='oj-text-field-container' role='presentation'>", "  <div class='oj-select-choice' tabindex='0' role='combobox' ", "     aria-autocomplete='none' aria-expanded='false'>", "   <div class='oj-text-field-middle'>", "      <span class='oj-select-chosen'></span>", '   </div>', "    <abbr class='oj-select-search-choice-close' role='presentation'></abbr>", "    <a class='oj-select-arrow oj-component-icon oj-clickable-icon-nocontext oj-select-open-icon' role='presentation'>", '    </a>', '  </div>', '</div>', "<div class='oj-listbox-drop' role='dialog'>", "  <div class='oj-listbox-search-wrapper'>", "  <div class='oj-listbox-search'>", "    <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off'", "           spellcheck='false' class='oj-listbox-input' title='Search field' ", "           role='combobox' aria-expanded='false' aria-autocomplete='list' />", "    <span class='oj-listbox-spyglass-box'>", "      <span class='oj-component-icon oj-clickable-icon-nocontext oj-listbox-search-icon' role='presentation'>", "       <b role='presentation'></b></span>", '    </span>', '  </div>', '  </div>', "   <ul class='oj-listbox-results' role='listbox'>", '   </ul>', '</div>', "<div role='region' class='oj-helper-hidden-accessible oj-listbox-liveregion' aria-live='polite'></div>"].join('')); // @HTMLUpdateOK
+  _COMPONENT_CLASSLIST: 'oj-select oj-component',
 
-    return container;
+  /**
+   * Creates children elements for oj-select-one
+   *
+   * @return {jQuery} The collection of HTML elements that represent the content
+   *
+   * @memberof! _OjSingleSelect
+   * @instance
+   * @protected
+   * @override
+   */
+  _CreateContentElements: function _CreateContentElements() {
+    var contentStructure = ["<div class='oj-text-field-container' role='presentation'>", "  <div class='oj-select-choice' tabindex='0' role='combobox' ", "     aria-autocomplete='none' aria-expanded='false'>", "   <div class='oj-text-field-middle'>", "      <span class='oj-select-chosen'></span>", '   </div>', "    <abbr class='oj-select-search-choice-close' role='presentation'></abbr>", "    <a class='oj-select-arrow oj-component-icon oj-clickable-icon-nocontext oj-select-open-icon' role='presentation'>", '    </a>', '  </div>', '</div>', "<div class='oj-listbox-drop' role='dialog'>", "  <div class='oj-listbox-search-wrapper'>", "  <div class='oj-listbox-search'>", "    <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off'", "           spellcheck='false' class='oj-listbox-input' title='Search field' ", "           role='combobox' aria-expanded='false' aria-autocomplete='list' />", "    <span class='oj-listbox-spyglass-box'>", "      <span class='oj-component-icon oj-listbox-search-icon' role='presentation'>", "       <b role='presentation'></b></span>", '    </span>', '  </div>', '  </div>', "   <ul class='oj-listbox-results' role='listbox'>", '   </ul>', '</div>', "<div class='oj-helper-hidden-accessible oj-listbox-liveregion' aria-live='polite'></div>"];
+    return $(contentStructure.join(''));
   },
   // _OjSingleSelect
   // eslint-disable-next-line no-unused-vars
@@ -6270,7 +6738,7 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
       'aria-describedby': selectedId
     }); //  - missing select label
 
-    var label = this._getAttribute('aria-label');
+    var label = this._getTransferredAttribute('aria-label');
 
     if (label) {
       this.selection.attr('aria-label', label);
@@ -6395,9 +6863,19 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
     // /pass original event
     var setValueReturn = _OjSingleSelect.superclass.setVal.call(this, val, event, context);
 
-    return setValueReturn.then(this._bind(function () {
+    if (setValueReturn instanceof Promise) {
+      return setValueReturn.then(this._bind(function (result) {
+        if (result !== false) {
+          this.selection.data('selectVal', val);
+        }
+      }));
+    }
+
+    if (setValueReturn !== false) {
       this.selection.data('selectVal', val);
-    }));
+    }
+
+    return setValueReturn;
   },
   // _OjSingleSelect
   _containerKeydownHandler: function _containerKeydownHandler(e) {
@@ -6819,6 +7297,7 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
         passive: false
       });
       delete this._delegatedContainerTouchStartListener;
+      this.container.off('click touchstart');
     }
 
     _AbstractMultiChoice.superclass._destroy.apply(this, arguments);
@@ -6829,6 +7308,11 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     var idSuffix = _ComboUtils.nextUid();
 
     var elementLabel;
+
+    var ariaLabel = this._getTransferredAttribute('aria-label');
+
+    var ariaControls = this._getTransferredAttribute('aria-controls');
+
     this.searchContainer = this.container.find('.' + this._classNm + '-search-field');
     var selection = this.container.find(selector);
     this.selection = selection;
@@ -6874,12 +7358,12 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
       }
     }
 
-    if (this._getAttribute('aria-label')) {
-      this._contentElement.attr('aria-label', this._getAttribute('aria-label'));
+    if (ariaLabel) {
+      this._contentElement.attr('aria-label', ariaLabel);
     }
 
-    if (this._getAttribute('aria-controls')) {
-      this._contentElement.attr('aria-controls', this._getAttribute('aria-controls'));
+    if (ariaControls) {
+      this._contentElement.attr('aria-controls', ariaControls);
     }
 
     if (this.elementTabIndex) {
@@ -6925,19 +7409,30 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
           trigger: trigger
         };
 
-        this._onSelect(data, options, e);
+        var onSelectReturn = this._onSelect(data, options, e); // BUG JET-37212 - oj-combobox-many: input text is not cleared on blur
+        // The clearing part was removed while fixing the bug JET-28569. But this part is
+        // needed to clear the search box under certain cases like typing in a value that is already
+        // present and then blurring out.
+
+
+        if (onSelectReturn instanceof Promise) {
+          // The issue JET-28569 which removed this part so as to not clear the text when using async-validator
+          // so in that case, wait for the promise to resolve and then clear the text if needed.
+          onSelectReturn.then(this._bind(this._clearSearchOnBlur));
+        } else {
+          this._clearSearchOnBlur();
+        }
       }
 
-      this.search.removeClass(this._classNm + '-focused');
-      this.container.removeClass('oj-focus');
+      this._selectChoice(null);
 
-      this._selectChoice(null); // : component oj-combobox-many displays validation error message even when no value is entered in the component
-      // do not clear search if the input text is invalid
-      // this will allow users to correct any invalid input text
+      if (e.type === 'blur') {
+        // JET-35372 8.2.0: oj-combobox-many steals input focus when value/options are updated
+        // reset the isSearchFocused flag on blur event
+        this.isSearchFocused = false; // Clear up the focus classes on blur event
 
-
-      if (!this._opened() && this._classNm !== 'oj-select' && this.ojContext.isValid()) {
-        this._clearSearch();
+        this.search.removeClass(this._classNm + '-focused');
+        this.container.removeClass('oj-focus');
       }
 
       e.stopImmediatePropagation();
@@ -6989,9 +7484,7 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 
     this._initContainerWidth();
 
-    this.opts.element.hide().attr('aria-hidden', true);
-    this.container.append(this.opts.element); // @HTMLUpdateOK
-    // set the placeholder if necessary
+    this.opts.element.hide().attr('aria-hidden', true); // set the placeholder if necessary
 
     this._clearSearch();
   },
@@ -7195,7 +7688,12 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     });
 
     if (filtered && filtered.length > 0 && (this._classNm === 'oj-combobox' || this._classNm === 'oj-select')) {
-      if (this.opts.fetchType === 'init') {
+      // JET-35213 - reset issue in required oj-select-many
+      // When calling reset method, the valueOptions might not have been set (like when click on an option,
+      // where valueOptions will be set before updating selection). In such scenarios, where the valueOptions
+      // are not updated the filtered data from the data provider should be set as valueOptions instead of populating
+      // from the current valueOptions even if it is not an initial fetch
+      if (this.opts.fetchType === 'init' || !this._skipSetValueOptions) {
         // for initial fetch, the filtered data will include data/metadata information when bound to a data provider
         this.setValOpts(filtered);
       } else if (_ComboUtils.isDataProvider(this.opts.options)) {
@@ -7221,9 +7719,25 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     self._postprocessResults();
   },
   // AbstractMultiChoice
+
+  /**
+   * Handles when a selection is made by the user
+   *
+   * @param {object} data A valueOption object for the currect selection
+   * @param {object} options Options for _onSelect method on how to handle the event
+   * @param {jQuery.Event=} event The event at which the method is invoked
+   * @return {Promise|boolean|null} Result of setting the value
+   *                                * Promise when using async validators
+   *                                * boolean when using sync validators / when setting the value without validators
+   *                                * null when setValue is not invoked since there was no change in the value
+   *
+   * @memberof! _AbstractMultiChoice
+   * @instance
+   * @private
+   */
   _onSelect: function _onSelect(data, options, event) {
     if (!this._triggerSelect(data)) {
-      return;
+      return false;
     }
 
     var context;
@@ -7260,6 +7774,7 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 
     var isDataProvider = opts ? _ComboUtils.isDataProvider(opts.options) : false;
     var setValueReturn = null;
+    var returnValue = null;
     var previousHasUncommittedValue = this.hasUncommittedValue;
 
     if (isDataProvider) {
@@ -7311,20 +7826,66 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 
     this.hasUncommittedValue = false; // setVal method returns a promise that resolves to true|false or a boolean
 
-    setValueReturn = this.setVal(val, event, context); // If the validation fails, set the hasUncommittedValue flag so as to revert it back to its
+    setValueReturn = this.setVal(val, event, context);
+
+    if (setValueReturn instanceof Promise) {
+      returnValue = setValueReturn.then(this._bind(function (result) {
+        this._afterOnSelectSetVal(result, data, valOptsInit, previousHasUncommittedValue); // return the result of the validation, which can use by methods
+        // that rely on the result of _onSelect call.
+
+
+        return result;
+      }));
+    } else {
+      // Sanitize the setValueReturn to be boolean.
+      // we can treat null as a passed case, since it represents that
+      // the value is already one of the selected values and a valid one.
+      var result = setValueReturn !== false;
+
+      this._afterOnSelectSetVal(result, data, valOptsInit, previousHasUncommittedValue);
+
+      returnValue = setValueReturn;
+    } // need not to wait for the validation to complete as the following
+    // operations are a response to the event and not for setting the value.
+
+
+    if (this.opts.closeOnSelect) {
+      this.close(event);
+    } // When clicking outside the combobox (including clicking on other components) triggers a blur event
+    // Should not focus the search when the trigger is a blur event.
+
+
+    if ((!options || options.trigger !== _ComboUtils.ValueChangeTriggerTypes.BLUR) && this._elemNm === 'ojcombobox') {
+      this._focusSearch();
+    }
+
+    return returnValue;
+  },
+
+  /**
+   * Performs operations that has to be done after the setVal call in _onSelect
+   *
+   * @param {boolean} result The result of the setVal call
+   * @param {object} data A valueOption object for the currect selection
+   * @param {object} valOptsInit The initial valueOptions
+   * @param {boolean} previousHasUncommittedValue The initial hasCommittedValue flag value
+   *
+   * @memberof! _AbstractMultiChoice
+   * @instance
+   * @private
+   */
+  _afterOnSelectSetVal: function _afterOnSelectSetVal(result, data, valOptsInit, previousHasUncommittedValue) {
+    var isSelectCombobox = this._classNm === 'oj-combobox' || this._classNm === 'oj-select'; // If the validation fails, set the hasUncommittedValue flag so as to revert it back to its
     // original state
 
-    setValueReturn.then(this._bind(function (result) {
-      if (result === false) {
-        // The validation failed, so reset the flag
-        this.hasUncommittedValue = previousHasUncommittedValue;
-      } // Do nothing as the validation succeeded and the value is set.
+    if (result === false) {
+      // The validation failed, so reset the flag
+      this.hasUncommittedValue = previousHasUncommittedValue; // : component oj-combobox-many displays the list of the values - does not exclude the invalid values
+      // If the input text is invalid, restore to initial value options
 
-    })); // : component oj-combobox-many displays the list of the values - does not exclude the invalid values
-    // If the input text is invalid, restore to initial value options
-
-    if (isSelectCombobox && !this.ojContext.isValid()) {
-      this.setValOpts(valOptsInit);
+      if (isSelectCombobox && !this.ojContext.isValid()) {
+        this.setValOpts(valOptsInit);
+      }
     }
 
     this._skipSetValueOptions = false;
@@ -7334,18 +7895,11 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     }
 
     if (this.opts.closeOnSelect) {
-      this.close(event); // do not reset search width if the input text is invalid
+      // do not reset search width if the input text is invalid
       // this will allow users to correct any invalid input text
-
       if (this.ojContext.isValid()) {
         this._resetSearchWidth();
       }
-    } // When clicking outside the combobox (including clicking on other components) triggers a blur event
-    // Should not focus the search when the trigger is a blur event.
-
-
-    if ((!options || options.trigger !== _ComboUtils.ValueChangeTriggerTypes.BLUR) && this._elemNm === 'ojcombobox') {
-      this._focusSearch();
     }
   },
   _cancel: function _cancel(event) {
@@ -7479,21 +8033,39 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     }
 
     var context;
+    var setValueReturn;
     var index = val.indexOf(this.id(data));
+    val.splice(index, 1);
+    context = this._syncValueOptions(this.ojContext, val, valOpts);
+    this._skipSetValueOptions = true;
+    setValueReturn = this.setVal(val, event, context);
 
-    while (index >= 0) {
-      val.splice(index, 1);
-      context = this._syncValueOptions(this.ojContext, val, valOpts);
-      this._skipSetValueOptions = true;
-      this.setVal(val, event, context);
-      this._skipSetValueOptions = false;
-
-      if (this.select) {
-        this._postprocessResults();
-      }
-
-      index = val.indexOf(this.id(data));
+    if (setValueReturn instanceof Promise) {
+      setValueReturn.then(this._bind(function (result) {
+        this._afterUnselectSetValue(result, selected);
+      }));
+    } else {
+      this._afterUnselectSetValue(setValueReturn, selected);
     }
+  },
+
+  /**
+   * Performs operations that has to be done after setting the value in _unselect method
+   *
+   * @param {boolean} result The result of setVal call
+   * @param {HTMLElement} selected The current selected element that has to be removed
+   *
+   * @memberof! _AbstractMultiChoice
+   * @instance
+   * @private
+   */
+  _afterUnselectSetValue: function _afterUnselectSetValue(result, selected) {
+    this._skipSetValueOptions = false;
+
+    if (result !== false && this.select) {
+      this._postprocessResults();
+    } // The selected option should be removed irrespective of the setVal result
+
 
     selected.remove();
   },
@@ -7555,13 +8127,19 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 
   /**
    * Sets the value
-   * @instance
-   * @override
-   * @ignore
+   *
    * @param {Array<any>} val The value to be set
    * @param {jQuery.Event=} event The event at which the method is invoked
    * @param {object} context Context
-   * @return {Promise} Result of setting the value
+   * @return {Promise|boolean|null} Result of setting the value
+   *                                * Promise when using async validators
+   *                                * boolean when using sync validators / when setting the value without validators
+   *                                * null when setValue is not invoked since there was no change in the value
+   *
+   * @memberof! _AbstractMultiChoice
+   * @instance
+   * @override
+   * @ignore
    */
   setVal: function setVal(val, event, context) {
     var unique = [];
@@ -7618,17 +8196,37 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
       setValueResult = this.ojContext._SetValue(unique, event, options);
     }
 
+    if (setValueResult instanceof Promise) {
+      // eslint-disable-next-line no-unused-vars
+      return setValueResult.then(this._bind(function (result) {
+        this._afterSetValue(unique);
+      }));
+    } // Call afterSetValue unconditionally if setValue is executed synchronously
+    // as this method has parts of code that needs to be executed for both when
+    // validation passes or when it fails. The checks are done in the method
+    // so it is okay to call this function unconditionally here.
+
+
+    this._afterSetValue(unique);
+
+    return setValueResult;
+  },
+
+  /**
+   * Executes the operations that has to be done after the _SetValue call
+   *
+   * @param {Array} unique The array of unique set of values that was set in the _SetValue call
+   *
+   * @memberof! _AbstractMultiChoice
+   * @instance
+   * @private
+   */
+  _afterSetValue: function _afterSetValue(unique) {
     if (this.ojContext.isValid() || unique.length === 0) {
       this.currentValue = unique;
     }
 
     this.search.attr('aria-activedescendant', this.opts.element.attr('id'));
-
-    if (setValueResult instanceof Promise) {
-      return setValueResult;
-    }
-
-    return Promise.resolve(setValueResult === true);
   },
 
   /**
@@ -7656,6 +8254,21 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     }
 
     return dataArr;
+  },
+
+  /**
+   * Handles clearing the search when the user blurs out from the search
+   * @instance
+   * @private
+   * @ignore
+   */
+  _clearSearchOnBlur: function _clearSearchOnBlur() {
+    // : component oj-combobox-many displays validation error message even when no value is entered in the component
+    // do not clear search if the input text is invalid
+    // this will allow users to correct any invalid input text
+    if (!this._opened() && this._classNm !== 'oj-select' && this.ojContext.isValid()) {
+      this._clearSearch();
+    }
   },
 
   /**
@@ -7699,13 +8312,21 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 var _OjMultiCombobox = _ComboUtils.clazz(_AbstractMultiChoice, {
   _elemNm: 'ojcombobox',
   _classNm: 'oj-combobox',
-  _createContainer: function _createContainer() {
-    var container = $(document.createElement('div')).attr({
-      class: 'oj-combobox oj-combobox-multi oj-component'
-    }).html([// @HTMLUpdateOK
-    "<div class='oj-text-field-container' role='presentation'> ", "<ul class='oj-combobox-choices'>", "  <li class='oj-combobox-search-field'><span class='oj-helper-hidden'>&nbsp;</span>", "    <input type='text' role='combobox' aria-expanded='false' aria-autocomplete='list' autocomplete='off' autocorrect='off' autocapitalize='off' spellcheck='false' class='oj-combobox-input'>", '  </li>', '</ul>', '</div>', "<div class='oj-combobox-description oj-helper-hidden-accessible'></div>", "<div class='oj-listbox-drop oj-listbox-drop-multi'>", "   <ul class='oj-listbox-results' role='listbox'>", '   </ul>', '</div>', "<div role='region' class='oj-helper-hidden-accessible oj-listbox-liveregion' aria-live='polite'></div>"].join('')); // @HTMLUpdateOK
+  _COMPONENT_CLASSLIST: 'oj-combobox oj-combobox-multi oj-component',
 
-    return container;
+  /**
+   * Creates children elements for oj-combobox-many
+   *
+   * @return {jQuery} The collection of HTML elements that represent the content
+   *
+   * @memberof! _OjMultiCombobox
+   * @instance
+   * @protected
+   * @override
+   */
+  _CreateContentElements: function _CreateContentElements() {
+    var contentStructure = ["<div class='oj-text-field-container' role='presentation'> ", "<ul class='oj-combobox-choices'>", "  <li class='oj-combobox-search-field'><span class='oj-helper-hidden'>&nbsp;</span>", "    <input type='text' role='combobox' aria-expanded='false' aria-autocomplete='list' autocomplete='off' autocorrect='off' autocapitalize='off' spellcheck='false' class='oj-combobox-input'>", '  </li>', '</ul>', '</div>', "<div class='oj-combobox-description oj-helper-hidden-accessible'></div>", "<div class='oj-listbox-drop oj-listbox-drop-multi'>", "   <ul class='oj-listbox-results' role='listbox'>", '   </ul>', '</div>', "<div class='oj-helper-hidden-accessible oj-listbox-liveregion' aria-live='polite'></div>"];
+    return $(contentStructure.join(''));
   },
   _opening: function _opening(event, dontUpdateResults) {
     // if beforeExpand is not cancelled
@@ -7821,13 +8442,21 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice, {
   _elemNm: 'ojselect',
   _classNm: 'oj-select',
   _userTyping: false,
-  _createContainer: function _createContainer() {
-    var container = $(document.createElement('div')).attr({
-      class: 'oj-select oj-select-multi oj-component'
-    }).html([// @HTMLUpdateOK
-    "<div class='oj-text-field-container' role='presentation'>", "<ul class='oj-select-choices' tabindex='0' role='combobox' ", "  aria-autocomplete='none' aria-expanded='false'>", '</ul>', '</div>', "<div class='oj-select-description oj-helper-hidden-accessible'></div>", "<div class='oj-listbox-drop' role='dialog'>", "  <div class='oj-listbox-search-wrapper'>", "  <div class='oj-listbox-search'>", "    <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off'", "           spellcheck='false' class='oj-listbox-input' title='Search field' ", "           role='combobox' aria-expanded='false' aria-autocomplete='list' />", "    <span class='oj-listbox-spyglass-box'>", "      <span class='oj-component-icon oj-clickable-icon-nocontext oj-listbox-search-icon' role='presentation'>", "       <b role='presentation'></b></span>", '    </span>', '  </div>', '  </div>', "   <ul class='oj-listbox-results' role='listbox'>", '   </ul>', '</div>', "<div role='region' class='oj-helper-hidden-accessible oj-listbox-liveregion' aria-live='polite'></div>"].join('')); // @HTMLUpdateOK
+  _COMPONENT_CLASSLIST: 'oj-select oj-select-multi oj-component',
 
-    return container;
+  /**
+   * Creates children elements for oj-select-many
+   *
+   * @return {jQuery} The collection of HTML elements that represent the content
+   *
+   * @memberof! _OjMultiSelect
+   * @instance
+   * @protected
+   * @override
+   */
+  _CreateContentElements: function _CreateContentElements() {
+    var contentStructure = ["<div class='oj-text-field-container' role='presentation'>", "<ul class='oj-select-choices' tabindex='0' role='combobox' ", "  aria-autocomplete='none' aria-expanded='false'>", '</ul>', '</div>', "<div class='oj-select-description oj-helper-hidden-accessible'></div>", "<div class='oj-listbox-drop' role='dialog'>", "  <div class='oj-listbox-search-wrapper'>", "  <div class='oj-listbox-search'>", "    <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off'", "           spellcheck='false' class='oj-listbox-input' title='Search field' ", "           role='combobox' aria-expanded='false' aria-autocomplete='list' />", "    <span class='oj-listbox-spyglass-box'>", "      <span class='oj-component-icon oj-listbox-search-icon' role='presentation'>", "       <b role='presentation'></b></span>", '    </span>', '  </div>', '  </div>', "   <ul class='oj-listbox-results' role='listbox'>", '   </ul>', '</div>', "<div class='oj-helper-hidden-accessible oj-listbox-liveregion' aria-live='polite'></div>"];
+    return $(contentStructure.join(''));
   },
   // _OjMultiSelect
   // eslint-disable-next-line no-unused-vars
@@ -7935,12 +8564,29 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice, {
 var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox, {
   _elemNm: 'ojinputsearch',
   _classNm: 'oj-inputsearch',
-  // _OjInputSeachContainer
-  _createContainer: function _createContainer() {
-    var container = $(document.createElement('div')).attr({
-      class: 'oj-inputsearch oj-component'
-    }).html([// @HTMLUpdateOK
-    "<div class='oj-inputsearch-choice' tabindex='-1' role='presentation'>", "   <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off'", "       spellcheck='false' class='oj-inputsearch-input' role='combobox' aria-expanded='false' aria-autocomplete='list' />", "   <a class='oj-inputsearch-search-button oj-inputsearch-search-icon oj-component-icon oj-clickable-icon-nocontext'", "       role='button' aria-label='search'></a>", '</div>', "<div class='oj-listbox-drop' role='presentation'>", "   <ul class='oj-listbox-results' role='listbox'>", '   </ul>', '</div>', "<div role='region' class='oj-helper-hidden-accessible oj-listbox-liveregion' aria-live='polite'></div>"].join(''));
+  _COMPONENT_CLASSLIST: 'oj-inputsearch oj-component',
+  // return the element one which we want to position the listbox-dropdown. We don't
+  // want it to be the container because we add the inline messages to the container
+  // and if we line up to the container when it has inline messages, the dropdown
+  // appears after the inline messages. We want it to always appear next to the input,
+  // which is the first child of the container.
+  _getDropdownPositionElement: function _getDropdownPositionElement() {
+    return this.container.children().first();
+  },
+
+  /**
+   * Creates children elements for ojInputSearch
+   *
+   * @return {jQuery} The collection of HTML elements that represent the content
+   *
+   * @memberof! _OjInputSeachContainer
+   * @instance
+   * @protected
+   * @override
+   */
+  _CreateContentElements: function _CreateContentElements() {
+    var contentStructure = ["<div class='oj-inputsearch-choice' tabindex='-1' role='presentation'>", "   <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off'", "       spellcheck='false' class='oj-inputsearch-input' role='combobox' aria-expanded='false' aria-autocomplete='list' />", "   <a class='oj-inputsearch-search-button oj-inputsearch-search-icon oj-component-icon oj-clickable-icon-nocontext'", "       role='button' aria-label='search'></a>", '</div>', "<div class='oj-listbox-drop' role='presentation'>", "   <ul class='oj-listbox-results' role='listbox'>", '   </ul>', '</div>', "<div role='region' class='oj-helper-hidden-accessible oj-listbox-liveregion' aria-live='polite'></div>"];
+    var container = $(contentStructure.join(''));
     var trigger = container.find('.oj-inputsearch-search-button');
 
     this._attachSearchIconClickHandler(trigger);
@@ -8178,223 +8824,461 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox, {
 /* global _ComboUtils:false, _OjMultiCombobox:false, _OjSingleCombobox:false, Promise:false */
 
 /**
- * @ojcomponent oj.ojComboboxOne
- * @augments oj.ojCombobox
- * @since 0.6.0
- * @ojdisplayname Combobox (One)
- * @ojshortdesc A combobox one is a dropdown list that supports single selection, text input, and search filtering.
- * @ojrole combobox
- * @ojsignature [{
- *                target: "Type",
- *                value: "class ojComboboxOne<K, D, V= any> extends ojCombobox<V, ojComboboxOneSettableProperties<K, D, V>, V, string>",
- *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}
- *                , {"name": "V", "description": "Type of value of the component"}]
- *               },
- *               {
- *                target: "Type",
- *                value: "ojComboboxOneSettableProperties<K, D, V=any> extends ojComboboxSettableProperties<V>",
- *                for: "SettableProperties"
- *               }
- *              ]
- * @ojtsimport {module: "ojconverter-number", type: "AMD", imported: ["IntlNumberConverter", "NumberConverter"]}
- * @ojtsimport {module: "ojconverter-datetime", type: "AMD",  imported: ["IntlDateTimeConverter", "DateTimeConverter"]}
- * @ojtsimport {module: "ojvalidator", type: "AMD", importName: "Validator"}
- * @ojtsimport {module: "ojvalidator-async", type: "AMD", importName: "AsyncValidator"}
- * @ojtsimport {module: "ojconverter-datetime", type: "AMD",  imported: ["IntlDateTimeConverter", "DateTimeConverter"]}
- * @ojtsimport {module: "ojvalidator-daterestriction", type: "AMD", importName: "DateRestrictionValidator"}
- * @ojtsimport {module: "ojvalidator-datetimerange", type: "AMD", importName: "DateTimeRangeValidator"}
- * @ojtsimport {module: "ojvalidator-length", type: "AMD", importName: "LengthValidator"}
- * @ojtsimport {module: "ojvalidator-numberrange", type: "AMD", importName: "NumberRangeValidator"}
- * @ojtsimport {module: "ojvalidator-regexp", type: "AMD", importName: "RegExpValidator"}
- * @ojtsimport {module: "ojvalidator-required", type: "AMD", importName: "RequiredValidator"}
- *
- * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled"]}
- * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
- * @ojvbdefaultcolumns 6
- * @ojvbmincolumns 2
- *
- * @classdesc
- * <h3 id="comboboxOneOverview-section">
- *   JET Combobox One
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#comboboxOneOverview-section"></a>
- * </h3>
- * <p>Description: JET Combobox One provides support for single-select, text input, and search filtering.</p>
- *
- * <p>A JET Combobox One can be created with the following markup.</p>
- *
- * <pre class="prettyprint">
- * <code>
- * &lt;oj-combobox-one>
+   * @ojcomponent oj.ojComboboxOne
+   * @augments oj.ojCombobox
+   * @since 0.6.0
+   * @ojdisplayname Combobox (One)
+   * @ojshortdesc A combobox one is a dropdown list that supports single selection, text input, and search filtering.
+   * @ojrole combobox
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojComboboxOne<K, D, V= any> extends ojCombobox<V, ojComboboxOneSettableProperties<K, D, V>, V, string>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}
+   *                , {"name": "V", "description": "Type of value of the component"}]
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojComboboxOneSettableProperties<K, D, V=any> extends ojComboboxSettableProperties<V>",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
+   * @ojtsimport {module: "ojconverter-number", type: "AMD", imported: ["IntlNumberConverter", "NumberConverter"]}
+   * @ojtsimport {module: "ojconverter-datetime", type: "AMD",  imported: ["IntlDateTimeConverter", "DateTimeConverter"]}
+   * @ojtsimport {module: "ojvalidator", type: "AMD", importName: "Validator"}
+   * @ojtsimport {module: "ojvalidator-async", type: "AMD", importName: "AsyncValidator"}
+   * @ojtsimport {module: "ojconverter-datetime", type: "AMD",  imported: ["IntlDateTimeConverter", "DateTimeConverter"]}
+   * @ojtsimport {module: "ojvalidator-daterestriction", type: "AMD", importName: "DateRestrictionValidator"}
+   * @ojtsimport {module: "ojvalidator-datetimerange", type: "AMD", importName: "DateTimeRangeValidator"}
+   * @ojtsimport {module: "ojvalidator-length", type: "AMD", importName: "LengthValidator"}
+   * @ojtsimport {module: "ojvalidator-numberrange", type: "AMD", importName: "NumberRangeValidator"}
+   * @ojtsimport {module: "ojvalidator-regexp", type: "AMD", importName: "RegExpValidator"}
+   * @ojtsimport {module: "ojvalidator-required", type: "AMD", importName: "RequiredValidator"}
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
+   * @ojvbdefaultcolumns 6
+   * @ojvbmincolumns 2
+   *
+   * @classdesc
+   * <h3 id="comboboxOneOverview-section">
+   *   JET Combobox One
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#comboboxOneOverview-section"></a>
+   * </h3>
+   * <p>Description: JET Combobox One provides support for single-select, text input, and search filtering.</p>
+   *
+   * <p>A JET Combobox One can be created with the following markup.</p>
+   *
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-combobox-one>
+   *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+   *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+   *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+   *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+   * &lt;/oj-combobox-one>
+   * </code></pre>
+   *
+   * {@ojinclude "name":"validationAndMessagingDoc"}
+   *
+   * <h3 id="touch-section">
+   *   Touch End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"touchDocOne"}
+   *
+   * <h3 id="keyboard-section">
+   *   Keyboard End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"keyboardDocOne"}
+   *
+   * <h3 id="perf-section">
+   *   Performance
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
+   * </h3>
+   *
+   * <h4>Page Load</h4>
+   * <p>If the <a href="#options">options</a> attribute is a data provider, and if there is an initially selected value, setting the <a href="#valueOption">valueOption</a> attribute initially can improve page load performance because the element will not have to fetch the selected label from the data provider.</p>
+   * <p>When using a data provider, the dropdown data isn't fetched until the user opens the dropdown.</p>
+   *
+   *
+   * {@ojinclude "name":"comboboxCommon"}
+   */
+// --------------------------------------------------- oj.ojCombobox-One Styling Start ------------------------------------------------------------
+
+/**
+   * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+   * The form control style classes can be applied to the component, or an ancestor element. <br/>
+   * When applied to an ancestor element, all form components that support the style classes will be affected.
+   */
+// ---------------- oj-form-control-full-width --------------
+
+/**
+  * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
+  * @ojstyleclass oj-form-control-full-width
+  * @ojdisplayname Full Width
+  * @memberof oj.ojComboboxOne
+  * @ojtsexample
+  * &lt;oj-combobox-one class="oj-form-control-full-width">
+  *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+  *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+  *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+  *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+  * &lt;/oj-combobox-one>
+  */
+// ---------------- oj-form-control max-width --------------
+
+/**
+* In the Redwood theme the default max width of a text field is 100%.
+* These max width convenience classes are available to create a medium or small field.<br>
+* The class is applied to the root element.
+* @ojstyleset form-control-max-width
+* @ojdisplayname Max Width
+* @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+* @ojstylerelation exclusive
+* @memberof oj.ojComboboxOne
+* @ojtsexample
+* &lt;oj-combobox-one class="oj-form-control-max-width-md">
+*   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+*   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+*   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+* &lt;/oj-combobox-one>
+*/
+
+/**
+* @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+* @ojshortdesc Sets the max width for a small field
+* @ojdisplayname Small
+* @memberof! oj.ojComboboxOne
+ */
+
+/**
+* @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+* @ojshortdesc Sets the max width for a medium field
+* @ojdisplayname Medium
+* @memberof! oj.ojComboboxOne
+ */
+// ---------------- oj-form-control width --------------
+
+/**
+* In the Redwood theme the default width of a text field is 100%.
+* These width convenience classes are available to create a medium or small field.<br>
+* The class is applied to the root element.
+* @ojstyleset form-control-width
+* @ojdisplayname Width
+* @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+* @ojstylerelation exclusive
+* @memberof oj.ojComboboxOne
+* @ojtsexample
+* &lt;oj-combobox-one class="oj-form-control-width-md">
+*   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+*   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+*   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+* &lt;/oj-combobox-one>
+*/
+
+/**
+* @ojstyleclass form-control-width.oj-form-control-width-sm
+* @ojshortdesc Sets the width for a small field
+* @ojdisplayname Small
+* @memberof! oj.ojComboboxOne
+ */
+
+/**
+* @ojstyleclass form-control-width.oj-form-control-width-md
+* @ojshortdesc Sets the width for a medium field
+* @ojdisplayname Medium
+* @memberof! oj.ojComboboxOne
+ */
+// ---------------- oj-form-control-text-align- --------------
+
+/**
+ * Classes that help align text of the element.
+ * @ojstyleset text-align
+ * @ojdisplayname Text Alignment
+ * @ojstylesetitems ["text-align.oj-form-control-text-align-right", "text-align.oj-form-control-text-align-start", "text-align.oj-form-control-text-align-end"]
+ * @ojstylerelation exclusive
+ * @memberof oj.ojComboboxOne
+ * @ojtsexample
+ * &lt;oj-combobox-one class="oj-form-control-text-align-right">
  *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
  *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
  *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
  *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
  * &lt;/oj-combobox-one>
- * </code></pre>
- *
- * {@ojinclude "name":"validationAndMessagingDoc"}
- *
- * <h3 id="touch-section">
- *   Touch End User Information
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"touchDocOne"}
- *
- * <h3 id="keyboard-section">
- *   Keyboard End User Information
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"keyboardDocOne"}
- *
- * <h3 id="perf-section">
- *   Performance
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
- * </h3>
- *
- * <h4>Page Load</h4>
- * <p>If the <a href="#options">options</a> attribute is a data provider, and if there is an initially selected value, setting the <a href="#valueOption">valueOption</a> attribute initially can improve page load performance because the element will not have to fetch the selected label from the data provider.</p>
- * <p>When using a data provider, the dropdown data isn't fetched until the user opens the dropdown.</p>
- *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
- *
- * {@ojinclude "name":"comboboxCommon"}
  */
 
 /**
-* @ojcomponent oj.ojComboboxMany
-* @augments oj.ojCombobox
-* @since 0.6.0
-* @ojdisplayname Combobox (Many)
-* @ojshortdesc A combobox many is a dropdown list that supports multiple selections, text input, and search filtering.
-* @ojrole combobox
-* @ojsignature [{
-*                target: "Type",
-*                value: "class ojComboboxMany<K, D, V= any> extends ojCombobox<Array<V>, ojComboboxManySettableProperties<K, D, V>, Array<V>, Array<string>>",
-*                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}
-*                ,{"name": "V", "description": "Type of each item in the value of the component"}]
-*               },
-*               {
-*                target: "Type",
-*                value: "ojComboboxManySettableProperties<K, D, V= any> extends ojComboboxSettableProperties<Array<V>>",
-*                for: "SettableProperties"
-*               }
-*              ]
-*
-*
-* @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled"]}
-* @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
-* @ojvbdefaultcolumns 6
-* @ojvbmincolumns 2
-*
-* @classdesc
-* <h3 id="comboboxManyOverview-section">
-*   JET Combobox Many
-*   <a class="bookmarkable-link" title="Bookmarkable Link" href="#comboboxManyOverview-section"></a>
-* </h3>
-* <p>Description: JET Combobox Many provides support for multi-select, text input, and search filtering.</p>
-*
-* <p>A JET Combobox Many can be created with the following markup.</p>
-*
-* <pre class="prettyprint">
-* <code>
-* &lt;oj-combobox-many>
+ * @ojstyleclass text-align.oj-form-control-text-align-right
+ * @ojshortdesc Aligns the text to the right regardless of the reading direction. This is normally used for right aligning numbers.
+ * @ojdisplayname Align-Right
+ * @memberof! oj.ojComboboxOne
+ */
+
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-start
+ * @ojshortdesc Aligns the text to the left in LTR and to the right in RTL.
+ * @ojdisplayname Align-Start
+ * @memberof! oj.ojComboboxOne
+ */
+
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-end
+ * @ojshortdesc Aligns the text to the right in LTR and to the left in RTL.
+ * @ojdisplayname Align-End
+ * @memberof! oj.ojComboboxOne
+ */
+// --------------------------------------------------- oj.ojCombobox -One Styling end ------------------------------------------------------------
+
+/**
+   * @ojcomponent oj.ojComboboxMany
+   * @augments oj.ojCombobox
+   * @since 0.6.0
+   * @ojdisplayname Combobox (Many)
+   * @ojshortdesc A combobox many is a dropdown list that supports multiple selections, text input, and search filtering.
+   * @ojrole combobox
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojComboboxMany<K, D, V= any> extends ojCombobox<Array<V>, ojComboboxManySettableProperties<K, D, V>, Array<V>, Array<string>>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}
+   *                ,{"name": "V", "description": "Type of each item in the value of the component"}]
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojComboboxManySettableProperties<K, D, V= any> extends ojComboboxSettableProperties<Array<V>>",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
+   *
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
+   * @ojvbdefaultcolumns 6
+   * @ojvbmincolumns 2
+   *
+   * @classdesc
+   * <h3 id="comboboxManyOverview-section">
+   *   JET Combobox Many
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#comboboxManyOverview-section"></a>
+   * </h3>
+   * <p>Description: JET Combobox Many provides support for multi-select, text input, and search filtering.</p>
+   *
+   * <p>A JET Combobox Many can be created with the following markup.</p>
+   *
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-combobox-many>
+   *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+   *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+   *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+   *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+   * &lt;/oj-combobox-many>
+   * </code></pre>
+   *
+   * {@ojinclude "name":"validationAndMessagingDoc"}
+   *
+   * <h3 id="touch-section">
+   *   Touch End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"touchDocMany"}
+   *
+   * <h3 id="keyboard-section">
+   *   Keyboard End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"keyboardDocMany"}
+   *
+   * <h3 id="perf-section">
+   *   Performance
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
+   * </h3>
+   *
+   * <h4>Page Load</h4>
+   * <p>If the <a href="#options">options</a> attribute is a data provider, and if there are initially selected values, setting the <a href="#valueOptions">valueOptions</a> attribute initially can improve page load performance because the element will not have to fetch the selected labels from the data provider.</p>
+   * <p>When using a data provider, the dropdown data isn't fetched until the user opens the dropdown.</p>
+   *
+   *
+   * {@ojinclude "name":"comboboxCommon"}
+   */
+// --------------------------------------------------- oj.ojCombobox-many Styling Start ------------------------------------------------------------
+
+/**
+   * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+   * The form control style classes can be applied to the component, or an ancestor element. <br/>
+   * When applied to an ancestor element, all form components that support the style classes will be affected.
+   */
+// ---------------- oj-form-control-full-width --------------
+
+/**
+  * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
+  * @ojstyleclass oj-form-control-full-width
+  * @ojdisplayname Full Width
+  * @memberof oj.ojComboboxMany
+  * @ojtsexample
+  * &lt;oj-combobox-many class="oj-form-control-full-width">
+  *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+  *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+  *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+  *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+  * &lt;/oj-combobox-many>
+  */
+// ---------------- oj-form-control max-width --------------
+
+/**
+* In the Redwood theme the default max width of a text field is 100%.
+* These max width convenience classes are available to create a medium or small field.<br>
+* The class is applied to the root element.
+* @ojstyleset form-control-max-width
+* @ojdisplayname Max Width
+* @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+* @ojstylerelation exclusive
+* @memberof oj.ojComboboxMany
+* @ojtsexample
+* &lt;oj-combobox-many class="oj-form-control-max-width-md">
 *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
 *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
 *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
-*   &lt;oj-option value="option 4">option 4&lt;/oj-option>
 * &lt;/oj-combobox-many>
-* </code></pre>
-*
-* {@ojinclude "name":"validationAndMessagingDoc"}
-*
-* <h3 id="touch-section">
-*   Touch End User Information
-*   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
-* </h3>
-*
-* {@ojinclude "name":"touchDocMany"}
-*
-* <h3 id="keyboard-section">
-*   Keyboard End User Information
-*   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
-* </h3>
-*
-* {@ojinclude "name":"keyboardDocMany"}
-*
-* <h3 id="perf-section">
-*   Performance
-*   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
-* </h3>
-*
-* <h4>Page Load</h4>
-* <p>If the <a href="#options">options</a> attribute is a data provider, and if there are initially selected values, setting the <a href="#valueOptions">valueOptions</a> attribute initially can improve page load performance because the element will not have to fetch the selected labels from the data provider.</p>
-* <p>When using a data provider, the dropdown data isn't fetched until the user opens the dropdown.</p>
-*
-* <h3 id="styling-section">
-*   Styling
-*   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
-* </h3>
-*
-* {@ojinclude "name":"stylingDoc"}
-*
-* {@ojinclude "name":"comboboxCommon"}
 */
 
 /**
- * @ojcomponent oj.ojCombobox
- * @augments oj.editableValue
- * @ojimportmembers oj.ojDisplayOptions
- * @since 0.6.0
- * @abstract
- * @ojsignature [{
- *                target: "Type",
- *                value: "abstract class ojCombobox<V, SP extends ojComboboxSettableProperties<V, SV, RV>, SV=V, RV=V> extends editableValue<V, SP, SV, RV>"
- *               },
- *               {
- *                target: "Type",
- *                value: "ojComboboxSettableProperties<V, SV= V, RV= V> extends editableValueSettableProperties<V, SV, RV>",
- *                for: "SettableProperties"
- *               }
- *              ]
- *
- * @hideconstructor
- * @classdesc
+* @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+* @ojshortdesc Sets the max width for a small field
+* @ojdisplayname Small
+* @memberof! oj.ojComboboxMany
  */
 
 /**
- *
- * <h3 id="rtl-section">
- *   Reading direction
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
- * </h3>
- *
- * <p>As with any JET element, in the unusual case that the directionality (LTR or RTL) changes post-init, the Combobox must be <code class="prettyprint">refresh()</code>ed.</p>
- *
- *
- * <h3 id="a11y-section">
- *   Accessibility
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
- * </h3>
- * <p>
- * It is up to the application developer to associate an oj-label to the combobox element.
- * You should put an <code>id</code> on the combobox element, and then set
- * the <code>for</code> attribute on the oj-label to be the combobox element's id.
- * </p>
- * <p>
- * The element will decorate its associated label with required and help
- * information, if the <code>required</code> and <code>help</code> attributes are set.
- * </p>
- *
- * @ojfragment comboboxCommon
- * @memberof oj.ojCombobox
+* @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+* @ojshortdesc Sets the max width for a medium field
+* @ojdisplayname Medium
+* @memberof! oj.ojComboboxMany
  */
+// ---------------- oj-form-control width --------------
+
+/**
+* In the Redwood theme the default width of a text field is 100%.
+* These width convenience classes are available to create a medium or small field.<br>
+* The class is applied to the root element.
+* @ojstyleset form-control-width
+* @ojdisplayname Width
+* @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+* @ojstylerelation exclusive
+* @memberof oj.ojComboboxMany
+* @ojtsexample
+* &lt;oj-combobox-many class="oj-form-control-width-md">
+*   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+*   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+*   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+* &lt;/oj-combobox-many>
+*/
+
+/**
+* @ojstyleclass form-control-width.oj-form-control-width-sm
+* @ojshortdesc Sets the width for a small field
+* @ojdisplayname Small
+* @memberof! oj.ojComboboxMany
+ */
+
+/**
+* @ojstyleclass form-control-width.oj-form-control-width-md
+* @ojshortdesc Sets the width for a medium field
+* @ojdisplayname Medium
+* @memberof! oj.ojComboboxMany
+ */
+// ---------------- oj-form-control-text-align- --------------
+
+/**
+ * Classes that help align text of the element.
+ * @ojstyleset text-align
+ * @ojdisplayname Text Alignment
+ * @ojstylesetitems ["text-align.oj-form-control-text-align-right", "text-align.oj-form-control-text-align-start", "text-align.oj-form-control-text-align-end"]
+ * @ojstylerelation exclusive
+ * @memberof oj.ojComboboxMany
+ * @ojtsexample
+ * &lt;oj-combobox-many class="oj-form-control-text-align-right">
+ *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+ *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+ *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+ *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+ * &lt;/oj-combobox-many>
+ */
+
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-right
+ * @ojshortdesc Aligns the text to the right regardless of the reading direction. This is normally used for right aligning numbers.
+ * @ojdisplayname Align-Right
+ * @memberof! oj.ojComboboxMany
+ */
+
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-start
+ * @ojshortdesc Aligns the text to the left in LTR and to the right in RTL.
+ * @ojdisplayname Align-Start
+ * @memberof! oj.ojComboboxMany
+ */
+
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-end
+ * @ojshortdesc Aligns the text to the right in LTR and to the left in RTL.
+ * @ojdisplayname text-Align-End
+ * @memberof! oj.ojComboboxMany
+ */
+// --------------------------------------------------- oj.ojCombobox-many Styling end ------------------------------------------------------------
+
+/**
+   * @ojcomponent oj.ojCombobox
+   * @augments oj.editableValue
+   * @ojimportmembers oj.ojDisplayOptions
+   * @since 0.6.0
+   * @abstract
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "abstract class ojCombobox<V, SP extends ojComboboxSettableProperties<V, SV, RV>, SV=V, RV=V> extends editableValue<V, SP, SV, RV>"
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojComboboxSettableProperties<V, SV= V, RV= V> extends editableValueSettableProperties<V, SV, RV>",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
+   *
+   * @hideconstructor
+   * @classdesc
+   */
+
+/**
+   *
+   * <h3 id="rtl-section">
+   *   Reading direction
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
+   * </h3>
+   *
+   * <p>As with any JET element, in the unusual case that the directionality (LTR or RTL) changes post-init, the Combobox must be <code class="prettyprint">refresh()</code>ed.</p>
+   *
+   *
+   * <h3 id="a11y-section">
+   *   Accessibility
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+   * </h3>
+   * <p>
+   * It is up to the application developer to associate an oj-label to the combobox element.
+   * You should put an <code>id</code> on the combobox element, and then set
+   * the <code>for</code> attribute on the oj-label to be the combobox element's id.
+   * </p>
+   * <p>
+   * The element will decorate its associated label with required and help
+   * information, if the <code>required</code> and <code>help</code> attributes are set.
+   * </p>
+   *
+   * @ojfragment comboboxCommon
+   * @memberof oj.ojCombobox
+   */
 oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   defaultElement: '<input>',
   widgetEventPrefix: 'oj',
@@ -8467,605 +9351,605 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
      */
 
     /**
-     * {@ojinclude "name":"comboboxCommonAsyncValidators"}
-     *
-     * @example <caption>Create an Object that duck-types the oj.AsyncValidator interface.
-     * Bind the Object to the JET form component's async-validators attribute. The
-     * validator's 'validate' method will be called when the user changes the input.</caption>
-     *  self.asyncValidator1 = {
-     *    // required validate method
-     *    'validate': function(value) {
-     *      return new Promise(function(resolve, reject) {
-     *        var successful = someBackendMethod();
-     *        if (successful) {
-     *          resolve(true);
-     *        } else {
-     *          reject(new Error('The amount of purchase is too high. It is ' + value));
-     *        }
-     *      });
-     *    },
-     *    // optional hint attribute. hint shows up when user sets focus to input.
-     *    'hint': new Promise(function (resolve, reject) {
-     *      var formattedMaxPurchase = getSomeBackendFormattedMaxPurchase();
-     *      resolve(maxPurchase + " is the maximum.");
-     *    });
-     *  };
-     *  -- HTML --
-     *  &lt;oj-combobox-many async-validators="[[[asyncValidator1]]]">&lt;/oj-combobox-many>
-     * @example <caption>Initialize the component with multiple AsyncValidator
-     * duck-typed instances:</caption>
-     * -- HTML --
-     * &lt;oj-combobox-many
-                async-validators="[[[asyncValidator1, asyncValidator2]]]">&lt;/oj-combobox-many>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">asyncValidators</code>
-     * property after initialization:</caption>
-     * // getter
-     * var validators = myComp.asyncValidators;
-     *
-     * // setter
-     * var myValidators = [{
-     * 'validate' : function(value) {
-     *   return new Promise(function(resolve, reject) {
-     *   // mock server-side delay
-     *   setTimeout(function () {
-     *     if (value === "pass" || value === "another pass") {
-     *       resolve(true);
-     *     } else {
-     *       reject(new Error("value isn't 'pass' or 'another pass'. It is " + value.));
-     *     }
-     *   },10);
-     *   });
-     * }
-     * }];
-     * myComp.asyncValidators = myValidators;
-     * @ojdeprecated {since: '8.0.0', description: 'Use the validators property instead for either regular Validators or AsyncValidators.'}
-     * @name asyncValidators
-     * @ojshortdesc Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojComboboxMany
-     * @default []
-     * @ojsignature  { target: "Type",
-     *       value: "Array<oj.AsyncValidator<Array<V>>>",
-     *       jsdocOverride: true}
-     * @type {Array.<Object>}
-     */
+    * {@ojinclude "name":"comboboxCommonAsyncValidators"}
+    *
+    * @example <caption>Create an Object that duck-types the oj.AsyncValidator interface.
+    * Bind the Object to the JET form component's async-validators attribute. The
+    * validator's 'validate' method will be called when the user changes the input.</caption>
+    *  self.asyncValidator1 = {
+    *    // required validate method
+    *    'validate': function(value) {
+    *      return new Promise(function(resolve, reject) {
+    *        var successful = someBackendMethod();
+    *        if (successful) {
+    *          resolve(true);
+    *        } else {
+    *          reject(new Error('The amount of purchase is too high. It is ' + value));
+    *        }
+    *      });
+    *    },
+    *    // optional hint attribute. hint shows up when user sets focus to input.
+    *    'hint': new Promise(function (resolve, reject) {
+    *      var formattedMaxPurchase = getSomeBackendFormattedMaxPurchase();
+    *      resolve(maxPurchase + " is the maximum.");
+    *    });
+    *  };
+    *  -- HTML --
+    *  &lt;oj-combobox-many async-validators="[[[asyncValidator1]]]">&lt;/oj-combobox-many>
+    * @example <caption>Initialize the component with multiple AsyncValidator
+    * duck-typed instances:</caption>
+    * -- HTML --
+    * &lt;oj-combobox-many
+              async-validators="[[[asyncValidator1, asyncValidator2]]]">&lt;/oj-combobox-many>
+    *
+    * @example <caption>Get or set the <code class="prettyprint">asyncValidators</code>
+    * property after initialization:</caption>
+    * // getter
+    * var validators = myComp.asyncValidators;
+    *
+    * // setter
+    * var myValidators = [{
+    * 'validate' : function(value) {
+    *   return new Promise(function(resolve, reject) {
+    *   // mock server-side delay
+    *   setTimeout(function () {
+    *     if (value === "pass" || value === "another pass") {
+    *       resolve(true);
+    *     } else {
+    *       reject(new Error("value isn't 'pass' or 'another pass'. It is " + value.));
+    *     }
+    *   },10);
+    *   });
+    * }
+    * }];
+    * myComp.asyncValidators = myValidators;
+    * @ojdeprecated {since: '8.0.0', description: 'Use the validators property instead for either regular Validators or AsyncValidators.'}
+    * @name asyncValidators
+    * @ojshortdesc Specifies a list of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. See the Help documentation for more information.
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojComboboxMany
+    * @default []
+    * @ojsignature  { target: "Type",
+    *       value: "Array<oj.AsyncValidator<Array<V>>>",
+    *       jsdocOverride: true}
+    * @type {Array.<Object>}
+    */
 
     /**
-     * List of asynchronous validators used by the component when performing validation.
-     * Use <code class="prettyprint">async-validators</code> when you need to
-     * perform some validation work on the server. Otherwise, use
-     * <code class="prettyprint">validators</code>, which are synchronous.
-     * <p>
-     * Each item in the Array is an instance that duck types {@link oj.AsyncValidator}.
-     * Implicit validators created by a component when certain attributes
-     * are present (e.g. <code class="prettyprint">required</code> attribute) are separate from
-     * validators specified through the <code class="prettyprint">async-validators</code>
-     * attribute and the <code class="prettyprint">validators</code> attribute.
-     * At runtime when the component runs validation, it
-     * combines the implicit validators with the list specified through the
-     * <code class="prettyprint">validators</code>
-     * attribute and also the list specified through the
-     * <code class="prettyprint">async-validators</code> attribute.
-     * Error messages are shown as soon as each async validator returns;
-     * we do not wait until all the async validators finish to show errors.
-     * If the component's valid state changes for the worse, it is also updated
-     * as each validator returns so valid will be invalidShown
-     * as soon as the first validator has an Error.
-     * </p>
-     * <p> It is recommended that you show the
-     * value you are validating in the error message because if the async operation takes a while,
-     * the user could be typing in a new value when the error message comes back
-     * and might be confused what value the error is for. However, if the user enters a new value
-     * (like presses Enter or Tab), a new validation lifecycle will start
-     * and validation errors for the previous value will not be shown to the user.
-     * If you need to format the value for the error message,
-     * you can use e.g. for number
-     * <code class="prettyprint">new NumberConverter.IntlNumberConverter(converterOption)</code>
-     * to get the converter instance,
-     * then call <code class="prettyprint">converter.format(value)</code>.
-     * </p>
-     * <p>
-     * Hints exposed by async-validators and validators are shown in the notewindow by default,
-     * or as determined by the 'validatorHint' property set on the
-     * <code class="prettyprint">display-options</code> attribute.
-     * </p>
-     * <p>Since async validators are run asynchronously, you should wait on the BusyContext before
-     * you check valid property or the value property. Alternatively you can add a callback to
-     * the validChanged or valueChanged events.
-     * </p>
-     * <p>
-     * The steps performed always, running validation and clearing messages is the same as
-     * for the <code class="prettyprint">validators</code> attribute.
-     * </p>
-     * <br/>
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojCombobox
-     * @default []
-     * @ojfragment comboboxCommonAsyncValidators
-     */
+    * List of asynchronous validators used by the component when performing validation.
+    * Use <code class="prettyprint">async-validators</code> when you need to
+    * perform some validation work on the server. Otherwise, use
+    * <code class="prettyprint">validators</code>, which are synchronous.
+    * <p>
+    * Each item in the Array is an instance that duck types {@link oj.AsyncValidator}.
+    * Implicit validators created by a component when certain attributes
+    * are present (e.g. <code class="prettyprint">required</code> attribute) are separate from
+    * validators specified through the <code class="prettyprint">async-validators</code>
+    * attribute and the <code class="prettyprint">validators</code> attribute.
+    * At runtime when the component runs validation, it
+    * combines the implicit validators with the list specified through the
+    * <code class="prettyprint">validators</code>
+    * attribute and also the list specified through the
+    * <code class="prettyprint">async-validators</code> attribute.
+    * Error messages are shown as soon as each async validator returns;
+    * we do not wait until all the async validators finish to show errors.
+    * If the component's valid state changes for the worse, it is also updated
+    * as each validator returns so valid will be invalidShown
+    * as soon as the first validator has an Error.
+    * </p>
+    * <p> It is recommended that you show the
+    * value you are validating in the error message because if the async operation takes a while,
+    * the user could be typing in a new value when the error message comes back
+    * and might be confused what value the error is for. However, if the user enters a new value
+    * (like presses Enter or Tab), a new validation lifecycle will start
+    * and validation errors for the previous value will not be shown to the user.
+    * If you need to format the value for the error message,
+    * you can use e.g. for number
+    * <code class="prettyprint">new NumberConverter.IntlNumberConverter(converterOption)</code>
+    * to get the converter instance,
+    * then call <code class="prettyprint">converter.format(value)</code>.
+    * </p>
+    * <p>
+    * Hints exposed by async-validators and validators are shown in the notewindow by default,
+    * or as determined by the 'validatorHint' property set on the
+    * <code class="prettyprint">display-options</code> attribute.
+    * </p>
+    * <p>Since async validators are run asynchronously, you should wait on the BusyContext before
+    * you check valid property or the value property. Alternatively you can add a callback to
+    * the validChanged or valueChanged events.
+    * </p>
+    * <p>
+    * The steps performed always, running validation and clearing messages is the same as
+    * for the <code class="prettyprint">validators</code> attribute.
+    * </p>
+    * <br/>
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojCombobox
+    * @default []
+    * @ojfragment comboboxCommonAsyncValidators
+    */
     asyncValidators: [],
 
     /**
-     * {@ojinclude "name":"comboboxCommonConverter"}
-     *
-     * @example <caption>Initialize the Combobox with a number converter instance:</caption>
-     * &lt;oj-combobox-one converter="[[salaryConverter]]">&lt;/oj-combobox-one><br/>
-     * // Initialize converter instance using currency options
-     * var options = {style: 'currency', 'currency': 'USD', maximumFractionDigits: 0};
-     * var salaryConverter = new NumberConverter(options);
-     * @example <caption>Initialize the Combobox with converter object literal:</caption>
-     * &lt;oj-combobox-one converter='{"type": "number", "options": {"style": "decimal"}}'>&lt;/oj-combobox-one>
-     * @example <caption>Get or set the <code class="prettyprint">converter</code>
-     *  property after initialization:</caption>
-     * // getter
-     * var converter = myComp.converter;
-     *
-     * // setter
-     * myComp.converter = myConverter;
-     *
-     * @name converter
-     * @ojshortdesc An object that converts the value. See the Help documentation for more information.
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojComboboxOne
-     * @ojsignature [{
-     *    target: "Type",
-     *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
-     *            null",
-     *    jsdocOverride: true},
-     * {
-     *    target: "Type",
-     *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
-     *            oj.Validation.RegisteredConverter|
-     *            null",
-     *    consumedBy: 'tsdep'}]
-     * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredConverter'],
-     *                description:'Defining a converter with an object literal with converter type and its options
-     *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
-     *                  work again by importing the deprecated module you need, like ojvalidation-base.'}
-     * @type {Object|null}
-     * @default null
-     */
+    * {@ojinclude "name":"comboboxCommonConverter"}
+    *
+    * @example <caption>Initialize the Combobox with a number converter instance:</caption>
+    * &lt;oj-combobox-one converter="[[salaryConverter]]">&lt;/oj-combobox-one><br/>
+    * // Initialize converter instance using currency options
+    * var options = {style: 'currency', 'currency': 'USD', maximumFractionDigits: 0};
+    * var salaryConverter = new NumberConverter(options);
+    * @example <caption>Initialize the Combobox with converter object literal:</caption>
+    * &lt;oj-combobox-one converter='{"type": "number", "options": {"style": "decimal"}}'>&lt;/oj-combobox-one>
+    * @example <caption>Get or set the <code class="prettyprint">converter</code>
+    *  property after initialization:</caption>
+    * // getter
+    * var converter = myComp.converter;
+    *
+    * // setter
+    * myComp.converter = myConverter;
+    *
+    * @name converter
+    * @ojshortdesc An object that converts the value. See the Help documentation for more information.
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojComboboxOne
+    * @ojsignature [{
+    *    target: "Type",
+    *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+    *            null",
+    *    jsdocOverride: true},
+    * {
+    *    target: "Type",
+    *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+    *            oj.Validation.RegisteredConverter|
+    *            null",
+    *    consumedBy: 'tsdep'}]
+    * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredConverter'],
+    *                description:'Defining a converter with an object literal with converter type and its options
+    *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
+    *                  work again by importing the deprecated module you need, like ojvalidation-base.'}
+    * @type {Object|null}
+    * @default null
+    */
 
     /**
-     * {@ojinclude "name":"comboboxCommonConverter"}
-     *
-     * @example <caption>Initialize the Combobox with a number converter instance:</caption>
-     * &lt;oj-combobox-many converter="[[salaryConverter]]">&lt;/oj-combobox-many><br/>
-     * // Initialize converter instance using currency options
-     * var options = {style: 'currency', 'currency': 'USD', maximumFractionDigits: 0};
-     * var salaryConverter = new NumberConverter(options);
-     *
-     * @example <caption>Initialize the Combobox with converter object literal:</caption>
-     * &lt;oj-combobox-many converter='{"type": "number", "options": {"style": "decimal"}}'>&lt;/oj-combobox-many>
-     * @example <caption>Get or set the <code class="prettyprint">converter</code>
-     *  property after initialization:</caption>
-     * // getter
-     * var converter = myComp.converter;
-     *
-     * // setter
-     * myComp.converter = myConverter;
-     *
-     * @name converter
-     * @ojshortdesc An object that converts the value. See the Help documentation for more information.
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojComboboxMany
-     * @ojsignature [{
-     *    target: "Type",
-     *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
-     *            null",
-     *    jsdocOverride: true},
-     * {
-     *    target: "Type",
-     *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
-     *            oj.Validation.RegisteredConverter|
-     *            null",
-     *    consumedBy: 'tsdep'}]
-     * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredConverter'],
-     *                description:'Defining a converter with an object literal with converter type and its options
-     *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
-     *                  work again by importing the deprecated module you need, like ojvalidation-base.'}
-     * @type {Object|null}
-     * @default null
-     */
+    * {@ojinclude "name":"comboboxCommonConverter"}
+    *
+    * @example <caption>Initialize the Combobox with a number converter instance:</caption>
+    * &lt;oj-combobox-many converter="[[salaryConverter]]">&lt;/oj-combobox-many><br/>
+    * // Initialize converter instance using currency options
+    * var options = {style: 'currency', 'currency': 'USD', maximumFractionDigits: 0};
+    * var salaryConverter = new NumberConverter(options);
+    *
+    * @example <caption>Initialize the Combobox with converter object literal:</caption>
+    * &lt;oj-combobox-many converter='{"type": "number", "options": {"style": "decimal"}}'>&lt;/oj-combobox-many>
+    * @example <caption>Get or set the <code class="prettyprint">converter</code>
+    *  property after initialization:</caption>
+    * // getter
+    * var converter = myComp.converter;
+    *
+    * // setter
+    * myComp.converter = myConverter;
+    *
+    * @name converter
+    * @ojshortdesc An object that converts the value. See the Help documentation for more information.
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojComboboxMany
+    * @ojsignature [{
+    *    target: "Type",
+    *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+    *            null",
+    *    jsdocOverride: true},
+    * {
+    *    target: "Type",
+    *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+    *            oj.Validation.RegisteredConverter|
+    *            null",
+    *    consumedBy: 'tsdep'}]
+    * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredConverter'],
+    *                description:'Defining a converter with an object literal with converter type and its options
+    *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
+    *                  work again by importing the deprecated module you need, like ojvalidation-base.'}
+    * @type {Object|null}
+    * @default null
+    */
 
     /**
-     * A converter instance or Promise to a converter instance
-     * or one that duck types {@link oj.Converter}.
-     * When <code class="prettyprint">converter</code> property changes due to programmatic
-     * intervention, the element performs various tasks based on the current state it is in. </br>
-     *
-     * <h4>Steps Performed Always</h4>
-     * <ul>
-     * <li>Any cached converter instance is cleared and new converter created. The converter hint is
-     * pushed to messaging. E.g., notewindow displays the new hint(s).
-     * </li>
-     * </ul>
-     *
-     * <h4>Running Validation</h4>
-     * <ul>
-     * <li>if element is valid when <code class="prettyprint">converter</code> property changes, the
-     * display value is refreshed.</li>
-     * <li>if element is invalid and is showing messages when
-     * <code class="prettyprint">converter</code> property changes, then all messages generated by the
-     * element are cleared and full validation run using its current display value.
-     * <ul>
-     *   <li>if there are validation errors, then <code class="prettyprint">value</code>
-     *   property is not updated, and the errors are shown. The display value is not refreshed in this case. </li>
-     *   <li>if no errors result from the validation, <code class="prettyprint">value</code>
-     *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
-     *   event on the <code class="prettyprint">value</code> property to clear custom errors. The
-     *   display value is refreshed with the formatted value provided by converter.</li>
-     * </ul>
-     * </li>
-     * <li>if element is invalid and has deferred messages when
-     * <code class="prettyprint">converter</code> property changes, then the display value is
-     * refreshed with the formatted value provided by converter.</li>
-     * </ul>
-     * </p>
-     *
-     * <h4>Clearing Messages</h4>
-     * <ul>
-     * <li>When element messages are cleared in the cases described above, messages created by
-     * the element are cleared.</li>
-     * <li><code class="prettyprint">messages-custom</code> property is not cleared. Page authors can
-     * choose to clear it explicitly when setting the converter property.</li>
-     * </ul>
-     * </p>
-     *
-     * @ojshortdesc An object that converts the value. See the Help documentation for more information.
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojCombobox
-     * @ojfragment comboboxCommonConverter
-     */
+    * A converter instance or Promise to a converter instance
+    * or one that duck types {@link oj.Converter}.
+    * When <code class="prettyprint">converter</code> property changes due to programmatic
+    * intervention, the element performs various tasks based on the current state it is in. </br>
+    *
+    * <h4>Steps Performed Always</h4>
+    * <ul>
+    * <li>Any cached converter instance is cleared and new converter created. The converter hint is
+    * pushed to messaging. E.g., notewindow displays the new hint(s).
+    * </li>
+    * </ul>
+    *
+    * <h4>Running Validation</h4>
+    * <ul>
+    * <li>if element is valid when <code class="prettyprint">converter</code> property changes, the
+    * display value is refreshed.</li>
+    * <li>if element is invalid and is showing messages when
+    * <code class="prettyprint">converter</code> property changes, then all messages generated by the
+    * element are cleared and full validation run using its current display value.
+    * <ul>
+    *   <li>if there are validation errors, then <code class="prettyprint">value</code>
+    *   property is not updated, and the errors are shown. The display value is not refreshed in this case. </li>
+    *   <li>if no errors result from the validation, <code class="prettyprint">value</code>
+    *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+    *   event on the <code class="prettyprint">value</code> property to clear custom errors. The
+    *   display value is refreshed with the formatted value provided by converter.</li>
+    * </ul>
+    * </li>
+    * <li>if element is invalid and has deferred messages when
+    * <code class="prettyprint">converter</code> property changes, then the display value is
+    * refreshed with the formatted value provided by converter.</li>
+    * </ul>
+    * </p>
+    *
+    * <h4>Clearing Messages</h4>
+    * <ul>
+    * <li>When element messages are cleared in the cases described above, messages created by
+    * the element are cleared.</li>
+    * <li><code class="prettyprint">messages-custom</code> property is not cleared. Page authors can
+    * choose to clear it explicitly when setting the converter property.</li>
+    * </ul>
+    * </p>
+    *
+    * @ojshortdesc An object that converts the value. See the Help documentation for more information.
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojCombobox
+    * @ojfragment comboboxCommonConverter
+    */
     converter: null,
 
     /**
-     * Whether to filter the list with the current display value on opening the drop down. This can be used to support search use cases.
-     * This only applies to the initial opening of the drop down. When the user starts typing, the dropdown filters as usual.
-     *
-     * @example <caption>Initialize the combobox with the <code class="prettyprint">filter-on-open</code> attribute specified:</caption>
-     * &lt;oj-combobox-one filter-on-open="rawValue">&lt;/oj-combobox-one>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">filter-on-open</code> property after initialization:</caption>
-     * // getter
-     * var filterOnOpenValue = myCombobox.filterOnOpen;
-     *
-     * // setter
-     * myCombobox.filterOnOpen = "rawValue";
-     *
-     * @ojshortdesc Whether to filter the drop down list on open.
-     * @expose
-     * @instance
-     * @memberof oj.ojComboboxOne
-     * @type {string}
-     * @since 4.2.0
-     *
-     * @ojvalue {string} "none"  Show all available options without filtering on open.
-     * @ojvalue {string} "rawValue" Filter the drop down list on open with the rawValue (current display value).
-     * @default "none"
-     */
+    * Whether to filter the list with the current display value on opening the drop down. This can be used to support search use cases.
+    * This only applies to the initial opening of the drop down. When the user starts typing, the dropdown filters as usual.
+    *
+    * @example <caption>Initialize the combobox with the <code class="prettyprint">filter-on-open</code> attribute specified:</caption>
+    * &lt;oj-combobox-one filter-on-open="rawValue">&lt;/oj-combobox-one>
+    *
+    * @example <caption>Get or set the <code class="prettyprint">filter-on-open</code> property after initialization:</caption>
+    * // getter
+    * var filterOnOpenValue = myCombobox.filterOnOpen;
+    *
+    * // setter
+    * myCombobox.filterOnOpen = "rawValue";
+    *
+    * @ojshortdesc Whether to filter the drop down list on open.
+    * @expose
+    * @instance
+    * @memberof oj.ojComboboxOne
+    * @type {string}
+    * @since 4.2.0
+    *
+    * @ojvalue {string} "none"  Show all available options without filtering on open.
+    * @ojvalue {string} "rawValue" Filter the drop down list on open with the rawValue (current display value).
+    * @default "none"
+    */
     filterOnOpen: 'none',
 
     /**
-     * {@ojinclude "name":"comboboxCommonLabelledBy"}
-     * @name labelledBy
-     * @expose
-     * @ojshortdesc The oj-label sets the labelledBy property
-     * programmatically on the form component.
-     * @type {string|null}
-     * @default null
-     * @since 7.0.0
-     * @access public
-     * @instance
-     * @memberof oj.ojComboboxMany
-     */
+    * {@ojinclude "name":"comboboxCommonLabelledBy"}
+    * @name labelledBy
+    * @expose
+    * @ojshortdesc The oj-label sets the labelledBy property
+    * programmatically on the form component.
+    * @type {string|null}
+    * @default null
+    * @since 7.0.0
+    * @access public
+    * @instance
+    * @memberof oj.ojComboboxMany
+    */
 
     /**
-     * {@ojinclude "name":"comboboxCommonLabelledBy"}
-     * @name labelledBy
-     * @expose
-     * @ojshortdesc The oj-label sets the labelledBy property
-     * programmatically on the form component.
-     * @type {string|null}
-     * @default null
-     * @since 7.0.0
-     * @access public
-     * @instance
-     * @memberof oj.ojComboboxOne
-     */
+    * {@ojinclude "name":"comboboxCommonLabelledBy"}
+    * @name labelledBy
+    * @expose
+    * @ojshortdesc The oj-label sets the labelledBy property
+    * programmatically on the form component.
+    * @type {string|null}
+    * @default null
+    * @since 7.0.0
+    * @access public
+    * @instance
+    * @memberof oj.ojComboboxOne
+    */
 
     /**
-     * <p>
-     * The oj-label sets the labelledBy property programmatically on the form component
-     * to make it easy for the form component to find its oj-label component (a
-     * document.getElementById call.)
-     * </p>
-     * <p>
-     * The application developer should use the 'for'/'id api
-     * to link the oj-label with the form component;
-     * the 'for' on the oj-label to point to the 'id' on the input form component.
-     * This is the most performant way for the oj-label to find its form component.
-     * </p>
-     *
-     * // setter
-     * myComp.labelledBy = "labelId";
-     *
-     * @expose
-     * @ojshortdesc The oj-label sets the labelledBy property
-     * programmatically on the form component.
-     * @type {string|null}
-     * @default null
-     * @since 7.0.0
-     * @access public
-     * @instance
-     * @memberof oj.ojCombobox
-     * @ojfragment comboboxCommonLabelledBy
-     */
+    * <p>
+    * The oj-label sets the labelledBy property programmatically on the form component
+    * to make it easy for the form component to find its oj-label component (a
+    * document.getElementById call.)
+    * </p>
+    * <p>
+    * The application developer should use the 'for'/'id api
+    * to link the oj-label with the form component;
+    * the 'for' on the oj-label to point to the 'id' on the input form component.
+    * This is the most performant way for the oj-label to find its form component.
+    * </p>
+    *
+    * // setter
+    * myComp.labelledBy = "labelId";
+    *
+    * @expose
+    * @ojshortdesc The oj-label sets the labelledBy property
+    * programmatically on the form component.
+    * @type {string|null}
+    * @default null
+    * @since 7.0.0
+    * @access public
+    * @instance
+    * @memberof oj.ojCombobox
+    * @ojfragment comboboxCommonLabelledBy
+    */
     labelledBy: null,
 
     /**
-     * The placeholder text to set on the element. The placeholder specifies a short hint that can be displayed before user
-     * selects or enters a value.
-     *
-     * @example <caption>Initialize the combobox with the <code class="prettyprint">placeholder</code> attribute specified:</caption>
-     * &lt;oj-combobox-one placeholder="Please select ...">&lt;/oj-combobox-one>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">placeholder</code> property after initialization:</caption>
-     * // getter
-     * var placeholderValue = myCombobox.placeholder;
-     *
-     * // setter
-     * myCombobox.placeholder = "Select a value";
-     *
-     * @name placeholder
-     * @ojshortdesc A short hint that can be displayed before user selects or enters a value.
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojComboboxOne
-     * @type {string|null}
-     * @default null
-     * @ojtranslatable
-     */
+    * The placeholder text to set on the element. The placeholder specifies a short hint that can be displayed before user
+    * selects or enters a value.
+    *
+    * @example <caption>Initialize the combobox with the <code class="prettyprint">placeholder</code> attribute specified:</caption>
+    * &lt;oj-combobox-one placeholder="Please select ...">&lt;/oj-combobox-one>
+    *
+    * @example <caption>Get or set the <code class="prettyprint">placeholder</code> property after initialization:</caption>
+    * // getter
+    * var placeholderValue = myCombobox.placeholder;
+    *
+    * // setter
+    * myCombobox.placeholder = "Select a value";
+    *
+    * @name placeholder
+    * @ojshortdesc A short hint that can be displayed before user selects or enters a value.
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojComboboxOne
+    * @type {string|null}
+    * @default null
+    * @ojtranslatable
+    */
 
     /**
-     * The placeholder text to set on the element. The placeholder specifies a short hint that can be displayed before user
-     * selects or enters a value.
-     *
-     * @example <caption>Initialize the combobox with the <code class="prettyprint">placeholder</code> attribute specified:</caption>
-     * &lt;oj-combobox-many placeholder="Please select ...">&lt;/oj-combobox-many>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">placeholder</code> property after initialization:</caption>
-     * // getter
-     * var placeholderValue = myCombobox.placeholder;
-     *
-     * // setter
-     * myCombobox.placeholder = "Select values";
-     *
-     * @name placeholder
-     * @ojshortdesc A short hint that can be displayed before user selects or enters a value.
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojComboboxMany
-     * @type {string|null}
-     * @default null
-     * @ojtranslatable
-     */
+    * The placeholder text to set on the element. The placeholder specifies a short hint that can be displayed before user
+    * selects or enters a value.
+    *
+    * @example <caption>Initialize the combobox with the <code class="prettyprint">placeholder</code> attribute specified:</caption>
+    * &lt;oj-combobox-many placeholder="Please select ...">&lt;/oj-combobox-many>
+    *
+    * @example <caption>Get or set the <code class="prettyprint">placeholder</code> property after initialization:</caption>
+    * // getter
+    * var placeholderValue = myCombobox.placeholder;
+    *
+    * // setter
+    * myCombobox.placeholder = "Select values";
+    *
+    * @name placeholder
+    * @ojshortdesc A short hint that can be displayed before user selects or enters a value.
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojComboboxMany
+    * @type {string|null}
+    * @default null
+    * @ojtranslatable
+    */
     placeholder: null,
 
     /**
-     * @typedef {Object} oj.ojCombobox.Option
-     * @property {boolean=} disabled Option item is disabled.
-     * @property {string=} label The display label for the option item. If it's missing, string(value) will be used.
-     * @property {any} value The value of the option item.
-     */
+    * @typedef {Object} oj.ojCombobox.Option
+    * @property {boolean=} disabled Option item is disabled.
+    * @property {string=} label The display label for the option item. If it's missing, string(value) will be used.
+    * @property {any} value The value of the option item.
+    */
 
     /**
-     * @typedef {Object} oj.ojCombobox.Optgroup
-     * @property {boolean=} disabled Option group is disabled.
-     * @property {string} label The display label for the option group.
-     * @property {Array.<Object>} children The Option or Optgroup children.
-     * @ojsignature { target: "Type", value: "Array.<oj.ojCombobox.Option|oj.ojCombobox.Optgroup>", for: "children", jsdocOverride: true}
-     */
+    * @typedef {Object} oj.ojCombobox.Optgroup
+    * @property {boolean=} disabled Option group is disabled.
+    * @property {string} label The display label for the option group.
+    * @property {Array.<Object>} children The Option or Optgroup children.
+    * @ojsignature { target: "Type", value: "Array.<oj.ojCombobox.Option|oj.ojCombobox.Optgroup>", for: "children", jsdocOverride: true}
+    */
 
     /**
-     * {@ojinclude "name":"comboboxCommonOptions"}
-     * @name options
-     * @ojshortdesc The option items for the Combobox.
-     * @expose
-     * @access public
-     * @instance
-     * @type {Array.<Object>|Object|null}
-     * @ojsignature { target: "Type",
-     *                value: "Array<oj.ojCombobox.Option|oj.ojCombobox.Optgroup>|oj.DataProvider<K, D>|null",
-     *                jsdocOverride: true}
-     * @default null
-     * @memberof oj.ojComboboxOne
-     *
-     * @example <caption>Initialize the Combobox with the <code class="prettyprint">options</code> specified:</caption>
-     * &lt;oj-combobox-one options="[[dataArray]]">&lt;/oj-combobox-one>
-     *
-     * @example <caption>The options array should contain objects with value and label properties:</caption>
-     * var dataArray = [{value: 'option1', label: 'Option 1'},
-     *                  {value: 'option2', label: 'Option 2', disabled: true},
-     *                  {value: 'option3', label: 'Option 3'}];
-     *
-     * @example <caption>Initialize the Combobox with a data provider and data mapping:</caption>
-     * &lt;oj-combobox-one options="[[dataProvider]]">&lt;/oj-combobox-one>
-     *
-     * @example <caption>Data mapping can be used if data doesn't have value and label properties.</caption>
-     * // actual field names are "id" and "name"
-     * var dataArray = [
-     *            {id: 'Id 1', name: 'Name 1'},
-     *            {id: 'Id 2', name: 'Name 2'},
-     *            {id: 'Id 3', name: 'Name 3'}];
-     *
-     * // In mapfields, map "name" to "label" and "id" to "value"
-     * var mapFields = function(item) {
-     *   var data = item['data'];
-     *   var mappedItem = {};
-     *   mappedItem['data'] = {};
-     *   mappedItem['data']['label'] = data['name'];
-     *   mappedItem['data']['value'] = data['id'];
-     *   mappedItem['metadata'] = {'key': data['id']};
-     *   return mappedItem;
-     * };
-     * var dataMapping = {'mapFields': mapFields};
-     *
-     * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {keyAttributes: 'id'});
-     * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {'dataMapping': dataMapping});
-     */
+    * {@ojinclude "name":"comboboxCommonOptions"}
+    * @name options
+    * @ojshortdesc The option items for the Combobox.
+    * @expose
+    * @access public
+    * @instance
+    * @type {Array.<Object>|Object|null}
+    * @ojsignature { target: "Type",
+    *                value: "Array<oj.ojCombobox.Option|oj.ojCombobox.Optgroup>|oj.DataProvider<K, D>|null",
+    *                jsdocOverride: true}
+    * @default null
+    * @memberof oj.ojComboboxOne
+    *
+    * @example <caption>Initialize the Combobox with the <code class="prettyprint">options</code> specified:</caption>
+    * &lt;oj-combobox-one options="[[dataArray]]">&lt;/oj-combobox-one>
+    *
+    * @example <caption>The options array should contain objects with value and label properties:</caption>
+    * var dataArray = [{value: 'option1', label: 'Option 1'},
+    *                  {value: 'option2', label: 'Option 2', disabled: true},
+    *                  {value: 'option3', label: 'Option 3'}];
+    *
+    * @example <caption>Initialize the Combobox with a data provider and data mapping:</caption>
+    * &lt;oj-combobox-one options="[[dataProvider]]">&lt;/oj-combobox-one>
+    *
+    * @example <caption>Data mapping can be used if data doesn't have value and label properties.</caption>
+    * // actual field names are "id" and "name"
+    * var dataArray = [
+    *            {id: 'Id 1', name: 'Name 1'},
+    *            {id: 'Id 2', name: 'Name 2'},
+    *            {id: 'Id 3', name: 'Name 3'}];
+    *
+    * // In mapfields, map "name" to "label" and "id" to "value"
+    * var mapFields = function(item) {
+    *   var data = item['data'];
+    *   var mappedItem = {};
+    *   mappedItem['data'] = {};
+    *   mappedItem['data']['label'] = data['name'];
+    *   mappedItem['data']['value'] = data['id'];
+    *   mappedItem['metadata'] = {'key': data['id']};
+    *   return mappedItem;
+    * };
+    * var dataMapping = {'mapFields': mapFields};
+    *
+    * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {keyAttributes: 'id'});
+    * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {'dataMapping': dataMapping});
+    */
 
     /**
-     * {@ojinclude "name":"comboboxCommonOptions"}
-     * @name options
-     * @ojshortdesc The option items for the Combobox.
-     * @expose
-     * @access public
-     * @instance
-     * @type {Array.<Object>|Object|null}
-     *
-     * @ojsignature { target: "Type",
-     *                value: "Array<oj.ojCombobox.Option|oj.ojCombobox.Optgroup>|oj.DataProvider<K, D>|null",
-     *                jsdocOverride: true}
-     * @default null
-     * @memberof oj.ojComboboxMany
-     *
-     * @example <caption>Initialize the Combobox with the <code class="prettyprint">options</code> specified:</caption>
-     * &lt;oj-combobox-many options="[[dataArray]]">&lt;/oj-combobox-many>
-     *
-     * @example <caption>The options array should contain objects with value and label properties:</caption>
-     * var dataArray = [{value: 'option1', label: 'Option 1'},
-     *                  {value: 'option2', label: 'Option 2', disabled: true},
-     *                  {value: 'option3', label: 'Option 3'}];
-     *
-     * @example <caption>Initialize the Combobox with a data provider and data mapping:</caption>
-     * &lt;oj-combobox-many options="[[dataProvider]]">&lt;/oj-combobox-many>
-     *
-     * @example <caption>Data mapping can be used if data doesn't have value and label properties.</caption>
-     * // actual field names are "id" and "name"
-     * var dataArray = [
-     *            {id: 'Id 1', name: 'Name 1'},
-     *            {id: 'Id 2', name: 'Name 2'},
-     *            {id: 'Id 3', name: 'Name 3'}];
-     *
-     * // In mapfields, map "name" to "label" and "id" to "value"
-     * var mapFields = function(item) {
-     *   var data = item['data'];
-     *   var mappedItem = {};
-     *   mappedItem['data'] = {};
-     *   mappedItem['data']['label'] = data['name'];
-     *   mappedItem['data']['value'] = data['id'];
-     *   mappedItem['metadata'] = {'key': data['id']};
-     *   return mappedItem;
-     * };
-     * var dataMapping = {'mapFields': mapFields};
-     *
-     * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {keyAttributes: 'id'});
-     * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {'dataMapping': dataMapping});
-     */
+    * {@ojinclude "name":"comboboxCommonOptions"}
+    * @name options
+    * @ojshortdesc The option items for the Combobox.
+    * @expose
+    * @access public
+    * @instance
+    * @type {Array.<Object>|Object|null}
+    *
+    * @ojsignature { target: "Type",
+    *                value: "Array<oj.ojCombobox.Option|oj.ojCombobox.Optgroup>|oj.DataProvider<K, D>|null",
+    *                jsdocOverride: true}
+    * @default null
+    * @memberof oj.ojComboboxMany
+    *
+    * @example <caption>Initialize the Combobox with the <code class="prettyprint">options</code> specified:</caption>
+    * &lt;oj-combobox-many options="[[dataArray]]">&lt;/oj-combobox-many>
+    *
+    * @example <caption>The options array should contain objects with value and label properties:</caption>
+    * var dataArray = [{value: 'option1', label: 'Option 1'},
+    *                  {value: 'option2', label: 'Option 2', disabled: true},
+    *                  {value: 'option3', label: 'Option 3'}];
+    *
+    * @example <caption>Initialize the Combobox with a data provider and data mapping:</caption>
+    * &lt;oj-combobox-many options="[[dataProvider]]">&lt;/oj-combobox-many>
+    *
+    * @example <caption>Data mapping can be used if data doesn't have value and label properties.</caption>
+    * // actual field names are "id" and "name"
+    * var dataArray = [
+    *            {id: 'Id 1', name: 'Name 1'},
+    *            {id: 'Id 2', name: 'Name 2'},
+    *            {id: 'Id 3', name: 'Name 3'}];
+    *
+    * // In mapfields, map "name" to "label" and "id" to "value"
+    * var mapFields = function(item) {
+    *   var data = item['data'];
+    *   var mappedItem = {};
+    *   mappedItem['data'] = {};
+    *   mappedItem['data']['label'] = data['name'];
+    *   mappedItem['data']['value'] = data['id'];
+    *   mappedItem['metadata'] = {'key': data['id']};
+    *   return mappedItem;
+    * };
+    * var dataMapping = {'mapFields': mapFields};
+    *
+    * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {keyAttributes: 'id'});
+    * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {'dataMapping': dataMapping});
+    */
 
     /**
-     * The option items for the Combobox. This attribute can be used instead of providing a list of <code class="prettyprint">oj-option</code> or <code class="prettyprint">oj-optgroup</code> child elements of the Combobox element.
-     * This attribute accepts:
-     * <ol>
-     * <li>an array of <code class="prettyprint">oj.ojCombobox.Option</code> and/or <code class="prettyprint">oj.ojCombobox.Optgroup</code>.
-     *   <ul>
-     *   <li>Use <code class="prettyprint">oj.ojCombobox.Option</code> for a leaf option.</li>
-     *   <li>Use <code class="prettyprint">oj.ojCombobox.Optgroup</code> for a group option.</li>
-     *   </ul>
-     * </li>
-     * <li>a data provider. This data provider must implement <a href="oj.DataProvider.html">oj.DataProvider</a>.
-     *   <ul>
-     *   <li><code class="prettyprint">value</code> in <code class="prettyprint">oj.ojCombobox.Option</code> must be the row key in the data provider.</li>
-     *   <li>A maximum of 15 rows will be displayed in the dropdown. If more than 15 results are available then users need to filter further.</li>
-     *   <li>If the data provider supports the filter criteria capability including the contains (<code class="prettyprint">$co or $regex</code>) operator, JET Combobox will request the data provider to do filtering. Otherwise it will filter internally.</li>
-     *   <li>See also <a href="#perf-section">Improve page load performance</a></li>
-     *   </ul>
-     * </li>
-     * </ol>
-     *
-     * @expose
-     * @memberof oj.ojCombobox
-     * @instance
-     * @ojfragment comboboxCommonOptions
-     */
+    * The option items for the Combobox. This attribute can be used instead of providing a list of <code class="prettyprint">oj-option</code> or <code class="prettyprint">oj-optgroup</code> child elements of the Combobox element.
+    * This attribute accepts:
+    * <ol>
+    * <li>an array of <code class="prettyprint">oj.ojCombobox.Option</code> and/or <code class="prettyprint">oj.ojCombobox.Optgroup</code>.
+    *   <ul>
+    *   <li>Use <code class="prettyprint">oj.ojCombobox.Option</code> for a leaf option.</li>
+    *   <li>Use <code class="prettyprint">oj.ojCombobox.Optgroup</code> for a group option.</li>
+    *   </ul>
+    * </li>
+    * <li>a data provider. This data provider must implement <a href="oj.DataProvider.html">oj.DataProvider</a>.
+    *   <ul>
+    *   <li><code class="prettyprint">value</code> in <code class="prettyprint">oj.ojCombobox.Option</code> must be the row key in the data provider.</li>
+    *   <li>A maximum of 15 rows will be displayed in the dropdown. If more than 15 results are available then users need to filter further.</li>
+    *   <li>If the data provider supports the filter criteria capability including the contains (<code class="prettyprint">$co or $regex</code>) operator, JET Combobox will request the data provider to do filtering. Otherwise it will filter internally.</li>
+    *   <li>See also <a href="#perf-section">Improve page load performance</a></li>
+    *   </ul>
+    * </li>
+    * </ol>
+    *
+    * @expose
+    * @memberof oj.ojCombobox
+    * @instance
+    * @ojfragment comboboxCommonOptions
+    */
     options: null,
 
     /**
-     * @typedef {Object} oj.ojCombobox.OptionsKeys
-     * @property {?string=} label The key name for the label.
-     * @property {?string=} value The key name for the value.
-     * @property {?string=} children The key name for the children.
-     * @property {?Object=} childKeys The object for the child keys.
-     * @ojsignature {target:"Type", for:"childKeys", value:"oj.ojCombobox.OptionsKeys", jsdocOverride:true}
-     */
+    * @typedef {Object} oj.ojCombobox.OptionsKeys
+    * @property {?string=} label The key name for the label.
+    * @property {?string=} value The key name for the value.
+    * @property {?string=} children The key name for the children.
+    * @property {?Object=} childKeys The object for the child keys.
+    * @ojsignature {target:"Type", for:"childKeys", value:"oj.ojCombobox.OptionsKeys", jsdocOverride:true}
+    */
 
     /**
-     * {@ojinclude "name":"comboboxCommonOptionsKeys"}
-     *
-     * @example <caption>Initialize the Combobox with <code class="prettyprint">options-keys</code> specified. This allows the key names to be redefined in the options array.</caption>
-     * &lt;oj-combobox-one options-keys="[[optionsKeys]]">&lt;/oj-combobox-one>
-     * @example var optionsKeys = {value : "state_abbr", label : "state_name"};
-     * @example <caption>Redefine keys for data with subgroups.</caption>
-     * var optionsKeys = {label : "regions", children : "states",
-     *                    childKeys : {value : "state_abbr", label : "state_name"}};
-     * @name optionsKeys
-     * @ojshortdesc Specify the key names to use in the options array.  Depending on options-keys means that the signature of the data does not match what is supported by the options attribute.
-     * @expose
-     * @access public
-     * @instance
-     * @type {?Object}
-     * @default null
-     * @memberof oj.ojComboboxOne
-     * @ojsignature {target:"Type", value:"oj.ojCombobox.OptionsKeys|null", jsdocOverride:true}
-     */
+    * {@ojinclude "name":"comboboxCommonOptionsKeys"}
+    *
+    * @example <caption>Initialize the Combobox with <code class="prettyprint">options-keys</code> specified. This allows the key names to be redefined in the options array.</caption>
+    * &lt;oj-combobox-one options-keys="[[optionsKeys]]">&lt;/oj-combobox-one>
+    * @example var optionsKeys = {value : "state_abbr", label : "state_name"};
+    * @example <caption>Redefine keys for data with subgroups.</caption>
+    * var optionsKeys = {label : "regions", children : "states",
+    *                    childKeys : {value : "state_abbr", label : "state_name"}};
+    * @name optionsKeys
+    * @ojshortdesc Specify the key names to use in the options array.  Depending on options-keys means that the signature of the data does not match what is supported by the options attribute.
+    * @expose
+    * @access public
+    * @instance
+    * @type {?Object}
+    * @default null
+    * @memberof oj.ojComboboxOne
+    * @ojsignature {target:"Type", value:"oj.ojCombobox.OptionsKeys|null", jsdocOverride:true}
+    */
 
     /**
-     * {@ojinclude "name":"comboboxCommonOptionsKeys"}
-     *
-     * @example <caption>Initialize the Combobox with <code class="prettyprint">options-keys</code> specified. This allows the key names to be redefined in the options array.</caption>
-     * &lt;oj-combobox-many options-keys="[[optionsKeys]]">&lt;/oj-combobox-many>
-     * @example var optionsKeys = {value : "state_abbr", label : "state_name"};
-     * @example <caption>Redefine keys for data with subgroups.</caption>
-     * var optionsKeys = {label : "regions", children : "states",
-     *                    childKeys : {value : "state_abbr", label : "state_name"}};
-     * @name optionsKeys
-     * @ojshortdesc Specify the key names to use in the options array.  Depending on options-keys means that the signature of the data does not match what is supported by the options attribute.
-     * @expose
-     * @access public
-     * @instance
-     * @type {?Object}
-     * @default null
-     * @memberof oj.ojComboboxMany
-     * @ojsignature {target:"Type", value:"oj.ojCombobox.OptionsKeys|null", jsdocOverride:true}
-     */
+    * {@ojinclude "name":"comboboxCommonOptionsKeys"}
+    *
+    * @example <caption>Initialize the Combobox with <code class="prettyprint">options-keys</code> specified. This allows the key names to be redefined in the options array.</caption>
+    * &lt;oj-combobox-many options-keys="[[optionsKeys]]">&lt;/oj-combobox-many>
+    * @example var optionsKeys = {value : "state_abbr", label : "state_name"};
+    * @example <caption>Redefine keys for data with subgroups.</caption>
+    * var optionsKeys = {label : "regions", children : "states",
+    *                    childKeys : {value : "state_abbr", label : "state_name"}};
+    * @name optionsKeys
+    * @ojshortdesc Specify the key names to use in the options array.  Depending on options-keys means that the signature of the data does not match what is supported by the options attribute.
+    * @expose
+    * @access public
+    * @instance
+    * @type {?Object}
+    * @default null
+    * @memberof oj.ojComboboxMany
+    * @ojsignature {target:"Type", value:"oj.ojCombobox.OptionsKeys|null", jsdocOverride:true}
+    */
 
     /**
-     * Specify the key names to use in the options array.
-     * <p>Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error.</p>
-     * <p>Best practice is to use a <a href="oj.ListDataProviderView.html">oj.ListDataProviderView</a> with data mapping as a replacement.</p>
-     * <p>However, for the app that must fetch data from a REST endpoint where the data fields do not match those that are supported by the options attribute, you may use the options-keys with any dataProvider that implements <a href="oj.DataProvider.html">oj.DataProvider</a> interface.</p>
-     * <p>Note: <code class="prettyprint">child-keys</code> and <code class="prettyprint">children</code> properties in <code class="prettyprint">options-keys</code> are ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.</p>
-     *
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojCombobox
-     * @ojfragment comboboxCommonOptionsKeys
-     */
+    * Specify the key names to use in the options array.
+    * <p>Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error.</p>
+    * <p>Best practice is to use a <a href="oj.ListDataProviderView.html">oj.ListDataProviderView</a> with data mapping as a replacement.</p>
+    * <p>However, for the app that must fetch data from a REST endpoint where the data fields do not match those that are supported by the options attribute, you may use the options-keys with any dataProvider that implements <a href="oj.DataProvider.html">oj.DataProvider</a> interface.</p>
+    * <p>Note: <code class="prettyprint">child-keys</code> and <code class="prettyprint">children</code> properties in <code class="prettyprint">options-keys</code> are ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.</p>
+    *
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojCombobox
+    * @ojfragment comboboxCommonOptionsKeys
+    */
     optionsKeys: {
       /**
        * The key name for the label.
@@ -9082,95 +9966,95 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
        */
 
       /**
-       * The key name for the label.
-       *
-       * @name optionsKeys.label
-       * @expose
-       * @public
-       * @instance
-       * @memberof! oj.ojComboboxMany
-       * @type {?string}
-       * @ojsignature { target: "Type",
-       *                value: "?"}
-       * @default null
-       */
+      * The key name for the label.
+      *
+      * @name optionsKeys.label
+      * @expose
+      * @public
+      * @instance
+      * @memberof! oj.ojComboboxMany
+      * @type {?string}
+      * @ojsignature { target: "Type",
+      *                value: "?"}
+      * @default null
+      */
 
       /**
-       * The key name for the value.
-       *
-       * @name optionsKeys.value
-       * @expose
-       * @public
-       * @instance
-       * @memberof! oj.ojComboboxOne
-       * @type {?string}
-       * @ojsignature { target: "Type",
-       *                value: "?"}
-       * @default null
-       */
+      * The key name for the value.
+      *
+      * @name optionsKeys.value
+      * @expose
+      * @public
+      * @instance
+      * @memberof! oj.ojComboboxOne
+      * @type {?string}
+      * @ojsignature { target: "Type",
+      *                value: "?"}
+      * @default null
+      */
 
       /**
-       * The key name for the value.
-       *
-       * @name optionsKeys.value
-       * @expose
-       * @public
-       * @instance
-       * @memberof! oj.ojComboboxMany
-       * @type {?string}
-       * @ojsignature { target: "Type",
-       *                value: "?"}
-       * @default null
-       */
+      * The key name for the value.
+      *
+      * @name optionsKeys.value
+      * @expose
+      * @public
+      * @instance
+      * @memberof! oj.ojComboboxMany
+      * @type {?string}
+      * @ojsignature { target: "Type",
+      *                value: "?"}
+      * @default null
+      */
 
       /**
-       * The key name for the children. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
-       *
-       * @name optionsKeys.children
-       * @ojshortdesc The key name for the children. It is ignored when using a TreeDataProvider.
-       * @expose
-       * @public
-       * @instance
-       * @memberof! oj.ojComboboxOne
-       * @type {?string}
-       * @ojsignature { target: "Type",
-       *                value: "?"}
-       * @default null
-       */
+      * The key name for the children. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
+      *
+      * @name optionsKeys.children
+      * @ojshortdesc The key name for the children. It is ignored when using a TreeDataProvider.
+      * @expose
+      * @public
+      * @instance
+      * @memberof! oj.ojComboboxOne
+      * @type {?string}
+      * @ojsignature { target: "Type",
+      *                value: "?"}
+      * @default null
+      */
 
       /**
-       * The key name for the children. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
-       *
-       * @name optionsKeys.children
-       * @ojshortdesc The key name for the children. It is ignored when using a TreeDataProvider.
-       * @expose
-       * @public
-       * @instance
-       * @memberof! oj.ojComboboxMany
-       * @type {?string}
-       * @ojsignature { target: "Type",
-       *                value: "?"}
-       * @default null
-       */
+      * The key name for the children. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
+      *
+      * @name optionsKeys.children
+      * @ojshortdesc The key name for the children. It is ignored when using a TreeDataProvider.
+      * @expose
+      * @public
+      * @instance
+      * @memberof! oj.ojComboboxMany
+      * @type {?string}
+      * @ojsignature { target: "Type",
+      *                value: "?"}
+      * @default null
+      */
 
       /**
-       * The object for the child keys. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
-       *
-       * @name optionsKeys.childKeys
-       * @ojshortdesc The object for the child keys. It is ignored when using a TreeDataProvider.
-       * @expose
-       * @public
-       * @instance
-       * @memberof! oj.ojComboboxOne
-       * @type {?Object}
-       * @ojsignature {target:"Type", value:"oj.ojCombobox.OptionsKeys", jsdocOverride:true}
-       * @default null
-       * @property {?string=} label The key name for the label.
-       * @property {?string=} value The key name for the value.
-       * @property {?string=} children The key name for the children.
-       * @property {?Object=} childKeys The object for the child keys.
-       * @ojsignature {target:"Type", for:"childKeys", value:"oj.ojCombobox.OptionsKeys|null", jsdocOverride:true}
-       */
+      * The object for the child keys. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
+      *
+      * @name optionsKeys.childKeys
+      * @ojshortdesc The object for the child keys. It is ignored when using a TreeDataProvider.
+      * @expose
+      * @public
+      * @instance
+      * @memberof! oj.ojComboboxOne
+      * @type {?Object}
+      * @ojsignature {target:"Type", value:"oj.ojCombobox.OptionsKeys", jsdocOverride:true}
+      * @default null
+      * @property {?string=} label The key name for the label.
+      * @property {?string=} value The key name for the value.
+      * @property {?string=} children The key name for the children.
+      * @property {?Object=} childKeys The object for the child keys.
+      * @ojsignature {target:"Type", for:"childKeys", value:"oj.ojCombobox.OptionsKeys|null", jsdocOverride:true}
+      */
 
       /**
        * The object for the child keys. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
@@ -9193,925 +10077,936 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
     },
 
     /**
-     * <p>Attributes specified here will be set on the picker DOM element when it's launched.
-     * <p>The supported attribute is <code class="prettyprint">class</code>, which is appended to the picker's class, if any.
-     * Note: 1) picker-attributes is not applied in the native theme.
-     * 2) setting this attribute after element creation has no effect.
-     *
-     * @property {string=} style The css style to append to the picker.
-     * @property {string=} class The css class to append to the picker.
-     *
-     * @example <caption>Initialize the combobox specifying the class attribute to be set on the picker DOM element:</caption>
-     * &lt;oj-combobox-one picker-attributes="[[pickerAttributes]]">&lt;/oj-combobox-one>
-     * @example var pickerAttributes = {
-     *   "style": "color:blue;",
-     *   "class": "my-class"
-     * };
-     *
-     * @name pickerAttributes
-     * @ojshortdesc The style attributes for the drop down.
-     * @expose
-     * @memberof oj.ojComboboxOne
-     * @ojdeprecated {target: "property", for: "style", since: "7.0.0", description: "Style property of pickerAttribute is deprecated as it violates the recommended <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy'>Content Security Policy</a> for JET which disallows <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src'>inline styles</a>. Use class property instead."}
-     * @instance
-     * @type {?Object}
-     * @default null
-     */
+    * <p>Attributes specified here will be set on the picker DOM element when it's launched.
+    * <p>The supported attribute is <code class="prettyprint">class</code>, which is appended to the picker's class, if any.
+    * Note: 1) picker-attributes is not applied in the native theme.
+    * 2) setting this attribute after element creation has no effect.
+    *
+    * @property {string=} style The css style to append to the picker.
+    * @property {string=} class The css class to append to the picker.
+    *
+    * @example <caption>Initialize the combobox specifying the class attribute to be set on the picker DOM element:</caption>
+    * &lt;oj-combobox-one picker-attributes="[[pickerAttributes]]">&lt;/oj-combobox-one>
+    * @example var pickerAttributes = {
+    *   "style": "color:blue;",
+    *   "class": "my-class"
+    * };
+    *
+    * @name pickerAttributes
+    * @ojshortdesc The style attributes for the drop down.
+    * @expose
+    * @memberof oj.ojComboboxOne
+    * @ojdeprecated {target: "property", for: "style", since: "7.0.0", description: "Style property of pickerAttribute is deprecated as it violates the recommended <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy'>Content Security Policy</a> for JET which disallows <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src'>inline styles</a>. Use class property instead."}
+    * @instance
+    * @type {?Object}
+    * @default null
+    */
 
     /**
-     * <p>Attributes specified here will be set on the picker DOM element when it's launched.
-     * <p>The supported attribute is <code class="prettyprint">class</code>, which is appended to the picker's class, if any.
-     * Note: 1) picker-attributes is not applied in the native theme.
-     * 2) setting this attribute after element creation has no effect.
-     *
-     * @property {string=} style The css style to append to the picker.
-     * @property {string=} class The css class to append to the picker.
-     *
-     * @example <caption>Initialize the combobox specifying the class attribute to be set on the picker DOM element:</caption>
-     * &lt;oj-combobox-many picker-attributes="[[pickerAttributes]]">&lt;/oj-combobox-many>
-     * @example var pickerAttributes = {
-     *   "class": "my-class"
-     * };
-     *
-     * @name pickerAttributes
-     * @ojshortdesc The style attributes for the drop down.
-     * @expose
-     * @memberof oj.ojComboboxMany
-     * @ojdeprecated {target: "property", for: "style", since: "7.0.0", description: "Style property of pickerAttribute is deprecated as it violates the recommended <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy'>Content Security Policy</a> for JET which disallows <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src'>inline styles</a>. Use class property instead."}
-     * @instance
-     * @type {?Object}
-     * @default null
-     */
+    * <p>Attributes specified here will be set on the picker DOM element when it's launched.
+    * <p>The supported attribute is <code class="prettyprint">class</code>, which is appended to the picker's class, if any.
+    * Note: 1) picker-attributes is not applied in the native theme.
+    * 2) setting this attribute after element creation has no effect.
+    *
+    * @property {string=} style The css style to append to the picker.
+    * @property {string=} class The css class to append to the picker.
+    *
+    * @example <caption>Initialize the combobox specifying the class attribute to be set on the picker DOM element:</caption>
+    * &lt;oj-combobox-many picker-attributes="[[pickerAttributes]]">&lt;/oj-combobox-many>
+    * @example var pickerAttributes = {
+    *   "class": "my-class"
+    * };
+    *
+    * @name pickerAttributes
+    * @ojshortdesc The style attributes for the drop down.
+    * @expose
+    * @memberof oj.ojComboboxMany
+    * @ojdeprecated {target: "property", for: "style", since: "7.0.0", description: "Style property of pickerAttribute is deprecated as it violates the recommended <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy'>Content Security Policy</a> for JET which disallows <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src'>inline styles</a>. Use class property instead."}
+    * @instance
+    * @type {?Object}
+    * @default null
+    */
     pickerAttributes: null,
 
     /**
-     * @typedef {Object} oj.ojCombobox.OptionContext
-     * @property {Element} componentElement A reference to the combobox element.
-     * @property {?Element} parent The parent of the data item. The parent is null for root node.
-     * @property {number} index The index of the option, where 0 is the index of the first option. In the hierarchical case the index is relative to its parent.
-     * @property {number } depth The depth of the option. The depth of the first level children under the invisible root is 0.
-     * @property {boolean} leaf Whether the option is a leaf or a group.
-     * @property {Object} data The data object for the option.
-     * @property {Element} parentElement The option label element. The renderer can use this to directly append content.
-     */
+    * @typedef {Object} oj.ojCombobox.OptionContext
+    * @property {Element} componentElement A reference to the combobox element.
+    * @property {?Element} parent The parent of the data item. The parent is null for root node.
+    * @property {number} index The index of the option, where 0 is the index of the first option. In the hierarchical case the index is relative to its parent.
+    * @property {number } depth The depth of the option. The depth of the first level children under the invisible root is 0.
+    * @property {boolean} leaf Whether the option is a leaf or a group.
+    * @property {Object} data The data object for the option.
+    * @property {Element} parentElement The option label element. The renderer can use this to directly append content.
+    */
 
     /**
-     * {@ojinclude "name":"comboboxCommonOptionRenderer"}
-     * @name optionRenderer
-     * @ojshortdesc The renderer function that renders the content of each option.
-     * @expose
-     * @memberof oj.ojComboboxOne
-     * @instance
-     * @type {null|function(Object):Object}
-     * @ojsignature { target: "Type",
-     *                value: "?((param0: oj.ojCombobox.OptionContext) => Element)|null",
-     *                jsdocOverride: true}
-     * @default null
-     * @example <caption>Initialize the Combobox with a renderer:</caption>
-     * &lt;oj-combobox-one option-renderer="[[optionRenderer]]">&lt;/oj-combobox-one>
-     * @example var optionRenderer = function(context) {
-     *            var ojOption = document.createElement('oj-option');
-     *            // Set the textContent or append other child nodes
-     *            ojOption.textContent = context.data['FIRST_NAME'] + ' ' + context.data['LAST_NAME'];
-     *            return ojOption;
-     *          };
-     */
+    * {@ojinclude "name":"comboboxCommonOptionRenderer"}
+    * @name optionRenderer
+    * @ojshortdesc The renderer function that renders the content of each option.
+    * @expose
+    * @memberof oj.ojComboboxOne
+    * @instance
+    * @type {null|function(Object):Object}
+    * @ojsignature { target: "Type",
+    *                value: "?((param0: oj.ojCombobox.OptionContext) => Element)|null",
+    *                jsdocOverride: true}
+    * @default null
+    * @example <caption>Initialize the Combobox with a renderer:</caption>
+    * &lt;oj-combobox-one option-renderer="[[optionRenderer]]">&lt;/oj-combobox-one>
+    * @example var optionRenderer = function(context) {
+    *            var ojOption = document.createElement('oj-option');
+    *            // Set the textContent or append other child nodes
+    *            ojOption.textContent = context.data['FIRST_NAME'] + ' ' + context.data['LAST_NAME'];
+    *            return ojOption;
+    *          };
+    */
 
     /**
-     * {@ojinclude "name":"comboboxCommonOptionRenderer"}
-     * @name optionRenderer
-     * @ojshortdesc The renderer function that renders the content of each option.
-     * @expose
-     * @memberof oj.ojComboboxMany
-     * @instance
-     * @type {null|function(Object):Object}
-     * @ojsignature { target: "Type",
-     *                value: "?((param0: oj.ojCombobox.OptionContext) => Element)|null",
-     *                jsdocOverride: true}
-     * @default null
-     * @example <caption>Initialize the Combobox with a renderer:</caption>
-     * &lt;oj-combobox-many option-renderer="[[optionRenderer]]">&lt;/oj-combobox-many>
-     * @example var optionRenderer = function(context) {
-     *            var ojOption = document.createElement('oj-option');
-     *            // Set the textContent or append other child nodes
-     *            ojOption.textContent = context.data['FIRST_NAME'] + ' ' + context.data['LAST_NAME'];
-     *            return ojOption;
-     *          };
-     */
+    * {@ojinclude "name":"comboboxCommonOptionRenderer"}
+    * @name optionRenderer
+    * @ojshortdesc The renderer function that renders the content of each option.
+    * @expose
+    * @memberof oj.ojComboboxMany
+    * @instance
+    * @type {null|function(Object):Object}
+    * @ojsignature { target: "Type",
+    *                value: "?((param0: oj.ojCombobox.OptionContext) => Element)|null",
+    *                jsdocOverride: true}
+    * @default null
+    * @example <caption>Initialize the Combobox with a renderer:</caption>
+    * &lt;oj-combobox-many option-renderer="[[optionRenderer]]">&lt;/oj-combobox-many>
+    * @example var optionRenderer = function(context) {
+    *            var ojOption = document.createElement('oj-option');
+    *            // Set the textContent or append other child nodes
+    *            ojOption.textContent = context.data['FIRST_NAME'] + ' ' + context.data['LAST_NAME'];
+    *            return ojOption;
+    *          };
+    */
 
     /**
-     * The renderer function that renders the content of each option.
-     * The function should return an oj-option element (for leaf option) or an oj-optgroup element (for group option).
-     * <p>It is not necessary to set the "value" attribute on the oj-option as it is available from the options data.</p>
-     * <p><b>
-     * Note: Prior to version 6.1.0, the function could also return one of the following:
-     * <ul>
-     *   <li>An Object with the following property:
-     *     <ul><li>insert: HTMLElement - A DOM element representing the content of the option.</li></ul>
-     *   </li>
-     *   <li>undefined: If the developer chooses to manipulate the option content directly, the function should return undefined.</li>
-     * </ul>
-     * This is deprecated and support may be removed in the future.
-     * </b></p>
-     *
-     * <p>The <code class="prettyprint">option-renderer</code> decides only
-     * how the options' content has to be rendered in the drop down.
-     * Once an option is selected from the drop down,
-     * what value has to be displayed in the in input field is decided by the
-     * label field in the data object. See <a href="#options">options</a>
-     * and <a href="#optionsKeys">options-keys</a> for configuring option label and value.
-     * </p>
-     *
-     * <p>The context parameter passed to the renderer contains the following keys:</p>
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Key</th>
-     *       <th>Description</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td><kbd>componentElement</kbd></td>
-     *       <td>A reference to the Combobox element.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><kbd>parent</kbd></td>
-     *       <td>The parent of the data item. The parent is null for root node.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><kbd>index</kbd></td>
-     *       <td>The index of the option, where 0 is the index of the first option. In the hierarchical case the index is relative to its parent.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><kbd>depth</kbd></td>
-     *       <td>The depth of the option. The depth of the first level children under the invisible root is 0.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><kbd>leaf</kbd></td>
-     *       <td>Whether the option is a leaf or a group.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><kbd>data</kbd></td>
-     *       <td>The data object for the option.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><kbd>parentElement</kbd></td>
-     *       <td>The option label element.  The renderer can use this to directly append content.</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @expose
-     * @memberof oj.ojCombobox
-     * @instance
-     * @ojfragment comboboxCommonOptionRenderer
-     */
+    * The renderer function that renders the content of each option.
+    * The function should return an oj-option element (for leaf option) or an oj-optgroup element (for group option).
+    * <p>It is not necessary to set the "value" attribute on the oj-option as it is available from the options data.</p>
+    * <p><b>
+    * Note: Prior to version 6.1.0, the function could also return one of the following:
+    * <ul>
+    *   <li>An Object with the following property:
+    *     <ul><li>insert: HTMLElement - A DOM element representing the content of the option.</li></ul>
+    *   </li>
+    *   <li>undefined: If the developer chooses to manipulate the option content directly, the function should return undefined.</li>
+    * </ul>
+    * This is deprecated and support may be removed in the future.
+    * </b></p>
+    *
+    * <p>The <code class="prettyprint">option-renderer</code> decides only
+    * how the options' content has to be rendered in the drop down.
+    * Once an option is selected from the drop down,
+    * what value has to be displayed in the in input field is decided by the
+    * label field in the data object. See <a href="#options">options</a>
+    * and <a href="#optionsKeys">options-keys</a> for configuring option label and value.
+    * </p>
+    *
+    * <p>The context parameter passed to the renderer contains the following keys:</p>
+    * <table class="keyboard-table">
+    *   <thead>
+    *     <tr>
+    *       <th>Key</th>
+    *       <th>Description</th>
+    *     </tr>
+    *   </thead>
+    *   <tbody>
+    *     <tr>
+    *       <td><kbd>componentElement</kbd></td>
+    *       <td>A reference to the Combobox element.</td>
+    *     </tr>
+    *     <tr>
+    *       <td><kbd>parent</kbd></td>
+    *       <td>The parent of the data item. The parent is null for root node.</td>
+    *     </tr>
+    *     <tr>
+    *       <td><kbd>index</kbd></td>
+    *       <td>The index of the option, where 0 is the index of the first option. In the hierarchical case the index is relative to its parent.</td>
+    *     </tr>
+    *     <tr>
+    *       <td><kbd>depth</kbd></td>
+    *       <td>The depth of the option. The depth of the first level children under the invisible root is 0.</td>
+    *     </tr>
+    *     <tr>
+    *       <td><kbd>leaf</kbd></td>
+    *       <td>Whether the option is a leaf or a group.</td>
+    *     </tr>
+    *     <tr>
+    *       <td><kbd>data</kbd></td>
+    *       <td>The data object for the option.</td>
+    *     </tr>
+    *     <tr>
+    *       <td><kbd>parentElement</kbd></td>
+    *       <td>The option label element.  The renderer can use this to directly append content.</td>
+    *     </tr>
+    *   </tbody>
+    * </table>
+    *
+    * @expose
+    * @memberof oj.ojCombobox
+    * @instance
+    * @ojfragment comboboxCommonOptionRenderer
+    */
     optionRenderer: null,
 
     /**
-     * The minimum number of characters a user must type before a options
-     * filtering is performed. Zero is useful for local data with just a few items,
-     * but a higher value should be used when a single character search could match a few thousand items.
-     *
-     * @expose
-     * @memberof oj.ojComboboxOne
-     * @name minLength
-     * @ojshortdesc The minimum number of characters a user must type before search filtering is performed.
-     * @instance
-     * @type {number}
-     * @default 0
-     * @ojmin 0
-     *
-     * @example <caption>Initialize the Combobox with the <code class="prettyprint">min-length</code> attribute specified:</caption>
-     * &lt;oj-combobox-one min-length="2">&lt;/oj-combobox-one>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">minLength</code> property after initialization:</caption>
-     * // getter
-     * var minLengthValue = myCombobox.minLength;
-     *
-     * // setter
-     * myCombobox.minLength = 3;
-     *
-     */
+    * The minimum number of characters a user must type before a options
+    * filtering is performed. Zero is useful for local data with just a few items,
+    * but a higher value should be used when a single character search could match a few thousand items.
+    *
+    * @expose
+    * @memberof oj.ojComboboxOne
+    * @name minLength
+    * @ojshortdesc The minimum number of characters a user must type before search filtering is performed.
+    * @instance
+    * @type {number}
+    * @default 0
+    * @ojmin 0
+    *
+    * @example <caption>Initialize the Combobox with the <code class="prettyprint">min-length</code> attribute specified:</caption>
+    * &lt;oj-combobox-one min-length="2">&lt;/oj-combobox-one>
+    *
+    * @example <caption>Get or set the <code class="prettyprint">minLength</code> property after initialization:</caption>
+    * // getter
+    * var minLengthValue = myCombobox.minLength;
+    *
+    * // setter
+    * myCombobox.minLength = 3;
+    *
+    */
 
     /**
-     * The minimum number of characters a user must type before a options
-     * filtering is performed. Zero is useful for local data with just a few items,
-     * but a higher value should be used when a single character search could match a few thousand items.
-     *
-     * @expose
-     * @memberof oj.ojComboboxMany
-     * @name minLength
-     * @ojshortdesc The minimum number of characters a user must type before search filtering is performed.
-     * @instance
-     * @type {number}
-     * @default 0
-     * @ojmin 0
-     *
-     * @example <caption>Initialize the Combobox with the <code class="prettyprint">min-length</code> attribute specified:</caption>
-     * &lt;oj-combobox-many min-length="2">&lt;/oj-combobox-many>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">minLength</code> property after initialization:</caption>
-     * // getter
-     * var minLengthValue = myCombobox.minLength;
-     *
-     * // setter
-     * myCombobox.minLength = 3;
-     *
-     */
+    * The minimum number of characters a user must type before a options
+    * filtering is performed. Zero is useful for local data with just a few items,
+    * but a higher value should be used when a single character search could match a few thousand items.
+    *
+    * @expose
+    * @memberof oj.ojComboboxMany
+    * @name minLength
+    * @ojshortdesc The minimum number of characters a user must type before search filtering is performed.
+    * @instance
+    * @type {number}
+    * @default 0
+    * @ojmin 0
+    *
+    * @example <caption>Initialize the Combobox with the <code class="prettyprint">min-length</code> attribute specified:</caption>
+    * &lt;oj-combobox-many min-length="2">&lt;/oj-combobox-many>
+    *
+    * @example <caption>Get or set the <code class="prettyprint">minLength</code> property after initialization:</caption>
+    * // getter
+    * var minLengthValue = myCombobox.minLength;
+    *
+    * // setter
+    * myCombobox.minLength = 3;
+    *
+    */
     minLength: 0,
 
     /**
-     * {@ojinclude "name":"comboboxCommonMaximumResultCount"}
-     *
-     * @example <caption>Initialize the combobox with the <code class="prettyprint">maximum-result-count</code> attribute specified:</caption>
-     * &lt;oj-combobox-one maximum-result-count="25">&lt;/oj-combobox-one>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">maximumResultCount</code> property after initialization:</caption>
-     * // getter
-     * var maximumResultCount = myCombobox.maximumResultCount;
-     *
-     * // setter
-     * myCombobox.maximumResultCount = 25;
-     *
-     * @name maximumResultCount
-     * @ojshortdesc The maximum number of results displayed in the dropdown.
-     * @expose
-     * @memberof oj.ojComboboxOne
-     * @since 8.0.0
-     * @instance
-     * @type {number}
-     * @default 15
-     */
+    * {@ojinclude "name":"comboboxCommonMaximumResultCount"}
+    *
+    * @example <caption>Initialize the combobox with the <code class="prettyprint">maximum-result-count</code> attribute specified:</caption>
+    * &lt;oj-combobox-one maximum-result-count="25">&lt;/oj-combobox-one>
+    *
+    * @example <caption>Get or set the <code class="prettyprint">maximumResultCount</code> property after initialization:</caption>
+    * // getter
+    * var maximumResultCount = myCombobox.maximumResultCount;
+    *
+    * // setter
+    * myCombobox.maximumResultCount = 25;
+    *
+    * @name maximumResultCount
+    * @ojshortdesc The maximum number of results displayed in the dropdown.
+    * @expose
+    * @memberof oj.ojComboboxOne
+    * @since 8.0.0
+    * @instance
+    * @type {number}
+    * @default 15
+    */
 
     /**
-     * {@ojinclude "name":"comboboxCommonMaximumResultCount"}
-     *
-     * @example <caption>Initialize the combobox with the <code class="prettyprint">maximum-result-count</code> attribute specified:</caption>
-     * &lt;oj-combobox-many maximum-result-count="25">&lt;/oj-combobox-many>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">maximumResultCount</code> property after initialization:</caption>
-     * // getter
-     * var maximumResultCount = myCombobox.maximumResultCount;
-     *
-     * // setter
-     * myCombobox.maximumResultCount = 25;
-     *
-     * @name maximumResultCount
-     * @ojshortdesc The maximum number of results displayed in the dropdown.
-     * @expose
-     * @memberof oj.ojComboboxMany
-     * @since 8.0.0
-     * @instance
-     * @type {number}
-     * @default 15
-     */
+    * {@ojinclude "name":"comboboxCommonMaximumResultCount"}
+    *
+    * @example <caption>Initialize the combobox with the <code class="prettyprint">maximum-result-count</code> attribute specified:</caption>
+    * &lt;oj-combobox-many maximum-result-count="25">&lt;/oj-combobox-many>
+    *
+    * @example <caption>Get or set the <code class="prettyprint">maximumResultCount</code> property after initialization:</caption>
+    * // getter
+    * var maximumResultCount = myCombobox.maximumResultCount;
+    *
+    * // setter
+    * myCombobox.maximumResultCount = 25;
+    *
+    * @name maximumResultCount
+    * @ojshortdesc The maximum number of results displayed in the dropdown.
+    * @expose
+    * @memberof oj.ojComboboxMany
+    * @since 8.0.0
+    * @instance
+    * @type {number}
+    * @default 15
+    */
 
     /**
-     * <p>The maximum number of results that will be displayed in the dropdown when the options attribute is bound to a data provider.</p>
-     *
-     * <p>If more than the maximum number of results are available from data provider then user needs to filter further.
-     * A value less than 1 indicates there is no maximum limit and all the results will be fetched and displayed in the dropdown.</p>
-     *
-     * <p>When the options attribute is bound to a hierarchical data source like a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>,
-     * this attribute represents the maximum number of leaf results that will be displayed in the dropdown.</p>
-     *
-     * <p>Note: This attribute has no effect when the options attribute is bound to an array/observable array or
-     * when the component renders an oj-option element or an oj-optgroup element as children.</p>
-     *
-     * @expose
-     * @memberof oj.ojCombobox
-     * @instance
-     * @ojfragment comboboxCommonMaximumResultCount
-     */
+    * <p>The maximum number of results that will be displayed in the dropdown when the options attribute is bound to a data provider.</p>
+    *
+    * <p>If more than the maximum number of results are available from data provider then user needs to filter further.
+    * A value less than 1 indicates there is no maximum limit and all the results will be fetched and displayed in the dropdown.</p>
+    *
+    * <p>When the options attribute is bound to a hierarchical data source like a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>,
+    * this attribute represents the maximum number of leaf results that will be displayed in the dropdown.</p>
+    *
+    * <p>Note: This attribute has no effect when the options attribute is bound to an array/observable array or
+    * when the component renders an oj-option element or an oj-optgroup element as children.</p>
+    *
+    * @expose
+    * @memberof oj.ojCombobox
+    * @instance
+    * @ojfragment comboboxCommonMaximumResultCount
+    */
     maximumResultCount: 15,
 
     /**
-     * {@ojinclude "name":"comboboxCommonRawValue"}
-     *
-     * <p>
-     * The <code class="prettyprint">rawValue</code> updates on the 'input' javascript event,
-     * so the <code class="prettyprint">rawValue</code> changes as the value of the input is changed.
-     * Consider the above example of combobox. Now, if the user types in 'Edge' into the field,
-     * the <code class="prettyprint">rawValue</code> will be 'E', then 'Ed', then 'Edg', and finally 'Edge'.
-     * Then when the user blurs or presses Enter the <code class="prettyprint">value</code> property gets
-     * converted and validated (if there is a converter or validators) and then gets updated if valid.
-     * In this case, without any converter the <code class="prettyprint">value</code> will be updated to 'Edge'.
-     * </p>
-     * <p>
-     * If the user types in 'CH' instead, the <code class="prettyprint">rawValue</code> will be 'C' and then 'CH'.
-     * Now, when the user blurs or presses Enter and since the <code class="prettyprint">rawValue</code> now matches
-     * one of the keys(values) of the current set of options the <code class="prettyprint">value</code> will be
-     * updated to 'CH', while the <code class="prettyprint">rawValue</code> gets updated to 'Chrome' and the user now sees 'Chrome'
-     * in the text field.
-     * </p>
-     * <p>
-     * Note that a <code class="prettyprint">rawValueChanged</code> event will be triggered when setting
-     * the <code class="prettyprint">value</code> to 'CH' and the event payload will contain the current
-     * <code class="prettyprint">rawValue</code> as 'Chrome' and previous <code class="prettyprint">rawValue</code> as 'CH'.
-     * </p>
-     *
-     * @name rawValue
-     * @ojshortdesc The currently displayed text retrieved from the input field.
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojComboboxOne
-     * @type {?string}
-     * @default null
-     * @since 1.2.1
-     * @readonly
-     * @ojwriteback
-     */
+    * {@ojinclude "name":"comboboxCommonRawValue"}
+    *
+    * <p>
+    * The <code class="prettyprint">rawValue</code> updates on the 'input' javascript event,
+    * so the <code class="prettyprint">rawValue</code> changes as the value of the input is changed.
+    * Consider the above example of combobox. Now, if the user types in 'Edge' into the field,
+    * the <code class="prettyprint">rawValue</code> will be 'E', then 'Ed', then 'Edg', and finally 'Edge'.
+    * Then when the user blurs or presses Enter the <code class="prettyprint">value</code> property gets
+    * converted and validated (if there is a converter or validators) and then gets updated if valid.
+    * In this case, without any converter the <code class="prettyprint">value</code> will be updated to 'Edge'.
+    * </p>
+    * <p>
+    * If the user types in 'CH' instead, the <code class="prettyprint">rawValue</code> will be 'C' and then 'CH'.
+    * Now, when the user blurs or presses Enter and since the <code class="prettyprint">rawValue</code> now matches
+    * one of the keys(values) of the current set of options the <code class="prettyprint">value</code> will be
+    * updated to 'CH', while the <code class="prettyprint">rawValue</code> gets updated to 'Chrome' and the user now sees 'Chrome'
+    * in the text field.
+    * </p>
+    * <p>
+    * Note that a <code class="prettyprint">rawValueChanged</code> event will be triggered when setting
+    * the <code class="prettyprint">value</code> to 'CH' and the event payload will contain the current
+    * <code class="prettyprint">rawValue</code> as 'Chrome' and previous <code class="prettyprint">rawValue</code> as 'CH'.
+    * </p>
+    *
+    * @name rawValue
+    * @ojshortdesc The currently displayed text retrieved from the input field.
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojComboboxOne
+    * @type {?string}
+    * @default null
+    * @since 1.2.1
+    * @readonly
+    * @ojwriteback
+    */
 
     /**
-     * {@ojinclude "name":"comboboxCommonRawValue"}
-     *
-     * <p>
-     * The <code class="prettyprint">rawValue</code> updates on the 'input' javascript event,
-     * so the <code class="prettyprint">rawValue</code> changes as the value of the input is changed. The
-     * <code class="prettyprint">rawValue</code> is always an array when exists and the last element of the
-     * array represent the current text typed in the input text field.
-     * Consider the above example combobox. Now, if the user types in 'Edge' into the field,
-     * the <code class="prettyprint">rawValue</code> will be ['E'], then ['Ed'], then ['Edg'], and finally ['Edge'].
-     * Then when the user blurs or presses Enter the <code class="prettyprint">value</code> property gets
-     * converted and validated (if there is a converter or validators) and then gets updated if valid.
-     * In this case, without any converter the <code class="prettyprint">value</code> will be updated to ['Edge'].
-     * </p>
-     * <p>
-     * Then if the user continues to type in 'CH', the <code class="prettyprint">rawValue</code> will be ['Edge', 'C']
-     * and then ['Edge', 'CH']. The rawValue will contains the labels of all the selected values along with the text
-     * currently being typed in the text field. Now, when the user blurs or presses Enter and since the
-     * text now matches one of the keys(values) of the current set of options the <code class="prettyprint">value</code> will be
-     * updated to ['Edge', 'CH'], while the <code class="prettyprint">rawValue</code> gets updated to ['Edge', 'Chrome']
-     * and the user now sees two pills 'Edge' and 'Chrome'.
-     * </p>
-     * <p>
-     * Note that a <code class="prettyprint">rawValueChanged</code> event will be triggered when setting
-     * the <code class="prettyprint">value</code> and the event payload will contain the current
-     * <code class="prettyprint">rawValue</code> as ['Edge', 'Chrome'] and previous
-     * <code class="prettyprint">rawValue</code> as ['Edge', 'CH'].
-     * </p>
-     *
-     * @name rawValue
-     * @ojshortdesc The currently displayed text retrieved from the input field.
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojComboboxMany
-     * @type {?Array<string>}
-     * @default null
-     * @since 1.2.1
-     * @readonly
-     * @ojwriteback
-     */
+    * {@ojinclude "name":"comboboxCommonRawValue"}
+    *
+    * <p>
+    * The <code class="prettyprint">rawValue</code> updates on the 'input' javascript event,
+    * so the <code class="prettyprint">rawValue</code> changes as the value of the input is changed. The
+    * <code class="prettyprint">rawValue</code> is always an array when exists and the last element of the
+    * array represent the current text typed in the input text field.
+    * Consider the above example combobox. Now, if the user types in 'Edge' into the field,
+    * the <code class="prettyprint">rawValue</code> will be ['E'], then ['Ed'], then ['Edg'], and finally ['Edge'].
+    * Then when the user blurs or presses Enter the <code class="prettyprint">value</code> property gets
+    * converted and validated (if there is a converter or validators) and then gets updated if valid.
+    * In this case, without any converter the <code class="prettyprint">value</code> will be updated to ['Edge'].
+    * </p>
+    * <p>
+    * Then if the user continues to type in 'CH', the <code class="prettyprint">rawValue</code> will be ['Edge', 'C']
+    * and then ['Edge', 'CH']. The rawValue will contains the labels of all the selected values along with the text
+    * currently being typed in the text field. Now, when the user blurs or presses Enter and since the
+    * text now matches one of the keys(values) of the current set of options the <code class="prettyprint">value</code> will be
+    * updated to ['Edge', 'CH'], while the <code class="prettyprint">rawValue</code> gets updated to ['Edge', 'Chrome']
+    * and the user now sees two pills 'Edge' and 'Chrome'.
+    * </p>
+    * <p>
+    * Note that a <code class="prettyprint">rawValueChanged</code> event will be triggered when setting
+    * the <code class="prettyprint">value</code> and the event payload will contain the current
+    * <code class="prettyprint">rawValue</code> as ['Edge', 'Chrome'] and previous
+    * <code class="prettyprint">rawValue</code> as ['Edge', 'CH'].
+    * </p>
+    *
+    * @name rawValue
+    * @ojshortdesc The currently displayed text retrieved from the input field.
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojComboboxMany
+    * @type {?Array<string>}
+    * @default null
+    * @since 1.2.1
+    * @readonly
+    * @ojwriteback
+    */
 
     /**
-     * <p>The  <code class="prettyprint">rawValue</code> is the read-only property for retrieving
-     * the current value from the input field in string form. The main consumer of
-     * <code class="prettyprint">rawValue</code> is a converter.</p>
-     * <p>This is a read-only attribute so page authors cannot set or change it directly.</p>
-     * <p>
-     * Consider a combobox with the following options:
-     * <pre>
-     * <code>
-     *   &lt;oj-option value="CH">Chrome&lt;/oj-option>
-     *   &lt;oj-option value="FF">Firefox&lt;/oj-option>
-     *   &lt;oj-option value="SA">Safari&lt;/oj-option>
-     *   &lt;oj-option value="OP">Opera&lt;/oj-option>
-     * </code>
-     * </pre>
-     * </p>
-     *
-     * @example <caption>Get the <code class="prettyprint">rawValue</code> property after initialization:</caption>
-     * // getter
-     * var rawValue = myCombobox.rawValue;
-     *
-     * @ojshortdesc The currently displayed text retrieved from the input field.
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojCombobox
-     * @ojfragment comboboxCommonRawValue
-     */
+    * <p>The  <code class="prettyprint">rawValue</code> is the read-only property for retrieving
+    * the current value from the input field in string form. The main consumer of
+    * <code class="prettyprint">rawValue</code> is a converter.</p>
+    * <p>This is a read-only attribute so page authors cannot set or change it directly.</p>
+    * <p>
+    * Consider a combobox with the following options:
+    * <pre>
+    * <code>
+    *   &lt;oj-option value="CH">Chrome&lt;/oj-option>
+    *   &lt;oj-option value="FF">Firefox&lt;/oj-option>
+    *   &lt;oj-option value="SA">Safari&lt;/oj-option>
+    *   &lt;oj-option value="OP">Opera&lt;/oj-option>
+    * </code>
+    * </pre>
+    * </p>
+    *
+    * @example <caption>Get the <code class="prettyprint">rawValue</code> property after initialization:</caption>
+    * // getter
+    * var rawValue = myCombobox.rawValue;
+    *
+    * @ojshortdesc The currently displayed text retrieved from the input field.
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojCombobox
+    * @ojfragment comboboxCommonRawValue
+    */
     rawValue: null,
 
     /**
-     * {@ojinclude "name":"comboboxCommonRequired"}
-     *
-     * @example <caption>Initialize the Combobox with the <code class="prettyprint">required</code> attribute:</caption>
-     * &lt;oj-combobox-one required="[[isRequired]]">&lt;/oj-combobox-one>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">required</code> property after initialization:</caption>
-     * // getter
-     * var requiredValue = myCombobox.required;
-     *
-     * // setter
-     * myCombobox.required = true;
-     *
-     * @name required
-     * @ojshortdesc Specifies whether a value is required.
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojComboboxOne
-     * @type {boolean}
-     * @default false
-     * @since 0.7.0
-     * @see #translations
-     */
+    * {@ojinclude "name":"comboboxCommonRequired"}
+    *
+    * @example <caption>Initialize the Combobox with the <code class="prettyprint">required</code> attribute:</caption>
+    * &lt;oj-combobox-one required="[[isRequired]]">&lt;/oj-combobox-one>
+    *
+    * @example <caption>Get or set the <code class="prettyprint">required</code> property after initialization:</caption>
+    * // getter
+    * var requiredValue = myCombobox.required;
+    *
+    * // setter
+    * myCombobox.required = true;
+    *
+    * @name required
+    * @ojshortdesc Specifies whether a value is required.
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojComboboxOne
+    * @type {boolean}
+    * @default false
+    * @since 0.7.0
+    * @see #translations
+    */
 
     /**
-     * {@ojinclude "name":"comboboxCommonRequired"}
-     *
-     * @example <caption>Initialize the Combobox with the <code class="prettyprint">required</code> attribute:</caption>
-     * &lt;oj-combobox-many required="[[isRequired]]">&lt;/oj-combobox-many>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">required</code> property after initialization:</caption>
-     * // getter
-     * var requiredValue = myCombobox.required;
-     *
-     * // setter
-     * myCombobox.required = true;
-     *
-     * @name required
-     * @ojshortdesc Specifies whether a value is required.
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojComboboxMany
-     * @type {boolean}
-     * @default false
-     * @since 0.7.0
-     * @see #translations
-     */
+    * {@ojinclude "name":"comboboxCommonRequired"}
+    *
+    * @example <caption>Initialize the Combobox with the <code class="prettyprint">required</code> attribute:</caption>
+    * &lt;oj-combobox-many required="[[isRequired]]">&lt;/oj-combobox-many>
+    *
+    * @example <caption>Get or set the <code class="prettyprint">required</code> property after initialization:</caption>
+    * // getter
+    * var requiredValue = myCombobox.required;
+    *
+    * // setter
+    * myCombobox.required = true;
+    *
+    * @name required
+    * @ojshortdesc Specifies whether a value is required.
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojComboboxMany
+    * @type {boolean}
+    * @default false
+    * @since 0.7.0
+    * @see #translations
+    */
 
     /**
-     * Whether the Combobox is required or optional. When required is set to true, an implicit
-     * required validator is created using the RequiredValidator -
-     * <code class="prettyprint">RequiredValidator()</code>.
-     *
-     * Translations specified using the <code class="prettyprint">translations.required</code> attribute
-     * and the label associated with the Combobox, are passed through to the options parameter of the
-     * createValidator method.
-     *
-     * <p>
-     * When <code class="prettyprint">required</code> property changes due to programmatic intervention,
-     * the Combobox may clear messages and run validation, based on the current state it's in. </br>
-     *
-     * <h4>Running Validation</h4>
-     * <ul>
-     * <li>if element is valid when required is set to true, then it runs deferred validation on
-     * the value. This is to ensure errors are not flagged unnecessarily.
-     * </li>
-     * <li>if element is invalid and has deferred messages when required is set to false, then
-     * element messages are cleared but no deferred validation is run.
-     * </li>
-     * <li>if element is invalid and currently showing invalid messages when required is set, then
-     * element messages are cleared and normal validation is run using the current display value.
-     * <ul>
-     *   <li>if there are validation errors, then <code class="prettyprint">value</code>
-     *   property is not updated and the error is shown.
-     *   </li>
-     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
-     *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
-     *   event on the <code class="prettyprint">value</code> property to clear custom errors.</li>
-     * </ul>
-     * </li>
-     * </ul>
-     *
-     * <h4>Clearing Messages</h4>
-     * <ul>
-     * <li>Only messages created by the element are cleared.</li>
-     * <li><code class="prettyprint">messages-custom</code> attribute is not cleared.</li>
-     * </ul>
-     *
-     * </p>
-     *
-     * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
-     * This is the default.
-     * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by user and the
-     * input's label will render a required icon. Additionally a required validator -
-     * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set.
-     * An explicit required validator can be set by page authors using the validators attribute.
-     *
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojCombobox
-     * @since 0.7.0
-     * @see #translations
-     * @ojfragment comboboxCommonRequired
-     */
+    * Whether the Combobox is required or optional. When required is set to true, an implicit
+    * required validator is created using the RequiredValidator -
+    * <code class="prettyprint">RequiredValidator()</code>.
+    *
+    * Translations specified using the <code class="prettyprint">translations.required</code> attribute
+    * and the label associated with the Combobox, are passed through to the options parameter of the
+    * createValidator method.
+    *
+    * <p>
+    * When <code class="prettyprint">required</code> property changes due to programmatic intervention,
+    * the Combobox may clear messages and run validation, based on the current state it's in. </br>
+    *
+    * <h4>Running Validation</h4>
+    * <ul>
+    * <li>if element is valid when required is set to true, then it runs deferred validation on
+    * the value. This is to ensure errors are not flagged unnecessarily.
+    * </li>
+    * <li>if element is invalid and has deferred messages when required is set to false, then
+    * element messages are cleared but no deferred validation is run.
+    * </li>
+    * <li>if element is invalid and currently showing invalid messages when required is set, then
+    * element messages are cleared and normal validation is run using the current display value.
+    * <ul>
+    *   <li>if there are validation errors, then <code class="prettyprint">value</code>
+    *   property is not updated and the error is shown.
+    *   </li>
+    *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
+    *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+    *   event on the <code class="prettyprint">value</code> property to clear custom errors.</li>
+    * </ul>
+    * </li>
+    * </ul>
+    *
+    * <h4>Clearing Messages</h4>
+    * <ul>
+    * <li>Only messages created by the element are cleared.</li>
+    * <li><code class="prettyprint">messages-custom</code> attribute is not cleared.</li>
+    * </ul>
+    *
+    * </p>
+    *
+    * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
+    * This is the default.
+    * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by user and the
+    * input's label will render a required icon. Additionally a required validator -
+    * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set.
+    * An explicit required validator can be set by page authors using the validators attribute.
+    *
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojCombobox
+    * @since 0.7.0
+    * @see #translations
+    * @ojfragment comboboxCommonRequired
+    */
     required: false,
 
     /**
-     * Dictates element's readonly state.
-     *
-     * @example <caption>Initialize the combobox with the <code class="prettyprint">readonly</code> attribute:</caption>
-     * &lt;oj-some-element readonly>&lt;/oj-some-element>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">readonly</code> property after initialization:</caption>
-     * // getter
-     * var ro = myComp.readonly;
-     *
-     * // setter
-     * myComp.readonly = false;
-     *
-     * @name readOnly
-     * @alias readonly
-     * @expose
-     * @ojshortdesc Specifies whether the component is read-only. A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
-     * @access public
-     * @instance
-     * @memberof oj.ojComboboxOne
-     * @type {boolean}
-     * @default false
-     */
+    * Dictates element's readonly state.
+    * <p>
+    * The oj-form-layout provides its readonly attribute value and the form components
+    * consume it if it is not already set explicitly.
+    * For example, if oj-form-layout is set to readonly='true',
+    * all the form components it contains will be readonly='true' by default.
+    * </p>
+    *
+    * @example <caption>Initialize the combobox with the <code class="prettyprint">readonly</code> attribute:</caption>
+    * &lt;oj-some-element readonly>&lt;/oj-some-element>
+    *
+    * @example <caption>Get or set the <code class="prettyprint">readonly</code> property after initialization:</caption>
+    * // getter
+    * var ro = myComp.readonly;
+    *
+    * // setter
+    * myComp.readonly = false;
+    *
+    * @name readOnly
+    * @alias readonly
+    * @expose
+    * @ojshortdesc Specifies whether the component is read-only. A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
+    * @access public
+    * @instance
+    * @memberof oj.ojComboboxOne
+    * @type {boolean}
+    * @default false
+    */
 
     /**
-     * Dictates element's readonly state.
-     *
-     * @example <caption>Initialize the combobox with the <code class="prettyprint">readonly</code> attribute:</caption>
-     * &lt;oj-some-element readonly>&lt;/oj-some-element>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">readonly</code> property after initialization:</caption>
-     * // getter
-     * var ro = myComp.readonly;
-     *
-     * // setter
-     * myComp.readonly = false;
-     *
-     * @name readOnly
-     * @alias readonly
-     * @expose
-     * @ojshortdesc Specifies whether the component is read-only. A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
-     * @access public
-     * @instance
-     * @memberof oj.ojComboboxMany
-     * @type {boolean}
-     * @default false
-     */
+    * Dictates element's readonly state.
+    * <p>
+    * The oj-form-layout provides its readonly attribute value and the form components
+    * consume it if it is not already set explicitly.
+    * For example, if oj-form-layout is set to readonly='true',
+    * all the form components it contains will be readonly='true' by default.
+    * </p>
+    * @example <caption>Initialize the combobox with the <code class="prettyprint">readonly</code> attribute:</caption>
+    * &lt;oj-some-element readonly>&lt;/oj-some-element>
+    *
+    * @example <caption>Get or set the <code class="prettyprint">readonly</code> property after initialization:</caption>
+    * // getter
+    * var ro = myComp.readonly;
+    *
+    * // setter
+    * myComp.readonly = false;
+    *
+    * @name readOnly
+    * @alias readonly
+    * @expose
+    * @ojshortdesc Specifies whether the component is read-only. A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
+    * @access public
+    * @instance
+    * @memberof oj.ojComboboxMany
+    * @type {boolean}
+    * @default false
+    */
     readOnly: false,
 
     /**
-     * {@ojinclude "name":"comboboxCommonValidators"}
-     *
-     *
-     * @example <caption>Initialize the Combobox with validator instance:</caption>
-     * &lt;oj-combobox-one validators="[[validators]]">&lt;/oj-combobox-one>
-     * @example var validators = [new RegExpValidator({
-     *       pattern: '[a-zA-Z0-9]{3,}'
-     *     })];
-     *
-     *
-     * @example <caption>Initialize the Combobox with multiple validator instances:</caption>
-     * var validator1 = new MyCustomValidator({'foo': 'A'});
-     * var validator2 = new MyCustomValidator({'foo': 'B'});
-     * var validators = [validator1, validator2];
-     * &lt;oj-combobox-one validators="[[validators]]">&lt;/oj-combobox-one>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">validators</code> property after initialization:</caption>
-     * // get one
-     * var validator = myCombobox.validators[0];
-     *
-     * // get all
-     * var validators = myCombobox.validators;
-     *
-     * // set all
-     * myCombobox.validators = myValidators;
-     *
-     * @name validators
-     * @ojshortdesc Specifies a list of synchronous validators for performing validation by the element. See the Help documentation for more information.
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojComboboxOne
-     * @type {Array}
-     * @default []
-     * @ojsignature  [{ target: "Type",
-     *   value: "Array<oj.Validator<V>|oj.AsyncValidator<V>>|null",
-     *   jsdocOverride: true},
-     * { target: "Type",
-     *   value: "Array<oj.Validator<V>|oj.AsyncValidator<V>|
-     *       oj.Validation.RegisteredValidator>|null",
-     *   consumedBy: 'tsdep'}]
-     * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredValidator'],
-     *                description: 'Defining a validator with an object literal with validator type and
-     *                  its options (aka JSON format) has been deprecated and does nothing. If needed, you can
-     *                  make the JSON format work again by importing the deprecated ojvalidation module you need,
-     *                  like ojvalidation-base.'}
-     */
+    * {@ojinclude "name":"comboboxCommonValidators"}
+    *
+    *
+    * @example <caption>Initialize the Combobox with validator instance:</caption>
+    * &lt;oj-combobox-one validators="[[validators]]">&lt;/oj-combobox-one>
+    * @example var validators = [new RegExpValidator({
+    *       pattern: '[a-zA-Z0-9]{3,}'
+    *     })];
+    *
+    *
+    * @example <caption>Initialize the Combobox with multiple validator instances:</caption>
+    * var validator1 = new MyCustomValidator({'foo': 'A'});
+    * var validator2 = new MyCustomValidator({'foo': 'B'});
+    * var validators = [validator1, validator2];
+    * &lt;oj-combobox-one validators="[[validators]]">&lt;/oj-combobox-one>
+    *
+    * @example <caption>Get or set the <code class="prettyprint">validators</code> property after initialization:</caption>
+    * // get one
+    * var validator = myCombobox.validators[0];
+    *
+    * // get all
+    * var validators = myCombobox.validators;
+    *
+    * // set all
+    * myCombobox.validators = myValidators;
+    *
+    * @name validators
+    * @ojshortdesc Specifies a list of synchronous validators for performing validation by the element. See the Help documentation for more information.
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojComboboxOne
+    * @type {Array}
+    * @default []
+    * @ojsignature  [{ target: "Type",
+    *   value: "Array<oj.Validator<V>|oj.AsyncValidator<V>>|null",
+    *   jsdocOverride: true},
+    * { target: "Type",
+    *   value: "Array<oj.Validator<V>|oj.AsyncValidator<V>|
+    *       oj.Validation.RegisteredValidator>|null",
+    *   consumedBy: 'tsdep'}]
+    * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredValidator'],
+    *                description: 'Defining a validator with an object literal with validator type and
+    *                  its options (aka JSON format) has been deprecated and does nothing. If needed, you can
+    *                  make the JSON format work again by importing the deprecated ojvalidation module you need,
+    *                  like ojvalidation-base.'}
+    */
 
     /**
-     * {@ojinclude "name":"comboboxCommonValidators"}
-     *
-     * @example <caption>Initialize the Combobox with validator instance:</caption>
-     * &lt;oj-combobox-many validators="[[validators]]">&lt;/oj-combobox-many>
-     * @example var validators = [new RegExpValidator({
-     *       pattern: '[a-zA-Z0-9]{3,}'
-     *     })];
-     *
-     *
-     * @example <caption>Initialize the Combobox with multiple validator instances:</caption>
-     * var validator1 = new MyCustomValidator({'foo': 'A'});
-     * var validator2 = new MyCustomValidator({'foo': 'B'});
-     * var validators = [validator1, validator2];
-     * &lt;oj-combobox-many validators="[[validators]]">&lt;/oj-combobox-many>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">validators</code> property after initialization:</caption>
-     * // get one
-     * var validator = myCombobox.validators[0];
-     *
-     * // get all
-     * var validators = myCombobox.validators;
-     *
-     * // set all
-     * myCombobox.validators = myValidators;
-     *
-     * @name validators
-     * @ojshortdesc Specifies a list of synchronous validators for performing validation by the element. See the Help documentation for more information.
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojComboboxMany
-     * @type {Array}
-     * @default []
-     * @ojsignature  [{ target: "Type",
-     *   value: "Array<oj.Validator<V>|oj.AsyncValidator<V>>|null",
-     *   jsdocOverride: true},
-     * { target: "Type",
-     *   value: "Array<oj.Validator<V>|oj.AsyncValidator<V>|
-     *       oj.Validation.RegisteredValidator>|null",
-     *   consumedBy: 'tsdep'}]
-     * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredValidator'],
-     *                description: 'Defining a validator with an object literal with validator type and
-     *                  its options (aka JSON format) has been deprecated and does nothing. If needed, you can
-     *                  make the JSON format work again by importing the deprecated ojvalidation module you need,
-     *                  like ojvalidation-base.'}
-     */
+    * {@ojinclude "name":"comboboxCommonValidators"}
+    *
+    * @example <caption>Initialize the Combobox with validator instance:</caption>
+    * &lt;oj-combobox-many validators="[[validators]]">&lt;/oj-combobox-many>
+    * @example var validators = [new RegExpValidator({
+    *       pattern: '[a-zA-Z0-9]{3,}'
+    *     })];
+    *
+    *
+    * @example <caption>Initialize the Combobox with multiple validator instances:</caption>
+    * var validator1 = new MyCustomValidator({'foo': 'A'});
+    * var validator2 = new MyCustomValidator({'foo': 'B'});
+    * var validators = [validator1, validator2];
+    * &lt;oj-combobox-many validators="[[validators]]">&lt;/oj-combobox-many>
+    *
+    * @example <caption>Get or set the <code class="prettyprint">validators</code> property after initialization:</caption>
+    * // get one
+    * var validator = myCombobox.validators[0];
+    *
+    * // get all
+    * var validators = myCombobox.validators;
+    *
+    * // set all
+    * myCombobox.validators = myValidators;
+    *
+    * @name validators
+    * @ojshortdesc Specifies a list of synchronous validators for performing validation by the element. See the Help documentation for more information.
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojComboboxMany
+    * @type {Array}
+    * @default []
+    * @ojsignature  [{ target: "Type",
+    *   value: "Array<oj.Validator<V>|oj.AsyncValidator<V>>|null",
+    *   jsdocOverride: true},
+    * { target: "Type",
+    *   value: "Array<oj.Validator<V>|oj.AsyncValidator<V>|
+    *       oj.Validation.RegisteredValidator>|null",
+    *   consumedBy: 'tsdep'}]
+    * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredValidator'],
+    *                description: 'Defining a validator with an object literal with validator type and
+    *                  its options (aka JSON format) has been deprecated and does nothing. If needed, you can
+    *                  make the JSON format work again by importing the deprecated ojvalidation module you need,
+    *                  like ojvalidation-base.'}
+    */
 
     /**
-     * List of validators, synchronous or asynchronous,
-     * used by component along with asynchronous validators from the deprecated async-validators option
-     * and the implicit component validators when performing validation. Each item is either an
-     * instance that duck types {@link oj.Validator} or {@link oj.AsyncValidator}.
-     * As of v8.0.0, defining a validator with an object literal
-     * with validator type and its options
-     * (aka json format) has been deprecated and does nothing.
-     * If needed, you can make the json format work
-     * again by importing the deprecated module you need, e.g., ojvalidation-base module.
-     * <p>
-     * Implicit validators are created by the element when certain attributes are present.
-     * For example, if the <code class="prettyprint">required</code>
-     * attribute is set, an implicit {@link oj.RequiredValidator} is created.
-     * At runtime when the component runs validation, it
-     * combines all the implicit validators with all the validators
-     * specified through this <code class="prettyprint">validators</code> attribute
-     * and the <code class="prettyprint">async-validators</code> attribute, and
-     * runs all of them.
-     * </p>
-     * <p>
-     * Hints exposed by validators are shown in the notewindow by default, or as determined by the
-     * 'validatorHint' property set on the <code class="prettyprint">display-options</code>
-     * attribute.
-     * </p>
-     *
-     * <p>
-     * When <code class="prettyprint">validators</code> property changes due to programmatic
-     * intervention, the element may decide to clear messages and run validation, based on the
-     * current state it is in. </br>
-     *
-     * <h4>Steps Performed Always</h4>
-     * <ul>
-     * <li>The cached list of validator instances are cleared and new validator hints is pushed to
-     * messaging. E.g., notewindow displays the new hint(s).
-     * </li>
-     * </ul>
-     *
-     * <h4>Running Validation</h4>
-     * <ul>
-     * <li>if element is valid when validators changes, element does nothing other than the
-     * steps it always performs.</li>
-     * <li>if element is invalid and is showing messages -
-     * <code class="prettyprint">messages-shown</code> property is non-empty, when
-     * <code class="prettyprint">validators</code> or
-     * <code class="prettyprint">async-validators</code changes then all element messages
-     * are cleared and full validation run using the display value on the element.
-     * <ul>
-     *   <li>if there are validation errors, then <code class="prettyprint">value</code>
-     *   property is not updated and the error is shown.
-     *   </li>
-     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
-     *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
-     *   event on the <code class="prettyprint">value</code> property to clear custom errors.</li>
-     * </ul>
-     * </li>
-     * <li>if element is invalid and has deferred messages when validators changes, it does
-     * nothing other than the steps it performs always.</li>
-     * </ul>
-     * </p>
-     *
-     * <h4>Clearing Messages</h4>
-     * <ul>
-     * <li>Only messages created by the element are cleared.</li>
-     * <li><code class="prettyprint">messages-custom</code> property is not cleared.</li>
-     * </ul>
-     * </p>
-     *
-     * @expose
-     * @access public
-     * @instance
-     * @memberof oj.ojCombobox
-     * @ojfragment comboboxCommonValidators
-     */
+    * List of validators, synchronous or asynchronous,
+    * used by component along with asynchronous validators from the deprecated async-validators option
+    * and the implicit component validators when performing validation. Each item is either an
+    * instance that duck types {@link oj.Validator} or {@link oj.AsyncValidator}.
+    * As of v8.0.0, defining a validator with an object literal
+    * with validator type and its options
+    * (aka json format) has been deprecated and does nothing.
+    * If needed, you can make the json format work
+    * again by importing the deprecated module you need, e.g., ojvalidation-base module.
+    * <p>
+    * Implicit validators are created by the element when certain attributes are present.
+    * For example, if the <code class="prettyprint">required</code>
+    * attribute is set, an implicit {@link oj.RequiredValidator} is created.
+    * At runtime when the component runs validation, it
+    * combines all the implicit validators with all the validators
+    * specified through this <code class="prettyprint">validators</code> attribute
+    * and the <code class="prettyprint">async-validators</code> attribute, and
+    * runs all of them.
+    * </p>
+    * <p>
+    * Hints exposed by validators are shown in the notewindow by default, or as determined by the
+    * 'validatorHint' property set on the <code class="prettyprint">display-options</code>
+    * attribute.
+    * </p>
+    *
+    * <p>
+    * When <code class="prettyprint">validators</code> property changes due to programmatic
+    * intervention, the element may decide to clear messages and run validation, based on the
+    * current state it is in. </br>
+    *
+    * <h4>Steps Performed Always</h4>
+    * <ul>
+    * <li>The cached list of validator instances are cleared and new validator hints is pushed to
+    * messaging. E.g., notewindow displays the new hint(s).
+    * </li>
+    * </ul>
+    *
+    * <h4>Running Validation</h4>
+    * <ul>
+    * <li>if element is valid when validators changes, element does nothing other than the
+    * steps it always performs.</li>
+    * <li>if element is invalid and is showing messages -
+    * <code class="prettyprint">messages-shown</code> property is non-empty, when
+    * <code class="prettyprint">validators</code> or
+    * <code class="prettyprint">async-validators</code changes then all element messages
+    * are cleared and full validation run using the display value on the element.
+    * <ul>
+    *   <li>if there are validation errors, then <code class="prettyprint">value</code>
+    *   property is not updated and the error is shown.
+    *   </li>
+    *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
+    *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+    *   event on the <code class="prettyprint">value</code> property to clear custom errors.</li>
+    * </ul>
+    * </li>
+    * <li>if element is invalid and has deferred messages when validators changes, it does
+    * nothing other than the steps it performs always.</li>
+    * </ul>
+    * </p>
+    *
+    * <h4>Clearing Messages</h4>
+    * <ul>
+    * <li>Only messages created by the element are cleared.</li>
+    * <li><code class="prettyprint">messages-custom</code> property is not cleared.</li>
+    * </ul>
+    * </p>
+    *
+    * @expose
+    * @access public
+    * @instance
+    * @memberof oj.ojCombobox
+    * @ojfragment comboboxCommonValidators
+    */
     validators: [],
 
     /**
-     * The <code class="prettyprint">valueOption</code> is similar to the <code class="prettyprint">value</code>, but is an
-     * Object which contains both a value and display label.
-     * The <code class="prettyprint">value</code> and <code class="prettyprint">valueOption</code> are kept in sync.
-     * If initially both are set, the selected value in the <code class="prettyprint">value</code> attribute has precedence.
-     * <p>Note: When the <code class="prettyprint">options</code> attribute is bound to a data provider, the <code class="prettyprint">valueOptionChanged</code> event will include data and metadata information if it is available from data provider.</p>
-     * <p>Setting the <code class="prettyprint">valueOption</code> attribute initially can improve page load performance if there are initially selected values.  But, the initial <code class="prettyprint">valueOptionChanged</code> event will not include data and metadata information, because the element doesn't have to fetch the selected label from the data provider.</p>
-     * <p>If <code class="prettyprint">valueOption</code> is not specified or the selected value is missing, then the label will be fetched from the data provider.</p>
-     *
-     * @name valueOption
-     * @ojshortdesc The current value of the element and its associated display label.
-     * @expose
-     * @instance
-     * @type {null | Object}
-     * @default null
-     * @ojwriteback
-     *
-     * @property {any} value current value of multiple selected JET Combobox values
-     * @property {string} [label] display label of value above. If missing, String(value) is used.
-     * @memberof oj.ojComboboxOne
-     * @ojsignature { target: "Type",
-     *                value: "V|null", for: "value"}
-     *
-     * @example <caption>Initialize the Combobox with the <code class="prettyprint">value-option</code> attribute specified:</caption>
-     * &lt;oj-combobox-one value-option="[[valueOption]]">&lt;/oj-combobox-one>
-     *
-     * @example <caption>Object with value and label properties:</caption>
-     * var valueOption = {'value': 'val1', 'label': 'Label 1'};
-     *
-     * @example <caption>Get or set the <code class="prettyprint">valueOption</code> property after initialization:</caption>
-     * // getter
-     * var valueOption = myCombobox.valueOption;
-     *
-     * // setter
-     * myCombobox.valueOption = valueOption;
-     */
+    * The <code class="prettyprint">valueOption</code> is similar to the <code class="prettyprint">value</code>, but is an
+    * Object which contains both a value and display label.
+    * The <code class="prettyprint">value</code> and <code class="prettyprint">valueOption</code> are kept in sync.
+    * If initially both are set, the selected value in the <code class="prettyprint">value</code> attribute has precedence.
+    * <p>Note: When the <code class="prettyprint">options</code> attribute is bound to a data provider, the <code class="prettyprint">valueOptionChanged</code> event will include data and metadata information if it is available from data provider.</p>
+    * <p>Setting the <code class="prettyprint">valueOption</code> attribute initially can improve page load performance if there are initially selected values.  But, the initial <code class="prettyprint">valueOptionChanged</code> event will not include data and metadata information, because the element doesn't have to fetch the selected label from the data provider.</p>
+    * <p>If <code class="prettyprint">valueOption</code> is not specified or the selected value is missing, then the label will be fetched from the data provider.</p>
+    *
+    * @name valueOption
+    * @ojshortdesc The current value of the element and its associated display label.
+    * @expose
+    * @instance
+    * @type {null | Object}
+    * @default null
+    * @ojwriteback
+    *
+    * @property {any} value current value of multiple selected JET Combobox values
+    * @property {string} [label] display label of value above. If missing, String(value) is used.
+    * @memberof oj.ojComboboxOne
+    * @ojsignature { target: "Type",
+    *                value: "V|null", for: "value"}
+    *
+    * @example <caption>Initialize the Combobox with the <code class="prettyprint">value-option</code> attribute specified:</caption>
+    * &lt;oj-combobox-one value-option="[[valueOption]]">&lt;/oj-combobox-one>
+    *
+    * @example <caption>Object with value and label properties:</caption>
+    * var valueOption = {'value': 'val1', 'label': 'Label 1'};
+    *
+    * @example <caption>Get or set the <code class="prettyprint">valueOption</code> property after initialization:</caption>
+    * // getter
+    * var valueOption = myCombobox.valueOption;
+    *
+    * // setter
+    * myCombobox.valueOption = valueOption;
+    */
     valueOption: null,
 
     /**
-     * The <code class="prettyprint">valueOptions</code> is similar to the <code class="prettyprint">value</code>, but is an array
-     * of Objects and each Object contains both a value and display label.
-     * The <code class="prettyprint">value</code> and <code class="prettyprint">valueOptions</code> are kept in sync.
-     * If initially both are set, the selected values in the <code class="prettyprint">value</code> attribute has precedence.
-     * <p>Note: When the <code class="prettyprint">options</code> attribute is bound to a data provider, the <code class="prettyprint">valueOptionsChanged</code> event will include data and metadata information if it is available from data provider.</p>
-     * <p>Setting the <code class="prettyprint">valueOptions</code> attribute initially can improve page load performance if there are initially selected values.  But, the initial <code class="prettyprint">valueOptionsChanged</code> event will not include data and metadata information, because the element doesn't have to fetch the selected label from the data provider.</p>
-     * <p>If <code class="prettyprint">valueOptions</code> is not specified or one of the selected values is missing, then the labels will be fetched from the data provider.</p>
-     *
-     * @name valueOptions
-     * @ojshortdesc The current values of the element and their associated display labels.
-     * @expose
-     * @instance
-     * @type {null | Array.<Object>}
-     * @default null
-     * @ojwriteback
-     *
-     * @property {any} value the current value of JET Combobox
-     * @property {string} [label] display label of value above. If missing, String(value) is used.
-     * @ojsignature { target: "Type",
-     *                value: "Array<{value: V, label?: string}> | null",
-     *                jsdocOverride: true}
-     *
-     * @memberof oj.ojComboboxMany
-     *
-     * @example <caption>Initialize the Combobox with the <code class="prettyprint">value-options</code> attribute specified:</caption>
-     * &lt;oj-combobox-many value-options="[[optionsArray]]">&lt;/oj-combobox-many>
-     *
-     * @example <caption>Array of Objects with value and label properties:</caption>
-     * var optionsArray = [{'value': 'val1', 'label': 'Label 1'},
-     *                     {'value': 'val2', 'label': 'Label 2'}];
-     *
-     * @example <caption>Get or set the <code class="prettyprint">valueOptions</code> property after initialization:</caption>
-     * // getter
-     * var valueOptions = myCombobox.valueOptions;
-     *
-     * // setter
-     * myCombobox.valueOptions = optionsArray;
-     */
+    * The <code class="prettyprint">valueOptions</code> is similar to the <code class="prettyprint">value</code>, but is an array
+    * of Objects and each Object contains both a value and display label.
+    * The <code class="prettyprint">value</code> and <code class="prettyprint">valueOptions</code> are kept in sync.
+    * If initially both are set, the selected values in the <code class="prettyprint">value</code> attribute has precedence.
+    * <p>Note: When the <code class="prettyprint">options</code> attribute is bound to a data provider, the <code class="prettyprint">valueOptionsChanged</code> event will include data and metadata information if it is available from data provider.</p>
+    * <p>Setting the <code class="prettyprint">valueOptions</code> attribute initially can improve page load performance if there are initially selected values.  But, the initial <code class="prettyprint">valueOptionsChanged</code> event will not include data and metadata information, because the element doesn't have to fetch the selected label from the data provider.</p>
+    * <p>If <code class="prettyprint">valueOptions</code> is not specified or one of the selected values is missing, then the labels will be fetched from the data provider.</p>
+    *
+    * @name valueOptions
+    * @ojshortdesc The current values of the element and their associated display labels.
+    * @expose
+    * @instance
+    * @type {null | Array.<Object>}
+    * @default null
+    * @ojwriteback
+    *
+    * @property {any} value the current value of JET Combobox
+    * @property {string} [label] display label of value above. If missing, String(value) is used.
+    * @ojsignature { target: "Type",
+    *                value: "Array<{value: V, label?: string}> | null",
+    *                jsdocOverride: true}
+    *
+    * @memberof oj.ojComboboxMany
+    *
+    * @example <caption>Initialize the Combobox with the <code class="prettyprint">value-options</code> attribute specified:</caption>
+    * &lt;oj-combobox-many value-options="[[optionsArray]]">&lt;/oj-combobox-many>
+    *
+    * @example <caption>Array of Objects with value and label properties:</caption>
+    * var optionsArray = [{'value': 'val1', 'label': 'Label 1'},
+    *                     {'value': 'val2', 'label': 'Label 2'}];
+    *
+    * @example <caption>Get or set the <code class="prettyprint">valueOptions</code> property after initialization:</caption>
+    * // getter
+    * var valueOptions = myCombobox.valueOptions;
+    *
+    * // setter
+    * myCombobox.valueOptions = optionsArray;
+    */
     valueOptions: null,
 
     /**
-     * The value of the element. It supports any type.
-     * <p>Note: When the <code class="prettyprint">options</code> attribute is bound to a data provider, the <code class="prettyprint">valueChanged</code> event will include data and metadata information if it is available from data provider.</p>
-     *
-     * @example <caption>Initialize the combobox with the <code class="prettyprint">value</code> attribute specified:</caption>
-     * &lt;oj-combobox-one value="option1">&lt;/oj-combobox-one>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">value</code> property after initialization:</caption>
-     * // getter
-     * var value = myCombobox.value;
-     *
-     * // setter
-     * myCombobox.value = "option1";
-     *
-     * @member
-     * @name value
-     * @ojshortdesc The value of the element.
-     * @access public
-     * @instance
-     * @ojeventgroup common
-     * @memberof oj.ojComboboxOne
-     * @type {any}
-     * @ojsignature { target: "Type",
-     *                value: "V|null"}
-     * @default null
-     * @ojwriteback
-     */
+    * The value of the element. It supports any type.
+    * <p>Note: When the <code class="prettyprint">options</code> attribute is bound to a data provider, the <code class="prettyprint">valueChanged</code> event will include data and metadata information if it is available from data provider.</p>
+    *
+    * @example <caption>Initialize the combobox with the <code class="prettyprint">value</code> attribute specified:</caption>
+    * &lt;oj-combobox-one value="option1">&lt;/oj-combobox-one>
+    *
+    * @example <caption>Get or set the <code class="prettyprint">value</code> property after initialization:</caption>
+    * // getter
+    * var value = myCombobox.value;
+    *
+    * // setter
+    * myCombobox.value = "option1";
+    *
+    * @member
+    * @name value
+    * @ojshortdesc The value of the element.
+    * @access public
+    * @instance
+    * @ojeventgroup common
+    * @memberof oj.ojComboboxOne
+    * @type {any}
+    * @ojsignature { target: "Type",
+    *                value: "V|null"}
+    * @default null
+    * @ojwriteback
+    */
 
     /**
-     * The value of the element. The value is an array with any type of items.
-     * <p>Note: When the <code class="prettyprint">options</code> attribute is bound to a data provider, the <code class="prettyprint">valueChanged</code> event will include data and metadata information if it is available from data provider.</p>
-     *
-     * @example <caption>Initialize the combobox with the <code class="prettyprint">value</code> attribute specified:</caption>
-     * &lt;oj-combobox-many value="{{val}}">&lt;/oj-combobox-many>
-     * @example var val = ['option1', 'option2'];
-     *
-     * @example <caption>Get or set the <code class="prettyprint">value</code> property after initialization:</caption>
-     * // getter
-     * var value = myCombobox.value;
-     *
-     * // setter
-     * myCombobox.value = ["option1", "option2"];
-     *
-     * @member
-     * @name value
-     * @ojshortdesc The value of the element.
-     * @access public
-     * @instance
-     * @ojeventgroup common
-     * @memberof oj.ojComboboxMany
-     * @type {Array.<any>|null}
-     * @ojsignature { target: "Type",
-     *                value: "Array<V>|null"}
-     * @default null
-     * @ojwriteback
-     */
+    * The value of the element. The value is an array with any type of items.
+    * <p>Note: When the <code class="prettyprint">options</code> attribute is bound to a data provider, the <code class="prettyprint">valueChanged</code> event will include data and metadata information if it is available from data provider.</p>
+    *
+    * @example <caption>Initialize the combobox with the <code class="prettyprint">value</code> attribute specified:</caption>
+    * &lt;oj-combobox-many value="{{val}}">&lt;/oj-combobox-many>
+    * @example var val = ['option1', 'option2'];
+    *
+    * @example <caption>Get or set the <code class="prettyprint">value</code> property after initialization:</caption>
+    * // getter
+    * var value = myCombobox.value;
+    *
+    * // setter
+    * myCombobox.value = ["option1", "option2"];
+    *
+    * @member
+    * @name value
+    * @ojshortdesc The value of the element.
+    * @access public
+    * @instance
+    * @ojeventgroup common
+    * @memberof oj.ojComboboxMany
+    * @type {Array.<any>|null}
+    * @ojsignature { target: "Type",
+    *                value: "Array<V>|null"}
+    * @default null
+    * @ojwriteback
+    */
 
     /**
-     * Triggered when the value is submitted by the user through pressing the enter key or selecting from the drop down list.
-     * This is to support search use cases.
-     * The event will be fired even if the value is the same. This will help the application to re-submit the search query for the same value.
-     * The event is not triggered if the submitted value fails validation. The event is not triggered on blur or tab out.
-     *
-     * @example <caption>Define an event listener.</caption>
-     * var listener = function( event )
-     * {
-     *   // Get the search term
-     *   var term = event['detail']['value'];
-     *
-     *   // search with the term
-     * };
-     * @ojshortdesc Event handler for when the value is submitted by the user.
-     * @expose
-     * @event
-     * @memberof oj.ojComboboxOne
-     * @since 4.2.0
-     *
-     * @instance
-     * @property {any} value the current value
-     * @property {any} previousValue the previous value
-     */
+    * Triggered when the value is submitted by the user through pressing the enter key or selecting from the drop down list.
+    * This is to support search use cases.
+    * The event will be fired even if the value is the same. This will help the application to re-submit the search query for the same value.
+    * The event is not triggered if the submitted value fails validation. The event is not triggered on blur or tab out.
+    *
+    * @example <caption>Define an event listener.</caption>
+    * var listener = function( event )
+    * {
+    *   // Get the search term
+    *   var term = event['detail']['value'];
+    *
+    *   // search with the term
+    * };
+    * @ojshortdesc Event handler for when the value is submitted by the user.
+    * @expose
+    * @event
+    * @memberof oj.ojComboboxOne
+    * @since 4.2.0
+    *
+    * @instance
+    * @property {any} value the current value
+    * @property {any} previousValue the previous value
+    */
     valueUpdated: null
   },
 
   /**
-   * Returns a jQuery object containing the element visually representing the combobox.
-   *
-   * <p>This method does not accept any arguments.
-   *
-   * @memberof! oj.ojCombobox
-   * @instance
-   * @public
-   * @ignore
-   * @return {jQuery} the combobox
-   */
+     * Returns a jQuery object containing the element visually representing the combobox.
+     *
+     * <p>This method does not accept any arguments.
+     *
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @public
+     * @ignore
+     * @return {jQuery} the combobox
+     */
   widget: function widget() {
     return this.combobox.container;
   },
 
   /**
-   * @memberof! oj.ojCombobox
-   * @instance
-   * @protected
-   * @override
-   */
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @protected
+     * @override
+     */
   _ComponentCreate: function _ComponentCreate() {
     this._super();
 
@@ -10121,16 +11016,16 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   },
 
   /**
-   * @memberof! oj.ojCombobox
-   * @instance
-   * @protected
-   * @override
-   */
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @protected
+     * @override
+     */
   _AfterCreate: function _AfterCreate() {
     this._super();
 
     if (this._IsCustomElement()) {
-      oj.EditableValueUtils._setInputId(this._GetContentElement()[0], this.OuterWrapper.id, this.options.labelledBy); // need to apply the oj-focus marker selector for control of the floating label.
+      this._initInputIdLabelForConnection(this._GetContentElement()[0], this.OuterWrapper.id, this.options.labelledBy); // need to apply the oj-focus marker selector for control of the floating label.
 
 
       var rootElement = this._getRootElement();
@@ -10139,19 +11034,25 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
         element: rootElement,
         applyHighlight: false,
         afterToggle: this._handleAfterFocusToggle.bind(this, rootElement)
-      });
+      }); // If labelEdge is set to none, aria-label would have been set to the innerElem
+      // so, we need to update the aria-label elsewhere
+
+
+      if (this.combobox && this.options.labelEdge === 'none') {
+        this.combobox.updateAriaLabelIfNeeded();
+      }
     }
   },
 
   /**
-   * If the dropdown is open and the afterToggle handler is called with focusout,
-   * turn on the 'oj-focus' selector. This is needed for floating labels.  If focus
-   * moves to the droplist, the label should be in the up position versus floating
-   * down over the input on selection of a dropdown item.
-   * @private
-   * @instance
-   * @memberof! oj.ojCombobox
-   */
+    * If the dropdown is open and the afterToggle handler is called with focusout,
+    * turn on the 'oj-focus' selector. This is needed for floating labels.  If focus
+    * moves to the droplist, the label should be in the up position versus floating
+    * down over the input on selection of a dropdown item.
+    * @private
+    * @instance
+    * @memberof! oj.ojCombobox
+    */
   _handleAfterFocusToggle: function _handleAfterFocusToggle(element, eventType) {
     if (eventType === 'focusout') {
       var dropdown = this._getDropdown();
@@ -10163,11 +11064,11 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   },
 
   /**
-   * @memberof! oj.ojCombobox
-   * @instance
-   * @protected
-   * @override
-   */
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @protected
+     * @override
+     */
   _InitOptions: function _InitOptions(originalDefaults, constructorOptions) {
     var props = [{
       attribute: 'disabled',
@@ -10214,15 +11115,15 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   },
 
   /**
-   * Whether the component is required.
-   *
-   * @return {boolean} true if required; false
-   *
-   * @memberof! oj.ojCombobox
-   * @instance
-   * @protected
-   * @override
-   */
+  * Whether the component is required.
+  *
+  * @return {boolean} true if required; false
+  *
+  * @memberof! oj.ojCombobox
+  * @instance
+  * @protected
+  * @override
+  */
   _IsRequired: function _IsRequired() {
     return this.options.required;
   },
@@ -10238,8 +11139,8 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
    * @private
    */
   // eslint-disable-next-line no-unused-vars
-  _labelledByChangedForInputComp: function _labelledByChangedForInputComp(labelledBy, contentElementId) {
-    oj.EditableValueUtils._labelledByChangedForInputComp.apply(this, arguments);
+  _labelledByUpdatedForInputComp: function _labelledByUpdatedForInputComp(labelledBy, contentElementId) {
+    oj.EditableValueUtils._labelledByUpdatedForInputComp.apply(this, arguments);
 
     if (this.combobox.results == null) {
       return;
@@ -10253,6 +11154,31 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
 
     this.combobox.results.attr('aria-labelledby', ariaLabelledBy);
   },
+
+  /**
+   * @memberof! oj.ojCombobox
+   * @instance
+   * @private
+   */
+  _initInputIdLabelForConnection: oj.EditableValueUtils._initInputIdLabelForConnection,
+
+  /**
+   * @memberof! oj.ojCombobox
+   * @instance
+   * @private
+   */
+  _linkLabelForInputComp: oj.EditableValueUtils._linkLabelForInputComp,
+
+  /**
+   * Draw a readonly div. When readonly, this div is shown and
+   * the input has display:none on it through theming, and vice versa.
+   * We set the textContent in _SetDisplayValue() if readonly
+   * @param {HTMLElement} pass in this.element[0]
+   * @memberof! oj.ojCombobox
+   * @instance
+   * @private
+   */
+  _createOrUpdateReadonlyDiv: oj.EditableValueUtils._createOrUpdateReadonlyDiv,
 
   /**
    * Performs post processing after required option is set by taking the following steps.
@@ -10301,20 +11227,20 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   _AfterSetOptionValidators: oj.EditableValueUtils._AfterSetOptionValidators,
 
   /**
-    * When async-validators attribute changes, take the following steps.
-    *
-    * - Clear the cached normalized list of all validator instances. push new hints to messaging.<br/>
-    * - if component is valid -> validators changes -> no change<br/>
-    * - if component is invalid has messagesShown -> validators changes -> clear all component
-    * messages and re-run full validation on displayValue. if there are no errors push value to
-    * model;<br/>
-    * - if component is invalid has messagesHidden -> validators changes -> do nothing; doesn't change
-    * the required-ness of component <br/>
-    * - messagesCustom is not cleared.<br/>
-    * @memberof! oj.ojCombobox
-    * @instance
-    * @protected
-    */
+      * When async-validators attribute changes, take the following steps.
+      *
+      * - Clear the cached normalized list of all validator instances. push new hints to messaging.<br/>
+      * - if component is valid -> validators changes -> no change<br/>
+      * - if component is invalid has messagesShown -> validators changes -> clear all component
+      * messages and re-run full validation on displayValue. if there are no errors push value to
+      * model;<br/>
+      * - if component is invalid has messagesHidden -> validators changes -> do nothing; doesn't change
+      * the required-ness of component <br/>
+      * - messagesCustom is not cleared.<br/>
+      * @memberof! oj.ojCombobox
+      * @instance
+      * @protected
+      */
   _AfterSetOptionAsyncValidators: oj.EditableValueUtils._AfterSetOptionAsyncValidators,
 
   /**
@@ -10367,13 +11293,13 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   _GetNormalizedValidatorsFromOption: oj.EditableValueUtils._GetNormalizedValidatorsFromOption,
 
   /**
-   * This returns an array of all async validators
-   * normalized from the async-validators attribute set on the component. <br/>
-   * @return {Array} of validators.
-   * @memberof! oj.ojCombobox
-   * @instance
-   * @protected
-   */
+  * This returns an array of all async validators
+  * normalized from the async-validators attribute set on the component. <br/>
+  * @return {Array} of validators.
+  * @memberof! oj.ojCombobox
+  * @instance
+  * @protected
+  */
   _GetNormalizedAsyncValidatorsFromOption: oj.EditableValueUtils._GetNormalizedAsyncValidatorsFromOption,
   _setup: function _setup() {
     var opts = {};
@@ -10476,17 +11402,15 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
 
     this._SetRootAttributes();
 
-    if (this._IsCustomElement()) {
-      this._initComponentMessaging();
-    }
+    this._initComponentMessaging();
   },
 
   /**
-   * Handles options specific to combobox.
-   * @override
-   * @protected
-   * @memberof! oj.ojCombobox
-   */
+     * Handles options specific to combobox.
+     * @override
+     * @protected
+     * @memberof! oj.ojCombobox
+     */
   _setOption: function _setOption(key, _value, flags) {
     var value = _value;
     var multi = this.multiple;
@@ -10527,6 +11451,8 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
       _ComboUtils.removeDataProviderEventListeners(this);
 
       _ComboUtils.clearDataProviderWrapper(this);
+    } else if (key === 'optionsKeys') {
+      _ComboUtils.clearDataProviderWrapper(this);
     } else if (key === 'valueOption' && multi !== true) {
       // fixup valueOption
       value = _ComboUtils.getValueOptionsForPlaceholder(this, value); //  - unable to clear values on lov value-option, to get the placeholder to show
@@ -10566,6 +11492,8 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
         // are matches.
         this.combobox._updateResults(false, true);
       }
+    } else if (key === 'optionsKeys') {
+      _ComboUtils.wrapDataProviderIfNeeded(this, this.combobox ? this.combobox.opts : null);
     } else if (key === 'disabled') {
       if (value) {
         this.combobox._disable();
@@ -10579,7 +11507,7 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
       if (this.options.labelledBy) {
         var id = this._GetContentElement()[0].id;
 
-        this._labelledByChangedForInputComp(this.options.labelledBy, id);
+        this._labelledByUpdatedForInputComp(this.options.labelledBy, id);
       }
     } else if (key === 'maximumResultCount') {
       this.combobox.opts.maximumResultCount = value;
@@ -10587,17 +11515,17 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   },
 
   /**
-   * Performs post processing after _SetOption() is called. Different options when changed perform
-   * different tasks. See _AfterSetOption[OptionName] method for details.
-   *
-   * @param {string} option
-   * @param {Object|string=} previous
-   * @param {Object=} flags
-   * @protected
-   * @memberof! oj.ojCombobox
-   * @instance
-   * @override
-   */
+     * Performs post processing after _SetOption() is called. Different options when changed perform
+     * different tasks. See _AfterSetOption[OptionName] method for details.
+     *
+     * @param {string} option
+     * @param {Object|string=} previous
+     * @param {Object=} flags
+     * @protected
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @override
+     */
   // eslint-disable-next-line no-unused-vars
   _AfterSetOption: function _AfterSetOption(option, previous, flags) {
     this._superApply(arguments);
@@ -10623,6 +11551,17 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
 
         break;
 
+      case 'labelHint':
+      case 'labelEdge':
+        // Changing labelHint and labelEdge might have updated
+        // aria-label on the root element. Check if it is needed to
+        // update the aria-label on inner elements.
+        if (this.combobox) {
+          this.combobox.updateAriaLabelIfNeeded();
+        }
+
+        break;
+
       default:
         break;
     }
@@ -10641,22 +11580,22 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   },
 
   /**
-   * Override to do the delay connect/disconnect
-   * @memberof oj.ojCombobox
-   * @override
-   * @protected
-   */
+     * Override to do the delay connect/disconnect
+     * @memberof oj.ojCombobox
+     * @override
+     * @protected
+     */
   _VerifyConnectedForSetup: function _VerifyConnectedForSetup() {
     //  - temp moving oj-select from one elem to another should not cause fetch
     return true;
   },
 
   /**
-   * Updates display value of combobox.
-   * @override
-   * @protected
-   * @memberof! oj.ojCombobox
-   */
+     * Updates display value of combobox.
+     * @override
+     * @protected
+     * @memberof! oj.ojCombobox
+     */
   // eslint-disable-next-line no-unused-vars
   _SetDisplayValue: function _SetDisplayValue(displayValue) {
     //  - need to be able to specify the initial value of select components bound to dprv
@@ -10672,12 +11611,12 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   },
 
   /**
-   * Returns the display value.
-   * @override
-   * @protected
-   * @memberof! oj.ojCombobox
-   * @return {Array|Object|null} display value of the component
-   */
+     * Returns the display value.
+     * @override
+     * @protected
+     * @memberof! oj.ojCombobox
+     * @return {Array|Object|null} display value of the component
+     */
   _GetDisplayValue: function _GetDisplayValue() {
     var displayValue = null;
 
@@ -10713,11 +11652,11 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   },
 
   /**
-   * Set the placeholder.
-   * @override
-   * @protected
-   * @memberof! oj.ojCombobox
-   */
+     * Set the placeholder.
+     * @override
+     * @protected
+     * @memberof! oj.ojCombobox
+     */
   _SetPlaceholder: function _SetPlaceholder(value) {
     if (this.combobox) {
       this.combobox.opts.placeholder = value; // TODO: pavitra - noticed that some combobox tests fail because the _setPlaceholder is
@@ -10813,6 +11752,19 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
    */
   _GetContentElement: function _GetContentElement() {
     return this.combobox.search;
+  },
+
+  /**
+   * Returns the element on which aria-label can be found.
+   * For combobox components, it is the content element where the aria-label will be set.
+   *
+   * @override
+   * @protected
+   * @memberof! oj.ojCombobox
+   * @return {HTMLElement} The element in which we set the aria-label attribute
+   */
+  _GetAriaLabelElement: function _GetAriaLabelElement() {
+    return this._GetContentElement()[0];
   },
 
   /**
@@ -10969,21 +11921,22 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   },
 
   /**
-   * Runs full validation on the newValue and sets the newValue on the component.
-   *
-   * @return {Promise|boolean}
-   * @memberof oj.ojCombobox
-   * @override
-   * @instance
-   * @protected
-   */
+     * Runs full validation on the newValue and sets the newValue on the component.
+     *
+     * @return {Promise|boolean}
+     * @memberof oj.ojCombobox
+     * @override
+     * @instance
+     * @protected
+     */
   _SetValue: function _SetValue(newValue, event, options) {
     // if the _SetValue has failed due to validation errors in combobox, update the display value
     // if there are no validation errors, display value will be updated by editableValue
     var resolved = this._super(newValue, event, options); // update display value only if there are validation errors
+    // don't wait for the promise to resolve to update the display value
 
 
-    if (!resolved) {
+    if (!resolved || resolved instanceof Promise) {
       var isPlaceholderVal;
 
       if (this._IsCustomElement()) {
@@ -11005,16 +11958,16 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   },
 
   /**
-   * Whether a value can be set on the component. For example, if the component is
-   * disabled or readOnly then setting value on component is a no-op.
-   *
-   * @see #_SetValue
-   * @return {boolean}
-   * @memberof oj.ojCombobox
-   * @override
-   * @instance
-   * @protected
-   */
+     * Whether a value can be set on the component. For example, if the component is
+     * disabled or readOnly then setting value on component is a no-op.
+     *
+     * @see #_SetValue
+     * @return {boolean}
+     * @memberof oj.ojCombobox
+     * @override
+     * @instance
+     * @protected
+     */
   _CanSetValue: function _CanSetValue() {
     // FIX  - VALUE UNCHANGED IN DISABLED SELECT WHEN CHANGING BOUND VALUEOPTION
     // _SetValue always performs validation, which calls _CanSetValue, which returns false if
@@ -11029,20 +11982,20 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   },
 
   /**
-   * Finds the valueOption candidate for the rawValue provided.
-   * The value candidate is the value/label pair that will be set if the validation passes.
-   * There can be two cases:
-   *  1. The rawValue matches a key in the current dataprovider, then the valueOption from the
-   *     dataprovider will be the value candidate
-   *  2. Otherwise, a new valueOption will be created with value and label matching the rawValue
-   *     which will be the value candidate
-   *
-   * @param {string} rawValue The rawValue for which the value candidate has to be obtained
-   * @return {object} The valueOption candidate
-   * @memberof oj.ojCombobox
-   * @instance
-   * @private
-   */
+     * Finds the valueOption candidate for the rawValue provided.
+     * The value candidate is the value/label pair that will be set if the validation passes.
+     * There can be two cases:
+     *  1. The rawValue matches a key in the current dataprovider, then the valueOption from the
+     *     dataprovider will be the value candidate
+     *  2. Otherwise, a new valueOption will be created with value and label matching the rawValue
+     *     which will be the value candidate
+     *
+     * @param {string} rawValue The rawValue for which the value candidate has to be obtained
+     * @return {object} The valueOption candidate
+     * @memberof oj.ojCombobox
+     * @instance
+     * @private
+     */
   _getValueOptionCandidateFromRawValue: function _getValueOptionCandidateFromRawValue(rawValue) {
     var defaultValueOption = this.combobox.opts.manageNewEntry(rawValue);
     return _ComboUtils.findOptionFromResult(this.combobox, rawValue, defaultValueOption);
@@ -11317,272 +12270,232 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
   } // Fragments:
 
   /**
-   * <p>The &lt;oj-combobox-one> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
-   * accepted children and slots.</p>
-   *
-   * @ojchild Default
-   * @memberof oj.ojComboboxOne
-   * @ojshortdesc The oj-combobox-one element accepts oj-option elements as children.
-   *
-   * @example <caption>Initialize the Combobox with child content specified:</caption>
-   * &lt;oj-combobox-one>
-   *   &lt;oj-option value="option1">Option 1&lt;/oj-option>
-   *   &lt;oj-option value="option2">Option 2&lt;/oj-option>
-   *   &lt;oj-option value="option3">Option 3&lt;/oj-option>
-   * &lt;/oj-combobox-one>
-   */
+  * <p>The &lt;oj-combobox-one> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
+  * accepted children and slots.</p>
+  *
+  * @ojchild Default
+  * @memberof oj.ojComboboxOne
+  * @ojshortdesc The oj-combobox-one element accepts oj-option elements as children.
+  *
+  * @example <caption>Initialize the Combobox with child content specified:</caption>
+  * &lt;oj-combobox-one>
+  *   &lt;oj-option value="option1">Option 1&lt;/oj-option>
+  *   &lt;oj-option value="option2">Option 2&lt;/oj-option>
+  *   &lt;oj-option value="option3">Option 3&lt;/oj-option>
+  * &lt;/oj-combobox-one>
+  */
 
   /**
-   * <p>The &lt;oj-combobox-many> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
-   * accepted children and slots.</p>
-   *
-   * @ojchild Default
-   * @memberof oj.ojComboboxMany
-   * @ojshortdesc The oj-combobox-many element accepts oj-option elements as children.
-   *
-   * @example <caption>Initialize the Combobox with child content specified:</caption>
-   * &lt;oj-combobox-many>
-   *   &lt;oj-option value="option1">Option 1&lt;/oj-option>
-   *   &lt;oj-option value="option2">Option 2&lt;/oj-option>
-   *   &lt;oj-option value="option3">Option 3&lt;/oj-option>
-   * &lt;/oj-combobox-many>
-   */
+  * <p>The &lt;oj-combobox-many> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
+  * accepted children and slots.</p>
+  *
+  * @ojchild Default
+  * @memberof oj.ojComboboxMany
+  * @ojshortdesc The oj-combobox-many element accepts oj-option elements as children.
+  *
+  * @example <caption>Initialize the Combobox with child content specified:</caption>
+  * &lt;oj-combobox-many>
+  *   &lt;oj-option value="option1">Option 1&lt;/oj-option>
+  *   &lt;oj-option value="option2">Option 2&lt;/oj-option>
+  *   &lt;oj-option value="option3">Option 3&lt;/oj-option>
+  * &lt;/oj-combobox-many>
+  */
 
   /**
-   * <p>The <code class="prettyprint">end</code> slot is for replacing combobox one's drop down arrow and the divider.
-   * For example, a magnifying glass icon for a search field can be provided in this slot.
-   * When the slot is provided with empty content, nothing will be rendered in the slot.
-   * When the slot is not provided, the default drop down arrow icon and the divider will be rendered.</p>
-   *
-   * @ojslot end
-   * @ojshortdesc The end slot enables replacement of the combobox's drop down arrow and divider. See the Help documentation for more information.
-   * @since 4.2.0
-   *
-   * @memberof oj.ojComboboxOne
-   *
-   * @example <caption>Initialize the Combobox one with child content specified for the end slot:</caption>
-   * &lt;oj-combobox-one>
-   *   &lt;a slot='end' class='mySearchButtonClass'>&lt;/a>
-   * &lt;/oj-combobox-one>
-   */
+  * <p>The <code class="prettyprint">end</code> slot is for replacing combobox one's drop down arrow and the divider.
+  * For example, a magnifying glass icon for a search field can be provided in this slot.
+  * When the slot is provided with empty content, nothing will be rendered in the slot.
+  * When the slot is not provided, the default drop down arrow icon and the divider will be rendered.</p>
+  *
+  * @ojslot end
+  * @ojshortdesc The end slot enables replacement of the combobox's drop down arrow and divider. See the Help documentation for more information.
+  * @since 4.2.0
+  *
+  * @memberof oj.ojComboboxOne
+  *
+  * @example <caption>Initialize the Combobox one with child content specified for the end slot:</caption>
+  * &lt;oj-combobox-one>
+  *   &lt;a slot='end' class='mySearchButtonClass'>&lt;/a>
+  * &lt;/oj-combobox-one>
+  */
 
   /**
-    * <table class="keyboard-table">
-    *   <thead>
-    *     <tr>
-    *       <th>Target</th>
-    *       <th>Gesture</th>
-    *       <th>Action</th>
-    *     </tr>
-    *   </thead>
-    *   <tbody>
-    *     <tr>
-    *       <td>Input Field</td>
-    *       <td><kbd>Tap</kbd></td>
-    *       <td> If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.
-    *       If hints, title or messages exist in a notewindow,
-    *        pop up the notewindow.</td>
-    *     </tr>
-    *     <tr>
-    *       <td>Arrow Button</td>
-    *       <td><kbd>Tap</kbd></td>
-    *       <td> If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.</td>
-    *     </tr>
-    *     <tr>
-    *       <td>Option Item</td>
-    *       <td><kbd>Tap</kbd></td>
-    *       <td>Tap on an option item in the drop down list to select.</td>
-    *     </tr>
-    *   </tbody>
-    *  </table>
-    *
-    * <p>Disabled option items receive no highlight and are not selectable.</p>
-    *
-    * @ojfragment touchDocOne - Used in touch gesture section of classdesc, and standalone gesture doc
-    * @memberof oj.ojComboboxOne
-    * @instance
-    */
+  * <table class="keyboard-table">
+  *   <thead>
+  *     <tr>
+  *       <th>Target</th>
+  *       <th>Gesture</th>
+  *       <th>Action</th>
+  *     </tr>
+  *   </thead>
+  *   <tbody>
+  *     <tr>
+  *       <td>Input Field</td>
+  *       <td><kbd>Tap</kbd></td>
+  *       <td> If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.
+  *       If hints, title or messages exist in a notewindow,
+  *        pop up the notewindow.</td>
+  *     </tr>
+  *     <tr>
+  *       <td>Arrow Button</td>
+  *       <td><kbd>Tap</kbd></td>
+  *       <td> If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.</td>
+  *     </tr>
+  *     <tr>
+  *       <td>Option Item</td>
+  *       <td><kbd>Tap</kbd></td>
+  *       <td>Tap on an option item in the drop down list to select.</td>
+  *     </tr>
+  *   </tbody>
+  *  </table>
+  *
+  * <p>Disabled option items receive no highlight and are not selectable.</p>
+  *
+  * @ojfragment touchDocOne - Used in touch gesture section of classdesc, and standalone gesture doc
+  * @memberof oj.ojComboboxOne
+  * @instance
+  */
 
   /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Gesture</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>Input Field</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td> If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.
-   *       If hints, title or messages exist in a notewindow,
-   *        pop up the notewindow.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>Option Item</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td>Tap on an option item in the drop down list to add to selection.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>Selected item with remove icon</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td>Remove item from the selected items list by tapping on the remove icon.</td>
-   *     </tr>
-   *   </tbody>
-   *  </table>
-   *
-   * <p>Disabled option items receive no highlight and are not selectable.</p>
-   *
-   * @ojfragment touchDocMany - Used in touch gesture section of classdesc, and standalone gesture doc
-   * @memberof oj.ojComboboxMany
-   * @instance
-   */
+  * <table class="keyboard-table">
+  *   <thead>
+  *     <tr>
+  *       <th>Target</th>
+  *       <th>Gesture</th>
+  *       <th>Action</th>
+  *     </tr>
+  *   </thead>
+  *   <tbody>
+  *     <tr>
+  *       <td>Input Field</td>
+  *       <td><kbd>Tap</kbd></td>
+  *       <td> If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.
+  *       If hints, title or messages exist in a notewindow,
+  *        pop up the notewindow.</td>
+  *     </tr>
+  *     <tr>
+  *       <td>Option Item</td>
+  *       <td><kbd>Tap</kbd></td>
+  *       <td>Tap on an option item in the drop down list to add to selection.</td>
+  *     </tr>
+  *     <tr>
+  *       <td>Selected item with remove icon</td>
+  *       <td><kbd>Tap</kbd></td>
+  *       <td>Remove item from the selected items list by tapping on the remove icon.</td>
+  *     </tr>
+  *   </tbody>
+  *  </table>
+  *
+  * <p>Disabled option items receive no highlight and are not selectable.</p>
+  *
+  * @ojfragment touchDocMany - Used in touch gesture section of classdesc, and standalone gesture doc
+  * @memberof oj.ojComboboxMany
+  * @instance
+  */
 
   /**
-    * <table class="keyboard-table">
-    *   <thead>
-    *     <tr>
-    *       <th>Target</th>
-    *       <th>Key</th>
-    *       <th>Action</th>
-    *     </tr>
-    *   </thead>
-    *   <tbody>
-    *     <tr>
-    *      <td>Option item</td>
-    *       <td><kbd>Enter</kbd></td>
-    *       <td> Select the highlighted choice from the drop down.</td>
-    *     </tr>
-    *     <tr>
-    *       <td>Input field</td>
-    *       <td><kbd>Enter</kbd></td>
-    *       <td>Set the input text as the value.</td>
-    *     </tr>
-    *     <tr>
-    *      <td>Drop down</td>
-    *       <td><kbd>UpArrow or DownArrow</kbd></td>
-    *       <td> Highlight the option item on the drop down list in the direction of the arrow.
-    *         If the drop down is not open, expand the drop down list.</td>
-    *     </tr>
-    *     <tr>
-    *      <td>Drop down</td>
-    *       <td><kbd>Esc</kbd></td>
-    *       <td> Collapse the drop down list. If the drop down is already closed, do nothing.</td>
-    *     </tr>
-    *     <tr>
-    *      <td>Combobox</td>
-    *       <td><kbd>Tab In</kbd></td>
-    *       <td>Set focus to the combobox. If hints, title or messages exist in a notewindow,
-    *        pop up the notewindow.</td>
-    *     </tr>
-    *   </tbody>
-    *  </table>
-    *
-    * <p>Disabled option items receive no highlight and are not selectable.</p>
-    *
-    * @ojfragment keyboardDocOne - Used in keyboard section of classdesc, and standalone gesture doc
-    * @memberof oj.ojComboboxOne
-    * @instance
-    */
+  * <table class="keyboard-table">
+  *   <thead>
+  *     <tr>
+  *       <th>Target</th>
+  *       <th>Key</th>
+  *       <th>Action</th>
+  *     </tr>
+  *   </thead>
+  *   <tbody>
+  *     <tr>
+  *      <td>Option item</td>
+  *       <td><kbd>Enter</kbd></td>
+  *       <td> Select the highlighted choice from the drop down.</td>
+  *     </tr>
+  *     <tr>
+  *       <td>Input field</td>
+  *       <td><kbd>Enter</kbd></td>
+  *       <td>Set the input text as the value.</td>
+  *     </tr>
+  *     <tr>
+  *      <td>Drop down</td>
+  *       <td><kbd>UpArrow or DownArrow</kbd></td>
+  *       <td> Highlight the option item on the drop down list in the direction of the arrow.
+  *         If the drop down is not open, expand the drop down list.</td>
+  *     </tr>
+  *     <tr>
+  *      <td>Drop down</td>
+  *       <td><kbd>Esc</kbd></td>
+  *       <td> Collapse the drop down list. If the drop down is already closed, do nothing.</td>
+  *     </tr>
+  *     <tr>
+  *      <td>Combobox</td>
+  *       <td><kbd>Tab In</kbd></td>
+  *       <td>Set focus to the combobox. If hints, title or messages exist in a notewindow,
+  *        pop up the notewindow.</td>
+  *     </tr>
+  *   </tbody>
+  *  </table>
+  *
+  * <p>Disabled option items receive no highlight and are not selectable.</p>
+  *
+  * @ojfragment keyboardDocOne - Used in keyboard section of classdesc, and standalone gesture doc
+  * @memberof oj.ojComboboxOne
+  * @instance
+  */
 
   /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Key</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *      <td>Option item</td>
-   *       <td><kbd>Enter</kbd></td>
-   *       <td> Select the highlighted item from the drop down.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>Input field</td>
-   *       <td><kbd>Enter</kbd></td>
-   *       <td>Add the input text to selections.</td>
-   *     </tr>
-   *     <tr>
-   *      <td>Drop down</td>
-   *       <td><kbd>UpArrow or DownArrow</kbd></td>
-   *       <td> Highlight the option item on the drop down list in the direction of the arrow.
-   *         If the drop down is not open, expand the drop down list.</td>
-   *     </tr>
-   *     <tr>
-   *      <td>Combobox</td>
-   *       <td><kbd>LeftArrow or RightArrow</kbd></td>
-   *       <td> Move focus to the previous or next selected item.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>Selected item with remove icon</td>
-   *       <td><kbd>Backspace or Delete</kbd></td>
-   *       <td>Remove the selected item having focus.</td>
-   *     </tr>
-   *     <tr>
-   *      <td>Drop down</td>
-   *       <td><kbd>Esc</kbd></td>
-   *       <td> Collapse the drop down list. If the drop down is already closed, do nothing.</td>
-   *     </tr>
-   *     <tr>
-   *      <td>Combobox</td>
-   *       <td><kbd>Tab In</kbd></td>
-   *       <td>Set focus to the combobox. If hints, title or messages exist in a notewindow,
-   *        pop up the notewindow.</td>
-   *     </tr>
-   *   </tbody>
-   *  </table>
-   *
-   * <p>Disabled option items receive no highlight and are not selectable.</p>
-   *
-   * @ojfragment keyboardDocMany - Used in keyboard section of classdesc, and standalone gesture doc
-   * @memberof oj.ojComboboxMany
-   * @instance
-   */
-
-  /**
-   * {@ojinclude "name":"ojStylingDocIntro"}
-   * <p>The form control style classes can be applied to the component, or an ancestor element. When
-   * applied to an ancestor element, all form components that support the style classes will be affected.
-   *
-   *  <table class="generic-table styling-table">
-   *   <thead>
-   *     <tr>
-   *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-   *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>oj-form-control-full-width</td>
-   *       <td>Changes the max-width to 100% so that form components will occupy
-   *           all the available horizontal space
-   *       </td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-form-control-text-align-right</td>
-   *       <td>Aligns the text to the right regardless of the reading direction.
-   *           This is normally used for right aligning numbers
-   *       </td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-form-control-text-align-start</td>
-   *       <td>Aligns the text to the left in ltr and to the right in rtl</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-form-control-text-align-end</td>
-   *       <td>Aligns the text to the right in ltr and to the left in rtl</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-   * @memberof oj.ojCombobox
-   */
+  * <table class="keyboard-table">
+  *   <thead>
+  *     <tr>
+  *       <th>Target</th>
+  *       <th>Key</th>
+  *       <th>Action</th>
+  *     </tr>
+  *   </thead>
+  *   <tbody>
+  *     <tr>
+  *      <td>Option item</td>
+  *       <td><kbd>Enter</kbd></td>
+  *       <td> Select the highlighted item from the drop down.</td>
+  *     </tr>
+  *     <tr>
+  *       <td>Input field</td>
+  *       <td><kbd>Enter</kbd></td>
+  *       <td>Add the input text to selections.</td>
+  *     </tr>
+  *     <tr>
+  *      <td>Drop down</td>
+  *       <td><kbd>UpArrow or DownArrow</kbd></td>
+  *       <td> Highlight the option item on the drop down list in the direction of the arrow.
+  *         If the drop down is not open, expand the drop down list.</td>
+  *     </tr>
+  *     <tr>
+  *      <td>Combobox</td>
+  *       <td><kbd>LeftArrow or RightArrow</kbd></td>
+  *       <td> Move focus to the previous or next selected item.</td>
+  *     </tr>
+  *     <tr>
+  *       <td>Selected item with remove icon</td>
+  *       <td><kbd>Backspace or Delete</kbd></td>
+  *       <td>Remove the selected item having focus.</td>
+  *     </tr>
+  *     <tr>
+  *      <td>Drop down</td>
+  *       <td><kbd>Esc</kbd></td>
+  *       <td> Collapse the drop down list. If the drop down is already closed, do nothing.</td>
+  *     </tr>
+  *     <tr>
+  *      <td>Combobox</td>
+  *       <td><kbd>Tab In</kbd></td>
+  *       <td>Set focus to the combobox. If hints, title or messages exist in a notewindow,
+  *        pop up the notewindow.</td>
+  *     </tr>
+  *   </tbody>
+  *  </table>
+  *
+  * <p>Disabled option items receive no highlight and are not selectable.</p>
+  *
+  * @ojfragment keyboardDocMany - Used in keyboard section of classdesc, and standalone gesture doc
+  * @memberof oj.ojComboboxMany
+  * @instance
+  */
 
 });
 
@@ -11591,7 +12504,7 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
 /* global _ComboUtils:false, _OjInputSeachContainer:false, Logger:false */
 
 /**
- * @ojcomponent oj.ojInputSearch
+ * @ojcomponent oj.ojInputSearchWidget
  * @ignore
  * @augments oj.editableValue
  * @since 1.2.0
@@ -11640,13 +12553,6 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
  *                                                                           }
  *                                                                         }}"/>
  * </code></pre>
- *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -11743,7 +12649,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
      * @expose
      * @access public
      * @instance
-     * @memberof! oj.ojInputSearch
+     * @memberof! oj.ojInputSearchWidget
      * @type {string|null|undefined}
      */
     placeholder: undefined,
@@ -11817,7 +12723,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
       * @access public
       * @instance
       * @default when the option is not set, the element's required property is used as its initial value if it exists.
-      * @memberof! oj.ojInputSearch
+      * @memberof! oj.ojInputSearchWidget
       * @type {boolean}
       * @default false
       * @since 0.7.0
@@ -11839,7 +12745,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
      * &lt;/ul&gt;
      *
      * @expose
-     * @memberof! oj.ojInputSearch
+     * @memberof! oj.ojInputSearchWidget
      * @instance
      * @type {string|null|undefined}
      */
@@ -11881,7 +12787,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
      * </table>
      *
      * @expose
-     * @memberof! oj.ojInputSearch
+     * @memberof! oj.ojInputSearchWidget
      * @instance
      * @type {Array|function(Object)}
      *
@@ -11909,7 +12815,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
      * Specify the key names to use in the options array.
      *
      * @expose
-     * @memberof! oj.ojInputSearch
+     * @memberof! oj.ojInputSearchWidget
      * @instance
      * @type {Object}
      *
@@ -11937,7 +12843,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
      * var inputSearch = $( ".selector" ).ojInputSearch( "option", "pickerAttributes" );
      *
      * @expose
-     * @memberof! oj.ojInputSearch
+     * @memberof! oj.ojInputSearchWidget
      * @instance
      * @type {?Object}
      * @default <code class="prettyprint">null</code>
@@ -11999,7 +12905,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
      * </table>
      *
      * @expose
-     * @memberof! oj.ojInputSearch
+     * @memberof! oj.ojInputSearchWidget
      * @instance
      * @type {function(Object)|null}
      * @default <code class="prettyprint">null</code>
@@ -12022,7 +12928,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
      *
      * @ojbindingonly
      * @name optionTemplate
-     * @memberof! oj.ojInputSearch
+     * @memberof! oj.ojInputSearchWidget
      * @instance
      * @type {string|null}
      * @default <code class="prettyprint">null</code>
@@ -12038,7 +12944,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
      * but a higher value should be used when a single character search could match a few thousand items.
      *
      * @expose
-     * @memberof! oj.ojInputSearch
+     * @memberof! oj.ojInputSearchWidget
      * @instance
      * @type {?number}
      * @default <code class="prettyprint">0</code>
@@ -12053,7 +12959,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
      *
      * @expose
      * @event
-     * @memberof! oj.ojInputSearch
+     * @memberof! oj.ojInputSearchWidget
      * @instance
      * @property {Event} event <code class="prettyprint">jQuery</code> event object
      * @property {Object} ui Parameters
@@ -12082,7 +12988,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
      * @expose
      * @access public
      * @instance
-     * @memberof! oj.ojInputSearch
+     * @memberof! oj.ojInputSearchWidget
      * @type {string|undefined}
      * @since 2.0.2
      * @readonly
@@ -12096,7 +13002,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
      *
      * @expose
      * @event
-     * @memberof! oj.ojInputSearch
+     * @memberof! oj.ojInputSearchWidget
      * @instance
      * @property {Event} event <code class="prettyprint">jQuery</code> event object
      * @property {Object} ui event payload
@@ -12149,7 +13055,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
      *
      * @expose
      * @event
-     * @memberof! oj.ojInputSearch
+     * @memberof! oj.ojInputSearchWidget
      * @instance
      * @property {Event} event <code class="prettyprint">jQuery</code> event object
      * @property {Object} ui Parameters
@@ -12254,7 +13160,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
      * @expose
      * @access public
      * @instance
-     * @memberof! oj.ojInputSearch
+     * @memberof! oj.ojInputSearchWidget
      * @type {Array|undefined}
      */
     validators: undefined
@@ -12280,7 +13186,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
      * @access public
      * @instance
      * @default When the option is not set, the element's value property is used as its initial value if it exists.
-     * @memberof! oj.ojInputSearch
+     * @memberof! oj.ojInputSearchWidget
      * @type {string|Array}
      */
 
@@ -12292,7 +13198,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    * <p>This method does not accept any arguments.
    *
    * @expose
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    * @instance
    * @return {jQuery} the ojInputSearch
    */
@@ -12350,7 +13256,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
   * @param {Object|string=} previous
   * @param {Object=} flags
   * @protected
-  * @memberof! oj.ojInputSearch
+  * @memberof! oj.ojInputSearchWidget
   * @instance
   * @override
   */
@@ -12379,7 +13285,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    *
    * @return {boolean} true if required; false
    *
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    * @instance
    * @protected
    * @override
@@ -12407,7 +13313,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    *
    * @param {string} option
    *
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    * @instance
    * @protected
    */
@@ -12428,14 +13334,14 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    * NOTE: The behavior applies to any option that creates implicit validators - min, max, pattern,
    * etc. Components can call this method when these options change.
    *
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    * @instance
    * @protected
    */
   _AfterSetOptionValidators: oj.EditableValueUtils._AfterSetOptionValidators,
 
   /**
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    * @instance
    * @private
    */
@@ -12445,7 +13351,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    * This returns an array of all validators
    * normalized from the validators option set on the component. <br/>
    * @return {Array} of validators.
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    * @instance
    * @protected
    */
@@ -12453,7 +13359,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
 
   /**
    * Called to find out if aria-required is unsupported.
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    * @instance
    * @protected
    */
@@ -12462,7 +13368,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
   },
 
   /**
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    * @instance
    * @private
    */
@@ -12495,7 +13401,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    * <p>This method does not accept any arguments.
    *
    * @expose
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    * @instance
    */
   refresh: function refresh() {
@@ -12512,7 +13418,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    * Handles options specific to InputSearch.
    * @override
    * @protected
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    */
   _setOption: function _setOption(key, _value, flags) {
     var value = _value;
@@ -12569,7 +13475,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    * Updates display value of InputSearch.
    * @override
    * @protected
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    */
   // eslint-disable-next-line no-unused-vars
   _SetDisplayValue: function _SetDisplayValue(displayValue) {
@@ -12580,7 +13486,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    * Set the placeholder.
    * @override
    * @protected
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    */
   _SetPlaceholder: function _SetPlaceholder(value) {
     if (this.inputSearch) {
@@ -12603,7 +13509,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    *
    * @expose
    * @override
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    * @instance
    */
   validate: function validate() {
@@ -12630,7 +13536,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    *
    * @override
    * @protected
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    * @instance
    */
   _parseValue: function _parseValue(submittedValue) {
@@ -12663,7 +13569,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    *
    * @override
    * @protected
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    * @return {Object} jquery element which represents the messaging launcher component
    */
   _GetMessagingLauncherElement: function _GetMessagingLauncherElement() {
@@ -12679,7 +13585,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    *
    * @override
    * @protected
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    * @return {jQuery} jquery element which represents the content.
    */
   _GetContentElement: function _GetContentElement() {
@@ -12691,7 +13597,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    *
    * @return {string}
    * @expose
-   * @memberof! oj.ojInputSearch
+   * @memberof! oj.ojInputSearchWidget
    * @override
    * @protected
    */
@@ -12716,7 +13622,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    * Opens the InputSearch drop-down.
    *
    * @expose
-   * @memberof oj.ojInputSearch
+   * @memberof oj.ojInputSearchWidget
    * @instance
    */
   expand: function expand() {
@@ -12727,7 +13633,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    * Closes the InputSearch drop-down.
    *
    * @expose
-   * @memberof oj.ojInputSearch
+   * @memberof oj.ojInputSearchWidget
    * @instance
    */
   collapse: function collapse() {
@@ -12744,7 +13650,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    * @ojsubid
    * @member
    * @name oj-inputsearch-input
-   * @memberof oj.ojInputSearch
+   * @memberof oj.ojInputSearchWidget
    * @instance
    *
    * @example <caption>Get the input field element</caption>
@@ -12760,7 +13666,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    * @ojsubid
    * @member
    * @name oj-inputsearch-search
-   * @memberof oj.ojInputSearch
+   * @memberof oj.ojInputSearchWidget
    * @instance
    *
    * @example <caption>Get the search icon of the InputSearch</caption>
@@ -12771,7 +13677,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    * <p>Sub-ID for the list item.</p>
    *
    * @ojsubid oj-listitem
-   * @memberof oj.ojInputSearch
+   * @memberof oj.ojInputSearchWidget
    *
    * @example <caption>Get the listitem corresponding to value "myVal"</caption>
    * var node = $( ".selector" ).ojInputSearch( "getNodeBySubId", {'subId': 'oj-listitem', 'value': 'myVal'} );
@@ -12825,7 +13731,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    * @expose
    * @override
    * @ignore
-   * @memberof oj.ojInputSearch
+   * @memberof oj.ojInputSearchWidget
    * @instance
    *
    * @param {!Element} node - child DOM node
@@ -12895,7 +13801,7 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
    *
    *
    * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-   * @memberof oj.ojInputSearch
+   * @memberof oj.ojInputSearchWidget
    */
 
   /**
@@ -12936,34 +13842,26 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
      * <p>Disabled option items receive no highlight and are not selectable.</p>
    *
    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-   * @memberof oj.ojInputSearch
+   * @memberof oj.ojInputSearchWidget
    */
+  // -------------------- Styling start ------------------------
+  // ------------------------------ oj-listbox-header ---------------------------------
 
   /**
-   * {@ojinclude "name":"ojStylingDocIntro"}
-   *
-   * <table class="generic-table styling-table">
-   *   <thead>
-   *     <tr>
-   *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-   *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>oj-listbox-header</td>
-   *       <td>Optional. Custom header options can be added to the drop down through this styling.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-listbox-highlighter-section</td>
-   *       <td>Optional. Styling to control the which part of the option label has to be considered for highlighting.</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-   * @memberof oj.ojInputSearch
+   * Optional. Custom header options can be added to the drop down through this styling.
+   * @ojstyleclass oj-listbox-header
+   * @ojdisplayname Custom Header
+   * @memberof oj.ojInputSearchWidget
    */
+  // ------------------------------ oj-listbox-highlighter-section ---------------------------------
+
+  /**
+   * Optional. Styling to control the which part of the option label has to be considered for highlighting.
+   * @ojstyleclass oj-listbox-highlighter-section
+   * @ojdisplayname Highlighting Control
+   * @memberof oj.ojInputSearchWidget
+   */
+  // -------------------- Styling end ------------------------
 
 });
 
@@ -13046,15 +13944,133 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
  * <p>If the <a href="#options">options</a> attribute is a data provider, and if there is an initially selected value, setting the <a href="#valueOption">valueOption</a> attribute initially can improve page load performance because the element will not have to fetch the selected label from the data provider.</p>
  * <p>When using a data provider and renderMode is 'jet', the dropdown data isn't fetched until the user opens the dropdown.</p>
  *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
- *
  * {@ojinclude "name":"selectCommon"}
  */
+// --------------------------------------------------- oj.ojSelectOne Styling Start ------------------------------------------------------------
+
+/**
+ * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+ * The form control style classes can be applied to the component, or an ancestor element. <br/>
+ * When applied to an ancestor element, all form components that support the style classes will be affected.
+ */
+// ---------------- oj-form-control-full-width --------------
+
+/**
+* Changes the max-width to 100% so that form components will occupy all the available horizontal space.
+* @ojstyleclass oj-form-control-full-width
+* @ojdisplayname FullWidth
+* @memberof oj.ojSelectOne
+* @ojtsexample
+* &lt;oj-select-one class="oj-form-control-full-width">
+*   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+*   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+*   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+*   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+* &lt;/oj-select-one>
+*/
+// ---------------- oj-form-control max-width --------------
+
+/**
+* In the Redwood theme the default max width of a text field is 100%.
+* These max width convenience classes are available to create a medium or small field.<br>
+* The class is applied to the root element.
+* @ojstyleset form-control-max-width
+* @ojdisplayname Max Width
+* @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+* @ojstylerelation exclusive
+* @memberof oj.ojSelectOne
+* @ojtsexample
+* &lt;oj-select-one class="oj-form-control-max-width-md">
+*   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+*   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+*   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+* &lt;/oj-select-one>
+*/
+
+/**
+* @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+* @ojshortdesc Sets the max width for a small field
+* @ojdisplayname Small
+* @memberof! oj.ojSelectOne
+ */
+
+/**
+* @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+* @ojshortdesc Sets the max width for a medium field
+* @ojdisplayname Medium
+* @memberof! oj.ojSelectOne
+ */
+// ---------------- oj-form-control width --------------
+
+/**
+* In the Redwood theme the default width of a text field is 100%.
+* These width convenience classes are available to create a medium or small field.<br>
+* The class is applied to the root element.
+* @ojstyleset form-control-width
+* @ojdisplayname Width
+* @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+* @ojstylerelation exclusive
+* @memberof oj.ojSelectOne
+* @ojtsexample
+* &lt;oj-select-one class="oj-form-control-width-md">
+*   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+*   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+*   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+* &lt;/oj-select-one>
+*/
+
+/**
+* @ojstyleclass form-control-width.oj-form-control-width-sm
+* @ojshortdesc Sets the width for a small field
+* @ojdisplayname Small
+* @memberof! oj.ojSelectOne
+ */
+
+/**
+* @ojstyleclass form-control-width.oj-form-control-width-md
+* @ojshortdesc Sets the width for a medium field
+* @ojdisplayname Medium
+* @memberof! oj.ojSelectOne
+ */
+// ---------------- oj-form-control-text-align- --------------
+
+/**
+ * Classes that help align text of the element.
+ * @ojstyleset text-align
+ * @ojdisplayname Text Alignment
+ * @ojstylesetitems ["text-align.oj-form-control-text-align-right", "text-align.oj-form-control-text-align-start", "text-align.oj-form-control-text-align-end"]
+ * @ojstylerelation exclusive
+ * @memberof oj.ojSelectOne
+ * @ojtsexample
+ * &lt;oj-select-one class="oj-form-control-text-align-right">
+ *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+ *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+ *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+ *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+ * &lt;/oj-select-one>
+ */
+
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-right
+ * @ojshortdesc Aligns the text to the right regardless of the reading direction. This is normally used for right aligning numbers.
+ * @ojdisplayname Align-Right
+ * @memberof! oj.ojSelectOne
+ */
+
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-start
+ * @ojshortdesc Aligns the text to the left in LTR and to the right in RTL.
+ * @ojdisplayname Align-Start
+ * @memberof! oj.ojSelectOne
+ */
+
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-end
+ * @ojshortdesc Aligns the text to the right in LTR and to the left in RTL.
+ * @ojdisplayname Align-End
+ * @memberof! oj.ojSelectOne
+ */
+// --------------------------------------------------- oj.ojSelectOne Styling end ------------------------------------------------------------
 
 /**
  * @ojcomponent oj.ojSelectMany
@@ -13125,15 +14141,134 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
  * <p>If the <a href="#options">options</a> attribute is a data provider, and if there are initially selected values, setting the <a href="#valueOptions">valueOptions</a> attribute initially can improve page load performance because the element will not have to fetch the selected labels from the data provider.</p>
  * <p>When using a data provider and renderMode is 'jet', the dropdown data isn't fetched until the user opens the dropdown.</p>
  *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
  *
  * {@ojinclude "name":"selectCommon"}
  */
+// --------------------------------------------------- oj.ojSelectMany Styling Start ------------------------------------------------------------
+
+/**
+ * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+ * The form control style classes can be applied to the component, or an ancestor element. <br/>
+ * When applied to an ancestor element, all form components that support the style classes will be affected.
+ */
+// ---------------- oj-form-control-full-width --------------
+
+/**
+* Changes the max-width to 100% so that form components will occupy all the available horizontal space.
+* @ojstyleclass oj-form-control-full-width
+* @ojdisplayname Full Width
+* @memberof oj.ojSelectMany
+* @ojtsexample
+* &lt;oj-select-many class="oj-form-control-full-width">
+*   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+*   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+*   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+*   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+* &lt;/oj-select-many>
+*/
+// ---------------- oj-form-control max-width --------------
+
+/**
+* In the Redwood theme the default max width of a text field is 100%.
+* These max width convenience classes are available to create a medium or small field.<br>
+* The class is applied to the root element.
+* @ojstyleset form-control-max-width
+* @ojdisplayname Max Width
+* @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+* @ojstylerelation exclusive
+* @memberof oj.ojSelectMany
+* @ojtsexample
+* &lt;oj-select-many class="oj-form-control-max-width-md">
+*   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+*   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+*   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+* &lt;/oj-select-many>
+*/
+
+/**
+* @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+* @ojshortdesc Sets the max width for a small field
+* @ojdisplayname Small
+* @memberof! oj.ojSelectMany
+ */
+
+/**
+* @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+* @ojshortdesc Sets the max width for a medium field
+* @ojdisplayname Medium
+* @memberof! oj.ojSelectMany
+ */
+// ---------------- oj-form-control width --------------
+
+/**
+* In the Redwood theme the default width of a text field is 100%.
+* These width convenience classes are available to create a medium or small field.<br>
+* The class is applied to the root element.
+* @ojstyleset form-control-width
+* @ojdisplayname Width
+* @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+* @ojstylerelation exclusive
+* @memberof oj.ojSelectMany
+* @ojtsexample
+* &lt;oj-select-many class="oj-form-control-width-md">
+*   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+*   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+*   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+* &lt;/oj-select-many>
+*/
+
+/**
+* @ojstyleclass form-control-width.oj-form-control-width-sm
+* @ojshortdesc Sets the width for a small field
+* @ojdisplayname Small
+* @memberof! oj.ojSelectMany
+ */
+
+/**
+* @ojstyleclass form-control-width.oj-form-control-width-md
+* @ojshortdesc Sets the width for a medium field
+* @ojdisplayname Medium
+* @memberof! oj.ojSelectMany
+ */
+// ---------------- oj-form-control-text-align- --------------
+
+/**
+ * Classes that help align text of the element.
+ * @ojstyleset text-align
+ * @ojdisplayname Text Alignment
+ * @ojstylesetitems ["text-align.oj-form-control-text-align-right", "text-align.oj-form-control-text-align-start", "text-align.oj-form-control-text-align-end"]
+ * @ojstylerelation exclusive
+ * @memberof oj.ojSelectMany
+ * @ojtsexample
+ * &lt;oj-select-many class="oj-form-control-text-align-right">
+ *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+ *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+ *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+ *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+ * &lt;/oj-select-many>
+ */
+
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-right
+ * @ojshortdesc Aligns the text to the right regardless of the reading direction. This is normally used for right aligning numbers.
+ * @ojdisplayname Align-Right
+ * @memberof! oj.ojSelectMany
+ */
+
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-start
+ * @ojshortdesc Aligns the text to the left in LTR and to the right in RTL.
+ * @ojdisplayname Align-Start
+ * @memberof! oj.ojSelectMany
+ */
+
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-end
+ * @ojshortdesc Aligns the text to the right in LTR and to the left in RTL.
+ * @ojdisplayname Align-End
+ * @memberof! oj.ojSelectMany
+ */
+// --------------------------------------------------- oj.ojSelectMany Styling end ------------------------------------------------------------
 
 /**
  * @ojcomponent oj.ojSelect
@@ -14083,7 +15218,12 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
 
     /**
      * Dictates element's readonly state.
-     *
+     * <p>
+     * The oj-form-layout provides its readonly attribute value and the form components
+     * consume it if it is not already set explicitly.
+     * For example, if oj-form-layout is set to readonly='true',
+     * all the form components it contains will be readonly='true' by default.
+     * </p>
      * @example <caption>Initialize the select with the <code class="prettyprint">readonly</code> attribute:</caption>
      * &lt;oj-some-element readonly>&lt;/oj-some-element>
      *
@@ -14107,7 +15247,12 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
 
     /**
      * Dictates element's readonly state.
-     *
+     * <p>
+     * The oj-form-layout provides its readonly attribute value and the form components
+     * consume it if it is not already set explicitly.
+     * For example, if oj-form-layout is set to readonly='true',
+     * all the form components it contains will be readonly='true' by default.
+     * </p>
      * @example <caption>Initialize the select with <code class="prettyprint">readonly</code> attribute:</caption>
      * &lt;oj-some-element readonly>&lt;/oj-some-element>
      *
@@ -14428,7 +15573,13 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
         element: rootElement,
         applyHighlight: false,
         afterToggle: this._handleAfterFocusToggle.bind(this, rootElement)
-      });
+      }); // If labelEdge is set to none, aria-label would have been set to the innerElem
+      // so, we need to update the aria-label elsewhere
+
+
+      if (this.select && this.options.labelEdge === 'none') {
+        this.select.updateAriaLabelIfNeeded();
+      }
     }
   },
 
@@ -14473,6 +15624,17 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
     switch (option) {
       case 'required':
         this._AfterSetOptionRequired(option);
+
+        break;
+
+      case 'labelHint':
+      case 'labelEdge':
+        // Changing labelHint and labelEdge might have updated
+        // aria-label on the root element. Check if it is needed to
+        // update the aria-label on inner elements.
+        if (this.select) {
+          this.select.updateAriaLabelIfNeeded();
+        }
 
         break;
 
@@ -14676,12 +15838,20 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
     });
   },
   _nativeSetup: function _nativeSetup() {
-    var element = this.element; // add a <div> around <select> for validation error
+    var element = this.element;
 
-    element.wrap('<div>').parent() // @HTMLUpdateOK
-    .addClass('oj-select-native oj-component oj-select oj-form-control');
+    if (this._IsCustomElement()) {
+      // The custom element will be the wrapper and we do not need to add another wrapper
+      $(this.OuterWrapper).addClass('oj-select-native oj-component oj-select oj-form-control');
+    } else {
+      // add a <div> around <select> for validation error
+      element.wrap('<div>').parent() // @HTMLUpdateOK
+      .addClass('oj-select-native oj-component oj-select oj-form-control');
+    }
+
     element.addClass('oj-select-select oj-component-initnode');
-    element.wrap('<div class="oj-text-field-container" role="presentation">'); // multiple attr
+    element.wrap('<div class="oj-text-field-container" role="presentation">'); // @HTMLUpdateOK
+    // multiple attr
 
     if (this.multiple) {
       if (!element[0].multiple) {
@@ -14877,9 +16047,7 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
 
     this._SetRootAttributes();
 
-    if (this._IsCustomElement()) {
-      this._initComponentMessaging();
-    }
+    this._initComponentMessaging();
   },
 
   /**
@@ -15425,7 +16593,8 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
     if (key === 'value') {
       // clone the value, otherwise _setDisplayValue will not be invoked on binding value to ko observableArray.
       // TODO: Need to revisit this once 18724975 is fixed.
-      if (this._HasPlaceholderSet() && (value != null && value.length === 0 || this._IsCustomElement() && _ComboUtils.isValueForPlaceholder(multi, value))) {
+      // BUG JET-31272 - For select many the valueOptions should be updated if the value is cleared
+      if ((this._HasPlaceholderSet() || multi) && (value != null && value.length === 0 || this._IsCustomElement() && _ComboUtils.isValueForPlaceholder(multi, value))) {
         //  - placeholder is not displayed after removing selections from select many
         _ComboUtils.setValueOptions(this, _ComboUtils.getFixupValueOptionsForPlaceholder(multi));
 
@@ -15568,6 +16737,8 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
       _ComboUtils.removeDataProviderEventListeners(this);
 
       _ComboUtils.clearDataProviderWrapper(this);
+    } else if (key === 'optionsKeys') {
+      _ComboUtils.clearDataProviderWrapper(this);
     } else if (key === 'valueOption' && multi !== true) {
       // fixup valueOption
       value = _ComboUtils.getValueOptionsForPlaceholder(this, value);
@@ -15706,6 +16877,8 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
       } else {
         this._nativeSetOptions(value);
       }
+    } else if (key === 'optionsKeys') {
+      _ComboUtils.wrapDataProviderIfNeeded(this, this.select ? this.select.opts : null);
     } else if (key === 'required' && this._isNative()) {
       var placeholder = $(this.element.find('.oj-listbox-placeholder'));
 
@@ -15806,7 +16979,12 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
       }
 
       this.element.parent().children('.oj-select-arrow').remove();
-      this.element.unwrap();
+
+      if (!this._IsCustomElement()) {
+        // Widgets will have extra wrapper and it should be unwrapped
+        this.element.unwrap();
+      }
+
       this.element.removeClass('oj-select-select oj-component-initnode');
       this.element.attr({
         'aria-labelledby': ''
@@ -16137,6 +17315,19 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
     }
 
     return this.element;
+  },
+
+  /**
+   * Returns the element on which aria-label can be found.
+   * For select components, it is the content element where the aria-label will be set.
+   *
+   * @override
+   * @protected
+   * @memberof! oj.ojSelect
+   * @return {HTMLElement} The element in which we set the aria-label attribute
+   */
+  _GetAriaLabelElement: function _GetAriaLabelElement() {
+    return this._GetContentElement()[0];
   } // Fragments:
 
   /**
@@ -16348,46 +17539,6 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
    * @instance
    */
 
-  /**
-   * {@ojinclude "name":"ojStylingDocIntro"}
-   * <p>The form control style classes can be applied to the component, or an ancestor element. When
-   * applied to an ancestor element, all form components that support the style classes will be affected.
-   *
-   * <table class="generic-table styling-table">
-   *   <thead>
-   *     <tr>
-   *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-   *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>oj-form-control-full-width</td>
-   *       <td>Changes the max-width to 100% so that form components will occupy
-   *           all the available horizontal space
-   *       </td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-form-control-text-align-right</td>
-   *       <td>Aligns the text to the right regardless of the reading direction or default text alignment.
-   *           This is normally used for right aligning numbers
-   *       </td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-form-control-text-align-start</td>
-   *       <td>Aligns the text to the left in ltr and to the right in rtl</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-form-control-text-align-end</td>
-   *       <td>Aligns the text to the right in ltr and to the left in rtl</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-   * @memberof oj.ojSelect
-   */
-
 });
 
 Components.setDefaultOptions({
@@ -16409,56 +17560,65 @@ Components.setDefaultOptions({
 
 /* global __oj_combobox_one_metadata:false */
 (function () {
+  var bindingMeta = {
+    properties: {
+      readonly: {
+        binding: {
+          consume: {
+            name: 'readonly'
+          }
+        }
+      },
+      userAssistanceDensity: {
+        binding: {
+          consume: {
+            name: 'userAssistanceDensity'
+          }
+        }
+      }
+    }
+  };
   __oj_combobox_one_metadata.extension._WIDGET_NAME = 'ojCombobox';
   __oj_combobox_one_metadata.extension._INNER_ELEM = 'input';
-  __oj_combobox_one_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['tabindex'];
+  __oj_combobox_one_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-controls', 'aria-label', 'tabindex'];
   __oj_combobox_one_metadata.extension._ALIASED_PROPS = {
     readonly: 'readOnly'
   };
   oj.CustomElementBridge.register('oj-combobox-one', {
-    metadata: __oj_combobox_one_metadata
+    metadata: oj.CollectionUtils.mergeDeep(__oj_combobox_one_metadata, bindingMeta)
   });
-})();
-/* global __oj_combobox_many_metadata:false */
+  /* global __oj_combobox_many_metadata:false */
 
-
-(function () {
   __oj_combobox_many_metadata.extension._WIDGET_NAME = 'ojCombobox';
   __oj_combobox_many_metadata.extension._INNER_ELEM = 'input';
-  __oj_combobox_many_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['tabindex'];
+  __oj_combobox_many_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-controls', 'aria-label', 'tabindex'];
   __oj_combobox_many_metadata.extension._ALIASED_PROPS = {
     readonly: 'readOnly'
   };
   oj.CustomElementBridge.register('oj-combobox-many', {
-    metadata: __oj_combobox_many_metadata
+    metadata: oj.CollectionUtils.mergeDeep(__oj_combobox_many_metadata, bindingMeta)
   });
-})();
-/* global __oj_select_one_metadata:false */
+  /* global __oj_select_one_metadata:false */
 
-
-(function () {
   __oj_select_one_metadata.extension._WIDGET_NAME = 'ojSelect';
   __oj_select_one_metadata.extension._INNER_ELEM = 'select';
-  __oj_select_one_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['tabindex'];
+  __oj_select_one_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-controls', 'aria-label', 'tabindex'];
   __oj_select_one_metadata.extension._ALIASED_PROPS = {
     readonly: 'readOnly'
   };
   oj.CustomElementBridge.register('oj-select-one', {
-    metadata: __oj_select_one_metadata
+    metadata: oj.CollectionUtils.mergeDeep(__oj_select_one_metadata, bindingMeta)
   });
-})();
-/* global __oj_select_many_metadata:false */
+  /* global __oj_select_many_metadata:false */
 
-
-(function () {
   __oj_select_many_metadata.extension._WIDGET_NAME = 'ojSelect';
   __oj_select_many_metadata.extension._INNER_ELEM = 'select';
-  __oj_select_many_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['tabindex'];
+  __oj_select_many_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-controls', 'aria-label', 'tabindex'];
   __oj_select_many_metadata.extension._ALIASED_PROPS = {
     readonly: 'readOnly'
   };
   oj.CustomElementBridge.register('oj-select-many', {
-    metadata: __oj_select_many_metadata
+    metadata: oj.CollectionUtils.mergeDeep(__oj_select_many_metadata, bindingMeta)
   });
 })();
 

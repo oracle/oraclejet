@@ -1,0 +1,25 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+  @include module-include-once("redwood.variables.diagram") {
+:root {
+
+
+  // diagram
+  // ----------------------------
+  --oj-diagram-node-border-color-hover:              var(--oj-palette-neutral-120);
+  --oj-diagram-link-color:                           var(--oj-palette-neutral-120);
+  --oj-diagram-link-padding:                         10px;
+  --oj-diagram-link-border-color-hover:              var(--oj-diagram-link-color);
+  --oj-diagram-overview-padding:                      0px;
+  --oj-diagram-overview-content-padding:              10px;
+  --oj-diagram-overview-bg-color:                     var(--oj-palette-neutral-50);
+  --oj-diagram-overview-window-bg-color:              var(--oj-palette-neutral-0);
+  --oj-diagram-overview-window-border-color:          var(--oj-palette-neutral-170);
+  --oj-diagram-overview-node-bg-color:                var(--oj-palette-neutral-170);
+  --oj-diagram-node-label-font-size:                  var(--oj-typography-body-2xs-font-size);
+  --oj-diagram-link-label-font-size:                  var(--oj-typography-body-2xs-font-size);
+}
+
+}

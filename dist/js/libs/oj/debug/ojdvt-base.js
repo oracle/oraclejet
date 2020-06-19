@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -69,7 +70,12 @@ DataProviderHandler.prototype._fetchCollection = function (dataProvider, postpro
     return Promise.resolve(finalData);
   }
 
-  var iterator = dataProvider.fetchFirst({ size: -1 })[Symbol.asyncIterator]();
+  // Create a clientId symbol that uniquely identify this consumer so that
+  // DataProvider which supports it can optimize resources
+  this._clientId = this._clientId || Symbol();
+
+  var options = { clientId: this._clientId, size: -1 };
+  var iterator = dataProvider.fetchFirst(options)[Symbol.asyncIterator]();
   var isTreeDataProvider = this.isTreeDataProvider(dataProvider);
 
   // Helper function to handle case where fetch parameter -1 doesn�t return all the data
@@ -786,6 +792,7 @@ DvtStyleProcessor._buildTextCssPropertiesObject = function (cssDiv, ignoreProper
 DvtStyleProcessor.processStyles = function (element, options, componentClasses, childClasses) {
   var outerDummyDiv = null;
   var innerDummyDiv = null;
+  var ignoreCache = element.data('no-style-cache'); // this API is purely for testing purposes and not documented
 
   var styleClasses = '';
   var i;
@@ -808,7 +815,8 @@ DvtStyleProcessor.processStyles = function (element, options, componentClasses, 
     }
 
     // Performance: Only create these divs if we need to process uncached definitions
-    var hasUncachedProperty = DvtStyleProcessor._hasUncachedProperty(styleClass, definitions);
+    var hasUncachedProperty = DvtStyleProcessor._hasUncachedProperty(styleClass,
+      definitions) || ignoreCache;
     if (!innerDummyDiv && !outerDummyDiv && hasUncachedProperty) {
       // Add the component style classes to a hidden dummy div
       outerDummyDiv = $(document.createElement('div'));
@@ -843,7 +851,7 @@ DvtStyleProcessor.processStyles = function (element, options, componentClasses, 
   for (i = 0; i < styleClassKeys.length; i++) {
     styleClass = styleClassKeys[i];
     DvtStyleProcessor._processStyle(styleDivs[styleClass], options, styleClass,
-                                    styleDefinitions[styleClass]);
+                                    styleDefinitions[styleClass], ignoreCache);
   }
 
   // Performance: Process color attribute groups for components along with the component styles
@@ -899,9 +907,10 @@ DvtStyleProcessor._createStyleDivs = function (parentElement, styleClass, defini
  * @param {Object} options The options object to merge CSS properties with.
  * @param {string} styleClass The style class.
  * @param {Array} definitions Array of maps of CSS style attribute and values to process.
+ * @param {boolean} ignoreCache If true, then the style cache is ignored.
  * @private
  */
-DvtStyleProcessor._processStyle = function (cssDiv, options, styleClass, definitions) {
+DvtStyleProcessor._processStyle = function (cssDiv, options, styleClass, definitions, ignoreCache) {
   for (var i = 0; i < definitions.length; i++) {
     var definition = definitions[i];
     var property = definition.property;
@@ -912,7 +921,9 @@ DvtStyleProcessor._processStyle = function (cssDiv, options, styleClass, definit
       if (typeof value === 'undefined' && cssDiv) {
         // Resolve and store in the cache.
         value = DvtStyleProcessor._resolveStyle(cssDiv, property);
-        DvtStyleProcessor._styleCache[styleClass][property] = value;
+        if (!ignoreCache) {
+          DvtStyleProcessor._styleCache[styleClass][property] = value;
+        }
       }
 
       // If a value exists, apply to the JSON.
@@ -1507,12 +1518,18 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       this._context = new dvt.Context(this.element[0], null, this._referenceDiv[0]);
     }
 
-    // Store JET reference on context so toolkit can access things like loggers
-    this._context.oj = oj;
-    this._context.KeySetImpl = KeySetImpl;
-    this._context.ojMap = ojMap;
-    this._context.LocaleData = LocaleData;
-    this._context.dataProviderProps = Object.keys(this._GetSimpleDataProviderConfigs());
+    // Store JET reference on context so toolkit can access things like logger
+    var dataProviderProps = Object.keys(this._GetSimpleDataProviderConfigs());
+    var ref = {
+      oj: oj,
+      KeySetImpl: KeySetImpl,
+      ojMap: ojMap,
+      LocaleData: LocaleData,
+      dataProviderProps: dataProviderProps
+    };
+
+    this._context.setJetProperties(ref);
+
 
     // Set the reading direction on the context
     this._context.setReadingDirection(this._GetReadingDirection());
@@ -1533,6 +1550,13 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
 
     // Create and cache the component instance
     this._component = this._CreateDvtComponent(this._context, this._HandleEvent, this);
+    if (dvt.Agent.isEnvironmentTest()) {
+      // Hook to ensure stable dvt-static test output
+      var testId = this.element[0].getAttribute('data-oj-dvt-test-id');
+      if (testId && testId.length > 0) {
+        this._component.setId(testId);
+      }
+    }
 
     // Add the component to the display tree of the rendering context.
     this._context.getStage().addChild(this._component);
@@ -2237,6 +2261,24 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
   },
 
   /**
+   * Resolves document fonts to ensure they are loaded before component rendering
+   * @private
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _resolveDocumentFonts: function () {
+    var documentFonts = document.fonts;
+    if (documentFonts && documentFonts.status === 'loading') { // document.fonts is not supported by IE
+      this._numDeferredObjs += 1;
+      var renderCount = this._renderCount;
+
+      documentFonts.ready.then(function () {
+        this._renderDeferredData(renderCount, null, []);
+      }.bind(this));
+    }
+  },
+
+  /**
    * Resolves the deferred data for a component and returns whether there is any deferred data to wait on.
    * @return {boolean} True if all data has been resolved
    * @private
@@ -2253,6 +2295,8 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     // Fixing custom renderers will increment _numDeferredObjs if there are template slots
     // because the corresponding render functions cannot be created until the templateEnginePromise has resolved
     this._FixCustomRenderers(this._optionsCopy);
+
+    this._resolveDocumentFonts();
 
     var self = this;
     var paths = this._GetComponentDeferredDataPaths();
@@ -2365,7 +2409,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
    * @memberof oj.dvtBaseComponent
    */
   _renderDeferredData: function (renderCount, optionsTo, paths, values) {
-    if (renderCount === this._renderCount) {
+    if (this._context && renderCount === this._renderCount) {
       this._numDeferredObjs -= 1;
       for (var i = 0; i < paths.length; i++) {
         (new DvtJsonPath(optionsTo, paths[i])).setValue(values[i], true);
@@ -2677,6 +2721,10 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
    * @memberof oj.dvtBaseComponent
    */
   _ProcessOptions: function () {
+    if (dvt.Agent.isEnvironmentTest()) {
+      // Hook to pass toolkit-private API in dvt-static tests
+      this.options = Object.assign(this.options, this.element[0].__dvtToolkit);
+    }
     // Convert the tooltip to an object if the deprecated API structure is passed in
     var tooltip = this.options.tooltip;
     if (tooltip && tooltip._renderer) {
@@ -2951,7 +2999,6 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
         return this._super(option, value1, value2);
     }
   }
-
 }, true);
 
 

@@ -1,16 +1,17 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'], 
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcontext', 'ojs/ojthemeutils'],
 /*
 * @param {Object} oj 
 * @param {jQuery} $
 */
-function(oj, $)
+function(oj, $, Components, Context, ThemeUtils)
 {
   "use strict";
 var __oj_train_metadata = 
@@ -49,7 +50,7 @@ var __oj_train_metadata =
   "extension": {}
 };
 
-
+/* global Context:false, ThemeUtils:false  */
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
@@ -66,6 +67,8 @@ var __oj_train_metadata =
  * @ojpropertylayout {propertyGroup: "common", items: ["selectedStep", "steps"]}
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 6
+ *
+ * @ojuxspecs ['train']
  *
  * @classdesc
  * <h3 id="trainOverview-section">
@@ -94,14 +97,20 @@ var __oj_train_metadata =
  * </h3>
  *
  * {@ojinclude "name":"keyboardDoc"}
- *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
  */
+// --------------------------------------------------- oj.ojTrain Styling Start -----------------------------------------------------------
+// ---------------- oj-train-stretch --------------
+/**
+* Optional class that may be added to the train div which will stretch the train to cover the full width of the container specified.
+* @ojstyleclass oj-train-stretch
+* @ojdisplayname Stretch
+* @memberof oj.ojTrain
+* @ojtsexample
+* &lt;oj-train selected-step="{{currentStepValue}}" steps="{{stepArray}}" class="oj-train-stretch">
+* &lt;/oj-train>
+*/
+// --------------------------------------------------- oj.ojTrain Styling End -----------------------------------------------------------
+
 (function () {
   oj.__registerWidget('oj.ojTrain', $.oj.baseComponent,
     {
@@ -116,7 +125,7 @@ var __oj_train_metadata =
          * @property {string} label label of the step
          * @property {boolean} [disabled] indicates whether the step is disabled
          * @property {boolean} [visited] indicates whether the step has been visited
-         * @property {"info"|"error"|"fatal"|"warning"} [messageType] the type of message icon displayed on the step
+         * @property {"info"|"error"|"fatal"|"warning"|"confirmation"} [messageType] the type of message icon displayed on the step
          *
          */
 
@@ -323,9 +332,16 @@ var __oj_train_metadata =
         // Draw each step. Visually each step consists of a background circle, a button, an icon, and a label.
         for (var i = 0; i < this._stepNum; i++) {
           // Create a list item to store each step.
-          var stepTag = $('<li>').addClass('oj-train-step-list-item').attr({ id: this._stepArray[i][1] });
+          var stepId = this._stepArray[i][1];
+          var stepTag = $('<li>').addClass('oj-train-step-list-item').attr({ id: stepId });
 
           // Add message information
+          var disabled = this._stepArray[i][2];
+          if (this._selectedIndex === i) {
+            stepTag.addClass('oj-selected');
+          } else if (disabled) {
+            stepTag.addClass('oj-disabled');
+          }
           var messageType = this._stepArray[i][4];
           if (messageType === 'confirmation') {
             stepTag.addClass('oj-confirmation');
@@ -347,6 +363,20 @@ var __oj_train_metadata =
           this._drawMessageType(i);
           if (this._stretch) {
             stepTag.css('width', (100 / (this._stepNum)) + '%');
+          }
+
+          var themeName = ThemeUtils.getThemeName();
+
+          if (themeName.includes('redwood') && !disabled && this._selectedIndex !== i) {
+            this._AddHoverable(stepTag);
+            this._AddActiveable(stepTag);
+
+            stepTag.on('click' + this.eventNamespace, function (stepID, event) {
+              if (event.keyCode === $.ui.keyCode.ENTER || event.type === 'click') {
+                event.preventDefault();
+                this._fireSelectedStepOptionChange(stepID, event);
+              }
+            }.bind(this, stepId));
           }
         }
 
@@ -395,7 +425,6 @@ var __oj_train_metadata =
         var button = $('<div></div>')
             .addClass('oj-train-button');
         var scrnRead = $('<span></span>');
-        var self = this;
         var desc = '';
         if (this._stepArray[index]) {
           var visited = this._stepArray[index][3];
@@ -416,12 +445,10 @@ var __oj_train_metadata =
           if (!this._stepArray[index][2] && this._selectedIndex !== index) {
             this._AddHoverable(button);
             this._AddActiveable(button);
-
-            button.on('click' + this.eventNamespace, function (event) {
-              self._fireSelectedStepOptionChange(this.parentNode.parentNode.id, event);
-              self.refresh();
-              self._setFocus(this.parentNode.parentNode.id);
-            });
+            var stepId = this._stepArray[index][1];
+            button.on('click' + this.eventNamespace, function (stepID, event) {
+              this._fireSelectedStepOptionChange(stepID, event);
+            }.bind(this, stepId));
           }
 
           var stepBackground = this._stepList.children().eq(index).find('.oj-train-button-connector');
@@ -456,7 +483,6 @@ var __oj_train_metadata =
               .attr('aria-hidden', 'true');
           var scrnRead = $('<span></span>');
           var desc = '';
-          var self = this;
           var messageType = this._stepArray[index][4];
 
           if (messageType === 'confirmation') {
@@ -483,11 +509,10 @@ var __oj_train_metadata =
           }
           // Make icon clickable
           if (!this._stepArray[index][2] && this._selectedIndex !== index) {
-            icon.on('click' + this.eventNamespace, function (event) {
-              self._fireSelectedStepOptionChange(this.parentNode.parentNode.parentNode.id, event);
-              self.refresh();
-              self._setFocus(this.parentNode.parentNode.parentNode.id);
-            });
+            var stepId = this._stepArray[index][1];
+            icon.on('click' + this.eventNamespace, function (stepID, event) {
+              this._fireSelectedStepOptionChange(stepID, event);
+            }.bind(this, stepId));
           }
           // Add new message
           if (messageType != null) {
@@ -521,6 +546,7 @@ var __oj_train_metadata =
         };
         if (this._trigger('beforeDeselect', originalEvent, eventData) === false
             || this._trigger('beforeSelect', originalEvent, eventData) === false) {
+          this._optionChangePrevented = true;
           return;
         }
 
@@ -528,7 +554,9 @@ var __oj_train_metadata =
         var stepIndex = this._getStepIndex(previousValue);
         if (stepIndex !== -1) {
           var oldStepProperties = this.options.steps[stepIndex];
+          this._previousStepIndex = stepIndex;
           oldStepProperties.visited = true;
+          this._optionChangePrevented = false;
         }
 
         this._trigger('deselect', originalEvent, eventData);
@@ -611,7 +639,6 @@ var __oj_train_metadata =
        * @private
        */
       _drawLabel: function (index) {
-        var self = this;
         if (this._stepArray[index]) {
           var labelWrapper = $('<div></div>')
                 .addClass('oj-train-label-wrapper');
@@ -636,18 +663,18 @@ var __oj_train_metadata =
             this._AddHoverable(label);
             this._AddActiveable(label);
 
+            var stepId = this._stepArray[index][1];
+
             label.on('click keydown' + this.eventNamespace,
             /**
              * @suppress {missingProperties}
              */
-            function (event) {
+            function (stepID, event) {
               if (event.keyCode === $.ui.keyCode.ENTER || event.type === 'click') {
                 event.preventDefault();
-                self._fireSelectedStepOptionChange(this.parentNode.parentNode.id, event);
-                self.refresh();
-                self._setFocus(this.parentNode.parentNode.id);
+                this._fireSelectedStepOptionChange(stepID, event);
               }
-            });
+            }.bind(this, stepId));
           }
           var stepLi = this._stepList.children().eq(index).children();
           if (stepLi.length >= 2) {
@@ -787,7 +814,7 @@ var __oj_train_metadata =
        * @param {string} [stepProperties.label] label of step
        * @param {boolean} [stepProperties.disabled] whether step is disabled
        * @param {boolean} [stepProperties.visited] whether step has been visited
-       * @param {"info"|"error"|"fatal"|"warning"} [stepProperties.messageType] type of message displayed
+       * @param {"info"|"error"|"fatal"|"warning"|"confirmation"} [stepProperties.messageType] type of message displayed
        * @instance
        * @memberof oj.ojTrain
        * @return {void}
@@ -874,6 +901,78 @@ var __oj_train_metadata =
         this._super();
         this._destroy();
         this._setupTrain();
+
+        var previousStepMessageType;
+        if (this._previousStepIndex != null && this._stepArray[this._previousStepIndex] != null) {
+          previousStepMessageType = this._stepArray[this._previousStepIndex][4];
+        }
+        var selectedStepMessageType;
+        if (this._selectedIndex != null && this._stepArray[this._selectedIndex] != null) {
+          selectedStepMessageType = this._stepArray[this._selectedIndex][4];
+        }
+
+        var selectedButton = this.getNodeBySubId({ subId: 'oj-train-step', index: this._selectedIndex });
+        if (selectedButton && selectedStepMessageType == null) {
+          var selectedButtonBusyContext = Context.getContext(selectedButton).getBusyContext();
+          selectedButton.classList.add('oj-train-button-selected-animation');
+          var selectedAnimationDuration = parseFloat($(selectedButton).css('animationDuration'));
+          if (selectedAnimationDuration > 0) {
+            var selectedButtonAnimationResolve = selectedButtonBusyContext.addBusyState(
+                    { description: "The train selected button index='" +
+                      this._selectedIndex + "' is animating." });
+
+
+            setTimeout(function () {
+              selectedButtonAnimationResolve();
+            }, selectedAnimationDuration);
+          }
+        }
+        var visitedButton = this.getNodeBySubId({ subId: 'oj-train-step', index: this._previousStepIndex });
+        if (visitedButton && previousStepMessageType == null) {
+          var visitedButtonBusyContext = Context.getContext(visitedButton).getBusyContext();
+          visitedButton.classList.add('oj-train-button-visited-animation');
+          var visitedAnimationDuration = parseFloat($(visitedButton).css('animationDuration'));
+          if (visitedAnimationDuration > 0) {
+            var visitedButtonAnimationResolve = visitedButtonBusyContext.addBusyState(
+                            { description: "The train visited button index='" +
+                              this._previousStepIndex + "' is animating." });
+
+
+            setTimeout(function () {
+              visitedButtonAnimationResolve();
+            }, visitedAnimationDuration);
+          }
+        }
+        var previousStepIcon = this._stepList.children().eq(this._previousStepIndex).find('.oj-train-icon')[0];
+        if (previousStepIcon) {
+          var iconBusyContext = Context.getContext(previousStepIcon).getBusyContext();
+          previousStepIcon.classList.add('oj-train-button-messaging-icon-animation');
+          var iconAnimationDuration = parseFloat($(previousStepIcon).css('animationDuration'));
+          if (iconAnimationDuration > 0) {
+            var iconAnimationResolve = iconBusyContext.addBusyState(
+                { description: "The train icon index='" +
+                  this._previousStepIndex + "' is animating." });
+
+            setTimeout(function () {
+              iconAnimationResolve();
+            }, iconAnimationDuration);
+          }
+        }
+        var selectedStepIcon = this._stepList.children().eq(this._selectedIndex).find('.oj-train-icon')[0];
+        if (selectedStepIcon) {
+          var selectedIconBusyContext = Context.getContext(selectedStepIcon).getBusyContext();
+          selectedStepIcon.classList.add('oj-train-button-messaging-icon-animation');
+          var selectedIconAnimationDuration = parseFloat($(selectedStepIcon).css('animationDuration'));
+          if (selectedIconAnimationDuration > 0) {
+            var selectedIconAnimationResolve = selectedIconBusyContext.addBusyState(
+                { description: "The train icon index='" +
+                  this._selectedIndex + "' is animating." });
+
+            setTimeout(function () {
+              selectedIconAnimationResolve();
+            }, selectedIconAnimationDuration);
+          }
+        }
       },
 
       /**
@@ -907,6 +1006,10 @@ var __oj_train_metadata =
         var prevSelected = this._stepArray[this._selectedIndex][1];
         if (prevSelected !== newSelectedStep) {
           this._fireOptionChange(prevSelected, newSelectedStep, event);
+          if (!this._optionChangePrevented) {
+            this.refresh();
+            this._setFocus(newSelectedStep);
+          }
         }
       },
 
@@ -1050,31 +1153,6 @@ var __oj_train_metadata =
      *
      *
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-     * @memberof oj.ojTrain
-     */
-
-    /**
-     * {@ojinclude "name":"ojStylingDocIntro"}
-     *
-     * <table class="generic-table styling-table">
-     *   <thead>
-     *     <tr>
-     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td> oj-train-stretch</td>
-     *       <td> Optional class that may be added to the train div which will stretch the train to cover the full width of the container specified. </td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     * <br>
-     *
-     * Train step label wrapping is controlled by the $trainLabelTextWrap SASS Variable. $trainLabelTextWrap accepts css white-space values such as normal or nowrap(default).
-     *
-     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
      * @memberof oj.ojTrain
      */
 

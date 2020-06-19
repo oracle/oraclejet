@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -147,6 +148,120 @@
         $classSelectors: "h6.oj-header") {
           font-size: $header6FontSize; 
           font-weight: $header6FontWeight;
+      }
+
+
+      .oj-typography-heading-2xl,
+      .oj-typography-title-1 {
+        font-size: $header1FontSize !important;
+        font-weight: $header1FontWeight !important;
+      }
+
+      .oj-typography-heading-xl,
+      .oj-typography-title-2 {
+          font-size: $header2FontSize !important;
+          font-weight: $header2FontWeight !important;
+      }
+
+      .oj-typography-heading-lg,
+      .oj-typography-title-3 {
+          font-size: $header3FontSize !important;
+          font-weight: $header3FontWeight !important;
+      }
+
+      .oj-typography-heading-md,
+      .oj-typography-title-4 {
+          font-size: $header4FontSize !important;
+          font-weight: $header4FontWeight !important;
+      }
+
+      .oj-typography-heading-sm,
+      .oj-typography-title-5 {
+          font-size: $header5FontSize !important;
+          font-weight: $header5FontWeight !important;
+      }
+
+      .oj-typography-heading-xs,
+      .oj-typography-title-6 {
+          font-size: $header6FontSize !important;
+          font-weight: $header6FontWeight !important;
+      }
+
+      .oj-typography-subheading-2xl,
+      .oj-typography-subtitle-1 {
+        font-size: 1.25rem !important;
+        font-weight: normal !important;
+      }
+
+      .oj-typography-subheading-xl,
+      .oj-typography-subtitle-2 {
+        font-size: 1.125rem !important;
+        font-weight: normal !important;
+      }
+
+      .oj-typography-subheading-lg,
+      .oj-typography-subtitle-3 {
+        font-size: 1rem !important;
+        font-weight: normal !important;
+      }
+
+      .oj-typography-subheading-md,
+      .oj-typography-subtitle-4 {
+        font-size: .875rem !important;
+        font-weight: normal !important;
+      }
+
+      .oj-typography-subheading-sm {
+        font-size: .875rem !important;
+        font-weight: normal !important;
+      }
+
+      .oj-typography-subheading-xs {
+        font-size: .875rem !important;
+        font-weight: normal !important;
+      }
+
+
+      .oj-typography-body-xl {
+        font-size: 1.25rem !important;
+        font-weight: normal !important;
+      }
+
+      .oj-typography-body-lg,
+      .oj-typography-body-1 {
+        font-size: 1.125rem !important;
+        font-weight: normal !important;
+      }
+
+      .oj-typography-body-md,
+      .oj-typography-body-2 {
+        font-size: 1rem !important;
+        font-weight: normal !important;
+      }
+
+      .oj-typography-body-sm,
+      .oj-typography-body-3 {
+        font-size: .85714rem !important;
+        font-weight: normal !important;
+      }
+      .oj-typography-body-xs,
+      .oj-typography-caption-1 {
+        font-size: .78571rem !important;
+        font-weight: normal !important;
+      }
+
+      .oj-typography-body-2xs,
+      .oj-typography-caption-2 {
+        font-size:   .6875rem !important;
+        font-weight: normal !important;
+      }    
+
+      .oj-typography-semi-bold {
+        font-weight: 500 !important;
+      }
+      
+      .oj-typography-bold {
+        font-weight: 700 !important;
       }
 
 

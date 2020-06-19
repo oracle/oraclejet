@@ -1,12 +1,14 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojset', 'ojs/ojmap', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function(oj, $, ojSet, ojMap, __DataProvider)
+define(['ojs/ojcore', 'jquery', 'ojs/ojset', 'ojs/ojmap', 'ojs/ojdataprovider', 'ojs/ojlogger', 'ojs/ojeventtarget'],
+function(oj, $, ojSet, ojMap, __DataProvider, Logger)
 {
 class ArrayDataProvider {
     constructor(data, options) {
@@ -96,13 +98,15 @@ class ArrayDataProvider {
                 this._nextFunc = _nextFunc;
                 this._params = _params;
                 this._offset = _offset;
-                this._cachedOffset = _offset;
+                this._clientId = (_params && _params.clientId) || Symbol();
+                _parent._mapClientIdToOffset.set(this._clientId, _offset);
                 this._cacheObj = {};
                 this._cacheObj[ArrayDataProvider._MUTATIONSEQUENCENUM] = _parent._mutationSequenceNum;
             }
             ['next']() {
-                let resultObj = this._nextFunc(this._params, this._cachedOffset, this._cacheObj);
-                this._cachedOffset = resultObj.offset;
+                const cachedOffset = this._parent._mapClientIdToOffset.get(this._clientId);
+                let resultObj = this._nextFunc(this._params, cachedOffset, this._cacheObj);
+                this._parent._mapClientIdToOffset.set(this._clientId, resultObj.offset);
                 return Promise.resolve(resultObj.result);
             }
         };
@@ -166,6 +170,7 @@ class ArrayDataProvider {
         this._cachedIndexMap = [];
         this._sequenceNum = 0;
         this._mutationSequenceNum = 0;
+        this._mapClientIdToOffset = new Map();
         this._subscribeObservableArray(data);
         if (options != null && options[ArrayDataProvider._KEYS] != null) {
             this._keysSpecified = true;
@@ -201,8 +206,7 @@ class ArrayDataProvider {
                         break;
                     }
                 }
-                if (findKeyIndex != null &&
-                    findKeyIndex >= 0) {
+                if (findKeyIndex != null && findKeyIndex >= 0) {
                     let row = rowData[findKeyIndex];
                     if (fetchAttributes && fetchAttributes.length > 0) {
                         let updatedData = {};
@@ -222,7 +226,11 @@ class ArrayDataProvider {
         let self = this;
         let size = params != null ? params[ArrayDataProvider._SIZE] : -1;
         let sortCriteria = params != null ? params[ArrayDataProvider._SORTCRITERIA] : null;
-        let offset = params != null ? params[ArrayDataProvider._OFFSET] > 0 ? params[ArrayDataProvider._OFFSET] : 0 : 0;
+        let offset = params != null
+            ? params[ArrayDataProvider._OFFSET] > 0
+                ? params[ArrayDataProvider._OFFSET]
+                : 0
+            : 0;
         let fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
         let filterCriterion = params != null ? params[ArrayDataProvider._FILTERCRITERION] : null;
         this._generateKeysIfNeeded();
@@ -273,7 +281,8 @@ class ArrayDataProvider {
         else if (capabilityName == 'fetchCapability') {
             let exclusionFeature = new Set();
             exclusionFeature.add('exclusion');
-            return { attributeFilter: {
+            return {
+                attributeFilter: {
                     expansion: {},
                     ordering: {},
                     defaultShape: {
@@ -329,8 +338,7 @@ class ArrayDataProvider {
      * Get the keys, unwrapping observableArray if needed.
      */
     _getKeys() {
-        if (this._keys != null &&
-            !(this._keys instanceof Array)) {
+        if (this._keys != null && !(this._keys instanceof Array)) {
             return this._keys();
         }
         return this._keys;
@@ -351,6 +359,27 @@ class ArrayDataProvider {
         return keyIndex;
     }
     /**
+     * Adjust the last offset for iterators.
+     */
+    _adjustIteratorOffset(changes) {
+        this._mapClientIdToOffset.forEach((offset, clientId) => {
+            let addCount = 0;
+            let deleteCount = 0;
+            changes.forEach(function (change) {
+                // only count the changes below the last offset
+                if (change['index'] < offset) {
+                    if (change['status'] === 'deleted') {
+                        ++deleteCount;
+                    }
+                    else if (change['status'] === 'added') {
+                        ++addCount;
+                    }
+                }
+            });
+            this._mapClientIdToOffset.set(clientId, offset + addCount - deleteCount);
+        });
+    }
+    /**
      * If observableArray, then subscribe to it
      */
     _subscribeObservableArray(data) {
@@ -363,6 +392,8 @@ class ArrayDataProvider {
             let self = this;
             data['subscribe'](function (changes) {
                 let i, j, id, index, status, dataArray = [], keyArray = [], indexArray = [], metadataArray = [], afterKeyArray = [];
+                let addCount = 0;
+                let deleteCount = 0;
                 self._mutationSequenceNum++;
                 // first check if we only have adds or only have deletes
                 let onlyAdds = true;
@@ -370,11 +401,15 @@ class ArrayDataProvider {
                 changes.forEach(function (change) {
                     if (change['status'] === 'deleted') {
                         onlyAdds = false;
+                        ++deleteCount;
                     }
                     else if (change['status'] === 'added') {
                         onlyDeletes = false;
+                        ++addCount;
                     }
                 });
+                // Adjust the last offset for iterators
+                self._adjustIteratorOffset(changes);
                 let updatedIndexes = [];
                 let removeDuplicate = [];
                 let operationUpdateEventDetail = null;
@@ -394,7 +429,8 @@ class ArrayDataProvider {
                                 updatedIndexes.indexOf(i) < 0 &&
                                 removeDuplicate.indexOf(i) < 0) {
                                 // Squash delete and add only if they have the same index and either no key or same key
-                                if (iKey == null || oj.Object.compareValues(iKey, self._getId(changes[j].value))) {
+                                if (iKey == null ||
+                                    oj.Object.compareValues(iKey, self._getId(changes[j].value))) {
                                     if (status === 'deleted') {
                                         removeDuplicate.push(i);
                                         updatedIndexes.push(j);
@@ -428,7 +464,7 @@ class ArrayDataProvider {
                         operationUpdateEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, dataArray, indexArray);
                     }
                 }
-                dataArray = [], keyArray = [], indexArray = [];
+                (dataArray = []), (keyArray = []), (indexArray = []);
                 if (!onlyAdds) {
                     for (i = 0; i < changes.length; i++) {
                         if (changes[i]['status'] === 'deleted' &&
@@ -456,9 +492,9 @@ class ArrayDataProvider {
                         operationRemoveEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, dataArray, indexArray);
                     }
                 }
-                dataArray = [], keyArray = [], indexArray = [];
+                (dataArray = []), (keyArray = []), (indexArray = []);
                 if (!onlyDeletes) {
-                    let isInitiallyEmpty = self._getKeys() != null ? self._getKeys().length > 0 ? false : true : true;
+                    let isInitiallyEmpty = self._getKeys() != null ? (self._getKeys().length > 0 ? false : true) : true;
                     for (i = 0; i < changes.length; i++) {
                         if (changes[i]['status'] === 'added' &&
                             updatedIndexes.indexOf(i) < 0 &&
@@ -472,6 +508,13 @@ class ArrayDataProvider {
                                 self._keys.splice(changes[i].index, 0, id);
                             }
                             else if (isInitiallyEmpty || self._indexOfKey(id) === -1) {
+                                self._keys.splice(changes[i].index, 0, id);
+                            }
+                            else if (!generatedKeys) {
+                                // If we get here, we have a duplicate key and the _keys array has not just been generated.
+                                // In this case we log a warning but should add the key to the _keys array to keep
+                                // it in sync with the data array.  It is up to the app to ensure key uniqueness.
+                                Logger.warn('added row has duplicate key ' + id);
                                 self._keys.splice(changes[i].index, 0, id);
                             }
                             keyArray.push(id);
@@ -541,9 +584,10 @@ class ArrayDataProvider {
         let checkProps = ['keys', 'indexes'];
         checkProps.forEach(function (prop) {
             if (!fireMutipleEvents) {
-                fireMutipleEvents = self._hasSamePropValue(operationRemoveEventDetail, operationAddEventDetail, prop) ||
-                    self._hasSamePropValue(operationRemoveEventDetail, operationUpdateEventDetail, prop) ||
-                    self._hasSamePropValue(operationAddEventDetail, operationUpdateEventDetail, prop);
+                fireMutipleEvents =
+                    self._hasSamePropValue(operationRemoveEventDetail, operationAddEventDetail, prop) ||
+                        self._hasSamePropValue(operationRemoveEventDetail, operationUpdateEventDetail, prop) ||
+                        self._hasSamePropValue(operationAddEventDetail, operationUpdateEventDetail, prop);
             }
         });
         if (fireMutipleEvents) {
@@ -566,22 +610,34 @@ class ArrayDataProvider {
         }
     }
     _hasSamePropValue(operationEventDetail1, operationEventDetail2, prop) {
-        let hasSameValue = false;
-        if (operationEventDetail1 && operationEventDetail1[prop]) {
-            operationEventDetail1[prop].forEach(function (prop1) {
-                if (!hasSameValue &&
-                    operationEventDetail2 &&
-                    operationEventDetail2[prop]) {
-                    operationEventDetail2[prop].forEach(function (prop2) {
-                        if (!hasSameValue &&
-                            oj.Object.compareValues(prop1, prop2)) {
-                            hasSameValue = true;
-                        }
-                    });
-                }
-            });
+        const errStr = '_hasSamePropValue is true';
+        try {
+            if (operationEventDetail1 && operationEventDetail1[prop]) {
+                operationEventDetail1[prop].forEach(function (prop1) {
+                    if (operationEventDetail2 && operationEventDetail2[prop]) {
+                        operationEventDetail2[prop].forEach(function (prop2) {
+                            if (oj.Object.compareValues(prop1, prop2)) {
+                                // We can return true as soon as we find the first pair of values that are the same.
+                                // However, there is no way to break out of a forEach loop other than throwing error,
+                                // and there is no alternative way to iterate through a Set other than forEach.
+                                throw errStr;
+                            }
+                        });
+                    }
+                });
+            }
         }
-        return hasSameValue;
+        catch (e) {
+            if (e === errStr) {
+                // If this is the error we threw, return true
+                return true;
+            }
+            else {
+                // For other errors, just re-throw it
+                throw e;
+            }
+        }
+        return false;
     }
     /**
      * Check if observableArray
@@ -594,7 +650,10 @@ class ArrayDataProvider {
      */
     _generateKeysIfNeeded() {
         if (this._keys == null) {
-            let keyAttributes = this.options != null ? (this.options[ArrayDataProvider._KEYATTRIBUTES] || this.options[ArrayDataProvider._IDATTRIBUTE]) : null;
+            let keyAttributes = this.options != null
+                ? this.options[ArrayDataProvider._KEYATTRIBUTES] ||
+                    this.options[ArrayDataProvider._IDATTRIBUTE]
+                : null;
             this._keys = [];
             let rowData = this._getRowData();
             let id, i = 0;
@@ -614,7 +673,10 @@ class ArrayDataProvider {
      */
     _getId(row) {
         let id;
-        let keyAttributes = this.options != null ? (this.options[ArrayDataProvider._KEYATTRIBUTES] || this.options[ArrayDataProvider._IDATTRIBUTE]) : null;
+        let keyAttributes = this.options != null
+            ? this.options[ArrayDataProvider._KEYATTRIBUTES] ||
+                this.options[ArrayDataProvider._IDATTRIBUTE]
+            : null;
         if (keyAttributes != null) {
             if (Array.isArray(keyAttributes)) {
                 let i;
@@ -635,17 +697,15 @@ class ArrayDataProvider {
             return null;
         }
     }
-    ;
     /**
      * Get value for attribute
      */
     _getVal(val, attr) {
-        if (typeof (val[attr]) == 'function') {
+        if (typeof val[attr] == 'function') {
             return val[attr]();
         }
         return val[attr];
     }
-    ;
     /**
      * Get all values in a row
      */
@@ -655,7 +715,6 @@ class ArrayDataProvider {
             return self._getVal(val, key);
         });
     }
-    ;
     /**
      * Fetch from offset
      */
@@ -673,7 +732,13 @@ class ArrayDataProvider {
         let mappedKeys = indexMap.map(function (index) {
             return self._getKeys()[index];
         });
-        let fetchSize = params != null ? params[ArrayDataProvider._SIZE] > 0 ? params[ArrayDataProvider._SIZE] : params[ArrayDataProvider._SIZE] < 0 ? self._getKeys().length : 25 : 25;
+        let fetchSize = params != null
+            ? params[ArrayDataProvider._SIZE] > 0
+                ? params[ArrayDataProvider._SIZE]
+                : params[ArrayDataProvider._SIZE] < 0
+                    ? self._getKeys().length
+                    : 25
+            : 25;
         let hasMore = offset + fetchSize < mappedData.length ? true : false;
         let mergedSortCriteria = this._mergeSortCriteria(sortCriteria);
         if (mergedSortCriteria != null) {
@@ -686,12 +751,12 @@ class ArrayDataProvider {
         let filteredResultData;
         if (params != null && params[ArrayDataProvider._FILTERCRITERION]) {
             let filterCriterion = null;
-            if (!params[ArrayDataProvider._FILTERCRITERION].filter) {
-                filterCriterion = __DataProvider.FilterFactory.getFilter({ filterDef: params[ArrayDataProvider._FILTERCRITERION], filterOptions: this.options });
-            }
-            else {
-                filterCriterion = params[ArrayDataProvider._FILTERCRITERION];
-            }
+            // Always call getFilter to get a Filter instance, so any ArrayDataProvider options such as textFilterAttributes will work.
+            // This effectively ignore any "filter" property passed in filterCriterion.
+            filterCriterion = __DataProvider.FilterFactory.getFilter({
+                filterDef: params[ArrayDataProvider._FILTERCRITERION],
+                filterOptions: this.options
+            });
             let i = 0;
             while (resultData.length < fetchSize && i < mappedData.length) {
                 if (filterCriterion.filter(mappedData[i])) {
@@ -724,15 +789,23 @@ class ArrayDataProvider {
         });
         let result = new this.FetchListResult(this, params, filteredResultData, resultMetadata);
         if (hasMore) {
-            return { result: new this.AsyncIteratorYieldResult(this, result), offset: updatedOffset };
+            return {
+                result: new this.AsyncIteratorYieldResult(this, result),
+                offset: updatedOffset
+            };
         }
-        return { result: new this.AsyncIteratorReturnResult(this, result), offset: updatedOffset };
+        return {
+            result: new this.AsyncIteratorReturnResult(this, result),
+            offset: updatedOffset
+        };
     }
     /**
      * Get cached index map
      */
     _getCachedIndexMap(sortCriteria, cacheObj) {
-        if (cacheObj && cacheObj['indexMap'] && cacheObj[ArrayDataProvider._MUTATIONSEQUENCENUM] === this._mutationSequenceNum) {
+        if (cacheObj &&
+            cacheObj['indexMap'] &&
+            cacheObj[ArrayDataProvider._MUTATIONSEQUENCENUM] === this._mutationSequenceNum) {
             return cacheObj['indexMap'];
         }
         let dataIndexes = this._getRowData().map(function (value, index) {
@@ -787,13 +860,19 @@ class ArrayDataProvider {
                 }
                 else {
                     let compareResult = 0;
-                    let strX = (typeof xval === 'string') ? xval : (new String(xval)).toString();
-                    let strY = (typeof yval === 'string') ? yval : (new String(yval)).toString();
+                    let strX = typeof xval === 'string' ? xval : new String(xval).toString();
+                    let strY = typeof yval === 'string' ? yval : new String(yval).toString();
                     if (direction == 'ascending') {
-                        compareResult = strX.localeCompare(strY, undefined, { 'numeric': true, 'sensitivity': 'base' });
+                        compareResult = strX.localeCompare(strY, undefined, {
+                            numeric: true,
+                            sensitivity: 'base'
+                        });
                     }
                     else {
-                        compareResult = strY.localeCompare(strX, undefined, { 'numeric': true, 'sensitivity': 'base' });
+                        compareResult = strY.localeCompare(strX, undefined, {
+                            numeric: true,
+                            sensitivity: 'base'
+                        });
                     }
                     if (compareResult != 0) {
                         return compareResult;
@@ -818,7 +897,8 @@ class ArrayDataProvider {
             for (i = 0; i < implicitSort.length; i++) {
                 found = false;
                 for (j = 0; j < mergedSortCriteria.length; j++) {
-                    if (mergedSortCriteria[j][ArrayDataProvider._ATTRIBUTE] == implicitSort[i][ArrayDataProvider._ATTRIBUTE]) {
+                    if (mergedSortCriteria[j][ArrayDataProvider._ATTRIBUTE] ==
+                        implicitSort[i][ArrayDataProvider._ATTRIBUTE]) {
                         found = true;
                     }
                 }
@@ -882,8 +962,7 @@ class ArrayDataProvider {
                         else {
                             attribute = fetchAttr;
                         }
-                        if (!attribute.startsWith('!') &&
-                            attribute == dataAttr) {
+                        if (!attribute.startsWith('!') && attribute == dataAttr) {
                             self._filterRowAttributes(fetchAttr, data, updatedData);
                         }
                     });
@@ -894,15 +973,12 @@ class ArrayDataProvider {
             let name = fetchAttribute['name'];
             let attributes = fetchAttribute['attributes'];
             if (name && !name.startsWith('!')) {
-                if (data[name] instanceof Object &&
-                    !Array.isArray(data[name]) &&
-                    attributes) {
+                if (data[name] instanceof Object && !Array.isArray(data[name]) && attributes) {
                     let updatedDataSubObj = {};
                     self._filterRowAttributes(attributes, data[name], updatedDataSubObj);
                     updatedData[name] = updatedDataSubObj;
                 }
-                else if (Array.isArray(data[name]) &&
-                    attributes) {
+                else if (Array.isArray(data[name]) && attributes) {
                     updatedData[name] = [];
                     let updatedDataArrayItem;
                     data[name].forEach(function (arrVal, index) {
@@ -993,7 +1069,7 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  *            mutating the underlying array. The decision on whether to use an array or observableArray should therefore be guided
  *            by whether the data will be mutable. This dataprovider can be used by [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
  *            [TabBar]{@link oj.ojTabBar}, and [Table]{@link oj.ojTable}.<br><br>
- *            See the <a href="../jetCookbook.html?component=table&demo=basicTable">Table - Base Table</a> demo for an example.<br><br>
+ *            See the <a href="../jetCookbook.html?component=arrayDataProvider&demo=keys">ArrayDataProvider</a>, <a href="../jetCookbook.html?component=table&demo=basicTable">Table - Base Table</a> demo for an example.<br><br>
  *            The default sorting algorithm used when a sortCriteria is passed into fetchFirst is natural sort.
  *
  * <h3 id="events-section">

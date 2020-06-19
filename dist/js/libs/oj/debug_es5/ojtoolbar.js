@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -55,6 +56,8 @@ var __oj_toolbar_metadata =
    * @ojvbdefaultcolumns 12
    * @ojvbmincolumns 2
    *
+   * @ojuxspecs ['toolbar']
+   *
    * @classdesc
    * <h3 id="toolbarOverview-section">
    *   JET Toolbar
@@ -74,6 +77,8 @@ var __oj_toolbar_metadata =
    * such as separator icons.  Toolbar provides WAI-ARIA-compliant focus management.
    *
    * <p>A toolbar that contains radios should contain all radios in the radio group.
+   *
+   * <p>Multiple toolbars can be laid out as a set using the <a href="ToolbarSets.html#oj-toolbars">.oj-toolbars</a> and <a href="ToolbarSets.html#oj-toolbar-row">.oj-toolbar-row</a> style classes.
    *
    *
    * <h3 id="touch-section">
@@ -123,7 +128,6 @@ var __oj_toolbar_metadata =
    * text editor, then the application should apply an <code class="prettyprint">aria-controls</code> attribute to the toolbar element,
    * e.g. <code class="prettyprint">aria-controls="myTextEditor"</code>.
    *
-   * <p>See the <a href="#styling-section">Styling</a> section for information on how to create accessible toolbar separators.
    *
    * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
    * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
@@ -132,13 +136,6 @@ var __oj_toolbar_metadata =
    * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
    * required of enabled content, it cannot be used to convey meaningful information.</p>
    *
-   *
-   * <h3 id="styling-section">
-   *   Styling
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"stylingDoc"}
    *
    *
    * <h3 id="rtl-section">
@@ -178,6 +175,66 @@ var __oj_toolbar_metadata =
    *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
    *
    */
+  // --------------------------------------------------- oj.ojToolbar Styling Start -----------------------------------------------------------
+  // ---------------- oj-toolbar-separator --------------
+
+  /**
+  * Separators should be placed around any buttonsets in the toolbar, and anywhere else in the toolbar that a separator is desirable. <br/>
+  * For accessibility, additionally apply role and aria-orientation as shown.
+  * @ojstyleclass oj-toolbar-separator
+  * @ojdisplayname Separator
+  * @ojstyleselector "oj-toolbar span"
+  * @memberof oj.ojToolbar
+  * @ojtsexample
+  * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar">
+  *   &lt;oj-button ...>&lt;/oj-button>
+  *   &lt;span role="separator" aria-orientation="vertical" class="oj-toolbar-separator">&lt;/span>
+  *   &lt;oj-button ...>&lt;/oj-button>
+  * &lt;/oj-toolbar>
+  */
+  // ---------------- oj-toolbar-top-border --------------
+
+  /**
+  * Applies a top border to the toolbar, or to the oj-toolbars element, in themes not having this border by default.
+  * @ojstyleclass oj-toolbar-top-border
+  * @ojdisplayname Top Border
+  * @memberof oj.ojToolbar
+  * @ojtsexample
+  * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar" class="oj-toolbar-top-border">
+  *   &lt;oj-button ...>&lt;/oj-button>
+  *   &lt;span role="separator" aria-orientation="vertical" class="oj-toolbar-separator">&lt;/span>
+  *   &lt;oj-button ...>&lt;/oj-button>
+  * &lt;/oj-toolbar>
+  */
+  // ---------------- oj-toolbar-bottom-border --------------
+
+  /**
+  * Applies a bottom border to the toolbar, or to the oj-toolbars element, in themes not having this border by default.
+  * @ojstyleclass oj-toolbar-bottom-border
+  * @ojdisplayname Bottom Border
+  * @memberof oj.ojToolbar
+  * @ojtsexample
+  * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar" class="oj-toolbar-bottom-border">
+  *   &lt;oj-button ...>&lt;/oj-button>
+  *   &lt;span role="separator" aria-orientation="vertical" class="oj-toolbar-separator">&lt;/span>
+  *   &lt;oj-button ...>&lt;/oj-button>
+  * &lt;/oj-toolbar>
+  */
+  // ---------------- oj-toolbar-no-chrome --------------
+
+  /**
+  * Removes chrome (background and border) from the toolbar(s), in themes having this chrome by default.
+  * @ojstyleclass oj-toolbar-no-chrome
+  * @ojdisplayname No Chrome
+  * @memberof oj.ojToolbar
+  * @ojtsexample
+  * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar" class="oj-toolbar-no-chrome">
+  *   &lt;oj-button ...>&lt;/oj-button>
+  *   &lt;span role="separator" aria-orientation="vertical" class="oj-toolbar-separator">&lt;/span>
+  *   &lt;oj-button ...>&lt;/oj-button>
+  * &lt;/oj-toolbar>
+  */
+  // --------------------------------------------------- oj.ojToolbar Styling End -----------------------------------------------------------
   oj.__registerWidget('oj.ojToolbar', $.oj.baseComponent, {
     widgetEventPrefix: 'oj',
     options: {
@@ -206,8 +263,8 @@ var __oj_toolbar_metadata =
        * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
        * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
        * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
-       * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use solid instead."},
-       *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value is deprecated and will be removed in the future. Please use borderless instead."}]
+       * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value will be removed in the future. Please use borderless instead."},
+       *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value will be removed in the future. Please use solid instead."}]
        * @example <caption>Initialize the Toolbar with the <code class="prettyprint">chroming</code> attribute specified:</caption>
        * &lt;oj-toolbar chroming='borderless'>&lt;/oj-toolbar>
        *
@@ -261,7 +318,8 @@ var __oj_toolbar_metadata =
       this._super();
 
       var elem = this.element[0];
-      elem.setAttribute(Components._OJ_CONTAINER_ATTR, this.widgetName);
+      elem.setAttribute(Components._OJ_CONTAINER_ATTR, this.widgetName); // @HTMLUpdateOK
+
       elem.classList.add('oj-toolbar');
       elem.classList.add('oj-component');
       elem.setAttribute('role', 'toolbar');
@@ -796,88 +854,6 @@ var __oj_toolbar_metadata =
      * the individual buttons.
      *
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-     * @memberof oj.ojToolbar
-     */
-
-    /**
-     * {@ojinclude "name":"ojStylingDocIntro"}
-     *
-     * <table class="generic-table styling-table">
-     *   <thead>
-     *     <tr>
-     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocExampleHeader"}</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>oj-toolbar-separator</td>
-     *       <td>Separators should be placed around any buttonsets in the toolbar, and anywhere else in the toolbar that
-     *           a separator is desirable.  For accessibility, additionally apply <code class="prettyprint">role</code>
-     *           and <code class="prettyprint">aria-orientation</code> as shown.
-     *       </td>
-     *       <td>
-     * <pre class="prettyprint">
-     * <code>&lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar">
-     *   &lt;oj-button ...>&lt;/oj-button>
-     *   &lt;span role="separator" aria-orientation="vertical"
-     *         class="oj-toolbar-separator">&lt;/span>
-     *   &lt;oj-button ...>&lt;/oj-button>
-     * &lt;/oj-toolbar>
-     * </code></pre>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-toolbar-top-border</td>
-     *       <td>Applies a top border to the toolbar, or to the <code class="prettyprint">oj-toolbars</code> element,
-     *           in themes not having this border by default.</td>
-     *       <td rowspan=3>
-     * <pre class="prettyprint">
-     * <code>&lt;!-- These classes can be mixed and matched, and can also be applied to the
-     *      oj-toolbars element seen in the next example. -->
-     * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar"
-     *      class="oj-toolbar-top-border oj-toolbar-bottom-border oj-toolbar-no-chrome">
-     *   &lt;!-- toolbar contents -->
-     * &lt;/oj-toolbar>
-     * </code></pre>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-toolbar-bottom-border</td>
-       *       <td>Applies a bottom border to the toolbar, or to the <code class="prettyprint">oj-toolbars</code> element,
-     *           in themes not having this border by default.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-toolbar-no-chrome</td>
-     *       <td>Removes "chrome" (background and border) from the toolbar(s), in themes having this chrome by default.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-toolbars</td>
-     *       <td>An outer element representing a multiple toolbar layout. Contains one or more <code class="prettyprint">oj-toolbar-row</code> elements.</td>
-     *       <td rowspan=2>
-     * <pre class="prettyprint">
-     * <code>&lt;div class="oj-toolbars">
-     *   &lt;div class="oj-toolbar-row">
-     *     &lt;oj-toolbar id="toolbar1" ...>...&lt;/oj-toolbar>
-     *     &lt;oj-toolbar id="toolbar2" ...>...&lt;/oj-toolbar>
-     *   &lt;/div>
-     *   &lt;div class="oj-toolbar-row">
-     *     &lt;oj-toolbar id="toolbar3" ...>...&lt;/oj-toolbar>
-     *   &lt;/div>
-     * &lt;/div>
-     * </code></pre>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-toolbar-row</td>
-     *       <td>Each <code class="prettyprint">oj-toolbar-row</code> element is a row containing one or more toolbars.
-     *           These rows go inside an <code class="prettyprint">oj-toolbars</code> element.</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
      * @memberof oj.ojToolbar
      */
 

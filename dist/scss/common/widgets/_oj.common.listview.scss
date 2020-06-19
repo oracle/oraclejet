@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
 //          version in your base theme's directory,
@@ -81,7 +82,7 @@
 
         /* remove border top for the first group or leaf item to prevent double border */
         .oj-listview-element > .oj-listview-item:first-child,
-        ul:not(.oj-listview-card-layout) .oj-listview-group > .oj-listview-item:first-child,
+        .oj-listview:not(.oj-listview-card-layout) .oj-listview-group > .oj-listview-item:first-child,
         .oj-listview-element > .oj-listview-item-element:first-child .oj-listview-group-item {
             background-size: 0;
         }
@@ -116,70 +117,52 @@
         }
 
         /* Styling on list item hover */
-        .oj-listview-item.oj-hover {
-
-            background-color: $collectionCellBgColorHover;
-            border-top: 1px solid $collectionCellBorderColorHover;
-
-            background-size: 0;
-        }
-
+        .oj-listview-item.oj-hover,
+        .oj-listview-card.oj-hover,
         .oj-listview-group-item.oj-hover {
-
             background-color: $collectionCellBgColorHover;
-
         }
 
-        ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-hover + li.oj-listview-item {
-
+        .oj-listview:not(.oj-listview-card-layout) .oj-listview-item.oj-hover,
+        .oj-listview:not(.oj-listview-card-layout) .oj-listview-item.oj-hover + li.oj-listview-item {
             border-top: 1px solid $collectionCellBorderColorHover;
-
             background-size: 0;
         }
 
         /* Styling on list item selection */
-        .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected {
-
-            background-color: $collectionCellBgColorSelected;
-            border-top: 1px solid $collectionCellBorderColorSelected;
-
-            background-size: 0;
-        }
-
+        .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected,
+        .oj-listview.oj-focus-ancestor .oj-listview-card.oj-selected,
         .oj-listview.oj-focus-ancestor .oj-listview-group-item.oj-selected {
-
             background-color: $collectionCellBgColorSelected;
-
         }
 
-        .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-selected + li.oj-listview-item {
-
+        .oj-listview.oj-focus-ancestor:not(.oj-listview-card-layout) .oj-listview-item.oj-selected,
+        .oj-listview.oj-focus-ancestor:not(.oj-listview-card-layout) .oj-listview-item.oj-selected + li.oj-listview-item {
             border-top: 1px solid $collectionCellBorderColorSelected;
-
             background-size: 0;
         }
 
         /* Styling on list item inactive selection (when the root is not focus) */
-        .oj-listview-item.oj-selected {
-
+        .oj-listview-item.oj-selected,
+        .oj-listview-card.oj-selected,
+        .oj-listview-group-item.oj-selected {
             background-color: $collectionCellBgColorSelectedInactive;
-            border-top: 1px solid $collectionCellBorderColorSelectedInactive;
+        }
 
+        .oj-listview:not(.oj-listview-card-layout) .oj-listview-item.oj-selected,
+        .oj-listview:not(.oj-listview-card-layout) .oj-listview-item.oj-selected + li.oj-listview-item {
+            border-top: 1px solid $collectionCellBorderColorSelectedInactive;
             background-size: 0;
         }
 
-        .oj-listview-group-item.oj-selected {
-
-            background-color: $collectionCellBgColorSelectedInactive;
-
-        }
-
         /* Styling on focused list or group item */
+        .oj-listview-card.oj-focus-highlight,
         .oj-listview-item.oj-focus-highlight,
         .oj-listview-group-item.oj-focus-highlight {
             position: relative;
         }
 
+        .oj-listview-card.oj-focus-highlight::after,
         .oj-listview-item.oj-focus-highlight::after,
         .oj-listview-group-item.oj-focus-highlight::after {
             content: "";
@@ -209,15 +192,14 @@
         }
 
         /* Styling on focused list item */
-        .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus,
-        .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus + li.oj-listview-item {
-
+        .oj-listview.oj-focus-ancestor:not(.oj-listview-card-layout) .oj-listview-item.oj-focus,
+        .oj-listview.oj-focus-ancestor:not(.oj-listview-card-layout) .oj-listview-item.oj-focus + li.oj-listview-item {
             border-top: 1px solid $collectionCellBorderColorFocus;
-
             background-size: 0;
         }
 
         /* Styling for the list item elements in selected state when listview is in high contrast mode. */
+        .oj-hicontrast .oj-listview-card.oj-selected,
         .oj-hicontrast .oj-listview-item.oj-selected,
         .oj-hicontrast .oj-listview-group-item.oj-selected {
             border-width: 1px 2px 2px 1px;
@@ -226,6 +208,7 @@
         }
 
         /* Styling for the list item elements in focus state when listview is in high contrast mode. */
+        .oj-hicontrast .oj-listview-card.oj-focus-highlight,
         .oj-hicontrast .oj-listview-item.oj-focus-highlight,
         .oj-hicontrast .oj-listview-group-item.oj-focus-highlight {
             outline-width: 2px;
@@ -336,6 +319,32 @@
             }
         }
 
+        /* Styling for item when display mode is card */
+        .oj-listview-card {
+            margin-top: oj-shorthand-property-value-top($listViewCardMargin);
+            margin-right: oj-shorthand-property-value-top($listViewCardMargin);
+        }
+
+        /* Styling for group item when display mode is card */
+        .oj-listview-card-group {
+            display: flex;
+            flex-wrap: wrap;
+            list-style-type: none;
+            padding: 0 0 oj-shorthand-property-value-top($listViewCardMargin) 0;
+        }
+
+        /* Styling for group content when listview is filling the entire width and display mode is card */
+        .oj-listview.oj-full-width > .oj-listview-element > li > .oj-listview-card-group {
+            @include oj-rtl() {
+                padding-left: oj-shorthand-property-value-left($listViewCardMargin);
+                padding-right: oj-shorthand-property-value-right($listViewCardMargin);
+            }
+            @include oj-ltr() {
+                padding-right: oj-shorthand-property-value-left($listViewCardMargin);
+                padding-left: oj-shorthand-property-value-right($listViewCardMargin);
+            }
+        }        
+
         /* Styling for group item when card layout is used */
         .oj-listview-card-layout .oj-listview-group {
             display: flex;
@@ -392,11 +401,10 @@
 
         /* Styling for the drill icon */
         .oj-listview-drill-icon {
+            @extend .oj-fwk-icon;
             width: 16px;
             height: 16px;
-
             color: $listViewDrillIconColor;
-
         }
 
         /* Styling for the drill icon when item has focus */
@@ -446,6 +454,7 @@
         }
 
         /* Styling for the affordance icon when card layout is used */
+        .oj-listview-card .oj-listview-drag-handle,
         .oj-listview-card-layout .oj-listview-drag-handle {
             @extend .oj-fwk-icon-drag;
             background-image: none;
@@ -483,18 +492,37 @@
 
         /* Styling all drop targets in the list */
         .oj-listview-item.oj-drop {
-            box-sizing: border-box;
-
-            border: 1px solid $dropTarget2Color;
-            background-color: $dropTarget1Color;
-
+            background-color: transparent;
         }
 
-        /* Styling on empty list as drop targets in the list */
+        /* Styling for group item and on empty list as drop targets in the list */
+        .oj-listview-group-item.oj-drop,
         .oj-listview-empty-text.oj-drop {
-
             background-color: $dropTarget1Color;
-          
+        }
+
+        /* Styling on drag source when dnd with another component */
+        .oj-listview-drag-source
+        {
+            opacity: 0.3;
+        }
+
+        /* Styling on drop target when dnd with another component */
+        .oj-listview-drop-target
+        {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background-color: $dropTargetLineColor;
+        }
+
+        /* Styling on drop target above the first item */
+        .oj-listview-first-drop-target
+        {
+            position: absolute;
+            width: 100%;
+            height: 10px;
+            background-color: transparent;
         }
 
         /* Styling for an item that is cut during a context menu cut operation */

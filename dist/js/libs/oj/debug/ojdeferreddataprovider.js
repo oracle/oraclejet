@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -42,7 +43,6 @@ class DeferredDataProvider {
         });
         return new this.AsyncIterable(new this.AsyncIterator(asyncIteratorPromise));
     }
-    ;
     /**
      * Fetch rows by keys
      */
@@ -81,7 +81,7 @@ class DeferredDataProvider {
      */
     isEmpty() {
         if (!this[this._DATAPROVIDER])
-            return "unknown";
+            return 'unknown';
         else
             return this[this._DATAPROVIDER].isEmpty();
     }
@@ -99,19 +99,16 @@ class DeferredDataProvider {
             dataProvider.addEventListener(eventType, listener);
         });
     }
-    ;
     removeEventListener(eventType, listener) {
         this._getDataProvider().then(function (dataProvider) {
             dataProvider.removeEventListener(eventType, listener);
         });
     }
-    ;
     dispatchEvent(evt) {
         if (!this[this._DATAPROVIDER])
             return false;
         return this[this._DATAPROVIDER].dispatchEvent(evt);
     }
-    ;
     /**
      * Returns the resolved dataProvider for this instance
      */

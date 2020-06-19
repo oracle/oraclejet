@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['./DvtToolkit'], function(dvt) {
   "use strict";
@@ -8,16 +9,18 @@ define(['./DvtToolkit'], function(dvt) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function(dvt) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -215,8 +218,9 @@ dvt.BaseAxisInfo.prototype.getUnboundedCoordAt = function(value) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -408,9 +412,10 @@ dvt.DataAxisInfoMixin = function(context, options, availSpace) {
       this._dataMax = Math.max(0, this._dataMax);
     }
 
-    var scaleUnit = this._calcAxisScale((this.LinearGlobalMin != null ? this.LinearGlobalMin : this._dataMin),
-                                        (this.LinearGlobalMax != null ? this.LinearGlobalMax : this._dataMax));
-    scaleUnit = Math.max(scaleUnit, this._minMajorIncrement);
+    var maxValue = this.LinearGlobalMax != null ? this.LinearGlobalMax : this._dataMax;
+    var minValue = this.LinearGlobalMin != null ? this.LinearGlobalMin : this._dataMin;
+    var scaleUnit = Math.max(this._calcAxisScale(minValue, maxValue),
+      this._minMajorIncrement);
 
     // If there's only a single value on the axis, we need to adjust the
     // this._dataMin and this._dataMax to produce a nice looking axis with around 6 ticks.
@@ -448,6 +453,13 @@ dvt.DataAxisInfoMixin = function(context, options, availSpace) {
     if (this.LinearGlobalMax == null) {
       if (this.MajorTickCount) {
         this.LinearGlobalMax = this.LinearGlobalMin + this.MajorTickCount * scaleUnit;
+
+        // JET-28098 - wrong y2 max
+        if (this.LinearGlobalMax < this._dataMax) {
+          scaleUnit = Math.max(this._calcAxisScale(minValue, maxValue + scaleUnit),
+            this._minMajorIncrement);
+          this.LinearGlobalMax = this.LinearGlobalMin + this.MajorTickCount * scaleUnit;
+        }
       }
       else if (this.ZeroBaseline && this._dataMax <= 0) {
         this.LinearGlobalMax = 0;
@@ -584,8 +596,9 @@ dvt.DataAxisInfoMixin = function(context, options, availSpace) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -846,7 +859,8 @@ dvt.LinearScaleAxisValueFormatter.prototype.format = function(value, converter) 
   var parsed = value != null ? parseFloat(value) : value;
   if (typeof(parsed) === 'number') {
     var scale = Math.pow(10, this._scaleFactor);
-    var scaleConverterOptions = {style: 'decimal', decimalFormat: 'short', nu: 'latn', useGrouping: false}; // Use nu to make sure the digits are latin
+    var userConverterStyle = converter && converter.getOptions && converter.getOptions() && converter.getOptions().style;
+    var scaleConverterOptions = {style: 'decimal', decimalFormat: userConverterStyle === 'unit' ? 'standard' :'short', nu: 'latn', useGrouping: false}; // Use nu to make sure the digits are latin
     var defaultConverter = this._context.getNumberConverter(scaleConverterOptions);
 
     // Formatting for scale
@@ -857,8 +871,8 @@ dvt.LinearScaleAxisValueFormatter.prototype.format = function(value, converter) 
     var formattedScaledNumber = (Number(formattedScaleParts[1]) / scale)*parsed;
 
     // Formatting for scaled number
-    if (converter && (converter['getAsString'] || converter['format'])) {
-      formattedScaledNumber = converter['getAsString'] ? converter['getAsString'](formattedScaledNumber) : converter['format'](formattedScaledNumber); // Convert the number itself
+    if (converter && converter['format']) {
+      formattedScaledNumber = converter['format'](formattedScaledNumber); // Convert the number itself
     }
     else {
       var numberConverterOptions= {style: 'decimal', minimumFractionDigits: this._decimalPlaces, maximumFractionDigits: this._decimalPlaces}; //skip nu if you want the digits in native locale digits
@@ -946,8 +960,9 @@ dvt.LinearScaleAxisValueFormatter.prototype._getPowerOfTen = function(value) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 })(dvt);

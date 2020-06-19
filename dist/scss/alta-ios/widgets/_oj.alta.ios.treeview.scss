@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 @import "../../utilities/oj.utilities";  
 
 
@@ -23,12 +24,12 @@
 @if $includeTreeViewClasses != false  {
   @include module-include-once("alta.ios.treeview") {
     /* Styling for a collapsed icon */
-    .oj-collapsed > .oj-treeview-disclosure-icon {
+    .oj-collapsed > .oj-treeview-item-content > .oj-treeview-disclosure-icon {
       @extend .oj-fwk-icon-arrow03-end;
     }
 
     /* Styling for an expanded icon */
-    .oj-expanded > .oj-treeview-disclosure-icon {
+    .oj-expanded > .oj-treeview-item-content > .oj-treeview-disclosure-icon {
       @extend .oj-fwk-icon-arrow03-s-end;
     }
   }

@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
 //          version in your base theme's directory,
@@ -85,14 +86,16 @@
 
     }
 
+    // adjust top position of the last button connector
+    .oj-train-step-list-item:last-child > .oj-train-button-connector {
+      top: $trainConnectorHeight;
+    }
 
     .oj-train-button-connector.oj-train-fill {
 
         background-color: $trainContinuousConnectorBgColorSelected;
         @include oj-background-image(none);
 
-
-      top: 0;
     }
 
 
@@ -274,6 +277,7 @@
     }
 
     .oj-train-label-wrapper {
+      position: relative;
       overflow: hidden;
       text-overflow: ellipsis;
       margin-right: 5px;
@@ -281,6 +285,11 @@
 
         margin-top: $trainLabelPaddingTop;
 
+    }
+
+    // adjust top position of the last step label
+    .oj-train-step-list-item:last-child > .oj-train-label-wrapper {
+        top: $trainConnectorHeight;
     }
 
     .oj-train-label {

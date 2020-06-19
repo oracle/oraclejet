@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -257,6 +258,15 @@ var __oj_paging_control_metadata =
  * </h3>
  *
  * {@ojinclude "name":"touchDoc"}
+ *
+ * <h3 id="accessibility-section">
+ *   Accessibility
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+ * </h3>
+ *
+ * <p>Application should specify an id for the paging control to generate an aria-label value.
+ *
+ * <p>The paging control also uses aria role = "region".
  *
  */
 (function () {
@@ -903,7 +913,19 @@ var __oj_paging_control_metadata =
       var retval = null;
 
       if (subId === 'oj-pagingcontrol-nav-input') {
-        retval = this._getPagingControlContainer().find('.' + this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS)[0];
+        var isCustomElement = this._IsCustomElement();
+
+        if (!isCustomElement) {
+          retval = this._getPagingControlContainer().find('.' + this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS)[0];
+        } else {
+          var pagingControlNavInput = this._getPagingControlNavInput();
+
+          if (pagingControlNavInput) {
+            retval = pagingControlNavInput[0];
+          } else {
+            retval = undefined;
+          }
+        }
       } else if (subId === 'oj-pagingcontrol-nav-input-max') {
         retval = this._getPagingControlContainer().find('.' + this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_MAX_CLASS)[0];
       } else if (subId === 'oj-pagingcontrol-nav-input-summary') {
@@ -945,6 +967,12 @@ var __oj_paging_control_metadata =
     // @inheritdoc
     getSubIdByNode: function getSubIdByNode(node) {
       if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS)) {
+        return {
+          subId: 'oj-pagingcontrol-nav-input'
+        };
+      }
+
+      if (node && node.tagName === 'OJ-INPUT-TEXT') {
         return {
           subId: 'oj-pagingcontrol-nav-input'
         };
@@ -1578,9 +1606,11 @@ var __oj_paging_control_metadata =
       });
 
       navArrow.attr('title', navArrowTip);
-      navArrow.attr(this._TAB_INDEX, '0');
+      navArrow.attr(this._TAB_INDEX, '0'); // @HTMLUpdateOK
+
       navArrow.attr('href', '#');
-      navArrow.attr('oncontextmenu', 'return false;');
+      navArrow.attr('oncontextmenu', 'return false;'); // @HTMLUpdateOK
+
       var accLabelText = this.getTranslatedString(accLabelKey); // Add an aria-label on the button.  Otherwise screen reader will
       // use the text content, which includes the arrow ::before pseudo-element.
       // Even though the arrow is not read, it will be displayed as a non-printable
@@ -1618,7 +1648,7 @@ var __oj_paging_control_metadata =
         navArrow.addClass(this._MARKER_STYLE_CLASSES._ENABLED);
         navArrow.removeClass(this._MARKER_STYLE_CLASSES._DISABLED);
         navArrow.removeAttr('aria-disabled');
-        navArrow.attr(this._TAB_INDEX, '0');
+        navArrow.attr(this._TAB_INDEX, '0'); // @HTMLUpdateOK
       }
     },
 
@@ -2140,13 +2170,17 @@ var __oj_paging_control_metadata =
      * @private
      */
     _handlePageChange: function _handlePageChange(event, data) {
-      var option = data.option;
+      var isCustomElement = this._IsCustomElement();
 
-      if (option !== 'value') {
-        return;
+      if (!isCustomElement) {
+        var option = data.option;
+
+        if (option !== 'value') {
+          return;
+        }
       }
 
-      var page = data.value;
+      var page = isCustomElement ? event.detail.value : data.value;
 
       if (page !== this._getCurrentPage() + 1 && !isNaN(page) && page > 0) {
         page = Math.round(page);
@@ -2261,7 +2295,7 @@ var __oj_paging_control_metadata =
       if (!this._currentStartIndex) {
         this._currentStartIndex = pageSize;
       } else {
-        this._currentStartIndex = this._currentStartIndex + pageSize;
+        this._currentStartIndex += pageSize;
       }
 
       return this._invokeDataFetch({
@@ -2710,7 +2744,14 @@ var __oj_paging_control_metadata =
       if (pagingControlNavInput != null) {
         var navInputPageTip = this.getTranslatedString(this._BUNDLE_KEY._TIP_NAV_INPUT_PAGE);
         pagingControlNavInput.attr('title', navInputPageTip);
-        pagingControlNavInput.ojInputText('option', 'title', navInputPageTip);
+
+        var isCustomElement = this._IsCustomElement();
+
+        if (isCustomElement) {
+          pagingControlNavInput.get(0).setAttribute('help.instruction', navInputPageTip);
+        } else {
+          pagingControlNavInput.ojInputText('option', 'title', navInputPageTip);
+        }
       }
     },
 
@@ -2778,30 +2819,59 @@ var __oj_paging_control_metadata =
         }
       }
 
-      var pagingControlNavInput = this._getPagingControlNav().find('.' + this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS);
+      var pagingControlNavInput;
+
+      var isCustomElement = this._IsCustomElement();
+
+      if (!isCustomElement) {
+        pagingControlNavInput = this._getPagingControlNav().find('.' + this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS);
+      } else {
+        pagingControlNavInput = this._getPagingControlNavInput();
+      }
 
       if (pagingControlNavInput != null && pagingControlNavInput.length > 0) {
         pagingControlNavInput = $(pagingControlNavInput.get(0));
-        pagingControlNavInput.ojInputText();
-        pagingControlNavInput.ojInputText('option', 'validators', [{
+        var messagesShown;
+        var validatorOptions = [{
           type: 'numberRange',
           options: {
             min: 1,
             max: maxPageVal
           }
-        }]);
-        var messagesShown = pagingControlNavInput.ojInputText('option', 'messagesShown');
+        }];
 
-        if (messagesShown == null || messagesShown.length === 0) {
-          // only reset the value to the current page if there is currently no validation message displayed
-          this._resetPagingControlNavInput();
-        }
+        if (!isCustomElement) {
+          pagingControlNavInput.ojInputText();
+          pagingControlNavInput.ojInputText('option', 'validators', validatorOptions);
+          messagesShown = pagingControlNavInput.ojInputText('option', 'messagesShown');
 
-        if (maxPageVal === 1) {
-          // make readOnly if we only have one page
-          pagingControlNavInput.ojInputText('option', 'readOnly', true);
+          if (messagesShown == null || messagesShown.length === 0) {
+            // only reset the value to the current page if there is currently no validation message displayed
+            this._resetPagingControlNavInput();
+          }
+
+          if (maxPageVal === 1) {
+            // make readOnly if we only have one page
+            pagingControlNavInput.ojInputText('option', 'readOnly', true);
+          } else {
+            pagingControlNavInput.ojInputText('option', 'readOnly', false);
+          }
         } else {
-          pagingControlNavInput.ojInputText('option', 'readOnly', false);
+          pagingControlNavInput = this._getPagingControlNavInput();
+          pagingControlNavInput.get(0).setAttribute('validators', JSON.stringify(validatorOptions));
+          messagesShown = pagingControlNavInput.messagesShown;
+
+          if (messagesShown == null || messagesShown.length === 0) {
+            // only reset the value to the current page if there is currently no validation message displayed
+            this._resetPagingControlNavInput();
+          }
+
+          if (maxPageVal === 1) {
+            // make readOnly if we only have one page
+            pagingControlNavInput[0].readonly = true;
+          } else {
+            pagingControlNavInput[0].readonly = false;
+          }
         }
       }
     },
@@ -2965,9 +3035,15 @@ var __oj_paging_control_metadata =
     _resetPagingControlNavInput: function _resetPagingControlNavInput() {
       var pagingControlNavInput = this._getPagingControlNavInput();
 
-      if (pagingControlNavInput != null && pagingControlNavInput.hasClass('oj-component-initnode')) {
+      var isCustomElement = this._IsCustomElement();
+
+      if (pagingControlNavInput != null && (!isCustomElement && pagingControlNavInput.hasClass('oj-component-initnode') || isCustomElement)) {
         try {
-          pagingControlNavInput.ojInputText('option', 'value', this._getCurrentPage() + 1);
+          if (!isCustomElement) {
+            pagingControlNavInput.ojInputText('option', 'value', this._getCurrentPage() + 1);
+          } else {
+            pagingControlNavInput.get(0).value = this._getCurrentPage() + 1;
+          }
         } catch (err) {// Ignore
         }
       }
@@ -3134,7 +3210,7 @@ var __oj_paging_control_metadata =
       pagingControlAccPageSpan.style.position = 'absolute';
       pagingControlAccPageSpan.style.whiteSpace = 'nowrap';
       pagingControlAccPageSpan.style.clip = 'rect(1px, 1px, 1px, 1px)';
-      pagingControlContainer.append(pagingControlAccPageSpan);
+      pagingControlContainer.append(pagingControlAccPageSpan); // @HTMLUpdateOK
     },
 
     /**
@@ -3180,10 +3256,12 @@ var __oj_paging_control_metadata =
       var pagingControlContent = $(document.createElement('div'));
       pagingControlContent.addClass(this._CSS_CLASSES._PAGING_CONTROL_CONTENT_CLASS);
 
-      var pagingControlAccLabelId = this._getPagingControlAccLabel().attr('id');
+      var pagingControlAccLabelId = this._getPagingControlAccLabel().attr('id'); // Fix bug 34545: use region as role instead of navigation
+      // because navigation is reserved as unique landmark
 
-      pagingControlContent.attr('role', 'navigation');
-      pagingControlContent.attr('aria-labelledby', pagingControlAccLabelId);
+
+      pagingControlContent.attr('role', 'region');
+      pagingControlContent.attr('aria-labelledby', 'navigation_' + pagingControlAccLabelId);
       pagingControlContainer.append(pagingControlContent); // @HTMLUpdateOK
 
       return pagingControlContent;
@@ -3216,7 +3294,8 @@ var __oj_paging_control_metadata =
       pagingControlLoadMoreLink.addClass(this._CSS_CLASSES._PAGING_CONTROL_LOAD_MORE_LINK_CLASS);
       var loadMoreText = this.getTranslatedString(this._BUNDLE_KEY._LABEL_LOAD_MORE);
       pagingControlLoadMoreLink.text(loadMoreText);
-      pagingControlLoadMoreLink.attr(this._TAB_INDEX, '0');
+      pagingControlLoadMoreLink.attr(this._TAB_INDEX, '0'); // @HTMLUpdateOK
+
       pagingControlLoadMoreLink.attr('href', '#');
       pagingControlLoadMore.append(pagingControlLoadMoreLink); // @HTMLUpdateOK
 
@@ -3273,6 +3352,9 @@ var __oj_paging_control_metadata =
      */
     _createPagingControlNav: function _createPagingControlNav(size, startIndex) {
       var options = this.options;
+
+      var isCustomElement = this._IsCustomElement();
+
       var isVertical = this.options.pageOptions.orientation === 'vertical';
       var isDot = this.options.pageOptions.type === 'dots';
       var pageOptionLayout = options.pageOptions.layout;
@@ -3294,20 +3376,35 @@ var __oj_paging_control_metadata =
         pagingControlNav.append(pagingControlNavInputSection); // @HTMLUpdateOK
 
         var pagingControlNavLabel = $(document.createElement('label'));
-        pagingControlNavLabel.attr('for', this.element.attr('id') + '_nav_input');
+        pagingControlNavLabel.attr('for', this.element.attr('id') + '_nav_input|input');
         pagingControlNavLabel.addClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_LABEL_CLASS);
         pagingControlNavLabel.addClass('oj-label-inline');
         var navInputPageLabel = this.getTranslatedString(this._BUNDLE_KEY._LABEL_NAV_INPUT_PAGE);
         pagingControlNavLabel.text(navInputPageLabel);
         pagingControlNavInputSection.append(pagingControlNavLabel); // @HTMLUpdateOK
 
-        var pagingControlNavInput = $(document.createElement('input'));
-        pagingControlNavInput.addClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS);
+        var pagingControlNavInput;
         var navInputPageTip = this.getTranslatedString(this._BUNDLE_KEY._TIP_NAV_INPUT_PAGE);
-        pagingControlNavInput.attr('id', this.element.attr('id') + '_nav_input');
-        pagingControlNavInput.attr('title', navInputPageTip);
-        pagingControlNavInput.attr(this._TAB_INDEX, '0');
-        pagingControlNavInput.val(this._getCurrentPage() + 1);
+
+        if (!isCustomElement) {
+          pagingControlNavInput = $(document.createElement('input'));
+          pagingControlNavInput.addClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS);
+          pagingControlNavInput.attr('id', this.element.attr('id') + '_nav_input');
+          pagingControlNavInput.attr('title', navInputPageTip);
+          pagingControlNavInput.attr(this._TAB_INDEX, '0'); // @HTMLUpdateOK
+
+          pagingControlNavInput.val(this._getCurrentPage() + 1);
+        } else {
+          pagingControlNavInput = document.createElement('oj-input-text');
+          pagingControlNavInput.setAttribute('data-oj-binding-provider', 'none');
+          pagingControlNavInput.setAttribute('id', this.element.attr('id') + '_nav_input');
+          pagingControlNavInput.setAttribute('help.instruction', navInputPageTip);
+          pagingControlNavInput.setAttribute(this._TAB_INDEX, '0'); // @HTMLUpdateOK
+
+          pagingControlNavInput.classList.add(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS);
+          pagingControlNavInput.value = this._getCurrentPage() + 1;
+        }
+
         pagingControlNavInputSection.append(pagingControlNavInput); // @HTMLUpdateOK
 
         var maxPageVal = this._getMaxPageVal(size);
@@ -3323,30 +3420,50 @@ var __oj_paging_control_metadata =
           pagingControlNavInputSection.append(pagingControlNavMaxLabel); // @HTMLUpdateOK
         }
 
-        pagingControlNavInput.ojInputText({
-          displayOptions: {
-            messages: ['notewindow'],
-            converterHint: ['notewindow'],
-            validatorHint: ['notewindow']
-          },
-          rootAttributes: {
-            style: 'width: auto; min-width: 0;'
-          },
-          converter: new NumberConverter.IntlNumberConverter(),
-          validators: [{
-            type: 'numberRange',
-            options: {
-              min: 1,
-              max: maxPageVal
-            }
-          }]
-        }).attr('data-oj-internal', ''); // Add the optionChange listener after initializing the input component.
-        // Otherwise we get the optionChange event which causes a page change and
-        // extra refresh on the associating table.
+        var displayOptions = {
+          messages: ['notewindow'],
+          converterHint: ['notewindow'],
+          validatorHint: ['notewindow']
+        };
+        var validatorOptions = [{
+          type: 'numberRange',
+          options: {
+            min: 1,
+            max: maxPageVal
+          }
+        }];
 
-        pagingControlNavInput.on({
-          ojoptionchange: this._handlePageChange.bind(this)
-        });
+        if (!isCustomElement) {
+          pagingControlNavInput.ojInputText({
+            displayOptions: displayOptions,
+            userAssistanceDensity: 'compact',
+            rootAttributes: {
+              style: 'width: auto; min-width: 0;'
+            },
+            converter: new NumberConverter.IntlNumberConverter(),
+            validators: validatorOptions
+          }).attr('data-oj-internal', ''); // Add the optionChange listener after initializing the input component.
+          // Otherwise we get the optionChange event which causes a page change and
+          // extra refresh on the associating table.
+
+          pagingControlNavInput.on({
+            ojoptionchange: this._handlePageChange.bind(this)
+          });
+        } else {
+          pagingControlNavInput.setAttribute('display-options', JSON.stringify(displayOptions));
+          pagingControlNavInput.setAttribute('user-assistance-density', 'compact');
+          pagingControlNavInput.style.width = 'auto';
+          pagingControlNavInput.style.minWidth = 0;
+          var converterOptions = {
+            maximumFractionDigits: 0,
+            minimumFractionDigits: 0,
+            style: 'decimal',
+            useGrouping: false
+          };
+          pagingControlNavInput.converter = new NumberConverter.IntlNumberConverter(converterOptions);
+          pagingControlNavInput.setAttribute('validators', JSON.stringify(validatorOptions));
+          pagingControlNavInput.addEventListener('valueChanged', this._handlePageChange.bind(this));
+        }
       }
 
       if ($.inArray(this._PAGE_OPTION_LAYOUT._AUTO, pageOptionLayout) !== -1 && !isDot || $.inArray(this._PAGE_OPTION_LAYOUT._ALL, pageOptionLayout) !== -1 || $.inArray(this._PAGE_OPTION_LAYOUT._RANGE_TEXT, pageOptionLayout) !== -1) {
@@ -3574,7 +3691,8 @@ var __oj_paging_control_metadata =
           pagingControlNavPage.removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
           pagingControlNavPage.removeClass(this._MARKER_STYLE_CLASSES._DISABLED);
           pagingControlNavPage.addClass(this._MARKER_STYLE_CLASSES._ENABLED);
-          pagingControlNavPage.attr(this._TAB_INDEX, '0');
+          pagingControlNavPage.attr(this._TAB_INDEX, '0'); // @HTMLUpdateOK
+
           pagingControlNavPage.attr('href', '#');
         }
 
@@ -3598,7 +3716,8 @@ var __oj_paging_control_metadata =
         });
 
         pagingControlNavPage.attr('title', pageTitle);
-        pagingControlNavPage.attr('oncontextmenu', 'return false;'); // create the acc label for the page link
+        pagingControlNavPage.attr('oncontextmenu', 'return false;'); // @HTMLUpdateOK
+        // create the acc label for the page link
 
         var accPageLabel = this._createPagingControlAccNavPageLabel();
 
@@ -3762,16 +3881,26 @@ var __oj_paging_control_metadata =
      * @private
      */
     _getPagingControlNavInput: function _getPagingControlNavInput() {
+      var isCustomElement = this._IsCustomElement();
+
       if (!this._cachedDomPagingControlNavInput) {
         var pagingControlNav = this._getPagingControlNav();
 
         var pagingControlNavInput = null;
 
         if (pagingControlNav) {
-          pagingControlNavInput = pagingControlNav.find('.' + this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS);
+          if (!isCustomElement) {
+            pagingControlNavInput = pagingControlNav.find('.' + this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS);
 
-          if (pagingControlNavInput && pagingControlNavInput.length > 0) {
-            this._cachedDomPagingControlNavInput = $(pagingControlNavInput.get(0));
+            if (pagingControlNavInput && pagingControlNavInput.length > 0) {
+              this._cachedDomPagingControlNavInput = $(pagingControlNavInput.get(0));
+            }
+          } else {
+            pagingControlNavInput = pagingControlNav[0].getElementsByTagName('oj-input-text');
+
+            if (pagingControlNavInput && pagingControlNavInput.length > 0) {
+              this._cachedDomPagingControlNavInput = $(pagingControlNavInput[0]);
+            }
           }
         }
       }

@@ -1,7 +1,8 @@
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -20,16 +21,16 @@
   requirejs.config({
     // Path mappings for the logical module names
     paths: {
-      knockout: 'libs/knockout/knockout-3.5.0',
+      knockout: 'libs/knockout/knockout-3.5.1',
       jquery: 'libs/jquery/jquery-3.5.1.min',
       'jqueryui-amd': 'libs/jquery/jqueryui-amd-1.12.1.min',
-      ojs: 'libs/oj/v8.3.0/min' + (_ojNeedsES5 ? '_es5' : ''),
-      ojL10n: 'libs/oj/v8.3.0/ojL10n',
-      ojtranslations: 'libs/oj/v8.3.0/resources',
+      ojs: 'libs/oj/v9.0.0/min' + (_ojNeedsES5 ? '_es5' : ''),
+      ojL10n: 'libs/oj/v9.0.0/ojL10n',
+      ojtranslations: 'libs/oj/v9.0.0/resources',
       text: 'libs/require/text',
       hammerjs: 'libs/hammer/hammer-2.0.8.min',
       signals: 'libs/js-signals/signals.min',
-      ojdnd: 'libs/dnd-polyfill/dnd-polyfill-1.0.1.min',
+      ojdnd: 'libs/dnd-polyfill/dnd-polyfill-1.0.2.min',
       css: 'libs/require-css/css.min',
       customElements: 'libs/webcomponents/custom-elements.min',
       proj4: 'libs/proj4js/dist/proj4',

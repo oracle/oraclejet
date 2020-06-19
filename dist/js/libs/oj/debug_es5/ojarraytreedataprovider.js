@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -40,7 +41,7 @@ var ArrayTreeDataProvider = /*#__PURE__*/function () {
             var metadata = result.value.metadata;
 
             for (var i = 0; i < metadata.length; i++) {
-              // Replace flat array metadata with tree array metadata 
+              // Replace flat array metadata with tree array metadata
               metadata[i] = self._parent._getNodeMetadata(result.value.data[i]);
             }
 
@@ -90,8 +91,8 @@ var ArrayTreeDataProvider = /*#__PURE__*/function () {
           }
         });
         return Promise.resolve({
-          'containsParameters': params,
-          'results': results
+          containsParameters: params,
+          results: results
         });
       });
     }
@@ -156,15 +157,15 @@ var ArrayTreeDataProvider = /*#__PURE__*/function () {
           var data = results[i]['data'];
           metadata = self._getNodeMetadata(data);
           newResults.push({
-            'data': data,
-            'metadata': metadata
+            data: data,
+            metadata: metadata
           });
         }
 
         return {
-          'done': result['done'],
-          'fetchParameters': result['fetchParameters'],
-          'results': newResults
+          done: result['done'],
+          fetchParameters: result['fetchParameters'],
+          results: newResults
         };
       });
     }
@@ -178,22 +179,22 @@ var ArrayTreeDataProvider = /*#__PURE__*/function () {
 
         if (node) {
           results.set(key, {
-            'metadata': {
-              'key': key
+            metadata: {
+              key: key
             },
-            'data': node
+            data: node
           });
         }
       });
       return Promise.resolve({
-        'fetchParameters': params,
-        'results': results
+        fetchParameters: params,
+        results: results
       });
     }
   }, {
     key: "_getChildren",
     value: function _getChildren(node) {
-      var childrenAttr = this.options && this.options['childrenAttribute'] ? this.options['childrenAttribute'] : 'children'; // Pass true to _getVal so that we keep observableArray children in the same form 
+      var childrenAttr = this.options && this.options['childrenAttribute'] ? this.options['childrenAttribute'] : 'children'; // Pass true to _getVal so that we keep observableArray children in the same form
 
       return this._getVal(node, childrenAttr, true);
     }
@@ -249,6 +250,8 @@ var ArrayTreeDataProvider = /*#__PURE__*/function () {
                   if (status === 'deleted') {
                     removeDuplicate.push(i);
                     updatedIndexes.push(j);
+
+                    self._releaseNode(changes[i].value);
                   } else {
                     removeDuplicate.push(j);
                     updatedIndexes.push(i);
@@ -277,7 +280,7 @@ var ArrayTreeDataProvider = /*#__PURE__*/function () {
         if (keyArray.length > 0) {
           metadataArray = keyArray.map(function (value) {
             return {
-              'key': value
+              key: value
             };
           });
           var keySet = new Set();
@@ -494,7 +497,7 @@ var ArrayTreeDataProvider = /*#__PURE__*/function () {
       var keyPath = parentKeyPath ? parentKeyPath.slice() : [];
 
       if (key == null) {
-        // _getId returns null if keyAttributes is not specified.  In this case we 
+        // _getId returns null if keyAttributes is not specified.  In this case we
         // use the index path of the node as the key.
         // However, if this is called after initialization, we can't use index
         // any more because node position can shift, so we need to keep track of
@@ -505,15 +508,15 @@ var ArrayTreeDataProvider = /*#__PURE__*/function () {
         keyPath.push(key);
 
         if (this.options && this.options['keyAttributesScope'] == 'siblings') {
-          // If the id is only unique among siblings, we use the id path of the 
+          // If the id is only unique among siblings, we use the id path of the
           // node as the key.
           key = keyPath;
         }
       }
 
       return {
-        'key': key,
-        'keyPath': keyPath
+        key: key,
+        keyPath: keyPath
       };
     }
     /**
@@ -545,12 +548,12 @@ var ArrayTreeDataProvider = /*#__PURE__*/function () {
         return null;
       }
     }
-  }, {
-    key: "_getVal",
-
     /**
      * Get value for attribute
      */
+
+  }, {
+    key: "_getVal",
     value: function _getVal(val, attr, keepFunc) {
       if (typeof attr == 'string') {
         var dotIndex = attr.indexOf('.');
@@ -574,12 +577,12 @@ var ArrayTreeDataProvider = /*#__PURE__*/function () {
 
       return val[attr];
     }
-  }, {
-    key: "_getAllVals",
-
     /**
      * Get all values in a row
      */
+
+  }, {
+    key: "_getAllVals",
     value: function _getAllVals(val) {
       var self = this;
       return Object.keys(val).map(function (key) {
@@ -590,7 +593,7 @@ var ArrayTreeDataProvider = /*#__PURE__*/function () {
     key: "_getNodeMetadata",
     value: function _getNodeMetadata(node) {
       return {
-        'key': this._getKeyForNode(node)
+        key: this._getKeyForNode(node)
       };
     }
   }, {
@@ -711,7 +714,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
  *            Filtering is supported and, by default, applied only on leaf nodes. Empty tree nodes are not collapsed. The filtering on leaf nodes only works
  *            by combining the passed in filter definition with an OR expression of the "children" property to determine if a node
  *            is a tree or leaf. Therefore, if users want to customize this to include filtering on tree nodes as well, then a custom filter()
- *            function can be specified which excludes tree nodes.
+ *            function can be specified which excludes tree nodes.<br><br>
  *
  *
  * <h3 id="events-section">

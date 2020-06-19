@@ -1,0 +1,112 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.icon.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.scss";
+
+//--------------------------------------------------------
+
+// include dependencies
+  @include module-include-once("common.icon") {
+
+
+    .oj-icon-circle{
+      border-radius: 50%;
+      border: 0px solid transparent;
+      box-sizing: border-box;
+      display: inline-block;
+    }
+    
+      
+      .oj-icon-circle-inner {
+        border-radius: 50%;
+        color: var(--oj-icon-circle-font-color);
+        background-color: var(--oj-icon-circle-bg-color);
+        box-sizing: border-box;;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        background-size: var(--oj-icon-circle-xxl-size) var(--oj-icon-circle-xxl-size);
+      }
+      
+      .oj-icon-circle-xxs .oj-icon-circle-inner,
+      .oj-icon-xxs .oj-icon-circle-inner {
+        height:var(--oj-icon-circle-xxs-size);
+        width: var(--oj-icon-circle-xxs-size);
+        font-size: var(--oj-icon-circle-xxs-font-size);
+      }
+      
+      .oj-icon-circle-xs .oj-icon-circle-inner,
+      .oj-icon-xs .oj-icon-circle-inner {
+        height:var(--oj-icon-circle-xs-size);
+        width: var(--oj-icon-circle-xs-size);
+        font-size: var(--oj-icon-circle-xs-font-size);
+      }
+      
+      .oj-icon-circle-sm .oj-icon-circle-inner,
+      .oj-icon-sm .oj-icon-circle-inner {
+        height:var(--oj-icon-circle-sm-size);
+        width: var(--oj-icon-circle-sm-size);
+        font-size: var(--oj-icon-circle-sm-font-size);
+      }
+      /*Don't need to specify medium size since it is the default*/
+      .oj-icon-circle-inner {
+        height:var(--oj-icon-circle-md-size);
+        width: var(--oj-icon-circle-md-size);
+        font-size: var(--oj-icon-circle-md-font-size);
+      }
+      
+      .oj-icon-circle-lg .oj-icon-circle-inner,
+      .oj-icon-lg .oj-icon-circle-inner {
+        height:var(--oj-icon-circle-lg-size);
+        width: var(--oj-icon-circle-lg-size);
+        font-size: var(--oj-icon-circle-lg-font-size);
+      }
+
+      .oj-icon-circle-xl .oj-icon-circle-inner,
+      .oj-icon-xl .oj-icon-circle-inner {
+        height:var(--oj-icon-circle-xl-size);
+        width: var(--oj-icon-circle-xl-size);
+        font-size: var(--oj-icon-circle-xl-font-size);
+      }
+      
+      .oj-icon-circle-xxl .oj-icon-circle-inner,
+      .oj-icon-xxl .oj-icon-circle-inner {
+        height:var(--oj-icon-circle-xxl-size);
+        width: var(--oj-icon-circle-xxl-size);
+        font-size: var(--oj-icon-circle-xxl-font-size);
+      }
+      
+      .oj-icon-circle-green .oj-icon-circle-inner{
+        background-color: var(--oj-icon-circle-green);
+      }
+      
+      .oj-icon-circle-purple .oj-icon-circle-inner{
+        background-color: var(--oj-icon-circle-purple);
+      }
+      
+      .oj-icon-circle-red .oj-icon-circle-inner{
+        background-color: var(--oj-icon-circle-red);      
+      }
+      
+      .oj-icon-circle-teal .oj-icon-circle-inner{
+        background-color: var(--oj-icon-circle-teal); 
+      }
+      
+      .oj-icon-circle-orange .oj-icon-circle-inner{
+        background-color: var(--oj-icon-circle-orange); 
+      }
+      
+      .oj-icon-circle-forest .oj-icon-circle-inner{
+        background-color: var(--oj-icon-circle-forest); 
+      }
+      
+      .oj-icon-circle-mauve .oj-icon-circle-inner{
+        background-color: var(--oj-icon-circle-mauve); 
+      }
+      
+  }

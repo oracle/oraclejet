@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -54,11 +55,9 @@ class TreeDataProviderView {
     addEventListener(eventType, listener) {
         this._listDataProviderView.addEventListener(eventType, listener);
     }
-    ;
     removeEventListener(eventType, listener) {
         this._listDataProviderView.removeEventListener(eventType, listener);
     }
-    ;
     dispatchEvent(evt) {
         return this._listDataProviderView.dispatchEvent(evt);
     }

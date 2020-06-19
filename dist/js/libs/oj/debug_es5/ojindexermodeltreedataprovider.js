@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -137,10 +138,10 @@ var IndexerModelTreeDataProvider = /*#__PURE__*/function () {
 
       return Promise.resolve(section);
     }
+    /** **************** TreeDataProvider *******************/
+
   }, {
     key: "getChildDataProvider",
-
-    /** **************** TreeDataProvider *******************/
     value: function getChildDataProvider(parentKey, options) {
       if (parentKey === null) {
         return this;

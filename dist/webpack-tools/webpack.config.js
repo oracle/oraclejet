@@ -1,12 +1,13 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -33,14 +34,14 @@ module.exports = {
   resolve: {
     alias: {
       // path mappings go here
-      'knockout': path.resolve(__dirname, './web/js/libs/knockout/knockout-3.5.0.debug'),
+      'knockout': path.resolve(__dirname, './web/js/libs/knockout/knockout-3.5.1.debug'),
       'jquery': path.resolve(__dirname, './web/js/libs/jquery/jquery-3.5.1'),
       'jqueryui-amd': path.resolve(__dirname, './web/js/libs/jquery/jqueryui-amd-1.12.1'),
       'promise': path.resolve(__dirname, './web/js/libs/es6-promise/es6-promise'),
       'hammerjs': path.resolve(__dirname, './web/js/libs/hammer/hammer-2.0.8'),
-      'ojdnd': path.resolve(__dirname, './web/js/libs/dnd-polyfill/dnd-polyfill-1.0.1'),
-      'ojs': path.resolve(__dirname, './web/js/libs/oj/v8.3.0/debug'),
-      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/v8.3.0/resources'),
+      'ojdnd': path.resolve(__dirname, './web/js/libs/dnd-polyfill/dnd-polyfill-1.0.2'),
+      'ojs': path.resolve(__dirname, './web/js/libs/oj/v9.0.0/debug'),
+      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/v9.0.0/resources'),
       'signals': path.resolve(__dirname, './web/js/libs/js-signals/signals'),
       'touchr': path.resolve(__dirname, './web/js/libs/touchr/touchr'),
       'customElements': path.resolve(__dirname, './web/js/libs/webcomponents/custom-elements.min'),
@@ -80,7 +81,7 @@ module.exports = {
           }
         },
         // Point this setting to the root folder for the associated JET distribution (could be a CDN). Used by the oj.Config.getResourceUri() call
-        baseResourceUrl: "./web/js/libs/oj/v8.3.0"
+        baseResourceUrl: "./web/js/libs/oj/v9.0.0"
       }
     )
 

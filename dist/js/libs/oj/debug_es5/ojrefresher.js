@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -104,14 +105,21 @@ var __oj_refresher_metadata =
    *
    * </code></pre>
    *
-   * <h3 id="styling-section">
-   *   Styling
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"stylingDoc"}
-   *
    */
+  // --------------------------------------------------- oj.ojRefresher Styling Start -----------------------------------------------------------
+  // ---------------- oj-scroller --------------
+
+  /**
+  * Designates the element to be the scroller element used in place of the target.
+  * @ojstyleclass oj-scroller
+  * @ojdisplayname Scroller element
+  * @memberof oj.ojRefresher
+  * @ojtsexample
+  * &lt;oj-refresher id='myrefresher' threshold='100' text='Checking for updates' refresh-content='[[refreshFunc]]'>
+  *     &lt;oj-list-view id="refreshId">&lt;/oj-list-view>
+  * &lt;/oj-refresher>
+  */
+  // --------------------------------------------------- oj.ojRefresher Styling End -----------------------------------------------------------
   oj.__registerWidget('oj.ojRefresher', $.oj.baseComponent, {
     widgetEventPrefix: 'oj',
     options: {
@@ -336,30 +344,6 @@ var __oj_refresher_metadata =
      * @ojslot contextMenu
      * @memberof oj.ojRefresher
      * @ignore
-     */
-    // Fragments
-
-    /**
-     * {@ojinclude "name":"ojStylingDocIntro"}
-     *
-     * <table class="generic-table styling-table">
-     *   <thead>
-     *     <tr>
-     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>oj-scroller</td>
-     *       <td>Designates the element to be the scroller element used in place of the target.</td>
-     *       </td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-     * @memberof oj.ojRefresher
      */
 
   });

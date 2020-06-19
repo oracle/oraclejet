@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -41,12 +42,12 @@ NocompButtonUtils.setup = function (nocompButton) {
   }); // Add action on ENTER-key
 
   nocompButton.addEventListener('keydown', function (event) {
-    if (event.keyCode === 13) {
+    if (event.keyCode === 13 || event.key === 'Enter') {
       nocompButton.classList.add('oj-active');
     }
   });
   nocompButton.addEventListener('keyup', function (event) {
-    if (event.keyCode === 13) {
+    if (event.keyCode === 13 || event.key === 'Enter') {
       nocompButton.classList.remove('oj-active');
       nocompButton.click();
     }

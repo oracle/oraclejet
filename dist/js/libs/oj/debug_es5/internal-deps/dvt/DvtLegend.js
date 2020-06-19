@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['./DvtToolkit'], function(dvt) {
   "use strict";
@@ -8,15 +9,17 @@ define(['./DvtToolkit'], function(dvt) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function (dvt) {
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -224,7 +227,7 @@ define(['./DvtToolkit'], function(dvt) {
 
 
   dvt.Legend.prototype.__registerObject = function (peer) {
-    if (peer.getDisplayables()[0] instanceof dvt.Button) this._navigablePeers.push(peer); // peer is navigable if associated with button
+    if (peer.getDisplayables()[0] instanceof dvt.IconButton) this._navigablePeers.push(peer); // peer is navigable if associated with button
     else {
         // peer is navigable if associated with legend item using datatip, action, drilling, or hideShow is enabled
         var hideAndShow = this.getOptions()['hideAndShowBehavior'];
@@ -461,8 +464,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -725,8 +729,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -825,8 +830,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -866,32 +872,9 @@ define(['./DvtToolkit'], function(dvt) {
   DvtLegendEventManager.prototype.OnMouseOver = function (event) {
     DvtLegendEventManager.superclass.OnMouseOver.call(this, event);
     var obj = this.GetLogicalObject(event.target);
-    if (!obj) return;
-    var params = obj instanceof dvt.SimpleObjPeer ? obj.getParams() : null; // Activate button hover state for collapsible section title
-
-    if (params && params['isCollapsible'] && params['button']) {
-      var button = params['button'];
-      button.drawOverState();
-    } // Accessibility Support
-
+    if (!obj) return; // Accessibility Support
 
     this.UpdateActiveElement(obj);
-  };
-  /**
-   * @override
-   */
-
-
-  DvtLegendEventManager.prototype.OnMouseOut = function (event) {
-    DvtLegendEventManager.superclass.OnMouseOut.call(this, event);
-    var obj = this.GetLogicalObject(event.target);
-    if (!obj) return;
-    var params = obj instanceof dvt.SimpleObjPeer ? obj.getParams() : null;
-
-    if (params && params['isCollapsible'] && params['button']) {
-      var button = params['button'];
-      button.drawUpState();
-    }
   };
   /**
    * @override
@@ -987,7 +970,7 @@ define(['./DvtToolkit'], function(dvt) {
     var options = this._legend.getOptions(); // Do not fire rollover event for section collapse/expand button
 
 
-    if (options['hoverBehavior'] == 'none' || obj.getDisplayables && obj.getDisplayables()[0] instanceof dvt.Button) return; // Compute the new highlighted categories and update the options
+    if (options['hoverBehavior'] == 'none' || obj.getDisplayables && obj.getDisplayables()[0] instanceof dvt.IconButton) return; // Compute the new highlighted categories and update the options
 
     var categories = obj.getCategories ? obj.getCategories() : [];
     options['highlightedCategories'] = bOver ? categories.slice() : null; // Fire the event to the rollover handler, who will fire to the component callback.
@@ -999,7 +982,7 @@ define(['./DvtToolkit'], function(dvt) {
   /**
    * Collapses or expands a legend section when collapse button is clicked.
    * @param {dvt.BaseEvent} event
-   * @param {dvt.Button} button The button that calls the method.
+   * @param {dvt.IconButton} button The button that calls the method.
    */
 
 
@@ -1187,8 +1170,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1224,7 +1208,7 @@ define(['./DvtToolkit'], function(dvt) {
 
     var currentNavigable = this._eventManager.getFocus();
 
-    var isButton = currentNavigable && currentNavigable.getDisplayables()[0] instanceof dvt.Button;
+    var isButton = currentNavigable && currentNavigable.getDisplayables()[0] instanceof dvt.IconButton;
     var nextNavigable = null;
 
     if (currentNavigable == null && keyCode == dvt.KeyboardEvent.TAB) {
@@ -1260,8 +1244,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1416,7 +1401,7 @@ define(['./DvtToolkit'], function(dvt) {
     var bHiddenCategory = DvtLegendRenderer.isCategoryHidden(this._category, this._legend);
     var data = this.getData();
 
-    if (this._displayables[0] instanceof dvt.Button) {
+    if (this._displayables[0] instanceof dvt.IconButton) {
       states.push(translations[DvtLegendRenderer.isSectionCollapsed(data, this._legend) ? 'stateCollapsed' : 'stateExpanded']);
       return dvt.Displayable.generateAriaLabel(data['title'], states);
     }
@@ -1453,7 +1438,7 @@ define(['./DvtToolkit'], function(dvt) {
 
     var navigables = this._legend.__getKeyboardObjects();
 
-    return dvt.KeyboardHandler.getNextNavigable(this, event, navigables, true);
+    return dvt.KeyboardHandler.getNextNavigable(this, event, navigables, true, this._legend);
   };
   /**
    * @override
@@ -1481,7 +1466,7 @@ define(['./DvtToolkit'], function(dvt) {
     this._isShowingKeyboardFocusEffect = true;
 
     if (this._displayables[0]) {
-      if (this._displayables[0] instanceof dvt.Button) this._displayables[0].drawOverState();else this._displayables[0].setSolidStroke(dvt.Agent.getFocusColor());
+      if (this._displayables[0] instanceof dvt.IconButton) this._displayables[0].showKeyboardFocusEffect();else this._displayables[0].setSolidStroke(dvt.Agent.getFocusColor());
     }
   };
   /**
@@ -1493,7 +1478,7 @@ define(['./DvtToolkit'], function(dvt) {
     this._isShowingKeyboardFocusEffect = false;
 
     if (this._displayables[0]) {
-      if (this._displayables[0] instanceof dvt.Button) this._displayables[0].drawUpState();else this._displayables[0].setStroke(null);
+      if (this._displayables[0] instanceof dvt.IconButton) this._displayables[0].hideKeyboardFocusEffect();else this._displayables[0].setStroke(null);
     }
   };
   /**
@@ -1560,8 +1545,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1715,7 +1701,7 @@ define(['./DvtToolkit'], function(dvt) {
    * @param {object} section The section attributes, if this is a section
    * @param {boolean} isAligned Whether the title supports halign (done at the end of render call).
    * @param {number} id The id of the section, if this is a section.
-   * @param {dvt.Button} button The button associated with the legend title
+   * @param {dvt.IconButton} button The button associated with the legend title
    * @return {dvt.Rectangle} The dimension of the title.
    * @private
    */
@@ -1729,7 +1715,12 @@ define(['./DvtToolkit'], function(dvt) {
 
     var title = new dvt.OutputText(context, titleStr, availSpace.x, availSpace.y);
     var titleStyle = options['titleStyle'];
-    if (section && section['titleStyle']) titleStyle = new dvt.CSSStyle(section['titleStyle']);else if (section && options['_sectionTitleStyle']) titleStyle = options['_sectionTitleStyle'];
+
+    if (section) {
+      var defaultStyle = options['_sectionTitleStyle'].clone();
+      titleStyle = section['titleStyle'] ? defaultStyle.merge(new dvt.CSSStyle(section['titleStyle'])) : defaultStyle;
+    }
+
     title.setCSSStyle(titleStyle);
 
     if (dvt.TextUtils.fitText(title, availSpace.w, Infinity, container)) {
@@ -1850,42 +1841,22 @@ define(['./DvtToolkit'], function(dvt) {
    * @param {string} id The button id.
    * @param {function} callback The button callback function.
    * @param {object} callbackObj The button callback object.
-   * @return {dvt.Button} The button.
+   * @return {dvt.IconButton} The button.
    * @private
    */
 
 
   DvtLegendRenderer._createButton = function (context, legend, item, resources, prefix, x, y, tooltip, id, callback, callbackObj) {
-    var upState = DvtLegendRenderer._createButtonImage(context, resources, prefix + 'Enabled', x, y);
-
-    var overState = DvtLegendRenderer._createButtonImage(context, resources, prefix + 'Over', x, y);
-
-    var downState = DvtLegendRenderer._createButtonImage(context, resources, prefix + 'Down', x, y);
-
-    var button = new dvt.Button(context, upState, overState, downState, null, id, callback, callbackObj);
+    var iconStyle = dvt.ToolkitUtils.getIconStyle(context, resources[prefix]);
+    var button = new dvt.IconButton(context, 'borderless', {
+      style: iconStyle,
+      size: DvtLegendRenderer._BUTTON_SIZE
+    }, null, id, callback, callbackObj);
+    button.setTranslate(x, y);
     var peer = DvtLegendObjPeer.associate([button], legend, item, tooltip, null, false);
     button.setAriaRole('button');
     peer.updateAriaLabel();
     return button;
-  };
-  /**
-   * Creates a button image.
-   * @param {dvt.Context} context
-   * @param {object} resources The object containing the button image resources.
-   * @param {string} name The image resource name.
-   * @param {number} x The button x position.
-   * @param {number} y The button y position.
-   * @return {dvt.Image} .
-   * @private
-   */
-
-
-  DvtLegendRenderer._createButtonImage = function (context, resources, name, x, y) {
-    var suffix = dvt.Agent.isRightToLeft(context) ? 'RTL' : '';
-    var src = resources[name + suffix] ? resources[name + suffix] : resources[name];
-    var image = new dvt.Image(context, src, x, y, DvtLegendRenderer._BUTTON_SIZE, DvtLegendRenderer._BUTTON_SIZE);
-    image.setInvisibleFill();
-    return image;
   };
   /**
    * Renders a vertical legend section.
@@ -2058,6 +2029,15 @@ define(['./DvtToolkit'], function(dvt) {
       return sectionDim;
     }
 
+    if (title) {
+      // no need to vertically align if there is no title
+      legend.getCache().putToCache("horizRowAlign", true);
+      legend.getCache().putToCache("sectionRect", sectionDim);
+      var dims = title.getDimensions();
+      var dy = sectionDim.y + sectionDim.h / 2 - dims.h / 2 - dims.y;
+      title.setTranslate(0, dy);
+    }
+
     var colWidth;
 
     for (i = 0; i < numItems; i++) {
@@ -2068,8 +2048,11 @@ define(['./DvtToolkit'], function(dvt) {
       colWidth = textWidths[i] + symbolWidth + symbolGap;
       sectionSpace.w -= colWidth + colGap;
       if (!isRTL) sectionSpace.x += colWidth + colGap;
-    }
+    } // Reset cached variables after legend items are created
 
+
+    legend.getCache().putToCache('horizRowAlign', false);
+    legend.getCache().putToCache("sectionRect", null);
     return sectionDim;
   };
   /**
@@ -2188,6 +2171,16 @@ define(['./DvtToolkit'], function(dvt) {
 
         dvt.TextUtils.centerTextVertically(text, availSpace.y + rowHeight / 2);
         if (isRTL) text.alignRight();
+      } // Vertically center the legend title and legend items of the horizontal section
+
+
+      var sectionRect = legend.getCache().getFromCache('sectionRect');
+
+      if (legend.getCache().getFromCache('horizRowAlign') && sectionRect && options['orientation'] != 'vertical') {
+        var textH = text.getDimensions().h;
+        var dy = sectionRect.y + sectionRect.h / 2 - Math.max(options['symbolHeight'], textH) / 2 - availSpace.y;
+        marker.setTranslate(0, dy);
+        text.setTranslate(0, dy);
       }
     } // Add legend marker to legend. Legend text has been added by _createLegendText.
 
@@ -2463,8 +2456,9 @@ define(['./DvtToolkit'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 

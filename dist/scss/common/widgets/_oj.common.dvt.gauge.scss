@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your theme's directory, 
@@ -66,7 +67,7 @@
       font-weight: bold;
     }
 
-    .oj-gauge-tick-label {
+    .oj-gauge-label {
     }
 
     // color for the first threshold on a gauge, typically represents a low value
@@ -98,5 +99,36 @@
         @include oj-browser-focus-outline-approximation($primaryTextColor);
 
     }
+
+    .oj-rating-gauge-selected {
+      fill: $ratingGaugeColorSelected;
+      stroke: $ratingGaugeBorderColorSelected;
+    }
+
+    .oj-rating-gauge-unselected {
+      fill: $ratingGaugeColorUnselected;
+      stroke: $ratingGaugeBorderColorUnselected;
+    }
+
+    .oj-rating-gauge-changed {
+      fill: $ratingGaugeColorChanged;
+      stroke: $ratingGaugeBorderColorChanged;
+    }
+
+    .oj-rating-gauge-hover {
+      fill: $ratingGaugeColorHover;
+      stroke: $ratingGaugeBorderColorHover;
+    }
+
+    .oj-rating-gauge-selected-disabled {
+      fill: $ratingGaugeColorSelectedDisabled;
+      stroke: $ratingGaugeBorderColorSelectedDisabled;
+    }
+      
+    .oj-rating-gauge-unselected-disabled {
+      fill: $ratingGaugeColorUnselectedDisabled;
+      stroke: $ratingGaugeBorderColorUnselectedDisabled;
+    }
+
   }
 }

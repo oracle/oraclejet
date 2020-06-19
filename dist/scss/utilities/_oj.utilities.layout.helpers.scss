@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 //-------------------------------------------------------------------------------------------------
 // generate layout utility classes, usually these belong inside of media queries
 //
@@ -21,87 +22,249 @@
     .#{$selectorPrefix}-hide { display:none; }
   }
 
-
   @if $generateSpacing {
-    @for  $i from 1 through 4 {
+    .#{$selectorPrefix}-margin-0 {
+      @include oj-ltr() {
+      margin: 0 !important;
+      }
+      @include oj-rtl() {
+        margin: 0 !important;
+        }
+    }
+
+    .#{$selectorPrefix}-margin-0-horizontal{
+      @include oj-ltr() {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      }
+      @include oj-rtl() {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+      }
+    }
+
+    .#{$selectorPrefix}-margin-0-vertical {    
+      @include oj-ltr() {
+      margin-top: 0 !important;
+      margin-bottom: 0 !important; }
+      @include oj-rtl() {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important; }
+      }        
+
+    .#{$selectorPrefix}-margin-0-top {   
+      @include oj-ltr() {  
+     margin-top: 0 !important; }
+     @include oj-rtl() {  
+      margin-top: 0 !important; }
+
+    }
+
+    .#{$selectorPrefix}-margin-0-bottom {   
+      @include oj-ltr() {  
+      margin-bottom: 0 !important; }
+      @include oj-rtl() {  
+        margin-bottom: 0 !important; }
+
+    }
+
+    .#{$selectorPrefix}-margin-0-start {
+      @include oj-ltr() {
+        margin-left: 0 !important;
+      }
+      @include oj-rtl() {
+        margin-right: 0!important;
+      }
+
+    }
+
+    .#{$selectorPrefix}-margin-0-end { 
+      @include oj-ltr() {
+        margin-right: 0 !important;
+      }
+      @include oj-rtl() {
+        margin-left: 0 !important;
+      }
+
+       }
+
+    .#{$selectorPrefix}-padding-0 {
+      @include oj-ltr() {
+      padding: 0 !important;
+      }
+      @include oj-rtl() {
+        padding: 0 !important;
+        }
+
+    }
+
+    .#{$selectorPrefix}-padding-0-horizontal {
+      @include oj-ltr() {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      }
+      @include oj-rtl() {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        }
+    }
+
+    .#{$selectorPrefix}-padding-0-vertical { 
+      @include oj-ltr() {       
+        padding-top: 0 !important;
+        padding-bottom: 0 !important; }
+      @include oj-rtl() {       
+        padding-top: 0 !important;
+        padding-bottom: 0 !important; }
+
+      }
+
+    .#{$selectorPrefix}-padding-0-top {  
+      @include oj-ltr() {     
+        padding-top: 0 !important; }  
+      @include oj-rtl() {     
+          padding-top: 0 !important; }  
+      }        
+
+    .#{$selectorPrefix}-padding-0-bottom {  
+      @include oj-ltr() {      
+        padding-bottom: 0 !important;   }    
+      @include oj-rtl() {      
+        padding-bottom: 0 !important;   }    
+    }
+
+    .#{$selectorPrefix}-padding-0-start {
+      @include oj-ltr() {
+        padding-left: 0 !important;
+      }
+      @include oj-rtl() {
+        padding-right: 0!important;
+      }
+    }
+    .#{$selectorPrefix}-padding-0-end { 
+      @include oj-ltr() {
+        padding-right: 0 !important;
+      }
+      @include oj-rtl() {
+        padding-left: 0 !important;
+      }
+    }
+    @for  $i from 1 through 10 {
       $spacing: $i * $spacingSmall;
 
       .#{$selectorPrefix}-margin-#{$i}x {
-        margin: $spacing; }
+        @include oj-ltr() {
+        margin: $spacing !important; } 
+        @include oj-rtl() {
+          margin: $spacing !important; } 
+      }
 
       .#{$selectorPrefix}-margin-#{$i}x-horizontal {
-        margin-left: $spacing;
-        margin-right: $spacing;
+        @include oj-ltr() {
+        margin-left: $spacing !important;
+        margin-right: $spacing !important;
+        }
+        @include oj-rtl() {
+          margin-left: $spacing !important;
+          margin-right: $spacing !important;
+          }
       }
 
-      .#{$selectorPrefix}-margin-#{$i}x-vertical {
-        margin-top: $spacing;
-        margin-bottom: $spacing;
-      }
+      .#{$selectorPrefix}-margin-#{$i}x-vertical { 
+        @include oj-ltr() {           
+          margin-top: $spacing !important;
+          margin-bottom: $spacing !important;
+        } 
+        @include oj-rtl() {           
+          margin-top: $spacing !important;
+          margin-bottom: $spacing !important;
+        }     
+      }  
+     
 
-      .#{$selectorPrefix}-margin-#{$i}x-top {
-        margin-top: $spacing;
-      }
+      .#{$selectorPrefix}-margin-#{$i}x-top {     
+        margin-top: $spacing !important; }       
 
-      .#{$selectorPrefix}-margin-#{$i}x-bottom {
-        margin-bottom: $spacing;
-      }
+      .#{$selectorPrefix}-margin-#{$i}x-bottom {       
+        margin-bottom: $spacing !important; }      
 
       .#{$selectorPrefix}-margin-#{$i}x-start {
         @include oj-ltr() {
-          margin-left: $spacing;
+          margin-left: $spacing !important;
         }
         @include oj-rtl() {
-          margin-right: $spacing;
+          margin-right: $spacing !important;
         }
       }
 
       .#{$selectorPrefix}-margin-#{$i}x-end {
         @include oj-ltr() {
-          margin-right: $spacing;
+          margin-right: $spacing !important;
         }
         @include oj-rtl() {
-          margin-left: $spacing;
+          margin-left: $spacing !important;
         }
       }
 
       .#{$selectorPrefix}-padding-#{$i}x {
-        padding: $spacing;
+        @include oj-ltr() {
+        padding: $spacing !important; }
+        @include oj-rtl() {
+          padding: $spacing !important; }
+
       }
 
       .#{$selectorPrefix}-padding-#{$i}x-horizontal {
-        padding-left: $spacing;
-        padding-right: $spacing;
-      }
-
-      .#{$selectorPrefix}-padding-#{$i}x-vertical {
-        padding-top: $spacing;
-        padding-bottom: $spacing;
-      }
-
-      .#{$selectorPrefix}-padding-#{$i}x-top {
-        padding-top: $spacing;
-      }
-
-      .#{$selectorPrefix}-padding-#{$i}x-bottom {
-        padding-bottom: $spacing;
-      }
-
-      .#{$selectorPrefix}-padding-#{$i}x-start {
         @include oj-ltr() {
-          padding-left: $spacing;
+        padding-left: $spacing !important;
+        padding-right: $spacing !important;
         }
         @include oj-rtl() {
-          padding-right: $spacing;
+          padding-left: $spacing !important;
+          padding-right: $spacing !important;
+          }
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x-vertical {   
+        @include oj-ltr() { 
+        padding-top: $spacing !important;
+        padding-bottom: $spacing !important;  }
+        @include oj-rtl() { 
+        padding-top: $spacing !important;
+        padding-bottom: $spacing !important;  }
+
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x-top {     
+        @include oj-ltr() { 
+        padding-top: $spacing !important; } 
+        @include oj-rtl() { 
+          padding-top: $spacing !important; }     
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x-bottom {  
+        @include oj-ltr() {      
+        padding-bottom: $spacing !important; }  
+        @include oj-rtl() {      
+          padding-bottom: $spacing !important; }  
+      }   
+        
+        
+      .#{$selectorPrefix}-padding-#{$i}x-start {
+        @include oj-ltr() {
+          padding-left: $spacing !important;
+        }
+        @include oj-rtl() {
+          padding-right: $spacing !important;
         }
       }
 
       .#{$selectorPrefix}-padding-#{$i}x-end {
         @include oj-ltr() {
-          padding-right: $spacing;
+          padding-right: $spacing !important;
         }
         @include oj-rtl() {
-          padding-left: $spacing;
+          padding-left: $spacing !important;
         }
       }
     }

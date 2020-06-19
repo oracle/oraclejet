@@ -1,0 +1,301 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.avatar.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.scss";
+
+//--------------------------------------------------------
+// include dependencies
+  @include module-include-once("common.avatar") {
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-avatar:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    oj-avatar {
+      display: inline-block;
+    }
+
+    :not(.oj-hicontrast) .oj-avatar-background-image .oj-avatar-initials {
+      opacity:0;
+    }
+    .oj-hicontrast .oj-avatar-background-image .oj-avatar-initials {
+      opacity:1;
+    }
+
+    .oj-avatar-background-image {
+      background-size: cover;
+      background-position: center center;
+      align-self: stretch;
+      align-items: center;
+      justify-content: center;
+      display: flex;
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      // Chrome bug 1016796 Background-image upscaling creates artifact on top/right edges
+      width: calc(100% + 2px);
+      height: calc(100% + 2px);
+    }
+
+    .oj-avatar-has-initials .oj-avatar-background-image{
+      background-size: var(--oj-avatar-xxl-size) var(--oj-avatar-xxl-size);
+    }
+    .oj-avatar {
+      border: var(--oj-avatar-xxs-border-width) solid var(--oj-avatar-border-color);
+      color: var(--oj-avatar-text-color);
+
+      box-sizing: border-box;
+      align-items: center;
+      justify-content: center;
+      display: flex;
+      position: relative;
+      background-color: var(--oj-avatar-bg-color);
+      overflow: hidden;
+
+    }
+
+    //div selector present to give it priority over colored backgrounds below
+    div.oj-avatar.oj-avatar-image {
+      background-color: rgba(0, 0, 0, 0);
+    }
+
+    .oj-avatar-bg-purple.oj-avatar {
+      background-color: var(--oj-avatar-purple);
+      border-color: var(--oj-avatar-purple);
+    }
+
+    .oj-avatar-bg-orange.oj-avatar {
+      background-color: var(--oj-avatar-orange);
+      border-color: var(--oj-avatar-orange);
+    }
+
+    .oj-avatar-bg-red.oj-avatar {
+      background-color: var(--oj-avatar-red);
+      border-color: var(--oj-avatar-red);
+    }
+
+    .oj-avatar-bg-teal.oj-avatar {
+      background-color: var(--oj-avatar-teal);
+      border-color: var(--oj-avatar-teal);
+    }
+
+    .oj-avatar-bg-green.oj-avatar {
+      background-color: var(--oj-avatar-green);
+      border-color: var(--oj-avatar-green);
+    }
+    .oj-avatar-bg-forest.oj-avatar {
+      background-color: var(--oj-avatar-forest);
+      border-color: var(--oj-avatar-forest);
+    }
+
+    .oj-avatar-bg-mauve.oj-avatar {
+      background-color: var(--oj-avatar-mauve);
+      border-color: var(--oj-avatar-mauve);
+    }
+
+    .oj-avatar-initials {
+      text-overflow: ellipsis;
+      overflow:hidden;
+    }
+
+    //To meet text contrast ratio requirement, a Filter is placed on the two
+    //smallest avatars to darken the background color
+    .oj-avatar-xxs.oj-avatar-has-initials.oj-avatar,
+    .oj-avatar-xs.oj-avatar-has-initials.oj-avatar {
+
+        background-image:linear-gradient(rgba(0, 0, 0, var(--oj-avatar-initials-shade-opacity)), rgba(0, 0, 0, var(--oj-avatar-initials-shade-opacity)));
+    }
+
+    .oj-avatar-placeholder {
+      color: #ffffff;
+      @extend .oj-fwk-icon;
+    }
+    
+    .oj-avatar-group-image .oj-avatar-placeholder {
+      @extend .oj-fwk-icon-users;
+    }
+
+    //Filter is placed on the border so that the background color and border
+    //color are the same
+    .oj-avatar-xxs.oj-avatar-has-initials.oj-avatar::after,
+    .oj-avatar-xs.oj-avatar-has-initials.oj-avatar::after {
+
+        border-color: rgba(0, 0, 0, var(--oj-avatar-initials-shade-opacity));
+        //needed to line up the darkening border with the normal border
+        top: calc(0px - var(--oj-avatar-xxs-border-width));
+        left: calc(0px - var(--oj-avatar-xxs-border-width));
+
+    }
+    .oj-avatar-xxs.oj-avatar .oj-avatar-background-image{
+
+      border-radius: var(--oj-avatar-xxs-border-radius);
+
+    }
+    .oj-avatar-xxs.oj-avatar-has-initials.oj-avatar::after {
+
+        width:var(--oj-avatar-xxs-size);
+        height:var(--oj-avatar-xxs-size);
+        border-width: var(--oj-avatar-xxs-border-width);
+
+    }
+    .oj-avatar-xxs.oj-avatar {
+
+        font-size: var(--oj-avatar-xxs-initials-font-size);
+        font-weight: var(--oj-avatar-xxs-initials-font-weight);
+        width: var(--oj-avatar-xxs-size);
+        height: var(--oj-avatar-xxs-size);
+        border-radius: var(--oj-avatar-xxs-border-radius);
+
+    }
+    .oj-avatar-xxs .oj-avatar-placeholder {
+
+        font-size: calc(2/3 * var(--oj-avatar-xxs-size));
+    }
+
+    .oj-avatar-xs.oj-avatar .oj-avatar-background-image{
+
+      border-radius: var(--oj-avatar-xs-border-radius);
+    }
+
+    .oj-avatar-xs.oj-avatar-has-initials.oj-avatar::after {
+
+        width:var(--oj-avatar-xs-size);
+        height:var(--oj-avatar-xs-size);
+        border-width: var(--oj-avatar-xxs-border-width);
+
+    }
+    .oj-avatar-xs.oj-avatar {
+
+        font-size: var(--oj-avatar-xs-initials-font-size);
+        font-weight: var(--oj-avatar-xs-initials-font-weight);
+        width: var(--oj-avatar-xs-size);
+        height: var(--oj-avatar-xs-size);
+        border-radius: var(--oj-avatar-xs-border-radius);
+
+    }
+    .oj-avatar-xs .oj-avatar-placeholder {
+
+        font-size: calc(2/3 * var(--oj-avatar-xs-size));
+
+    }
+
+    .oj-avatar-sm.oj-avatar .oj-avatar-background-image{
+
+      border-radius: var(--oj-avatar-sm-border-radius);
+
+    }
+    .oj-avatar-sm.oj-avatar {
+
+        height: var(--oj-avatar-sm-size);
+        width: var(--oj-avatar-sm-size);
+        font-size: var(--oj-avatar-sm-initials-font-size);
+        font-weight: var(--oj-avatar-sm-initials-font-weight);
+        border-radius: var(--oj-avatar-sm-border-radius);
+
+    }
+    .oj-avatar-sm .oj-avatar-placeholder {
+
+        font-size: calc(2/3 * var(--oj-avatar-sm-size));
+
+    }
+
+    /*Don't need to specify medium size since it is the default*/
+    .oj-avatar .oj-avatar-background-image{
+
+      border-radius: var(--oj-avatar-md-border-radius);
+
+    }
+
+    .oj-avatar {
+
+        height: var(--oj-avatar-md-size);
+        width: var(--oj-avatar-md-size);
+        font-size: var(--oj-avatar-md-initials-font-size);
+        font-weight: var(--oj-avatar-md-initials-font-weight);
+        border-radius: var(--oj-avatar-md-border-radius);
+
+    }
+    .oj-avatar-placeholder {
+
+        font-size: calc(2/3 * var(--oj-avatar-md-size));
+
+    }
+
+    .oj-avatar-lg.oj-avatar .oj-avatar-background-image{
+
+      border-radius: var(--oj-avatar-lg-border-radius);
+    }
+
+    .oj-avatar-lg.oj-avatar {
+
+        height: var(--oj-avatar-lg-size);
+        width: var(--oj-avatar-lg-size);
+        font-size: var(--oj-avatar-lg-initials-font-size);
+        font-weight: var(--oj-avatar-lg-initials-font-weight);
+        border-radius: var(--oj-avatar-lg-border-radius);
+
+    }
+    .oj-avatar-lg .oj-avatar-placeholder {
+
+        font-size: calc(2/3 * var(--oj-avatar-lg-size));
+
+    }
+
+    .oj-avatar-xl.oj-avatar .oj-avatar-background-image{
+
+      border-radius: var(--oj-avatar-xl-border-radius);
+
+    }
+    .oj-avatar-xl.oj-avatar {
+
+        height: var(--oj-avatar-xl-size);
+        width: var(--oj-avatar-xl-size);
+        font-size: var(--oj-avatar-xl-initials-font-size);
+        font-weight: var(--oj-avatar-xl-initials-font-weight);
+        border-radius: var(--oj-avatar-xl-border-radius);
+
+    }
+    .oj-avatar-xl .oj-avatar-placeholder {
+
+        font-size: calc(2/3 * var(--oj-avatar-xl-size));
+
+    }
+
+    .oj-avatar-xxl.oj-avatar .oj-avatar-background-image{
+
+      border-radius: var(--oj-avatar-xxl-border-radius);
+
+    }
+    .oj-avatar-xxl.oj-avatar,
+    .oj-avatar-xl.oj-avatar{
+
+        border-width: var(--oj-avatar-xl-border-width);
+
+    }
+
+    .oj-avatar-xxl.oj-avatar {
+
+        height: var(--oj-avatar-xxl-size);
+        width: var(--oj-avatar-xxl-size);
+        font-size: var(--oj-avatar-xxl-initials-font-size);
+        font-weight: var(--oj-avatar-xxl-initials-font-weight);
+        border-radius: var(--oj-avatar-xxl-border-radius);
+
+    }
+    .oj-avatar-xxl .oj-avatar-placeholder {
+
+        font-size: calc(2/3 * var(--oj-avatar-xxl-size));
+
+    }
+
+
+
+  }

@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -93,31 +94,44 @@
       background-color: transparent;
       border-color: transparent;
       outline: none;
+      padding-bottom: 0;
       @include oj-ltr() {
         padding-left: 0;
       }
       @include oj-rtl() {
         padding-right: 0;
       }
+    }
+    
+    .oj-select.oj-read-only .oj-select-choices {
+      min-height: $formControlInputHeight;
     }
 
     /* apply to the selected entries */
     .oj-select.oj-read-only .oj-select-chosen,
     .oj-select.oj-read-only .oj-select-selected-choice {
       outline: none;
+      margin-top: 0;
+      border-top-width: 0;
+      border-bottom-width: 0;
+      line-height: $formControlInputHeight;
 
         @include oj-form-control-content-readonly;        
       
     }
 
-    /* apply to the first selected entry in readonly mode */
-    .oj-select.oj-read-only li.oj-select-selected-choice:first-child {
+    /* apply to the selected entry in readonly mode */
+    .oj-select.oj-read-only li.oj-select-selected-choice {
       @include oj-ltr() {
         padding-left: 0;
       }
       @include oj-rtl() {
         padding-right: 0;
       }
+    }
+
+    .oj-select.oj-read-only .oj-select-selected-choice-label {
+      display: inherit;
     }
 
     /* don't show dropdown trigger */
@@ -131,11 +145,11 @@
     }
 
     /* Styling for text-align */
-    .oj-form-control-text-align-right .oj-select .oj-select-choice
+    .oj-form-control-text-align-right.oj-select .oj-select-choice
     {
       text-align: right;
     }
-    .oj-form-control-text-align-start .oj-select .oj-select-choice
+    .oj-form-control-text-align-start.oj-select .oj-select-choice
     {
 
         @include oj-bidi-property(
@@ -144,7 +158,7 @@
           $important: false);
 
     }
-    .oj-form-control-text-align-end .oj-select .oj-select-choice
+    .oj-form-control-text-align-end.oj-select .oj-select-choice
     {
 
         @include oj-bidi-property(
@@ -155,7 +169,7 @@
     }
 
     /* Styling for native render mode text-align */
-    .oj-form-control-text-align-right .oj-select .oj-select-select
+    .oj-form-control-text-align-right.oj-select .oj-select-select
     {
       text-align: right;
       direction: rtl;
@@ -167,7 +181,7 @@
         }
 
     }
-    .oj-form-control-text-align-start .oj-select .oj-select-select
+    .oj-form-control-text-align-start.oj-select .oj-select-select
     {
 
 
@@ -184,7 +198,7 @@
         direction: rtl;
       }
     }
-    .oj-form-control-text-align-end .oj-select .oj-select-select
+    .oj-form-control-text-align-end.oj-select .oj-select-select
     {
 
         @include oj-bidi-property(
@@ -208,11 +222,11 @@
 
       }
     }
-    .oj-form-control-text-align-right .oj-select .oj-select-choices li
+    .oj-form-control-text-align-right.oj-select .oj-select-choices li
     {
       float: right;
     }
-    .oj-form-control-text-align-start .oj-select .oj-select-choices li
+    .oj-form-control-text-align-start.oj-select .oj-select-choices li
     {
 
         @include oj-bidi-property(
@@ -221,7 +235,7 @@
           $important: false);
 
     }
-    .oj-form-control-text-align-end .oj-select .oj-select-choices li
+    .oj-form-control-text-align-end.oj-select .oj-select-choices li
     {
 
         @include oj-bidi-property(
@@ -250,7 +264,7 @@
     .oj-select-choices {
       box-sizing: border-box;
       height: auto;
-
+      min-height: calc(#{$formControlTriggerHeight} * 1.25);
       padding: 0 $formControlPaddingHorizontal 5px;   
       @include oj-form-control-content;   
       // Default to no border for common due to generic changes for quiet forms
@@ -635,7 +649,7 @@
     // remove borders, inherit colors and stretch the height
     // need extra specificity since base selector has direction selectors
     .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice,
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {    
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {
       @include oj-form-control-inherit();
       @include oj-form-control-inherit-border();
     }
@@ -652,11 +666,11 @@
       background-color:inherit;
       border-width: 0;
     }
-    
+
     .oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select {
       height:100%;
     }
-    
+
     // TODO: single select when height is large, it doesn't vertically center align
     // TODO: multi select's color inherit does not work. the color does not get inherited. (same with combobox)
 
@@ -698,7 +712,7 @@
       background-color: transparent;
     }
 
-    .oj-text-field-label-inside .oj-select.oj-read-only .oj-select-choice {
+    .oj-text-field-label-inside.oj-select.oj-read-only .oj-select-choice {
       padding: 0;
 
       @include oj-ltr() {
@@ -709,27 +723,34 @@
       }
     }
 
-    .oj-text-field-label-inside .oj-select.oj-read-only .oj-select-chosen,
-    .oj-text-field-label-inside .oj-select.oj-read-only .oj-select-choices {
+    .oj-text-field-label-inside.oj-select.oj-read-only .oj-select-chosen {
       padding-left: 0;
-      padding-right: 0
+      padding-right: 0;
+      padding-bottom: 0;
+    }
+    
+    .oj-text-field-label-inside.oj-select.oj-read-only .oj-select-selected-choice {
+      line-height: normal;
     }
 
-    .oj-text-field-label-inside .oj-select.oj-disabled .oj-text-field-container {
+    .oj-text-field.oj-select.oj-disabled .oj-text-field-container {
       background-color: $formControlBgColorDisabled;
     }
 
-    .oj-text-field .oj-select-multi .oj-text-field-container {
+    .oj-text-field.oj-select-multi .oj-text-field-container {
       height: auto;
+    }
+    
+    .oj-text-field.oj-select-multi:not(.oj-read-only) .oj-text-field-container {
       // The min height needs to be applied to the oj-text-field-container for .oj-select-many
       // since the border is on the .oj-text-field-container div.
-      min-height: calc(#{$formControlTriggerHeight} * 1.28);
+      min-height: calc(#{$formControlTriggerHeight} * 1.25);
     }
-    .oj-text-field .oj-select:not(.oj-select-multi) .oj-text-field-container {
+    .oj-text-field.oj-select:not(.oj-select-multi) .oj-text-field-container {
       height: $formControlTriggerHeight;
     }
 
-    .oj-text-field-label-inside .oj-select-selected-choice {
+    .oj-text-field-label-inside:not(.oj-read-only) .oj-select-selected-choice {
       @include oj-ltr() {
         margin: 10px 6px 0 0;
       }
@@ -737,8 +758,8 @@
         margin: 10px 0 0 6px;
       }
     }
-    .oj-text-field-label-inside .oj-select,
-    .oj-form-control-label-top .oj-select{
+    .oj-text-field-label-inside.oj-select,
+    .oj-form-control-label-top.oj-select {
       max-width: 100%;
     }
     .oj-text-field-label-inside .oj-select-label {

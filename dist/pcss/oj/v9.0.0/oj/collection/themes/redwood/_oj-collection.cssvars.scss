@@ -1,0 +1,105 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+  @include module-include-once("redwood.variables.collection") {
+// todo: in list view grid lines are optional, we should add a class to remove them
+//       called  oj-listview-hide-horizontal-gridlines
+//       dev will need to figure out how to expose this class
+// todo: we don't support active, cell active bg color: neutral 70, 60% opacity (should match oj-active-bg-color)
+// todo: get rid of the selected inactive vars? they're weird.
+// todo: it's actually really confusing using the collection vars, like on list view a lot of them
+//       don't apply. I think we should have list view vars and data grid vars and then table uses one or
+//       the other depending on this: http://jet.us.oracle.com/trunk/jsdocs/oj.ojTable.html#display
+
+:root {
+
+  // collections (used by components like table, data grid, list view)
+  // ----------------------------
+
+  --oj-collection-bg-color:                                var(--oj-palette-neutral-0);
+  --oj-collection-border-color:                            rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-lowest));
+  --oj-collection-status-bg-color:                         var(--oj-palette-neutral-0);
+  --oj-collection-selection-affordance-border-color:       var(--oj-palette-brand-110);
+
+  --oj-collection-column-width:                            6.25rem;
+
+//  For table in list mode and listview
+  --oj-collection-list-min-row-height:                     3rem;
+  --oj-collection-list-cell-padding-vertical:              0.75rem;
+
+  // this should be at least as high as var(--oj-text-field-height)
+  // todo: this seems to only affect the data grid, table has a different row height which seems odd
+  --oj-collection-row-height:                              2.375rem;
+
+  // header
+  // todo: the header font vars don't apply to table headers. 
+  // todo: should be using caption-2
+  --oj-collection-header-font-size:                        var(--oj-typography-body-xs-font-size);
+  --oj-collection-header-font-weight:                      normal;
+  --oj-collection-header-line-height:                      var(--oj-typography-body-xs-line-height);
+  --oj-collection-header-bg-color:                         var(--oj-palette-neutral-0);
+  --oj-collection-header-border-color:                     var(--oj-collection-cell-border-color);
+  --oj-collection-header-text-color:                       var(--oj-core-text-color-secondary);
+  --oj-collection-header-height:                           2.25rem;
+  --oj-collection-column-header-justify-content:           flex-start;
+  --oj-collection-column-header-align-items:               center;
+  --oj-collection-row-header-justify-content:              flex-start;
+  --oj-collection-row-header-align-items:                  center;
+
+  // header hover
+  --oj-collection-header-bg-color-hover:                   var(--oj-core-bg-color-hover); 
+
+  // header selected
+  --oj-collection-header-bg-color-selected:                var(--oj-palette-brand-30);
+
+  // header selected inactive (selected but focus outside the component)
+  --oj-collection-header-bg-color-selected-inactive:       var(--oj-collection-header-bg-color-selected);
+
+  // header drag
+  --oj-collection-header-bg-color-drag:                    var(--oj-palette-brand-40);
+  --oj-collection-header-drag-image-border-color:          var(--oj-palette-neutral-100);
+
+  // cell
+  --oj-collection-cell-align-items:                        center;
+  --oj-collection-cell-justify-content:                    flex-end;
+  // todo: these only apply to data grid, confusing
+  --oj-collection-cell-align-text:                         right;
+  --oj-collection-cell-align-text-rtl:                     left;  
+// todo: should we use line-height as well?
+  --oj-collection-cell-font-size:                          var(--oj-typography-body-md-font-size);
+  --oj-collection-cell-text-color:                         var(--oj-core-text-color-primary);
+  --oj-collection-cell-bg-color:                           var(--oj-palette-neutral-0);
+  --oj-collection-cell-border-color:                       rgba(var(--oj-palette-neutral-rgb-150), var(--oj-palette-opacity-lowest));
+  --oj-collection-cell-banded-bg-color:                    var(--oj-palette-neutral-10);
+
+  // todo: this applies to data grid, partly to table, and not at all to list view - confusing
+  --oj-collection-cell-padding:                            .5rem;
+
+  // cell focus
+  // todo: they want a 2px focus border width, but make sure things don't jump if the width changes
+  --oj-collection-cell-border-color-focus:                 transparent;
+  --oj-collection-editable-cell-border-color-focus:        var(--oj-palette-brand-110);
+
+  // cell hover
+  --oj-collection-cell-bg-color-hover:                     var(--oj-core-bg-color-hover); 
+  --oj-collection-cell-border-color-hover:                 transparent;
+
+  // cell selected
+  --oj-collection-cell-bg-color-selected:                  var(--oj-palette-brand-30);
+  --oj-collection-cell-border-color-selected:              rgba(var(--oj-palette-brand-rgb-100), var(--oj-palette-opacity-medium));
+
+  // cell selected inactive (selected but focus outside the component)
+  --oj-collection-cell-bg-color-selected-inactive:         var(--oj-collection-cell-bg-color-selected);
+  --oj-collection-cell-border-color-selected-inactive:     var(--oj-collection-cell-border-color-selected);
+
+  // cell readonly
+  --oj-collection-editable-cell-bg-color-read-only:        var(--oj-core-bg-color-hover);
+
+  // cell drag
+  //todo: come back to this, did not set
+  --oj-collection-cell-bg-color-drag:                      var(--oj-palette-brand-40);
+  --oj-collection-cell-drag-image-border-color:            var(--oj-palette-neutral-40);
+}
+
+}

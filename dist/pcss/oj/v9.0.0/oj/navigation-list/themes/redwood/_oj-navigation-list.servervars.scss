@@ -1,0 +1,22 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../animation/themes/redwood/_oj-animation.servervars.scss";
+
+// values could be "circle" or "none"
+$navigationListIconOnlyStyle:             none !default;
+$navigationListHorizontalIconOnlyStyle:   none !default;
+
+//---------------Animations-------------------
+$navigationListHorizontalAddAnimation:                     ((effect: "expand", direction:"width"), "fadeIn") !default;
+$navigationListHorizontalRemoveAnimation:                  ((effect: "collapse", direction:"width", persist:"all"), "fadeOut") !default;
+$navigationListAddAnimation:                               ((effect: "expand"), "fadeIn") !default;
+$navigationListRemoveAnimation:                            ((effect: "collapse"), "fadeOut") !default;
+$navigationListUpdateAnimation:                            (effect: "fadeIn") !default;
+$navigationListExpandAnimation:                            (effect: "expand") !default;
+$navigationListCollapseAnimation:                          (effect: "collapse") !default;
+$navigationListSliderExpandAnimation:                      (effect: "slideIn", direction:"start", duration: $animationDurationMedium) !default;
+$navigationListSliderCollapseAnimation:                    (effect: "slideIn", direction:"end", duration: $animationDurationMedium) !default;
+$navigationListPointerUpAnimation:                         (effect: "ripple") !default;
+
+//------Options----------------
+$navigationListHierarchyMenuThresholdOptionDefault: -1 !default;

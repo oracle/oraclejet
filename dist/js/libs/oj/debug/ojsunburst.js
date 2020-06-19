@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -451,6 +452,8 @@ var __oj_sunburst_node_metadata =
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 6
  *
+ * @ojuxspecs ['data-visualization-sunburst']
+ *
  * @classdesc
  * <h3 id="sunburstOverview-section">
  *   JET Sunburst
@@ -743,6 +746,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @expose
      * @name selectionMode
      * @memberof oj.ojSunburst
+     * @ojshortdesc Specifies the selection behavior on the sunburst. See the Help documentation for more information.
      * @instance
      * @type {string}
      * @ojvalue {string} "none" Selection is disabled.
@@ -833,6 +837,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @memberof oj.ojSunburst
      * @instance
      * @type {string}
+     * @ojtranslatable
      * @default ""
      */
       colorLabel: '',
@@ -842,6 +847,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @expose
      * @name sizeLabel
      * @ojshortdesc Specifies the label used in the legend describing the size metric of the sunburst.
+     * @ojtranslatable
      * @memberof oj.ojSunburst
      * @instance
      * @type {string}
@@ -954,7 +960,9 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
         labelHalign: 'center',
 
        /**
-        * The CSS style object defining the style of the label. The default value comes from the CSS and varies based on theme.
+        * The CSS style object defining the style of the label.
+        * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+        * The default value comes from the CSS and varies based on theme.
         * @expose
         * @name nodeDefaults.labelStyle
         * @ojshortdesc The CSS style object defining the style of the label.
@@ -1378,12 +1386,8 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
       resources.rotateCursor =
         Config.getResourceUrl('resources/internal-deps/dvt/sunburst/rotate.cur');
 
-      resources.expand = 'oj-sunburst-expand-icon';
-      resources.expandOver = 'oj-sunburst-expand-icon oj-hover';
-      resources.expandDown = 'oj-sunburst-expand-icon oj-active';
-      resources.collapse = 'oj-sunburst-collapse-icon';
-      resources.collapseOver = 'oj-sunburst-collapse-icon oj-hover';
-      resources.collapseDown = 'oj-sunburst-collapse-icon oj-active';
+      resources.expand = 'oj-fwk-icon oj-fwk-icon-plus';
+      resources.collapse = 'oj-fwk-icon oj-fwk-icon-minus';
     },
 
     /**
@@ -1601,7 +1605,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
  * @property {string=} label The label for this node.
  * @property {("auto"|"horizontal"|"off"|"rotated")=} [labelDisplay="auto"] The label display behavior for the nodes. More labels are generally displayed when using rotation, with the trade off of readability. When auto is used, rotated or horizontal labels will be used based on the client browser and platform.
  * @property {("center"|"inner"|"outer")=} [labelHalign="center"] The horizontal alignment for labels displayed within the node. Only applies to rotated text.
- * @property {Object=} labelStyle The CSS style object defining the style of the label.
+ * @property {Object=} labelStyle The CSS style object defining the style of the label. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration. The default value comes from the CSS and varies based on theme. The default value comes from the CSS and varies based on theme.
  * @property {Array.<Object>=} nodes An array of objects with properties for the child nodes.
  * @property {("largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"|"none"|"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle")=} [pattern="none"] The pattern used to fill the node.
  * @property {number=} radius The radius of the node relative to the other nodes.
@@ -1609,7 +1613,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
  * @property {string=} shortDesc The description of this node. This is used for accessibility and also for customizing the tooltip text.
  * @property {("inherit"|"off"|"on")=} [showDisclosure="inherit"] Specifies whether to display the expand/collapse button on hover for a specific node. If the button is clicked, the expanded attribute is updated with the new array of node ids.
  * @property {string=} svgClassName The CSS style class to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
- * @property {Object=} svgStyle The inline style to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
+ * @property {Object=} svgStyle The inline style to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute. Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
  * @property {number} value The value of the node, which determines the relative size of the node.
  * @ojsignature [{target: "Type", value: "K", for: "id"},
  *               {target: "Type", value: "Array.<oj.ojSunburst.Node<K>>=", for: "nodes"},
@@ -1678,7 +1682,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
 /**
  * <p>
  *  The <code class="prettyprint">nodeTemplate</code> slot is used to specify the template for
- *  creating nodes of the sunburst. The slot content must be wrapped in a &lt;template>
+ *  creating nodes of the sunburst. The slot content must be wrapped in a single &lt;template>
  *  element. The content of the template should be a single &lt;oj-sunburst-node> element.
  *  See the [oj-sunburst-node]{@link oj.ojSunburstNode} doc for more details.
  * </p>
@@ -1719,7 +1723,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
   * @property {any} parentKey  The key of the parent node
   */
 /**
- * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
+ * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content. The slot content must be a single &lt;template> element.
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
@@ -1730,6 +1734,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
  * @ojslot tooltipTemplate
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojSunburst.TooltipContext
+ * @ojmaxitems 1
  * @memberof oj.ojSunburst
  *
  * @example <caption>Initialize the Sunburst with a tooltip template specified:</caption>
@@ -1742,7 +1747,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
 
 /**
  * <p>The <code class="prettyprint">rootNodeContentTemplate</code> slot is used to specify custom root node content
- * for a sunburst.  This slot takes precedence over the rootNodeContent.renderer property if specified.
+ * for a sunburst. The slot content must be a single &lt;template> element. This slot takes precedence over the rootNodeContent.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
  *   <li>$current - an object that contains information for the root node. (See [oj.ojSunburst.RootNodeContext]{@link oj.ojSunburst.RootNodeContext} or the table below for a list of properties available on $current) </li>
@@ -1750,6 +1755,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
  *
  *
  * @ojslot rootNodeContentTemplate
+ * @ojmaxitems 1
  * @ojshortdesc The rootNodeContentTemplate slot is used to specify custom root node content for a sunburst. See the Help documentation for more information.
  * @ojslotitemprops oj.ojSunburst.RootNodeContext
  * @memberof oj.ojSunburst
@@ -1810,6 +1816,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
 
 /**
  * @ojcomponent oj.ojSunburstNode
+ * @ojshortdesc The oj-sunburst-node element is used to declare properties for sunburst nodes. See the Help documentation for more information.
  * @ojsignature {target: "Type", value:"class ojSunburstNode extends JetElement<ojSunburstNodeSettableProperties>"}
  * @ojslotcomponent
  * @since 6.0.0
@@ -1897,6 +1904,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
  */
 /**
  * The inline style to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
+ * Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
  * @expose
  * @name svgStyle
  * @ojshortdesc The inline style to apply to the node. See the Help documentation for more information.
@@ -1971,6 +1979,8 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
  */
 /**
  * The CSS style object defining the style of the label.
+ * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration. The default value comes from the CSS and varies based on theme.
+ * The default value comes from the CSS and varies based on theme.
  * @expose
  * @name labelStyle
  * @memberof! oj.ojSunburstNode

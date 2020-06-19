@@ -1,12 +1,13 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -144,7 +145,29 @@ function _execBundle(src) {
  * @param {*} obj
  */
 function _getModuleContent(obj) {
-  return 'module.exports=' + JSON.stringify(obj);
+  return 'module.exports=' + _stringifyWithFunctions(obj);
+}
+
+/**
+ * Allow functions in bundle values while delegating to JSON.stringify() for everything else
+ * @param {*} obj
+ */
+function _stringifyWithFunctions(obj) {
+  if (Array.isArray(obj)) {
+    const vals = obj.map(val => {
+      return _stringifyWithFunctions(val);
+    });
+    return `[${vals.join(',')}]`;
+  } else if (_isObject(obj)) {
+    const vals = Object.keys(obj).map(key => {
+      return `${JSON.stringify(key)}:${_stringifyWithFunctions(obj[key])}`;
+    });
+    return `{${vals.join(',')}}`;
+  } else if (typeof obj === 'function') {
+    return String(obj);
+  } else {
+    return JSON.stringify(obj);
+  }
 }
 
 

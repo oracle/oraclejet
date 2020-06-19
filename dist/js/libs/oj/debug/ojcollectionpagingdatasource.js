@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -25,6 +26,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout-model', 'ojs/ojdatas
  * @constructor
  * @final
  * @since 1.0
+ * @ojdeprecated {since: '9.0.0', description: 'CollectionPagingDataSource has been deprecated, please use DataProviders instead.'}
  * @ojtsignore
  * @ojtsimport knockout
  */

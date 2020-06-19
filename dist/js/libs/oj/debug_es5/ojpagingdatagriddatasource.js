@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -160,6 +161,7 @@ oj.PagingCellSet.prototype.getExtent = function (indexes) {
  * @constructor
  * @final
  * @since 1.0
+ * @ojdeprecated {since: '9.0.0', description: 'PagingDataGridDataSource has been deprecated, please use DataProviders instead.'}
  * @ojtsignore
  */
 // eslint-disable-next-line no-unused-vars

@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -56,6 +57,8 @@ var __oj_label_value_metadata =
  * @ojpropertylayout {propertyGroup: "common", items: ["labelEdge", "labelWidth", "colspan"]}
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 2
+ *
+ * @ojuxspecs ['label']
  *
  * @classdesc
  * <h3 id="optionOverview-section">
@@ -305,7 +308,7 @@ function ojLabelValue(context) {
           break;
 
         default:
-          element.removeChild(child); // @HTMLUpdateOK removing any non 'label'/'value' slot children
+          element.removeChild(child); // removing any non 'label'/'value' slot children
 
           break;
       }

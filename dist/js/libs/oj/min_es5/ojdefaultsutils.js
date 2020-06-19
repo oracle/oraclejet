@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(["ojs/ojmetadatautils"],function(t){"use strict";var e;return function(e){function a(e,a,i){var f=e._staticDefaults;if(void 0===f){if(a){var u=a.properties;u&&(f=Object.create(t.getDefaultValues(u,i)))}else f=null;e._staticDefaults=f}return f}function i(t,e){if(t.getDynamicDefaults){var a=t.getDynamicDefaults();if(a)for(var i in a)void 0===e[i]&&(e[i]=a[i])}}e.getDefaults=function(t,e,f){var u=t._defaults;if(void 0===u){var n=a(t,e,f);i(t,u=Object.create(n)),t._defaults=u}return u},e.getStaticDefaults=a,e.applyDynamicDefaults=i}(e||(e={})),e});
+define(["ojs/ojmetadatautils"],function(e){"use strict";var t;return function(t){function a(t,a,i){var u,f=t._staticDefaults;if(void 0===f){if(f=null,a){var n=a.properties,r=null===(u=a.extension)||void 0===u?void 0:u._DEFAULTS;if(r){var l=new r;f=Object.create(l)}else n&&(f=Object.create(e.getDefaultValues(n,i)))}t._staticDefaults=f}return f}function i(e,t){if(e.getDynamicDefaults){var a=e.getDynamicDefaults();if(a)for(var i in a)void 0===t[i]&&(t[i]=a[i])}}t.getFrozenDefault=function(a,i,u){var f=t.getDefaults(i,u,!0);return e.deepFreeze(f[a])},t.getDefaults=function(e,t,u){var f=e._defaults;if(void 0===f){var n=a(e,t,u);i(e,f=Object.create(n)),e._defaults=f}return f},t.getStaticDefaults=a,t.applyDynamicDefaults=i}(t||(t={})),{DefaultsUtils:t}});

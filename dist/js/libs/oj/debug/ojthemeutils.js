@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -236,7 +237,7 @@ ThemeUtils.parseJSONFromFontFamily = function (selector) {
                             '.\nString being parsed is ' + fontstring + '. Error is:\n', e);
 
             // remove the meta tag
-            document.head.removeChild(elem); // @HTMLUpdateOK
+            document.head.removeChild(elem);
             throw e;
           }
         }
@@ -245,7 +246,7 @@ ThemeUtils.parseJSONFromFontFamily = function (selector) {
   }
 
   // remove the meta tag
-  document.head.removeChild(elem); // @HTMLUpdateOK
+  document.head.removeChild(elem);
 
   // cache the result
   if (jsonval == null) {

@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -2640,6 +2641,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
      * @expose
      * @name selectionMode
      * @memberof oj.ojDiagram
+     * @ojshortdesc Specifies the selection behavior on the diagram. See the Help documentation for more information.
      * @instance
      * @type {string}
      * @ojvalue {string} "none" Selection is disabled.
@@ -3836,9 +3838,8 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
        */
       nodeDefaults: {
         /**
-         * The CSS style object defining the style of the node label. Supports color,
-         * fontFamily, fontSize, fontStyle, fontWeight, textDecoration, cursor, maxWidth,
-         * backgroundColor, borderColor, borderRadius, and borderWidth properties.
+         * The CSS style object defining the style of the node label.
+         * Supports backgroundColor, borderColor, borderRadius, borderWidth, color, cursor, fontFamily, fontSize, fontStyle, fontWeight, maxWidth, textDecoration properties.
          * @ojshortdesc Specifies CSS styles for the node label.
          * @expose
          * @name styleDefaults.nodeDefaults.labelStyle
@@ -4013,6 +4014,8 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
 
           /**
            * The default SVG CSS style object defining the style of the icon.
+           * Only SVG CSS style properties are supported.
+           * @ojshortdesc Specifies CSS styles for the icon.
            * @expose
            * @name styleDefaults.nodeDefaults.icon.svgStyle
            * @memberof! oj.ojDiagram
@@ -4057,6 +4060,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
 
         /**
          * The default style object represents the SVG CSS style of the link. User defined custom SVG CSS Styles will be applied directly on the link.
+         * Only SVG CSS style properties are supported.
          * @ojshortdesc Specifies SVG CSS styles for the link.
          * @expose
          * @name styleDefaults.linkDefaults.svgStyle
@@ -4091,9 +4095,9 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
         width: 1.0,
 
         /**
-         * The CSS style object defining the style of the link label. Supports color,
-         * fontFamily, fontSize, fontStyle, fontWeight, textDecoration, cursor, maxWidth,
-         * backgroundColor, borderColor, borderRadius, and borderWidth properties.
+         * The CSS style object defining the style of the link label.
+         * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, maxWidth, textDecoration.
+         * The default value comes from the CSS and varies based on theme.
          * @ojshortdesc Specifies CSS styles for the link label.
          * @expose
          * @name styleDefaults.linkDefaults.labelStyle
@@ -4163,7 +4167,9 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
 
         /**
          * The promoted style object represents the CSS style of the link. User defined custom CSS Styles will be applied directly on the link.
+         * Only SVG CSS style properties are supported.
          * @expose
+         * @ojshortdesc Specifies CSS styles of the promoted link.
          * @name styleDefaults.promotedLink.svgStyle
          * @memberof! oj.ojDiagram
          * @instance
@@ -4728,72 +4734,21 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
       this.options._resources = {};
     }
 
-    var resources = this.options._resources;
+    var resources = this.options._resources; // TODO: what is this?
 
-    if (oj.DomUtils.getReadingDirection() === 'rtl') {
-      resources.collapse_ena = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-collapse-button-ena_rtl.svg'),
-        width: 20,
-        height: 20
-      };
-      resources.collapse_ovr = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-collapse-button-ovr_rtl.svg'),
-        width: 20,
-        height: 20
-      };
-      resources.collapse_dwn = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-collapse-button-dwn_rtl.svg'),
-        width: 20,
-        height: 20
-      };
-      resources.expand_ena = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-expand-button-ena_rtl.svg'),
-        width: 20,
-        height: 20
-      };
-      resources.expand_ovr = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-expand-button-ovr_rtl.svg'),
-        width: 20,
-        height: 20
-      };
-      resources.expand_dwn = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-expand-button-dwn_rtl.svg'),
-        width: 20,
-        height: 20
-      };
-    } else {
-      // ltr
-      resources.collapse_ena = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-collapse-button-ena.svg'),
-        width: 20,
-        height: 20
-      };
-      resources.collapse_ovr = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-collapse-button-ovr.svg'),
-        width: 20,
-        height: 20
-      };
-      resources.collapse_dwn = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-collapse-button-dwn.svg'),
-        width: 20,
-        height: 20
-      };
-      resources.expand_ena = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-expand-button-ena.svg'),
-        width: 20,
-        height: 20
-      };
-      resources.expand_ovr = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-expand-button-ovr.svg'),
-        width: 20,
-        height: 20
-      };
-      resources.expand_dwn = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-expand-button-dwn.svg'),
-        width: 20,
-        height: 20
-      };
-    }
+    resources.panUp = 'oj-chart-pan-icon';
+    resources.panUpHover = 'oj-chart-pan-icon oj-hover';
+    resources.panDown = 'oj-chart-pan-icon oj-active';
+    resources.collapse = {
+      icon: 'oj-fwk-icon oj-fwk-icon-minus',
+      width: 10,
+      height: 10
+    };
+    resources.expand = {
+      icon: 'oj-fwk-icon oj-fwk-icon-plus',
+      width: 10,
+      height: 10
+    };
   },
   //* * @inheritdoc */
   _GetComponentNoClonePaths: function _GetComponentNoClonePaths() {
@@ -6163,7 +6118,7 @@ Components.setDefaultOptions({
 // Slots
 
 /**
- * <p> The <code class="prettyprint">linkTemplate</code> slot is used to specify the template for creating each diagram link. The slot content must be a &lt;template> element.
+ * <p> The <code class="prettyprint">linkTemplate</code> slot is used to specify the template for creating each diagram link. The slot content must be a single &lt;template> element.
  * <p>When the template is executed for each item, it will have access to the diagram's binding context and the following properties:</p>
  * <ul>
  *   <li>$current - an object that contains information for the current link. (See [oj.ojDiagram.LinkTemplateContext]{@link oj.ojDiagram.LinkTemplateContext} or the table below for a list of properties available on $current) </li>
@@ -6194,7 +6149,7 @@ Components.setDefaultOptions({
  */
 
 /**
- * <p> The <code class="prettyprint">nodeTemplate</code> slot is used to specify the template for creating each diagram node. The slot content must be a &lt;template> element.
+ * <p> The <code class="prettyprint">nodeTemplate</code> slot is used to specify the template for creating each diagram node. The slot content must be a single &lt;template> element.
  * <p>When the template is executed for each item, it will have access to the diagram's binding context and the following properties:</p>
  * <ul>
  *   <li>$current - an object that contains information for the current node. (See [oj.ojDiagram.NodeTemplateContext]{@link oj.ojDiagram.NodeTemplateContext} or the table below for a list of properties available on $current) </li>
@@ -6222,7 +6177,7 @@ Components.setDefaultOptions({
  */
 
 /**
-* <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
+* <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content. The slot content must be a single &lt;template> element.
 * This slot takes precedence over the tooltip.renderer property if specified.
 * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
 * <ul>
@@ -6231,6 +6186,7 @@ Components.setDefaultOptions({
 *
 *
 * @ojslot tooltipTemplate
+* @ojmaxitems 1
 * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
 * @ojslotitemprops oj.ojDiagram.TooltipContext
 * @memberof oj.ojDiagram
@@ -6245,7 +6201,7 @@ Components.setDefaultOptions({
 
 /**
 * <p>The <code class="prettyprint">nodeContentTemplate</code> slot is used to specify custom node content.</p>
-* This slot takes precedence over the
+* The slot content must be a single &lt;template> element. This slot takes precedence over the
 * renderer/focusRenderer/hoverRenderer/selectionRenderer/zoomRenderer
 * properties on the nodeContent object if specified.
 * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
@@ -6259,6 +6215,7 @@ Components.setDefaultOptions({
 * The component will insert the entire SVG structure into DOM including the outer <code>svg</code> element.</p>
 *
 * @ojslot nodeContentTemplate
+* @ojmaxitems 1
 * @ojshortdesc The nodeContentTemplate slot is used to specify custom node content. See the Help documentation for more information.
 * @ojslotitemprops oj.ojDiagram.RendererContext
 * @memberof oj.ojDiagram
@@ -6275,7 +6232,7 @@ Components.setDefaultOptions({
 */
 
 /**
-* <p>The <code class="prettyprint">linkContentTemplate</code> slot is used to specify custom link content.</p>
+* <p>The <code class="prettyprint">linkContentTemplate</code> slot is used to specify custom link content. The slot content must be a single &lt;template> element.</p>
 * This slot takes precedence over the renderer/focusRenderer/hoverRenderer/selectionRenderer
 * properties on the linkContent object if specified.
 * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
@@ -6289,6 +6246,7 @@ Components.setDefaultOptions({
 * <p>See <a href="#linkContent.renderer">linkContent.renderer</a> for additional details on custom content for Diagram links.</p>
 *
 * @ojslot linkContentTemplate
+* @ojmaxitems 1
 * @ojshortdesc The linkContentTemplate slot is used to specify custom link content. See the Help documentation for more information.
 * @ojslotitemprops oj.ojDiagram.LinkRendererContext
 * @memberof oj.ojDiagram
@@ -6310,6 +6268,7 @@ Components.setDefaultOptions({
 
 /**
  * @ojcomponent oj.ojDiagramLink
+ * @ojshortdesc The oj-diagram-link element is used to declare properties for diagram links. See the Help documentation for more information.
  * @ojimportmembers oj.ojDiagramLinkProperties
  * @ojsignature {target: "Type", value:"class ojDiagramLink extends JetElement<ojDiagramLinkSettableProperties>"}
  * @ojslotcomponent
@@ -6344,6 +6303,7 @@ Components.setDefaultOptions({
 
 /**
  * @ojcomponent oj.ojDiagramNode
+ * @ojshortdesc The oj-diagram-node element is used to declare properties for diagram nodes. See the Help documentation for more information.
  * @ojimportmembers oj.ojDiagramNodeProperties
  * @ojsignature {target: "Type", value:"class ojDiagramNode extends JetElement<ojDiagramNodeSettableProperties>"}
  * @ojslotcomponent
@@ -6377,8 +6337,6 @@ Components.setDefaultOptions({
 
 
 /* global __oj_diagram_metadata:false */
-
-/* global DvtAttributeUtils */
 
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.

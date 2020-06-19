@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['./DvtToolkit'], function(dvt) {
   "use strict";
@@ -8,16 +9,18 @@ define(['./DvtToolkit'], function(dvt) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function(dvt) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -425,8 +428,9 @@ dvt.PictoChart.prototype.getAutomation = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -522,8 +526,9 @@ DvtPictoChartAutomation.prototype.getItemCount = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -637,8 +642,9 @@ DvtPictoChartEventManager.prototype.processDrillEvent = function(obj) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -680,9 +686,8 @@ DvtPictoChartDefaults.VERSION_1 = {
   '_gapRatio': 0.25,
   '_textStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_13 + 'color: #252525;'),
   '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_13 + 'color: #252525;'),
-  '_tooltipStyle': new dvt.CSSStyle('border-collapse: separate; border-spacing: 1px'),
-  '_tooltipLabelStyle': new dvt.CSSStyle('color: #666666; padding: 0px 2px'),
-  '_tooltipValueStyle': new dvt.CSSStyle('color: #333333; padding: 0px 2px')
+  '_tooltipLabelStyle': new dvt.CSSStyle(''),
+  '_tooltipValueStyle': new dvt.CSSStyle('')
 };
 
 /**
@@ -695,8 +700,9 @@ DvtPictoChartDefaults.prototype.getAnimationDuration = function(options)
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -782,8 +788,9 @@ DvtPictoChartImageMarker.prototype._setAnimationParams = function(params) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1033,17 +1040,13 @@ DvtPictoChartItem.prototype.getDatatip = function(target) {
     return this.getShortDesc();
 
   // Default Tooltip Support
-  var isRTL = dvt.Agent.isRightToLeft(this._picto.getCtx());
-  options['_tooltipLabelStyle'].setStyle(dvt.CSSStyle.TEXT_ALIGN, isRTL ? 'left' : 'right');
-  options['_tooltipValueStyle'].setStyle(dvt.CSSStyle.TEXT_ALIGN, isRTL ? 'right' : 'left');
-
   var tds = [];
   var name = this.getName();
   if (name)
-    tds.push(dvt.HtmlTooltipManager.createElement('td', options['_tooltipLabelStyle'], name));
-  tds.push(dvt.HtmlTooltipManager.createElement('td', options['_tooltipValueStyle'], this._getCountString()));
+    tds.push(dvt.HtmlTooltipManager.createElement('td', options['_tooltipLabelStyle'], name, ['oj-dvt-datatip-label']));
+  tds.push(dvt.HtmlTooltipManager.createElement('td', options['_tooltipValueStyle'], this._getCountString(), ['oj-dvt-datatip-value']));
   var tr = dvt.HtmlTooltipManager.createElement('tr', null, tds);
-  var table = dvt.HtmlTooltipManager.createElement('table', options['_tooltipStyle'], [tr]);
+  var table = dvt.HtmlTooltipManager.createElement('table', null, [tr], ['oj-dvt-datatip-table']);
   return table;
 };
 
@@ -1254,8 +1257,9 @@ DvtPictoChartItem.prototype.getKeyboardTooltipLocation = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1355,8 +1359,9 @@ DvtPictoChartKeyboardHandler.prototype.processKeyDown = function(event) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -1447,8 +1452,9 @@ DvtPictoChartShapeMarker.prototype._setAnimationParams = function(params) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1844,8 +1850,9 @@ DvtPictoChartRenderer.isOriginRight = function(picto) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 })(dvt);

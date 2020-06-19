@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
 import { IntlDateTimeConverter, DateTimeConverter } from '../ojconverter-datetime';
 import ColorConverter = require('../ojconverter-color');
 import { IntlNumberConverter, NumberConverter } from '../ojconverter-number';
@@ -30,6 +38,8 @@ export interface inputBase<V, SP extends inputBaseSettableProperties<V, SV>, SV 
     required: boolean;
     validators: Array<Validator<V> | AsyncValidator<V>> | null;
     translations: {
+        accessibleMaxLengthExceeded?: string;
+        accessibleMaxLengthRemaining?: string;
         regexp?: {
             messageDetail?: string;
             messageSummary?: string;
@@ -116,6 +126,8 @@ export interface inputBaseSettableProperties<V, SV = V, RV = V> extends editable
     required: boolean;
     validators: Array<Validator<V> | AsyncValidator<V>> | null;
     translations: {
+        accessibleMaxLengthExceeded?: string;
+        accessibleMaxLengthRemaining?: string;
         regexp?: {
             messageDetail?: string;
             messageSummary?: string;
@@ -133,6 +145,8 @@ export interface inputBaseSettablePropertiesLenient<V, SV = V, RV = V> extends P
 export interface ojInputPassword<V = string> extends inputBase<V, ojInputPasswordSettableProperties<V>> {
     value: V | null;
     translations: {
+        accessibleMaxLengthExceeded?: string;
+        accessibleMaxLengthRemaining?: string;
         regexp?: {
             messageDetail?: string;
             messageSummary?: string;
@@ -176,6 +190,8 @@ export interface ojInputPasswordEventMap<V = string> extends inputBaseEventMap<V
 export interface ojInputPasswordSettableProperties<V = string> extends inputBaseSettableProperties<V> {
     value: V | null;
     translations: {
+        accessibleMaxLengthExceeded?: string;
+        accessibleMaxLengthRemaining?: string;
         regexp?: {
             messageDetail?: string;
             messageSummary?: string;

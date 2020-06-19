@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
 import RequiredValidator = require('../ojvalidator-required');
 import RegExpValidator = require('../ojvalidator-regexp');
 import LengthValidator = require('../ojvalidator-length');
@@ -175,6 +183,8 @@ export interface ojInputDate<SP extends ojInputDateSettableProperties = ojInputD
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     translations: {
+        accessibleMaxLengthExceeded?: string;
+        accessibleMaxLengthRemaining?: string;
         currentText?: string;
         dateRestriction?: {
             hint?: string;
@@ -326,6 +336,8 @@ export interface ojInputDateSettableProperties extends inputBaseSettableProperti
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     translations: {
+        accessibleMaxLengthExceeded?: string;
+        accessibleMaxLengthRemaining?: string;
         currentText?: string;
         dateRestriction?: {
             hint?: string;
@@ -381,6 +393,8 @@ export interface ojInputDateTime<SP extends ojInputDateTimeSettableProperties = 
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     translations: {
+        accessibleMaxLengthExceeded?: string;
+        accessibleMaxLengthRemaining?: string;
         cancel?: string;
         currentText?: string;
         dateRestriction?: {
@@ -485,6 +499,8 @@ export interface ojInputDateTimeSettableProperties extends ojInputDateSettablePr
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     translations: {
+        accessibleMaxLengthExceeded?: string;
+        accessibleMaxLengthRemaining?: string;
         cancel?: string;
         currentText?: string;
         dateRestriction?: {
@@ -547,6 +563,8 @@ export interface ojInputTime extends inputBase<string, ojInputTimeSettableProper
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     translations: {
+        accessibleMaxLengthExceeded?: string;
+        accessibleMaxLengthRemaining?: string;
         ampmWheelLabel?: string;
         cancelText?: string;
         currentTimeText?: string;
@@ -655,6 +673,8 @@ export interface ojInputTimeSettableProperties extends inputBaseSettableProperti
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     translations: {
+        accessibleMaxLengthExceeded?: string;
+        accessibleMaxLengthRemaining?: string;
         ampmWheelLabel?: string;
         cancelText?: string;
         currentTimeText?: string;

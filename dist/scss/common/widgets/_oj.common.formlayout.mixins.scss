@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 
 //------------------------------------------------------------------------------------------------
 // Some mixins for *-label-inline and *-labels-inline
@@ -471,21 +472,6 @@
 
     }
 
-    // in some cases form controls are grouped together with the 
-    // oj-form-control-group class, in that case you need
-    // to subtract wrappableMarginBottom
-    .oj-form > .oj-form-control-group {
-
-        margin-bottom: calc(#{$formLayoutMarginBottom} - #{$wrappableMarginBottom});
-
-    }
-
-    // This keeps the form controls lined up in case one has an inline message.
-    .oj-form-control-group .oj-form-control {
-      vertical-align: top;
-    }
-
-
     // when a form is nested reset the text align to start, otherwise the field's
     // text-align property will be inherited
     .oj-form > .oj-flex > .oj-flex-item > .oj-form{
@@ -605,12 +591,6 @@
 
     // no border on the last row
     .oj-form > .oj-flex:last-child{
-      border-width: 0;
-    }
-
-    .oj-form-no-dividers > .oj-flex,
-    .oj-form-layout > .oj-form-no-dividers[class*="oj-form-cols-"] > .oj-flex:last-child,
-    .oj-form-layout > .oj-flex-item > .oj-form-no-dividers > .oj-flex:last-child {
       border-width: 0;
     }
   }

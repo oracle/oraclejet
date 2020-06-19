@@ -1,0 +1,105 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
+//          for example alta/widgets/_oj.alta.dvt.chart.scss
+// !!!
+
+@import "../../../utilities/_oj.utilities.scss";
+
+  @include module-include-once("common.chart") {
+    
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-chart:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    oj-chart {
+      display: block;
+    }
+
+    .oj-chart {
+
+        user-select: none;
+
+
+      width:100%;
+      height:448px;
+    }
+
+    .oj-chart-data-label {
+
+        font-size: var(--oj-chart-data-label-font-size);
+
+    }
+
+    .oj-chart-data-cursor-line {
+
+        color: var(--oj-core-text-color-primary);
+
+    }
+
+    .oj-chart-stock-falling {
+
+        background-color: var(--oj-chart-stock-falling-bg-color);
+
+    }
+
+    .oj-chart-stock-range {
+
+        background-color: var(--oj-chart-stock-range-bg-color);
+
+    }
+
+    .oj-chart-stock-rising {
+
+        background-color: var(--oj-chart-stock-rising-bg-color);
+
+    }
+
+    .oj-chart-stack-label{
+
+        font-size: var(--oj-chart-stack-label-font-size);
+
+      font-weight: bold;
+    }
+
+    .oj-chart-pie-center-label,
+    .oj-chart-xaxis-title,
+    .oj-chart-yaxis-title,
+    .oj-chart-y2axis-title {
+
+          font-size: var(--oj-chart-axis-title-font-size);
+          color: var(--oj-chart-axis-title-text-color);
+
+    }
+
+    .oj-chart-xaxis-tick-label,
+    .oj-chart-yaxis-tick-label,
+    .oj-chart-y2axis-tick-label {
+      
+          font-size: var(--oj-chart-axis-tick-label-font-size);
+          color: var(--oj-chart-axis-tick-label-text-color);
+
+    }
+
+    .oj-chart-animation-down {
+      fill: var(--oj-chart-animation-falling-icon-color);
+    }
+
+    .oj-chart-animation-up {
+      fill: var(--oj-chart-animation-rising-icon-color);
+    }
+
+    .oj-chart-animation-marker {
+      fill: var(--oj-chart-animation-marker-color);
+    }
+
+    .oj-chart .oj-active-drop {
+      fill: var(--oj-core-drop-target-color-1);
+    }
+
+  }

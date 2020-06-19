@@ -1,0 +1,52 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../theme/themes/redwood/oj-helpers.scss";
+@import "../../../dvt/themes/redwood/_oj-dvt.scss"; 
+// import avatar
+@import "../../../avatar/themes/redwood/oj-avatar.scss"; 
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+// ----- end dependencies ---------
+
+
+@import "_oj-n-box.cssvars.scss";
+// import classes defined in the common directory
+@import "../base/_oj-n-box.scss"; 
+
+.oj-nbox-node-initials-neutral {
+  background-image: oj-common-image-url('../../redwood/images/ava-neutral.png');
+}
+
+.oj-nbox-node-initials-red {
+  background-image: oj-common-image-url('../../redwood/images/ava-red.png');
+}
+
+.oj-nbox-node-initials-orange {
+  background-image: oj-common-image-url('../../redwood/images/ava-orange.png');
+}
+
+.oj-nbox-node-initials-forest {
+  background-image: oj-common-image-url('../../redwood/images/ava-forest.png');
+}
+
+.oj-nbox-node-initials-green {
+  background-image: oj-common-image-url('../../redwood/images/ava-green.png');
+}
+
+.oj-nbox-node-initials-teal {
+  background-image: oj-common-image-url('../../redwood/images/ava-teal.png');
+}
+
+.oj-nbox-node-initials-mauve {
+  background-image: oj-common-image-url('../../redwood/images/ava-mauve.png');
+}
+
+.oj-nbox-node-initials-purple {
+  background-image: oj-common-image-url('../../redwood/images/ava-purple.png');
+}

@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -56,9 +57,9 @@ MetadataUtils.getDefaultValue = function (metadata, shouldFreeze) {
     // For object/array types, either freeze or make a copy of the value
     // to prevent modification
     if (Array.isArray(defaultValue)) {
-      defaultValue = shouldFreeze ? deepFreeze(defaultValue) : defaultValue.slice();
+      defaultValue = shouldFreeze ? MetadataUtils.deepFreeze(defaultValue) : defaultValue.slice();
     } else if (defaultValue !== null && typeof defaultValue === 'object') {
-      defaultValue = shouldFreeze ? deepFreeze(defaultValue) :
+      defaultValue = shouldFreeze ? MetadataUtils.deepFreeze(defaultValue) :
         oj.CollectionUtils.copyInto({}, defaultValue, undefined, true);
     }
   }
@@ -92,29 +93,35 @@ MetadataUtils.getDefaultValues = function (metadata, shouldFreeze) {
 };
 
 /**
- * Helper to deep freeze default values found in component
- * metadata. This method expects that all object types are
- * pojos since values are coming from metadata.
+ * Helper to deep freeze object literals. This method will walk arrays and
+ * freeze array contents as needed. If anything other than a plain old object,
+ * we will not attempt to freeze it so the owner should ensure that the
+ * object is immutable.
  * @param {any} value The value to freeze
  * @return {any}
  * @ignore
  */
-function deepFreeze(value) {
-  if (Array.isArray(value)) {
-    // eslint-disable-next-line no-param-reassign
-    value = value.map(item => deepFreeze(item));
-  } else if (value != null && typeof value === 'object') {
-    // Retrieve the property names defined on object
-    var propNames = Object.getOwnPropertyNames(value);
-    Object.keys(propNames).forEach(function (name) {
-      // eslint-disable-next-line no-param-reassign
-      value[name] = deepFreeze(value[name]);
-    });
-  } else {
+MetadataUtils.deepFreeze = function (value) {
+  if (Object.isFrozen(value)) {
     return value;
+  } else if (Array.isArray(value)) {
+    // eslint-disable-next-line no-param-reassign
+    value = value.map(item => MetadataUtils.deepFreeze(item));
+  } else if (value !== null && typeof value === 'object') {
+    // We should only recurse/freeze if value is a pojo.
+    // proto will be null if Object.create(null) was used
+    const proto = Object.getPrototypeOf(value);
+    if (proto === null || proto === Object.prototype) {
+      // Retrieve the property names defined on object
+      Object.keys(value).forEach(function (name) {
+        // eslint-disable-next-line no-param-reassign
+        value[name] = MetadataUtils.deepFreeze(value[name]);
+      });
+      Object.freeze(value);
+    }
   }
-  return Object.freeze(value);
-}
+  return value;
+};
 
 ;return MetadataUtils;
 });

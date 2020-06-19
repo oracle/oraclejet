@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -223,11 +224,9 @@ function ExpParser() {
     if (_isDecimalDigit(ch) || ch === PERIOD_CODE) {
       // Char code 46 is a dot `.` which can start off a numeric literal
       return _gobbleNumericLiteral(context);
-    } else if (ch === SQUOTE_CODE || ch === DQUOTE_CODE) {
-      // Single or double quotes
-      return _gobbleStringLiteral(context);
-    } else if (ch === OBRACK_CODE) {
-      return _gobbleArray(context);
+    } else if (ch === SQUOTE_CODE || ch === DQUOTE_CODE || ch === OBRACK_CODE) {
+      // Treat string literal or an array literal as variable to support method call such as 'abc'.indexOf('b')
+      return _gobbleVariable(context);
     } else if (ch === OBRACE_CODE) {
       return _gobbleObjectLiteral(context);
     }
@@ -480,9 +479,17 @@ function ExpParser() {
 
     if (ch_i === OPAREN_CODE) {
       node = _gobbleGroup(context);
+    } else if (ch_i === SQUOTE_CODE || ch_i === DQUOTE_CODE) {
+      // Supporting method call on string literal such as 'abc'.indexOf('b')
+      // Single or double quotes
+      node = _gobbleStringLiteral(context);
+    } else if (ch_i === OBRACK_CODE) {
+      // Supporting method call on array literal such as [1, 3].includes(3)
+      node = _gobbleArray(context);
     } else {
       node = _gobbleIdentifier(context);
     }
+
     _gobbleSpaces(context);
     ch_i = expr.charCodeAt(context.index);
     while (ch_i === PERIOD_CODE || ch_i === OBRACK_CODE || ch_i === OPAREN_CODE) {

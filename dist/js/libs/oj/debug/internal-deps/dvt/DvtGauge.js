@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['./DvtToolkit', './DvtAxis'], function(dvt) {
   "use strict";
@@ -8,16 +9,18 @@ define(['./DvtToolkit', './DvtAxis'], function(dvt) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function(dvt) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -561,8 +564,9 @@ DvtGauge.prototype.UpdateAriaAttributes = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -639,8 +643,9 @@ DvtGaugeAutomation.prototype.getMetricLabel = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -664,8 +669,9 @@ dvt.DataAxisInfoMixin.call(DvtGaugeDataAxisInfo.prototype);
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -728,8 +734,9 @@ DvtGaugeDefaults.prototype.getAnimationDuration = function(options)
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -826,8 +833,9 @@ DvtGaugeDataUtils.getReferenceObject = function(gauge, index) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -906,7 +914,7 @@ DvtGaugeEventManager.prototype.IsShowingTooltipWhileEditing = function() {
  * @override
  */
 DvtGaugeEventManager.prototype.PreEventBubble = function(event) {
-  if (dvt.TouchEvent.TOUCHSTART === event.type && this._gauge.getOptions()['readOnly'] === false) {
+  if (dvt.TouchEvent.TOUCHSTART === event.type && this._isInteractive()) {
     // Set the editing flag so moves are tracked
     this.IsMouseEditing = true;
     var coords = this.GetRelativePosition(event.touches[0].pageX, event.touches[0].pageY);
@@ -990,9 +998,17 @@ DvtGaugeEventManager.prototype.__isMouseEditing = function() {
 };
 
 /**
+ * Returns whether the gauge is interactive or not.
+ */
+DvtGaugeEventManager.prototype._isInteractive = function() {
+  return this._gauge.getOptions()['readOnly'] === false;
+};
+
+/**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1049,8 +1065,9 @@ DvtGaugeKeyboardHandler.prototype.processKeyDown = function(event) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1371,8 +1388,9 @@ DvtGaugeStyleUtils.hasLabel = function(options) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1488,9 +1506,7 @@ DvtGaugeRenderer._formatMetricLabelValue = function(value, gauge, converter, sca
 
   // when scaling is set then init formatter
   var formatter = new dvt.LinearScaleAxisValueFormatter(gauge.getCtx(), minValue, maxValue, increment, scaling, autoPrecision, options.translations);
-  if (converter && converter['getAsString'])
-    output = formatter.format(value, converter);
-  else if (converter && converter['format'])
+  if (converter && converter['format'])
     output = formatter.format(value, converter);
   else if (isPercent){
     var percentConverter = gauge.getCtx().getNumberConverter({'style': 'percent', 'maximumFractionDigits': 0, 'minimumFractionDigits': 0});
@@ -1703,8 +1719,9 @@ DvtGaugeRenderer.adjustForStep = function(options, value) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -1784,8 +1801,9 @@ dvt.LedGauge.prototype.Render = function(container, width, height)
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1811,8 +1829,9 @@ DvtLedGaugeDefaults.SKIN_ALTA = {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1830,7 +1849,17 @@ DvtLedGaugeRenderer._SHAPE_TRIANGLE_CMDS = [- 50, 36.6, 0, - 50, 50, 36.6];
  * Polygon commands for star shape.  Centered at (0,0) with size of 100.
  * @private
  */
-DvtLedGaugeRenderer._SHAPE_STAR_CMDS = [- 50, - 11.22, - 16.69, - 17.94, 0, - 47.55, 16.69, - 17.94, 50, - 11.22, 26.69, 13.8, 30.9, 47.56, 0, 33.42, - 30.9, 47.56, - 26.69, 13.8];
+DvtLedGaugeRenderer._SHAPE_STAR_CMDS =  "M -2.3323410040000025 -46.8254465126 L -12.701751285999997 -15.545956187999998 C -12.943326088000003 -14.817199866000001 " +
+    "-13.891253726000002 -14.094892532000003 -14.646583826 -14.078635606000002 L -46.2211570996 -13.404525749999996 C -49.12828379242 " +
+    "-13.341995967999997 -49.998273374 -10.536430505999999 -47.65387053 -8.673443352000001 L -22.487397618 11.333639436 C -21.899964744 " +
+    "11.799949602 -21.5454519 12.944028062000003 -21.75520669 13.670033817999999 L -30.900518082 45.368315020000004 C -31.755033981999997 " +
+    "48.332533563999995 -29.515189984 50.03887154 -27.13579624 48.30409229799999 L -1.211776860000003 29.388699619999993 C -0.5921225659999989 " +
+    "28.936411882 0.5933118939999987 28.936411882 1.2117931279999983 29.388196488000006 L 27.136032126000007 48.303749592 C 29.515895485999994 " +
+    "50.03887154 31.755739484000003 48.332533563999995 30.9013306 45.36868546 L 21.75517974 13.670628383999999 C 21.545840763999994 12.944454068000002 " +
+    "21.900650744000004 11.799965184 22.487199951999994 11.334356992000002 L 47.65483338 -8.673647878000004 C 49.997370499999995 -10.536650614000001 " +
+    "49.12850642 -13.341945596 46.22304318799999 -13.404519674000001 L 14.647032665999994 -14.078640996000003 C 13.891959129999993 -14.094892532000003 " +
+    "12.944031590000002 -14.817199866000001 12.702466293999997 -15.545927081999999 L 2.3333718660000025 -46.824464327200005 C 1.3737484180000004 " +
+    "-49.725014840760004 -1.3711653340000003 -49.725014840760004 -2.3323410040000025 -46.8254465126 Z"
 
 /** @private **/
 DvtLedGaugeRenderer._SHAPE_ARROW_CMDS = [25, 48, 25, 8, 47.5, 8, 0, - 39, - 47.5, 8, - 25, 8, - 25, 48];
@@ -1974,7 +2003,7 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
     }
 
     // These shapes are defined as polygons
-    if ((type == 'triangle' || type == 'arrow') || type == 'star') {
+    if ((type == 'triangle' || type == 'arrow')) {
       cmds = dvt.PolygonUtils.scale(cmds, scale, scale);
 
       // Translate from center of (0,0)
@@ -2007,7 +2036,7 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
 
   // rotate the shape if needed
   var rotation = options['rotation'];
-  if (rotation && (type == 'arrow' || type == 'triangle' || (shape instanceof dvt.Path && type != 'human')))
+  if (rotation && (type == 'arrow' || type == 'triangle' || (shape instanceof dvt.Path && type != 'human' && type != "star")))
     shape = DvtLedGaugeRenderer._rotate(gauge, container, shape, bounds);
 
   // Add the shape to the container
@@ -2161,8 +2190,9 @@ DvtLedGaugeRenderer._getMetricLabelBounds = function(gauge, container, bounds) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -2306,8 +2336,9 @@ dvt.StatusMeterGauge.prototype.GetValueAt = function(x, y) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -2341,8 +2372,9 @@ DvtStatusMeterGaugeDefaults.SKIN_ALTA = {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -2456,7 +2488,7 @@ DvtStatusMeterGaugeRenderer._renderCircularGauge = function(gauge, container, bo
   if (thresholds && options['plotArea']['rendered'] != 'off' && options['thresholdDisplay'] == 'all') {
     for (var currentThresholdIndex = 0; currentThresholdIndex < thresholds.length; currentThresholdIndex++) {
       var thresholdColor = DvtGaugeStyleUtils.getThresholdColor(gauge, thresholds[currentThresholdIndex], currentThresholdIndex);
-      var max = thresholds[currentThresholdIndex]['max'] < options['max'] ? thresholds[currentThresholdIndex]['max'] : options['max'];
+      var max = thresholds[currentThresholdIndex]['max'] < options['max'] && currentThresholdIndex != (thresholds.length - 1) ? thresholds[currentThresholdIndex]['max'] : options['max'];
       var min = currentThresholdIndex == 0 ? options['min'] : thresholds[currentThresholdIndex - 1]['max'];
       startAngle = startAngleRads + angleExtentRads * DvtGaugeRenderer.getFillPercentage(options, options['min'], max, min);
       percentFill = DvtGaugeRenderer.getFillPercentage(options, min, max, max);
@@ -2704,8 +2736,7 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
       // Shadowing effect
       // Fix for : Shadow causes the reference line to disappear in IE11
       if (dvt.Agent.browser !== 'ie' && dvt.Agent.browser !== 'edge' && options['visualEffects'] != 'none') {
-        var shadowRGBA = dvt.ColorUtils.makeRGBA(0, 0, 0, 0.8);
-        var shadow = new dvt.Shadow(shadowRGBA, 0.75, 3, 3, 50, 1, 2);
+        var shadow = new dvt.Shadow(.5, .5, 1, 'rgba(0, 0, 0, 0.8)');
         referenceLine.addDrawEffect(shadow);
       }
     }
@@ -3485,8 +3516,9 @@ DvtStatusMeterGaugeRenderer._renderCenterContent = function(gauge, options, boun
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -3577,8 +3609,9 @@ DvtStatusMeterGaugeIndicator.prototype.setAnimationParams = function(params) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -3663,8 +3696,9 @@ DvtStatusMeterGaugeCircularIndicator.prototype.setAnimationParams = function(par
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -3837,8 +3871,9 @@ dvt.DialGauge.prototype.GetValueAt = function(x, y) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -3869,8 +3904,9 @@ DvtDialGaugeDefaults.SKIN_ALTA = {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4372,8 +4408,9 @@ DvtDialGaugeRenderer._renderTickLabels = function(gauge, container, bounds) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -4427,8 +4464,9 @@ DvtDialGaugeIndicator.prototype.setAnimationParams = function(params) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -4768,8 +4806,9 @@ dvt.RatingGauge.prototype.CreateEventManager = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4801,8 +4840,9 @@ DvtRatingGaugeDefaults.SKIN_ALTA = {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4836,8 +4876,9 @@ DvtRatingGaugePeer.prototype.getDatatip = function(target, x, y) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4875,7 +4916,9 @@ DvtRatingGaugeRenderer.render = function(gauge, container, width, height) {
     }
 
     // Create the options objects for the shapes
-    var unselectedOptions = {'value': 0,
+    var unselectedOptions = {
+      'value': 0,
+      'state': 'unselected',
       'type': options['unselectedState']['shape'],
       'color': options['unselectedState']['color'],
       'borderColor': options['unselectedState']['borderColor'],
@@ -4883,7 +4926,9 @@ DvtRatingGaugeRenderer.render = function(gauge, container, width, height) {
       'source': options['unselectedState']['source'],
       'svgClassName': options['unselectedState']['svgClassName'],
       'svgStyle': options['unselectedState']['svgStyle']};
-    var selectedOptions = {'value': 0,
+    var selectedOptions = {
+      'value': 0,
+      'state': 'selected',
       'type': options['selectedState']['shape'],
       'color': selectedColor,
       'borderColor': selectedBorderColor,
@@ -4891,7 +4936,9 @@ DvtRatingGaugeRenderer.render = function(gauge, container, width, height) {
       'source': options['selectedState']['source'],
       'svgClassName': options['selectedState']['svgClassName'],
       'svgStyle': options['selectedState']['svgStyle']};
-    var changedOptions = {'value': 0,
+    var changedOptions = {
+      'value': 0,
+      'state': 'changed',
       'type': options['changedState']['shape'],
       'color': changedColor,
       'borderColor': changedBorderColor,
@@ -4899,7 +4946,9 @@ DvtRatingGaugeRenderer.render = function(gauge, container, width, height) {
       'source': options['changedState']['source'],
       'svgClassName': options['changedState']['svgClassName'],
       'svgStyle': options['changedState']['svgStyle']};
-    var hoverOptions = {'value': 0,
+    var hoverOptions = {
+      'value': 0,
+      'state': 'hover',
       'type': options['hoverState']['shape'],
       'color': options['hoverState']['color'],
       'borderColor': options['hoverState']['borderColor'],
@@ -4996,21 +5045,27 @@ DvtRatingGaugeRenderer._createShape = function(context, x, y, width, height, sta
     shape = dvt.LedGauge.newInstance(context, null, null, true);
     if (x != 0 && y != 0)
       shape.setTranslate(x, y);
+
+    if (gaugeOptions['disabled']){
+      if (stateOptions['state'] === 'selected')
+        stateOptions['svgClassName'] = 'oj-rating-gauge-selected-disabled';
+      else if (stateOptions['state'] === 'unselected')
+        stateOptions['svgClassName'] = 'oj-rating-gauge-unselected-disabled';
+
+      stateOptions['svgStyle'] = null;
+    }
+
     shape.render(stateOptions, width, height);
   }
 
-  // Custom style and class
-  if (shape) {
-    shape.setClassName(gaugeOptions['svgClassName']);
-    shape.setStyle(gaugeOptions['svgStyle']);
-  }
   return shape;
 };
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -5033,7 +5088,7 @@ dvt.Obj.createSubclass(DvtRatingGaugeEventManager, DvtGaugeEventManager);
  */
 DvtRatingGaugeEventManager.prototype.OnMouseOver = function(event) {
   // Only editable gauges
-  if (this._gauge.getOptions()['readOnly'] === false) {
+  if (this._isInteractive()) {
     var coords = this.GetRelativePosition(event.pageX, event.pageY);
     this._gauge.__processValueChangeStart(coords.x, coords.y);
     this.IsMouseEditing = true;
@@ -5049,7 +5104,7 @@ DvtRatingGaugeEventManager.prototype.OnMouseOver = function(event) {
  */
 DvtRatingGaugeEventManager.prototype.OnMouseOut = function(event) {
   // Only editable gauges
-  if (this._gauge.getOptions()['readOnly'] === false) {
+  if (this._isInteractive()) {
     var coords = this.GetRelativePosition(event.pageX, event.pageY);
     this._gauge.__processHoverEnd(coords.x, coords.y);
     this.IsMouseEditing = false;
@@ -5065,11 +5120,14 @@ DvtRatingGaugeEventManager.prototype.OnMouseOut = function(event) {
 DvtRatingGaugeEventManager.prototype.OnMouseMove = function(event) {
 
   var coords = this.GetRelativePosition(event.pageX, event.pageY);
-  if (this._gauge.getOptions()['readOnly'] === false && !this.IsMouseEditing &&
+  var isDisabled = this._gauge.getOptions()['disabled'] === true;
+  if (this._isInteractive() && !this.IsMouseEditing &&
       this._gauge.getOptions()['value'] != this._gauge.GetValueAt(coords.x, coords.y)) {
     this.IsMouseEditing = true;
   }
-  DvtRatingGaugeEventManager.superclass.OnMouseMove.call(this, event);
+
+  if (!isDisabled)
+    DvtRatingGaugeEventManager.superclass.OnMouseMove.call(this, event);
 };
 
 /**
@@ -5099,9 +5157,20 @@ DvtRatingGaugeEventManager.prototype.IsShowingTooltipWhileEditing = function() {
 };
 
 /**
+ * Checks if the gauge is interactive
+ * @override
+ */
+DvtRatingGaugeEventManager.prototype._isInteractive = function() {
+  var isReadOnly = this._gauge.getOptions()['readOnly'] === true;
+  var isDisabled = this._gauge.getOptions()['disabled'] === true;
+  return !(isDisabled || isReadOnly);
+};
+
+/**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 })(dvt);

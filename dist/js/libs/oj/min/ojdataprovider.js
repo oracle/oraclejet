@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 define(["ojs/ojcore","ojs/ojeventtarget"],function(t){"use strict";var e,r,i=t.GenericEvent;
@@ -170,7 +171,7 @@ class s{fetchByOffset(t){let e=t&&t.size>0?t.size:25,r=t?t.sortCriteria:null,i=t
  * Released under the MIT license.
  * http://jquery.org/license
  */
-class l{constructor(t){t=t||{},this._textFilterAttributes=t.filterOptions?t.filterOptions.textFilterAttributes:null;let e=t.filterDef;e&&(e.op?(this.op=e.op,e.value?(this.value=e.value,e.attribute&&(this.attribute=e.attribute)):e.criteria&&(this.criteria=e.criteria)):e.text&&(this.text=e.text))}filter(e,r,i){return t.FilterUtils.satisfy(l._transformFilter(this),e)}static _transformFilter(t){let e;if(t){let r,i=t.op;if(t.text?i="$regex":"$le"===i?i="$lte":"$ge"===i?i="$gte":"$pr"===i&&(i="$exists"),"$and"!=i&&"$or"!=i){r=t.text?new RegExp(t.text,"i"):t.value,e={};let n=t.attribute;if(n){let t={};"$sw"!==i&&"$ew"!==i&&"$co"!==i||(i="$regex",r=l._fixStringExpr(i,r)),t[i]=r,e[n]=t}else if(t.text){let n={};n[i]=r,t._textFilterAttributes?t._textFilterAttributes.forEach(function(t){e[t]=n}):e["*"]=n}else{let t=[];l._transformObjectExpr(r,i,null,t),e.$and=t}}else{let r=[];t.criteria.forEach(function(t){r.push(l._transformFilter(t))}),(e={})[i]=r}}return e}static _transformObjectExpr(t,e,r,i){if(Object.keys(t).length>0)Object.keys(t).forEach(function(n){let a=t[n],o=r?r+"."+n:n;if(a instanceof Object)l._transformObjectExpr(a,e,o,i);else{let t={};"$sw"!==e&&"$ew"!==e&&"$co"!==e||(e="$regex",a=l._fixStringExpr(e,a)),t[e]=a;let r={};r[o]=t,i.push(r)}});else{let n={};n[e]=t;let a={};a[r]=n,i.push(a)}}static _fixStringExpr(t,e){return("string"==typeof e||e instanceof String)&&("$sw"===t?e="^"+e:"$ew"===t&&(e+="$")),e}}t.FilterFactory=class{static getFilter(t){return new l(t)}},
+class l{constructor(t){t=t||{},this._textFilterAttributes=t.filterOptions?t.filterOptions.textFilterAttributes:null;let e=t.filterDef;e&&(e.op?(this.op=e.op,e.value?(this.value=e.value,e.attribute&&(this.attribute=e.attribute)):e.criteria&&(this.criteria=e.criteria)):e.text&&(this.text=e.text))}filter(e,r,i){return t.FilterUtils.satisfy(l._transformFilter(this),e)}static _transformFilter(t){let e;if(t){let r,i=t.op;if(t.text?i="$regex":"$le"===i?i="$lte":"$ge"===i?i="$gte":"$pr"===i&&(i="$exists"),"$and"!=i&&"$or"!=i){r=t.text?new RegExp(t.text,"i"):t.value,e={};let n=t.attribute;if(n){let t={};"$sw"!==i&&"$ew"!==i&&"$co"!==i||(i="$regex",r=l._fixStringExpr(i,r)),t[i]=r,e[n]=t}else if(t.text){let n={};if(n[i]=r,t._textFilterAttributes){let r=[];t._textFilterAttributes.forEach(function(t){let e={};e[t]=n,r.push(e)}),e.$or=r}else e["*"]=n}else{let t=[];l._transformObjectExpr(r,i,null,t),e.$and=t}}else{let r=[];t.criteria.forEach(function(t){r.push(l._transformFilter(t))}),(e={})[i]=r}}return e}static _transformObjectExpr(t,e,r,i){if(Object.keys(t).length>0)Object.keys(t).forEach(function(n){let a=t[n],o=r?r+"."+n:n;if(a instanceof Object)l._transformObjectExpr(a,e,o,i);else{let t={};"$sw"!==e&&"$ew"!==e&&"$co"!==e||(e="$regex",a=l._fixStringExpr(e,a)),t[e]=a;let r={};r[o]=t,i.push(r)}});else{let n={};n[e]=t;let a={};a[r]=n,i.push(a)}}static _fixStringExpr(t,e){return("string"==typeof e||e instanceof String)&&("$sw"===t?e="^"+e:"$ew"===t&&(e+="$")),e}}t.FilterFactory=class{static getFilter(t){return new l(t)}},
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
@@ -192,4 +193,14 @@ t.FilterUtils=function(){function t(t,e){var r=!1;for(var n in e)if(e.hasOwnProp
  * Released under the MIT license.
  * http://jquery.org/license
  */
-var f={};return f.FetchByKeysMixin=t.FetchByKeysMixin,f.FetchByOffsetMixin=t.FetchByOffsetMixin,f.FilterFactory=t.FilterFactory,f.DataProviderRefreshEvent=t.DataProviderRefreshEvent,f.DataProviderMutationEvent=t.DataProviderMutationEvent,f});
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+var f={};return f.FetchByKeysMixin=t.FetchByKeysMixin,f.FetchByOffsetMixin=t.FetchByOffsetMixin,f.FilterFactory=t.FilterFactory,f.DataProviderRefreshEvent=t.DataProviderRefreshEvent,f.DataProviderMutationEvent=t.DataProviderMutationEvent,f.AttributeFilterOperator=t.AttributeFilterOperator,f.CompoundFilterOperator=t.CompoundFilterOperator,f});

@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -10,12 +11,16 @@ define(['ojs/ojcore', 'knockout'], function(oj, ko)
   "use strict";
 
 /**
- * Utility class with functions for preprocessing HTML content.
  * @namespace
  * @hideconstructor
  * @ojtsmodule
  *
  * @since 6.1.0
+ * @classdesc
+ * <p>Utility class with functions for preprocessing HTML content.</p>
+ * <p><b>Note,</b> the utility methods do not validate HTML input provided by an application
+ * for integrity or security violations. It is the application's responsibility to sanitize
+ * the input to prevent unsafe content from being added to the page.</p>
  */
 var HtmlUtils = {};
 
@@ -30,7 +35,7 @@ HtmlUtils.stringToNodeArray = function (html) {
   // escape html for the predefined tags
   var tags = [
     'table', 'caption', 'colgroup', 'col', 'thead', 'tfoot', 'th',
-    'tbody', 'tr', 'td', 'template'
+    'tbody', 'tr', 'td', 'template', 'p'
   ];
   var i;
 
@@ -106,10 +111,10 @@ function _unescapeTag(parent) {
 
     if (nodeName.substr(0, 16) === 'oj-bind-replace-') {
       var replName = nodeName.substr(16);
-      replNode = document.createElement(replName);
+      replNode = document.createElement(replName); // @HTMLUpdateOK
       for (j = 0; j < child.attributes.length; j++) {
         attr = child.attributes[j];
-        replNode.setAttribute(attr.name, attr.value);
+        replNode.setAttribute(attr.name, attr.value); // @HTMLUpdateOK
       }
       var childHolder = replNode.content ? replNode.content : replNode;
       for (j = 0; child.childNodes.length > 0;) {
@@ -117,10 +122,10 @@ function _unescapeTag(parent) {
       }
       parent.replaceChild(replNode, child);
     } else if (nodeName === 'script' || nodeName === 'style') {
-      replNode = document.createElement(nodeName);
+      replNode = document.createElement(nodeName); // @HTMLUpdateOK
       for (j = 0; j < child.attributes.length; j++) {
         attr = child.attributes[j];
-        replNode.setAttribute(attr.name, attr.value);
+        replNode.setAttribute(attr.name, attr.value); // @HTMLUpdateOK
       }
       var origHTML = child.innerHTML; // @HTMLUpdateOK
       replNode.innerHTML = origHTML.replace(new RegExp('oj-bind-replace-', 'g'), ''); // @HTMLUpdateOK

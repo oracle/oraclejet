@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['./DvtToolkit', './DvtAxis', './DvtLegend', './DvtOverview'], function(dvt) {
   "use strict";
@@ -8,16 +9,18 @@ define(['./DvtToolkit', './DvtAxis', './DvtLegend', './DvtOverview'], function(d
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function(dvt) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -1382,8 +1385,9 @@ dvt.Chart.prototype.getRawOptions = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1938,8 +1942,9 @@ dvt.Automation.prototype.IsTooltipElement = function(domElement) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1958,17 +1963,17 @@ var DvtChartEventManager = function(chart) {
 
   /**
    * The pan button
-   * @type {dvt.Button}
+   * @type {dvt.IconButton}
    */
   this.panButton = null;
   /**
    * The marquee zoom button
-   * @type {dvt.Button}
+   * @type {dvt.IconButton}
    */
   this.zoomButton = null;
   /**
    * The marquee select button
-   * @type {dvt.Button}
+   * @type {dvt.IconButton}
    */
   this.selectButton = null;
 
@@ -2187,7 +2192,7 @@ DvtChartEventManager.prototype.OnMouseMove = function(event) {
 
   var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
   if (this._dataCursorHandler) {
-    if (this.GetLogicalObjectAndDisplayable(event.target).displayable instanceof dvt.Button) // don't show DC over buttons
+    if (this.GetLogicalObjectAndDisplayable(event.target).displayable instanceof dvt.IconButton) // don't show DC over buttons
       this._dataCursorHandler.processEnd();
     else
       this._dataCursorHandler.processMove(relPos);
@@ -3015,17 +3020,10 @@ DvtChartEventManager.prototype._getDropObject = function(event) {
 };
 
 /**
- * @override
- */
-DvtChartEventManager.prototype.isClearMenuAllowed = function(logicalObject)
-{
-  return logicalObject && logicalObject.getParams && logicalObject.getParams().type == 'plotArea';
-};
-
-/**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /*---------------------------------------------------------------------------------*/
@@ -3167,8 +3165,9 @@ DvtChartKeyboardHandler.prototype.getDefaultNavigable = function(navigableItems)
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -3787,8 +3786,9 @@ DvtChartObjPeer.prototype.getDragFeedback = function(mouseX, mouseY) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -3881,8 +3881,9 @@ DvtChartRefObjPeer.prototype.getDatatipColor = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -3944,8 +3945,9 @@ DvtChartDataItem.prototype.valueOf = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4047,10 +4049,10 @@ DvtChartDefaults.SKIN_ALTA = {
     'shapes': ['square', 'circle', 'diamond', 'plus', 'triangleDown', 'triangleUp'],
     'seriesEffect': 'color', 'threeDEffect': 'off', 'selectionEffect': 'highlight',
     'animationDuration': 1000, 'animationIndicators': 'all',
-    'animationUpColor': '#0099FF', 'animationDownColor': '#FF3300',
+    'animationUpColor': '', 'animationDownColor': '',
     'lineStyle': 'solid', 'lineType': 'auto', 'markerDisplayed': 'auto',
     'markerColor': null, 'markerShape': 'auto', 'markerSize': 10,
-    'marqueeColor': 'rgba(255,255,255,0.4)', 'marqueeBorderColor': '#0572ce',
+    'marqueeColor': '', 'marqueeBorderColor': '',
     'pieFeelerColor': '#BAC5D6', 'pieInnerRadius': 0,
     'selectedInnerColor': '#ffffff', 'selectedOuterColor': '#5a5a5a',
     'sliceLabelType': 'percent',
@@ -4068,15 +4070,13 @@ DvtChartDefaults.SKIN_ALTA = {
     'hoverBehaviorDelay' : 200,
     'dataCursor': {'markerSize': 8, 'markerDisplayed': 'on', 'lineColor': '#5a5a5a', 'lineWidth': 2, 'lineStyle': 'solid'},
     'groupSeparators' : {'rendered' : 'on', color: 'rgba(138,141,172,0.4)'},
-    'padding': 'auto',
-    '_tooltipStyle': new dvt.CSSStyle('border-collapse: separate; border-spacing: 2px; overflow: hidden; display: block;'),
-    'tooltipLabelStyle': new dvt.CSSStyle('color: #666666; padding: 0px 2px; white-space: nowrap;'),
-    'tooltipValueStyle': new dvt.CSSStyle('color: #333333; padding: 0px 2px;'),
+    'tooltipLabelStyle': new dvt.CSSStyle(''),
+    'tooltipValueStyle': new dvt.CSSStyle(''),
     'stackLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_11),
     'boxPlot': {
       'whiskerSvgStyle': {},
       'whiskerEndSvgStyle': {'strokeWidth' : 2},
-      'whiskerEndLength': 9,
+      'whiskerEndLength': '9px',
       'medianSvgStyle': {'strokeWidth': 3}
     }
   },
@@ -4122,8 +4122,9 @@ DvtChartDefaults.prototype.getNoCloneObject = function(chart) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /*---------------------------------------------------------------------*/
@@ -4377,8 +4378,9 @@ DvtChartDataCursorHandler.prototype._getClosestMatch = function(x, y) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4446,8 +4448,17 @@ DvtAxis.prototype.Init = function(context, callback, callbackObj) {
  */
 DvtAxis.prototype.SetOptions = function(options) {
   if (options) {
+    var isRendered = options['rendered'] !== 'off';
+
     // Combine the user options with the defaults and store. If the axis isn't rendered, no need to apply defaults.
-    this.Options = (options['rendered'] == 'off') ? options : this.Defaults.calcOptions(options);
+    if (isRendered) {
+      this.Options = this.Defaults.calcOptions(options);
+    } else {
+      // Convert user option object styles to CSSStyle
+      options.tickLabel.style = new dvt.CSSStyle(options.tickLabel.style);
+      options.titleStyle = new dvt.CSSStyle(options.titleStyle);
+      this.Options = options;
+    }
   }
   else if (!this.Options) // Create a default options object if none has been specified
     this.Options = this.GetDefaults();
@@ -4459,14 +4470,15 @@ DvtAxis.prototype.SetOptions = function(options) {
  * @param {object} options The object containing specifications and data for this component.
  * @param {Number} maxWidth The maximum width available.
  * @param {Number} maxHeight The maximum height available.
+ * @param {boolean} ignoreRenderedOption rendered= "off" will be ignored if this is true
  * @return {dvt.Dimension} The preferred dimensions for the object.
  */
-DvtAxis.prototype.getPreferredSize = function(options, maxWidth, maxHeight) {
+DvtAxis.prototype.getPreferredSize = function(options, maxWidth, maxHeight, ignoreRenderedOption) {
   // Update the options object.
   this.SetOptions(options);
 
   // Ask the axis to render its context in the max space and find the space used
-  return DvtAxisRenderer.getPreferredSize(this, maxWidth, maxHeight);
+  return DvtAxisRenderer.getPreferredSize(this, maxWidth, maxHeight, ignoreRenderedOption);
 };
 
 
@@ -4649,8 +4661,9 @@ DvtAxis.prototype.getAutomation = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4673,8 +4686,9 @@ DvtAxisConstants.TITLE = 'title';
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4784,8 +4798,9 @@ DvtAxisAutomation.prototype.getDomElementForSubId = function(subId) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4842,8 +4857,9 @@ DvtAxisDefaults.getGapSize = function(context, options, defaultSize) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -4956,8 +4972,9 @@ DvtAxisEventManager.prototype.GetDragDataContexts = function(bSanitize) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -5019,8 +5036,9 @@ DvtAxisKeyboardHandler.prototype.processKeyDown = function(event) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -5045,7 +5063,7 @@ DvtAxisRenderer._MAX_TITLE_LINE_WRAP = 3;
  * @param {number} availHeight
  * @return {dvt.Dimension} The preferred dimensions for the object.
  */
-DvtAxisRenderer.getPreferredSize = function(axis, availWidth, availHeight) {
+DvtAxisRenderer.getPreferredSize = function(axis, availWidth, availHeight, ignoreRenderedOption) {
   // Calculate the axis extents and increments
   var axisInfo = DvtAxisRenderer._createAxisInfo(axis, new dvt.Rectangle(0, 0, availWidth, availHeight));
   var context = axis.getCtx();
@@ -5055,8 +5073,8 @@ DvtAxisRenderer.getPreferredSize = function(axis, availWidth, availHeight) {
   // size that we need to keep track of.  For example, this is the height on horizontal axes.
   var bHoriz = (options['position'] == 'top' || options['position'] == 'bottom');
 
-  // No size if not rendered or either dimension is 0
-  if (options['rendered'] == 'off' || availWidth <= 0 || availHeight <= 0)
+  // No size if not rendered or either dimension is 0. Since dimensions can also be 0 for rendered==off, either checks are ignored for the ignoreRenderedOption flag
+  if ((options['rendered'] == 'off' || availWidth <= 0 || availHeight <= 0) && !ignoreRenderedOption)
     return bHoriz ? new dvt.Dimension(availWidth, 0) : new dvt.Dimension(0, availHeight);
 
   // Allocate space for the title
@@ -5569,7 +5587,7 @@ DvtAxisRenderer._renderLabelsVert = function(axis, axisInfo, availSpace) {
         var cmd = dvt.PathUtils.roundedRectangle(bboxDims.x - padding, bboxDims.y, bboxDims.w + 2 * padding, bboxDims.h, 2, 2, 2, 2);
         var bbox = new dvt.Path(axis.getCtx(), cmd);
         var bgColor = label.getCSSStyle().getStyle(dvt.CSSStyle.BACKGROUND_COLOR);
-        var opacity = labelY + bboxDims.h / 2 > axisInfo.getEndCoord() && axis.getOptions()['polarGridShape'] == 'circle' ? 1 : 0.3;
+        var opacity = labelY + bboxDims.h / 2 > axisInfo.getEndCoord() && axis.getOptions()['polarGridShape'] == 'circle' ? 1 : 0.6;
         if (bgColor)
           bbox.setSolidFill(bgColor);
         else
@@ -5993,8 +6011,9 @@ DvtAxisRenderer.isWrapEnabled = function(cssStyle) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -6211,7 +6230,7 @@ DvtAxisInfo.prototype.IsOverlapping = function(labelDims, skippedLabels, maxWidt
     if (labelDims[j] == null)
       continue;
 
-    if (maxWidths != null && labelDims[j].w > maxWidths[j]) 
+    if (maxWidths != null && labelDims[j].w > maxWidths[j])
       return true;
 
     if (pointA1 == null || pointA2 == null) {
@@ -6608,8 +6627,9 @@ DvtAxisInfo.prototype.getLogScaleUnit = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -6790,12 +6810,10 @@ DvtDataAxisInfo.prototype.getMinorTickCoords = function() {
  */
 DvtDataAxisInfo.prototype._formatValue = function(value) {
 
-  if (this.Converter && (this.Converter['getAsString'] || this.Converter['format'])) {
+  if (this.Converter &&  this.Converter['format']) {
     if (this._axisValueFormatter)
       return this._axisValueFormatter.format(value, this.Converter);
-    else if (this.Converter['getAsString'])
-      return this.Converter['getAsString'](value);
-    else if (this.Converter['format'])
+    else
       return this.Converter['format'](value);
   }
 
@@ -6847,7 +6865,7 @@ DvtDataAxisInfo.prototype.getMinorIncrement = function() {
  * @override
  */
 DvtDataAxisInfo.prototype.getMinimumExtent = function() {
-  return (this.LinearGlobalMax - this.LinearGlobalMin) / this.MAX_ZOOM_FACTOR;
+  return (this.LinearGlobalMax - this.LinearGlobalMin) / DvtDataAxisInfo.MAX_ZOOM_FACTOR;
 };
 
 
@@ -6909,8 +6927,9 @@ dvt.DataAxisInfoMixin.call(DvtDataAxisInfo.prototype);
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -8044,8 +8063,9 @@ DvtGroupAxisInfo.prototype.getSkipIncrement = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -8258,8 +8278,9 @@ DvtAxisObjPeer.prototype.getDragFeedback = function(mouseX, mouseY) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -8532,6 +8553,31 @@ DvtTimeAxisInfo.prototype.formatLabel = function(axisValue) {
 };
 
 /**
+ * Calculates the level of granularity in the data
+ * @return {Number} The level of granularity (Eg. Second, Minute, Hour, Day, Month, Year)
+ *                  represented in milliseconds.
+ * @private
+ */
+DvtTimeAxisInfo.prototype._calculateGranularity = function() {
+  if (this._step >= DvtTimeAxisInfo.TIME_YEAR_MIN || this._timeRange >= 6 * DvtTimeAxisInfo.TIME_YEAR_MIN)
+    return DvtTimeAxisInfo.TIME_YEAR_MIN;
+
+  if (this._step >= DvtTimeAxisInfo.TIME_MONTH_MIN || this._timeRange >= 6 * DvtTimeAxisInfo.TIME_MONTH_MIN)
+    return DvtTimeAxisInfo.TIME_MONTH_MIN;
+
+  if (this._step >= DvtTimeAxisInfo.TIME_DAY || this._timeRange >= 6 * DvtTimeAxisInfo.TIME_DAY)
+    return DvtTimeAxisInfo.TIME_DAY;
+
+  if (this._step >= DvtTimeAxisInfo.TIME_HOUR || this._timeRange >= 6 * DvtTimeAxisInfo.TIME_HOUR)
+    return DvtTimeAxisInfo.TIME_HOUR;
+
+  if (this._step >= DvtTimeAxisInfo.TIME_MINUTE || this._timeRange >= 6 * DvtTimeAxisInfo.TIME_MINUTE)
+    return DvtTimeAxisInfo.TIME_MINUTE;
+
+  return DvtTimeAxisInfo.TIME_SECOND;
+};
+
+/**
  * Formats the given date with the given converter
  * @param {Date} date The current date
  * @param {Date} prevDate The date of the previous set of labels
@@ -8543,11 +8589,8 @@ DvtTimeAxisInfo.prototype._formatAxisLabelWithConverter = function(date, prevDat
   if (converter) {
     var label = null;
     var prevLabel = null;
-    if (converter['getAsString']) {
-      label = converter['getAsString'](date);
-      prevLabel = converter['getAsString'](prevDate);
-    }
-    else if (converter['format']) {
+
+    if (converter['format']) {
       label = converter['format'](this._dateToIsoWithTimeZoneConverter && date ? this._dateToIsoWithTimeZoneConverter(date) : date);
       prevLabel = converter['format'](this._dateToIsoWithTimeZoneConverter && prevDate ? this._dateToIsoWithTimeZoneConverter(prevDate) : prevDate);
     }
@@ -8569,6 +8612,7 @@ DvtTimeAxisInfo.prototype._formatAxisLabel = function(date, prevDate, bOneLabel)
   var label1 = null;// level 1 label
   var label2 = null;// level 2 label
   var isVert = this.Position == 'left' || this.Position == 'right';
+  var granularity = this._calculateGranularity();
 
   // If dateTimeFormatter is used, use it
   if (this._label1Converter || this._label2Converter) {
@@ -8580,11 +8624,11 @@ DvtTimeAxisInfo.prototype._formatAxisLabel = function(date, prevDate, bOneLabel)
     return [label1, label2];
   }
 
-  if (this._step >= DvtTimeAxisInfo.TIME_YEAR_MIN || this._timeRange >= 6 * DvtTimeAxisInfo.TIME_YEAR_MIN) {
+  if (granularity === DvtTimeAxisInfo.TIME_YEAR_MIN) {
     label1 = this._formatDate(date, false, false, true);// Year
   }
 
-  else if (this._step >= DvtTimeAxisInfo.TIME_MONTH_MIN || this._timeRange >= 6 * DvtTimeAxisInfo.TIME_MONTH_MIN) {
+  else if (granularity === DvtTimeAxisInfo.TIME_MONTH_MIN) {
     if (prevDate == null || prevDate.getMonth() != date.getMonth())
       label1 = this._formatDate(date, false, true, false);// Month
 
@@ -8592,7 +8636,7 @@ DvtTimeAxisInfo.prototype._formatAxisLabel = function(date, prevDate, bOneLabel)
       label2 = this._formatDate(date, false, false, true);// Year
   }
 
-  else if (this._step >= DvtTimeAxisInfo.TIME_DAY || this._timeRange >= 6 * DvtTimeAxisInfo.TIME_DAY) {
+  else if (granularity === DvtTimeAxisInfo.TIME_DAY) {
     if (bOneLabel) {
       label1 = this._formatDate(date, true, true, true);// Day, Month, Year
     }
@@ -8608,11 +8652,11 @@ DvtTimeAxisInfo.prototype._formatAxisLabel = function(date, prevDate, bOneLabel)
   }
 
   else {
-    if (this._step >= DvtTimeAxisInfo.TIME_HOUR || this._timeRange >= 6 * DvtTimeAxisInfo.TIME_HOUR) {
+    if (granularity === DvtTimeAxisInfo.TIME_HOUR) {
       if (prevDate == null || (prevDate.getHours() != date.getHours()))
         label1 = this._formatTime(date, false, false);// HH AM/PM or HH:MM
     }
-    else if (this._step >= DvtTimeAxisInfo.TIME_MINUTE || this._timeRange >= 6 * DvtTimeAxisInfo.TIME_MINUTE) {
+    else if (granularity === DvtTimeAxisInfo.TIME_MINUTE) {
       if (prevDate == null || (prevDate.getMinutes() != date.getMinutes()))
         label1 = this._formatTime(date, true, false);// HH:MM
     }
@@ -8908,6 +8952,21 @@ DvtTimeAxisInfo.prototype._generateLabels = function(context) {
     this._step = this._averageInterval;
 
     if (!this._skipGaps) {
+      // BUG JET-31414 (30393656) MISSING '28' ON X AXIS FOR COORDINATE TO VALUE CONVERSION DEMO
+      // Since the axis labels are obtained from the groups, it may miss a few values.
+      // Find and treat the missing values before proceeding.
+      times = DvtTimeAxisInfo._treatMissingValues(times, this._calculateGranularity());
+
+      // Since the contents of the times array might have been updated, the step value should
+      // be updated.
+      // The step value is approximated to the estimated average of the intervals in the updated
+      // times array.
+      // It is safe to do so even when there were no missing values as it should not have any side-effects
+      // on rendering the axis.
+      // If there are less than 2 values in the times array, proceed with the existing step value.
+      if (times.length > 1) {
+        this._step = (times[times.length - 1] - times[0]) / (times.length - 1);
+      }
       // Check the width of the first level1 label. If we expect that we'll have more group labels than we can fit in the
       // available space, then render the time labels at a regular interval (using mixed freq algorithm).
       var labelWidth;
@@ -9011,6 +9070,162 @@ DvtTimeAxisInfo.prototype._generateLabels = function(context) {
   this._level2Coords = coords2;
 };
 
+/**
+ * Calulates the GCD of all the intervals in the given array
+ * @param {Array} intervals The array of intervals in the time axis values
+ * @return {Number} The GCD of the intervals
+ */
+DvtTimeAxisInfo._getGCDInterval = function(intervals) {
+  var gcd = function(interval1, interval2) {
+    if (interval1 === 0)
+      return interval2;
+    return gcd(interval2 % interval1, interval1);
+  };
+
+  var result = intervals[0];
+  for (var i = 1; i < intervals.length; i++) {
+    result = gcd(result, intervals[i]);
+    if (result === 1)
+      return 1;
+  }
+
+  return result;
+};
+
+/**
+ * Calculates interval between two times based on the current granularity level
+ * @param {Date} previousValue
+ * @param {Date} currentValue
+ * @param {Number} granularity The granularity level
+ * @return {Number} The interval in the current granular level
+ *                  (Eg. if the interval is 1 month and graularity level is month, then returns 1)
+ * @private
+ * @static
+ */
+DvtTimeAxisInfo._calculateGranularInterval = function(previousDate, currentDate, granularity) {
+  // Treat times for the day light savings.
+  var prevTimezoneOffset = previousDate.getTimezoneOffset();
+  var currentTimezoneOffset = currentDate.getTimezoneOffset();
+  var currentTime = currentDate.getTime();
+  var currentTimezoneOffsetCorrection = (prevTimezoneOffset - currentTimezoneOffset) * 1000 * 60;
+  if (currentTimezoneOffsetCorrection > 0) {
+    currentDate.setTime(currentTime + currentTimezoneOffsetCorrection);
+  }
+
+  var granularInterval;
+  if (granularity === DvtTimeAxisInfo.TIME_YEAR_MIN)
+    granularInterval = (currentDate.getFullYear() - previousDate.getFullYear());
+  else if (granularity === DvtTimeAxisInfo.TIME_MONTH_MIN)
+    granularInterval = 12 * (currentDate.getFullYear() - previousDate.getFullYear()) +
+      (currentDate.getMonth() - previousDate.getMonth());
+  else
+    granularInterval = Math.round((currentDate.getTime() - previousDate.getTime()) / granularity);
+
+  if (currentTimezoneOffsetCorrection > 0) {
+    currentDate.setTime(currentTime); // reset to original value
+  }
+
+  return granularInterval;
+};
+
+/**
+ * Checks if any of the times array has any missing value and fills in the gap.
+ * @param {Array} times An array of times in milliseconds representing the axis values.
+ * @param {Number} granularity The granularity level
+ * @return {Array} The treated times array
+ * @private
+ * @static
+ */
+DvtTimeAxisInfo._treatMissingValues = function(times, granularity) {
+  var initialInterval;
+  var intervals = new Set();
+  var hasMissingValues = false;
+  var ret = times; // If there are no missing values, the original array will be returned.
+  var intervalsCache = [];
+
+  var timeLength = times.length;
+  var i;
+  var previousDate = new Date(times[0]);
+  for(i = 1; i < timeLength; i++) {
+    // Calculate the current interval.
+    var currentDate = new Date(times[i]);
+    var currentInterval = DvtTimeAxisInfo._calculateGranularInterval(previousDate, currentDate, granularity);
+    previousDate = currentDate;
+
+    // Cache the result so as to not calculate again while filling the missing values
+    // Since the cache is only used for filling in the missing values, and the operation
+    // is performed in the same order as this one, having the cache key in the format
+    // '1546318800000-1514782800000' should be fine.
+    intervalsCache.push(currentInterval);
+
+    // Proceed only if the current interval is greater than the current
+    // granularity level.
+    if (currentInterval <= 0) {
+      continue;
+    }
+
+    // Add the current interval to the set.
+    // The GCD of all the intervals will be used to fill in the missing the
+    // values.
+    intervals.add(currentInterval);
+
+    // During the initial iteration, we will not have any information on intervals,
+    // so, store the current interval and continue.
+    if (!initialInterval) {
+      initialInterval = currentInterval;
+      continue;
+    }
+
+    // Check if the current interval is regular.
+    if (currentInterval !== initialInterval) {
+      hasMissingValues = true;
+    }
+  }
+
+  // If missing values are present, treat them.
+  if (hasMissingValues) {
+    // Get the GCD of intervals and it will be the minimum interval in the new set of times
+    var minimumInterval = DvtTimeAxisInfo._getGCDInterval([...intervals]);
+    ret = [];
+    ret.push(times[0]);
+    for (i = 1; i < timeLength; i++) {
+      var currentValue = times[i];
+      var previousValue = times[i - 1];
+
+      // Retrieve the interval from cache.
+      // As we are looping through the same array the cache will have the interval value
+      // and will never be undefined.
+      var currentInterval = intervalsCache[i-1];
+
+      // If no values are missing in this interval,
+      // add current value to the return array and continue.
+      // Note: Values are considered missing only when the interval is greater than the current granularity level (minimumInterval).
+      // Example: Jan 1, Jan 15, Feb 1, Mar 1, May 1, Jun 1
+      // Granularity = Month; Minimum Interval = 1 (1 month)
+      // Mar 1, May 1 => has one missing value: Apr
+      // Jan 1, Jan 15 => has no missing value
+      if (currentInterval <= minimumInterval) {
+        ret.push(currentValue);
+        continue;
+      }
+
+      // Calculate the interval at which the values are to be filled
+      var ratioOfCurrentIntervalToMinimumInterval = (currentInterval / minimumInterval); // Should be a round number as minimumInterval is a divisor of currentInterval
+      var numMissingValues = ratioOfCurrentIntervalToMinimumInterval - 1;
+      var fillIntervalInMilliseconds = Math.round((currentValue - previousValue) / ratioOfCurrentIntervalToMinimumInterval);
+
+      // Fill in the missing values
+      var j;
+      for (j = 1; j <= numMissingValues; j++) {
+        previousValue += fillIntervalInMilliseconds;
+        ret.push(previousValue);
+      }
+      ret.push(currentValue); // Finally, add the current value
+      previousValue = currentValue; // Update the previous value
+    }
+  }
+  return ret;
+};
 
 /**
  * Determines if rectangle A (bounded by pointA1 and pointA2) and rectangle B (bounded by pointB1 and B2) overlap.
@@ -9483,8 +9698,9 @@ DvtTimeAxisInfo.prototype.getEndOverflow = function() {
 
 /**
  * @license
- * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2011 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -9790,8 +10006,9 @@ DvtChartSelectableWedge.prototype.UpdateSelectionEffect = function() {
 
 /**
  * @license
- * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2011 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -10020,8 +10237,9 @@ DvtChartSelectableRectangularPolygon.prototype._createPointsArray = function(ins
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -10312,8 +10530,9 @@ DvtChartAxis.prototype.getMaxCoord = function() {
 
 /**
  * @license
- * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2011 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -10680,8 +10899,9 @@ DvtChartBar.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -11188,8 +11408,9 @@ DvtChartBoxAndWhisker.prototype._cleanUp = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -11417,8 +11638,9 @@ DvtChartCandlestick._getInitialPoints = function(points) {
 
 /**
  * @license
- * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2011 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -11466,8 +11688,9 @@ DvtChartCoord.prototype.clone = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -12121,8 +12344,9 @@ DvtChartLineArea._removeAreaEdge = function(arCoord, index, baseline) {
 
 /**
  * @license
- * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2011 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -12220,8 +12444,9 @@ DvtChartLineMarker.prototype.UpdateSelectionEffect = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -12283,10 +12508,11 @@ DvtChartOverview.prototype._renderChart = function(options, width, height) {
   }
 
   // Set the user options override
-  var userOptions = this._parentChart.getOptions()['overview']['content'];
+  var parentOptions = this._parentChart.getOptions();
+  var userOptions = parentOptions['overview']['content'];
   options = dvt.JsonUtils.merge(userOptions, options, noCloneOptions);
-  var isYAxisRendered = options.yAxis.rendered === "on";
-  var isY2AxisRendered = options.y2Axis.rendered === "on";
+  var isOverviewYAxisRendered = options.yAxis.rendered === "on";
+  var isOverviewY2AxisRendered = options.y2Axis.rendered === "on";
 
   // Turn off zoomAndScroll to prevent scrollbar/overview from appearing inside the overview
   // This has to be done after setting userOptions to prevent users from overriding it
@@ -12297,19 +12523,28 @@ DvtChartOverview.prototype._renderChart = function(options, width, height) {
     this._chart = dvt.Chart.newInstance(this.getCtx());
     this._chart.setId(this._id); // Set the id to prevent randomly generated one from breaking tests
   }
-  
+
   var chartWidth = width;
-  var parentChartPlotAreaXCoord = this._parentChart.__getPlotAreaSpace().x;
+  var parentWidth = this._parentChart.getWidth();
+  var parentPlotAreaSpace = this._parentChart.__getPlotAreaSpace();
+  var parentHasY2Data = DvtChartTypeUtils.hasY2Data(this._parentChart);
+  var parentHasY2DataOnly = DvtChartTypeUtils.hasY2DataOnly(this._parentChart);
+  var isOverviewYAxisRendered = options.yAxis.rendered === "on"  && !parentHasY2DataOnly;
+  var isOverviewY2AxisRendered = options.y2Axis.rendered === "on" && parentHasY2Data;
+  var parentPlotAreaXCoord = parentPlotAreaSpace.x;
+  var yPreferredWidth = parentPlotAreaXCoord;
+  var y2PreferredWidth = parentWidth - (yPreferredWidth + width);
+
   // Specify y-axis and y2-axis space for alignment
-  if (isYAxisRendered) {
-    chartWidth = parentChartPlotAreaXCoord + width;
-    options.yAxis.size = parentChartPlotAreaXCoord;
+  if (isOverviewYAxisRendered) {
+    chartWidth =  yPreferredWidth + width;
+    options.yAxis.size = yPreferredWidth;
   }
-  if (isY2AxisRendered) {
-    chartWidth = this._parentChart.getWidth() - (isYAxisRendered ? 0 : parentChartPlotAreaXCoord);
-    options.y2Axis.size = this._parentChart.getWidth() - (parentChartPlotAreaXCoord + width);
+  if (isOverviewY2AxisRendered) {
+    chartWidth = (isOverviewYAxisRendered ? yPreferredWidth : 0) + y2PreferredWidth + width;
+    options.y2Axis.size = y2PreferredWidth;
   }
-  
+
   this._chartContainer.addChild(this._chart);
   this._chart.render(options, chartWidth, height);
 
@@ -12320,7 +12555,7 @@ DvtChartOverview.prototype._renderChart = function(options, width, height) {
   this._chart.getEventManager().setKeyboardHandler(null);
   var chartPlotAreaDims = this._chart.__getPlotAreaSpace();
 
-  if (isYAxisRendered) {
+  if (isOverviewYAxisRendered) {
     // Shift the  overview chart so its plot area and the parent chart's plot area align
     var newX = this._chartContainer.getTranslateX() - chartPlotAreaDims.x;
     this._chartContainer.setTranslateX(newX);
@@ -12345,9 +12580,8 @@ DvtChartOverview.prototype.render = function(options, width, height) {
     'windowBorderLeftColor': '#333333',
     'leftFilterPanelColor': 'rgba(5,65,135,0.1)',
     'rightFilterPanelColor': 'rgba(5,65,135,0.1)',
-    'handleBackgroundImage': options['chart']['_resources']['overviewGrippy'],
-    'handleWidth': 3,
-    'handleHeight': 15,
+    'handleBackgroundClass': options['chart']['_resources']['overviewGrippy'],
+    'handleSize': 16,
     'handleFillColor': 'rgba(0,0,0,0)'
   };
   options.overview.animationOnClick = 'off';
@@ -12407,8 +12641,9 @@ DvtChartOverview.prototype.HandleKeyUp = function(event) {
 
 /**
  * @license
- * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2011 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -12598,8 +12833,9 @@ DvtChartPolarBar.prototype.getOriginalBarSize = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -12794,8 +13030,9 @@ DvtChartRangeMarker.prototype.getBoundingBox2 = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -12983,8 +13220,9 @@ DvtChartDataCursor.prototype.setBehavior = function(behavior) {
 
 /**
  * @license
- * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2013 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -13434,8 +13672,9 @@ DvtChartFunnelSlice.prototype.copyShape = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -13842,8 +14081,9 @@ DvtChartPyramidSlice.prototype.getPrimaryFill = function() {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /*---------------------------------------------------------------------*/
@@ -14063,7 +14303,6 @@ DvtChartPie.prototype.setInitialSelection = function() {
 DvtChartPie.prototype.render = function() {
   DvtChartEventUtils.addPlotAreaDnDBackground(this.chart, this, this._frame, true);
 
-  var shadow;
   if (!this.contains(this._shapesContainer)) {
     if (!this._shapesContainer) {
       this._shapesContainer = new dvt.Container(this.getCtx());
@@ -14113,14 +14352,6 @@ DvtChartPie.prototype.render = function() {
   for (var i = 0; i < zOrderedSlices.length; i++) {
     if (!thinSlices[zOrderedSlices[i].getSeriesIndex()])
       zOrderedSlices[i].render(this._duringDisplayAnim);
-  }
-
-  // : Don't render shadows in Chrome SVG
-  if (dvt.Agent.browser !== 'safari' && dvt.Agent.engine != 'blink') {
-    //: apply shadow after rendering slices because
-    //shadow effect may depend on bounding box
-    if (shadow)
-      this._shapesContainer.addDrawEffect(shadow);
   }
 
   // perform initial selection
@@ -14692,8 +14923,9 @@ DvtChartPie.prototype.getCenterLabel = function() {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /*---------------------------------------------------------------------*/
@@ -16004,8 +16236,9 @@ DvtChartPieSlice.prototype.getSeriesIndex = function() {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -16268,8 +16501,9 @@ DvtChartAnimOnDisplay._getMeanPoints = function(params) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -16445,8 +16679,9 @@ DvtChartAnimOnDC._canAnimate = function(oldChart, newChart)
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -16486,8 +16721,9 @@ DvtChartDataChange.prototype.getOptionsCache = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -16607,8 +16843,9 @@ DvtChartDataChangeAbstract.prototype.setOldChart = function(chart)
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -16744,8 +16981,9 @@ DvtChartDataChangeBar.prototype._onEndAnimation = function() {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -16773,8 +17011,9 @@ DvtChartDataChangeBoxAndWhisker.prototype.Init = function(peer, duration) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -16998,8 +17237,9 @@ DvtChartDataChangeLineArea.prototype.Init = function(peer, duration) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -17041,7 +17281,8 @@ DvtChartDataChangeMarker.prototype.animateUpdate = function(handler, oldDC)
   if (this.isValueChange(oldDC) && (DvtChartStyleUtils.getAnimationIndicators(chart) != 'none') && DvtChartTypeUtils.isScatterBubble(chart)) {
     // Use the old shape for the update color overlay
     var overlay = oldDC._shape;
-    overlay.setSolidFill('#FFFF2B', 0.9);
+    overlay.setAlpha(0.9);
+    overlay.setClassName('oj-chart-animation-marker');
     overlay.setCenterDimensions(startRect);
     this._peer.getChart().getPlotArea().addChild(overlay);
 
@@ -17135,8 +17376,9 @@ DvtChartDataChangeMarker.prototype.Init = function(peer, duration) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -17207,8 +17449,9 @@ DvtChartDataChangeRangeMarker.prototype.animateUpdate = function(handler, oldDC)
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /*---------------------------------------------------------------------*/
@@ -17296,15 +17539,18 @@ DvtChartDataChangeUtils._drawIndicator = function(context, bDown, bHoriz, fc)
   else  // Vertical
     ptrCmds = bDown ? 'M-5,-3.5L5,-3.5L0,3.5L-5,-3.5Z' : 'M-5,3.5L5,3.5L0,-3.5L-5,3.5Z';
 
+  var cssClass = bDown ? 'oj-chart-animation-down' : 'oj-chart-animation-up';
   var ret = new dvt.Path(context, ptrCmds);
-  ret.setSolidFill(fc);
+  ret.setClassName(cssClass);
+  ret.setStyle({fill: fc});
   return ret;
 };
 
 /**
  * @license
- * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2013 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -17416,8 +17662,9 @@ DvtChartDataChangeFunnelSlice.prototype.Init = function(peer, duration) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -17517,8 +17764,9 @@ DvtChartDataChangePyramidSlice.prototype.Init = function(peer, duration) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -17736,18 +17984,25 @@ DvtChartAxisUtils.isGridPolygonal = function(chart) {
  * @return {boolean} True if the axis is rendered.
  */
 DvtChartAxisUtils.isAxisRendered = function(chart, type) {
-  // For y/y2, evaluate if there's any series assigned to them
-  if (type == 'y' && DvtChartTypeUtils.hasY2DataOnly(chart))
+  // Check if the current chart type supports having axes
+  if (!DvtChartTypeUtils.hasAxes(chart)) {
     return false;
-  if (type == 'y2' && !DvtChartTypeUtils.hasY2Data(chart))
+  }
+
+  var options = chart.getOptions();
+  var ovContent = options.overview.content && options.overview.content[type+"Axis"];
+  var ignoreRenderedOption = ovContent && ovContent.rendered == "on";
+  // For y/y2, evaluate if there's any series assigned to them
+  if (type == 'y' && DvtChartTypeUtils.hasY2DataOnly(chart) && !ignoreRenderedOption)
+    return false;
+  if (type == 'y2' && !DvtChartTypeUtils.hasY2Data(chart) && !ignoreRenderedOption)
     return false;
 
   // Check the chart options
-  var options = chart.getOptions();
   var axisOptions = options[type + 'Axis'];
-  if (axisOptions['rendered'] == 'off')
+  if (axisOptions['rendered'] == 'off' && !ignoreRenderedOption)
     return false;
-  if (axisOptions['tickLabel']['rendered'] == 'off' && !axisOptions['title'])
+  if (axisOptions['tickLabel']['rendered'] == 'off' && !axisOptions['title'] && !ignoreRenderedOption)
     return false;
 
   return true;
@@ -18147,8 +18402,9 @@ DvtChartAxisUtils.axisContainsPoint = function(axis, relPos) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -18284,6 +18540,7 @@ DvtChartDataUtils.processDataObject = function(chart) {
   var hasLowHighSeries = false;
   var hasNegativeValues = false;
   var hasDataOutsideBarEdge = false;
+  var hasSeriesDisplayedInLegend = false;
 
   // Stock Chart Overrides
   var isStock = DvtChartTypeUtils.isStock(chart);
@@ -18311,15 +18568,18 @@ DvtChartDataUtils.processDataObject = function(chart) {
     if (seriesItem['items'] && seriesItem['items'].length > maxGroups)
       maxGroups = seriesItem['items'].length;
 
-    if (seriesItem['visibility'] == 'hidden') {
+    if (seriesItem['visibility'] === 'hidden') {
       var hiddenCategories = DvtChartStyleUtils.getHiddenCategories(chart);
       if (hiddenCategories.indexOf(series) < 0)
         hiddenCategories.push(series);
     }
     seriesItem['visibility'] = null;
 
-    if (seriesItem['assignedToY2'] == 'on')
+    if (seriesItem['assignedToY2'] === 'on')
       hasY2Assignment = true;
+
+    if (seriesItem['displayInLegend'] === 'on')
+      hasSeriesDisplayedInLegend = true;
 
     //  - SANITIZE CHART OPTIONS OBJECT
     if (seriesItem && seriesItem['items']) {
@@ -18398,6 +18658,7 @@ DvtChartDataUtils.processDataObject = function(chart) {
   optionsCache.putToCache('hasLowHighSeries', hasLowHighSeries);
   optionsCache.putToCache('hasNegativeValues', hasNegativeValues);
   optionsCache.putToCache('hasDataOutsideBarEdge', hasDataOutsideBarEdge);
+  optionsCache.putToCache('hasSeriesDisplayedInLegend', hasSeriesDisplayedInLegend);
 
   // Add Volume Series
   if (isStock && DvtChartDataUtils.hasVolumeSeries(chart) && !DvtChartTypeUtils.isOverview(chart)) {
@@ -18473,7 +18734,7 @@ DvtChartDataUtils.processDataObject = function(chart) {
 
   // Sorting: Sort the groups based on their values if sorting is turned on
   var sorting = options['sorting'];
-  sorting = (sorting == 'on') ? 'descending' : (sorting != 'ascending' && sorting != 'descending') ? 'off' : sorting;
+  sorting = (sorting === 'on') ? 'descending' : (sorting !== 'ascending' && sorting !== 'descending') ? 'off' : sorting;
   if (DvtChartTypeUtils.isBLAC(chart) && DvtChartAxisUtils.hasGroupAxis(chart) && sorting != 'off' && DvtChartDataUtils.getNumLevels(chart) == 1) {
     // Find all the group totals
     var groups = DvtChartDataUtils.getGroups(chart);
@@ -18492,7 +18753,7 @@ DvtChartDataUtils.processDataObject = function(chart) {
       totalsMap[groups[j]] = {'index': j, 'total': total, 'group': options['groups'][j]};
     }
     // Sort the groups list
-    if (sorting == 'ascending')
+    if (sorting === 'ascending')
       groups.sort(function(a, b) { return totalsMap[a]['total'] - totalsMap[b]['total']; });
     else
       groups.sort(function(a, b) { return totalsMap[b]['total'] - totalsMap[a]['total']; });
@@ -20177,7 +20438,8 @@ DvtChartDataUtils.getDataContext = function(chart, seriesIndex, groupIndex, item
     if (rawData._noTemplate) {
       rawData = rawData._itemData;
      }
-     else {
+     else if (rawData && typeof(rawData) === 'object') {
+      rawData = Object.assign({}, rawData);
       delete rawData['_itemData'];
     }
     dataContext = {
@@ -20194,7 +20456,8 @@ DvtChartDataUtils.getDataContext = function(chart, seriesIndex, groupIndex, item
     if (rawData._noTemplate) {
       rawData = rawData._itemData;
     }
-    else {
+    else  if (rawData && typeof(rawData) === 'object' ) {
+      rawData = Object.assign({}, rawData);
       delete rawData['_itemData'];
     }
     dataContext = {
@@ -20231,7 +20494,22 @@ DvtChartDataUtils.getDataContext = function(chart, seriesIndex, groupIndex, item
 
     if (!isOtherSlice && (nestedDataItem || dataItem || seriesItem)) {
       dataContext['series'] = DvtChartDataUtils.getSeries(chart, seriesIndex);
-      dataContext['seriesData'] = rawOptions['series'][seriesIndex];
+      var seriesData = rawOptions['series'][seriesIndex];
+      var clonedSeriesData = Object.assign({}, seriesData);
+      clonedSeriesData.items = []; // Object.assign doesn't clone array properties
+      var noTemplate =  seriesData.items[0] &&  seriesData.items[0]._noTemplate;
+      for (var i = 0; i < seriesData.items.length; i++) {
+        var item =  Object.assign({}, seriesData.items[i]);
+        if (item && typeof(item) === 'object' ) {
+          delete item['_itemData'];
+          if (noTemplate) {
+            delete item['_dvtNoClone'];
+            delete item['_noTemplate'];
+          }
+        }
+        clonedSeriesData.items.push(item);
+      }
+      dataContext['seriesData'] = clonedSeriesData;
     }
 
     if (DvtChartTypeUtils.isPie(chart) && chart.pieChart)
@@ -20412,8 +20690,9 @@ DvtChartDataUtils.getFilteredChartObjPeers = function(chart) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -21047,8 +21326,9 @@ DvtChartEventUtils.addPlotAreaDnDBackground = function(chart, container, availSp
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -21286,8 +21566,9 @@ DvtChartRefObjUtils.getViewportMinMaxIndex = function(chart, items) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -21466,8 +21747,9 @@ DvtChartSeriesEffectUtils.getFunnelPyramidSliceFill = function(chart, seriesInde
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -22705,7 +22987,7 @@ DvtChartStyleUtils.getDataLabelPosition = function(chart, seriesIndex, groupInde
  * @param {object} textDims Data label dimensions
  * @param {object} plotAreaDims Plot area dimensions
  * @param {object} isHoriz Whether or not the chart is horizontal.
- * @return {object} Indicates where the label has collisions: xAxis, yAxis, y2Axis, legend, top of chart 
+ * @return {object} Indicates where the label has collisions: xAxis, yAxis, y2Axis, legend, top of chart
  */
 DvtChartStyleUtils.getDataLabelCollisions = function (chart, centeredTextCoords, textDims, plotAreaDims, isHoriz) {
   var textX = centeredTextCoords && centeredTextCoords.x ? centeredTextCoords.x - (textDims.w / 2) || textDims.x : textDims.x;
@@ -22728,7 +23010,7 @@ DvtChartStyleUtils.getDataLabelCollisions = function (chart, centeredTextCoords,
  * @param {string} position Initial label position
  * @param {object} detectedCollisions Indicates where label has collision: xAxis, yAxis, y2Axis, legend, top of chart
  * @param {boolean} hasY2Axis Whether the chart has a y2 axis
- * @return {string} The adjusted data label position. 
+ * @return {string} The adjusted data label position.
  */
 DvtChartStyleUtils.adjustDataLabelPosition = function (position, detectedCollisions, hasY2Axis) {
   var adjustedPosition = position;
@@ -22877,15 +23159,20 @@ DvtChartStyleUtils.getGroupWidth = function(chart) {
 };
 
 /**
- * Returns true if the chart is bar and stack label is enabled.
+ * Returns true if the chart supports stacking and stack label is enabled.
  * @param {dvt.Chart} chart
  * @return {boolean}
  */
 DvtChartStyleUtils.isStackLabelRendered = function(chart) {
   // To have stack labels, the attribute must be set and the chart must be a supporting type.
   var options = chart.getOptions();
-  if (DvtChartTypeUtils.isStacked(chart) && options['stackLabel'] == 'on')
-    return true;
+  //check if stack is enabled first
+  if (options['stack'] != 'on' || DvtChartAxisUtils.isMixedFrequency(chart)){
+    return false;
+  }
+
+  if (options['stackLabel'] === 'on')
+    return DvtChartTypeUtils.isBLAC(chart);
 
   return false;
 };
@@ -23100,8 +23387,9 @@ DvtChartStyleUtils._setBoxPlotDefaultLineColor = function(boxPlotOptions, prefix
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -23150,8 +23438,9 @@ DvtChartTextUtils.areTitlesRendered = function(chart) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -23287,7 +23576,7 @@ DvtChartTooltipUtils._processDatatip = function(datatipRows, chart, isTabular) {
 
   // Add outer table tags
   if (isTabular)
-    return dvt.HtmlTooltipManager.createElement('table', chart.getOptions()['styleDefaults']['_tooltipStyle'], datatipRows);
+    return dvt.HtmlTooltipManager.createElement('table', null, datatipRows, ['oj-dvt-datatip-table']);
   else
     return datatipRows.join('');
 };
@@ -23516,12 +23805,8 @@ DvtChartTooltipUtils._addDatatipRow = function(datatipRows, chart, type, default
     value = DvtChartTooltipUtils.formatValue(chart, valueFormat, value);
 
   if (isTabular) {
-    var isRTL = dvt.Agent.isRightToLeft(chart.getCtx());
-    options['tooltipLabelStyle'].setStyle(dvt.CSSStyle.TEXT_ALIGN, isRTL ? 'left' : 'right');
-    options['tooltipValueStyle'].setStyle(dvt.CSSStyle.TEXT_ALIGN, isRTL ? 'right' : 'left');
-
-    var tds = [dvt.HtmlTooltipManager.createElement('td', options['tooltipLabelStyle'], tooltipLabel),
-               dvt.HtmlTooltipManager.createElement('td', options['tooltipValueStyle'], value)];
+    var tds = [dvt.HtmlTooltipManager.createElement('td', options['tooltipLabelStyle'], tooltipLabel, ['oj-dvt-datatip-label']),
+               dvt.HtmlTooltipManager.createElement('td', options['tooltipValueStyle'], value, ['oj-dvt-datatip-value'])];
     datatipRows.push(dvt.HtmlTooltipManager.createElement('tr', null, tds));
   }
   else {
@@ -23587,7 +23872,7 @@ DvtChartTooltipUtils.formatValue = function(chart, valueFormat, value, min, max,
 
   // Create the formatter
   var formatter = new dvt.LinearScaleAxisValueFormatter(chart.getCtx(), min, max, majorIncrement, scaling, autoPrecision, chart.getOptions().translations);
-  if (converter && (converter['getAsString'] || converter['format']))
+  if (converter &&  converter['format'])
     return formatter.format(value, converter);
   else
     return formatter.format(value);
@@ -23603,8 +23888,6 @@ DvtChartTooltipUtils.formatDateValue = function(valueFormat, date) {
   var converter = valueFormat['converter'];
   if (!converter)
     return null;
-  if (converter['getAsString'])
-    return converter['getAsString'](date);
   if (converter['format'])
     return converter['format'](date);
   return null;
@@ -23649,8 +23932,9 @@ DvtChartTooltipUtils.getDataCursorBehavior = function(chart) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -24123,7 +24407,7 @@ DvtChartTypeUtils.isStandalonePlotArea = function(chart) {
   var options = chart.getOptions();
   if (DvtChartTextUtils.areTitlesRendered(chart))
     return false;
-  if (options['legend']['rendered'] != 'off')
+  if (DvtChartTypeUtils.isLegendRendered(chart))
     return false;
   if (DvtChartAxisUtils.isAxisRendered(chart, 'x'))
     return false;
@@ -24192,9 +24476,49 @@ DvtChartTypeUtils.isStandaloneY2Axis = function(chart) {
 };
 
 /**
+ * Returns whether the legend is rendered
+ * (only type of the chart, legend.rendered and series.displayInLegend are considered)
+ * @param {dvt.Chart} chart instance of the chart
+ * @return {boolean} true, if the legend is rendered
+ */
+DvtChartTypeUtils.isLegendRendered = function(chart) {
+  var options = chart.getOptions();
+  var hasLargeSeriesCount = chart.getOptionsCache().getFromCache('hasLargeSeriesCount');
+  var legend = options['legend'];
+
+  if (legend['rendered'] === 'off') {
+    return false;
+  }
+
+  // Legend will not be rendered if rendered: auto is provided and
+  // the series data count is large
+  // The same check is being done in DvtChartLegendRenderer.render method.
+  if (legend['rendered'] === 'auto' && hasLargeSeriesCount) {
+    return false;
+  }
+
+  var hasSeriesDisplayedInLegend = chart.getOptionsCache().getFromCache('hasSeriesDisplayedInLegend');
+  var hasCustomLegendSections = legend['sections'] && legend['sections'].length !== 0;
+
+  var isStock = DvtChartTypeUtils.isStock(chart);
+  var isFunnel = DvtChartTypeUtils.isFunnel(chart);
+  var isPyramid = DvtChartTypeUtils.isPyramid(chart);
+
+  // For rendered: auto; Stock, funnel and pyramid charts do not render the legend unless
+  // displayInLegend property is set in at least one series or
+  // custom legend sections are provided.
+  if ((isStock || isFunnel || isPyramid) &&
+      !hasSeriesDisplayedInLegend && !hasCustomLegendSections) {
+    return false;
+  }
+  return true;
+};
+
+/**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -24403,8 +24727,9 @@ DvtChartMarkerUtils.updatePixelMap = function(pixelMap, markerX, markerY, marker
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -24630,8 +24955,9 @@ DvtChartPieUtils.getSliceBySeriesIndex = function(chart, seriesIndex) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -25029,8 +25355,9 @@ DvtChartPieRenderUtils._generateInnerPoints = function(cx, cy, xpos, ypos, tilt)
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /*---------------------------------------------------------------------*/
@@ -25299,8 +25626,9 @@ DvtChartPieLabelInfo.prototype.setY = function(y) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /*---------------------------------------------------------------------*/
@@ -25703,10 +26031,8 @@ DvtChartPieLabelUtils.generateSlicePercentageString = function(slice) {
   var spercent = '';
 
   // Apply the percent converter if present
-  if (percentConverter && percentConverter['getAsString']) {
-    spercent = percentConverter['getAsString'](percentage);
-  }
-  else if (percentConverter && percentConverter['format']) {
+
+  if (percentConverter && percentConverter['format']) {
     spercent = percentConverter['format'](percentage);
   }
   else {
@@ -26451,8 +26777,9 @@ DvtChartPieLabelUtils._skipSliceLabel = function(pie, slice) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -26521,9 +26848,6 @@ DvtChartRenderer.render = function(chart, container, availSpace) {
 
     DvtChartRenderer._updateTitles(chart, container, titleSpace, availSpace); // reposition title and/or footnote if aligned to plot area
     DvtChartRenderer._renderPlotArea(chart, container, availSpace);
-    if (DvtChartTypeUtils.isPolar(chart))
-      container.addChild(chart.yAxis); // move radial labels above the plot area objects
-
     DvtChartRenderer._renderDragButtons(chart, container);
   }
   else // Render the empty text
@@ -26644,9 +26968,7 @@ DvtChartRenderer._addOuterGaps = function(chart, availSpace) {
   var gapWidth = DvtChartDefaults.getGapWidth(chart, options['layout']['outerGapWidth']);
   var gapHeight = DvtChartDefaults.getGapHeight(chart, options['layout']['outerGapHeight']);
 
-  if (options['styleDefaults']['padding'] == 'none' ||
-      DvtChartTypeUtils.isStandalonePlotArea(chart) || DvtChartTypeUtils.isStandaloneXAxis(chart) ||
-      DvtChartTypeUtils.isStandaloneYAxis(chart) || DvtChartTypeUtils.isStandaloneY2Axis(chart)) {
+  if (!DvtChartRenderer._needsOuterGaps(chart)) {
     // Set the padding to at most 1px.
     gapWidth = Math.min(gapWidth, 1);
     gapHeight = Math.min(gapHeight, 1);
@@ -26657,6 +26979,30 @@ DvtChartRenderer._addOuterGaps = function(chart, availSpace) {
   availSpace.y += gapHeight;
   availSpace.h -= 2 * gapHeight;
 };
+
+/**
+ * Checks if outer gap is needed for the chart
+ * @param {dvt.Chart} chart The instance of the chart
+ * @return {boolean} true, if it is needed to add outer gaps
+ */
+DvtChartRenderer._needsOuterGaps = function(chart) {
+  var options = chart.getOptions();
+  // For funnel 3d chart, outer gap is needed, since
+  // the 3d effect overflows on the top and bottom
+  if (DvtChartTypeUtils.isFunnel(chart) && options['styleDefaults']['threeDEffect'] === 'on') {
+    return true;
+  }
+
+  // No need for outer gap it is a standalone chart object
+  if (DvtChartTypeUtils.isStandalonePlotArea(chart) ||
+      DvtChartTypeUtils.isStandaloneXAxis(chart) ||
+      DvtChartTypeUtils.isStandaloneYAxis(chart) ||
+      DvtChartTypeUtils.isStandaloneY2Axis(chart)) {
+    return false;
+  }
+
+  return true;
+}
 
 /**
  * Renders the chart titles and updates the available space.
@@ -26871,7 +27217,8 @@ DvtChartRenderer._renderPlotArea = function(chart, container, availSpace) {
     // Create a container for the plot area contents
     var plotArea = new dvt.Container(chart.getCtx());
     plotArea.setTranslate(availSpace.x, availSpace.y);
-    container.addChild(plotArea);
+    // Add plotArea at index 1, so axes and legends render on top of it
+    container.addChildAt(plotArea, 1);
     chart.setPlotArea(plotArea);
 
     // Associate plot area with logical object to support automation
@@ -27097,6 +27444,7 @@ DvtChartRenderer._renderDragButtons = function(chart, container) {
     return;
 
   var options = chart.getOptions();
+  var resources = options['_resources'];
   var translations = options.translations;
   var em = chart.getEventManager();
   var dragMode = options['dragMode'];
@@ -27119,14 +27467,32 @@ DvtChartRenderer._renderDragButtons = function(chart, container) {
 
   chart.dragButtons = new dvt.Container(chart.getCtx());
 
-  var tooltip, position;
+  var tooltip, position, iconStyles;
+  var classNamesList = [];
   var hasSelectButton = options['selectionMode'] == 'multiple' && (isTouch || isScrollable);
   var hasPanButton = isScrollable && isTouch;
   var hasZoomButton = isScrollable && !isTouch && DvtChartEventUtils.isZoomable(chart) && DvtChartTypeUtils.isScatterBubble(chart);
 
+  // Compute the list of required class names for the drag buttons
+  if (hasSelectButton) {
+    resources['select'] && classNamesList.push(resources['select']);
+  }
+
+  if (hasPanButton) {
+    resources['pan'] && classNamesList.push(resources['pan']);
+  }
+
+  if (hasZoomButton) {
+    resources['zoom'] && classNamesList.push(resources['zoom']);
+  }
+
+  // Compute the icon styles using the classlist
+  iconStyles = dvt.ToolkitUtils.getIconStyles(chart.getCtx(), classNamesList);
+
+  // Create the required drag buttons
   if (hasSelectButton) {
     position = (hasPanButton || hasZoomButton) ? 'end' : 'solo';
-    em.selectButton = DvtChartRenderer._createDragButton(chart, chart.dragButtons, 'select', em.onSelectButtonClick, em, position);
+    em.selectButton = DvtChartRenderer._createDragButton(chart, chart.dragButtons, iconStyles[resources['select']], em.onSelectButtonClick, em, position);
     tooltip = translations.tooltipSelect;
     em.selectButton.setTooltip(tooltip);
     em.associate(em.selectButton, em.selectButton);
@@ -27134,7 +27500,7 @@ DvtChartRenderer._renderDragButtons = function(chart, container) {
 
   if (hasPanButton) {
     position = hasSelectButton ? 'start' : 'solo';
-    em.panButton = DvtChartRenderer._createDragButton(chart, chart.dragButtons, 'pan', em.onPanButtonClick, em, position);
+    em.panButton = DvtChartRenderer._createDragButton(chart, chart.dragButtons, iconStyles[resources['pan']], em.onPanButtonClick, em, position);
     tooltip = translations.tooltipPan;
     em.panButton.setTooltip(tooltip);
     em.associate(em.panButton, em.panButton);
@@ -27142,7 +27508,7 @@ DvtChartRenderer._renderDragButtons = function(chart, container) {
 
   if (hasZoomButton) {
     position = hasSelectButton ? 'start' : 'solo';
-    em.zoomButton = DvtChartRenderer._createDragButton(chart, chart.dragButtons, 'zoom', em.onZoomButtonClick, em, position);
+    em.zoomButton = DvtChartRenderer._createDragButton(chart, chart.dragButtons, iconStyles[resources['zoom']], em.onZoomButtonClick, em, position);
     tooltip = translations.tooltipZoom;
     em.zoomButton.setTooltip(tooltip);
     em.associate(em.zoomButton, em.zoomButton);
@@ -27175,7 +27541,7 @@ DvtChartRenderer._renderDragButtons = function(chart, container) {
 /**
  * Positions the drag button
  * @param {dvt.Chart} chart
- * @param {dvt.Button} button
+ * @param {dvt.IconButton} button
  * @param {dvt.Rectangle} availSpace
  * @private
  */
@@ -27217,11 +27583,10 @@ DvtChartRenderer.positionDragButtons = function(chart) {
  * Creates the rounded square background for the drag button.
  * @param {dvt.Context} context
  * @param {string} position The position of the button: start, end, or solo.
- * @param {string} borderColor The border color of the button.
  * @return {dvt.Rect} The button background.
  * @private
  */
-DvtChartRenderer._createDragButtonBackground = function(context, position, borderColor) {
+DvtChartRenderer._createDragButtonBackground = function(context, position) {
   var blcr = 2;
   var trcr = 2;
   var isR2L = dvt.Agent.isRightToLeft(context);
@@ -27240,66 +27605,58 @@ DvtChartRenderer._createDragButtonBackground = function(context, position, borde
   var background = new dvt.Path(context, cmd);
 
   // don't use pixel hinting on desktop bc the corners look broken
-  if (dvt.Agent.getDevicePixelRatio() > 1) {
-    background.setSolidStroke(borderColor, DvtChartRenderer._BUTTON_OPACITY, 1);
-    background.setPixelHinting(true);
-  }
-  else
-    background.setSolidStroke(borderColor, DvtChartRenderer._BUTTON_OPACITY, 1);
-
+  background.setPixelHinting(dvt.Agent.getDevicePixelRatio() > 1);
   return background;
 };
 
+/**
+ * Computes the image url using the imageUrlMapping cache and chart resources
+ * @param {dvt.Chart} chart the chart instance\
+ * @param {object} imageUrlMapping object that maps image source string to url
+ * @param {string} resourceKey the key for the image source in the resources map
+ * @param {string=} fallbackUrl the optional fallback url
+ * @return {string|null} the image url if available in the cache, or the fallbackUrl
+ *                       if provided and null if neither of them is avilable.
+ */
+DvtChartRenderer._getImageUrl = function (chart, imageUrlMapping, resourceKey, fallbackUrl) {
+  var resources = chart.getOptions()['_resources'];
+  var imageSource = resources[resourceKey];
+  var url;
+
+  // if image source is not available, return the fallback url
+  if (imageSource == null) {
+    return fallbackUrl;
+  }
+
+  // if image url exists in the cache and return the url
+  url = imageUrlMapping[imageSource];
+  if (url != null) {
+    return url;
+  }
+
+  // return the image source if the url is not available in the cache
+  return imageSource;
+};
 
 /**
  * Creates and a drag button.
  * @param {dvt.Chart} chart
  * @param {dvt.Container} container The container for the button.
- * @param {string} prefix The resource prefix for the button image URL.
+ * @param {object} iconStyle The icon style information
  * @param {object} callback The callback method of the button.
  * @param {object} callbackObj The object of the callback method.
  * @param {string} position The position of the button: start, end, or solo.
- * @return {dvt.Button}
+ * @return {dvt.IconButton}
  * @private
  */
-DvtChartRenderer._createDragButton = function(chart, container, prefix, callback, callbackObj, position) {
+DvtChartRenderer._createDragButton = function(chart, container, iconStyle, callback, callbackObj, position) {
   // Create the button and add to the container
   var context = chart.getCtx();
-  var resources = chart.getOptions()['_resources'];
 
-  // Initialize the button states
-  var upState = DvtChartRenderer._createDragButtonBackground(context, position, '#C4CED7');
-  var upSrc = resources[prefix + 'Up'];
-  upState.setFill(new dvt.LinearGradientFill(270,
-      ['#FFFFFF', '#F1F3F4', '#E8EBED', '#E4E8EA'],
-      [DvtChartRenderer._BUTTON_OPACITY, DvtChartRenderer._BUTTON_OPACITY, DvtChartRenderer._BUTTON_OPACITY, DvtChartRenderer._BUTTON_OPACITY],
-      [0, 0.0364, 0.5, 1]));
-  upState.addChild(new dvt.Image(context, upSrc, 0, 0, DvtChartRenderer._BUTTON_SIZE, DvtChartRenderer._BUTTON_SIZE));
+  // background
+  var background = DvtChartRenderer._createDragButtonBackground(context, position);
 
-  var overState = DvtChartRenderer._createDragButtonBackground(context, position, '#C4CED7');
-  var overSrc = resources[prefix + 'UpHover'] ? resources[prefix + 'UpHover'] : upSrc;
-  overState.setSolidFill('#F7F8F9', DvtChartRenderer._BUTTON_OPACITY);
-  overState.addChild(new dvt.Image(context, overSrc, 0, 0, DvtChartRenderer._BUTTON_SIZE, DvtChartRenderer._BUTTON_SIZE));
-
-  var downState = DvtChartRenderer._createDragButtonBackground(context, position, '#0572CE');
-  var downSrc = resources[prefix + 'Down'];
-  downState.setSolidFill('#0572CE', DvtChartRenderer._BUTTON_OPACITY);
-  downState.addChild(new dvt.Image(context, downSrc, 0, 0, DvtChartRenderer._BUTTON_SIZE, DvtChartRenderer._BUTTON_SIZE));
-
-  var overDownState = DvtChartRenderer._createDragButtonBackground(context, position, '#0572CE');
-  var overDownSrc = resources[prefix + 'DownHover'] ? resources[prefix + 'DownHover'] : downSrc;
-  overDownState.setSolidFill('#0572CE', DvtChartRenderer._BUTTON_OPACITY);
-  overDownState.addChild(new dvt.Image(context, overDownSrc, 0, 0, DvtChartRenderer._BUTTON_SIZE, DvtChartRenderer._BUTTON_SIZE));
-
-  var button = new dvt.Button(context, upState, overState, downState, null, null, callback, callbackObj);
-  button.setOverDownState(overDownState);
-  button.setToggleEnabled(true);
-  container.addChild(button);
-
-  // Button should consume mousedown event so that drag is not initiated
-  button.addEvtListener(dvt.MouseEvent.MOUSEDOWN, function(event) {
-    event.stopPropagation();
-  });
+  var button = new dvt.IconButton(context, 'outlined', {style: iconStyle, size: DvtChartRenderer._BUTTON_SIZE}, background, null, callback, callbackObj);
 
   // Add hit area to the button for touch devices
   if (dvt.Agent.isTouchDevice()) {
@@ -27315,8 +27672,17 @@ DvtChartRenderer._createDragButton = function(chart, container, prefix, callback
       hitArea = new dvt.Rect(context, -0.5 * hitPadding, -hitPadding, DvtChartRenderer._BUTTON_SIZE + 1.5 * hitPadding, DvtChartRenderer._BUTTON_SIZE + 2 * hitPadding);
 
     hitArea.setInvisibleFill();
+    hitArea.setSolidStroke('none')
     button.addChild(hitArea);
   }
+
+  button.setToggleEnabled(true)
+  container.addChild(button);
+
+  // Button should consume mousedown event so that drag is not initiated
+  button.addEvtListener(dvt.MouseEvent.MOUSEDOWN, function(event) {
+    event.stopPropagation();
+  });
 
   return button;
 };
@@ -27365,8 +27731,9 @@ DvtChartRenderer.renderDataCursor = function(chart) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -27417,9 +27784,12 @@ DvtChartAxisRenderer._renderCartesian = function(chart, container, availSpace) {
   var options = chart.getOptions();
   var isHoriz = DvtChartTypeUtils.isHorizontal(chart);
   var isSplitDualY = DvtChartTypeUtils.isSplitDualY(chart);
+  var isOverview = DvtChartTypeUtils.isOverview(chart);
   var totalAvailSpace = availSpace.clone();
   var yPosition = DvtChartAxisUtils.getYAxisPosition(chart);
   var y2Position = DvtChartAxisUtils.getY2AxisPosition(chart);
+  var ignoreYRendering = !isOverview && options.overview.content && options.overview.content.yAxis && options.overview.content.yAxis.rendered == "on"; // main chart's y-axis.rendered = "off" should be ignored(for sizing purposes) if the overview has a y-axis
+  var ignoreY2Rendering = !isOverview && options.overview.content && options.overview.content.y2Axis && options.overview.content.y2Axis.rendered == "on"; // main chart's y2-axis.rendered = "off" should be ignored(for sizing purposes) if the overview has a y2-axis
 
   DvtChartAxisRenderer._addAxisGaps(chart, availSpace);
 
@@ -27435,8 +27805,8 @@ DvtChartAxisRenderer._renderCartesian = function(chart, container, availSpace) {
   // 3. Update y axes with reduced size (due to x axis)
 
   // Get preferred sizing for the y axes
-  var yInfo = DvtChartAxisRenderer._createYAxis(chart, container, availSpace, totalAvailSpace);
-  var y2Info = DvtChartAxisRenderer._createY2Axis(chart, container, availSpace, totalAvailSpace);
+  var yInfo = DvtChartAxisRenderer._createYAxis(chart, container, availSpace, totalAvailSpace, ignoreYRendering);
+  var y2Info = DvtChartAxisRenderer._createY2Axis(chart, container, availSpace, totalAvailSpace, ignoreY2Rendering);
 
   // Align the y and y2 axis tick marks if needed
   var bAligned = !isSplitDualY && options['y2Axis']['alignTickMarks'] == 'on' && options['y2Axis']['step'] == null;
@@ -27448,7 +27818,7 @@ DvtChartAxisRenderer._renderCartesian = function(chart, container, availSpace) {
     //  - y2 tick label is missing sometimes
     // recalculate preferred dimensions to account for new set of labels, which may be wider than previous dimensions
     if (!isHoriz)
-      y2Info.dim = DvtChartAxisRenderer._getPreferredSize(chart, y2Info.axis, chart.y2Axis, y2Info.options, 'y2', availSpace, totalAvailSpace);
+      y2Info.dim = DvtChartAxisRenderer._getPreferredSize(chart, y2Info.axis, chart.y2Axis, y2Info.options, 'y2', availSpace, totalAvailSpace, ignoreY2Rendering);
   }
 
   var yGap = DvtChartAxisUtils.getTickLabelGapSize(chart, 'y');
@@ -27467,12 +27837,12 @@ DvtChartAxisRenderer._renderCartesian = function(chart, container, availSpace) {
       yInfo.dim.w = maxSize - yGap;
       y2Info.dim.w = maxSize - y2Gap;
     }
-    DvtChartAxisRenderer._positionAxis(availSpace.clone(), yInfo, yGap); // clone so availSpace not subtracted twice
-    DvtChartAxisRenderer._positionAxis(availSpace, y2Info, y2Gap);
+    DvtChartAxisRenderer._positionAxis(availSpace.clone(), yInfo, yGap, ignoreYRendering); // clone so availSpace not subtracted twice
+    DvtChartAxisRenderer._positionAxis(availSpace, y2Info, y2Gap, ignoreY2Rendering);
   }
   else {
-    DvtChartAxisRenderer._positionAxis(availSpace, yInfo, yGap);
-    DvtChartAxisRenderer._positionAxis(availSpace, y2Info, y2Gap);
+    DvtChartAxisRenderer._positionAxis(availSpace, yInfo, yGap, ignoreYRendering);
+    DvtChartAxisRenderer._positionAxis(availSpace, y2Info, y2Gap, ignoreY2Rendering);
   }
 
   // Spark Bar Spacing Support
@@ -27653,10 +28023,11 @@ DvtChartAxisRenderer._createXAxis = function(chart, container, availSpace, total
  * @param {dvt.Container} container The container to render into.
  * @param {dvt.Rectangle} availSpace The available space for the axis.
  * @param {dvt.Rectangle} totalAvailSpace The total available space allocated for all axes and plot area.
+ * @param {boolean} ignoreRenderedOption rendered= "off" will be ignored if this is true
  * @return {object}
  * @private
  */
-DvtChartAxisRenderer._createYAxis = function(chart, container, availSpace, totalAvailSpace) {
+DvtChartAxisRenderer._createYAxis = function(chart, container, availSpace, totalAvailSpace, ignoreRenderedOption) {
   var options = chart.getOptions();
 
   // Check that the graph needs a y1 axis
@@ -27676,7 +28047,7 @@ DvtChartAxisRenderer._createYAxis = function(chart, container, availSpace, total
   // Create the axis and add to the display list for calc and rendering
   var axis = new DvtChartAxis(chart.getCtx(), chart.processEvent, chart);
   container.addChild(axis);
-  var preferredSize = DvtChartAxisRenderer._getPreferredSize(chart, axis, chart.yAxis, axisOptions, 'y', availSpace, totalAvailSpace);
+  var preferredSize = DvtChartAxisRenderer._getPreferredSize(chart, axis, chart.yAxis, axisOptions, 'y', availSpace, totalAvailSpace, ignoreRenderedOption);
   DvtChartAxisRenderer._adjustYAxisForLabels(axis, axisOptions, chart, 'y');
 
   // Store the axis min/max for zoom & scroll
@@ -27693,10 +28064,11 @@ DvtChartAxisRenderer._createYAxis = function(chart, container, availSpace, total
  * @param {dvt.Container} container The container to render into.
  * @param {dvt.Rectangle} availSpace The available space for the axis.
  * @param {dvt.Rectangle} totalAvailSpace The total available space allocated for all axes and plot area.
+ * @param {boolean} ignoreRenderedOption rendered= "off" will be ignored if this is true
  * @return {object}
  * @private
  */
-DvtChartAxisRenderer._createY2Axis = function(chart, container, availSpace, totalAvailSpace) {
+DvtChartAxisRenderer._createY2Axis = function(chart, container, availSpace, totalAvailSpace, ignoreRenderedOption) {
   var options = chart.getOptions();
 
   // Check that the graph has y2-axis data
@@ -27716,7 +28088,7 @@ DvtChartAxisRenderer._createY2Axis = function(chart, container, availSpace, tota
   // Create the axis and add to the display list for calc and rendering
   var axis = new DvtChartAxis(chart.getCtx(), chart.processEvent, chart);
   container.addChild(axis);
-  var preferredSize = DvtChartAxisRenderer._getPreferredSize(chart, axis, chart.y2Axis, axisOptions, 'y2', availSpace, totalAvailSpace);
+  var preferredSize = DvtChartAxisRenderer._getPreferredSize(chart, axis, chart.y2Axis, axisOptions, 'y2', availSpace, totalAvailSpace, ignoreRenderedOption);
   DvtChartAxisRenderer._adjustYAxisForLabels(axis, axisOptions, chart, 'y2');
 
   // Store the axis min/max for zoom & scroll
@@ -27852,10 +28224,11 @@ DvtChartAxisRenderer._adjustYAxisForLabels = function(axis, axisOptions, chart, 
  * @param {String} type The axis type: x, y, or y2.
  * @param {dvt.Rectangle} availSpace
  * @param {dvt.Rectangle} totalAvailSpace
+ * @param {boolean} ignoreRenderedOption rendered= "off" will be ignored if this is true
  * @return {dvt.Dimension} The preferred size.
  * @private
  */
-DvtChartAxisRenderer._getPreferredSize = function(chart, axis, oldAxis, axisOptions, type, availSpace, totalAvailSpace) {
+DvtChartAxisRenderer._getPreferredSize = function(chart, axis, oldAxis, axisOptions, type, availSpace, totalAvailSpace, ignoreRenderedOption) {
   var isStandalone = axisOptions['isStandalone'];
   var position = axisOptions['position'];
   var isHoriz = (position == 'top' || position == 'bottom');
@@ -27872,7 +28245,7 @@ DvtChartAxisRenderer._getPreferredSize = function(chart, axis, oldAxis, axisOpti
   }
 
   // if axis not rendered, return 0 for the size dimension
-  else if (axisOptions['rendered'] == 'off') {
+  else if (axisOptions['rendered'] == 'off' && !ignoreRenderedOption) {
     if (isHoriz)
       preferredHeight = 0;
     else
@@ -27920,9 +28293,9 @@ DvtChartAxisRenderer._getPreferredSize = function(chart, axis, oldAxis, axisOpti
     // last option: use axis.getPreferredSize based on the maxSize
     maxSize = maxSize == null ? DvtChartAxisRenderer._DEFAULT_AXIS_MAX_SIZE : maxSize;
     if (isHoriz)
-      return axis.getPreferredSize(axisOptions, availSpace.w, DvtChartStyleUtils.getSizeInPixels(maxSize, totalAvailSpace.h) - gap);
+      return axis.getPreferredSize(axisOptions, availSpace.w, DvtChartStyleUtils.getSizeInPixels(maxSize, totalAvailSpace.h) - gap, ignoreRenderedOption);
     else
-      return axis.getPreferredSize(axisOptions, DvtChartStyleUtils.getSizeInPixels(maxSize, totalAvailSpace.w) - gap, availSpace.h);
+      return axis.getPreferredSize(axisOptions, DvtChartStyleUtils.getSizeInPixels(maxSize, totalAvailSpace.w) - gap, availSpace.h, ignoreRenderedOption);
   }
 
   //  Calling getPreferredSize to ensure that axis info is populated.
@@ -27972,13 +28345,17 @@ DvtChartAxisRenderer._addAxisGaps = function(chart, availSpace) {
  * @param {dvt.Rectangle} availSpace
  * @param {object} axisInfo
  * @param {number} gap The tick label gap size.
+ * @param {boolean} ignoreRenderedOption rendered= "off" will be ignored if this is true
  * @private
  */
-DvtChartAxisRenderer._positionAxis = function(availSpace, axisInfo, gap) {
+DvtChartAxisRenderer._positionAxis = function(availSpace, axisInfo, gap, ignoreRenderedOption) {
   if (!axisInfo)
     return;
+  // Adjust dimensions because the layout work should still be done.
+  var height = ignoreRenderedOption ? Math.max(axisInfo.dim.h, 1) : axisInfo.dim.h;
+  var width = ignoreRenderedOption ? Math.max(axisInfo.dim.w, 1) : axisInfo.dim.w;
 
-  dvt.LayoutUtils.position(availSpace, axisInfo.options['position'], axisInfo.axis, axisInfo.dim.w, axisInfo.dim.h, gap);
+  dvt.LayoutUtils.position(availSpace, axisInfo.options['position'], axisInfo.axis, width, height, gap);
 };
 
 
@@ -28097,8 +28474,9 @@ DvtChartAxisRenderer._storeAxes = function(chart, xInfo, yInfo, y2Info) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -28506,8 +28884,9 @@ DvtChartLegendRenderer._getRefObjItems = function(chart) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -28949,7 +29328,7 @@ DvtChartPlotAreaRenderer._renderDataLabel = function(chart, container, dataItemB
     var nudgeDown = detectedCollisions && detectedCollisions.top && (pos == 'left' || pos == 'right');
     var nudgeLeft = detectedCollisions && (((hasY2Axis || !hasLegend) && detectedCollisions.y2Axis) || detectedCollisions.legend) && (pos == 'top' || pos == 'bottom');
     var nudgeRight = detectedCollisions && detectedCollisions.yAxis && (pos == 'top' || pos == 'bottom');
-    
+
     if (pos == 'left') {
       coord.x = itemBounds.x - labelDims.w / 2 - DvtChartPlotAreaRenderer._MARKER_DATA_LABEL_GAP;
     } else if (pos == 'right') {
@@ -29607,6 +29986,11 @@ DvtChartPlotAreaRenderer._renderBars = function(chart, container, availSpace) {
   var isR2L = dvt.Agent.isRightToLeft(chart.getCtx());
   var hasStackLabel = DvtChartStyleUtils.isStackLabelRendered(chart);
   var isStacked = DvtChartTypeUtils.isStacked(chart);
+
+  // fix for chart stack label for data with series count < 2; 
+  if ((DvtChartDataUtils.getSeriesCount(chart) < 2) && hasStackLabel){
+    isStacked = true;
+  }
   var innerColor = DvtChartStyleUtils.getSelectedInnerColor(chart);
   var outerColor = DvtChartStyleUtils.getSelectedOuterColor(chart);
   var duringZoomAndScroll = chart.getOptions()['_duringZoomAndScroll'];
@@ -30576,8 +30960,9 @@ DvtChartPlotAreaRenderer._extendClipGroup = function(chart) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -30718,8 +31103,9 @@ DvtChartFunnelRenderer._renderFunnelSlices = function(chart, container, availSpa
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -30826,8 +31212,9 @@ DvtChartPyramidRenderer._renderPyramidSlices = function(chart, container, availS
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -31180,8 +31567,9 @@ DvtChartRefObjRenderer._getAxisCoord = function(chart, axis, value) {
 
 /**
  * @license
- * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2008 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -31402,8 +31790,9 @@ dvt.SparkChart.prototype.__getLogicalObject = function()
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -31454,8 +31843,9 @@ DvtSparkChartAutomation.prototype.getDataItem = function(itemIndex) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -31510,8 +31900,9 @@ DvtSparkChartDefaults.prototype.getAnimationDuration = function(options)
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -31555,8 +31946,9 @@ DvtSparkChartEventManager.prototype.OnBlur = function(event) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -31796,8 +32188,9 @@ DvtSparkChartRenderer._convertOptionsObj = function(spark) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 })(dvt);

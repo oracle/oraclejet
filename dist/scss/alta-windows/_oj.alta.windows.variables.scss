@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 @import "../utilities/oj.utilities.units";
 @import "../common/oj.common.palette";
 
@@ -437,7 +438,12 @@ $formControlPlaceholderColor:     $tertiaryTextColor !default;
 // form control option defaults
 //----------------------------------
 $formControlLabelEdgeDefault: provided !default;
+$inputFormControlReadonlyDefault: input !default;
+$formControlUseUserAssistanceOptionDefault: ignore !default;
 
+// messaging option defaults
+//----------------------------------
+$formControlMessageSummaryOptionDefault: "header" !default;
 
 // form labels
 //----------------------------------
@@ -794,6 +800,17 @@ $listViewCardMargin:     20px 20px 0 0 !default;
 $listViewHeaderFontSize: $header2FontSize !default;
 $listViewHeaderOpacity:  0.85 !default;
 
+// SELECTOR WIDTH
+//-----------------------------------------------------------------------------
+
+// width of the selector 
+$selectorWidth:                      20px !default;
+// height of the selector 
+$selectorHeight:                     20px !default;
+// margin of the selector 
+$selectorMargin:                     10px !default;
+
+
 // APPLICATION LAYOUT - MOBILE PATTERN VARIABLES
 //-------------------------------------------------------------
 // Padding
@@ -807,4 +824,9 @@ $appLayoutHybridHeaderTitleFontSize: 1rem !default;
 // options
 $offcanvasDisplayModeOptionDefault: overlay !default;
 
+// CONVEYORBELT
+//----------------------------------------
+$conveyorBeltArrowVisibilityOptionDefault: visible !default;
+
 @import "../common/oj.common.variables";
+

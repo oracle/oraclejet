@@ -1,22 +1,34 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojconfig', 'touchr'],
-       function(oj, $, Components, Logger, Context, Config)
+define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojconfig', 'touchr'],
+       function(oj, $, ThemeUtils, Components, Logger, Context, Config)
 {
   "use strict";
 var __oj_conveyor_belt_metadata = 
 {
   "properties": {
+    "arrowVisibility": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "auto",
+        "hidden",
+        "visible"
+      ]
+    },
     "contentParent": {
-      "type": "string"
+      "type": "string",
+      "writeback": true
     },
     "orientation": {
       "type": "string",
+      "writeback": true,
       "enumValues": [
         "horizontal",
         "vertical"
@@ -30,6 +42,7 @@ var __oj_conveyor_belt_metadata =
   },
   "methods": {
     "refresh": {},
+    "scrollElementIntoView": {},
     "setProperty": {},
     "getProperty": {},
     "setProperties": {},
@@ -54,6 +67,7 @@ var __oj_conveyor_belt_metadata =
  * @param {Object} contentParent DOM element whose children are the items to scroll
  * @param {boolean} bRtl True if the reading direction is right-to-left, otherwise false
  * @param {Object} buttonInfo Map of properties for the following button information:
+ *  - arrowVisibility: 'visible'/'hidden' if arrow buttons should be visible/hidden
  *  - prevButtonStyleClass: Style class name to use for the scroll previous button,
  *  - nextButtonStyleClass: Style class name to use for the scroll next button,
  *  - prevButtonIcon: Icon element to use for the scroll previous button,
@@ -90,6 +104,7 @@ function ConveyorBeltCommon(
   this._orientation = orientation;
   this._contentParent = contentParent;
   this._bRtl = bRtl;
+  this._arrowVisibility = buttonInfo.arrowVisibility;
   this._prevButtonStyleClass = buttonInfo.prevButtonStyleClass;
   this._nextButtonStyleClass = buttonInfo.nextButtonStyleClass;
   this._prevButtonIcon = buttonInfo.prevButtonIcon;
@@ -143,16 +158,18 @@ ConveyorBeltCommon.prototype.setup = function () {
   this._createInnerContainers();
 
   // create the next/prev buttons
-  this._createPrevButton(this._prevButtonStyleClass, this._prevButtonIcon);
-  this._createNextButton(this._nextButtonStyleClass, this._nextButtonIcon);
+  if (this._arrowVisibility === 'visible') {
+    this._createPrevButton(this._prevButtonStyleClass, this._prevButtonIcon);
+    this._createNextButton(this._nextButtonStyleClass, this._nextButtonIcon);
 
-  var nextButton = this._nextButton;
-  this._buttonWidth = nextButton.offsetWidth;
-  this._buttonHeight = nextButton.offsetHeight;
+    var nextButton = this._nextButton;
+    this._buttonWidth = nextButton.offsetWidth;
+    this._buttonHeight = nextButton.offsetHeight;
 
-  // hide the buttons until we know we need them
-  this._hidePrevButton();
-  this._hideNextButton();
+    // hide the buttons until we know we need them
+    this._hidePrevButton();
+    this._hideNextButton();
+  }
 
   // handle the mouse wheel on the whole conveyor
   this._mouseWheelListener = function (event) {
@@ -247,12 +264,14 @@ ConveyorBeltCommon.prototype.destroy = function () {
 
   // the content container is a child of the overflow container
   elem.removeChild(this._overflowContainer);
-  elem.removeChild(this._nextButton);
-  elem.removeChild(this._prevButton);
-
-  this._nextButton = null;
-  this._prevButton = null;
   this._overflowContainer = null;
+
+  if (this._nextButton != null && this._prevButton != null) {
+    elem.removeChild(this._nextButton);
+    elem.removeChild(this._prevButton);
+    this._nextButton = null;
+    this._prevButton = null;
+  }
   this._contentContainer = null;
   this._clearCachedSizes();
 
@@ -504,9 +523,11 @@ ConveyorBeltCommon.prototype._reinitializeInnerDom = function () {
   this._origScroll = this._getCurrScroll();
   this._setOverflowScroll(0);
 
-  // hide the buttons until we know we need them
-  this._hidePrevButton();
-  this._hideNextButton();
+  if (this._arrowVisibility === 'visible') {
+      // hide the buttons until we know we need them
+    this._hidePrevButton();
+    this._hideNextButton();
+  }
 };
 
 /**
@@ -545,7 +566,9 @@ ConveyorBeltCommon.prototype._handleResize = function (bSetup) {
     this._adjustOverflowSize(false);
   }
   // center buttons orthogonal to conveyor orientation
-  this._alignButtons();
+  if (this._arrowVisibility === 'visible') {
+    this._alignButtons();
+  }
 };
 
 /**
@@ -560,20 +583,14 @@ ConveyorBeltCommon.prototype._alignButtons = function () {
   var prevButton = this._prevButton;
   var nextButtonStyle = nextButton.style;
   var prevButtonStyle = prevButton.style;
-  var contentContainer = this._contentContainer;
   var totalSize = this._totalSize;
 
   if (this._isHorizontal()) {
-    var vOffset = 0.5 * (totalSize.h - contentContainer.offsetHeight);
-    nextButtonStyle.top = vOffset + 'px';
-    prevButtonStyle.top = vOffset + 'px';
+    nextButtonStyle.height = totalSize.h + 'px';
+    prevButtonStyle.height = totalSize.h + 'px';
   } else {
-    var hOffset = 0.5 * (totalSize.w - contentContainer.offsetWidth);
-    if (this._bRtl) {
-      hOffset = -hOffset;
-    }
-    nextButtonStyle.left = hOffset + 'px';
-    prevButtonStyle.left = hOffset + 'px';
+    nextButtonStyle.width = totalSize.w + 'px';
+    prevButtonStyle.width = totalSize.w + 'px';
   }
 };
 
@@ -605,8 +622,10 @@ ConveyorBeltCommon.prototype._adjustOverflowSize = function (bInit) {
   }
 
   // hide buttons AFTER calculating sizes above, but BEFORE updating scroll position below
-  this._hidePrevButton();
-  this._hideNextButton();
+  if (this._arrowVisibility === 'visible') {
+    this._hidePrevButton();
+    this._hideNextButton();
+  }
 
   // refresh current scroll position AFTER calculating sizes above
   this._setCurrScroll(bInit ? this._minScroll : this._origScroll, true);
@@ -1561,7 +1580,7 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
 
 
 
-/* global ConveyorBeltCommon:false, Components:false, Logger:false, Config:false, Context:false */
+/* global ConveyorBeltCommon:false, Components:false, Logger:false, Config:false, Context:false, ThemeUtils:false */
 
 /**
  * @ojcomponent oj.ojConveyorBelt
@@ -1574,6 +1593,8 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
  * @ojpropertylayout {propertyGroup: "common", items: ["orientation"]}
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 2
+ *
+ * @ojuxspecs ['conveyor-belt']
  *
  * @classdesc
  * <h3 id="conveyorBeltOverview-section">
@@ -1609,6 +1630,21 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
  *   &lt;oj-button>Zeta&lt;/oj-button>
  * &lt;/oj-conveyor-belt>
  * </code></pre>
+ *
+ * <p id="conveyorBelt-filmStrip-section">JET FilmStrip and ConveyorBelt look similar, but are intended to be used
+ * for different purposes.
+ * <a class="bookmarkable-link" title="Bookmarkable Link" href="#conveyorBelt-filmStrip-section"></a>
+ * <p>Use ConveyorBelt when you want to:
+ * <ul>
+ * <li>handle overflow without showing a scrollbar</li>
+ * <li>keep all items accessible via tabbing and readable by a screen reader</li>
+ * </ul>
+ * <p>Use FilmStrip when you want to:
+ * <ul>
+ * <li>layout a set of items across discrete logical pages</li>
+ * <li>control which and how many items are shown</li>
+ * <li>hide items outside the current viewport from tab order and screen reader</li>
+ * </ul>
  *
  *
  * <h3 id="touch-section">
@@ -1740,6 +1776,7 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
          * @expose
          * @memberof oj.ojConveyorBelt
          * @instance
+         * @ojwriteback
          * @type {string}
          * @ojvalue {string} "horizontal" Orient the conveyorBelt horizontally.
          * @ojvalue {string} "vertical" Orient the conveyorBelt vertically.
@@ -1760,6 +1797,47 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
          * myConveyorBelt.orientation = 'vertical';
          */
         orientation: 'horizontal',
+        /**
+         * <p>Indicates whether overflow content arrows are visible or hidden.
+         *
+         * <p>The default value of this property varies by theme. If the default value is 'auto', then the behavior varies by device.
+         *
+         * <ul>
+         *   <li>The default value comes from the <code class="prettyprint">$conveyorBeltArrowVisibilityOptionDefault</code> variable in the theme,  defaults to 'auto' in Redwood and 'visible' in Alta</li>
+         *   <li>If it is not set in the theme the default arrow visibility is <code class="prettyprint">"auto"</code>.</li>
+         * </ul>
+         *
+         * <p>Setting a value for this attribute overrides the theme default for this conveyor instance
+         *
+         *
+         * @expose
+         * @memberof oj.ojConveyorBelt
+         * @instance
+         * @since 9.0.0
+         * @ojwriteback
+         * @type {string}
+         * @ojvalue {string} "auto" show overflow arrows on desktop, hide on mobile.
+         * @ojvalue {string} "visible" always show overflow arrows.
+         * @ojvalue {string} "hidden" never show overflow arrows.
+         * @ojshortdesc Specifies visibility of overflow arrow buttons.
+         *
+         * @example <caption>Initialize the conveyorBelt with the
+         * <code class="prettyprint">arrow-visibility</code> attribute specified:</caption>
+         * &lt;oj-conveyor-belt arrow-visibility='auto'>
+         * &lt;/oj-conveyor-belt>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">arrow-visibility</code> property after initialization:</caption>
+         * // getter
+         * var arrowVisibilityValue = myConveyor.arrowVisibility;
+         *
+         * // setter
+         * myConveyor.arrowVisibility = 'hidden';
+         *
+         * @example <caption>Set the default in the theme (SCSS) :</caption>
+         * $conveyorBeltArrowVisibilityOptionDefault: visible !default;
+         *
+         */
+        arrowVisibility: 'auto',
         /**
          * Specify the selector of the descendant DOM element in the conveyorBelt
          * that directly contains the items to scroll among.
@@ -1787,6 +1865,7 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
          * @expose
          * @memberof oj.ojConveyorBelt
          * @instance
+         * @ojwriteback
          * @type {?string}
          * @default null
          * @ojshortdesc Specify the selector of the descendant DOM element in the conveyorBelt that directly contains the items to scroll among.
@@ -1972,6 +2051,7 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
         var elem = this.element;
         var options = this.options;
         var orientation = options.orientation;
+
         if (orientation === 'vertical') {
           elem.addClass('oj-conveyorbelt-vertical');
         } else {
@@ -1992,6 +2072,7 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
           var nextStyleClass = null;
           var prevIcon = null;
           var nextIcon = null;
+
           var animateScrollFunc = null;
           if (orientation !== 'vertical') {
             prevStyleClass = 'oj-enabled oj-conveyorbelt-overflow-indicator oj-start oj-default';
@@ -2006,7 +2087,15 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
             nextIcon = this._createIcon('oj-conveyorbelt-overflow-icon oj-bottom');
             animateScrollFunc = this._animateScrollTop;
           }
+
           var buttonInfo = {};
+
+          if (options.arrowVisibility === 'auto') {
+            buttonInfo.arrowVisibility = (Config.getDeviceRenderMode() === 'phone') ? 'hidden' : 'visible';
+          } else {
+            buttonInfo.arrowVisibility = options.arrowVisibility;
+          }
+
           buttonInfo.prevButtonStyleClass = prevStyleClass;
           buttonInfo.nextButtonStyleClass = nextStyleClass;
           buttonInfo.prevButtonIcon = prevIcon;
@@ -2098,6 +2187,9 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
             // when changing containerParent or orientation, just destroy and recreate
             // the ConveyorBeltCommon
           case 'containerParent':
+          case 'arrowVisibility':
+            bRecreate = true;
+            break;
           case 'orientation':
             bRecreate = (options.orientation !== value);
             break;
@@ -2208,9 +2300,9 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
       },
 
       /**
-       * Create a DOM element for an icon.
+       * Create a DOM element for a button with an icon.
        * @param {string} iconStyleClass Style class for the icon
-       * @returns {Element} Icon DOM element
+       * @returns {Element} Button with Icon DOM element
        * @memberof oj.ojConveyorBelt
        * @instance
        * @private
@@ -2218,7 +2310,10 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
       _createIcon: function (iconStyleClass) {
         var span = document.createElement('span');
         span.setAttribute('class', 'oj-component-icon ' + iconStyleClass);
-        return span;
+        var innerButton = document.createElement('div');
+        innerButton.setAttribute('class', 'oj-conveyorbelt-overflow-button');
+        innerButton.appendChild(span);
+        return innerButton;
       },
 
       /**
@@ -2394,7 +2489,44 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
           currentNode = currentNode.parentElement;
         }
         return null;
-      }
+      },
+
+      /**
+       * Scrolls child item of conveyor belt into the view.
+       *
+       *
+       * @param {Element} elem DOM element to scroll
+       * @return {void}
+       * @expose
+       * @memberof oj.ojConveyorBelt
+       * @instance
+       * @since 9.0.0
+       * @ojshortdesc Scrolls child item of conveyor belt into the view.
+       *
+       * @example <caption>Invoke the <code class="prettyprint">scrollElementIntoView</code> method:</caption>
+       * myConveyorBelt.scrollElementIntoView(element);
+       */
+      scrollElementIntoView: function (element) {
+        // the size (width or height) of overflow container
+        var currentViewportSize = this._cbCommon._getCurrViewportSize();
+        if (this._cbCommon._isHorizontal()) { // in case of a horizontal conveyorbelt
+          var currentScrollLeft = this.widget().find('.oj-conveyorbelt-overflow-container')[0].scrollLeft;
+
+          if (element.offsetLeft + element.offsetWidth >= currentScrollLeft + currentViewportSize) { // if element (e.g. tab) is partially hidden to the right side
+            this.widget().find('.oj-conveyorbelt-overflow-container')[0].scrollLeft = (element.offsetLeft + element.offsetWidth) - currentViewportSize;
+          } else if (element.offsetLeft < currentScrollLeft) { // if element (e.g. tab) is partially hidden to the left side
+            this.widget().find('.oj-conveyorbelt-overflow-container')[0].scrollLeft = element.offsetLeft;
+          }
+        } else { // in case of a vertical conveyorbelt
+          var currentScrollTop = this.widget().find('.oj-conveyorbelt-overflow-container')[0].scrollTop;
+
+          if (element.offsetTop + element.offsetHeight >= currentScrollTop + currentViewportSize) { // if element (e.g. tab) is partially hidden below
+            this.widget().find('.oj-conveyorbelt-overflow-container')[0].scrollTop = (element.offsetTop + element.offsetHeight) - currentViewportSize;
+          } else if (element.offsetTop < currentScrollTop) { // if element (e.g. tab) is partially hidden above
+            this.widget().find('.oj-conveyorbelt-overflow-container')[0].scrollTop = element.offsetTop;
+          }
+        }
+      },
 
       // start API doc fragments /////////////////////////////////////////////////////
 
@@ -2476,6 +2608,15 @@ ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
       // end API doc fragments ///////////////////////////////////////////////////////
 
     }); // end of oj.__registerWidget
+
+  // Set theme-based defaults
+  Components.setDefaultOptions({
+    ojConveyorBelt: {
+      arrowVisibility: Components.createDynamicPropertyGetter(function () {
+        return (ThemeUtils.parseJSONFromFontFamily('oj-conveyorbelt-option-defaults') || {}).arrowVisibility;
+      })
+    }
+  });
 }()); // end of ConveyorBelt wrapper function
 
 

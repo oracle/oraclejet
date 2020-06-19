@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['./DvtToolkit'], function(dvt) {
   "use strict";
@@ -8,16 +9,18 @@ define(['./DvtToolkit'], function(dvt) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function(dvt) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -369,79 +372,33 @@ dvt.TimeComponent.prototype.renderZoomControls = function(options)
   // Zoom in states
   var zoomInOptions = options['zoomInProps'];
   var imageSize = zoomInOptions['imageSize'];
-  var cssUrl = zoomInOptions['cssUrl'];
-  var cssUrlHover = zoomInOptions['cssUrlHover'];
-  var cssUrlActive = zoomInOptions['cssUrlActive'];
-  var cssUrlDisabled = zoomInOptions['cssUrlDisabled'];
-  var enabledBackgroundColor = zoomInOptions['enabledBackgroundColor'];
-  var enabledBorderColor = zoomInOptions['enabledBorderColor'];
-  var hoverBackgroundColor = zoomInOptions['hoverBackgroundColor'];
-  var hoverBorderColor = zoomInOptions['hoverBorderColor'];
-  var activeBackgroundColor = zoomInOptions['activeBackgroundColor'];
-  var activeBorderColor = zoomInOptions['activeBorderColor'];
-  var disabledBackgroundColor = zoomInOptions['disabledBackgroundColor'];
-  var disabledBorderColor = zoomInOptions['disabledBorderColor'];
-
-  var upState = dvt.TransientButton.getStateFromURL(context, cssUrl, imageSize, imageSize, enabledBackgroundColor, enabledBorderColor);
-  var overState = dvt.TransientButton.getStateFromURL(context, cssUrlHover, imageSize, imageSize, hoverBackgroundColor, hoverBorderColor);
-  var downState = dvt.TransientButton.getStateFromURL(context, cssUrlActive, imageSize, imageSize, activeBackgroundColor, activeBorderColor);
-  var disabledState = dvt.TransientButton.getStateFromURL(context, cssUrlDisabled, imageSize, imageSize, disabledBackgroundColor, disabledBorderColor);
+  var iconClass = zoomInOptions['class'];
 
   var zoomInPosX = zoomInOptions['posX'];
   var zoomInPosY = zoomInOptions['posY'];
 
   if (this.zoomin == null)
   {
-    this.zoomin = new dvt.TransientButton(context, upState, overState, downState,
-        disabledState, this.EventManager, this.EventManager.HandleZoomInClick);
+    var iconStyle = dvt.ToolkitUtils.getIconStyle(context, iconClass);
+    this.zoomin = new dvt.TransientButton(context, iconStyle, imageSize, this.EventManager, this.EventManager.HandleZoomInClick);
     // In order for tooltips to show up, we need to associate the buttons through the event manager
     this.EventManager.associate(this.zoomin, this.zoomin);
-  }
-  else
-  {
-    this.zoomin.setUpState(upState);
-    this.zoomin.setOverState(overState);
-    this.zoomin.setDownState(downState);
-    this.zoomin.setDisabledState(disabledState);
   }
 
   // Zoom out states
   var zoomOutOptions = options['zoomOutProps'];
   imageSize = zoomOutOptions['imageSize'];
-  cssUrl = zoomOutOptions['cssUrl'];
-  cssUrlHover = zoomOutOptions['cssUrlHover'];
-  cssUrlActive = zoomOutOptions['cssUrlActive'];
-  cssUrlDisabled = zoomOutOptions['cssUrlDisabled'];
-  enabledBackgroundColor = zoomOutOptions['enabledBackgroundColor'];
-  enabledBorderColor = zoomOutOptions['enabledBorderColor'];
-  hoverBackgroundColor = zoomOutOptions['hoverBackgroundColor'];
-  hoverBorderColor = zoomOutOptions['hoverBorderColor'];
-  activeBackgroundColor = zoomOutOptions['activeBackgroundColor'];
-  activeBorderColor = zoomOutOptions['activeBorderColor'];
-  disabledBackgroundColor = zoomOutOptions['disabledBackgroundColor'];
-  disabledBorderColor = zoomOutOptions['disabledBorderColor'];
-
-  upState = dvt.TransientButton.getStateFromURL(context, cssUrl, imageSize, imageSize, enabledBackgroundColor, enabledBorderColor);
-  overState = dvt.TransientButton.getStateFromURL(context, cssUrlHover, imageSize, imageSize, hoverBackgroundColor, hoverBorderColor);
-  downState = dvt.TransientButton.getStateFromURL(context, cssUrlActive, imageSize, imageSize, activeBackgroundColor, activeBorderColor);
-  disabledState = dvt.TransientButton.getStateFromURL(context, cssUrlDisabled, imageSize, imageSize, disabledBackgroundColor, disabledBorderColor);
+  iconClass = zoomOutOptions['class'];
 
   var zoomOutPosX = zoomOutOptions['posX'];
   var zoomOutPosY = zoomOutOptions['posY'];
 
   if (this.zoomout == null)
   {
-    this.zoomout = new dvt.TransientButton(context, upState, overState, downState,
-        disabledState, this.EventManager, this.EventManager.HandleZoomOutClick);
+    var iconStyle = dvt.ToolkitUtils.getIconStyle(context, iconClass);
+    this.zoomout = new dvt.TransientButton(context, iconStyle, imageSize, this.EventManager, this.EventManager.HandleZoomOutClick);
     // In order for tooltips to show up, we need to associate the buttons through the event manager
     this.EventManager.associate(this.zoomout, this.zoomout);
-  }
-  else
-  {
-    this.zoomout.setUpState(upState);
-    this.zoomout.setOverState(overState);
-    this.zoomout.setDownState(downState);
-    this.zoomout.setDisabledState(disabledState);
   }
 
   this.zoomin.setTooltip(translations.tooltipZoomIn);
@@ -703,12 +660,10 @@ dvt.TimeComponent.prototype.enableZoomButton = function(isZoomIn)
   if (isZoomIn)
   {
     this.zoomin.setEnabled(true);
-    this.zoomin.drawUpState();
   }
   else
   {
     this.zoomout.setEnabled(true);
-    this.zoomout.drawUpState();
   }
 };
 
@@ -717,13 +672,11 @@ dvt.TimeComponent.prototype.disableZoomButton = function(isZoomIn)
   if (isZoomIn)
   {
     this.zoomin.setEnabled(false);
-    this.zoomin.drawDisabledState();
     this.zoomin.setCursor(null);
   }
   else
   {
     this.zoomout.setEnabled(false);
-    this.zoomout.drawDisabledState();
     this.zoomout.setCursor(null);
   }
 };
@@ -1183,8 +1136,9 @@ dvt.TimeComponent.prototype.panBy = function(deltaX, deltaY)
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1622,8 +1576,9 @@ dvt.TimeComponentEventManager.prototype.GetTouchResponse = function()
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1697,8 +1652,9 @@ dvt.TimeComponentKeyboardHandler.prototype.processKeyDown = function(event)
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -1759,8 +1715,9 @@ DvtTimeComponentStyleUtils.getScrollbarPadding = function()
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 })(dvt);

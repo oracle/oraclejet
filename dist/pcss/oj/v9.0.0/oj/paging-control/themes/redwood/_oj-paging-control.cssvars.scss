@@ -1,0 +1,21 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+// import dependencies
+@import "../../../label/themes/redwood/_oj-label.cssvars.scss";
+@import "../../../button/themes/redwood/_oj-button.cssvars.scss";
+@import "../../../text-field/themes/redwood/_oj-text-field.cssvars.scss";
+
+  @include module-include-once("redwood.variables.pagingcontrol") {
+
+:root {
+  // paging
+  // ----------------------------
+  --oj-paging-padding:          1rem;
+  --oj-paging-dot-size:         10px;
+  --oj-paging-dot-padding:      8px;
+  --oj-paging-border-color:     var(--oj-palette-neutral-50);
+
+}
+}

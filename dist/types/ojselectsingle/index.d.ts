@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
 import CommonTypes = require('../ojcommontypes');
 import { KeySet } from '../ojkeyset';
 import { DataProvider, ItemMetadata } from '../ojdataprovider';
@@ -19,6 +27,7 @@ export interface ojSelectSingle<V, D> extends editableValue<V, ojSelectSingleSet
     virtualKeyboard: 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
     translations: {
         cancel?: string;
+        labelAccClearValue?: string;
         labelAccOpenDropdown?: string;
         multipleMatchesFound?: string;
         nOrMoreMatchesFound?: string;
@@ -79,9 +88,13 @@ export namespace ojSelectSingle {
     // tslint:disable-next-line interface-over-type-literal
     type CollectionTemplateContext<V, D> = {
         data: DataProvider<V, D>;
-        selected: KeySet<V>;
-        selectedItem: CommonTypes.ItemContext<V, D>;
         searchText: string;
+        selectedItem: CommonTypes.ItemContext<V, D>;
+        selected: KeySet<V>;
+        currentRow: {
+            rowKey: V;
+        };
+        handleRowAction: ((event: Event, context: CommonTypes.ItemContext<V, D>) => void);
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext<V, D> = {
@@ -89,6 +102,7 @@ export namespace ojSelectSingle {
         data: D;
         index: number;
         key: V;
+        metadata: ItemMetadata<V>;
         searchText: string;
         depth: number;
         leaf: boolean;
@@ -125,6 +139,7 @@ export interface ojSelectSingleSettableProperties<V, D> extends editableValueSet
     virtualKeyboard: 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
     translations: {
         cancel?: string;
+        labelAccClearValue?: string;
         labelAccOpenDropdown?: string;
         multipleMatchesFound?: string;
         nOrMoreMatchesFound?: string;

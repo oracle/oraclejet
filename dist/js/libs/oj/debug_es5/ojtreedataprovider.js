@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -276,7 +277,7 @@ var TreeDataProvider = oj.TreeDataProvider;
  * @ojsignature {target: "Type",
  *               value: "(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
  * @ojtsexample <caption>Fetch by offset 5 rows starting at index 2</caption>
- * let value = await dataprovider.fetchByOffset({size: 5, offset: 2});
+ * let result = await dataprovider.fetchByOffset({size: 5, offset: 2});
  * let results = result['results'];
  * let data = results.map(function(value) {
  *   return value['data'];

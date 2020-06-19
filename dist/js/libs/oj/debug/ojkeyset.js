@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -15,7 +16,7 @@ define(['ojs/ojcore', 'ojs/ojkeysetimpl'], function(oj, KeySetImpl)
  * An immutable set of keys.
  * @class KeySet
  *
- * @classdesc The base class for ExpandedKeySet and ExpandAllKeySet.  Represents an immutable set of keys.
+ * @classdesc The base class for KeySetImpl and AllKeySetImpl.  Represents an immutable set of keys.
  * @constructor
  * @hideconstructor
  * @abstract

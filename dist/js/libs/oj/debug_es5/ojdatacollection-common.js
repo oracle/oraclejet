@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -37,8 +38,9 @@ DataCollectionUtils._DATA_OJ_TABMOD = 'data-oj-tabmod';
  */
 
 DataCollectionUtils.getFocusableElementsInNode = function (node, skipVisibilityCheck) {
-  var inputElems = [];
-  var nodes = node.querySelectorAll("input, select, button, a, textarea, object, [tabIndex]:not([tabIndex='-1'])");
+  var inputElems = []; // a nodes without href are not focusable
+
+  var nodes = node.querySelectorAll("input, select, button, a[href], textarea, object, [tabIndex]:not([tabIndex='-1'])");
   var nodeCount = nodes.length; // in IE, each 'option' after 'select' elem will be counted as an input element(and cause duplicate input elems returned)
   // this will cause problem with TAB/Shift-TAB (recognizing whether to go to next cell or to tab within the current cell
 
@@ -75,8 +77,10 @@ DataCollectionUtils.disableAllFocusableElements = function (element, skipVisibil
     if (!excludeActiveElement || focusElems[i] !== document.activeElement) {
       var tabIndex = parseInt(focusElems[i].getAttribute(DataCollectionUtils._TAB_INDEX), 10); // store the tabindex as an attribute
 
-      focusElems[i].setAttribute(DataCollectionUtils._DATA_OJ_TABMOD, tabIndex);
-      focusElems[i].setAttribute(DataCollectionUtils._TAB_INDEX, -1);
+      focusElems[i].setAttribute(DataCollectionUtils._DATA_OJ_TABMOD, tabIndex); // @HTMLUpdateOK
+
+      focusElems[i].setAttribute(DataCollectionUtils._TAB_INDEX, -1); // @HTMLUpdateOK
+
       disabledElems.push(focusElems[i]);
     }
   }
@@ -102,7 +106,7 @@ DataCollectionUtils.enableAllFocusableElements = function (element) {
     if (isNaN(tabIndex)) {
       focusElems[i].removeAttribute(DataCollectionUtils._TAB_INDEX);
     } else {
-      focusElems[i].setAttribute(DataCollectionUtils._TAB_INDEX, tabIndex);
+      focusElems[i].setAttribute(DataCollectionUtils._TAB_INDEX, tabIndex); // @HTMLUpdateOK
     }
   }
 
@@ -206,9 +210,9 @@ DataCollectionUtils.disableDefaultBrowserStyling = function (element) {
 };
 /**
  * Merges additional styling with an element's existing styling.
- * @param {Element} the element to apply the merged styling to
- * @param {string} the current style string of the element
- * @param {string} the additional style string to apply to the element
+ * @param {Element} element the element to apply the merged styling to
+ * @param {string} initStyle the current style string of the element
+ * @param {string} addedStyle the additional style string to apply to the element
  */
 
 
@@ -216,7 +220,7 @@ DataCollectionUtils.applyMergedInlineStyles = function (element, initStyle, adde
   var addedStyleObj = DataCollectionUtils.convertStringToStyleObj(addedStyle);
   var initStyleObj = DataCollectionUtils.convertStringToStyleObj(initStyle);
   var mergedStyle = Object.assign({}, addedStyleObj, initStyleObj);
-  element.setAttribute('style', DataCollectionUtils.convertStyleObjToString(mergedStyle)); // @HTMLUpdateOK
+  DataCollectionUtils.applyStyleObj(element, mergedStyle);
 };
 /**
  * Converts an HTML inline style string to a style object whose keys represent style properties
@@ -248,23 +252,22 @@ DataCollectionUtils.convertStringToStyleObj = function (styleString) {
   return retObj;
 };
 /**
- * Converts an object whose keys represent style properties and whose values represent the style
- * values into an HTML inline style string.
+ * Applies an object whose keys represent style properties and whose values represent the style
+ * values to a given element.
+ * @param {element} the element to apply the style object to
  * @param {Object} the style object to be converted
  * @private
  */
 
 
-DataCollectionUtils.convertStyleObjToString = function (styleObj) {
-  var retString = '';
+DataCollectionUtils.applyStyleObj = function (element, styleObj) {
   var stylePropArr = Object.keys(styleObj);
   var styleValArr = Object.values(styleObj);
 
   for (var i = 0; i < stylePropArr.length; i++) {
-    retString += stylePropArr[i] + ':' + styleValArr[i] + ';';
+    /* eslint-disable no-param-reassign */
+    element.style[stylePropArr[i]] = styleValArr[i];
   }
-
-  return retString;
 };
 /** ******************* selected KeySet related methods *****************/
 
@@ -318,6 +321,126 @@ DataCollectionUtils.areKeySetsEqual = function (keySet1, keySet2) {
   }
 
   return true;
+};
+/** **************** keyboard event handling methods ****************** */
+
+
+DataCollectionUtils.KEYBOARD_KEYS = {
+  _SPACEBAR: ' ',
+  _SPACEBAR_IE: 'SpaceBar',
+  _SPACEBAR_CODE: 32,
+  _ENTER: 'Enter',
+  _ENTER_CODE: 13,
+  _UP: 'ArrowUp',
+  _UP_IE: 'Up',
+  _UP_CODE: 38,
+  _DOWN: 'ArrowDown',
+  _DOWN_IE: 'Down',
+  _DOWN_CODE: 40,
+  _LEFT: 'ArrowLeft',
+  _LEFT_IE: 'Left',
+  _LEFT_CODE: 37,
+  _RIGHT: 'ArrowRight',
+  _RIGHT_IE: 'Right',
+  _RIGHT_CODE: 39,
+  _HOME: 'Home',
+  _HOME_CODE: 36,
+  _END: 'End',
+  _END_CODE: 35,
+  _TAB: 'Tab',
+  _TAB_CODE: 9,
+  _ESCAPE: 'Escape',
+  _ESCAPE_IE: 'Esc',
+  _ESCAPE_CODE: 27,
+  _F2: 'F2',
+  _F2_CODE: 113
+};
+/**
+ * @private
+ */
+
+DataCollectionUtils.isEnterKeyEvent = function (eventKey) {
+  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._ENTER || eventKey === DataCollectionUtils.KEYBOARD_KEYS._ENTER_CODE;
+};
+/**
+ * @private
+ */
+
+
+DataCollectionUtils.isSpaceBarKeyEvent = function (eventKey) {
+  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._SPACEBAR || eventKey === DataCollectionUtils.KEYBOARD_KEYS._SPACEBAR_IE || eventKey === DataCollectionUtils.KEYBOARD_KEYS._SPACEBAR_CODE;
+};
+/**
+ * @private
+ */
+
+
+DataCollectionUtils.isEscapeKeyEvent = function (eventKey) {
+  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._ESCAPE || eventKey === DataCollectionUtils.KEYBOARD_KEYS._ESCAPE_IE || eventKey === DataCollectionUtils.KEYBOARD_KEYS._ESCAPE_CODE;
+};
+/**
+ * @private
+ */
+
+
+DataCollectionUtils.isTabKeyEvent = function (eventKey) {
+  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._TAB || eventKey === DataCollectionUtils.KEYBOARD_KEYS._TAB_CODE;
+};
+/**
+ * @private
+ */
+
+
+DataCollectionUtils.isF2KeyEvent = function (eventKey) {
+  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._F2 || eventKey === DataCollectionUtils.KEYBOARD_KEYS._F2_CODE;
+};
+/**
+ * @private
+ */
+
+
+DataCollectionUtils.isHomeKeyEvent = function (eventKey) {
+  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._HOME || eventKey === DataCollectionUtils.KEYBOARD_KEYS._HOME_CODE;
+};
+/**
+ * @private
+ */
+
+
+DataCollectionUtils.isEndKeyEvent = function (eventKey) {
+  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._END || eventKey === DataCollectionUtils.KEYBOARD_KEYS._END_CODE;
+};
+/**
+ * @private
+ */
+
+
+DataCollectionUtils.isArrowUpKeyEvent = function (eventKey) {
+  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._UP || eventKey === DataCollectionUtils.KEYBOARD_KEYS._UP_IE || eventKey === DataCollectionUtils.KEYBOARD_KEYS._UP_CODE;
+};
+/**
+ * @private
+ */
+
+
+DataCollectionUtils.isArrowDownKeyEvent = function (eventKey) {
+  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._DOWN || eventKey === DataCollectionUtils.KEYBOARD_KEYS._DOWN_IE || eventKey === DataCollectionUtils.KEYBOARD_KEYS._DOWN_CODE;
+};
+/**
+ * @private
+ */
+
+
+DataCollectionUtils.isArrowLeftKeyEvent = function (eventKey) {
+  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._LEFT || eventKey === DataCollectionUtils.KEYBOARD_KEYS._LEFT_IE || eventKey === DataCollectionUtils.KEYBOARD_KEYS._LEFT_CODE;
+};
+/**
+ * @private
+ */
+
+
+DataCollectionUtils.isArrowRightKeyEvent = function (eventKey) {
+  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._RIGHT || eventKey === DataCollectionUtils.KEYBOARD_KEYS._RIGHT_IE || eventKey === DataCollectionUtils.KEYBOARD_KEYS._RIGHT_CODE;
 };
 
 ;return DataCollectionUtils;

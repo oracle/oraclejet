@@ -1,0 +1,53 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.waterfalllayout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.scss";
+
+  @include module-include-once("common.card") {
+    
+    /* Styling for card entrance animation during initial load */
+    .oj-card-initial-entrance-animation {
+      animation-name: card-initial-fade-in;
+      animation-duration: 0.3s;
+      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+      animation-iteration-count: 1;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes card-initial-fade-in {
+      0%   { visibility: visible; opacity: 0; transform: translateY(300px); }
+      100% { visibility: visible; opacity: 1; transform: translateY(0);}
+    }
+
+    /* Styling for card exit animation when data changed */
+    .oj-card-initial-exit-animation {
+        animation-name: card-initial-fade-out;
+        animation-duration: 0.3s;
+        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+    }
+
+    @keyframes card-initial-fade-out {
+      0%   { visibility: visible; opacity: 1; transform: translateY(0px); }
+      100% { visibility: visible; opacity: 0; transform: translateY(300px);}
+    }
+
+    /* Styling for card entrance animation during load more */
+    .oj-card-loadmore-entrance-animation {
+      animation-name: card-loadmore-fade-in;
+      animation-duration: 0.15s;
+      animation-iteration-count: 1;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes card-loadmore-fade-in {
+      0%   { visibility: visible; opacity: 0; }
+      100% { visibility: visible; opacity: 1; }
+    }    
+  }

@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -135,7 +136,7 @@ oj.BaseCustomElementBridge.proto =
       if (bridge.ShouldHandleAttributeChanged(this)) {
         var prop = oj.__AttributeUtils.attributeToPropertyName(attr);
         var propMeta = oj.BaseCustomElementBridge
-            .__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge));
+          .__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(bridge));
 
         oj.BaseCustomElementBridge.__CheckOverlappingAttribute(this, attr);
 
@@ -155,9 +156,8 @@ oj.BaseCustomElementBridge.proto =
         var expression = oj.__AttributeUtils.getExpressionInfo(newValue).expr;
         if (!expression) {
           if (propMeta) {
-            this.setProperty(prop, oj.BaseCustomElementBridge.__ParseAttrValue(this, attr,
-                                                                              prop, newValue,
-                                                                              propMeta));
+            this.setProperty(prop, oj.BaseCustomElementBridge
+              .__ParseAttrValue(this, attr, prop, newValue, propMeta));
           }
           // This allows subclasses to handle special cases like global transfer
           // attributes for JET components or controlled properties for virtual components
@@ -188,11 +188,11 @@ oj.BaseCustomElementBridge.proto =
   },
 
   GetAttributes: function (metadata) {
-    return oj.BaseCustomElementBridge.getAttributes(metadata.properties);
+    return metadata ? oj.BaseCustomElementBridge.getAttributes(metadata.properties) : [];
   },
 
   GetMetadata: function (descriptor) {
-    return descriptor[oj.BaseCustomElementBridge.DESC_KEY_META];
+    return descriptor[oj.BaseCustomElementBridge.DESC_KEY_META] || {};
   },
 
   /**
@@ -205,7 +205,8 @@ oj.BaseCustomElementBridge.proto =
     return property;
   },
 
-  GetTrackChildrenOption: function () {
+  // eslint-disable-next-line no-unused-vars
+  GetTrackChildrenOption: function (element) {
     return this.METADATA.extension && this.METADATA.extension._TRACK_CHILDREN ?
       this.METADATA.extension._TRACK_CHILDREN : 'none';
   },
@@ -271,7 +272,7 @@ oj.BaseCustomElementBridge.proto =
   GetProperty: function (element, prop, props) {
     var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
     var meta = oj.BaseCustomElementBridge
-        .__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this));
+      .__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this));
 
     // For event listener and non component properties, retrieve the value directly stored on the element.
     // For top level properties, this will delegate to our 'set' methods so we can handle default values.
@@ -348,7 +349,7 @@ oj.BaseCustomElementBridge.proto =
     // Check value against any defined enums
     var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
     var meta = oj.BaseCustomElementBridge
-        .__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this));
+      .__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this));
     if (event || !meta) {
       // eslint-disable-next-line no-param-reassign
       element[prop] = value;
@@ -375,11 +376,11 @@ oj.BaseCustomElementBridge.proto =
         if (bOuter) {
           // This ultimately triggers our element defined property setter
           this.ValidateAndSetProperty(this.GetAliasForProperty.bind(this),
-                                      props, prop, value, element);
+            props, prop, value, element);
         } else {
           // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
           oj.BaseCustomElementBridge.__SetProperty(this.GetAliasForProperty.bind(this),
-                                                   props, prop, value);
+            props, prop, value);
         }
 
         this._SKIP_PROP_CHANGE_EVENT = false;
@@ -392,8 +393,7 @@ oj.BaseCustomElementBridge.proto =
           // Pass the top level property value/previousValues
           var updatedFrom = bOuter ? 'external' : 'internal';
           oj.BaseCustomElementBridge.__FirePropertyChangeEvent(element, topProp, props[topProp],
-                                                               topPropPrevValue, updatedFrom,
-                                                               subprop);
+            topPropPrevValue, updatedFrom, subprop);
         }
         return { property: topProp, propertySet: true, isSubproperty: isSubprop };
       }
@@ -491,7 +491,7 @@ oj.BaseCustomElementBridge.proto =
           }
         } catch (ex) {
           // If an error occurs during component creation, resolve the busy context and throw an error.
-          self.throwError(element, 'Error while rendering component. ' + ex);
+          self.throwError(element, 'Error while rendering component.', ex);
         }
       };
 
@@ -614,9 +614,23 @@ oj.BaseCustomElementBridge.proto =
     }
   },
 
-  throwError: function (elem, msg) {
+  /**
+   * Throws new error.
+   * @ignore
+   * @param {Element} elem The element that reports an error
+   * @param {string} msg Error message
+   * @param {Error=} origErr Original error whose stack should be preserved
+   */
+  throwError: function (elem, msg, origErr) {
     this.GetDelayedReadyPromise().rejectPromise();
-    throw new Error(oj.BaseCustomElementBridge.getElementInfo(elem) + ': ' + msg);
+    var errMsg = oj.BaseCustomElementBridge.getElementInfo(elem) + ': ' + msg;
+    if (origErr) {
+      // The error.stack feature is considered non-standard,
+      // but all the browsers support it according to caniuse:
+      // https://caniuse.com/#feat=mdn-javascript_builtins_error_stack
+      errMsg = errMsg + ' ' + (origErr.stack ? origErr.stack : origErr);
+    }
+    throw new Error(errMsg);
   },
 
   _setBpResolver: function (resolve) {
@@ -712,21 +726,20 @@ oj.BaseCustomElementBridge.proto =
         }, _UPGRADE_MESSAGE_INTERVAL);
 
         // return a promise that will be resolved, when element is defined and created
-        return customElements
-                .whenDefined(trackedElement.localName)
-                .then(function () {
-                  resolveElementDefinedBusyState();
-                  clearInterval(timer);
-                  if (oj.BaseCustomElementBridge.getRegistered(trackedElement.tagName)) {
-                    return oj.BaseCustomElementBridge.getInstance(trackedElement).whenCreated();
-                  }
-                  return null;
-                })
-                .catch(function (error) {
-                  resolveElementDefinedBusyState();
-                  clearInterval(timer);
-                  throw new Error('Error defining element ' + trackedElement.localName + ' : ' + error);
-                });
+        return customElements.whenDefined(trackedElement.localName)
+          .then(function () {
+            resolveElementDefinedBusyState();
+            clearInterval(timer);
+            if (oj.BaseCustomElementBridge.getRegistered(trackedElement.tagName)) {
+              return oj.BaseCustomElementBridge.getInstance(trackedElement).whenCreated();
+            }
+            return null;
+          })
+          .catch(function (error) {
+            resolveElementDefinedBusyState();
+            clearInterval(timer);
+            throw new Error('Error defining element ' + trackedElement.localName + ' : ' + error);
+          });
       } else if (oj.BaseCustomElementBridge.getRegistered(trackedElement.tagName)) {
         return oj.BaseCustomElementBridge.getInstance(trackedElement).whenCreated();
       }
@@ -782,7 +795,7 @@ oj.BaseCustomElementBridge.getAttributes = function (props) {
  */
 oj.BaseCustomElementBridge.getTrackChildrenOption = function (element) {
   var bridge = oj.BaseCustomElementBridge.getInstance(element);
-  return bridge ? bridge.GetTrackChildrenOption() : 'none';
+  return bridge ? bridge.GetTrackChildrenOption(element) : 'none';
 };
 
 /**
@@ -961,26 +974,6 @@ oj.BaseCustomElementBridge._getCompositeBindingProviderName = function (element)
   // for upstream dependency we will still rely components being registered on the oj namespace.
   var name = oj.Composite ? oj.Composite.getBindingProviderName(element.parentElement) : null;
   return name;
-};
-
-
-/**
- * Verify metadata for required properties
- * @ignore
- */
-oj.BaseCustomElementBridge._verifyMetadata = function (tagName, metadata) {
-  if (metadata) {
-    // Verify that declared properties don't override any global HTML element properties
-    var properties = metadata.properties;
-    if (properties) {
-      // We are not currently checking for redefined aria-*, data-*, or event handler attributes, e.g. onclick.
-      Object.keys(properties).forEach(function (prop) {
-        if (oj.__AttributeUtils.isGlobal(prop)) {
-          Logger.error("Error registering composite %s. Redefined global HTML element attribute '%s' in metadata.", tagName, prop);
-        }
-      });
-    }
-  }
 };
 
 /**
@@ -1255,7 +1248,7 @@ oj.BaseCustomElementBridge.__ParseAttrValue = function (elem, attr, prop, val, m
     try {
       coercedValue = oj.__AttributeUtils.coerceValue(elem, attr, value, type);
     } catch (ex) {
-      bridge.throwError(elem, ex);
+      bridge.throwError(elem, 'Error parsing attribute value.', ex);
     }
     return coercedValue;
   }
@@ -1307,8 +1300,6 @@ oj.BaseCustomElementBridge.__Register = function (tagName, descriptor, bridgePro
       Logger.error('Cannot register ' + tagName + '. Missing a descriptor.');
     }
 
-    oj.BaseCustomElementBridge
-      ._verifyMetadata(tagName, descriptor[oj.BaseCustomElementBridge.DESC_KEY_META]);
     oj.BaseCustomElementBridge._registry[name] =
       { descriptor: descriptor, bridgeProto: bridgeProto, composite: isComposite, cache: {} };
     return true;
@@ -1443,14 +1434,15 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
  */
 
 /**
- * <h2 id="ce-overview-section" class="subsection-title">
+ * <h2 id="ce-overview-section">
  *   Overview<a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-overview-section"></a>
  * </h2>
  * <p>
  *   JET components and <a href="CompositeOverview.html">custom components</a>, collectively referred to as <b>JET Web Components</b>,
  *   are implemented as <a href="https://developer.mozilla.org/en-US/docs/Web/Web_Components/Custom_Elements">custom HTML elements</a>
- *   and extend the HTMLElement interface. This means that JET custom elements automatically inherit
- *   <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes">global attributes</a>
+ *   and extend the <a href="https://html.spec.whatwg.org/multipage/dom.html#htmlelement">HTMLElement</a> interface. This means that
+ *   JET custom elements automatically inherit
+ *   <a href=https://html.spec.whatwg.org/multipage/dom.html#global-attributes>global attributes</a>
  *   and programmatic access to these components is similar to interacting with native HTML elements.
  *   All JET components live in the "oj" namespace and have HTML element names starting with "oj-". We will use
  *   the term "JET component" to refer to both native JET custom elements and custom elements implemented using the
@@ -1780,6 +1772,12 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
  *   See <a href="#ce-events-section">Events and Listeners</a> for additional information on how to listen for
  *   these events.
  * </p>
+ * <p>
+ * Note as well that in cases where a component property that supports writeback is bound to a writable expression,
+ * the relative order of expression writing and invocation of property change listeners is not guaranteed.
+ * For this reason, it is not recommended to write logic that depends both on component/event state and application
+ * view model state.
+ * </p>
  * <h2 id="ce-proptoattr-section" class="subsection-title">Property-to-Attribute Mapping
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-proptoattr-section"></a>
  * </h2>
@@ -1806,8 +1804,9 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
  * </h2>
  * <p>
  *   JET Web Components, like other custom HTML elements, may fire <code>CustomEvents</code>.  These
- *   events typically bubble and will be described in component documentation.  In addition, JET components
- *   fire non-bubbling [property]Changed (e.g. valueChanged) <code>CustomEvents</code>
+ *   events will be described in component documentation, including whether they bubble, are cancelable and any
+ *   event detail payloads. In addition, JET components
+ *   fire non-bubbling, non-cancelable [property]Changed (e.g. valueChanged) <code>CustomEvents</code>
  *   whenever a property is updated. See the <a href="#ce-properties-section">properties section</a> above
  *   for details on the event payload.
  * </p>
@@ -1827,6 +1826,12 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
  *   that evaluate to functions; arbitrary JavaScript will not be accepted.
  * </p>
  * <p>
+ *   Please note that event listeners specified using this syntax can only be set during component initialization.
+ *   Subsequent setAttribute calls for the event listener attributes will be ignored.
+ *   There is no associated <code>on[EventName]<code> property on the JET custom element for the equivalent
+ *   <code>on-[event-name]</code> attribute.
+ * </p>
+ * <p>
  *   In addition to the event parameter, event listeners specified via <code>on-[event-name]</code>
  *   attributes will receive two additional parameters when they are invoked: <code>data</code> and <code>bindingContext</code>.
  *   The <code>bindingContext</code> parameter provides the listener with the entire data binding context that
@@ -1844,12 +1849,6 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
  * }
  *   </code>
  *   </pre>
- * </p>
- * <p>
- *   Please note that there is a
- *   current limitation where event listeners specified using this syntax can only be
- *   set during component initialization. Subsequent setAttribute calls for the
- *   event listener attributes will be ignored.
  * </p>
  *
  * <h2 id="ce-slots-section" class="subsection-title">

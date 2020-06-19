@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -31,13 +32,6 @@ function(oj, $, Context, Hammer, OffcanvasUtils)
  * This class provides functions for setting up and handling swipe to reveal on an offcanvas element.  The offcanvas
  * element contains contextual actions that users can perform on the element that user perform the swipe gesture on.
  * This is most commonly found in ListView where user swipes on an item to reveal contextual actions that can be done on the item.
- *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -228,44 +222,48 @@ oj.SwipeToRevealUtils.tearDownSwipeActions = function (elem) {
     passive: false
   });
   delete outerWrapper._touchStartListener;
-};
+}; // -------------------- Styling start ----------------------------------
+
 /**
- * The following CSS classes can be applied by the page author as needed.
- * <p>
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>Class</th>
- *       <th>Description</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-swipetoreveal-more</td>
- *       <td>Designed for use with an action item that shows more available actions that users can perform.
- *           <p>Is applied to the element that represents the more action item inside the offcanvas element.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-swipetoreveal-flag</td>
- *       <td>Designed for use with an action item that tags the associated item in the host like listview item.
- *           <p>Is applied to the element that represents the flag action item inside the offcanvas element.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-swipetoreveal-alert</td>
- *       <td>Designed for use with an action item that performs an explicit action like deleting the associated listview item.
- *           <p>Is applied to the element that represents the alert action item inside the offcanvas element.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-swipetoreveal-default</td>
- *       <td>Designed for use with an action item that should get all the space when user swipes pass the threshold distance.
- *           <p>Is applied to the element that represents the default action item inside the offcanvas element.</td>
- *     </tr>
- *   </tbody>
- * </table>
- *
- * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+ * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+ */
+// ------------------------------ oj-swipetoreveal-more ---------------------------------
+
+/**
+ * Designed for use with an action item that tags the associated item in the host like listview item.<br/><br/>
+ * Is applied to the element that represents the flag action item inside the offcanvas element.
+ * @ojstyleclass oj-swipetoreveal-more
+ * @ojdisplayname SwipeReveal More
  * @memberof oj.SwipeToRevealUtils
  */
+// ------------------------------ oj-swipetoreveal-flag ---------------------------------
+
+/**
+ * Designed for use with an action item that shows more available actions that users can perform.<br/><br/>
+ * Is applied to the oj-option element that represents the action item.
+ * @ojstyleclass oj-swipetoreveal-flag
+ * @ojdisplayname SwipeReveal Flag
+ * @memberof oj.SwipeToRevealUtils
+ */
+// ------------------------------ oj-swipetoreveal-alert ---------------------------------
+
+/**
+ * Designed for use with an action item that performs an explicit action like deleting the associated listview item.<br/><br/>
+ * Is applied to the element that represents the alert action item inside the offcanvas element.
+ * @ojstyleclass oj-swipetoreveal-alert
+ * @ojdisplayname SwipeReveal Alert
+ * @memberof oj.SwipeToRevealUtils
+ */
+// ------------------------------ oj-swipetoreveal-default ---------------------------------
+
+/**
+ * Designed for use with an action item that should get all the space when user swipes pass the threshold distance.<br/><br/>
+ * Is applied to the element that represents the default action item inside the offcanvas element.
+ * @ojstyleclass oj-swipetoreveal-default
+ * @ojdisplayname SwipeReveal Default
+ * @memberof oj.SwipeToRevealUtils
+ */
+// -------------------- Styling end ------------------------
 
 /**
  * <table class="keyboard-table">

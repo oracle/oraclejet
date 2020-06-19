@@ -1,0 +1,25 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+// ----- start dependencies ---------
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../theme/themes/redwood/oj-helpers.scss";
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+
+// ----- end dependencies ---------
+@import "_oj-button.servervars.scss";
+
+@import "_oj-button.cssvars.scss";
+// import classes defined in the common directory
+@import "../base/_oj-button.scss"; 
+
+@include module-include-once("redwood.button") {
+
+    // For redwood, solid toggle button is an anti-pattern. So, hiding it until a permanant solution is created
+    .oj-buttonset.oj-button-full-chrome {
+        visibility: hidden;
+    }
+}

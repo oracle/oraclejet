@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -81,6 +82,9 @@
     /* overflow indicators */
     .oj-conveyorbelt-overflow-indicator {
         box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
           width: $conveyorBeltOverflowIndicatorHeight;
           height: $conveyorBeltOverflowIndicatorHeight;
@@ -174,5 +178,17 @@
     .oj-conveyorbelt-overflow-icon.oj-bottom {
         @extend .oj-fwk-icon-caret-s;
     }
+
+    // Option defaults
+    //----------------------------------
+     $conveyorBeltDefaultOptions: ();
+
+     @if ($conveyorBeltArrowVisibilityOptionDefault != null) {
+         $conveyorBeltDefaultOptions: map-merge($conveyorBeltDefaultOptions, (arrowVisibility: $conveyorBeltArrowVisibilityOptionDefault));
+     }
+
+     .oj-conveyorbelt-option-defaults {
+         font-family: oj-json-from-map($conveyorBeltDefaultOptions);
+     }
   }
 }

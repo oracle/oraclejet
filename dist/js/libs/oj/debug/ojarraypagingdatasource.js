@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -32,6 +33,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojdatasource-common'], function
  * @param {Array.<Object>} data
  * @constructor
  * @final
+ * @ojdeprecated {since: '9.0.0', description: 'ArrayPagingDataSource has been deprecated, please use DataProviders instead.'}
  * @ojtsignore
  * @ojtsimport knockout
  */

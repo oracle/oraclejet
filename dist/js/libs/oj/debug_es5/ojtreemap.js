@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -545,6 +546,8 @@ var __oj_treemap_node_metadata =
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 6
  *
+ * @ojuxspecs ['data-visualization-tree-map']
+ *
  * @classdesc
  * <h3 id="treemapOverview-section">
  *   JET Treemap
@@ -900,6 +903,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
     nodeDefaults: {
       /**
        * The CSS style object defining the style of the label. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
        * The default value comes from the CSS and varies based on theme.
        * @expose
        * @name nodeDefaults.labelStyle
@@ -1137,7 +1141,9 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
         labelHalign: 'start',
 
         /**
-         * The CSS style string defining the style of the header title. The default value comes from the CSS and varies based on theme.
+         * The CSS style string defining the style of the header title.
+         * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+         * The default value comes from the CSS and varies based on theme.
          * @expose
          * @name nodeDefaults.header.labelStyle
          * @ojshortdesc The CSS style string defining the style of the header title.
@@ -1200,6 +1206,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
      * @expose
      * @name selectionMode
      * @memberof oj.ojTreemap
+     * @ojshortdesc Specifies the selection behavior on the treemap. See the Help documentation for more information.
      * @instance
      * @type {string}
      * @ojvalue {string} "none" Selection is disabled.
@@ -1228,6 +1235,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
      * @expose
      * @name colorLabel
      * @ojshortdesc Specifies the label displayed in the legend describing the color metric of the treemap.
+     * @ojtranslatable
      * @memberof oj.ojTreemap
      * @instance
      * @type {string}
@@ -1240,6 +1248,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
      * @expose
      * @name sizeLabel
      * @ojshortdesc Specifies the label used in the legend describing the size metric of the treemap.
+     * @ojtranslatable
      * @memberof oj.ojTreemap
      * @instance
      * @type {string}
@@ -1458,7 +1467,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
       path: 'nodeDefaults/header/borderColor',
       property: 'border-top-color'
     }, {
-      path: 'nodeDefaults/header/labelStyle',
+      path: 'nodeDefaults/header/_labelStyle',
       property: 'TEXT'
     }];
     styleClasses['oj-treemap-node-header oj-hover'] = [{
@@ -1579,14 +1588,9 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
       this.options._resources = {};
     }
 
-    var resources = this.options._resources; // Add isolate and restore icons
-
-    resources.isolate = 'oj-treemap-isolate-icon';
-    resources.isolateOver = 'oj-treemap-isolate-icon oj-hover';
-    resources.isolateDown = 'oj-treemap-isolate-icon oj-active';
-    resources.restore = 'oj-treemap-restore-icon';
-    resources.restoreOver = 'oj-treemap-restore-icon oj-hover';
-    resources.restoreDown = 'oj-treemap-restore-icon oj-active';
+    var resources = this.options._resources;
+    resources.isolate = 'oj-fwk-icon oj-fwk-icon-maximize';
+    resources.restore = 'oj-fwk-icon oj-fwk-icon-minimize';
   },
 
   /**
@@ -1785,20 +1789,20 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
  * @property {Object=} header An object defining the properties for the node header.
  * @property {"off"|"on"} [header.isolate="on"] Specifies whether isolate behavior is enabled on the node.
  * @property {"center"|"end"|"start"} [header.labelHalign="start"] The horizontal alignment of the header title.
- * @property {Object=} header.labelStyle The CSS style object defining the style of the header title.
+ * @property {Object=} header.labelStyle The CSS style object defining the style of the header title. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
  * @property {"off"|"on"} [header.useNodeColor="off"] Specifies whether the node color should be displayed in the header.
  * @property {any=} id The id of the node. For the DataProvider case, the key for the node will be used as the id.
  * @property {string=} label The label for this node.
  * @property {"node"|"off"} [labelDisplay="node"] The label display behavior for leaf nodes.
  * @property {"center"|"end"|"start"} [labelHalign="center"] The horizontal alignment for labels displayed within the node.
- * @property {Object=} labelStyle The CSS style object defining the style of the label.
+ * @property {Object=} labelStyle The CSS style object defining the style of the label. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
  * @property {"bottom"|"center"|"top"} [labelValign="center"] The vertical alignment for labels displayed within the node.
  * @property {Array.<Object>=} nodes An array of objects with properties for the child nodes.
  * @property {"largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"|"none"|"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle"} [pattern="none"] The pattern used to fill the node.
  * @property {"auto"|"off"} [selectable="auto"] Specifies whether or not the node will be selectable.
  * @property {string=} shortDesc The description of this node. This is used for accessibility and also for customizing the tooltip text.
  * @property {string=} svgClassName The CSS style class to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
- * @property {Object=} svgStyle The inline style to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
+ * @property {Object=} svgStyle The inline style to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute. Only SVG CSS style properties are supported.
  * @property {number=} value The value of the node, which determines the relative size of the node.
  * @ojsignature [{target: "Type", value: "K", for: "id"},
  *               {target: "Type", value: "Array.<oj.ojTreemap.Node<K>>=", for: "nodes"},
@@ -1860,7 +1864,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
 /**
  * <p>
  *  The <code class="prettyprint">nodeTemplate</code> slot is used to specify the template for
- *  creating nodes of the treemap. The slot content must be wrapped in a &lt;template>
+ *  creating nodes of the treemap. The slot content must be wrapped in a single &lt;template>
  *  element. The content of the template should be a single &lt;oj-treemap-node> element.
  *  See the [oj-treemap-node]{@link oj.ojTreemapNode} doc for more details.
  * </p>
@@ -1905,7 +1909,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
  */
 
 /**
- * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
+ * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content. The slot content must be a single &lt;template> element.
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
@@ -1914,6 +1918,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
  *
  *
  * @ojslot tooltipTemplate
+ * @ojmaxitems 1
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojTreemap.TooltipContext
  * @memberof oj.ojTreemap
@@ -1928,7 +1933,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
 
 /**
  * <p>The <code class="prettyprint">nodeContentTemplate</code> slot is used to specify custom node content
- * for leaf nodes of a treemap.  This slot takes precedence over the nodeContent.renderer property if specified.
+ * for leaf nodes of a treemap. The slot content must be a single &lt;template> element. This slot takes precedence over the nodeContent.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
  *   <li>$current - an object that contains information for the current node. (See [oj.ojTreemap.NodeContentContext]{@link oj.ojTreemap.NodeContentContext} or the table below for a list of properties available on $current) </li>
@@ -1936,6 +1941,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
  *
  *
  * @ojslot nodeContentTemplate
+ * @ojmaxitems 1
  * @ojshortdesc The nodeContentTemplate slot is used to specify custom node content for leaf nodes of a treemap. See the Help documentation for more information.
  * @ojslotitemprops oj.ojTreemap.NodeContentContext
  * @memberof oj.ojTreemap
@@ -1997,6 +2003,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
 
 /**
  * @ojcomponent oj.ojTreemapNode
+ * @ojshortdesc The oj-treemap-node element is used to declare properties for treemap nodes. See the Help documentation for more information.
  * @ojsignature {target: "Type", value:"class ojTreemapNode extends JetElement<ojTreemapNodeSettableProperties>"}
  * @ojslotcomponent
  * @since 6.0.0
@@ -2070,6 +2077,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
 
 /**
  * The inline style to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
+ * Only SVG CSS style properties are supported.
  * @expose
  * @name svgStyle
  * @ojshortdesc The inline style to apply to the node. See the Help documentation for more information.
@@ -2139,6 +2147,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
 
 /**
  * The CSS style object defining the style of the label. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping.
+ * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
  * @expose
  * @name labelStyle
  * @ojshortdesc The CSS style object defining the style of the label. See the Help documentation for more information.
@@ -2232,6 +2241,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
 
 /**
  * The CSS style object defining the style of the header title.
+ * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
  * @expose
  * @name header.labelStyle
  * @memberof! oj.ojTreemapNode

@@ -1,11 +1,12 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
-define(['ojs/ojcore', 'jquery'], function(oj, $)
+define(['ojs/ojcore-base', 'jquery'], function(oj, $)
 {
   "use strict";
 /* jslint browser: true*/
@@ -27,8 +28,9 @@ define(['ojs/ojcore', 'jquery'], function(oj, $)
  *                  <b>initialRowCount</b>: initial row count. DomScroller will be initialized with this row count. Default is 0.<br>
  *                  <b>fetchTrigger</b>: how close should the scroll position be relative to the maximum scroll position before a fetch is triggered. Default is 1 pixel.<br>
  * @constructor
+ * @ojtsmodule
  */
-oj.DomScroller = function (element, dataprovider, options) {
+var DomScroller = function (element, dataprovider, options) {
   // eslint-disable-next-line no-param-reassign
   options = options || {};
   this._data = dataprovider;
@@ -75,7 +77,7 @@ oj.DomScroller = function (element, dataprovider, options) {
 /**
  * Update value for fetch trigger
  */
-oj.DomScroller.prototype.setFetchTrigger = function (fetchTrigger) {
+DomScroller.prototype.setFetchTrigger = function (fetchTrigger) {
   if (fetchTrigger != null && !isNaN(fetchTrigger) && fetchTrigger >= 0) {
     this._fetchTrigger = fetchTrigger;
   }
@@ -85,7 +87,7 @@ oj.DomScroller.prototype.setFetchTrigger = function (fetchTrigger) {
  * Retrieve the element where the scroll listener is registered on.
  * @private
  */
-oj.DomScroller.prototype._getScrollEventElement = function () {
+DomScroller.prototype._getScrollEventElement = function () {
   // if scroller is the body, listen for window scroll event.  This is the only way that works consistently across all browsers.
   if (this._element === document.body || this._element === document.documentElement) {
     return window;
@@ -100,7 +102,7 @@ oj.DomScroller.prototype._getScrollEventElement = function () {
  * @param {Element} element the element
  * @return {number} the distance between the specified element and ancestor
  */
-oj.DomScroller.calculateOffsetTop = function (ancestor, element) {
+DomScroller.calculateOffsetTop = function (ancestor, element) {
   var offset = 0;
   var current = element;
   while (current && current !== ancestor && $.contains(ancestor, current)) {
@@ -117,7 +119,7 @@ oj.DomScroller.calculateOffsetTop = function (ancestor, element) {
  * @return {number} scroll top
  * @private
  */
-oj.DomScroller.prototype._getScrollTop = function (element) {
+DomScroller.prototype._getScrollTop = function (element) {
   var scrollTop = this._fetchTrigger;
 
   if (element === document.documentElement) {
@@ -144,7 +146,7 @@ oj.DomScroller.prototype._getScrollTop = function (element) {
  * @memberof! oj.DomScroller
  * @instance
  */
-oj.DomScroller.prototype.destroy = function () {
+DomScroller.prototype.destroy = function () {
   this._unregisterDataSourceEventListeners();
   $(this._getScrollEventElement()).off('.domscroller');
 };
@@ -159,7 +161,7 @@ oj.DomScroller.prototype.destroy = function () {
  * @memberof! oj.DomScroller
  * @instance
  */
-oj.DomScroller.prototype.checkViewport = function () {
+DomScroller.prototype.checkViewport = function () {
   if (this._asyncIterator && this._element.clientHeight > 0 &&
       !this.isOverflow()) {
     return this._fetchMoreRows();
@@ -171,7 +173,7 @@ oj.DomScroller.prototype.checkViewport = function () {
  * Fetch more rows if beforeFetch callback allows it
  * @private
  */
-oj.DomScroller.prototype._doFetch = function (scrollTop) {
+DomScroller.prototype._doFetch = function (scrollTop) {
   var self = this;
 
   if (this._beforeFetchCallback(scrollTop - this._fetchTrigger)) {
@@ -204,7 +206,7 @@ oj.DomScroller.prototype._doFetch = function (scrollTop) {
  * Handle scrollTop on scroller
  * @private
  */
-oj.DomScroller.prototype._handleScrollerScrollTop = function (scrollTop, maxScrollTop) {
+DomScroller.prototype._handleScrollerScrollTop = function (scrollTop, maxScrollTop) {
   if (this._handleScrollTopCallback) {
     this._handleScrollTopCallback(scrollTop);
   }
@@ -246,7 +248,7 @@ oj.DomScroller.prototype._handleScrollerScrollTop = function (scrollTop, maxScro
  * Check whether the scroll DOM has overflowed
  * @return {boolean} true if overflowed, false otherwise
  */
-oj.DomScroller.prototype.isOverflow = function () {
+DomScroller.prototype.isOverflow = function () {
   var element = this._element;
   var diff = element.scrollHeight - (element.clientHeight + this._fetchTrigger);
   if (diff === 1 && oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.EDGE) {
@@ -262,7 +264,7 @@ oj.DomScroller.prototype.isOverflow = function () {
  * Try to fetch more rows
  * @private
  */
-oj.DomScroller.prototype._fetchMoreRows = function () {
+DomScroller.prototype._fetchMoreRows = function () {
   if (!this._fetchPromise) {
     // make sure we don't exceed maxCount
     var remainingCount = this._maxCount - this._rowCount;
@@ -314,7 +316,7 @@ oj.DomScroller.prototype._fetchMoreRows = function () {
 /**
  * @private
  */
-oj.DomScroller.prototype._handleDataRowMutateEvent = function (event) {
+DomScroller.prototype._handleDataRowMutateEvent = function (event) {
   // if everything has been fetched already then we don't have to do anything also
   if (this._asyncIterator == null) {
     return;
@@ -365,7 +367,7 @@ oj.DomScroller.prototype._handleDataRowMutateEvent = function (event) {
 /**
  * @private
  */
-oj.DomScroller.prototype._handleDataRowAddedOrRemoved = function (keys, indexes, callback) {
+DomScroller.prototype._handleDataRowAddedOrRemoved = function (keys, indexes, callback) {
   if (indexes) {
     for (var i = 0; i < indexes.length; i++) {
       var rowIdx = indexes[i];
@@ -393,7 +395,7 @@ oj.DomScroller.prototype._handleDataRowAddedOrRemoved = function (keys, indexes,
  * Register event listeners which need to be registered datasource.
  * @private
  */
-oj.DomScroller.prototype._registerDataSourceEventListeners = function () {
+DomScroller.prototype._registerDataSourceEventListeners = function () {
   // register the listeners on the datasource
   var data = this._data;
   if (data != null) {
@@ -421,7 +423,7 @@ oj.DomScroller.prototype._registerDataSourceEventListeners = function () {
  * Unregister event listeners which are registered on datasource.
  * @private
  */
-oj.DomScroller.prototype._unregisterDataSourceEventListeners = function () {
+DomScroller.prototype._unregisterDataSourceEventListeners = function () {
   var data = this._data;
   // unregister the listeners on the datasource
   if (this._dataProviderEventHandlers != null && data != null) {
@@ -434,4 +436,5 @@ oj.DomScroller.prototype._unregisterDataSourceEventListeners = function () {
 };
 
 
+;return DomScroller;
 });

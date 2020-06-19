@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!
 // WARNING: do not directly import this file, instead import the
 //          version in your theme's directory,
@@ -30,45 +31,9 @@
       height:300px;
     }
 
-    .oj-chart-select-icon {
-      background-image: oj-common-image-url("dvt/chart/marquee-up.png");
-    }
-
-    .oj-chart-select-icon.oj-active {
-      background-image: oj-common-image-url("dvt/chart/marquee-down.png");
-    }
-    
-    .oj-chart-select-icon.oj-hover {
-      background-image: oj-common-image-url("dvt/chart/marquee-hover.png");
-    }
-
-    .oj-chart-pan-icon {
-      background-image: oj-common-image-url("dvt/chart/pan-up.png");
-    }
-
-    .oj-chart-pan-icon.oj-active {
-      background-image: oj-common-image-url("dvt/chart/pan-down.png");
-    }
-    
-    .oj-chart-pan-icon.oj-hover {
-      background-image: oj-common-image-url("dvt/chart/pan-hover.png");
-    }
-
-    .oj-chart-zoom-icon {
-      background-image: oj-common-image-url("dvt/chart/zoom-up.png");
-    }
-
-    .oj-chart-zoom-icon.oj-active {
-      background-image: oj-common-image-url("dvt/chart/zoom-down.png");
-    }
-    
-    .oj-chart-zoom-icon.oj-hover {
-      background-image: oj-common-image-url("dvt/chart/zoom-hover.png");
-    }
-
     .oj-chart-data-label {
 
-        font-size: $smallFontSize;
+        font-size: $dvtChartDataLabelFontSize;
 
     }
 
@@ -113,13 +78,6 @@
 
     }
 
-    .oj-chart-tooltip-label {
-
-          font-size: $smallFontSize;
-          color: $formControlLabelColor;
-
-    }
-
     .oj-chart-xaxis-tick-label,
     .oj-chart-yaxis-tick-label,
     .oj-chart-y2axis-tick-label {
@@ -149,6 +107,22 @@
 
           @include oj-browser-focus-outline-approximation($primaryTextColor);
         
+    }
+
+    .oj-chart-animation-down {
+      fill: $dvtChartAnimationFallingIconColor;
+    }
+
+    .oj-chart-animation-up {
+      fill: $dvtChartAnimationRisingIconColor;
+    }
+
+    .oj-chart-animation-marker {
+      fill: $dvtChartAnimationMarkerColor;
+    }
+
+    .oj-chart .oj-active-drop {
+      fill: $accentColorHighlight1;
     }
   }
 }

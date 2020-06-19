@@ -1,0 +1,134 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.dvt.gauge.scss
+// !!!
+@import "../../../utilities/_oj.utilities.scss";
+
+  @include module-include-once("common.gauge") {
+// todo: there's actually 3 components in here, this needs to be broken out into
+// separate files/dirs
+    .oj-dialgauge {
+      width:200px;
+      height:200px;
+    }
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-led-gauge:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    oj-led-gauge {
+      display: block;
+    }
+
+    .oj-ledgauge {
+      width:40px;
+      height:40px;
+    }
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-status-meter-gauge:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    oj-status-meter-gauge {
+      display: block;
+    }
+
+    .oj-statusmetergauge {
+      width:220px;
+      height:25px;
+    }
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-rating-gauge:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    oj-rating-gauge {
+      display: block;
+    }
+
+    .oj-ratinggauge {
+      width:120px;
+      height:25px;
+    }
+
+    .oj-gauge-metric-label {
+      font-weight: bold;
+    }
+
+    .oj-gauge-label {
+    }
+
+    // color for the first threshold on a gauge, typically represents a low value
+    .oj-gauge-threshold1 {
+    
+        color: var(--oj-gauge-threshold-color-1);
+
+    }
+
+    // color for the second threshold on a gauge, typically represents a medium value
+    .oj-gauge-threshold2 {
+
+        color: var(--oj-gauge-threshold-color-2);
+
+    }
+
+    // color for the third threshold on a gauge, typically represents a high value
+    .oj-gauge-threshold3 {
+
+        color: var(--oj-gauge-threshold-color-3);
+
+    }
+
+    .oj-dialgauge.oj-focus-highlight,
+    .oj-ledgauge.oj-focus-highlight,
+    .oj-statusmetergauge.oj-focus-highlight,
+    .oj-ratinggauge.oj-focus-highlight {
+
+        outline: dotted 1px var(--oj-core-focus-border-color);   // used on most browsers
+        outline: -webkit-focus-ring-color auto;             // used on chrome
+
+    } 
+
+    .oj-rating-gauge-selected {
+      fill : var(--oj-rating-gauge-color-selected);
+      stroke: var(--oj-rating-gauge-border-color-selected);
+    }
+
+    .oj-rating-gauge-unselected {
+      fill : var(--oj-rating-gauge-color-unselected);
+      stroke: var(--oj-rating-gauge-border-color-unselected);
+    }
+
+    .oj-rating-gauge-changed {
+      fill : var(--oj-rating-gauge-color-changed);
+      stroke: var(--oj-rating-gauge-border-color-changed);
+    }
+
+    .oj-rating-gauge-hover {
+      fill : var(--oj-rating-gauge-color-hover);
+      stroke: var(--oj-rating-gauge-border-color-hover);
+    }
+
+    .oj-rating-gauge-selected-disabled {
+      fill: var(--oj-rating-gauge-color-selected-disabled);
+      stroke: var(--oj-rating-gauge-border-color-selected-disabled);
+    }
+
+    .oj-rating-gauge-unselected-disabled {
+      fill: var(--oj-rating-gauge-color-unselected-disabled);
+      stroke: var(--oj-rating-gauge-border-color-unselected-disabled);
+    }
+
+  }

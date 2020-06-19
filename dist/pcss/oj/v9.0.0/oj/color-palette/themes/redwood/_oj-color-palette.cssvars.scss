@@ -1,0 +1,35 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+// import dependencies
+@import "../../../text-field/themes/redwood/_oj-text-field.cssvars.scss";
+@import "../../../messages/themes/redwood/_oj-messages.cssvars.scss";
+
+  @include module-include-once("redwood.variables.colorpalette") {
+
+:root {
+
+  // color palette
+  // --------------------------
+  --oj-color-palette-text-color:                         var(--oj-core-text-color-primary);
+  --oj-color-palette-swatch-inner-border-color:          var(--oj-palette-neutral-170);
+  --oj-color-palette-swatch-outer-border-color-selected: var(--oj-palette-neutral-190); 
+  --oj-color-palette-border-radius:                      50%;
+  --oj-color-palette-swatch-margin:                      2px;
+  
+  --oj-color-palette-list-swatch-sm-width:               1.25rem;
+  --oj-color-palette-list-swatch-sm-height:              1.25rem;
+  --oj-color-palette-list-swatch-lg-width:               17.125rem;
+  --oj-color-palette-list-swatch-lg-height:              1.375rem;
+  
+  --oj-color-palette-grid-swatch-xs-size:                1.25rem;
+  --oj-color-palette-grid-swatch-sm-size:                2.125rem;
+  --oj-color-palette-grid-swatch-lg-size:                4.75rem;
+  --oj-color-palette-grid-swatch-xl-size:                4.75rem;
+  --oj-color-palette-grid-font-size:                     var(--oj-typography-body-xs-font-size);
+  --oj-color-palette-grid-line-height:                   var(--oj-typography-body-xs-line-height);
+  
+}
+
+}

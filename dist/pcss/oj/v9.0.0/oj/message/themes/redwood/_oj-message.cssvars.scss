@@ -1,0 +1,65 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+
+  @include module-include-once("redwood.variables.message") {
+
+    :root {
+      // Message
+      // ---------------------------
+
+      --oj-message-header-height:                   1.5rem;
+      --oj-message-category-text-color:             var(--oj-core-text-color-primary);
+      --oj-message-category-font-size:              var(--oj-typography-body-xs-font-size);
+      --oj-message-category-font-weight:            600;
+      --oj-message-summary-font-weight:             var(--oj-typography-subheading-xl-font-weight);
+      --oj-message-summary-text-color:              var(--oj-core-text-color-primary);
+      --oj-message-summary-font-size:               var(--oj-typography-body-lg-font-size);
+      --oj-message-summary-line-height:             var(--oj-typography-body-lg-line-height);
+      --oj-message-detail-text-color:               var(--oj-core-text-color-secondary);
+      --oj-message-detail-font-size:                var(--oj-typography-body-sm-font-size);
+      --oj-message-detail-line-height:              var(--oj-typography-body-sm-line-height);
+      --oj-message-time-text-color:                 var(--oj-core-text-color-secondary);
+      --oj-message-time-font-size:                  var(--oj-typography-body-xs-font-size);
+      --oj-message-close-icon-display:              block;
+      --oj-message-auto-timeout-close-icon-display: block;
+
+      --oj-message-general-inline-border-width: 0 0 1px 0;
+      --oj-message-general-inline-border-color: var(--oj-core-divider-color);
+
+      --oj-message-component-inline-bg-color-error:            transparent;
+      --oj-message-component-inline-border-color-error:        transparent;
+      --oj-message-component-inline-bg-color-warning:          transparent;
+      --oj-message-component-inline-border-color-warning:      transparent;
+      --oj-message-component-inline-bg-color-info:             transparent;
+      --oj-message-component-inline-border-color-info:         transparent;
+      --oj-message-component-inline-bg-color-confirmation:     transparent;
+      --oj-message-component-inline-border-color-confirmation: transparent;
+      --oj-message-component-inline-margin-top:                0;
+      --oj-message-component-inline-border-width:              0;
+      --oj-message-component-inline-border-radius:             0;
+      --oj-message-component-inline-padding:                   0;
+      --oj-message-radiocheckbox-inline-margin-top:            0;
+      --oj-message-radiocheckbox-inline-border-top-width:      0;
+      
+      --oj-message-general-overlay-border-width:        0;
+      --oj-message-general-overlay-border-color:        initial;
+      --oj-message-general-overlay-border-radius:       none;
+      --oj-message-general-overlay-box-shadow:          var(--oj-core-box-shadow-md);
+      --oj-message-general-overlay-header-bg-color:     var(--oj-palette-neutral-10);
+      --oj-message-general-overlay-body-bg-color:       var(--oj-palette-neutral-10);
+      --oj-message-general-overlay-separator-margin:    1px;
+
+      --oj-message-notification-overlay-header-bg-color:  var(--oj-palette-neutral-10);
+      --oj-message-notification-overlay-body-bg-color:    var(--oj-palette-neutral-10);
+      --oj-message-notification-overlay-border-width:     0;
+      --oj-message-notification-overlay-border-color:     initial;
+      --oj-message-notification-overlay-border-radius:    var(--oj-core-border-radius-lg);
+      --oj-message-notification-overlay-box-shadow:       var(--oj-core-box-shadow-md);
+      --oj-message-notification-overlay-separator-margin: 0.5rem;
+
+      //Variables needed for theming the padding for various messaging areas
+      --oj-message-component-icon-to-text-padding:  0.25rem;
+    }
+  }

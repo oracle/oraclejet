@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -14,11 +15,10 @@ class EventTargetMixin {
             this._eventListeners = [];
         }
         this._eventListeners.push({
-            'type': eventType.toLowerCase(),
-            'listener': listener
+            type: eventType.toLowerCase(),
+            listener: listener
         });
     }
-    ;
     removeEventListener(eventType, listener) {
         if (this._eventListeners) {
             let i;
@@ -30,7 +30,6 @@ class EventTargetMixin {
             }
         }
     }
-    ;
     dispatchEvent(evt) {
         if (this._eventListeners) {
             var i, returnValue;
@@ -38,9 +37,7 @@ class EventTargetMixin {
             var eventListeners = this._eventListeners.slice(0);
             for (i = 0; i < eventListeners.length; i++) {
                 var eventListener = eventListeners[i];
-                if (evt &&
-                    evt.type &&
-                    eventListener['type'] == evt.type.toLowerCase()) {
+                if (evt && evt.type && eventListener['type'] == evt.type.toLowerCase()) {
                     returnValue = eventListener['listener'].apply(this, [evt]);
                     if (returnValue === false) {
                         // event cancelled
@@ -51,11 +48,10 @@ class EventTargetMixin {
         }
         return true;
     }
-    ;
     static applyMixin(derivedCtor) {
         let baseCtors = [EventTargetMixin];
-        baseCtors.forEach(baseCtor => {
-            Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+        baseCtors.forEach((baseCtor) => {
+            Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
                 if (name !== 'constructor') {
                     derivedCtor.prototype[name] = baseCtor.prototype[name];
                 }

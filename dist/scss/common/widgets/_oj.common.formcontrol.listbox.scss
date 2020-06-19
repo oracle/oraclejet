@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
 //          version in your base theme's directory,
@@ -43,6 +44,14 @@
       flex-direction: column;
     }
 
+    .oj-listbox-drop.oj-listbox-fullscreen {
+      position: fixed;
+    }
+    
+    .oj-listbox-searchselect-no-results:not(.oj-listbox-fullscreen) {
+      border: none;
+    }
+
     /*
      * applied to the dropdown when it is open above the component
      */
@@ -65,9 +74,11 @@
     }
 
     /*
-     * applied to results
+     * Base class for results, shared by oj-listbox-results and oj-select-results (for
+     * oj-select-single).  oj-select-single cannot directly reuse oj-listbox-results itself
+     * because that interferes with collection styling, such as by hiding the selected item.
      */
-    .oj-listbox-results {
+    .oj-listbox-results-base {
       padding: 0;
       margin: 1px 0 2px 0;
       position: relative;
@@ -75,6 +86,12 @@
       overflow-y: auto;
       -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
       max-height: 200px;
+    }
+    /*
+     * applied to results
+     */
+    .oj-listbox-results {
+      @extend .oj-listbox-results-base;
     }
 
     /*

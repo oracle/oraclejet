@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
 //          version in your base theme's directory,
@@ -242,7 +243,8 @@
 
     /* Styling for the page mode page input element. */
     /* Copying from form controls css vars mixins but removing rtl*/
-    input.oj-pagingcontrol-nav-input.oj-inputtext-input {
+    input.oj-pagingcontrol-nav-input.oj-inputtext-input,
+    .oj-pagingcontrol-nav-input input.oj-inputtext-input {
       // Adding RTL to prevent right align for RTL
       @include oj-ltr() {
         text-align: center;  
@@ -258,11 +260,10 @@
     }
 
     /* Styling for the page mode page input element when readOnly. */
-    input[readOnly].oj-pagingcontrol-nav-input.oj-inputtext-input {
-
+    input[readOnly].oj-pagingcontrol-nav-input.oj-inputtext-input,
+    .oj-pagingcontrol-nav-input input[readOnly].oj-inputtext-input {
         color: $formControlLabelColor;
         min-width: $fontSize;
-        max-width: $fontSize;
 
     }
 

@@ -1,12 +1,13 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconfig', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/ojthemeutils', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview', 'ojs/ojcontext', 'ojs/ojtimerutils', 'ojs/ojkeyset', 'ojs/ojeditablevalue', 'ojs/ojlistview', 'ojs/ojbutton', 'ojs/ojpopupcore', 'ojs/ojinputtext', 'ojs/ojbutton'],
-       function(oj, $, Components, Config, HtmlUtils, Logger, ThemeUtils, ListDataProviderView, TreeDataProviderView, Context, TimerUtils, ojkeyset)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconfig', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/ojthemeutils', 'ojs/ojcachingdataprovider', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview', 'ojs/ojcontext', 'ojs/ojtimerutils', 'ojs/ojkeyset', 'ojs/ojeditablevalue', 'ojs/ojlistview', 'ojs/ojpopupcore', 'ojs/ojinputtext'],
+       function(oj, $, Components, Config, HtmlUtils, Logger, ThemeUtils, CachingDataProvider, ListDataProviderView, TreeDataProviderView, Context, TimerUtils, ojkeyset)
 {
   "use strict";
 //%COMPONENT_METADATA%
@@ -105,6 +106,9 @@ var __oj_select_single_metadata =
         "cancel": {
           "type": "string"
         },
+        "labelAccClearValue": {
+          "type": "string"
+        },
         "labelAccOpenDropdown": {
           "type": "string"
         },
@@ -141,6 +145,15 @@ var __oj_select_single_metadata =
           }
         }
       }
+    },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
     },
     "valid": {
       "type": "string",
@@ -198,7 +211,7 @@ var __oj_select_single_metadata =
 };
 
 
- /* global Symbol:false, Promise:false, Set:false, Map:false */
+/* global Symbol:false, Promise:false, Set:false, Map:false */
 
 /**
  * @private
@@ -326,6 +339,12 @@ function FilteringDataProviderView(dataProvider) {
   // FilteringDataProviderView
   this.fetchByOffset = function (params) {
     if (dataProvider) {
+      // always pass filter criterion to underlying data provider because component will make sure
+      // it is a ListDataProviderView and call the FilterFactory to do local filtering if needed
+      if (this._filterCriterion) {
+        // eslint-disable-next-line no-param-reassign
+        params.filterCriterion = this._filterCriterion;
+      }
       return dataProvider.fetchByOffset(params);
     }
     return Promise.resolve({
@@ -429,12 +448,6 @@ var LovUtils = {
   },
 
   // LovUtils
-  ValueChangeTriggerTypes:
-  {
-    OPTION_SELECTED: 'option_selected'
-  },
-
-  // LovUtils
   _isControlKey: function (event) {
     switch (event.which) {
       case LovUtils.KEYS.SHIFT:
@@ -511,23 +524,26 @@ var LovUtils = {
     if (value === null) {
       targetElem.removeAttribute(targetAttr);
     } else {
-      targetElem.setAttribute(targetAttr, value);
+      targetElem.setAttribute(targetAttr, value); // @HTMLUpdateOK
     }
   }
 };
 
 
 
- /* global LovUtils:false, Promise:false, Logger:false, Context:false, ojkeyset:false, HtmlUtils:false, Set:false */
+/* global LovUtils:false, Promise:false, Logger:false, Context:false, ojkeyset:false, HtmlUtils:false, Set:false, Symbol: false */
 
 /**
  * @private
  */
-var LovDropdown = function (options) {
-// {dataProvider, className, parentId, idSuffix, fullScreenPopup, inputType,
-//  bodyElem, headerTemplate, footerTemplate, itemTemplate, collectionTemplate,
-//  getTemplateEngineFunc, templateContextComponentElement, getTranslatedStringFunc,
-//  addBusyStateFunc, itemTextRendererFunc, filterInputText, afterDropdownInitFunc}
+var LovDropdown = function () {
+};
+
+LovDropdown.prototype.init = function (options) {
+  // {dataProvider, className, parentId, idSuffix, fullScreenPopup, inputType,
+  //  bodyElem, headerTemplate, footerTemplate, itemTemplate, collectionTemplate,
+  //  getTemplateEngineFunc, templateContextComponentElement,
+  //  addBusyStateFunc, itemTextRendererFunc, filterInputText, afterDropdownInitFunc}
   this._dataProvider = options.dataProvider;
   this._fullScreenPopup = options.fullScreenPopup;
   this._bodyElem = $(options.bodyElem);
@@ -537,7 +553,6 @@ var LovDropdown = function (options) {
   this._collectionTemplate = options.collectionTemplate;
   this._getTemplateEngineFunc = options.getTemplateEngineFunc;
   this._templateContextComponentElement = options.templateContextComponentElement;
-  this._getTranslatedStringFunc = options.getTranslatedStringFunc;
   this._addBusyStateFunc = options.addBusyStateFunc;
   this._itemTextRendererFunc = options.itemTextRendererFunc;
   this._filterInputText = options.filterInputText;
@@ -545,6 +560,11 @@ var LovDropdown = function (options) {
   // this._maxDisplayCount = 50;
   // this._fetchSize = 50;
   // this._maxFetchCount = 1000;
+
+  this._currentFirstItem = null;
+  this._templateEngine = null;
+  this._resultsCount = null;
+  this._NO_RESULTS_FOUND_CLASSNAME = 'oj-listbox-searchselect-no-results';
 
   var resolveBusyState = this._addBusyStateFunc('LovDropdown initializing');
 
@@ -571,22 +591,18 @@ var LovDropdown = function (options) {
     searchText: undefined,
     selected: undefined,
     selectedItem: undefined,
-    selectedItemChangedListener: this._handleCollectionSelectedItemChanged.bind(this)
+    selectedItemChangedListener: this._handleCollectionSelectedItemChanged.bind(this),
+    currentRow: {
+      rowIndex: undefined,
+      rowKey: undefined
+    },
+    currentRowChangedListener: this._handleCollectionCurrentRowChanged.bind(this),
+    currentRowKeyChangedListener: this._handleCollectionCurrentRowKeyChanged.bind(this),
+    handleRowAction: this._handleRowAction.bind(this)
   };
   this._collectionRendererFunc = this._collectionTemplate ?
     this._templateCollectionRenderer.bind(this) : this._defaultCollectionRenderer.bind(this);
   this._collectionRendererFunc(this._collectionContext);
-
-
-  if (options.fullScreenPopup) {
-  //   // find the dropdown's search field
-  //   this._searchElem = containerElem.find('input.oj-listbox-input');
-
-    var backButton = containerElem.find('#cancelButton_' + options.idSuffix);
-    backButton.on('ojAction', function () {
-      this._dispatchEvent('cancelDropdown');
-    }.bind(this));
-  }
 
   containerElem.on('change', '.' + options.className + '-input', LovUtils.stopEventPropagation);
 
@@ -623,6 +639,13 @@ var LovDropdown = function (options) {
   renderPromise.then(afterRenderFunc, afterRenderFunc);
 
   containerElem.on('keydown', this._handleKeyDown.bind(this));
+
+  // if updateLabel was called before now, execute the deferred call
+  if (this._updateLabelFunc) {
+    var updateLabelFunc = this._updateLabelFunc;
+    this._updateLabelFunc = null;
+    updateLabelFunc();
+  }
 };
 
 /**
@@ -642,7 +665,7 @@ var LovDropdown = function (options) {
 //   var slotPlaceholderElem = containerElem.querySelector('.oj-listbox-' + slotName + '-main');
 //   var nodes = engine.execute(slotPlaceholderElem, template, context);
 //   nodes.forEach(function (el) {
-//     slotPlaceholderElem.appendChild(el); // @HTMLUpdateReview
+//     slotPlaceholderElem.appendChild(el);
 //   });
 // };
 
@@ -656,7 +679,7 @@ LovDropdown.prototype.destroy = function () {
 
   // only load template engine if we actually have templates
   if (// this._headerTemplate || this._footerTemplate ||
-      this._itemTemplate || this._collectionTemplate) {
+      (this._itemTemplate || this._collectionTemplate) && this._containerElem) {
     this._getTemplateEngineFunc().then(function (templateEngine) {
       templateEngine.clean(this._containerElem[0]);
     }.bind(this));
@@ -666,7 +689,11 @@ LovDropdown.prototype.destroy = function () {
 };
 
 LovDropdown.prototype.getElement = function () {
-  return this._containerElem[0];
+  // check whether the dropdown has been initialized
+  if (this._containerElem) {
+    return this._containerElem[0];
+  }
+  return null;
 };
 
 // LovDropdown.prototype.getResultsElement = function () {
@@ -680,7 +707,6 @@ LovDropdown.prototype.getElement = function () {
 LovDropdown.prototype._createInnerDom = function (options) {
   var idSuffix = options.idSuffix;
   // var inputType = options.inputType;
-  var getTranslatedStringFunc = options.getTranslatedStringFunc;
 
   var outerDiv = document.createElement('div');
   outerDiv.setAttribute('data-oj-containerid', options.parentId);
@@ -692,21 +718,6 @@ LovDropdown.prototype._createInnerDom = function (options) {
   outerDiv.setAttribute('role', 'presentation');
 
   if (this._fullScreenPopup) {
-    var strCancel = getTranslatedStringFunc('cancel');
-    var backButton = document.createElement('oj-button');
-    backButton.textContent = strCancel;
-    backButton.setAttribute('id', 'cancelButton_' + idSuffix);
-    backButton.setAttribute('chroming', 'half');
-    // backButton.setAttribute('display', 'icons');
-    backButton.setAttribute('data-oj-internal', '');
-    backButton.setAttribute('data-oj-binding-provider', 'none');
-    backButton.setAttribute('class', 'oj-searchselect-cancel');
-    // var backIcon = document.createElement('span');
-    // backIcon.setAttribute('slot', 'endIcon');
-    // backIcon.setAttribute('class', 'oj-fwk-icon oj-fwk-icon-back');
-    // backButton.appendChild(backIcon);
-    outerDiv.appendChild(backButton);
-
     outerDiv.appendChild(this._filterInputText);
   }
 
@@ -740,10 +751,17 @@ LovDropdown.prototype._createInnerDom = function (options) {
 
 LovDropdown._highlighter = function (unhighlightedText, searchText) {
   if (searchText && searchText.length > 0) {
-    return unhighlightedText.replace(new RegExp(searchText, 'gi'),
+    // Escape the search text to use it for RegExp
+    // JET-34448 - LOV should escape search text used for highlighting
+    var escSearchText = LovDropdown._escapeRegExp(searchText);
+    return unhighlightedText.replace(new RegExp(escSearchText, 'gi'),
       '<span class="oj-listbox-highlighter">$&</span>');
   }
   return unhighlightedText;
+};
+
+LovDropdown._escapeRegExp = function (text) {
+  return text.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&');
 };
 
 LovDropdown.prototype._defaultItemRenderer = function (listViewItemContext) {
@@ -765,15 +783,15 @@ LovDropdown.prototype._defaultItemRenderer = function (listViewItemContext) {
   // the leaf property will be absent for flat data
   var isParent = listViewItemContext.leaf === false;
   var str = isParent ?
-            formatted :
-            LovDropdown._highlighter(formatted, this._collectionContext.searchText);
+    formatted :
+    LovDropdown._highlighter(formatted, this._collectionContext.searchText);
   var nodes = HtmlUtils.stringToNodeArray('<span>' + str + '</span>');
   for (var i = 0; i < nodes.length; i++) {
     // label.appendChild(nodes[i]);
     li.appendChild(nodes[i]);
   }
 
-  // li.appendChild(label); // @HTMLUpdateReview
+  // li.appendChild(label);
   // return li;
 };
 
@@ -800,11 +818,12 @@ LovDropdown.prototype._templateItemRenderer = function (templateEngine, listView
     }
   }
 
-  // li.appendChild(label); // @HTMLUpdateReview
+  // li.appendChild(label);
   // return li;
 };
 
-LovDropdown.prototype.renderResults = function (searchText, filterCriteria, selectedValue) {
+LovDropdown.prototype.renderResults = function (searchText, filterCriteria,
+  selectedValue, initial) {
   var resolveBusyState = this._addBusyStateFunc('LovDropdown rendering results');
 
   // save most recent filterCriteria so we know whether we need to apply highlighting
@@ -827,7 +846,11 @@ LovDropdown.prototype.renderResults = function (searchText, filterCriteria, sele
       // wait until the changes propagate to the collection and the collection handles the DP
       // refresh event due to filter criteria changing before resolving the promise
       var busyContext = Context.getContext(this._containerElem[0]).getBusyContext();
-      busyContext.whenReady().then(resolve, reject);
+      // Once the collection is ready, call the configureResults
+      // to set the selected and currentRow accordingly.
+      busyContext.whenReady().then(function () {
+        this._configureResults(searchText, selectedValue, initial).then(resolve, reject);
+      }.bind(this), reject);
     }.bind(this), reject);
   }.bind(this));
   // save the most recent promise so we can ignore old responses
@@ -836,7 +859,15 @@ LovDropdown.prototype.renderResults = function (searchText, filterCriteria, sele
   var collectionContext = this._collectionContext;
   collectionContext.data = this._dataProvider;
   collectionContext.searchText = searchText;
-  collectionContext.selected = new ojkeyset.KeySetImpl([selectedValue]);
+  var selectedKeys = [];
+  if (!LovUtils.isValueForPlaceholder(selectedValue)) {
+    selectedKeys.push(selectedValue);
+  }
+  // Only set the selected and do not set the currentRow.rowKey here
+  // It should be set only if the row is present, it will be set in
+  // the _configureResults after the data is fetched by the
+  // collection and the presence of the rowKey is verified.
+  collectionContext.selected = new ojkeyset.KeySetImpl(selectedKeys);
 
   // JET-34871 - FILTERING DANGLING BUSY STATE
   // if there is an existing, unresolved renderPromise, reject it now so that we don't end up with
@@ -872,15 +903,232 @@ LovDropdown.prototype.renderResults = function (searchText, filterCriteria, sele
 
 LovDropdown.prototype.updateLabel = function (ariaLabelId, ariaLabel) {
   var resultsElem = this._resultsElem;
-  if (!this._collectionTemplate && resultsElem) {
+  if (!resultsElem) {
+    // if the dropdown hasn't been initialized yet, defer the updateLabel call until then
+    this._updateLabelFunc = this.updateLabel.bind(this, ariaLabelId, ariaLabel);
+  } else if (!this._collectionTemplate) {
     var listView = resultsElem[0];
     //  - oghag missing label for ojselect and ojcombobox
     if (ariaLabelId) {
       listView.setAttribute('aria-labelledby', ariaLabelId);
+      // The attribute value only can be removed by setting it to an empty string
+      listView.setAttribute('aria-label', '');
     } else if (ariaLabel) {
       listView.setAttribute('aria-label', ariaLabel);
+      // The attribute value only can be removed by setting it to an empty string
+      listView.setAttribute('aria-labelledby', '');
     }
   }
+};
+
+/**
+ * Configures the results by doing the following operations:
+ *   1. hides/shows the dropdown based on the availability of the results
+ *   2. selects the first result if exists
+ *   3. sets the first result as the current row if exists
+ *
+ * @param {string=} searchText The current text used for filtering the data
+ * @param {V=} selectedValue The current selected value
+ * @param {boolean} initial Flag indicating if this is an initial fetch
+ *
+ * @return {Promise} a promise that resolve once the operation is completed
+ *
+ * @memberof LovDropdown
+ * @private
+ * @instance
+ */
+LovDropdown.prototype._configureResults = function (searchText, selectedValue, initial) {
+  // get the busy context of the collection, so we can wait for it to be updated
+  var busyContext = Context.getContext(this._containerElem[0]).getBusyContext();
+
+  // Clear the current value item
+  this._setCurrentFirstItem(null);
+
+  // This method is called only after the collection fetched the data
+  // get the result count and store them
+  this._resultsCount = this._dataProvider.getFetchedDataCount() || {};
+
+  // At this point, the data would have been fetched and we will have the fetched data count.
+  // If the result count is 0, then we need to hide the dropdown.
+  // Do not close the dropdown since we need to proceed as if the dropdown is open (which is used
+  // in other places and we would want it to work as if the dropdown is open). So instead, we just need to
+  // hide the dropdown.
+  if (this._resultsCount.count == null || this._resultsCount.count === 0) {
+    this._containerElem.addClass(this._NO_RESULTS_FOUND_CLASSNAME);
+    return Promise.resolve();
+  }
+
+  // Now that we know that we have results to show, we need to make sure that the dropdown is being shown
+  this._containerElem.removeClass(this._NO_RESULTS_FOUND_CLASSNAME);
+
+  // If it is the initial fetch selection would have been already done
+  // during initialization, so only update currentRow if needed.
+  if (initial) {
+    // if there is a selected value, then the collection would have
+    // filtered the data using the display text initially. Set the current row only if the
+    // fetched data is not empty.
+    // TODO: Implement a better way to determine if the selectedValue is present in
+    //       the fetched data.
+    if (selectedValue != null && this._resultsCount.count > 0) {
+      this._setCollectionCurrentRow({ rowKey: selectedValue });
+      return busyContext.whenReady();
+    }
+    // In case if there is no selected value, or filtered data is empty
+    // do nothing. No need to clear the current row as it would have been cleared
+    // when the dropdown was closed.
+    return Promise.resolve();
+  }
+
+  // If no search text is present, clear current selection and return
+  if (searchText == null || searchText === '') {
+    this._clearSelection();
+    // Wait for the collection to be updated and resolve the operation
+    return busyContext.whenReady();
+  }
+
+  // If search text is present, the first option should be highlighted
+  // TODO: This call modifies the fetchedDataCount in the dataProvider,
+  //       should this be reset to the initial value? For now, the count is stored
+  //       in the LovDropdown and can be retrieved by calling LovDropdown.prototype.getResultsCount
+  //       method.
+  return this._fetchFirstResult().then(function (data) {
+    if (data == null) {
+      this._clearSelection();
+      // Return the busy context promise
+      return busyContext.whenReady();
+    }
+
+    // Set the current value item
+    var rowKey = data.key;
+    this._setCurrentFirstItem(data);
+    this._setCollectionCurrentRow({ rowKey: rowKey });
+    // During initial render the handlers will be short-circuited, so we
+    // need to call selected separately
+    this._setCollectionSelectedKeySet(rowKey);
+
+    // Return the busy context promise
+    return busyContext.whenReady();
+  }.bind(this));
+};
+
+/**
+ * Fetches the first result from the data provider (first leaf for the tree data)
+ *
+ * @return {Promise<ItemContext>} returns a promise that resolves to ItemContext representing the first data
+ *
+ * @memberof LovDropdown
+ * @instance
+ * @private
+ */
+LovDropdown.prototype._fetchFirstResult = function () {
+  if (oj.DataProviderFeatureChecker.isTreeDataProvider(this._dataProvider)) {
+    return this._fetchFirstLeafData();
+  }
+
+  return this._fetchFirstFlatData();
+};
+
+/**
+ * Fetches the first data from flat data provider
+ *
+ * @return {Promise<ItemContext>} returns a promise that resolves to ItemContext representing the first data
+ *
+ * @memberof LovDropdown
+ * @instance
+ * @private
+ */
+LovDropdown.prototype._fetchFirstFlatData = function () {
+  // Filter criteria should already be set in the data provider, we just
+  // need to fetch the first result
+  var fetchPromise = this._dataProvider.fetchByOffset({ offset: 0, size: 1 });
+  var result = null;
+  var parseResults = function (fetchResults) {
+    if (fetchResults != null) {
+      let results = fetchResults.results;
+      if (results.length > 0) {
+        let firstResult = results[0];
+        result = this._createValueItemFromItem(firstResult);
+      }
+    }
+    return Promise.resolve(result);
+  }.bind(this);
+
+  return fetchPromise.then(parseResults);
+};
+
+/**
+ * Fetches the first leaf data from tree data provider
+ *
+ * @return {Promise<ItemContext>} returns a promise that resolves to ItemContext representing the first data
+ *
+ * @memberof LovDropdown
+ * @instance
+ * @private
+ */
+LovDropdown.prototype._fetchFirstLeafData = function () {
+  // Filter criteria should already be set in the data provider, we just
+  // need to fetch the first result
+  // TODO: (JET-34960) When using CachingTreeDataProvider, may need pass through this
+  //       and make sure the cached data is being used.
+  var fetchListParams = { size: 1 };
+  var self = this;
+  var done = false;
+  var fetchDataRecursively = function (dataProvider) {
+    let result = null;
+    let asyncIterator = dataProvider.fetchFirst(fetchListParams)[Symbol.asyncIterator]();
+    let processChunk = function (fetchResults) {
+      let data = fetchResults.value.data;
+      let metadata = fetchResults.value.metadata;
+
+      let fetchChild = function (childIndex) {
+        if (childIndex < data.length) {
+          if (!done) {
+            let itemData = data[childIndex];
+            let itemMetadata = metadata[childIndex];
+
+            let childDataProvider = dataProvider.getChildDataProvider(itemData.value);
+
+            if (childDataProvider != null) {
+              return fetchDataRecursively(childDataProvider).then(function (_result) {
+                result = _result;
+                return fetchChild(childIndex + 1);
+              });
+            }
+
+            let item = { data: itemData, metadata: itemMetadata };
+            result = self._createValueItemFromItem(item);
+            done = true;
+          }
+        }
+        return Promise.resolve(result);
+      };
+
+      let fetchChildPromise = fetchChild(0);
+
+      return fetchChildPromise.then(function () {
+        if (fetchResults.done || done) {
+          return Promise.resolve(result);
+        }
+        return asyncIterator.next().then(processChunk);
+      });
+    };
+
+    return asyncIterator.next().then(processChunk);
+  };
+
+  return fetchDataRecursively(this._dataProvider);
+};
+
+/**
+ * Clears the selection in the dropdown
+ *
+ * @memberof LovDropdown
+ * @private
+ * @instance
+ */
+LovDropdown.prototype._clearSelection = function () {
+  this._setCollectionCurrentRow({ rowKey: null });
+  this._setCollectionSelectedKeySet(null);
 };
 
 LovDropdown.prototype._clearContextRenderPromiseFunctions = function (context) {
@@ -909,18 +1157,15 @@ LovDropdown.prototype._defaultCollectionRenderer = function (context) {
     listView.setAttribute('drill-mode', 'none');
     listView.setAttribute('gridlines.item', 'hidden');
 
+    // Add an empty noData container since we will be hiding the dropdown when
+    // there is no data.
+    // We need to have an empty noData container otherwise listView's default
+    // template shows "No items to display" text which flashes for a brief period of time
+    // before we hide the dropdown.
     var noDataTemplate = document.createElement('template');
     noDataTemplate.setAttribute('slot', 'noData');
     var noDataContainer = document.createElement('div');
     noDataContainer.setAttribute('class', 'oj-searchselect-no-results-container');
-    var line1 = document.createElement('span');
-    line1.setAttribute('class', 'oj-searchselect-no-results-line1');
-    line1.innerText = this._getTranslatedStringFunc('noResultsLine1');
-    noDataContainer.appendChild(line1);
-    var line2 = document.createElement('span');
-    line2.setAttribute('class', 'oj-searchselect-no-results-line2 oj-label-nocomp');
-    line2.innerText = this._getTranslatedStringFunc('noResultsLine2');
-    noDataContainer.appendChild(line2);
     // need to append to content documentFragment of template element instead of template itself
     // (the content doc fragment is undefined in IE11, so just append to the template itself)
     if (noDataTemplate.content) {
@@ -937,8 +1182,10 @@ LovDropdown.prototype._defaultCollectionRenderer = function (context) {
 
     busyContext = Context.getContext(listView).getBusyContext();
     busyContext.whenReady().then(function () {
-      listView.addEventListener('firstSelectedItemChanged', function (event) {
-        context.selectedItemChangedListener(event.detail.value);
+      listView.addEventListener('ojItemAction', context.handleRowAction);
+      listView.addEventListener('currentItemChanged', function (event) {
+        // Call the handler to update the collection context accordingly
+        context.currentRowKeyChangedListener(event.detail.value);
       });
       if (context.data && oj.DataProviderFeatureChecker
         && oj.DataProviderFeatureChecker.isTreeDataProvider(context.data)) {
@@ -978,6 +1225,7 @@ LovDropdown.prototype._defaultCollectionRenderer = function (context) {
     busyContext.whenReady().then(function () {
       listView.data = context.data;
       listView.selected = context.selected;
+      listView.currentItem = context.currentRow.rowKey;
       this._clearContextRenderPromiseFunctions(context);
       contextRenderDone();
     }.bind(this), function (reason) {
@@ -996,6 +1244,7 @@ LovDropdown.prototype._templateCollectionRenderer = function (context) {
     var $parentElem = $(context.parentElement);
     var placeholderElem = $parentElem.find('.oj-searchselect-results-placeholder')[0];
     this._getTemplateEngineFunc().then(function (templateEngine) {
+      this._templateEngine = templateEngine;
       this._collectionTemplateContext = this._createCollectionTemplateContext(templateEngine,
         context);
       var nodes = templateEngine.execute(this._templateContextComponentElement,
@@ -1044,9 +1293,8 @@ LovDropdown.prototype._removeDataProviderEventListeners = function () {
   if (dataProvider && dataProviderEventHandler) {
     dataProvider.removeEventListener('mutate', dataProviderEventHandler);
     dataProvider.removeEventListener('refresh', dataProviderEventHandler);
-
-    this._savedDataProviderEH = undefined;
   }
+  this._savedDataProviderEH = undefined;
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -1130,6 +1378,9 @@ LovDropdown.prototype.close = function () {
     activeElem.blur();
   }
 
+  // Reset the selection
+  this._clearSelection();
+
   /** @type {!Object.<oj.PopupService.OPTION, ?>} */
   var psOptions = {};
   psOptions[oj.PopupService.OPTION.POPUP] = this._containerElem;
@@ -1163,9 +1414,15 @@ LovDropdown.prototype.open = function () {
   psEvents[oj.PopupService.EVENT.POPUP_AUTODISMISS] = this._clickAwayHandler.bind(this);
   psEvents[oj.PopupService.EVENT.POPUP_REFRESH] = function () {
     this._dispatchEvent('sizeDropdown');
+    this._dispatchEvent('adjustDropdownPosition', { popupElem: containerElem[0] });
   }.bind(this);
   psEvents[oj.PopupService.EVENT.POPUP_AFTER_OPEN] = function (event) {
-    this._dispatchEvent('adjustDropdownPosition', { popupElem: event.popup[0] });
+    var dropdownElem = event.popup[0];
+    this._dispatchEvent('sizeDropdown');
+    this._dispatchEvent('adjustDropdownPosition', { popupElem: dropdownElem });
+    if (this._fullScreenPopup) {
+      dropdownElem.scrollIntoView();
+    }
   }.bind(this);
 
   /** @type {!Object.<oj.PopupService.OPTION, ?>} */
@@ -1179,9 +1436,6 @@ LovDropdown.prototype.open = function () {
   }
 
   this._dispatchEvent('openPopup', { psOptions: psOptions });
-
-  // show the elements
-  this._dispatchEvent('sizeDropdown');
 };
 
 LovDropdown.prototype._clickAwayHandler = function (event) {
@@ -1284,39 +1538,9 @@ LovDropdown.prototype._surrogateRemoveHandler = function () {
  */
 LovDropdown.prototype._handleKeyDown = function (e) {
   if (e.which === LovUtils.KEYS.TAB) {
-    // var focused = this.focusNextControlItem(e);
-    // if (!focused) {
-    //   this._dispatchEvent('tabOut');
-    //   // Since dropdown resides BEFORE the input in the DOM, browser will let
-    //   // shift-tab move to previous node before the dropdown. If dropdown doesn't
-    //   // focus on anything with Shift-Tab, leave focus on input field and kill
-    //   // the event.
-    //   if (e.shiftKey) {
-    //     e.preventDefault();
-    //   } else {
-    //     this._dispatchEvent('closeDropdown', { trigger: 'tabKeyDown' });
-    //   }
-    // }
-
-    // TAB cycles within dropdown
-    var containerElem = this._containerElem;
-    var firstTabbableNode = oj.FocusUtils.getFirstTabStop(containerElem);
-    var lastTabbableNode = oj.FocusUtils.getLastTabStop(containerElem);
-    var target = e.target;
-
-    if (firstTabbableNode === target && e.shiftKey) {
-      e.preventDefault();
-      // tabbing backwards, cycle focus to last tabbable node
-      if (lastTabbableNode) {
-        oj.FocusUtils.focusElement(lastTabbableNode);
-      }
-    } else if (lastTabbableNode === target && !e.shiftKey) {
-      e.preventDefault();
-      // tabbing forwards, cycle to the first tabbable node
-      if (firstTabbableNode) {
-        oj.FocusUtils.focusElement(firstTabbableNode);
-      }
-    }
+    // Dispatch event so that ojselect can react to this event
+    // Do not kill the event as we want the focus to be moved to the next component
+    this._dispatchEvent('tabOut');
   } else if (e.which === LovUtils.KEYS.ESC) {
     this._dispatchEvent('closeDropdown', { trigger: 'escKeyDown' });
   }
@@ -1473,6 +1697,71 @@ LovDropdown.prototype._handleCollectionSelectedItemChanged = function (_valueIte
   this._handleSelection(valueItem, event);
 };
 
+/**
+ * Performs actions that have to be done when the oj-table updates the currentRow
+ * property.
+ *
+ * @param {oj.ojTable.CurrentRow<K>} currentRow The object containing the rowKey of the current selected row
+ *
+ * @memberof LovDropdown
+ * @instance
+ * @private
+ */
+LovDropdown.prototype._handleCollectionCurrentRowChanged = function (currentRow) {
+  // Do nothing if called during the initialization phase
+  // or when the currentRow is null
+  if (this._duringListViewInitialization || currentRow == null) {
+    return;
+  }
+  // keep context up to date, make a copy since we do not want to modify the reference
+  this._collectionContext.currentRow = {
+    rowIndex: currentRow.rowIndex,
+    rowKey: currentRow.rowKey
+  };
+  // Call the currentRow.rowKey handler with the current rowKey
+  this._handleCollectionCurrentRowKeyChanged(currentRow.rowKey);
+};
+
+/**
+ * Performs operations that have to be done when the collection updates the currentRow
+ * property
+ *
+ * @param {K} rowKey The current selected item's key
+ *
+ * @memberof LovDropdown
+ * @instance
+ * @private
+ */
+LovDropdown.prototype._handleCollectionCurrentRowKeyChanged = function (rowKey) {
+  // Do nothing if called during the initialization phase
+  // or when the rowKey is null
+  if (this._duringListViewInitialization || rowKey == null) {
+    return;
+  }
+  // keep context up to date
+  this._collectionContext.currentRow.rowKey = rowKey;
+
+  // whenever the rowKey is updated, we need to update the selected property
+  // as well to keep things in sync.
+  this._setCollectionSelectedKeySet(rowKey);
+};
+
+/**
+ * Performs actions that have to be done when a row/item is selected from the collection
+ *
+ * @param {CustomEvent} event ojRowAction or ojItemAction event object
+ * @param {ItemContext} context
+ *
+ * @memberof LovDropdown
+ * @instance
+ * @private
+ */
+// eslint-disable-next-line no-unused-vars
+LovDropdown.prototype._handleRowAction = function (event, context) {
+  var valueItem = this._createValueItemFromItem(event.detail.context);
+  this._handleSelection(valueItem, event);
+};
+
 // LovDropdown.prototype.activateHighlightedElem = function () {
 //   var val = this._getCurrentListItemValue();
 //   if (val !== null) {
@@ -1497,9 +1786,7 @@ LovDropdown.prototype._handleCollectionSelectedItemChanged = function (_valueIte
 
 LovDropdown.prototype._handleSelection = function (valueItem, event) {
   if (valueItem) {
-    var selectionOptions = { trigger: LovUtils.ValueChangeTriggerTypes.OPTION_SELECTED };
-    this._dispatchEvent('handleSelection',
-      { valueItem: valueItem, selectionOptions: selectionOptions, event: event });
+    this._dispatchEvent('handleSelection', { valueItem: valueItem, event: event });
   }
 };
 
@@ -1548,12 +1835,187 @@ LovDropdown.prototype._createCollectionTemplateContext = function (templateEngin
     // pass listener so we can react to writebacks made by the collection
     templateEngine.defineTrackableProperty(templateContext, 'selectedItem', undefined,
       context.selectedItemChangedListener);
+
+    // currentRow property is an object and we expect the collection to writeback
+    // we need to consider two cases here:
+    //  1. if oj-table is used as a collection template, it updates the currentRow
+    //     property directly
+    //  2. if oj-list-view is used as a collection template, it updates the rowKey
+    //     property of the currentRow property
+    // so, we need to define two trackable properties
+    let currentRow = {};
+    templateEngine.defineTrackableProperty(currentRow, 'rowKey', undefined,
+      context.currentRowKeyChangedListener);
+    templateEngine.defineTrackableProperty(templateContext, 'currentRow', currentRow,
+      context.currentRowChangedListener);
+
+    // this an event listener and so we don't expect a writeback for this property
+    templateContext.handleRowAction = context.handleRowAction;
   } else {
     Logger.error('JET Select: template engine not available when creating context' +
           ' for collectionTemplate');
   }
 
   return templateContext;
+};
+
+/**
+ * Creates the value item from the dataprovider item
+ *
+ * @param {Item} item the item fetched from the data provider
+ * @returns {Object} the constructed value item
+ *
+ * @memberof LovDropdown
+ * @private
+ * @instance
+ */
+LovDropdown.prototype._createValueItemFromItem = function (item) {
+  if (item.data == null || item.metadata == null) {
+    return null;
+  }
+
+  return {
+    key: item.metadata.key,
+    data: item.data,
+    metadata: {
+      key: item.metadata.key
+    }
+  };
+};
+
+/**
+ * Setter function for selected property of the collectionTemplate context
+ *
+ * @param {K} rowKey new key to be set to selected keyset
+ *
+ * @memberof LovDropdown
+ * @private
+ * @instance
+ */
+LovDropdown.prototype._setCollectionSelectedKeySet = function (rowKey) {
+  // Construct the selected keyset
+  var selected;
+  if (rowKey != null) {
+    selected = new ojkeyset.KeySetImpl([rowKey]);
+  } else {
+    selected = new ojkeyset.KeySetImpl([]);
+  }
+  // Keep the collection context in sync
+  this._collectionContext.selected = selected;
+
+  if (this._collectionTemplateContext != null) {
+    this._collectionTemplateContext.selected = selected;
+  } else if (this._collectionTemplate == null) {
+    // If no collection template is present, that means default
+    // list view is being used, set the property using this._resultsElem
+    this._resultsElem[0].setProperty('selected', selected);
+  }
+};
+
+/**
+ * Sets the currentRow property of the collection template context
+ *
+ * @param {oj.ojTable.CurrentRow<K>} currentRow The object containing the rowKey of the current selected row
+ *
+ * @memberof LovDropdown
+ * @private
+ * @instance
+ */
+LovDropdown.prototype._setCollectionCurrentRow = function (currentRow) {
+  // keep context up to date, make a copy since we do not want to modify the reference
+  this._collectionContext.currentRow = {
+    rowIndex: currentRow.rowIndex,
+    rowKey: currentRow.rowKey
+  };
+
+  if (this._collectionTemplateContext != null) {
+    // Since the reference is changed, we will have to reinitialize listener to the
+    // rowKey property
+    this._addListenerForRowKeyProperty(currentRow);
+    this._collectionTemplateContext.currentRow = currentRow;
+  } else if (this._collectionTemplate == null) {
+    // If no collection template is present, that means default
+    // list view is being used, set the property using this._resultsElem
+    this._resultsElem[0].setProperty('currentItem', currentRow.rowKey);
+  }
+};
+
+/**
+ * Retrives the current value item for selection
+ *
+ * @return {Object=} The current value item
+ *
+ * @memberof LovDropdown
+ * @public
+ * @instance
+ * @ignore
+ */
+LovDropdown.prototype.getValueItemForSelection = function () {
+  var _rowKey = this._collectionContext.currentRow.rowKey;
+  var _firstItem = this._currentFirstItem;
+  var _selectedItem = this._collectionContext.selectedItem;
+
+  // First check if current row exists
+  if (_rowKey != null) {
+    let returnValueItem = {};
+    returnValueItem.key = _rowKey;
+    // If the current row is the first item in the dropdown
+    // we will already have the data
+    if (_firstItem && _firstItem.key === _rowKey) {
+      returnValueItem.data = _firstItem.data;
+      returnValueItem.metadata = _firstItem.metadata;
+    }
+    return returnValueItem;
+  }
+
+  // If current row key does not exist, return the selected item
+  return _selectedItem;
+};
+
+/**
+ * Gets the result count shown in the dropdown
+ *
+ * @return {Object} The result count object of type { count: number, done: boolean}
+ *
+ * @memberof LovDropdown
+ * @instance
+ * @public
+ * @ignore
+ */
+LovDropdown.prototype.getResultsCount = function () {
+  return this._resultsCount;
+};
+
+/**
+ * Sets the current first value item
+ *
+ * @param {Object=} valueItem The current value item
+ *
+ * @memberof LovDropdown
+ * @private
+ * @instance
+ */
+LovDropdown.prototype._setCurrentFirstItem = function (valueItem) {
+  this._currentFirstItem = valueItem;
+};
+
+/**
+ * Adds listener for rowKey property of the currentRow property
+ *
+ * @param {oj.ojTable.CurrentRow<K>} currentRow The current row object
+ *
+ * @memberof LovDropdown
+ * @private
+ * @instance
+ */
+LovDropdown.prototype._addListenerForRowKeyProperty = function (currentRow) {
+  var context = this._collectionContext;
+  var rowKey = currentRow.rowKey;
+  // add trackable property rowKey
+  if (this._templateEngine) {
+    this._templateEngine.defineTrackableProperty(currentRow, 'rowKey', rowKey,
+      context.currentRowKeyChangedListener);
+  }
 };
 
 
@@ -1564,14 +2026,12 @@ LovDropdown.prototype._createCollectionTemplateContext = function (templateEngin
  * @private
  */
 var LovMainField = function (options) {
-  // {className, ariaLabel, ariaControls, showIndicatorDelay, idSuffix,
-  //  inputType, enabled, readOnly, placeholder, getTranslatedStringFunc, addBusyStateFunc,
-  //  forceReadOnly, setLoadingFunc, clearLoadingFunc}
-  this._showIndicatorDelay = options.showIndicatorDelay;
+  // {className, ariaLabel, ariaControls, idSuffix,
+  //  inputType, enabled, readOnly, placeholder, addBusyStateFunc,
+  //  forceReadOnly, endContent, createOrUpdateReadonlyDivFunc}
   this._addBusyStateFunc = options.addBusyStateFunc;
   this._forceReadOnly = options.forceReadOnly;
-  this._setLoadingFunc = options.setLoadingFunc;
-  this._clearLoadingFunc = options.clearLoadingFunc;
+  this._createOrUpdateReadonlyDivFunc = options.createOrUpdateReadonlyDivFunc;
 
   this._containerElem = this._createInnerDom(options);
   var $containerElem = $(this._containerElem);
@@ -1587,6 +2047,20 @@ LovMainField.prototype.getInputElem = function () {
   return this._inputElem;
 };
 
+/**
+ * Returns the value of the input element
+ *
+ * @return {string} the value of the input element
+ *
+ * @memberof LovMainField
+ * @public
+ * @instance
+ * @ignore
+ */
+LovMainField.prototype.getInputText = function () {
+  return this._inputElem.value || '';
+};
+
 LovMainField.prototype._createInnerDom = function (options) {
   var className = options.className;
   var idSuffix = options.idSuffix;
@@ -1595,6 +2069,7 @@ LovMainField.prototype._createInnerDom = function (options) {
   var readonly = options.readOnly;
   var ariaLabel = options.ariaLabel;
   var ariaControls = options.ariaControls;
+  var cachedMainFieldInputElement = options.cachedMainFieldInputElement;
 
   var textFieldContainer = document.createElement('div');
   textFieldContainer.setAttribute('class', 'oj-text-field-container');
@@ -1604,7 +2079,7 @@ LovMainField.prototype._createInnerDom = function (options) {
   labelValueDiv.setAttribute('class', 'oj-text-field-middle');
   textFieldContainer.appendChild(labelValueDiv); // @HTMLUpdateOK
 
-  var input = document.createElement('input');
+  var input = cachedMainFieldInputElement || document.createElement('input');
   input.setAttribute('id', className + '-input-' + idSuffix);
   input.setAttribute('autocomplete', 'off');
   input.setAttribute('autocorrect', 'off');
@@ -1633,19 +2108,15 @@ LovMainField.prototype._createInnerDom = function (options) {
   } else {
     input.setAttribute('type', 'text');
   }
-  labelValueDiv.appendChild(input); // @HTMLUpdateReview
+  labelValueDiv.appendChild(input);
 
-  var strExpand = options.getTranslatedStringFunc('labelAccOpenDropdown');
-  var a = document.createElement('a');
-  var styleClasses = className + '-arrow ' + className + '-open-icon ' + className +
-    '-icon oj-component-icon oj-clickable-icon-nocontext';
-  if (!readonly && !enabled) {
-    styleClasses += ' oj-disabled';
+  if (options.endContent) {
+    textFieldContainer.appendChild(options.endContent);
   }
-  a.setAttribute('class', styleClasses);
-  a.setAttribute('role', 'presentation');
-  a.setAttribute('aria-label', strExpand);
-  textFieldContainer.appendChild(a); // @HTMLUpdateReview
+  // create readonly div and insert before input for consistency with other form comps.
+  if (readonly) {
+    this._createOrUpdateReadonlyDivFunc(input);
+  }
 
   return textFieldContainer;
 };
@@ -1653,79 +2124,15 @@ LovMainField.prototype._createInnerDom = function (options) {
 /**
  * Update the label associated with the field.
  * @param {string} labelledBy Id of the label
+ * @param {string} ariaLabel The aria-label text
  */
-LovMainField.prototype.updateLabel = function (labelledBy) {
+LovMainField.prototype.updateLabel = function (labelledBy, ariaLabel) {
   if (labelledBy) {
     this._inputElem.setAttribute('aria-labelledby', labelledBy);
-  }
-};
-
-/**
- * Set the UI loading state of the component. After a delay, this function displays
- * a loading indicator on the component.
- * @param {string} state The state value to set; can be one of "start" or "stop"
- */
-LovMainField.prototype.setUiLoadingState = function (state) {
-  if (state === 'start') {
-    // Clear out any existing timer
-    if (this._loadingIndicatorTimer) {
-      this._loadingIndicatorTimer.clear();
-    }
-    this._loadingIndicatorTimer = TimerUtils.getTimer(this._showIndicatorDelay);
-    this._loadingIndicatorTimer.getPromise()
-      .then(function (pending) {
-        // Only add the loading indicator if loading request is still pending
-        // (not cleared out by request finishing)
-        if (pending) {
-          this._addLoadingIndicator();
-        }
-      }.bind(this));
-  } else if (state === 'stop') {
-    if (this._loadingIndicatorTimer) {
-      this._loadingIndicatorTimer.clear();
-      this._loadingIndicatorTimer = null;
-    }
-    this._removeLoadingIndicator();
-  }
-};
-
-// Add a loading indicator to the select box
-LovMainField.prototype._addLoadingIndicator = function () {
-  var containerElem = this._containerElem;
-
-  //  - display loading indicator when fetching label for initial value is slow
-  if (containerElem._loadingIndicatorCount === undefined) {
-    containerElem._loadingIndicatorCount = 1;
-  } else {
-    containerElem._loadingIndicatorCount += 1;
-  }
-
-  // check if it's already added
-  if (containerElem._saveLoadingIndicator) {
-    return;
-  }
-
-  this._setLoadingFunc();
-
-  containerElem._saveLoadingIndicator = true;
-};
-
-// Remove the loading indicator
-LovMainField.prototype._removeLoadingIndicator = function () {
-  var containerElem = this._containerElem;
-
-  //  - display loading indicator when fetching label for initial value is slow
-  if (containerElem._loadingIndicatorCount !== undefined) {
-    // remove the loading indicator when reference count down to 0
-    if (containerElem._loadingIndicatorCount === 1) {
-      containerElem._loadingIndicatorCount = undefined;
-      if (containerElem._saveLoadingIndicator) {
-        this._clearLoadingFunc();
-        containerElem._saveLoadingIndicator = undefined;
-      }
-    } else {
-      containerElem._loadingIndicatorCount -= 1;
-    }
+    this._inputElem.removeAttribute('aria-label');
+  } else if (ariaLabel) {
+    this._inputElem.setAttribute('aria-label', ariaLabel);
+    this._inputElem.removeAttribute('aria-labelledby');
   }
 };
 
@@ -1765,7 +2172,7 @@ LovMainField.prototype._removeLoadingIndicator = function () {
 
 
 
-/* global LovUtils:false, Promise:false, Logger:false, TimerUtils:false */
+/* global LovUtils:false, Promise:false, Logger:false, Config:false */
 
 /**
  * @private
@@ -1773,9 +2180,9 @@ LovMainField.prototype._removeLoadingIndicator = function () {
 var AbstractLovBase = function (options) {
   // {className, dataProvider, containerElem, fullScreenPopup,
   // idSuffix, lovMainField, filterInputText, lovDropdown, liveRegion, enabled, readOnly, value,
-  // getTranslatedStringFunc, addBusyStateFunc, showMainFieldFunc}
+  // getTranslatedStringFunc, addBusyStateFunc, showMainFieldFunc, setFilterFieldTextFunc,
+  // setUiLoadingStateFunc}
   this._minLength = 0;
-  this._fetchRateLimit = 150;
 
   this._className = options.className;
 
@@ -1794,6 +2201,7 @@ var AbstractLovBase = function (options) {
   this._liveRegion = options.liveRegion;
   this._showMainFieldFunc = options.showMainFieldFunc;
   this._setFilterFieldTextFunc = options.setFilterFieldTextFunc;
+  this._setUiLoadingStateFunc = options.setUiLoadingStateFunc;
 
   this._lastDataProviderPromise = null;
 
@@ -1859,7 +2267,7 @@ AbstractLovBase.prototype._usingHandler = function (pos, props) {
   if (oj.PositionUtils.isAligningPositionClipped(props)) {
     // add busy state
     var resolveBusyState = this._addBusyStateFunc('closing popup');
-    this._closeDelayTimer = window.setTimeout(function () {
+    this._closeDelayTimer = window.setTimeout(function () { // @HTMLUpdateOK
       this.closeDropdown();
       resolveBusyState();
     }.bind(this), 1);
@@ -1913,41 +2321,49 @@ AbstractLovBase.prototype.sizeDropdown = function () {
   if (this._fullScreenPopup) {
     var ww = Math.min(window.innerWidth, window.screen.availWidth);
     var hh = Math.min(window.innerHeight, window.screen.availHeight);
+    // in an iframe on a phone, need to get the available height of the parent window to account
+    // for browser URL bar and bottom toolbar
+    // (this depends on device type, not device render mode, because the fix is not needed on
+    // desktop in the cookbook phone portrait mode)
+    var deviceType = Config.getDeviceType();
+    // window.parent is not supposed to be null/undefined, but checking that for safety;
+    // in normal cases where the window doesn't have a logical parent, window.parent is supposed
+    // to be set to the window itself;
+    // when there is an iframe, like in the cookbook, the window.parent will actually be different
+    // from the window
+    if (deviceType === 'phone' && (window.parent && window !== window.parent)) {
+      var parentHH = Math.min(window.parent.innerHeight, window.parent.screen.availHeight);
+      var availContentHeight = Math.min(hh, parentHH);
+      if (hh > availContentHeight) {
+        var diffHeight = hh - availContentHeight;
+        dropdownElem.style.paddingBottom = diffHeight + 'px';
+      }
+    }
     dropdownElem.style.width = ww + 'px';
     dropdownElem.style.height = hh + 'px';
   } else {
-    dropdownElem.style.minWidth = $(this._containerElem).outerWidth() + 'px';
+    dropdownElem.style.minWidth = $(this._containerElem).width() + 'px';
   }
 };
 
 AbstractLovBase.prototype.adjustDropdownPosition = function (elem) {
   if (!this._fullScreenPopup) {
+    // JET-31234 - DROPDOWN POSITIONING LOGIC
+    // only adjust width if necessary; let the popup service position above/below the field
+
     var $elem = $(elem);
     var dropdownRect = elem.getBoundingClientRect();
     var containerRect = this._containerElem.getBoundingClientRect();
-    var hh = Math.min(window.innerHeight, window.screen.availHeight);
     var ww = Math.min(window.innerWidth, window.screen.availWidth);
-    var maxHeight;
     var maxWidth;
     var gap = 10;
-    if (dropdownRect.y > containerRect.y) {
-      // dropdown is below the field
-      maxHeight = hh - dropdownRect.y - gap;
-    } else {
-      // dropdown is above the field
-      maxHeight = containerRect.y - gap;
-      var strHeight = $elem.css('height');
-      var height = parseFloat(strHeight);
-      if (height > maxHeight) {
-        var heightDiff = height - maxHeight;
-        var strTop = $elem.css('top');
-        var top = parseFloat(strTop);
-        $elem.css('top', (top + heightDiff) + 'px');
-      }
-    }
-    if (dropdownRect.x >= containerRect.x) {
+    var strLeft = $elem.css('left');
+    var left = parseFloat(strLeft);
+    if (dropdownRect.left >= containerRect.left) {
       // dropdown doesn't extend to the left of the field
-      maxWidth = ww - dropdownRect.x - gap;
+      maxWidth = ww - dropdownRect.left - gap;
+      // make sure dropdown starts at left of field, and not to right of it
+      $elem.css('left', left + 'px');
     } else {
       // dropdown extends to the left of the field
       maxWidth = containerRect.right - gap;
@@ -1955,12 +2371,19 @@ AbstractLovBase.prototype.adjustDropdownPosition = function (elem) {
       var width = parseFloat(strWidth);
       if (width > maxWidth) {
         var widthDiff = width - maxWidth;
-        var strLeft = $elem.css('left');
-        var left = parseFloat(strLeft);
         $elem.css('left', (left + widthDiff) + 'px');
+      } else if (dropdownRect.left + dropdownRect.width <
+        containerRect.left + containerRect.width) {
+        //  - select single opens in wrong place
+        // make sure the right side of the dropdown aligns with the right side of the field, in case
+        // the 'no data' message was initially shown wider than the field, and then the width of the
+        // dropdown shrunk after the data was loaded
+        // eslint-disable-next-line no-mixed-operators
+        var xDiff = containerRect.left + containerRect.width -
+          (dropdownRect.left + dropdownRect.width);
+        $elem.css('left', (left + xDiff) + 'px');
       }
     }
-    $elem.css('max-height', maxHeight + 'px');
     $elem.css('max-width', maxWidth + 'px');
   }
 };
@@ -1978,7 +2401,8 @@ AbstractLovBase.prototype.openDropdown = function (dontUpdateResults) {
   }
 
   if (this._fullScreenPopup) {
-    this._setFilterFieldTextFunc('');
+    var mainInputElem = this._lovMainField.getInputElem();
+    this._setFilterFieldTextFunc(mainInputElem.value);
   }
 
   $(this._containerElem).addClass('oj-listbox-dropdown-open');
@@ -2024,7 +2448,20 @@ AbstractLovBase.prototype.closeDropdown = function () {
 };
 
 AbstractLovBase.prototype.updateResults = function (initial, focusFirstElem) {
-  var term = this._filterInputText.rawValue || '';
+  var term;
+
+  // During the initial fetch (happens when the dropdown is opened), we need to use the display
+  // text to filter the dropdown results
+  if (initial === true) {
+    // TODO: Get back to this once the design is confirmed for the component's
+    //       behavior for rendering the results on opening the dropdown when a value
+    //       is selected.
+    // term = this._lovMainField.getInputText();
+    term = '';
+  } else {
+    term = this._filterInputText.rawValue || '';
+  }
+
   var lastTerm = this._lastSearchTerm;
 
   // prevent duplicate queries against the same term
@@ -2043,29 +2480,17 @@ AbstractLovBase.prototype.updateResults = function (initial, focusFirstElem) {
   this._lastSearchTerm = term;
 
   if (term.length >= this._minLength) {
-    if (this._queryTimer) {
-      this._queryTimer.clear();
-    }
-
     if (!initial || initial === true) {
-      this._runQuery(initial, term, focusFirstElem);
+      this._runQuery(term, focusFirstElem, (initial === true));
     } else {
-      var queryResolveBusyState = this._addBusyStateFunc('query results');
-      this._queryTimer = TimerUtils.getTimer(this._fetchRateLimit);
-      this._queryTimer.getPromise()
-        .then(function (completed) {
-          if (completed) {
-            this._runQuery(initial, term, focusFirstElem);
-          }
-        }.bind(this))
-        .then(queryResolveBusyState);
+      this._runQuery(term, focusFirstElem);
     }
   } else {
     this.closeDropdown();
   }
 };
 
-AbstractLovBase.prototype._runQuery = function (initial, term, focusFirstElem) {
+AbstractLovBase.prototype._runQuery = function (term, focusFirstElem, initial) {
   var lovDropdown = this._lovDropdown;
 
   if (this._minLength > term.length) {
@@ -2076,10 +2501,6 @@ AbstractLovBase.prototype._runQuery = function (initial, term, focusFirstElem) {
   this.openDropdown(true);
 
   // lovDropdown.clearHighlight();
-  if (!(term !== undefined && term !== null && (initial !== true || this._minLength > 0))) {
-    // eslint-disable-next-line no-param-reassign
-    term = '';
-  }
 
   if (this.hasData()) {
     if (!this._ariaExpanded) {
@@ -2094,7 +2515,7 @@ AbstractLovBase.prototype._runQuery = function (initial, term, focusFirstElem) {
     }
 
     // lovDropdown.setSearchText(term);
-    var fetchPromise = this._fetchFromDataProvider(term);
+    var fetchPromise = this._fetchFromDataProvider(term, initial);
     fetchPromise.then(function () {
       // ignore old responses
       if (fetchPromise === this._lastDataProviderPromise) {
@@ -2118,7 +2539,7 @@ AbstractLovBase.prototype._handleQueryResultsFetch = function () {
 
   // var results = this._lovDropdown.findHighlightableOptionElems();
   // var resultsCount = results ? results.length : 0;
-  var fetchedDataCount = this._dataProvider ? this._dataProvider.getFetchedDataCount() : null;
+  var fetchedDataCount = this._lovDropdown.getResultsCount();
   var resultsCount = fetchedDataCount ? fetchedDataCount.count : 0;
   var resultsCountDone = fetchedDataCount ? fetchedDataCount.done : true;
   var translation;
@@ -2161,7 +2582,7 @@ AbstractLovBase.prototype.handleDataProviderEvent = function (event) {
 // display message for furthur filtering if not all results are fetched
 // if multiple queries are in progress, discard all but the last query
 // returns a promise that resolves when the listview has finished rendering
-AbstractLovBase.prototype._fetchFromDataProvider = function (term) {
+AbstractLovBase.prototype._fetchFromDataProvider = function (term, initial) {
   var bLoadingIndicatorAdded = false;
 
   // add busy context
@@ -2169,9 +2590,9 @@ AbstractLovBase.prototype._fetchFromDataProvider = function (term) {
 
   // display spinning icon only for the initial fetch
   if (this._fetchType === 'init') {
-    bLoadingIndicatorAdded = true;
     if (!this.isDropdownOpen()) {
-      this._lovMainField.setUiLoadingState('start');
+      bLoadingIndicatorAdded = true;
+      this._setUiLoadingStateFunc('start');
     }
     this._fetchType = null;
   }
@@ -2194,15 +2615,17 @@ AbstractLovBase.prototype._fetchFromDataProvider = function (term) {
   var retPromise = new Promise(function (resolve, reject) {
     // fetch data from dataProvider
     var renderPromise = this._lovDropdown.renderResults(term, filterCriteria,
-      LovUtils.isValueForPlaceholder(this._value) ? null : this._value);
+      LovUtils.isValueForPlaceholder(this._value) ? null : this._value, initial);
 
     var afterRenderPromiseFunc = function () {
       if (bLoadingIndicatorAdded) {
-        this._lovMainField.setUiLoadingState('stop');
+        this._setUiLoadingStateFunc('stop');
       }
 
       // clear busy context
-      fetchResolveFunc();// ignore old responses
+      fetchResolveFunc();
+
+      // ignore old responses
       if (retPromise === this._lastDataProviderPromise) {
         resolve();
       } else {
@@ -2226,7 +2649,7 @@ AbstractLovBase.prototype._fetchFromDataProvider = function (term) {
 
 
 
-/* global LovUtils:false, LovMainField:false, AbstractLovBase:false, LovDropdown:false, Components:false, Promise:false, ThemeUtils:false, ListDataProviderView:false, TreeDataProviderView:false, FilteringDataProviderView:false, Logger:false, Config:false, Set:false */
+/* global LovUtils:false, LovMainField:false, AbstractLovBase:false, LovDropdown:false, Components:false, Promise:false, ThemeUtils:false, CachingDataProvider: false, ListDataProviderView:false, TreeDataProviderView:false, FilteringDataProviderView:false, Logger:false, Config:false, Set:false, Context:false, TimerUtils:false */
 
 /**
  * @ojcomponent oj.ojSelectSingle
@@ -2256,6 +2679,8 @@ AbstractLovBase.prototype._fetchFromDataProvider = function (term) {
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 2
  *
+ * @ojuxspecs ['select-single-item']
+ *
  * @classdesc
  * <h3 id="selectSingleOverview-section">
  *   JET Select Single
@@ -2269,6 +2694,13 @@ AbstractLovBase.prototype._fetchFromDataProvider = function (term) {
  * &lt;oj-select-single data="[[dataProvider]]">
  * &lt;/oj-select-single>
  * </code></pre>
+ *
+ * <h4>Data</h4>
+ * <p>The only way to provide data to JET Select Single is through a
+ * <a href="DataProvider.html">DataProvider</a>.  Using
+ * <a href="oj.ojOption.html">&lt;oj-option></a> and
+ * <a href="oj.ojOptgroup.html">&lt;oj-optgroup></a> child tags is not supported.  For cases with
+ * a small set of fixed data, use an <a href="ArrayDataProvider.html">ArrayDataProvider</a>.</p>
  *
  * {@ojinclude "name":"validationAndMessagingDoc"}
  *
@@ -2295,15 +2727,106 @@ AbstractLovBase.prototype._fetchFromDataProvider = function (term) {
  * <p>If there is an initially selected value, setting the <a href="#valueItem">valueItem</a> attribute initially can improve page load performance because the element will not have to fetch the selected label from the data provider.</p>
  * <p>The dropdown data isn't fetched until the user opens the dropdown.</p>
  *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
- *
  * {@ojinclude "name":"selectCommon"}
  */
+// --------------------------------------------------- oj.ojSelectSingle Styling Start ------------------------------------------------------------
+// ---------------- oj-select-results ----------------------
+/**
+ * Apply this class to the collection element (e.g. an &lt;oj-list-view>) in the collectionTemplate.
+ * @ojstyleclass oj-select-results
+ * @ojdisplayname Collection Element
+ * @memberof oj.ojSelectSingle
+ */
+/**
+ * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+ * The form control style classes can be applied to the component, or an ancestor element. <br/>
+ * When applied to an ancestor element, all form components that support the style classes will be affected.
+ */
+// ---------------- oj-form-control max-width --------------
+  /**
+  * In the Redwood theme the default max width of a text field is 100%.
+  * These max width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-max-width
+  * @ojdisplayname Max Width
+  * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojSelectSingle
+  * @ojtsexample
+  * &lt;oj-select-single class="oj-form-control-max-width-md">
+  * &lt;/oj-select-single>
+  */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+  * @ojshortdesc Sets the max width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojSelectSingle
+   */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+  * @ojshortdesc Sets the max width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojSelectSingle
+   */
+
+
+  // ---------------- oj-form-control width --------------
+  /**
+  * In the Redwood theme the default width of a text field is 100%.
+  * These width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-width
+  * @ojdisplayname Width
+  * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojSelectSingle
+  * @ojtsexample
+  * &lt;oj-select-single class="oj-form-control-width-md">
+  * &lt;/oj-select-single>
+  */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-sm
+  * @ojshortdesc Sets the width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojSelectSingle
+   */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-md
+  * @ojshortdesc Sets the width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojSelectSingle
+   */
+// ---------------- oj-form-control-text-align- --------------
+/**
+ * Classes that help align text of the element.
+ * @ojstyleset text-align
+ * @ojdisplayname Text Alignment
+ * @ojstylesetitems ["text-align.oj-form-control-text-align-right", "text-align.oj-form-control-text-align-start", "text-align.oj-form-control-text-align-end"]
+ * @ojstylerelation exclusive
+ * @memberof oj.ojSelectSingle
+ * @ojtsexample
+ * &lt;oj-select-single class="oj-form-control-text-align-right">
+ * &lt;/oj-select-single>
+ */
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-right
+ * @ojshortdesc Aligns the text to the right regardless of the reading direction. This is normally used for right aligning numbers.
+ * @ojdisplayname oj-form-control-text-align-start
+ * @memberof! oj.ojSelectSingle
+ */
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-start
+ * @ojshortdesc Aligns the text to the left in LTR and to the right in RTL.
+ * @ojdisplayname oj-form-control-text-align-start
+ * @memberof! oj.ojSelectSingle
+ */
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-end
+ * @ojshortdesc Aligns the text to the right in LTR and to the left in RTL.
+ * @ojdisplayname oj-form-control-text-align-end
+ * @memberof! oj.ojSelectSingle
+ */
+// --------------------------------------------------- oj.ojSelectSingle Styling end ------------------------------------------------------------
 
 /**
  * @ojcomponent oj.ojSelect2
@@ -2507,7 +3030,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     required: false,
 
     /**
-     * The type of virtual keyboard to display for entering value on mobile browsers.  This attribute has no effect on desktop browsers.
+     * The type of virtual keyboard to display for entering a value on mobile browsers. This attribute has no effect on desktop browsers.
      *
      * @example <caption>Initialize the component with the <code class="prettyprint">virtual-keyboard</code> attribute:</caption>
      * &lt;oj-select-single virtual-keyboard="number">&lt;/oj-select-single>
@@ -2520,28 +3043,32 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
      * myComp.virtualKeyboard = "number";
      *
      * @name virtualKeyboard
-     * @ojshortdesc The type of virtual keyboard to display for entering value on mobile browsers.
-     *
      * @expose
      * @instance
      * @memberof oj.ojSelectSingle
+     * @ojshortdesc The type of virtual keyboard to display for entering a value on mobile browsers. See the Help documentation for more information.
      * @type {string}
-     * @ojvalue {string} "email" Use a virtual keyboard for entering email.
-     * @ojvalue {string} "number" Use a virtual keyboard for entering number.
+     * @ojvalue {string} "email" Use a virtual keyboard for entering email addresses.
+     * @ojvalue {string} "number" Use a virtual keyboard for entering numbers.
      *                            <p>Note that on Android and Windows Mobile, the "number" keyboard
      *                            does not contain the minus sign.  This value should not be used
      *                            on fields that accept negative values.</p>
      * @ojvalue {string} "search" Use a virtual keyboard for entering search terms.
-     * @ojvalue {string} "tel" Use a virtual keyboard for entering telephone number.
+     * @ojvalue {string} "tel" Use a virtual keyboard for entering telephone numbers.
      * @ojvalue {string} "text" Use a virtual keyboard for entering text.
-     * @ojvalue {string} "url" Use a virtual keyboard for entering URL.
+     * @ojvalue {string} "url" Use a virtual keyboard for URL entry.
      * @default "search"
      */
     virtualKeyboard: 'search',
 
     /**
      * Dictates element's readonly state.
-     *
+     * <p>
+     * The oj-form-layout provides its readonly attribute value and the form components
+     * consume it if it is not already set explicitly.
+     * For example, if oj-form-layout is set to readonly='true',
+     * all the form components it contains will be readonly='true' by default.
+     * </p>
      * @example <caption>Initialize the select with the <code class="prettyprint">readonly</code> attribute:</caption>
      * &lt;oj-some-element readonly>&lt;/oj-some-element>
      *
@@ -2763,7 +3290,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
   _AfterCreate: function () {
     this._super();
 
-    oj.EditableValueUtils._setInputId(
+    this._initInputIdLabelForConnection(
       this._GetContentElement()[0], this.OuterWrapper.id, this.options.labelledBy);
 
     // need to apply the oj-focus marker selector for control of the floating label.
@@ -2773,6 +3300,12 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       applyHighlight: false,
       afterToggle: this._handleAfterFocusToggle.bind(this, rootElement)
     });
+
+    // If labelEdge is set to none, aria-label would have been set to the root element
+    // so, we need to update the aria-label elsewhere
+    if (this.options.labelEdge === 'none') {
+      this._updateLabel();
+    }
   },
 
   /**
@@ -2838,8 +3371,20 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    * @instance
    * @private
    */
-  _labelledByChangedForInputComp: oj.EditableValueUtils._labelledByChangedForInputComp,
+  _labelledByUpdatedForInputComp: oj.EditableValueUtils._labelledByUpdatedForInputComp,
 
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _initInputIdLabelForConnection: oj.EditableValueUtils._initInputIdLabelForConnection,
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _linkLabelForInputComp: oj.EditableValueUtils._linkLabelForInputComp,
   /**
    * Performs post processing after required option is set by taking the following steps.
    *
@@ -2887,11 +3432,26 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
   },
 
   /**
+   * Sets up resources for select single
+   *
+   * @param {HTMLElement=} cachedMainFieldInputElem An optional HTML input element to be
+   *                                                used for main field element
+   *
    * @memberof! oj.ojSelect2
    * @instance
    * @private
    */
-  _setupSelectResources: function () {
+  _setupSelectResources: function (cachedMainFieldInputElem) {
+    this._loadingIndicatorCount = 0;
+    var OuterWrapper = this.OuterWrapper;
+    // JET-32835 - SINGLESELECT'S INLINE MESSAGES IS SOMETIMES BELOW AND SOMETIMES ABOVE COMPONENT.
+    // save existing child nodes so we can append them at the end of our internal DOM
+    var childNodes = OuterWrapper.childNodes;
+    var existingChildren = [];
+    for (var i = 0; i < childNodes.length; i++) {
+      existingChildren.push(childNodes[i]);
+    }
+
     var options = this.options;
 
     this._wrapDataProviderIfNeeded(options.data);
@@ -2899,7 +3459,6 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
 
     // need to initially apply virtualKeyboard option
     this._SetInputType(this._ALLOWED_INPUT_TYPES);
-    var OuterWrapper = this.OuterWrapper;
 
     // need to use 'self' for getTranslatedStringFunc because it's called using func.apply(), which
     // would override the 'this' binding
@@ -2929,6 +3488,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     var showIndicatorDelay = this._cssOptionDefaults.showIndicatorDelay;
     showIndicatorDelay = parseInt(showIndicatorDelay, 10);
     showIndicatorDelay = isNaN(showIndicatorDelay) ? 250 : showIndicatorDelay;
+    this._showIndicatorDelay = showIndicatorDelay;
 
     var inputType = element.attr('type');
     this._resolveValueItemLater = false;
@@ -2937,50 +3497,60 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
 
     this._initContainer(className, idSuffix, readonly);
 
+    // Bug JET-35402 - help.instruction does not display after oj-select-single went from disabled to enabled
+    // Pass in the existing main field input element if it already exists.
     var lovMainField = new LovMainField({
       className: className,
       ariaLabel: OuterWrapper.getAttribute('aria-label'),
       ariaControls: OuterWrapper.getAttribute('aria-controls'),
-      showIndicatorDelay: showIndicatorDelay,
       idSuffix: idSuffix,
       inputType: inputType,
       enabled: lovEnabled,
       readOnly: readonly,
       placeholder: options.placeholder,
-      getTranslatedStringFunc: getTranslatedStringFunc,
       addBusyStateFunc: addBusyStateFunc,
       forceReadOnly: this._fullScreenPopup,
-      setLoadingFunc: this._SetLoading.bind(this),
-      clearLoadingFunc: this._ClearLoading.bind(this)
+      endContent: this._createMainFieldEndContent(lovEnabled, readonly),
+      cachedMainFieldInputElement: cachedMainFieldInputElem,
+      createOrUpdateReadonlyDivFunc: this._createOrUpdateReadonlyDiv.bind(this)
     });
     this._lovMainField = lovMainField;
     this._initLovMainField(lovMainField);
+
     var mainFieldElem = lovMainField.getElement();
-    OuterWrapper.appendChild(mainFieldElem); // @HTMLUpdateReview
+    OuterWrapper.appendChild(mainFieldElem);
 
     var filterInputText = this._createFilterInputText(className, idSuffix);
     if (!this._fullScreenPopup) {
       filterInputText.style.visibility = 'hidden';
+      OuterWrapper.appendChild(filterInputText);
     }
     this._filterInputText = filterInputText;
-    OuterWrapper.appendChild(filterInputText); // @HTMLUpdateReview
 
-    var afterDropdownInitFunc = function (resultsElem) {
-      if (this._fullScreenPopup) {
-        filterInputText.setAttribute('aria-controls', resultsElem.id);
-      }
+    var lovDropdown = new LovDropdown();
+    // defer initialization of dropdown until we open it
+    this._initLovDropdownFunc = function (afterInitFunc) {
+      var afterDropdownInitFunc = function (resultsElem) {
+        if (this._fullScreenPopup) {
+          filterInputText.setAttribute('aria-controls', resultsElem.id);
+        }
+        if (afterInitFunc) {
+          afterInitFunc();
+        }
+      }.bind(this);
+      this._initLovDropdown(idSuffix, inputType, elemId, getTranslatedStringFunc, addBusyStateFunc,
+        afterDropdownInitFunc);
+
+      var dropdownElem = lovDropdown.getElement();
+      OuterWrapper.appendChild(dropdownElem);
+      dropdownElem.addEventListener('lovDropdownEvent', this._handleLovDropdownEvent.bind(this));
+
+      //  - Accessibility : JAWS does not read aria-controls attribute set on ojselect
+      var $inputElem = $(lovMainField.getInputElem());
+      $inputElem.attr('aria-owns', dropdownElem.id);
     }.bind(this);
-    var lovDropdown = this._createLovDropdown(idSuffix, inputType, elemId,
-      getTranslatedStringFunc, addBusyStateFunc, afterDropdownInitFunc);
     this._lovDropdown = lovDropdown;
-    // this._initLovDropdown(lovDropdown, className);
-    var dropdownElem = lovDropdown.getElement();
-    OuterWrapper.appendChild(dropdownElem);
-    dropdownElem.addEventListener('lovDropdownEvent', this._handleLovDropdownEvent.bind(this));
-
-    //  - Accessibility : JAWS does not read aria-controls attribute set on ojselect
-    var $inputElem = $(lovMainField.getInputElem());
-    $inputElem.attr('aria-owns', dropdownElem.id);
+    // this._initLovDropdownOld(lovDropdown, className);
 
     var abstractLovBase = new AbstractLovBase({
       className: className,
@@ -2998,7 +3568,8 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       getTranslatedStringFunc: getTranslatedStringFunc,
       addBusyStateFunc: addBusyStateFunc,
       showMainFieldFunc: this._showMainField.bind(this),
-      setFilterFieldTextFunc: this._setFilterFieldText.bind(this)
+      setFilterFieldTextFunc: this._setFilterFieldText.bind(this),
+      setUiLoadingStateFunc: this._setUiLoadingState.bind(this)
     });
     this._abstractLovBase = abstractLovBase;
 
@@ -3018,21 +3589,56 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     this._resolveValueItemLater = this._mergeValueAndValueItem(options.value, options.valueItem);
 
     this._updateLabel();
+
+    // JET-32835 - SINGLESELECT'S INLINE MESSAGES IS SOMETIMES BELOW AND SOMETIMES ABOVE COMPONENT.
+    // append pre-existing child nodes at the end of our internal DOM
+    for (var j = 0; j < existingChildren.length; j++) {
+      OuterWrapper.appendChild(existingChildren[j]);
+    }
   },
 
   /**
+   * Releases the resources created for select single
+   *
+   * @param {boolean} shouldRetainMainFieldElem A flag to indicate if the main field
+   *                                            element should be reatined
+   *
    * @memberof! oj.ojSelect2
    * @instance
    * @private
    */
-  _releaseSelectResources: function () {
+  _releaseSelectResources: function (shouldRetainMainFieldElem) {
+    // call to stop loading at least once to clear out an existing timer
+    for (var i = this._loadingIndicatorCount; i >= 0; i--) {
+      this._setUiLoadingState('stop');
+    }
+    this._loadingIndicatorCount = 0;
+    this._savedLoadingIndicator = false;
+
+    this._deferredSetDisplayValue = null;
+    this._clearMainFieldFocusHandlerTimer();
+
     $(this._filterInputText).remove();
+    // If we will be reinserting the lov main field's input element
+    // detach the element from the lov main field container to
+    // retain all the data it holds before destroying the container
+    if (shouldRetainMainFieldElem) {
+      $(this._lovMainField.getInputElem()).detach();
+      // Clean up the input element from all the previously set attributes
+      this._cleanUpMainFieldInputElement();
+      // Remove the event listeners assigned by us, as they will be added again when
+      // the element is reattached.
+      $(this._lovMainField.getInputElem()).off(this._lovMainFieldInputEventListeners);
+    }
     $(this._lovMainField.getElement()).remove();
     $(this._liveRegion).remove();
 
     this._abstractLovBase.destroy();
-    $(this._lovDropdown.getElement()).remove();
-    this._lovDropdown.destroy();
+    // only need to destroy dropdown if it was initialized
+    if (this._lovDropdown.getElement()) {
+      $(this._lovDropdown.getElement()).remove();
+      this._lovDropdown.destroy();
+    }
 
     var OuterWrapper = this.OuterWrapper;
     // need to remove classes one by one because IE11 doesn't support passing multiple
@@ -3069,6 +3675,46 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
   },
 
   /**
+   * Cleans up the main field input element for reuse. This removes all the attributes
+   * set by us on the main field input element.
+   *
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _cleanUpMainFieldInputElement: function () {
+    var mainFieldInputElem = this._lovMainField.getInputElem();
+    // TODO: IE 11 does not support Element.attributes which is what we will
+    // be relying on for other browsers. Once, we stop supporting IE 11
+    // clean up this part
+    var agentInfo = oj.AgentUtils.getAgentInfo();
+    if (agentInfo.browser === oj.AgentUtils.BROWSER.IE) {
+      // Clean up attributes set during the initialization of lovMainField
+      // See LovMainField._createInnerDom for the attributes set
+      // It is enough to remove the attributes that are conditionally set
+      mainFieldInputElem.removeAttribute('readonly');
+      mainFieldInputElem.removeAttribute('role');
+      mainFieldInputElem.removeAttribute('type');
+
+      // Remove all the aria attributes set by us
+      // See ojSelect._updateLabel method for the attributes set
+      mainFieldInputElem.removeAttribute('aria-controls');
+      mainFieldInputElem.removeAttribute('aria-expanded');
+      mainFieldInputElem.removeAttribute('aria-label');
+      mainFieldInputElem.removeAttribute('aria-labelledby');
+    } else {
+      // Loop through all the attributes and remove them
+      while (mainFieldInputElem.hasAttributes()) {
+        var attributeName = mainFieldInputElem.attributes[0].name;
+        mainFieldInputElem.removeAttribute(attributeName);
+      }
+    }
+
+    // value will not be in the attributes collection, so reset it separately
+    mainFieldInputElem.value = '';
+  },
+
+  /**
    * @memberof! oj.ojSelect2
    * @instance
    * @private
@@ -3077,6 +3723,9 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     var $labelElem = this._GetLabelElement() || $();
     this._$labelElem = $labelElem;
     var options = this.options;
+    var lovMainField = this._lovMainField;
+    var lovDropdown = this._lovDropdown;
+    var filterInputText = this._filterInputText;
 
     var labelId;
     if ($labelElem.length > 0) {
@@ -3090,17 +3739,10 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       labelId = options.labelledBy;
     }
 
-    var lovMainField = this._lovMainField;
-    lovMainField.updateLabel(labelId);
-
     // element.attr('aria-labelledby', labelId);
     if ($labelElem.length > 0) {
       var $inputElem = $(lovMainField.getInputElem());
       $labelElem.attr('for', $inputElem.attr('id'));
-    }
-
-    if (labelId) {
-      this._filterInputText.setAttribute('labelled-by', labelId);
     }
 
     //  - oghag missing label for ojselect and ojcombobox
@@ -3110,12 +3752,24 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
         labelText = $labelElem.text();
       }
     } else {
-      var alabel = this.element.attr('aria-label');
+      var alabel = this.OuterWrapper.getAttribute('aria-label');
       if (alabel) {
         labelText = alabel;
       }
     }
-    this._lovDropdown.updateLabel(labelId, labelText);
+
+    lovDropdown.updateLabel(labelId, labelText);
+    lovMainField.updateLabel(labelId, labelText);
+
+    if (labelId) {
+      filterInputText.setAttribute('labelled-by', labelId);
+      // The attribute value only can be removed by setting it to an empty string
+      filterInputText.setAttribute('aria-label', '');
+    } else if (labelText) {
+      filterInputText.setAttribute('aria-label', labelText);
+      // The attribute value only can be removed by setting it to an empty string
+      filterInputText.setAttribute('labelled-by', '');
+    }
   },
 
   /**
@@ -3138,31 +3792,33 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     } else {
       elemClassList.add('oj-read-only');
     }
-    // if (this._fullScreenPopup) {
-    //   elemClassList.add('oj-searchselect-fullscreen');
-    // } else {
-    //   elemClassList.remove('oj-searchselect-fullscreen');
-    // }
+    if (this._fullScreenPopup) {
+      // elemClassList.add('oj-searchselect-fullscreen');
+      elemClassList.add('oj-searchselect-mobile');
+    } else {
+      // elemClassList.remove('oj-searchselect-fullscreen');
+      elemClassList.remove('oj-searchselect-mobile');
+    }
+
+    this._toggleNoValueStyleClass();
 
     var liveRegion = document.createElement('div');
     liveRegion.setAttribute('id', 'oj-listbox-live-' + idSuffix);
-    liveRegion.setAttribute('role', 'region');
     liveRegion.setAttribute('class', 'oj-helper-hidden-accessible oj-listbox-liveregion');
     liveRegion.setAttribute('aria-live', 'polite');
-    elem.appendChild(liveRegion); // @HTMLUpdateReview
+    elem.appendChild(liveRegion);
 
     // do not propagate change event from the search field out of the component
     $elem.on('change', '.' + className + '-input', LovUtils.stopEventPropagation);
 
     this._containerEventListeners = {
       click: LovUtils.killEvent,
-      keyup: function (event) {
-        if (event.keyCode === 10 || event.keyCode === 13) {
-          $elem.removeClass('oj-focus');
-        }
-      },
+      // keyup: function (event) {
+      //   if (event.keyCode === 10 || event.keyCode === 13) {
+      //     $elem.removeClass('oj-focus');
+      //   }
+      // },
       keydown: this._handleContainerKeyDown.bind(this),
-      mousedown: this._handleContainerMouseDown.bind(this),
       mouseup: function () {
         $elem.removeClass('oj-active');
       }
@@ -3177,9 +3833,26 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    * @instance
    * @private
    */
+  _toggleNoValueStyleClass: function () {
+    var classList = this.OuterWrapper.classList;
+    if (LovUtils.isValueForPlaceholder(this.options.value)) {
+      classList.add('oj-searchselect-no-value');
+    } else {
+      classList.remove('oj-searchselect-no-value');
+    }
+  },
+
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
   _setFilterFieldText: function (text) {
     this._ignoreFilterFieldRawValueChanged = true;
     this._filterInputText.value = text;
+    // if the value is same and focus stays in the field, the rawValue will not be updated.
+    // So, the filter text has to be refreshed to reflect the changes.
+    this._filterInputText.refresh();
     this._ignoreFilterFieldRawValueChanged = false;
   },
 
@@ -3204,9 +3877,8 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       }
 
       // TODO: figure out how to do this through oj-input-text API
-      var $filterInputElem = $(filterInputText).find('input');
-      if ($filterInputElem.length > 0) {
-        var filterInputElem = $filterInputElem[0];
+      var filterInputElem = this._getFilterInputElem();
+      if (filterInputElem) {
         filterInputElem.setAttribute('role', 'combobox');
         if (!preserveState) {
           LovUtils.copyAttribute(mainInputElem, 'aria-required', filterInputElem, 'aria-required');
@@ -3216,7 +3888,6 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
 
       lovMainField.getInputElem().style.visibility = 'hidden';
       filterInputText.style.visibility = '';
-      filterInputText.style.top = lovMainField.getElement().offsetTop + 'px';
       this.OuterWrapper.appendChild(filterInputText);
     }
     if (!preserveState) {
@@ -3248,7 +3919,22 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
 
     var filterInputText = this._filterInputText;
     if (filterInputText.style.visibility !== 'hidden') {
-      this._lovMainField.getInputElem().style.visibility = '';
+      var mainInputElem = this._lovMainField.getInputElem();
+
+      // JET-34889 - WHEN OJ-SELECT-SINGLE GETS FOCUS, SELECT THE INPUT TEXT TO ALLOW
+      // TYPING WITHOUT CLEARING FIRST
+      // reset the selection range to put the cursor at the end of the text
+      // (Without this, all of part of the old selection gets maintained.
+      // One example is if you tab into the field the first time, all the text gets highlighted.
+      // If you then click outside somewhere, and then click on the dropdown arrow to open the
+      // dropdown, all the text is still highlighted instead of the cursor being at the end of the
+      // field.
+      // Another example is if you tab into the field the first time, then click outside, and then
+      // click on the text to open the dropdown, all the text from the start to where you clicked
+      // is highlighted instead of the cursor just being where you clicked.)
+      mainInputElem.setSelectionRange(1000000, 1000000);
+
+      mainInputElem.style.visibility = '';
       filterInputText.style.visibility = 'hidden';
     }
   },
@@ -3258,8 +3944,19 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    * @instance
    * @private
    */
+  _isFilterInputTextCleared: function () {
+    var filterInputText = this._filterInputText;
+    var searchText = filterInputText.rawValue;
+    return (searchText == null || searchText === '');
+  },
+
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
   _handleContainerKeyDown: function (event) {
-    if (!this._lovEnabled) {
+    if (!this._lovEnabled || this.options.readOnly) {
       return;
     }
 
@@ -3276,6 +3973,9 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
 
     var abstractLovBase = this._abstractLovBase;
     var lovDropdown = this._lovDropdown;
+    // don't call lovDropdown.getValueItemForSelection() to get the currentSelectedItem until after
+    // the dropdown has been initialized
+    var currentSelectedItem;
 
     switch (event.which) {
       case LovUtils.KEYS.UP:
@@ -3283,6 +3983,11 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
         if (abstractLovBase.isDropdownOpen()) {
           // lovDropdown.transferHighlight((event.which === LovUtils.KEYS.UP) ? -1 : 1);
           oj.FocusUtils.focusFirstTabStop(lovDropdown.getElement());
+
+          // keep oj-focus on root so that inside label is still shifted up and field looks focused
+          // while dropdown is open
+          this.OuterWrapper.classList.add('oj-focus');
+
           // if tabbing into dropdown, continue showing filter field as it was before tabbing
           //  - ie11: filter field hidden when you arrow into dropdown
           // in IE11, defer showing filter field until after focus transfer into dropdown has
@@ -3291,7 +3996,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
           if (agentInfo.browser === oj.AgentUtils.BROWSER.IE) {
             var resolveBusyContext = LovUtils.addBusyState(this.OuterWrapper,
               'Select showing filter field while arrowing into dropdown');
-            setTimeout(function () {
+            setTimeout(function () { // @HTMLUpdateOK
               this._showFilterField(true);
               resolveBusyContext();
             }.bind(this), 0);
@@ -3299,7 +4004,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
             this._showFilterField(true);
           }
         } else {
-          abstractLovBase.openDropdown();
+          this._openDropdown();
           // if opening dropdown just after selecting an item, when main field selection elem is
           // focused, then focus main input field so that filter field gets shown
           // if (!this._fullScreenPopup) {
@@ -3314,21 +4019,47 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
         // lovDropdown.activateHighlightedElem();
         //  - select and combobox stop keyboard event propegation
         event.preventDefault();
+
+        // on desktop, if the user clears all the text and presses Enter, clear the LOV value
+        if (!this._fullScreenPopup && this._isFilterInputTextCleared()) {
+          this._handleSelection(this._valueItemForPlaceholder);
+        } else if (!this._fullScreenPopup && abstractLovBase.isDropdownOpen()) {
+          // on the desktop if there is text in the input field and there is a selected item in the dropdown
+          // and the user presses Enter, set that as the value
+
+          currentSelectedItem = lovDropdown.getValueItemForSelection();
+          if (currentSelectedItem != null) {
+            this._fetchDataAndSelect(currentSelectedItem, event);
+          }
+        }
         break;
 
       case LovUtils.KEYS.TAB:
-        abstractLovBase.closeDropdown();
-        if (!this._fullScreenPopup && event.shiftKey) {
-          var filterInputText = this._filterInputText;
-          var parentElem = filterInputText.parentNode;
-          // move all the siblings before the filterInputText to the end, so that focus won't go to
-          // the main input field and will instead go to the previous tabbable elem on the page
-          // (can't just move the filterInputText because it's involved in the focus change and
-          // the browser throws an error)
-          while (parentElem.firstChild !== filterInputText) {
-            parentElem.appendChild(parentElem.firstChild);
+        if (!this._fullScreenPopup) {
+          if (event.shiftKey) {
+            var filterInputText = this._filterInputText;
+            var parentElem = filterInputText.parentNode;
+            // move all the siblings before the filterInputText to the end, so that focus won't go
+            // to the main input field and will instead go to the previous tabbable elem on the page
+            // (can't just move the filterInputText because it's involved in the focus change and
+            // the browser throws an error)
+            while (parentElem.firstChild !== filterInputText) {
+              parentElem.appendChild(parentElem.firstChild);
+            }
+          }
+          // on desktop, if the user clears all the text and Tabs out, clear the LOV value
+          if (this._isFilterInputTextCleared()) {
+            this._handleSelection(this._valueItemForPlaceholder);
+          } else if (abstractLovBase.isDropdownOpen()) {
+            currentSelectedItem = lovDropdown.getValueItemForSelection();
+            if (currentSelectedItem != null) {
+              // on the desktop if there is text in the input field and there is a selected item in the dropdown
+              // and the user presses Tab, set that as the value
+              this._fetchDataAndSelect(currentSelectedItem, event);
+            }
           }
         }
+        this._closeDropdown();
         break;
 
       case LovUtils.KEYS.ESC:
@@ -3362,16 +4093,6 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
 
     var OuterWrapper = this.OuterWrapper;
 
-    // TODO: is there a way to qualify this inclusively based on our created DOM instead of
-    // exclusively based on inline messaging container?
-    // don't open the dropdown when clicking on messages
-    var inlineMessagingContainer =
-      OuterWrapper.querySelector('.oj-messaging-inline-container');
-    if (inlineMessagingContainer &&
-        oj.DomUtils.isAncestorOrSelf(inlineMessagingContainer, event.target)) {
-      return;
-    }
-
     // don't open dropdown when clicking on top label
     var $OuterWrapper = $(OuterWrapper);
     var clickedTopLabel = false;
@@ -3384,12 +4105,18 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
 
     // only open dropdown on left (main) button click
     var mainButton = (event.button === 0);
+    var skipPreventDefault = false;
 
-    if (mainButton) {
-      if (abstractLovBase.isDropdownOpen()) {
-        abstractLovBase.closeDropdown();
-      } else if (this._lovEnabled && !clickedTopLabel) {
-        abstractLovBase.openDropdown();
+    if (mainButton && !this.options.readOnly) {
+      if (this._fullScreenPopup) {
+        var clearValueElem = OuterWrapper.querySelector('.oj-searchselect-clear-value');
+        if (clearValueElem && oj.DomUtils.isAncestorOrSelf(clearValueElem, event.target)) {
+          return;
+        }
+      }
+
+      if (!abstractLovBase.isDropdownOpen() && this._lovEnabled && !clickedTopLabel) {
+        this._openDropdown();
         // prevent the focus from moving back or to whatever happens to be under the mouse/touch
         // point when the dropdown opens
         if (this._fullScreenPopup) {
@@ -3402,10 +4129,6 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       $OuterWrapper.addClass('oj-active');
 
       if (mainButton) {
-        //  - clicking on component does not always focus input
-        // prevent focus from transferring back
-        event.preventDefault();
-
         if (!this._fullScreenPopup && this._lovEnabled) {
           //  - help.instruction text not always shown
           // if the filter field is hidden, focus the main field instead of directly showing the
@@ -3414,10 +4137,28 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
           // whatever other processing it needs to do, because the main input elem is hidden and
           // can't receive focus
           if (this._filterInputText.style.visibility === 'hidden') {
+            // don't call preventDefault() because it prevents the cursor from moving to where
+            // the mouse was clicked
+            skipPreventDefault = true;
             this._lovMainField.getInputElem().focus();
-          } else {
+          } else if (!this.options.readOnly) {
+            // don't call preventDefault() because it prevents the cursor from moving to where
+            // the mouse was clicked when inside the filter input, but if the click was outside
+            // the filter input (for example over the dropdown arrow), then we do want to call
+            // preventDefault() so that the filter input doesn't lose focus
+            if (event.target === this._getFilterInputElem()) {
+              skipPreventDefault = true;
+            }
             this._showFilterField();
           }
+        }
+
+        //  - clicking on component does not always focus input
+        // prevent focus from transferring back
+        if (!skipPreventDefault) {
+          // JET-31848 - MOVING THE CURSOR BY CLICKING ON THE INPUT FIELD TOGGLES THE DROPDOWN
+          // don't call preventDefault(), otherwise clicking in the field doesn't move the cursor
+          event.preventDefault();
         }
       }
     }
@@ -3433,32 +4174,40 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     var abstractLovBase = this._abstractLovBase;
     // var lovMainField = this._lovMainField;
     switch (detail.subtype) {
-      case 'cancelDropdown':
-        abstractLovBase.cancel();
-        break;
       case 'closeDropdown':
         if (detail.trigger === 'escKeyDown') {
           this._filterInputText.focus();
         } else if (detail.trigger === 'clickAway') {
-          // need to explicitly show main field again if focus is in the dropdown
-          if (oj.DomUtils.isAncestor(this._lovDropdown.getElement(), document.activeElement)) {
-            this._showMainField();
-          }
+          // explicitly show main field again in case focus is in the dropdown
+          this._showMainField();
           this.OuterWrapper.classList.remove('oj-focus');
         }
-        abstractLovBase.closeDropdown();
+        this._closeDropdown();
         break;
-      // case 'tabOut':
-      //   // If no control item focused and going forward, then put focus on the
-      //   // input so that it can naturally go to the next focusable item, but don't
-      //   // kill the event so that it can go to the next field.
-      //   // lovMainField.getInputElem().focus();
-      //   this._filterInputText.focus();
-      //   break;
+      case 'tabOut':
+        // If no control item focused and going forward, then put focus on the
+        // input so that it can naturally go to the next focusable item, but don't
+        // kill the event so that it can go to the next field.
+        // lovMainField.getInputElem().focus();
+        this._filterInputText.focus();
+        // on the desktop if there is a selected item in the dropdown
+        // and the user presses Tab, set that as the value
+        if (!this._fullScreenPopup) {
+          let currentSelectedItem = this._lovDropdown.getValueItemForSelection();
+          if (currentSelectedItem != null) {
+            this._fetchDataAndSelect(currentSelectedItem, event);
+          }
+        }
+        break;
       case 'sizeDropdown':
         abstractLovBase.sizeDropdown();
         break;
       case 'adjustDropdownPosition':
+        //  - oj-select-single stays sticky when scrolled outside the drop down
+        // need to position popup again before adjusting its position
+        var position = abstractLovBase.getDropdownPosition();
+        $(detail.popupElem).position(position);
+
         abstractLovBase.adjustDropdownPosition(detail.popupElem);
         break;
       case 'openPopup':
@@ -3468,7 +4217,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
         oj.PopupService.getInstance().open(psOptions);
         break;
       case 'handleSelection':
-        this._handleSelection(detail.valueItem, detail.selectionOptions, detail.event);
+        this._handleSelection(detail.valueItem, detail.event);
         break;
       // case 'updateLiveRegion':
       //   abstractLovBase.updateLiveRegion(detail.text);
@@ -3496,20 +4245,52 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
   },
 
   /**
+   * Handles selection for select-single. If the data is not present, it is fetched and
+   * then the selection is made
+   *
+   * @param {Object} valueItem
+   * @param {CustomEvent} event
+   *
    * @memberof! oj.ojSelect2
    * @instance
    * @private
    */
-  _handleSelection: function (valueItem, selectionOptions, event) {
-    var abstractLovBase = this._abstractLovBase;
-    var context;
-    if (selectionOptions && selectionOptions.trigger) {
-      context = {
-        optionMetadata: {
-          trigger: selectionOptions.trigger
+  _fetchDataAndSelect: function (valueItem, event) {
+    // Check if the data has to be fetched
+    if (valueItem.data != null) {
+      // Make selection if data exists
+      this._handleSelection(valueItem, event);
+    } else {
+      // Fetch the data using the key
+      var keys = [valueItem.key];
+      var failedFetch = function () {
+        this._handleSelection(this._valueItemForPlaceholder);
+      }.bind(this);
+      var afterFetch = function (fetchResults) {
+        // Check if the data is available for the provided key
+        if (fetchResults.data.length > 0) {
+          var _valueItem = {};
+          _valueItem.key = valueItem.key;
+          _valueItem.data = fetchResults.data[0];
+          _valueItem.metadata = fetchResults.metadata[0];
+
+          this._handleSelection(_valueItem, event);
+        } else {
+          failedFetch();
         }
-      };
+      }.bind(this);
+
+      this._fetchByKeysFromDataProvider(keys).then(afterFetch, failedFetch);
     }
+  },
+
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _handleSelection: function (valueItem, event) {
+    var context;
 
     // if (!this._fullScreenPopup) {
     //   this._showMainField();
@@ -3527,6 +4308,9 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       // this._lovMainField.focusCursorEndInputElem();
       var inputElem = this._lovMainField.getInputElem();
       if (!this._fullScreenPopup) {
+        if (LovUtils.isValueItemForPlaceholder(newValueItem)) {
+          inputElem.value = '';
+        }
         this._setFilterFieldText(inputElem.value);
         // show the filter field after selecting an item on mobile because we want the focus to
         // go back to the main part of the component, and the user can tab out or reopen the
@@ -3540,10 +4324,35 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       }
     }
 
-    //  - edge, safari: kb focus transfer only works the first time
-    // close the dropdown AFTER transferring focus to input field above so that the listView in the
-    // dropdown will get a blur event first
-    abstractLovBase.closeDropdown();
+    this._closeDropdown();
+  },
+
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _closeDropdown: function () {
+    // only need to do anything if dropdown had been initialized
+    var dropdownElem = this._lovDropdown.getElement();
+    if (dropdownElem != null) {
+      var resolveBusyState = LovUtils.addBusyState(this.OuterWrapper,
+        'Select waiting for dropdown busy context before closing dropdown');
+      var afterBusyFunc = function () {
+        resolveBusyState();
+        //  - edge, safari: kb focus transfer only works the first time
+        // close the dropdown AFTER transferring focus to input field above so that the listView in
+        // the dropdown will get a blur event first
+        this._abstractLovBase.closeDropdown();
+      }.bind(this);
+      // JET-35346: wait until the collection in the dropdown resolves any outstanding busy states
+      // before closing the dropdown (so that listView has a chance to process a blur event first)
+      var busyContext = Context.getContext(dropdownElem).getBusyContext();
+      busyContext.whenReady().then(afterBusyFunc, function (reason) {
+        Logger.warn('Select: dropdown busy context rejected when closing dropdown: ' + reason);
+        afterBusyFunc();
+      });
+    }
   },
 
   /**
@@ -3557,15 +4366,10 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     if (this._cachedFetchByKeys) {
       this._valueHasChanged = true;
       // remove loading indicator
-      this._lovMainField.setUiLoadingState('stop');
+      this._setUiLoadingState('stop');
     }
 
-    //  - resetting value when value-item and placeholder are set throws exception
-    if (LovUtils.isValueItemForPlaceholder(valueItem)) {
-      this._setValueItem(this._valueItemForPlaceholder);
-    } else {
-      this._resolveValueItemLater = true;
-    }
+    this._resolveValueItemLater = true;
 
     var value = null;
     if (!LovUtils.isValueItemForPlaceholder(valueItem)) {
@@ -3596,15 +4400,160 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    * @instance
    * @private
    */
+  _createMainFieldEndContent: function (enabled, readonly) {
+    var span = document.createElement('span');
+
+    var dropdownIcon = this._createDropdownIcon(enabled, readonly);
+    span.appendChild(dropdownIcon);
+
+    if (this._fullScreenPopup) {
+      var clearValueIcon = this._createClearValueIcon();
+      span.appendChild(clearValueIcon);
+    }
+
+    return span;
+  },
+
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _createDropdownIcon: function (enabled, readonly) {
+    var className = this._className;
+
+    var a = document.createElement('a');
+    var styleClasses = className + '-arrow ' + className + '-open-icon ' + className +
+      '-icon oj-component-icon oj-clickable-icon-nocontext';
+    if (!readonly && !enabled) {
+      styleClasses += ' oj-disabled';
+    }
+    a.setAttribute('class', styleClasses);
+    a.setAttribute('role', 'presentation');
+    var strExpand = this.getTranslatedString('labelAccOpenDropdown');
+    a.setAttribute('aria-label', strExpand);
+
+    return a;
+  },
+
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _createClearValueIcon: function () {
+    var className = this._className;
+
+    var a = document.createElement('a');
+    var styleClasses = className + '-clear-value ' + className + '-clear-value-icon ' +
+      className + '-icon oj-component-icon oj-clickable-icon-nocontext';
+    a.setAttribute('class', styleClasses);
+    a.setAttribute('role', 'button');
+    var strClear = this.getTranslatedString('labelAccClearValue');
+    a.setAttribute('aria-label', strClear);
+
+    a.addEventListener('click', function () {
+      // TODO: After selecting a new value, then clearing it, and then opening the dropdown again,
+      // I can't select the same value.  It gets highlighted, but doesn't close the dropdown and
+      // doesn't get set as the component value.  It looks like we're not getting a
+      // firstSelectedItemChanged event from listView in that case.  I think the firstSelectedItem
+      // is still for the last selected value, even though we've cleared it and set the listView
+      // selected attribute to an empty KeySetImpl.
+      // (Filed JET-33592 - FIRST-SELECTED-ITEM-CHANGED NOT FIRED AFTER CLEARING AND SELECTING
+      // SAME ITEM against listView.)
+      // (This may not be a bug after listView implements JET-32345 - COLLECTION ENHANCEMENTS FOR
+      // LOV USECASE.)
+      this._handleSelection(this._valueItemForPlaceholder);
+    }.bind(this));
+
+    return a;
+  },
+
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
   _initLovMainField: function (lovMainField) {
-    $(lovMainField.getInputElem()).on({
+    this._lovMainFieldInputEventListeners = {
       focus: function (event) {
         LovUtils.killEvent(event);
         if (!this._fullScreenPopup && !this.options.readOnly) {
-          this._showFilterField();
+          // JET-34889 - WHEN OJ-SELECT-SINGLE GETS FOCUS, SELECT THE INPUT TEXT TO ALLOW TYPING
+          // WITHOUT CLEARING FIRST
+          // set a timer to handle the focus so that the main input has the correct selection range
+          // and we can transfer it from the main input to the filter input
+          // (Trying to listen to the main input 'select' event for this instead of using a timer
+          // doesn't seem to work. Clicking on the dropdown arrow doesn't show a cursor at the end
+          // of the text. Maybe it only works when there's a range involved, not just moving the
+          // cursor.)
+          this._clearMainFieldFocusHandlerTimer();
+          var resolveBusyContext = LovUtils.addBusyState(this.OuterWrapper,
+            'Select showing filter field after focusing main field');
+          this._mainFieldFocusHandlerTimer = TimerUtils.getTimer(0);
+          this._mainFieldFocusHandlerTimer.getPromise().then(function (pending) {
+            // only act on the timer if it hasn't been cleared
+            if (pending) {
+              this._mainFieldFocusHandlerTimer = null;
+              this._showFilterField();
+              // JET-34889 - WHEN OJ-SELECT-SINGLE GETS FOCUS, SELECT THE INPUT TEXT TO ALLOW
+              // TYPING WITHOUT CLEARING FIRST
+              // transfer the selection range from the main input to the filter input
+              this._transferSelectionRangeToFilterField();
+            }
+            resolveBusyContext();
+          }.bind(this));
         }
       }.bind(this)
+    };
+    $(lovMainField.getInputElem()).on(this._lovMainFieldInputEventListeners);
+
+    // assign event listeners
+    $(lovMainField.getElement()).on({
+      mousedown: this._handleContainerMouseDown.bind(this)
     });
+  },
+
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _clearMainFieldFocusHandlerTimer: function () {
+    if (this._mainFieldFocusHandlerTimer) {
+      this._mainFieldFocusHandlerTimer.clear();
+      this._mainFieldFocusHandlerTimer = null;
+    }
+  },
+
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _transferSelectionRangeToFilterField: function () {
+    var mainInputElem = this._lovMainField.getInputElem();
+    var filterInputElem = this._getFilterInputElem();
+    if (filterInputElem) {
+      filterInputElem.setSelectionRange(
+        mainInputElem.selectionStart,
+        mainInputElem.selectionEnd,
+        mainInputElem.selectionDirection
+      );
+    }
+  },
+
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _getFilterInputElem: function () {
+    var $filterInputElem = $(this._filterInputText).find('input');
+    if ($filterInputElem.length > 0) {
+      return $filterInputElem[0];
+    }
+    return null;
   },
 
   /**
@@ -3618,6 +4567,8 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     var options = this.options;
 
     var filterInputText = document.createElement('oj-input-text');
+    filterInputText.setAttribute('display-options.messages', 'none');
+    filterInputText.setAttribute('user-assistance-density', 'compact');
     filterInputText.setAttribute('id', className + '-filter-' + idSuffix);
     filterInputText.setAttribute('class', className + '-filter');
     filterInputText.setAttribute('clear-icon', this._fullScreenPopup ? 'always' : 'never');
@@ -3653,24 +4604,32 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       a.style.visibility = 'hidden';
       filterInputText.appendChild(a);
     } else {
-      // create the magnifying glass icon at the start of the field on mobile
-      var filterIconWrapper = document.createElement('span');
-      filterIconWrapper.setAttribute('slot', 'start');
-      filterIconWrapper.setAttribute('class', className + '-filter-indicator');
-      filterInputText.appendChild(filterIconWrapper);
+      var strCancel = this.getTranslatedString('cancel');
+      var backIcon = document.createElement('span');
+      backIcon.setAttribute('id', 'cancelButton_' + this._idSuffix);
+      backIcon.setAttribute('slot', 'start');
+      backIcon.setAttribute('class', className + '-back-button');
+      backIcon.setAttribute('aria-label', strCancel);
+      backIcon.addEventListener('click', function () {
+          // focus the input element after canceling on mobile because we want the focus to
+          // go back to the main part of the component, and the user can tab out or reopen the
+          // dropdown
+          this._lovMainField.getInputElem().focus();
+          this._abstractLovBase.cancel();
+      }.bind(this));
 
-      var filterIcon = document.createElement('span');
-      filterIcon.setAttribute('class', className + '-filter-indicator-icon ' + className +
+      filterInputText.appendChild(backIcon);
+      var innerIcon = document.createElement('span');
+
+      innerIcon.setAttribute('class', className + '-back-icon ' + className +
         '-icon oj-component-icon oj-clickable-icon-nocontext');
-      filterIconWrapper.appendChild(filterIcon);
+      backIcon.appendChild(innerIcon);
     }
 
     var $elem = $(this.OuterWrapper);
     filterInputText.addEventListener('rawValueChanged', function (event) {
-      // this._abstractLovBase isn't defined yet, so can't directly use that function as the
-      // listener, need to wrap in outer function
       if (!this._ignoreFilterFieldRawValueChanged) {
-        this._abstractLovBase.updateResults(event);
+        this._updateResults(event);
       }
     }.bind(this));
     filterInputText.addEventListener('focus', function () {
@@ -3687,6 +4646,12 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       }
     }.bind(this));
 
+    // Add mousedown event listener only on desktop, since we do not want to toggle
+    // dropdown when tapped on filter input text when using in mobile
+    if (!this._fullScreenPopup) {
+      filterInputText.addEventListener('mousedown', this._handleContainerMouseDown.bind(this));
+    }
+
     return filterInputText;
   },
 
@@ -3695,7 +4660,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    * @instance
    * @private
    */
-  // _initLovDropdown: function (lovDropdown, className) {
+  // _initLovDropdownOld: function (lovDropdown, className) {
   //   var $searchElem = $(lovDropdown.getSearchElem());
   //   $searchElem.on({
   //     keydown: function () {
@@ -3726,9 +4691,9 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    * @instance
    * @private
    */
-  _createLovDropdown: function (idSuffix, inputType, containerId,
+  _initLovDropdown: function (idSuffix, inputType, containerId,
     getTranslatedStringFunc, addBusyStateFunc, afterDropdownInitFunc) {
-    return new LovDropdown({
+    this._lovDropdown.init({
       dataProvider: this._wrappedDataProvider,
       className: 'oj-select',
       parentId: containerId,
@@ -3748,6 +4713,44 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       filterInputText: this._filterInputText,
       afterDropdownInitFunc: afterDropdownInitFunc
     });
+  },
+
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _openDropdown: function () {
+    var abstractLovBase = this._abstractLovBase;
+    // defer initialization of dropdown until we open it
+    if (this._initLovDropdownFunc) {
+      var initLovDropdownFunc = this._initLovDropdownFunc;
+      this._initLovDropdownFunc = null;
+      initLovDropdownFunc(function () {
+        abstractLovBase.openDropdown();
+      });
+    } else {
+      abstractLovBase.openDropdown();
+    }
+  },
+
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _updateResults: function (event) {
+    var abstractLovBase = this._abstractLovBase;
+    // defer initialization of dropdown until we open it
+    if (this._initLovDropdownFunc) {
+      var initLovDropdownFunc = this._initLovDropdownFunc;
+      this._initLovDropdownFunc = null;
+      initLovDropdownFunc(function () {
+        abstractLovBase.updateResults(event);
+      });
+    } else {
+      abstractLovBase.updateResults(event);
+    }
   },
 
   /**
@@ -3785,6 +4788,18 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
   _refreshRequired: oj.EditableValueUtils._refreshRequired,
 
   /**
+   * Draw a readonly div if needed. When readonly, this div is shown and
+   * the input has display:none on it through theming, and vice versa.
+   * We set the textContent in _SetDisplayValue() if readonly, and
+   * in this function.
+   * @param {HTMLElement} pass in the input element.
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _createOrUpdateReadonlyDiv: oj.EditableValueUtils._createOrUpdateReadonlyDiv,
+
+  /**
    * Called to find out if aria-required is unsupported.
    * @memberof! oj.ojSelect2
    * @instance
@@ -3806,13 +4821,28 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    * @public
    */
   refresh: function () {
+    var mainFieldInputElem = this._lovMainField.getInputElem();
+    // JET-34351 - OJ-SELECT-SINGLE DOES NOT SHOW VALUE IF OPTIONS ARE UPDATED ASYNC
+    // set this flag while calling superclass refresh so that we can defer handling any
+    // _SetDisplayValue calls until after we've setup again
+    this._bSuperRefreshing = true;
     this._super();
+    this._bSuperRefreshing = false;
 
-    this._releaseSelectResources();
+    // Bug JET-35402 - help.instruction does not display after oj-select-single went from disabled to enabled
+    // We will be reusing the main field's input element, so we need to retain it along
+    // with the data it holds.
+    this._releaseSelectResources(true);
 
-    this._setupSelectResources();
+    this._setupSelectResources(mainFieldInputElem);
 
     this._initComponentMessaging();
+
+    // JET-34351 - OJ-SELECT-SINGLE DOES NOT SHOW VALUE IF OPTIONS ARE UPDATED ASYNC
+    // after we've setup again, now process any deferred _SetDisplayValue calls
+    if (this._deferredSetDisplayValue) {
+      this._deferredSetDisplayValue();
+    }
   },
 
   /**
@@ -3831,6 +4861,8 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       this._bReleasedResources = false;
 
       this._setupSelectResources();
+
+      this._initComponentMessaging();
     }
   },
 
@@ -3849,6 +4881,37 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
   },
 
   /**
+   * Sets multiple options
+   * @param {Object} options the options object
+   * @param {Object} flags additional flags for option
+   * @override
+   * @protected
+   * @memberof! oj.ojSelect2
+   */
+  _setOptions: function (options, flags) {
+    // JET-34601 - SELECT SINGLE- CHANGING DISABLED PROPERTY GIVES A GLOWING EFFECT
+    // create a temporary object for individual _setOption calls to store things, so that we can
+    // process them in a particular order, if necessary
+    this._processSetOptions = {};
+
+    this._super(options, flags);
+
+    var processSetOptions = this._processSetOptions;
+    this._processSetOptions = null;
+
+    if (processSetOptions) {
+      // JET-34601 - SELECT SINGLE- CHANGING DISABLED PROPERTY GIVES A GLOWING EFFECT
+      // if we need to refresh, do that before setting a new value
+      if (processSetOptions.forRefresh) {
+        processSetOptions.forRefresh();
+      }
+      if (processSetOptions.value) {
+        processSetOptions.value();
+      }
+    }
+  },
+
+  /**
    * Handles options specific to Select.
    * @override
    * @protected
@@ -3863,26 +4926,44 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     if (key === 'valueItem') {
       this._syncValueWithValueItem(value, this.options.value);
     } else if (key === 'value') {
-      abstractLovBase.setValue(value);
+      // JET-34601 - SELECT SINGLE- CHANGING DISABLED PROPERTY GIVES A GLOWING EFFECT
+      // save the processing function for execution in _setOptions
+      var processSetOptionValue = function () {
+        abstractLovBase.setValue(value);
 
-      //  - placeholder is not displayed after removing selections from select many
-      //  - resetting value when value-item and placeholder are set throws exception
-      if (LovUtils.isValueForPlaceholder(value)) {
-        this._setValueItem(this._valueItemForPlaceholder);
+        //  - placeholder is not displayed after removing selections from select many
+        //  - resetting value when value-item and placeholder are set throws exception
+        if (LovUtils.isValueForPlaceholder(value)) {
+          this._setValueItem(this._valueItemForPlaceholder);
+        } else {
+          // update valueItem
+          this._updateValueItem(value);
+        }
+
+        // need to update display value again after valueItem is set correctly
+        this._SetDisplayValue();
+      }.bind(this);
+      if (this._processSetOptions) {
+        this._processSetOptions.value = processSetOptionValue;
       } else {
-        // update valueItem
-        this._updateValueItem(value);
+        processSetOptionValue();
       }
-
-      // need to update display value again after valueItem is set correctly
-      this._SetDisplayValue();
     } else if (key === 'disabled' || key === 'readOnly' || key === 'placeholder' ||
       key === 'data' || key === 'itemText') {
-      this.refresh();
+      // JET-34601 - SELECT SINGLE- CHANGING DISABLED PROPERTY GIVES A GLOWING EFFECT
+      // save the processing function for execution in _setOptions
+      var processSetOptionForRefresh = function () {
+        this.refresh();
+      }.bind(this);
+      if (this._processSetOptions) {
+        this._processSetOptions.forRefresh = processSetOptionForRefresh;
+      } else {
+        processSetOptionForRefresh();
+      }
     } else if (key === 'labelledBy') {
       if (this.options.labelledBy) {
         var id = this._GetContentElement()[0].id;
-        this._labelledByChangedForInputComp(this.options.labelledBy, id);
+        this._labelledByUpdatedForInputComp(this.options.labelledBy, id);
       }
 
       // TODO: need to do a targeted update here, because calling refresh clears any custom
@@ -3916,8 +4997,34 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
         this._SetInputType(this._ALLOWED_INPUT_TYPES);
         this.refresh();
         break;
+      case 'labelHint':
+      case 'labelEdge':
+        // Changing labelHint and labelEdge might have updated
+        // aria-label on the root element. Check if it is needed to
+        // update the aria-label on inner elements.
+        this._updateLabel();
+        break;
       default:
         break;
+    }
+  },
+
+  /**
+   * Performs post processing after value option changes.
+   *
+   * @param {string} option
+   * @param {Object=} flags
+   *
+   * @protected
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @override
+   */
+  // eslint-disable-next-line no-unused-vars
+  _AfterSetOptionValue: function (option, flags) {
+    this._superApply(arguments);
+    if (option === 'value') {
+      this._toggleNoValueStyleClass();
     }
   },
 
@@ -3973,6 +5080,17 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    */
   // eslint-disable-next-line no-unused-vars
   _SetDisplayValue: function (displayValue) {
+    // JET-34351 - OJ-SELECT-SINGLE DOES NOT SHOW VALUE IF OPTIONS ARE UPDATED ASYNC
+    // while calling superclass refresh, defer handling any _SetDisplayValue calls until after
+    // we've setup again
+    if (this._bSuperRefreshing) {
+      this._deferredSetDisplayValue = function () {
+        this._deferredSetDisplayValue = null;
+        this._SetDisplayValue(displayValue);
+      }.bind(this);
+      return;
+    }
+
     //  - need to be able to specify the initial value of select components bound to dprv
     if (!this._applyValueItem(this.options.valueItem)) {
       this._initSelectedValue();
@@ -4002,6 +5120,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    *  });
    * @return {Promise} Promise resolves to "valid" if the component passed all validations.
    * The Promise resolves to "invalid" if there were validation errors.
+   * @ojshortdesc Validates the component's display value using all validators registered on the component. If there are no validation errors, then the value is updated. See the Help documentation for more information.
    * @method
    * @access public
    * @expose
@@ -4038,6 +5157,16 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       // the displayValue, use the currently set value instead
       // eslint-disable-next-line no-param-reassign
       newValue = this.options.value;
+
+      // JET-35455 - OJ-SELECT-SINGLE NOT SHOWING VISUAL ERROR STATE AFTER ITS VALIDATE() METHOD
+      // RETURNS INVALID DETERMINATION
+      // EditableValue always returns 'invalid' when validating a value of undefined, but the
+      // error message doesn't get shown for a required LOV with no initial value, so make sure
+      // we set null instead of undefined.
+      if (newValue === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        newValue = null;
+      }
     }
     return this._super(newValue, event, options);
   },
@@ -4125,12 +5254,17 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       // make sure data provider is an instance of *DataProviderView, and wrap it with one if it
       // isn't, so that we can use the FilterFactory to create filter criterion and have the DP
       // do local filtering if needed
-      if (this._isTreeDataProvider(wrapper)) {
-        if (!(wrapper instanceof TreeDataProviderView)) {
-          wrapper = new TreeDataProviderView(wrapper);
+      if (this._isTreeDataProvider(dataProvider)) {
+        if (!(dataProvider instanceof TreeDataProviderView)) {
+          wrapper = new TreeDataProviderView(dataProvider);
         }
-      } else if (!(wrapper instanceof ListDataProviderView)) {
-        wrapper = new ListDataProviderView(wrapper);
+        // TODO: (JET-34960) Use CachingTreeDataProvider for tree data when available
+      } else {
+        if (!(dataProvider instanceof ListDataProviderView)) {
+          wrapper = new ListDataProviderView(dataProvider);
+        }
+        // Wrap the data provider in the CachingDataProvider first
+        wrapper = new CachingDataProvider(wrapper);
       }
       wrapper = new FilteringDataProviderView(wrapper);
       // save the data provider or wrapper
@@ -4274,7 +5408,8 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
   _initSelectedValue: function (valueItem) {
     //  - need to be able to specify the initial value of select components bound to dprv
     if (!this._applyValueItem(valueItem)) {
-      var value = valueItem ? valueItem.key : this.options.value;
+      var value = (!LovUtils.isValueItemForPlaceholder(valueItem)) ? valueItem.key :
+        this.options.value;
       this._initSelectionHelper(value, this._updateSelectedOption.bind(this));
     }
   },
@@ -4365,6 +5500,13 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     }
     if (text !== null) {
       $inputElem.val(text);
+      // keep readonly div's content in sync
+      if (this.options.readOnly) {
+        let readonlyElem = this._getReadonlyDiv();
+        if (readonlyElem) {
+          readonlyElem.textContent = text;
+        }
+      }
     }
   },
 
@@ -4407,13 +5549,35 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
           data: [valueItem.data],
           metadata: [valueItem.metadata]
         }, value, initSelectionCallback);
-      } else {
+      } else if (this.options.data) {
+        // JET-34351 - OJ-SELECT-SINGLE DOES NOT SHOW VALUE IF OPTIONS ARE UPDATED ASYNC
+        // if we were showing the loading indicator while waiting for data to be set, stop
+        // showing it now
+        if (this._loadingAwaitingData) {
+          this._loadingAwaitingData = false;
+          this._setUiLoadingState('stop');
+        }
+        // JET-34351 - OJ-SELECT-SINGLE DOES NOT SHOW VALUE IF OPTIONS ARE UPDATED ASYNC
+        // only init selected value if options.data not null, otherwise the valueItem may
+        // get set containing only the key, which means no label will be shown in the field
         this._fetchByKeysFromDataProvider([value])
           .then(function (fetchResults) {
-            this._initSelectionFetchByKey(fetchResults, value, initSelectionCallback);
+            // JET-34713 Error updating array dataprovider of ojSelectSingle while its hidden
+            // Abort if select single has been disconnected
+            if (!this._bReleasedResources) {
+              this._initSelectionFetchByKey(fetchResults, value, initSelectionCallback);
+            }
           }.bind(this), function () {
-            this._initSelectionFetchByKey(null, value, initSelectionCallback);
+            if (!this._bReleasedResources) {
+              this._initSelectionFetchByKey(null, value, initSelectionCallback);
+            }
           }.bind(this));
+      } else if (!this._loadingAwaitingData) {
+        // JET-34351 - OJ-SELECT-SINGLE DOES NOT SHOW VALUE IF OPTIONS ARE UPDATED ASYNC
+        // if we can't fetch right now because we're waiting for data to be set, show the
+        // loading indicator
+        this._loadingAwaitingData = true;
+        this._setUiLoadingState('start');
       }
     }
   },
@@ -4463,9 +5627,9 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       //  - display loading indicator when fetching label for initial value is slow
       var bLoadingIndicatorAdded = false;
       if (this._abstractLovBase.getFetchType() === 'init') {
-        bLoadingIndicatorAdded = true;
         if (!this._abstractLovBase.isDropdownOpen()) {
-          this._lovMainField.setUiLoadingState('start');
+          bLoadingIndicatorAdded = true;
+          this._setUiLoadingState('start');
         }
       }
 
@@ -4498,14 +5662,17 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       };
 
       var afterFetchPromiseFunc = function () {
-        //  - sdp.fetchbykeys method is being called twice for a single value
-        // eslint-disable-next-line no-param-reassign
-        this._cachedFetchByKeys = undefined;
+        // JET-34713 Error updating array dataprovider of ojSelectSingle while its hidden
+        // Abort if select single has been disconnected
+        if (!this._bReleasedResources) {
+          //  - sdp.fetchbykeys method is being called twice for a single value
+          // eslint-disable-next-line no-param-reassign
+          this._cachedFetchByKeys = undefined;
 
-        if (bLoadingIndicatorAdded) {
-          this._lovMainField.setUiLoadingState('stop');
+          if (bLoadingIndicatorAdded) {
+            this._setUiLoadingState('stop');
+          }
         }
-
         fetchResolveFunc();
       }.bind(this);
       fetchPromise.then(function () {
@@ -4517,6 +5684,77 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     }
 
     return fetchPromise;
+  },
+
+  /**
+   * Set the UI loading state of the component. After a delay, this function displays
+   * a loading indicator on the component.
+   * @param {string} state The state value to set; can be one of "start" or "stop"
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _setUiLoadingState: function (state) {
+    if (state === 'start') {
+      // Clear out any existing timer
+      if (this._loadingIndicatorTimer) {
+        this._loadingIndicatorTimer.clear();
+      }
+      this._loadingIndicatorTimer = TimerUtils.getTimer(this._showIndicatorDelay);
+      this._loadingIndicatorTimer.getPromise()
+        .then(function (pending) {
+          // Only add the loading indicator if loading request is still pending
+          // (not cleared out by request finishing)
+          if (pending) {
+            this._addLoadingIndicator();
+          }
+        }.bind(this));
+    } else if (state === 'stop') {
+      if (this._loadingIndicatorTimer) {
+        this._loadingIndicatorTimer.clear();
+        this._loadingIndicatorTimer = null;
+      }
+      this._removeLoadingIndicator();
+    }
+  },
+
+  // Add a loading indicator to the select box
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _addLoadingIndicator: function () {
+    //  - display loading indicator when fetching label for initial value is slow
+    this._loadingIndicatorCount += 1;
+
+    // check if it's already added
+    if (this._savedLoadingIndicator) {
+      return;
+    }
+
+    this._SetLoading();
+
+    this._savedLoadingIndicator = true;
+  },
+
+  // Remove the loading indicator
+  /**
+   * @memberof! oj.ojSelect2
+   * @instance
+   * @private
+   */
+  _removeLoadingIndicator: function () {
+    // don't decrement count below 0
+    if (this._loadingIndicatorCount > 0) {
+      this._loadingIndicatorCount -= 1;
+    }
+    //  - display loading indicator when fetching label for initial value is slow
+    // remove the loading indicator when reference count down to 0
+    if (this._loadingIndicatorCount === 0 && this._savedLoadingIndicator) {
+      this._ClearLoading();
+      this._savedLoadingIndicator = false;
+    }
   },
 
   // TODO: Jeanne. Need a _ValidateReturnPromise function as well. And I need a test, because
@@ -4615,17 +5853,70 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    * &lt;/oj-select-single>
    */
   /**
-   * @typedef {Object}oj.ojSelectSingle.CollectionTemplateContext
+   * @typedef {Object} oj.ojSelectSingle.CollectionTemplateContext
    * @property {Object} data The data for the collection.
-   * @property {Object} selected The selected item key.
-   * @property {Object} selectedItem The selected item context.
    * @property {string} searchText Search text.
+   * @property {Object} selectedItem The selected item context.
+   * @property {Object} selected
+   *           <p>The <code class="prettyprint">selected</code> property is used to push the current
+   *           selected option to the collection. This is also used to highlight the option when
+   *           navigating through the dropdown.</p>
+   *           <p>This should be bound to the <code class="prettyprint">selected</code> attribute of
+   *           <code class="prettyprint">oj-list-view</code> if it is used for the collectionTemplate.</p>
+   *           <p>When using <code class="prettyprint">oj-table</code> as the collectionTemplate this should
+   *           be bound to the <code class="prettyprint">selected.row</code> attribute of the
+   *           <code class="prettyprint">oj-table</code> instead.</p>
+   * @property {Object} currentRow
+   *           <p>The <code class="prettyprint">currentRow</code> property is used to set the focus to
+   *           current active row in the <code class="prettyprint">oj-table</code>. This is also used to
+   *           get the key for the current row when navigating through the options in the dropdown. Since,
+   *           this property is used to listen to the changes made by the <code class="prettyprint">oj-table</code>,
+   *           it should be bound to the <code class="prettyprint">current-row</code> attribute of the
+   *           <code class="prettyprint">oj-table</code></p> using a <b>writable</b> expression.
+   *           <p>Example:</p>
+   *           <pre>
+   *            <code>
+   *              &lt;oj-table
+   *                ...
+   *                current-row="{{$current.currentRow}}"
+   *                ...&gt;
+   *            </code>
+   *           </pre>
+   * @property {any} currentRow.rowKey
+   *           <p>When using <code class="prettyprint">oj-list-view</code>, this sub-property of the
+   *           <code class="prettyprint">currentRow</code> property should be used instead. This should
+   *           be bound to the <code class="prettyprint">current-item</code> attribute of the
+   *           <code class="prettyprint">oj-list-view</code></p> using a <b>writable</b> expression.
+   *           <p>Example:</p>
+   *           <pre>
+   *            <code>
+   *              &lt;oj-list-view
+   *                ...
+   *                current-item="{{$current.currentRow.rowKey}}"
+   *                ...&gt;
+   *            </code>
+   *           </pre>
+   * @property {Function} handleRowAction
+   *           <p>The <code class="prettyprint">handleRowAction</code> property is used to make selection
+   *           for <code class="prettyprint">oj-select-single</code> when <code class="prettyprint">ojItemAction</code>
+   *           is triggered in the <code class="prettyprint">oj-list-view</code> (<code class="prettyprint">ojRowAction</code>
+   *           if <code class="prettyprint">oj-table</code> is used).
+   *           <p>This should be bound to the <code class="prettyprint">on-oj-item-action</code> attribute of
+   *           <code class="prettyprint">oj-list-view</code> if it is used for the collectionTemplate.</p>
+   *           <p>When using <code class="prettyprint">oj-table</code> as the collectionTemplate this should
+   *           be bound to the <code class="prettyprint">on-oj-row-action</code> attribute of the
+   *           <code class="prettyprint">oj-table</code> instead.</p>
    * @ojsignature [{target: "Type", value: "oj.DataProvider<V, D>", for: "data",
    *                jsdocOverride:true},
    *               {target:"Type", value:"KeySet<V>", for: "selected", jsdocOverride:true},
    *               {target:"Type", value:"CommonTypes.ItemContext<V, D>", for: "selectedItem",
    *                jsdocOverride:true},
+   *               {target:"Type", value:"V", for: "currentRow.rowKey", jsdocOverride: true},
+   *               {target:"Type", value:"((event: Event, context: CommonTypes.ItemContext<V, D>) => void)",
+   *                for: "handleRowAction", jsdocOverride: true},
    *               {target: "Type", value: "<V, D>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target: "property", for: "selectedItem", since: "9.0.0",
+   *                description: "The selectedItem property is deprecated in favor of currentRow and handleRowAction properties, which provide additional functionalities."}
    */
 
   /**
@@ -4668,6 +5959,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    * @property {Object} data The data for the current item being rendered
    * @property {number} index The zero-based index of the current item
    * @property {any} key The key of the current item being rendered
+   * @property {Object} metadata The metadata for the current item being rendered
    * @property {string} searchText The search text entered by the user
    * @property {number} depth (TreeDataProvider only) The depth of the current
    * item (available when hierarchical data is provided) being rendered. The depth
@@ -4680,6 +5972,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    * @ojsignature [{target: "Type", value: "D", for: "data",
    *                jsdocOverride:true},
    *               {target:"Type", value:"V", for: "key", jsdocOverride:true},
+   *               {target:"Type", value:"oj.ItemMetadata<V>", for: "metadata", jsdocOverride:true},
    *               {target:"Type", value:"V", for: "parentKey", jsdocOverride:true},
    *               {target: "Type", value: "<V, D>", for: "genericTypeParameters"}]
    */
@@ -4766,46 +6059,6 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    * @memberof oj.ojSelectSingle
    */
 
-  /**
-   * {@ojinclude "name":"ojStylingDocIntro"}
-   * <p>The form control text align style classes can be applied to the component, or an ancestor element. When
-   * applied to an ancestor element, all form components that support the text align style classes will be affected.
-   *
-   * <table class="generic-table styling-table">
-   *   <thead>
-   *     <tr>
-   *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-   *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>oj-form-control-text-align-right</td>
-   *       <td>Aligns the text to the right regardless of the reading direction.
-   *           This is normally used for right aligning numbers
-   *       </td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-form-control-text-align-start</td>
-   *       <td>Aligns the text to the left in ltr and to the right in rtl</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-form-control-text-align-end</td>
-   *       <td>Aligns the text to the right in ltr and to the left in rtl</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-select-results</td>
-   *       <td>Apply to the collection element
-   *           (e.g. <code class="prettyprint">&lt;oj-list-view></code>) in the
-   *           <code class="prettyprint">collectionTemplate</code></td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-   * @memberof oj.ojSelectSingle
-   */
-
   // Superclass Doc Overrides
   /**
    * @ojslot contextMenu
@@ -4831,7 +6084,19 @@ Components.setDefaultOptions({
   __oj_select_single_metadata.extension._WIDGET_NAME = 'ojSelect2';
   __oj_select_single_metadata.extension._INNER_ELEM = 'input';
   __oj_select_single_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
-  oj.CustomElementBridge.register('oj-select-single', { metadata: __oj_select_single_metadata });
+  oj.CustomElementBridge.register('oj-select-single', {
+    metadata:
+      oj.CollectionUtils.mergeDeep(__oj_select_single_metadata, {
+        properties: {
+          readonly: {
+            binding: { consume: { name: 'readonly' } }
+          },
+          userAssistanceDensity: {
+            binding: { consume: { name: 'userAssistanceDensity' } }
+          }
+        }
+      })
+  });
 }());
 
 });

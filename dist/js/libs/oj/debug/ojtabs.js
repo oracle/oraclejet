@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -69,13 +70,6 @@ function(oj, $, Components)
  * </h3>
  *
  * {@ojinclude "name":"keyboardDoc"}
- *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
  *
  * <h3 id="perf-section">
  *   Performance
@@ -2353,7 +2347,7 @@ function(oj, $, Components)
         return $('<a>')
         .text(this.getTranslatedString(_arMenuKeyMap[cmd]))
         .attr('href', '#')
-        .wrap('<li>')  // @HTMLUpdateOK
+        .wrap('<li>') // @HTMLUpdateOK
         .parent()
         .attr('id', _arMenuCmdMap[cmd])
         .addClass('oj-menu-item');
@@ -2434,7 +2428,7 @@ function(oj, $, Components)
           var t = $.type(menu);
           if (t === 'function') {
             try {
-              menu = menu();             // call user's method to get the context menu
+              menu = menu(); // call user's method to get the context menu
             } catch (e) {
               menu = null;
             }
@@ -2442,7 +2436,7 @@ function(oj, $, Components)
           }
 
           if (menu) {
-            var $m = $(menu);                  // get the user's <ul> list
+            var $m = $(menu); // get the user's <ul> list
             if ($m.length) {
               this.options.contextMenu = menu;
             }
@@ -2997,39 +2991,37 @@ function(oj, $, Components)
      * @memberof oj.ojTabs
      */
 
-    /**
-     * {@ojinclude "name":"ojStylingDocIntro"}
-     *
-     * <table class="generic-table styling-table">
-     *   <thead>
-     *     <tr>
-     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>oj-tabs-icon-only</td>
-     *       <td>Applied to an ojtabs if the tab headers contain only icons.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-tabs-text-icon<br>
-     *       <td>Applied to an ojtabs if the tab headers contain both icons and text.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-tabs-tab-icon</td>
-     *       <td>Applied to a custom icon of a tab.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-tabs-facet</td>
-     *       <td>Applied to an element that is displayed on the tab bar either before or after the horizontal tab headers.</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-     * @memberof oj.ojTabs
-     */
+  // -------------------- Styling start ------------------------
+  // ------------------------------ oj-tabs-icon-only ---------------------------------
+  /**
+   * Applied to an ojtabs if the tab headers contain only icons.
+   * @ojstyleclass oj-tabs-icon-only
+   * @ojdisplayname Tabs Icon Only
+   * @memberof oj.ojTabs
+   */
+  // ------------------------------ oj-tabs-text-icon ---------------------------------
+  /**
+   * Applied to an ojtabs if the tab headers contain both icons and text.
+   * @ojstyleclass oj-tabs-text-icon
+   * @ojdisplayname Tabs Text Icon
+   * @memberof oj.ojTabs
+   */
+    // ------------------------------ oj-tabs-tab-icon ---------------------------------
+  /**
+   * Applied to a custom icon of a tab.
+   * @ojstyleclass oj-tabs-tab-icon
+   * @ojdisplayname Tabs Icon
+   * @memberof oj.ojTabs
+   */
+    // ------------------------------ oj-tabs-facet ---------------------------------
+  /**
+   * Applied to an element that is displayed on the tab bar either before or after the horizontal tab headers.
+   * @ojstyleclass oj-tabs-facet
+   * @ojdisplayname Tabs Facet
+   * @memberof oj.ojTabs
+   */
+  // -------------------- Styling end ------------------------
+
     });
 }());
 

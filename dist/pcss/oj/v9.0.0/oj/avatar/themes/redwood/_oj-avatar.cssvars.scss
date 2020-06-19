@@ -1,0 +1,85 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+@include module-include-once("redwood.variables.avatar") {
+:root {
+
+// todo: border-radius: add support for border radius, see commented vars below
+// todo: the spec calls for a different height than width, before you do anything with that
+//       follow up with Chloe and Carmen to see if there will be an issue with that in FA
+//       If we decide a different height and width is ok then
+//          width: rename all avatar vars that end with -inner-size to -inner-width
+//          height: add support for height vars, see commented vars below
+// todo: alignment: TBD how to implement but add support for aligning the initials bottom right at some sizes.
+//       - the initials should flip in rtl mode
+//       - consider using a rem value for the left/bottom padding instead of var for left/bottom for every size and see how it looks
+// todo: add support for font weight
+// todo: border- currently we always show a border, you can see it when there's a picture.
+//       Add support for not showing any border
+// todo: bg colors, we don't support out of the box colors on avatar, discuss with Gab and Chunmei how to do that,
+//       here are the colors to use if we find an api:
+//     brand-40
+//     orange-50
+//     red-50
+//     blue-40
+//     purple-50
+//     warm-purple-50
+
+
+  // avatar
+  // ----------------------------
+  --oj-avatar-bg-color:                       transparent;
+  --oj-avatar-border-color:                   var(--oj-avatar-bg-color);
+  --oj-avatar-text-color:                     var(--oj-core-text-color-primary-contrast);
+
+  --oj-avatar-xxs-size:                       1.75rem;
+  --oj-avatar-xxs-border-radius:              0.25rem;
+  --oj-avatar-xxs-border-width:               0;
+  --oj-avatar-xxs-initials-font-size:         var(--oj-typography-body-xs-font-size); 
+  --oj-avatar-xxs-initials-font-weight:       500; 
+
+  --oj-avatar-xs-size:                        2.75rem;
+  --oj-avatar-xs-border-radius:               0.25rem;
+  --oj-avatar-xs-initials-font-size:          var(--oj-typography-body-md-font-size);
+  --oj-avatar-xs-initials-font-weight:        400;
+
+  --oj-avatar-sm-size:                        3.5rem;
+  --oj-avatar-sm-border-radius:               0.25rem;
+  --oj-avatar-sm-initials-font-size:          var(--oj-typography-heading-xs-font-size);
+  --oj-avatar-sm-initials-font-weight:        normal;
+
+  --oj-avatar-md-size:                        4.5rem;
+  --oj-avatar-md-border-radius:               0.25rem;
+  --oj-avatar-md-initials-font-size:          var(--oj-typography-heading-lg-font-size);
+  --oj-avatar-md-initials-font-weight:        lighter;
+
+  --oj-avatar-lg-size:                        6rem;
+  --oj-avatar-lg-border-radius:               0.375rem;
+  --oj-avatar-lg-initials-font-size:          40px;
+  --oj-avatar-lg-initials-font-weight:        lighter;
+
+  --oj-avatar-xl-size:                        9rem;
+  --oj-avatar-xl-border-radius:               0.5rem;
+  --oj-avatar-xl-border-width:                0;
+  --oj-avatar-xl-initials-font-size:          48px;
+  --oj-avatar-xl-initials-font-weight:        lighter;
+
+
+  --oj-avatar-xxl-size:                       12.25rem;
+  --oj-avatar-xxl-border-radius:              0.5rem;
+  --oj-avatar-xxl-initials-font-size:         72px;
+  --oj-avatar-xxl-initials-font-weight:       lighter;
+
+  --oj-avatar-initials-shade-opacity:          0;
+  
+  --oj-avatar-green:                          transparent;
+  --oj-avatar-purple:                         transparent;
+  --oj-avatar-red:                            transparent;
+  --oj-avatar-teal:                           transparent;
+  --oj-avatar-orange:                         transparent;
+  --oj-avatar-forest:                         transparent;
+  --oj-avatar-mauve:                          transparent;
+
+}
+}

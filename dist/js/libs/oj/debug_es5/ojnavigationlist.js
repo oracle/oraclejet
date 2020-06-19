@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -139,7 +140,8 @@ var __oj_tab_bar_metadata =
       "type": "string",
       "enumValues": [
         "all",
-        "icons"
+        "icons",
+        "stacked"
       ],
       "value": "all"
     },
@@ -164,6 +166,14 @@ var __oj_tab_bar_metadata =
           "value": true
         }
       }
+    },
+    "layout": {
+      "type": "string",
+      "enumValues": [
+        "condense",
+        "stretch"
+      ],
+      "value": "stretch"
     },
     "overflow": {
       "type": "string",
@@ -632,7 +642,8 @@ oj.HorizontalNavListHandler.prototype.Destroy = function () {
 };
 
 oj.HorizontalNavListHandler.prototype.UpdateAriaPropertiesOnSelectedItem = function (elem, highlight) {
-  elem.attr(this._isTabBar() ? 'aria-selected' : 'aria-pressed', highlight ? 'true' : 'false');
+  elem.attr(this._isTabBar() ? 'aria-selected' : 'aria-pressed', // @HTMLUpdateOK
+  highlight ? 'true' : 'false');
 };
 
 oj.HorizontalNavListHandler.prototype._isTabBar = function () {
@@ -649,10 +660,10 @@ oj.HorizontalNavListHandler.prototype._isTabBar = function () {
 
 oj.HorizontalNavListHandler.prototype.HandleArrowKeys = function (keyCode, isExtend, event) {
   // Change keyCode to reverse left/right arrow keys for rtl case.
-  if (keyCode === $.ui.keyCode.LEFT) {
+  if (keyCode === 'ArrowLeft' || keyCode === 'Left' || keyCode === $.ui.keyCode.LEFT) {
     // eslint-disable-next-line no-param-reassign
     keyCode = this.m_widget.isRtl() ? $.ui.keyCode.DOWN : $.ui.keyCode.UP;
-  } else if (keyCode === $.ui.keyCode.RIGHT) {
+  } else if (keyCode === 'ArrowRight' || keyCode === 'Right' || keyCode === $.ui.keyCode.RIGHT) {
     // eslint-disable-next-line no-param-reassign
     keyCode = this.m_widget.isRtl() ? $.ui.keyCode.UP : $.ui.keyCode.DOWN;
   }
@@ -672,7 +683,7 @@ oj.HorizontalNavListHandler.prototype.HandleArrowKeys = function (keyCode, isExt
 
 
 oj.HorizontalNavListHandler.prototype.IsArrowKey = function (keyCode) {
-  return keyCode === this.m_widget.UP_KEY || keyCode === this.m_widget.DOWN_KEY || keyCode === this.m_widget.LEFT_KEY || keyCode === this.m_widget.RIGHT_KEY;
+  return keyCode === 'ArrowUp' || keyCode === 'Up' || keyCode === this.m_widget.UP_KEY || keyCode === 'ArrowDown' || keyCode === 'Down' || keyCode === this.m_widget.DOWN_KEY || keyCode === 'ArrowLeft' || keyCode === 'Left' || keyCode === this.m_widget.LEFT_KEY || keyCode === 'ArrowRight' || keyCode === 'Right' || keyCode === this.m_widget.RIGHT_KEY;
 }; // eslint-disable-next-line no-unused-vars
 
 
@@ -696,6 +707,13 @@ oj.HorizontalNavListHandler.prototype.BeforeRenderComplete = function () {
   }
 
   this.m_widget.element.attr('role', 'presentation');
+
+  if (this.m_widget.GetOption('layout') === 'condense') {
+    if (!this.m_root.hasClass(this.m_widget.getCondenseStyleClass())) {
+      this.m_root.addClass(this.m_widget.getCondenseStyleClass());
+    }
+  }
+
   var visibleItems = this.m_widget.element.find('.' + this.m_widget.getItemElementStyleClass() + ':visible');
   visibleItems.each(function (index) {
     var ele = $(this);
@@ -723,7 +741,8 @@ oj.HorizontalNavListHandler.prototype._addSeparator = function (elem, index) {
   var previousElement = $elem.prev();
 
   if (index > 0 && previousElement.length && !previousElement.is('li.' + this.m_widget.getDividerStyleClass())) {
-    $elem.before('<li role="separator" class="' + this.m_widget.getDividerStyleClass() + '"></li>'); // @HTMLUpdateOK
+    $elem.before('<li role="separator" class="' + // @HTMLUpdateOK
+    this.m_widget.getDividerStyleClass() + '"></li>');
   }
 };
 
@@ -1075,7 +1094,7 @@ oj.HorizontalNavListHandler.prototype._applyThreshold = function (threshold) {
 
       self._showOrHideItem($item, true);
 
-      if ($item.hasClass('oj-selected')) {
+      if ($item.hasClass('oj-selected') && self.m_overflowMenuItem) {
         self._highlightUnhighlightMoreItem(false);
       }
 
@@ -1134,15 +1153,15 @@ oj.HorizontalNavListHandler.prototype._getOverflowMenuButton = function () {
     overflowMenuItem.uniqueId().attr('role', 'presentation').addClass(this.m_widget.getItemElementStyleClass()).addClass(this.m_widget.getItemStyleClass()).addClass(this.m_widget.getOverflowItemStyleClass()).addClass('oj-default').append(anchorElement); // @HTMLUpdateOK constructed by component and not using string passed through any API
 
     anchorElement.addClass(this.m_widget.getFocusedElementStyleClass()).addClass(this.m_widget.getItemContentStyleClass());
-    anchorElement.attr('role', 'button').attr('aria-haspopup', 'true').attr('aria-pressed', 'false').attr('tabindex', '-1').attr(DataCollectionUtils._DATA_OJ_TABMOD, '-1').attr('href', '#').append(iconElement) // @HTMLUpdateOK constructed by component and not using string passed through any API
+    anchorElement.attr('role', 'button').attr('aria-haspopup', 'true').attr('aria-pressed', 'false').attr('tabindex', '-1').attr(DataCollectionUtils._DATA_OJ_TABMOD, '-1') // @HTMLUpdateOK
+    .attr('href', '#').append(iconElement) // @HTMLUpdateOK constructed by component and not using string passed through any API
     .append(labelElement); // @HTMLUpdateOK label text is read from resource bundle and it was properly escaped
 
     if (!this.m_root.find('ul:first').hasClass(this.m_widget.getHasIconsStyleClass())) {
       anchorElement.addClass(this.m_widget.getHasNoIconStyleClass());
     }
 
-    labelElement.text(this.m_widget.ojContext.getTranslatedString('overflowItemLabel')) // @HTMLUpdateOK
-    .addClass(this.m_widget.getItemLabelStyleClass());
+    labelElement.text(this.m_widget.ojContext.getTranslatedString('overflowItemLabel')).addClass(this.m_widget.getItemLabelStyleClass());
     iconElement.addClass(this.m_widget.getItemIconStyleClass()).addClass('oj-fwk-icon').addClass(this.m_widget.getOverflowItemIconStyleClass());
     overflowMenuItem[0].key = overflowMenuItem.attr('id');
     this.m_root.find('.' + this.m_widget.GetStyleClass()).append(overflowMenuItem); // @HTMLUpdateOK constructed by component and not using string passed through any API
@@ -1650,7 +1669,10 @@ oj.SlidingNavListHandler.prototype._slideAnimationComplete = function (item, isM
       this.m_widget.AvoidFocusHighLight(true);
     }
 
-    this.m_widget.SetCurrentItem(focusableElement, event);
+    if (focusableElement.length > 0) {
+      this.m_widget.SetCurrentItem(focusableElement, event);
+    }
+
     this.m_widget.AvoidFocusHighLight(false);
   }
 
@@ -1853,8 +1875,10 @@ oj.SlidingNavListHandler.prototype.ModifyListItem = function ($item, itemContent
 
   if (!itemContent.attr('id')) {
     itemContent.uniqueId();
-  } // Ensure that it collapses all nodes.
+  } // JET:34729 remove aria-selected from menuitem elements, invalid tag for role menu
 
+
+  focusableElement.removeAttr('aria-selected'); // Ensure that it collapses all nodes.
 
   var groupItems = $item.children('.' + this.m_widget.getGroupStyleClass());
 
@@ -1885,6 +1909,12 @@ oj.SlidingNavListHandler.prototype.HandleClick = function (event) {
   if ($(event.target).closest('.oj-navigationlist-previous-link, .oj-navigationlist-previous-button').length > 0) {
     this.CollapseCurrentList(event);
   }
+};
+
+oj.SlidingNavListHandler.prototype.IsSelectable = function (item) {
+  // Slider items don't have Aria-selected tag, overrding selction for slider navlist
+  var itemSelectionMarkerAttr = 'aria-selected';
+  return this.m_widget.getFocusItem($(item))[0].getAttribute('role') === 'menuitem' && !this.m_widget.getFocusItem($(item))[0].hasAttribute(itemSelectionMarkerAttr);
 };
 
 oj.SlidingNavListHandler.prototype.HandleKeydown = function (event) {
@@ -2340,6 +2370,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
   OPTION_DISPLAY: 'display',
   OPTION_DISPLAY_ICONS: 'icons',
   OPTION_DISPLAY_ALL: 'all',
+  OPTION_DISPLAY_STACKED: 'stacked',
+  OPTION_LAYOUT_STRETCH: 'stretch',
+  OPTION_LAYOUT_CONDENSE: 'condense',
   OPTION_EDGE: 'edge',
   OPTION_EDGE_TOP: 'top',
   OPTION_EDGE_END: 'end',
@@ -2379,6 +2412,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
   },
   EXPANDED_STYLE_CLASS: 'oj-expanded',
   COLLAPSED_STYLE_CLASS: 'oj-collapsed',
+  CONDENSE_STYLE_CLASS: 'oj-condense',
   SLIDING_NAVLIST_CURRENT_STYLE_CLASS: 'oj-navigationlist-current',
   DIVIDER_STYLE_CLASS: {
     navlist: 'oj-navigationlist-divider',
@@ -2407,6 +2441,10 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
   _ICON_ONLY_STYLE_CLASS: {
     navlist: 'oj-navigationlist-icon-only',
     tabbar: 'oj-tabbar-icon-only'
+  },
+  _STACK_ICON_STYLE_CLASS: {
+    navlist: 'oj-navigationlist-stack-icon-label',
+    tabbar: 'oj-tabbar-stack-icon-label'
   },
   _ITEM_ICON_STYLE_CLASS: {
     navlist: 'oj-navigationlist-item-icon',
@@ -2745,6 +2783,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @protected
    */
   SetAriaProperties: function SetAriaProperties() {
+    // add aria-multiselectable attribute only on tabbar
     if (this._getNavigationMode() === 'tabbar') {
       this.ojContext.element.attr('aria-multiselectable', false);
     }
@@ -3027,6 +3066,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
   getIconOnlyStyleClass: function getIconOnlyStyleClass() {
     return this._ICON_ONLY_STYLE_CLASS[this._getNavigationMode()];
   },
+  getStackedIconStyleClass: function getStackedIconStyleClass() {
+    return this._STACK_ICON_STYLE_CLASS[this._getNavigationMode()];
+  },
   getItemIconStyleClass: function getItemIconStyleClass() {
     return this._ITEM_ICON_STYLE_CLASS[this._getNavigationMode()];
   },
@@ -3059,6 +3101,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
   },
   getNoFollowLinkStyleClass: function getNoFollowLinkStyleClass() {
     return this._NAVLIST_NO_FOLLOW_LINK_CLASS[this._getNavigationMode()];
+  },
+  getCondenseStyleClass: function getCondenseStyleClass() {
+    return this.CONDENSE_STYLE_CLASS;
   },
   getItemSubIdKey: function getItemSubIdKey() {
     if (this.isTabBar()) {
@@ -3258,7 +3303,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @protected
    */
   HandleArrowKeys: function HandleArrowKeys(keyCode, isExtend, event) {
-    return this.m_listHandler.HandleArrowKeys(keyCode, isExtend, event);
+    // Arrow key's should work independent of Alt key
+    return !event.altKey && this.m_listHandler.HandleArrowKeys(keyCode, isExtend, event);
   },
 
   /**
@@ -3547,7 +3593,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @protected
    */
   ShouldRefresh: function ShouldRefresh(options) {
-    return options.data != null || options.drillMode != null || options.item != null || options.display != null || options.edge != null;
+    return options.data != null || options.drillMode != null || options.item != null || options.display != null || options.layout != null || options.edge != null;
   },
 
   /**
@@ -3929,6 +3975,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       }
 
       groupIcon.attr('role', 'presentation');
+      groupIcon.attr('tabindex', '-1'); // @HTMLUpdateOK
+
       groupIcon.removeAttr('aria-labelledby');
 
       if ($item.hasClass('oj-disabled')) {
@@ -3940,8 +3988,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
 
     if (itemContent.length > 0) {
       itemContent.addClass(this.getItemContentStyleClass());
-      var icon = itemContent.find('.' + itemIconClass); // @HTMLUpdateOK
-
+      var icon = itemContent.find('.' + itemIconClass);
       var itemLabelElement = document.createElement('span');
       itemLabelElement.classList.add(this.getItemLabelStyleClass());
 
@@ -3962,6 +4009,19 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
           icon.attr('role', 'img');
 
           this._setToolTipOnIcon(icon, itemLabel);
+        }
+
+        if (this.ojContext.options.display === 'stacked') {
+          if (!this.ojContext.element.hasClass(this.getStackedIconStyleClass())) {
+            this.ojContext.element.addClass(this.getStackedIconStyleClass());
+            this.isStackedIconClassAdded = true;
+          }
+
+          var iconLabel = this.getItemLabel($item);
+          icon.attr('aria-label', iconLabel);
+          icon.attr('role', 'img');
+
+          this._setToolTipOnIcon(icon, iconLabel);
         }
 
         $item.closest('ul').addClass(this.getHasIconsStyleClass());
@@ -4100,6 +4160,12 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    */
   _resetNavlist: function _resetNavlist() {
     this.ojContext.element.removeClass(this.getIconOnlyStyleClass());
+
+    if (this.isStackedIconClassAdded) {
+      this.ojContext.element.removeClass(this.getStackedIconStyleClass());
+    }
+
+    this.ojContext.element.removeClass(this.getCondenseStyleClass());
     this.ojContext.element.removeClass(this._APPLICATION_LEVEL_NAV_STYLE_CLASS);
     this.ojContext.element.removeClass(this._PAGE_LEVEL_NAV_STYLE_CLASS);
 
@@ -4174,6 +4240,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojpropertylayout {propertyGroup: "data", items: ["data", "selection"]}
    * @ojvbdefaultcolumns 2
    * @ojvbmincolumns 1
+   *
+   * @ojuxspecs ['nav-list']
    *
    * @classdesc
    * <h3 id="navlistOverview-section">
@@ -4321,12 +4389,6 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *  &lt;/oj-navigation-list>
    * </code></pre>
    *
-   * <h3 id="styling-section">
-   *   Styling
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"stylingDoc"}
    * <h3 id="touch-section">
    *   Touch End User Information
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -4434,7 +4496,6 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *   Accessibility
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
-   * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
    * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
    * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
    * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
@@ -4521,6 +4582,214 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * </table>
    *
    */
+  // --------------------------------------------------- oj.ojNavigationList Styling Start -----------------------------------------------------------
+  // ---------------- oj-navigationlist-stack-icon-label --------------
+
+  /**
+  * Use this class to display a horizontal Navigation List with icons and labels stacked. Applicable only when edge is top.
+  * @ojstyleclass oj-navigationlist-stack-icon-label
+  * @ojdisplayname Stack Icon
+  * @memberof oj.ojNavigationList
+  * @ojtsexample
+  * &lt;oj-navigation-list class="oj-navigationlist-stack-icon-label" >
+  *   &lt;ul>
+  *     &lt;li id="foo">
+  *       &lt;a href="#">
+  *         &lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">
+  *         &lt;/span>
+  *         Foo
+  *       &lt;/a>
+  *     &lt;/li>
+  *   &lt;/ul>
+  * &lt;/oj-navigation-list>
+  */
+  // ---------------- oj-navigationlist-category-divider --------------
+
+  /**
+  * Use this class to add a horizontal divider line between two categories of items.
+  * @ojstyleclass oj-navigationlist-category-divider
+  * @ojdisplayname Category Divider
+  * @ojstyleselector "oj-navigation-list li"
+  * @memberof oj.ojNavigationList
+  * @ojtsexample
+  * &lt;oj-navigation-list>
+  *   &lt;ul>
+  *     &lt;li ...>&lt;/li>
+  *     &lt;li class="oj-navigationlist-category-divider">&lt;/li>
+  *     &lt;li id="foo">
+  *       &lt;a href="#">
+  *         &lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">
+  *         &lt;/span>
+  *         Foo
+  *       &lt;/a>
+  *     &lt;/li>
+  *   &lt;/ul>
+  * &lt;/oj-navigation-list>
+  */
+  // ---------------- oj-navigationlist-item-icon --------------
+
+  /**
+  * Use this class to add an icon to a list item.
+  * @ojstyleclass oj-navigationlist-item-icon
+  * @ojdisplayname Icon
+  * @ojstyleselector "oj-navigation-list span"
+  * @memberof oj.ojNavigationList
+  * @ojtsexample
+  * &lt;oj-navigation-list class="oj-navigationlist-stack-icon-label" >
+  *   &lt;ul>
+  *     &lt;li id="foo">
+  *       &lt;a href="#">
+  *         &lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">
+  *         &lt;/span>
+  *         Foo
+  *       &lt;/a>
+  *     &lt;/li>
+  *   &lt;/ul>
+  * &lt;/oj-navigation-list>
+  */
+  // ---------------- oj-navigationlist-item-title --------------
+
+  /**
+  * When arbitrary content is placed inside an item's content area, its title text can be marked using this style class. This helps the component in identifying the Item's label.
+  * @ojstyleclass oj-navigationlist-item-title
+  * @ojdisplayname Title
+  * @ojstyleselector "oj-navigation-list span"
+  * @memberof oj.ojNavigationList
+  * @ojtsexample
+  * &lt;li id="foo">
+  *   &lt;div>
+  *     &lt;span class="oj-navigationlist-item-title">Play&lt;/span>
+  *       &lt;button>Button&lt;/button>
+  *   &lt;/div>
+  * &lt;/li>
+  */
+  // ---------------- oj-navigationlist-item-text-wrap --------------
+
+  /**
+  * Use this class to wrap item label text. Note: On IE11, this is not supported when overflow attribute is set to 'popup'.
+  * @ojstyleclass oj-navigationlist-item-text-wrap
+  * @ojdisplayname Text Wrap
+  * @memberof oj.ojNavigationList
+  * @ojtsexample
+  * &lt;oj-navigation-list class="oj-navigationlist-item-text-wrap" >
+  *   &lt;ul>
+  *     &lt;li id="foo">
+  *       &lt;a href="#">
+  *         &lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">
+  *         &lt;/span>
+  *         Foo
+  *       &lt;/a>
+  *     &lt;/li>
+  *   &lt;/ul>
+  * &lt;/oj-navigation-list>
+  */
+  // ---------------- oj-navigationlist-item-dividers --------------
+
+  /**
+  * Use this class to render a divider between list items. Note: On IE11, this is not supported when overflow attribute is set to 'popup'.
+  * @ojstyleclass oj-navigationlist-item-dividers
+  * @ojdisplayname Item Dividers
+  * @memberof oj.ojNavigationList
+  * @ojunsupportedthemes ["Redwood"]
+  * @ojtsexample
+  * &lt;oj-navigation-list class="oj-navigationlist-item-dividers" >
+  *   &lt;ul>
+  *     &lt;li id="foo">
+  *       &lt;a href="#">
+  *         &lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">
+  *         &lt;/span>
+  *         Foo
+  *       &lt;/a>
+  *     &lt;/li>
+  *   &lt;/ul>
+  * &lt;/oj-navigation-list>
+  */
+  // ---------------- oj-[size]-condense --------------
+
+  /**
+  * Use this class to condense horizontal navigation list items depending on screen size.
+  * @ojstyletemplate oj-[size]-condense
+  * @ojstyletemplatetokens ["StylingTemplateTokens.[size]"]
+  * @ojdisplayname Condense
+  * @memberof oj.ojNavigationList
+  * @ojtsexample
+  * &lt;oj-navigation-list class="oj-sm-condense" >
+  *   &lt;ul>
+  *     &lt;li id="foo">
+  *       &lt;a href="#">
+  *         &lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">
+  *         &lt;/span>
+  *         Foo
+  *       &lt;/a>
+  *     &lt;/li>
+  *   &lt;/ul>
+  * &lt;/oj-navigation-list>
+  */
+  // ---------------- oj-navigationlist-nofollow-link --------------
+
+  /**
+  * Use this class to prevent automatic navigation to the url specified on an &lt;a> tag's href attribute. <br/>
+  * In this case, navigation can be handled programmatically by using selectionChanged event. <br/>
+  * This is useful to execute some custom logic before browser triggers navigation.
+  * @ojstyleclass oj-navigationlist-nofollow-link
+  * @ojdisplayname No Follow Link
+  * @ojshortdesc Use this class to prevent automatic navigation to a URL within a list item. See the Help documentation for more information.
+  * @memberof oj.ojNavigationList
+  * @ojtsexample
+  * &lt;oj-navigation-list class="oj-navigationlist-nofollow-link" >
+  *   &lt;ul>
+  *     &lt;li id="foo">
+  *       &lt;a href="#">
+  *         &lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">
+  *         &lt;/span>
+  *         Foo
+  *       &lt;/a>
+  *     &lt;/li>
+  *   &lt;/ul>
+  * &lt;/oj-navigation-list>
+  */
+  // ---------------- oj-focus-highlight --------------
+
+  /**
+  * Under normal circumstances this class is applied automatically.
+  * It is documented here for the rare cases that an app developer needs per-instance control.<br/><br/>
+  * The oj-focus-highlight class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.<br/><br/>
+  * The application-level behavior for this component is controlled in the theme by the <code class="prettyprint"><span class="pln">$focusHighlightPolicy </span></code>SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:<br/><br/>
+  * <code class="prettyprint"><span class="pln">nonPointer: </span></code>oj-focus-highlight is applied only when focus is not the result of pointer interaction. Most themes default to this value.<br/>
+  * <code class="prettyprint"><span class="pln">all: </span></code> oj-focus-highlight is applied regardless of the focus mechanism.<br/>
+  * <code class="prettyprint"><span class="pln">none: </span></code> oj-focus-highlight is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.<br/><br/>
+  * To change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed.<br/>
+  * @ojstyleclass oj-focus-highlight
+  * @ojdisplayname Focus Styling
+  * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
+  * @memberof oj.ojNavigationList
+  * @ojtsexample
+  * &lt;oj-navigation-list class="oj-focus-highlight">
+  *   &lt;!-- Content -->
+  * &lt;/oj-navigation-list>
+  */
+  // ---------------- oj-disabled --------------
+
+  /**
+  * Any list item can be disabled by adding the oj-disabled class to that element
+  * @ojstyleclass oj-disabled
+  * @ojdisplayname Disabled Item
+  * @ojstyleselector "oj-navigation-list li"
+  * @memberof oj.ojNavigationList
+  * @ojtsexample
+  * &lt;oj-navigation-list>
+  *   &lt;ul>
+  *     &lt;li id="foo" class="oj-disabled">
+  *       &lt;a href="#">
+  *         &lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">
+  *         &lt;/span>
+  *         Foo
+  *       &lt;/a>
+  *     &lt;/li>
+  *   &lt;/ul>
+  * &lt;/oj-navigation-list>
+  */
+  // --------------------------------------------------- oj.ojNavigationList Styling End -----------------------------------------------------------
   oj.__registerWidget('oj.ojNavigationList', $.oj.baseComponent, {
     widgetEventPrefix: 'oj',
     options: {
@@ -4741,23 +5010,23 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       /**
        * Specifies the key set containing the keys of the items that should be expanded.
        *
-       * Use the <a href="ExpandedKeySet.html">ExpandedKeySet</a> class to specify items to expand.
-       * Use the <a href="ExpandAllKeySet.html">ExpandAllKeySet</a> class to expand all items.
+       * Use the <a href="KeySetImpl.html">KeySetImpl</a> class to specify items to expand.
+       * Use the <a href="AllKeySetImpl.html">AllKeySetImpl</a> class to expand all items.
        *
        * @expose
        * @ojshortdesc Specifies the key set containing the keys of the items that should be expanded. See the Help documentation for more information.
        * @memberof! oj.ojNavigationList
        * @instance
-       * @default new ExpandedKeySet();
+       * @default new AllKeySetImpl();
        * @type {KeySet}
        * @ojsignature {target:"Type", value:"oj.KeySet<K>"}
        * @ojwriteback
        *
        * @example <caption>Initialize the NavigationList with specific items expanded:</caption>
-       * myNavList.expanded = new ExpandedKeySet(['item1', 'item2']);
+       * myNavList.expanded = new KeySetImpl(['item1', 'item2']);
        *
        * @example <caption>Initialize the NavigationList with all items expanded:</caption>
-       * myNavList.expanded = new ExpandAllKeySet();
+       * myNavList.expanded = new AllKeySetImpl();
        */
       expanded: new oj._ojListViewExpandedKeySet(),
 
@@ -4848,8 +5117,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       * @memberof oj.ojNavigationList
       * @instance
       * @type {string}
-      * @ojvalue {string} "popup" popup menu will be shown with overflowed items.<p> Note that setting <code class="prettyprint">overflow</code> to <code class="prettyprint">popup</code> can trigger browser reflow, so only set it when it is actually required.
-      * @ojvalue {string} "hidden" overflow is clipped, and the rest of the content will be invisible.
+      * @ojvalue {string} "popup" Popup menu will be shown with overflowed items.<p> Note that setting <code class="prettyprint">overflow</code> to <code class="prettyprint">popup</code> can trigger browser reflow, so only set it when it is actually required.
+      * @ojvalue {string} "hidden" Overflow is clipped, and the rest of the content will be invisible.
       * @default hidden
       * @since 3.0.0
       * @example <caption>Initialize the Navigation List with the <code class="prettyprint">overflow</code> attribute specified:</caption>
@@ -5229,6 +5498,10 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
           throw new Error("Icon only navigation list should have drillMode set to 'none'.");
         }
 
+        if (display === this.navlist.OPTION_DISPLAY_STACKED) {
+          throw new Error("Stack only navigation list should have drillMode set to 'none'.");
+        }
+
         if (edge === this.navlist.OPTION_EDGE_TOP) {
           throw new Error("Horizontal navigation list should have drillMode set to 'none'.");
         }
@@ -5240,7 +5513,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       if (key === this.navlist.OPTION_DRILL_MODE) {
         valid = value === this.navlist.OPTION_DRILL_MODE_NONE || value === this.navlist.OPTION_DRILL_MODE_COLLAPSIBLE || value === this.navlist.OPTION_DRILL_MODE_SLIDING;
       } else if (key === this.navlist.OPTION_DISPLAY) {
-        valid = value === this.navlist.OPTION_DISPLAY_ALL || value === this.navlist.OPTION_DISPLAY_ICONS;
+        valid = value === this.navlist.OPTION_DISPLAY_ALL || value === this.navlist.OPTION_DISPLAY_ICONS || value === this.navlist.OPTION_DISPLAY_STACKED;
       } else if (key === this.navlist.OPTION_EDGE) {
         if (this.element[0].tagName.toLowerCase() === this.navlist.TAG_NAME_TAB_BAR) {
           valid = value === this.navlist.OPTION_EDGE_TOP || value === this.navlist.OPTION_EDGE_START || value === this.navlist.OPTION_EDGE_END || value === this.navlist.OPTION_EDGE_BOTTOM;
@@ -5675,193 +5948,6 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
      * @memberof oj.ojNavigationList
      */
-
-    /**
-     * {@ojinclude "name":"ojStylingDocIntro"}
-     * <table class="generic-table styling-table">
-     *   <thead>
-     *     <tr>
-     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocExampleHeader"}</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>oj-navigationlist-stack-icon-label</td>
-     *       <td>Displays horizontal Navigation List with icon and label stacked. Applicable only when <code class="prettyprint">edge</code> is <code class="prettyprint">top</code>.</td>
-     *       <td>
-     *          <pre class="prettyprint">
-     *<code>&lt;oj-navigation-list class="oj-navigationlist-stack-icon-label" >
-     *  &lt;ul>
-     *    &lt;li id="foo">
-     *      &lt;a href="#">
-     *        &lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">
-     *        &lt;/span>
-     *        Foo
-     *      &lt;/a>
-     *    &lt;/li>
-     *  &lt;/ul>
-     *&lt;/oj-navigation-list>
-     *</code></pre>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-navigationlist-category-divider</td>
-     *       <td>Use this class to add horizontal divider line between two categories of items.</td>
-     *       <td>
-     *          <pre class="prettyprint">
-     *<code>&lt;oj-navigation-list>
-     *  &lt;ul>
-     *    &lt;li ...> &lt;/li>
-     *    &lt;li class="oj-navigationlist-category-divider"> &lt;/li>
-     *    &lt;li id="foo">
-     *      &lt;a href="#">
-     *        &lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">
-     *        &lt;/span>
-     *        Foo
-     *      &lt;/a>
-     *    &lt;/li>
-     *    &lt;li ...> &lt;/li>
-     *  &lt;/ul>
-     *&lt;/oj-navigation-list>
-     *</code></pre>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-navigationlist-item-icon</td>
-     *       <td>Use this class to add icon to list item.</td>
-     *       <td>
-     *          <pre class="prettyprint">
-     *<code>&lt;oj-navigation-list>
-     *  &lt;ul>
-     *    &lt;li id="foo">
-     *      &lt;a href="#">
-     *        &lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">
-     *        &lt;/span>
-     *        Foo
-     *      &lt;/a>
-     *    &lt;/li>
-     *  &lt;/ul>
-     *&lt;/oj-navigation-list></code></pre>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-navigationlist-item-title</td>
-     *       <td>When arbitrary content is placed inside item's content area, it's title text can be marked using this style class. This helps component in identifying the Item's label.
-     *       </td>
-     *       <td>
-     * <pre class="prettyprint">
-     * <code>&lt;li>
-     *   &lt;div>
-     *     &lt;span class="oj-navigationlist-item-title">Play&lt;/span>
-     *     &lt;button>Button&lt;/button>
-     *   &lt;/div>
-     * &lt;/li>
-     * </code></pre>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-navigationlist-item-text-wrap</td>
-     *       <td>Use this class to wrap item label text. Note: On IE11, this is not supported when <code class="prettyprint">overflow</code> attribute is set to <code class="prettyprint">popup</code>.</td>
-     *       <td>
-     *          <pre class="prettyprint">
-     *<code>&lt;oj-navigation-list class="oj-navigationlist-item-text-wrap" >
-     *  &lt;ul>
-     *    &lt;li id="foo">
-     *      &lt;a href="#">
-     *        &lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">
-     *        &lt;/span>
-     *        Foo
-     *      &lt;/a>
-     *    &lt;/li>
-     *  &lt;/ul>
-     *&lt;/oj-navigation-list>
-     *</code></pre>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-navigationlist-item-dividers</td>
-     *       <td>Use this class to show dividers between horizontal navigation list items.</td>
-     *       <td>
-     *          <pre class="prettyprint">
-     *<code>&lt;oj-navigation-list class="oj-navigationlist-item-dividers" >
-     *  &lt;ul>
-     *    &lt;li id="foo">
-     *       &lt;a href="#">
-     *         &lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">&lt;/span>
-     *         Foo
-     *       &lt;/a>
-     *    &lt;/li>
-     *  &lt;/ul>
-     *&lt;/oj-navigation-list>
-     *</code></pre>
-     *       </td>
-     *     </tr>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-sm-condense</td>
-     *       <td>Use this class to condense horizontal navigation list items on small screens and larger.
-     *       </td>
-     *       <td rowspan="4">
-     *          <pre class="prettyprint">
-     *<code>&lt;oj-navigation-list class="oj-sm-condense" >
-     *  &lt;ul>
-     *    &lt;li id="foo">
-     *      &lt;a href="#">
-     *        &lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">&lt;/span>
-     *        Foo
-     *      &lt;/a>
-     *    &lt;/li>
-     *  &lt;/ul>
-     *&lt;/oj-navigation-list>
-     *</code></pre>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-md-condense</td>
-     *       <td>Use this class to condense horizontal navigation list items on medium screens and larger.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-lg-condense</td>
-     *       <td>Use this class to condense horizontal navigation list items on large screens and larger.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-xl-condense</td>
-     *       <td>Use this class to condense horizontal navigation list items on extra large screens and larger.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-navigationlist-nofollow-link</td>
-     *       <td> Use this class to prevent automatic navigation to the url specified on <code class="prettyprint">&lt;a></code> tag's <code class="prettyprint">href</code> attribute. In this case, navigation can be handled programmatically by using <code class="prettyprint">selectionChanged</code> event. This is useful to execute some custom logic before browser triggers navigation.
-     *       </td>
-     *       <td>
-     *          <pre class="prettyprint">
-     *<code>&lt;oj-navigation-list class="oj-navigationlist-nofollow-link" >
-     *  &lt;ul>
-     *    &lt;li id="foo">&lt;a href="folder/foo.html">
-     *      &lt;span
-     *        class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">&lt;/span>
-     *      Foo&lt;/a>
-     *    &lt;/li>
-     *  &lt;/ul>
-     *&lt;/oj-navigation-list>
-     *</code></pre>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-focus-highlight</td>
-     *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
-     *       <td></td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-     * @memberof oj.ojNavigationList
-     */
     // SubId Locators *****************************************************
 
     /**
@@ -5978,6 +6064,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 2
  *
+ * @ojuxspecs ['tab-bar']
+ *
  * @classdesc
  * <h3 id="navlistOverview-section">
  *   JET Tab Bar
@@ -6043,13 +6131,6 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
  *   &lt;/ul>
  *  &lt;/oj-tab-bar>
  * </code></pre>
- *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -6127,7 +6208,6 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
- * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
  * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
  * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
  * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
@@ -6197,6 +6277,256 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
  * </table>
  *
  */
+// --------------------------------------------------- oj.ojTabBar Styling Start -----------------------------------------------------------
+// ---------------- oj-tabbar-stack-icon-label --------------
+
+/**
+* Use this class to display a horizontal Tab Bar with icons and labels stacked. Applicable only when edge is top.
+* @ojstyleclass oj-tabbar-stack-icon-label
+* @ojdisplayname Stack Icon
+* @memberof oj.ojTabBar
+* @ojdeprecated {since: '9.0.0', description: 'Use display attribute instead.'}
+* @ojtsexample
+* &lt;oj-tab-bar class="oj-tabbar-stack-icon-label" >
+*   &lt;ul>
+*     &lt;li id="foo">
+*       &lt;a href="#">
+*         &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+*         &lt;/span>
+*         Foo
+*       &lt;/a>
+*     &lt;/li>
+*   &lt;/ul>
+* &lt;/oj-tab-bar>
+*/
+// ---------------- oj-tabbar-category-divider --------------
+
+/**
+* Use this class to add a horizontal divider line between two categories of items.
+* @ojstyleclass oj-tabbar-category-divider
+* @ojdisplayname CategoryDivider
+* @ojstyleselector "oj-tab-bar li"
+* @memberof oj.ojTabBar
+* @ojtsexample
+* &lt;oj-tab-bar>
+*   &lt;ul>
+*     &lt;li ...>&lt;/li>
+*     &lt;li class="oj-tabbar-category-divider">&lt;/li>
+*     &lt;li id="foo">
+*       &lt;a href="#">
+*         &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+*         &lt;/span>
+*         Foo
+*       &lt;/a>
+*     &lt;/li>
+*   &lt;/ul>
+* &lt;/oj-tab-bar>
+*/
+// ---------------- oj-tabbar-item-icon --------------
+
+/**
+* Use this class to add an icon to a list item.
+* @ojstyleclass oj-tabbar-item-icon
+* @ojdisplayname Icons
+* @ojstyleselector "oj-tab-bar span"
+* @memberof oj.ojTabBar
+* @ojtsexample
+* &lt;oj-tab-bar class="oj-tabbar-stack-icon-label" >
+*   &lt;ul>
+*     &lt;li id="foo">
+*       &lt;a href="#">
+*         &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+*         &lt;/span>
+*         Foo
+*       &lt;/a>
+*     &lt;/li>
+*   &lt;/ul>
+* &lt;/oj-tab-bar>
+*/
+// ---------------- oj-tabbar-item-title --------------
+
+/**
+* When arbitrary content is placed inside an item's content area, its title text can be marked using this style class. This helps the component in identifying the Item's label.
+* @ojstyleclass oj-tabbar-item-title
+* @ojdisplayname Title
+* @memberof oj.ojTabBar
+* @ojstyleselector "oj-tab-bar span"
+* @ojtsexample
+* &lt;li id="foo">
+*   &lt;div>
+*     &lt;span class="oj-tabbar-item-title">Play&lt;/span>
+*       &lt;button>Button&lt;/button>
+*   &lt;/div>
+* &lt;/li>
+*/
+// ---------------- oj-tabbar-item-text-wrap --------------
+
+/**
+* Use this class to wrap item label text. Note: On IE11, this is not supported when overflow attribute is set to 'popup'.
+* @ojstyleclass oj-tabbar-item-text-wrap
+* @ojdisplayname Text Wrap
+* @memberof oj.ojTabBar
+* @ojtsexample
+* &lt;oj-tab-bar class="oj-tabbar-item-text-wrap" >
+*   &lt;ul>
+*     &lt;li id="foo">
+*       &lt;a href="#">
+*         &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+*         &lt;/span>
+*         Foo
+*       &lt;/a>
+*     &lt;/li>
+*   &lt;/ul>
+* &lt;/oj-tab-bar>
+*/
+// ---------------- oj-tabbar-item-dividers --------------
+
+/**
+* Use this class  to render a divider between tab items. Note: On IE11, this is not supported when overflow attribute is set to 'popup'.
+* @ojstyleclass oj-tabbar-item-dividers
+* @ojdisplayname ItemDividers
+* @memberof oj.ojTabBar
+* @ojunsupportedthemes ["Redwood"]
+* @ojtsexample
+* &lt;oj-tab-bar class="oj-tabbar-item-dividers" >
+*   &lt;ul>
+*     &lt;li id="foo">
+*       &lt;a href="#">
+*         &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+*         &lt;/span>
+*         Foo
+*       &lt;/a>
+*     &lt;/li>
+*   &lt;/ul>
+* &lt;/oj-tab-bar>
+*/
+// ---------------- oj-[size]-condense --------------
+
+/**
+* Use this class to wrap item label text. Note: On IE11, this is not supported when overflow attribute is set to 'popup'.
+* @ojstyletemplate oj-[size]-condense
+* @ojstyletemplatetokens ["StylingTemplateTokens.[size]"]
+* @ojdisplayname Condense
+* @memberof oj.ojTabBar
+* @ojtsexample
+* &lt;oj-tab-bar class="oj-sm-condense" >
+*   &lt;ul>
+*     &lt;li id="foo">
+*       &lt;a href="#">
+*         &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+*         &lt;/span>
+*         Foo
+*       &lt;/a>
+*     &lt;/li>
+*   &lt;/ul>
+* &lt;/oj-tab-bar>
+*/
+// ---------------- oj-tabbar-nofollow-link --------------
+
+/**
+* Use this class to prevent automatic navigation to the url specified on an &lt;a> tag's href attribute. <br/>
+* In this case, navigation can be handled programmatically by using selectionChanged event. <br/>
+* This is useful to execute some custom logic before browser triggers navigation.
+* @ojstyleclass oj-tabbar-nofollow-link
+* @ojdisplayname No Follow Link
+* @ojshortdesc Use this class to prevent automatic navigation to a URL within a tab item. See the Help documentation for more information.
+* @memberof oj.ojTabBar
+* @ojtsexample
+* &lt;oj-tab-bar class="oj-tabbar-nofollow-link" >
+*   &lt;ul>
+*     &lt;li id="foo">
+*       &lt;a href="#">
+*         &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+*         &lt;/span>
+*         Foo
+*       &lt;/a>
+*     &lt;/li>
+*   &lt;/ul>
+* &lt;/oj-tab-bar>
+*/
+// ---------------- oj-removable --------------
+
+/**
+* Use this class to make an item removable.
+* @ojstyleclass oj-removable
+* @ojdisplayname Item Removable
+* @ojstyleselector "oj-tab-bar li"
+* @memberof oj.ojTabBar
+* @ojtsexample
+* &lt;oj-tab-bar>
+*   &lt;ul>
+*     &lt;li id="foo" class="oj-removable" >
+*       &lt;a href="#">
+*         &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+*         &lt;/span>
+*         Foo
+*       &lt;/a>
+*     &lt;/li>
+*   &lt;/ul>
+* &lt;/oj-tab-bar>
+*/
+// ---------------- oj-tabbar-hide-remove-icon --------------
+
+/**
+* Use this class to hide the remove icon. In this case, Item can be removed using context menu.
+* @ojstyleclass oj-tabbar-hide-remove-icon
+* @ojdisplayname Hide Remove Icon
+* @memberof oj.ojTabBar
+* @ojtsexample
+* &lt;oj-tab-bar class="oj-tabbar-hide-remove-icon" >
+*   &lt;ul>
+*     &lt;li id="foo">
+*       &lt;a href="#">
+*         &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+*         &lt;/span>
+*         Foo
+*       &lt;/a>
+*     &lt;/li>
+*   &lt;/ul>
+* &lt;/oj-tab-bar>
+*/
+// ---------------- oj-disabled --------------
+
+/**
+* Any list item can be disabled by adding the oj-disabled class to that element
+* @ojstyleclass oj-disabled
+* @ojdisplayname Disabled Item
+* @ojstyleselector "oj-tab-bar li"
+* @memberof oj.ojTabBar
+* @ojtsexample
+* &lt;oj-tab-bar>
+*   &lt;ul>
+*     &lt;li id="foo" class="oj-disabled" >
+*       &lt;a href="#">
+*         &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+*         &lt;/span>
+*         Foo
+*       &lt;/a>
+*     &lt;/li>
+*   &lt;/ul>
+* &lt;/oj-tab-bar>
+*/
+// ---------------- oj-focus-highlight --------------
+
+/**
+* Under normal circumstances this class is applied automatically.
+* It is documented here for the rare cases that an app developer needs per-instance control.<br/><br/>
+* The oj-focus-highlight class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.<br/><br/>
+* The application-level behavior for this component is controlled in the theme by the <code class="prettyprint"><span class="pln">$focusHighlightPolicy </span></code>SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:<br/><br/>
+* <code class="prettyprint"><span class="pln">nonPointer: </span></code>oj-focus-highlight is applied only when focus is not the result of pointer interaction. Most themes default to this value.<br/>
+* <code class="prettyprint"><span class="pln">all: </span></code> oj-focus-highlight is applied regardless of the focus mechanism.<br/>
+* <code class="prettyprint"><span class="pln">none: </span></code> oj-focus-highlight is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.<br/><br/>
+* To change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed.<br/>
+* @ojstyleclass oj-focus-highlight
+* @ojdisplayname Focus Styling
+* @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
+* @memberof oj.ojTabBar
+* @ojtsexample
+* &lt;oj-tab-bar class="oj-focus-highlight">
+*   &lt;!-- Content -->
+* &lt;/oj-tab-bar>
+*/
+// --------------------------------------------------- oj.ojTabBar Styling End -----------------------------------------------------------
 
 /**
  * An alias for the current item when referenced inside the item template. This can be especially useful
@@ -6408,6 +6738,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
  * @type {string}
  * @ojvalue {string} "all" Display both the label and icons.
  * @ojvalue {string} "icons" Display only the icons.
+ * @ojvalue {string} "stacked" Display icons with stacked label.
  * @default all
  * @ojshortdesc Specifies what needs to be displayed. See the Help documentation for more information.
  * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">display</code> attribute specified:</caption>
@@ -6422,6 +6753,29 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
  */
 
 /**
+* Whether to stretch the tab bar items to occupy available space or to condense items
+*
+* @expose
+* @memberof oj.ojTabBar
+* @instance
+* @name layout
+* @type {string}
+* @ojvalue {string} "stretch" all items are stretched
+* @ojvalue {string} "condense" all items are condense
+* @default stretch
+* @ojshortdesc Specifies whether to stretch the tab bar items to occupy available space or to condense items.
+* @example <caption>Initialize the Tab Bar with the <code class="prettyprint">layout</code> attribute specified:</caption>
+*  &lt;oj-tab-bar layout='condense'> ... &lt;/oj-tab-bar>
+*
+* @example <caption>Get or set the <code class="prettyprint">layout</code> property:</caption>
+* // getter
+* var layout = myTabBar.layout;
+*
+* // setter
+* myTabBar.layout = "stretch";
+*/
+
+/**
 * Specifies the overflow behaviour.
 * NOTE: This is only applicable when <code class="prettyprint">edge</code> attribute set to <code class="prettyprint">top</code>
 * @expose
@@ -6429,8 +6783,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
 * @name overflow
 * @instance
 * @type {string}
-* @ojvalue {string} "popup" popup menu will be shown with overflowed items. <p> Note that setting <code class="prettyprint">overflow</code> to <code class="prettyprint">popup</code> can trigger browser reflow, so only set it when it is actually required.
-* @ojvalue {string} "hidden" overflow is clipped, and the rest of the content will be invisible.
+* @ojvalue {string} "popup" Popup menu will be shown with overflowed items. <p> Note that setting <code class="prettyprint">overflow</code> to <code class="prettyprint">popup</code> can trigger browser reflow, so only set it when it is actually required.
+* @ojvalue {string} "hidden" Overflow is clipped, and the rest of the content will be invisible.
 * @default hidden
 * @ojshortdesc Specifies overflow behaviour for the Tab Bar.
 * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">overflow</code> attribute specified:</caption>
@@ -6831,229 +7185,6 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
  *
  *
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
- * @memberof oj.ojTabBar
- */
-
-/**
- * {@ojinclude "name":"ojStylingDocIntro"}
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
- *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
- *       <th>{@ojinclude "name":"ojStylingDocExampleHeader"}</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-tabbar-stack-icon-label</td>
- *       <td>Displays horizontal Tab Bar with icon and label stacked. Applicable only when <code class="prettyprint">edge</code> is <code class="prettyprint">top</code>.</td>
- *       <td>
- *          <pre class="prettyprint">
- *<code>&lt;oj-tab-bar class="oj-tabbar-stack-icon-label" >
- *  &lt;ul>
- *    &lt;li id="foo">
- *      &lt;a href="#">
- *        &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
- *        &lt;/span>
- *        Foo
- *      &lt;/a>
- *    &lt;/li>
- *  &lt;/ul>
- *&lt;/oj-tab-bar>
- *</code></pre>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-tabbar-category-divider</td>
- *       <td>Use this class to add horizontal divider line between two categories of items.</td>
- *       <td>
- *          <pre class="prettyprint">
- *<code>&lt;oj-tab-bar>
- *  &lt;ul>
- *    &lt;li ...> &lt;/li>
- *    &lt;li class="oj-tabbar-category-divider"> &lt;/li>
- *    &lt;li id="foo">
- *      &lt;a href="#">
- *        &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
- *        &lt;/span>
- *        Foo
- *      &lt;/a>
- *    &lt;/li>
- *    &lt;li ...> &lt;/li>
- *  &lt;/ul>
- *&lt;/oj-tab-bar>
- *</code></pre>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-tabbar-item-icon</td>
- *       <td>Use this class to add icon to list item.</td>
- *       <td>
- *          <pre class="prettyprint">
- *<code>&lt;oj-tab-bar>
- *  &lt;ul>
- *    &lt;li id="foo">
- *      &lt;a href="#">
- *        &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
- *        &lt;/span>
- *        Foo
- *      &lt;/a>
- *    &lt;/li>
- *  &lt;/ul>
- *&lt;/oj-tab-bar></code></pre>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-tabbar-item-title</td>
- *       <td>When arbitrary content is placed inside item's content area, it's title text can be marked using this style class. This helps component in identifying the Item's label.
- *       </td>
- *       <td>
- * <pre class="prettyprint">
- * <code>&lt;li>
- *   &lt;div>
- *     &lt;span class="oj-tabbar-item-title">Play&lt;/span>
- *     &lt;button>Button&lt;/button>
- *   &lt;/div>
- * &lt;/li>
- * </code></pre>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-tabbar-item-text-wrap</td>
- *       <td>Use this class to wrap item label text. Note: On IE11, this is not supported when <code class="prettyprint">overflow</code> attribute is set to <code class="prettyprint">popup</code>.</td>
- *       <td>
- *          <pre class="prettyprint">
- *<code>&lt;oj-tab-bar class="oj-tabbar-item-text-wrap" >
- *  &lt;ul>
- *    &lt;li id="foo">
- *      &lt;a href="#">
- *        &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
- *        &lt;/span>
- *        Foo
- *      &lt;/a>
- *    &lt;/li>
- *  &lt;/ul>
- *&lt;/oj-tab-bar>
- *</code></pre>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-tabbar-item-dividers</td>
- *       <td>Use this class to show dividers between horizontal tab bar items.</td>
- *       <td>
- *          <pre class="prettyprint">
- *<code>&lt;oj-tab-bar class="oj-tabbar-item-dividers" >
- *  &lt;ul>
- *    &lt;li id="foo">
- *       &lt;a href="#">
- *         &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">&lt;/span>
- *         Foo
- *       &lt;/a>
- *    &lt;/li>
- *  &lt;/ul>
- *&lt;/oj-tab-bar>
- *</code></pre>
- *       </td>
- *     </tr>
- *     </tr>
- *     <tr>
- *       <td>oj-sm-condense</td>
- *       <td>Use this class to condense horizontal tab bar items on small screens and larger.
- *       </td>
- *       <td rowspan="4">
- *          <pre class="prettyprint">
- *<code>&lt;oj-tab-bar class="oj-sm-condense" >
- *  &lt;ul>
- *    &lt;li id="foo">
- *      &lt;a href="#">
- *        &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">&lt;/span>
- *        Foo
- *      &lt;/a>
- *    &lt;/li>
- *  &lt;/ul>
- *&lt;/oj-tab-bar>
- *</code></pre>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-md-condense</td>
- *       <td>Use this class to condense horizontal tab bar items on medium screens and larger.
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-lg-condense</td>
- *       <td>Use this class to condense horizontal tab bar items on large screens and larger.
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-xl-condense</td>
- *       <td>Use this class to condense horizontal tab bar items on extra large screens and larger.
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-tabbar-nofollow-link</td>
- *       <td> Use this class to prevent automatic navigation to the url specified on <code class="prettyprint">&lt;a></code> tag's <code class="prettyprint">href</code> attribute. In this case, navigation can be handled programmatically by using <code class="prettyprint">selectionChanged</code> event. This is useful to execute some custom tasks before browser triggers navigation.
- *       </td>
- *       <td>
- *          <pre class="prettyprint">
- *<code>&lt;oj-tab-bar class="oj-tabbar-nofollow-link" >
- *  &lt;ul>
- *    &lt;li id="foo">&lt;a href="folder/foo.html">
- *      &lt;span
- *        class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">&lt;/span>
- *      Foo&lt;/a>
- *    &lt;/li>
- *  &lt;/ul>
- *&lt;/oj-tab-bar>
- *</code></pre>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-removable</td>
- *       <td> Use this class to make an item removable.
- *       </td>
- *       <td>
- *          <pre class="prettyprint">
- *<code>&lt;oj-tab-bar >
- *  &lt;ul>
- *    &lt;li id="foo" class="oj-removable" >&lt;a href="folder/foo.html">
- *      &lt;span
- *        class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">&lt;/span>
- *      Foo&lt;/a>
- *    &lt;/li>
- *  &lt;/ul>
- *&lt;/oj-tab-bar>
- *</code></pre>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-tabbar-hide-remove-icon</td>
- *       <td> Use this class to hide the remove icon. In this case, Item can be removed using context menu.
- *       </td>
- *       <td>
- *          <pre class="prettyprint">
- *<code>&lt;oj-tab-bar class="oj-tabbar-hide-remove-icon">
- *  &lt;ul>
- *    &lt;li id="foo" class="oj-removable" >&lt;a href="folder/foo.html">
- *      &lt;span
- *        class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">&lt;/span>
- *      Foo&lt;/a>
- *    &lt;/li>
- *  &lt;/ul>
- *&lt;/oj-tab-bar>
- *</code></pre>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-focus-highlight</td>
- *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
- *       <td></td>
- *     </tr>
- *   </tbody>
- * </table>
- *
- * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
  * @memberof oj.ojTabBar
  */
 // SubId Locators *****************************************************

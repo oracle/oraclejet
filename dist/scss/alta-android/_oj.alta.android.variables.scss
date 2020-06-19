@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 @import "../utilities/oj.utilities.property";
 @import "../utilities/oj.utilities.units";
 @import "../common/oj.common.palette";
@@ -412,6 +413,9 @@ $buttonOutlinedChromeBorderColorSelectedHover:  $buttonOutlinedChromeBgColorSele
 // default: equal width only for full- and outline-chrome buttons, not half chrome
 $buttonsetEqualWidthChromingList: full outlined !default; // default should be equal width buttonsets for these chroming values (auto width for all others)
 
+//Divider
+$dividerMargin: 0.5rem;
+
 // DIALOG
 //----------------------------------------------------------------
 
@@ -466,7 +470,12 @@ $formControlBgColorDisabled:            transparent !default;
 // form control option defaults
 //----------------------------------
 $formControlLabelEdgeDefault: provided !default;
+$inputFormControlReadonlyDefault: input !default;
+$formControlUseUserAssistanceOptionDefault: ignore !default;
 
+// messaging option defaults
+//----------------------------------
+$formControlMessageSummaryOptionDefault: "header" !default;
 
 // form labels
 //----------------------------------
@@ -500,6 +509,7 @@ $formLayoutLabelInlineMarginTop: .5em !default;
 $formLayoutFieldInlineAlign: end !default;
 $formLayoutLabelEdgeDefault: top !default;
 $formLayoutLabelGenerationDefault: form !default;
+$formLayoutDirectionDefault: column !default;
 
 // Default value for colspan-wrap attribute
 $formLayoutColspanWrapDefault: nowrap !default;
@@ -511,7 +521,7 @@ $formLayoutHorizontalMargin:  $formControlLabelInlineGutter !default;
 // INPUT TEXT, INPUT PASSWORD, TEXT AREA
 //----------------------------------------------------------------
 // common
-$textAreaLineHeight:                  oj-px-to-rem(24px, $baseFontSize: 16px) !default;
+$textAreaLineHeight:                  1.2 !default;
 
 
 // disabled
@@ -783,6 +793,17 @@ $listViewCardMargin:         8px 8px 0 0 !default;
 $listViewHeaderFontSize:     $header5FontSize !default;
 $listViewPointerUpAnimation: (effect: "ripple") !default;
 
+// SELECTOR WIDTH
+//-----------------------------------------------------------------------------
+
+// width of the selector 
+$selectorWidth:                      18px !default;
+// height of the selector 
+$selectorHeight:                     18px !default;
+// margin of the selector 
+$selectorMargin:                     10px !default;
+
+
 // DATAGRID
 //----------------------------------------------------------------
 $collectionBorderColor:                       $neutralColor8 !default;
@@ -881,5 +902,11 @@ $tabBarItemContrastLabelColorDisabled:            $neutralColor13 !default;
 $tabBarHorizontalItemContrastLabelColorSelected:  $neutralColor3 !default;
 //=================================================================
 //=================================================================
+
+// CONVEYORBELT
+//----------------------------------------
+$conveyorBeltArrowVisibilityOptionDefault: visible !default;
+//
+//
 
 @import "../common/oj.common.variables";

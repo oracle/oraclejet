@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -294,6 +295,8 @@ var __oj_dialog_metadata =
    * @ojvbdefaultcolumns 12
    * @ojvbmincolumns 12
    *
+   * @ojuxspecs ['dialog']
+   *
    * @classdesc
    * <h3 id="dialogOverview-section">
    *   JET Dialog Component
@@ -307,12 +310,6 @@ var __oj_dialog_metadata =
    *
    *<p>A bottom button bar and semi-transparent modal overlay layer are common options that can be added.</p>
    *
-   * <h3 id="styling-section">
-   *   Styling
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"stylingDoc"}
    *
    * <h3 id="focus-section">
    *   Focus
@@ -330,7 +327,6 @@ var __oj_dialog_metadata =
    *<p>While open, the dialog widget ensures that tabbing cycles focus between elements within the dialog itself, not elements outside of it. Modal dialogs additionally prevent mouse users from clicking on elements outside of the dialog.</p>
    *
    *<p>Upon closing a dialog, focus is automatically returned to the element that had focus when the dialog was opened.</p>
-   * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.</p>
    *
    * <h3 id="touch-section">
    *   Touch End User Information
@@ -393,7 +389,6 @@ var __oj_dialog_metadata =
    * For user-defined headers, the title div is identified by the div that has the <code class="prettyprint">oj-dialog-title</code> class.
    * Note that user-defined headers must have a title div (in order to meet accesibility requirements).
    *
-   * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.</p>
    *
    * <h3 id="reparenting-section">
    *   Reparenting
@@ -472,6 +467,49 @@ var __oj_dialog_metadata =
    * &lt;/oj-dialog&gt;
    * </code></pre>
    */
+// ------------------------------------------------ oj-dialog Styling start ------------------------------------------------
+  // ----------------------------------- oj-dialog-title--------------
+  /**
+   * Class used to format the dialog title. Automatically created headers use oj-dialog-title to format the title.<br/>
+   * For user-defined headers, you may want to use the oj-dialog-title class so that the title in your user-defined header
+   * is stylistically similar to a default title.<br/>
+   * @ojstyleclass oj-dialog-title
+   * @ojdisplayname Dialog Title
+   * @ojshortdesc Class used to format the dialog title. See the Help documentation for more information.
+   * @memberof oj.ojDialog
+   */
+  // ----------------------------------- oj-dialog-footer-separator--------------
+  /**
+   * Class that works with the <code class="prettyprint">oj-dialog-footer</code> class to specify a separator between the dialog body and the dialog footer.</br>
+   * This class should be applied to the div that specifies <code class="prettyprint">slot="footer"</code> for the dialog.<br/>
+   * Note that for themes that have a built-in footer separator (specifically the iOS theme), this class has no effect.<br/>
+   * @ojstyleclass oj-dialog-footer-separator
+   * @ojdisplayname Footer Separator
+   * @ojshortdesc Class used to specify a separator between the dialog body and the dialog footer. See the Help documentation for more information.
+   * @memberof oj.ojDialog
+   */
+  // ----------------------------------- oj-progress-bar-embedded--------------
+  /**
+   * Optional class used to format a progress bar when embedded in the dialog.<br/>
+   * @ojstyleclass oj-progress-bar-embedded
+   * @ojdisplayname Embedded Progress Bar
+   * @memberof oj.ojDialog
+   */
+  // ----------------------------------- oj-focus-highlight -------------
+  /**
+   * Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app developer needs per-instance control.<br/><br/>
+   * The oj-focus-highlight class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.<br/><br/>
+   * The application-level behavior for this component is controlled in the theme by the <code class="prettyprint"><span class="pln">$focusHighlightPolicy </span></code>SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:<br/><br/>
+   * <code class="prettyprint"><span class="pln">nonPointer: </span></code>oj-focus-highlight is applied only when focus is not the result of pointer interaction. Most themes default to this value.<br/>
+   * <code class="prettyprint"><span class="pln">all: </span></code> oj-focus-highlight is applied regardless of the focus mechanism.<br/>
+   * <code class="prettyprint"><span class="pln">none: </span></code> oj-focus-highlight is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.<br/><br/>
+   * To change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed.<br/>
+   * @ojstyleclass oj-focus-highlight
+   * @ojdisplayname Focus Styling
+   * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
+   * @memberof oj.ojDialog
+   */
+  // ------------------------------------------------ oj-dialog Styling end ------------------------------------------------
 
   oj.__registerWidget('oj.ojDialog', $.oj.baseComponent, {
     version: '1.0.0',
@@ -1019,7 +1057,7 @@ var __oj_dialog_metadata =
            * @instance
            * @ojcancelable
            * @ojbubbles
-           * @property {"open"|"close"} action The action that is starting the animation.
+           * @property {"open"|"close"} action The action that is starting the animation.<br><br>
            *            The number of actions can vary from component to component.
            *            Suggested values are:
            *                    <ul>
@@ -1066,7 +1104,7 @@ var __oj_dialog_metadata =
            * @ojcancelable
            * @ojbubbles
            * @property {!Element} element target of animation
-           * @property {"open"|"close"} action The action that is ending the animation.
+           * @property {"open"|"close"} action The action that is ending the animation.<br><br>
            *                   The number of actions can vary from component to component.
            *                   Suggested values are:
            *                    <ul>
@@ -1261,7 +1299,7 @@ var __oj_dialog_metadata =
     _createBodySlot: function () {
       this._createContentDiv();
 
-      this.element[0].appendChild(this._contentDiv);  // @HTMLUpdateOK
+      this.element[0].appendChild(this._contentDiv); // @HTMLUpdateOK
       Components.subtreeAttached(this._contentDiv);
 
       this._bodySlot = document.createElement('div');
@@ -1418,7 +1456,7 @@ var __oj_dialog_metadata =
 
       if (this._uiDialogBody) {
         // unwrap the dialog body from the content element.
-        this._uiDialogBody.insertAfter(this._uiDialogContent);  // @HTMLUpdateOK safe manipulation
+        this._uiDialogBody.insertAfter(this._uiDialogContent); // @HTMLUpdateOK safe manipulation
       }
       this._uiDialogContent.remove();
       this._uiDialogBody = null;
@@ -1506,12 +1544,12 @@ var __oj_dialog_metadata =
       if (this.options.modality === 'modal') {
         var forEach = Array.prototype.forEach;
          // Find elements within dialog that have accesskey and remove marker added during open
-        var elementsInDialogWithAccesskey = this.element[0].getElementsByClassName('oj-helper-element-in-dialog-with-accesskey');
+        var elementsInDialogWithAccesskey = this.element[0].querySelectorAll('.oj-helper-element-in-dialog-with-accesskey');
         forEach.call(elementsInDialogWithAccesskey, function (element) {
           element.classList.remove('oj-helper-element-in-dialog-with-accesskey');
         });
          // Find elements with oj-helper-element-with-accesskey class, get accesskey value from data attr, set accesskey attr, remove class
-        var elementsInDOMWithAccesskey = document.getElementsByClassName('oj-helper-element-with-accesskey');
+        var elementsInDOMWithAccesskey = document.querySelectorAll('.oj-helper-element-with-accesskey');
         forEach.call(elementsInDOMWithAccesskey, function (element) {
           element.setAttribute('accesskey', element.getAttribute('data-ojAccessKey'));
           element.removeAttribute('data-ojAccessKey');
@@ -1885,7 +1923,7 @@ var __oj_dialog_metadata =
       if (this.closeButtonDiv !== null && this.closeButtonDiv !== undefined) {
         if (this.closeButtonDiv.parentElement) {
           Components.subtreeDetached(this.closeButtonDiv);
-          this.closeButtonDiv.parentElement.removeChild(this.closeButtonDiv); // @HTMLUpdateOK
+          this.closeButtonDiv.parentElement.removeChild(this.closeButtonDiv);
         }
 
         this.closeButton = null;
@@ -1999,7 +2037,7 @@ var __oj_dialog_metadata =
     _createTitlebar: function () {
       this._uiDialogTitlebarDiv = document.createElement('div');
       this._uiDialogTitlebarDiv.classList.add(OJD_HEADER);
-      this.element[0].insertBefore(this._uiDialogTitlebarDiv, this.element[0].firstChild);  // @HTMLUpdateOK
+      this.element[0].insertBefore(this._uiDialogTitlebarDiv, this.element[0].firstChild); // @HTMLUpdateOK
       Components.subtreeAttached(this._uiDialogTitlebarDiv);
 
       this._uiDialogTitlebar = $(this._uiDialogTitlebarDiv);
@@ -2023,7 +2061,7 @@ var __oj_dialog_metadata =
       // Set the content of the title.
       if (!this._IsCustomElement()) {
         if (!this.options.title) {
-          title.innerHTML = '&#160;';  // @HTMLUpdateOK
+          title.innerHTML = '&#160;'; // @HTMLUpdateOK
         }
         title.textContent = this.options.title;
       } else if (this._IsCustomElement()) {
@@ -2032,7 +2070,7 @@ var __oj_dialog_metadata =
         } else if (this.element.attr('title')) {
           title.textContent = this.element.attr('title');
         } else {
-          title.innerHTML = '&#160;';  // @HTMLUpdateOK
+          title.innerHTML = '&#160;'; // @HTMLUpdateOK
         }
       }
     },
@@ -2288,7 +2326,6 @@ var __oj_dialog_metadata =
         var node;
 
         switch (subId) {
-
           case OJD_HEADER:
           case OJD_FOOTER:
           case OJD_CONTENT:
@@ -2637,51 +2674,6 @@ var __oj_dialog_metadata =
      * </table>
      *
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-     * @memberof oj.ojDialog
-     */
-
-    /**
-     * <table class="generic-table styling-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Class(es)</th>
-     *       <th>Description</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>oj-dialog-title</td>
-     *       <td><p> Class used to format the title. Automatically created headers use <code class="prettyprint"> oj-dialog-title </code> to format the title. For user-defined headers, you may want to use the <code class="prettyprint"> oj-dialog-title </code> so that the title in your user-defined header is stylistically similar to a default title. </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-dialog-footer-separator</td>
-     *       <td><p>A separator between the dialog body and the dialog footer can be added by using a second style class (<code class="prettyprint">oj-dialog-footer-separator</code>) in the footer. So use:
-     *           <ul>
-     *             <li>oj-dialog-footer oj-dialog-footer-separator</li>
-     *           </ul>
-     *      to add a footer separator to the dialog.
-     *        Note that for themes that have a built-in footer separator (specifically the iOS theme),
-     *        this class has no effect.
-     *     <p>See the demo section for a live example of the footer separator. </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-progress-bar-embedded</td>
-     *       <td><p> Optional markup. Used to format a progress bar embedded in the dialog header.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-focus-highlight</td>
-     *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
-     *     </tr>
-     *
-     *   </tbody>
-     * </table>
-     *
-     * <p> Note that the dialog component wraps additional divs around the user's content and also performs other DOM manipulations.
-     * Thus, the user should be careful if they wish to engage in advanced coding approaches.
-     * In general, it is best to target DOM elements by id or class name
-     * (e.g., developers should not rely on relative positioning of dialog DOM elements).
-     *
-     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
      * @memberof oj.ojDialog
      */
 
@@ -3263,7 +3255,7 @@ var __oj_dialog_metadata =
           // }
 
           this.handles[handle] = '.oj-resizable-' + handle;
-          this.element.append(axis);   // @HTMLUpdateOK
+          this.element.append(axis); // @HTMLUpdateOK
         }
       }
 

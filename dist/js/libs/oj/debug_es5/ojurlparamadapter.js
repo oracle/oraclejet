@@ -1,15 +1,14 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
 define(['ojs/ojcore', 'ojs/ojurlpathadapter', 'ojs/ojlogger'],
 function(oj, UrlPathAdapter, Logger) {
   "use strict";
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
@@ -19,7 +18,7 @@ var adapter = function () {
   var _PARAM_NAME = '_ojCoreRouter';
   /**
    * Parse document.location.search into
-   * [{ name: value }, { name: value }]
+   * [[ name, value ], [ name, value ]]
    */
 
   function parseSearch() {
@@ -30,7 +29,7 @@ var adapter = function () {
     if (search) {
       search.split('&').forEach(function (pair) {
         var parts = pair.split('=');
-        params.push(_defineProperty({}, parts[0], decode(parts[1])));
+        params.push(parts);
       });
     }
 
@@ -38,36 +37,29 @@ var adapter = function () {
   }
   /**
    * Given an array of
-   * [{ name1: value1 }, { name2: value2 }]
+   * [[ name1, value1 ], [ name2, value2 ]]
    * recreate a search string, "name1=value1&name2=value2"
    * @param {Array<object>} params An array of param objects
    */
 
 
   function recreateSearch(params) {
-    var search = [];
-    params.forEach(function (param) {
-      // Only one key for each pair
-      var name = Object.keys(param)[0];
-      search.push(name + '=' + encode(param[name]));
+    var search = params.map(function (param) {
+      return param[0] + '=' + param[1];
     });
     return search.join('&');
   }
   /**
-   * Given search parameters [ { _ojCoreRouter: '...'}, { foo: 'bar' } ], find
-   * the '_ojCoreRouter' value
+   * Given search parameters from the URL, find the value of '_ojCoreRouter'
    */
 
 
   function getRouterParamValue() {
     var allParams = parseSearch();
-    var routerValue = '';
-    allParams.forEach(function (param) {
-      if (param[_PARAM_NAME]) {
-        routerValue = param[_PARAM_NAME];
-      }
+    var found = allParams.find(function (param) {
+      return param[0] === _PARAM_NAME;
     });
-    return routerValue;
+    return found && decode(found[1]);
   }
   /**
    * Given a string of route states (/path1/path2/path3), encode the value and
@@ -77,18 +69,16 @@ var adapter = function () {
 
 
   function setRouterParamValue(routerValue) {
+    var newValue = encode(routerValue);
     var allParams = parseSearch();
-    var ojParamExists = false;
-    allParams.forEach(function (param) {
-      if (param[_PARAM_NAME]) {
-        // eslint-disable-next-line no-param-reassign
-        param[_PARAM_NAME] = routerValue;
-        ojParamExists = true;
-      }
-    }); // If no _ojCoreRouter param exists, create it
+    var found = allParams.find(function (param) {
+      return param[0] === _PARAM_NAME;
+    });
 
-    if (!ojParamExists) {
-      allParams.push(_defineProperty({}, _PARAM_NAME, routerValue));
+    if (found) {
+      found[1] = newValue;
+    } else {
+      allParams.push([_PARAM_NAME, newValue]);
     }
 
     return recreateSearch(allParams);
@@ -138,6 +128,8 @@ var adapter = function () {
 
 
   function UrlParamAdapter() {
+    // Use UrlPathAdapter with "" as the baseUrl to handle parsing states stored
+    // in the query parameter
     this._pathAdapter = new UrlPathAdapter('');
   }
   /**
@@ -154,7 +146,9 @@ var adapter = function () {
 
 
   UrlParamAdapter.prototype.getRoutesForUrl = function () {
-    var url = getRouterParamValue();
+    // If no router state query param value exists, pass path adapter blank
+    // for the URL so that it generates the default route.
+    var url = getRouterParamValue() || '';
 
     var routes = this._pathAdapter.getRoutesForUrl(url);
 

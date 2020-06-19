@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -143,6 +144,9 @@ var adapter = function () {
 
 
   UrlPathAdapter.prototype.getRoutesForUrl = function (url) {
+    // If url is given, then a decorator (UrlParamAdapter) is calling us with a
+    // value that it wants to have parsed. If undefined, then the router is
+    // calling us directly.
     var path = url !== undefined ? url : document.location.pathname;
     var baseUrl = this._baseUrl; // Remove baseUrl from the URL
 

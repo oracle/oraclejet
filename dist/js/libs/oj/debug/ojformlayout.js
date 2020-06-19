@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -28,8 +29,7 @@ var __oj_form_layout_metadata =
       "enumValues": [
         "column",
         "row"
-      ],
-      "value": "column"
+      ]
     },
     "labelEdge": {
       "type": "string",
@@ -54,6 +54,19 @@ var __oj_form_layout_metadata =
     "maxColumns": {
       "type": "number",
       "value": 1
+    },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "efficient"
     }
   },
   "methods": {
@@ -76,9 +89,11 @@ var __oj_form_layout_metadata =
  *
  * @ojsignature {target: "Type", value:"class ojFormLayout extends JetElement<ojFormLayoutSettableProperties>"}
  *
- * @ojpropertylayout {propertyGroup: "common", items: ["maxColumns", "labelEdge", "labelWidth"]}
+ * @ojpropertylayout {propertyGroup: "common", items: ["maxColumns", "labelEdge", "labelWidth", "readonly"]}
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 2
+ *
+ * @ojuxspecs ['form-layout']
  *
  * @classdesc
  * <h3 id="optionOverview-section">
@@ -136,6 +151,23 @@ var __oj_form_layout_metadata =
  * </p>
  */
 
+// --------------------------------------------------- oj.ojFormLayout Styling Start ------------------------------------------------------------
+/**
+ * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+ * The form layout style classes should be applied to the oj-form-layout component. <br/>
+ */
+// ---------------- oj-formlayout-full-width --------------
+/**
+ * In Redwood by default a form layout has a max width, add this class if you'd like to opt out and have the form layout to stretch the full width.
+ * @ojstyleclass oj-formlayout-full-width
+ * @ojdisplayname Form Layout Full Width
+ * @memberof oj.ojFormLayout
+ * @ojtsexample
+ * &lt;oj-form-layout class="oj-formlayout-full-width">
+ * &lt;/oj-form-layout>
+ */
+// --------------------------------------------------- oj.ojFormLayout Styling end ------------------------------------------------------------
+
 /**
  * @member
  * @name colspanWrap
@@ -173,10 +205,10 @@ var __oj_form_layout_metadata =
  * @memberof oj.ojFormLayout
  * @instance
  * @type {string}
- * @default "column"
  * @ojvalue {string} "column" Components are laid out in columns
  * @ojvalue {string} "row" Components are laid out in rows
  * @desc Specifies the layout direction of the form layout children.
+ * <p>The default value depends on the theme.</p>
  *
  * @example <caption>Initialize the oj-form-layout with the <code class="prettyprint">direction</code> attribute specified:</caption>
  * &lt;oj-form-layout direction="row">
@@ -209,6 +241,8 @@ var __oj_form_layout_metadata =
  * <p>The default value varies by theme, and it works well for the theme in most cases.
  * If this attribute is set to an explicit value, The label-edge attribute on all form controls should also be set to an explict value.
  * For example, if this attribute is set to "start" or "top", the label-edge attribute of all form controls should be set to "provided".</p>
+ *
+ * @ojshortdesc Specifies how the label is created and aligned with its form control. See the Help documentation for more information.
  *
  * @example <caption>Initialize the oj-form-layout with the <code class="prettyprint">label-edge</code> attribute specified:</caption>
  * &lt;oj-form-layout label-edge="top">
@@ -306,6 +340,64 @@ var __oj_form_layout_metadata =
  *
  * // setter
  * myFormLayout.maxColumns = 2;
+ */
+
+/**
+ * @member
+ * @name readonly
+ * @ojshortdesc Specifies whether the form is readonly. See the Help documentation for more information.
+ * @expose
+ * @memberof oj.ojFormLayout
+ * @instance
+ * @type {boolean}
+ * @default false
+ * @desc Specifies whether the form is readonly. A readonly form has no reserved rows for user assistance text.
+ * <p>
+ * The oj-form-layout provides its readonly attribute value and the form components
+ * consume it if it is not already set explicitly.
+ * For example, if oj-form-layout is set to readonly='true',
+ * all the form components it contains will be readonly='true' by default.
+ * </p>
+ */
+
+/**
+ * @member
+ * @name userAssistanceDensity
+ * @ojunsupportedthemes ["Alta"]
+ * @ojshortdesc Specifies the density of the form component's user assistance presentation.
+ * @expose
+ * @memberof oj.ojFormLayout
+ * @instance
+ * @type {string}
+ * @ojsignature {target: "Type", value: "'reflow'|'efficient'|'compact'",  jsdocOverride: true}
+ * @ojvalue {string} "reflow" If reflow, messages, help, hints, and required are all shown inline under the field with no reserved space.
+ * @ojvalue {string} "efficient" messages, help, hints, and required are all shown inline under the field with reserved space underneath.
+ * @ojvalue {string} "compact" messages, help, hints, and required will not be shown inline; they will show in a mode that keeps the screen more compact, like
+ * a popup for the messages, and a required icon to indicate Required.
+ * @default "efficient"
+ *
+ * @desc <p>Specifies the density of the form component's user assistance presentation.
+ * It can be shown inline with reserved rows to prevent reflow if
+ * a user assistance text shows up, inline without reserved rows,
+ * or it can be shown compactly in a popup instead.</p>
+ * <p>
+ * The oj-form-layout provides its user-assistance-density attribute value or its default
+ * value and the form components consumes it if it is not already set explicitly.
+ * For example, if oj-form-layout is set or defaults to
+ * user-assistance-density='efficient', all the
+ * form components it contains will be user-assistance-density='efficient' by default.
+ * This is why when a form component is inside an oj-form-layout component
+ * the form component's user-assistance-density is 'efficient',
+ * and when a form component is not inside an oj-form-layout
+ * component, the form component's user-assistance-density is 'reflow'.
+ * </p>
+ * <p>
+ * A form component can explicitly
+ * set its own user-assistance-density attribute which will take
+ * precedence over the oj-form-layout's.
+ * </p>
+ *
+ * <p>This attribute is ignored in the Alta theme.</p>
  */
 
 /**
@@ -455,6 +547,7 @@ function ojFormLayout(context) {
 
   this.createDOM = function () {
     element.classList.add('oj-form-layout');
+    element.classList.add('oj-formlayout-max-cols-' + element.maxColumns);
 
     // Create wrapper div
     ojForm = document.createElement('div');
@@ -462,6 +555,21 @@ function ojFormLayout(context) {
     ojForm.setAttribute('data-oj-context', '');
     ojForm.setAttribute('data-oj-internal', '');
     ojForm.setAttribute(BONUS_DOM_ATTR, ''); // @HTMLUpdateOK
+
+    // set style
+    if (element.readonly) {
+      ojForm.classList.remove('oj-enabled');
+    } else {
+      ojForm.classList.add('oj-enabled');
+    }
+
+    // set styleclass for user-assistance-density
+    const efficientStyleClass = 'oj-efficient';
+    if (element.userAssistanceDensity === 'efficient') {
+      ojForm.classList.add(efficientStyleClass);
+    } else {
+      ojForm.classList.remove(efficientStyleClass);
+    }
 
     // wrap the children with the div
     // we use .firstChild and not .firstElementChild so that comment
@@ -471,6 +579,42 @@ function ojFormLayout(context) {
     }
 
     element.appendChild(ojForm); // @HTMLUpdateOK appending internally created DOM element
+  };
+
+  // Handles property changes for oj-form-layout.
+  // handlePropertyChanged is an optional DefinitionalElementBridge method where if defined,
+  // will be called with the property and value that changed
+  // letting the component handle a partial update case. The component
+  // can return true in this callback to skip a full render call to updateDOM
+  // which will be done if this method returns false or undefined.
+
+  // eslint-disable-next-line no-unused-vars
+  self.handlePropertyChanged = function (property, value) {
+    // if readonly, just update the styleclass and move on.
+    if (property === 'readonly') {
+      if (element.readonly) {
+        ojForm.classList.remove('oj-enabled');
+      } else {
+        ojForm.classList.add('oj-enabled');
+      }
+      return true;
+    }
+
+    // if ojFormLayout's userAssistanceDensity property changes,
+    // update the styleclass.
+    // See _childUserAssistanceDensityChanged for formlayout's responsibilities
+    // when the form control's userAssistanceDensity changes.
+    if (property === 'userAssistanceDensity') {
+      const efficientStyleClass = 'oj-efficient';
+      if (element.userAssistanceDensity === 'efficient') {
+        ojForm.classList.add(efficientStyleClass);
+      } else {
+        ojForm.classList.remove(efficientStyleClass);
+      }
+      return true;
+    }
+
+    return false;
   };
 
   /**
@@ -644,6 +788,11 @@ function ojFormLayout(context) {
    */
   function _updateOjFormDiv() {
     var maxCols = element.maxColumns;
+    var newClass = 'oj-formlayout-max-cols-' + element.maxColumns;
+    var cName = element.className;
+    if (cName.indexOf('oj-formlayout-max-cols-') !== -1) {
+      element.className = cName.replace(/oj-formlayout-max-cols-[\d+]/, newClass);
+    }
 
     if (element.labelEdge === 'start') {
       // If labelWidth is set to 0 (including "0", "0px", "0%", etc.), we don't need the
@@ -859,7 +1008,12 @@ function ojFormLayout(context) {
     var span = document.createElement('span');
     span.id = editableElem.id + '|hint';
     span.textContent = editableElem.labelHint;
-    _updateLabelHelpAndShowRequired(editableElem, ojLabel);
+
+    // For Alta theme, we ignore userAssistanceDensity and always show help on label
+    if (_showUserAssistanceNotInline(editableElem)) {
+      _updateLabelHelpAndShowRequired(editableElem, ojLabel);
+    }
+
     ojLabel.appendChild(span); // @HTMLUpdateOK append span containing trusted content.
 
     _linkLabelAndElement(ojLabel, editableElem);
@@ -914,9 +1068,13 @@ function ojFormLayout(context) {
   function _childHelpHintsChanged(event) {
     var editable = event.target;
     var ojLabel = _getOjLabelForChildElement(editable);
+    let help = event.detail.value;
 
     if (ojLabel) {
-      ojLabel.help = event.detail.value;
+      let showHelpOnLabel = _showRequiredHelpOnLabel(editable);
+      if (showHelpOnLabel) {
+        ojLabel.help = help;
+      }
     }
   }
 
@@ -931,13 +1089,88 @@ function ojFormLayout(context) {
   function _childRequiredChanged(event) {
     var editable = event.target;
     var ojLabel = _getOjLabelForChildElement(editable);
-
     if (ojLabel) {
-      ojLabel.showRequired = event.detail.value;
+      let required = event.detail.value;
+      // need to see if we should show required on the label.
+      // For example, in 'inline' mode, required is not shown on the label.
+      let showRequiredOnLabel;
+      if (required) {
+        showRequiredOnLabel = _showRequiredHelpOnLabel(editable);
+      } else {
+        showRequiredOnLabel = false;
+      }
+      ojLabel.showRequired = showRequiredOnLabel;
     }
   }
 
   /**
+   * listener for userAssistanceDensityChanged events on the form controls.
+   * When userAssistanceDensity changes on a form control, ojformlayout needs
+   * to update the form control's label it created (if any).
+   * For example, when 'compact', the label has the required icon and
+   * the help definition/source icon, otherwise it does not.
+   *
+   * @param {Event} event the change event object
+   * @memberof oj.ojFormLayout
+   * @instance
+   * @private
+   */
+  function _childUserAssistanceDensityChanged(event) {
+    let eventTarget = event.target;
+    let userAssistanceValue = event.detail.value; // compact or not.
+    let userAssistancePrevious = event.detail.previousValue;
+
+    // In this callback, we only care about if userAssistanceDensity
+    // changed from or changed to 'compact'. So, for example,
+    // if it is going from 'efficient' to 'reflow', then we can return
+    if (userAssistanceValue !== 'compact' && userAssistancePrevious !== 'compact') {
+      return;
+    }
+
+    let ojLabel = _getOjLabelForChildElement(eventTarget);
+    // For Alta theme, we ignore userAssistanceDensity and always show help on label
+    if (_showUserAssistanceNotInline(eventTarget)) {
+      _updateLabelHelpAndShowRequired(eventTarget, ojLabel);
+    } else {
+      // clear out label because if it shown inline
+      if (eventTarget.required) {
+        ojLabel.showRequired = false;
+      }
+      const helpHints = eventTarget.helpHints;
+      if (helpHints) {
+        if (helpHints.definition || helpHints.source) {
+          ojLabel.help = { definition: null, source: null };
+        }
+      }
+    }
+  }
+
+  /*
+  * Returns true if required is not shown inline, meaning it needs to be on the label.
+  * @param {Element} editable
+  * @memberof oj.ojFormLayout
+  * @instance
+  * @private
+  */
+  function _showRequiredHelpOnLabel(editable) {
+    let defaultOptions = ThemeUtils.parseJSONFromFontFamily('oj-form-control-option-defaults');
+    // this will return 'use' or 'ignore'. This tells us whether we should use the
+    // user-assistance-density attribute or ignore it. If we ignore it, we will
+    // use the displayOptions attribute.
+    var useUserAssistanceOption = defaultOptions.useUserAssistanceOptionDefault;
+
+    let displayMethod = useUserAssistanceOption === 'use' ?
+      editable.userAssistanceDensity : 'displayOptions';
+    return displayMethod === 'compact' || displayMethod === 'displayOptions';
+  }
+
+  /**
+   * Components with label-hint and label-edge of none or inside create
+   * their own labels, and therefore these event listeners are not created here,
+   * but instead event listeners are in the BaseInsideLabelStrategy.
+   * Only when the oj-form-layout creates the label
+   * (label-edge='top' on oj-form-layout and 'provided' on component)
+   * do we listen here.
    * If the child element doesn't have listeners yet, add them.
    * Only the component events bubble and not the property change events,
    * so it doesn't work to listen on the oj-form-layout for
@@ -953,6 +1186,7 @@ function ojFormLayout(context) {
     child.addEventListener('labelHintChanged', _childLabelHintChanged);
     child.addEventListener('helpHintsChanged', _childHelpHintsChanged);
     child.addEventListener('requiredChanged', _childRequiredChanged);
+    child.addEventListener('userAssistanceDensityChanged', _childUserAssistanceDensityChanged);
   }
 
   /**
@@ -1010,6 +1244,7 @@ function ojFormLayout(context) {
             child.removeEventListener('labelHintChanged', _childLabelHintChanged);
             child.removeEventListener('helpHintsChanged', _childHelpHintsChanged);
             child.removeEventListener('requiredChanged', _childRequiredChanged);
+            child.removeEventListener('userAssistanceDensityChanged', _childUserAssistanceDensityChanged);
           }
         }
       }
@@ -1066,7 +1301,72 @@ function ojFormLayout(context) {
         ojLabel.help = helpHints;
       }
     }
-    ojLabel.showRequired = comp.required;
+    let required = comp.required;
+    let showRequiredOnLabel;
+    if (required) {
+      showRequiredOnLabel = _showRequiredHelpOnLabel(comp);
+    } else {
+      showRequiredOnLabel = false;
+    }
+    ojLabel.showRequired = showRequiredOnLabel;
+  }
+
+  // Move all non-element nodes preceding elem into ojFlex
+  function _movePrecedingNonElementNodes(ojFlex, elem) {
+    var firstNode;
+
+    // Find the first of all non-element nodes preceding elem
+    var sibling = elem.previousSibling;
+    while (sibling && sibling.nodeType !== 1) {
+      firstNode = sibling;
+      sibling = sibling.previousSibling;
+    }
+
+    // Move all the non-element nodes into ojFlex in order
+    while (firstNode && firstNode !== elem) {
+      sibling = firstNode.nextSibling;
+      ojFlex.appendChild(firstNode);
+      firstNode = sibling;
+    }
+  }
+
+  // Move all non-element nodes succeeding ojFlex into ojFlex
+  // Stop if an oj-bind-* comment node is encountered.
+  function _moveSucceedingNonElementNodes(ojFlex) {
+    while (ojFlex.nextSibling) {
+      var sibling = ojFlex.nextSibling;
+      if (sibling.nodeType === 1) {
+        // Stop if we get to an element
+        break;
+      } else if (sibling.nodeType === 8) {
+        var str = sibling.textContent.trim();
+        // Stop if we get to a start comment node for oj-bind-*
+        // It needs to stay with the next element
+        if (str.indexOf('oj-bind-') === 0) {
+          break;
+        }
+      }
+      // Move the node into ojFlex
+      ojFlex.appendChild(sibling);
+    }
+  }
+
+  // Create a new flex div for a row
+  function _createRowDiv(currentRow, insertBeforeElem) {
+    // If we are ending a row, move any succeeding non-element nodes into it
+    // because there may be end comment node for the last element.
+    if (currentRow) {
+      _moveSucceedingNonElementNodes(currentRow);
+    }
+
+    var newRow = _createDivElement('oj-flex');
+    insertBeforeElem.parentElement.insertBefore(newRow, insertBeforeElem); // @HTMLUpdateOK insert div containing trusted content.
+
+    // After starting a new row, move any preceding non-element nodes into it
+    // because there may be start comment nodes for the next element.
+    _movePrecedingNonElementNodes(newRow, newRow);
+
+    return newRow;
   }
 
   /**
@@ -1098,6 +1398,10 @@ function ojFormLayout(context) {
       var label = childArray[j];
       colspan = 1;
 
+      if (directionIsColumn || pairCnt % maxCols === 0) {
+        currentRow = _createRowDiv(currentRow, label);
+      } // This will be the oj-flex div for a row
+
       // if the current child element is on the unresolvedChildren list, skip it
       if (unresolvedChildren.indexOf(label) === -1) {
         var tagName = label.tagName.toLowerCase();
@@ -1106,14 +1410,12 @@ function ojFormLayout(context) {
           var elem = childArray[j];
 
           // for direction === "row", we only render the oj-flex div once per row.
-          currentRow = _addFlexDivs(label, elem,
-                                    directionIsColumn || pairCnt % maxCols === 0);
+          _addFlexDivs(label, elem, currentRow);
         } else if ('labelHint' in label && _isLabelByChild(label)) {
           // In case of label edge = inside or top generated by component,
           // Form layout does not render the label.
           // But we want all the flow to be similar to what it does if component was rendering a label
-          currentRow = _addFlexDivs(label, null,
-            directionIsColumn || pairCnt % maxCols === 0);
+          _addFlexDivs(label, null, currentRow);
         } else {
           // handle the non oj-label child, which includes oj-label-value
           // if the child element supports colspan, we need to calculate that actual
@@ -1133,11 +1435,13 @@ function ojFormLayout(context) {
               if (element.colspanWrap === 'wrap' && availableCols < colspan && curCol > 0) {
                 // If colspanWrap is 'wrap' and there isn't enough column left to satisfy colspan,
                 // then just add empty flex items to take up remaining columns and adjust the counters.
-                // _addFlexDivs will start a new row.
                 _addMissingFlexItems(currentRow, pairCnt);
                 pairCnt += availableCols;
                 curCol = 0;
                 colspan = Math.min(colspan, maxCols);
+
+                // Start a new row
+                currentRow = _createRowDiv(currentRow, label);
               } else {
                 // don't exceed availableCols
                 colspan = Math.min(colspan, availableCols);
@@ -1149,9 +1453,7 @@ function ojFormLayout(context) {
             }
           }
 
-          currentRow = _addFlexDivs(label, null,
-                                    directionIsColumn || pairCnt % maxCols === 0,
-                                    colspan);
+          _addFlexDivs(label, null, currentRow, colspan);
         }
       }
       pairCnt += colspan;
@@ -1180,8 +1482,8 @@ function ojFormLayout(context) {
 
     // If elem has a colspan property, then
     if (elem && 'colspan' in elem && elem.colspan) {
-      colspan = Math.min(Math.floor(elem.colspan), availableCols); // force integer colspan values,
-                                                                   // don't exceed availableCols
+      colspan = Math.min(Math.floor(elem.colspan), availableCols); /* force integer colspan values,
+                                                                      don't exceed availableCols */
     }
 
     return ((Math.floor(100000 / element.maxColumns) / 1000) * colspan) + '%';
@@ -1260,17 +1562,12 @@ function ojFormLayout(context) {
     }
   }
 
-  function _addFlexDivs(label, elem, createOjFlex, colspan) {
-    var ojFlex;
+  function _addFlexDivs(label, elem, ojFlex, colspan) {
     var emptyLabelFlexItem;
 
-    if (createOjFlex) {
-      ojFlex = _createDivElement('oj-flex');
-    } else {
-      ojFlex = label.previousElementSibling;
-    } // This will be the oj-flex div for a row
-
     var slotWidth = elem ? _getLabelFlexItemWidth() : _getFullFlexItemWidth(label, colspan);
+
+    _movePrecedingNonElementNodes(ojFlex, label);
 
     if (!elem) {
       // We need this zero width flex-item because we need to have pairs of flex-items
@@ -1281,7 +1578,6 @@ function ojFormLayout(context) {
     var labelOjFlexItem = _createDivElement('oj-flex-item');
     ojFlex.appendChild(labelOjFlexItem); // @HTMLUpdateOK append div containing trusted content.
 
-    label.parentElement.insertBefore(ojFlex, label); // @HTMLUpdateOK insert div containing trusted content.
     labelOjFlexItem.appendChild(label); // @HTMLUpdateOK append oj-label containing trusted content.
 
 
@@ -1373,7 +1669,7 @@ function ojFormLayout(context) {
       }
     }
 
-    return ojFlex;
+    _moveSucceedingNonElementNodes(ojFlex);
   }
 
   /**
@@ -1496,8 +1792,10 @@ function ojFormLayout(context) {
    * @private
    */
   function _removeElementAndReparentChildren(elem) {
-    while (elem.firstElementChild) {
-      var child = elem.firstElementChild;
+    // We need to reparent all nodes, not just element nodes because some comment nodes
+    // may be oj-bind-* components.
+    while (elem.firstChild) {
+      var child = elem.firstChild;
       elem.parentNode.insertBefore(child, elem); // @HTMLUpdateOK reparenting existing element.
       var refresh = 'refresh';
       if (child[refresh] && child.classList.contains('oj-complete')) child.refresh();
@@ -1522,6 +1820,28 @@ function ojFormLayout(context) {
     }
   }
 
+ /**
+   * In the Alta theme, we show required on the label with an * icon,
+   * and help on label with a ? icon.
+   * In the Redwood theme, we show 'Required'/help as text inline if
+   * user-assistance-density attribute is not 'compact',
+   * else we show it as an * on the icon.
+   */
+  function _showUserAssistanceNotInline(editableElem) {
+    let defaultOptions = ThemeUtils.parseJSONFromFontFamily('oj-form-control-option-defaults');
+    let resolvedUserAssistance = 'displayOptions';
+
+    if (defaultOptions) {
+      // this will return 'use' or 'ignore'. This tells us whether we should use the
+      // user-assistance-density attribute or ignore it. If we ignore it, we will
+      // use the displayOptions attribute.
+      let useUserAssistanceOption = defaultOptions.useUserAssistanceOptionDefault;
+      resolvedUserAssistance =
+        useUserAssistanceOption === 'use' ? editableElem.userAssistanceDensity : 'displayOptions';
+    }
+    return (resolvedUserAssistance === 'compact' || resolvedUserAssistance === 'displayOptions');
+  }
+
   /**
    * Some properties of the form is based on the theme.
    * We first check if the user has set a value. If so, we use it and do not find a default from themes.
@@ -1537,6 +1857,9 @@ function ojFormLayout(context) {
       if (!componentContext.props.colspanWrap) {
         element.colspanWrap = themeDefault.colspanWrap;
       }
+      if (!componentContext.props.direction) {
+        element.direction = themeDefault.direction;
+      }
     } else {
       if (!element.labelEdge) {
         element.labelEdge = themeDefault.labelEdge;
@@ -1544,14 +1867,19 @@ function ojFormLayout(context) {
       if (!element.colspanWrap) {
         element.colspanWrap = themeDefault.colspanWrap;
       }
+      if (!element.direction) {
+        element.direction = themeDefault.direction;
+      }
     }
   }
 }
 
 // static function called by the bridge to get attribute default values
 ojFormLayout.getDynamicDefaults = function () {
+  var themeDefault = (ThemeUtils.parseJSONFromFontFamily('oj-form-layout-option-defaults') || {});
   return {
-    labelEdge: (ThemeUtils.parseJSONFromFontFamily('oj-form-layout-option-defaults') || {}).labelEdge
+    labelEdge: themeDefault.labelEdge,
+    direction: themeDefault.direction
   };
 };
 
@@ -1561,7 +1889,27 @@ ojFormLayout.getDynamicDefaults = function () {
 (function () {
   __oj_form_layout_metadata.extension._CONSTRUCTOR = ojFormLayout;
   __oj_form_layout_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
-  oj.CustomElementBridge.register('oj-form-layout', { metadata: __oj_form_layout_metadata });
+  oj.CustomElementBridge.register('oj-form-layout', {
+    metadata: oj.CollectionUtils.mergeDeep(
+      __oj_form_layout_metadata, {
+        properties: {
+          readonly: {
+            binding: {
+              provide: [{ name: 'containerReadonly' },
+              { name: 'readonly' }],
+              consume: { name: 'containerReadonly' }
+            }
+          },
+          userAssistanceDensity: {
+            binding: {
+              provide: [{ name: 'containerUserAssistanceDensity' },
+              { name: 'userAssistanceDensity', default: 'efficient' }],
+              consume: { name: 'containerUserAssistanceDensity' }
+            }
+          }
+        }
+      })
+  });
 }());
 
 });

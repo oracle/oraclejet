@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 
 // helpers
 @import "../common/helpers/oj.common.helpers";
@@ -57,10 +58,14 @@
 @import "widgets/oj.alta.android.datagrid";
 @import "widgets/oj.alta.android.rowexpander";
 @import "widgets/oj.alta.android.listview";
+@import "widgets/oj.alta.android.listitemlayout";
 @import "widgets/oj.alta.android.indexer";
 @import "widgets/oj.alta.android.masonry";
 @import "widgets/oj.alta.android.activitystream";
 @import "widgets/oj.alta.android.waterfalllayout";
+@import "widgets/oj.alta.android.selector";
+@import "widgets/oj.alta.android.streamlist";
+
 
 // data visualizations
 @import "widgets/oj.alta.android.dvt.base";

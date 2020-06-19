@@ -1,0 +1,18 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+$tabBarIconOnlyStyle:                               none !default;
+// values could be "circle" or "none"
+$tabBarHorizontalIconOnlyStyle:                     none !default;
+//Align label of vertical tab bar, support either null or center
+$tabBarVerticalItemLabelTextAlign:                  null !default;
+//Valid values are either null or even which ensures equal size for all tabs
+$tabBarHorizontalItemWidthDistribution:             null !default;
+
+//----------Animations------------
+$tabBarHorizontalAddAnimation:                      ((effect: "expand", direction:"width"), "fadeIn") !default;
+$tabBarHorizontalRemoveAnimation:                   ((effect: "collapse", direction:"width", persist:"all"), "fadeOut") !default;
+$tabBarAddAnimation:                                ((effect: "expand"), "fadeIn") !default;
+$tabBarRemoveAnimation:                             ((effect: "collapse"), "fadeOut") !default;
+$tabBarUpdateAnimation:                             (effect: "fadeIn") !default;
+$tabBarPointerUpAnimation:                          (effect: "ripple") !default;

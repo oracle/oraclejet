@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!
 // WARNING: do not directly import this file, instead import the
 //          version in your theme's directory,
@@ -92,6 +93,7 @@
     .oj-nbox-node {
 
         background-color: $dvtComponentBgColor;
+        border-radius: 1px;
 
     }
 
@@ -111,6 +113,12 @@
 
       font-size: $fontSize;
 
+    }
+
+    //Size of the background image file
+    .oj-nbox-node-initials-background {
+      width: $avatarXxlInnerSize;
+      height: $avatarXxlInnerSize;
     }
 
     .oj-nbox-node-secondarylabel {
@@ -145,6 +153,47 @@
         font-size: $fontSize;
         font-weight: $header4FontWeight;
       
+    }
+    .oj-nbox-node-initials {
+      fill: $neutralColor1;
+      font-size: $avatarXxsInitialsFontSize;
+    }
+
+    .oj-nbox-node-initials.oj-nbox-node-initials-lg {
+      font-size: $avatarXsInitialsFontSize;
+
+    }
+
+    .oj-nbox-node-initials-background-neutral {
+      fill: $neutralColor13;
+    }
+
+    .oj-nbox-node-initials-background-red {
+      fill: $avatarRed;
+    }
+
+    .oj-nbox-node-initials-background-orange {
+      fill: $avatarOrange;
+    }
+
+    .oj-nbox-node-initials-background-forest {
+      fill: $avatarForest;
+    }
+
+    .oj-nbox-node-initials-background-green {
+      fill: $avatarGreen;
+    }
+
+    .oj-nbox-node-initials-background-teal {
+      fill: $avatarTeal;
+    }
+
+    .oj-nbox-node-initials-background-mauve {
+      fill: $avatarMauve;
+    }
+
+    .oj-nbox-node-initials-background-purple {
+      fill: $avatarPurple;
     }
   }
 }

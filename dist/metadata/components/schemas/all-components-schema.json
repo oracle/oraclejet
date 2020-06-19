@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "all-components-schema.json",
+  "title": "JSON Schema for validating allComponents.json",
+
+  "type": "object",
+
+  "properties": {
+    "jetVersion": {
+      "$ref": "component-schema.json#/definitions/semverExactDef"
+    },
+    "components": {
+      "type": "object",
+      "patternProperties": {
+        "^(oj[\u002d]{1}[a-z0-9_\u002d]+)$": {
+          "$ref": "component-schema.json"
+        }
+      },
+      "additionalProperties": false
+    },
+    "styleClasses": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {"$ref": "component-schema.json#/definitions/styleClassStrictDef"},
+          {"$ref": "component-schema.json#/definitions/styleSetStrictDef"},
+          {"$ref": "component-schema.json#/definitions/styleTemplateStrictDef"}
+        ]
+      }
+    },
+    "additionalProperties": false
+  },
+  "additionalProperties": false
+}

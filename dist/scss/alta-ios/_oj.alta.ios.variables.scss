@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 @import "../utilities/oj.utilities.units";
 @import "../common/oj.common.palette";
 
@@ -477,6 +478,7 @@ $buttonsetBorderRadius: 5px !default;
 
 $buttonsetChromingOptionDefault: outlined !default;
 
+
 // width
 //----------------------------------
 // default: equal width only for full- and outline-chrome buttons, not half chrome
@@ -546,7 +548,12 @@ $formControlPlaceholderColor:         $textColor4 !default;
 // form control option defaults
 //----------------------------------
 $formControlLabelEdgeDefault: provided !default;
+$inputFormControlReadonlyDefault: input !default;
+$formControlUseUserAssistanceOptionDefault: ignore !default;
 
+// messaging option defaults
+//----------------------------------
+$formControlMessageSummaryOptionDefault: "header" !default;
 
 // form labels
 //----------------------------------
@@ -580,6 +587,7 @@ $formLayoutLabelInlineMarginTop: .5em !default;
 $formLayoutFieldInlineAlign: end !default;
 $formLayoutLabelEdgeDefault: top !default;
 $formLayoutLabelGenerationDefault: form !default;
+$formLayoutDirectionDefault: column !default;
 
 // Default value for colspan-wrap attribute
 $formLayoutColspanWrapDefault: nowrap !default;
@@ -590,7 +598,7 @@ $formLayoutHorizontalMargin:  $formControlLabelInlineGutter !default;
 
 // INPUT TEXT, INPUT PASSWORD, TEXT AREA
 //----------------------------------------------------------------
-$textAreaLineHeight:                  oj-px-to-rem(23px, $baseFontSize: 16px) !default;
+$textAreaLineHeight:                  1.2 !default;
 // INPUT DATE
 $inputDateTimeConverterYearOptionDefault: 2-digit !default;
 $inputDateTimeShowPickerOnDesktopOptionDefault: enabled !default;
@@ -606,6 +614,9 @@ $inputSearchIconPadding:              0 6px 0 9px !default;
 $inputNumberInputToButtonMargin: 10px !default;
 
 $inputNumberButtonWidth: 50px;
+
+// the chroming of input number buttons
+$inputNumberButtonChromingOptionDefault: outlined !default;
 
 // RADIOSET AND CHECKBOXSET
 // ios has input rendered as a background image and label comes before image
@@ -959,6 +970,15 @@ $indexerItemWidth:      	32px !default;
 $indexerTextColor:      	$brandColorDark1 !default;
 $indexerTextColorDisabled:      $brandColorDark1 !default;
 
+// SELECTOR WIDTH
+//-----------------------------------------------------------------------------
+
+// width of the selector 
+$selectorWidth:                      22px !default;
+// height of the selector 
+$selectorHeight:                     22px !default;
+// margin of the selector 
+$selectorMargin:                     10px !default;
 
 
 // APPLICATION LAYOUT - MOBILE PATTERN VARIABLES
@@ -975,5 +995,7 @@ $appLayoutHybridFooterBorderColor: $appLayoutHybridHeaderBorderColor !default;
 //----------------------------------------
 // options
 $offcanvasDisplayModeOptionDefault: push !default;
+
+$conveyorBeltArrowVisibilityOptionDefault: visible !default;
 
 @import "../common/oj.common.variables";

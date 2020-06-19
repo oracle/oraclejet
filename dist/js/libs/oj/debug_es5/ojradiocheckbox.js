@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -125,12 +126,17 @@ oj.RadioCheckboxUtils.generateOptionsFromData = function () {
     description: desc
   };
   var busyContext = oj.Context.getContext(this.element[0]).getBusyContext();
-  var resolveFunc = busyContext.addBusyState(busyStateOptions); // Fetch all the option data
+  var resolveFunc = busyContext.addBusyState(busyStateOptions); // Create a clientId symbol that uniquely identify this consumer so that
+  // DataProvider which supports it can optimize resources
+
+  this._clientId = this._clientId || Symbol(); // Fetch all the option data
   // eslint-disable-next-line no-param-reassign
 
   this._optionsDataArray = [];
   var i;
-  var asyncIterator = dataProvider.fetchFirst()[Symbol.asyncIterator]();
+  var asyncIterator = dataProvider.fetchFirst({
+    clientId: this._clientId
+  })[Symbol.asyncIterator]();
   var self = this;
 
   var processResults = function processResults(iterResult) {

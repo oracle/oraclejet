@@ -1,0 +1,38 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../animation/themes/redwood/_oj-animation.servervars.scss";
+// menu animation defaults
+//----------------------------------
+
+// dropdown menu
+$menuDropDownOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition", duration: $animationDurationShort) !default;
+$menuDropDownCloseAnimation: (effect: "none") !default;
+
+// sheet menu
+$menuSheetOpenAnimation: (effect: "slideIn", direction: "top", duration: $animationDurationShort) !default;
+$menuSheetCloseAnimation: (effect: "slideOut", direction: "bottom", duration: $animationDurationShort) !default;
+
+// submenu
+$menuSubmenuOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition", duration: $animationDurationShort) !default;
+$menuSubmenuCloseAnimation: (effect: "none") !default;
+
+
+// Controls whether sheet menus have a "Cancel" menu item automatically added.
+// Valid values are "none" and "menuItem".
+$menuSheetCancelAffordance: "none" !default;
+
+// Controls whether "swipe down to dismiss" is supported for sheet menus.
+// Note that this only applies to swipes starting on the menu, since any touch
+// outside the menu will dismiss, regardless of whether it turns into a swipe.
+// Valid values are "dismiss" and "none".
+$menuSheetSwipeDownBehavior: "dismiss" !default;
+
+// Controls whether a "glass pane" is displayed behind dropDown menus.
+// Valid values are "modal" and "modeless".
+$menuDropDownModality: "modeless" !default;
+
+// Controls whether a "glass pane" is displayed behind sheet menus.
+// Valid values are "modal" and "modeless".
+$menuSheetModality: "modal" !default;
+
+$menuSheetMarginBottom:                0 !default;

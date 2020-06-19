@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -75,6 +76,8 @@ var __oj_collapsible_metadata =
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 2
  *
+ * @ojuxspecs ['collapsible-header']
+ *
  * @classdesc
  * <h3 id="collapsibleOverview-section">
  *   JET Collapsible
@@ -108,13 +111,6 @@ var __oj_collapsible_metadata =
  *
  * {@ojinclude "name":"keyboardDoc"}
  *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
- *
  * <h3 id="rtl-section">
  *   Reading direction
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
@@ -123,6 +119,24 @@ var __oj_collapsible_metadata =
  * <p>In the unusual case that the directionality (LTR or RTL) changes post-init, the collapsible must be <code class="prettyprint">refresh()</code>ed.
  *
  */
+
+// --------------------------------------------------- oj.ojCollapsible Styling Start ------------------------------------------------------------
+/**
+ * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+ */
+// ---------------- oj-clickthrough-disabled --------------
+/**
+* Use on any element inside the header where you do not want Collapsible to process the click event.
+* @ojstyleclass oj-clickthrough-disabled
+* @ojdisplayname Prevent Clickthrough
+* @memberof oj.ojCollapsible
+* @ojtsexample
+* &lt;oj-collapsible id="collapsibleId" class="oj-clickthrough-disabled">
+*   &lt;h3 slot='header'>Header 1&lt;/h3>
+*   &lt;!-- Content -->
+* &lt;/oj-collapsible>
+*/
+// --------------------------------------------------- oj.ojCollapsible Styling End ------------------------------------------------------------
 (function () {
   var uid = 0;
   var OPEN_ICON = 'oj-collapsible-open-icon';
@@ -933,7 +947,7 @@ var __oj_collapsible_metadata =
                 // enable & start transition
                   wrapper.addClass('oj-collapsible-transition')
                   .css({
-                    'max-height': 0   //! important
+                    'max-height': 0 //! important
                   });
                   self._resolveTransition(wrapper);
                 }, 20);
@@ -1301,30 +1315,6 @@ var __oj_collapsible_metadata =
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
      * @memberof oj.ojCollapsible
      */
-
-    /**
-     * {@ojinclude "name":"ojStylingDocIntro"}
-     *
-     * <table class="generic-table styling-table">
-     *   <thead>
-     *     <tr>
-     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>oj-clickthrough-disabled</td>
-     *       <td>Use on any element inside the header where you do not want Collapsible to process the click event.</td>
-     *       </td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-     * @memberof oj.ojCollapsible
-     */
-
     });
 }());
 

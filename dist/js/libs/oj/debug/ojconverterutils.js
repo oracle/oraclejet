@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -34,8 +35,7 @@ ConverterUtils.getConverterInstance = function (converterOption) {
             cTypeStr = cTypeStr || converterOption;
             if (cTypeStr && typeof cTypeStr === 'string') {
                 // if we are passed a string get registered type.
-                if (oj.Validation &&
-                    oj.Validation.converterFactory) {
+                if (oj.Validation && oj.Validation.converterFactory) {
                     var cf = oj.Validation.converterFactory(cTypeStr);
                     return cf.createConverter(cOptions);
                 }

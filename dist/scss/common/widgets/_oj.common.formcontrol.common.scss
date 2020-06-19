@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -23,6 +24,15 @@
     {
       $formControlDefaultOptions: map-merge($formControlDefaultOptions, (labelEdge: $formControlLabelEdgeDefault));
     }
+    @if ($inputFormControlReadonlyDefault != null)
+    {
+      $formControlDefaultOptions: map-merge($formControlDefaultOptions, (readonlyElem: $inputFormControlReadonlyDefault));
+    }
+    @if ($formControlUseUserAssistanceOptionDefault != null)
+    {
+      $formControlDefaultOptions: map-merge($formControlDefaultOptions, (useUserAssistanceOptionDefault: $formControlUseUserAssistanceOptionDefault));
+    }
+
     .oj-form-control-option-defaults {
         font-family: oj-json-from-map($formControlDefaultOptions);
     }
@@ -83,20 +93,8 @@
       display: inline-flex;
       // grow the input using the flex property
       flex: 1;
-      // needed for the input to be able to shrink smaller than the browser
-      // default width.  Because this has flex-grow of 1, it will always grow
-      // to the available space of the parent container, which is what we want.
-      width: 1em;
-      // needed or else the input could overflow the container
-      min-width: 1em; 
       // The border is on an ancestor element, so this needs to be 100% height
       height: 100%;
-    }
-    // We need to override the width for .oj-form-control-inherit on the
-    // .oj-text-field-middle wrapper div so that it will not become too narrow
-    // when it is in a shrink-to-fit container like a table <td> element.
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field-middle {
-      width: 100%;
     }
 
     /* when the label is inside or above, we must set the max-width of the component to
@@ -133,10 +131,7 @@
     /* consolidating styles - start
     */
     //common styles for component root
-    // Bug 30595890 - regrn: select one width 7.2 > 8.0 
-    // similar styles are defined on inner div for oj-select and oj-combobox,
-    // so don't set the oj-text-field style on component root for oj-select and oj-combobox.
-    .oj-inputtext, .oj-inputpassword, .oj-textarea, .oj-inputnumber, .oj-inputdatetime, .oj-searchselect {
+    .oj-text-field {
       display: inline-block;
       // because max/min width is in em the font size needs to be on this element 
       // and not on the selector that goes on the input.
@@ -210,7 +205,7 @@
     // remove borders, inherit colors and stretch the height
     .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field .oj-text-field-input,
     .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field .oj-text-field-container {
-      @include oj-form-control-inherit(); 
+      @include oj-form-control-inherit();
     }
 
     // only override the background when not disabled
@@ -250,8 +245,7 @@
       height: $formControlInputHeight;
     } 
 
-    .oj-text-field.oj-read-only .oj-text-field-container,
-    .oj-text-field .oj-read-only .oj-text-field-container {
+    .oj-text-field.oj-read-only .oj-text-field-container {
       border-style: none;
       border-color: transparent;
       border-width: 0;
@@ -260,44 +254,39 @@
     }      
 
     .oj-text-field.oj-invalid .oj-text-field-container,
-    .oj-text-field .oj-invalid .oj-text-field-container,
-    .oj-text-field.oj-warning .oj-text-field-container,
-    .oj-text-field .oj-warning .oj-text-field-container {
+    .oj-text-field.oj-warning .oj-text-field-container {
       @include oj-form-control-border-message-width;
       border-style: solid;
     }
 
     // Styling for invalid state
-    .oj-text-field.oj-invalid .oj-text-field-container,
-    .oj-text-field .oj-invalid .oj-text-field-container {
+    .oj-text-field.oj-invalid .oj-text-field-container {
       border-color: $borderColorError; 
     }
     // Styling for warning state
-    .oj-text-field.oj-warning .oj-text-field-container,
-    .oj-text-field .oj-warning .oj-text-field-container {
+    .oj-text-field.oj-warning .oj-text-field-container {
       border-color: $borderColorWarning; 
     }
 
     .oj-text-field-label-inside.oj-text-field .oj-text-field-container {
       min-height: $formControlInsideInputHeight; 
     }
+
     .oj-text-field-label-inside.oj-text-field .oj-text-field-container .oj-label,
-    .oj-text-field-label-inside.oj-text-field.oj-disabled .oj-text-field-container .oj-label,
-    .oj-text-field-label-inside.oj-text-field .oj-disabled .oj-text-field-container .oj-label {
+    .oj-text-field-label-inside.oj-text-field.oj-disabled .oj-text-field-container .oj-label {
       position: absolute;
-      top: 0;
+      top: 50%;
+      transform: translateY(-50%);
       z-index: 1;
       
       transition: all .25s ease .1s;
       pointer-events: none;
 
       @include oj-ltr() {
-        transform-origin: left top 0;
-        transform: translateX($formControlInsideLabelTranslateX) translateY($formControlInsideLabelTranslateY);
+        left: $formControlPaddingHorizontal;
       }
       @include oj-rtl() {
-        transform-origin: right top 0;
-        transform: translateX(calc(#{$formControlInsideLabelTranslateX} * -1)) translateY($formControlInsideLabelTranslateY);
+        right: $formControlPaddingHorizontal;
       }
     }
 
@@ -311,45 +300,49 @@
 
     .oj-text-field-label-inside.oj-text-field.oj-focus .oj-text-field-container .oj-label,
     .oj-text-field-label-inside.oj-text-field:not(.oj-has-no-value) .oj-text-field-container .oj-label {
-      transition: transform .25s ease .1s, font-weight .25s ease .1s, font-size .25s ease .1s;
+      transition: top .25s ease .1s, font-weight .25s ease .1s, font-size .25s ease .1s;
       font-size: $formControlInsideLabelFontSize;
       font-weight: $formControlInsideLabelFontWeight;
       line-height: $formControlInsideLabelLineHeight;
+      
+      // The label top should be 25% of the height of the input field, when the input field has value
+      top: calc((#{$formControlInsideInputHeight} * 25) / 100);
     
       @include oj-ltr() {
-        transform-origin: left top 0;
-        transform: translateX($formControlInsideLabelTranslateX) translateY($formControlInsideLabelTranslateYFocus);
+        left: $formControlPaddingHorizontal;
       }
       @include oj-rtl() {
-        transform-origin: right top 0;
-        transform: translateX(calc(#{$formControlInsideLabelTranslateX} * -1)) translateY($formControlInsideLabelTranslateYFocus);
+        right: $formControlPaddingHorizontal;
       }
-    }
+    } 
 
-    .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container .oj-label,
-    .oj-text-field-label-inside.oj-text-field .oj-read-only .oj-text-field-container .oj-label {
+    .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container .oj-label {
       font-size: $formControlInsideLabelFontSize;
       font-weight: $formControlInsideLabelFontWeight;
       line-height: $formControlInsideLabelLineHeight;
+      
+      // The label top should be 25% of the height of the input field, when the input field has value
+      top: calc((#{$formControlInsideInputHeight} * 25) / 100);
   
       @include oj-ltr() {
-        transform-origin: left top 0;
-        transform: translateX(0) translateY($formControlInsideLabelTranslateYFocus);
+        left: 0;
       }
       @include oj-rtl() {
-        transform-origin: right top 0;
-        transform: translateX(0) translateY($formControlInsideLabelTranslateYFocus);
+        right: 0;
       }
     }
 
-    .oj-text-field-label-inside.oj-text-field.oj-disabled:not(.oj-has-no-value) .oj-text-field-container .oj-label,
-    .oj-text-field-label-inside.oj-text-field:not(.oj-has-no-value) .oj-disabled .oj-text-field-container .oj-label {
+    .oj-text-field-label-inside.oj-text-field.oj-disabled:not(.oj-has-no-value) .oj-text-field-container .oj-label {
       transition: none; 
       background-color: $formControlBgColorDisabled;
     }
 
-    .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container .oj-label,
-    .oj-text-field-label-inside.oj-text-field .oj-read-only .oj-text-field-container .oj-label {
+    .oj-text-field-label-inside.oj-text-field.oj-textarea .oj-label,
+    .oj-text-field-label-inside.oj-text-field.oj-textarea.oj-disabled.oj-has-no-value .oj-label  {
+      top: calc(#{$formControlInsideInputHeight} / 2);
+    }
+
+    .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container .oj-label {
       transition: none; 
       background-color: transparent;
     }
@@ -366,6 +359,13 @@
       cursor: default;
       font-size: $formControlInsideLabelFontSize;
       color: $textColorDisabled;
+    }
+
+    .oj-required-inline-container {
+      color: $messageDetailTextColor;
+      font-size: $messageDetailFontSize;
+      line-height: $messageDetailLineHeight;
+      width: 100%;
     }
   }
 }

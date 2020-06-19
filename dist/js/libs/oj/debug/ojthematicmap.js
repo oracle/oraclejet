@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -644,6 +645,8 @@ var __oj_thematic_map_marker_metadata =
  * @ojpropertylayout {propertyGroup: "data", items: ["mapProvider.geo", "mapProvider.propertiesKeys", "areaData", "markerData", "linkData", "isolatedItem", "selection"]}
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 6
+ *
+ * @ojuxspecs ['data-visualization-thematic-map']
  *
  * @classdesc
  * <h3 id="thematicMapOverview-section">
@@ -1523,6 +1526,7 @@ oj.__registerWidget('oj.ojThematicMap', $.oj.dvtBaseComponent,
       styleDefaults: {
         /**
          * The CSS style object defining the style of the area layer areas. The default value comes from the CSS and varies based on theme.
+         * Only SVG CSS style properties are supported.
          * @expose
          * @name styleDefaults.areaSvgStyle
          * @ojshortdesc The CSS style object defining the style of the area layer areas.
@@ -1694,8 +1698,10 @@ oj.__registerWidget('oj.ojThematicMap', $.oj.dvtBaseComponent,
           height: 8,
           /**
            * The CSS style object for a marker label.
+           * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
            * @expose
            * @name styleDefaults.dataMarkerDefaults.labelStyle
+           * @ojshortdesc The CSS style object defining the style of the marker label.
            * @memberof! oj.ojThematicMap
            * @instance
            * @type {Object=}
@@ -1767,8 +1773,10 @@ oj.__registerWidget('oj.ojThematicMap', $.oj.dvtBaseComponent,
         hoverBehaviorDelay: 200,
         /**
          * The CSS style object for the area layer labels.
+         * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
          * @expose
          * @name styleDefaults.labelStyle
+         * @ojshortdesc The CSS style object defining the style of the area layer labels.
          * @memberof! oj.ojThematicMap
          * @instance
          * @type {Object=}
@@ -3145,13 +3153,13 @@ Components.setDefaultOptions({
  * @property {string=}       color The area color.
  * @property {any=}          id The identifier for this area. The id should be set by the application if the DataProvider is not being used. The row key will be used as id in the  case.
  * @property {string=}       label Text used for the area's label.
- * @property {Object=}       labelStyle The CSS style defining the label style for this area.
+ * @property {Object=}       labelStyle The CSS style defining the label style for this area. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
  * @property {string}        location An identifier corresponding to a Feature provided in the mapProvider geo object that this area is associated with.
  * @property {number=}       opacity The area opacity.
  * @property {"auto"|"off"}  [selectable="auto"] Specifies whether or not the area will be selectable.
  * @property {string=}       shortDesc The text that displays in the area's tooltip.
  * @property {string=}       svgClassName The CSS style class defining the style of the area.
- * @property {Object=}       svgStyle The CSS style object defining the style of the area.
+ * @property {Object=}       svgStyle The CSS style object defining the style of the area. Only SVG CSS style properties are supported.
  * @ojsignature [{target: "Type", value: "K", for: "id"},
  *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true},
  *               {target: "Type", value: "CSSStyleDeclaration", for: "labelStyle", jsdocOverride: true},
@@ -3175,7 +3183,7 @@ Components.setDefaultOptions({
  * @property {number=}       startLocation.x The x coordinate which can represent latitude of the start point.
  * @property {number=}       startLocation.y The y coordinate which can represent longitude of the start point.
  * @property {string=}       svgClassName The CSS style class defining the style of the link.
- * @property {Object=}       svgStyle The CSS style object defining the style of the link.
+ * @property {Object=}       svgStyle The CSS style object defining the style of the link. Only SVG CSS style properties are supported.
  * @property {number=}       width The link width in pixels.
  * @ojsignature [{target: "Type", value: "K2", for: "endLocation.id"},
  *               {target: "Type", value: "K1", for: "id"},
@@ -3194,7 +3202,7 @@ Components.setDefaultOptions({
  * @property {any=}       id The identifier for this marker. The id should be set by the application if the DataProvider is not being used. The row key will be used as id in the  case.
  * @property {string=}       label Text used for the marker's label.
  * @property {"bottom"|"center"|"top"}       [labelPosition="center"] Determines the label position relative to the marker.
- * @property {Object=}       labelStyle The CSS style object defining the style of the marker.
+ * @property {Object=}       labelStyle The CSS style object defining the style of the marker. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
  * @property {string=}       location An identifier corresponding to a Feature provided in the mapProvider geo object that this marker is associated with.
  * @property {number=}       opacity The marker opacity.
  * @property {number=}       rotation The angle to rotate the marker in clockwise degrees around the marker center.
@@ -3209,7 +3217,7 @@ Components.setDefaultOptions({
  *                                               sourceSelected image will be used. If sourceSelected is not defined, then the source image will be used.
  * @property {string=}       sourceSelected An optional URI specifying the location of the selected image. If not defined, the source image will be used.
  * @property {string=}       svgClassName The CSS style class defining the style of the marker.
- * @property {Object=}       svgStyle The CSS style object defining the style of the marker.
+ * @property {Object=}       svgStyle The CSS style object defining the style of the marker. Only SVG CSS style properties are supported.
  * @property {number=}       value A data value used to calculate the marker dimensions based on the range of all the data values and the element size.
  *                                 Markers with negative or zero data values will not be rendered. If specified, this value takes precedence over the
  *                                 width and height attributes.
@@ -3372,7 +3380,7 @@ Components.setDefaultOptions({
 /**
  * <p>
  *  The <code class="prettyprint">areaTemplate</code> slot is used to specify the template for
- *  creating areas of the thematic map. The slot content must be wrapped in a &lt;template>
+ *  creating areas of the thematic map. The slot content must be wrapped in a single &lt;template>
  *  element. The content of the template should be a single &lt;oj-thematic-map-area> element.
  *  See the [oj-thematic-map-area]{@link oj.ojThematicMapArea} doc for more details.
  * </p>
@@ -3417,7 +3425,7 @@ Components.setDefaultOptions({
 /**
  * <p>
  *  The <code class="prettyprint">markerTemplate</code> slot is used to specify the template for
- *  creating markers of the thematic map. The slot content must be wrapped in a &lt;template>
+ *  creating markers of the thematic map. The slot content must be wrapped in a single &lt;template>
  *  element. The content of the template should be a single &lt;oj-thematic-map-marker> element.
  *  See the [oj-thematic-map-marker]{@link oj.ojThematicMapMarker} doc for more details.
  * </p>
@@ -3461,7 +3469,7 @@ Components.setDefaultOptions({
 /**
  * <p>
  *  The <code class="prettyprint">linkTemplate</code> slot is used to specify the template for
- *  creating links of the thematic map. The slot content must be wrapped in a &lt;template>
+ *  creating links of the thematic map. The slot content must be wrapped in a single &lt;template>
  *  element. The content of the template should be a single &lt;oj-thematic-map-link> element.
  *  See the [oj-thematic-map-link]{@link oj.ojThematicMapLink} doc for more details.
  * </p>
@@ -3503,7 +3511,7 @@ Components.setDefaultOptions({
   * @property {any} key The key of the current link
   */
  /**
- * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
+ * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content. The slot content must be a single &lt;template> element.
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
@@ -3512,6 +3520,7 @@ Components.setDefaultOptions({
  *
  *
  * @ojslot tooltipTemplate
+ * @ojmaxitems 1
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojThematicMap.TooltipContext
  * @memberof oj.ojThematicMap
@@ -3525,15 +3534,16 @@ Components.setDefaultOptions({
  */
 
  /**
- * <p>The <code class="prettyprint">markerContentTemplate</code> slot is used to specify custom marker content.</p>
+ * <p>The <code class="prettyprint">markerContentTemplate</code> slot is used to specify custom marker content. The slot content must be a single &lt;template> element.</p>
  * This slot takes precedence over the renderer/focusRenderer/hoverRenderer/selectionRenderer properties if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
  *   <li>$current - an object that contains information for the current marker. (See [oj.ojThematicMap.RendererContext]{@link oj.ojThematicMap.RendererContext} or the table below for a list of properties available on $current) </li>
  * </ul>
  * <p>Additionally, add data-oj-default-focus, data-oj-default-hover and/or data-oj-default-selection attributes to the template to also render the default focus, hover and/or selection effect for the data item.</p>
- *
+ * <p>Note that SVG nodes for the marker content should be wrapped into an svg element in order to have the SVG namespace. The component will insert the entire SVG structure into DOM including the outer svg element.</p>
  * @ojslot markerContentTemplate
+ * @ojmaxitems 1
  * @ojslotitemprops oj.ojThematicMap.RendererContext
  * @memberof oj.ojThematicMap
  * @since 7.1.0
@@ -3551,6 +3561,7 @@ Components.setDefaultOptions({
 
 /**
  * @ojcomponent oj.ojThematicMapArea
+ * @ojshortdesc The oj-thematic-map-area element is used to declare properties for thematic map areas. See the Help documentation for more information.
  * @ojsignature {target: "Type", value:"class ojThematicMapArea extends JetElement<ojThematicMapAreaSettableProperties>"}
  * @ojslotcomponent
  * @since 5.2.0
@@ -3624,6 +3635,7 @@ Components.setDefaultOptions({
  */
 /**
  * The CSS style object defining the style of the area label. The default values come from the CSS classes and varies based on theme.
+ * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
  * @expose
  * @name labelStyle
  * @ojshortdesc The CSS style object defining the style of the area label.
@@ -3710,6 +3722,7 @@ Components.setDefaultOptions({
  */
 /**
  * The CSS style object defining the style of the area.
+ * Only SVG CSS style properties are supported.
  * @expose
  * @name svgStyle
  * @memberof! oj.ojThematicMapArea
@@ -3726,6 +3739,7 @@ Components.setDefaultOptions({
 
 /**
  * @ojcomponent oj.ojThematicMapLink
+ * @ojshortdesc The oj-thematic-map-link element is used to declare properties for thematic map links. See the Help documentation for more information.
  * @ojsignature {target: "Type", value:"class ojThematicMapLink extends JetElement<ojThematicMapLinkSettableProperties>"}
  * @ojslotcomponent
  * @since 5.2.0
@@ -3942,6 +3956,7 @@ Components.setDefaultOptions({
  */
 /**
  * The CSS style object defining the style of the link.
+ * Only SVG CSS style properties are supported.
  * @expose
  * @name svgStyle
  * @memberof! oj.ojThematicMapLink
@@ -3972,6 +3987,7 @@ Components.setDefaultOptions({
 
 /**
  * @ojcomponent oj.ojThematicMapMarker
+ * @ojshortdesc The oj-thematic-map-marker element is used to declare properties for thematic map markers. See the Help documentation for more information.
  * @ojsignature {target: "Type", value:"class ojThematicMapMarker extends JetElement<ojThematicMapMarkerSettableProperties>"}
  * @ojslotcomponent
  * @since 5.2.0
@@ -4116,6 +4132,7 @@ Components.setDefaultOptions({
  */
 /**
  * The CSS style object defining the style of the marker label. The default values come from the CSS classes and varies based on theme.
+ * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
  * @expose
  * @name labelStyle
  * @ojshortdesc The CSS style object defining the style of the marker label.
@@ -4284,6 +4301,7 @@ Components.setDefaultOptions({
  */
 /**
  * The CSS style object defining the style of the marker.
+ * Only SVG CSS style properties are supported.
  * @expose
  * @name svgStyle
  * @memberof! oj.ojThematicMapMarker

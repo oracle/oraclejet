@@ -1,0 +1,35 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+@import "../../../theme/themes/redwood/oj-helpers.scss";
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencie
+// import dependencies
+@import "../../../icons/themes/redwood/oj-icons.scss";
+
+// ----- end dependencies ---------
+
+@import "_oj-message.servervars.scss";
+@import "_oj-message.cssvars.scss";
+// import classes defined in the common directory
+@import "../base/_oj-message.scss";
+
+  @include module-include-once("redwood.message") {
+    
+    .oj-message-body .oj-message-summary {
+      padding-bottom: 4px;
+    }
+    
+    .oj-message-category,
+    .oj-message-header .oj-message-summary {
+      @include oj-ltr() {
+        padding: 0px 0px 0px 10px;
+      }
+      @include oj-rtl() {
+        padding: 0px 10px 0px 0px;
+      }
+    }
+    
+  }

@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
 import Message = require('../ojmessaging');
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface editableValue<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> extends baseComponent<SP> {
@@ -13,6 +21,7 @@ export interface editableValue<V, SP extends editableValueSettableProperties<V, 
     labelEdge: 'inside' | 'none' | 'provided';
     labelHint: string;
     messagesCustom: Message[];
+    userAssistanceDensity: 'reflow' | 'efficient' | 'compact';
     readonly valid: 'valid' | 'pending' | 'invalidHidden' | 'invalidShown';
     value: V | null;
     addEventListener<T extends keyof editableValueEventMap<V, SP, SV, RV>>(type: T, listener: (this: HTMLElement, ev: editableValueEventMap<V, SP, SV, RV>[T]) => any, useCapture?: boolean): void;
@@ -55,6 +64,8 @@ export namespace editableValue {
     // tslint:disable-next-line interface-over-type-literal
     type messagesCustomChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["messagesCustom"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["userAssistanceDensity"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type validChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["valid"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueChanged<V, SP extends editableValueSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<editableValue<V, SP, SV, RV>["value"]>;
@@ -69,6 +80,7 @@ export interface editableValueEventMap<V, SP extends editableValueSettableProper
     'labelEdgeChanged': JetElementCustomEvent<editableValue<V, SP, SV, RV>["labelEdge"]>;
     'labelHintChanged': JetElementCustomEvent<editableValue<V, SP, SV, RV>["labelHint"]>;
     'messagesCustomChanged': JetElementCustomEvent<editableValue<V, SP, SV, RV>["messagesCustom"]>;
+    'userAssistanceDensityChanged': JetElementCustomEvent<editableValue<V, SP, SV, RV>["userAssistanceDensity"]>;
     'validChanged': JetElementCustomEvent<editableValue<V, SP, SV, RV>["valid"]>;
     'valueChanged': JetElementCustomEvent<editableValue<V, SP, SV, RV>["value"]>;
 }
@@ -85,6 +97,7 @@ export interface editableValueSettableProperties<V, SV = V, RV = V> extends base
     labelEdge: 'inside' | 'none' | 'provided';
     labelHint: string;
     messagesCustom: Message[];
+    userAssistanceDensity: 'reflow' | 'efficient' | 'compact';
     readonly valid: 'valid' | 'pending' | 'invalidHidden' | 'invalidShown';
     value: SV | null;
 }

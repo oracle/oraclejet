@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface feedBaseComponent<SP extends feedBaseComponentSettableProperties = feedBaseComponentSettableProperties> extends baseComponent<SP> {
     addEventListener<T extends keyof feedBaseComponentEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: feedBaseComponentEventMap<SP>[T]) => any, useCapture?: boolean): void;

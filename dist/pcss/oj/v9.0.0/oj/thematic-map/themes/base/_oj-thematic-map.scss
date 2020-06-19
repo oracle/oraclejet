@@ -1,0 +1,87 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
+//          for example alta/widgets/_oj.alta.dvt.thematicmap.scss
+// !!!
+@import "../../../utilities/_oj.utilities.scss";
+
+  @include module-include-once("common.thematicmap") {
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-thematic-map:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    oj-thematic-map {
+      display: block;
+    }
+
+    .oj-thematicmap{
+
+        user-select: none;
+
+
+        width:100%;
+        height:560px;
+    }
+
+    .oj-thematicmap-arealayer {
+
+      background-color: var(--oj-thematic-map-bg-color);
+      border-color: var(--oj-thematic-map-border-color);
+      font-size: var(--oj-thematic-map-label-font-size);
+
+    }
+
+    .oj-thematicmap-area {
+
+      border-color: var(--oj-thematic-map-border-color);
+
+    }
+
+    .oj-thematicmap-area.oj-hover {
+
+      border-color: var(--oj-dvt-item-inner-border-color-selected);
+
+    }
+
+    .oj-thematicmap-area.oj-selected {
+
+      border-top-color: var(--oj-dvt-item-inner-border-color-selected);
+      border-bottom-color: var(--oj-dvt-item-outer-border-color-selected);
+
+    }
+
+    .oj-thematicmap-marker {
+
+      border-color: var(--oj-thematic-map-marker-border-color);
+        color: var(--oj-core-text-color-primary);
+        font-size: var(--oj-thematic-map-marker-label-font-size);
+        background-color: var(--oj-thematic-map-marker-bg-color);
+
+    }
+
+    .oj-thematicmap-link {
+
+      color: var(--oj-thematic-map-link-color);
+
+    }
+
+    // Link inner hover color
+    .oj-thematicmap-link.oj-hover {
+
+      color: var(--oj-dvt-item-inner-border-color-selected);
+
+    }
+
+    // Link outer selection color
+    .oj-thematicmap-link.oj-selected {
+    
+      border-color: var(--oj-dvt-item-outer-border-color-selected);
+
+    }
+  }

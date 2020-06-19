@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['./DvtToolkit', './DvtTimeComponent', './DvtTimeAxis'], function(dvt) {
   "use strict";
@@ -10,15 +11,17 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function (dvt) {
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -35,20 +38,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    */
 
   DvtGanttStyleUtils._DEFAULT_TIMEAXES_LABEL_STYLE = dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color: #333333;';
-  /**
-   * The default zoom control background color.
-   * @const
-   * @private
-   */
-
-  DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR = '#ffffff';
-  /**
-   * The default zoom control border color.
-   * @const
-   * @private
-   */
-
-  DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR = '#d6d7d8';
   /**
    * The default zoom control diameter.
    * @const
@@ -593,166 +582,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     return animationDuration;
   };
   /**
-   * Returns the zoom control background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control background color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomInButtonBackgroundColor = function (options) {
-    if (options['zoomIn_bgc']) return options['zoomIn_bgc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control active background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control active background color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomInButtonActiveBackgroundColor = function (options) {
-    if (options['zoomIn_a_bgc']) return options['zoomIn_a_bgc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control hover background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control hover background color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomInButtonHoverBackgroundColor = function (options) {
-    if (options['zoomIn_h_bgc']) return options['zoomIn_h_bgc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control disabled background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control disabled background color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomInButtonDisabledBackgroundColor = function (options) {
-    if (options['zoomIn_d_bgc']) return options['zoomIn_d_bgc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control border color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomInButtonBorderColor = function (options) {
-    if (options['zoomIn_bc']) return options['zoomIn_bc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
-   * Returns the zoom control active border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control active border color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomInButtonActiveBorderColor = function (options) {
-    if (options['zoomIn_a_bc']) return options['zoomIn_a_bc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
-   * Returns the zoom control hover border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control hover border color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomInButtonHoverBorderColor = function (options) {
-    if (options['zoomIn_h_bc']) return options['zoomIn_h_bc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
-   * Returns the zoom control disabled border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control disabled border color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomInButtonDisabledBorderColor = function (options) {
-    if (options['zoomIn_d_bc']) return options['zoomIn_d_bc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
-   * Returns the zoom control background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control background color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomOutButtonBackgroundColor = function (options) {
-    if (options['zoomOut_bgc']) return options['zoomOut_bgc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control active background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control active background color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomOutButtonActiveBackgroundColor = function (options) {
-    if (options['zoomOut_a_bgc']) return options['zoomOut_a_bgc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control hover background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control hover background color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomOutButtonHoverBackgroundColor = function (options) {
-    if (options['zoomOut_h_bgc']) return options['zoomOut_h_bgc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control disabled background color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control disabled background color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomOutButtonDisabledBackgroundColor = function (options) {
-    if (options['zoomOut_d_bgc']) return options['zoomOut_d_bgc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BACKGROUND_COLOR;
-  };
-  /**
-   * Returns the zoom control border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control border color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomOutButtonBorderColor = function (options) {
-    if (options['zoomOut_bc']) return options['zoomOut_bc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
-   * Returns the zoom control active border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control active border color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomOutButtonActiveBorderColor = function (options) {
-    if (options['zoomOut_a_bc']) return options['zoomOut_a_bc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
-   * Returns the zoom control hover border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control hover border color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomOutButtonHoverBorderColor = function (options) {
-    if (options['zoomOut_h_bc']) return options['zoomOut_h_bc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
-   * Returns the zoom control disabled border color.
-   * @param {object} options The object containing data and specification for the component.
-   * @return {string} The zoom control disabled border color.
-   */
-
-
-  DvtGanttStyleUtils.getZoomOutButtonDisabledBorderColor = function (options) {
-    if (options['zoomOut_d_bc']) return options['zoomOut_d_bc'];else return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
-  };
-  /**
    * Returns the stroke color of the inner dependency line when it has focus.
    * @param {object} options The object containing data and specification for the component.
    * @return {string} The stroke color of the inner dependency line when it has focus.
@@ -802,8 +631,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -973,8 +803,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     // dvt.HtmlTooltipManager._showTextAtPosition(),
     // and that method makes sure all parsable HTML tags are disabled/handled
 
-    if (isTabular) return '<table class=\"' + gantt.GetStyleClass('tooltipTable') + '\">' + datatip + '<\/table>'; // @HTMLUpdateOK
-
+    if (isTabular) return '<table class=\"' + gantt.GetStyleClass('tooltipTable') + '\">' + datatip + '<\/table>';
     return datatip;
   };
   /**
@@ -1109,7 +938,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       // and that last method makes sure all parsable HTML tags are disabled/handled
       var tooltipLabelClass = gantt.GetStyleClass('tooltipLabel');
       var tooltipValueClass = gantt.GetStyleClass('tooltipValue');
-      return datatip + '<tr>' + '<td class=\"' + tooltipLabelClass + '\">' + tooltipLabel + '<\/td>' + '<td class=\"' + tooltipValueClass + '\">' + value + '<\/td>' + '<\/tr>'; // @HTMLUpdateOK
+      return datatip + '<tr>' + '<td class=\"' + tooltipLabelClass + '\">' + tooltipLabel + '<\/td>' + '<td class=\"' + tooltipValueClass + '\">' + value + '<\/td>' + '<\/tr>';
     } else {
       if (datatip.length > 0) datatip += '<br>';
       return datatip + dvt.ResourceUtils.format(gantt.getOptions().translations.labelAndValue, [tooltipLabel, value]);
@@ -1172,8 +1001,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1836,8 +1666,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3483,8 +3314,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4034,9 +3866,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
     if (rowIndex != null) {
       rowIndex = Math.min(Math.max(0, rowIndex), rowObjs.length - 1);
-      var rowY = rowObjs[rowIndex];
-      var offsetY = scrollPosition['offsetY'] != null ? scrollPosition['offsetY'] : 0;
-      scrollPositionY = rowY['y'] + offsetY;
+      var rowY = rowObjs[rowIndex]; // prevent undef rowY from causing an error: 
+
+      if (rowY != null) {
+        var offsetY = scrollPosition['offsetY'] != null ? scrollPosition['offsetY'] : 0;
+        scrollPositionY = rowY['y'] + offsetY;
+      }
     } else if (scrollPosition['y'] != null) {
       scrollPositionY = scrollPosition['y'];
     }
@@ -5085,8 +4920,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   dvt.Gantt.prototype.HandleTouchStart = function (event) {};
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5216,8 +5052,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5320,8 +5157,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6059,8 +5897,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -7290,7 +7129,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   /**
    * Expands or collapses a row when expand/collapse button is clicked.
    * @param {dvt.BaseEvent} event
-   * @param {dvt.Button} button The button that calls the method.
+   * @param {dvt.IconButton} button The button that calls the method.
    */
 
 
@@ -7392,8 +7231,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -7936,8 +7776,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -8018,8 +7859,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -8288,9 +8130,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     // not pixel aware, in cases where the edge is between two pixels (e.g. on resize), the 0.5px doesn't show up, and the
     // entire stroke disappear. Fix is to double up the pixel so there there is always > 0.5px on each side of the edge
     // and use a clippath to hide the inner half of the stroke to maintain stroke width.
+    // Update: We can avoid CSP violation here by setting scss stroke-width on oj-gantt-container to 2px default;
+    // gantt._background.SetSvgProperty('style', 'stroke-width:' + (gantt.getBorderWidth() * 2) + 'px');
 
-
-    gantt._background.SetSvgProperty('style', 'stroke-width:' + gantt.getBorderWidth() * 2 + 'px');
 
     gantt._background.setClassName(gantt.GetStyleClass('databody'));
 
@@ -8469,33 +8311,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     var zoomControlProperties = {
       'zoomInProps': {
         'imageSize': 16,
-        'cssUrl': resources['zoomIn'],
-        'cssUrlHover': resources['zoomIn_h'],
-        'cssUrlActive': resources['zoomIn_a'],
-        'cssUrlDisabled': resources['zoomIn_d'],
-        'enabledBackgroundColor': DvtGanttStyleUtils.getZoomInButtonBackgroundColor(resources),
-        'enabledBorderColor': DvtGanttStyleUtils.getZoomInButtonBorderColor(resources),
-        'hoverBackgroundColor': DvtGanttStyleUtils.getZoomInButtonHoverBackgroundColor(resources),
-        'hoverBorderColor': DvtGanttStyleUtils.getZoomInButtonHoverBorderColor(resources),
-        'activeBackgroundColor': DvtGanttStyleUtils.getZoomInButtonActiveBackgroundColor(resources),
-        'activeBorderColor': DvtGanttStyleUtils.getZoomInButtonActiveBorderColor(resources),
-        'disabledBackgroundColor': DvtGanttStyleUtils.getZoomInButtonDisabledBackgroundColor(resources),
-        'disabledBorderColor': DvtGanttStyleUtils.getZoomInButtonDisabledBorderColor(resources)
+        'class': resources['zoomIn']
       },
       'zoomOutProps': {
         'imageSize': 16,
-        'cssUrl': resources['zoomOut'],
-        'cssUrlHover': resources['zoomOut_h'],
-        'cssUrlActive': resources['zoomOut_a'],
-        'cssUrlDisabled': resources['zoomOut_d'],
-        'enabledBackgroundColor': DvtGanttStyleUtils.getZoomOutButtonBackgroundColor(resources),
-        'enabledBorderColor': DvtGanttStyleUtils.getZoomOutButtonBorderColor(resources),
-        'hoverBackgroundColor': DvtGanttStyleUtils.getZoomOutButtonHoverBackgroundColor(resources),
-        'hoverBorderColor': DvtGanttStyleUtils.getZoomOutButtonHoverBorderColor(resources),
-        'activeBackgroundColor': DvtGanttStyleUtils.getZoomOutButtonActiveBackgroundColor(resources),
-        'activeBorderColor': DvtGanttStyleUtils.getZoomOutButtonActiveBorderColor(resources),
-        'disabledBackgroundColor': DvtGanttStyleUtils.getZoomOutButtonDisabledBackgroundColor(resources),
-        'disabledBorderColor': DvtGanttStyleUtils.getZoomOutButtonDisabledBorderColor(resources)
+        'class': resources['zoomOut']
       }
     };
     if (isRTL) var transX = gantt.getStartXOffset() + DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_PADDING;else transX = gantt.getCanvasLength() + gantt.getStartXOffset() - (DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_PADDING + DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER);
@@ -8776,8 +8596,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -9036,8 +8857,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -9243,41 +9065,24 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    * @param {string} tooltip The button tooltip.
    * @param {function} callback The button callback function.
    * @param {object} callbackObj The button callback object.
-   * @return {dvt.Button} The button.
+   * @return {dvt.IconButton} The button.
    * @private
    */
 
 
   DvtGanttRowLabelContent.prototype._createExpandCollapseButton = function (context, resources, prefix, x, y, size, callback, callbackObj) {
-    var upState = this._createButtonImage(context, resources[prefix + 'Enabled'], x, y, size);
-
-    var overState = this._createButtonImage(context, resources[prefix + 'Over'], x, y, size);
-
-    var downState = this._createButtonImage(context, resources[prefix + 'Down'], x, y, size);
-
-    var button = new dvt.Button(context, upState, overState, downState, null, null, callback, callbackObj);
+    var iconStyle = dvt.ToolkitUtils.getIconStyle(context, resources[prefix]);
+    var button = new dvt.IconButton(context, 'borderless', {
+      style: iconStyle,
+      size: size
+    }, null, null, callback, callbackObj);
+    button.setTranslate(x, y);
     button.setAriaRole('button');
     button.setAriaProperty('label', this.getAriaLabel());
 
     this._gantt.getEventManager().associate(button, this);
 
     return button;
-  };
-  /**
-   * Creates a button image.
-   * @param {dvt.Context} context
-   * @param {object} src The image src.
-   * @param {number} x The button x position.
-   * @param {number} y The button y position.
-   * @return {dvt.Image} The image.
-   * @private
-   */
-
-
-  DvtGanttRowLabelContent.prototype._createButtonImage = function (context, src, x, y, size) {
-    var image = new dvt.Image(context, src, x, y, size, size);
-    image.setInvisibleFill();
-    return image;
   };
   /**
    * Gets the context to be passed into custom renderer callbacks
@@ -9368,7 +9173,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * Gets the expand collapse button
-   * @return {dvt.Button}
+   * @return {dvt.IconButton}
    */
 
 
@@ -9472,8 +9277,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -9947,8 +9753,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -11235,8 +11042,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -12194,8 +12002,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -12827,8 +12636,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -13535,8 +13345,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 

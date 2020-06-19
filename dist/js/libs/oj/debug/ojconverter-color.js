@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -121,9 +122,9 @@ function(oj, Translations, Converter)
    */
   ColorConverter.prototype.parse = function (value) {
     try {
-      return new oj.Color(value);   // throws error if invalid
+      return new oj.Color(value); // throws error if invalid
     } catch (e) {
-      throw ColorConverter._throwInvalidColorSyntax();  // This throw is not reachable.  THe function does it. Done for ESLint
+      throw ColorConverter._throwInvalidColorSyntax(); // This throw is not reachable.  THe function does it. Done for ESLint
     }
   };
 

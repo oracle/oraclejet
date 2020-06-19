@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -43,10 +44,6 @@ var __oj_color_palette_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -131,6 +128,15 @@ var __oj_color_palette_metadata =
           "type": "string"
         }
       }
+    },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
     },
     "valid": {
       "type": "string",
@@ -222,6 +228,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    * @ojpropertylayout {propertyGroup: "data", items: ["palette", "value"]}
    * @ojvbdefaultcolumns 4
    * @ojvbmincolumns 4
+   *
+   * @ojuxspecs ['color-palette']
    *
    * @classdesc
    * <h3 id="colorPaletteOverview-section">
@@ -746,7 +754,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       this._super();
 
-      this._updateLabelledBy(this.element[0], null, this.options.labelledBy, this._$LV); // custom element's use oj-label.
+      this._labelledByUpdatedForSet(this.element[0].id, null, this.options.labelledBy, this._$LV); // custom element's use oj-label.
 
 
       if (!this._IsCustomElement()) {
@@ -827,7 +835,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         case 'labelledBy':
           // remove the old one and add the new one
-          this._updateLabelledBy(this.element[0], originalValue, newval, this._$LV);
+          this._labelledByUpdatedForSet(this.element[0].id, originalValue, newval, this._$LV);
 
           break;
 
@@ -848,7 +856,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      * @instance
      * @private
      */
-    _updateLabelledBy: LabelledByUtils._updateLabelledBy,
+    _labelledByUpdatedForSet: LabelledByUtils._labelledByUpdatedForSet,
 
     /**
      * @param {Event} event the associated Event object.
@@ -1998,7 +2006,24 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 (function () {
   __oj_color_palette_metadata.extension._WIDGET_NAME = 'ojColorPalette';
   oj.CustomElementBridge.register('oj-color-palette', {
-    metadata: __oj_color_palette_metadata
+    metadata: oj.CollectionUtils.mergeDeep(__oj_color_palette_metadata, {
+      properties: {
+        readonly: {
+          binding: {
+            consume: {
+              name: 'readonly'
+            }
+          }
+        },
+        userAssistanceDensity: {
+          binding: {
+            consume: {
+              name: 'userAssistanceDensity'
+            }
+          }
+        }
+      }
+    })
   });
 })();
 

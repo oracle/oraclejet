@@ -253,6 +253,7 @@
 //$includeResponsiveHelperClasses: $includeAllClasses !default;
 //$includeRefresherClasses:        $includeAllClasses !default;
 //$includeRowExpanderClasses:      $includeAllClasses !default;
+//$includeStreamListClasses:       $includeAllClasses !default;
 //$includeSwipeActionsClasses:     $includeAllClasses !default;
 //$includeSwipeToRevealClasses:    $includeAllClasses !default;
 //$includeSwitcherClasses:         $includeAllClasses !default;
@@ -264,7 +265,7 @@
 //$includeTreeClasses:             $includeAllClasses !default;
 //$includeTreeViewClasses:         $includeAllClasses !default;
 //$includeWaterfallLayoutClasses:  $includeAllClasses !default;
-//$includeHelpClasses:             $includeAllClasses !default;
+//$includeSelectorClasses:         $includeAllClasses !default;
 
 //-----------------------------------------------------------------------------
 // PALETTE VARIABLES:
@@ -372,6 +373,10 @@
 // background colors
 //----------------------------------
 //$contrastBackground1Color:  $neutralColor15 !default;
+
+//DIVIDER 
+
+//$dividerMargin: 0.5rem;
 
 //-----------------------------------------------------------------------------
 // TEXT VARIABLES
@@ -511,8 +516,9 @@
 
 // drag and drop
 //----------------------------------
-//$dropTarget1Color:  $accentColorHighlight1 !default;
-//$dropTarget2Color:  $accentColorHighlight2 !default;
+//$dropTarget1Color:    $accentColorHighlight1 !default;
+//$dropTarget2Color:    $accentColorHighlight2 !default;
+//$dropTargetLineColor: $brandColor !default;
 
 // border radius
 //----------------------------------
@@ -747,6 +753,7 @@
 //$responsiveGenerateTextAlignEnd:          true !default;
 //$responsiveGenerateFloatStart:            true !default;
 //$responsiveGenerateFloatEnd:              true !default;
+
 
 
 
@@ -1641,6 +1648,8 @@
 
 // messaging border
 //$formControlMessagingBorderWidth: 2px 2px 2px 2px !default;
+// Message Summary Option Default:
+//$formControlMessageSummaryOptionDefault: "header" !default;
 //$formControlTextAlign: null !default;
 
 
@@ -1696,6 +1705,8 @@
 // form control option defaults
 //----------------------------------
 //$formControlLabelEdgeDefault: provided !default;
+//$inputFormControlReadonlyDefault: input !default;
+//$formControlUseUserAssistanceOptionDefault: ignore !default;
 
 
 
@@ -1738,6 +1749,7 @@
 //$formLayoutLabelInlineAlign: start !default;
 //$formLayoutLabelEdgeDefault: top !default;
 //$formLayoutLabelGenerationDefault: form !default;
+//$formLayoutDirectionDefault: column !default;
 
 // Default value for colspan-wrap attribute
 //$formLayoutColspanWrapDefault: nowrap !default;
@@ -1757,6 +1769,7 @@
 //options
 // For option 'step'
 //$inputNumberStepOptionDefault: 1 !default;
+//$inputNumberButtonChromingOptionDefault: solid !default;
 
 // RADIO and CHECKBOX
 // The input html element can be hidden the radio/checkbox rendered as an image instead
@@ -1813,7 +1826,7 @@
 //-----------------------------------------------------------------------------
 //$inputTextBorderStyleDisabled:        dotted !default;
 //$inputTextTextAlign: null !default;
-//$textAreaLineHeight:                  oj-px-to-rem(24px, $baseFontSize: 16px) !default;
+//$textAreaLineHeight:                  1.2 !default;
 
 //INPUT SEARCH
 //--------------------------------------------------------------
@@ -2342,13 +2355,22 @@
 //$treeViewItemBgColorSelectedInactive: $collectionCellBgColorSelected !default; // BgColorSelectedInactive is too light
 
 // dnd
-//$treeViewDropLineColor:               $brandColor !default;
-//$treeViewDropMarkerColor:             $brandColor !default;
+//$treeViewDropLineColor:               $dropTargetLineColor !default;
 
 // spacer
 //$treeViewSpacerWidth:                 24px !default;
 //$treeViewSpacerHeight:                30px !default;
 
+// load indicator
+//$treeViewLoadIndicator:               none !default;
+
+// checkboxes 
+//$treeViewMultipleSelectionAffordance: none !default;
+
+// data animation fade in time
+//$treeViewDataFadeInDuration:          0s !default;
+
+//$treeViewDropItemBackground:          $dropTarget1Color !default;
 
 // TABLE
 //-----------------------------------------------------------------------------
@@ -2368,10 +2390,16 @@
 // Table Display Option Default
 //$tableDisplayOptionDefault:            "list" !default;
 
+// Table selector for multiple selection
+//$tableEnableSelector: false !default;
+
 // animations
 //$tableAddAnimation:                         ((effect: "slideIn", direction:"bottom"), "fadeIn") !default;
 //$tableRemoveAnimation:                      ((effect: "slideOut", direction:"top"), "fadeOut") !default;
 //$tableUpdateAnimation:                      (effect: "fadeIn") !default;
+
+// load indicator
+//$tableLoadIndicator: icon !default;
 
 // ROWEXPANDER
 //-----------------------------------------------------------------------------
@@ -2508,6 +2536,16 @@
 //$waterfallLayoutEntranceAnimation: ((effect: "fadeIn", duration: "300ms", timingFunction: "cubic-bezier(0, 0, 0.2, 1)"), (effect: "slideIn", direction: "top", offsetY: "300px", duration: "300ms", timingFunction: "cubic-bezier(0, 0, 0.2, 1)")) !default;
 //$waterfallLayoutExitAnimation:      (effect: "fadeOut", duration: "200ms", timingFunction: "cubic-bezier(0, 0, 0.2, 1)") !default;
 
+// SELECTOR WIDTH
+//-----------------------------------------------------------------------------
+
+// width of the selector 
+//$selectorWidth:                      18px !default;
+// height of the selector 
+//$selectorHeight:                     18px !default;
+// margin of the selector 
+//$selectorMargin:                     10px !default;
+
 // FILM STRIP
 //-----------------------------------------------------------------------------
 
@@ -2524,6 +2562,8 @@
 
 //hover
 //$conveyorBeltOverflowIndicatorHeight: $buttonHeight !default;
+
+//$conveyorBeltArrowVisibilityOptionDefault: visible !default;
 
 
 // NAVIGATIONLIST
@@ -2826,6 +2866,10 @@
 //$dvtAxisTitleTextColor: $tertiaryTextColor !default;
 //$dvtIconBgColorActive: $buttonBgColorActive !default;
 //$dvtIconBorderColorActive: $buttonBorderColorActive !default;
+//$dvtMarqueeColor: rgba(255,255,255,0.4) !default;
+//$dvtMarqueeBorderColor: #0572ce !default;
+
+//$dvtIconColorActive: $buttonIconColorActive !default;
 
 // attribute group colors
 //----------------------------------
@@ -2850,6 +2894,22 @@
 //$dvtThreshold2Color: $accentColorDvt3 !default;
 // used for the third threshold on a gauge, typically represents a high value
 //$dvtThreshold3Color: $accentColorDvt2 !default;
+//-----------------------------------
+// ratinggauge state fill and stroke color
+//$ratingGaugeBorderColorHover:              transparent;
+//$ratingGaugeBorderColorSelected:           transparent;
+//$ratingGaugeBorderColorChanged:            transparent;
+//$ratingGaugeBorderColorUnselected:         transparent;
+//$ratingGaugeBorderColorSelectedDisabled:   transparent;
+//$ratingGaugeBorderColorUnselectedDisabled: transparent;
+
+//$ratingGaugeColorHover:           #007cc8 !default;
+//$ratingGaugeColorSelected:        #f8c15a !default;
+//$ratingGaugeColorChanged:         #ed2c02 !default;
+//$ratingGaugeColorUnselected:      #c4ced7 !default;
+//$ratingGaugeColorSelectedDisabled: $neutralColor8;
+//$ratingGaugeColorUnselectedDisabled: $neutralColor5;
+
 
 // background
 //----------------------------------
@@ -2875,6 +2935,10 @@
 //$dvtChartStockRisingBgColor:      $neutralColor13 !default;
 //$dvtChartSubtitleTextColor: $secondaryTextColor !default;
 //$dvtChartTitleTextColor:          $headerTextColor !default;
+//$dvtChartAnimationRisingIconColor:        #0099ff !default;
+//$dvtChartAnimationFallingIconColor:      #ff3300 !default;
+//$dvtChartAnimationMarkerColor:             #ffff2b !default;
+//$dvtChartDataLabelFontSize: $smallFontSize !default;
 
 // diagram
 //----------------------------------
@@ -2944,11 +3008,14 @@
 //$dvtTreemapNodeHeaderBgColor: $brandColorLight3 !default;
 //$dvtTreemapNodeBorderColorHover: $neutralColor6 !default;
 //$dvtTreemapDrillTextColor: $linkTextColor !default;
+//$dvtTreemapLabelFontSize: $smallFontSize !default;
+//$dvtTreemapHeaderFontSize: $smallFontSize !default;
 
 // sunburst
 //----------------------------------
 //$dvtSunburstNodeBorderColorHover: $dvtTreemapNodeBorderColorHover !default;
 //$dvtSunburstDrillTextColor: $linkTextColor !default;
+//$dvtSunburstLabelFontSize: $smallFontSize !default;
 
 // timeaxis
 //----------------------------------
@@ -2986,8 +3053,6 @@
 //icon
 //----------------------------------
 //$iconCircleInnerBgColor:         $neutralColor13 !default;
-//$iconCircleBorderOffsetBgColor:  $neutralColor1 !default;//the padding color between border and circle
-//$iconCircleBorderColor:          $iconCircleInnerBgColor !default;
 //$iconCircleFontColor:            $neutralColor1 !default;
 
 //$iconCircleXxsInnerSize:              32px !default;
@@ -2998,21 +3063,6 @@
 //$iconCircleXlInnerSize:               192px !default;
 //$iconCircleXxlInnerSize:              256px !default;
 
-//Space between the outer border and inner circle
-//$iconCircleXxsBorderOffset:           2px !default;
-//$iconCircleXsBorderOffset:            3px !default;
-//$iconCircleSmBorderOffset:            4px !default;
-//$iconCircleMdBorderOffset:            4px !default;
-//$iconCircleLgBorderOffset:            5px !default;
-//$iconCircleXlBorderOffset:            6px !default;
-//$iconCircleXxlBorderOffset:           8px !default;
-
-//Outside border width
-//border used for xxs, xs, sm, md, lg
-//$iconCircleXxsBorderWidth:        1px !default;
-//lg border used for xl, xxl
-//$iconCircleXlBorderWidth:         2px !default;
-
 //Font size for the icon font
 //$iconCircleXxsFontSize:          calc(#{$iconCircleXxsInnerSize} / 2) !default;
 //$iconCircleXsFontSize:           calc(#{$iconCircleXsInnerSize} / 2 ) !default;
@@ -3022,6 +3072,13 @@
 //$iconCircleXlFontSize:           calc(#{$iconCircleXlInnerSize} / 2) !default;
 //$iconCircleXxlFontSize:          calc(#{$iconCircleXxlInnerSize} / 2) !default;
 
+//$iconCircleGreen:                     #005a1c;
+//$iconCirclePurple:                    #920083;
+//$iconCircleRed:                       #e4001e;
+//$iconCircleTeal:                      #008179;
+//$iconCircleOrange:                    #be4800;
+//$iconCircleForest:                    #008323;
+//$iconCircleMauve:                     #754b9a;
 
 //avatar
 //----------------------------------
@@ -3076,6 +3133,7 @@
 //$avatarGreen:                   #005a1c !default; 
 //$avatarForest:                  #008323 !default;
 //$avatarMauve:                   #754b9a !default;
+
 
 //-----------------------------------------------------------------------------
 // OPTIMIZATION VARIABLES
@@ -3206,13 +3264,10 @@
 
 /* This padding is needed to bring the text field below the label, so that the label and the text inside the text field don't overlap. */
 //$formControlInsidePaddingTop:           0.85rem !default;
-//$formControlInsideTextareaPaddingTop:   1.25rem !default;
+//$formControlInsideTextareaMarginTop:    1.25rem !default;
 //$formControlInsideLabelFontSize:        $smallFontSize !default;
 //$formControlInsideLabelFontWeight:      $formControlLabelFontWeight !default;
 //$formControlInsideLabelLineHeight:      normal !default;
-//$formControlInsideLabelTranslateX:      $formControlPaddingHorizontal !default;
-//$formControlInsideLabelTranslateY:      0.625rem !default;
-//$formControlInsideLabelTranslateYFocus: 0.1875rem !default;
 //$formControlInsideLabelFontSize:        $smallestFontSize !default;
 //$formControlInsideBorderRightWidth:     1px !default; //TODO: use oj-shorthand-property-value-bottom($formControlBorderWidth)
 //$formControlInsideBorderLeftWidth:      1px !default;

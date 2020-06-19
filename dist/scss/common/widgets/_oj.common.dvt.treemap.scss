@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!
 // WARNING: do not directly import this file, instead import the
 //          version in your theme's directory,
@@ -25,63 +26,9 @@
       height:400px;
 
         color: $textColor;
-        font-size: $smallFontSize;
+        font-size: $dvtTreemapLabelFontSize;
         @include oj-user-select-property(none);
 
-    }
-
-    .oj-treemap-isolate-icon {
-      @include oj-ltr() {
-        background-image: oj-common-image-url("dvt/treemap/s_max_ena.png");
-      }
-      @include oj-rtl() {
-        background-image: oj-common-image-url("dvt/treemap/s_max_ena_rtl.png");
-      }
-    }
-
-    .oj-treemap-restore-icon {
-      @include oj-ltr() {
-        background-image: oj-common-image-url("dvt/treemap/s_restore_ena.png");
-      }
-      @include oj-rtl() {
-        background-image: oj-common-image-url("dvt/treemap/s_restore_ena_rtl.png");
-      }
-    }
-
-    .oj-treemap-isolate-icon.oj-hover {
-      @include oj-ltr() {
-        background-image: oj-common-image-url("dvt/treemap/s_max_ovr.png");
-      }
-      @include oj-rtl() {
-        background-image: oj-common-image-url("dvt/treemap/s_max_ovr_rtl.png");
-      }
-    }
-
-   .oj-treemap-restore-icon.oj-hover {
-      @include oj-ltr() {
-        background-image: oj-common-image-url("dvt/treemap/s_restore_ovr.png");
-      }
-      @include oj-rtl() {
-        background-image: oj-common-image-url("dvt/treemap/s_restore_ovr_rtl.png");
-      }
-    }
-
-    .oj-treemap-isolate-icon.oj-active {
-      @include oj-ltr() {
-        background-image: oj-common-image-url("dvt/treemap/s_max_dwn.png");
-      }
-      @include oj-rtl() {
-        background-image: oj-common-image-url("dvt/treemap/s_max_dwn_rtl.png");
-      }
-    }
-
-    .oj-treemap-restore-icon.oj-active {
-      @include oj-ltr() {
-        background-image: oj-common-image-url("dvt/treemap/s_restore_dwn.png");
-      }
-      @include oj-rtl() {
-        background-image: oj-common-image-url("dvt/treemap/s_restore_dwn_rtl.png");
-      }
     }
 
     .oj-treemap-attribute-type-text {
@@ -120,7 +67,7 @@
 
     .oj-treemap-node {
 
-      font-size: $smallFontSize;
+      font-size: $dvtTreemapLabelFontSize;
 
     }
 
@@ -139,7 +86,7 @@
 
     .oj-treemap-node-header {
 
-      font-size: $smallFontSize;
+      font-size: $dvtTreemapHeaderFontSize;
       color: $headerTextColor;
       background-color: $dvtComponentBgColor;
       border-color: $dvtTreemapNodeHeaderBorderColor;

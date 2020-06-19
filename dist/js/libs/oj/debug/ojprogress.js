@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -67,11 +68,11 @@ var __oj_progress_metadata =
  * @since 1.0.0
  * @augments oj.baseComponent
  * @ojshortdesc A progress allows the user to visualize the progression of an extended computer operation.
- *
  * @ojpropertylayout {propertyGroup: "common", items: ["type", "max"]}
  * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
  * @ojvbdefaultcolumns 4
  * @ojvbmincolumns 1
+ * @ojunsupportedthemes ["Redwood"]
  *
  * @classdesc
  * <h3 id="progressOverview-section">
@@ -97,13 +98,6 @@ var __oj_progress_metadata =
  *
  * {@ojinclude "name":"keyboardDoc"}
  *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
- *
  * <h3 id="accessibility-section">
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
@@ -114,6 +108,58 @@ var __oj_progress_metadata =
  *
  *
  */
+// --------------------------------------------------- oj.ojProgress Styling Start -----------------------------------------------------------
+  // ---------------- oj-progress-bar-embedded --------------
+  /**
+  * Optional class that can be set on a oj-progress bar element to style an embedded progress bar within a web application or dialog.
+  * @ojstyleclass oj-progress-bar-embedded
+  * @ojdisplayname Embedded
+  * @memberof oj.ojProgress
+  * @ojtsexample
+  * &lt;div class='oj-web-applayout-page'>
+  *   &lt;header class='oj-web-applayout-header'>
+  *   &lt;</header>
+  *   &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
+  *   &lt;/oj-progress>
+  * &lt;/div>
+  */
+   // ---------------- oj-progress-bar-start-label --------------
+  /**
+  * Optional class that can be set on a div after the oj-progress element. This div contains the start text to display underneath the oj-progress bar.
+  * @ojstyleclass oj-progress-bar-start-label
+  * @ojdisplayname Start Label
+  * @memberof oj.ojProgress
+  * @ojtsexample
+  * &lt;div class='oj-web-applayout-page'>
+  *   &lt;header class='oj-web-applayout-header'>
+  *   &lt;</header>
+  *   &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
+  *     &lt;div class='oj-progress-bar-start-label'>0%
+  *     &lt;/div>
+  *     &lt;div class='oj-progress-bar-end-label'>100%
+  *     &lt;/div>
+  *   &lt;/oj-progress>
+  * &lt;/div>
+  */
+   // ---------------- oj-progress-bar-end-label --------------
+  /**
+  * Optional class that can be set on a div after the oj-progress element. This div contains the end text to display underneath the oj-progress bar.
+  * @ojstyleclass oj-progress-bar-end-label
+  * @ojdisplayname End Label
+  * @memberof oj.ojProgress
+  * @ojtsexample
+  * &lt;div class='oj-web-applayout-page'>
+  *   &lt;header class='oj-web-applayout-header'>
+  *   &lt;</header>
+  *   &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
+  *     &lt;div class='oj-progress-bar-start-label'>0%
+  *     &lt;/div>
+  *     &lt;div class='oj-progress-bar-end-label'>100%
+  *     &lt;/div>
+  *   &lt;/oj-progress>
+  * &lt;/div>
+  */
+// --------------------------------------------------- oj.ojProgress Styling end -----------------------------------------------------------
 
 (function () {
   /*
@@ -542,64 +588,6 @@ var __oj_progress_metadata =
      * <p>This element has no keyboard interaction.  </p>
      *
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-     * @memberof oj.ojProgress
-     */
-
-    /**
-     * {@ojinclude "name":"ojStylingDocIntro"}
-     *
-     * <table class="generic-table styling-table">
-     *   <thead>
-     *     <tr>
-     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocExampleHeader"}</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>oj-progress-bar-embedded</td>
-     *       <td> Optional class that can be set on a oj-progress bar element to style an embedded progress bar within a web application or dialog.</td>
-     *       <td>
-     *       <pre class="prettyprint">
-     *<code>&lt;div class='oj-web-applayout-page'>
-     *  &lt;header class='oj-web-applayout-header'>&lt;/header>
-     *  &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
-     *  &lt;/oj-progress>
-     *&lt;/div>
-     *</code></pre>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td> oj-progress-bar-start-label</td>
-     *       <td> Optional class that can be set on a div after the oj-progress element.  This div contains the start text to display underneath the oj-progress bar.</td>
-     *       <td>
-     *       <pre class="prettyprint">
-     *<code>&lt;div id='progress-container'>
-     *  &lt;oj-progress value='{{loadingValue}}'>&lt;/oj-progress>
-     *  &lt;div class='oj-progress-bar-start-label'>0%&lt;/div>
-     *  &lt;div class='oj-progress-bar-end-label'>100%&lt;/div>
-     *&lt;/div>
-     *</code></pre>
-     *       </td>
-     *     </tr>
-     *    <tr>
-     *       <td>oj-progress-bar-end-label</td>
-     *       <td> Optional class that can be set on a div after the oj-progress element.  This div contains the end text to display underneath the oj-progress bar. </td>
-     *       <td>
-     *       <pre class="prettyprint">
-     *<code>&lt;div id='progress-container'>
-     *  &lt;oj-progress value='{{loadingValue}}'>&lt;/oj-progress>
-     *  &lt;div class='oj-progress-bar-start-label'>0%&lt;/div>
-     *  &lt;div class='oj-progress-bar-end-label'>100%&lt;/div>
-     *&lt;/div>
-     *</code></pre>
-     *       </td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
      * @memberof oj.ojProgress
      */
 

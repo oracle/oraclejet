@@ -1,3 +1,12 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
+import { ItemMetadata } from '../ojdataprovider';
 import { KeySet } from '../ojkeyset';
 import TreeDataProvider = require('../ojtreedataprovider');
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
@@ -123,6 +132,7 @@ export namespace ojTreeView {
         leaf: boolean;
         parentElement: Element;
         parentKey?: K;
+        metadata: ItemMetadata<K>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemsDropOnDropContext = {

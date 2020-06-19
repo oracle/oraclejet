@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 @import "../../utilities/oj.utilities";
 
 // ----- start dependencies ---------
@@ -27,12 +28,7 @@
 		margin-left: 3px;
 		margin-right: 3px;
 	}
-			
-	// READONLY ON/OFF
-	.oj-switch.oj-read-only .oj-switch-thumb,
-	.oj-switch.oj-selected.oj-read-only .oj-switch-thumb {
-		color: transparent;
-	}
+
 		
   }
 }

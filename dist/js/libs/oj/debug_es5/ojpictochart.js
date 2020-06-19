@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -322,6 +323,8 @@ var __oj_picto_chart_item_metadata =
  * @ojpropertylayout {propertyGroup: "data", items: ["data"]}
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 2
+ *
+ * @ojuxspecs ['data-visualization-picto-chart']
  *
  * @classdesc
  * <h3 id="pictoChartOverview-section">
@@ -1015,7 +1018,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent, {
  * @property {number=} borderWidth The border width of the item in pixels. Does not apply if custom image is specified.
  * @property {string=} source The URI of the custom image. If specified, it takes precedence over shape.
  * @property {string=} svgClassName The CSS style class to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
- * @property {Object=} svgStyle The inline style to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
+ * @property {Object=} svgStyle The inline style to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified. Only SVG CSS style properties are supported.
  * @property {string=} sourceHover The optional URI for the hover state. If not specified, the source image will be used.
  * @property {string=} sourceSelected The optional URI for the selected state. If not specified, the source image will be used.
  * @property {string=} sourceHoverSelected The optional URI for the hover selected state. If not specified, the source image will be used.
@@ -1073,7 +1076,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent, {
 
 /**
 *
-* <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the picto chart when a DataProvider has been specified with the data attribute. The slot content must be a &lt;template> element.</p>
+* <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the picto chart when a DataProvider has been specified with the data attribute. The slot content must be a single &lt;template> element.</p>
 * <p>When the template is executed for each item, it will have access to the picto chart's binding context and the following properties:</p>
 * <ul>
 *   <li>$current - an object that contains information for the current item. (See [oj.ojPictoChart.ItemTemplateContext]{@link oj.ojPictoChart.ItemTemplateContext} or the table below for a list of properties available on $current) </li>
@@ -1102,7 +1105,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent, {
 */
 
 /**
- * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
+ * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content. The slot content must be a single &lt;template> element.
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
@@ -1112,6 +1115,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent, {
  *
  * @ojslot tooltipTemplate
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
+ * @ojmaxitems 1
  * @ojslotitemprops oj.ojPictoChart.TooltipContext
  * @memberof oj.ojPictoChart
  *
@@ -1160,6 +1164,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent, {
 
 /**
  * @ojcomponent oj.ojPictoChartItem
+ * @ojshortdesc The oj-picto-chart-item element is used to declare properties for picto chart items. See the Help documentation for more information.
  * @ojsignature {target: "Type", value:"class ojPictoChartItem extends JetElement<ojPictoChartItemSettableProperties>"}
  * @ojslotcomponent
  * @since 5.2.0
@@ -1470,6 +1475,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent, {
 
 /**
  * The inline style to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
+ * Only SVG CSS style properties are supported.
  * @expose
  * @name svgStyle
  * @ojshortdesc The inline style to apply to the item. See the Help documentation for more information.

@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -231,6 +232,10 @@ var __oj_n_box_metadata =
             "iconDefaults": {
               "type": "object",
               "properties": {
+                "background": {
+                  "type": "string",
+                  "value": "neutral"
+                },
                 "borderColor": {
                   "type": "string"
                 },
@@ -507,6 +512,20 @@ var __oj_n_box_node_metadata =
     "icon": {
       "type": "object",
       "properties": {
+        "background": {
+          "type": "string",
+          "enumValues": [
+            "forest",
+            "green",
+            "mauve",
+            "neutral",
+            "orange",
+            "purple",
+            "red",
+            "teal"
+          ],
+          "value": "neutral"
+        },
         "borderColor": {
           "type": "string"
         },
@@ -521,6 +540,10 @@ var __oj_n_box_node_metadata =
         },
         "height": {
           "type": "number"
+        },
+        "initials": {
+          "type": "string",
+          "value": ""
         },
         "opacity": {
           "type": "number"
@@ -682,6 +705,8 @@ var __oj_n_box_node_metadata =
  * @ojpropertylayout {propertyGroup: "data", items: ["data", "rows", "columns", "cells"]}
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 12
+ *
+ * @ojuxspecs ['data-visualization-nbox']
  *
  * @classdesc
  * <h3 id="nBoxOverview-section">
@@ -893,6 +918,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * The text for the title on the column edge.
        * @expose
        * @name columnsTitle
+       * @ojtranslatable
        * @memberof oj.ojNBox
        * @instance
        * @type {string}
@@ -1137,6 +1163,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * @expose
        * @name rowsTitle
        * @memberof oj.ojNBox
+       * @ojtranslatable
        * @instance
        * @type {string}
        * @default ""
@@ -1169,6 +1196,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
        * @expose
        * @name selectionMode
        * @memberof oj.ojNBox
+       * @ojshortdesc Specifies the selection behavior on the NBox. See the Help documentation for more information.
        * @instance
        * @type {string}
        * @ojvalue {string} "none" Selection is disabled.
@@ -1224,7 +1252,9 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
           labelHalign: 'start',
 
           /**
-           * The CSS style object defining the style of the cell labels.  The default value comes from the CSS and varies based on theme.
+           * The CSS style object defining the style of the cell labels.
+           * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+           * The default value comes from the CSS and varies based on theme.
            * @expose
            * @name styleDefaults.cellDefaults.labelStyle
            * @ojshortdesc The CSS style object defining the style of the cell labels.
@@ -1236,7 +1266,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
           labelStyle: undefined,
 
           /**
-           * The CSS style object defining the styles of the cell background and border when the cell is maximized.  The default value comes from the CSS and varies based on theme.
+           * The CSS style object defining the styles of the cell background and border when the cell is maximized.
+           * Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
            * @expose
            * @name styleDefaults.cellDefaults.maximizedSvgStyle
            * @ojshortdesc The CSS style object defining the styles of the cell background and border when the cell is maximized.
@@ -1248,7 +1279,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
           maximizedSvgStyle: undefined,
 
           /**
-           * The CSS style object defining the styles of the cell background and border when the cell is minimized.  The default value comes from the CSS and varies based on theme.
+           * The CSS style object defining the styles of the cell background and border when the cell is minimized.
+           * Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
            * @expose
            * @name styleDefaults.cellDefaults.minimizedSvgStyle
            * @ojshortdesc The CSS style object defining the styles of the cell background and border when the cell is minimized.
@@ -1275,7 +1307,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
           showCount: 'auto',
 
           /**
-           * The CSS style object defining the styles of the cell background and border.  The default value comes from the CSS and varies based on theme.
+           * The CSS style object defining the styles of the cell background and border.
+           * Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
            * @expose
            * @name styleDefaults.cellDefaults.svgStyle
            * @ojshortdesc The CSS style object defining the styles of the cell background and border.
@@ -1288,7 +1321,9 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
         },
 
         /**
-         * The CSS style object defining the style of the column labels.  The default value comes from the CSS and varies based on theme.
+         * The CSS style object defining the style of the column labels.
+         * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+         * The default value comes from the CSS and varies based on theme.
          * @expose
          * @name styleDefaults.columnLabelStyle
          * @ojshortdesc The CSS style object defining the style of the column labels.
@@ -1300,7 +1335,9 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
         columnLabelStyle: undefined,
 
         /**
-         * The CSS style object defining the style of the columns title.  The default value comes from the CSS and varies based on theme.
+         * The CSS style object defining the style of the columns title.
+         * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+         * The default value comes from the CSS and varies based on theme.
          * @expose
          * @name styleDefaults.columnsTitleStyle
          * @ojshortdesc The CSS style object defining the style of the columns title.
@@ -1498,6 +1535,25 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
              */
             source: '',
 
+             /**
+             * The URL of an image to display by default for the node icons.
+             * @expose
+             * @name styleDefaults.nodeDefaults.iconDefaults.background
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {string}
+             * @ojvalue {string=} "neutral"
+             * @ojvalue {string=} "red"
+             * @ojvalue {string=} "orange"
+             * @ojvalue {string=} "forest"
+             * @ojvalue {string=} "green"
+             * @ojvalue {string=} "teal"
+             * @ojvalue {string=} "mauve"
+             * @ojvalue {string=} "purple"
+             * @default "neutral"
+             */
+            background: 'neutral',
+
             /**
              * The default width of the node icons.  If the value is 0, the width will be automatically based on the remaining node contents.
              * @expose
@@ -1666,7 +1722,9 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
           },
 
           /**
-           * The CSS style object defining the style of the node labels.  The default value comes from the CSS and varies based on theme.
+           * The CSS style object defining the style of the node labels.
+           * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+           * The default value comes from the CSS and varies based on theme.
            * @expose
            * @name styleDefaults.nodeDefaults.labelStyle
            * @ojshortdesc The CSS style object defining the style of the node labels.
@@ -1678,7 +1736,9 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
           labelStyle: undefined,
 
           /**
-           * The CSS style object defining the style of the node secondary labels.  The default value comes from the CSS and varies based on theme.
+           * The CSS style object defining the style of the node secondary labels.
+           * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+           * The default value comes from the CSS and varies based on theme.
            * @expose
            * @name styleDefaults.nodeDefaults.secondaryLabelStyle
            * @ojshortdesc The CSS style object defining the style of the node secondary labels.
@@ -1691,7 +1751,9 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
         },
 
         /**
-         * The CSS style object defining the style of the row labels.  The default value comes from the CSS and varies based on theme.
+         * The CSS style object defining the style of the row labels.
+         * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+         * The default value comes from the CSS and varies based on theme.
          * @expose
          * @name styleDefaults.rowLabelStyle
          * @ojshortdesc The CSS style object defining the style of the row labels.
@@ -1703,7 +1765,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
         rowLabelStyle: undefined,
 
         /**
-         * The CSS style object defining the style of the rows title.  The default value comes from the CSS and varies based on theme.
+         * The CSS style object defining the style of the rows title.
+         * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
          * @expose
          * @name styleDefaults.rowsTitleStyle
          * @ojshortdesc The CSS style object defining the style of the rows title.
@@ -1881,21 +1944,32 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
         property: 'TEXT'
       };
 
-      styleClasses['oj-nbox-cell'] = {
+      styleClasses['oj-nbox-cell'] = [{
         path: 'styleDefaults/cellDefaults/_style',
         property: 'BACKGROUND'
-      };
+      }, {
+        path: 'styleDefaults/cellDefaults/_borderRadius',
+        property: 'border-radius'
+      }];
       styleClasses['oj-nbox-cell oj-minimized'] = {
-        path: 'styleDefaults/cellDefaults/minimizedStyle',
+        path: 'styleDefaults/cellDefaults/_minimizedStyle',
         property: 'BACKGROUND'
       };
       styleClasses['oj-nbox-cell oj-maximized'] = {
-        path: 'styleDefaults/cellDefaults/maximizedStyle',
+        path: 'styleDefaults/cellDefaults/_maximizedStyle',
         property: 'BACKGROUND'
       };
 
       styleClasses['oj-nbox-cell-label'] = {
         path: 'styleDefaults/cellDefaults/labelStyle',
+        property: 'TEXT'
+      };
+      styleClasses['oj-nbox-cell-label oj-minimized'] = {
+        path: 'styleDefaults/cellDefaults/_labelMinimizedStyle',
+        property: 'TEXT'
+      };
+      styleClasses['oj-nbox-cell-label oj-maximized'] = {
+        path: 'styleDefaults/cellDefaults/_labelMaximizedStyle',
         property: 'TEXT'
       };
       styleClasses['oj-nbox-cell-countlabel'] = {
@@ -1906,11 +1980,17 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
         path: 'styleDefaults/cellDefaults/countLabelStyle',
         property: 'TEXT'
       };
-
-      styleClasses['oj-nbox-node'] = {
+      styleClasses['oj-nbox-cell-shadow'] = {
+        path: 'styleDefaults/cellDefaults/_panelShadow',
+        property: 'box-shadow'
+      };
+      styleClasses['oj-nbox-node'] = [{
         path: 'styleDefaults/nodeDefaults/color',
         property: 'background-color'
-      };
+      }, {
+        path: 'styleDefaults/nodeDefaults/_borderRadius',
+        property: 'border-radius'
+      }];
       styleClasses['oj-nbox-node oj-hover'] = {
         path: 'styleDefaults/nodeDefaults/hoverColor',
         property: 'border-color'
@@ -1928,11 +2008,14 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
         path: 'styleDefaults/nodeDefaults/secondaryLabelStyle',
         property: 'TEXT'
       };
+      styleClasses['oj-nbox-node-initials-background'] = {
+        path: 'styleDefaults/nodeDefaults/iconDefaults/backgroundSize',
+        property: 'width'
+      };
       styleClasses['oj-nbox-node-categorylabel'] = {
         path: 'styleDefaults/_categoryNodeDefaults/labelStyle',
         property: 'TEXT'
       };
-
       styleClasses['oj-nbox-dialog'] = [
         { path: 'styleDefaults/_drawerDefaults/background',
           property: 'background-color'
@@ -1964,40 +2047,55 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
       if (this.options._resources == null) { this.options._resources = {}; }
 
       var resources = this.options._resources;
-      resources.overflow_dwn = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/nbox/overflow_dwn.png'),
+      resources.overflow = {
+        class: 'oj-fwk-icon oj-fwk-icon-dots-horizontal',
         width: 34,
         height: 9
       };
-      resources.overflow_ovr = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/nbox/overflow_ovr.png'),
-        width: 34,
-        height: 9
-      };
-      resources.overflow_ena = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/nbox/overflow_ena.png'),
-        width: 34,
-        height: 9
-      };
-      resources.overflow_dis = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/nbox/overflow_dis.png'),
-        width: 34,
-        height: 9
-      };
-      resources.close_dwn = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/nbox/close_dwn.png'),
+      resources.close = {
+        class: 'oj-fwk-icon oj-fwk-icon-cross',
         width: 16,
         height: 16
       };
-      resources.close_ovr = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/nbox/close_ovr.png'),
-        width: 16,
-        height: 16
+      resources.background_neutral = {
+        src: 'oj-nbox-node-initials-neutral',
+        width: 44,
+        height: 44
       };
-      resources.close_ena = {
-        src: Config.getResourceUrl('resources/internal-deps/dvt/nbox/close_ena.png'),
-        width: 16,
-        height: 16
+      resources.background_teal = {
+        src: 'oj-nbox-node-initials-teal',
+        width: 44,
+        height: 44
+      };
+      resources.background_red = {
+        src: 'oj-nbox-node-initials-red',
+        width: 44,
+        height: 44
+      };
+      resources.background_green = {
+        src: 'oj-nbox-node-initials-green',
+        width: 44,
+        height: 44
+      };
+      resources.background_orange = {
+        src: 'oj-nbox-node-initials-orange',
+        width: 44,
+        height: 44
+      };
+      resources.background_mauve = {
+        src: 'oj-nbox-node-initials-mauve',
+        width: 44,
+        height: 44
+      };
+      resources.background_forest = {
+        src: 'oj-nbox-node-initials-forest',
+        width: 44,
+        height: 44
+      };
+      resources.background_purple = {
+        src: 'oj-nbox-node-initials-purple',
+        width: 44,
+        height: 44
       };
     },
 
@@ -2452,8 +2550,10 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @property {("largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"|"none"|"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle")=} icon.pattern The pattern of this icon.
  * @property {("circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string)=} icon.shape The shape of this icon. Can take the name of a built-in shape or the SVG path commands for a custom shape.
  * @property {string=} icon.source The URL of an image to display for this icon.
- * @property {string=} icon.svgClassName The CSS style class defining the style of this icon.
- * @property {Object=} icon.svgStyle The CSS style object defining the style of this icon.
+ * @property {string=} icon.initials The initials displayed for this icon.
+ * @property {("neutral"|"red"|"orange"|"forest"|"green"|"teal"|"mauve"|"purple")} icon.background The background of initials
+ * @property {string=} icon.svgClassName The CSS style class defining the style of this icon.  Will not be applied if initials are specified.
+ * @property {Object=} icon.svgStyle The CSS style object defining the style of this icon. Only SVG CSS style properties are supported. Will not be applied if initials are specified.  The default value comes from the CSS and varies based on theme.
  * @property {number=} icon.width The width of this icon.
  * @property {string=} indicatorColor The background color for the indicator section of this node.
  * @property {Object=} indicatorIcon Defines the indicator icon for this node.
@@ -2467,13 +2567,13 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @property {("circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string)=} indicatorIcon.shape The shape of this indicator icon. Can take the name of a built-in shape or the SVG path commands for a custom shape.
  * @property {string=} indicatorIcon.source The URL of an image to display for this indicator icon.
  * @property {string=} indicatorIcon.svgClassName The CSS style class defining the style of this indicator icon.
- * @property {Object=} indicatorIcon.svgStyle The CSS style object defining the style of this indicator icon.
+ * @property {Object=} indicatorIcon.svgStyle The CSS style object defining the style of this indicator icon. Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
  * @property {number=} indicatorIcon.width The width of this indicator icon.
  * @property {string} row The row id for this node.
  * @property {string=} label The text for the node label.
  * @property {string=} secondaryLabel The text for the secondary node label.
  * @property {string=} svgClassName The CSS style class defining the style of this node.
- * @property {Object=} svgStyle The CSS style object defining the style of this node.
+ * @property {Object=} svgStyle The CSS style object defining the style of this node. Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
  * @property {number=} xPercentage An optional horizontal position (as a percentage) to be used in the average position calculation when grouping across cells.
  * @property {number=} yPercentage An optional vertical position (as a percentage) to be used in the average position calculation when grouping across cells.
  * @property {string=} shortDesc The description of this node. This is used for accessibility and also for customizing the tooltip text.
@@ -2489,12 +2589,12 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @property {string=} label The text for the cell label.
  * @property {string} column The id of the column containing this cell.
  * @property {string=} labelHalign The horizontal alignment value for the cell label.
- * @property {Object=} labelStyle The CSS style object defining the style of the cell label.
+ * @property {Object=} labelStyle The CSS style object defining the style of the cell label. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration. The default value comes from the CSS and varies based on theme.
  * @property {string=} svgClassName The CSS style class for this cell. Used for customizing the cell background and border.
- * @property {Object=} svgStyle The CSS style object for this cell. Used for customizing the cell background and border.
- * @property {Object=} maximizedSvgStyle The CSS style object for this cell. Used for customizing the maximized cell background and border.
+ * @property {Object=} svgStyle The CSS style object for this cell. Used for customizing the cell background and border. Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
+ * @property {Object=} maximizedSvgStyle The CSS style object for this cell. Used for customizing the maximized cell background and border. Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
  * @property {string=} maximizedSvgClassName The CSS style class for this cell. Used for customizing the minimized cell background and border.
- * @property {Object=} minimizedSvgStyle The CSS style object for this cell. Used for customizing the minimized cell background and border.
+ * @property {Object=} minimizedSvgStyle The CSS style object for this cell. Used for customizing the minimized cell background and border. Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
  * @property {string=} minimizedSvgClassName The CSS style class for this cell. Used for customizing the minimized cell background and border.
  * @property {string} row The id of the row containing this cell.
  * @property {"on"|"off"|"auto"} [showCount="auto"] Determines when to display the cell count label (extra info displayed after primary cell label). "off" never show the count label. "on" always show the count label. Show countLabel value if specified, otherwise use a simple node count. "auto" show the count label if countLabel attribute is defined.
@@ -2509,7 +2609,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @typedef {Object} oj.ojNBox.Column
  * @property {string} id The id of the column. Used to identify this column.
  * @property {string=} label The text for the column label.
- * @property {Object=} labelStyle The CSS style object defining the style of the column label.
+ * @property {Object=} labelStyle The CSS style object defining the style of the column label. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
  * @ojsignature {target: "Type", value: "CSSStyleDeclaration", for: "labelStyle", jsdocOverride: true}
  */
 
@@ -2517,7 +2617,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * @typedef {Object} oj.ojNBox.Row
  * @property {string} id The id of the row. Used to identify this row.
  * @property {string=} label The text for the row label.
- * @property {Object=} labelStyle The CSS style object defining the style of the row label.
+ * @property {Object=} labelStyle The CSS style object defining the style of the row label. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
  * @ojsignature {target: "Type", value: "CSSStyleDeclaration", for: "labelStyle", jsdocOverride: true}
  */
 
@@ -2664,7 +2764,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
 
  /**
   * <p> The <code class="prettyprint">nodeTemplate</code> slot is used to specify the template for creating each node of the NBox when a DataProvider
-  * has been specified with the data attribute. The slot content must be a &lt;template> element.
+  * has been specified with the data attribute. The slot content must be a single &lt;template> element.
   * <p>When the template is executed for each node, it will have access to the NBox's binding context and the following properties:</p>
   * <ul>
   *   <li>$current - an object that contains information for the current node. (See [oj.ojNBox.NodeTemplateContext]{@link oj.ojNBox.NodeTemplateContext} or the table below for a list of properties available on $current) </li>
@@ -2705,7 +2805,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  */
 
   /**
- * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
+ * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.  The slot content must be a single &lt;template> element.
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
@@ -2714,6 +2814,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  *
  * @ojslot tooltipTemplate
+ * @ojmaxitems 1
  * @ojslotitemprops oj.ojNBox.TooltipContext
  * @memberof oj.ojNBox
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
@@ -2769,6 +2870,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
 
 /**
  * @ojcomponent oj.ojNBoxNode
+ * @ojshortdesc The oj-n-box-node element is used to declare properties for NBox nodes. See the Help documentation for more information.
  * @ojsignature {target: "Type", value:"class ojNBoxNode extends JetElement<ojNBoxNodeSettableProperties>"}
  * @ojslotcomponent
  * @since 6.0.0
@@ -3079,7 +3181,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * &lt;/oj-n-box>
  */
 /**
- * The CSS style class defining the style of this icon.
+ * The CSS style class defining the style of this icon.  Will not be applied if initials are specified.
  * @expose
  * @name icon.svgClassName
  * @memberof! oj.ojNBoxNode
@@ -3096,7 +3198,36 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  * &lt;/oj-n-box>
  */
 /**
+ * The background pattern displayed with the initials of this icon.
+ * @expose
+ * @name icon.background
+ * @memberof! oj.ojNBoxNode
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "neutral"
+ * @ojvalue {string} "red"
+ * @ojvalue {string} "orange"
+ * @ojvalue {string} "forest"
+ * @ojvalue {string} "green"
+ * @ojvalue {string} "teal"
+ * @ojvalue {string} "mauve"
+ * @ojvalue {string} "purple"
+ * @default 'neutral'
+ */
+/**
+ * The initials displayed on this icon if no image source provided.
+ * @expose
+ * @name icon.initials
+ * @memberof! oj.ojNBoxNode
+ * @instance
+ * @type {string}
+ * @default ''
+ */
+/**
  * The CSS style object defining the style of this icon.
+ * Only SVG CSS style properties are supported.
+ * Will not be applied if initials are specified.
+ * The default value comes from the CSS and varies based on theme.
  * @expose
  * @name icon.svgStyle
  * @memberof! oj.ojNBoxNode
@@ -3338,6 +3469,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  */
 /**
  * The CSS style object defining the style of this indicator icon.
+ * Only SVG CSS style properties are supported.
+ * The default value comes from the CSS and varies based on theme.
  * @expose
  * @name indicatorIcon.svgStyle
  * @memberof! oj.ojNBoxNode
@@ -3439,6 +3572,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  */
 /**
  * The CSS style object defining the style of the node text.
+ * Only SVG CSS style properties are supported.
  * @expose
  * @name svgStyle
  * @memberof! oj.ojNBoxNode

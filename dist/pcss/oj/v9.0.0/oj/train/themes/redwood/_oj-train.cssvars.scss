@@ -1,0 +1,95 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+@import "../../../utilities/_oj.utilities.scss";
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+ 
+  @include module-include-once("redwood.variables.train") {
+ 
+:root {
+  --oj-train-step-width:                       7rem;
+  --oj-train-padding:                          0.75rem 0 0.75rem 0;
+  --oj-train-label-font-size:                  var(--oj-typography-body-sm-font-size);
+  --oj-train-label-font-weight:                bold;
+  --oj-train-label-padding-top:                0.75rem;
+  --oj-train-label-text-wrap:                  normal;
+  --oj-train-button-diameter:                  1.5rem;
+  --oj-train-button-font-size:                 var(--oj-typography-body-xs-font-size);
+  --oj-train-button-icon-diameter:             var(--oj-train-button-diameter);
+  --oj-train-button-text-is-numeric:           1;
+  --oj-train-button-connector-diameter:        var(--oj-train-button-diameter);
+  --oj-train-button-text-display:              inherit;
+  //_oj-train-connector-has-fill is 0 for individual and 1 for continuous
+  --oj-train-connector-height:                 2px;
+ 
+  // default
+  --oj-train-button-bg-color:                  var(--oj-palette-neutral-0);
+  --oj-train-button-border-color:              rgba(var(--oj-palette-neutral-rgb-190),var(--oj-palette-opacity-medium));
+  --oj-train-button-border-width:              2px;
+  --oj-train-button-text-color:                var(--oj-core-text-color-secondary);
+  --oj-train-label-color:                      var(--oj-core-text-color-secondary);
+  --oj-train-connector-bg-color:               rgba(var(--oj-palette-neutral-rgb-190),var(--oj-palette-opacity-low));
+ 
+  --oj-train-connector-has-fill:               0;
+  --oj-train-individual-connector-padding:     0.625rem;
+ 
+  // visited
+  --oj-train-button-bg-color-visited:          var(--oj-palette-success-110);
+  --oj-train-button-border-color-visited:      transparent;
+  --oj-train-button-text-color-visited:        var(--oj-core-text-color-primary-contrast);
+  --oj-train-button-text-display-visited:      inherit;
+  --oj-train-button-animation-visited:         trainvisited var(--oj-animation-duration-medium) var(--oj-animation-ease-in-out);
+  --oj-train-label-color-visited:              var(--oj-core-text-color-primary);
+  --oj-train-icon-display-visited:             none;
+ 
+  // hover
+  --oj-train-button-bg-color-hover:            var(--oj-palette-neutral-0);
+  --oj-train-button-border-color-hover:        rgba(var(--oj-palette-brand-rgb-160),var(--oj-palette-opacity-medium));
+  --oj-train-button-text-color-hover:          rgba(var(--oj-palette-brand-rgb-160),var(--oj-palette-opacity-medium));
+  --oj-train-step-bg-color-hover:              var(--oj-core-bg-color-hover);
+  --oj-train-step-border-radius-hover:         0.5rem;
+ 
+  // active
+  --oj-train-button-bg-color-active:           var(--oj-palette-neutral-190);
+  --oj-train-button-border-color-active:       var(--oj-palette-neutral-190);
+  --oj-train-button-text-color-active:         var(--oj-palette-neutral-0);
+  --oj-train-button-transform-active:          scale(0.8);
+  --oj-train-button-animation-active:          var(--oj-animation-duration-long) var(--oj-animation-ease-in-out);
+  --oj-train-label-text-decoration-active:     none;
+  --oj-train-label-font-weight-active:         bold;
+  --oj-train-step-bg-color-active:             var(--oj-core-bg-color-active);
+ 
+  // selected
+  --oj-train-button-bg-color-selected:         var(--oj-palette-neutral-190);
+  --oj-train-button-border-color-selected:     var(--oj-palette-neutral-190);
+  --oj-train-button-text-color-selected:       var(--oj-palette-neutral-0);
+  --oj-train-button-transform-selected:        scale(1);
+  --oj-train-button-animation-selected:        var(--oj-animation-duration-long) var(--oj-animation-ease-in-out);
+  --oj-train-label-font-weight-selected:       bold;
+  --oj-train-label-color-selected:             var(--oj-core-text-color-primary);
+  --oj-train-continuous-connector-bg-color-selected: transparent;
+  --oj-train-individual-connector-bg-color-selected: rgba(var(--oj-palette-neutral-rgb-190),var(--oj-palette-opacity-low));
+  --oj-train-individual-connector-padding-selected: 0px;
+ 
+  // disabled
+  --oj-train-button-bg-color-disabled:         var(--oj-palette-neutral-0);
+  --oj-train-button-border-color-disabled:     rgba(var(--oj-palette-brand-rgb-160),var(--oj-palette-opacity-lowest));
+  --oj-train-button-text-color-disabled:       var(--oj-train-button-border-color-disabled);
+  --oj-train-button-opacity-disabled:          1;
+  --oj-train-label-color-disabled:             var(--oj-train-button-border-color-disabled);
+ 
+  --oj-train-button-messaging-icon-animation:  messaging var(--oj-animation-duration-medium) var(--oj-animation-ease-in-out);
+  --oj-train-button-messaging-bg-color:        var(--oj-palette-neutral-0);
+  --oj-train-button-connector-bg-color:        transparent;
+ 
+  --oj-train-button-error-icon-color:          var(--oj-palette-danger-100);  
+  --oj-train-button-warning-icon-color:        var(--oj-palette-warning-100);
+  --oj-train-button-info-icon-color:           var(--oj-palette-neutral-190);
+  --oj-train-button-confirmation-icon-color:   var(--oj-palette-success-110);
+  --oj-train-icon-font-size:                   unset;
+ 
+ 
+}
+ 
+}

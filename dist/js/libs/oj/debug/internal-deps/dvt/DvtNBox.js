@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['./DvtToolkit'], function(dvt) {
   "use strict";
@@ -8,16 +9,18 @@ define(['./DvtToolkit'], function(dvt) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function(dvt) {
 
 /**
  * @license
- * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2013 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -825,10 +828,66 @@ dvt.NBox.prototype.setAnimationAllowed = function(animationAllowed) {
   this._animationAllowed = animationAllowed;
 };
 
+
+/**
+ * Sets the filter
+ *
+ * @param {dvt.Shadow} filter
+ */
+dvt.NBox.prototype.setCellFilter = function(filter) {
+  this._filter = filter;
+};
+
+/**
+ * Returns the filter
+ *
+ * @return {dvt.Shadow} filter
+ */
+dvt.NBox.prototype.getCellFilter = function() {
+  return this._filter;
+};
+
+/**
+ * Sets the node clip path
+ *
+ * @param {dvt.ClipPath} clipPath
+ */
+dvt.NBox.prototype.setNodeClipPath = function(clipPath) {
+  this._nodeClipPath = clipPath;
+};
+
+/**
+ * Returns the node clip path
+ *
+ * @return {dvt.ClipPath} clipPath
+ */
+dvt.NBox.prototype.getNodeClipPath = function() {
+  return this._nodeClipPath;
+};
+
+/**
+ * Sets the node icon clip path
+ *
+ * @param {dvt.ClipPath} clipPath
+ */
+dvt.NBox.prototype.setNodeIconClipPath = function(clipPath) {
+  this._nodeIconClipPath = clipPath;
+};
+
+/**
+ * Returns the node icon clip path
+ *
+ * @return {dvt.ClipPath} clipPath
+ */
+dvt.NBox.prototype.getNodeIconClipPath = function() {
+  return this._nodeIconClipPath;
+};
+
 /**
  * @license
- * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2013 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -940,6 +999,16 @@ dvt.NBoxConstants.ICON = 'icon';
  * @const
  */
 dvt.NBoxConstants.ICON_DEFAULTS = 'iconDefaults';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.INITIALS = 'initials';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.BACKGROUND = 'background';
 
 /**
  * @const
@@ -1169,8 +1238,9 @@ dvt.NBoxConstants.WIDTH = 'width';
 
 /**
  * @license
- * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2013 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -1206,23 +1276,27 @@ DvtNBoxDefaults.SKIN_ALTA = {
   'highlightMatch' : 'all',
   'highlightedCategories' : [],
   'touchResponse': 'auto',
-  '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA + 'color: #252525;'),
+  '_statusMessageStyle': new dvt.CSSStyle(),
   'styleDefaults': {
     'animationDuration': 500,
     'hoverBehaviorDelay': 200,
-    'columnLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color: #252525;'),
-    'rowLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color: #252525;'),
-    'columnsTitleStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_14 + 'color: #252525;'),
-    'rowsTitleStyle' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_14 + 'color: #252525;'),
-    'cellDefaults' : {'_style': new dvt.CSSStyle('background-color:#e9e9e9'),
-      '_maximizedStyle': new dvt.CSSStyle('background-color:#dddddd'),
-      '_minimizedStyle': new dvt.CSSStyle('background-color:#e9e9e9'),
-      'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_14 + 'color: #252525;'),
-      'countLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_14 + 'color: #252525;'),
-      'bodyCountLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA + 'color: #252525;'),
+    'columnLabelStyle': new dvt.CSSStyle(),
+    'rowLabelStyle': new dvt.CSSStyle(),
+    'columnsTitleStyle': new dvt.CSSStyle(),
+    'rowsTitleStyle' : new dvt.CSSStyle(),
+    'cellDefaults' : {'_style': new dvt.CSSStyle(),
+      '_borderRadius': 0,
+      '_maximizedStyle': new dvt.CSSStyle(),
+      '_minimizedStyle': new dvt.CSSStyle(),
+      'labelStyle': new dvt.CSSStyle(),
+      '_labelMinimizedStyle': new dvt.CSSStyle(),
+      '_labelMaximizedStyle': new dvt.CSSStyle(),
+      'countLabelStyle': new dvt.CSSStyle(),
+      'bodyCountLabelStyle': new dvt.CSSStyle(),
       'dropTargetStyle': new dvt.CSSStyle('background-color:rgba(217, 244, 250, .75);border-color:#ccf6ff'),
       'showCount': 'auto',
-      'showMaximize': 'on'},
+      'showMaximize': 'on',
+      '_panelShadow':'none'},
     '__scrollbar' : {'scrollbarBackground': 'linear-gradient(bottom, #dce2e7 0%, #f8f8f8 8%)',
       'scrollbarBorderColor': '#dce2e7',
       'scrollbarHandleColor': '#abb0b4',
@@ -1232,14 +1306,14 @@ DvtNBoxDefaults.SKIN_ALTA = {
       'borderColor': '#bcc7d2',
       'borderRadius': 1,
       'headerBackground': 'linear-gradient(to bottom, #f5f5f5 0%, #f0f0f0 100%)',
-      'labelStyle': new dvt.CSSStyle('color: #252525;' + dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_14),
-      'countLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_14),
+      'labelStyle': new dvt.CSSStyle(),
+      'countLabelStyle': new dvt.CSSStyle(),
       'countBorderRadius': 1},
     'nodeDefaults' : {'color': '#FFFFFF',
-      'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12),
-      'secondaryLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11),
+      'labelStyle': new dvt.CSSStyle(),
+      'secondaryLabelStyle': new dvt.CSSStyle(),
       'alphaFade': 0.2,
-      'borderRadius': 1,
+      '_borderRadius': 1,
       'hoverColor': '#FFFFFF',
       'selectionColor': '#000000',
       'iconDefaults': {'preferredSize': 19,
@@ -1251,7 +1325,10 @@ DvtNBoxDefaults.SKIN_ALTA = {
         'borderColor': '#000000',
         'borderWidth': 0,
         'borderRadius' : 0,
-        'shape': dvt.SimpleMarker.CIRCLE},
+        'shape': dvt.SimpleMarker.CIRCLE,
+        'background': 'neutral',
+        'backgroundSize': 196
+      },
       'indicatorIconDefaults': {'width': 10,
         'height': 10,
         'opacity': 1,
@@ -1260,7 +1337,7 @@ DvtNBoxDefaults.SKIN_ALTA = {
         'borderWidth': 0,
         'borderRadius' : 0,
         'shape': dvt.SimpleMarker.CIRCLE}},
-    '_categoryNodeDefaults' : {'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)}
+    '_categoryNodeDefaults' : {'labelStyle': new dvt.CSSStyle()}
   },
   '__layout': {
     'componentGap': 8,
@@ -1300,8 +1377,9 @@ DvtNBoxDefaults.SKIN_ALTA = {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 var DvtNBoxCell = function() {};
@@ -1771,10 +1849,12 @@ DvtNBoxCell.prototype.getKeyboardFocusDisplayable = function() {
   return null;
 };
 
+
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -2270,8 +2350,9 @@ DvtNBoxNode.prototype.setChildContainer = function(container) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 var DvtNBoxNodeOverflow = function() {};
@@ -2316,10 +2397,13 @@ DvtNBoxNodeOverflow.prototype.Init = function(nbox, cell) {
  * @param {number} height the height of the overflow button
  */
 DvtNBoxNodeOverflow.prototype.render = function(container, width, height) {
+  var ctx = this._nbox.getCtx();
   var options = this._nbox.getOptions();
+  var overflow = options['_resources']['overflow'];
 
-  var w = options['_resources']['overflow_ena']['width'];
-  var h = options['_resources']['overflow_ena']['height'];
+  var w = overflow['width'];
+  var h = overflow['height'];
+  var iconStyle = dvt.ToolkitUtils.getIconStyle(ctx, overflow['class']);
 
   var scale = 1;
   if (width < w || height < h) {
@@ -2330,41 +2414,17 @@ DvtNBoxNodeOverflow.prototype.render = function(container, width, height) {
   // Image dimensions
   w = scale * w;
   h = scale * h;
-  var x = (width - w) / 2;
-  var y = (height - h) / 2;
+  // image will be centered at (Math.max(w, h) / 2, Math.max(w, h) / 2)
+  var c = Math.max(w, h) / 2;
+  var x = c - width / 2;
+  var y = c - height / 2;
 
-  var ctx = this._nbox.getCtx();
+  var background = new dvt.Rect(ctx, 0, 0, width, height);
 
-  var upRect = new dvt.Rect(ctx, 0, 0, width, height);
-  var overRect = new dvt.Rect(ctx, 0, 0, width, height);
-  var downRect = new dvt.Rect(ctx, 0, 0, width, height);
-  var disRect = new dvt.Rect(ctx, 0, 0, width, height);
+  this._button = new dvt.IconButton(ctx, 'borderless', {style: iconStyle, size: Math.max(w, h), pos: {x: width / 2, y: height / 2}}, background, null, this.HandleClick, this);
 
-  upRect.setInvisibleFill();
-  overRect.setInvisibleFill();
-  downRect.setInvisibleFill();
-  disRect.setInvisibleFill();
-
-  var upState = new dvt.Container(ctx);
-  var overState = new dvt.Container(ctx);
-  var downState = new dvt.Container(ctx);
-  var disState = new dvt.Container(ctx);
-
-  upState.addChild(upRect);
-  overState.addChild(overRect);
-  downState.addChild(downRect);
-  disState.addChild(disRect);
-
-  upState.addChild(new dvt.Image(ctx, options['_resources']['overflow_ena']['src'], x, y, w, h));
-  overState.addChild(new dvt.Image(ctx, options['_resources']['overflow_ovr']['src'], x, y, w, h));
-  downState.addChild(new dvt.Image(ctx, options['_resources']['overflow_dwn']['src'], x, y, w, h));
-  disState.addChild(new dvt.Image(ctx, options['_resources']['overflow_dis']['src'], x, y, w, h));
-
-
-  this._button = new dvt.Button(ctx, upState, overState, downState, disState, null, this.HandleClick, this);
   if (!DvtNBoxDataUtils.isMaximizeEnabled(this._nbox)) {
     this._button.setEnabled(false);
-    this._button.drawDisabledState();
   }
 
   this.addChild(this._button);
@@ -2373,8 +2433,6 @@ DvtNBoxNodeOverflow.prototype.render = function(container, width, height) {
   container.addChild(this);
   this._addAccessibilityAttributes();
   this._nbox.EventManager.associate(this, this);
-
-
 };
 
 /**
@@ -2387,7 +2445,7 @@ DvtNBoxNodeOverflow.prototype.getParentCell = function() {
 
 /**
  * Gets the overflow button
- * @return {dvt.Button} button for the overflow
+ * @return {dvt.IconButton} button for the overflow
  */
 DvtNBoxNodeOverflow.prototype.getButton = function() {
   return this._button;
@@ -2536,8 +2594,9 @@ DvtNBoxNodeOverflow.prototype.getKeyboardFocusDisplayable = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 var DvtNBoxCategoryNode = function() {};
@@ -3032,8 +3091,9 @@ DvtNBoxCategoryNode.prototype.getKeyboardFocusDisplayable = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -3083,8 +3143,9 @@ DvtNBoxCategoryRolloverHandler.prototype.GetRolloutCallback = function(event, ob
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 var DvtNBoxDrawer = function() {};
@@ -3352,8 +3413,9 @@ DvtNBoxDrawer.prototype.getKeyboardFocusDisplayable = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -3422,8 +3484,9 @@ DvtNBoxDataAnimationHandler.prototype.getAnimationDuration = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -3562,8 +3625,9 @@ DvtNBoxEventManager.prototype.GetTouchResponse = function() {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -3725,8 +3789,9 @@ DvtNBoxKeyboardHandler.getNextNavigableCategoryNode = function(curr, event, navi
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -3807,7 +3872,7 @@ DvtNBoxAutomation.prototype.GetSubIdForDomElement = function(displayable) {
 
       // cell#overflow
       // cell#closeButton
-      if (displayable instanceof dvt.Button) {
+      if (displayable instanceof dvt.IconButton) {
         if (this._getParentObject(displayable, DvtNBoxNodeOverflow)) {
           action = 'overflow';
           return this._createSubId(component, action);
@@ -3841,7 +3906,7 @@ DvtNBoxAutomation.prototype.GetSubIdForDomElement = function(displayable) {
       }
 
       // dialog#closeButton
-      if (displayable instanceof dvt.Button) {
+      if (displayable instanceof dvt.IconButton) {
         action = 'closeButton';
         return this._createSubId(component, action);
       }
@@ -4044,7 +4109,7 @@ DvtNBoxAutomation.prototype.getDomElementForSubId = function(subId) {
             // dialog#closeButton
             if (action == 'closeButton') {
               for (var j = 0; j < dialog.getNumChildren(); j++) {
-                if (dialog.getChildAt(j) instanceof dvt.Button) {
+                if (dialog.getChildAt(j) instanceof dvt.IconButton) {
                   displayable = dialog.getChildAt(j);
                 }
               }
@@ -4529,8 +4594,9 @@ DvtNBoxAutomation.prototype.getNodeIndexFromId = function(id) {
 
 /**
  * @license
- * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2013 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -4904,6 +4970,8 @@ DvtNBoxRenderer._renderNodes = function(nbox, container, availSpace) {
     else {
       DvtNBoxRenderer._renderIndividualNodes(nbox, container, availSpace);
     }
+    nbox.setNodeClipPath(null);
+    nbox.setNodeIconClipPath(null);
   }
 };
 
@@ -5772,8 +5840,9 @@ DvtNBoxRenderer._renderEmptyText = function(nbox, container, availSpace) {
 
 /**
  * @license
- * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2013 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -5815,6 +5884,9 @@ DvtNBoxCellRenderer.render = function(nbox, cellData, cellContainer, availSpace)
   cellRect.setPixelHinting(true);
   var style = DvtNBoxStyleUtils.getCellStyle(nbox, cellIndex);
   DvtNBoxCellRenderer._applyStyleToRect(cellRect, style);
+  var borderRadius = DvtNBoxStyleUtils.getCellBorderRadius(nbox);
+  cellRect.setRx(borderRadius);
+  cellRect.setRy(borderRadius);
 
   //Apply the custom style and classname on the cell
   var styleObj = DvtNBoxStyleUtils.getCellStyleObject(nbox, cellIndex);
@@ -5823,6 +5895,16 @@ DvtNBoxCellRenderer.render = function(nbox, cellData, cellContainer, availSpace)
   cellRect.setClassName(className);
 
   cellContainer.addChild(cellRect);
+
+  var filter = nbox.getCellFilter();
+  if (filter === undefined) {
+    filter = DvtNBoxCellRenderer._createShadow(options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS]['_panelShadow']);
+    nbox.setCellFilter(filter);
+  }
+  if(filter) {
+    cellRect.addDrawEffect(filter);
+  }
+
   DvtNBoxDataUtils.setDisplayable(nbox, cellData, cellRect, 'background');
 
   var keyboardFocusEffect = new dvt.KeyboardFocusEffect(nbox.getCtx(), cellContainer, new dvt.Rectangle(-1, -1, cellRect.getWidth() + 2, cellRect.getHeight() + 2));
@@ -5907,15 +5989,12 @@ DvtNBoxCellRenderer.renderHeader = function(nbox, cellData, cellContainer, noCou
 
     var cellCloseWidthWithGap = 0;
     if (DvtNBoxDataUtils.isCellMaximized(nbox, cellIndex)) {
-      var closeEna = options['_resources']['close_ena'];
-      var closeWidth = closeEna['width'];
+      var close = options['_resources']['close'];
+      var closeWidth = close['width'];
       if (cellRect.getWidth() - cellStartGap - cellEndGap > closeWidth) {
-        var closeOvr = options['_resources']['close_ovr'];
-        var closeDwn = options['_resources']['close_dwn'];
-        var closeEnaImg = new dvt.Image(nbox.getCtx(), closeEna['src'], 0, 0, closeEna['width'], closeEna['height']);
-        var closeOvrImg = new dvt.Image(nbox.getCtx(), closeOvr['src'], 0, 0, closeOvr['width'], closeOvr['height']);
-        var closeDwnImg = new dvt.Image(nbox.getCtx(), closeDwn['src'], 0, 0, closeDwn['width'], closeDwn['height']);
-        var closeButton = new dvt.Button(nbox.getCtx(), closeEnaImg, closeOvrImg, closeDwnImg, null, null, cellContainer.handleDoubleClick, cellContainer);
+        var context = nbox.getCtx();
+        var iconStyle = dvt.ToolkitUtils.getIconStyle(context, close['class']);
+        var closeButton = new dvt.IconButton(context, 'borderless', {style: iconStyle, size: closeWidth}, null, null, cellContainer.handleDoubleClick, cellContainer);
 
         // Center/hide close button if cell too thin for normal rendering
         var closeButtonX = rtl ? Math.min((cellRect.getWidth() - closeWidth) / 2, cellEndGap) : Math.max((cellRect.getWidth() - closeWidth) / 2, cellRect.getWidth() - cellEndGap - closeWidth);
@@ -5952,7 +6031,8 @@ DvtNBoxCellRenderer.renderHeader = function(nbox, cellData, cellContainer, noCou
       if (DvtNBoxCellRenderer._isLabelVertical(nbox, cellData)) {
         // Vertical Label
         if (countText) {
-          countLabel = DvtNBoxRenderer.createText(nbox.getCtx(), countText, DvtNBoxStyleUtils.getCellCountLabelStyle(nbox), dvt.OutputText.H_ALIGN_CENTER, dvt.OutputText.V_ALIGN_MIDDLE);
+          countLabel = DvtNBoxRenderer.createText(nbox.getCtx(), countText, DvtNBoxStyleUtils.getCellCountLabelStyle(nbox, cellIndex), dvt.OutputText.H_ALIGN_CENTER, dvt.OutputText.V_ALIGN_MIDDLE);
+          countLabel.setClassName('oj-typography-semi-bold');
           if (dvt.TextUtils.fitText(countLabel, cellRect.getHeight() - cellStartGap - cellEndGap, cellRect.getWidth() - 2 * cellTopGap, cellContainer)) {
             DvtNBoxDataUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
             addedHeader = true;
@@ -5984,7 +6064,8 @@ DvtNBoxCellRenderer.renderHeader = function(nbox, cellData, cellContainer, noCou
       }
       else {
         if (countText) {
-          countLabel = DvtNBoxRenderer.createText(nbox.getCtx(), countText, DvtNBoxStyleUtils.getCellCountLabelStyle(nbox), halign, dvt.OutputText.V_ALIGN_MIDDLE);
+          countLabel = DvtNBoxRenderer.createText(nbox.getCtx(), countText, DvtNBoxStyleUtils.getCellCountLabelStyle(nbox, cellIndex), halign, dvt.OutputText.V_ALIGN_MIDDLE);
+          countLabel.setClassName('oj-typography-semi-bold');
           if (dvt.TextUtils.fitText(countLabel, cellRect.getWidth() - cellStartGap - cellEndGap - cellCloseWidthWithGap, cellRect.getHeight() - 2 * cellTopGap, cellContainer)) {
             DvtNBoxDataUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
             addedHeader = true;
@@ -6313,7 +6394,7 @@ DvtNBoxCellRenderer._calculateCellLayout = function(nbox) {
       var label = DvtNBoxRenderer.createText(nbox.getCtx(), cellData[dvt.NBoxConstants.LABEL], DvtNBoxStyleUtils.getCellLabelStyle(nbox, i), halign, dvt.OutputText.V_ALIGN_MIDDLE);
       var cellLabelHeight = label.getDimensions().h;
       if (DvtNBoxStyleUtils.getCellShowCount(nbox, cellData) == 'on') {
-        var count = DvtNBoxRenderer.createText(nbox.getCtx(), cellCounts['total'][i], DvtNBoxStyleUtils.getCellCountLabelStyle(nbox), halign, dvt.OutputText.V_ALIGN_MIDDLE);
+        var count = DvtNBoxRenderer.createText(nbox.getCtx(), cellCounts['total'][i], DvtNBoxStyleUtils.getCellCountLabelStyle(nbox, i), halign, dvt.OutputText.V_ALIGN_MIDDLE);
         var countLabelHeight = count.getDimensions().h;
         cellLabelHeight = Math.max(cellLabelHeight, countLabelHeight);
       }
@@ -6321,7 +6402,7 @@ DvtNBoxCellRenderer._calculateCellLayout = function(nbox) {
     }
   }
   if (DvtNBoxDataUtils.getMaximizedRow(nbox) && DvtNBoxDataUtils.getMaximizedColumn(nbox)) {
-    maximizedLabelHeight = Math.max(labelHeight, options['_resources']['close_ena']['height']);
+    maximizedLabelHeight = Math.max(labelHeight, options['_resources']['close']['height']);
   }
 
   var minimizedHeaderSize = labelHeight + cellTopGap + cellBottomGap;
@@ -6572,10 +6653,30 @@ DvtNBoxCellRenderer._addAccessibilityAttributes = function(nbox, cellData, cellC
   }
 };
 
+DvtNBoxCellRenderer._createShadow = function(shadowStyle) {
+  if (shadowStyle && shadowStyle.length > 0 && shadowStyle !== 'none') {
+    // Different browsers return either:
+    // Case 1: 'color h-offset v-offset blur spread'
+    // Case 2: 'h-offset v-offset blur spread color'
+    var tokens = shadowStyle.match(/\S+\([^\)]+\)|\S+/g);
+    var firstChar = shadowStyle.charAt(0);
+    if (firstChar >= '0' && firstChar <= '9') {
+      // Case 2
+      return new dvt.Shadow(parseInt(tokens[0]), parseInt(tokens[1]), parseInt(tokens[2])/2, tokens[4]);
+    }
+    else {
+      // Case 1
+      return new dvt.Shadow(parseInt(tokens[1]), parseInt(tokens[2]), parseInt(tokens[3])/2, tokens[0]);
+    }
+  }
+  return null;
+}
+
 /**
  * @license
- * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2013 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -7207,6 +7308,7 @@ DvtNBoxNodeRenderer._renderNodeIndicator = function(nbox, node, nodeContainer, n
  * @param {object} nodeLayout an object containing dimensions of the various node sections
  */
 DvtNBoxNodeRenderer._renderNodeIcon = function(nbox, node, nodeContainer, nodeLayout) {
+  var options = nbox.getOptions();
   var color = DvtNBoxStyleUtils.getNodeColor(nbox, node);
   var contrastColor = dvt.ColorUtils.getContrastingTextColor(color);
 
@@ -7214,7 +7316,7 @@ DvtNBoxNodeRenderer._renderNodeIcon = function(nbox, node, nodeContainer, nodeLa
 
   var icon = DvtNBoxDataUtils.getIcon(nbox, node);
   if (icon) {
-    var padding = (icon[dvt.NBoxConstants.SOURCE] ? icon['sourcePaddingRatio'] : icon['shapePaddingRatio']) * nodeLayout['nodeHeight'];
+    var padding = (icon[dvt.NBoxConstants.SOURCE] || icon[dvt.NBoxConstants.INITIALS] ? icon['sourcePaddingRatio'] : icon['shapePaddingRatio']) * nodeLayout['nodeHeight'];
 
     var iconWidth = icon[dvt.NBoxConstants.WIDTH] ? icon[dvt.NBoxConstants.WIDTH] : nodeLayout['iconWidth'] ? nodeLayout['iconWidth'] : (nodeLayout['iconSectionWidth'] - 2 * padding);
     var iconHeight = icon[dvt.NBoxConstants.HEIGHT] ? icon[dvt.NBoxConstants.HEIGHT] : (nodeLayout['nodeHeight'] - 2 * padding);
@@ -7223,19 +7325,51 @@ DvtNBoxNodeRenderer._renderNodeIcon = function(nbox, node, nodeContainer, nodeLa
 
     var iconColor = icon[dvt.NBoxConstants.COLOR] ? icon[dvt.NBoxConstants.COLOR] : contrastColor;
     var iconMarker;
+    var iconInitials;
     var iconBorderColor = icon[dvt.NBoxConstants.BORDER_COLOR];
     var iconBorderWidth = icon[dvt.NBoxConstants.BORDER_WIDTH];
     var iconBorderRadius = icon[dvt.NBoxConstants.BORDER_RADIUS];
     var iconPattern = icon[dvt.NBoxConstants.PATTERN];
-    if (icon[dvt.NBoxConstants.SOURCE]) {
+    var iconSource = icon[dvt.NBoxConstants.SOURCE];
+    var iconBackground = options['_resources']['background_' + icon[dvt.NBoxConstants.BACKGROUND]];
+    if (iconSource) {
       iconMarker = new dvt.ImageMarker(nbox.getCtx(),
           iconX,
           iconY,
           iconWidth,
           iconHeight,
           iconBorderRadius,
-          icon[dvt.NBoxConstants.SOURCE]);
+          iconSource);
       iconMarker.setPreserveAspectRatio(DvtNBoxNodeRenderer._ASPECT_RATIO_SCALING);
+    }
+    else if(icon[dvt.NBoxConstants.INITIALS]) {
+      var iconBackgroundSrc= iconBackground['src'];
+      var hasSource = dvt.ToolkitUtils.getImageUrl(nbox.getCtx(), iconBackgroundSrc).includes('.');
+      if (hasSource) {
+        iconMarker = new dvt.Container(nbox.getCtx());
+        var iconBackgroundSize = icon['backgroundSize'];
+        var backgroundMarker =  new dvt.ImageMarker(nbox.getCtx(),
+          iconX,
+          iconY,
+          parseInt(iconBackgroundSize),
+          parseInt(iconBackgroundSize),
+          iconBorderRadius,
+          iconBackground['src']);
+        backgroundMarker.setClipPath(DvtNBoxNodeRenderer._getIconClipPath(nbox, iconX, iconY, iconWidth, iconHeight));
+        iconMarker.addChild(backgroundMarker);
+      }
+      else {
+        iconMarker = new dvt.SimpleMarker(nbox.getCtx(),
+          null,
+          iconX,
+          iconY,
+          iconWidth,
+          iconHeight);
+        iconMarker.setClassName('oj-nbox-node-initials-background-' + icon[dvt.NBoxConstants.BACKGROUND]);
+      }
+      iconInitials = DvtNBoxRenderer.createText(nbox.getCtx(), icon[dvt.NBoxConstants.INITIALS], null, dvt.OutputText.H_ALIGN_CENTER, dvt.OutputText.V_ALIGN_CENTRAL);
+      DvtNBoxRenderer.positionText(iconInitials, iconX, iconY);
+      node[dvt.NBoxConstants.SECONDARY_LABEL] ? iconInitials.setClassName('oj-nbox-node-initials oj-nbox-node-initials-lg') : iconInitials.setClassName('oj-nbox-node-initials');
     }
     else {
       iconMarker = new dvt.SimpleMarker(nbox.getCtx(),
@@ -7255,10 +7389,12 @@ DvtNBoxNodeRenderer._renderNodeIcon = function(nbox, node, nodeContainer, nodeLa
     else
       iconMarker.setSolidFill(iconColor);
 
-    //set the Icon Marker custom style and class name
-    var style = icon['svgStyle'] || icon['style'];
-    var className = icon['svgClassName'] || icon['className'];
-    iconMarker.setStyle(style).setClassName(className);
+    if(!icon[dvt.NBoxConstants.INITIALS]) {
+      //set the Icon Marker custom style and class name only if initials are not applied
+      var style = icon['svgStyle'] || icon['style'];
+      var className = icon['svgClassName'] || icon['className'];
+      iconMarker.setStyle(style).setClassName(className);
+    }
 
     // If icon is on one of the ends, add clip path
     if (nodeLayout['indicatorSectionWidth'] == 0 || nodeLayout['labelSectionWidth'] == 0) {
@@ -7277,6 +7413,9 @@ DvtNBoxNodeRenderer._renderNodeIcon = function(nbox, node, nodeContainer, nodeLa
     }
 
     DvtNBoxDataUtils.setDisplayable(nbox, node, iconMarker, dvt.NBoxConstants.ICON);
+    if(iconInitials) {
+      nodeContainer.addChild(iconInitials);
+    }
   }
 };
 
@@ -7354,17 +7493,42 @@ DvtNBoxNodeRenderer._getMaxLabelWidth = function(nbox, nodes) {
  * @param {object} nodeLayout an object containing dimensions of the various node sections
  */
 DvtNBoxNodeRenderer._clipIfNecessary = function(nbox, displayable, nodeLayout) {
-  var borderRadius = DvtNBoxStyleUtils.getNodeBorderRadius(nbox);
-  borderRadius = borderRadius < DvtNBoxNodeRenderer._MIN_CORNER_RADIUS ? 0 : borderRadius;
-  if (borderRadius) {
+  var clipPath = nbox.getNodeClipPath();
+  if (!clipPath) {
+    var borderRadius = DvtNBoxStyleUtils.getNodeBorderRadius(nbox);
+    borderRadius = borderRadius < DvtNBoxNodeRenderer._MIN_CORNER_RADIUS ? 0 : borderRadius;
+    if (!borderRadius) {
+      return;
+    }
     var nodeWidth = nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth'];
     var nodeHeight = nodeLayout['nodeHeight'];
     var clipPath = new dvt.ClipPath();
     clipPath.addRect(0, 0, nodeWidth, nodeHeight, borderRadius, borderRadius);
-    displayable.setClipPath(clipPath);
+    nbox.setNodeClipPath(clipPath);
   }
+  displayable.setClipPath(clipPath);
 };
 
+/**
+ * @private
+ * Returns the Icon Background Clip Path
+ *
+ * @param {dvt.NBox} nbox
+ * @param {number} x center of the clippath
+ * @param {number} y center of the clippath
+ * @param {number} width
+ * @param {number} height
+ * @return {dvt.clipPath} node icon clip path
+ */
+DvtNBoxNodeRenderer._getIconClipPath = function(nbox, x, y, width, height) {
+  var clipPath = nbox.getNodeIconClipPath();
+  if (!clipPath) {
+    clipPath = new dvt.ClipPath();
+    clipPath.addRect(x - (width / 2), y - (height / 2), width, height);
+    nbox.setNodeIconClipPath(clipPath);
+  }
+  return clipPath;
+};
 
 /**
  * @override
@@ -7618,8 +7782,9 @@ DvtNBoxNodeRenderer._addAccessibilityAttributes = function(nbox, object) {
 
 /**
  * @license
- * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2013 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -7968,8 +8133,9 @@ DvtNBoxCategoryNodeRenderer._addAccessibilityAttributes = function(nbox, object)
 
 /**
  * @license
- * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2013 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -8030,16 +8196,13 @@ DvtNBoxDrawerRenderer._renderHeader = function(nbox, data, drawerContainer) {
   var drawerBounds = data['__drawerBounds'];
 
   // Render the close button
-  var closeEna = options['_resources']['close_ena'];
-  var closeWidth = closeEna['width'];
+  var close = options['_resources']['close'];
+  var closeWidth = close['width'];
   if (drawerBounds.w > closeWidth) {
-    var closeOvr = options['_resources']['close_ovr'];
-    var closeDwn = options['_resources']['close_dwn'];
-    var closeHeight = closeEna['height'];
-    var closeEnaImg = new dvt.Image(nbox.getCtx(), closeEna['src'], 0, 0, closeEna['width'], closeEna['height']);
-    var closeOvrImg = new dvt.Image(nbox.getCtx(), closeOvr['src'], 0, 0, closeOvr['width'], closeOvr['height']);
-    var closeDwnImg = new dvt.Image(nbox.getCtx(), closeDwn['src'], 0, 0, closeDwn['width'], closeDwn['height']);
-    var closeButton = new dvt.Button(nbox.getCtx(), closeEnaImg, closeOvrImg, closeDwnImg, null, null, drawerContainer.closeDrawer, drawerContainer);
+    var closeHeight = close['height'];
+    var context = nbox.getCtx();
+    var iconStyle = dvt.ToolkitUtils.getIconStyle(context, close['class']);
+    var closeButton = new dvt.IconButton(context, 'borderless', {style: iconStyle, size: closeWidth}, null, null, drawerContainer.closeDrawer, drawerContainer);
 
     // Center/hide close button if drawer too thin for normal rendering
     var closeButtonX = rtl ? Math.min((drawerBounds.w - closeWidth) / 2, drawerButtonGap) : Math.max((drawerBounds.w - closeWidth) / 2, drawerBounds.w - drawerButtonGap - closeWidth);
@@ -8402,8 +8565,9 @@ DvtNBoxDrawerRenderer._addAccessibilityAttributes = function(nbox, data, drawerC
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -9172,7 +9336,9 @@ DvtNBoxDataUtils.getNodeLabel = function(nbox, node) {
   var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
   var halign = rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT;
   label = DvtNBoxRenderer.createText(nbox.getCtx(), node[dvt.NBoxConstants.LABEL], DvtNBoxStyleUtils.getNodeLabelStyle(nbox, node), halign, dvt.OutputText.V_ALIGN_MIDDLE);
-
+  if (node[dvt.NBoxConstants.SECONDARY_LABEL]) {
+    label.setClassName('oj-typography-semi-bold');
+  }
   DvtNBoxDataUtils.setDisplayable(nbox, node, label, dvt.NBoxConstants.LABEL);
   return label;
 };
@@ -9198,7 +9364,6 @@ DvtNBoxDataUtils.getNodeSecondaryLabel = function(nbox, node) {
   var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
   var halign = rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT;
   secondaryLabel = DvtNBoxRenderer.createText(nbox.getCtx(), node[dvt.NBoxConstants.SECONDARY_LABEL], DvtNBoxStyleUtils.getNodeSecondaryLabelStyle(nbox, node), halign, dvt.OutputText.V_ALIGN_MIDDLE);
-
   DvtNBoxDataUtils.setDisplayable(nbox, node, secondaryLabel, dvt.NBoxConstants.SECONDARY_LABEL);
   return secondaryLabel;
 };
@@ -9371,8 +9536,9 @@ DvtNBoxDataUtils.getNextNavigableNode = function(nbox, object, event) {
 
 /**
  * @license
- * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2013 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -9602,7 +9768,8 @@ DvtNBoxStyleUtils.getCellClassName = function(nbox, cellIndex) {
  */
 DvtNBoxStyleUtils.getCellLabelStyle = function(nbox, cellIndex) {
   var options = nbox.getOptions();
-  var defaults = options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS][dvt.NBoxConstants.LABEL_STYLE];
+  var labelStyle = DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex) ? '_labelMinimizedStyle' : dvt.NBoxConstants.LABEL_STYLE;
+  var defaults = options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS][labelStyle];
   var cell = DvtNBoxDataUtils.getCell(nbox, cellIndex);
   if (cell[dvt.NBoxConstants.LABEL_STYLE]) {
     return dvt.JsonUtils.merge(new dvt.CSSStyle(cell[dvt.NBoxConstants.LABEL_STYLE]), defaults);
@@ -9625,12 +9792,22 @@ DvtNBoxStyleUtils.getCellShowCount = function(nbox, cell) {
 /**
  * Returns the count label style for nbox cells
  * @param {dvt.NBox} nbox
+ * @param {number} cellIndex the specified cell index
  * @return {dvt.CSSStyle} the count label style for nbox cells
  */
-DvtNBoxStyleUtils.getCellCountLabelStyle = function(nbox) {
-  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS]['countLabelStyle'];
+DvtNBoxStyleUtils.getCellCountLabelStyle = function(nbox, cellIndex) {
+  var labelStyle = DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex) ? '_labelMinimizedStyle' : 'countLabelStyle';
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS][labelStyle];
 };
 
+/**
+ * Returns the border radius for cells
+ * @param {dvt.NBox} nbox
+ * @return {number} the border radius
+ */
+DvtNBoxStyleUtils.getCellBorderRadius = function(nbox) {
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS]['_' + dvt.NBoxConstants.BORDER_RADIUS];
+};
 
 /**
  * Returns the body count label style for nbox cells
@@ -9984,7 +10161,7 @@ DvtNBoxStyleUtils.getCategoryNodeLabelStyle = function(nbox) {
  * @return {number} the border radius
  */
 DvtNBoxStyleUtils.getNodeBorderRadius = function(nbox) {
-  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.BORDER_RADIUS];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS]['_' + dvt.NBoxConstants.BORDER_RADIUS];
 };
 
 
@@ -10034,8 +10211,9 @@ DvtNBoxStyleUtils.getLabelHalign = function(nbox, data) {
 
 /**
  * @license
- * Copyright (c) 2013 %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2013 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -10102,8 +10280,9 @@ var DvtVectorUtils = {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 })(dvt);

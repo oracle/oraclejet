@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -207,6 +208,10 @@ ko.virtualElements.allowedBindings._ojBindDom_ = true;
  * inside another HTML element (e.g. &lt;span&gt;) with the slot attribute. The oj-bind-dom element does not support
  * the slot attribute.</p>
  *
+ * <p><b>Note,</b> the oj-bind-dom element does not validate HTML input provided by an application for integrity or
+ * security violations. It is the application's responsibility to sanitize the input to prevent unsafe content
+ * from being added to the page.</p>
+ *
  * @example <caption>Initialize the oj-bind-dom:</caption>
  * &lt;oj-bind-dom config='[[configObj]]'>
  * &lt;/oj-bind-dom>
@@ -227,16 +232,38 @@ ko.virtualElements.allowedBindings._ojBindDom_ = true;
  * @ojsignature {target: "Type", value: "oj.ojBindDom.Config<D>|Promise<oj.ojBindDom.Config<D>>", jsdocOverride: true}
  */
 
+
 /**
- * @typedef {Object} oj.ojBindDom.Config
- * @property {Array<Node>} view The Nodes to be inserted. Note that oj-bind-dom does not clone the node array
+ * @ojtypedef oj.ojBindDom.Config
+ * @memberof oj.ojBindDom
+ * @ojsignature {for: "genericTypeParameters", target: "Type", value: "<D>"}
+ * @export
+ */
+
+/**
+ * The Nodes to be inserted. Note that oj-bind-dom does not clone the node array
  * before applying bindings to it. If the application needs to have access to the original node array,
  * it should set the 'view' property to a cloned copy.  Node arrays should not have a longer lifespan
  * than their oj-bind-dom element as would be the case for a node array created in the application model and
  * referenced by an oj-bind-dom element that is detached and reattached by another binding element or script.
- * @property {Object} data The data available to the view when expressions are evaluated.  Note that the oj-bind-dom element's binding context will not be made available.
- * @ojsignature [{for: "data", target: "Type", value: "D"},
- *               {for: "genericTypeParameters", target: "Type", value: "<D>"}]
+ *
+ * @name view
+ * @type {Array<Node>}
+ * @ojtypedefmember
+ * @memberof oj.ojBindDom.Config
+ * @ojshortdesc An array of nodes to be inserted into the DOM. See the Help documenation for more information.
+ */
+
+/**
+ * The data available to the view when expressions are evaluated.  Note that the oj-bind-dom element's binding context
+ * will not be made available.
+ *
+ * @name data
+ * @type {Object}
+ * @ojtypedefmember
+ * @memberof oj.ojBindDom.Config
+ * @ojshortdesc The data available to the view when expressions are evaluated. Note that the element's binding context will not be made available.
+ * @ojsignature {target: "Type", value: "D"}
  */
 
 });

@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -34,6 +35,11 @@
       oj-label:not(.oj-complete) {
         visibility: hidden;
       }
+    }
+
+    /* wraps help text that displays inside popup. */
+    .oj-label-help-popup-container {
+      max-width: 320px;
     }
 
     .oj-label,
@@ -250,37 +256,37 @@
     // this allows the alta theme to render an '*' icon using content css property, 
     // and alta mobile themes to render a circle w/o using content css property.
    
-      .oj-label-required-icon:before {
-        content: $formControlLabelRequiredChar;
+    .oj-label-required-icon:before {
+      content: $formControlLabelRequiredChar;
+    }
+    @if ($formControlLabelRequiredChar and $formControlLabelRequiredChar != '')
+    {
+      .oj-label-required-icon {
+        color: $colorRequired;
+        font-size: $largeFontSize;
+        font-weight: normal;
+        line-height: $fontSize;
+        font-family: inherit;
+        background-color: transparent;
+        border-radius: 0;
+        height: auto;
+        width: auto;
       }
-      @if ($formControlLabelRequiredChar and $formControlLabelRequiredChar != '')
-      {
-        .oj-label-required-icon {
-          color: $colorRequired;
-          font-size: $largeFontSize;
-          font-weight: normal;
-          line-height: $fontSize;
-          font-family: inherit;
-          background-color: transparent;
-          border-radius: 0;
-          height: auto;
-          width: auto;
-        }
+    }
+    @else
+    {
+      .oj-label-required-icon {
+        color: $colorRequired;
+        font-size: $largeFontSize;
+        font-weight: normal;
+        line-height: $fontSize;
+        font-family: inherit;
+        background-color: $colorRequired;
+        border-radius: 50%;
+        height: 4px;
+        width: 4px; // px is ok since it is so small it won't make a difference if font size changes
       }
-      @else
-      {
-        .oj-label-required-icon {
-          color: $colorRequired;
-          font-size: $largeFontSize;
-          font-weight: normal;
-          line-height: $fontSize;
-          font-family: inherit;
-          background-color: $colorRequired;
-          border-radius: 50%;
-          height: 4px;
-          width: 4px; // px is ok since it is so small it won't make a difference if font size changes
-        }
-      } 
+    } 
 
 
   }

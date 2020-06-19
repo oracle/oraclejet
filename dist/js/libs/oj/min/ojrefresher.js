@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 define(["ojs/ojcore","jquery","ojs/ojcontext","ojs/ojcomponentcore","ojs/ojpulltorefresh","ojs/ojlogger","touchr"],function(e,t,r,s,o,n){"use strict";var l={properties:{refreshContent:{type:"function"},target:{type:"Element"},text:{type:"string",value:""},threshold:{type:"number",value:0},translations:{type:"object",value:{},properties:{ariaRefreshCompleteLink:{type:"string"},ariaRefreshLink:{type:"string"},ariaRefreshingLink:{type:"string"}}}},methods:{refresh:{},setProperty:{},getProperty:{},setProperties:{},getNodeBySubId:{},getSubIdByNode:{}},extension:{}};

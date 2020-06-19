@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!
 // WARNING: do not directly import this file, instead import the
 //          version in your theme's directory,
@@ -21,36 +22,12 @@
 
     .oj-sunburst {
 
-          font-size: $smallFontSize;
+          font-size: $dvtSunburstLabelFontSize;
           color: $textColor;
           @include oj-user-select-property(none);
 
       width:400px;
       height:400px;
-    }
-
-    .oj-sunburst-expand-icon {
-      background-image: oj-common-image-url("dvt/sunburst/node_expand.png");
-    }
-
-    .oj-sunburst-collapse-icon {
-      background-image: oj-common-image-url("dvt/sunburst/node_collapse.png");
-    }
-
-    .oj-sunburst-expand-icon.oj-hover {
-      background-image: oj-common-image-url("dvt/sunburst/node_expand_ovr.png");
-    }
-
-    .oj-sunburst-collapse-icon.oj-hover {
-      background-image: oj-common-image-url("dvt/sunburst/node_collapse_ovr.png");
-    }
-
-    .oj-sunburst-expand-icon.oj-active {
-      background-image: oj-common-image-url("dvt/sunburst/node_expand_ovr.png");
-    }
-
-    .oj-sunburst-collapse-icon.oj-active {
-      background-image: oj-common-image-url("dvt/sunburst/node_collapse_ovr.png");
     }
 
     .oj-sunburst-attribute-type-text {
@@ -90,7 +67,7 @@
 
     .oj-sunburst-node {
 
-      font-size: $smallFontSize;
+      font-size: $dvtSunburstLabelFontSize;
 
     }
 

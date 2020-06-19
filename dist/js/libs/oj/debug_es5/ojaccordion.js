@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -63,6 +64,8 @@ var __oj_accordion_metadata =
  *                     {propertyGroup: "data", items: ["expanded"]} ]
  * @ojvbdefaultcolumns 3
  * @ojvbmincolumns 1
+ *
+ * @ojuxspecs ['accordion']
  *
  * @classdesc
  * <h3 id="accordionOverview-section">
@@ -376,13 +379,9 @@ var __oj_accordion_metadata =
      * @private
      */
     _makeCollapsible: function _makeCollapsible() {
-      this.collapsibles = this.element.children().not('oj-menu'); // Since oj-collapsible elements may not be upgraded until after oj-accordion elements,
-      // just set the expand-area property for custom elements
+      this.collapsibles = this.element.children().not('oj-menu');
 
       if (this._IsCustomElement()) {
-        this.element.children('oj-collapsible').each(function (index, collapsible) {
-          collapsible.setAttribute('expand-area', 'header');
-        });
         this.collapsibles.not('oj-collapsible').ojCollapsible({
           expandArea: 'header'
         }).addClass('oj-accordion-created').attr('data-oj-internal', ''); // mark internal component, used in oj.Components.getComponentElementByNode

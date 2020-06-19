@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -571,54 +572,149 @@ oj.EditableValueUtils._getCustomOjLabelElements = function (labelledBy) {
   return labelElements;
 };
 /**
- * Called during component initialization. Sets the sub-id on the input and
- * set data-oj-input-id attribute on each oj-label
- * that is pointing to the form component with the labelled-by attribute.
+ * Called during component initialization for Custom form components so that
+ * they will be associated with their oj-label element correctly.
+ * It links oj-label and form control for accessibility reasons.
+ *
+ * Background of how oj-label and 'input' components are linked together for accessibility:
+ * --------------------------------------------------------------------------------------
+ * An application developer links oj-label with a 'form' component like this:
+ * <oj-label id='foo' for='myinput'> to <oj-input-text id='myinput'>
+ *
+ * We render the aria and data-oj- attributes on the correct dom like this:
+ * <oj-label id='foo' for='myinput' data-oj-input-id='myinput|input'>
+ * <span id="foo|label_helpIcon"<label id='foo|label' for='myinput|input'>
+ * <oj-input-text id='myinput' labelled-by='foo' described-by='foo|label_helpIcon'>
+ * <input aria-describedby='foo|label_helpIcon'>
+ * ---------------------------------------------------------------------------------------
+ * Note: See also _labelledByUpdatedForInputComp. We need both this function
+ * and that one because
+ * we cannot guarantee the upgrade order of the oj-label and form component.
+ * If oj-label is not upgraded at the time the form component is, then it is
+ * possible that the labels cannot be found. If that's the case, then the oj-label will
+ * write labelledBy on the form component, and the  _labelledByUpdatedForInputComp
+ * will get called which calls _setDataOjInputIdAttrOnLabel.
  * @ignore
  * @private
  */
 
 
-oj.EditableValueUtils._setInputId = function (contentElement, inputId, labelledBy) {
-  if (inputId) {
-    oj.EditableValueUtils.setSubIdForCustomLabelFor(contentElement, inputId); // most likely it is one label per component, but it is possible to have more than one
-    // label per component.
+oj.EditableValueUtils._initInputIdLabelForConnection = function (contentElement, componentId, labelledBy) {
+  if (componentId) {
+    contentElement.setAttribute('id', componentId + '|input');
 
-    var ojlabels = oj.EditableValueUtils._getCustomOjLabelElements(labelledBy);
-
-    if (ojlabels) {
-      var id = contentElement.id;
-
-      for (var i = 0; i < ojlabels.length; i++) {
-        var ojlabel = ojlabels[i];
-        ojlabel.setAttribute('data-oj-input-id', id);
-      }
+    if (labelledBy) {
+      this._linkLabelForInputComp(labelledBy, contentElement.id);
     }
+  }
+
+  if (labelledBy) {
+    this._setReadonlyDivLabelledBy(labelledBy);
   }
 };
 /**
- * Called when labelledBy option is changed on the form components with inputs, like
- * oj-input-text. Sets the data-oj-input-id attribute on each oj-label
- * that is pointing to the form component with the labelled-by attribute and also
- * updates the required validator's translation label text, if any.
+ * This function is called when labelledBy option is changed
+ * on the form components with inputs, like
+ * oj-input-text. It links oj-label's internal for and input form control's id
+ * without relying on property dom searches.
+ * Note: See also _initInputIdLabelForConnection. We need both this function
+ * and that one because
+ * we cannot guarantee the upgrade order of the oj-label and form component.
  * @ignore
  * @private
  */
 
 
-oj.EditableValueUtils._labelledByChangedForInputComp = function (labelledBy, id) {
+oj.EditableValueUtils._labelledByUpdatedForInputComp = function (labelledBy, contentElementId) {
+  if (labelledBy) {
+    if (contentElementId) {
+      this._linkLabelForInputComp(labelledBy, contentElementId);
+    }
+
+    this._setReadonlyDivLabelledBy(labelledBy);
+  } // update the required translation text since it could use label text
+  // and if labelledBy changes, label text would have changed.
+
+
+  if (this._IsRequired() && this.options.translations.required) {
+    this._implicitReqValidator = null;
+
+    this._getImplicitRequiredValidator();
+  }
+};
+/**
+ * @ignore
+ * @private
+ */
+
+
+oj.EditableValueUtils._linkLabelForInputComp = function (labelledBy, contentElementId) {
   var ojlabels = oj.EditableValueUtils._getCustomOjLabelElements(labelledBy);
 
   if (ojlabels) {
+    oj.EditableValueUtils._setDataOjInputIdAttrOnLabel(contentElementId, ojlabels);
+  }
+};
+/**
+ * This function is called when labelledBy option is changed
+ * on the form components with inputs, like
+ * oj-input-text, and during component init, to set aria-labelledby
+ * on the readonly div, if the component has a readonly div.
+ * @ignore
+ * @private
+ */
+
+
+oj.EditableValueUtils._setReadonlyDivLabelledBy = function (labelledBy) {
+  // don't call this function if labelledBy doesn't have a value.
+  oj.Assert.assert(labelledBy);
+
+  var readonlyElem = this._getReadonlyDiv();
+
+  if (readonlyElem) {
+    readonlyElem.setAttribute('aria-labelledby', labelledBy + '|label');
+  }
+};
+/**
+ * This function is called when readonly option changes from false to true
+ * for readonly input components, or when the component is created.
+ * @ignore
+ * @private
+ */
+
+
+oj.EditableValueUtils._createOrUpdateReadonlyDiv = function (input) {
+  var createConditions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
+  // create readonly div if it doesn't exist.
+  var readonlyElem = this._getReadonlyDiv();
+
+  if (!readonlyElem && createConditions) {
+    readonlyElem = this._createReadonlyDiv(input);
+
+    if (this.options.labelledBy) {
+      this._setReadonlyDivLabelledBy(this.options.labelledBy);
+    }
+
+    this._setAriaLabelFromLabelHint();
+  }
+
+  if (readonlyElem) {
+    readonlyElem.textContent = this._GetDisplayValue();
+  }
+};
+/**
+ * @ignore
+ * @private
+ */
+
+
+oj.EditableValueUtils._setDataOjInputIdAttrOnLabel = function (contentElementId, ojlabels) {
+  if (ojlabels) {
     for (var i = 0; i < ojlabels.length; i++) {
-      var ojlabel = ojlabels[i];
-      ojlabel.setAttribute('data-oj-input-id', id); // update the required translation text
+      var ojlabel = ojlabels[i]; // setting this will cause ojlabel to set its internal label element's for to this id.
 
-      if (this._IsRequired() && this.options.translations.required) {
-        this._implicitReqValidator = null;
-
-        this._getImplicitRequiredValidator();
-      }
+      ojlabel.setAttribute('data-oj-input-id', contentElementId);
     }
   }
 };
@@ -690,21 +786,6 @@ oj.EditableValueUtils.validate = function () {
   return returnValue;
 };
 /**
- * Called from _AfterCreate for IsCustomElement form components so that they will
- * be assocatied with their oj-label element correctly.
- * Set the sub-id on the element so if they have a oj-label
- * pointing to it with the 'for' attrbiute, JAWS will read the label.
- * @param {Element} element
- * @param {string} widgetId
- * @ignore
- * @private
- */
-
-
-oj.EditableValueUtils.setSubIdForCustomLabelFor = function (element, widgetId) {
-  element.setAttribute('id', widgetId + '|input');
-};
-/**
  * Refresh everything that needs refreshing when the required option is toggled:
  * refreshes theming, aria-required, label.
  *
@@ -758,13 +839,21 @@ oj.EditableValueUtils._refreshRequired = function (value) {
         // if aria-labelledby is set,
         // add/remove aria-describedby to the inputs pointing to
         // the label+"_requiredIcon".
-        id = this._getAriaLabelledById(this.element);
+        var ariaLabelledByElem = this._getAriaLabelledByElement(this.element);
+
+        if (ariaLabelledByElem !== null && ariaLabelledByElem.length !== 0) {
+          id = ariaLabelledByElem[0].getAttribute('id');
+        }
 
         if (id) {
+          var ariaId = id + _REQUIRED_ICON_ID;
+
           if (value) {
-            this._addAriaDescribedBy(id + _REQUIRED_ICON_ID);
+            // adds
+            this._describedByUpdated(null, ariaId);
           } else {
-            this._removeAriaDescribedBy(id + _REQUIRED_ICON_ID);
+            // removes
+            this._describedByUpdated(ariaId, null);
           }
         }
       }
@@ -1328,6 +1417,307 @@ oj.EditableValueUtils._SetInputType = function (allowedTypes) {
     this.element[0].setAttribute('type', inputType);
   }
 };
+/**
+ * Draw a readonly div. When readonly, this div is shown and
+ * the input has display:none on it through theming, and vice versa.
+ * We set the textContent in _SetDisplayValue() if readonly
+ * @param {HTMLElement} pass in this.element[0]
+ * @return {HTMLElement|null} the readonlyDivElem or null if we don't want
+ * to use a readonly div.
+ * @private
+ * @ignore
+ */
+
+
+oj.EditableValueUtils._createReadonlyDiv = function (element) {
+  if (this._UseReadonlyDiv()) {
+    var readonlyElem = document.createElement('div');
+    readonlyElem.classList.add('oj-text-field-readonly-div'); // create this inner element that holds the text.  This is needed
+    // so that we can put flexbox styles on the oj-text-field-readonly-div
+    // to have the text vertically centered in the div.
+
+    var readonlyInnerElem = document.createElement('div');
+    readonlyInnerElem.classList.add('oj-text-field-readonly'); // for accessibility you need to be able to tab into a readonly field.
+
+    readonlyInnerElem.setAttribute('tabindex', '0');
+    readonlyInnerElem.setAttribute('role', 'textbox');
+    readonlyInnerElem.setAttribute('aria-readonly', true);
+    readonlyElem.appendChild(readonlyInnerElem);
+    element.parentNode.insertBefore(readonlyElem, element); // @HTMLUpdateOK
+    // return the element that we need to set textContent, aria-labelledby, etc.
+
+    return readonlyInnerElem;
+  }
+
+  return null;
+};
+/**
+ * Returns the inner readonly div HTMLElement that we need to set textContent,
+ * aria-labelledby, etc.
+ * @private
+ * @ignore
+ */
+
+
+oj.EditableValueUtils._getReadonlyDiv = function () {
+  return this.widget()[0].querySelector('.oj-text-field-readonly');
+};
+
+
+
+/* jslint browser: true*/
+
+/**
+ * Base class for rendering the 'inside' labels. This is so InsideLabelStrategy
+ * and InsideFormControlLabelStrategy can share code.
+ * Extends the MessagingStrategy which does more now than messages. It now
+ * is also for rendering the form component's label in one of many positions.
+ *
+ * @extends {oj.MessagingStrategy}
+ * @protected
+ * @constructor
+ * @since 8.0.0
+ * @class BaseInsidelLabelStrategy
+ * @ignore
+ * @ojtsignore
+ * @param {Array.<string>} options an array of messaging artifacts that are
+ * displayed as an inside label for non-text field form controls.
+ * For LabelStrategies this is always only labelEdge.
+ */
+var BaseInsidelLabelStrategy = function BaseInsidelLabelStrategy(options) {
+  this.Init(options);
+}; // Subclass from oj.MessagingStrategy
+
+
+oj.Object.createSubclass(BaseInsidelLabelStrategy, oj.MessagingStrategy, 'BaseInsidelLabelStrategy');
+/**
+ * Adds a hook for subclass to use its own styleclass on root dom element.
+ * @memberof BaseInsidelLabelStrategy
+ * @instance
+ * @protected
+ */
+
+BaseInsidelLabelStrategy.prototype._GetFormControlLabelStyleClass = function () {
+  return 'oj-form-control-label-inside';
+};
+/**
+ * Creates the label adding associated event listeners for applying
+ * marker selectors to the root and responding to label-hint
+ * and other component property changes.
+ * @memberof BaseInsidelLabelStrategy
+ * @instance
+ * @protected
+ */
+
+
+BaseInsidelLabelStrategy.prototype._CreateLabel = function () {
+  var component = this.GetComponent();
+
+  var container = this._GetContainer(component); // could be overwritten. InsideLabelStrategy.
+
+
+  if (!container) return;
+  var options = component.options;
+
+  var element = component._getRootElement(); // could be overwritten ,e.g., _getBaseLabelSelector
+
+
+  var labelStyleClass = this._GetFormControlLabelStyleClass();
+
+  element.classList.add(labelStyleClass);
+  this.GenerateIdIfNeeded(element);
+  this._showUserAssistanceNotInline = component._showUserAssistanceNotInline();
+  var renderRequiredIcon = options.required && this._showUserAssistanceNotInline; // for 'inside labels' we do not show help on the label.
+
+  this._createOjLabelElement(element, component, container, options.labelHint, renderRequiredIcon, options.helpHints, this._showUserAssistanceNotInline);
+};
+/**
+ * @memberof BaseInsidelLabelStrategy
+ * @instance
+ * @private
+ * @param {Element} label oj-label element
+ * @param {CustomEvent} event requiredChanged event
+ */
+
+
+BaseInsidelLabelStrategy.prototype._createOjLabelElement = function (element, component, container, labelHint, showRequired, helpHintsAttrValue, showUserAssistanceOnLabel) {
+  var ojlabel = document.createElement('oj-label');
+  ojlabel.id = BaseInsidelLabelStrategy._getLabelId(element);
+  ojlabel.setAttribute('data-oj-binding-provider', 'none');
+  ojlabel.setAttribute('data-oj-internal', ''); // associate with form component
+
+  ojlabel.setAttribute('for', element.id);
+  var defaultLabelStyleClass = [component._GetDefaultStyleClass(), 'label'].join('-');
+  ojlabel.classList.add(defaultLabelStyleClass);
+
+  if (showRequired) {
+    ojlabel.setAttribute('show-required', showRequired);
+  }
+
+  if (showUserAssistanceOnLabel && helpHintsAttrValue) {
+    ojlabel.help = helpHintsAttrValue;
+  } // add labelHint
+
+
+  var span = document.createElement('span');
+  span.id = [element.id, '|hint'].join('');
+  span.innerText = labelHint; // add to dom and create event handlers
+
+  ojlabel.appendChild(span);
+
+  this._InsertOjLabel(ojlabel, container, component);
+
+  this._CreateEventHandlers(span, element, ojlabel, component);
+};
+/**
+ * Gets the form component's container. Could be overwritten to have more
+ * logic to get the container.
+ * @memberof BaseInsidelLabelStrategy
+ * @instance
+ * @protected
+ */
+
+
+BaseInsidelLabelStrategy.prototype._GetContainer = function (component) {
+  return component._GetFormControlContainer();
+};
+/**
+ * Creates event handlers
+ * Override if there are more event listeners to create
+ * Components with label-hint and label-edge of none or inside create
+ * their own labels in this strategy, and when they do we listen for
+ * attribute changes so we can deal with them and update the label accordingly.
+ * If the oj-form-layout creates the label (top/start), then similar event listeners
+ * are created there in ojformlayout.
+ * @param {Element} span span around the label where we use innerText to set the labelHint
+ * @param {Element} element root custom element
+ * @param {Element} ojlabel ojlabel custom element
+ * @param {Element} component form component
+ * @memberof BaseInsidelLabelStrategy
+ * @instance
+ * @protected
+ */
+
+
+BaseInsidelLabelStrategy.prototype._CreateEventHandlers = function (span, element, ojlabel, component) {
+  this._labelHintChangedCallback = BaseInsidelLabelStrategy._labelHintChangedHandler.bind(this, span);
+  element.addEventListener('labelHintChanged', this._labelHintChangedCallback);
+  this._requiredChangedCallback = BaseInsidelLabelStrategy._requiredChangedHandler.bind(this, ojlabel, component);
+  element.addEventListener('requiredChanged', this._requiredChangedCallback);
+  this._helpHintsChangedCallback = BaseInsidelLabelStrategy._helpHintsChangedHandler.bind(this, ojlabel, component);
+  element.addEventListener('helpHintsChanged', this._helpHintsChangedCallback);
+};
+/**
+ * Removes the fixed label unregistering associated event listeners.
+ * @memberof BaseInsidelLabelStrategy
+ * @instance
+ * @private
+ */
+
+
+BaseInsidelLabelStrategy.prototype._DestroyLabel = function () {
+  var component = this.GetComponent();
+  var options = component.options;
+
+  var element = component._getRootElement();
+
+  var labelStyleClass = this._GetFormControlLabelStyleClass(); // override
+
+
+  element.classList.remove(labelStyleClass);
+
+  var labelId = BaseInsidelLabelStrategy._getLabelId(element); // no need to override
+
+
+  var ojlabel = document.getElementById(labelId);
+
+  if (ojlabel) {
+    ojlabel.for = ''; // Triggers code to unlink the oj-label from its form component
+
+    ojlabel.parentElement.removeChild(ojlabel);
+  }
+
+  options.labelledBy = undefined;
+
+  this._DeleteEventHandlers(element);
+};
+/**
+ * Removes the event handlers
+ * Override if there are more event handlers to delete
+ * @param {Element} element root custom element
+ * @memberof BaseInsidelLabelStrategy
+ * @instance
+ * @protected
+ */
+
+
+BaseInsidelLabelStrategy.prototype._DeleteEventHandlers = function (element) {
+  element.removeEventListener('labelHintChanged', this._labelHintChangedCallback);
+  element.removeEventListener('requiredChanged', this._requiredChangedCallback);
+  element.removeEventListener('helpHintsChanged', this._helpHintsChangedCallback);
+  delete this._helpHintsChangedCallback;
+  delete this._labelHintChangedCallback;
+  delete this._requiredChangedCallback;
+};
+/**
+ * @static
+ * @private
+ * @param {Element} element root custom element
+ * @return {string} fixed label id
+ */
+
+
+BaseInsidelLabelStrategy._getLabelId = function (element) {
+  return [element.id, '-labelled-by'].join('');
+};
+/**
+ * @static
+ * @private
+ * @param {Element} span holding label text
+ * @param {CustomEvent} event labelChanged event
+ */
+
+
+BaseInsidelLabelStrategy._labelHintChangedHandler = function (span, event) {
+  // eslint-disable-next-line no-param-reassign
+  span.innerText = event.detail.value;
+};
+/**
+ * @static
+ * @private
+ * @param {Element} label oj-label element
+ * @param {CustomEvent} event requiredChanged event
+ */
+
+
+BaseInsidelLabelStrategy._requiredChangedHandler = function (label, component, event) {
+  // we show required on label if compact and not when inline, for example.
+  // get it here and cache it if it doesn't exist.
+  if (this._showUserAssistanceNotInline == null) {
+    this._showUserAssistanceNotInline = component._showUserAssistanceNotInline();
+  } // eslint-disable-next-line no-param-reassign
+
+
+  label.showRequired = event.detail.value && this._showUserAssistanceNotInline;
+};
+/**
+ * helpHints attribute changed on form component, so update help icon on label if it is there.
+ * (it could be inline to the component and not on label, if so, see InlineHelpHintsStrategy)
+ * @static
+ * @private
+ * @param {Element} label oj-label element
+ * @param {CustomEvent} event helpHintsChanged event
+ */
+
+
+BaseInsidelLabelStrategy._helpHintsChangedHandler = function (label, component, event) {
+  this._showUserAssistanceNotInline = component._showUserAssistanceNotInline();
+
+  if (this._showUserAssistanceNotInline) {
+    // eslint-disable-next-line no-param-reassign
+    label.help = event.detail.value;
+  }
+};
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
@@ -1744,7 +2134,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
      * If the component is in an oj-form-layout, and the label-edge attribute on oj-form-layout is set to an explicit value,
      * the label-edge attribute on all form controls should also be set to an explict value.
      * For example, if the label-edge attribute on oj-form-layout is set to "start" or "top", the label-edge attribute of all form controls should be set to "provided".</p>
-     * @ojshortdesc Defines how the label of a component is created.
+     * @ojshortdesc Defines how the label of a component is created. See the Help documentation for more information.
      * @access public
      * @expose
      * @name labelEdge
@@ -1780,6 +2170,9 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
      * See the <a href="#validation-section">Validation and Messages</a> section
      * for details on when the component clears <code class="prettyprint">messagesCustom</code>;
      * for example, when full validation is run.
+     * </p>
+     * <p>In the Redwood theme, the Message summary is not displayed to the user, so make sure to have a Message detail
+     * set in your Message object.
      * </p>
      *
      *
@@ -1956,6 +2349,45 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
 
     /**
      * <p>
+     * Specifies the density of the form component's user assistance presentation.
+     * It can be shown inline with reserved rows to prevent reflow if
+     * a user assistance text shows up, inline without reserved rows,
+     * or it can be shown compactly in a popup instead.</p>
+     * <p>
+     * The oj-form-layout provides its user-assistance-density attribute value and its default
+     * value and the form components consume it if it is not already set explicitly.
+     * For example, if oj-form-layout is set or defaults to
+     * user-assistance-density='efficient', all the
+     * form components it contains will be user-assistance-density='efficient' by default.
+     * This is why when a form component is inside an oj-form-layout component
+     * its user-assistance-density is 'efficient', and when it is not inside an oj-form-layout
+     * component, its user-assistance-density is 'reflow'.
+     * </p>
+     * <p>
+     * A form component can explicitly
+     * set its own user-assistance-density attribute which will take precedence.
+     * </p>
+     * <p>This attribute is ignored in the Alta theme.</p>
+     * @ojshortdesc Specifies the density of the form component's user assistance presentation.
+     * @access public
+     * @expose
+     * @name userAssistanceDensity
+     * @ojunsupportedthemes ["Alta"]
+     * @default "reflow"
+     * @instance
+     * @type {string}
+     * @ojsignature {target: "Type", value: "'reflow'|'efficient'|'compact'",  jsdocOverride: true}
+     * @memberof oj.editableValue
+     * @ojvalue {string} "reflow" Messages, help, hints, and required are all shown inline under the field with no reserved space.
+     * @ojvalue {string} "efficient" Messages, help, hints, and required are all shown inline under the field with reserved space.
+     * @ojvalue {string} "compact" Messages, help, hints, and required will not be shown inline; they will show in a mode that keeps the screen more compact, like
+     * a popup for the messages, and a required icon to indicate Required.
+     * @since 9.0.0
+     */
+    userAssistanceDensity: 'reflow',
+
+    /**
+     * <p>
      * The current valid state of the component. It is evaluated on initial render.
      * It is re-evaluated
      * <ul>
@@ -2103,13 +2535,14 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
      * @ojbubbles
      * @ojcancelable
      * @instance
-     * @property {string} action The action that triggers the animation. Supported values are:
-     *                    <ul>
-     *                      <li>"inline-open" - when an inline message container opens or increases in size</li>
-     *                      <li>"inline-close" - when an inline message container closes or decreases in size</li>
-     *                      <li>"notewindow-open" - when a note window opens</li>
-     *                      <li>"notewindow-close" - when a note window closes</li>
-     *                    </ul>
+     * @property {string} action The action that triggers the animation.</br></br>
+     *                           Supported values are:
+     *                              <ul>
+     *                                <li>"inline-open" - when an inline message container opens or increases in size</li>
+     *                                <li>"inline-close" - when an inline message container closes or decreases in size</li>
+     *                                <li>"notewindow-open" - when a note window opens</li>
+     *                                <li>"notewindow-close" - when a note window closes</li>
+     *                              </ul>
      * @property {Element} element The element being animated.
      * @property {function():void} endCallback If the event listener calls event.preventDefault to
      *            cancel the default animation, it must call the endCallback function when it
@@ -2155,13 +2588,14 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
      * @memberof oj.editableValue
      * @since 4.0.0
      * @instance
-     * @property {string} action The action that triggers the animation. Supported values are:
-     *                    <ul>
-     *                      <li>"inline-open" - when an inline message container opens or increases in size</li>
-     *                      <li>"inline-close" - when an inline message container closes or decreases in size</li>
-     *                      <li>"notewindow-open" - when a note window opens</li>
-     *                      <li>"notewindow-close" - when a note window closes</li>
-     *                    </ul>
+     * @property {string} action The action that triggers the animation.</br></br>
+     *                           Supported values are:
+     *                              <ul>
+     *                                <li>"inline-open" - when an inline message container opens or increases in size</li>
+     *                                <li>"inline-close" - when an inline message container closes or decreases in size</li>
+     *                                <li>"notewindow-open" - when a note window opens</li>
+     *                                <li>"notewindow-close" - when a note window closes</li>
+     *                              </ul>
      * @property {Element} element The element being animated.
      * @example <caption>Define an event listener for the
      *          <code class="prettyprint">ojAnimateEnd</code> event to add any processing after the end of
@@ -2549,7 +2983,9 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
       } else {
         this.widget()[0].classList.add('oj-text-field');
       }
-    } // We need to make sure the form component has an id since oj-form-layout
+    }
+
+    this._toggleOjHasNoValueClass(); // We need to make sure the form component has an id since oj-form-layout
     // creates the label and associates them via for/id. Adding an id from ojformlayout
     // after the component is created does not create the form component's internal id.
 
@@ -2576,11 +3012,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
     describedBy = this.options.describedBy;
 
     if (describedBy) {
-      var eachIdArray = describedBy.split(/\s+/);
-
-      for (i = 0; i < eachIdArray.length; i++) {
-        this._addAriaDescribedBy(eachIdArray[i]);
-      }
+      this._describedByUpdated(null, describedBy);
     } // run deferred validation
 
 
@@ -2731,6 +3163,13 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
 
       case 'translations':
         this.refresh();
+        break;
+
+      case 'userAssistanceDensity':
+        // if the userAssistanceDensity of the component changed,
+        // we need to create or remove the user assistance display strategy.
+        this._initComponentMessaging();
+
         break;
 
       case 'value':
@@ -2931,7 +3370,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
         oldValue = this.options.describedBy;
         newValue = value;
 
-        this._updateDescribedBy(oldValue, newValue);
+        this._describedByUpdated(oldValue, newValue);
 
         break;
 
@@ -2968,9 +3407,9 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
   // *********** END WIDGET FACTORY METHODS **********
 
   /**
-   * Returns a jquery object of the element representing the content node. This could be a jQuery
+   * Returns a jquery object of the element(s) representing the content node. This could be a jQuery
    * object of the element the widget was invoked on - typically this is an input or select or
-   * textarea element for which a value can be set.
+   * textarea element for which a value can be set. It could be more than one dom node.
    *
    * @memberof oj.editableValue
    * @instance
@@ -2989,6 +3428,8 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
    * pointing to input.
    * If that's not found, we walk up the dom looking for aria-labelledby.
    * Note: multiple labels for one input is legal in html-5.
+   * This is called for widget components, not custom components.
+   * We check as well inside this function and return if a custom component.
    * @memberof oj.editableValue
    * @instance
    * @protected
@@ -2996,6 +3437,10 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
    *  return null if it can't find anything.
    */
   _GetLabelElement: function _GetLabelElement() {
+    if (this._IsCustomElement()) {
+      return null;
+    }
+
     var ariaElement;
     var labelQuery;
 
@@ -3273,13 +3718,26 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
         // 4. labelEdge option is set to 'none' (this will only be set by app)
         // 5. There is no aria-label attribute or the aria-label was set by us.
         // 6. There is no aria-labelledby attribute.
-        ariaLabelElem.setAttribute('aria-label', this.options.labelHint); // Remember what we set aria-label to
+        ariaLabelElem.setAttribute('aria-label', this.options.labelHint); // Set on the readonly div if it exists as well.
+
+        var readonlyDiv = this._getReadonlyDiv();
+
+        if (readonlyDiv) {
+          readonlyDiv.setAttribute('aria-label', this.options.labelHint);
+        } // Remember what we set aria-label to
+
 
         this._ariaLabelFromHint = this.options.labelHint;
       } else if (this._ariaLabelFromHint && this._ariaLabelFromHint === ariaLabel) {
         // If we have set aria-label previously and no one has changed it, remove it
         // if the current condition no longer need to set aria-label.
-        ariaLabelElem.removeAttribute('aria-label');
+        ariaLabelElem.removeAttribute('aria-label'); // remove from the readonly div as well.
+
+        var _readonlyDiv = this._getReadonlyDiv();
+
+        if (_readonlyDiv) {
+          _readonlyDiv.removeAttribute('aria-label');
+        }
       }
     }
   },
@@ -3552,6 +4010,51 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
   },
 
   /**
+  * This method takes a value from a value change listener
+  * and determines if it is 'empty'. This is used to toggle a
+  * 'oj-has-no-value' style class.
+  * This method is generic enough to be used by all EditableValue components,
+  * but can be overridden by component if needed.
+  *
+  * @memberof oj.editableValue
+  * @instance
+  * @protected
+  */
+  _IsValueEmpty: function _IsValueEmpty(value) {
+    if (value === undefined || value === null) {
+      return true;
+    } else if (typeof value === 'string') {
+      return oj.StringUtils.isEmptyOrUndefined(value);
+    } else if (typeof value === 'number') {
+      return isNaN(value);
+    } else if (Array.isArray(value)) {
+      // oj-select-many setting observable(undefined) returns an array with
+      // an undefined value versus an undefined value
+      return value.length === 0 || value.length === 1 && (value[0] === null || value[0] === undefined);
+    }
+
+    return false;
+  },
+
+  /**
+  * This method toggles a
+  * 'oj-has-no-value' style class.
+  *
+  * @memberof oj.editableValue
+  * @instance
+  * @private
+  */
+  _toggleOjHasNoValueClass: function _toggleOjHasNoValueClass(value) {
+    var element = this._getRootElement();
+
+    if (this._IsValueEmpty(value)) {
+      element.classList.add('oj-has-no-value');
+    } else {
+      element.classList.remove('oj-has-no-value');
+    }
+  },
+
+  /**
    * Called in response to a change in the options set for this component, this method refreshes the
    * component display value. Subclasses can override to provide custom refresh behavior.
    *
@@ -3590,8 +4093,21 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
               definition: helpDef,
               source: helpSource
             });
+            var label = this.$label[0];
 
-            this._refreshDescribedByForLabel();
+            if (label) {
+              var labelId = label.id;
+
+              if (labelId) {
+                var ariaId = labelId + _HELP_ICON_ID;
+
+                if (helpSource != null || helpDef != null) {
+                  this._describedByUpdated(null, ariaId);
+                } else {
+                  this._describedByUpdated(ariaId, null);
+                }
+              }
+            }
           }
         }
 
@@ -3804,7 +4320,13 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
     var self = this;
     var resolvedState = false;
     var validateReturn;
-    var fulfilledNewValue; // disallow setting a value of undefined by widgets
+    var fulfilledNewValue; // we want to add/remove the oj-has-no-value styleclass so we can style based on
+    // if there is something in the field.
+    // this is where we validate what the user has typed in, so it is a good place
+    // to check this styleclass.
+
+    this._toggleOjHasNoValueClass(newValue); // disallow setting a value of undefined by widgets
+
 
     if (newValue === undefined) {
       Logger.warn('Attempt to set a value of undefined');
@@ -4367,35 +4889,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
       }
 
       if (labelId) {
-        this._addAriaDescribedBy(labelId + _HELP_ICON_ID);
-      }
-    }
-  },
-
-  /**
-   * Refreshes the aria-describedby for label element's helpIcon
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _refreshDescribedByForLabel: function _refreshDescribedByForLabel() {
-    var helpDef = this.options.help.definition;
-    var helpSource = this.options.help.source; // if aria-labelledby is set,
-    // add/remove aria-describedby to the inputs pointing to
-    // the label+"_helpIcon".
-
-    var labelId;
-    var label = this.$label[0];
-
-    if (label) {
-      labelId = label.id;
-    }
-
-    if (labelId) {
-      if (helpSource != null || helpDef != null) {
-        this._addAriaDescribedBy(labelId + _HELP_ICON_ID);
-      } else {
-        this._removeAriaDescribedBy(labelId + _HELP_ICON_ID);
+        this._describedByUpdated(null, labelId + _HELP_ICON_ID);
       }
     }
   },
@@ -4484,9 +4978,14 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
    * @instance
    */
   _getAriaLabelledByElement: function _getAriaLabelledByElement(elem) {
-    // look for a label with an id equal to the value of aria-labelledby.
+    // this is the widget way of doing things, so return if custom element.
+    if (this._IsCustomElement()) {
+      return null;
+    } // look for a label with an id equal to the value of aria-labelledby.
     // .prop does not work for aria-labelledby. Need to use .attr to find
     // aria-labelledby.
+
+
     var ariaId = elem[0].getAttribute('aria-labelledby');
     var labelQuery;
 
@@ -4496,28 +4995,6 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
     }
 
     return null;
-  },
-
-  /**
-   * Get the id of the element whose aria-labelledby is set
-   * @param {Object} elem the dom element from which you want to get the
-   * aria-labelledby property value
-   * @return {string} id or null
-   *
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _getAriaLabelledById: function _getAriaLabelledById(elem) {
-    var id = null;
-
-    var ariaLabelledByElem = this._getAriaLabelledByElement(elem);
-
-    if (ariaLabelledByElem !== null && ariaLabelledByElem.length !== 0) {
-      id = ariaLabelledByElem[0].getAttribute('id');
-    }
-
-    return id;
   },
 
   /**
@@ -5048,6 +5525,61 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
   },
 
   /**
+    * In the Alta theme, we want to continue to use the display-options properties to decide
+    * where to render help-instruction, messages, validation-hint, etc. For example, if
+    * display-options.messages = 'notewindow' then the messages will show up in a popup on focus.
+    *
+    * In the Redwood theme, we instead use the user-assistance attribute set on the component
+    * to decide whether to show the user assistance (this includes Required)
+    * inline or in compact mode which is where the user assistance is shown via a popup,
+    * like in the ? icon on the label or a (x) icon in the field.
+    * We need a way to say 'use' the user-assistance-density attribute or 'ignore'
+    * the user-assistance-density attribute and instead use the 'old' way
+    * of doing things based on the theme.
+    * And if you are 'using' the user-assistance-density attribute what is it,
+    * reflow or efficient or compact?
+    * @return {'reflow'|'efficient'|'compact'|'displayOptions'} If 'displayOptions' it uses
+    * the 'old' way of doing things which is to look at all the displayOptions for where to display
+    * things. If 'efficient' or 'reflow' it renders all the user assistance inline,
+    * and if compact it renders everything in the 'compact' ux design which is in notewindows.
+    * @private
+    * @memberof oj.editableValue
+    * @instance
+    */
+  _getResolvedUserAssistance: function _getResolvedUserAssistance() {
+    if (this._defaultOptions == null) {
+      this._defaultOptions = ThemeUtils.parseJSONFromFontFamily('oj-form-control-option-defaults');
+    } // this will return 'use' or 'ignore'. This tells us whether we should use the
+    // user-assistance-density attribute or ignore it. If we ignore it, we will
+    // use the displayOptions attribute.
+
+
+    if (this._defaultOptions) {
+      var useUserAssistanceOption = this._defaultOptions.useUserAssistanceOptionDefault;
+      return useUserAssistanceOption === 'use' ? this.options.userAssistanceDensity : 'displayOptions';
+    } // if no theme return displayOptions for bw compatibility.
+
+
+    return 'displayOptions';
+  },
+
+  /**
+    * In the Alta theme, we show required on the label with an * icon,
+    * and help on label with a ? icon.
+    * In the Redwood theme, we show 'Required'/help as text inline if
+    * user-assistance-density attribute is not 'compact',
+    * else we show it as an * on the icon.
+    * @private
+    * @memberof oj.editableValue
+    * @instance
+    */
+  _showUserAssistanceNotInline: function _showUserAssistanceNotInline() {
+    var resolvedUserAssistance = this._getResolvedUserAssistance();
+
+    return resolvedUserAssistance === 'compact' || resolvedUserAssistance === 'displayOptions';
+  },
+
+  /**
    * Returns content that will be used by messaging strategies.
    *
    * @param {number} updateType of messaging content to update. Accepted values are defined by
@@ -5308,8 +5840,12 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
    * @instance
    */
   _refreshComponentDisplayValue: function _refreshComponentDisplayValue(value, fullRefresh) {
-    var displayValueReturn; // We set the last model value after the format, so this is saying,
+    var displayValueReturn; // when we change the display value via value change we want to
+    // update the 'oj-has-no-value' class.
+
+    this._toggleOjHasNoValueClass(value); // We set the last model value after the format, so this is saying,
     // has the value about to be formatted different than the one we last formatted?
+
 
     if (fullRefresh || value !== this._getLastModelValue()) {
       // this formats the value and displays it.
@@ -5536,6 +6072,46 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
     } else {
       focusElem.removeAttribute('aria-label');
     }
+  },
+
+  /**
+   * @ignore
+   * @protected
+   * @memberof oj.editableValue
+   * @return {boolean}
+   */
+  _UseReadonlyDiv: function _UseReadonlyDiv() {
+    if (this._defaultOptions == null) {
+      this._defaultOptions = ThemeUtils.parseJSONFromFontFamily('oj-form-control-option-defaults');
+    }
+
+    return this._defaultOptions.readonlyElem === 'div';
+  },
+
+  /**
+   * This is called from InlineHelpHintsStrategy to determine if the
+   * component should show help hints on focus or always. Set
+   * components show it always.
+   * @ignore
+   * @protected
+   * @memberof oj.editableValue
+   * @return {'focus'|'always'}
+   */
+  _ShowHelpHints: function _ShowHelpHints() {
+    return this._IsTextFieldComponent() ? 'focus' : 'always';
+  },
+
+  /**
+     * This is called from InlineHelpHintsStrategy to determine
+     * the location of the inline help hints, above the component
+     * or below inline.
+   * @ignore
+   * @protected
+   * @memberof oj.editableValue
+   * @return {'above'|'inline'}
+   */
+  _ShowHelpHintsLocation: function _ShowHelpHintsLocation() {
+    return 'inline';
   },
 
   /**
@@ -5881,25 +6457,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
    * @instance
    * @private
    */
-  _updateDescribedBy: LabelledByUtils._updateDescribedBy,
-
-  /**
-   * Add the aria-describedby on the content element(s) if it isn't already there.
-   *
-   * @memberof oj.editableValue
-   * @instance
-   * @private
-   */
-  _addAriaDescribedBy: LabelledByUtils._addAriaDescribedBy,
-
-  /**
-   * Remove the aria-describedby from the content element(s)
-   *
-   * @memberof oj.editableValue
-   * @instance
-   * @private
-   */
-  _removeAriaDescribedBy: LabelledByUtils._removeAriaDescribedBy,
+  _describedByUpdated: LabelledByUtils._describedByUpdated,
 
   /**
    * Set busy state for async validators
@@ -5967,6 +6525,39 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
    * @protected
    */
   _AfterCreateConverterCached: oj.EditableValueUtils._AfterCreateConverterCached,
+
+  /**
+   * Returns the readonly div HTMLElement.
+   * @memberof oj.editableValue
+   * @instance
+   * @private
+   */
+  _getReadonlyDiv: oj.EditableValueUtils._getReadonlyDiv,
+
+  /**
+   * Creates or updates the readonly div. This is called when the
+   * component is initially enabled and becomes readonly.
+   * @memberof oj.editableValue
+   * @instance
+   * @private
+   */
+  _createOrUpdateReadonlyDiv: oj.EditableValueUtils._createOrUpdateReadonlyDiv,
+
+  /**
+  * Creates the readonly div. This is called when the
+  * component is initially enabled and becomes readonly.
+  * @memberof oj.editableValue
+  * @instance
+  * @private
+  */
+  _createReadonlyDiv: oj.EditableValueUtils._createReadonlyDiv,
+
+  /**
+   * @memberof oj.editableValue
+   * @instance
+   * @private
+   */
+  _setReadonlyDivLabelledBy: oj.EditableValueUtils._setReadonlyDivLabelledBy,
 
   /**
    * Returns the associated input container needed for component managed labels.  Subclasses can
@@ -6099,6 +6690,10 @@ Components.setDefaultOptions({
       }
 
       return undefined;
+    }),
+    userAssistanceDensity: Components.createDynamicPropertyGetter(function (context) {
+      var userAssistanceDensityVar = context.containers.indexOf('ojDataGrid') >= 0 || context.containers.indexOf('ojTable') >= 0 ? 'compact' : 'reflow';
+      return userAssistanceDensityVar;
     })
   }
 }); // ////////////////     SUB-IDS     //////////////////
@@ -6259,6 +6854,395 @@ Components.setDefaultOptions({
 
 
 
+/* jslint browser: true*/
+
+/**
+ * Adapter for handling inline Help and Hints text.
+ * Extends the MessagingStrategy which does more now than messages.
+ *
+ * @extends {oj.MessagingStrategy}
+ * @protected
+ * @constructor
+ * @since 9.0.0
+ * @class InlineHelpHintsStrategy
+ * @ignore
+ * @ojtsignore
+ * @param {Array.<string>} displayOptions an array of messaging artifacts that are
+ * displayed as an inside label for text fields.
+ * For LabelStrategies this is always only labelEdge.
+ */
+var InlineHelpHintsStrategy = function InlineHelpHintsStrategy(displayOptions, parentElement) {
+  this.Init(displayOptions);
+  this._userAssistanceDivElement = parentElement;
+};
+/**
+ * Registers the InlineHelpHintsStrategy constructor function with oj.ComponentMessaging.
+ * No need to register since we are not creating this strategy on from ComponentMessaging.
+ * InlineUserAssistanceStrategy creates it.
+ * @private
+ */
+// oj.ComponentMessaging
+//    .registerMessagingStrategy('inlinehelphints',
+//     InlineHelpHintsStrategy);
+// Subclass from oj.MessagingStrategy
+
+
+oj.Object.createSubclass(InlineHelpHintsStrategy, oj.MessagingStrategy, 'InlineHelpHintsStrategy');
+/**
+ * @param {Object} cm a reference to an instance of oj.ComponentMessaging that provides access to
+ * the latest messaging content.
+ * @public
+ * @memberof InlineHelpHintsStrategy
+ * @instance
+ * @override
+ */
+
+InlineHelpHintsStrategy.prototype.activate = function (cm) {
+  InlineHelpHintsStrategy.superclass.activate.call(this, cm);
+
+  if (this.containerRoot == null) {
+    this._createInlineHelpHints();
+  }
+};
+/**
+ * @param {Array.<string>} newOptions
+ * @public
+ * @memberof InlineHelpHintsStrategy
+ * @instance
+ * @override
+ */
+
+
+InlineHelpHintsStrategy.prototype.reactivate = function (newOptions, parentElement) {
+  InlineHelpHintsStrategy.superclass.reactivate.call(this, newOptions);
+  this._userAssistanceDivElement = parentElement;
+
+  var containerRootExists = this._isContainerRootDomInDocument();
+
+  if (!containerRootExists) {
+    this._createInlineHelpHints();
+  }
+};
+/**
+ * @param {Object=} content the messaging content object. If it contains validityState, then
+ * this means the component has messaging content.
+ * @return {boolean}
+ * @memberof InlineHelpHintsStrategy
+ * @instance
+ * @oublic
+ * @override
+ */
+// eslint-disable-next-line no-unused-vars
+
+
+InlineHelpHintsStrategy.prototype.shouldUpdate = function (content) {
+  // TODO: Add other help/validation as well. If any of those change
+  // we should update.
+  var updateTitle = !!(content && content.title !== undefined);
+  var updateValidatorHint = !!(content && content.validatorHint !== undefined);
+  return updateTitle || updateValidatorHint;
+};
+/**
+ * Updates component with instance using the content provided.
+ * @memberof InlineHelpHintsStrategy
+ * @instance
+ * @public
+ * @override
+ */
+
+
+InlineHelpHintsStrategy.prototype.update = function () {
+  InlineHelpHintsStrategy.superclass.update.call(this);
+
+  this._updateInlineHelpHints();
+};
+/**
+ * Cleans up dom on the component and removes any event listeners it created.
+ * @memberof InlineHelpHintsStrategy
+ * @instance
+ * @public
+ * @override
+ */
+
+
+InlineHelpHintsStrategy.prototype.deactivate = function () {
+  var component = this.GetComponent();
+
+  var element = component._getRootElement();
+
+  var container = this._getHelpHintsInlineContainer(element);
+
+  if (container) {
+    this.RemoveAriaDescribedByForInlineMessaging(container);
+    container.parentElement.removeChild(container);
+  } // if we created a event handler then we know we have to delete them here.
+
+
+  if (this._focusinCallback) {
+    this._deleteFocusEventHandlers(element);
+  }
+
+  InlineHelpHintsStrategy.superclass.deactivate.call(this);
+};
+/**
+ * Creates the dom adding associated event listeners for applying
+ * marker selectors to the root and responding to focus event listeners.
+ * @memberof InlineHelpHintsStrategy
+ * @instance
+ * @private
+ */
+
+
+InlineHelpHintsStrategy.prototype._createInlineHelpHints = function () {
+  var component = this.GetComponent();
+
+  var showHelpHints = component._ShowHelpHints();
+
+  if (showHelpHints === 'always') {
+    // if showHelpHints is 'focus', then we create the content on the first focusin so that
+    // we can delay getting validation hints.
+    // otherwise add content now.
+    this._addHelpHintsContent(component);
+  }
+
+  if (showHelpHints === 'focus') {
+    this._createFocusEventHandlers(component);
+  }
+
+  this._createHelpHintsAttributeEventHandlers(component);
+};
+/**
+ * Creates the focusevent handlers.
+ * @memberof InlineHelpHintsStrategy
+ * @instance
+ * @private
+ */
+
+
+InlineHelpHintsStrategy.prototype._createFocusEventHandlers = function (component) {
+  var element = component._getRootElement();
+
+  this._focusinCallback = InlineHelpHintsStrategy._focusinHandler.bind(this, component);
+  element.addEventListener('focusin', this._focusinCallback);
+  this._focusoutCallback = InlineHelpHintsStrategy._focusoutHandler.bind(this, component);
+  element.addEventListener('focusout', this._focusoutCallback);
+};
+
+InlineHelpHintsStrategy.prototype._deleteFocusEventHandlers = function (element) {
+  element.removeEventListener('focusin', this._focusinCallback);
+  delete this._focusinCallback;
+  element.removeEventListener('focusout', this._focusoutCallback);
+  delete this._focusoutCallback;
+};
+/**
+ * Creates the help/helpHints handlers.
+ * @memberof InlineHelpHintsStrategy
+ * @instance
+ * @private
+ */
+
+
+InlineHelpHintsStrategy.prototype._createHelpHintsAttributeEventHandlers = function (component) {
+  var element = component._getRootElement();
+
+  this._helpHintsChangedCallback = InlineHelpHintsStrategy._helpHintsChangedHandler.bind(this, component);
+  element.addEventListener('helpHintsChanged', this._helpHintsChangedCallback);
+};
+
+InlineHelpHintsStrategy.prototype._deleteHelpHintsAttributeEventHandlers = function (element) {
+  element.removeEventListener('helpHintsChanged', this._helpHintsChangedCallback);
+  delete this._helpHintsChangedCallback;
+};
+/**
+ * @return {Element} help hints inline container dom element, if it exists,
+ * null otherwise. It is the oj-helphints-inline-container dom element.
+ * This may be a child of the user assistance dom element or not because
+ * radioset/checkboxset it is not since it is under the label, so start
+ * with root
+ * @memberof InlineHelpHintsStrategy
+ * @instance
+ * @private
+ */
+
+
+InlineHelpHintsStrategy.prototype._getHelpHintsInlineContainer = function (rootElem) {
+  return rootElem.querySelector('.oj-helphints-inline-container');
+};
+/**
+ * Returns true if the div exists. This is needed
+ * because it is possible that components delete their dom, including
+ * the inline dom, which means the this.containerRoot is not
+ * null.
+ * @return {boolean} true if this.containerRoot exists in the dom
+ * @private
+ * @memberof InlineHelpHintsStrategy
+ * @instance
+ */
+
+
+InlineHelpHintsStrategy.prototype._isContainerRootDomInDocument = function () {
+  var containerRootExistsInDocument = false;
+
+  if (this.containerRoot) {
+    var id = this.containerRoot.id;
+    containerRootExistsInDocument = document.getElementById(id);
+  }
+
+  return containerRootExistsInDocument !== null;
+};
+/**
+ * Show the message on focus. We will use theming to hide the message on blur.
+ * This way it will already be there the next time we focus.
+ * We show helpInstruction and if that's not there validaton hint and
+ * if that is not there help definition. And on whichever of these, we show
+ * More Info... for help.source if that is there.
+ * @static
+ * @private
+ * @param {Object} component form component root element
+ * @param {CustomEvent} event focus event
+ */
+// eslint-disable-next-line no-unused-vars
+
+
+InlineHelpHintsStrategy._focusinHandler = function (component, event) {
+  // add focusin on parent
+  this._userAssistanceDivElement.classList.add('oj-focus');
+
+  if (this._contentAddedOnFocus) {
+    return;
+  }
+
+  this._contentAddedOnFocus = this._addHelpHintsContent(component);
+};
+/**
+ * @static
+ * @private
+ * @param {Object} component form component root element
+ * @param {CustomEvent} event helpChanged event
+ */
+// eslint-disable-next-line no-unused-vars
+
+
+InlineHelpHintsStrategy._helpHintsChangedHandler = function (component, event) {
+  this._addHelpHintsContent(component);
+};
+/**
+ * Creates the content.
+ * @param {Object} component the form component
+ * @return {boolean} Returns true if content was added
+ * @memberof InlineHelpHintsStrategy
+ * @instance
+ * @private
+ */
+
+
+InlineHelpHintsStrategy.prototype._addHelpHintsContent = function (component) {
+  // let helpSource = component.options.helpHints.source;
+  var hintsHtml;
+  var helpInstruction = component.options.help.instruction;
+
+  if (helpInstruction) {
+    var helpInstructionDom = oj.PopupMessagingStrategyUtils.buildHintHtml(document, 'oj-form-control-hint-title', helpInstruction, true, 'oj-form-control-hint');
+    hintsHtml = helpInstructionDom;
+  }
+
+  if (!hintsHtml && this.ShowValidatorHint()) {
+    // helpInstruction takes priority. If it is not set, check validator hints.
+    // This involves loading the validators if they are not set.
+    // ShowValidatorHint may be null if the display-options.validatorHint = 'none',
+    // otherwise we show the validator hint.
+    // no helpInstruction, so try to get validation hint
+    // we do the same thing that we do in PopupComponentMessages
+    var hints = this.GetValidatorHints();
+
+    if (hints) {
+      hintsHtml = hints.join('<br/>');
+    }
+  }
+
+  if (!hintsHtml) {
+    // try to get help definition
+    // TODO: we need to listen for helpHints changes and update this
+    // TODO: we don't need to do that for help.instruction or validation since
+    // EditableValue is doing it. It updates only for 'title', so not everything at least.
+    // But we do not have that hook for help definition or source, but we could listen on
+    // attribute change instead. That is what the LabelStrategies do, I think.
+    var definition = component.options.helpHints.definition;
+
+    if (definition) {
+      hintsHtml = definition;
+    }
+  }
+
+  if (hintsHtml && !this.containerRoot) {
+    this.containerRoot = document.createElement('div');
+    this.containerRoot.classList.add('oj-helphints-inline-container');
+    $(this.containerRoot).uniqueId();
+    this.AddAriaDescribedByForInlineMessaging(this.containerRoot);
+
+    var showHelpHintsLocation = component._ShowHelpHintsLocation();
+
+    if (showHelpHintsLocation === 'inline') {
+      this._userAssistanceDivElement.appendChild(this.containerRoot);
+    } else {
+      var formControlContainerDom = component._GetFormControlContainer();
+
+      formControlContainerDom.parentElement.insertBefore(this.containerRoot, formControlContainerDom);
+    }
+  } // Now we have created the container root, we can add the hintsHtml
+  // This function is also called when updateHelpHintsContent, so it is possible
+  // that there is no more help and hintsHtml is '',
+  // in which case we want to clear out textContent.
+
+
+  if (this.containerRoot) {
+    this.containerRoot.innerHTML = hintsHtml; // @HTMLUpdateOK
+  }
+
+  if (this._userAssistanceDivElement) {
+    // add this selector the first time we have hints. then use
+    // theming to hide/show it based on focus and whether or not
+    // we have messages, which trumps hints.
+    if (hintsHtml) {
+      this._userAssistanceDivElement.classList.add('oj-has-helphints');
+    } else {
+      this._userAssistanceDivElement.classList.remove('oj-has-helphints');
+    }
+  }
+
+  return hintsHtml;
+};
+/**
+ * If the inline message is already open its contents need to updated when update() or
+ * reactivate() is called.
+ *
+ * @private
+ * @memberof InlineHelpHintsStrategy
+ * @instance
+ */
+
+
+InlineHelpHintsStrategy.prototype._updateInlineHelpHints = function () {
+  var component = this.GetComponent();
+
+  this._addHelpHintsContent(component);
+};
+/**
+ * @static
+ * @private
+ * @param {Object} component the form component
+ * @param {CustomEvent} event focus event
+ */
+// eslint-disable-next-line no-unused-vars
+
+
+InlineHelpHintsStrategy._focusoutHandler = function (component, event) {
+  // make this focusout since focusout bubbles and blur does not.
+  this._userAssistanceDivElement.classList.remove('oj-focus');
+};
+
+
+
 /* global ThemeUtils:false, Context:false */
 
 /* jslint browser: true*/
@@ -6273,8 +7257,9 @@ Components.setDefaultOptions({
  * @extends {oj.MessagingStrategy}
  * @private
  */
-oj.InlineMessagingStrategy = function (displayOptions) {
+oj.InlineMessagingStrategy = function (displayOptions, parentElement) {
   this.Init(displayOptions);
+  this._parentElement = parentElement;
 };
 /**
  * Registers the InlineMessagingStrategy constructor function with oj.ComponentMessaging.
@@ -6287,6 +7272,20 @@ oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_
 
 oj.Object.createSubclass(oj.InlineMessagingStrategy, oj.MessagingStrategy, 'oj.InlineMessagingStrategy');
 /**
+ * Does nothing; We do not create the inline messaging dom until we get messages to show.
+ *
+ * @param {Object} cm a reference to an instance of oj.ComponentMessaging that provides access to
+ * the latest messaging content. * @private
+ * @memberof oj.InlineMessagingStrategy
+ * @instance
+ * @override
+ *
+ */
+
+oj.InlineMessagingStrategy.prototype.activate = function (cm) {
+  oj.InlineMessagingStrategy.superclass.activate.call(this, cm); // We do not create the inline messaging dom until we get messages to show.
+};
+/**
  * Reinitializes with the new display options and updates component messaging using the new content.
  *
  * @param {Array.<string>} newDisplayOptions
@@ -6297,8 +7296,10 @@ oj.Object.createSubclass(oj.InlineMessagingStrategy, oj.MessagingStrategy, 'oj.I
  *
  */
 
-oj.InlineMessagingStrategy.prototype.reactivate = function (newDisplayOptions) {
+
+oj.InlineMessagingStrategy.prototype.reactivate = function (newDisplayOptions, parentElement) {
   oj.InlineMessagingStrategy.superclass.reactivate.call(this, newDisplayOptions);
+  this._parentElement = parentElement;
 
   this._updateInlineMessage();
 };
@@ -6637,9 +7638,21 @@ oj.InlineMessagingStrategy.prototype._updateInlineMessage = function () {
   var contentToShow;
   var domNode; // contentToShow will be "" (a falsey) if there are no messages to show.
 
-  contentToShow = this._buildInlineHtml(); // create the inline messaging dom if there is content to show and the dom hasn't been created.
+  contentToShow = this._buildInlineHtml(); // add/remove oj-has-messages on this._parentElement if it exists;
 
-  if (contentToShow && this.$messagingContentRoot == null) {
+  if (this._parentElement) {
+    if (contentToShow) {
+      this._parentElement.classList.add('oj-has-messages');
+    } else {
+      this._parentElement.classList.remove('oj-has-messages');
+    }
+  } // create the inline messaging dom if there is content to show and the dom hasn't been created.
+  // We do not create the inline messaging dom until the first content is shown.
+
+
+  var messagingRootExists = this._isMessagingContentRootDomInDocument();
+
+  if (contentToShow && !messagingRootExists) {
     this._createInlineMessage();
   }
 
@@ -6653,21 +7666,13 @@ oj.InlineMessagingStrategy.prototype._updateInlineMessage = function () {
       // want to update the DOM every single time.  Instead we queue up the
       // updates and will only show the last one within the same event cyle.
       this._queueAction(contentToShow);
-    } else if (contentToShow) {
+    } else {
       // Legacy components don't have animation so just update the DOM
       // push new content into inline message dom
       domNode = this.$messagingContentRoot[0]; // contentToShow includes content that may come from app. It is scrubbed for illegal tags
       // before setting to innerHTML
 
       domNode.innerHTML = contentToShow; // @HTMLUpdateOK
-    } else {
-      // if there is no content to show and inline message dom is currently there, remove the dom.
-      // NOTE: If you see that a button seems to be losing its click event
-      // after inline messaging validation or after a reset
-      // it may be because the button is moving as a result of the inline messaging appearing
-      // and/or disappearing. The workaround for the user is to use 'mousedown' event instead
-      // of the 'click' event.
-      this._removeMessagingContentRootDom();
     }
   }
 };
@@ -6675,15 +7680,19 @@ oj.InlineMessagingStrategy.prototype._updateInlineMessage = function () {
 oj.InlineMessagingStrategy.prototype._createInlineMessage = function () {
   var widget;
   this.$messagingContentRoot = $(this._getInlineContentHtml());
-
-  this._addAriaDescribedBy(this.$messagingContentRoot);
+  this.AddAriaDescribedByForInlineMessaging(this.$messagingContentRoot[0]);
 
   this._addAriaLive(this.$messagingContentRoot); // append content that goes in inline messaging div
-  // make it the very LAST child of the widget.
 
 
-  widget = this.GetComponent().widget();
-  widget[0].appendChild(this.$messagingContentRoot[0]); // @HTMLUpdateOK
+  if (this._parentElement) {
+    this._parentElement.appendChild(this.$messagingContentRoot[0]); // @HTMLUpdateOK
+
+  } else {
+    // make it the very LAST child of the widget.
+    widget = this.GetComponent().widget();
+    widget[0].appendChild(this.$messagingContentRoot[0]); // @HTMLUpdateOK
+  }
 };
 /**
  * Returns the dom for the messaging-inline-container.
@@ -6709,47 +7718,18 @@ oj.InlineMessagingStrategy.prototype._getInlineContentHtml = function () {
 
 
 oj.InlineMessagingStrategy.prototype._removeMessagingContentRootDom = function () {
-  if (this.$messagingContentRoot != null) {
-    var messagingContentRoot = this.$messagingContentRoot[0];
+  var messagingRootExists = this._isMessagingContentRootDomInDocument();
 
-    this._removeAriaDescribedBy(this.$messagingContentRoot);
+  if (messagingRootExists) {
+    this.RemoveAriaDescribedByForInlineMessaging(this.$messagingContentRoot[0]);
+    var parentNode = this.$messagingContentRoot[0].parentNode;
 
-    messagingContentRoot.parentNode.removeChild(messagingContentRoot);
-    this.$messagingContentRoot = null;
+    if (parentNode) {
+      parentNode.removeChild(this.$messagingContentRoot[0]);
+    }
   }
-};
-/**
- * Create an id to put on the root dom element that holds the inline messaging content,
- * then add aria-describedby on the launcher (this is what PopupMessaging does as well).
- * This makes it so the screen reader user knows the messaging content is connected to the launcher.
- * @memberof oj.InlineMessagingStrategy
- * @instance
- * @private
- */
 
-
-oj.InlineMessagingStrategy.prototype._addAriaDescribedBy = function (messagingRoot) {
-  var describedby;
-  var $launcher;
-  var messagingRootId;
-  var tokens; // create an id on the div holding the inline messaging.
-  // add aria-describedby to the launcher to associate the launcher and the inline message
-
-  $launcher = this.GetLauncher();
-  var launcher = $launcher[0];
-  oj.Assert.assertPrototype($launcher, $);
-  oj.Assert.assertPrototype(messagingRoot, $);
-  messagingRootId = messagingRoot.uniqueId()[0].getAttribute('id');
-  describedby = launcher.getAttribute('aria-describedby');
-  tokens = describedby ? describedby.split(/\s+/) : [];
-  tokens.push(messagingRootId);
-  describedby = tokens.join(' ').trim();
-
-  if (describedby == null) {
-    launcher.removeAttribute('aria-describedby');
-  } else {
-    launcher.setAttribute('aria-describedby', describedby);
-  }
+  this.$messagingContentRoot = null;
 };
 /**
  * aria-live: polite
@@ -6765,41 +7745,6 @@ oj.InlineMessagingStrategy.prototype._addAriaDescribedBy = function (messagingRo
 oj.InlineMessagingStrategy.prototype._addAriaLive = function (messagingRoot) {
   oj.Assert.assertPrototype(messagingRoot, $);
   messagingRoot[0].setAttribute('aria-live', 'polite');
-};
-/**
- * Removes the aria-describedby from the launcher that was added by _addAriaDescribedBy
- * @param {jQuery} messagingRoot
- * @memberof oj.InlineMessagingStrategy
- * @instance
- * @private
- */
-
-
-oj.InlineMessagingStrategy.prototype._removeAriaDescribedBy = function (messagingRoot) {
-  var describedby;
-  var index;
-  var launcher;
-  var messagingRootId;
-  var tokens;
-  launcher = this.GetLauncher();
-  oj.Assert.assertPrototype(launcher, $);
-  oj.Assert.assertPrototype(messagingRoot, $);
-  messagingRootId = messagingRoot[0].getAttribute('id');
-  describedby = launcher[0].getAttribute('aria-describedby');
-  tokens = describedby ? describedby.split(/\s+/) : [];
-  index = tokens.indexOf(messagingRootId);
-
-  if (index !== -1) {
-    tokens.splice(index, 1);
-  }
-
-  describedby = tokens.join(' ').trim();
-
-  if (describedby) {
-    launcher[0].setAttribute('aria-describedby', describedby);
-  } else {
-    launcher[0].removeAttribute('aria-describedby');
-  }
 };
 /**
  * Returns the content to show inside the inline message html.
@@ -6845,19 +7790,702 @@ oj.InlineMessagingStrategy.prototype._buildMessagesHtml = function (document) {
 
   return content;
 };
+/**
+ * Returns true if the inline messaging div exists. This is needed
+ * because it is possible that components delete their dom, including
+ * the inline message dom, which means the this.$messagingContentRoot is not
+ * null.
+ * @return {boolean} true if this.$messagingContentRoot exists in the dom
+ * @private
+ * @memberof oj.InlineMessagingStrategy
+ * @instance
+ */
 
 
+oj.InlineMessagingStrategy.prototype._isMessagingContentRootDomInDocument = function () {
+  var messagingRootExistsInDocument = false;
+
+  if (this.$messagingContentRoot) {
+    var id = this.$messagingContentRoot[0].id;
+    messagingRootExistsInDocument = document.getElementById(id);
+  } else {
+    return false;
+  }
+
+  return messagingRootExistsInDocument !== null;
+};
+
+
+
+/* global Translations:false */
 
 /* jslint browser: true*/
 
 /**
- * Adapter for rendering fixed labels located on top of the form component,
- * but still within the form component's root dom node, and smaller to match
- * a text field's 'inside' label.
- * Extends the MessagingStrategy which does more now than messages. It now
- * is also for rendering the form component's label in one of many positions.
+ * Adapter for handling inline Required text.
+ * Extends the MessagingStrategy which does more now than messages.
  *
  * @extends {oj.MessagingStrategy}
+ * @protected
+ * @constructor
+ * @since 9.0.0
+ * @class InlineRequiredStrategy
+ * @ignore
+ * @ojtsignore
+ * @param {Array.<string>} displayOptions an array of messaging artifacts that are
+ * displayed as an inside label for text fields.
+ * For LabelStrategies this is always only labelEdge.
+ */
+var InlineRequiredStrategy = function InlineRequiredStrategy(displayOptions, parentElement) {
+  this.Init(displayOptions);
+  this._parentElement = parentElement;
+};
+/**
+ * Registers the InlineRequiredStrategy constructor function with oj.ComponentMessaging.
+ * No need to register since we are not creating this strategy on from ComponentMessaging.
+ * InlineUserAssistanceStrategy creates it.
+ * @private
+ */
+// oj.ComponentMessaging
+//    .registerMessagingStrategy('required',
+//     InlineRequiredStrategy);
+// Subclass from oj.MessagingStrategy
+
+
+oj.Object.createSubclass(InlineRequiredStrategy, oj.MessagingStrategy, 'InlineRequiredStrategy');
+/**
+ * @param {Object} cm a reference to an instance of oj.ComponentMessaging that provides access to
+ * the latest messaging content.
+ * @public
+ * @memberof InlineRequiredStrategy
+ * @instance
+ * @override
+ */
+
+InlineRequiredStrategy.prototype.activate = function (cm) {
+  InlineRequiredStrategy.superclass.activate.call(this, cm);
+
+  if (this.containerRoot == null) {
+    this._createInlineRequired();
+  }
+};
+/**
+ * @param {Array.<string>} newOptions
+ * @public
+ * @memberof InlineRequiredStrategy
+ * @instance
+ * @override
+ */
+
+
+InlineRequiredStrategy.prototype.reactivate = function (newOptions, parentElement) {
+  InlineRequiredStrategy.superclass.reactivate.call(this, newOptions);
+  this._parentElement = parentElement; // select/combobox on refresh destroys all its contents, including
+  // the inline messaging container, and then reactivate is called.
+
+  var containerRootExists = this._isContainerRootDomInDocument();
+
+  if (!containerRootExists) {
+    this._createInlineRequired();
+  }
+};
+/**
+ * @param {Object=} content the messaging content object. If it contains validityState, then
+ * this means the component has messaging content.
+ * @return {boolean}
+ * @memberof InlineRequiredStrategy
+ * @instance
+ * @oublic
+ * @override
+ */
+// eslint-disable-next-line no-unused-vars
+
+
+InlineRequiredStrategy.prototype.shouldUpdate = function (content) {
+  // We are registering a requiredChanged listener that
+  // will update when it should.
+  return false;
+};
+/**
+ * Updates component with instance using the content provided.
+ * @memberof InlineRequiredStrategy
+ * @instance
+ * @public
+ * @override
+ */
+
+
+InlineRequiredStrategy.prototype.update = function () {
+  InlineRequiredStrategy.superclass.update.call(this);
+};
+/**
+ * Cleans up dom on the component and removes any event listeners it created.
+ * @memberof InlineRequiredStrategy
+ * @instance
+ * @public
+ * @override
+ */
+
+
+InlineRequiredStrategy.prototype.deactivate = function () {
+  var container = this._getRequiredInlineContainer();
+
+  if (container) {
+    this._parentElement.removeChild(container);
+  }
+
+  var component = this.GetComponent();
+
+  var element = component._getRootElement();
+
+  element.removeEventListener('requiredChanged', this._requiredChangedCallback);
+  delete this._requiredChangedCallback;
+  this._parentElement = null;
+  this.containerRoot = null;
+  InlineRequiredStrategy.superclass.deactivate.call(this);
+};
+/**
+ * Creates the Required dom adding associated event listeners for applying
+ * marker selectors to the root and responding to required property changes.
+ * @memberof InlineRequiredStrategy
+ * @instance
+ * @private
+ */
+
+
+InlineRequiredStrategy.prototype._createInlineRequired = function () {
+  var component = this.GetComponent();
+  var options = component.options;
+
+  var element = component._getRootElement(); // we render the required dom if the component is required. We use theming to toggle
+  // the visibility of the Required text to follow the Redwood UX design, which is to
+  // show the Required text when required and empty and no other user assistance text is showing,
+  // else do not show Required.
+
+
+  if (options.required) {
+    this.containerRoot = document.createElement('div');
+    this.containerRoot.classList.add('oj-required-inline-container');
+    var requiredText = Translations.getTranslatedString('oj-ojEditableValue.requiredText');
+    this.containerRoot.textContent = requiredText;
+    $(this.containerRoot).uniqueId();
+
+    this._parentElement.appendChild(this.containerRoot);
+
+    if (component._AriaRequiredUnsupported()) {
+      this.AddDescribedByToElement(element, this.containerRoot.id);
+    }
+  }
+
+  if (!this._requiredChangedCallback) {
+    // whether or not we create the required dom we need to add an event listener so if required attribute
+    // changes on the component, we create the required dom.
+    // if required changed, we will remove or add the required dom
+    this._requiredChangedCallback = this._requiredChangedHandler.bind(this, component);
+    element.addEventListener('requiredChanged', this._requiredChangedCallback);
+  }
+};
+/**
+ * @memberof InlineRequiredStrategy
+ * @instance
+ * @private
+ */
+
+
+InlineRequiredStrategy.prototype._getRequiredInlineContainer = function () {
+  return this._parentElement.querySelector('.oj-required-inline-container');
+};
+/**
+ * @memberof InlineRequiredStrategy
+ * @instance
+ * @private
+ * @param {Component} the component
+ * @param {CustomEvent} event requiredChanged event
+ */
+
+
+InlineRequiredStrategy.prototype._requiredChangedHandler = function (component, event) {
+  var requiredOptionValue = event.detail.value;
+
+  var container = this._getRequiredInlineContainer();
+
+  if (requiredOptionValue && container === null) {
+    this._createInlineRequired();
+  } else if (!requiredOptionValue && container !== null) {
+    // not required
+    // remove the dom if it is there
+    if (container) {
+      this._parentElement.removeChild(container);
+    }
+  }
+};
+/**
+ * Returns true if the div exists. This is needed
+ * because it is possible that components delete their dom, including
+ * the inline dom, which means the this.containerRoot is not
+ * null.
+ * @return {boolean} true if this.containerRoot exists in the dom
+ * @private
+ * @memberof InlineRequiredStrategy
+ * @instance
+ */
+
+
+InlineRequiredStrategy.prototype._isContainerRootDomInDocument = function () {
+  var containerRootExistsInDocument = false;
+
+  if (this.containerRoot) {
+    var id = this.containerRoot.id;
+    containerRootExistsInDocument = document.getElementById(id);
+  }
+
+  return containerRootExistsInDocument !== null;
+};
+
+
+
+/* global InlineRequiredStrategy: false, InlineHelpHintsStrategy: false */
+
+/* jslint browser: true*/
+
+/**
+ * A user assistance strategy that places the user assistance content inline (underneath) the editableValue
+ * component. This does not look at displayOptions, but passes it on to its contained strategies.
+ * For example if display-options.validatorHint='none', we do not want to show it.
+ * TODO: This is confusing because displayOptions is what is displayed in each strategy.
+ * But for Redwood we want displayOptions to be ['messages', 'validationHint', 'required', 'title']
+ * @since 9.0.0
+ * @constructor
+ * @extends {oj.MessagingStrategy}
+ * @private
+ */
+var InlineUserAssistanceStrategy = function InlineUserAssistanceStrategy(displayOptions) {
+  // Redwood wants messages to always show up inline, nowhere else.
+  // TODO: Does this need to be able to be set to 'none' for CCAs?
+  // is there a displayOptions.messages = 'none'?
+  this.Init(displayOptions);
+  this._displayOptions = displayOptions;
+};
+/**
+ * Registers the InlineUserAssistanceStrategy constructor function with oj.ComponentMessaging.
+ *
+ * @private
+ */
+
+
+oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.USER_ASSISTANCE_INLINE, InlineUserAssistanceStrategy); // Subclass from oj.MessagingStrategy
+
+oj.Object.createSubclass(InlineUserAssistanceStrategy, oj.MessagingStrategy, 'InlineUserAssistanceStrategy');
+/**
+ * Activate by writing an empty div and by activating the sub-strategies
+ *
+ * @param {Object} cm a reference to an instance of oj.ComponentMessaging that provides access to
+ * the latest messaging content.
+ * @private
+ * @memberof InlineUserAssistanceStrategy
+ * @instance
+ * @override
+ *
+ */
+
+InlineUserAssistanceStrategy.prototype.activate = function (cm) {
+  InlineUserAssistanceStrategy.superclass.activate.call(this, cm);
+  this._componentMessaging = cm;
+  var component = this.GetComponent();
+  var options = component.options;
+
+  var element = component._getRootElement(); // set readonly and disabled event listeners
+
+
+  this._readonlyChangedCallback = this._readonlyChangedHandler.bind(this, component);
+  element.addEventListener('readonlyChanged', this._readonlyChangedCallback);
+  this._disabledChangedCallback = this._disabledChangedHandler.bind(this, component);
+  element.addEventListener('disabledChanged', this._disabledChangedCallback); // set userAssistanceDensity event listener to change styleclass
+
+  this._userAssistanceDensityChangedCallback = this._userAssistanceDensityChangedHandler.bind(this, component);
+  element.addEventListener('userAssistanceDensityChanged', this._userAssistanceDensityChangedCallback); // create the user assistance dom. It is needed in readonly, disabled and enabled modes
+  // so that in form layout mixed mode the fields all have this dom with a min-height
+  // to keep the fields lined up.
+
+  if (this.containerRoot == null) {
+    this._createInlineContainer();
+  } // Do not create any dom for sub-dom if readonly or disabled is true
+  // since we do not want to show Required, Inline messages, nor help hints in
+  // readonly or disabled modes.
+
+
+  if (this._isDisabledOrReadonly()) {
+    return;
+  }
+
+  this._activateContainerStrategies(cm, options);
+};
+/**
+ * Reinitializes with the new display options and updates component messaging using the new content.
+ * newDisplayOptions are the strategies for InlineUserAssistanceStrategy.
+ * During Init we save the original displayOptions.
+ *
+ * @param {Array.<string>} newDisplayOptions
+ * @private
+ * @memberof InlineUserAssistanceStrategy
+ * @instance
+ * @override
+ *
+ */
+
+
+InlineUserAssistanceStrategy.prototype.reactivate = function (newDisplayOptions) {
+  InlineUserAssistanceStrategy.superclass.reactivate.call(this, newDisplayOptions);
+  var options = this.GetComponent().options;
+
+  if (this._isDisabledOrReadonly(options)) {
+    return;
+  } // select/combobox on refresh destroys all its contents, including
+  // the inline containers, and then reactivate is called.
+
+
+  var containerRootExists = this._isContainerRootDomInDocument();
+
+  if (!containerRootExists) {
+    this._createInlineContainer();
+  } // if we have already activated our sub-strategies,
+  // this._inlineMessagingStrategy will not be undefined
+
+
+  if (this._inlineMessagingStrategy) {
+    // delegate to contained strategies.
+    this._inlineMessagingStrategy.reactivate(newDisplayOptions, this.containerRoot);
+
+    if (this._inlineRequiredStrategy) {
+      this._inlineRequiredStrategy.reactivate(newDisplayOptions, this.containerRoot);
+    }
+
+    if (this._inlineHelpHintsStrategy) {
+      this._inlineHelpHintsStrategy.reactivate(newDisplayOptions, this.containerRoot);
+    }
+  } else {
+    // we haven't activated the sub-strategies yet, so do it now.
+    this._activateContainerStrategies(this._componentMessaging, options);
+  }
+};
+/**
+ * Returns true if the messaging content should update. This method is an
+ * optimization because the update() method is called too often and any time any content changes.
+ * The only time InlineUserAssistanceStrategy#update needs to execute is when the oj.ComponentValidity
+ * object is in the content because we don't add this unless there are messages.
+ *
+ * @param {Object=} content the messaging content object. If it contains validityState, then
+ * this means the component has messaging content.
+ * @return {boolean}
+ * @memberof InlineUserAssistanceStrategy
+ * @instance
+ * @private
+ * @override
+ */
+
+
+InlineUserAssistanceStrategy.prototype.shouldUpdate = function (content) {
+  if (this._isDisabledOrReadonly()) {
+    return false;
+  } // return true and check in update per strategy we are delegating to.
+
+
+  this._shouldUpdateContent = content;
+  return true;
+};
+/**
+ * Updates component with instance using the content provided.
+ * @memberof InlineUserAssistanceStrategy
+ * @instance
+ * @private
+ * @override
+ */
+
+
+InlineUserAssistanceStrategy.prototype.update = function () {
+  InlineUserAssistanceStrategy.superclass.update.call(this);
+
+  if (!this._inlineMessagingStrategy) {
+    // if we haven't created the sub-strategies yet, return.
+    return;
+  } // if readonly or disabled, return
+
+
+  if (this._isDisabledOrReadonly()) {
+    return;
+  }
+
+  if (this._inlineMessagingStrategy.shouldUpdate(this._shouldUpdateContent)) {
+    this._inlineMessagingStrategy.update();
+  }
+
+  if (this._inlineRequiredStrategy && this._inlineRequiredStrategy.shouldUpdate(this._shouldUpdateContent)) {
+    this._inlineRequiredStrategy.update();
+  }
+
+  if (this._inlineHelpHintsStrategy && this._inlineHelpHintsStrategy.shouldUpdate(this._shouldUpdateContent)) {
+    this._inlineHelpHintsStrategy.update();
+  }
+};
+/**
+ * Cleans up messages on the component and destroys any widgets it created.
+ *
+ * @memberof InlineUserAssistanceStrategy
+ * @instance
+ * @private
+ * @override
+ */
+
+
+InlineUserAssistanceStrategy.prototype.deactivate = function () {
+  this._inlineMessagingStrategy.deactivate();
+
+  if (this._inlineRequiredStrategy) {
+    this._inlineRequiredStrategy.deactivate();
+  }
+
+  if (this._inlineHelpHintsStrategy) {
+    this._inlineHelpHintsStrategy.deactivate();
+  }
+
+  this._removeContainerRootDom();
+
+  delete this._inlineMessagingStrategy;
+  delete this._inlineRequiredStrategy;
+  delete this._inlineHelpHintsStrategy; // Remove event handlers
+
+  var component = this.GetComponent();
+
+  var element = component._getRootElement();
+
+  element.removeEventListener('readonlyChanged', this._readonlyChangedCallback);
+  delete this._readonlyChangedCallback;
+  element.removeEventListener('disabledChanged', this._disabledChangedCallback);
+  delete this._disabledChangedCallback;
+  element.removeEventListener('userAssistanceDensityChanged', this._userAssistanceDensityChangedCallback);
+  delete this._userAssistanceDensityChangedCallback;
+  InlineUserAssistanceStrategy.superclass.deactivate.call(this);
+};
+
+InlineUserAssistanceStrategy.prototype._createInlineContainer = function () {
+  this.containerRoot = document.createElement('div');
+  this.containerRoot.classList.add('oj-user-assistance-inline-container'); // this will be oj-efficient or oj-reflow and will be used in theming to
+  // either reserve space with min-height or not reserve space.
+
+  var component = this.GetComponent();
+  var userAssistanceOptionValue = component.options.userAssistanceDensity;
+
+  if (userAssistanceOptionValue === 'efficient') {
+    this.containerRoot.classList.add('oj-efficient');
+  } else if (userAssistanceOptionValue === 'reflow') {
+    this.containerRoot.classList.add('oj-reflow');
+  }
+
+  $(this.containerRoot).uniqueId(); // append content that goes in inline user assistance div
+  // make it the very LAST child of the widget.
+
+  component.widget()[0].appendChild(this.containerRoot); // @HTMLUpdateOK
+};
+/**
+ * Removes the messaging content root dom and anything else that was adding during the
+ * creation of the messaging content root dom.
+ *
+ * @private
+ * @memberof InlineUserAssistanceStrategy
+ * @instance
+ */
+
+
+InlineUserAssistanceStrategy.prototype._removeContainerRootDom = function () {
+  if (this._isContainerRootDomInDocument()) {
+    var parentNode = this.containerRoot.parentNode;
+
+    if (parentNode) {
+      parentNode.removeChild(this.containerRoot);
+    }
+  }
+
+  this.containerRoot = null;
+};
+/**
+ * Returns true if the inline div exists. This is needed
+ * because it is possible that components delete their dom, including
+ * the inline dom, which means the this.containerRoot is not
+ * null.
+ * @return {boolean} true if this.containerRoot exists in the dom
+ * @private
+ * @memberof InlineUserAssistanceStrategy
+ * @instance
+ */
+
+
+InlineUserAssistanceStrategy.prototype._isContainerRootDomInDocument = function () {
+  var containerRootExistsInDocument = false;
+
+  if (this.containerRoot) {
+    var id = this.containerRoot.id;
+    containerRootExistsInDocument = document.getElementById(id);
+  }
+
+  return containerRootExistsInDocument !== null;
+};
+/**
+ * activate the Container Strategies
+ * @private
+ * @memberof InlineUserAssistanceStrategy
+ * @instance
+ */
+
+
+InlineUserAssistanceStrategy.prototype._activateContainerStrategies = function (cm, options) {
+  // instantiate and activate the strategy objects this strategy delegates to
+  // we wait until this function to instantiate because we want to have the containerRoot
+  // created, and we wait until activate to do that in our strategies.
+  var Callback = oj.InlineMessagingStrategy;
+  this._inlineMessagingStrategy = new Callback(this._displayOptions, this.containerRoot);
+
+  this._inlineMessagingStrategy.activate(cm); // Set up the strategy if the component has a required attribute. It doesn't have to be
+  // set to required, but it needs to have a required attribute in its api.
+
+
+  if (options.required !== undefined) {
+    Callback = InlineRequiredStrategy;
+    this._inlineRequiredStrategy = new Callback(this._displayOptions, this.containerRoot);
+
+    this._inlineRequiredStrategy.activate(cm);
+  } // setup InlineHelpHintsStrategy
+
+
+  Callback = InlineHelpHintsStrategy;
+  this._inlineHelpHintsStrategy = new Callback(this._displayOptions, this.containerRoot);
+
+  this._inlineHelpHintsStrategy.activate(cm);
+};
+/**
+ * If user-assistance-density property is changed
+ * @memberof InlineUserAssistanceStrategy
+ * @instance
+ * @private
+ * @param {Component} the component
+ * @param {CustomEvent} event readonlyChanged event
+ */
+
+
+InlineUserAssistanceStrategy.prototype._userAssistanceDensityChangedHandler = function (component, event) {
+  var userAssistanceOptionValue = event.detail.value;
+  var _OJ_REFLOW = 'oj-reflow';
+  var _OJ_EFFICIENT = 'oj-efficient';
+
+  if (userAssistanceOptionValue === 'efficient') {
+    this.containerRoot.classList.add(_OJ_EFFICIENT);
+    this.containerRoot.classList.remove(_OJ_REFLOW);
+  } else if (userAssistanceOptionValue === 'reflow') {
+    this.containerRoot.classList.add(_OJ_REFLOW);
+    this.containerRoot.classList.remove(_OJ_EFFICIENT);
+  } else {
+    this.containerRoot.classList.remove(_OJ_EFFICIENT);
+    this.containerRoot.classList.remove(_OJ_REFLOW);
+  }
+};
+/**
+ * If readonly is true, then delete the user-assistance-display dom
+ * and deactivate all the sub-strategies, otherwise activate them.
+ * @memberof InlineUserAssistanceStrategy
+ * @instance
+ * @private
+ * @param {Component} the component
+ * @param {CustomEvent} event readonlyChanged event
+ */
+
+
+InlineUserAssistanceStrategy.prototype._readonlyChangedHandler = function (component, event) {
+  var readonlyOptionValue = event.detail.value;
+
+  if (readonlyOptionValue) {
+    this._deactivateContainerStrategies();
+  } else {
+    var options = component.options;
+
+    this._activateContainerStrategies(this._componentMessaging, options);
+  }
+};
+/**
+ * If disabled is true, then delete the user-assistance-display dom
+ * and deactivate all the sub-strategies, otherwise activate them.
+ * @memberof InlineUserAssistanceStrategy
+ * @instance
+ * @private
+ * @param {Component} the component
+ * @param {CustomEvent} event disabledChanged event
+ */
+
+
+InlineUserAssistanceStrategy.prototype._disabledChangedHandler = function (component, event) {
+  var disabledOptionValue = event.detail.value;
+
+  if (disabledOptionValue) {
+    this._deactivateContainerStrategies();
+  } else {
+    var options = component.options;
+
+    this._activateContainerStrategies(this._componentMessaging, options);
+  }
+};
+/**
+ * Deactivate all the sub-strategies.
+ * @memberof InlineUserAssistanceStrategy
+ * @instance
+ * @private
+ */
+
+
+InlineUserAssistanceStrategy.prototype._deactivateContainerStrategies = function () {
+  if (this._inlineMessagingStrategy) {
+    this._inlineMessagingStrategy.deactivate();
+  }
+
+  if (this._inlineRequiredStrategy) {
+    this._inlineRequiredStrategy.deactivate();
+  }
+
+  if (this._inlineHelpHintsStrategy) {
+    this._inlineHelpHintsStrategy.deactivate();
+  }
+
+  delete this._inlineMessagingStrategy;
+  delete this._inlineRequiredStrategy;
+  delete this._inlineHelpHintsStrategy;
+};
+/**
+ * If component readOnly or disabled.
+ * @return {boolean}
+ * @private
+ * @memberof InlineUserAssistanceStrategy
+ * @instance
+ */
+
+
+InlineUserAssistanceStrategy.prototype._isDisabledOrReadonly = function () {
+  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.GetComponent().options;
+  var isDisabled = options.disabled || false;
+  var isReadOnly = options.readOnly || false;
+  return isDisabled || isReadOnly;
+};
+
+
+
+/* global BaseInsidelLabelStrategy: false */
+
+/* jslint browser: true*/
+
+/**
+ * Adapter for rendering fixed labels within the form component's root dom node as the first
+ * child of the root dom element,
+ * and smaller to match a text field's 'inside' label.
+ * This is used for non-text-field components like
+ * radioset/checkboxset/slider/switch/datepicker/colorpicker, etc.
+ *
+ * @extends BaseInsidelLabelStrategy
  * @protected
  * @constructor
  * @since 8.0.0
@@ -6878,9 +8506,9 @@ var InsideFormControlLabelStrategy = function InsideFormControlLabelStrategy(opt
  */
 
 
-oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL, InsideFormControlLabelStrategy); // Subclass from oj.MessagingStrategy
+oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL, InsideFormControlLabelStrategy); // Subclass from BaseInsidelLabelStrategy
 
-oj.Object.createSubclass(InsideFormControlLabelStrategy, oj.MessagingStrategy, 'InsideFormControlLabelStrategy');
+oj.Object.createSubclass(InsideFormControlLabelStrategy, BaseInsidelLabelStrategy, 'InsideFormControlLabelStrategy');
 /**
  * @param {Object} cm a reference to an instance of oj.ComponentMessaging that provides access to
  * the latest messaging content.
@@ -6893,7 +8521,7 @@ oj.Object.createSubclass(InsideFormControlLabelStrategy, oj.MessagingStrategy, '
 InsideFormControlLabelStrategy.prototype.activate = function (cm) {
   InsideFormControlLabelStrategy.superclass.activate.call(this, cm);
 
-  this._createFixedLabel();
+  this._CreateLabel();
 };
 /**
  * @param {Array.<string>} newOptions
@@ -6907,9 +8535,9 @@ InsideFormControlLabelStrategy.prototype.activate = function (cm) {
 InsideFormControlLabelStrategy.prototype.reactivate = function (newOptions) {
   InsideFormControlLabelStrategy.superclass.reactivate.call(this, newOptions);
 
-  this._destroyFixedLabel();
+  this._DestroyLabel();
 
-  this._createFixedLabel();
+  this._CreateLabel();
 };
 /**
  * @param {Object=} content the messaging content object. If it contains validityState, then
@@ -6947,7 +8575,7 @@ InsideFormControlLabelStrategy.prototype.update = function () {
 
 
 InsideFormControlLabelStrategy.prototype.deactivate = function () {
-  this._destroyFixedLabel();
+  this._DestroyLabel();
 
   InsideFormControlLabelStrategy.superclass.deactivate.call(this);
 };
@@ -6959,94 +8587,44 @@ InsideFormControlLabelStrategy.prototype.deactivate = function () {
  */
 
 
-InsideFormControlLabelStrategy.prototype.getFormControlLabelStyleClass = function () {
+InsideFormControlLabelStrategy.prototype._GetFormControlLabelStyleClass = function () {
   return 'oj-form-control-label-inside';
 };
 /**
- * Removes the fixed label unregistering associated event listeners.
+ * Insert the ojLabel
  * @memberof InsideFormControlLabelStrategy
- * @instance
- * @private
+ * @protected
+ * @override
+ * @param {Element} ojlabel
+ * @param {Element} container
+ * @param {Object} component
+ * @return {string}
  */
 
 
-InsideFormControlLabelStrategy.prototype._destroyFixedLabel = function () {
-  var component = this.GetComponent();
-  var options = component.options;
+InsideFormControlLabelStrategy.prototype._InsertOjLabel = function (ojlabel, _container, component) {
+  // node.insertBefore(newnode, existingnode);
+  // insert the new ojlabel element as first child of the root
+  var root = component._getRootElement();
 
-  var element = component._getRootElement();
-
-  var labelStyleClass = this.getFormControlLabelStyleClass();
-  element.classList.remove(labelStyleClass);
-  element.removeEventListener('labelHintChanged', this._labelHintChangedCallback);
-  element.removeEventListener('requiredChanged', this._requiredChangedCallback);
-  element.removeEventListener('helpHintsChanged', this._helpHintsChangedCallback);
-
-  var labelId = InsideFormControlLabelStrategy._getLabelId(element);
-
-  var ojlabel = document.getElementById(labelId);
-  if (ojlabel) ojlabel.parentElement.removeChild(ojlabel);
-  options.labelledBy = undefined;
-  this.customOjLabelElement = undefined;
-  delete this._labelHintChangedCallback;
-  delete this._helpHintsChangedCallback;
-  delete this._requiredChangedCallback;
+  root.insertBefore(ojlabel, root.firstElementChild);
 };
 /**
- * Creates the fixed label adding associated event listeners for applying
- * marker selectors to the root and responding to label-hint property changes.
- * @memberof InsideFormControlLabelStrategy
- * @instance
- * @private
- */
-
-
-InsideFormControlLabelStrategy.prototype._createFixedLabel = function () {
-  var component = this.GetComponent();
-
-  var container = component._GetFormControlContainer();
-
-  if (!container) return;
-  var options = component.options;
-
-  var element = component._getRootElement();
-
-  var labelStyleClass = this.getFormControlLabelStyleClass();
-  element.classList.add(labelStyleClass);
-  this.GenerateIdIfNeeded(element);
-  var ojlabel = document.createElement('oj-label');
-  ojlabel.id = InsideFormControlLabelStrategy._getLabelId(element);
-  ojlabel.setAttribute('data-oj-binding-provider', 'none');
-  ojlabel.setAttribute('data-oj-internal', ''); // associate with form component
-
-  ojlabel.setAttribute('for', element.id);
-  container.parentElement.insertBefore(ojlabel, container);
-  var defaultLabelStyleClass = [component._GetDefaultStyleClass(), 'label'].join('-');
-  ojlabel.classList.add(defaultLabelStyleClass);
-  ojlabel.showRequired = options.required;
-  ojlabel.help = options.helpHints;
-  this.customOjLabelElement = ojlabel;
-  var span = document.createElement('span');
-  span.id = [element.id, '|hint'].join('');
-  span.innerText = options.labelHint;
-  ojlabel.appendChild(span);
-  this._labelHintChangedCallback = InsideFormControlLabelStrategy._labelHintChangedHandler.bind(this, span);
-  element.addEventListener('labelHintChanged', this._labelHintChangedCallback);
-  this._requiredChangedCallback = InsideFormControlLabelStrategy._requiredChangedHandler.bind(this, ojlabel);
-  element.addEventListener('requiredChanged', this._requiredChangedCallback);
-  this._helpHintsChangedCallback = InsideFormControlLabelStrategy._helpHintsChangedHandler.bind(this, ojlabel);
-  element.addEventListener('helpHintsChanged', this._helpHintsChangedCallback);
-};
-/**
- * @static
- * @private
+ * Creates event handlers
+ * Override to add helpHints.
+ * @param {Element} span span around the label where we use innerText to set the labelHint
  * @param {Element} element root custom element
- * @return {string} fixed label id
+ * @param {Element} ojlabel ojlabel custom element
+ * @param {Element} component form component
+ * @memberof InsideFormControlLabelStrategy
+ * @instance
+ * @protected
+ * @override
  */
 
 
-InsideFormControlLabelStrategy._getLabelId = function (element) {
-  return [element.id, '-labelled-by'].join('');
+InsideFormControlLabelStrategy.prototype._CreateEventHandlers = function (span, element, ojlabel, component) {
+  InsideFormControlLabelStrategy.superclass._CreateEventHandlers.call(this, span, element, ojlabel, component);
 };
 /**
  * @static
@@ -7059,30 +8637,6 @@ InsideFormControlLabelStrategy._getLabelId = function (element) {
 InsideFormControlLabelStrategy._labelHintChangedHandler = function (span, event) {
   // eslint-disable-next-line no-param-reassign
   span.innerText = event.detail.value;
-};
-/**
- * @static
- * @private
- * @param {Element} label oj-label element
- * @param {CustomEvent} event requiredChanged event
- */
-
-
-InsideFormControlLabelStrategy._requiredChangedHandler = function (label, event) {
-  // eslint-disable-next-line no-param-reassign
-  label.showRequired = event.detail.value;
-};
-/**
- * @static
- * @private
- * @param {Element} label oj-label element
- * @param {CustomEvent} event helpHintsChanged event
- */
-
-
-InsideFormControlLabelStrategy._helpHintsChangedHandler = function (label, event) {
-  // eslint-disable-next-line no-param-reassign
-  label.help = event.detail.value;
 };
 
 
@@ -7345,7 +8899,7 @@ oj.InsideLabelPlaceholderStrategy._blurHandler = function (element) {
 
 
 
-/* global ThemeUtils:false, Context:false */
+/* global ThemeUtils:false, Context:false, BaseInsidelLabelStrategy: false */
 
 /* jslint browser: true*/
 
@@ -7354,7 +8908,7 @@ oj.InsideLabelPlaceholderStrategy._blurHandler = function (element) {
  * Extends the MessagingStrategy which does more now than messages. It now
  * is also for rendering the form component's label in one of many positions.
  *
- * @extends {oj.MessagingStrategy}
+ * @extends BaseInsidelLabelStrategy
  * @protected
  * @constructor
  * @since 7.0.0
@@ -7376,9 +8930,9 @@ oj.InsideLabelStrategy = function (options) {
  */
 
 
-oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE, oj.InsideLabelStrategy); // Subclass from oj.MessagingStrategy
+oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE, oj.InsideLabelStrategy); // Subclass from BaseInsidelLabelStrategy
 
-oj.Object.createSubclass(oj.InsideLabelStrategy, oj.MessagingStrategy, 'oj.InsideLabelStrategy');
+oj.Object.createSubclass(oj.InsideLabelStrategy, BaseInsidelLabelStrategy, 'oj.InsideLabelStrategy');
 /**
  * @param {Object} cm a reference to an instance of oj.ComponentMessaging that provides access to
  * the latest messaging content.
@@ -7393,7 +8947,7 @@ oj.InsideLabelStrategy.prototype.activate = function (cm) {
 
   this._placeholderStrategy.activate(cm);
 
-  this._createFloatingLabel();
+  this._CreateLabel();
 };
 /**
  * @param {Array.<string>} newOptions
@@ -7407,9 +8961,9 @@ oj.InsideLabelStrategy.prototype.activate = function (cm) {
 oj.InsideLabelStrategy.prototype.reactivate = function (newOptions) {
   oj.InsideLabelStrategy.superclass.reactivate.call(this, newOptions);
 
-  this._destroyFloatingLabel();
+  this._DestroyLabel();
 
-  this._createFloatingLabel();
+  this._CreateLabel();
 
   this._placeholderStrategy.reactivate(newOptions);
 };
@@ -7451,62 +9005,26 @@ oj.InsideLabelStrategy.prototype.update = function () {
 oj.InsideLabelStrategy.prototype.deactivate = function () {
   this._placeholderStrategy.deactivate();
 
-  this._destroyFloatingLabel();
+  this._DestroyLabel();
 
   oj.InsideLabelStrategy.superclass.deactivate.call(this);
 };
 /**
- * Removes the floating label unregistering associated event listeners.
+ * Gets the form component's container.
  * @memberof oj.InsideLabelStrategy
  * @instance
- * @private
+ * @protected
+ * @override
  */
 
 
-oj.InsideLabelStrategy.prototype._destroyFloatingLabel = function () {
-  var component = this.GetComponent();
-
-  var element = component._getRootElement();
-
-  var labelStyleClass = oj.InsideLabelStrategy._getBaseLabelSelector('inside');
-
-  element.classList.remove(labelStyleClass);
-  element.removeEventListener('labelHintChanged', this._labelHintChangedCallback);
-  element.removeEventListener('valueChanged', this._valueChangedCallback);
-  element.removeEventListener('requiredChanged', this._requiredChangedCallback);
-  element.removeEventListener('validChanged', this._validChangedCallback);
-
-  var labelId = oj.InsideLabelStrategy._getLabelId(element);
-
-  var ojlabel = document.getElementById(labelId);
-
-  if (ojlabel) {
-    ojlabel.for = ''; // Triggers code to unlink the oj-label from its form component
-
-    ojlabel.parentElement.removeChild(ojlabel);
-  }
-
-  this.customOjLabelElement = undefined;
-  delete this._labelHintChangedCallback;
-  delete this._valueChangedCallback;
-  delete this._requiredChangedCallback;
-  delete this._validChangedCallback;
-};
-/**
- * Creates the floating label adding associated event listeners for applying
- * marker selectors to the root and responding to label-hint property changes.
- * @memberof oj.InsideLabelStrategy
- * @instance
- * @private
- */
-
-
-oj.InsideLabelStrategy.prototype._createFloatingLabel = function () {
-  var component = this.GetComponent();
-
+oj.InsideLabelStrategy.prototype._GetContainer = function (component) {
   var container = component._GetFormControlContainer();
 
-  if (!container) return; // look for a component container override
+  if (!container) {
+    return null;
+  } // look for a component container override
+
 
   var fname = '_GetContentWrapper';
 
@@ -7514,172 +9032,45 @@ oj.InsideLabelStrategy.prototype._createFloatingLabel = function () {
     container = component[fname]();
   }
 
-  var options = component.options;
-
-  var element = component._getRootElement();
-
-  var labelEdge = 'inside';
-
-  var labelStyleClass = oj.InsideLabelStrategy._getBaseLabelSelector(labelEdge);
-
-  element.classList.add(labelStyleClass);
-  this.GenerateIdIfNeeded(element);
-  var ojlabel = document.createElement('oj-label');
-  ojlabel.id = oj.InsideLabelStrategy._getLabelId(element);
-  ojlabel.setAttribute('data-oj-binding-provider', 'none');
-  ojlabel.setAttribute('data-oj-internal', ''); // associate with form component
-
-  ojlabel.setAttribute('for', element.id);
-  container.insertBefore(ojlabel, container.firstElementChild);
-  var defaultLabelStyleClass = [component._GetDefaultStyleClass(), 'label'].join('-');
-  ojlabel.classList.add(defaultLabelStyleClass);
-  ojlabel.showRequired = options.required;
-  this.customOjLabelElement = ojlabel;
-  var span = document.createElement('span');
-  span.id = [element.id, '|hint'].join('');
-  span.innerText = options.labelHint;
-  ojlabel.appendChild(span);
-  this._labelHintChangedCallback = oj.InsideLabelStrategy._labelHintChangedHandler.bind(this, span);
-  element.addEventListener('labelHintChanged', this._labelHintChangedCallback);
-  this._valueChangedCallback = oj.InsideLabelStrategy._valueChangedHandler.bind(this, element);
-  element.addEventListener('valueChanged', this._valueChangedCallback);
-  this._requiredChangedCallback = oj.InsideLabelStrategy._requiredChangedHandler.bind(this, ojlabel);
-  element.addEventListener('requiredChanged', this._requiredChangedCallback);
-  this._validChangedCallback = oj.InsideLabelStrategy._validChangedHandler.bind(this, component);
-  element.addEventListener('validChanged', this._validChangedCallback);
-
-  oj.InsideLabelStrategy._toggleHasNoValueSelector(element, component.options.value);
+  return container;
 };
 /**
- * @static
- * @private
+ * @memberof oj.InsideLabelStrategy
+ * @protected
+ * @override
  * @param {string} labelEdgeValue
  * @return {string}
  */
 
 
-oj.InsideLabelStrategy._getBaseLabelSelector = function (labelEdgeValue) {
+oj.InsideLabelStrategy.prototype._GetFormControlLabelStyleClass = function () {
+  var labelEdgeValue = 'inside';
   return [oj.InsideLabelStrategy._BASE_STYLE_CLASS, 'label', labelEdgeValue.toLowerCase()].join('-');
 };
 /**
- * @static
- * @private
- * @param {Element} element root custom element
- * @return {string} floating label id
+ * @memberof oj.InsideLabelStrategy
+ * @protected
+ * @override
+ * @param {Element} ojlabel
+ * @param {Element} container
+ * @param {Object} component
+ * @return {string}
  */
+// eslint-disable-next-line no-unused-vars
 
 
-oj.InsideLabelStrategy._getLabelId = function (element) {
-  return [element.id, '-labelled-by'].join('');
+oj.InsideLabelStrategy.prototype._InsertOjLabel = function (ojlabel, container) {
+  // node.insertBefore(newnode, existingnode);
+  // insert the new ojlabel element before the existing firstChildElement.
+  container.insertBefore(ojlabel, container.firstElementChild);
 };
-/**
- * @static
- * @private
- * @param {Element} span holding label text
- * @param {CustomEvent} event labelChanged event
- */
-
-
-oj.InsideLabelStrategy._labelHintChangedHandler = function (span, event) {
-  // eslint-disable-next-line no-param-reassign
-  span.innerText = event.detail.value;
-};
-/**
- * @static
- * @private
- * @param {Element} label oj-label element
- * @param {CustomEvent} event requiredChanged event
- */
-
-
-oj.InsideLabelStrategy._requiredChangedHandler = function (label, event) {
-  // eslint-disable-next-line no-param-reassign
-  label.showRequired = event.detail.value;
-};
-/**
- * @static
- * @private
- * @param {Element} element element
- * @param {CustomEvent} event requiredChanged event
- */
-
-
-oj.InsideLabelStrategy._validChangedHandler = function (component, event) {
-  // The issue:- When the user enters a invalid input in to field and tabs out,
-  // the floating label moves down and overlaps the invalid text.
-  // Cause:- We were relying on value changes to position or reposition the label.
-  // But in this case, a value change is not triggered and hence the label goes back and
-  // overlaps the invalid text entered by the user.
-  // Fix:- we listen on valid change, check if there is a display value in the field and then decide
-  // the position.
-  var valid = event.detail.value;
-
-  if (valid === 'invalidShown') {
-    var displayValue = component._GetDisplayValue();
-
-    var element = component._getRootElement();
-
-    oj.InsideLabelStrategy._toggleHasNoValueSelector(element, displayValue);
-  }
-};
-/**
- * @static
- * @private
- * @param {Element} element root custom element
- * @param {CustomEvent} event valueChanged event
- */
-
-
-oj.InsideLabelStrategy._valueChangedHandler = function (element, event) {
-  oj.InsideLabelStrategy._toggleHasNoValueSelector(element, event.detail.value);
-};
-/**
- * @static
- * @private
- * @param {Element} element root custom element
- * @param {Object} val value or the display value of the editable component.
- */
-
-
-oj.InsideLabelStrategy._toggleHasNoValueSelector = function (element, val) {
-  function isEmpty(value) {
-    if (value === undefined || value === null) {
-      return true;
-    } else if (typeof value === 'string') {
-      return oj.StringUtils.isEmptyOrUndefined(value);
-    } else if (typeof value === 'number') {
-      return isNaN(value);
-    } else if (Array.isArray(value)) {
-      // oj-select-many setting observable(undefined) returns an array with
-      // an undefined value versus an undefined value
-      return value.length === 0 || value.length === 1 && (value[0] === null || value[0] === undefined);
-    }
-
-    return false;
-  }
-
-  if (isEmpty(val)) {
-    element.classList.add(oj.InsideLabelStrategy._HAS_NO_VALUE_MARKER_CLASS);
-  } else {
-    element.classList.remove(oj.InsideLabelStrategy._HAS_NO_VALUE_MARKER_CLASS);
-  }
-};
-/**
- * Holds the marker selector that is toggled on and off when the editable component
- * doesn't have a value.
- * @const
- * @private
- * @type {string}
- */
-
-
-oj.InsideLabelStrategy._HAS_NO_VALUE_MARKER_CLASS = 'oj-has-no-value';
 /**
  * Base selector (prefix) for styling floating labels
  * @const
  * @private
  * @type {string}
  */
+
 
 oj.InsideLabelStrategy._BASE_STYLE_CLASS = 'oj-text-field';
 
@@ -7911,28 +9302,6 @@ oj.PopupMessagingStrategy.prototype.deactivate = function () {
 
 oj.PopupMessagingStrategy.prototype.close = function () {
   this._closePopup();
-};
-
-oj.PopupMessagingStrategy.prototype.GetValidatorHints = function () {
-  var component = this.GetComponent(); // Async validators hints are retrieved only when they are needed to be shown to the user.
-  // So instead of calling _initAsyncValidatorMessagingHint when the component is created,
-  // it is called here when validator hints are first shown to the user.
-
-  if (!component._initAsyncMessaging && component && component._initAsyncValidatorMessagingHint) {
-    component._initAsyncMessaging = true;
-
-    component._initAsyncValidatorMessagingHint();
-  }
-
-  var hints = [];
-
-  var mc = this._getMessagingContent();
-
-  var vHints = mc && mc.validatorHint || [];
-  $.each(vHints, function (index, hint) {
-    hints.push(hint);
-  });
-  return hints;
 };
 /**
  * Closes the associated notewindow popup
@@ -8740,8 +10109,7 @@ oj.PopupMessagingStrategyUtils.buildHintHtml = function (document, selector, hin
 
     titleDom.classList.add(selector);
 
-    oj.PopupMessagingStrategyUtils._appendTextDom(titleDom, oj.PopupMessagingStrategyUtils._getTextDom(document, hintText, htmlAllowed)); // @HTMLUpdateOK
-
+    oj.PopupMessagingStrategyUtils._appendTextDom(titleDom, oj.PopupMessagingStrategyUtils._getTextDom(document, hintText, htmlAllowed));
   }
 
   return titleDom ? titleDom.outerHTML : ''; // @HTMLUpdateOK
@@ -8910,20 +10278,22 @@ oj.PopupMessagingStrategyUtils.buildMessageHtml = function (document, summary, d
 
   msgContent = document.createElement('span');
   msgContent.classList.add(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONTENT);
-  msgSummary = document.createElement('div');
-  msgSummary.classList.add(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_SUMMARY);
-  msgSummary.textContent = summary;
-  msgContent.appendChild(msgSummary); // @HTMLUpdateOK
+
+  if ((ThemeUtils.parseJSONFromFontFamily('oj-messaging-popup-option-defaults') || {}).messageSummaryOptionDefault === 'header') {
+    msgSummary = document.createElement('div');
+    msgSummary.classList.add(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_SUMMARY);
+    msgSummary.textContent = summary;
+    msgContent.appendChild(msgSummary); // @HTMLUpdateOK
+  }
 
   if (detail) {
     // detail text allows html content. So scrub it before setting it.
     var detailDom = oj.PopupMessagingStrategyUtils._getTextDom(document, detail, true);
 
     msgDetail = document.createElement('div');
-    msgDetail.classList.add(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_DETAIL); // @HTMLUpdateOK
+    msgDetail.classList.add(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_DETAIL);
 
-    oj.PopupMessagingStrategyUtils._appendTextDom(msgDetail, detailDom); // @HTMLUpdateOK
-
+    oj.PopupMessagingStrategyUtils._appendTextDom(msgDetail, detailDom);
 
     msgContent.appendChild(msgDetail); // @HTMLUpdateOK
   }
@@ -9043,7 +10413,8 @@ oj.PopupMessagingStrategyUtils._getTextDom = function (document, value, htmlAllo
 
 oj.PopupMessagingStrategyUtils._appendTextDom = function (parentElement, textDom) {
   if (oj.StringUtils.isString(textDom)) {
-    parentElement.innerHTML = textDom; // eslint-disable-line no-param-reassign
+    // eslint-disable-next-line no-param-reassign
+    parentElement.innerHTML = textDom; // @HTMLUpdateOK
   } else {
     parentElement.appendChild(textDom);
   }

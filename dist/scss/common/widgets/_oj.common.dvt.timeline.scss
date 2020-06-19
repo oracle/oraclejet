@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!
 // WARNING: do not directly import this file, instead import the
 //          version in your theme's directory,
@@ -119,14 +120,6 @@
 
     }
 
-    .oj-timeline-overview-window-handle-horizontal {
-      background-image:oj-common-image-url("dvt/common/drag_horizontal.png");
-    }
-
-    .oj-timeline-overview-window-handle-vertical {
-      background-image:oj-common-image-url("dvt/common/drag_vertical.png");
-    }
-
     .oj-timeline-reference-object {
 
         color:$dvtTimelineReferenceObjectColor;
@@ -163,52 +156,21 @@
 
     }
 
-    .oj-timeline-zoomin-icon {
-      background-image:oj-common-image-url("dvt/common/func_plus_16_ena.png");
-
-          background-color: $dvtComponentBgColor;
-          border-color: $dvtPanelBorderColor;
-
+    /* override dvt button styling for backwards variable compatibility */
+    .oj-timeline .oj-dvt-button-outlined,
+    .oj-timeline .oj-dvt-button-outlined.oj-hover,
+    .oj-timeline .oj-dvt-button-outlined.oj-disabled {
+      stroke: $dvtPanelBorderColor;
+      fill: none;
     }
 
-    .oj-timeline-zoomin-icon.oj-hover {
-      background-image:oj-common-image-url("dvt/common/func_plus_16_hov.png");
+    .oj-timeline .oj-dvt-button-outlined.oj-active {
+      stroke: $dvtIconBorderColorActive;
+      fill: $dvtIconBgColorActive;
     }
 
-    .oj-timeline-zoomin-icon.oj-active {
-      background-image:oj-common-image-url("dvt/common/func_plus_16_act.png");
-
-        background-color:$dvtIconBgColorActive;
-        border-color:$dvtIconBorderColorActive;
-
-    }
-
-    .oj-timeline-zoomin-icon.oj-disabled {
-      background-image:oj-common-image-url("dvt/common/func_plus_16_dis.png");
-    }
-
-    .oj-timeline-zoomout-icon {
-      background-image:oj-common-image-url("dvt/common/func_minus_16_ena.png");
-
-        background-color: $dvtComponentBgColor;
-        border-color: $dvtPanelBorderColor;
-
-    }
-
-    .oj-timeline-zoomout-icon.oj-hover {
-      background-image:oj-common-image-url("dvt/common/func_minus_16_hov.png");
-    }
-
-    .oj-timeline-zoomout-icon.oj-active {
-      background-image:oj-common-image-url("dvt/common/func_minus_16_act.png");
-
-        background-color:$dvtIconBgColorActive;
-        border-color:$dvtIconBorderColorActive;
-      
-    }
-
-    .oj-timeline-zoomout-icon.oj-disabled {
-      background-image:oj-common-image-url("dvt/common/func_minus_16_dis.png");
+    .oj-timeline .oj-dvt-button-outlined.oj-active .oj-dvt-icon {
+      fill: $dvtIconColorActive;
     }
   }
 }

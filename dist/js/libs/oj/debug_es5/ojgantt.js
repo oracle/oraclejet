@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -979,6 +980,8 @@ var __oj_gantt_task_metadata =
  * @ojpropertylayout {propertyGroup: "data", items: ["taskData", "selection"]}
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 12
+ *
+ * @ojuxspecs ['data-visualization-gantt']
  *
  * @classdesc
  * <h3 id="GanttOverview-section">
@@ -2313,6 +2316,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
 
       /**
        * The CSS style defining the style of the task.
+       * Only SVG CSS style properties are supported.
        * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
        * @expose
        * @name taskDefaults.svgStyle
@@ -2399,6 +2403,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
 
         /**
          * The CSS inline style to apply to the progress bar. Only CSS style applicable to SVG elements can be used.
+         * Only SVG CSS style properties are supported.
          * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
          * @expose
          * @name taskDefaults.progress.svgStyle
@@ -2469,6 +2474,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
 
         /**
          * The CSS style defining the style of the baseline.
+         * Only SVG CSS style properties are supported.
          * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
          * @expose
          * @name taskDefaults.baseline.svgStyle
@@ -3211,9 +3217,9 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
     map.baselineMilestone = 'oj-gantt-baseline-milestone';
     map.taskLabel = 'oj-gantt-task-label';
     map.taskProgress = 'oj-gantt-task-progress';
-    map.tooltipLabel = 'oj-gantt-tooltip-label';
-    map.tooltipValue = 'oj-gantt-tooltip-value';
-    map.tooltipTable = 'oj-gantt-tooltip-content';
+    map.tooltipLabel = 'oj-dvt-datatip-label';
+    map.tooltipValue = 'oj-dvt-datatip-value';
+    map.tooltipTable = 'oj-dvt-datatip-table';
     map.referenceObject = 'oj-gantt-reference-object';
     map.selected = 'oj-selected';
     map.hover = 'oj-hover';
@@ -3296,64 +3302,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
     styleClasses['oj-gantt'] = {
       path: '_resources/animationDuration',
       property: 'ANIM_DUR'
-    }; // Zoom Control Icons
-
-    styleClasses['oj-gantt-zoomin-icon'] = [{
-      path: '_resources/zoomIn_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomIn_bc',
-      property: 'border-color'
-    }];
-    styleClasses['oj-gantt-zoomin-icon oj-hover'] = [{
-      path: '_resources/zoomIn_h_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomIn_h_bc',
-      property: 'border-color'
-    }];
-    styleClasses['oj-gantt-zoomin-icon oj-active'] = [{
-      path: '_resources/zoomIn_a_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomIn_a_bc',
-      property: 'border-color'
-    }];
-    styleClasses['oj-gantt-zoomin-icon oj-disabled'] = [{
-      path: '_resources/zoomIn_d_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomIn_d_bc',
-      property: 'border-color'
-    }];
-    styleClasses['oj-gantt-zoomout-icon'] = [{
-      path: '_resources/zoomOut_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomOut_bc',
-      property: 'border-color'
-    }];
-    styleClasses['oj-gantt-zoomout-icon oj-hover'] = [{
-      path: '_resources/zoomOut_h_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomOut_h_bc',
-      property: 'border-color'
-    }];
-    styleClasses['oj-gantt-zoomout-icon oj-active'] = [{
-      path: '_resources/zoomOut_a_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomOut_a_bc',
-      property: 'border-color'
-    }];
-    styleClasses['oj-gantt-zoomout-icon oj-disabled'] = [{
-      path: '_resources/zoomOut_d_bgc',
-      property: 'background-color'
-    }, {
-      path: '_resources/zoomOut_d_bc',
-      property: 'border-color'
-    }]; // Axes labels
+    }; // Axes labels
 
     styleClasses['oj-gantt-major-axis-label'] = {
       path: '_resources/majorAxisLabelFontProp',
@@ -3391,21 +3340,13 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
 
     var resources = this.options._resources; // zoom control icon images
 
-    resources.zoomIn = 'oj-gantt-zoomin-icon';
-    resources.zoomIn_h = 'oj-gantt-zoomin-icon oj-hover';
-    resources.zoomIn_a = 'oj-gantt-zoomin-icon oj-active';
-    resources.zoomIn_d = 'oj-gantt-zoomin-icon oj-disabled';
-    resources.zoomOut = 'oj-gantt-zoomout-icon';
-    resources.zoomOut_h = 'oj-gantt-zoomout-icon oj-hover';
-    resources.zoomOut_a = 'oj-gantt-zoomout-icon oj-active';
-    resources.zoomOut_d = 'oj-gantt-zoomout-icon oj-disabled'; // expand/collapse icon images
+    resources.zoomIn = 'oj-fwk-icon oj-fwk-icon-plus';
+    resources.zoomOut = 'oj-fwk-icon oj-fwk-icon-minus'; // expand/collapse icon images
+    // Add images
 
-    resources.closedEnabled = 'oj-gantt-row-label-close-icon';
-    resources.closedOver = 'oj-gantt-row-label-close-icon oj-hover';
-    resources.closedDown = 'oj-gantt-row-label-close-icon oj-active';
-    resources.openEnabled = 'oj-gantt-row-label-open-icon';
-    resources.openOver = 'oj-gantt-row-label-open-icon oj-hover';
-    resources.openDown = 'oj-gantt-row-label-open-icon oj-active'; // progress value converter for task tooltip
+    var rtl = this._GetReadingDirection() === 'rtl';
+    resources.closed = "oj-fwk-icon oj-fwk-icon-arrow-".concat(rtl ? 'w' : 'e');
+    resources.open = "oj-fwk-icon oj-fwk-icon-arrow-".concat(rtl ? 'sw' : 'se'); // progress value converter for task tooltip
 
     resources.percentConverter = new __NumberConverter.IntlNumberConverter({
       style: 'percent'
@@ -3957,7 +3898,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
 /**
  * @typedef {Object} oj.ojGantt.ReferenceObject
  * @property {string=} svgClassName A space delimited list of CSS style classes defining the style of the reference object. Note that only CSS style applicable to SVG elements can be used.
- * @property {Object=} svgStyle The CSS style defining the style of the reference object.
+ * @property {Object=} svgStyle The CSS style defining the style of the reference object. Only SVG CSS style properties are supported.
  * @property {string=} value The time value of this reference object. If not specified, no reference object will be shown. See <a href="#formats-section">Date and Time Formats</a> for more details on required string formats.
  * @ojsignature [{target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true}]
  */
@@ -3966,7 +3907,8 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
  * @typedef {Object} oj.ojGantt.Row
  * @ojimportmembers oj.ojGanttRowProperties
  * @property {any=} id The identifier for the row. Optional if the row contains only one task. This must be unique across all rows in Gantt.
- * @property {Array.<Object>} [tasks] An array of tasks. If not specified, no data will be shown. When only one of 'start' or 'end' value is specified, or when 'start' and 'end' values are equal, the task is considered a milestone task. Note that values of analogous properties from <a href="#taskDefaults">task-defaults</a> are used for any unspecified properties on the task, and values of any specified properties would override those from <a href="#taskDefaults">task-defaults</a>.
+ * @property {Array.<Object>} [tasks] An array of tasks. If not specified, no data will be shown.</br>
+ *                                    When only one of 'start' or 'end' value is specified, or when 'start' and 'end' values are equal, the task is considered a milestone task. Note that values of analogous properties from <a href="#taskDefaults">task-defaults</a> are used for any unspecified properties on the task, and values of any specified properties would override those from <a href="#taskDefaults">task-defaults</a>.
  * @ojsignature [{target: "Type", value: "Array<oj.ojGantt.RowTask<K2>>", for: "tasks", jsdocOverride:true},
  *               {target: "Type", value: "<K2>", for:"genericTypeParameters"}]
  */
@@ -4046,7 +3988,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
 // Slots
 
 /**
- * <p>The <code class="prettyprint">dependencyTemplate</code> slot is used to specify the template for creating each dependency line of the gantt. The slot content must be a &lt;template> element.
+ * <p>The <code class="prettyprint">dependencyTemplate</code> slot is used to specify the template for creating each dependency line of the gantt. The slot content must be a single &lt;template> element.
  * The content of the template should only be one &lt;oj-gantt-dependency> element. The reference data provider is that of the <a href="#dependencyData">dependency-data</a> attribute.
  * See the [oj-gantt-dependency]{@link oj.ojGanttDependency} doc for more details.</p>
  * <p>When the template is executed for each task, it will have access to the gantt's binding context containing the following properties:</p>
@@ -4099,7 +4041,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
 */
 
 /**
- * <p>The <code class="prettyprint">taskTemplate</code> slot is used to specify the template for creating each task of the gantt. The slot content must be a &lt;template> element.
+ * <p>The <code class="prettyprint">taskTemplate</code> slot is used to specify the template for creating each task of the gantt. The slot content must be a single &lt;template> element.
  * The content of the template should only be one &lt;oj-gantt-task> element. The reference data provider is that of the <a href="#taskData">task-data</a> attribute.
  * See the [oj-gantt-task]{@link oj.ojGanttTask} doc for more details.
  * The [row-id]{@link oj.ojGanttTask#rowId} is optional if there is only one task in the row for every row; otherwise it must be specified.
@@ -4129,7 +4071,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
  */
 
 /**
- * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
+ * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content. The slot content must be a single &lt;template> element.
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
@@ -4138,6 +4080,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
  *
  *
  * @ojslot tooltipTemplate
+ * @ojmaxitems 1
  * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
  * @ojslotitemprops oj.ojGantt.TooltipContext
  * @memberof oj.ojGantt
@@ -4152,7 +4095,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
  */
 
 /**
-* <p>The <code class="prettyprint">rowAxisLabelTemplate</code> slot is used to specify custom row axis label content.
+* <p>The <code class="prettyprint">rowAxisLabelTemplate</code> slot is used to specify custom row axis label content. The slot content must be a single &lt;template> element.
 * This slot takes precedence over the rowAxis.label.renderer property if specified.
 * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
 * <ul>
@@ -4161,6 +4104,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
 *
 *
 * @ojslot rowAxisLabelTemplate
+* @ojmaxitems 1
 * @ojshortdesc The rowAxisLabelTemplate slot is used to specify custom row axis label content. See the Help documentation for more information.
 * @ojslotitemprops oj.ojGantt.RowAxisLabelRendererContext
 * @memberof oj.ojGantt

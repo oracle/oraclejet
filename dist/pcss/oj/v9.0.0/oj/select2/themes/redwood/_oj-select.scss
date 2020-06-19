@@ -1,0 +1,34 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../theme/themes/redwood/oj-helpers.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../form-control/themes/redwood/_oj-messaging.scss";
+@import "../../../popup/themes/redwood/oj-popup.scss";
+@import "../../../label/themes/redwood/oj-label.scss";
+@import "../../../form-control/themes/redwood/_oj-form-control.scss";
+@import "../../../list-box/themes/redwood/_oj-list-box.scss";
+
+// ----- end dependencies ---------
+
+
+@import "_oj-select.cssvars.scss";
+// import classes defined in the common directory
+@import "../base/_oj-select.scss";
+
+@include module-include-once("redwood.select2") {
+    
+    // TODO: JET-15324 Need to remove this code.
+    // Needs to be reassessed when the input slots are available 
+    .oj-searchselect-open-icon {
+      padding-right: 16px;
+      padding-left: 16px;
+    }
+}

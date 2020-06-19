@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
 //          version in your base theme's directory,
@@ -45,20 +46,9 @@
     // Basic item
     .oj-treeview-item {
       white-space: nowrap;
-
-        min-width: $treeViewSpacerWidth;
-        @include oj-ltr() {
-          margin-left: $treeViewSpacerWidth;
-        }
-        @include oj-rtl() {
-          margin-right: $treeViewSpacerWidth;
-        }
-
       vertical-align: middle;
     }
 
-    // First level items are not indented
-    oj-tree-view > .oj-treeview-list > .oj-treeview-item,
     .oj-treeview-list.oj-treeview-drag-image > .oj-treeview-item {
       @include oj-ltr() {
         margin-left: 0;
@@ -73,6 +63,12 @@
       display: inline-block;
       text-decoration: none;
       vertical-align: middle;
+      @include oj-ltr() {
+        text-align: right;
+      }
+      @include oj-rtl() {
+        text-align: left;
+      }
     }
 
     // Item icon
@@ -113,9 +109,20 @@
         margin-right: 2px;
       }
     }
-
+    .oj-treeview-item-content-icon {
+      vertical-align: middle;
+      font-size: $fontSize;
+    }
+    
     .oj-treeview-item-content {
+      width: 100%;
       display: inline-block;
+      vertical-align: middle;
+    }
+
+    .oj-treeview-selector {
+      display: inline-block;
+      vertical-align: middle;
     }
 
     // Hovered item content
@@ -164,7 +171,6 @@
     // Disclosure icon or the spacer
     .oj-treeview-spacer {
 
-        width: $treeViewSpacerWidth;
         height: $treeViewSpacerHeight;
 
     }
@@ -177,34 +183,18 @@
       margin: 7px 4px;
     }
 
-    // DnD reorder insert position pointer container
-    .oj-treeview-drop-marker {
-      position: absolute;
-      background-color: transparent;
-      pointer-events: none;
-      width: 16px;
-      height: 16px;
-      padding: 1px;
-    }
-
     // DnD reorder insert position pointer line when dropping between items
     .oj-treeview-drop-line {
       height: 1px;
       width: 100px;
       position: absolute;
-
-        background-color: $treeViewDropLineColor;
-
+      background-color: $treeViewDropLineColor;
       pointer-events: none;
     }
 
-    // DnD insert pointer icon
-    .oj-treeview-drop-marker-icon {
-      position: absolute;
-      @extend .oj-fwk-icon-arrow-end;
-
-        color: $treeViewDropMarkerColor;
-      
+    .oj-treeview-drop-zone {
+      background-color: $treeViewDropItemBackground;
+      border-radius: .25rem;
     }
 
     // Make sure drag image isn't visible to the end user
@@ -217,6 +207,7 @@
     .oj-treeview-drag-image .oj-treeview-item {
       position: absolute;
     }
+    @include oj-property-multiplier($selectorName: 'oj-treeview-depth', $propertyName: 'width', $propertyMultiplicand: $treeViewSpacerWidth, $minMultiplier: 1, $maxMultiplier: 15);
 
     // Animation defaults
     $treeViewAnimationDefaults: ();
@@ -234,6 +225,22 @@
 
     @if ($treeViewAnimationDefaults) {
       $treeViewDefaultOptions: map-merge($treeViewDefaultOptions, (animation: $treeViewAnimationDefaults));
+    }
+    
+    @if ($treeViewLoadIndicator) {
+      $treeViewDefaultOptions: map-merge($treeViewDefaultOptions, (loadIndicator: $treeViewLoadIndicator));
+    }
+
+    @if ($loadingIndicatorDelayDuration) {
+      $treeViewDefaultOptions: map-merge($treeViewDefaultOptions, (showIndicatorDelay: $loadingIndicatorDelayDuration));
+    }
+
+    @if ($treeViewDataFadeInDuration) {
+      $treeViewDefaultOptions: map-merge($treeViewDefaultOptions, (dataFadeInDuration: $treeViewDataFadeInDuration));
+    }
+    
+    @if ($treeViewMultipleSelectionAffordance) {
+      $treeViewDefaultOptions: map-merge($treeViewDefaultOptions, (multipleSelectionAffordance: $treeViewMultipleSelectionAffordance));
     }
 
     // Component default options selector

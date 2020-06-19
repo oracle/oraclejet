@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
 //          version in your base theme's directory,
@@ -43,9 +44,17 @@
     @if ($tableDisplayOptionDefault != null) {
        $tableDefaultOptions: map-merge($tableDefaultOptions, (display: $tableDisplayOptionDefault));
     }
-    @if ($loadingIndicatorDelayDuration != null)
-    {
-       $tableDefaultOptions: map-merge($tableDefaultOptions, (showIndicatorDelay: $loadingIndicatorDelayDuration));
+
+    @if ($tableLoadIndicator) {
+      $tableDefaultOptions: map-merge($tableDefaultOptions, (loadIndicator: $tableLoadIndicator));
+    }
+
+    @if ($tableEnableSelector) {
+      $tableDefaultOptions: map-merge($tableDefaultOptions, (enableSelector: $tableEnableSelector));
+    }
+
+    @if ($loadingIndicatorDelayDuration != null) {
+      $tableDefaultOptions: map-merge($tableDefaultOptions, (showIndicatorDelay: $loadingIndicatorDelayDuration));
     }
 
     .oj-table-option-defaults {
@@ -447,13 +456,13 @@
 
     /* Styling for both the sort icons and click area */
     .oj-table-column-header-asc-icon,
-    .oj-table-column-header-dsc-icon {
+    .oj-table-column-header-dsc-icon,
+    .oj-table-column-header-default-sort-icon {
       flex: 0 1 auto;
     }
 
     /* Styling for disabled sort icons */
-    .oj-table-column-header-asc-icon.oj-disabled,
-    .oj-table-column-header-dsc-icon.oj-disabled {
+    .oj-table-column-header-default-sort-icon.oj-disabled {
       display: none;
     }
     
@@ -484,7 +493,7 @@
     /* Styling for the table body element when table has vertical scrollbars. */
     .oj-table-scroll-vertical .oj-table-body {
       display: block;
-      overflow-y: auto;
+      overflow-y: scroll;
       position: relative;
       // enable momentum based scrolling for touch devices
       -webkit-overflow-scrolling: touch;
@@ -493,7 +502,7 @@
     /* Styling for the table body element when table has horizontal scrollbars. */
     .oj-table-scroll-horizontal .oj-table-body {
       display: block;
-      overflow-x: auto;
+      overflow-x: scroll;
       position: relative;
       // enable momentum based scrolling for touch devices
       -webkit-overflow-scrolling: touch;
@@ -639,6 +648,7 @@
     .oj-table-data-cell.oj-table-data-cell-edit {
 
         outline: 1px solid $collectionEditableCellBorderColorFocus;
+        outline-offset: -1px;
 
     }
 
@@ -697,9 +707,9 @@
 
     /* Styling on form controls stamped inside a table */
     .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) {
-        @include oj-form-control-padding-override(
+      @include oj-form-control-padding-override(
         $padding: "0 #{$collectionCellPadding}");
- 
+
     }
 
     .oj-table-data-cell .oj-checkboxset .oj-checkbox-label {
@@ -843,6 +853,7 @@
 
     /* Styling for the activity indicator. */
     .oj-table-loading-icon {
+      position: relative;
       display: block;
       width: 40px;
       height: 40px;

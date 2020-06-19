@@ -1,0 +1,58 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+@include module-include-once("redwood.variables.formlayout") {
+
+:root {
+  // form layout
+  // ------------------------
+  // outer border
+  --oj-form-layout-border-color:                          transparent;
+  --oj-form-layout-border-width:                          0;
+  --oj-form-layout-inset-margin:                          0; //settings: ignore
+
+  // divider between rows
+  --oj-form-layout-divider-color:                         transparent;
+  --oj-form-layout-divider-width:                         0;
+  --oj-form-layout-divider-margin:                        0;
+  
+
+  // These variables are used to set the column-width/column-gap properties
+  // in .oj-form-cols and .oj-form-cols-labels-inline.
+  // These classes use css multi column layout, see:
+  // http://dev.w3.org/csswg/css-multicol/
+  --oj-form-layout-start-label-column-min-width:          22rem;
+  --oj-form-layout-start-label-column-max-width:          37.5rem;
+  --oj-form-layout-column-min-width:                      18rem;
+  --oj-form-layout-column-max-width:                      28rem;
+  
+  // The left/right margin is the space before the first column and after the last column of an oj-form-layout
+  --oj-form-layout-horizontal-margin:                     0px;
+  // The gutter is the space between columns of an oj-form-layout
+  --oj-form-layout-column-gutter:                         1.5rem;
+
+  // In a form layout this is the space expected between
+  // form controls in different rows
+  // todo: probably need to change this, think we are calculating off this in sass
+  --oj-form-layout-margin-bottom:                         .875rem;
+
+  // todo: I have this var below but not the sass vars commented, figure out what is going on and add it to the doc
+  --oj-form-layout-field-inline-justify-content: flex-start;
+
+  // in a form layout when the labels are inline what is the
+  // default label alignment
+  --oj-form-layout-label-inline-text-align: right;
+  --oj-form-layout-label-inline-text-align-rtl: left;
+
+  // in a form layout when the labels are inline what is the
+  // default field alignment
+  --oj-form-layout-field-inline-text-align: left;
+  --oj-form-layout-field-inline-text-align-rtl: right;
+
+  // gutter (padding) between the inline label and the control
+  --oj-form-layout-label-inline-gutter-padding: 1.5rem;
+
+}
+
+}

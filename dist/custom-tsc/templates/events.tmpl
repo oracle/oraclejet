@@ -1,0 +1,31 @@
+<?js
+var events = obj;
+for (let event in events){
+  // will use the event type from src if exists and will not explode its members
+  // will specify the type in the CustomEvent type params
+  const eventDetailType = events[event]['reftype'];
+  let eventInterfaceName = event;
+  if (eventDetailType) {
+    // if we have have generics use that in the interface name
+    if (eventDetailType.indexOf('<') > 0 && eventDetailType.indexOf('>') > 1){
+      eventInterfaceName = `${event}${this.propsTypeParams}`;
+    }?>
+  interface <?js= eventInterfaceName ?> extends CustomEvent<<?js= eventDetailType?> & {
+    [propName: string]: any;
+  }>{}
+  <?js 
+  } 
+  else { // event detail was specified as a type literal?>
+  interface <?js= eventInterfaceName ?> extends CustomEvent<{
+  <?js 
+  if (events[event]['detail']) {
+    const details = events[event]['detail'];
+    for (let detail in details) {?>
+    <?js= detail ?>: <?js= details[detail]['reftype'] ?>;
+    <?js
+    }
+  }?>
+    [propName: string]: any;}>{}
+  <?js
+  }
+}?>

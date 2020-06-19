@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
 // tslint:disable-next-line no-unnecessary-class
 export interface AttributeExprFilter<D> extends AttributeExprFilterDef<D>, BaseDataFilter<D> {
 }
@@ -86,6 +94,34 @@ export interface DataProviderAddOperationEventDetail<K, D> extends DataProviderO
     addBeforeKeys?: K[];
     parentKeys?: K[];
 }
+export class DataProviderMutationEvent<K, D> implements Event {
+    AT_TARGET: number;
+    BUBBLING_PHASE: number;
+    CAPTURING_PHASE: number;
+    NONE: number;
+    bubbles: boolean;
+    cancelBubble: boolean;
+    cancelable: boolean;
+    composed: boolean;
+    composedPath: () => EventTarget[];
+    currentTarget: EventTarget;
+    deepPath: () => EventTarget[];
+    defaultPrevented: boolean;
+    detail: DataProviderMutationEventDetail<K, D>;
+    eventPhase: number;
+    initEvent: (eventTypeArg: string, canBubbleArg: boolean, cancelableArg: boolean) => void;
+    isTrusted: boolean;
+    preventDefault: () => void;
+    returnValue: boolean;
+    scoped: boolean;
+    srcElement: Element | null;
+    stopImmediatePropagation: () => void;
+    stopPropagation: () => void;
+    target: EventTarget;
+    timeStamp: number;
+    type: string;
+    constructor(detail: DataProviderMutationEventDetail<K, D>);
+}
 export interface DataProviderMutationEventDetail<K, D> {
     add?: DataProviderAddOperationEventDetail<K, D>;
     remove?: DataProviderOperationEventDetail<K, D>;
@@ -96,6 +132,33 @@ export interface DataProviderOperationEventDetail<K, D> {
     indexes?: number[];
     keys: Set<K>;
     metadata?: Array<ItemMetadata<K>>;
+}
+export class DataProviderRefreshEvent implements Event {
+    AT_TARGET: number;
+    BUBBLING_PHASE: number;
+    CAPTURING_PHASE: number;
+    NONE: number;
+    bubbles: boolean;
+    cancelBubble: boolean;
+    cancelable: boolean;
+    composed: boolean;
+    composedPath: () => EventTarget[];
+    currentTarget: EventTarget;
+    deepPath: () => EventTarget[];
+    defaultPrevented: boolean;
+    eventPhase: number;
+    initEvent: (eventTypeArg: string, canBubbleArg: boolean, cancelableArg: boolean) => void;
+    isTrusted: boolean;
+    preventDefault: () => void;
+    returnValue: boolean;
+    scoped: boolean;
+    srcElement: Element | null;
+    stopImmediatePropagation: () => void;
+    stopPropagation: () => void;
+    target: EventTarget;
+    timeStamp: number;
+    type: string;
+    constructor();
 }
 export interface FetchAttribute {
     attributes?: Array<string | FetchAttribute>;
@@ -158,21 +221,37 @@ export interface FilterCapability {
     textFilter?: any;
 }
 export class FilterFactory<D> {
-    getFilter(options: {
-        filterDef: DataFilter.FilterDef<D>;
+    static getFilter(options: {
+        filterDef: DataFilter.FilterDef<any>;
         filterOptions: any;
-    }): DataFilter.Filter<D>;
+    }): DataFilter.Filter<any>;
 }
 export interface FilterOperator<D> {
     op: AttributeFilterOperator.AttributeOperator | CompoundFilterOperator.CompoundOperator;
     filter(data: any[]): any[];
 }
-export interface Item<K, D> {
+export interface Item<K, D> extends ItemWithOptionalData<K, D> {
     data: D;
     metadata: ItemMetadata<K>;
 }
+export interface ItemMessage {
+    detail: string;
+    severity?: (ItemMessage.SEVERITY_TYPE | ItemMessage.SEVERITY_LEVEL);
+    summary: string;
+}
+export namespace ItemMessage {
+    // tslint:disable-next-line interface-over-type-literal
+    type SEVERITY_LEVEL = 1 | 2 | 3 | 4 | 5;
+    // tslint:disable-next-line interface-over-type-literal
+    type SEVERITY_TYPE = 'confirmation' | 'info' | 'warning' | 'error' | 'fatal';
+}
 export interface ItemMetadata<K> {
     key: K;
+    message?: ItemMessage;
+}
+export interface ItemWithOptionalData<K, D> {
+    data?: D;
+    metadata: ItemMetadata<K>;
 }
 export interface SortCapability<D> {
     attributes: 'none' | 'single' | 'multiple';

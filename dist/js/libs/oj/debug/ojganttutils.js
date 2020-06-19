@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -63,64 +64,11 @@ GanttUtils.computeTableColumnHeaderHeight = function (table, gantt, axisInfo) {
   totalHeight += getAxisHeight(majorAxis, 'major');
   totalHeight += getAxisHeight(minorAxis, 'minor');
 
-  var tableHeaderHeight = GanttUtils._getTableHeaderHeight(table);
-  totalHeight -= tableHeaderHeight;
-
   // todo: investigate offset required for IE/Edge
   if (oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.EDGE ||
     oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.IE) {
     totalHeight -= 1;
   }
-
-  return totalHeight;
-};
-
-/**
- * Calculate the default column header height in Table, with no customizations.
- * @private
- */
-GanttUtils._getTableHeaderHeight = function (table) {
-  var TABLE_CLASS = 'oj-table';
-
-  var dummyParent = document.createElement('div');
-  if (table != null) {
-    dummyParent.className = table.className + ' ';
-  }
-  dummyParent.className = dummyParent.className + TABLE_CLASS + ' ' + TABLE_CLASS + '-grid-display';
-  var dummyHeader = document.createElement('div');
-  dummyHeader.className = TABLE_CLASS + '-header';
-  var dummyHeaderRow = document.createElement('div');
-  dummyHeaderRow.className = TABLE_CLASS + '-header-row';
-  var dummyHeaderCell = document.createElement('div');
-  dummyHeaderCell.className = TABLE_CLASS + '-column-header-cell';
-
-  dummyHeaderRow.appendChild(dummyHeaderCell);
-  dummyHeader.appendChild(dummyHeaderRow);
-  dummyParent.appendChild(dummyHeader);
-
-  var root = table != null ? table : document.body;
-  root.appendChild(dummyParent);
-  var cssStyle = window.getComputedStyle(dummyHeaderCell);
-
-  var paddingTop = parseInt(cssStyle.paddingTop, 10);
-  var paddingBottom = parseInt(cssStyle.paddingBottom, 10);
-  var borderTopWidth = parseInt(cssStyle.borderTopWidth, 10);
-  var borderBottomWidth = parseInt(cssStyle.borderBottomWidth, 10);
-
-  cssStyle = window.getComputedStyle(dummyHeader);
-  var headerBorderBottomWidth = parseInt(cssStyle.borderBottomWidth, 10);
-
-  var totalHeight = 0;
-  // cell padding
-  totalHeight += (isNaN(paddingTop) ? 0 : paddingTop);
-  totalHeight += (isNaN(paddingBottom) ? 0 : paddingBottom);
-  totalHeight += (isNaN(borderTopWidth) ? 0 : borderTopWidth);
-  totalHeight += (isNaN(borderBottomWidth) ? 0 : borderBottomWidth);
-
-  // header bottom border
-  totalHeight += (isNaN(headerBorderBottomWidth) ? 0 : headerBorderBottomWidth);
-
-  root.removeChild(dummyParent);
 
   return totalHeight;
 };

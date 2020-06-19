@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojTrain extends baseComponent<ojTrainSettableProperties> {
     selectedStep: string;
@@ -18,7 +26,7 @@ export interface ojTrain extends baseComponent<ojTrainSettableProperties> {
         label?: string;
         disabled?: boolean;
         visited?: boolean;
-        messageType?: 'info' | 'error' | 'fatal' | 'warning';
+        messageType?: 'info' | 'error' | 'fatal' | 'warning' | 'confirmation';
     }): void;
 }
 export namespace ojTrain {
@@ -56,7 +64,7 @@ export namespace ojTrain {
         label: string;
         disabled?: boolean;
         visited?: boolean;
-        messageType?: 'info' | 'error' | 'fatal' | 'warning';
+        messageType?: 'info' | 'error' | 'fatal' | 'warning' | 'confirmation';
     };
 }
 export interface ojTrainEventMap extends baseComponentEventMap<ojTrainSettableProperties> {

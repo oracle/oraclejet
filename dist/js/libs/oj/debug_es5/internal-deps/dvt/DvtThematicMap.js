@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   "use strict";
@@ -8,15 +9,17 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
 
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 (function (dvt) {
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -482,6 +485,8 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
     pzcContainer.addChild(this._linkLayers);
     this._touchEventLayer && pzcContainer.addChild(this._touchEventLayer); // Render all point layers and the first area layer
 
+    var areaLayerDim;
+
     var pzcMatrix = this._pzc.getContentPane().getMatrix();
 
     this._areaLayerRendered = false;
@@ -494,7 +499,17 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
 
         if (!this._areaLayerRendered && layer instanceof DvtMapAreaLayer) {
           this._areaLayerRendered = true;
-          this._areaLayer = layer;
+          this._areaLayer = layer; // DvtMapAreaLayer.prototype.getLayerDim() calls getBBox which causes forced synchronous layout(reflow).
+          // The dimensions are cached in the DvtMapAreaLayer.prototype._layerDim after it is calculated for the
+          // first time.
+          // To avoid a performance bottleneck here, this has to be done when we have the least number of elements
+          // in the DOM. DvtThematicMapJsonParser.prototype.parse() and DvtThematicMapJsonParser.prototype._parseAreaLayer()
+          // guarantees that the first entry in the this._layers is the map area layer and hence, doing the initial
+          // layout before rendering data points (which could be large) provides a significant performance improvement.
+          // We need no worry about the subsequent DvtMapAreaLayer.prototype.getLayerDim() calls as the dimensions
+          // are returned from the cached value and will not cause layout(reflow).
+
+          areaLayerDim = layer.getLayerDim();
         }
       }
     }
@@ -521,7 +536,7 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
     // Additional zooming for initialZooming will be applied after animations are complete
 
 
-    this._pzc.zoomToFit(null, this._areaLayer.getLayerDim()); // Get the current zoom of the canvas to set min canvas zoom to fit component in viewport
+    this._pzc.zoomToFit(null, areaLayerDim); // Get the current zoom of the canvas to set min canvas zoom to fit component in viewport
 
 
     this._updateZoomLimits();
@@ -1264,8 +1279,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1426,8 +1442,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1622,8 +1639,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1790,8 +1808,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) 2015 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2015 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -2009,8 +2028,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
   // For MAF this != window and we want to use this
@@ -2508,8 +2528,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -2557,8 +2578,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -2809,8 +2831,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3671,8 +3694,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3792,8 +3816,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3982,8 +4007,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4202,8 +4228,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4494,8 +4521,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4942,8 +4970,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5531,8 +5560,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5739,8 +5769,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6040,8 +6071,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6092,7 +6124,11 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
 
     this._parseMapProperties(options);
 
-    this._parseStyles(options['styleDefaults']);
+    this._parseStyles(options['styleDefaults']); // The map area layer should to be parsed before the data layers.
+    // This is to guarantee that the map area layer is the first one to be rendered.
+    // This is needed for improving the performance of the tmap by avoiding a performance
+    // bottleneck due to layout in the function dvt.ThematicMap.prototype._render.
+
 
     this._parseAreaLayer(options['areaLayers']);
 
@@ -6183,7 +6219,10 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
     mapLayer.setAreaLabels(labels);
     mapLayer.setAreaLabelInfo(labelsInfo);
     mapLayer.setLayerCSSStyle(this._areaLayerStyle);
-    mapLayer.setDropSiteCSSStyle(this._areaDropSiteStyle);
+    mapLayer.setDropSiteCSSStyle(this._areaDropSiteStyle); // The map area layer has to be added before adding the data layers.
+    // This is to guarantee that the map layer is the first one to be rendered.
+    // This is needed for improving the performance of the tmap by avoiding performance
+    // bottleneck in the function dvt.ThematicMap.prototype._render.
 
     this._tmap.addLayer(mapLayer); // parse data layers
 
@@ -7030,8 +7069,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -7691,8 +7731,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -8051,8 +8092,9 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 

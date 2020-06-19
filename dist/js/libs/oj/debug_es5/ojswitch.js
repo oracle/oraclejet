@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -48,10 +49,6 @@ var __oj_switch_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -107,6 +104,15 @@ var __oj_switch_metadata =
     "translations": {
       "type": "object",
       "value": {}
+    },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
     },
     "valid": {
       "type": "string",
@@ -176,6 +182,8 @@ var __oj_switch_metadata =
    * @ojvbdefaultcolumns 6
    * @ojvbmincolumns 2
    *
+   * @ojuxspecs ['switch']
+   *
    * @classdesc
    * <p>
    * The oj-switch component enhances <code class="prettyprint">input</code>
@@ -215,14 +223,6 @@ var __oj_switch_metadata =
    * {@ojinclude "name":"accessibilityDisabledEditableValue"}
    * </p>
    *
-   * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
-   *
-   * <h3 id="styling-section">
-   *   Styling
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
-   * </h3>
-   * {@ojinclude "name":"stylingDoc"}
-   *
    * <h3 id="label-section">
    *   Label and Switch
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
@@ -246,6 +246,36 @@ var __oj_switch_metadata =
    * @example <caption>Initialize the switch with some attributes specified:</caption>
    * &lt;oj-switch value=true disabled=false>&lt;/oj-switch>
    */
+  // --------------------------------------------------- oj.ojSwitch Styling Start -----------------------------------------------------------
+  // ---------------- oj-switch --------------
+
+  /**
+  * Top level switch class.
+  * @ojstyleclass oj-switch
+  * @ojdisplayname Switch
+  * @memberof oj.ojSwitch
+  */
+  // ---------------- oj-focus-highlight --------------
+
+  /**
+  * Under normal circumstances this class is applied automatically.
+  * It is documented here for the rare cases that an app developer needs per-instance control.<br/><br/>
+  * The oj-focus-highlight class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.<br/><br/>
+  * The application-level behavior for this component is controlled in the theme by the <code class="prettyprint"><span class="pln">$focusHighlightPolicy </span></code>SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:<br/><br/>
+  * <code class="prettyprint"><span class="pln">nonPointer: </span></code>oj-focus-highlight is applied only when focus is not the result of pointer interaction. Most themes default to this value.<br/>
+  * <code class="prettyprint"><span class="pln">all: </span></code> oj-focus-highlight is applied regardless of the focus mechanism.<br/>
+  * <code class="prettyprint"><span class="pln">none: </span></code> oj-focus-highlight is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.<br/><br/>
+  * To change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed.<br/>
+  * @ojstyleclass oj-focus-highlight
+  * @ojdisplayname Focus Styling
+  * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
+  * @memberof oj.ojSwitch
+  * @ojtsexample
+  * &lt;oj-switch class="oj-focus-highlight">
+  *   &lt;!-- Content -->
+  * &lt;/oj-switch>
+  */
+  // --------------------------------------------------- oj.ojSwitch Styling end -----------------------------------------------------------
   oj.__registerWidget('oj.ojSwitch', $.oj.editableValue, {
     version: '1.1.0',
     defaultElement: '<input>',
@@ -326,7 +356,12 @@ var __oj_switch_metadata =
        * If you want to prevent the user from interacting with the element, use the disabled property instead. The element's
        * <code class="prettyprint">readOnly</code> property is used as its initial value if it exists, when the attribute is not explicitly set.
        *  When neither is set, <code class="prettyprint">readOnly </code> defaults to false.
-       *
+       * <p>
+       * The oj-form-layout provides its readonly attribute value and the form components
+       * consume it if it is not already set explicitly.
+       * For example, if oj-form-layout is set to readonly='true',
+       * all the form components it contains will be readonly='true' by default.
+       * </p>
        * @example <caption>Initialize the switch with
        * <code class="prettyprint">readOnly</code> attribute:</caption>
        * &lt;oj-switch readonly="true">&lt;/oj-switch>
@@ -641,7 +676,10 @@ var __oj_switch_metadata =
           $(this.switchThumb).removeAttr('tabindex');
         } else {
           rootElement.addClass('oj-read-only');
-          $(this.switchThumb).html(this._setReadOnlyValue()); // @HTMLUpdateOK internal strings
+
+          var readonlyValue = this._setReadOnlyValue();
+
+          $(this.switchThumb).html(readonlyValue); // @HTMLUpdateOK internal strings
         }
       }
 
@@ -960,33 +998,6 @@ var __oj_switch_metadata =
      * @memberof oj.ojSwitch
      */
 
-    /**
-     * {@ojinclude "name":"ojStylingDocIntro"}
-     *
-     * <p>
-     * <table class="generic-table styling-table">
-     *   <thead>
-     *     <tr>
-     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>oj-switch</td>
-     *       <td>Top level switch class. </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-focus-highlight</td>
-     *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-     * @memberof oj.ojSwitch
-     */
-
   });
 })(); // / ///////////////     SUB-IDS     //////////////////
 
@@ -1020,7 +1031,24 @@ var __oj_switch_metadata =
     readonly: 'readOnly'
   };
   oj.CustomElementBridge.register('oj-switch', {
-    metadata: __oj_switch_metadata
+    metadata: oj.CollectionUtils.mergeDeep(__oj_switch_metadata, {
+      properties: {
+        readonly: {
+          binding: {
+            consume: {
+              name: 'readonly'
+            }
+          }
+        },
+        userAssistanceDensity: {
+          binding: {
+            consume: {
+              name: 'userAssistanceDensity'
+            }
+          }
+        }
+      }
+    })
   });
 })();
 

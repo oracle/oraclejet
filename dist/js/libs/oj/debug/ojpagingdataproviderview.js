@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -53,13 +54,14 @@ class PagingDataProviderView {
             }
         };
         this.AsyncIterator = class {
-            constructor(_parent, _nextFunc, _params) {
+            constructor(_parent, _nextFunc, _params, _clientId) {
                 this._parent = _parent;
                 this._nextFunc = _nextFunc;
                 this._params = _params;
+                this._clientId = _clientId;
             }
             ['next']() {
-                let result = this._nextFunc(this._params);
+                let result = this._nextFunc(this._params, this._clientId);
                 return Promise.resolve(result);
             }
         };
@@ -197,19 +199,21 @@ class PagingDataProviderView {
         this._pageSize = -1;
         this._pageCount = -1;
         this._offset = 0;
+        this._mutationOffset = 0;
         this._totalSize = -1;
         this._skipCriteriaCheck = false;
-        // set up initialize promise check to make sure setPage is called before 
+        // set up initialize promise check to make sure setPage is called before
         // fetching data
         this._isInitialized = new Promise(function (resolve) {
             self._resolveFunc = resolve;
         });
-        // set up initialize data promise check to make sure data is loaded 
+        // set up initialize data promise check to make sure data is loaded
         // before View fetch calls are allowed to continue
         this._isInitialDataLoaded = new Promise(function (resolve) {
             self._dataResolveFunc = resolve;
         });
         this._hasMutated = false;
+        this._selfRefresh = false;
         this._mustRefetch = false;
         this._isFetchingForMutation = false;
         this._mutationEventQueue = [];
@@ -219,6 +223,8 @@ class PagingDataProviderView {
         this._mutatingTotalSize = null;
         this._fetchMore = false;
         this._isUnknownRowCount = false;
+        this._fetchFirstDone = false;
+        this._iteratorCacheMap = new Map();
     }
     containsKeys(params) {
         let self = this;
@@ -248,7 +254,9 @@ class PagingDataProviderView {
             let requestedKeys = params.keys;
             if (!self._isGlobal(params)) {
                 // use the cached fetch data to get values by keys.
-                return self._fetchByOffset(new self.FetchByOffsetParameters(self, self._offset, self._pageSize, self._currentSortCriteria, self._currentFilterCriteria)).then(function (results) {
+                return self
+                    ._fetchByOffset(new self.FetchByOffsetParameters(self, self._offset, self._pageSize, self._currentSortCriteria, self._currentFilterCriteria))
+                    .then(function (results) {
                     let result = results['results'];
                     let mappedResultMap = new Map();
                     let filteredResults = result.map(function (value) {
@@ -271,7 +279,7 @@ class PagingDataProviderView {
                 }
                 else {
                     // doesn't exist so need to throw an error
-                    throw new Error("Global scope not supported for this dataprovider");
+                    throw new Error('Global scope not supported for this dataprovider');
                 }
             }
         });
@@ -279,7 +287,7 @@ class PagingDataProviderView {
     fetchByOffset(params) {
         let self = this;
         return this._checkIfDataInitialized(function () {
-            let offset = params != null ? params[self._OFFSET] > 0 ? params[self._OFFSET] : 0 : 0;
+            let offset = params != null ? (params[self._OFFSET] > 0 ? params[self._OFFSET] : 0) : 0;
             params = new self.FetchByOffsetParameters(self, self._offset, self._pageSize, self._currentSortCriteria, self._currentFilterCriteria);
             return self._fetchByOffset(params).then(function (results) {
                 let newResult = results['results'].filter(function (value, index) {
@@ -314,37 +322,91 @@ class PagingDataProviderView {
         }
         let offset = self._offset;
         let size = self._pageSize;
+        let clientId = (params && params.clientId) || Symbol();
+        // initialize cachemap
+        this._iteratorCacheMap.set(clientId, {
+            offset: offset,
+            size: size,
+            mutationOffset: 0,
+            fetchFirstDone: false,
+            currentParams: self._currentParams
+        });
         // this fetchFirst applies the offset properties on the this.
-        return new self.AsyncIterable(self, new self.AsyncIterator(self, function () {
-            return function () {
+        return new self.AsyncIterable(self, new self.AsyncIterator(self, (function (params, clientId) {
+            return function (params, clientId) {
+                let iteratorData = self._iteratorCacheMap.get(clientId);
+                let offset = iteratorData['offset'];
+                let size = iteratorData['size'];
+                let mutationOffset = iteratorData['mutationOffset'];
+                let fetchFirstDone = iteratorData['fetchFirstDone'];
+                let currentParams = iteratorData['currentParams'];
                 let updatedParams = new self.FetchByOffsetParameters(self, offset, size, self._currentSortCriteria, self._currentFilterCriteria);
+                if (mutationOffset != 0) {
+                    // we have a remove event in progress triggering a fetch
+                    // Since we already have the page fetched data, we can
+                    // just grab the current page data and slice what we need.
+                    updatedParams = currentParams;
+                }
+                // Datagrid may trigger the fetchFirst first, so we need to update the params again before fetching
+                let needParamUpdate = false;
+                if (self._isInitialDataLoaded != null) {
+                    needParamUpdate = true;
+                }
                 return self._checkIfDataInitialized(function () {
+                    if (needParamUpdate) {
+                        size = self._pageSize;
+                        offset = self._offset;
+                        updatedParams = new self.FetchByOffsetParameters(self, offset, size, self._currentSortCriteria, self._currentFilterCriteria);
+                    }
                     return self._fetchByOffset(updatedParams).then(function (result) {
                         let results = result['results'];
+                        // If the fetch first done flag is true, then the last fetch should have been all the data
+                        // Return no results since datagrid requires 0 results to conclude fetch
+                        // Skip this if mutationOffset is non-zero, since it's an extra fetch caused by mutation
+                        if (fetchFirstDone && mutationOffset == 0) {
+                            results = [];
+                        }
+                        if (mutationOffset != 0) {
+                            // Do a slice for mutation offset if applicable.
+                            results = results.slice(results.length - mutationOffset);
+                        }
                         let data = results.map(function (value) {
                             return value[self._DATA];
                         });
                         let metadata = results.map(function (value) {
                             return value[self._METADATA];
                         });
-                        offset = offset + metadata.length;
+                        offset = offset + metadata.length - mutationOffset;
                         // fire page change event in the case of sort operation resetting the page to 0
                         if (payload[self._PAGE] != null) {
-                            self.dispatchEvent(new CustomEvent(self._PAGE, { "detail": payload }));
+                            // Update end item index
+                            self._endItemIndex = self._offset + data.length - 1;
+                            self.dispatchEvent(new CustomEvent(self._PAGE, { detail: payload }));
                             payload = {};
                         }
                         // Datagrid triggers fetchfirst before setPage, so we need to clear this parameter here
                         self._skipCriteriaCheck = false;
-                        let resultsParam = new self.FetchByOffsetParameters(self, result['fetchParameters']['offset'], self._pageSize, self._currentSortCriteria);
-                        // if the dataprovider supports fetchByOffset then we use that to do an offset based fetch
+                        let resultsParam = new self.FetchByOffsetParameters(self, result['fetchParameters']['offset'] - self._mutationOffset, self._pageSize, self._currentSortCriteria);
+                        // Reset mutation offset after fetch
+                        mutationOffset = 0;
+                        // Set done flag for datagrid fetch handling
+                        fetchFirstDone = result[self._DONE];
+                        // cache the new data values
+                        self._iteratorCacheMap.set(clientId, {
+                            offset: offset,
+                            size: size,
+                            mutationOffset: mutationOffset,
+                            fetchFirstDone: fetchFirstDone,
+                            currentParams: currentParams
+                        });
                         if (result[self._DONE]) {
-                            return Promise.resolve(new self.AsyncIteratorReturnResult(self, new self.FetchListResult(self, resultsParam, data, metadata)));
+                            return Promise.resolve((new self.AsyncIteratorReturnResult(self, new self.FetchListResult(self, resultsParam, data, metadata))));
                         }
-                        return Promise.resolve(new self.AsyncIteratorYieldResult(self, new self.FetchListResult(self, resultsParam, data, metadata)));
+                        return Promise.resolve((new self.AsyncIteratorYieldResult(self, new self.FetchListResult(self, resultsParam, data, metadata))));
                     });
                 });
             };
-        }(), params));
+        })(), params, clientId));
     }
     getCapability(capabilityName) {
         return this.dataProvider.getCapability(capabilityName);
@@ -397,7 +459,7 @@ class PagingDataProviderView {
                     // since it means we were done last page
                     self._currentPage = payload[self._PREVIOUSPAGE];
                     self._offset = self._currentPage * self._pageSize;
-                    self.dispatchEvent(new CustomEvent(self._PAGECOUNT, { detail: { "previousValue": value, "value": value } }));
+                    self.dispatchEvent(new CustomEvent(self._PAGECOUNT, { detail: { previousValue: value, value: value } }));
                     // skip refresh
                     self._doRefreshEvent = false;
                 }
@@ -410,11 +472,15 @@ class PagingDataProviderView {
                 // double fetch. Also confirm that initial data has been loaded
                 if (self._doRefreshEvent) {
                     self._hasMutated = true;
+                    self._selfRefresh = true;
                     self.dispatchEvent(new oj.DataProviderRefreshEvent());
                 }
                 else {
                     self._dataResolveFunc(true);
                     self._doRefreshEvent = true;
+                }
+                if (self._isInitialDataLoaded) {
+                    self._dataResolveFunc(true);
                 }
             });
         });
@@ -478,7 +544,7 @@ class PagingDataProviderView {
                     self._pageCount = Math.ceil(self._totalSize / self._pageSize);
                     // update offsets and currentpage if needed
                     if (self._offset >= self._totalSize) {
-                        self._offset = self._totalSize - self._totalSize % self._pageSize;
+                        self._offset = self._totalSize - (self._totalSize % self._pageSize);
                         self._endItemIndex = self._totalSize - 1;
                         let newPage = Math.floor(self._totalSize / self._pageSize);
                         if (self._currentPage != newPage) {
@@ -490,17 +556,21 @@ class PagingDataProviderView {
                         }
                     }
                     if (previousPageCount != self._pageCount) {
-                        self.dispatchEvent(new CustomEvent(self._PAGECOUNT, { detail: { "previousValue": previousPageCount, "value": self._pageCount } }));
+                        self.dispatchEvent(new CustomEvent(self._PAGECOUNT, {
+                            detail: { previousValue: previousPageCount, value: self._pageCount }
+                        }));
                     }
                     else if (previousTotalSize != self._totalSize) {
-                        self.dispatchEvent(new CustomEvent(self._TOTALSIZE, { detail: { "previousValue": previousTotalSize, "value": self._totalSize } }));
+                        self.dispatchEvent(new CustomEvent(self._TOTALSIZE, {
+                            detail: { previousValue: previousTotalSize, value: self._totalSize }
+                        }));
                     }
                 }
                 return self._pageSize;
             });
         });
     }
-    // busy context for mutation event handling. 
+    // busy context for mutation event handling.
     // should block setPage calls until done
     _mutationBusyContext(callback) {
         let self = this;
@@ -529,7 +599,7 @@ class PagingDataProviderView {
                 // make sure currentPage is set
                 if (!value || self._currentPage == -1) {
                     self._isInitialized = null;
-                    throw new Error("Paging DataProvider View incorrectly initialized");
+                    throw new Error('Paging DataProvider View incorrectly initialized');
                 }
                 else {
                     self._isInitialized = null;
@@ -541,7 +611,7 @@ class PagingDataProviderView {
             return callback();
         }
     }
-    // helper method to check if paging control dataprovider view is initialized with data  
+    // helper method to check if paging control dataprovider view is initialized with data
     _checkIfDataInitialized(callback) {
         let self = this;
         if (this._isInitialDataLoaded) {
@@ -549,7 +619,7 @@ class PagingDataProviderView {
                 // make sure currentPage is set
                 if (!value || self._currentPage == -1) {
                     self._isInitialDataLoaded = null;
-                    throw new Error("Paging DataProvider View incorrectly initialized");
+                    throw new Error('Paging DataProvider View incorrectly initialized');
                 }
                 else {
                     self._isInitialDataLoaded = null;
@@ -571,10 +641,10 @@ class PagingDataProviderView {
     }
     // helper method to check that all params for the current fetched data are still the same
     _isSameParams(params) {
-        if (this._currentParams[this._SIZE] === params[this._SIZE]
-            && this._currentParams[this._OFFSET] === params[this._OFFSET]
-            && this._currentParams[this._SORTCRITERIA] === params[this._SORTCRITERIA]
-            && this._currentParams[this._FILTERCRITERION] === params[this._FILTERCRITERION]) {
+        if (this._currentParams[this._SIZE] === params[this._SIZE] &&
+            this._currentParams[this._OFFSET] === params[this._OFFSET] &&
+            this._currentParams[this._SORTCRITERIA] === params[this._SORTCRITERIA] &&
+            this._currentParams[this._FILTERCRITERION] === params[this._FILTERCRITERION]) {
             return true;
         }
         else {
@@ -585,8 +655,8 @@ class PagingDataProviderView {
     _isSameCriteria(sortCriteria, filterCriterion) {
         if (sortCriteria) {
             if (!this._currentSortCriteria ||
-                (sortCriteria[0]["attribute"] != this._currentSortCriteria[0]["attribute"]
-                    || sortCriteria[0]["direction"] != this._currentSortCriteria[0]["direction"])) {
+                sortCriteria[0]['attribute'] != this._currentSortCriteria[0]['attribute'] ||
+                sortCriteria[0]['direction'] != this._currentSortCriteria[0]['direction']) {
                 return false;
             }
         }
@@ -596,10 +666,21 @@ class PagingDataProviderView {
             }
         }
         if (filterCriterion) {
-            if (!this._currentFilterCriteria ||
-                (filterCriterion[0]["op"] != this._currentFilterCriteria[0]["op"]
-                    || filterCriterion[0]["filter"] != this._currentFilterCriteria[0]["filter"])) {
+            if (!this._currentFilterCriteria) {
                 return false;
+            }
+            else {
+                // need to do deep filter compare from both sides
+                for (const prop in this._currentFilterCriteria) {
+                    if (!this._filterCompare(this._currentFilterCriteria, filterCriterion, prop)) {
+                        return false;
+                    }
+                }
+                for (const prop in filterCriterion) {
+                    if (!this._filterCompare(this._currentFilterCriteria, filterCriterion, prop)) {
+                        return false;
+                    }
+                }
             }
         }
         else {
@@ -609,15 +690,23 @@ class PagingDataProviderView {
         }
         return true;
     }
+    _filterCompare(cachedFilter, newFilter, prop) {
+        if (cachedFilter[prop] && newFilter[prop] && cachedFilter[prop] == newFilter[prop]) {
+            return true;
+        }
+        return false;
+    }
     _isGlobal(params) {
-        return params.scope != undefined && params.scope === "global";
+        return params.scope != undefined && params.scope === 'global';
     }
     // helper method to get current page data
     _getCurrentPageData() {
         let self = this;
         // if params haven't changed, just return what we already have
         // Also need to check that offset and page size are properly set
-        if (self._currentParams && self._currentParams['offset'] === self._offset && self._currentParams['size'] === self._pageSize) {
+        if (self._currentParams &&
+            self._currentParams['offset'] === self._offset &&
+            self._currentParams['size'] === self._pageSize) {
             if (self._currentResults && !self._hasMutated) {
                 return new Promise(function (resolve) {
                     resolve(new self.FetchByOffsetResults(self, self._getLocalParams(self._currentParams), self._currentResults, self._currentIsDone));
@@ -630,7 +719,9 @@ class PagingDataProviderView {
             }
         }
         else {
-            return self._fetchByOffset(new self.FetchByOffsetParameters(self, self._offset, self._pageSize, self._currentSortCriteria, self._currentFilterCriteria)).then(function (result) {
+            return self
+                ._fetchByOffset(new self.FetchByOffsetParameters(self, self._offset, self._pageSize, self._currentSortCriteria, self._currentFilterCriteria))
+                .then(function (result) {
                 return result;
             });
         }
@@ -640,7 +731,11 @@ class PagingDataProviderView {
         let self = this;
         return this._checkIfInitialized(function () {
             // if params haven't changed, just return what we already have
-            if (self._currentParams && self._isSameParams(params) && !self._hasMutated) {
+            if (self._currentParams &&
+                self._isSameParams(params) &&
+                (!self._hasMutated || self._selfRefresh)) {
+                self._selfRefresh = false;
+                self._hasMutated = false;
                 return new Promise(function (resolve) {
                     resolve(new self.FetchByOffsetResults(self, self._getLocalParams(self._currentParams), self._currentResults, self._currentIsDone));
                 });
@@ -662,7 +757,8 @@ class PagingDataProviderView {
     _fetchByOffsetHelper(params) {
         let self = this;
         // perform a fetch by offset using the available params.
-        return self.dataProvider[self._FETCHBYOFFSET](params).then(function (result) {
+        return self.dataProvider[self._FETCHBYOFFSET](params)
+            .then(function (result) {
             // store results locally. If fetchMore is true, we should append instead of replace
             self._currentIsDone = result['done'];
             if (self._fetchMore) {
@@ -677,13 +773,16 @@ class PagingDataProviderView {
             let resultSize = self._currentResults.length;
             let newSize = self._offset + resultSize;
             if (result['done']) {
-                self._pageCount = Math.ceil((newSize) / self._pageSize);
+                self._pageCount = Math.ceil(newSize / self._pageSize);
                 // if partial, can change back to exact.
                 if (self._totalSizeConfidence) {
                     self._totalSizeConfidence = null;
                 }
             }
-            else if (!result['done'] && newSize >= self._totalSize && self._totalSize > -1 && params.size === self._pageSize) {
+            else if (!result['done'] &&
+                newSize >= self._totalSize &&
+                self._totalSize > -1 &&
+                params.size === self._pageSize) {
                 // we have more data than we expect given the totalSize, so we should be in partial mode
                 self._totalSizeConfidence = 'atLeast';
                 self._pageCount = self._pageCount + 1;
@@ -697,18 +796,25 @@ class PagingDataProviderView {
                 return self._fetchByOffsetHelper(newParams);
             }
             else if (!result['done'] && self._totalSize === -1) {
-                // either we haven't initialized total size yet, 
+                // either we haven't initialized total size yet,
                 // or we are in unknown row count mode
                 self._isUnknownRowCount = true;
             }
             // check if pageSize matches length or if length and offset hits total size.
-            if (self._pageSize == self._currentResults.length || (newSize >= self._totalSize && self._totalSize > -1)) {
+            if (self._pageSize == self._currentResults.length ||
+                (newSize >= self._totalSize && self._totalSize > -1)) {
                 self._currentIsDone = true;
+            }
+            // Truncate results down to pageSize if needed to prevent extra data
+            // bug JET-33250
+            if (resultSize > self._pageSize) {
+                self._currentResults.splice(self._pageSize);
             }
             // updated data so set mutated flag to false;
             self._hasMutated = false;
             return new self.FetchByOffsetResults(self, self._getLocalParams(self._currentParams), self._currentResults, self._currentIsDone);
-        }).catch(function (reject) {
+        })
+            .catch(function (reject) {
             // if fetch is rejected, set all current records to null and reject.
             self._hasMutated = false;
             self._fetchMore = false;
@@ -745,7 +851,7 @@ class PagingDataProviderView {
         return new self.FetchByOffsetParameters(self, newOffset, newSize, params.sortCriteria, params.filterCriterion);
     }
     // helper method to fetch data from dataprovider
-    // needs to make sure that no new mutation events have 
+    // needs to make sure that no new mutation events have
     // occurred while fetching to prevent mistakes.
     _mutationEventDataFetcher(callback) {
         let self = this;
@@ -757,7 +863,9 @@ class PagingDataProviderView {
                     self._endItemIndex = totalSize - 1;
                 }
             }
-            self._getCurrentPageData().then(function (result) {
+            self
+                ._getCurrentPageData()
+                .then(function (result) {
                 if (self._mustRefetch) {
                     self._mustRefetch = false;
                     self._hasMutated = true;
@@ -766,7 +874,8 @@ class PagingDataProviderView {
                 else {
                     callback(result);
                 }
-            }).catch(function (reject) {
+            })
+                .catch(function (reject) {
                 // try again if must refetch is true
                 if (self._mustRefetch) {
                     self._mustRefetch = false;
@@ -794,7 +903,7 @@ class PagingDataProviderView {
         let updateDataArray = [];
         let updateIndexArray = [];
         let updateKeySet = new Set();
-        //TODO iterate through previous page data vs current page data 
+        //TODO iterate through previous page data vs current page data
         // and generate the mutation event detail
         let previousPageData = self._currentResultsForMutation.map(function (item, index) {
             return { item: item, index: index };
@@ -815,9 +924,11 @@ class PagingDataProviderView {
             return previousPageDataKeys.indexOf(item.item.metadata.key) < 0;
         });
         // Use filtered mutation event queue to track update events
-        let updateMutationsIndices = self._mutationEventQueue.filter(function (item) {
+        let updateMutationsIndices = self._mutationEventQueue
+            .filter(function (item) {
             return !item.detail.add && !item.detail.remove && item.detail.update;
-        }).map(function (item) {
+        })
+            .map(function (item) {
             return item.detail.update.indexes;
         });
         // flatten array so we can check for duplicates
@@ -870,6 +981,20 @@ class PagingDataProviderView {
                 updateKeySet.add(metadata.key);
             });
         }
+        // bug 36520: Adding mutation offset tracker to support collection iterator
+        // based mutation event handling. Expected behavior should be: on remove event
+        // iterator is called and expected to provide the new rows to fill in the
+        // removed gap when we need add events that are out of current viewport range
+        // Table specific
+        let currentViewport = self._endItemIndex - self._offset - removeIndexArray.length;
+        let oocvAddIndexArray = addIndexArray.filter(function (index) {
+            return index >= currentViewport;
+        });
+        // Update mutation offset values
+        this._iteratorCacheMap.forEach(function (iteratorData, clientId) {
+            iteratorData['mutationOffset'] = oocvAddIndexArray.length;
+            this._iteratorCacheMap.set(clientId, iteratorData);
+        }.bind(this));
         // build mutation event detail and fire if not null
         let operationAddEventDetail = null;
         let operationRemoveEventDetail = null;
@@ -883,7 +1008,9 @@ class PagingDataProviderView {
         if (updateIndexArray.length > 0) {
             operationUpdateEventDetail = new self.DataProviderOperationEventDetail(self, updateKeySet, updateMetadataArray, updateDataArray, updateIndexArray);
         }
-        if (operationAddEventDetail != null || operationRemoveEventDetail != null || operationUpdateEventDetail != null) {
+        if (operationAddEventDetail != null ||
+            operationRemoveEventDetail != null ||
+            operationUpdateEventDetail != null) {
             let mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
             self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
         }
@@ -893,10 +1020,15 @@ class PagingDataProviderView {
         dataprovider.addEventListener(this._REFRESH, function (event) {
             // Treat it as a set page to 0 and refresh if not
             // directly after a mutation b/c mutation event trigger
-            // refresh naturally. Natural refreshes need to update 
-            // totalSize and force fetching. 
+            // refresh naturally. Natural refreshes need to update
+            // totalSize and force fetching.
             if (!self._hasMutated) {
                 self._hasMutated = true;
+                // If refresh occurs, setPage should complete before
+                // fetchFirst triggers. this will help resolve the order
+                self._isInitialDataLoaded = new Promise(function (resolve) {
+                    self._dataResolveFunc = resolve;
+                });
                 self._updateTotalSize().then(function () {
                     self.setPage(0, { pageSize: self._pageSize }).then(function () {
                         // if no data, set page skips refresh event dispatch,

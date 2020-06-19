@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 @import "../../utilities/oj.utilities";
 
 
@@ -22,7 +23,8 @@
 @if $includeTableClasses != false  {
   @include module-include-once("alta.android.table") {
     /* Styling for the sort ascending icon */
-    .oj-table-column-header-asc-icon {
+    .oj-table-column-header-asc-icon,
+    .oj-table-column-header-default-sort-icon {
       @extend .oj-fwk-icon-arrowtail-n;
     }
 

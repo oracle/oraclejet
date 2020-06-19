@@ -1,0 +1,350 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.formcontrol.switch.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.scss";
+@import "../../../form-control/themes/base/_oj-form-control.mixins.scss";
+
+
+
+  @include module-include-once("common.switch") {
+    /* switch */
+    /* --------------------------------------------------------------- */
+
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  @if $initialVisibility == hidden {
+    oj-switch:not(.oj-complete) {
+      visibility: hidden;
+    }
+  }
+
+	.oj-switch {
+		display: inline-block;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	.oj-switch .oj-switch-container {
+		position: relative;
+    min-height: var(--oj-core-touch-target-min-size);
+    min-width: var(--oj-core-touch-target-min-size);
+  }
+
+	.oj-switch .oj-switch-thumb {
+    box-sizing: content-box;
+		@include oj-ltr() {
+			left: var(--oj-switch-thumb-to-track-horizontal-margin);
+			right: auto;
+		}
+		@include oj-rtl() {
+			left: auto;
+      right: var(--oj-switch-thumb-to-track-horizontal-margin);
+		}
+	}
+
+	.oj-switch.oj-selected .oj-switch-thumb {
+		@include oj-ltr() {
+			left: auto;
+			right: var(--oj-switch-thumb-to-track-horizontal-margin);
+		}
+		@include oj-rtl() {
+			left: var(--oj-switch-thumb-to-track-horizontal-margin);
+			right: auto;
+		}
+	}
+
+	.oj-switch .oj-switch-track {
+
+      position: absolute;
+      top: 50%;
+      border-style: solid;
+      border-width: var(--oj-switch-track-border-width);
+      height: var(--oj-switch-track-height);
+      width: var(--oj-switch-track-width);
+      box-sizing: border-box;
+      transform: translate3d(0, -50%, 0);
+      border-radius: var(--oj-switch-track-border-radius);
+      transition: var(--oj-switch-track-transitions);
+
+
+  }
+  
+  //todo: This is reducing the size of the container from the touch target 
+  //  to the track height, but doesn't quite work
+  .oj-switch.oj-read-only .oj-switch-container {
+    min-height: var(--oj-switch-track-height);
+  }
+
+	.oj-switch.oj-read-only .oj-switch-track {
+
+      position: absolute;
+      top: 50%;
+      border-style: solid;
+      border-width: var(--oj-switch-track-border-width-readonly);
+      height: var(--oj-switch-track-height);
+      width: var(--oj-switch-track-width);
+      box-sizing: border-box;
+      transform: translate3d(0, -50%, 0);
+      border-radius: var(--oj-switch-track-border-radius);
+
+
+
+	}
+
+	// ENABLED OFF
+	.oj-switch,
+	.oj-switch.oj-default {
+
+
+      .oj-switch-track {
+        background-color: var(--oj-switch-track-bg-color);
+        border-color: var(--oj-switch-track-border-color);
+      }
+      .oj-switch-thumb {
+
+        position: absolute;
+        top: 50%;
+        border-style: solid;
+        border-width: var(--oj-switch-thumb-border-width);
+        height: var(--oj-switch-thumb-height);
+        width: var(--oj-switch-thumb-width);
+        box-sizing: border-box;
+        transform: translate3d(0, -50%, 0);
+        border-radius: var(--oj-switch-thumb-border-radius);
+        box-shadow: var(--oj-switch-thumb-box-shadow);
+        background-color: var(--oj-switch-thumb-bg-color);
+        border-color: var(--oj-switch-thumb-border-color);
+        transition:var(--oj-switch-thumb-transition-selected);
+      }
+
+
+	}
+
+	// ENABLED ON
+	.oj-switch.oj-selected {
+
+      .oj-switch-track {
+        background-color: var(--oj-switch-track-bg-color-selected);
+        border-color: var(--oj-switch-track-border-color-selected);
+      }
+      .oj-switch-thumb {
+
+        border-width: var(--oj-switch-thumb-border-width);
+        height: var(--oj-switch-thumb-height-selected);
+        width: var(--oj-switch-thumb-width-selected);
+        border-radius: var(--oj-switch-thumb-border-radius);
+        box-shadow: var(--oj-switch-thumb-box-shadow-selected);
+        background-color: var(--oj-switch-thumb-bg-color-selected);
+        border-color: var(--oj-switch-thumb-border-color-selected);
+        transition:var(--oj-switch-thumb-transition-deselected);
+      }
+
+
+	}
+
+  // HOVER OFF
+  .oj-switch.oj-hover:not(.oj-disabled):not(.oj-read-only) {
+
+      .oj-switch-track {
+        background-color: var(--oj-switch-track-bg-color-hover);
+        border-color: var(--oj-switch-track-border-color-hover);
+      }
+      .oj-switch-thumb {
+        cursor: var(--oj-core-cursor-clickable);
+        border-width: var(--oj-switch-thumb-border-width-hover);
+        height: var(--oj-switch-thumb-height-hover);
+        width: var(--oj-switch-thumb-width-hover);
+        border-radius: var(--oj-switch-thumb-border-radius);
+        box-shadow: none;
+        background-color: var(--oj-switch-thumb-bg-color-hover);
+        border-color: var(--oj-switch-thumb-border-color-hover);
+      }
+
+
+	}
+
+	// HOVER ON
+	.oj-switch.oj-selected.oj-hover {
+
+      .oj-switch-track {
+        background-color: var(--oj-switch-track-bg-color-selected-hover);
+        border-color: var(--oj-switch-track-border-color-selected-hover);
+      }
+      .oj-switch-thumb {
+
+        border-width: var(--oj-switch-thumb-border-width-selected-hover);
+        height: var(--oj-switch-thumb-height-selected-hover);
+        width: var(--oj-switch-thumb-width-selected-hover);
+        border-radius: var(--oj-switch-thumb-border-radius);
+        box-shadow: none;
+        background-color: var(--oj-switch-thumb-bg-color-selected-hover);
+        border-color: var(--oj-switch-thumb-border-color-selected-hover);
+      }
+
+
+	}
+
+	// ACTIVE OFF
+	.oj-switch.oj-active,
+	.oj-switch.oj-hover.oj-active .oj-switch-thumb {
+
+      .oj-switch-track {
+        background-color: var(--oj-switch-track-bg-color-active);
+        border-color: var(--oj-switch-track-border-color-active);
+      }
+      .oj-switch-thumb {
+
+        border-width: var(--oj-switch-thumb-border-width-active);
+        height: var(--oj-switch-thumb-height-active);
+        width: var(--oj-switch-thumb-width-active);
+        border-radius: var(--oj-switch-thumb-border-radius-active);
+        box-shadow: none;
+        background-color: var(--oj-switch-thumb-bg-color-active);
+        border-color: var(--oj-switch-thumb-border-color-active);
+        transform: translate3d(0, -50%, 0);
+        transition:var(--oj-switch-thumb-transition-active);
+      }
+
+
+	}
+
+	// ACTIVE ON
+	.oj-switch.oj-selected.oj-active,
+	.oj-switch.oj-selected.oj-hover.oj-active .oj-switch-thumb {
+
+      .oj-switch-track {
+        background-color: var(--oj-switch-track-bg-color-selected-active);
+        border-color: var(--oj-switch-track-border-color-selected-active);
+      }
+      .oj-switch-thumb {
+
+        border-width: var(--oj-switch-thumb-border-width-selected-active);
+        height: var(--oj-switch-thumb-height-selected-active);
+        width: var(--oj-switch-thumb-width-selected-active);
+        border-radius: var(--oj-switch-thumb-border-radius-selected-active);
+        box-shadow: none;
+        background-color: var(--oj-switch-thumb-bg-color-selected-active);
+        border-color: var(--oj-switch-thumb-border-color-selected-active);
+        transform: translate3d(0, -50%, 0);
+        transition:var(--oj-switch-thumb-transition-active);
+      }
+
+
+
+	}
+
+	// READONLY OFF
+	.oj-switch.oj-read-only {
+
+      .oj-switch-track {
+        background-color: var(--oj-switch-track-bg-color-readonly);
+        border-color: var(--oj-switch-track-border-color-readonly);
+      }
+      .oj-switch-thumb {
+
+        border-width: var(--oj-switch-thumb-border-width-readonly);
+        height: var(--oj-switch-thumb-height-readonly);
+        width: var(--oj-switch-thumb-width-readonly);
+        border-radius: var(--oj-switch-thumb-border-radius);
+        box-shadow: none;
+        background-color: var(--oj-switch-thumb-bg-color-readonly);
+        border-color: var(--oj-switch-thumb-border-color-readonly);
+        color: var(--oj-text-field-value-color-read-only);
+        font-weight: var(--oj-text-field-font-weight-read-only);
+        @include oj-ltr() {
+          left: 0;
+          right: auto;
+        }
+        @include oj-rtl() {
+          left: auto;
+          right: 0;
+        }
+      }
+
+
+	}
+
+	// READONLY ON
+	.oj-switch.oj-selected.oj-read-only {
+
+      .oj-switch-track {
+        background-color: var(--oj-switch-track-bg-color-selected-readonly);
+        border-color: var(--oj-switch-track-border-color-selected-readonly);
+      }
+      .oj-switch-thumb {
+
+        border-width: var(--oj-switch-thumb-border-width-readonly);
+        height: var(--oj-switch-thumb-height-selected-readonly);
+        width: var(--oj-switch-thumb-width-selected-readonly);
+        border-radius: var(--oj-switch-thumb-border-radius);
+        box-shadow: none;
+        background-color: var(--oj-switch-thumb-bg-color-selected-readonly);
+        border-color: var(--oj-switch-thumb-border-color-selected-readonly);
+        color: var(--oj-switch-text-color-selected-readonly);
+        @include oj-ltr() {
+          left: 0;
+          right: auto;
+        }
+        @include oj-rtl() {
+          left: auto;
+          right: 0;
+        }
+      }
+
+
+
+	}
+
+	// DISABLED OFF
+	.oj-switch.oj-disabled {
+
+      .oj-switch-track {
+        background-color: var(--oj-switch-track-bg-color-disabled);
+        border-color: var(--oj-switch-track-border-color-disabled);
+      }
+      .oj-switch-thumb {
+
+        border-width: var(--oj-switch-thumb-border-width);
+        height: var(--oj-switch-thumb-height-disabled);
+        width: var(--oj-switch-thumb-width-disabled);
+        border-radius: var(--oj-switch-thumb-border-radius);
+        box-shadow: none;
+        background-color: var(--oj-switch-thumb-bg-color-disabled);
+        border-color: var(--oj-switch-thumb-border-color-disabled);
+      }
+
+
+
+	}
+
+	// DISABLED ON
+	.oj-switch.oj-disabled.oj-selected {
+
+      .oj-switch-track {
+        background-color: var(--oj-switch-track-bg-color-selected-disabled);
+        border-color: var(--oj-switch-track-border-color-selected-disabled);
+      }
+      .oj-switch-thumb {
+
+        border-width: var(--oj-switch-thumb-border-width);
+        height: var(--oj-switch-thumb-height-selected-disabled);
+        width: var(--oj-switch-thumb-width-selected-disabled);
+        border-radius: var(--oj-switch-thumb-border-radius);
+        box-shadow: none;
+        background-color: var(--oj-switch-thumb-bg-color-selected-disabled);
+        border-color: var(--oj-switch-thumb-border-color-selected-disabled);
+      }
+
+
+
+	}
+
+	.oj-switch-thumb:not(.oj-focus-highlight):focus {
+		outline:none;
+	}
+
+ }

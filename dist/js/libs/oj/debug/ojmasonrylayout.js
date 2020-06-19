@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -1698,13 +1699,6 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
  * elements to match the visual layout order so that tab order and screen reader
  * reading order will match the visual layout order.
  *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
- *
  *
  * <h3 id="rtl-section">
  *   Reading direction
@@ -1986,6 +1980,27 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
   }
 
   // end static functions for drag-and-drop reordering ///////////////////////
+  // --------------------------------------------------- oj.ojmasonrylayout Styling Start -----------------------------------------------------------
+  /**
+   * Masonry tiles can be of pre-defined sizes spanning 1 to 3 columns and rows.
+   * There is a specific style class for each of the supported sizes.
+   * Use these classes on child elements of oj-masonry-layout. <br/>
+   * @ojstyletemplate oj-masonrylayout-tile-[tile-size]
+   * @ojdisplayname Tile Size
+   * @memberof oj.ojMasonryLayout
+   * @ojstyleselector "oj-masonry-layout *"
+   * @ojstyletemplatetokens ["StylingTemplateTokens.[tile-size]"]
+   * @ojtsexample
+   * &lt;oj-masonry-layout>
+   *   &lt;div  class="oj-masonrylayout-tile-1x1">
+   *     &lt;!-- Content 1 -->
+   *   &lt;/div>
+   *   &lt;div  class="oj-masonrylayout-tile-2x3">
+   *     &lt;!-- Content 2 -->
+   *   &lt;/div>
+   * &lt;/oj-masonry-layout>
+   */
+  // --------------------------------------------------- oj.ojmasonrylayout Styling End -----------------------------------------------------------
 
   oj.__registerWidget('oj.ojMasonryLayout', $.oj.baseComponent,
     {
@@ -2088,7 +2103,7 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
          * @instance
          * @ojcancelable
          * @ojshortdesc Event triggered when the default animation of a particular action is about to start. See the Help documentation for more information.
-         * @property {string} action The action that triggers the animation.
+         * @property {string} action The action that triggers the animation.<br><br>
          *            Supported values are:
          *                    <ul>
          *                      <li>"insert" - when a tile is inserted</li>
@@ -2144,7 +2159,7 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
          * @memberof oj.ojMasonryLayout
          * @instance
          * @ojshortdesc Event triggered when the default animation of a particular action has ended.
-         * @property {string} action The action that triggers the animation.
+         * @property {string} action The action that triggers the animation.</br></br>
          *            Supported values are:
          *                    <ul>
          *                      <li>"insert" - when a tile is inserted</li>
@@ -3846,12 +3861,12 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
         // setup for tiles themselves
         var tiles = jqElem.filter(options.reorderHandle);
         tiles
-          .attr(_DRAGGABLE, 'true')  // @HTMLUpdateOK
+          .attr(_DRAGGABLE, 'true') // @HTMLUpdateOK
           .addClass(_OJ_DRAGGABLE);
         // setup for descendants of tiles
         var reorderHandles = jqElem.find(options.reorderHandle);
         reorderHandles
-          .attr(_DRAGGABLE, 'true')  // @HTMLUpdateOK
+          .attr(_DRAGGABLE, 'true') // @HTMLUpdateOK
           .addClass(_OJ_DRAGGABLE);
       },
 
@@ -4530,55 +4545,6 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
        * @memberof oj.ojMasonryLayout
        */
 
-      /**
-       * <p>The following css classes can be used to specify the size of a masonry tile.
-       *
-       * <table class="generic-table styling-table">
-       *   <thead>
-       *     <tr>
-       *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-       *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>oj-masonrylayout-tile-1x1</td>
-       *       <td>A tile that spans 1 column and 1 row.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>oj-masonrylayout-tile-1x2</td>
-       *       <td>A tile that spans 1 column and 2 rows.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>oj-masonrylayout-tile-1x3</td>
-       *       <td>A tile that spans 1 column and 3 rows.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>oj-masonrylayout-tile-2x1</td>
-       *       <td>A tile that spans 2 columns and 1 row.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>oj-masonrylayout-tile-2x2</td>
-       *       <td>A tile that spans 2 columns and 2 rows.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>oj-masonrylayout-tile-2x3</td>
-       *       <td>A tile that spans 2 columns and 3 rows.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>oj-masonrylayout-tile-3x1</td>
-       *       <td>A tile that spans 3 columns and 1 row.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>oj-masonrylayout-tile-3x2</td>
-       *       <td>A tile that spans 3 columns and 2 rows.</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-       * @memberof oj.ojMasonryLayout
-       */
       // end API doc fragments ///////////////////////////////////////////////////////
 
     }); // end of oj.__registerWidget

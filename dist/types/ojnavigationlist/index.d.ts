@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
 import { KeySet } from '../ojkeyset';
 import { DataProvider } from '../ojdataprovider';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
@@ -190,12 +198,13 @@ export interface ojTabBar<K, D> extends baseComponent<ojTabBarSettableProperties
     as: string;
     currentItem: any;
     data: DataProvider<K, D> | null;
-    display: 'all' | 'icons';
+    display: 'all' | 'icons' | 'stacked';
     edge: 'top' | 'bottom' | 'start' | 'end';
     item: {
         renderer?: (((context: ojTabBar.ItemContext<K, D>) => void) | null);
         selectable?: (((context: ojTabBar.ItemContext<K, D>) => boolean) | boolean);
     };
+    layout: 'stretch' | 'condense';
     overflow: 'popup' | 'hidden';
     reorderable: 'enabled' | 'disabled';
     selection: any;
@@ -300,6 +309,8 @@ export namespace ojTabBar {
     // tslint:disable-next-line interface-over-type-literal
     type itemChanged<K, D> = JetElementCustomEvent<ojTabBar<K, D>["item"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type layoutChanged<K, D> = JetElementCustomEvent<ojTabBar<K, D>["layout"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type overflowChanged<K, D> = JetElementCustomEvent<ojTabBar<K, D>["overflow"]>;
     // tslint:disable-next-line interface-over-type-literal
     type reorderableChanged<K, D> = JetElementCustomEvent<ojTabBar<K, D>["reorderable"]>;
@@ -346,6 +357,7 @@ export interface ojTabBarEventMap<K, D> extends baseComponentEventMap<ojTabBarSe
     'displayChanged': JetElementCustomEvent<ojTabBar<K, D>["display"]>;
     'edgeChanged': JetElementCustomEvent<ojTabBar<K, D>["edge"]>;
     'itemChanged': JetElementCustomEvent<ojTabBar<K, D>["item"]>;
+    'layoutChanged': JetElementCustomEvent<ojTabBar<K, D>["layout"]>;
     'overflowChanged': JetElementCustomEvent<ojTabBar<K, D>["overflow"]>;
     'reorderableChanged': JetElementCustomEvent<ojTabBar<K, D>["reorderable"]>;
     'selectionChanged': JetElementCustomEvent<ojTabBar<K, D>["selection"]>;
@@ -355,12 +367,13 @@ export interface ojTabBarSettableProperties<K, D> extends baseComponentSettableP
     as: string;
     currentItem: any;
     data: DataProvider<K, D> | null;
-    display: 'all' | 'icons';
+    display: 'all' | 'icons' | 'stacked';
     edge: 'top' | 'bottom' | 'start' | 'end';
     item: {
         renderer?: (((context: ojTabBar.ItemContext<K, D>) => void) | null);
         selectable?: (((context: ojTabBar.ItemContext<K, D>) => boolean) | boolean);
     };
+    layout: 'stretch' | 'condense';
     overflow: 'popup' | 'hidden';
     reorderable: 'enabled' | 'disabled';
     selection: any;

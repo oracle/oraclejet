@@ -1,14 +1,15 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
 define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 
 'ojs/internal-deps/dvt/DvtGauge','ojs/ojlogger', 'ojs/ojconverterutils-i18n',
-'ojs/ojconverter-number', 'ojs/ojvalidation-number'], 
-function(oj, $, Config, comp, DvtAttributeUtils, dvt, Logger, ConverterUtils, NumberConverter)
+'ojs/ojconverter-number', 'ojs/ojlabelledbyutils', 'ojs/ojvalidation-number'], 
+function(oj, $, Config, comp, DvtAttributeUtils, dvt, Logger, ConverterUtils, NumberConverter, LabelledByUtils)
 {
   "use strict";
 var __oj_led_gauge_metadata = 
@@ -249,6 +250,13 @@ var __oj_rating_gauge_metadata =
         }
       }
     },
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
     "hoverState": {
       "type": "object",
       "properties": {
@@ -276,6 +284,9 @@ var __oj_rating_gauge_metadata =
           "value": {}
         }
       }
+    },
+    "labelledBy": {
+      "type": "string"
     },
     "max": {
       "type": "number",
@@ -514,6 +525,9 @@ var __oj_status_meter_gauge_metadata =
     "color": {
       "type": "string"
     },
+    "describedBy": {
+      "type": "string"
+    },
     "indicatorSize": {
       "type": "number",
       "value": 1
@@ -543,6 +557,9 @@ var __oj_status_meter_gauge_metadata =
           "value": ""
         }
       }
+    },
+    "labelledBy": {
+      "type": "string"
     },
     "max": {
       "type": "number",
@@ -793,6 +810,8 @@ var __oj_status_meter_gauge_metadata =
 
 /* global Logger:false, ConverterUtils:false, NumberConverter:false */
 
+/* global LabelledByUtils:false */
+
 /**
  * @ojcomponent oj.dvtBaseGauge
  * @augments oj.dvtBaseComponent
@@ -801,6 +820,25 @@ var __oj_status_meter_gauge_metadata =
  * @abstract
  */
 oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent, {
+  /**
+   * If custom element, get the labelledBy option, and set this
+   * onto the root dom element as aria-labelledby. We append "|label" so it matches the id that
+   * is on the oj-label's label element.
+   * @memberof oj.dvtBaseGauge
+   * @instance
+   * @private
+   *
+   */
+  _labelledByUpdatedForSet: LabelledByUtils._labelledByUpdatedForSet,
+
+  /**
+   * When describedBy changes, we need to update the aria-described attribute.
+   * @memberof oj.dvtBaseGauge
+   * @instance
+   * @private
+   */
+  _describedByUpdated: LabelledByUtils._describedByUpdated,
+
   /**
    * @override
    * @memberof oj.dvtBaseGauge
@@ -833,6 +871,17 @@ oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent, {
       readOnly: true
     };
     this.option('rawValue', this.options.value, flags);
+
+    if (this._SupportsOjLabel()) {
+      var labelledBy = this.options.labelledBy;
+
+      this._labelledByUpdatedForSet(this.element[0].id, null, labelledBy, this.element);
+    }
+  },
+  //* * @inheritdoc */
+  //* * @override */
+  _GetContentElement: function _GetContentElement() {
+    return this.element;
   },
   //* * @inheritdoc */
   _GetChildStyleClasses: function _GetChildStyleClasses() {
@@ -842,8 +891,8 @@ oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent, {
       path: 'metricLabel/style',
       property: 'TEXT'
     };
-    styleClasses['oj-gauge-tick-label'] = {
-      path: 'tickLabel/style',
+    styleClasses['oj-gauge-label'] = {
+      path: 'label/style',
       property: 'TEXT'
     };
     styleClasses['oj-gauge-threshold1'] = {
@@ -887,10 +936,21 @@ oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent, {
   },
 
   /**
+  * @protected
+  * @memberof oj.dvtBaseGauge
+  */
+  _SupportsOjLabel: function _SupportsOjLabel() {
+    return false;
+  },
+
+  /**
    * @override
    * @private
+   * @inheritdoc
    */
   _setOption: function _setOption(key, value, flags) {
+    var oldValue = this.options[key];
+
     if (key === 'rawValue') {
       // rawValue is a read-only option
       Logger.error("'rawValue' is a read-only option and cannot be set");
@@ -905,6 +965,21 @@ oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent, {
         readOnly: true
       };
       this.option('rawValue', value, rawValueFlags);
+    }
+
+    if (this._SupportsOjLabel()) {
+      var elem;
+
+      if (key === 'labelledBy') {
+        elem = this.element;
+
+        this._labelledByUpdatedForSet(elem[0].id, oldValue, value, elem);
+      }
+
+      if (key === 'describedBy') {
+        // This sets the aria-describedby on the correct dom node
+        this._describedByUpdated(oldValue, value);
+      }
     }
 
     this._super(key, value, flags);
@@ -1951,8 +2026,10 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge, {
     label: {
       /**
        * The CSS style object defining the style of the label.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
        * @expose
        * @name label.style
+       * @ojshortdesc The CSS style object defining the style of the label.
        * @memberof! oj.ojLedGauge
        * @instance
        * @type {Object=}
@@ -2032,8 +2109,10 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge, {
 
       /**
        * The CSS style object defining the style of the label.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
        * @expose
        * @name metricLabel.style
+       * @ojshortdesc The CSS style object defining the style of the label.
        * @memberof! oj.ojLedGauge
        * @instance
        * @type {Object=}
@@ -2135,6 +2214,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge, {
 
     /**
      * The inline style to apply to the gauge. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
+     * Only SVG CSS style properties are supported.
      * @expose
      * @name svgStyle
      * @memberof oj.ojLedGauge
@@ -2340,7 +2420,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge, {
  */
 
 /**
-* <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
+* <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content. The slot content must be a single &lt;template> element.
 * This slot takes precedence over the tooltip.renderer property if specified.
 * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
 * <ul>
@@ -2349,6 +2429,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge, {
 *
 *
 * @ojslot tooltipTemplate
+* @ojmaxitems 1
 * @ojslotitemprops oj.ojLedGauge.TooltipContext
 * @memberof oj.ojLedGauge
 * @ojshortdesc The tooltipTemplate slot is used to specify custom tooltip content. See the Help documentation for more information.
@@ -2378,6 +2459,8 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge, {
  *                     {propertyGroup: "data", items: ["value", "min", "max", "step"]} ]
  * @ojvbdefaultcolumns 4
  * @ojvbmincolumns 1
+ *
+ * @ojuxspecs ['gauge']
  *
  * @classdesc
  * <h3 id="ratingGaugeOverview-section">
@@ -2447,7 +2530,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
      */
     changedState: {
       /**
-       * The border color for changed state. Does not apply if a custom image is specified.
+       * The border color for changed state. Does not apply if a custom image is specified. The default value comes from the CSS and varies based on theme.
        * @expose
        * @name changedState.borderColor
        * @memberof! oj.ojRatingGauge
@@ -2471,7 +2554,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
        * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
        */
-      color: '#ED2C02',
+      color: '',
 
       /**
        * The shape to be used. Can take the name of a built-in shape or the SVG path commands for a custom shape. Does not apply if a custom image is specified.
@@ -2513,6 +2596,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
 
       /**
        * The inline style to apply to the changed state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
+       * Only SVG CSS style properties are supported.
        * @expose
        * @name changedState.svgStyle
        * @memberof! oj.ojRatingGauge
@@ -2535,7 +2619,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
      */
     hoverState: {
       /**
-       * The border color for hover state. Does not apply if a custom image is specified.
+       * The border color for hover state. Does not apply if a custom image is specified. The default value comes from the CSS and varies based on theme.
        * @expose
        * @name hoverState.borderColor
        * @memberof! oj.ojRatingGauge
@@ -2559,7 +2643,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
        * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
        */
-      color: '#007CC8',
+      color: '',
 
       /**
        * The shape to be used. Can take the name of a built-in shape or the SVG path commands for a custom shape. Does not apply if a custom image is specified.
@@ -2601,6 +2685,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
 
       /**
        * The inline style to apply to the hover state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
+       * Only SVG CSS style properties are supported.
        * @expose
        * @name hoverState.svgStyle
        * @memberof! oj.ojRatingGauge
@@ -2612,6 +2697,53 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
        */
       svgStyle: {}
     },
+
+    /**
+    * It is used to establish a relationship between this component and another element.
+    * A common use is to tie the oj-label and the oj-rating-gauge together for accessibility.
+    * The oj-label custom element has an id, and you use the labelled-by attribute
+    * to tie the two components together to facilitate correct screen reader behavior.
+    * @expose
+    * @name labelledBy
+    * @memberof oj.ojRatingGauge
+    * @ojshortdesc Establishes a relationship between this component and another element, typically an oj-label custom element. See the Help documentation for more information.
+    * @type {string|null}
+    * @public
+    * @instance
+    * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
+    * // getter
+    * var labelId = myRatingGauge.labelledBy;
+    *
+    * // setter
+    * myRatingGauge.labelledBy = "labelId";
+    *
+    */
+    labelledBy: null,
+
+    /**
+     * It is used to establish a relationship between this component and another element.
+     * Typically this is not used by the application developer, but by the oj-label custom element's
+     * code. One use case is where the oj-label custom element code writes described-by
+     * on its form component for accessibility reasons.
+     * To facilitate correct screen reader behavior, the described-by attribute is
+     * copied to the aria-describedby attribute on the component's dom element.
+     * @expose
+     * @name describedBy
+     * @memberof oj.ojRatingGauge
+     * @ojshortdesc Specifies a relationship between this component and another element.
+     * @type {string|null}
+     * @public
+     * @instance
+     *
+     * @example <caption>Get or set the <code class="prettyprint">describedBy</code> property after initialization:</caption>
+     * // getter
+     * var descById = myRatingGauge.describedBy;
+     *
+     * // setter
+     * myRatingGauge.describedBy = "someId";
+     *
+     */
+    describedBy: null,
 
     /**
      * Integer value specifying the maximum value of the gauge, which determines the number of shapes or images that are displayed.
@@ -2647,6 +2779,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
      * @ojvalue {string} "vertical"
      * @ojvalue {string} "horizontal"
      * @default "horizontal"
+     * @ojdeprecated {since: '9.0.0', description: 'Usage of vertical rating gauges is not recommended.'}
      */
     orientation: 'horizontal',
 
@@ -2694,6 +2827,17 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
     readonly: false,
 
     /**
+     * Defines whether the gauge is disabled or not. User interaction is prevented if set to <code>true</code>. Visual indication will not be present when custom image source is used. Other state specific <code>svg-class-name</code> and <code>svg-style</code> will be overridden by disabled default style.
+     * @expose
+     * @name disabled
+     * @memberof oj.ojRatingGauge
+     * @instance
+     * @type {boolean}
+     * @default false
+     */
+    disabled: false,
+
+    /**
      * The selected shape for the gauge.
      * @expose
      * @name selectedState
@@ -2703,7 +2847,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
      */
     selectedState: {
       /**
-       * The border color for selected state. Does not apply if a custom image is specified.
+       * The border color for selected state. Does not apply if a custom image is specified. The default value comes from the CSS and varies based on theme.
        * @expose
        * @name selectedState.borderColor
        * @memberof! oj.ojRatingGauge
@@ -2727,7 +2871,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
        * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
        */
-      color: '#F8C15A',
+      color: '',
 
       /**
        * The shape to be used. Can take the name of a built-in shape or the SVG path commands for a custom shape. Does not apply if a custom image is specified.
@@ -2769,6 +2913,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
 
       /**
        * The inline style to apply to the selected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
+       * Only SVG CSS style properties are supported.
        * @expose
        * @name selectedState.svgStyle
        * @memberof! oj.ojRatingGauge
@@ -2845,7 +2990,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
      */
     unselectedState: {
       /**
-       * The border color for unselected state. Does not apply if a custom image is specified.
+       * The border color for unselected state. Does not apply if a custom image is specified. The default value comes from the CSS and varies based on theme.
        * @expose
        * @name unselectedState.borderColor
        * @memberof! oj.ojRatingGauge
@@ -2869,7 +3014,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
        * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
        */
-      color: '#C4CED7',
+      color: '',
 
       /**
        * The shape to be used. Can take the name of a built-in shape or the SVG path commands for a custom shape. Does not apply if a custom image is specified.
@@ -2911,6 +3056,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
 
       /**
        * The inline style to apply to the unselected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
+       * Only SVG CSS style properties are supported.
        * @expose
        * @name unselectedState.svgStyle
        * @memberof! oj.ojRatingGauge
@@ -2980,6 +3126,40 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
     return styleClasses;
   },
   //* * @inheritdoc */
+  _GetChildStyleClasses: function _GetChildStyleClasses() {
+    var styleClasses = this._super();
+
+    styleClasses['oj-rating-gauge-hover'] = [{
+      path: 'hoverState/color',
+      property: 'fill'
+    }, {
+      path: 'hoverState/borderColor',
+      property: 'stroke'
+    }];
+    styleClasses['oj-rating-gauge-selected'] = [{
+      path: 'selectedState/color',
+      property: 'fill'
+    }, {
+      path: 'selectedState/borderColor',
+      property: 'stroke'
+    }];
+    styleClasses['oj-rating-gauge-unselected'] = [{
+      path: 'unselectedState/color',
+      property: 'fill'
+    }, {
+      path: 'unselectedState/borderColor',
+      property: 'stroke'
+    }];
+    styleClasses['oj-rating-gauge-changed'] = [{
+      path: 'changedState/color',
+      property: 'fill'
+    }, {
+      path: 'changedState/borderColor',
+      property: 'stroke'
+    }];
+    return styleClasses;
+  },
+  //* * @inheritdoc */
   _Render: function _Render() {
     // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
     if (this.element.attr('title')) {
@@ -2992,6 +3172,13 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
 
 
     this._super();
+  },
+
+  /**
+  * @private
+  */
+  _SupportsOjLabel: function _SupportsOjLabel() {
+    return this._IsCustomElement();
   },
   //* * @inheritdoc */
   // eslint-disable-next-line no-unused-vars
@@ -3172,6 +3359,8 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
  *                     {propertyGroup: "data", items: ["value", "min", "max", "step", "thresholds", "referenceLines"]} ]
  * @ojvbdefaultcolumns 4
  * @ojvbmincolumns 1
+ *
+ * @ojuxspecs ['gauge']
  *
  * @classdesc
  * <h3 id="statusMeterGaugeOverview-section">
@@ -3393,6 +3582,8 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
        * The CSS style object defining the style of the label.
        * @expose
        * @name label.style
+       * @ojshortdesc The CSS style object to apply to the label.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
        * @memberof! oj.ojStatusMeterGauge
        * @instance
        * @type {Object=}
@@ -3414,6 +3605,53 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
        */
       text: ''
     },
+
+    /**
+     * It is used to establish a relationship between this component and another element.
+     * A common use is to tie the oj-label and the oj-status-meter-gauge together for accessibility.
+     * The oj-label custom element has an id, and you use the labelled-by attribute
+     * to tie the two components together to facilitate correct screen reader behavior.
+     * @expose
+     * @name labelledBy
+     * @ojshortdesc Establishes a relationship between this component and another element, typically an oj-label custom element. See the Help documentation for more information.
+     * @memberof oj.ojStatusMeterGauge
+     * @public
+     * @instance
+     * @type {string|null}
+     * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
+     * // getter
+     * var labelId = myStatusMeterGauge.labelledBy;
+     *
+     * // setter
+     * myStatusMeterGauge.labelledBy = "labelId";
+     *
+     */
+    labelledBy: null,
+
+    /**
+     * @expose
+     * It is used to establish a relationship between this component and another element.
+     * Typically this is not used by the application developer, but by the oj-label custom element's
+     * code. One use case is where the oj-label custom element code writes described-by
+     * on its form component for accessibility reasons.
+     * To facilitate correct screen reader behavior, the described-by attribute is
+     * copied to the aria-describedby attribute on the component's dom element.
+     * @name describedBy
+     * @ojshortdesc Specifies a relationship between this component and another element.
+     * @memberof oj.ojStatusMeterGauge
+     * @public
+     * @instance
+     * @type {string|null}
+     *
+     * @example <caption>Get or set the <code class="prettyprint">describedBy</code> property after initialization:</caption>
+     * // getter
+     * var descById = myStatusMeterGauge.describedBy;
+     *
+     * // setter
+     * myStatusMeterGauge.describedBy = "someId";
+     *
+     */
+    describedBy: null,
 
     /**
      * The maximum value of the gauge.
@@ -3503,8 +3741,10 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
 
       /**
        * The CSS style object defining the style of the label.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
        * @expose
        * @name metricLabel.style
+       * @ojshortdesc The CSS style object to apply to the label.
        * @memberof! oj.ojStatusMeterGauge
        * @instance
        * @type {Object=}
@@ -3644,6 +3884,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
 
       /**
        * The inline style to apply to the plot area. The style class and inline style will override any other styling specified through the properties.
+       * Only SVG CSS style properties are supported.
        * @expose
        * @name plotArea.svgStyle
        * @memberof! oj.ojStatusMeterGauge
@@ -3738,6 +3979,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
 
     /**
      * The inline style to apply to the gauge indicator. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
+     * Only SVG CSS style properties are supported.
      * @expose
      * @name svgStyle
      * @memberof oj.ojStatusMeterGauge
@@ -3864,6 +4106,13 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
       path: 'center/renderer',
       slot: 'centerTemplate'
     }];
+  },
+
+  /**
+  * @private
+  */
+  _SupportsOjLabel: function _SupportsOjLabel() {
+    return this._IsCustomElement();
   },
   //* * @inheritdoc */
   _ProcessOptions: function _ProcessOptions() {

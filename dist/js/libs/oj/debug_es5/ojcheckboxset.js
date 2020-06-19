@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -47,10 +48,6 @@ var __oj_checkboxset_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -147,6 +144,15 @@ var __oj_checkboxset_metadata =
         }
       }
     },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
+    },
     "valid": {
       "type": "string",
       "writeback": true,
@@ -227,6 +233,8 @@ var __oj_checkboxset_metadata =
    * @ojvbdefaultcolumns 6
    * @ojvbmincolumns 2
    *
+   * @ojuxspecs ['checkboxset']
+   *
    * @classdesc
    * <h3 id="checkboxsetOverview-section">
    *   JET Checkboxset
@@ -297,11 +305,6 @@ var __oj_checkboxset_metadata =
    * <code class="prettyprint">labelled-by</code> attribute on the oj-checkboxset to be the
    * oj-label's <code class="prettyprint">id</code>.
    * </p>
-   * <h3 id="styling-section">
-   *   Styling
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
-   * </h3>
-   * {@ojinclude "name":"stylingDoc"}
    *
    * @example <caption>Initialize the checkboxset with no attributes specified:</caption>
    * &lt;oj-checkboxset id="colorCheckbox" value="{{currentColor}}">
@@ -320,6 +323,68 @@ var __oj_checkboxset_metadata =
    * // set the value to "ciao". (The 'ciao' checkbox will be checked)
    * myComp.value = ["ciao"];
    */
+  // --------------------------------------------------- oj.ojCheckboxset Styling Start ------------------------------------------------------------
+
+  /**
+  * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+  */
+  // ---------------- oj-choice-direction-column --------------
+
+  /**
+  * Use this style class to lay out the checkboxes in a column. This is the default.
+  * @ojstyleclass oj-choice-direction-column
+  * @ojdisplayname Column Layout
+  * @memberof oj.ojCheckboxset
+  * @ojtsexample
+  * &lt;oj-checkboxset id="checkboxsetId" class="oj-choice-direction-column">
+  *   &lt;!-- Content -->
+  * &lt;/oj-checkboxset>
+  */
+
+  /**
+  * Use this style class to lay out the checkboxes in a row.
+  * @ojstyleclass oj-choice-direction-row
+  * @ojdisplayname Row Layout
+  * @memberof oj.ojCheckboxset
+  * @ojtsexample
+  * &lt;oj-checkboxset id="checkboxsetId" class="oj-choice-direction-row">
+  *   &lt;!-- Content -->
+  * &lt;/oj-checkboxset>
+  */
+
+  /**
+  * Use this style class if you don't want the chrome around the set.
+  * @ojstyleclass oj-checkboxset-no-chrome
+  * @ojdisplayname No Chrome
+  * @memberof oj.ojCheckboxset
+  * @ojtsexample
+  * &lt;oj-checkboxset id="checkboxsetId" class="oj-checkboxset-no-chrome">
+  *   &lt;!-- Content -->
+  * &lt;/oj-checkboxset>
+  */
+
+  /**
+  * Use this style class to order the checkbox at the start and label text at the end, even if a theme has a different default order.
+  * @ojstyleclass oj-checkboxset-input-start
+  * @ojdisplayname Input Start
+  * @memberof oj.ojCheckboxset
+  * @ojtsexample
+  * &lt;oj-checkboxset id="checkboxsetId" class="oj-checkboxset-input-start">
+  *   &lt;!-- Content -->
+  * &lt;/oj-checkboxset>
+  */
+
+  /**
+  * Use this style class to order the checkbox at the end and the label text at the start, even if a theme has a different default order.
+  * @ojstyleclass oj-checkboxset-input-end
+  * @ojdisplayname Input End
+  * @memberof oj.ojCheckboxset
+  * @ojtsexample
+  * &lt;oj-checkboxset id="checkboxsetId" class="oj-checkboxset-input-end">
+  *   &lt;!-- Content -->
+  * &lt;/oj-checkboxset>
+  */
+  // --------------------------------------------------- oj.ojCheckboxset Styling End ------------------------------------------------------------
 
   oj.__registerWidget('oj.ojCheckboxset', $.oj.editableValue, {
     version: '1.0.0',
@@ -385,9 +450,15 @@ var __oj_checkboxset_metadata =
       labelledBy: null,
 
       /**
-       * Whether the component is readonly. The readOnly property sets or returns whether an element is readOnly, or not.
-       * A readOnly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
+       * Whether the component is readonly. The readonly property sets or returns whether an element is readonly, or not.
+       * A readonly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
        * If you want to prevent the user from interacting with the element, use the disabled property instead.
+       * <p>
+       * The oj-form-layout provides its readonly attribute value and the form components
+       * consume it if it is not already set explicitly.
+       * For example, if oj-form-layout is set to readonly='true',
+       * all the form components it contains will be readonly='true' by default.
+       * </p>
        *
        * @example <caption>Initialize component with <code class="prettyprint">readonly</code> attribute:</caption>
        * &lt;oj-checkboxset readonly>&lt;/oj-checkboxset>
@@ -969,13 +1040,12 @@ var __oj_checkboxset_metadata =
       $(element.get(0).childNodes).filter(function () {
         return !(this.getAttribute && this.getAttribute('slot') === 'contextMenu');
       }).wrapAll("<div class='oj-checkboxset-wrapper oj-form-control-container'></div>"); // @HTMLUpdateOK
-      // if readonly, set tabindex and aria-readonly on the wrapper
+      // if readonly, set tabindex on the wrapper
 
       if (this.options.readOnly) {
         var domElem = this.element[0];
         var wrapperDom = domElem.querySelector('.oj-checkboxset-wrapper');
         wrapperDom.setAttribute('tabindex', 0);
-        wrapperDom.setAttribute('aria-readonly', 'true');
       }
 
       this._on(this._events);
@@ -1127,10 +1197,10 @@ var __oj_checkboxset_metadata =
           wrapperDom = domElem;
         }
 
-        var novaluespan = domElem.querySelector('[data-no-value-span]'); // Remove the old no-value span, if there is one and there is a current selection.
+        var novaluespan = domElem.querySelector('[data-no-value-span]'); // Remove the old no-value span when there is one and there is a current selection or not in readonly mode
 
         if (novaluespan) {
-          if (numSelected > 0) {
+          if (numSelected > 0 || !this.options.readOnly) {
             novaluespan.parentElement.removeChild(novaluespan);
           }
         } else if (numSelected === 0 && this.options.readOnly) {
@@ -1138,6 +1208,7 @@ var __oj_checkboxset_metadata =
           var span = document.createElement('span');
           span.setAttribute('data-no-value-span', '');
           span.setAttribute('class', 'oj-choice-item');
+          span.setAttribute('aria-readonly', true);
           var noCheckboxSelected = this.getTranslatedString('readonlyNoValue');
 
           if (noCheckboxSelected !== null) {
@@ -1214,7 +1285,13 @@ var __oj_checkboxset_metadata =
           var isLastOption = i === selectedArrayLength - 1;
 
           this._initReadonlyLabelFromOjOption(elem, parentSpan, isLastOption);
+        } else if (isAlreadyProcessed && parentSpan) {
+          // remove 'aria-readonly' for unselected options.
+          parentSpan.removeAttribute('aria-readonly');
         }
+      } else if (isAlreadyProcessed && parentSpan) {
+        // remove 'aria-readonly' for all options when set value to empty
+        parentSpan.removeAttribute('aria-readonly');
       }
     },
 
@@ -1245,14 +1322,29 @@ var __oj_checkboxset_metadata =
       // setting the initial value for these elements.
 
       if (!alreadyProcessed) {
-        span = document.createElement('span');
         checkbox = document.createElement('input');
-        label = document.createElement('label');
-        span.setAttribute('class', 'oj-choice-item');
         checkbox.setAttribute('type', 'checkbox'); // The value is needed for accessibiliy of the image used for the checkbox
 
         checkbox.setAttribute('value', ojoption.value);
-        checkbox.setAttribute('id', checkboxId);
+        checkbox.setAttribute('id', checkboxId); // in readonly mode, if a option is selected, the <oj-option> will be surrounded by <label> tag
+        // if a option is selected, we can set attribute for the previous label and there is no need to create a new label
+        // if a option is not selected, we need to create a new label.
+
+        if (ojoption.parentElement.nodeName === 'LABEL') {
+          label = ojoption.parentElement;
+          label.parentElement.insertBefore(checkbox, label); // remove 'aria-readonly' when toggle readonly to false
+
+          label.parentElement.removeAttribute('aria-readonly');
+        } else {
+          span = document.createElement('span');
+          label = document.createElement('label');
+          span.setAttribute('class', 'oj-choice-item');
+          ojoption.parentElement.insertBefore(span, ojoption);
+          span.appendChild(checkbox);
+          span.appendChild(label);
+          label.appendChild(ojoption);
+        }
+
         label.setAttribute('for', checkboxId); // if the ojoption doesn't have any textContent, hide the label element.  The use case for
         // this is the case where you have an oj-checkboxset with one checkbox with no label (i.e. you
         // specify one oj-option with no textContent).  We want to hide the generated label element so
@@ -1262,14 +1354,11 @@ var __oj_checkboxset_metadata =
 
         if (!ojoption.textContent || ojoption.textContent === '') {
           label.classList.add('oj-helper-hidden');
-        }
+        } // in readonly mode, options are not selected will be hidden
+        // when we toggle readonly to false, we need to remove the 'oj-helper-hidden' class
 
-        ojoption.parentElement.insertBefore(span, ojoption); // @HTMLUpdateOK
 
-        label.appendChild(ojoption); // append the oj-option as a child of label
-
-        span.appendChild(checkbox);
-        span.appendChild(label);
+        ojoption.classList.remove('oj-helper-hidden');
       } else {
         // find the parent label element.  This is the element we need to hide if there is no text
         // content in the oj-option
@@ -1316,10 +1405,16 @@ var __oj_checkboxset_metadata =
       var name = this.element[0].id; // Use the id of the ojcheckboxset as the name of the oj-options.
 
       var ariaLabel = ojoption.getAttribute('aria-label');
-      var ariaLabelledBy = ojoption.getAttribute('aria-labelledby'); // The value attribute of the checkbox only supports text, so we need to be
+      var ariaLabelledBy = ojoption.getAttribute('aria-labelledby');
+      var separatorNode = label.querySelector('span[data-oj-internal]');
+
+      if (separatorNode) {
+        separatorNode.parentElement.removeChild(separatorNode);
+      } // The value attribute of the checkbox only supports text, so we need to be
       // able to access the oj-option's value property instead.  This attribute
       // is a link back to the oj-option so that we don't need to use dom traversal
       // to get to the oj-option to get its value.
+
 
       checkbox.setAttribute('data-oj-option-id', id);
 
@@ -1368,7 +1463,7 @@ var __oj_checkboxset_metadata =
         }
       }
 
-      var label;
+      var label = document.createElement('label');
       var ojoption = elem;
       var isRowDirection = this.element.hasClass('oj-choice-direction-row');
       var needsSeparator = isRowDirection && !isLastOption;
@@ -1383,15 +1478,24 @@ var __oj_checkboxset_metadata =
         // so we would need to hide the input as we only show label in case of readonly and not input.
 
         if (checkboxExists) {
-          checkbox.parentElement.classList.add('oj-helper-hidden');
+          checkbox.parentElement.classList.add('oj-helper-hidden'); // when we toggle readonly to true, we need to remove the checkbox element.
+
+          var oldlabel = checkbox.parentElement.nextElementSibling;
+
+          if (oldlabel !== null) {
+            label.appendChild(ojoption);
+            parentSpan.removeChild(oldlabel.previousSibling);
+            parentSpan.removeChild(oldlabel);
+            parentSpan.appendChild(label);
+          }
         }
 
         parentSpan.classList.remove('oj-helper-hidden');
+        parentSpan.setAttribute('aria-readonly', true);
         toggleLabelSeparator(ojoption.parentElement, needsSeparator);
       } else {
         elem.classList.remove('oj-helper-hidden');
         var span = document.createElement('span');
-        label = document.createElement('label');
         ojoption.parentElement.insertBefore(span, ojoption); // @HTMLUpdateOK
 
         span.setAttribute('class', 'oj-choice-item');
@@ -1403,6 +1507,7 @@ var __oj_checkboxset_metadata =
         }
 
         span.appendChild(label);
+        span.setAttribute('aria-readonly', true);
       }
     },
     // custom oj-option renderer
@@ -1437,7 +1542,7 @@ var __oj_checkboxset_metadata =
      * @instance
      * @private
      */
-    _updateLabelledBy: LabelledByUtils._updateLabelledBy,
+    _labelledByUpdatedForSet: LabelledByUtils._labelledByUpdatedForSet,
 
     /**
      * Returns a jquery object that is a set of elements that are input type checkbox
@@ -1513,6 +1618,13 @@ var __oj_checkboxset_metadata =
         } else {
           this.element.removeClass('oj-checkboxset-single');
         }
+      } // add to the root dom the style class 'oj-read-only'
+
+
+      if (this.options.readOnly) {
+        this.element.addClass('oj-read-only');
+      } else {
+        this.element.removeClass('oj-read-only');
       } // add to the root dom the style class 'oj-choice-direction-column'
       // if there isn't already a 'oj-choice-direction-row' or 'oj-choice-direction-column' there.
 
@@ -1525,7 +1637,7 @@ var __oj_checkboxset_metadata =
 
       var widget = this.widget();
 
-      this._updateLabelledBy(widget[0], null, this.options.labelledBy, widget);
+      this._labelledByUpdatedForSet(widget[0].id, null, this.options.labelledBy, widget);
     },
     _events: {
       change: function change(event) {
@@ -1798,6 +1910,20 @@ var __oj_checkboxset_metadata =
     },
 
     /**
+     * This is called from InlineHelpHintsStrategy to determine
+     * the location of the inline help hints, above the component
+     * or below.
+     * @ignore
+     * @protected
+     * @override
+     * @memberof oj.ojCheckboxset
+     * @return {'above'|'inline'}
+     */
+    _ShowHelpHintsLocation: function _ShowHelpHintsLocation() {
+      return 'above';
+    },
+
+    /**
      * Performs post processing after required option is set by taking the following steps.
      *
      * - if component is invalid and has messgesShown -> required: false/true -> clear component errors;
@@ -1869,17 +1995,24 @@ var __oj_checkboxset_metadata =
         case 'readOnly':
           this.options.readOnly = !!value;
           var wrapperDom = this.element[0].querySelector('.oj-checkboxset-wrapper');
+          var val = this.options.value;
 
           if (this.options.readOnly) {
             wrapperDom.setAttribute('tabindex', 0);
-            wrapperDom.setAttribute('aria-readonly', 'true');
+            this.element.addClass('oj-read-only');
           } else {
             // remove tabindex and role
-            wrapperDom.removeAttribute('tabindex');
-            wrapperDom.removeAttribute('aria-readonly');
+            wrapperDom.removeAttribute('tabindex'); // remove oj-read-only class
+
+            this.element.removeClass('oj-read-only');
           }
 
-          this._processOjOptions();
+          this._ResetComponentState(); // when toggle readonly to false, we need to check the initial set values.
+
+
+          if (val != null) {
+            this._SetDisplayValue(val);
+          }
 
           break;
 
@@ -1892,7 +2025,7 @@ var __oj_checkboxset_metadata =
           // remove the old one and add the new one
           var widget = this.widget();
 
-          this._updateLabelledBy(widget[0], originalValue, value, widget);
+          this._labelledByUpdatedForSet(widget[0].id, originalValue, value, widget);
 
           break;
 
@@ -2145,82 +2278,6 @@ var __oj_checkboxset_metadata =
     * @memberof oj.ojCheckboxset
     */
 
-    /**
-     * {@ojinclude "name":"ojStylingDocIntro"}
-     *
-     * <table class="generic-table styling-table">
-     *   <thead>
-     *     <tr>
-     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocExampleHeader"}</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>oj-choice-direction-column</td>
-     *       <td>This is the default. It lays out the checkboxes in a column.
-     *       </td>
-     *       <td>
-     * <pre class="prettyprint">
-     * <code>&lt;oj-checkboxset id="checkboxsetId"
-     *  class="oj-checkboxset-direction-column">
-     * </code></pre>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-choice-direction-row</td>
-     *       <td>It lays out the checkboxes in a row.
-     *       </td>
-     *       <td>
-     * <pre class="prettyprint">
-     * <code>&lt;oj-checkboxset id="checkboxsetId"
-     *   class="oj-choice-direction-row">
-     * </code></pre>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-checkboxset-no-chrome</td>
-     *       <td>Use this styleclass if you don't want the chrome around the set.
-     *       </td>
-     *       <td>
-     * <pre class="prettyprint">
-     * <code>&lt;oj-checkboxset id="checkboxsetId"
-     *  class="oj-checkboxset-no-chrome">
-     * </code></pre>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-checkboxset-input-start</td>
-     *       <td>Use this styleclass to order the checkbox at the start and label text at the end
-     *       even if a theme has a different default order.
-     *       </td>
-     *       <td>
-     * <pre class="prettyprint">
-     * <code>&lt;oj-checkboxset id="checkboxsetId"
-     *  class="oj-checkboxset-input-start">
-     * </code></pre>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-checkboxset-input-end</td>
-     *       <td>Use this styleclass to order the checkbox at the end and the label text at the start
-     *       even if a theme has a different default order.
-     *       </td>
-     *       <td>
-     * <pre class="prettyprint">
-     * <code>&lt;oj-checkboxsetid="checkboxsetId"
-     *  class="oj-checkboxset-input-end" >
-     * </code></pre>
-     *       </td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-     * @memberof oj.ojCheckboxset
-     */
-
   }); // ////////////////     SUB-IDS     //////////////////
 
   /**
@@ -2245,7 +2302,24 @@ var __oj_checkboxset_metadata =
     readonly: 'readOnly'
   };
   oj.CustomElementBridge.register('oj-checkboxset', {
-    metadata: __oj_checkboxset_metadata
+    metadata: oj.CollectionUtils.mergeDeep(__oj_checkboxset_metadata, {
+      properties: {
+        readonly: {
+          binding: {
+            consume: {
+              name: 'readonly'
+            }
+          }
+        },
+        userAssistanceDensity: {
+          binding: {
+            consume: {
+              name: 'userAssistanceDensity'
+            }
+          }
+        }
+      }
+    })
   });
 })();
 

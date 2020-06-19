@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -43,10 +44,6 @@ var __oj_color_spectrum_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -118,6 +115,15 @@ var __oj_color_spectrum_metadata =
         }
       }
     },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
+    },
     "valid": {
       "type": "string",
       "writeback": true,
@@ -188,9 +194,9 @@ var __oj_color_spectrum_metadata =
   function _getHslFromRgb(color) {
     var hsl = _rgbToHsl(color.getRed(), color.getGreen(), color.getBlue());
 
-    hsl[0] *= 360;    // hsl was returned in [0,1] so transform into
-    hsl[1] *= 100;    // [0,360] for hue, and [0,100] for
-    hsl[2] *= 100;    // saturation/luminance
+    hsl[0] *= 360; // hsl was returned in [0,1] so transform into
+    hsl[1] *= 100; // [0,360] for hue, and [0,100] for
+    hsl[2] *= 100; // saturation/luminance
     hsl.push(color.getAlpha());
 
     return hsl;
@@ -268,6 +274,8 @@ var __oj_color_spectrum_metadata =
    * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
    * @ojvbdefaultcolumns 4
    * @ojvbmincolumns 4
+   *
+   * @ojuxspecs ['color-spectrum']
    *
    * @classdesc
    * <h3 id="colorSpectrumOverview-section">
@@ -386,7 +394,7 @@ var __oj_color_spectrum_metadata =
          */
         rawValue: null,
 
-      },   // end options
+      }, // end options
 
       //* * @inheritdoc */
       getNodeBySubId: function (locator) {
@@ -479,7 +487,7 @@ var __oj_color_spectrum_metadata =
         if (this._$boundElem) {
           this._clearListeners();
           this._destroySliders();
-          this._removeMarkup();          // remove our markup from dom
+          this._removeMarkup(); // remove our markup from dom
 
           this._$boundElem.removeClass('oj-colorspectrum');
 
@@ -512,7 +520,7 @@ var __oj_color_spectrum_metadata =
 
         this._super();
 
-        this._updateLabelledBy(this.element[0], null,
+        this._labelledByUpdatedForSet(this.element[0].id, null,
           this.options.labelledBy, this._$spectrumThumb);
 
         // custom element's use oj-label.
@@ -562,8 +570,9 @@ var __oj_color_spectrum_metadata =
           case 'disabled' :
             this._setOptDisabled(newval, true);
             break;
-          case 'labelledBy':  // remove the old one and add the new one
-            this._updateLabelledBy(this.element[0], originalValue, newval, this._$spectrumThumb);
+          case 'labelledBy': // remove the old one and add the new one
+            this._labelledByUpdatedForSet(
+              this.element[0].id, originalValue, newval, this._$spectrumThumb);
             break;
           default:
             break;
@@ -617,7 +626,7 @@ var __oj_color_spectrum_metadata =
        * @instance
        * @private
        */
-      _updateLabelledBy: LabelledByUtils._updateLabelledBy,
+      _labelledByUpdatedForSet: LabelledByUtils._labelledByUpdatedForSet,
 
       /**
        * @memberof oj.ojColorSpectrum
@@ -693,7 +702,7 @@ var __oj_color_spectrum_metadata =
           // Check if value has changed
           if (!this._compareColorValues(this._value, color)) {
             // Color is different from current
-            this._setColorVals(color);   // note the new color
+            this._setColorVals(color); // note the new color
             this._setSliderValue(this._hueVal, true);
             this._setSliderValue(this._alphaVal, false);
             this._setSpectrumHue(this._hueVal, this._satVal, this._lumVal, this._alphaVal, true);
@@ -730,7 +739,7 @@ var __oj_color_spectrum_metadata =
         // Slider  workround - originalEvent is missing on rawValue,
         // but is set on previous "value"
         if (ui.option === 'value') {
-          this._isOrigEvent = !!e.originalEvent;    // set for following rawValue event
+          this._isOrigEvent = !!e.originalEvent; // set for following rawValue event
         }
 
         $targ = $(e.target);
@@ -767,7 +776,7 @@ var __oj_color_spectrum_metadata =
         // then need to tell the Spectrum component which will also fire an
         // optionChange for the app listener.
         if (e.originalEvent || this._isOrigEvent) {
-          this._isOrigEvent = false;                 // TDO - remove when slider  fixed
+          this._isOrigEvent = false; // TDO - remove when slider  fixed
           if (ui.option === 'rawValue') {
             this._SetRawValue(newColor, e);
           } else if (ui.option === 'value') {
@@ -969,8 +978,8 @@ var __oj_color_spectrum_metadata =
         }
 
         var pos = this._$spectrum.offset(); // get click position relative
-        var xDisp = e.pageX - pos.left;     // relative to spectrum
-        var yDisp = e.pageY - pos.top;      // top left
+        var xDisp = e.pageX - pos.left; // relative to spectrum
+        var yDisp = e.pageY - pos.top; // top left
         var hue;
         var sat;
         var lum;
@@ -1023,7 +1032,7 @@ var __oj_color_spectrum_metadata =
         elapsed = this._keyNow - this._keyStart;
         this._keyCount += 1;
         if ((elapsed > 1400) || (this._keyCount > 25)) {
-          accel = 3;                 // now move in increments of 3 pixels
+          accel = 3; // now move in increments of 3 pixels
         }
 
         xDelta = 0;
@@ -1069,7 +1078,7 @@ var __oj_color_spectrum_metadata =
        * @private
        */
       _keyUp: function (e) {
-        this._keyStart = -1;     // end of elapsed time/keystroke counting period
+        this._keyStart = -1; // end of elapsed time/keystroke counting period
 
         // aria-valuetext was not set during the key down's to avoid repetitive
         // JAWS talkback - will do it now.
@@ -1171,7 +1180,7 @@ var __oj_color_spectrum_metadata =
           this._xThumb = cx;
           this._yThumb = cy;
         } else {
-          cx = this._xThumb;        // use last drag position
+          cx = this._xThumb; // use last drag position
           cy = this._yThumb;
         }
 
@@ -1356,7 +1365,7 @@ var __oj_color_spectrum_metadata =
        */
       _setup: function () {
         // Add markup as a child of this component's DOM element
-        this._$boundElem.append(this._markup);      // @HTMLUpdateOK (contained strings are sanitized)
+        this._$boundElem.append(this._markup); // @HTMLUpdateOK (contained strings are sanitized)
         this._$boundElem.addClass('oj-colorspectrum');
 
 //-------------------------------------------------------------------------------------
@@ -1405,7 +1414,7 @@ var __oj_color_spectrum_metadata =
         this._lumVal = hsl[2];
         this._alphaVal = hsl[3];
 
-        this._sliderSetup = false;    // ignore slider optionchange events during setup
+        this._sliderSetup = false; // ignore slider optionchange events during setup
 
         this._$hueSlider.ojSlider({
           max: 360,
@@ -1413,6 +1422,7 @@ var __oj_color_spectrum_metadata =
           step: 1,
           value: this._hueVal,
           orientation: 'vertical',
+          displayOptions: { messages: 'none' },
           optionChange: this._onSliderOptionChange.bind(this),
           rootAttributes: { class: 'oj-slider-color-picker' }
         }).attr('data-oj-internal', ''); // for use in automation api / oj.Components.getComponentElementByNode
@@ -1422,6 +1432,7 @@ var __oj_color_spectrum_metadata =
           step: 0.01,
           value: this._alphaVal,
           orientation: 'horizontal',
+          displayOptions: { messages: 'none' },
           optionChange: this._onSliderOptionChange.bind(this),
           rootAttributes: { class: 'oj-slider-color-picker' }
         }).attr('data-oj-internal', ''); // for use in automation api / oj.Components.getComponentElementByNode
@@ -1478,7 +1489,7 @@ var __oj_color_spectrum_metadata =
        * @private
        */
       _initSliders: function () {
-        var subId = { subId: 'oj-slider-bar' };         // for getNodeBySubId()
+        var subId = { subId: 'oj-slider-bar' }; // for getNodeBySubId()
 
         this._$hueBarBack = $(this._$hueSlider.ojSlider('getNodeBySubId', subId));
         this._$alphaBarBack = $(this._$alphaSlider.ojSlider('getNodeBySubId', subId));
@@ -1502,9 +1513,9 @@ var __oj_color_spectrum_metadata =
        * @private
        */
       _initData: function () {
-        this._applyOptions();     // process the component options
-        this._xThumb = 0;          // initial spectrum
-        this._yThumb = 0;         // thumb position.
+        this._applyOptions(); // process the component options
+        this._xThumb = 0; // initial spectrum
+        this._yThumb = 0; // thumb position.
 
         // Get slider aria-label's
         var hueTitle = this._EscapeXSS(this.getTranslatedString(TRANSKEY_HUE));
@@ -2040,14 +2051,25 @@ var __oj_color_spectrum_metadata =
        *
        */
 
-    });    // end    $.widget("oj.ojColorSpectrum"
+    }); // end    $.widget("oj.ojColorSpectrum"
 }());
 
 
 /* global __oj_color_spectrum_metadata */
 (function () {
   __oj_color_spectrum_metadata.extension._WIDGET_NAME = 'ojColorSpectrum';
-  oj.CustomElementBridge.register('oj-color-spectrum', { metadata: __oj_color_spectrum_metadata });
+  oj.CustomElementBridge.register('oj-color-spectrum', {
+    metadata: oj.CollectionUtils.mergeDeep(__oj_color_spectrum_metadata, {
+      properties: {
+        readonly: {
+          binding: { consume: { name: 'readonly' } }
+        },
+        userAssistanceDensity: {
+          binding: { consume: { name: 'userAssistanceDensity' } }
+        }
+      }
+    })
+  });
 }());
 
 });

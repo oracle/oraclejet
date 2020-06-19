@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -70,12 +71,12 @@ var DeferredDataProvider = /*#__PURE__*/function () {
 
       return new this.AsyncIterable(new this.AsyncIterator(asyncIteratorPromise));
     }
-  }, {
-    key: "fetchByKeys",
-
     /**
      * Fetch rows by keys
      */
+
+  }, {
+    key: "fetchByKeys",
     value: function fetchByKeys(params) {
       return this._getDataProvider().then(function (dataProvider) {
         return dataProvider.fetchByKeys(params);
@@ -122,7 +123,7 @@ var DeferredDataProvider = /*#__PURE__*/function () {
   }, {
     key: "isEmpty",
     value: function isEmpty() {
-      if (!this[this._DATAPROVIDER]) return "unknown";else return this[this._DATAPROVIDER].isEmpty();
+      if (!this[this._DATAPROVIDER]) return 'unknown';else return this[this._DATAPROVIDER].isEmpty();
     }
     /**
      * Determines whether this DataProvider supports certain feature.
@@ -156,12 +157,12 @@ var DeferredDataProvider = /*#__PURE__*/function () {
       if (!this[this._DATAPROVIDER]) return false;
       return this[this._DATAPROVIDER].dispatchEvent(evt);
     }
-  }, {
-    key: "_getDataProvider",
-
     /**
      * Returns the resolved dataProvider for this instance
      */
+
+  }, {
+    key: "_getDataProvider",
     value: function _getDataProvider() {
       var self = this;
       return this._dataProvider.then(function (dataProvider) {

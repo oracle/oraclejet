@@ -1,0 +1,29 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+ 
+  @include module-include-once("common.legend") {
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-legend:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+// todo: Bug 29181450 - oj-legend css needs to be moved into a legend dir
+    oj-legend {
+      display: block;
+    }
+
+    .oj-legend {
+        font-size: var(--oj-legend-text-font-size);
+        color: var(--oj-legend-text-color);
+        user-select: none;
+    }
+
+    .oj-legend-section-title {
+        font-size: var(--oj-legend-section-title-font-size);
+        font-weight: var(--oj-legend-section-title-font-weight);
+        color: var(--oj-legend-section-title-color);
+      }
+  }

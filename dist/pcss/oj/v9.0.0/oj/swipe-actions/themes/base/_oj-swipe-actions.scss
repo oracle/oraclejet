@@ -1,0 +1,84 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.swipeactions.scss
+// !!!
+
+// ----- start dependencies ---------
+
+@import "../../../utilities/_oj.utilities.scss";
+
+  @include module-include-once("common.swipeactions") {
+
+    /* Styling for the swipeactions root element */
+    .oj-swipeactions {
+        display: block;
+    }
+
+    /* Styling for the neutral action item. */
+    .oj-swipeactions-neutral {
+
+        background-color: var(--oj-swipe-actions-neutral-bg-color);
+
+    }
+
+    /* Styling for the attention action item. */
+    .oj-swipeactions-attention {
+
+        background-color: var(--oj-swipe-actions-attention-bg-color);
+
+    }
+
+    /* Styling for the danger action item. */
+    .oj-swipeactions-danger {
+
+        background-color: var(--oj-swipe-actions-danger-bg-color);
+
+    }
+
+    /* Styling for the text within action item. */
+    .oj-swipeactions-action-text {
+
+        font-size: initial;
+        padding-top: var(--oj-swipe-actions-icon-to-text-padding);
+
+    }
+
+    /* Styling for the panel of an action item. */
+    .oj-swipeactions-action-panel {
+        height: 100%;
+    }
+
+    /* styling on focused action item. */
+    .oj-swipeactions-action-panel.oj-focus-highlight {
+
+        outline: 2px dotted var(--oj-core-focus-border-color);
+
+      outline: -webkit-focus-ring-color solid;
+      outline-offset: -2px;
+    }
+
+    /* Styling for the listview item when it is the container of the swipeactions root element. */
+    .oj-listview-item.oj-swipeactions-container {
+        padding: 0;
+    }
+
+    /* Styling for the accessible link that displays the swipe actions when activate. */
+    .oj-swipeactions-accessible-link {
+        position: absolute;
+        top: calc(100% - 20px);
+    }
+
+    /* Styling for the accessible link that closes the swipe actions when activate. */
+    .oj-swipeactions-hide-actions-link {
+        position: absolute;
+        right: 0px;
+    }
+
+    /* Styling for the content of the accessible link that closes the swipe actions. */
+    .oj-swipeactions-hide-actions-link:after {
+        content: "[X]";
+    }
+  }

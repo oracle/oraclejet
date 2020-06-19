@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -43,10 +44,6 @@ var __oj_radioset_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -143,6 +140,15 @@ var __oj_radioset_metadata =
         }
       }
     },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
+    },
     "valid": {
       "type": "string",
       "writeback": true,
@@ -223,6 +229,8 @@ var __oj_radioset_metadata =
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 2
  *
+ * @ojuxspecs ['radioset']
+ *
  * @classdesc
  * <h3 id="radiosetOverview-section">
  *   JET Radioset
@@ -297,12 +305,6 @@ var __oj_radioset_metadata =
  * <code class="prettyprint">id</code>.
  * </p>
  *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- * {@ojinclude "name":"stylingDoc"}
- *
  * @example <caption>Initialize the radioset with no options specified:</caption>
  * &lt;oj-radioset id="colorRadio" value="{{currentColor}}">
  *   &lt;oj-option value="blue">Blue&lt;/oj-option>
@@ -320,6 +322,59 @@ var __oj_radioset_metadata =
  * // set the value to "ciao". (The 'ciao' radio will be selected)
  * myComp.value = "ciao";
  */
+// --------------------------------------------------- oj.ojRadioset Styling Start -----------------------------------------------------------
+  // ---------------- oj-choice-direction-column --------------
+  /**
+  * This is the default. It lays out the radios in a column.
+  * @ojstyleclass oj-choice-direction-column
+  * @ojdisplayname Column Layout
+  * @memberof oj.ojRadioset
+  * @ojtsexample
+  * &lt;oj-radioset id="radiosetId" class='oj-choice-direction-column'>
+  * &lt;/oj-radioset>
+  */
+  // ---------------- oj-choice-direction-row --------------
+  /**
+  * It lays out the radios in a row.
+  * @ojstyleclass oj-choice-direction-row
+  * @ojdisplayname Row Layout
+  * @memberof oj.ojRadioset
+  * @ojtsexample
+  * &lt;oj-radioset id="radiosetId" class='oj-choice-direction-row'>
+  * &lt;/oj-radioset>
+  */
+  // ---------------- oj-radioset-no-chrome --------------
+  /**
+  * Use this styleclass if you don't want the chrome around the set.
+  * @ojstyleclass oj-radioset-no-chrome
+  * @ojdisplayname No Chrome
+  * @memberof oj.ojRadioset
+  * @ojtsexample
+  * &lt;oj-radioset id="radiosetId" class='oj-radioset-no-chrome'>
+  * &lt;/oj-radioset>
+  */
+  // ---------------- oj-radioset-input-start --------------
+  /**
+  * Use this styleclass to order the radio at the start and label text at the end even if a theme has a different default order.
+  * @ojstyleclass oj-radioset-input-start
+  * @ojdisplayname Input Start
+  * @memberof oj.ojRadioset
+  * @ojtsexample
+  * &lt;oj-radioset id="radiosetId" class='oj-radioset-input-start'>
+  * &lt;/oj-radioset>
+  */
+  // ---------------- oj-radioset-input-end --------------
+  /**
+  * Use this styleclass to order the radio at the end and the label text at the start even if a theme has a different default order.
+  * @ojstyleclass oj-radioset-input-end
+  * @ojdisplayname Input End
+  * @memberof oj.ojRadioset
+  * @ojtsexample
+  * &lt;oj-radioset id="radiosetId" class='oj-radioset-input-end'>
+  * &lt;/oj-radioset>
+  */
+  // --------------------------------------------------- oj.ojRadioset Styling End -----------------------------------------------------------
+
   oj.__registerWidget('oj.ojRadioset', $.oj.editableValue,
     {
       version: '1.0.0',
@@ -357,10 +412,15 @@ var __oj_radioset_metadata =
          */
         disabled: false,
         /**
-         * Whether the component is readonly. The readOnly property sets or returns whether an element is readOnly, or not.
-         * A readOnly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
+         * Whether the component is readonly. The readonly property sets or returns whether an element is readonly, or not.
+         * A readonly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
          * If you want to prevent the user from interacting with the element, use the disabled property instead.
-         *
+         * <p>
+         * The oj-form-layout provides its readonly attribute value and the form components
+         * consume it if it is not already set explicitly.
+         * For example, if oj-form-layout is set to readonly='true',
+         * all the form components it contains will be readonly='true' by default.
+         * </p>
          * @example <caption>Initialize component with <code class="prettyprint">readonly</code> attribute:</caption>
          * &lt;oj-radioset readonly>&lt;/oj-radioset>
          *
@@ -372,6 +432,7 @@ var __oj_radioset_metadata =
          * myComponent.readonly = false;
          *
          * @default false
+         *
          * @name readOnly
          * @ojshortdesc Specifies whether the component is read-only. A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
          * @access public
@@ -1059,9 +1120,9 @@ var __oj_radioset_metadata =
           }
 
           var novaluespan = domElem.querySelector('[data-no-value-span]');
-          // Remove the old no-value span, if there is one and there is a current selection.
+          // Remove the old no-value span, if there is one and there is a current selection or not in readonly mode
           if (novaluespan) {
-            if (selectedOption && selectedOption !== '') {
+            if ((selectedOption && selectedOption !== '') || !this.options.readOnly) {
               novaluespan.parentElement.removeChild(novaluespan);
             }
           } else if ((!selectedOption || selectedOption === '') && this.options.readOnly) { // Otherwise, add the no value span if no selection.
@@ -1153,19 +1214,29 @@ var __oj_radioset_metadata =
         // in the code below, we use setAttribute() for everything as we want to be
         // setting the initial value for these elements.
         if (!alreadyProcessed) {
-          span = document.createElement('span');
           radio = document.createElement('input');
-          label = document.createElement('label');
-          span.setAttribute('class', 'oj-choice-item');
           radio.setAttribute('type', 'radio');
           // The value is needed for accessibiliy of the image used for the radio
           radio.setAttribute('value', ojoption.value);
           radio.setAttribute('id', radioId);
-          label.setAttribute('for', radioId);
-          ojoption.parentElement.insertBefore(span, ojoption);// @HTMLUpdateOK
-          label.appendChild(ojoption); // append the oj-option as a child of label
-          span.appendChild(radio);
-          span.appendChild(label);
+          // in readonly mode, if a option is selected, the <oj-option> will be surrounded by <label> tag
+          // if a option is selected, we can set attribute for the previous label and there is no need to create a new label
+          // if a option is not selected, we need to create a new label.
+          if (ojoption.parentElement.nodeName === 'LABEL') {
+            label = ojoption.parentElement;
+            label.setAttribute('for', radioId);
+            label.parentElement.insertBefore(radio, label);
+          } else {
+            label = document.createElement('label');
+            label.setAttribute('for', radioId);
+            span = document.createElement('span');
+            span.setAttribute('class', 'oj-choice-item');
+            ojoption.parentElement.insertBefore(span, ojoption); // @HTMLUpdateOK
+            span.appendChild(radio);
+            span.appendChild(label);
+            label.appendChild(ojoption); // append the oj-option as a child of label
+          }
+          ojoption.classList.remove('oj-helper-hidden');
         } else {
           var parentSpan = ojoption;
           do {
@@ -1274,7 +1345,7 @@ var __oj_radioset_metadata =
        * @instance
        * @private
        */
-      _updateLabelledBy: LabelledByUtils._updateLabelledBy,
+      _labelledByUpdatedForSet: LabelledByUtils._labelledByUpdatedForSet,
       /**
        * Returns a jquery object that is a set of elements that are input type radio
        * and have the name of the first radio found.
@@ -1346,10 +1417,18 @@ var __oj_radioset_metadata =
             !(this.element.hasClass('oj-choice-direction-row'))) {
           this.element.addClass('oj-choice-direction-column');
         }
+
+        // add to the root dom the style class 'oj-read-only'
+        if (this.options.readOnly) {
+          this.element.addClass('oj-read-only');
+        } else {
+          this.element.removeClass('oj-read-only');
+        }
+
         this._refreshRequired(this.options.required);
         // copy labelledBy to aria-labelledBy
         var widget = this.widget();
-        this._updateLabelledBy(widget[0], null, this.options.labelledBy, widget);
+        this._labelledByUpdatedForSet(widget[0].id, null, this.options.labelledBy, widget);
       },
       _events:
       {
@@ -1546,6 +1625,20 @@ var __oj_radioset_metadata =
       _AriaRequiredUnsupported: function () {
         return true;
       },
+
+      /**
+       * This is called from InlineHelpHintsStrategy to determine
+       * the location of the inline help hints, above the component
+       * or below.
+       * @ignore
+       * @protected
+       * @override
+       * @memberof oj.ojRadioset
+       * @return {'above'|'inline'}
+       */
+      _ShowHelpHintsLocation: function () {
+        return 'above';
+      },
       /**
        * Performs post processing after required option is set by taking the following steps.
        *
@@ -1613,16 +1706,22 @@ var __oj_radioset_metadata =
             break;
           case 'readOnly':
             var wrapperDom = this.element[0].querySelector('.oj-radioset-wrapper');
-
+            var val = this.options.value;
             if (value) {
               wrapperDom.setAttribute('tabindex', 0);
               wrapperDom.setAttribute('aria-readonly', 'true');
+              this.element.addClass('oj-read-only');
             } else {
               // remove tabindex and role
               wrapperDom.removeAttribute('tabindex');
               wrapperDom.removeAttribute('aria-readonly');
+              this.element.removeClass('oj-read-only');
             }
-            this._processOjOptions();
+            this._ResetComponentState();
+            // when toggle readonly to false, we need to check the initial set values.
+            if (val != null) {
+              this._SetDisplayValue(val);
+            }
             break;
           case 'value':
             this._processOjOptions();
@@ -1630,7 +1729,7 @@ var __oj_radioset_metadata =
           case 'labelledBy':
             // remove the old one and add the new one
             var widget = this.widget();
-            this._updateLabelledBy(widget[0], originalValue, value, widget);
+            this._labelledByUpdatedForSet(widget[0].id, originalValue, value, widget);
             break;
           case 'options':
             oj.RadioCheckboxUtils.generateOptionsFromData.call(this);
@@ -1886,82 +1985,6 @@ var __oj_radioset_metadata =
    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
    * @memberof oj.ojRadioset
    */
-
-  /**
-   * {@ojinclude "name":"ojStylingDocIntro"}
-   *
-   * <table class="generic-table styling-table">
-   *   <thead>
-   *     <tr>
-   *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-   *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-   *       <th>{@ojinclude "name":"ojStylingDocExampleHeader"}</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>oj-choice-direction-column</td>
-   *       <td>This is the default. It lays out the radios in a column.
-   *       </td>
-   *       <td>
-   * <pre class="prettyprint">
-   * <code>&lt;oj-radioset id="radiosetId"
-   *  class="oj-choice-direction-column">
-   * </code></pre>
-   *       </td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-choice-direction-row</td>
-   *       <td>It lays out the radio buttons in a row.
-   *       </td>
-   *       <td>
-   * <pre class="prettyprint">
-   * <code>&lt;oj-radioset id="radiosetId"
-   *  class="oj-choice-direction-row">
-   * </code></pre>
-   *       </td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-radioset-no-chrome</td>
-   *       <td>Use this styleclass if you don't want the chrome around the set.
-   *       </td>
-   *       <td>
-   * <pre class="prettyprint">
-   * <code>&lt;oj-radioset id="radiosetId"
-   *  class="oj-radioset-no-chrome">
-   * </code></pre>
-   *       </td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-radioset-input-start</td>
-   *       <td>Use this styleclass to order the radio at the start and label text at the end
-   *       even if a theme has a different default order.
-   *       </td>
-   *       <td>
-   * <pre class="prettyprint">
-   * <code>&lt;oj-radioset id="radiosetId"
-   *  class="oj-radioset-input-start">
-   * </code></pre>
-   *       </td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-radioset-input-end</td>
-   *       <td>Use this styleclass to order the radio at the end and the label text at the start
-   *       even if a theme has a different default order.
-   *       </td>
-   *       <td>
-   * <pre class="prettyprint">
-   * <code>&lt;oj-radioset id="radiosetId"
-   *  class="oj-radioset-input-end">
-   * </code></pre>
-   *       </td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-   * @memberof oj.ojRadioset
-   */
 }());
 
 
@@ -1969,7 +1992,19 @@ var __oj_radioset_metadata =
 (function () {
   __oj_radioset_metadata.extension._WIDGET_NAME = 'ojRadioset';
   __oj_radioset_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
-  oj.CustomElementBridge.register('oj-radioset', { metadata: __oj_radioset_metadata });
+  oj.CustomElementBridge.register('oj-radioset', {
+    metadata:
+      oj.CollectionUtils.mergeDeep(__oj_radioset_metadata, {
+        properties: {
+          readonly: {
+            binding: { consume: { name: 'readonly' } }
+          },
+          userAssistanceDensity: {
+            binding: { consume: { name: 'userAssistanceDensity' } }
+          }
+        }
+      })
+  });
 }());
 
 });

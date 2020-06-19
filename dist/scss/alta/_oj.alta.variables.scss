@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 @import "../utilities/oj.utilities.urls";
 @import "../utilities/oj.utilities.math";
 @import "../utilities/oj.utilities.units";
@@ -101,6 +102,8 @@ $largeBoxShadow:    1px 1px 10px 0 unquote('hsla(#{$boxShadowHsl},0.45)') !defau
 $opacityDisabled: 1 !default;
 
 
+//Divider
+$dividerMargin: 0.5rem;
 //----------------------------------------------------------------
 // CATEGORY AND WIDGET VARIABLES
 //----------------------------------------------------------------
@@ -176,11 +179,17 @@ $formControlPlaceholderFontStyle: italic !default;
 // form control option defaults
 //----------------------------------
 $formControlLabelEdgeDefault: provided !default;
+$inputFormControlReadonlyDefault: input !default;
+$formControlUseUserAssistanceOptionDefault: ignore !default;
 
+// messaging option defaults
+//----------------------------------
+$formControlMessageSummaryOptionDefault: "header" !default;
 
 $formLayoutLabelInlineAlign: end !default;
 $formLayoutLabelEdgeDefault: top !default;
 $formLayoutLabelGenerationDefault: form !default;
+$formLayoutDirectionDefault: column !default;
 
 // Default value for colspan-wrap attribute
 $formLayoutColspanWrapDefault: nowrap !default;
@@ -686,6 +695,7 @@ $indexerTextDecorationHover:    underline !default;
 //-----------------------------------------------------------------------------
 $dvtIconBgColorActive:          $neutralColor1 !default;
 $dvtIconBorderColorActive:      $neutralColor7 !default;
+$dvtIconColorActive:            $brandColor !default;
 
 $overlayOpacity: 0.4 !default;
 

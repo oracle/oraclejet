@@ -1,0 +1,244 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.utilities.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// todo: evealuate if/where these classes should live in Redwood
+
+@import "../../../utilities/_oj.utilities.scss";
+
+  @include module-include-once("common.utilities") {
+
+
+    //colors
+    .oj-text-color-primary, 
+    .oj-text-primary-color,
+    .oj-icon-color-primary {
+        color: var(--oj-core-text-color-primary) !important;
+    }
+
+    .oj-text-color-secondary,
+    .oj-text-secondary-color,
+    .oj-icon-color-secondary {
+
+        color: var(--oj-core-text-color-secondary) !important;
+
+
+    }
+
+    .oj-text-color-tertiary,
+    .oj-text-tertiary-color{
+
+        color: var(--oj-core-text-color-tertiary) !important;
+
+
+    }
+
+    .oj-text-color-disabled,
+    .oj-text-disabled-color,
+    .oj-icon-color-disabled {
+        color: var(--oj-core-text-color-disabled) !important;
+    }
+
+    .oj-text-color-danger {
+        color: var(--oj-core-text-color-danger) !important;
+    }
+
+    .oj-text-color-warning {
+        color: var(--oj-core-text-color-warning) !important;
+    }
+
+    .oj-text-color-success {
+        color: var(--oj-core-text-color-success) !important;
+    }
+
+    
+  .oj-icon-color-danger {
+      color: var(--oj-core-icon-color-danger) !important;
+  }
+
+  .oj-icon-color-warning {
+      color: var(--oj-core-icon-color-warning) !important;
+  }
+
+  .oj-icon-color-success {
+      color: var(--oj-core-icon-color-success) !important;
+  }
+
+  .oj-icon-color-info {
+      color: var(--oj-core-icon-color-info) !important;
+  }
+
+    // contrast background
+    .oj-contrast-marker .oj-contrast-background,
+    .oj-contrast-marker.oj-contrast-background {
+
+        background-color: var(--oj-core-contrast-background-1-color);
+        color: var(--oj-core-text-color-primary-contrast)
+
+
+
+    }
+
+    //The new redwood panel changes
+      // TODO: We should not be using panel variables. 
+
+  .oj-border {
+    border: 1px solid var(--oj-panel-neutral-0-border-color) !important;
+  }
+
+  .oj-border-top {
+    border-top: 1px solid var(--oj-panel-neutral-0-border-color) !important;
+  }
+
+  .oj-border-bottom {
+    border-bottom: 1px solid var(--oj-panel-neutral-0-border-color) !important;
+  }
+
+  .oj-border-start {
+    @include oj-ltr() {
+      border-left: 1px solid var(--oj-panel-neutral-0-border-color) !important;
+    }
+    @include oj-rtl() {
+      border-right: 1px solid var(--oj-panel-neutral-0-border-color) !important;
+    }
+  }
+
+  .oj-border-end {
+    @include oj-ltr() {
+      border-right: 1px solid var(--oj-panel-neutral-0-border-color) !important;
+    }
+    @include oj-rtl() {
+      border-left: 1px solid var(--oj-panel-neutral-0-border-color) !important;
+    }
+  }
+
+ //DIVIDER
+
+  .oj-divider-top {
+    border-top-width: 1px !important;
+    border-top-color: var(--oj-core-divider-color) !important;
+    border-top-style: solid !important;
+    }
+    
+  .oj-divider-top.oj-divider-padding {
+    padding-top: var(--oj-core-divider-margin) !important;
+    }
+    
+  .oj-divider-top.oj-divider-margin {
+    margin-top: var(--oj-core-divider-margin) !important;
+    }
+
+  .oj-divider-bottom {
+    border-bottom-width: 1px !important;
+    border-bottom-color: var(--oj-core-divider-color) !important;
+    border-bottom-style: solid !important;
+   }
+
+  .oj-divider-bottom.oj-divider-padding {
+    padding-bottom : var(--oj-core-divider-margin) !important;
+   }
+
+  .oj-divider-bottom.oj-divider-margin {
+    margin-bottom: var(--oj-core-divider-margin) !important;
+    }
+
+
+  .oj-divider-start{
+    @include oj-ltr() {
+      border-left-width: 1px !important;
+      border-left-color: var(--oj-core-divider-color) !important;
+      border-left-style: solid !important;
+      
+    }
+    @include oj-rtl() {
+      border-right-width: 1px !important;
+      border-right-color: var(--oj-core-divider-color) !important;
+      border-right-style: solid !important;
+      }
+  }
+
+  .oj-divider-start.oj-divider-padding
+  {
+    @include oj-ltr() {
+    padding-left : var(--oj-core-divider-margin) !important;
+    }
+    @include oj-rtl() {
+    padding-right : var(--oj-core-divider-margin) !important;
+    }
+
+  }
+  
+  .oj-divider-start.oj-divider-margin
+  {
+    @include oj-ltr() {
+    margin-left : var(--oj-core-divider-margin) !important;
+    margin-right: 0 !important;
+
+    }
+    @include oj-rtl() {
+     margin-right : var(--oj-core-divider-margin) !important;
+     margin-left: 0 !important;
+    }
+  }
+  
+ 
+  .oj-divider-end {
+
+    @include oj-ltr() {
+      border-right-width: 1px !important;
+      border-right-color: var(--oj-core-divider-color) !important;
+      border-right-style: solid !important;
+      
+    }
+    @include oj-rtl() {
+      border-left-width: 1px !important;
+      border-left-color: var(--oj-core-divider-color) !important;
+      border-left-style: solid !important;
+      }
+  }
+
+  .oj-divider-end.oj-divider-padding
+  {
+    @include oj-ltr() {
+    padding-right: var(--oj-core-divider-margin) !important;
+    
+  }
+    @include oj-rtl() {
+    padding-left : var(--oj-core-divider-margin) !important;
+    }
+
+  }
+  
+  .oj-divider-end.oj-divider-margin
+  {
+    @include oj-ltr() {
+    margin-right : var(--oj-core-divider-margin) !important;
+    }
+    @include oj-rtl() {
+      margin-left : var(--oj-core-divider-margin) !important;
+    }
+  }
+  
+
+  
+ .oj-bg-neutral-0 {
+    background-color: var(--oj-panel-neutral-0-bg-color) !important; 
+  }
+
+  .oj-bg-neutral-10 {
+    background-color: var(--oj-panel-neutral-10-bg-color) !important;
+  }
+  
+  .oj-bg-neutral-20 {
+    background-color: var(--oj-panel-neutral-20-bg-color) !important;
+  }
+
+  .oj-bg-neutral-30 {
+    background-color: var(--oj-panel-neutral-30-bg-color) !important;
+  }
+
+  }

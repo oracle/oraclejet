@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -43,10 +44,6 @@ var __oj_color_palette_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -131,6 +128,15 @@ var __oj_color_palette_metadata =
           "type": "string"
         }
       }
+    },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
     },
     "valid": {
       "type": "string",
@@ -225,6 +231,8 @@ var __oj_color_palette_metadata =
    * @ojpropertylayout {propertyGroup: "data", items: ["palette", "value"]}
    * @ojvbdefaultcolumns 4
    * @ojvbmincolumns 4
+   *
+   * @ojuxspecs ['color-palette']
    *
    * @classdesc
    * <h3 id="colorPaletteOverview-section">
@@ -421,7 +429,7 @@ var __oj_color_palette_metadata =
          * myColorPalette.value = new oj.Color('rgb(0,0,0)');
          */
         value: null,
-      },   // end options
+      }, // end options
 
 
       //* * @inheritdoc */
@@ -520,13 +528,13 @@ var __oj_color_palette_metadata =
                                        this.element.attr('id') + ').');
 
            // Perform the add
-          o.id = this._getNewSwatchId();  // give the new swatch an id
+          o.id = this._getNewSwatchId(); // give the new swatch an id
           if (!this._opStack) {
-            this._opStack = [];              // fifo stack of post-busy operations
+            this._opStack = []; // fifo stack of post-busy operations
           }
           this._opStack.push({ op: 'a', obj: o });
-          this._palDataSource.add(o);        // ListView will render the new entry
-          this._waitForLV();                 // complete the add when LV is complete
+          this._palDataSource.add(o); // ListView will render the new entry
+          this._waitForLV(); // complete the add when LV is complete
         }
       },
 
@@ -568,12 +576,12 @@ var __oj_color_palette_metadata =
                                       this.element.attr('id') + ').');
           // Perform the remove
           if (!this._opStack) {
-            this._opStack = [];      // fifo stack of post-busy operations
+            this._opStack = []; // fifo stack of post-busy operations
           }
           this._opStack.push({ op: 'r', obj: palEntry });
-          this._palDataSource.remove(palEntry);    // LV will re-render
+          this._palDataSource.remove(palEntry); // LV will re-render
 
-          this._waitForLV();                        // complete the remove when LV is complete
+          this._waitForLV(); // complete the remove when LV is complete
         }
       },
 
@@ -635,7 +643,7 @@ var __oj_color_palette_metadata =
             self._$LV.css(rtl ? 'padding-left' : 'padding-right', scrollbarWidth + 1);
           }
 
-          self._resolvePaletteBusyContext();    // component is ready to use
+          self._resolvePaletteBusyContext(); // component is ready to use
         });
       },
 
@@ -675,7 +683,7 @@ var __oj_color_palette_metadata =
       */
       _destroy: function () {
         this._palDataSource = null;
-        this._$paletteContainer.remove();          // remove our markup from dom
+        this._$paletteContainer.remove(); // remove our markup from dom
         this._$boundElem.removeClass('oj-colorpalette');
         this._clear();
         this._super();
@@ -704,7 +712,7 @@ var __oj_color_palette_metadata =
 
         this._super();
 
-        this._updateLabelledBy(this.element[0], null, this.options.labelledBy, this._$LV);
+        this._labelledByUpdatedForSet(this.element[0].id, null, this.options.labelledBy, this._$LV);
 
         // custom element's use oj-label.
         if (!this._IsCustomElement()) {
@@ -764,8 +772,8 @@ var __oj_color_palette_metadata =
             break;
           case 'disabled': this._setOptDisabled(newval, true);
             break;
-          case 'labelledBy':     // remove the old one and add the new one
-            this._updateLabelledBy(this.element[0], originalValue, newval, this._$LV);
+          case 'labelledBy': // remove the old one and add the new one
+            this._labelledByUpdatedForSet(this.element[0].id, originalValue, newval, this._$LV);
             break;
           default:
             break;
@@ -784,7 +792,7 @@ var __oj_color_palette_metadata =
        * @instance
        * @private
        */
-      _updateLabelledBy: LabelledByUtils._updateLabelledBy,
+      _labelledByUpdatedForSet: LabelledByUtils._labelledByUpdatedForSet,
 
       /**
        * @param {Event} event the associated Event object.
@@ -848,7 +856,7 @@ var __oj_color_palette_metadata =
               } else if (stackEntry.op === 'r') { // remove swatch
                 index = self._findIndexOfSwatchById(newPalette, thisObj.id);
                 newPalette.splice(index, 1);
-                stackEntry.index = index;      // save doing this again later
+                stackEntry.index = index; // save doing this again later
               }
             }
           }
@@ -915,9 +923,9 @@ var __oj_color_palette_metadata =
               originalEvent: origEvent,
               internalSet: true
             },
-            changed: true     // don't need comparison check
+            changed: true // don't need comparison check
           });
-        }    // end if "value"
+        } // end if "value"
       },
 
       /**
@@ -1122,14 +1130,14 @@ var __oj_color_palette_metadata =
       _renderStandard: function (color, showLabels, label, tooltip, swatchClass, selectedClass) {
         var entry = $("<div class='oj-colorpalette-swatch-entry'></div>")
           .addClass(swatchClass + (showLabels ? ' oj-colorpalette-swatch-showlabel' : ''))
-          .append($("<div class='oj-colorpalette-swatch-container'></div>")    // @HTMLUpdateOK
-            .append($("<div class='oj-colorpalette-swatch'></div>")            // @HTMLUpdateOK
+          .append($("<div class='oj-colorpalette-swatch-container'></div>") // @HTMLUpdateOK
+            .append($("<div class='oj-colorpalette-swatch'></div>") // @HTMLUpdateOK
               .attr('title', (!label) ? tooltip : null)
               .addClass(selectedClass)
               .css('backgroundColor', color.toString())));
 
         if (label) {
-          entry.append($("<span class='oj-colorpalette-swatch-text'>" + label + '</span>')[0]);  // @HTMLUpdateOK
+          entry.append($("<span class='oj-colorpalette-swatch-text'>" + label + '</span>')[0]); // @HTMLUpdateOK
         }
         return entry[0];
       },
@@ -1294,13 +1302,13 @@ var __oj_color_palette_metadata =
                 var palId = this._palette[palIndex].id;
                 pal.push(palId);
               }
-              this._$LV.ojListView('option', 'selection', pal);   // select, or deselect if not found
+              this._$LV.ojListView('option', 'selection', pal); // select, or deselect if not found
               this._value = color;
             }
           }
         }
 
-        return (pal.length > 0);        // return true if at least one palette color is selected
+        return (pal.length > 0); // return true if at least one palette color is selected
       },
 
       /**
@@ -1319,9 +1327,9 @@ var __oj_color_palette_metadata =
             // The busy state resolver will be invoked when ListView completes the add.
             this._setPaletteBusyContext('The palette (id=' + this.element.attr('id') + ') option change in progress.');
 
-            this._opStack = [];                  // clear the fifo stack of post-busy operations
+            this._opStack = []; // clear the fifo stack of post-busy operations
 
-            this._palette = palette.slice(0);    // make copy in case app is using same array
+            this._palette = palette.slice(0); // make copy in case app is using same array
             this._initSelection = this._findColorInPalette(this._value);
             this._setData(palette, this._initSelection, true);
 
@@ -1415,7 +1423,7 @@ var __oj_color_palette_metadata =
        * @private
        */
       _setData: function (palette, initSelected, setOption) {
-        this._addIdsToPalette(palette);            // add "id" props
+        this._addIdsToPalette(palette); // add "id" props
         this._palDataSource = new oj.ArrayTableDataSource(palette, { idAttribute: 'id' });
 
         //  If current value property matches a supplied swatch, select it.
@@ -1465,10 +1473,10 @@ var __oj_color_palette_metadata =
        */
       _setup: function () {
         // Add new listview markup as a child of this component's DOM element
-        this._$boundElem.append(this._markup);    // @HTMLUpdateOK (strings are all code constants)
+        this._$boundElem.append(this._markup); // @HTMLUpdateOK (strings are all code constants)
         this._$boundElem.addClass('oj-colorpalette');
         this._$paletteContainer = this._$boundElem.find('.oj-colorpalette-container');
-        this._$LV = this._$paletteContainer.find(':first');  // Listview UL
+        this._$LV = this._$paletteContainer.find(':first'); // Listview UL
         // Will be using a component context for the ListView
         this._$LV.attr('data-oj-context', '');
 
@@ -1477,7 +1485,7 @@ var __oj_color_palette_metadata =
           this._initSelection = this._findColorInPalette(this._value);
         }
 
-        this._swatchId = 0;                   // use  _getNextSwatchId() to access
+        this._swatchId = 0; // use  _getNextSwatchId() to access
         this._setData(this._palette, this._initSelection, false);
       },
 
@@ -1489,7 +1497,7 @@ var __oj_color_palette_metadata =
        * @private
        */
       _initData: function () {
-        this._applyOptions();     // process the component options
+        this._applyOptions(); // process the component options
         var converterOptions = { format: 'hex' };
         this._convHex = new ColorConverter(converterOptions);
         this._labelNone = this.getTranslatedString(TRANSKEY_NONE);
@@ -1697,7 +1705,7 @@ var __oj_color_palette_metadata =
         innerDiv.style.height = '100%';
         div.appendChild(innerDiv);
 
-        this.element.append(div);    // @HTMLUpdateOK
+        this.element.append(div); // @HTMLUpdateOK
         var outerWidth = div.offsetWidth;
         var innerWidth = innerDiv.offsetWidth;
         $(div).remove();
@@ -1905,14 +1913,26 @@ var __oj_color_palette_metadata =
        */
 
 
-    });    // end    $.widget("oj.ojColorPalette", ...
+    }); // end    $.widget("oj.ojColorPalette", ...
 }());
 
 
 /* global __oj_color_palette_metadata */
 (function () {
   __oj_color_palette_metadata.extension._WIDGET_NAME = 'ojColorPalette';
-  oj.CustomElementBridge.register('oj-color-palette', { metadata: __oj_color_palette_metadata });
+  oj.CustomElementBridge.register('oj-color-palette', {
+    metadata:
+      oj.CollectionUtils.mergeDeep(__oj_color_palette_metadata, {
+        properties: {
+          readonly: {
+            binding: { consume: { name: 'readonly' } }
+          },
+          userAssistanceDensity: {
+            binding: { consume: { name: 'userAssistanceDensity' } }
+          }
+        }
+      })
+  });
 }());
 
 });

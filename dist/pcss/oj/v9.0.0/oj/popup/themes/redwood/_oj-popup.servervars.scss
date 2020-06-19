@@ -1,0 +1,14 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+// POPUP
+//-----------------------------------------------------------------------------
+// animation theme defaults
+$popupOpenAnimation: ((effect: "zoomIn", transformOrigin: "#myPosition"), "fadeIn") !default;
+$popupCloseAnimation: ((effect: "zoomOut", transformOrigin: "#myPosition"), "fadeOut") !default;
+// Placeholder for theme specific popup modality option override.
+$popupModalityOptionDefault: "modeless" !default;
+
+// animation 
+$popupTailOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition") !default;
+$popupTailCloseAnimation: (effect: "none") !default;

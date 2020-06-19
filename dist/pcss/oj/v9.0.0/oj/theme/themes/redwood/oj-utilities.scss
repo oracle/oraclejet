@@ -1,0 +1,53 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+@import "../../../panel/themes/redwood/_oj-panel.cssvars.scss";
+@import "../base/_oj-utilities.scss"; 
+
+
+  @include module-include-once("redwood.utilities") {
+
+    // todo: change these once the palette is updated
+    .oj-bg-danger-10 {
+      background-color: var(--oj-palette-danger-10) !important;
+    }
+
+    .oj-bg-danger-30 {
+      background-color: var(--oj-palette-danger-30) !important;
+    }
+
+    .oj-bg-warning-10 {
+      background-color: var(--oj-palette-warning-10) !important;
+    }
+
+    .oj-bg-warning-30 {
+      background-color: var(--oj-palette-warning-30) !important;
+    }
+
+    
+    .oj-bg-success-10 {
+      background-color: var(--oj-palette-success-10) !important;
+    }
+
+    .oj-bg-success-30 {
+      background-color: var(--oj-palette-success-30) !important;
+    }
+
+    .oj-bg-info-10 {
+      background-color: var(--oj-palette-info-10) !important;
+    }
+
+    .oj-bg-info-30 {
+      background-color: var(--oj-palette-info-30) !important;
+    }
+    
+
+    .oj-bg-brand-10 {
+      background-color: var(--oj-palette-brand-10) !important;
+    }
+    .oj-bg-brand-30 {
+      background-color: var(--oj-palette-brand-30) !important;
+    }
+
+  }

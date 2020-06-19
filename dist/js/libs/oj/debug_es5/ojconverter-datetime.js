@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -1056,6 +1057,9 @@ IntlDateTimeConverter._DEFAULT_DATE = new Date(1998, 10, 29, 15, 45, 31);
 IntlDateTimeConverter.prototype.Init = function (options) {
   IntlDateTimeConverter.superclass.Init.call(this, options);
 }; // Returns the wrapped date time converter implementation object.
+// FA is overriding our ojs/ojconverter-datetime bundle and needs to define this function
+// or else they will get an error.
+// Do not rename. TODO: Ideally we will remove the need for them to have to define this function.
 
 
 IntlDateTimeConverter.prototype._getWrapped = function () {
@@ -1207,6 +1211,9 @@ IntlDateTimeConverter.prototype.getHint = function () {
   // do not return any hint.
   return null;
 }; // Returns the hint value.
+// FA is overriding our ojs/ojconverter-datetime bundle and needs to define this function
+// or else they will get an error.
+// Do not rename. TODO: Ideally we will remove the need for them to have to define this function.
 
 
 IntlDateTimeConverter.prototype._getHintValue = function () {
@@ -1543,6 +1550,10 @@ IntlDateTimeConverter.prototype.compareISODates = function (isoStr, isoStr2) {
 /**
  * Processes the error returned by the converter implementation and throws a oj.ConverterError
  * instance.
+ *
+ * FA is overriding our ojs/ojconverter-datetime bundle and needs to define this function
+ * or else they will get an error.
+ * Do not rename. TODO: Ideally we will remove the need for them to have to define this function.
  * @param {Error} e
  * @param {String|string|Date|Object=} value
  * @throws an instance of oj.ConverterError
@@ -1663,6 +1674,10 @@ IntlDateTimeConverter.prototype._processConverterError = function (e, value) {
 };
 /**
  * Checks to see if an option is present in the resolved options.
+ *
+ * FA is overriding our ojs/ojconverter-datetime bundle and needs to define this function
+ * or else they will get an error.
+ * Do not rename. TODO: Ideally we will remove the need for them to have to define this function.
  * @param {string} optionName
  * @returns {boolean} true if optionName is present.
  * @private
@@ -1722,6 +1737,9 @@ IntlDateTimeConverter.prototype.getAvailableTimeZones = function () {
 };
 /**
  * Internal API to getTimePositioning.
+ * FA is overriding our ojs/ojconverter-datetime bundle and needs to define this function
+ * or else they will get an error, because ojtimepicker is calling this.
+ * Do not rename. TODO: Ideally we will remove the need for them to have to define this function.
  * @returns {Object} json object of the positioning with h + m as keys
  * @export
  * @ignore
@@ -3802,8 +3820,10 @@ OraDateTimeConverter = function () {
 
     if (timeZone === undefined) {
       return zoneName;
-    }
+    } // . Need to support Ho_Chi_minh city
 
+
+    timeZone = timeZone.replace('Ho_Chi_Minh', 'Saigon');
     var metazones = localeElements.supplemental.metazones;
 
     var metaZone = _getMetazone(value, timeZone, metazones);
@@ -3824,7 +3844,14 @@ OraDateTimeConverter = function () {
 
     if (zoneNameEntry0 === undefined) {
       var offset = zone.ofset(index);
-      return __ConverterUtilsI18n.OraI18nUtils.getTimeStringFromOffset(_UTC, offset, true, true);
+
+      if (offset !== 0) {
+        offset = __ConverterUtilsI18n.OraI18nUtils.getTimeStringFromOffset(_UTC, offset, true, true);
+      } else {
+        offset = _UTC;
+      }
+
+      return offset;
     }
 
     var zoneNameEntry;
@@ -3848,6 +3875,10 @@ OraDateTimeConverter = function () {
       if (zoneName !== undefined) {
         return zoneName;
       }
+    }
+
+    if (offset1 === 0) {
+      return _UTC;
     } // return UTC offset if we can not find a timezone name.
 
 
@@ -6279,6 +6310,10 @@ OraDateTimeConverter = function () {
 
     var mainNode = __ConverterUtilsI18n.OraI18nUtils.getLocaleElementsMainNode(localeElements);
 
+    var mainNodeKey = __ConverterUtilsI18n.OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
+
+    var lang = _getBCP47Lang(mainNodeKey);
+
     var metaZones = mainNode.dates.timeZoneNames.metazone;
     var cities = mainNode.dates.timeZoneNames.zone;
     var sortedZones = [];
@@ -6291,12 +6326,18 @@ OraDateTimeConverter = function () {
       var parts = id.split('/');
       var region = parts[0];
       var city = parts[1];
-      var locCity = '';
-      var locZone = '';
+      var locCity;
+      var locZone;
       var nameObject = {};
       var metaRegion = _cities[region];
 
-      if (metaRegion !== undefined) {
+      if (lang === 'en') {
+        if (parts[1] !== undefined) {
+          locCity = ' ' + parts[1];
+          locCity = locCity.replace(/_/g, ' ');
+          locCity = locCity.replace('Saigon', 'Ho Chi Minh City');
+        }
+      } else if (metaRegion !== undefined) {
         locCity = metaRegion[city];
 
         if (locCity !== undefined) {
@@ -6324,10 +6365,10 @@ OraDateTimeConverter = function () {
         if (locZone === undefined) {
           locZone = metaZone.long.standard;
         }
+      }
 
-        if (locZone !== undefined) {
-          locZone = ' - ' + locZone;
-        }
+      if (locCity === undefined) {
+        return null;
       }
 
       var locName = '(' + _UTC + ')';
@@ -6337,13 +6378,24 @@ OraDateTimeConverter = function () {
         locName = '(' + locName + ')';
       }
 
-      if (locCity === undefined || locZone === undefined) {
-        return null;
+      if (locZone === undefined) {
+        locZone = '';
+      }
+
+      if (locZone !== '') {
+        locZone = ' - ' + locZone;
       }
 
       nameObject.offsetLocName = locName + locCity + locZone;
       nameObject.locName = locCity + locZone;
       return nameObject;
+    }
+
+    function isDuplicateZone(sZones, lName) {
+      return sZones.find(function (_ref) {
+        var displayName = _ref.displayName;
+        return displayName.offsetLocName === lName.offsetLocName;
+      });
     }
 
     function pushZoneNameObject(zones) {
@@ -6352,19 +6404,31 @@ OraDateTimeConverter = function () {
       var zoneNames = Object.keys(zones);
 
       for (var i = 0; i < zoneNames.length; i++) {
-        var zoneName = zoneNames[i];
-        zone = tz.getZone(zoneName, localeElements);
-        offset = _getStdOffset(zone, dParts);
-        var localizedName = getLocalizedName(zoneName, offset, metaZones, cities);
+        var zoneName = zoneNames[i]; // skip Etc zones and duplicate Ho_Chi_Minh city
 
-        if (localizedName !== null) {
-          sortedZones.push({
-            id: zoneName,
-            displayName: localizedName
-          });
+        if (zoneName.indexOf('Etc/') === -1 && zoneName.indexOf('Ho_Chi_Minh') === -1) {
+          zone = tz.getZone(zoneName, localeElements);
+          offset = _getStdOffset(zone, dParts);
+          var localizedName = getLocalizedName(zoneName, offset, metaZones, cities);
+
+          if (localizedName !== null) {
+            var isDuplicate = isDuplicateZone(sortedZones, localizedName);
+
+            if (!isDuplicate) {
+              // . Asia/Saigon is obsolete
+              if (zoneName === 'Asia/Saigon') {
+                zoneName = 'Asia/Ho_Chi_Minh';
+              }
+
+              sortedZones.push({
+                id: zoneName,
+                displayName: localizedName
+              });
+            }
+          }
+
+          offsets[zoneName] = offset;
         }
-
-        offsets[zoneName] = offset;
       }
     } // return cahched array if available
 
@@ -7252,6 +7316,10 @@ var OraTimeZone = function () {
     },
     ofset: function ofset(idx) {
       var len = this.offsets.length;
+
+      if (len === 0) {
+        return 0;
+      }
 
       if (idx >= 0 && idx < len) {
         return parseInt(this.offsets[idx], 10);

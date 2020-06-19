@@ -1,0 +1,66 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.listview.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.scss";
+
+    @include module-include-once("common.streamlist") {
+
+        // This is to prevent the flash of unstyled content before the html becomes JET components.
+        @if $initialVisibility == hidden {
+          oj-stream-list:not(.oj-complete) {
+            visibility: hidden;
+          }
+        }
+
+        /* Styling for the stream list widget container */
+        oj-stream-list {
+          display: block;
+          overflow:auto;
+          cursor: pointer; 
+        }
+
+        /* Styling for skeleton list item container */
+        .oj-stream-list-skeleton {
+          height: 1.25rem;
+          margin-top: var(--oj-core-spacing-4x)
+        }
+
+        /* Styling for skeleton list item container */
+        .oj-stream-list-child-skeleton {
+          margin-left: var(--oj-core-spacing-4x)
+        }
+
+        /* Styling for skeleton list item container */
+        .oj-stream-list-skeleton-content {
+          height: 100%;
+        }
+
+        /* Styling for item entrance animation */
+        .oj-stream-list-entrance-animation {
+          animation-name: stream-list-entrance-animation;
+          animation-duration: 0.15s;
+          animation-iteration-count: 1;
+          animation-fill-mode: forwards;
+        }
+
+        @keyframes stream-list-entrance-animation {
+          0%   { visibility: visible; opacity: 0; }
+          100% { visibility: visible; opacity: 1; }
+        }
+
+        $streamListDefaultOptions: ();
+        $streamListAnimationDefaults: ();
+
+        @if ($streamListAnimationDefaults) {
+            $streamListDefaultOptions: map-merge($streamListDefaultOptions, (animation: $streamListAnimationDefaults));
+        }
+
+        .oj-stream-list-option-defaults {
+            font-family: oj-json($streamListDefaultOptions) !important;
+        }
+    }

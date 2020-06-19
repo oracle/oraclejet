@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -104,7 +105,11 @@ class TableDataSourceAdapter extends DataSourceAdapter {
         let self = this;
         let size = params != null ? params[TableDataSourceAdapter._SIZE] : -1;
         let sortCriteria = params != null ? params[TableDataSourceAdapter._SORTCRITERIA] : null;
-        let offset = params != null ? params[TableDataSourceAdapter._OFFSET] > 0 ? params[TableDataSourceAdapter._OFFSET] : 0 : 0;
+        let offset = params != null
+            ? params[TableDataSourceAdapter._OFFSET] > 0
+                ? params[TableDataSourceAdapter._OFFSET]
+                : 0
+            : 0;
         let fetchParams = new this.FetchListParameters(this, size, sortCriteria);
         this._startIndex = 0;
         return this._getFetchFunc(fetchParams, offset)(fetchParams, true).then(function (iteratorResults) {
@@ -195,15 +200,14 @@ class TableDataSourceAdapter extends DataSourceAdapter {
      */
     _getFetchFunc(params, offset) {
         let self = this;
-        if (params != null &&
-            params[TableDataSourceAdapter._SORTCRITERIA] != null) {
+        if (params != null && params[TableDataSourceAdapter._SORTCRITERIA] != null) {
             let attribute = params[TableDataSourceAdapter._SORTCRITERIA][0][TableDataSourceAdapter._ATTRIBUTE];
             let direction = params[TableDataSourceAdapter._SORTCRITERIA][0][TableDataSourceAdapter._DIRECTION];
             this._ignoreSortEvent = true;
             if (!this._isPagingModelTableDataSource()) {
                 this._startIndex = 0;
             }
-            return function (attribute, direction) {
+            return (function (attribute, direction) {
                 return function (params, fetchFirst) {
                     if (fetchFirst) {
                         let sortParam = {};
@@ -219,7 +223,7 @@ class TableDataSourceAdapter extends DataSourceAdapter {
                         return self._getTableDataSourceFetch(params, offset)(params);
                     }
                 };
-            }(attribute, direction);
+            })(attribute, direction);
         }
         else {
             return this._getTableDataSourceFetch(params, offset);
@@ -236,12 +240,16 @@ class TableDataSourceAdapter extends DataSourceAdapter {
             if (self._startIndex != null) {
                 options[TableDataSourceAdapter._STARTINDEX] = self._startIndex + offset;
             }
-            options[TableDataSourceAdapter._PAGESIZE] = params != null && params[TableDataSourceAdapter._SIZE] > 0 ? params[TableDataSourceAdapter._SIZE] : null;
+            options[TableDataSourceAdapter._PAGESIZE] =
+                params != null && params[TableDataSourceAdapter._SIZE] > 0
+                    ? params[TableDataSourceAdapter._SIZE]
+                    : null;
             // to maintain backward compatibility, Table will specify silent flag
             if (!self._isPagingModelTableDataSource() && params[TableDataSourceAdapter._SILENT]) {
                 options[TableDataSourceAdapter._SILENT] = params[TableDataSourceAdapter._SILENT];
             }
-            if (self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA] != null && params[TableDataSourceAdapter._SORTCRITERIA] == null) {
+            if (self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA] != null &&
+                params[TableDataSourceAdapter._SORTCRITERIA] == null) {
                 params[TableDataSourceAdapter._SORTCRITERIA] = [];
                 let sortCriterion = new self.SortCriterion(self, self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA][TableDataSourceAdapter._KEY], self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA][TableDataSourceAdapter._DIRECTION]);
                 params[TableDataSourceAdapter._SORTCRITERIA].push(sortCriterion);
@@ -258,7 +266,8 @@ class TableDataSourceAdapter extends DataSourceAdapter {
                         self._ignoreDataSourceEvents.push(true);
                     }
                     self.tableDataSource.fetch(options).then(function (result) {
-                        if (!self._isPagingModelTableDataSource() && !options[TableDataSourceAdapter._SILENT]) {
+                        if (!self._isPagingModelTableDataSource() &&
+                            !options[TableDataSourceAdapter._SILENT]) {
                             self._ignoreDataSourceEvents.pop();
                         }
                         if (result !== null) {
@@ -282,11 +291,13 @@ class TableDataSourceAdapter extends DataSourceAdapter {
                             self._startIndex = self._startIndex + result[TableDataSourceAdapter._DATA].length;
                             if (self.tableDataSource.totalSizeConfidence() == 'actual' &&
                                 self.tableDataSource.totalSize() > 0 &&
-                                (result.startIndex + result[TableDataSourceAdapter._DATA].length) >= self.tableDataSource.totalSize()) {
+                                result.startIndex + result[TableDataSourceAdapter._DATA].length >=
+                                    self.tableDataSource.totalSize()) {
                                 done = true;
                             }
                             else if (options[TableDataSourceAdapter._PAGESIZE] > 0 &&
-                                result[TableDataSourceAdapter._DATA].length < options[TableDataSourceAdapter._PAGESIZE]) {
+                                result[TableDataSourceAdapter._DATA].length <
+                                    options[TableDataSourceAdapter._PAGESIZE]) {
                                 done = true;
                             }
                             else if (result[TableDataSourceAdapter._DATA].length == 0) {
@@ -302,7 +313,8 @@ class TableDataSourceAdapter extends DataSourceAdapter {
                             }
                         }
                     }, function (error) {
-                        if (!self._isPagingModelTableDataSource() && !options[TableDataSourceAdapter._SILENT]) {
+                        if (!self._isPagingModelTableDataSource() &&
+                            !options[TableDataSourceAdapter._SILENT]) {
                             self._ignoreDataSourceEvents.pop();
                         }
                         reject(error);
@@ -330,7 +342,8 @@ class TableDataSourceAdapter extends DataSourceAdapter {
             let done = false;
             if (self.tableDataSource.totalSizeConfidence() == 'actual' &&
                 self.tableDataSource.totalSize() > 0 &&
-                (self._startIndex + event[TableDataSourceAdapter._DATA].length) >= self.tableDataSource.totalSize()) {
+                self._startIndex + event[TableDataSourceAdapter._DATA].length >=
+                    self.tableDataSource.totalSize()) {
                 done = true;
             }
             if (done) {
@@ -407,8 +420,7 @@ class TableDataSourceAdapter extends DataSourceAdapter {
     }
     _handleRefresh(event) {
         let self = this;
-        if (!self._isFetching &&
-            !self._requestEventTriggered) {
+        if (!self._isFetching && !self._requestEventTriggered) {
             if (event[TableDataSourceAdapter._OFFSET] != null) {
                 self._startIndex = event[TableDataSourceAdapter._OFFSET];
             }
@@ -426,15 +438,13 @@ class TableDataSourceAdapter extends DataSourceAdapter {
             return;
         }
         // to test backward compatibility we still need to be able to access Model from the oj namespace
-        if (typeof oj.Model !== "undefined" &&
-            event instanceof oj.Model) {
+        if (typeof oj.Model !== 'undefined' && event instanceof oj.Model) {
             // ignore request events by oj.Model. Those will be followed by row
             // mutation events anyway
             return;
         }
         if (!self._isFetching) {
-            if (event[TableDataSourceAdapter._STARTINDEX] > 0 &&
-                self.getStartItemIndex() == 0) {
+            if (event[TableDataSourceAdapter._STARTINDEX] > 0 && self.getStartItemIndex() == 0) {
                 self._startIndex = event[TableDataSourceAdapter._STARTINDEX];
             }
             // dispatch a refresh event which will trigger a the component to

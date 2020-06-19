@@ -1,0 +1,44 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+// import dependencies
+@import "../../../collection/themes/redwood/_oj-collection.cssvars.scss";
+
+@include module-include-once("redwood.variables.listview") {
+
+:root {
+  // list view
+  // ----------------------------
+
+  --oj-list-view-drill-icon-color:    var(--oj-icon-color-default);
+
+  // group header
+  --oj-list-view-group-header-bg-color:          transparent;
+  --oj-list-view-group-header-bg-color-sticky:   var(--oj-palette-neutral-30);
+  --oj-list-view-group-header-bg-color-disabled: var(--oj-palette-neutral-20);
+  --oj-list-view-group-header-bg-image:          none;
+
+  --oj-list-view-group-header-font-weight:  var(--oj-typography-subheading-sm-font-weight);
+  --oj-list-view-group-header-font-size:    var(--oj-typography-body-md-font-size);
+  --oj-list-view-group-header-line-height:  var(--oj-typography-body-md-line-height);
+  --oj-list-view-group-header-border-width-expanded: 0;
+  --oj-list-view-group-header-border-width-collapsed: 0 0 1px;
+  --oj-list-view-group-header-opacity:      1;
+
+  // item
+  --oj-list-view-item-border-position: 0;
+  --oj-list-view-item-padding-horizontal: 1rem;
+
+  // card
+  --oj-list-view-card-width:          240px;
+  --oj-list-view-card-height:         auto;
+  --oj-list-view-card-margin-top:     var(--oj-core-spacing-4x);
+  --oj-list-view-card-margin-end:     var(--oj-core-spacing-4x);
+  --oj-list-view-card-margin-bottom:  0;
+  --oj-list-view-card-margin-start:   0;
+
+  
+}
+
+}

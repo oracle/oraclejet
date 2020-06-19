@@ -1,4 +1,5 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -72,7 +73,7 @@
       height: 100%;
     }
 
-    .oj-text-field .oj-combobox-multi .oj-text-field-container {
+    .oj-text-field.oj-combobox-multi .oj-text-field-container {
       height: auto;
     }
 
@@ -114,6 +115,7 @@
       background-color: transparent;
       border-color: transparent;
       outline: none;
+      padding-bottom: 0;
       @include oj-ltr() {
         padding-left: 0;
       }
@@ -126,19 +128,27 @@
     .oj-combobox.oj-read-only .oj-combobox-input,
     .oj-combobox.oj-read-only .oj-combobox-selected-choice {
       outline: none;
+      margin-top: 0;
+      border-top-width: 0;
+      border-bottom-width: 0;
+      line-height: $formControlInputHeight;
 
         @include oj-form-control-content-readonly;        
 
     }
 
-    /* apply to the first selected entry in readonly mode */
-    .oj-combobox.oj-read-only li.oj-combobox-selected-choice:first-child {
+    /* apply to the selected entry in readonly mode */
+    .oj-combobox.oj-read-only li.oj-combobox-selected-choice {
       @include oj-ltr() {
         padding-left: 0;
       }
       @include oj-rtl() {
         padding-right: 0;
       }
+    }
+
+    .oj-combobox.oj-read-only .oj-combobox-selected-choice-label {
+      display: inherit;
     }
 
     /* don't show dropdown trigger */
@@ -169,11 +179,11 @@
     }
 
     /* Styling for text-align */
-    .oj-form-control-text-align-right .oj-combobox .oj-combobox-input
+    .oj-form-control-text-align-right.oj-combobox .oj-combobox-input
     {
       text-align: right;
     }
-    .oj-form-control-text-align-start .oj-combobox .oj-combobox-input
+    .oj-form-control-text-align-start.oj-combobox .oj-combobox-input
     {
 
         @include oj-bidi-property(
@@ -182,7 +192,7 @@
           $important: false);
 
     }
-    .oj-form-control-text-align-end .oj-combobox .oj-combobox-input
+    .oj-form-control-text-align-end.oj-combobox .oj-combobox-input
     {
 
         @include oj-bidi-property(
@@ -191,11 +201,11 @@
           $important: false);
 
     }
-    .oj-form-control-text-align-right .oj-combobox .oj-combobox-choices li
+    .oj-form-control-text-align-right.oj-combobox .oj-combobox-choices li
     {
       float: right;
     }
-    .oj-form-control-text-align-start .oj-combobox .oj-combobox-choices li
+    .oj-form-control-text-align-start.oj-combobox .oj-combobox-choices li
     {
 
         @include oj-bidi-property(
@@ -204,7 +214,7 @@
           $important: false);
 
     }
-    .oj-form-control-text-align-end .oj-combobox .oj-combobox-choices li
+    .oj-form-control-text-align-end.oj-combobox .oj-combobox-choices li
     {
 
         @include oj-bidi-property(
@@ -505,8 +515,8 @@
     // need extra specificity since base selector has direction selectors
     .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
     .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {    
-      @include oj-form-control-inherit();  
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
+      @include oj-form-control-inherit();
       @include oj-form-control-inherit-border();
     }
 
@@ -554,7 +564,7 @@
         background-color: transparent;
       } 
   
-      .oj-text-field-label-inside .oj-combobox.oj-read-only .oj-combobox-choice {
+      .oj-text-field-label-inside.oj-combobox.oj-read-only .oj-combobox-choice {
         padding: 0;
 
         @include oj-ltr() {
@@ -565,17 +575,22 @@
         }
       } 
 
-      .oj-text-field-label-inside .oj-combobox.oj-read-only .oj-combobox-input,
-      .oj-text-field-label-inside .oj-combobox.oj-read-only .oj-combobox-choices {
+      .oj-text-field-label-inside.oj-combobox.oj-read-only .oj-combobox-input,
+      .oj-text-field-label-inside.oj-combobox.oj-read-only .oj-combobox-choices {
         padding-left: 0;
         padding-right: 0;
+        padding-bottom: 0;
+      }
+      
+      .oj-text-field-label-inside.oj-combobox.oj-read-only .oj-combobox-selected-choice {
+        line-height: normal;
       }
 
-      .oj-text-field-label-inside .oj-combobox.oj-disabled .oj-text-field-container {
+      .oj-text-field-label-inside.oj-combobox.oj-disabled .oj-text-field-container {
         background-color: $formControlBgColorDisabled;
       }
 
-      .oj-text-field-label-inside .oj-combobox-selected-choice {
+      .oj-text-field-label-inside:not(.oj-read-only) .oj-combobox-selected-choice {
         @include oj-ltr() {
           margin: 10px 6px 0 0;
         }
@@ -585,8 +600,8 @@
       }
 
 
-    .oj-text-field-label-inside .oj-combobox,
-    .oj-form-control-label-top .oj-combobox{
+    .oj-text-field-label-inside.oj-combobox,
+    .oj-form-control-label-top.oj-combobox{
       max-width: 100%;
     }
 

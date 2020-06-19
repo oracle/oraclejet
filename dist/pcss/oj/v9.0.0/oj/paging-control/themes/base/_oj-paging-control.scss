@@ -1,0 +1,419 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.pagingcontrol.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../../utilities/_oj.utilities.scss";
+@import "../../../form-control/themes/base/_oj-form-control.mixins.scss";
+
+  @include module-include-once("common.pagingcontrol") {
+
+    /* paging control */
+    /* --------------------------------------------------------------- */
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-paging-control:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    /* Styling for the component. Set the line-height back to normal in case it
+       was set to 0 by the table/datagrid footer classes */
+    .oj-pagingcontrol {
+      line-height: normal;
+      display: block;
+    }
+
+    /* Styling for the component content. */
+    .oj-pagingcontrol-content {
+      overflow: hidden;
+    }
+
+    /* Styling for the loadMore mode contents. */
+    .oj-pagingcontrol-loadmore {
+
+        padding: var(--oj-paging-padding);
+
+      @include oj-ltr() {
+        text-align: right;
+      }
+      @include oj-rtl() {
+        text-align: left;
+      }
+    }
+    /* Styling for the Show More link. */
+    .oj-pagingcontrol-loadmore-link {
+
+        color: var(--oj-link-text-color);
+
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .oj-pagingcontrol-loadmore-link.oj-hover {
+      text-decoration: underline;
+    }
+
+    /* Styling for the loadMore mode range. */
+    .oj-pagingcontrol-loadmore-range {
+
+        padding-left: calc(2 * var(--oj-paging-padding));
+        padding-right: calc(2 * var(--oj-paging-padding));
+
+      white-space: nowrap;
+    }
+
+    /* Styling for the page mode contents. */
+    .oj-pagingcontrol-nav {
+
+        padding: var(--oj-paging-padding);
+
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    /* Styling for the page mode page input section. */
+    .oj-pagingcontrol-nav-input-section {
+      display: inline-block;
+      vertical-align: top;
+      white-space: nowrap;
+
+        @include oj-ltr() {
+          padding-right: var(--oj-paging-padding);
+        }
+        @include oj-rtl() {
+          padding-left: var(--oj-paging-padding);
+        }
+
+    }
+
+    /* Styling for the input section labels */
+    .oj-pagingcontrol-nav-label.oj-label-inline,
+    .oj-pagingcontrol-nav-input-max.oj-label-inline,
+    .oj-pagingcontrol-nav-input-summary.oj-label-inline {
+      margin-top: 0.2em;
+      line-height: 1;
+      padding-top: 0.5rem;
+    }
+
+    /* Styling for the page mode navigation arrows section. */
+    .oj-pagingcontrol-nav-arrow-section {
+      display: inline-block;
+      vertical-align: middle;
+
+          @include oj-ltr() {
+            border-left: 1px solid var(--oj-paging-border-color);
+            padding-left: var(--oj-paging-padding);
+          }
+          @include oj-rtl() {
+            border-right: 1px solid var(--oj-paging-border-color);
+            padding-right: var(--oj-paging-padding);
+          }
+
+    }
+
+    /* Styling for the page mode navigation arrows section when it is the first child  */
+    .oj-pagingcontrol-nav-arrow-section:first-child {
+        @include oj-ltr() {
+          border-left: 0;
+          padding-left: 0;
+        }
+        @include oj-rtl() {
+          border-right: 0;
+          padding-right: 0;
+        }
+    }
+
+    /* Styling for the page mode page links section. */
+    .oj-pagingcontrol-nav-pages-section {
+      display: inline-block;
+      vertical-align: middle;
+
+        line-height: var(--oj-button-height);
+
+    }
+
+    /* Styling for the page mode dot links. */
+    .oj-pagingcontrol-nav-dot {
+
+        line-height: var(--oj-typography-body-md-font-size);
+        padding: var(--oj-paging-dot-padding);
+
+      display: inline-block;
+    }
+
+    /* Styling for the page mode dot bullet. */
+    .oj-pagingcontrol-nav-dot-bullet {
+      font-size: 0;
+      border-width: 1px;
+      border-style: solid;
+
+        border-color: var(--oj-icon-color-default);
+        width: var(--oj-paging-dot-size);
+        height: var(--oj-paging-dot-size);
+
+      box-sizing: border-box;
+      border-radius: 50%;
+      position: relative;
+      transition: all 0.3s ease 0s;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    /* Styling for the page mode dot bullet when paging control in high contrast mode. */
+    .oj-hicontrast .oj-pagingcontrol-nav-dot-bullet {
+      border: 3px double;
+    }
+
+    /* Styling for the page mode dot link when selected or hovered. */
+    .oj-pagingcontrol-nav-dot-bullet.oj-selected,
+    .oj-pagingcontrol-nav-dot-bullet.oj-hover {
+
+        background-color: var(--oj-icon-color-active);
+        border-color: var(--oj-icon-color-active);
+
+      content: "";
+    }
+
+    /* Styling for the page mode page links. */
+    .oj-pagingcontrol-nav-page {
+
+        color: var(--oj-link-text-color);
+        min-width: var(--oj-typography-body-md-font-size);
+        font-size: var(--oj-typography-body-md-font-size);
+        line-height: var(--oj-typography-body-md-line-height);
+
+      padding: 4px 8px;
+      text-align: center;
+      vertical-align: middle;
+      text-decoration: none;
+      outline: none;
+    }
+
+    .oj-pagingcontrol-nav-page.oj-hover {
+      text-decoration: underline;
+    }
+
+    .oj-pagingcontrol-nav-page.oj-focus {
+      text-decoration: underline;
+    }
+
+    .oj-pagingcontrol-nav-dot.oj-focus:not(.oj-focus-highlight){
+      outline:none;
+    }
+
+    /* Styling for the page mode page link when selected. */
+    .oj-pagingcontrol-nav-page.oj-selected {
+
+        border: 1px solid var(--oj-label-color);
+        color: var(--oj-core-text-color-primary);
+
+      display: inline;
+    }
+
+    /* Styling for the page mode page link when disabled. */
+    .oj-pagingcontrol-nav-page.oj-disabled {
+      text-decoration: none;
+    }
+
+    /* Styling for the page mode page ellipsis. */
+    .oj-pagingcontrol-nav-page-ellipsis {
+
+        min-width: var(--oj-typography-body-md-font-size);
+        font-size: var(--oj-typography-body-md-font-size);
+        line-height: var(--oj-typography-body-md-line-height);
+
+      padding: 4px;
+      vertical-align: bottom;
+    }
+
+    /* Styling for the page mode page label. */
+    label.oj-pagingcontrol-nav-label {
+
+        color: var(--oj-label-color);
+        font-size: var(--oj-typography-body-md-font-size);
+        line-height: var(--oj-typography-body-md-line-height);
+
+    }
+
+    .oj-pagingcontrol-nav-input-section .oj-inputtext .oj-text-field-container {
+      min-width: 2.5rem;
+      max-width: 2.5rem;
+      min-height: 2rem;
+      max-height: 2rem;
+      margin-top: 0.2em;
+    }
+
+    /* Styling for the page mode page input element. */
+    /* Copying from form controls css vars mixins but removing rtl*/
+    input.oj-pagingcontrol-nav-input.oj-inputtext-input, 
+    .oj-pagingcontrol-nav-input input.oj-inputtext-input{
+        // Adding RTL to prevent right align for RTL
+        @include oj-ltr() {
+          text-align: center;       
+        }
+        @include oj-rtl() {
+          text-align: center;       
+        }
+        // Prefix hardcoded because of caniuse-lite issue, should be removed once resolved
+        &:-ms-input-placeholder {
+          color: var(--oj-text-field-placeholder-color);
+          // in Firefox the default opacity is not 1 for placeholder
+          opacity: 1;
+          font-style: var(--oj-text-field-placeholder-font-style);
+        }
+        &::placeholder {
+          color: var(--oj-text-field-placeholder-color);
+          // in Firefox the default opacity is not 1 for placeholder
+          opacity: 1;
+          font-style: var(--oj-text-field-placeholder-font-style);
+        }
+        // remove ios background-color on tap since we tend to put our own background-color on tap
+        -webkit-tap-highlight-color: transparent;
+        font-size: var(--oj-typography-body-md-font-size);
+        line-height: var(--oj-typography-body-md-line-height);
+
+      padding-left: 2px;
+      padding-top: 0px;
+      padding-right: 2px;
+
+    }
+
+    /* Styling for the page mode page input element when readOnly. */
+    input[readOnly].oj-pagingcontrol-nav-input.oj-inputtext-input ,
+    .oj-pagingcontrol-nav-input input[readOnly].oj-inputtext-input {
+    
+        color: var(--oj-label-color);
+        min-width: var(--oj-typography-body-md-font-size);
+    }
+
+    /* Styling for the page mode maximum number of pages text. */
+    .oj-pagingcontrol-nav-input-max {
+
+        color: var(--oj-label-color);
+        font-size: var(--oj-typography-body-md-font-size);
+        line-height: var(--oj-typography-body-md-line-height);
+        @include oj-ltr() {
+          padding-left: var(--oj-paging-padding);
+        }
+        @include oj-rtl() {
+          padding-right: var(--oj-paging-padding);
+        }
+
+    }
+    
+    /* Styling for the page mode page range summary. */
+    .oj-pagingcontrol-nav-input-summary {
+
+        color: var(--oj-label-color);
+        font-size: var(--oj-typography-body-md-font-size);
+        line-height: var(--oj-typography-body-md-line-height);
+        @include oj-ltr() {
+          padding-right: var(--oj-paging-padding);
+        }
+        @include oj-rtl() {
+          padding-left: var(--oj-paging-padding);
+        }
+
+    }
+
+    /* Styling for the page mode navigation page arrows. */
+    .oj-pagingcontrol-nav-arrow {
+
+        width: var(--oj-button-height);
+        height: var(--oj-button-height);
+        line-height: var(--oj-button-height);
+        border-radius: var(--oj-button-border-radius);
+        cursor: var(--oj-button-cursor);
+
+      box-sizing: border-box;
+      vertical-align: middle;
+      background: transparent;
+      border: 1px solid transparent;
+      padding: 1px;
+    }
+
+    /* Styling for the page mode navigation page arrows in hover state. */
+    .oj-pagingcontrol-nav-arrow.oj-hover {
+
+        background-color: var(--oj-button-borderless-chrome-bg-color-hover);
+        border-color: var(--oj-button-borderless-chrome-border-color-hover);
+        color: var(--oj-button-borderless-chrome-icon-color-hover);
+
+      text-decoration: none;
+    }
+
+    /* Styling for the page mode navigation page arrows when active. */
+    .oj-pagingcontrol-nav-arrow.oj-active,
+    .oj-pagingcontrol-nav-arrow.oj-active.oj-hover {
+     
+       color: var(--oj-button-borderless-chrome-icon-color-selected);
+       background: var(--oj-button-borderless-chrome-bg-color-active);
+       border-color: var(--oj-button-borderless-chrome-border-color-active);
+
+    }
+
+    //todo
+    /* Styling for the page mode navigation first page arrow icon. */
+    .oj-pagingcontrol-nav-first-icon {
+      @include oj-ltr() {
+        @extend .oj-fwk-icon-caret02end-w !optional;
+      }
+      @include oj-rtl() {
+        @extend .oj-fwk-icon-caret02end-e !optional;
+      }
+    }
+
+    /* Styling for the page mode navigation first page arrow icon in vertical orientation. */
+    .oj-pagingcontrol-nav-first-vertical-icon {
+      @extend .oj-fwk-icon-caret02end-n !optional;
+    }
+
+    /* Styling for the page mode navigation previous page arrow icon. */
+    .oj-pagingcontrol-nav-previous-icon {
+      @include oj-ltr() {
+        @extend .oj-fwk-icon-caret02-w !optional;
+      }
+      @include oj-rtl() {
+        @extend .oj-fwk-icon-caret02-e !optional;
+      }
+    }
+
+    /* Styling for the page mode navigation previous page arrow icon in vertical orientation. */
+    .oj-pagingcontrol-nav-previous-vertical-icon {
+      @extend .oj-fwk-icon-caret02-n !optional;
+    }
+
+    /* Styling for the page mode navigation next page arrow icon. */
+    .oj-pagingcontrol-nav-next-icon {
+      @include oj-ltr() {
+        @extend .oj-fwk-icon-caret02-e !optional;
+      }
+      @include oj-rtl() {
+        @extend .oj-fwk-icon-caret02-w !optional;
+      }
+    }
+
+    /* Styling for the page mode navigation next page arrow icon in vertical orientation. */
+    .oj-pagingcontrol-nav-next-vertical-icon {
+      @extend .oj-fwk-icon-caret02-s !optional;
+    }
+
+    /* Styling for the page mode navigation last page arrow icon. */
+    .oj-pagingcontrol-nav-last-icon {
+      @include oj-ltr() {
+        @extend .oj-fwk-icon-caret02end-e !optional;
+      }
+      @include oj-rtl() {
+        @extend .oj-fwk-icon-caret02end-w !optional;
+      }
+    }
+
+    /* Styling for the page mode navigation last page arrow icon in vertical orientation. */
+    .oj-pagingcontrol-nav-last-vertical-icon {
+      @extend .oj-fwk-icon-caret02end-s !optional;
+    }
+  }

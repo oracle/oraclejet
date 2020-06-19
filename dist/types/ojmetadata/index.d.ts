@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
 // tslint:disable-next-line no-unnecessary-class
 // tslint:disable-next-line interface-over-type-literal
 export type ComponentMetadata = {
@@ -70,6 +78,7 @@ export type ComponentMetadataProperties = {
     readOnly?: boolean;
     type: string;
     value?: any[] | object | boolean | number | null | string;
+    binding?: PropertyBinding;
     writeback?: boolean;
     description?: string;
     displayName?: string;
@@ -133,6 +142,13 @@ export type Paths = {
     debug?: string;
 };
 // tslint:disable-next-line interface-over-type-literal
+export type PropertyBinding = {
+    consume?: {
+        name: string;
+    };
+    provide?: ProvideProperty[];
+};
+// tslint:disable-next-line interface-over-type-literal
 export type PropertyEditorValue = {
     description?: string;
     displayName?: string;
@@ -143,6 +159,12 @@ export type PropertyLayoutGroup = {
     propertyGroup: string;
     displayName?: string;
     items: Array<string | PropertyLayoutGroup>;
+};
+// tslint:disable-next-line interface-over-type-literal
+export type ProvideProperty = {
+    name: string;
+    default?: string | number | boolean | null;
+    transform?: Record<string, string | number | boolean | null>;
 };
 // tslint:disable-next-line interface-over-type-literal
 export type SlotDataVariable = {
@@ -164,6 +186,7 @@ export type StyleClass = {
     kind: 'class';
     displayName?: string;
     description?: string;
+    extension?: object;
     help?: string;
     status?: Status[];
     styleSelector?: string;
@@ -181,6 +204,7 @@ export type StyleSet = {
     kind: 'set';
     displayName?: string;
     description?: string;
+    extension?: object;
     help?: string;
     status?: Status[];
     styleRelation: 'exclusive' | 'inclusive';
@@ -192,6 +216,7 @@ export type StyleTemplate = {
     kind: 'template';
     displayName?: string;
     description?: string;
+    extension?: object;
     help?: string;
     status?: Status[];
     styleSelector?: string;

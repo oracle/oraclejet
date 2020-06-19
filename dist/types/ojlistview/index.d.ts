@@ -1,11 +1,20 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
 import CommonTypes = require('../ojcommontypes');
 import { KeySet } from '../ojkeyset';
-import { DataProvider } from '../ojdataprovider';
+import { DataProvider, ItemMetadata } from '../ojdataprovider';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojListView<K, D> extends baseComponent<ojListViewSettableProperties<K, D>> {
     as: string;
     currentItem: K;
     data: DataProvider<K, D>;
+    display: 'list' | 'card';
     dnd: {
         drag?: {
             items: {
@@ -159,6 +168,12 @@ export namespace ojListView {
         [propName: string]: any;
     }> {
     }
+    interface ojItemAction<K, D> extends CustomEvent<{
+        context: CommonTypes.ItemContext<K, D>;
+        originalEvent: Event;
+        [propName: string]: any;
+    }> {
+    }
     interface ojPaste extends CustomEvent<{
         item: Element;
         [propName: string]: any;
@@ -177,6 +192,8 @@ export namespace ojListView {
     type currentItemChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["currentItem"]>;
     // tslint:disable-next-line interface-over-type-literal
     type dataChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["display"]>;
     // tslint:disable-next-line interface-over-type-literal
     type dndChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["dnd"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -219,6 +236,7 @@ export namespace ojListView {
         index: number;
         key: K;
         data: D;
+        metadata: ItemMetadata<K>;
         parentElement: Element;
         depth?: number;
         parentKey?: K;
@@ -251,11 +269,13 @@ export interface ojListViewEventMap<K, D> extends baseComponentEventMap<ojListVi
     'ojCopy': ojListView.ojCopy;
     'ojCut': ojListView.ojCut;
     'ojExpand': ojListView.ojExpand<K>;
+    'ojItemAction': ojListView.ojItemAction<K, D>;
     'ojPaste': ojListView.ojPaste;
     'ojReorder': ojListView.ojReorder;
     'asChanged': JetElementCustomEvent<ojListView<K, D>["as"]>;
     'currentItemChanged': JetElementCustomEvent<ojListView<K, D>["currentItem"]>;
     'dataChanged': JetElementCustomEvent<ojListView<K, D>["data"]>;
+    'displayChanged': JetElementCustomEvent<ojListView<K, D>["display"]>;
     'dndChanged': JetElementCustomEvent<ojListView<K, D>["dnd"]>;
     'drillModeChanged': JetElementCustomEvent<ojListView<K, D>["drillMode"]>;
     'expandedChanged': JetElementCustomEvent<ojListView<K, D>["expanded"]>;
@@ -275,6 +295,7 @@ export interface ojListViewSettableProperties<K, D> extends baseComponentSettabl
     as: string;
     currentItem: K;
     data: DataProvider<K, D>;
+    display: 'list' | 'card';
     dnd: {
         drag?: {
             items: {

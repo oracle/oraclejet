@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -73,6 +74,8 @@ var __oj_swipe_actions_metadata =
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 12
  *
+ * @ojuxspecs ['swipe-actions']
+ *
  * @classdesc
  * <h3 id="swipeActionsOverview-section">
  *   JET SwipeActions Component
@@ -112,13 +115,6 @@ var __oj_swipe_actions_metadata =
  * <code class="prettyprint">startIcon</code> slot of the <code class="prettyprint">oj-option</code>
  * should be specified. See the <code class="prettyprint">oj-option</code> doc for details about accepted children and slots.</p>
  *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
- *
  * <h3 id="accessibility-section">
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
@@ -143,6 +139,30 @@ var __oj_swipe_actions_metadata =
  *
  * {@ojinclude "name":"keyboardDoc"}
  */
+// --------------------------------------------------- oj.ojSwipeActions Styling Start ------------------------------------------------------------
+/**
+* @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+*/
+// ---------------- oj-swipeactions-container --------------
+/**
+* Designed for use with item in oj-list-view that contains the oj-swipe-actions element, specifically this will remove the padding around the content of the item so that the swipe actions can take the full height.<br/>
+* Is applied to the root of each item in oj-list-view containing the oj-swipe-actions element.
+* @ojstyleclass oj-swipeactions-container
+* @ojdisplayname No Padding
+* @ojstyleselector oj-list-view li
+* @memberof oj.ojSwipeActions
+*/
+// ---------------- oj-swipeactions-[swipe-option] --------------
+/**
+* Designed to tag swipe action items within an oj-list-view.
+* @ojstyletemplate oj-swipeactions-[swipe-option]
+* @ojdisplayname Swipe Action Items
+* @ojstyleselector oj-swipe-actions oj-option
+* @ojstyletemplatetokens ["StylingTemplateTokens.[swipe-option]"]
+* @memberof oj.ojSwipeActions
+*/
+// --------------------------------------------------- oj.ojSwipeActions Styling End ------------------------------------------------------------
+
   oj.__registerWidget('oj.ojSwipeActions', $.oj.baseComponent,
     {
       version: '1.0.0',
@@ -796,49 +816,6 @@ var __oj_swipe_actions_metadata =
  *     &lt;oj-option value='action2'>Action 2&lt;/oj-option>
  *   &lt;template>
  * &lt;/oj-swipe-actions>
- */
-
-/**
- * The following CSS classes can be applied by the page author as needed.
- * <p>
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>Class</th>
- *       <th>Description</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-swipeactions-container</td>
- *       <td>Designed for use with item in oj-list-view that contains the oj-swipe-actions element, specifically this will remove the padding around the content of the item so that the swipe actions can take the full height.
- *           <p>Is applied to the root of each item in oj-list-view containing the oj-swipe-actions element.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-swipeactions-neutral</td>
- *       <td>Designed for use with an action item that shows more available actions that users can perform.
- *           <p>Is applied to the <code class="prettyprint">oj-option</code> element that represents the action item.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-swipeactions-attention</td>
- *       <td>Designed for use with an action item that tags the associated item in oj-list-view.
- *           <p>Is applied to the <code class="prettyprint">oj-option</code> element that represents the action item.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-swipeactions-danger</td>
- *       <td>Designed for use with an action item that performs an explicit action like deleting the associated item in oj-list-view.
- *           <p>Is applied to the <code class="prettyprint">oj-option</code> element that represents the action item.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-swipeactions-default</td>
- *       <td>Designed for use with an action item that should get all the space when user swipes pass the threshold distance.  This is usually the last item within the template.
- *           <p>Is applied to the <code class="prettyprint">oj-option</code> element that represents the default action item.</td>
- *     </tr>
- *   </tbody>
- * </table>
- *
- * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
- * @memberof oj.ojSwipeActions
  */
 
 /**

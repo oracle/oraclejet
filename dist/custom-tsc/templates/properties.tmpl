@@ -1,0 +1,52 @@
+<?js
+var properties = obj;
+var self = this;
+var props = properties? Object.keys(properties) : undefined;
+props.sort();
+for (let prop of props) {
+  if (properties[prop].description) {
+  ?>
+  /**
+   * <?js= properties[prop].description ?>
+   */
+  <?js
+  }
+  let type = properties[prop]['type'];
+  let reftype = properties[prop]['reftype'];
+  let enums = properties[prop]['enumValues'];
+  let value = properties[prop]['value'];
+  let optional = properties[prop]['optional'] ? '?' : '';
+  let strProp = properties[prop]['readOnly']? `readonly ${prop}`: `${prop}`;
+  strProp = `${strProp}${optional}`;
+  if (enums) {
+    if (!reftype){
+      type = "'" + enums.join("'|'") + "'"; 
+    }
+    else{
+      type = reftype;
+    }?>
+  <?js= `${strProp}: ${type};` ?>
+  <?js
+  }
+  else if (properties[prop]['properties']){ 
+    if (reftype) { ?>
+  <?js= `${strProp}: ${reftype};` ?>
+  <?js
+    }
+    else if (type === 'object') {?>
+  <?js= `${strProp}: {` ?>
+     <?js= self.partial('properties.tmpl', properties[prop]['properties']) ?>
+    };
+  <?js
+    }
+    else throw new Error(`Invalid type for ${prop}`);
+  }
+  else { 
+    if (reftype){
+      type = reftype;
+    }?>
+  <?js= `${strProp}: ${type};` ?>
+  <?js
+  }
+}
+?>

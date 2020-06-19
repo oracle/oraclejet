@@ -1,0 +1,69 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.listview.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+  @include module-include-once("common.listitemlayout") {
+
+      // This is to prevent the flash of unstyled content before the html becomes JET components.
+      @if $initialVisibility == hidden {
+        oj-list-item-layout:not(.oj-complete) {
+          visibility: hidden;
+        }
+      }
+
+      .oj-listitemlayout{
+        display: flex;
+        box-sizing: border-box;
+        align-items: center;
+        min-height: $collectionRowHeight;
+        padding: 0 $panelPadding;
+      }
+  
+      .oj-listitemlayout-selector,
+      .oj-listitemlayout-avatar{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+  
+      .oj-listitemlayout-content {
+        padding: $panelPadding 0;
+        display: flex;
+        flex:auto;
+        align-items: center;
+      }
+      
+      .oj-listitemlayout-textslots {
+        display: flex;
+        flex:auto;
+      }
+  
+      .oj-listitemlayout-leading {
+        @include oj-ltr() {
+          padding-right: $panelPadding;
+        }
+        @include oj-rtl() {
+          padding-left: $panelPadding;
+        }
+      }
+  
+      .oj-listitemlayout-main {
+        flex: auto;
+      }
+      
+      .oj-listitemlayout-meta {
+        justify-self: flex-end;
+        align-self: baseline;
+      }
+
+      .oj-listitemlayout-tertiary-padding{
+        padding-top: 2px;
+      }
+        
+  }

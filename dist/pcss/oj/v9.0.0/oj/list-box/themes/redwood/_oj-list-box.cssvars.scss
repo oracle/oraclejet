@@ -1,0 +1,26 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.scss";
+
+
+@import "../../../collection/themes/redwood/_oj-collection.cssvars.scss";
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+  @include module-include-once("redwood.variables.listbox") {
+
+:root {
+
+  // listbox
+  // --------------------------
+  // listbox values used in drop down for
+  // inputTime, select, combobox
+  // todo: this should be driven off a collection or list view var
+  --oj-listbox-item-padding-horizontal:  1rem;
+  --oj-listbox-item-padding-vertical:    var(--oj-collection-list-cell-padding-vertical);
+  --oj-listbox-item--min-row-height:     var(--oj-collection-list-min-row-height);
+  --oj-listbox-indent-width:             1rem;
+  --oj-listbox-bg-color-hover:           var(--oj-collection-cell-bg-color-hover);
+  --oj-listbox-message-text-color:       var(--oj-core-text-color-secondary);
+  
+}
+
+}

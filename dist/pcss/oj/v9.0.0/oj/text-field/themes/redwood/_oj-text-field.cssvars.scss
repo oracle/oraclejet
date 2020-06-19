@@ -1,0 +1,129 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+@import "../../../core/themes/redwood/_oj-core.cssvars";
+@import "../../../core/themes/redwood/_oj-palette.cssvars";
+@import "../../../form-layout/themes/redwood/_oj-form-layout.cssvars";
+
+  @include module-include-once("redwood.variables.textfield") {
+:root {
+
+    // common form controls
+    //--------------------------
+ 
+    --oj-text-field-sm-width: calc(var(--oj-form-layout-column-max-width)/2);
+    --oj-text-field-md-width: var(--oj-form-layout-column-max-width);
+
+    --oj-text-field-default-max-width:    100%;
+
+    --oj-text-field-min-width:          0; 
+    --oj-text-field-border-radius:       var(--oj-core-border-radius-lg);
+
+    --oj-text-field-border-top-width:    1px;
+    --oj-text-field-border-right-width:  1px;
+    --oj-text-field-border-bottom-width: 1px;
+    --oj-text-field-border-left-width:   1px;
+
+    --oj-text-field-box-shadow:          var(--oj-core-box-shadow-sm);
+
+    --oj-text-field-text-highlight-color: var(--oj-palette-brand-50);
+
+    // controls the horizontal padding inside an input
+    --oj-text-field-padding-horizontal: var(--oj-core-spacing-3x);
+
+    // todo: why do we need text align again? when is it not left?
+    --oj-text-field-text-align: left;
+    --oj-text-field-text-align-rtl: right;
+
+
+
+    // oj-form-control-input variables apply to
+    // input style form controls, like input text, password, etc
+    // --oj-text-field-height should match the button height
+    
+    --oj-text-field-height:              2.75rem;
+    --oj-text-field-font-size:        var(--oj-typography-body-md-font-size);
+    --oj-text-field-font-size-adjust: 100%;
+
+    // $oj-form-control-trigger variables apply to form controls
+    // that trigger some type of picker, like a select
+    
+
+    --oj-text-field-trigger-height:            var(--oj-text-field-height); //settings: ignore
+    --oj-text-field-trigger-font-size:         var(--oj-text-field-font-size); //settings: ignore
+    --oj-text-field-trigger-font-size-adjust:  var(--oj-text-field-font-size-adjust); //settings: ignore
+
+
+    // messaging
+    --oj-text-field-messaging-border-top-width:    1px;
+    --oj-text-field-messaging-border-right-width:  1px;
+    --oj-text-field-messaging-border-bottom-width: 1px;
+    --oj-text-field-messaging-border-left-width:   1px;
+    --oj-text-field-border-color-invalid:          var(--oj-palette-danger-100);
+    --oj-text-field-border-color-warning:          var(--oj-palette-warning-100);
+
+    // enabled
+    --oj-text-field-bg-color:               var(--oj-palette-neutral-0);
+    --oj-text-field-border-color:           rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-low));
+    --oj-text-field-placeholder-color:      var(--oj-core-text-color-secondary);
+    --oj-text-field-placeholder-font-style: normal;
+    --oj-text-field-value-color:      var(--oj-core-text-color-primary);
+    // $oj-form-control-trigger variables apply to form controls
+    // that trigger some type of picker, like a select
+    --oj-text-field-trigger-value-color:       var(--oj-text-field-value-color); //settings: ignore
+
+    // hover
+    --oj-text-field-bg-color-hover:           var(--oj-text-field-bg-color);
+
+    // active
+    // $oj-form-control-trigger variables apply to form controls
+    // that trigger some type of picker, like a select
+    --oj-text-field-trigger-bg-color-active:   var(--oj-text-field-bg-color); //settings: ignore
+
+    // disabled
+    --oj-text-field-bg-color-disabled:      rgba(var(--oj-palette-neutral-rgb-0), var(--oj-palette-opacity-low));
+
+    --oj-text-field-border-color-disabled:  rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-lowest));
+    --oj-text-field-value-color-disabled:   var(--oj-core-text-color-disabled);
+    --oj-text-field-opacity-disabled:       var(--oj-core-opacity-disabled);
+    --oj-text-field-border-style-disabled:    solid;
+
+    // readonly
+    --oj-text-field-value-color-read-only:  var(--oj-core-text-color-primary);
+    --oj-text-field-font-size-read-only:    var(--oj-typography-body-md-font-size);
+    --oj-text-field-font-weight-read-only:  normal;
+    --oj-text-field-line-height-read-only: var(--oj-typography-body-md-line-height);
+    --oj-text-field-border-color-read-only: rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-lowest));
+
+    // focus
+
+    --oj-text-field-border-color-focus: var(--oj-palette-brand-110);
+    --oj-text-field-border-top-width-focus:    var(--oj-text-field-border-top-width);
+    --oj-text-field-border-right-width-focus:  var(--oj-text-field-border-right-width);
+    --oj-text-field-border-bottom-width-focus: var(--oj-text-field-border-bottom-width);
+    --oj-text-field-border-left-width-focus:   var(--oj-text-field-border-left-width);
+
+    // variables that apply when the label-edge is inside
+    --oj-text-field-inside-height:            3.25rem;
+    --oj-text-field-inside-padding-top:             0.875rem;
+    --oj-text-field-inside-textarea-margin-top:    1.5rem;
+    // todo: disabled color should apply regardless of location, error and focus only apply when label is inside
+    --oj-text-field-inside-label-color-disabled:    var(--oj-core-text-color-disabled);
+    --oj-text-field-inside-label-color-error:       var(--oj-palette-danger-100);
+    --oj-text-field-inside-label-color-focus:       var(--oj-palette-brand-110);
+    --oj-text-field-inside-label-color-warning:     var(--oj-palette-warning-100);
+    --oj-text-field-inside-label-font-size:         var(--oj-typography-body-xs-font-size);
+    --oj-text-field-inside-label-font-weight:       500;
+    --oj-text-field-inside-label-line-height:       var(--oj-typography-body-xs-line-height);
+ 
+    // todo: see if we can get rid of these once we have input border colors again
+    --oj-text-field-button-border-color: var(--oj-palette-neutral-40);
+    --oj-text-field-button-border-color-disabled: rgba(var(--oj-palette-neutral-rgb-90), var(--oj-palette-opacity-lowest));
+    
+    // User Assistance
+    --oj-user-assistance-inline-text-color: var(--oj-core-text-color-secondary);
+    --oj-user-assistance-inline-line-height: 1.333;
+    --oj-user-assistance-inline-font-size: var(--oj-typography-body-xs-font-size);
+}
+
+}

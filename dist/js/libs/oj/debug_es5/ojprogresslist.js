@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -286,9 +287,10 @@ Composite.register('oj-progress-item', {
  * @ojcomponent oj.ojProgressList
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @since 4.0.0
- * @ojdeprecated {since: '8.0.0', description: 'Please use &lt;oj-list-view> instead.'}
  * @ojdisplayname Progress List
  * @ojshortdesc A progress list displays a list of items and their progress, it is most commonly used in conjunction with a file picker to display file upload progress.
+ * @ojdeprecated {since: '8.0.0', description: 'Please use &lt;oj-list-view> instead.'}
+ * @ojunsupportedthemes ["Redwood"]
  *
  * @class oj.ojProgressList
  * @ojsignature {target: "Type", value:"class ojProgressList extends JetElement<ojProgressListSettableProperties>"}

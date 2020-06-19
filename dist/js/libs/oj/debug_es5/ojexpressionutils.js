@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -56,11 +57,19 @@ ExpressionUtils.createGenericExpressionEvaluator = function (expressionText) {
       return evaluate([context]);
     };
   }
-  /* jslint evil:true */
-  // eslint-disable-next-line no-new-func
 
+  var evaluator;
 
-  return new Function('context', 'with(context){return ' + expressionText + ';}'); // @HTMLUpdateOK binding expression evaluation
+  try {
+    /* jslint evil:true */
+    // eslint-disable-next-line no-new-func
+    evaluator = new Function('context', 'with(context){return ' // @HTMLUpdateOK binding expression evaluation
+    + expressionText + ';}');
+  } catch (e) {
+    throw new Error(e.message + ' in expression "' + expressionText + '"');
+  }
+
+  return evaluator;
 };
 
 return ExpressionUtils;

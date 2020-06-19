@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -71,10 +72,6 @@ var __oj_input_number_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -234,6 +231,15 @@ var __oj_input_number_metadata =
         }
       }
     },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
+    },
     "valid": {
       "type": "string",
       "writeback": true,
@@ -337,6 +343,8 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 2
  *
+ * @ojuxspecs ['input-number']
+ *
  * @classdesc
  * <h3 id="inputNumberOverview-section">
  *   JET InputNumber Component
@@ -388,14 +396,6 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
  * </p>
  *
  *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
- *
- *
  * <h3 id="label-section">
  *   Label and InputNumber
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
@@ -416,6 +416,107 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
  * @example <caption>Initialize a component attribute via component binding:</caption>
  * &lt;oj-input-number id="numberId" value="{{currentValue}}">&lt;/oj-input-number>
  */
+// --------------------------------------------------- oj.ojInputNumber Styling Start ------------------------------------------------------------
+  /**
+   * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+   * The form control style classes can be applied to the component, or an ancestor element. <br/>
+   * When applied to an ancestor element, all form components that support the style classes will be affected.
+   */
+  // ---------------- oj-form-control-full-width --------------
+  /**
+  * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
+  * @ojstyleclass oj-form-control-full-width
+  * @ojdisplayname Full Width
+  * @memberof oj.ojInputNumber
+  * @ojtsexample
+  * &lt;oj-input-number class="oj-form-control-full-width">
+  * &lt;/oj-input-number>
+  */
+
+ // ---------------- oj-form-control max-width --------------
+  /**
+  * In the Redwood theme the default max width of a text field is 100%.
+  * These max width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-max-width
+  * @ojdisplayname Max Width
+  * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojInputNumber
+  * @ojtsexample
+  * &lt;oj-input-number class="oj-form-control-max-width-md">&lt;/oj-input-number>
+  */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+  * @ojshortdesc Sets the max width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojInputNumber
+   */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+  * @ojshortdesc Sets the max width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojInputNumber
+   */
+
+  // ---------------- oj-form-control width --------------
+  /**
+  * In the Redwood theme the default width of a text field is 100%.
+  * These width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-width
+  * @ojdisplayname Width
+  * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojInputNumber
+  * @ojtsexample
+  * &lt;oj-input-number class="oj-form-control-width-md">&lt;/oj-input-number>
+  */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-sm
+  * @ojshortdesc Sets the width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojInputNumber
+   */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-md
+  * @ojshortdesc Sets the width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojInputNumber
+   */
+
+ // ---------------- oj-form-control-text-align- --------------
+/**
+ * Classes that help align text of the element.
+ * @ojstyleset text-align
+ * @ojdisplayname Text Alignment
+ * @ojstylesetitems ["text-align.oj-form-control-text-align-right", "text-align.oj-form-control-text-align-start", "text-align.oj-form-control-text-align-end"]
+ * @ojstylerelation exclusive
+ * @memberof oj.ojInputNumber
+ * @ojtsexample
+ * &lt;oj-input-number class="oj-form-control-text-align-right">
+ * &lt;/oj-input-number>
+ */
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-right
+ * @ojshortdesc Aligns the text to the right regardless of the reading direction. This is normally used for right aligning numbers.
+ * @ojdisplayname Align-Right
+ * @memberof! oj.ojInputNumber
+ */
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-start
+ * @ojshortdesc Aligns the text to the left in LTR and to the right in RTL.
+ * @ojdisplayname Align-Start
+ * @memberof! oj.ojInputNumber
+ */
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-end
+ * @ojshortdesc Aligns the text to the right in LTR and to the left in RTL.
+ * @ojdisplayname Align-End
+ * @memberof! oj.ojInputNumber
+ */
+// --------------------------------------------------- oj.ojInputNumber Styling end ------------------------------------------------------------
+
   oj.__registerWidget('oj.ojInputNumber', $.oj.editableValue,
     {
       version: '1.0.0',
@@ -887,10 +988,15 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
          */
         rawValue: undefined,
         /**
-         * Whether the component is readonly. The readOnly property sets or returns whether an element is readOnly, or not.
-         * A readOnly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
+         * Whether the component is readonly. The readonly property sets or returns whether an element is readonly, or not.
+         * A readonly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
          * If you want to prevent the user from interacting with the element, use the disabled property instead.
-         *
+         * <p>
+         * The oj-form-layout provides its readonly attribute value and the form components
+         * consume it if it is not already set explicitly.
+         * For example, if oj-form-layout is set to readonly='true',
+         * all the form components it contains will be readonly='true' by default.
+         * </p>
          * @example <caption>Initialize component with <code class="prettyprint">readonly</code> attribute:</caption>
          * &lt;oj-input-number readonly>&lt;/oj-input-number>
          *
@@ -1235,8 +1341,12 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
          */
         value: null,
         /**
-         * The type of virtual keyboard to display for entering value on mobile browsers.  This attribute has no effect on desktop browsers.
-         *
+         * The type of virtual keyboard to display for entering a value on mobile browsers. This attribute has no effect on desktop browsers.
+         * <p>
+         * When setting the virual keyboard to "number", if the converter on the component formats the value with non-numeric characters the
+         * value will not display. oj-input-number's default converter formats with non-numeric characters. If applications want to use a
+         * "number" virtual keyboard they need to provide a converter that doesn't format with non-numeric characters.
+         * </p>
          * @example <caption>Initialize the component with the <code class="prettyprint">virtual-keyboard</code> attribute:</caption>
          * &lt;oj-input-number virtual-keyboard="number">&lt;/oj-input-number>
          *
@@ -1250,11 +1360,10 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
          * @expose
          * @instance
          * @memberof oj.ojInputNumber
+         * @ojshortdesc The type of virtual keyboard to display for entering a value on mobile browsers. See the Help documentation for more information.
          * @type {string}
          * @ojvalue {string} "auto" The component will determine the best virtual keyboard to use.
-         *                          <p>This is always "text" for this release but may change in future
-         *                          releases.</p>
-         * @ojvalue {string} "number" Use a virtual keyboard for entering number.
+         * @ojvalue {string} "number" Use a virtual keyboard for entering numbers.
          *                            <p>Note that on Android and Windows Mobile, the "number" keyboard does
          *                            not contain the minus sign.  This value should not be used on fields that
          *                            accept negative values.</p>
@@ -1514,7 +1623,10 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
         this._inputNumberDefaultValidators = {};
         this._setup();
         this._registerEvents();
-        this._focusable($(this.uiInputNumber));
+        this._focusable({
+          element: $(this.uiInputNumber),
+          applyHighlight: true
+        });
       },
       /**
        * After _ComponentCreate and _AfterCreate,
@@ -1538,8 +1650,14 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
         this.stepQueue = [];
         this._blurEnterSetValueCounter = 0;
         if (this._IsCustomElement()) {
-          oj.EditableValueUtils._setInputId(
-            this._GetContentElement()[0], this.widget()[0].id, this.options.labelledBy);
+          let labelledBy = this.options.labelledBy;
+          this._initInputIdLabelForConnection(
+            this._GetContentElement()[0], this.widget()[0].id, labelledBy);
+        }
+        // create a readonly div. This also sets the div's textContent with
+        // the converted display value, which is why this is in _AfterCreate.
+        if (this.options.readOnly) {
+          this._createOrUpdateReadonlyDiv(this.element[0]);
         }
       },
 
@@ -1646,6 +1764,28 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
           }
         }
       },
+      /**
+       * Called when the display value on the element needs to be updated. This method updates the
+       * (content) element value. Widgets can override this method to update the element
+       * appropriately.
+       *
+       * @param {string} displayValue the new string to be displayed
+       *
+       * @memberof oj.ojInputNumber
+       * @instance
+       * @protected
+       */
+      _SetDisplayValue: function (displayValue) {
+        this._superApply(arguments);
+        if (this.options.readOnly) {
+          let readonlyElem = this._getReadonlyDiv();
+          if (readonlyElem) {
+            // need to set the textContent on its child
+            readonlyElem.textContent = displayValue;
+          }
+        }
+      },
+
       /**
        * Whether the component is required.
        *
@@ -1866,6 +2006,9 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
           // if readonly, we remove buttons/spinner functionality.
           this._createOrDestroyOjButtonset();
           this.element[0].readOnly = !!value;
+          if (value) {
+            this._createOrUpdateReadonlyDiv(this.element[0]);
+          }
           this._refreshStateTheming('readOnly', this.options.readOnly);
         }
         if (key === 'step') {
@@ -1873,9 +2016,10 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
           this._createOrDestroyOjButtonset();
         }
         if (key === 'labelledBy') {
-          if (this.options.labelledBy) {
+          let labelledBy = this.options.labelledBy;
+          if (labelledBy) {
             var id = this._GetContentElement()[0].id;
-            this._labelledByChangedForInputComp(this.options.labelledBy, id);
+            this._labelledByUpdatedForInputComp(labelledBy, id);
           }
         }
       },
@@ -2008,7 +2152,6 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
 
           default:
             break;
-
         }
       },
       /**
@@ -2016,7 +2159,24 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
        * @instance
        * @private
        */
-      _labelledByChangedForInputComp: oj.EditableValueUtils._labelledByChangedForInputComp,
+      _labelledByUpdatedForInputComp: oj.EditableValueUtils._labelledByUpdatedForInputComp,
+      /**
+       * @memberof oj.ojInputNumber
+       * @instance
+       * @private
+       */
+      _initInputIdLabelForConnection: oj.EditableValueUtils._initInputIdLabelForConnection,
+      /**
+       * @memberof oj.ojInputNumber
+       * @instance
+       * @private
+       */
+      /**
+       * @memberof oj.ojInputNumber
+       * @instance
+       * @private
+       */
+      _linkLabelForInputComp: oj.EditableValueUtils._linkLabelForInputComp,
       /**
        * @memberof oj.ojInputNumber
        * @instance
@@ -2079,7 +2239,6 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
         var readOnly = true;
 
         this.element[0].readOnly = readOnly;
-        this._refreshStateTheming('readOnly', readOnly);
         // removes role spinbutton while loading
         this._refreshRoleSpinbutton(!readOnly);
       },
@@ -2095,7 +2254,6 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
         this._super();
         var readOnly = this.options.readOnly;
         this.element[0].readOnly = readOnly;
-        this._refreshStateTheming('readOnly', readOnly);
       },
 
       /**
@@ -2230,14 +2388,20 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
           buttons[i].setAttribute('tabIndex', '-1');
         }
 
+        const defaultOptions = ThemeUtils.parseJSONFromFontFamily(
+          'oj-input-number-option-defaults') || {};
+        const buttonChromingDefault = defaultOptions.buttonChroming || 'solid';
         var buttonsetDiv = buttonSetObj.upButton.parentNode;
         this.upButton = $(buttonSetObj.upButton).ojButton({ display: 'icons',
+          chroming: buttonChromingDefault,
           label: this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_INCREMENT),
           icons: { start: 'oj-component-icon oj-inputnumber-up-icon' } });
         this.downButton = $(buttonSetObj.downButton).ojButton({ display: 'icons',
+          chroming: buttonChromingDefault,
           label: this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_DECREMENT),
           icons: { start: 'oj-component-icon oj-inputnumber-down-icon' } });
-        this.buttonSet = $(buttonsetDiv).ojButtonset({ focusManagement: 'none' });
+        this.buttonSet = $(buttonsetDiv).ojButtonset({ focusManagement: 'none',
+          chroming: buttonChromingDefault });
         this._markInternalComponents();
       },
       /**
@@ -2764,6 +2928,16 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
        */
       _getConverter: oj.EditableValueUtils._GetConverter,
       /**
+       * Draw a readonly div or update one. When readonly, this div is shown and
+       * the input has display:none on it through theming, and vice versa.
+       * We set the textContent in _SetDisplayValue() if readonly
+       * @param {HTMLElement} pass in this.element[0]
+       * @memberof oj.ojInputNumber
+       * @instance
+       * @private
+       */
+      _createOrUpdateReadonlyDiv: oj.EditableValueUtils._createOrUpdateReadonlyDiv,
+      /**
        * Returns the converted display value.
        * This function gets the display value (or 0 if no display value), then parses it using
        * the converter.
@@ -3018,7 +3192,7 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
         if (!needsRole) {
           this.element[0].removeAttribute('role');
         } else {
-          this.element[0].setAttribute('role', 'spinbutton');
+          this.element[0].setAttribute('role', 'spinbutton'); // @HTMLUpdateOK
         }
       },
       /**
@@ -3384,45 +3558,7 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
        * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
        * @memberof oj.ojInputNumber
        */
-      /**
-       * {@ojinclude "name":"ojStylingDocIntro"}
-       * <p>The form control style classes can be applied to the component, or an ancestor element. When
-       * applied to an ancestor element, all form components that support the style classes will be affected.
-       *
-       * <table class="generic-table styling-table">
-       *   <thead>
-       *     <tr>
-       *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-       *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>oj-form-control-full-width</td>
-       *       <td>Changes the max-width to 100% so that form components will occupy
-       *           all the available horizontal space
-       *       </td>
-       *     </tr>
-       *     <tr>
-       *       <td>oj-form-control-text-align-right</td>
-       *       <td>Aligns the text to the right regardless of the reading direction.
-       *           This is normally used for right aligning numbers
-       *       </td>
-       *     </tr>
-       *     <tr>
-       *       <td>oj-form-control-text-align-start</td>
-       *       <td>Aligns the text to the left in ltr and to the right in rtl</td>
-       *     </tr>
-       *     <tr>
-       *       <td>oj-form-control-text-align-end</td>
-       *       <td>Aligns the text to the right in ltr and to the left in rtl</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-       * @memberof oj.ojInputNumber
-       */
+
     });
 
   Components.setDefaultOptions({
@@ -3477,7 +3613,19 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
   __oj_input_number_metadata.extension._INNER_ELEM = 'input';
   __oj_input_number_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['accesskey', 'aria-label', 'tabindex'];
 
-  oj.CustomElementBridge.register('oj-input-number', { metadata: __oj_input_number_metadata });
+  oj.CustomElementBridge.register('oj-input-number', {
+    metadata:
+      oj.CollectionUtils.mergeDeep(__oj_input_number_metadata, {
+        properties: {
+          readonly: {
+            binding: { consume: { name: 'readonly' } }
+          },
+          userAssistanceDensity: {
+            binding: { consume: { name: 'userAssistanceDensity' } }
+          }
+        }
+      })
+  });
 }());
 
 });

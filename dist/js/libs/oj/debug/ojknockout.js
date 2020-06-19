@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -1333,9 +1334,9 @@ ko.bindingHandlers.ojContextMenu = {
         $element.one('touchend' + eventNamespace, function () {
           var touchendMousedownThreshold = 50; // 50ms.  Make as small as possible to prevent unwanted side effects.
           menu.__contextMenuPressHoldJustEnded(true);
-          setTimeout(function () {
+          setTimeout(function () { // @HTMLUpdateOK delaying our own callback
             menu.__contextMenuPressHoldJustEnded(false);
-          }, touchendMousedownThreshold); // @HTMLUpdateOK delaying our own callback
+          }, touchendMousedownThreshold);
         });
       }
 
@@ -1395,9 +1396,9 @@ ko.bindingHandlers.ojContextMenu = {
         // see double-open comments above
         if (event.type === 'touchstart' || event.type === 'contextmenu') {
           doubleOpenType = event.type;
-          doubleOpenTimer = setTimeout(function () {
+          doubleOpenTimer = setTimeout(function () { // @HTMLUpdateOK delaying our own callback
             doubleOpenType = null;
-          }, doubleOpenThreshold); // @HTMLUpdateOK delaying our own callback
+          }, doubleOpenThreshold);
         }
       }
     }
@@ -1423,9 +1424,9 @@ ko.bindingHandlers.ojContextMenu = {
       // start a pressHold timer on touchstart.  If not cancelled before 750ms by touchend/etc., will launch the CM.
       if (event.type === 'touchstart') {
         touchInProgress = true;
-        pressHoldTimer = setTimeout(
+        pressHoldTimer = setTimeout( // @HTMLUpdateOK delaying our own callback
           launch.bind(undefined, event, 'touch', true),
-          pressHoldThreshold // @HTMLUpdateOK delaying our own callback
+          pressHoldThreshold
         );
       }
 
@@ -1536,7 +1537,7 @@ function _getClonedNodeArray(useTemplate, nodeStore) {
   var nodesArray = nodeStore[useTemplate];
   if (nodesArray == null) {
     nodesArray = ko.utils.parseHtmlFragment(document.getElementById(useTemplate).innerHTML, // @HTMLUpdateOK
-                                            document); // @HTMLUpdateOK
+                                            document);
     // eslint-disable-next-line no-param-reassign
     nodeStore[useTemplate] = nodesArray;
   }
@@ -1957,6 +1958,7 @@ BindingProviderImpl.addPostprocessor(
   }
 );
 
+/* eslint-disable no-use-before-define */
 
 /* global ko:false */
 
@@ -1964,31 +1966,29 @@ BindingProviderImpl.addPostprocessor(
  * @ignore
  */
 (function () {
-  var _ATTRIBUTE_CHANGED = 'attribute-changed';
-
   ko.bindingHandlers._ojCustomElement =
   {
     after: ['attr'], // Ensure attr binding is processed first so to handle :disabled case since we only process on init
     init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-       // Apply child bindings first
-      ko.applyBindingsToDescendants(bindingContext, element);
-
-      return { controlsDescendantBindings: true };
-    },
-
-    update: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
       var _expressionHandler;
       var attributeListener;
 
-      // This instance won't be created unless oj.BaseCustomElementBridge is defined so this call is safe
-      var bridge = oj.BaseCustomElementBridge.getInstance(element);
 
+      // This instance won't be created unless oj.BaseCustomElementBridge is defined so this call is safe
+      const bridge = oj.BaseCustomElementBridge.getInstance(element);
+      const metadataProps = oj.BaseCustomElementBridge.getProperties(bridge) || {};
+
+      // Compute data about the provided and consumed properties.
+      // Also get the function that would perform necessary clean up when the bindings on the provider element are being cleaned
+      const { provide: provideMap, consume: consumeMap, cleanup: disposeProviderListeners } =
+                        _setupProvideAndConsumeMaps(element, metadataProps);
+
+      // Called both when KO's cleanNode() is invoked and when the observable view model is mutated
       function cleanup() {
         if (_expressionHandler) {
           _expressionHandler.teardown();
           _expressionHandler = null;
         }
-
 
         if (attributeListener) {
           element.removeEventListener(_ATTRIBUTE_CHANGED, attributeListener);
@@ -1998,8 +1998,14 @@ BindingProviderImpl.addPostprocessor(
         oj._KnockoutBindingProvider.getInstance().__NotifyBindingsDisposed(element);
       }
 
-      function setup(isComposite) {
-        var metadataProps = oj.BaseCustomElementBridge.getProperties(bridge);
+      // Called only when KO's cleanNode() is invoked
+      function finalCleanup() {
+        cleanup();
+        disposeProviderListeners();
+      }
+
+
+      function setup(isComposite, isInitial) {
         _expressionHandler =
           new oj.__ExpressionPropertyUpdater(element, bindingContext, isComposite);
 
@@ -2010,18 +2016,48 @@ BindingProviderImpl.addPostprocessor(
         // to avoid overriding any property sets that could have occured after
         bridge.__INITIALIZING_PROPS = true;
 
-        // setupExpression will only update properties defined in metadata so it's safe to iterate through all element attributes
+        // setupPropertyBinding will only update properties defined in metadata so it's safe to iterate through all element attributes
         // including ones defined on the base HTML prototype
         var attrs = element.attributes; // attrs is a NamedNodeMap
         for (var i = 0; i < attrs.length; i++) {
           var attr = attrs[i];
           var propName = oj.__AttributeUtils.attributeToPropertyName(attr.nodeName);
           var eventName = oj.__AttributeUtils.eventListenerPropertyToEventType(propName);
-          var isDomEvent = eventName && !metadataProps[propName];
-          _expressionHandler.setupExpression(attr.value, propName, isDomEvent ?
+          let initialValueSetter;
+          let topPropName;
+          const isDomEvent = eventName && !metadataProps[propName];
+
+          if (!isDomEvent) {
+            topPropName = propName.split('.')[0];
+            const info = provideMap[topPropName];
+            // Initial value for provided properties needs to be set only when setup() is called for the very first time.
+            // After that, we will be using property change listeners to update the values
+            initialValueSetter = isInitial && info ? info.set : undefined;
+          }
+
+          _expressionHandler.setupPropertyBinding(attr.value, propName, isDomEvent ?
                                              domListenerMetadata :
-                                             metadataProps[propName.split('.')[0]]);
+                                             metadataProps[topPropName],
+                                             // Pass in a setter to store the initial value if this property will be
+                                             // provided to descendants
+                                             initialValueSetter);
         }
+
+        // Now set up implicit consumption of bindings for properties whose attributes are not set and whose
+        // metadata is set up to consume provided properties
+        const consumingProps = Object.keys(consumeMap);
+        consumingProps.forEach(consumingProp => {
+          if (!element.hasAttribute(oj.__AttributeUtils.propertyNameToAttribute(consumingProp))) {
+            const provideInfo = provideMap[consumingProp];
+            // Initial value for provided properties needs to be set only when setup() is called for the very first time.
+            // After that, we will be using property change listeners to update the values
+            const initialValueSetter = isInitial && provideInfo ? provideInfo.set : undefined;
+            _expressionHandler.setupPropertyBinding(undefined, consumingProp,
+              metadataProps[consumingProp],
+              initialValueSetter,
+              consumeMap[consumingProp]);
+          }
+        });
 
         bridge.__INITIALIZING_PROPS = false;
 
@@ -2034,39 +2070,210 @@ BindingProviderImpl.addPostprocessor(
 
           var metadata =
               _isDomEvent ? domListenerMetadata : metadataProps[_propName.split('.')[0]]; // send metadata for top level property
-          _expressionHandler.setupExpression(detail.value, _propName, metadata);
+          _expressionHandler.setupPropertyBinding(detail.value, _propName, metadata,
+            undefined/* no need to get initial value on attribute change */,
+            consumeMap[_propName]);
         };
 
         element.addEventListener(_ATTRIBUTE_CHANGED, attributeListener);
       }
 
-      // Since we are tracking all our dependencies explicitly, we are suspending dependency detection here.
-      // update() will be called only once as a result
-      ko.ignoreDependencies(
+
+      // Use ko.computed to track changes to the binding context. The binding will be cleaned u and recreated when a change
+      // is detected
+      ko.computed(
         function () {
-          ko.computed(
-            function () {
-              // Access valueAccesor to ensure that the binding is re-initialzied when an
-              // observable ViewModel is mutated
-              var isComposite = valueAccessor().composite;
+          // Access valueAccesor to ensure that the binding is re-initialized when an
+          // observable ViewModel is mutated
+          var isComposite = valueAccessor().composite;
 
-              if (!ko.computedContext.isInitial()) {
-                cleanup();
-              }
+          const isInitial = ko.computedContext.isInitial();
+          if (!isInitial) {
+            cleanup();
+          }
 
-              setup(isComposite);
-              bridge.playbackEarlyPropertySets(element);
-              oj._KnockoutBindingProvider.getInstance().__NotifyBindingsApplied(element);
-            },
-            null,
-            { disposeWhenNodeIsRemoved: element }
-          );
-        }
+          setup(isComposite, isInitial);
+          bridge.playbackEarlyPropertySets(element);
+        },
+        null,
+        { disposeWhenNodeIsRemoved: element }
       );
 
-      ko.utils.domNodeDisposal.addDisposeCallback(element, cleanup);
+      ko.utils.domNodeDisposal.addDisposeCallback(element, finalCleanup);
+
+      const contextWithProvideInfo = _getChildContext(bindingContext, provideMap);
+      ko.applyBindingsToDescendants(contextWithProvideInfo, element);
+
+      oj._KnockoutBindingProvider.getInstance().__NotifyBindingsApplied(element);
+
+      return { controlsDescendantBindings: true };
     }
   };
+
+  const _ATTRIBUTE_CHANGED = 'attribute-changed';
+  const _CHANGE_SUFFIX = 'Changed';
+  const _bindingPropagationMetadataCache = Object.create(null);
+
+
+  function _setupProvideAndConsumeMaps(element, metadataProps) {
+    // A map of a property name to a record with the following structure:
+    // {set: {Function}, vars: Array<{name: {String}, obs: {Function}, transform: {Function}}>} (the 'set' key representing
+    // the setter for updating the value (the setter may be updating more than one observable if the value is being provided
+    // under different names), the 'vars' key representing an array of records with a 'name' key
+    // being the provided name, the 'obs' key being the associated observable, and the 'transform' key being an optional
+    // transform map
+    const provide = Object.create(null); // null prototype for object being used as a map
+
+    // A map of a property name to a name of a provided property that should be consumed via an implicit binding
+    const consume = Object.create(null);
+
+    // Example 'provide binding' metadata:
+    // binding: {provide: [{name: "containerLabelEdge", default: "inside"}, {name: "labelEdge", transform: {top: "provided", start: "provided"}}]}
+
+    // Example 'consume binding' metadata:
+    // binding: {consume: {name: "containerLabelEdge"}}
+
+    const changeListeners = Object.create(null);
+
+    const provideConsumeMeta = _getProvideAndConsumeMetadataViaCache(element, metadataProps); // will return null if the component has no provide/consume metadata
+    if (provideConsumeMeta !== null) {
+      const propKeys = Object.keys(provideConsumeMeta);
+      propKeys.forEach(pName => {
+        const [provideMeta, consumeMeta] = provideConsumeMeta[pName];
+        if (provideMeta !== undefined) {
+          // 1) populate the 'provide' map including collecting initial values for properties
+          // whose attributes have literal values
+
+          // The binding will be provided to descendants only if the corresponding attribute is set
+          // or if the default value is provided via metadata
+          const attrName = oj.__AttributeUtils.propertyNameToAttribute(pName);
+          const hasAttribute = element.hasAttribute(attrName);
+          const observables = [];
+          const vars = [];
+          // iterate over provided bindings (there may be more than one!) that a single attribute produces
+          provideMeta.forEach(info => {
+            const name = info.name;
+            if (name === undefined) {
+              throw new Error('name attribute for the binding/provide metadata is required!');
+            }
+            const defaultVal = info.default;
+            const obs = _createObservableWithTransform(info.transform, defaultVal);
+            observables.push(obs);
+            vars.push({ name, obs });
+          });
+
+          if (vars.length > 0) {
+            // create a setter function that can update several observables at once
+            const set = _getSingleSetter(observables);
+            provide[pName] = { set, vars };
+
+            // Call the setter function whenever a  proeprty change event is fired
+            const changeListener = _setupChangeListenerForProvidedProperty(set);
+            const evtName = pName + _CHANGE_SUFFIX;
+            element.addEventListener(evtName, changeListener);
+            // Store listener in a map for future cleanup
+            changeListeners[evtName] = changeListener;
+
+            // If the attribute is present, and its value is not an expression, we won't be getting the initial value
+            // when the expression is evaluated, so we have to coerce and store the initial value here
+            if (hasAttribute) {
+              const attrVal = element.getAttribute(attrName);
+              if (!oj.__AttributeUtils.getExpressionInfo(attrVal).expr) {
+                set(oj.__AttributeUtils.coerceValue(element, attrName, attrVal,
+                        metadataProps[pName].type));
+              }
+            }
+          }
+        }
+        if (consumeMeta !== undefined) {
+          // 2) populate the 'consume' map
+          const name = consumeMeta.name;
+          if (name === undefined) {
+            throw new Error('\'name\' property on the binding/consume metadata is required!');
+          }
+          consume[pName] = name;
+        }
+      });
+    }
+
+    function cleanup() {
+      const changeListenerKeys = Object.keys(changeListeners);
+      changeListenerKeys.forEach(key =>
+        element.removeEventListener(key, changeListeners[key]));
+    }
+
+    return { provide, consume, cleanup };
+  }
+
+  function _getProvideAndConsumeMetadataViaCache(element, metadataProps) {
+    const elemName = element.localName;
+    let entry = _bindingPropagationMetadataCache[elemName];
+    if (entry !== undefined) {
+      return entry;
+    }
+    entry = null;
+    const propKeys = Object.keys(metadataProps);
+    propKeys.forEach(pName => {
+      const meta = metadataProps[pName];
+      const provideMeta = _getOptionalChainResult(meta, ['binding', 'provide']);
+      const consumeMeta = _getOptionalChainResult(meta, ['binding', 'consume']);
+      if (provideMeta || consumeMeta) {
+        if (meta.properties) {
+          throw new Error('Propagating complex properties is not supported!');
+        }
+        entry = entry || Object.create(null);
+        entry[pName] = [provideMeta, consumeMeta];
+      }
+    });
+    _bindingPropagationMetadataCache[elemName] = entry;
+    return entry;
+  }
+
+  function _setupChangeListenerForProvidedProperty(setter) {
+    return evt => setter(evt.detail.value);
+  }
+
+  // Implements functionality similar to optional chaining
+  function _getOptionalChainResult(obj, path) {
+    let res = obj;
+    return path.some(prop => {
+      res = res[prop];
+      return res === null || res === undefined;
+    }) ? undefined : res;
+  }
+
+  function _getChildContext(bindingContext, provideMap) {
+    let newContext = bindingContext;
+    const props = Object.keys(provideMap);
+    if (props.length > 0) {
+      const oldProvided = bindingContext.$provided;
+      const newProvided = oldProvided === undefined ? {} : Object.assign({}, oldProvided);
+
+      props.forEach(prop => {
+        const vars = provideMap[prop].vars;
+        vars.forEach(info => { newProvided[info.name] = info.obs; });
+      });
+
+      newContext = bindingContext.extend({ $provided: newProvided });
+    }
+    return newContext;
+  }
+
+  function _createObservableWithTransform(transform, initialVal) {
+    const observable = ko.observable(initialVal);
+    if (transform) {
+      return ko.pureComputed({
+        // eslint-disable-next-line no-prototype-builtins
+        write: value => observable(transform.hasOwnProperty(value) ? transform[value] : value),
+        read: () => observable()
+      });
+    }
+    return observable;
+  }
+
+  function _getSingleSetter(observables) {
+    return val => observables.forEach(observable=>observable(val));
+  }
 }());
 
 
@@ -2087,20 +2294,30 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
   var _settingProperties = {};
   var _CHANGED_EVENT_SUFFIX = 'Changed';
 
+
   // This function should be called when the bindings are applied initially and whenever the expression attribute changes
-  this.setupExpression = function (attrVal, propName, metadata) {
+  /**
+   * Sets up property binding. This method is called both when the bindings are applied and in response to an attribute change.
+   * @param {string|undefined} attrVal attribute value or undefined if there is none
+   * @param {string} propName property name
+   * @param {Object} metadata property metadata
+   * @param {Function|undefined} providedValueSetter function that should be called with the result of the initial evalution of the expression
+   * @param {string|undefined} providedPropName the key of the $provided map that points to an observable holding a provided value.
+   * If the attrVal parameter is undefined, the observable will be used to set up property binding
+   * @ignore
+   */
+  this.setupPropertyBinding = function (attrVal, propName, metadata,
+    providedValueSetter, providedPropName) {
     // If no metadata was passed in, just return bc this is not a component property.
     if (!metadata) {
-      return undefined;
+      return;
     }
 
     // See if attribute is a component property/subproperty by checking for metadata
     var meta = _getPropertyMetadata(propName, metadata);
     if (!meta) {
-      return undefined;
+      return;
     }
-
-    var info = oj.__AttributeUtils.getExpressionInfo(attrVal);
 
     var oldListener = _expressionListeners[propName];
     if (oldListener) {
@@ -2122,14 +2339,32 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
       _setDomListener(bindingContext, event, null);
     }
 
-    var readOnly = metadata.readOnly;
+    let evaluator;
+    let expr;
+    let downstreamOnly;
 
-    var expr = info.expr;
+    if (attrVal === undefined) {
+      // Implicit bindings are used only when the corresponding attribute is not set
 
-    if (expr) {
-      var evaluator = BindingProviderImpl.createEvaluator(expr, bindingContext);
+      // Get an observable for the provided value if we have metadata for its name
+      const observable = (providedPropName === undefined) ? null :
+              (bindingContext.$provided || {})[providedPropName];
 
-      if (!readOnly) {
+      // If the observable is present, we set up the implicit binding
+      if (observable) {
+        evaluator = () => observable(); // evaluator is using an implicit binding to a property provided by a container component
+      }
+    } else {
+      const info = oj.__AttributeUtils.getExpressionInfo(attrVal);
+      expr = info.expr;
+      if (expr) {
+        evaluator = BindingProviderImpl.createEvaluator(expr, bindingContext);
+        downstreamOnly = info.downstreamOnly;
+      }
+    }
+
+    if (evaluator) {
+      if (!metadata.readOnly) {
         var initialRead = true;
         ko.ignoreDependencies(
           function () {
@@ -2165,6 +2400,10 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
                   } else {
                     _setElementProperty(propName, unwrappedValue);
                   }
+
+                  if (initialRead && providedValueSetter) {
+                    providedValueSetter(unwrappedValue);
+                  }
                 }
               }
             );
@@ -2174,15 +2413,10 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
       }
 
       // Only listen for property changes for writeable properties
-      if (metadata.writeback && !info.downstreamOnly) {
+      if (expr !== undefined && metadata.writeback && !downstreamOnly) {
         _changeListeners[propName] = _listenToPropertyChanges(propName, expr, evaluator);
       }
-
-      return true;
     }
-
-
-    return false;
   };
 
 
@@ -2532,7 +2766,7 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
             for (i = 0; i < eventAttrs.length; i++) {
               var attrNode = eventAttrs[i];
               var propName = oj.__AttributeUtils.attributeToPropertyName(attrNode.nodeName);
-              expressionHandler.setupExpression(attrNode.value, propName, {
+              expressionHandler.setupPropertyBinding(attrNode.value, propName, {
                 _domListener: true
               });
             }
@@ -2628,26 +2862,12 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
         child = node.childNodes[0];
         parent.insertBefore(child, node); // @HTMLUpdateOK
         newNodes.push(child);
-        if (child.nodeType === 1 && child.nodeName.toLowerCase() === 'template') {
-          if (!koOpenComment._templateNode) {
-            Object.defineProperty(koOpenComment, '_templateNode', {
-              value: child,
-              enumerable: false
-            });
-          } else {
-            throw new Error('Multiple templates found: oj-bind-for-each requires a single template element as its direct child');
-          }
-        }
-      }
-      // check for the template since it is a required attribute for oj-bind-for-each.
-      if (!koOpenComment._templateNode) {
-        throw new Error('Template not found: oj-bind-for-each requires a single template element as its direct child');
       }
     }
     parent.insertBefore(koCloseComment, node); // @HTMLUpdateOK
     newNodes.push(koCloseComment);
 
-    parent.replaceChild(ojCloseComment, node); // @HTMLUpdateOK
+    parent.replaceChild(ojCloseComment, node);
     newNodes.push(ojCloseComment);
 
     return newNodes;
@@ -3118,7 +3338,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * @ignore
  */
 
-/* global ko:false, Symbol:false, Map:false, KeySetImpl:false, Context:false, BindingProviderImpl: false, Promise:false, templateEngine:false, Logger:false */
+/* global ko:false, Symbol:false, Map:false, KeySetImpl:false, Context:false, BindingProviderImpl: false, Promise:false, templateEngine:false, Logger:false*/
 
 (function () {
   'use strict';
@@ -3196,6 +3416,24 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     return isImmediate;
   }
 
+  function getTemplateNode(nodes) {
+    var templateNode;
+    for (var i = 0; i < nodes.length; i++) {
+      var testNode = nodes[i];
+      if (testNode.nodeType === 1 && testNode.nodeName.toLowerCase() === 'template') {
+        if (!templateNode) {
+          templateNode = testNode;
+        } else {
+          throw new Error('Multiple templates found: oj-bind-for-each requires a single template element as its direct child');
+        }
+      }
+    }
+    if (!templateNode) {
+      throw new Error('Template not found: oj-bind-for-each requires a single template element as its direct child');
+    }
+    return templateNode;
+  }
+
   // store a symbol for caching the pending delete info index in the data item objects
   var PENDING_DELETE_INDEX_KEY = createSymbolOrString('_ko_ffe_pending_delete_index');
 
@@ -3209,7 +3447,13 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
    */
   function OjForEach(element, value, context) {
     this.element = value.element || element;
-    this.element._templateNode.__ojBindingContext = context;
+    // convert oj-bind-x components into template
+    ko.applyBindingsToDescendants(context, this.element);
+    this.element._templateNode = getTemplateNode(ko.virtualElements.childNodes(this.element));
+    // Find the correct context for the template - it is either the context
+    // applied on this oj-bind-for-each element or a context applied on a swapped template
+    // when oj-bind-slot was processed. We need to use the correct context for the template.
+    this.element._templateNode.__ojBindingContext = ko.contextFor(this.element._templateNode);
     this.data = value.data;
     this.as = value.as;
     this.changeQueue = [];
@@ -3231,11 +3475,11 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     ko.virtualElements.emptyNode(this.element);
     this._initChildrenBindingsAppliedPromise();
 
-    if (this.data.fetchFirst) { // the data is a DataProvider object
+    var primeData = ko.unwrap(this.data);
+    if (primeData.fetchFirst) { // the data is a DataProvider object
+      this.currentDataProvider = primeData;
       this.fetchData();
     } else {
-      // Prime content
-      var primeData = ko.unwrap(this.data);
       this.onArrayChange(arrayMap(primeData, valueToChangeAddItem));
     }
     this.addSubscriptions();
@@ -3244,27 +3488,69 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   OjForEach.PENDING_DELETE_INDEX_KEY = PENDING_DELETE_INDEX_KEY;
 
   OjForEach.prototype.addSubscriptions = function () {
-    // Watch for changes
-    if (ko.isObservable(this.data)) {
-      if (!this.data.indexOf) {
+    var isObservable = ko.isObservable(this.data);
+    if (this.currentDataProvider) {
+      this.dataMutateHandler = this.handleDataMutateEvent.bind(this);
+      this.dataRefreshHandler = this.handleDataRefreshEvent.bind(this);
+      this.currentDataProvider.addEventListener('mutate', this.dataMutateHandler);
+      this.currentDataProvider.addEventListener('refresh', this.dataRefreshHandler);
+      if (isObservable) {
+        this.changeSubs = this.data.subscribe(this.onDataChange, this, 'change');
+      }
+    } else if (isObservable) {
+      if (!this.data.indexOf) { // observable but not an observable array
         // Make sure the observable is trackable.
         this.data = this.data.extend({ trackArrayChanges: true });
       }
-      this.changeSubs = this.data.subscribe(this.onArrayChange, this, 'arrayChange');
-    } else if (this.data.fetchFirst) { // add listener to handle DataProvider events
-      this.dataMutateHandler = this.handleDataMutateEvent.bind(this);
-      this.dataRefreshHandler = this.handleDataRefreshEvent.bind(this);
-      this.data.addEventListener('mutate', this.dataMutateHandler);
-      this.data.addEventListener('refresh', this.dataRefreshHandler);
+      this.changeArraySubs = this.data.subscribe(this.onArrayDataChange, this, 'arrayChange');
+      this.changeSubs = this.data.subscribe(this.onDataChange, this, 'change');
     }
   };
 
   OjForEach.prototype.removeSubscriptions = function () {
     if (this.changeSubs) {
       this.changeSubs.dispose();
-    } else if (this.data.removeEventListener) {
-      this.data.removeEventListener('mutate', this.dataMutateHandler);
-      this.data.removeEventListener('refresh', this.dataRefreshHandler);
+    }
+    if (this.changeArraySubs) {
+      this.changeArraySubs.dispose();
+    }
+    if (this.currentDataProvider) {
+      this.currentDataProvider.removeEventListener('mutate', this.dataMutateHandler);
+      this.currentDataProvider.removeEventListener('refresh', this.dataRefreshHandler);
+    }
+  };
+
+  OjForEach.prototype.onArrayDataChange = function (changeSet) {
+    // temporary member, cleared on change event
+    this.arrayChangeSet = changeSet;
+  };
+
+  OjForEach.prototype.onDataChange = function (changedData) {
+    if (this.arrayChangeSet) {
+      this.onArrayChange(this.arrayChangeSet);
+      this.arrayChangeSet = null;
+    } else {
+      this.setData({
+        data: this.data,
+        dataProvider: changedData.fetchFirst ? changedData : null
+      });
+      this.recreateContent(changedData);
+    }
+  };
+
+  OjForEach.prototype.recreateContent = function (changedData) {
+    // clean up existing content
+    this.changeQueue = [];
+    this.firstLastNodesList = [];
+    this.indexesToDelete = [];
+    this.rendering_queued = false;
+    this.pendingDeletes = [];
+    ko.virtualElements.emptyNode(this.element);
+    if (changedData.fetchFirst) {
+      // refetch data and recreate the child nodes
+      this.fetchData();
+    } else {
+      this.onArrayChange(arrayMap(changedData, valueToChangeAddItem));
     }
   };
 
@@ -3335,7 +3621,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   // to handle refresh operation
   OjForEach.prototype.fetchData = function () {
     var busyStateCallback = this.registerBusyState();
-    var iterator = this.data.fetchFirst({ size: -1 })[Symbol.asyncIterator]();
+    var iterator = this.currentDataProvider.fetchFirst({ size: -1 })[Symbol.asyncIterator]();
     var dataPromiseResolve;
     var dataPromiseReject;
     var headPromise;
@@ -3351,7 +3637,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
             changeSet.push(valueToChangeAddItem(value.data[i], entryIndex, value.metadata[i].key));
             entryIndex += 1;
           }
-          if (result.done) {  // finish up
+          if (result.done) { // finish up
             onArrayChangeCallback.call(callbackObj, changeSet);
             busyStateCallback();
             dataPromiseResolve();
@@ -3481,7 +3767,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     var dataIndexes;
     var busyStateCallback;
     var self = this;
-    var dataPromise;  // define the promise when data are fetched - add or update event.
+    var dataPromise; // define the promise when data are fetched - add or update event.
 
     if (addDetail) {
       var eventData = addDetail.data;
@@ -3501,7 +3787,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
       if (!Array.isArray(eventData)) { // data were not sent, should fetch data using keys
         busyStateCallback = this.registerBusyState();
-        dataPromise = this.data.fetchByKeys({ keys: eventKeys }).then(
+        dataPromise = this.currentDataProvider.fetchByKeys({ keys: eventKeys }).then(
           function (keyResult) { // success
             // if promise is current, retrieve records and update data set;
             // else throw valid rejection error
@@ -3548,7 +3834,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
       if (!Array.isArray(updateDetail.data)) { // data were not sent, need to fetch data
         busyStateCallback = this.registerBusyState();
-        dataPromise = this.data.fetchByKeys({ keys: eventKeys }).then(
+        dataPromise = this.currentDataProvider.fetchByKeys({ keys: eventKeys }).then(
           function (keyResult) { // success
             // if promise is current, retrieve records and update data set;
             // else throw valid rejection error
@@ -3596,15 +3882,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
   // Handler that processes "refresh" event from DataProvider
   OjForEach.prototype.handleDataRefreshEvent = function () {
-    // clean up existing content
-    this.changeQueue = [];
-    this.firstLastNodesList = [];
-    this.indexesToDelete = [];
-    this.rendering_queued = false;
-    this.pendingDeletes = [];
-    ko.virtualElements.emptyNode(this.element);
-    // refetch data and recreate the child nodes
-    this.fetchData();
+    this.recreateContent(this.currentDataProvider);
   };
 
   // If the array changes we register the change.
@@ -3893,13 +4171,14 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
   // Getter used in ko.computed callback that monitors array replacements
   OjForEach.prototype.getData = function () {
-    return this.data;
+    return { data: this.data, dataProvider: this.currentDataProvider };
   };
 
   // Setter used in ko.computed callback that monitors array replacements
-  OjForEach.prototype.setData = function (data) {
+  OjForEach.prototype.setData = function (obj) {
     this.removeSubscriptions();
-    this.data = data;
+    this.data = obj.data;
+    this.currentDataProvider = obj.dataProvider;
     this.addSubscriptions();
   };
 
@@ -3917,20 +4196,30 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
         value = valueAccessor();
         if (ffe) {
           var updatedValues = value.data;
-          var currentValues = ffe.getData();
-          var currentArray;
-          var updatedArray;
+          var currentValues = ffe.getData().data;
+          var currentPrimeData;
+          var updatedPrimeData;
           // retrive the array data that might be defined as an observable
           ko.ignoreDependencies(function () {
-            currentArray = ko.unwrap(currentValues);
-            updatedArray = ko.unwrap(updatedValues);
+            currentPrimeData = ko.unwrap(currentValues);
+            updatedPrimeData = ko.unwrap(updatedValues);
           });
-          // initialize options for ko.utils.compareArrays
-          // 'dontLimitMoves':true recommended for newer code, 'sparse':true is used for trackArray changes
-          var compareArrayOptions = { sparse: true, dontLimitMoves: true };
-          var changeSet = ko.utils.compareArrays(currentArray, updatedArray, compareArrayOptions);
-          ffe.setData(updatedValues);
-          ffe.onArrayChange(changeSet);
+          ffe.setData({
+            data: updatedValues,
+            dataProvider: updatedPrimeData.fetchFirst ? updatedPrimeData : null
+          });
+          if (Array.isArray(currentPrimeData) && Array.isArray(updatedPrimeData)) {
+            // compare arrays and update rendered DOM
+            // initialize options for ko.utils.compareArrays
+            // 'dontLimitMoves':true recommended for newer code, 'sparse':true is used for trackArray changes
+            var compareArrayOptions = { sparse: true, dontLimitMoves: true };
+            var changeSet =
+              ko.utils.compareArrays(currentPrimeData, updatedPrimeData, compareArrayOptions);
+            ffe.onArrayChange(changeSet);
+          } else {
+            // recreate content in all other cases
+            ffe.recreateContent(updatedPrimeData);
+          }
         }
       },
         null,
@@ -4152,8 +4441,8 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * @ojcomponent oj.ojBindForEach
  * @ojshortdesc An oj-bind-for-each binds items of an array to the specified markup section. The markup section is duplicated for each array item when element is rendered.
  * @ojbindingelement
- * @ojtsimport knockout
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
+ * @ojtsimport knockout
  * @ojsignature {target: "Type",
  *               value: "class ojBindForEach<K, D> extends HTMLElement",
  *               genericParameters: [{"name": "K", "description": "Type of key when passing data via a DataProvider"},

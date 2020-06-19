@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -255,10 +256,12 @@ class FlattenedTreeDataProviderView {
                     }
                     else if (addEvent.indexes != null) {
                         let parentIndex = self._getItemIndexByKey(parentKey);
-                        newIndex = parentIndex === -1 ? addEvent.indexes[index] : parentIndex + addEvent.indexes[index];
+                        newIndex =
+                            parentIndex === -1 ? addEvent.indexes[index] : parentIndex + addEvent.indexes[index];
                     }
                     else {
-                        newIndex = self._getItemIndexByKey(self._getLastItemByParentKey(parentKey).metadata.key) + 1;
+                        newIndex =
+                            self._getItemIndexByKey(self._getLastItemByParentKey(parentKey).metadata.key) + 1;
                     }
                     let item = self._updateItemMetadata(new self.Item(self, addEvent.metadata[index], addEvent.data[index]), parentKey, addEvent.indexes[index]);
                     self._spliceItemToCache(item, newIndex);
@@ -269,14 +272,16 @@ class FlattenedTreeDataProviderView {
                     addParentKeys.push(parentKey);
                     addAfterKeySet.add(addEvent.addBeforeKeys[index]);
                     addKeySet.add(addEvent.metadata[index].key);
-                    self._incrementIteratorOffset();
+                    self._incrementIteratorOffset(newIndex);
                 }
             });
             operationAddEventDetail = new self.DataProviderAddOperationEventDetail(self, addKeySet, addAfterKeySet, addBeforeKeys, addMetadataArray, addDataArray, addIndexArray);
         }
         let removeEvent = mutationEventDetail.detail.remove;
         if (removeEvent && removeEvent.data && removeEvent.data.length) {
-            let removeKeys = removeEvent.metadata.map(function (metadata) { return metadata.key; });
+            let removeKeys = removeEvent.metadata.map(function (metadata) {
+                return metadata.key;
+            });
             let removeMetadataArray = [];
             let removeDataArray = [];
             let removeIndexArray = [];
@@ -356,7 +361,7 @@ class FlattenedTreeDataProviderView {
         let self = this;
         let size = params != null ? params[this._SIZE] : -1;
         let sortCriteria = params != null ? params[this._SORTCRITERIA] : null;
-        let offset = params != null ? params[this._OFFSET] > 0 ? params[this._OFFSET] : 0 : 0;
+        let offset = params != null ? (params[this._OFFSET] > 0 ? params[this._OFFSET] : 0) : 0;
         let filterCriterion = params != null ? params[this._FILTERCRITERION] : null;
         let fetchAttributes = params != null ? params[this._ATTRIBUTES] : null;
         params = new self.FetchByOffsetParameters(self, offset, size, sortCriteria, filterCriterion, fetchAttributes);
@@ -387,7 +392,7 @@ class FlattenedTreeDataProviderView {
             self._currentFilterCriteria = filterCriterion;
             self._clearCache();
         }
-        let newIterator = new self.AsyncIterable(self, new self.AsyncIterator(self, function () {
+        let newIterator = new self.AsyncIterable(self, new self.AsyncIterator(self, (function () {
             return function () {
                 let currentOffset = self._iterators.get(newIterator);
                 let updatedParams = new self.FetchByOffsetParameters(self, currentOffset, size, sortCriteria, filterCriterion, fetchAttributes);
@@ -402,12 +407,12 @@ class FlattenedTreeDataProviderView {
                     let done = data.length === 0 || result[self._DONE];
                     self._iterators.set(newIterator, currentOffset + metadata.length);
                     if (done) {
-                        return Promise.resolve(new self.AsyncIteratorReturnResult(self, new self.FetchListResult(self, updatedParams, data, metadata)));
+                        return Promise.resolve((new self.AsyncIteratorReturnResult(self, new self.FetchListResult(self, updatedParams, data, metadata))));
                     }
-                    return Promise.resolve(new self.AsyncIteratorYieldResult(self, new self.FetchListResult(self, updatedParams, data, metadata)));
+                    return Promise.resolve((new self.AsyncIteratorYieldResult(self, new self.FetchListResult(self, updatedParams, data, metadata))));
                 });
             };
-        }(), params));
+        })(), params));
         self._iterators.set(newIterator, 0);
         return newIterator;
     }
@@ -423,8 +428,8 @@ class FlattenedTreeDataProviderView {
     _isSameCriteria(sortCriteria, filterCriterion) {
         if (sortCriteria) {
             if (!this._currentSortCriteria ||
-                (sortCriteria[0]["attribute"] != this._currentSortCriteria[0]["attribute"]
-                    || sortCriteria[0]["direction"] != this._currentSortCriteria[0]["direction"])) {
+                sortCriteria[0]['attribute'] != this._currentSortCriteria[0]['attribute'] ||
+                sortCriteria[0]['direction'] != this._currentSortCriteria[0]['direction']) {
                 return false;
             }
         }
@@ -435,8 +440,8 @@ class FlattenedTreeDataProviderView {
         }
         if (filterCriterion) {
             if (!this._currentFilterCriteria ||
-                (filterCriterion[0]["op"] != this._currentFilterCriteria[0]["op"]
-                    || filterCriterion[0]["filter"] != this._currentFilterCriteria[0]["filter"])) {
+                filterCriterion[0]['op'] != this._currentFilterCriteria[0]['op'] ||
+                filterCriterion[0]['filter'] != this._currentFilterCriteria[0]['filter']) {
                 return false;
             }
         }
@@ -456,7 +461,16 @@ class FlattenedTreeDataProviderView {
     }
     _getFetchByOffsetResultsFromCache(params) {
         let data = this._cache.slice(params[this._OFFSET], params[this._SIZE] === -1 ? undefined : params[this._OFFSET] + params[this._SIZE]);
-        return new this.FetchByOffsetResults(this, params, data, false);
+        let done = false;
+        if (data.length == 0) {
+            if (this._lastParams && this._lastParams == params) {
+                done = true;
+            }
+            else {
+                this._lastParams = params;
+            }
+        }
+        return new this.FetchByOffsetResults(this, params, data, done);
     }
     _clearCache() {
         this._cache = [];
@@ -491,12 +505,17 @@ class FlattenedTreeDataProviderView {
             let lastEntry = self._getItemByKey(lastParentKey);
             let lastEntryParentKey = lastEntry.metadata.parentKey;
             let lastEntryParentIndex = lastEntry.metadata.indexFromParent;
-            let childDataProvider = lastEntryParentKey === null ? self.dataProvider : self.getChildDataProvider(lastEntryParentKey);
+            let childDataProvider = lastEntryParentKey === null
+                ? self.dataProvider
+                : self.getChildDataProvider(lastEntryParentKey);
             let newParams = new self.FetchByOffsetParameters(self, lastEntryParentIndex + 1, self._getRemainingSize(finalParams), params[self._SORTCRITERIA], params[self._FILTERCRITERION], params[self._ATTRIBUTES]);
             let childrenPromise = self._fetchChildrenByOffsetFromDataProvider(newParams, childDataProvider, lastEntryParentKey, finalParams);
             return childrenPromise.then(handleFetchFromAncestors.bind(self, lastEntryParentKey));
         };
-        return self._fetchChildrenByOffsetFromDataProvider(params, dataprovider, parentKey, finalParams).then(handleFetchFromAncestors.bind(self, parentKey)).then(self._getFetchByOffsetResultsFromCache.bind(self, finalParams));
+        return self
+            ._fetchChildrenByOffsetFromDataProvider(params, dataprovider, parentKey, finalParams)
+            .then(handleFetchFromAncestors.bind(self, parentKey))
+            .then(self._getFetchByOffsetResultsFromCache.bind(self, finalParams));
     }
     _fetchChildrenByOffsetFromDataProvider(params, dataprovider, parentKey, finalParams) {
         let self = this;
@@ -518,7 +537,10 @@ class FlattenedTreeDataProviderView {
             }
             return handleNextItemInResults(new self.FetchByOffsetResults(self, params, results, false));
         };
-        return dataprovider.fetchByOffset(params).then(handleNextItemInResults).then(self._getFetchByOffsetResultsFromCache.bind(self, finalParams));
+        return dataprovider
+            .fetchByOffset(params)
+            .then(handleNextItemInResults)
+            .then(self._getFetchByOffsetResultsFromCache.bind(self, finalParams));
     }
     _sequence(a, fn) {
         return a.reduce((p, item) => {
@@ -535,8 +557,12 @@ class FlattenedTreeDataProviderView {
     }
     _getExpandedKeysFromResults(results) {
         let self = this;
-        let resultsKeys = results.map(function (result) { return result.metadata.key; });
-        return resultsKeys.filter(function (key) { return self._isExpanded(key); });
+        let resultsKeys = results.map(function (result) {
+            return result.metadata.key;
+        });
+        return resultsKeys.filter(function (key) {
+            return self._isExpanded(key);
+        });
     }
     _isExpanded(key) {
         let expanded = this.options[this._EXPANDED];
@@ -581,7 +607,9 @@ class FlattenedTreeDataProviderView {
         else {
             self._clearCache();
             self.dispatchEvent(new oj.DataProviderRefreshEvent());
-            self.getExpandedObservable().next(self._getExpandedObservableValue(this.options.expanded, Promise.resolve()));
+            self
+                .getExpandedObservable()
+                .next(self._getExpandedObservableValue(this.options.expanded, Promise.resolve()));
             return;
         }
         let expandPromise = self._expand(toExpand);
@@ -593,7 +621,9 @@ class FlattenedTreeDataProviderView {
                 resolve();
             });
         });
-        self.getExpandedObservable().next(self._getExpandedObservableValue(this.options.expanded, completionPromise));
+        self
+            .getExpandedObservable()
+            .next(self._getExpandedObservableValue(this.options.expanded, completionPromise));
     }
     getExpandedObservable() {
         return this._expandedObservable;
@@ -604,8 +634,10 @@ class FlattenedTreeDataProviderView {
     _pushItemToCache(item, parentKey) {
         let self = this;
         let lastEntry = self._getLastItemByParentKey(parentKey);
-        let index = lastEntry == null ? self._getItemIndexByKey(parentKey) :
-            (self._getItemIndexByKey(lastEntry.metadata.key) + self._getLocalDescendentCount(lastEntry.metadata.key));
+        let index = lastEntry == null
+            ? self._getItemIndexByKey(parentKey)
+            : self._getItemIndexByKey(lastEntry.metadata.key) +
+                self._getLocalDescendentCount(lastEntry.metadata.key);
         self._cache.splice(index + 1, 0, item);
     }
     _spliceItemToCache(item, index) {
@@ -653,7 +685,10 @@ class FlattenedTreeDataProviderView {
     }
     _getLastItemByParentKey(parentKey) {
         var returnItem = null;
-        this._cache.slice().reverse().some(function (item) {
+        this._cache
+            .slice()
+            .reverse()
+            .some(function (item) {
             if (item.metadata.parentKey === parentKey) {
                 returnItem = item;
                 return true;
@@ -712,7 +747,7 @@ class FlattenedTreeDataProviderView {
                         dataArray.push(item.data);
                         indexArray.push(insertIndex + index);
                         afterKey = item.metadata.key;
-                        self._incrementIteratorOffset();
+                        self._incrementIteratorOffset(insertIndex);
                     });
                 }
             });
@@ -749,18 +784,20 @@ class FlattenedTreeDataProviderView {
             }
         });
     }
-    _incrementIteratorOffset() {
+    _incrementIteratorOffset(index) {
         var self = this;
         self._iterators.forEach(function (offset, iterator) {
-            self._iterators.set(iterator, offset + 1);
+            if (index < offset) {
+                self._iterators.set(iterator, offset + 1);
+            }
         });
     }
     /**
-   * Return an empty Set which is optimized to store keys
-   */
+     * Return an empty Set which is optimized to store keys
+     */
     createOptimizedKeySet(initialSet) {
         if (this.dataProvider.createOptimizedKeySet) {
-            return (this.dataProvider.createOptimizedKeySet(initialSet));
+            return this.dataProvider.createOptimizedKeySet(initialSet);
         }
         return new ojSet(initialSet);
     }
@@ -769,7 +806,7 @@ class FlattenedTreeDataProviderView {
      */
     createOptimizedKeyMap(initialMap) {
         if (this.dataProvider.createOptimizedKeyMap) {
-            return (this.dataProvider.createOptimizedKeyMap(initialMap));
+            return this.dataProvider.createOptimizedKeyMap(initialMap);
         }
         if (initialMap) {
             let map = new ojMap();

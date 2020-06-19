@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -149,6 +150,8 @@ function _KoCustomBindingProvider() {
 
     _patchKoRenderTemplateSource(ko);
 
+    _patchKoComponentsLoaders(ko);
+
     _patchKoEvaluatorForCSP(_KoBindingCache);
 
     return this;
@@ -215,11 +218,19 @@ function _KoCustomBindingProvider() {
         return evaluate([$context.$data || {}, $context]);
       };
     }
-    /* jslint evil:true */
-    // eslint-disable-next-line no-new-func
 
+    var evaluator;
 
-    return new Function('$context', 'with($context){with($data||{}){return ' + expressionText + ';}}'); // @HTMLUpdateOK binding expression evaluation
+    try {
+      /* jslint evil:true */
+      // eslint-disable-next-line no-new-func
+      evaluator = new Function('$context', 'with($context){with($data||{}){return ' // @HTMLUpdateOK
+      + expressionText + ';}}'); // binding expression evaluation
+    } catch (e) {
+      throw new Error(e.message + ' in expression "' + expressionText + '"');
+    }
+
+    return evaluator;
   };
 
   this.createEvaluator = function (expression, bindingContext) {
@@ -342,6 +353,24 @@ function _KoCustomBindingProvider() {
       /* use current document if none is provided*/
       );
     };
+  } // This method adds custom KO component loader that overrides defaultLoader.loadTemplate().
+  // This is done to ensure that the template is parsed with the current document in order
+  // to upgrade custom elements synchronously
+  // The custom loader takes precedence over the default loader.
+
+
+  function _patchKoComponentsLoaders(ko) {
+    ko.components.loaders.unshift({
+      loadTemplate: function loadTemplate(name, templateConfig, callback) {
+        if (typeof templateConfig === 'string') {
+          var nodes = ko.utils.parseHtmlFragment(templateConfig, document);
+          ko.components.defaultLoader.loadTemplate(name, nodes, callback);
+        } else {
+          // Config type is not a string. Let default loader handle it.
+          callback(null);
+        }
+      }
+    });
   }
 
   function _preWrapGetAccessors(original, wrappedProvider) {
@@ -408,11 +437,19 @@ function _KoCustomBindingProvider() {
         }]);
       };
     }
-    /* jslint evil:true */
-    // eslint-disable-next-line no-new-func
 
+    var evaluator;
 
-    return new Function('$context', '$element', 'with($context.$data||{}){with($context){return ' + expressionText + '}}'); // @HTMLUpdateOK binding expression evaluation
+    try {
+      /* jslint evil:true */
+      // eslint-disable-next-line no-new-func
+      evaluator = new Function('$context', '$element', 'with($context.$data||{}){with($context){return ' + // @HTMLUpdateOK
+      expressionText + '}}'); // binding expression evaluation
+    } catch (e) {
+      throw new Error(e.message + ' in expression "' + expressionText + '"');
+    }
+
+    return evaluator;
   }
 
   function _createEvaluatorViaCache(factory, expr, bindingContext) {

@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -55,6 +56,7 @@ oj.ListViewDndContext.prototype.reset = function () {
   this.m_currentDragItem = null;
   this.m_dragItems = null;
   this.m_contextMenuItem = null;
+  this.m_cachedOffset = null;
 };
 
 /** ****************************** common helpers ***********************************************/
@@ -148,6 +150,9 @@ oj.ListViewDndContext.prototype.GetCommandPrefix = function () {
 };
 
 oj.ListViewDndContext.prototype._findItem = function (target) {
+  if ($(target).get(0).classList.contains('oj-listview-first-drop-target')) {
+    return $(this.m_dropTargetElem);
+  }
   return this.listview.FindItem(target);
 };
 
@@ -238,7 +243,10 @@ oj.ListViewDndContext.prototype._unsetSelectionDraggable = function () {
   if (this.m_draggableSelection) {
     $.each(this.m_draggableSelection, function (index, elem) {
       $(elem).removeClass('oj-draggable');
-    });
+      if (this.listview._isTouchSupport()) {
+        $(elem).removeAttr('draggable');
+      }
+    }.bind(this));
   }
 };
 
@@ -261,6 +269,10 @@ oj.ListViewDndContext.prototype.setSelectionDraggable = function () {
     if (elem != null && !this.listview.SkipFocus($(elem))) {
       elems.push(elem);
       $(elem).addClass('oj-draggable');
+      // for touch draggable needs to be set prior to touch interaction
+      if (this.listview._isTouchSupport()) {
+        $(elem).attr('draggable', 'true');
+      }
     }
   }
 
@@ -479,6 +491,49 @@ oj.ListViewDndContext.prototype._setDragItemData =
   };
 
 /**
+ * Creates the drag image element
+ * @private
+ */
+oj.ListViewDndContext.prototype._createDragImage = function () {
+  var dragImage = document.createElement('ul');
+  dragImage.className = this.listview.element.get(0).className;
+  dragImage.classList.add(this.GetDragImageClass());
+
+  if (this.listview.ojContext._IsCustomElement()) {
+    var predefined = ['oj-component', 'oj-complete'].concat(this.listview.GetContainerStyleClass().split(' '));
+    this.listview.GetRootElement().get(0).classList.forEach(function (name) {
+      if (predefined.indexOf(name) === -1) {
+        dragImage.classList.add(name);
+      }
+    });
+  }
+
+  return dragImage;
+};
+
+oj.ListViewDndContext.prototype._calculateOffset = function (elem) {
+  var style = window.getComputedStyle(elem);
+  var offset = parseFloat(style.marginLeft) + parseFloat(style.marginRight) +
+    parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) +
+    parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+
+  return offset;
+};
+
+oj.ListViewDndContext.prototype._calculateAffordanceOffset = function (item, affordance) {
+  if (this.m_cachedOffset == null) {
+    this.m_cachedOffset = Math.max(0, affordance.offsetLeft - item.offsetLeft)
+      + (affordance.offsetWidth / 2);
+
+    var itemOffset = this._calculateOffset(item);
+    var listviewOffset = this._calculateOffset(this.listview.getListContainer().get(0));
+    this.m_cachedOffset += Math.max(listviewOffset, itemOffset - listviewOffset);
+  }
+
+  return this.m_cachedOffset;
+};
+
+/**
  * Create and sets the drag image into the dataTransfer object
  * @param {Event} nativeEvent  DOM event object
  * @param {Array.<Element>} items array of row data
@@ -491,15 +546,14 @@ oj.ListViewDndContext.prototype.SetDragItemImage = function (nativeEvent, items)
   var left = 0;
   var top = 0;
   var target = nativeEvent.target;
+  var isCardLayout = this.listview.isCardLayout();
 
   if (items.length > 1) {
-    dragImage = $(document.createElement('ul'));
-    dragImage.get(0).className = this.listview.element.get(0).className;
-    dragImage.addClass(this.GetDragImageClass())
-      .css({
-        width: this.listview.element.css('width'),
-        height: this.listview.element.css('height')
-      });
+    dragImage = $(this._createDragImage());
+    dragImage.css({
+      width: this.listview.element.css('width'),
+      height: this.listview.element.css('height')
+    });
 
     var i;
     var minTop = Number.MAX_VALUE;
@@ -520,6 +574,9 @@ oj.ListViewDndContext.prototype.SetDragItemImage = function (nativeEvent, items)
           top: offsetTop,
           width: offsetWidth
         });
+      if (!isCardLayout) {
+        clone.addClass('oj-listview-item-drag-image');
+      }
       dragImage.append(clone); // @HTMLUpdateOK
     }
   } else {
@@ -530,7 +587,7 @@ oj.ListViewDndContext.prototype.SetDragItemImage = function (nativeEvent, items)
         offsetTop = target.offsetTop;
       }
 
-      left = Math.max(0, target.offsetLeft - items[0].offsetLeft) + (target.offsetWidth / 2);
+      left = this._calculateAffordanceOffset(items[0], target);
       top = offsetTop + (target.offsetHeight / 2);
     } else {
       left = Math.max(0, nativeEvent.offsetX);
@@ -540,19 +597,20 @@ oj.ListViewDndContext.prototype.SetDragItemImage = function (nativeEvent, items)
     clone = $(items[0].cloneNode(true));
     clone.removeClass('oj-selected oj-focus oj-hover')
       .addClass('oj-drag');
+    if (!isCardLayout) {
+      clone.addClass('oj-listview-item-drag-image');
+    }
 
-    dragImage = $(document.createElement('ul'));
-    dragImage.get(0).className = this.listview.element.get(0).className;
-    dragImage.addClass(this.GetDragImageClass())
-      .css({
-        width: this.GetDragImageWidth(items[0]),
-        height: items[0].offsetHeight * 2
-      })
-      .append(clone); // @HTMLUpdateOK
+    dragImage = $(this._createDragImage());
+    dragImage.css({
+      width: this.GetDragImageWidth(items[0]),
+      height: items[0].offsetHeight * 2
+    })
+    .append(clone); // @HTMLUpdateOK
   }
 
   // copying class might not be sufficient since it could be on the custom element root
-  if (this.listview.isCardLayout()) {
+  if (isCardLayout) {
     dragImage.addClass('oj-listview-card-layout');
   }
 
@@ -670,8 +728,10 @@ oj.ListViewDndContext.prototype._handleDragEnd = function (event) {
       .removeAttr('draggable');
 
     for (var i = 0; i < this.m_dragItems.length; i++) {
-      $(this.m_dragItems[i]).removeClass(this.GetDragItemClass())
-        .css('display', '');
+      var dragItem = this.m_dragItems[i];
+      dragItem.classList.remove('oj-listview-drag-source');
+      dragItem.classList.remove(this.GetDragItemClass());
+      $(dragItem).css('display', '');
     }
   }
 
@@ -745,26 +805,77 @@ oj.ListViewDndContext.prototype._invokeDropCallback = function (callbackType, ev
 };
 
 /**
+ * @private
+ */
+oj.ListViewDndContext.prototype._getDropIndicator = function () {
+  return this.m_dragItems != null ? 'space' : 'line';
+};
+
+/**
  * Create drop target based on item
  * @param {jQuery} item the item to create drop target based on
  * @return {jQuery} the drop target
  * @private
  */
 oj.ListViewDndContext.prototype._createDropTarget = function (item) {
-  if (this.m_dropTarget == null) {
-    var dropTarget = $(item.get(0).cloneNode(false));
-    dropTarget.addClass('oj-drop')
-      .removeClass('oj-drag oj-draggable oj-hover oj-focus oj-selected')
-      .css({
-        display: 'block',
-        height: item.outerHeight(),
-        width: item.outerWidth()
-      });
+  var type = this._getDropIndicator();
 
-    this.m_dropTarget = dropTarget;
+  if (this.m_dropTarget == null) {
+    var dropTarget;
+    if (type === 'space') {
+      dropTarget = $(item.get(0).cloneNode(false));
+      dropTarget.addClass('oj-drop')
+        .removeClass('oj-drag oj-draggable oj-hover oj-focus')
+        .css({
+          display: 'block',
+          height: item.outerHeight(),
+          width: item.outerWidth()
+        });
+    } else if (type === 'line') {
+      dropTarget = document.createElement('li');
+      dropTarget.classList.add('oj-listview-drop-target');
+    }
+
+    this.m_dropTarget = $(dropTarget);
+  }
+
+  if (type === 'line') {
+    var elem = item.get(0);
+    elem.classList.add('oj-drop');
+    if (this.m_dropTargetElem != null) {
+      this.m_dropTargetElem.classList.remove('oj-drop');
+    }
+    this.m_dropTargetElem = elem;
+    var top = (elem.offsetTop + elem.offsetHeight) - this._getDropIndicatorHeight();
+    // if it's the last item and gridlines are visible, need to make an adjustment
+    if (item.get(0).nextElementSibling == null && this.listview._isGridlinesVisible()) {
+      top -= 1;
+    }
+    this.m_dropTarget.get(0).style.top = top + 'px';
   }
 
   return this.m_dropTarget;
+};
+
+/**
+ * Gets and cached the height of the drop indicator
+ * @private
+ */
+oj.ListViewDndContext.prototype._getDropIndicatorHeight = function () {
+  if (!isNaN(this.m_dropIndicatorHeight)) {
+    return this.m_dropIndicatorHeight;
+  }
+
+  if (this.m_dropTarget) {
+    var dropIndicator = this.m_dropTarget.get(0);
+    this.listview.element.get(0).appendChild(dropIndicator);
+    this.m_dropIndicatorHeight = dropIndicator.offsetHeight;
+    if (this.listview._isGridlinesVisible()) {
+      this.m_dropIndicatorHeight -= 1;
+    }
+    return this.m_dropIndicatorHeight;
+  }
+  return 0;
 };
 
 /**
@@ -800,6 +911,15 @@ oj.ListViewDndContext.prototype._cleanupDropTarget = function () {
     this.m_dropTarget.css('height', '0');
     this.m_dropTarget.remove();
     this.m_dropTarget = null;
+  }
+
+  if (this.m_dropTargetElem != null) {
+    this.m_dropTargetElem.classList.remove('oj-drop');
+  }
+
+  if (this.m_firstDropTarget != null) {
+    this.m_firstDropTarget.parentNode.removeChild(this.m_firstDropTarget);
+    this.m_firstDropTarget = null;
   }
 
   this._cleanupEmptyList();
@@ -888,6 +1008,64 @@ oj.ListViewDndContext.prototype._restoreGroupItemStyle = function () {
 };
 
 /**
+ * Sets/updates the drop position
+ * @private
+ */
+oj.ListViewDndContext.prototype._setDropPosition = function (item, dropTarget) {
+  var type = this._getDropIndicator();
+
+  if (type === 'line') {
+    dropTarget.insertAfter(item); // @HTMLUpdateOK
+    return 'after';
+  }
+
+  var index = item.index();
+  if (this.m_dropTargetIndex == null || this.m_dropTargetIndex < index) {
+    dropTarget.insertAfter(item); // @HTMLUpdateOK
+    return 'after';
+  }
+
+  dropTarget.insertBefore(item); // @HTMLUpdateOK
+  return 'before';
+};
+
+/**
+ * Handles the special case of inserting before the first item (at root or in group node)
+ * @private
+ */
+oj.ListViewDndContext.prototype._checkFirstItemDropTarget = function (item, dropTarget, target) {
+  if (target.classList.contains('oj-listview-first-drop-target')) {
+    // in the top drop area
+    this.m_dropPosition = 'before';
+    // eslint-disable-next-line no-param-reassign
+    dropTarget.style.top = '0px';
+    return;
+  }
+
+  if (this._getDropIndicator() === 'line') {
+    if (item.previousElementSibling === null) {
+      // first item
+      if (this.m_firstDropTarget == null) {
+        var topDropTarget = document.createElement('li');
+        topDropTarget.classList.add('oj-listview-first-drop-target');
+        topDropTarget.style.top = '0px';
+        item.parentNode.appendChild(topDropTarget);
+        this.m_firstDropTarget = topDropTarget;
+      } else {
+        // first item, but not in the top drop area
+        this.m_dropPosition = 'after';
+        // eslint-disable-next-line no-param-reassign
+        dropTarget.style.top = ((item.offsetTop + item.offsetHeight) - this._getDropIndicatorHeight()) + 'px';
+      }
+    } else if (this.m_firstDropTarget) {
+      // not the first item, remove any first drop target artifacts
+      this.m_firstDropTarget.parentNode.removeChild(this.m_firstDropTarget);
+      this.m_firstDropTarget = null;
+    }
+  }
+};
+
+/**
  * Drag over event handler
  * @param {Event} event  jQuery event object
  * @private
@@ -923,6 +1101,10 @@ oj.ListViewDndContext.prototype._handleDragOver = function (event) {
 
       dropTarget.insertBefore(item); // @HTMLUpdateOK
       this.m_dropTargetIndex = dropTarget.index();
+    } else {
+      // not reorder or dnd within ListView, so apply dnd across collection styling
+      item.get(0).classList.remove('oj-hover');
+      item.get(0).classList.add('oj-listview-drag-source');
     }
   } else {
     // if drag over callback allows drop or if it's item reordering
@@ -942,20 +1124,15 @@ oj.ListViewDndContext.prototype._handleDragOver = function (event) {
           // if a drop target has not been created for this item
           if (!item.hasClass('oj-drop')) {
             dropTarget = this._createDropTarget(item);
-
-            var index = item.index();
-            if (this.m_dropTargetIndex == null || this.m_dropTargetIndex < index) {
-              dropTarget.insertAfter(item); // @HTMLUpdateOK
-              this.m_dropPosition = 'after';
-            } else {
-              dropTarget.insertBefore(item); // @HTMLUpdateOK
-              this.m_dropPosition = 'before';
-            }
-
+            this.m_dropPosition = this._setDropPosition(item, dropTarget);
             this._setAccInfo(item, this.m_dropPosition);
             this._setCurrentDropItem(item);
             this.m_dropTargetIndex = dropTarget.index();
+          } else {
+            dropTarget = this.m_dropTarget;
           }
+          // handle special case for first item (root or in a group)
+          this._checkFirstItemDropTarget(item.get(0), dropTarget.get(0), event.target);
         } else {
           // there won't be a drop target placeholder, remove any previous ones
           this._cleanupDropTarget();
@@ -979,11 +1156,8 @@ oj.ListViewDndContext.prototype._handleDragOver = function (event) {
       }
     } else {
       // drop on an empty list
-      var emptyItem = this.listview.element.children('.' + this.listview.getEmptyTextStyleClass());
+      var emptyItem = this._getAndUpdateEmptyItem();
       if (emptyItem != null && emptyItem.length > 0) {
-        emptyItem.addClass('oj-drop');
-        emptyItem.get(0).textContent = '';
-
         this._setCurrentDropItem(emptyItem);
         event.preventDefault();
       }
@@ -991,6 +1165,20 @@ oj.ListViewDndContext.prototype._handleDragOver = function (event) {
   }
 
   return returnValue;
+};
+
+/**
+ * @private
+ */
+oj.ListViewDndContext.prototype._getAndUpdateEmptyItem = function () {
+  var emptyItem = this.listview.element.children('.' + this.listview.getEmptyTextStyleClass());
+  if (emptyItem.length === 0) {
+    emptyItem = $(this.listview.element[0].querySelector('.oj-listview-no-data-item'));
+  } else {
+    emptyItem.get(0).textContent = '';
+  }
+  emptyItem.addClass('oj-drop');
+  return emptyItem;
 };
 
 /**
@@ -1045,6 +1233,14 @@ oj.ListViewDndContext.prototype._handleDragLeave = function (event) {
 };
 
 /**
+ * @private
+ */
+oj.ListViewDndContext.prototype._isEmptyItem = function (item) {
+  return item.hasClass(this.listview.getEmptyTextStyleClass()) ||
+    item.hasClass('oj-listview-no-data-item');
+};
+
+/**
  * Drop event handler
  * @param {Event} event  jQuery event object
  * @private
@@ -1058,7 +1254,7 @@ oj.ListViewDndContext.prototype._handleDrop = function (event) {
 
   // invoke callback
   var ui;
-  if (this.m_currentDropItem.hasClass(this.listview.getEmptyTextStyleClass())) {
+  if (this._isEmptyItem(this.m_currentDropItem)) {
     ui = {};
   } else {
     ui = { item: this.m_currentDropItem.get(0), position: this.m_dropPosition };
@@ -1268,7 +1464,7 @@ oj.ListViewDndContext.prototype._buildContextMenuItem = function (command, tagNa
  * @private
  */
 oj.ListViewDndContext.prototype._buildContextMenuListItem = function (command, tagName) {
-  var listItem = $(document.createElement(tagName));
+  var listItem = $(document.createElement(tagName)); // @HTMLUpdateOK
   listItem.attr('data-oj-command', command);
   listItem.append(this._buildContextMenuLabel(command, tagName === 'OJ-OPTION')); // @HTMLUpdateOK
   return listItem;

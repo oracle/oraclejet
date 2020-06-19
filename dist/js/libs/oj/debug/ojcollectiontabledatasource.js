@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -40,7 +41,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojmodel', 'ojs/ojdatasource-common'], funct
  */
 oj.CollectionTableDataSource = function (data, options) {
   // Initialize
-  this.data = {};   // This was put in to keep closure happy...
+  this.data = {}; // This was put in to keep closure happy...
   if (!(data instanceof Model.Collection)) {
     // we only support oj.Collection
     var errSummary = oj.TableDataSource._LOGGER_MSG._ERR_DATA_INVALID_TYPE_SUMMARY;

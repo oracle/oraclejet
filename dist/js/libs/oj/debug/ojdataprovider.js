@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -1099,6 +1100,30 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  */
 
 /**
+ * Optional symbol that can uniquely identify the consumer of the DataProvider.
+ *
+ * Each consumer can call Symbol() to obtain a unique symbol, which can be
+ * stored and reused on each subsequent call to fetchFirst. Note that Symbol()
+ * returns a different unique symbol every time, so it should not be called
+ * every time the consumer calls fetchFirst.
+ *
+ * There should only be one active iterator per clientId. All previous iterators
+ * obtained with the same clientId should be considered invalid. This is used to
+ * optimize resource usage in some DataProvider implementations.
+ *
+ *
+ * @since 9.0.0
+ * @export
+ * @expose
+ * @memberof oj.FetchListParameters
+ * @instance
+ * @name clientId
+ * @type {symbol}
+ * @ojsignature {target: "Type",
+ *               value: "?symbol"}
+ */
+
+/**
  * End of jsdoc
  */
 
@@ -1206,6 +1231,20 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  */
 
 /**
+ * An optional message such as error associated with the row
+ *
+ * @since 9.0.0
+ * @export
+ * @expose
+ * @memberof ItemMetadata
+ * @instance
+ * @name message
+ * @type {ItemMessage=}
+ * @ojsignature {target: "Type",
+ *               value: "?ItemMessage"}
+ */
+
+/**
  * End of jsdoc
  */
 
@@ -1236,7 +1275,6 @@ var AttributeFilterOperator;
         AttributeOperator["$regex"] = "$regex";
         AttributeOperator["$sw"] = "$sw";
     })(AttributeOperator = AttributeFilterOperator.AttributeOperator || (AttributeFilterOperator.AttributeOperator = {}));
-    ;
 })(AttributeFilterOperator || (AttributeFilterOperator = {}));
 oj['AttributeFilterOperator'] = AttributeFilterOperator;
 oj['AttributeFilterOperator']['AttributeOperator'] = AttributeFilterOperator.AttributeOperator;
@@ -1350,7 +1388,6 @@ var CompoundFilterOperator;
         CompoundOperator["$and"] = "$and";
         CompoundOperator["$or"] = "$or";
     })(CompoundOperator = CompoundFilterOperator.CompoundOperator || (CompoundFilterOperator.CompoundOperator = {}));
-    ;
 })(CompoundFilterOperator || (CompoundFilterOperator = {}));
 oj['CompoundFilterOperator'] = CompoundFilterOperator;
 oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.CompoundOperator;
@@ -1525,6 +1562,10 @@ oj.DataProviderMutationEvent = DataProviderMutationEvent;
 oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
 
 
+/**
+ * Interface oj.DataProviderMutationEventDetail
+ */
+
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -1612,7 +1653,6 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @final
  * @class DataProviderMutationEvent
  * @implements Event
- * @ojtsnoexport
  * @classdesc Mutation event dispatched by {@link DataProvider}
  * @param {DataProviderMutationEventDetail} detail the event detail
  * @ojsignature [{target: "Type",
@@ -1855,6 +1895,18 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
 
 /**
  *
+ * @since 9.0.0
+ * @export
+ * @expose
+ * @memberof DataProviderMutationEvent
+ * @instance
+ * @name composedPath
+ * @ojsignature {target: "Type",
+ *               value: "() => EventTarget[]"}
+ */
+
+/**
+ *
  * @since 4.2.0
  * @export
  * @expose
@@ -2091,7 +2143,6 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @final
  * @class DataProviderRefreshEvent
  * @implements Event
- * @ojtsnoexport
  * @classdesc Refresh Event dispatched by the {@link DataProvider}. This event is fired when
  * the data has been refreshed and components need to re-fetch the data.
  * @ojsignature {target: "Type",
@@ -2309,6 +2360,18 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @memberof DataProviderRefreshEvent
  * @instance
  * @name deepPath
+ * @ojsignature {target: "Type",
+ *               value: "() => EventTarget[]"}
+ */
+
+/**
+ *
+ * @since 9.0.0
+ * @export
+ * @expose
+ * @memberof DataProviderRefreshEvent
+ * @instance
+ * @name composedPath
  * @ojsignature {target: "Type",
  *               value: "() => EventTarget[]"}
  */
@@ -2721,7 +2784,7 @@ oj.DataProvider = function () {
  * @ojsignature {target: "Type",
  *               value: "(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
  * @ojtsexample <caption>Fetch by offset 5 rows starting at index 2</caption>
- * let value = await dataprovider.fetchByOffset({size: 5, offset: 2});
+ * let result = await dataprovider.fetchByOffset({size: 5, offset: 2});
  * let results = result['results'];
  * let data = results.map(function(value) {
  *   return value['data'];
@@ -2994,7 +3057,7 @@ class FetchByKeysMixin {
                     if (!resultMap.has(findKey)) {
                         keys.map(function (key, index) {
                             if (key == findKey) {
-                                resultMap.set(key, { 'metadata': metadata[index], 'data': data[index] });
+                                resultMap.set(key, { metadata: metadata[index], data: data[index] });
                             }
                         });
                     }
@@ -3025,7 +3088,7 @@ class FetchByKeysMixin {
                 let mappedItem = [value];
                 mappedResultMap.set(key, mappedItem[0]);
             });
-            return { 'fetchParameters': params, 'results': mappedResultMap };
+            return { fetchParameters: params, results: mappedResultMap };
         });
     }
     /**
@@ -3039,8 +3102,7 @@ class FetchByKeysMixin {
                     results.add(key);
                 }
             });
-            return Promise.resolve({ 'containsParameters': params,
-                'results': results });
+            return Promise.resolve({ containsParameters: params, results: results });
         });
     }
     getCapability(capabilityName) {
@@ -3070,8 +3132,8 @@ class FetchByKeysMixin {
         // Save the current getCapability
         let _lastGetCapability = derivedCtor.prototype['getCapability'];
         let baseCtors = [FetchByKeysMixin];
-        baseCtors.forEach(baseCtor => {
-            Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+        baseCtors.forEach((baseCtor) => {
+            Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
                 if (name !== 'constructor') {
                     derivedCtor.prototype[name] = baseCtor.prototype[name];
                 }
@@ -3222,13 +3284,13 @@ class FetchByOffsetMixin {
                 let data = value['data'];
                 let metadata = value['metadata'];
                 let dataLen = data.length;
-                if (offset < (fetched + dataLen)) {
-                    let start = (offset <= fetched) ? 0 : (offset - fetched);
+                if (offset < fetched + dataLen) {
+                    let start = offset <= fetched ? 0 : offset - fetched;
                     for (let index = start; index < dataLen; index++) {
                         if (resultArray.length == size) {
                             break;
                         }
-                        resultArray.push({ 'metadata': metadata[index], 'data': data[index] });
+                        resultArray.push({ metadata: metadata[index], data: data[index] });
                     }
                 }
                 fetched += dataLen;
@@ -3247,9 +3309,7 @@ class FetchByOffsetMixin {
             });
         }
         return _fetchNextSet(params, dataProviderAsyncIterator, resultArray).then(function (resultArray) {
-            return { 'fetchParameters': params,
-                'results': resultArray,
-                'done': done };
+            return { fetchParameters: params, results: resultArray, done: done };
         });
     }
     getCapability(capabilityName) {
@@ -3279,8 +3339,8 @@ class FetchByOffsetMixin {
         // Save the current getCapability
         let _lastGetCapability = derivedCtor.prototype['getCapability'];
         let baseCtors = [FetchByOffsetMixin];
-        baseCtors.forEach(baseCtor => {
-            Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+        baseCtors.forEach((baseCtor) => {
+            Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
                 if (name !== 'constructor') {
                     derivedCtor.prototype[name] = baseCtor.prototype[name];
                 }
@@ -3483,7 +3543,9 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 class FilterImpl {
     constructor(options) {
         options = options || {};
-        this._textFilterAttributes = options['filterOptions'] ? options['filterOptions']['textFilterAttributes'] : null;
+        this._textFilterAttributes = options['filterOptions']
+            ? options['filterOptions']['textFilterAttributes']
+            : null;
         let filterDef = options.filterDef;
         if (filterDef) {
             if (filterDef['op']) {
@@ -3523,7 +3585,7 @@ class FilterImpl {
                     op = '$gte';
                 }
                 else if (op === '$pr') {
-                    op = "$exists";
+                    op = '$exists';
                 }
             }
             if (op != '$and' && op != '$or') {
@@ -3538,9 +3600,7 @@ class FilterImpl {
                 if (attributeExpr) {
                     let operatorExpr = {};
                     // need express sw and ew as regex
-                    if (op === '$sw' ||
-                        op === '$ew' ||
-                        op === '$co') {
+                    if (op === '$sw' || op === '$ew' || op === '$co') {
                         op = '$regex';
                         filterValue = FilterImpl._fixStringExpr(op, filterValue);
                     }
@@ -3551,9 +3611,13 @@ class FilterImpl {
                     let operatorExpr = {};
                     operatorExpr[op] = filterValue;
                     if (filter._textFilterAttributes) {
+                        let textFilterArray = [];
                         filter._textFilterAttributes.forEach(function (field) {
-                            transformedExpr[field] = operatorExpr;
+                            let textFilter = {};
+                            textFilter[field] = operatorExpr;
+                            textFilterArray.push(textFilter);
                         });
+                        transformedExpr['$or'] = textFilterArray;
                     }
                     else {
                         transformedExpr['*'] = operatorExpr;
@@ -3587,9 +3651,7 @@ class FilterImpl {
                 if (!(fieldValue instanceof Object)) {
                     let operatorExpr = {};
                     // need express co, sw and ew as regex
-                    if (op === '$sw' ||
-                        op === '$ew' ||
-                        op === '$co') {
+                    if (op === '$sw' || op === '$ew' || op === '$co') {
                         op = '$regex';
                         fieldValue = FilterImpl._fixStringExpr(op, fieldValue);
                     }
@@ -3612,7 +3674,7 @@ class FilterImpl {
         }
     }
     static _fixStringExpr(op, value) {
-        if ((typeof value === 'string') || (value instanceof String)) {
+        if (typeof value === 'string' || value instanceof String) {
             if (op === '$sw') {
                 value = '^' + value;
             }
@@ -3625,7 +3687,7 @@ class FilterImpl {
 }
 class FilterFactory {
     static getFilter(options) {
-        return (new FilterImpl(options));
+        return new FilterImpl(options);
     }
 }
 oj['FilterFactory'] = FilterFactory;
@@ -3664,13 +3726,14 @@ oj['FilterFactory'] = FilterFactory;
  * @instance
  * @name getFilter
  * @method
+ * @static
  * @param {Object} options Options for the getFilter() function
  * @param {DataFilter.FilterDef} options.filterDef The filter definition for the filter to be returned.
  * @param {any=} options.filterOptions Options for the filter such as textFilterAttributes which lists the attributes to filter on for TextFilter.
  * @return {DataFilter.Filter} Returns either an AttributeFilter, AttributeExprFilter, CompoundFilter, or TextFilter depending on whether a AttributeFilterDef or CompoundFilterDef.
  * was passed in.
  * @ojsignature {target: "Type",
- *               value: "(options: {filterDef: DataFilter.FilterDef<D>, filterOptions: any}): DataFilter.Filter<D>",
+ *               value: "(options: {filterDef: DataFilter.FilterDef<any>, filterOptions: any}): DataFilter.Filter<any>",
  *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
  * @example
  * <caption>Get filter which filters on DepartmentId value 10 and then fetch filtered rows from the DataProvider</caption>
@@ -4154,11 +4217,156 @@ oj.FilterUtils = function () {
 
 /* jslint browser: true,devel:true*/
 /**
+ * The interface for ItemMetadata.  Note that key is the only mandatory property,
+ * implementations can provide additional properties as needed.
+ *
+ *
+ * @since 9.0.0
+ * @export
+ * @interface ItemMessage
+ * @ojsignature {target: "Type",
+ *               value: "interface ItemMessage"}
+ */
+
+/**
+ * Detail text of the message.
+ *
+ * @since 9.0.0
+ * @export
+ * @expose
+ * @memberof ItemMessage
+ * @instance
+ * @name detail
+ * @type {string}
+ */
+
+/**
+ * Severity type or level of the message.
+ *
+ * @since 9.0.0
+ * @export
+ * @expose
+ * @memberof ItemMessage
+ * @instance
+ * @name severity
+ * @type {(ItemMessage.SEVERITY_TYPE | ItemMessage.SEVERITY_LEVEL)=}
+ * @ojsignature {target: "Type",
+ *               value: "?(ItemMessage.SEVERITY_TYPE | ItemMessage.SEVERITY_LEVEL)"}
+ */
+
+/**
+ * Summary text of the message.
+ *
+ * @since 9.0.0
+ * @export
+ * @expose
+ * @memberof ItemMessage
+ * @instance
+ * @name summary
+ * @type {string}
+ */
+
+/**
+ * The supported severity levels of the message.
+ * @typedef {1 | 2 | 3 | 4 | 5} ItemMessage.SEVERITY_LEVEL
+ * @ojsignature {target:"Type", value:"1 | 2 | 3 | 4 | 5"}
+ * @ojvalue {number} 1 {"description": "Indicates a confirmation that an operation or task was completed. This is the lowest severity level."}
+ * @ojvalue {number} 2 {"description": "Indicates information or operation messages. This has a lower severity level than warning."}
+ * @ojvalue {number} 3 {"description": "Indicates an application condition or situation that might require users' attention. This has a lower severity than error."}
+ * @ojvalue {number} 4 {"description": "Used when data inaccuracies occur when completing a field and that needs fixing before user can continue. This has a lower severity level than fatal."}
+ * @ojvalue {number} 5 {"description": "Used when a critical application error or an unknown failure occurs. This is the highest severity level."}
+ */
+
+/**
+ * The supported severity types of the message.
+ * @typedef {'confirmation' | 'info' | 'warning' | 'error' | 'fatal'} ItemMessage.SEVERITY_TYPE
+ * @ojsignature {target:"Type", value:"'confirmation' | 'info' | 'warning' | 'error' | 'fatal'"}
+ * @ojvalue {string} "confirmation" {"description": "Indicates a confirmation that an operation or task was completed. This is the lowest severity level."}
+ * @ojvalue {string} "info" {"description": "Indicates information or operation messages. This has a lower severity level than warning."}
+ * @ojvalue {string} "warning" {"description": "Indicates an application condition or situation that might require users' attention. This has a lower severity than error."}
+ * @ojvalue {string} "error" {"description": "Used when data inaccuracies occur when completing a field and that needs fixing before user can continue. This has a lower severity level than fatal."}
+ * @ojvalue {string} "fatal" {"description": "Used when a critical application error or an unknown failure occurs. This is the highest severity level."}
+ */
+
+/**
+ * End of jsdoc
+ */
+
+
+
+
+
+
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/* jslint browser: true,devel:true*/
+/**
+ * The interface for ItemWithOptionalData
+ *
+ *
+ * @since 9.0.0
+ * @export
+ * @interface ItemWithOptionalData
+ * @ojsignature {target: "Type",
+ *               value: "interface ItemWithOptionalData<K, D>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
+ */
+
+/**
+ * The metadata for the item
+ *
+ *
+ * @since 9.0.0
+ * @export
+ * @expose
+ * @memberof ItemWithOptionalData
+ * @instance
+ * @name metadata
+ * @type {ItemMetadata}
+ * @ojsignature {target: "Type",
+ *               value: "ItemMetadata<K>"}
+ */
+
+/**
+ * The data for the item
+ *
+ *
+ * @since 9.0.0
+ * @export
+ * @expose
+ * @memberof ItemWithOptionalData
+ * @instance
+ * @name data
+ * @type {Object}
+ * @ojsignature {target: "Type",
+ *               value: "?D"}
+ */
+
+/**
+ * End of jsdoc
+ */
+
+
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/* jslint browser: true,devel:true*/
+/**
  * @since 4.1.0
  * @export
  * @interface Item
+ * @extends ItemWithOptionalData
  * @ojsignature {target: "Type",
- *               value: "interface Item<K, D>",
+ *               value: "interface Item<K, D> extends ItemWithOptionalData<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
  * @classdesc Defines the items returned in the Map<K, Item<K, D>> from the DataProvider method {@link DataProvider#fetchByKeys}
  */
@@ -4257,6 +4465,8 @@ __DataProvider.FetchByOffsetMixin = oj.FetchByOffsetMixin;
 __DataProvider.FilterFactory = oj.FilterFactory;
 __DataProvider.DataProviderRefreshEvent = oj.DataProviderRefreshEvent;
 __DataProvider.DataProviderMutationEvent = oj.DataProviderMutationEvent;
+__DataProvider.AttributeFilterOperator = oj.AttributeFilterOperator;
+__DataProvider.CompoundFilterOperator = oj.CompoundFilterOperator;
 
   ;return __DataProvider;
 });

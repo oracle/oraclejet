@@ -1,6 +1,7 @@
 /**
  * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  */
 define(['jquery'], function($) {
   "use strict";
@@ -9,17 +10,37 @@ define(['jquery'], function($) {
   // Declare dvt, since it will be used in the toolkit source.
   var dvt;
 
+function _construct(Parent, args, Class) { if (_isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 dvt = function () {
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -97,8 +118,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -863,7 +885,8 @@ dvt = function () {
   dvt.Context.requestAnimationFrame = function (callback) {
     // On android, requestAnimationFrame results causes the JS to wait until after the Rasterizer and GPU are
     // done, which can be slow. Using timeouts will allow the JS to execute concurrently.
-    if (dvt.Agent.isTouchDevice() && dvt.Agent.browser === 'chrome') return window.setTimeout(callback, 1000 / 60);else return window.requestAnimationFrame(callback);
+    if (dvt.Agent.isTouchDevice() && dvt.Agent.browser === 'chrome') return window.setTimeout(callback, 1000 / 60); //@HTMLUpdateOK
+    else return window.requestAnimationFrame(callback);
   };
   /**
    * Polyfill for cancelAnimationFrame.
@@ -996,9 +1019,29 @@ dvt = function () {
     this._destroyed = true;
   };
   /**
+   * Stores the JET references.
+   * @param {Object} properties object with JET references as keys
+   */
+
+
+  dvt.Context.prototype.setJetProperties = function (properties) {
+    this._jetProps = properties;
+    Object.assign(this, properties);
+  };
+  /**
+   * Returns stored JET references
+   * @return {Object} object with jet references as keys
+   */
+
+
+  dvt.Context.prototype.getJetProperties = function () {
+    return this._jetProps;
+  };
+  /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1106,8 +1149,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1519,8 +1563,9 @@ dvt = function () {
 
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1694,8 +1739,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -1865,8 +1911,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -2049,8 +2096,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -2144,8 +2192,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -2315,8 +2364,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -2573,8 +2623,9 @@ dvt = function () {
   dvt.Easing.prototype.Init = function () {};
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3237,8 +3288,9 @@ dvt = function () {
   DvtInterpolator._map[dvt.Animator.TYPE_POLYLINE] = DvtInterpolator.InterpolatePolyline;
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3397,8 +3449,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3926,8 +3979,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -3958,8 +4012,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4009,8 +4064,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4051,8 +4107,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4115,8 +4172,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4179,8 +4237,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4255,8 +4314,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4319,8 +4379,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4489,8 +4550,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4529,8 +4591,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4570,8 +4633,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -4623,8 +4687,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5489,8 +5554,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5613,8 +5679,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2015 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2015 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5666,8 +5733,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5724,8 +5792,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5823,48 +5892,31 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
   /**
     * @class dvt.Shadow
-    * Represents an immutable drop shadow.  The shadow object properties are a superset of values, and
-    *                            each platform implementation should take those required
-    *                            by that specfic platform.
+    * Represents an immutable drop shadow.
     *
     * @constructor
-    * @param {String} rgba  The color and transparency of the shadow.  Default is 0x59333333.
-    * @param {number} distance The offset distance for the shadow, in pixels. Default is 4.
-    * @param {number} blurX  The amount of horizontal blur. Valid values are 0.0 to 255.0  Default is 4.
-    * @param {number} blurY  The amount of vertical blur (float). Valid values are 0.0 to 255.0  Default is 4.
-    * @param {number} angle  The angle of the shadow. Valid values are 0.0 to 360.0 degrees.  Default is 45 deg.
-    * @param {number} strength  The strength of the imprint or spread. Default is 1.
-    *                           Note: The higher the value, the more color is imprinted and the
-    *                           stronger the contrast between the shadow and the background.
-    *                           Valid values are from 0 to 255.0
-    * @param {number} quality  An integer number of times to apply the effect. Valid values are 0
-    *                          to 15.  Default is 1.  Note: shadows with lower values are rendered
-    *                          more quickly. For most applications, a quality value of 1 (low), 2
-    *                          (medium), or 3 (high) is sufficient.  Although you can use additional
-    *                          numeric values up to 15 to achieve different effects, higher values
-    *                          are rendered more slowly. Instead of increasing the value of quality,
-    *                          you can often get a similar effect, and with faster rendering, by
-    *                          simply increasing the values of the blurX and blurY properties.
+    * @param {number} dx            The x offset of the drop shadow.
+    * @param {number} dy            The y offset of the drop shadow.
+    * @param {number} stdDeviation  The standard deviation for the blur operation in the  drop shadow; equal to half of the blur radius.
+    * @param {String} floodColor    The color and transparency of the shadow.
     */
 
 
-  dvt.Shadow = function (rgba, distance, blurX, blurY, angle, strength, quality) {
-    // The type of this draw effect, used in Flash to differentiate between filter effects
+  dvt.Shadow = function (dx, dy, stdDeviation, floodColor) {
+    // The type of this draw effect
     this.__type = 'shadow';
-    this._rgba = rgba ? rgba : 'rgba(48,48,48,0.35)';
-    this._distance = distance === null || isNaN(distance) ? 4 : distance;
-    this._strength = strength === null || isNaN(strength) ? 1 : strength;
-    this._blurX = blurX === null || isNaN(blurX) ? 4 : blurX;
-    this._blurY = blurY === null || isNaN(blurY) ? 4 : blurY;
-    this._angle = angle === null || isNaN(angle) ? 45 : angle;
-    this._quality = quality === null || isNaN(quality) ? 1 : quality;
+    this._dx = dx;
+    this._dy = dy;
+    this._stdDeviation = stdDeviation;
+    this._floodColor = floodColor;
     this._Id = 'ds' + dvt.Shadow._uniqueId++;
   };
 
@@ -5872,8 +5924,9 @@ dvt = function () {
   dvt.Shadow._uniqueId = 1;
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -5978,8 +6031,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6053,8 +6107,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6171,8 +6226,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6220,8 +6276,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6331,8 +6388,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6350,20 +6408,10 @@ dvt = function () {
   DvtSvgFilterContext.prototype.Init = function () {
     this._regionPctRect = new dvt.Rectangle(-10, -10, 120, 120);
     this._counter = 0;
-    this._resultIdsUnder = [];
-    this._resultIdsOver = [];
   };
 
   DvtSvgFilterContext.prototype.getRegionPctRect = function () {
     return this._regionPctRect;
-  };
-
-  DvtSvgFilterContext.prototype.getResultIdsUnder = function () {
-    return this._resultIdsUnder;
-  };
-
-  DvtSvgFilterContext.prototype.getResultIdsOver = function () {
-    return this._resultIdsOver;
   };
 
   DvtSvgFilterContext.prototype.createResultId = function (id) {
@@ -6375,8 +6423,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6469,33 +6518,6 @@ dvt = function () {
       }
     }
 
-    var numResultsUnder = filtContext.getResultIdsUnder().length;
-    var numResultsOver = filtContext.getResultIdsOver().length;
-    var elemMN;
-    var j;
-    var elemM = dvt.SvgShapeUtils.createElement('feMerge');
-
-    if (numResultsUnder > 0) {
-      for (j = 0; j < numResultsUnder; j++) {
-        elemMN = dvt.SvgShapeUtils.createElement('feMergeNode');
-        dvt.ToolkitUtils.setAttrNullNS(elemMN, 'in', filtContext.getResultIdsUnder()[j]);
-        dvt.ToolkitUtils.appendChildElem(elemM, elemMN);
-      }
-    }
-
-    elemMN = dvt.SvgShapeUtils.createElement('feMergeNode');
-    dvt.ToolkitUtils.setAttrNullNS(elemMN, 'in', 'SourceGraphic');
-    dvt.ToolkitUtils.appendChildElem(elemM, elemMN);
-
-    if (numResultsOver > 0) {
-      for (j = 0; j < numResultsOver; j++) {
-        elemMN = dvt.SvgShapeUtils.createElement('feMergeNode');
-        dvt.ToolkitUtils.setAttrNullNS(elemMN, 'in', filtContext.getResultIdsOver()[j]);
-        dvt.ToolkitUtils.appendChildElem(elemM, elemMN);
-      }
-    }
-
-    dvt.ToolkitUtils.appendChildElem(filt, elemM);
     return filt;
   };
 
@@ -6512,8 +6534,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6643,8 +6666,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6842,8 +6866,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -6873,32 +6898,10 @@ dvt = function () {
   DvtSvgShadowUtils.RADS_PER_DEGREE = Math.PI / 180;
 
   DvtSvgShadowUtils.createFilterPrimitives = function (filt, shadow, svgDisplayable, filtContext) {
-    var rgba = shadow._rgba;
-    var red = dvt.ColorUtils.getRed(rgba) / 255;
-    var green = dvt.ColorUtils.getGreen(rgba) / 255;
-    var blue = dvt.ColorUtils.getBlue(rgba) / 255;
-    var alpha = dvt.ColorUtils.getAlpha(rgba);
-    var strength = shadow._strength;
-    var origBlurX = shadow._blurX;
-    var origBlurY = shadow._blurY; //adjust blur values so that SVG behaves more like Flash
-    //: only calculate blur if blur is not set to 0
-
-    var blurX = 0;
-    var blurY = 0;
-
-    if (shadow._blurX > 0) {
-      blurX = Math.max(shadow._blurX / 3, 1);
-    }
-
-    if (shadow._blurY > 0) {
-      blurY = Math.max(shadow._blurY / 3, 1);
-    }
-
-    var distance = shadow._distance;
-    var angleDegs = shadow._angle;
-    var angleRads = angleDegs * DvtSvgShadowUtils.RADS_PER_DEGREE;
-    var dx = Math.cos(angleRads) * distance;
-    var dy = Math.sin(angleRads) * distance; //:
+    var dx = shadow._dx;
+    var dy = shadow._dy;
+    var stdDeviation = shadow._stdDeviation;
+    var floodColor = shadow._floodColor; //:
     //if we have a boundsRect, increase the size of the filter so
     //that the shadow has room to display outside the shape
 
@@ -6907,25 +6910,17 @@ dvt = function () {
     if (boundsRect) {
       //try to optimize based on how much of the shadow falls
       //on each side of the bounding box
-      var absDistance = Math.abs(distance); //use two times the blur by default, because using it directly
+      //use two times the blur by default, because using it directly
       //still clips the shadow
-
-      var padLeft = 2 * origBlurX;
-      var padRight = 2 * origBlurX;
-      var padTop = 2 * origBlurY;
-      var padBottom = 2 * origBlurY;
-
-      if (distance > 0) {
-        padLeft -= absDistance;
-        padTop -= absDistance;
-        padRight += absDistance;
-        padBottom += absDistance;
-      } else if (distance < 0) {
-        padLeft += absDistance;
-        padTop += absDistance;
-        padRight -= absDistance;
-        padBottom -= absDistance;
-      }
+      var padding = 2 * stdDeviation;
+      var padLeft = padding;
+      var padRight = padding;
+      var padTop = padding;
+      var padBottom = padding;
+      padLeft -= dx;
+      padTop -= dy;
+      padRight += dx;
+      padBottom += dy;
 
       if (padLeft < 0) {
         padLeft = 0;
@@ -6975,38 +6970,67 @@ dvt = function () {
       }
     }
 
-    var elemCM = dvt.SvgShapeUtils.createElement('feColorMatrix');
-    dvt.ToolkitUtils.setAttrNullNS(elemCM, 'in', 'SourceGraphic');
-    dvt.ToolkitUtils.setAttrNullNS(elemCM, 'type', 'matrix');
-    dvt.ToolkitUtils.setAttrNullNS(elemCM, 'values', '0 0 0 ' + red + ' 0 ' + '0 0 0 ' + green + ' 0 ' + '0 0 0 ' + blue + ' 0 ' + '0 0 0 ' + alpha * strength + ' 0'); //var elemCMResult = filtContext.createResultId('colorMatrix');
-    //dvt.ToolkitUtils.setAttrNullNS(elemCM, 'result', elemCMResult) ;
+    if (dvt.Agent.browser !== 'ie' && dvt.Agent.browser !== 'edge') {
+      /*
+       * <feDropShadow dx="<dx>" dy="<dy>" stdDeviation="<stdDeviation>" flood-color="<floodColor>"/>
+       */
+      var dropShadow = dvt.SvgShapeUtils.createElement('feDropShadow');
+      dvt.ToolkitUtils.setAttrNullNS(dropShadow, 'dx', dx);
+      dvt.ToolkitUtils.setAttrNullNS(dropShadow, 'dy', dy);
+      dvt.ToolkitUtils.setAttrNullNS(dropShadow, 'stdDeviation', stdDeviation);
+      dvt.ToolkitUtils.setAttrNullNS(dropShadow, 'flood-color', floodColor);
+      dvt.ToolkitUtils.appendChildElem(filt, dropShadow);
+    } else {
+      /*
+       * <feGaussianBlur stdDeviation="<stdDeviation>"/>
+       * <feOffset dx="<dx>" dy="<dy>" result="<offsetResult>"/>
+       * <feFlood flood-color="<floodColor>"/>
+       * <feComposite in2="<offsetResult>" operator="in"/>
+       * <feMerge>
+       *   <feMergeNode/>
+       *   <feMergeNode in="SourceGraphic"/>
+       * </feMerge>
+       */
+      var gaussianBlur = dvt.SvgShapeUtils.createElement('feGaussianBlur');
+      dvt.ToolkitUtils.setAttrNullNS(gaussianBlur, 'stdDeviation', stdDeviation);
+      var offset = dvt.SvgShapeUtils.createElement('feOffset');
+      var offsetResult = filtContext.createResultId('offset');
+      dvt.ToolkitUtils.setAttrNullNS(offset, 'dx', dx);
+      dvt.ToolkitUtils.setAttrNullNS(offset, 'dy', dy);
+      dvt.ToolkitUtils.setAttrNullNS(offset, 'result', offsetResult);
+      var flood = dvt.SvgShapeUtils.createElement('feFlood'); // IE doesn't support transparency in flood-color, need to split into color + opacity
 
-    var elemGB = dvt.SvgShapeUtils.createElement('feGaussianBlur'); //include both numbers for stdDev when necessary
+      var colorTokens = floodColor.split(/[\(,\)]/);
 
-    var stdDev = blurX;
+      if (colorTokens.length === 6) {
+        // ["rgba/hsla", "r/h", "g/s", "b/l", "a", ""]
+        dvt.ToolkitUtils.setAttrNullNS(flood, 'flood-color', "".concat(colorTokens[0].substr(0, 3), "(").concat(colorTokens[1], ",").concat(colorTokens[2], ",").concat(colorTokens[3], ")"));
+        dvt.ToolkitUtils.setAttrNullNS(flood, 'flood-opacity', colorTokens[4]);
+      } else {
+        dvt.ToolkitUtils.setAttrNullNS(flood, 'flood-color', floodColor);
+      }
 
-    if (blurX !== blurY) {
-      stdDev += ' ' + blurY;
+      var composite = dvt.SvgShapeUtils.createElement('feComposite');
+      dvt.ToolkitUtils.setAttrNullNS(composite, 'in2', offsetResult);
+      dvt.ToolkitUtils.setAttrNullNS(composite, 'operator', 'in');
+      var merge = dvt.SvgShapeUtils.createElement('feMerge');
+      var mergeNode1 = dvt.SvgShapeUtils.createElement('feMergeNode');
+      var mergeNode2 = dvt.SvgShapeUtils.createElement('feMergeNode');
+      dvt.ToolkitUtils.setAttrNullNS(mergeNode2, 'in', 'SourceGraphic');
+      dvt.ToolkitUtils.appendChildElem(merge, mergeNode1);
+      dvt.ToolkitUtils.appendChildElem(merge, mergeNode2);
+      dvt.ToolkitUtils.appendChildElem(filt, gaussianBlur);
+      dvt.ToolkitUtils.appendChildElem(filt, offset);
+      dvt.ToolkitUtils.appendChildElem(filt, flood);
+      dvt.ToolkitUtils.appendChildElem(filt, composite);
+      dvt.ToolkitUtils.appendChildElem(filt, merge);
     }
-
-    dvt.ToolkitUtils.setAttrNullNS(elemGB, 'stdDeviation', stdDev);
-    var elemGBResult = filtContext.createResultId('blur');
-    dvt.ToolkitUtils.setAttrNullNS(elemGB, 'result', elemGBResult);
-    var elemO = dvt.SvgShapeUtils.createElement('feOffset');
-    dvt.ToolkitUtils.setAttrNullNS(elemO, 'dx', dx);
-    dvt.ToolkitUtils.setAttrNullNS(elemO, 'dy', dy);
-    dvt.ToolkitUtils.setAttrNullNS(elemO, 'in', elemGBResult);
-    var elemOResult = filtContext.createResultId('offset');
-    dvt.ToolkitUtils.setAttrNullNS(elemO, 'result', elemOResult);
-    filtContext.getResultIdsUnder().push(elemOResult);
-    dvt.ToolkitUtils.appendChildElem(filt, elemCM);
-    dvt.ToolkitUtils.appendChildElem(filt, elemGB);
-    dvt.ToolkitUtils.appendChildElem(filt, elemO);
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -7025,8 +7049,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -7371,8 +7396,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -7403,8 +7429,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -7583,8 +7610,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -7656,8 +7684,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -7771,8 +7800,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -7832,8 +7862,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -7933,8 +7964,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -8045,8 +8077,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -8118,8 +8151,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -8299,8 +8333,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -8430,8 +8465,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2012 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2012 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -8583,8 +8619,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -8604,6 +8641,9 @@ dvt = function () {
   /** @private **/
 
   dvt.ToolkitUtils._IMAGE_URL_CACHE = {};
+  /** @private **/
+
+  dvt.ToolkitUtils._ICON_CACHE = {};
   /**
    * Creates and returns a new SVG document with the specified id.
    * @param {string} id The id for the new SVG document.
@@ -8748,6 +8788,22 @@ dvt = function () {
     return parent.appendChild(child); //@HTMLUpdateOK
   };
   /**
+   * Wrapper for removeChild method
+   * @param {Node} parent DOM element
+   * @param {Node} child DOM element to be removed from parent
+   * @return {Node|null} the removed element (child) or null if not removed
+   */
+
+
+  dvt.ToolkitUtils.removeChildElem = function (parent, child) {
+    // check if the child belongs to the parent
+    if (child.parentNode != parent) {
+      return null;
+    }
+
+    return parent.removeChild(child);
+  };
+  /**
    * Wrapper for getAttribute method
    * @param {object} elem DOM element
    * @param {string} name Attribute name to get
@@ -8792,7 +8848,7 @@ dvt = function () {
     } // Otherwise set the attribute
 
 
-    elem.setAttribute(name, value);
+    elem.setAttribute(name, value); // @HTMLUpdateOK
   };
   /**
    * Remove an attribute from a DOM element, using a null namespace.
@@ -8920,22 +8976,185 @@ dvt = function () {
 
 
   dvt.ToolkitUtils.getImageUrl = function (context, className) {
-    // If the className contains a dot, then it is actually a URL, so return immediately.
-    if (typeof $ == 'undefined' || className.indexOf('.') != -1) return className;
-    var url = dvt.ToolkitUtils._IMAGE_URL_CACHE[className];
-    if (url != null) return url; // Create a dummy CSS div, apply the class name, extract the background-image CSS, and then remove the dummy div.
+    // If classname is undefined or null, return the same and
+    // let the caller handle it.
+    // Also, if the className contains a dot, then it is actually a URL,
+    // so return immediately.
+    if (className == null || className.indexOf('.') !== -1) {
+      return className;
+    }
 
-    var cssDiv = $(document.createElement('div'));
-    cssDiv.css('display', 'none');
-    cssDiv.addClass(className);
-    var outerDiv = $(context.getContainer());
-    outerDiv.append(cssDiv); // @HTMLUpdateOK
+    var urlMapping = dvt.ToolkitUtils.getImageUrls(context, [className]);
+    return urlMapping[className];
+  };
+  /**
+   * Returns the image URL map for the specified list of classnames
+   * @param {dvt.Context} context
+   * @param {Array<string>} classNames
+   * @return {object} The map of the classname to image URL
+   */
 
-    url = cssDiv.css('background-image');
-    if (url && url.indexOf('url(') !== -1) url = url.slice(url.indexOf('url(') + 4, url.length - 1).replace(/["']/g, '');else url = className;
-    cssDiv.remove();
-    dvt.ToolkitUtils._IMAGE_URL_CACHE[className] = url;
-    return url;
+
+  dvt.ToolkitUtils.getImageUrls = function (context, classNames) {
+    // If the classname is empty, then return
+    if (classNames.length == 0) {
+      return {};
+    }
+
+    var urlMapping = {};
+    var cssContainer = document.createElement('div');
+    cssContainer.style.display = 'none'; // Create divs with the class names in the list and append it to the cssContainer
+
+    for (var i = 0; i < classNames.length; i++) {
+      var className = classNames[i];
+      var url, cssDiv; // Skip if the classname is null or undefined
+
+      if (className == null) {
+        continue;
+      } // If the className contains a dot, then it is actually a URL, so store and skip
+
+
+      if (className.indexOf('.') !== -1) {
+        urlMapping[className] = className;
+        continue;
+      }
+
+      url = dvt.ToolkitUtils._IMAGE_URL_CACHE[className]; // Check if the URL is already available in the cache
+
+      if (url != null) {
+        urlMapping[className] = url;
+        continue;
+      }
+
+      cssDiv = document.createElement('div');
+      cssDiv.className = className;
+      dvt.ToolkitUtils.appendChildElem(cssContainer, cssDiv);
+    } // No need to append the container and compute style when no
+    // child nodes are added.
+    // urlMapping can be returned immediately.
+
+
+    if (!cssContainer.hasChildNodes()) {
+      return urlMapping;
+    } // Append the cssContainer to the container of the context
+    // This invokes a forced Recalculate Styles by the browser
+    // Then the url can be extracted from the child divs
+
+
+    dvt.ToolkitUtils.appendChildElem(context.getContainer(), cssContainer); // Iterate through all the children of the cssContainer and
+    // extract the background-image url
+
+    Array.prototype.forEach.call(cssContainer.childNodes, function (cssDiv) {
+      var className = cssDiv.className;
+      var styleMap = window.getComputedStyle(cssDiv);
+      var url = styleMap.getPropertyValue('background-image'); // Sanitize the url
+
+      if (url && url.indexOf('url(') !== -1) {
+        url = url.slice(url.indexOf('url(') + 4, url.length - 1).replace(/["']/g, '');
+      } else {
+        url = className;
+      }
+
+      urlMapping[className] = url;
+      dvt.ToolkitUtils._IMAGE_URL_CACHE[className] = url;
+    });
+    dvt.ToolkitUtils.removeChildElem(context.getContainer(), cssContainer);
+    return urlMapping;
+  };
+  /**
+   * Returns the font icon style for the given classname
+   * @param {dvt.Context} context
+   * @param {string} className
+   * @return {object} An object with 'character' and 'transform' keys
+   */
+
+
+  dvt.ToolkitUtils.getIconStyle = function (context, className) {
+    return dvt.ToolkitUtils.getIconStyles(context, [className])[className];
+  };
+  /**
+   * Returns the font icon characters for the specified list of classnames
+   * @param {dvt.Context} context
+   * @param {Array<string>} classNames
+   * @return {object} A map from classnames to objects with 'character' and 'transform' keys
+   */
+
+
+  dvt.ToolkitUtils.getIconStyles = function (context, classNames) {
+    // If the classname is empty, then return
+    if (classNames.length == 0) {
+      return {};
+    }
+
+    var iconStyles = {};
+    var cssContainer = document.createElement('div');
+    var containerStyle = cssContainer.style; // can't use display:none because it will cause pseudoelements to be unavailable
+
+    containerStyle.width = '0px';
+    containerStyle.height = '0px';
+    containerStyle.visibility = 'hidden'; // Create divs with the class names in the list and append it to the cssContainer
+
+    for (var i = 0; i < classNames.length; i++) {
+      var className = classNames[i];
+      var iconStyle, cssDiv; // Skip if the classname is null or undefined
+
+      if (className == null) {
+        continue;
+      }
+
+      iconStyle = dvt.ToolkitUtils._ICON_CACHE[className]; // Check if the icon is already available in the cache
+
+      if (iconStyle != null) {
+        iconStyles[className] = iconStyle;
+        continue;
+      }
+
+      cssDiv = document.createElement('div');
+      cssDiv.className = className;
+      dvt.ToolkitUtils.appendChildElem(cssContainer, cssDiv);
+    } // No need to append the container and compute style when no
+    // child nodes are added.
+    // charMapping can be returned immediately.
+
+
+    if (!cssContainer.hasChildNodes()) {
+      return iconStyles;
+    } // Append the cssContainer to the container of the context
+    // This invokes a forced Recalculate Styles by the browser
+    // Then the char can be extracted from the child divs
+
+
+    dvt.ToolkitUtils.appendChildElem(context.getContainer(), cssContainer); // Iterate through all the children of the cssContainer and
+    // extract the content of the :before pseudoelement
+
+    Array.prototype.forEach.call(cssContainer.childNodes, function (cssDiv) {
+      var className = cssDiv.className;
+      var styleMap = window.getComputedStyle(cssDiv, ':before');
+      var content = styleMap.getPropertyValue('content'); // content is of the form '"c"' in all browsers except for safari where it's just 'c'
+
+      var char = content.charAt(content.charAt(0) === '"' ? 1 : 0);
+      var transform = styleMap.getPropertyValue('transform'); // should be either 'none' or 'matrix(a, b, c, d, tx, ty)'
+
+      var matrix;
+
+      if (transform === 'none') {
+        matrix = new dvt.Matrix();
+      } else {
+        var args = transform.match(/matrix\((.*)\)/)[1].split(', ').map(function (num) {
+          return Number(num);
+        });
+        matrix = _construct(dvt.Matrix, _toConsumableArray(args));
+      }
+
+      var iconStyle = {
+        character: char,
+        transform: matrix
+      };
+      iconStyles[className] = iconStyle;
+      dvt.ToolkitUtils._ICON_CACHE[className] = iconStyle;
+    });
+    dvt.ToolkitUtils.removeChildElem(context.getContainer(), cssContainer);
+    return iconStyles;
   };
   /**
    * Helper method that adds a class to a DOM element if it is not already added
@@ -9029,8 +9248,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -9181,8 +9401,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -9337,8 +9558,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -9358,8 +9580,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -9442,8 +9665,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -9495,8 +9719,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -9703,8 +9928,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -9795,8 +10021,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -9907,8 +10134,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -9954,8 +10182,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -10987,8 +11216,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -11096,8 +11326,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -11145,8 +11376,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -11717,8 +11949,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -11946,8 +12179,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -12012,8 +12246,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -12786,8 +13021,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -12892,8 +13128,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -13241,6 +13478,8 @@ dvt = function () {
         return -cachedDims.y;
       } else if (valign == dvt.OutputText.V_ALIGN_MIDDLE) {
         return -cachedDims.y - cachedDims.h / 2;
+      } else if (valign == dvt.OutputText.V_ALIGN_CENTRAL) {
+        return -cachedDims.y / 2;
       } else if (valign == dvt.OutputText.V_ALIGN_BOTTOM) {
         return -cachedDims.y - cachedDims.h;
       }
@@ -13313,9 +13552,9 @@ dvt = function () {
 
 
   dvt.TextUtils.getOptimalFontSize = function (context, textString, cssStyle, bounds) {
-    cssStyle = cssStyle ? cssStyle.clone() : new dvt.CSSStyle();
+    cssStyle = cssStyle ? cssStyle.clone() : new dvt.CSSStyle(); // Round the initial guess so that we're more likely to get cache hits on subsequent calls
 
-    for (var i = Math.max(Math.min(bounds.w / textString.length, bounds.h / 2), 9); i < 51; i += 1) {
+    for (var i = Math.max(Math.round(Math.min(bounds.w / textString.length, bounds.h / 2)), 9); i < 51; i += 1) {
       cssStyle.setFontSize('font-size', i + 'px', context);
       var textDim = dvt.TextUtils.getTextStringDimensions(context, textString, cssStyle);
       if (textDim.w > bounds.w || textDim.h > bounds.h) return Math.min(i - 1, 50) + 'px';
@@ -13353,8 +13592,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -13571,8 +13811,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -13611,7 +13852,8 @@ dvt = function () {
 
   dvt.Displayable.prototype.Init = function (context, type, id) {
     this._context = context;
-    this._elem = dvt.SvgShapeUtils.createElement(type);
+    this._elem = dvt.SvgShapeUtils.createElement(type); // @HTMLUpdateOK
+
     this._elem._obj = this; //  pointer back to this object
 
     this.setId(id); // TODO  Removal of null initialization routines
@@ -14365,8 +14607,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
   // File containing all draw effect (filter) related functions defined on dvt.Displayable.
@@ -14417,8 +14660,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
   // File containing all event listener related functions defined on dvt.Displayable.
@@ -14752,8 +14996,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
   // File containing all paint (fill and stroke) related functions defined on dvt.Displayable.
@@ -14990,8 +15235,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
   // File containing all transformation related functions defined on dvt.Displayable.
@@ -15260,8 +15506,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -15791,8 +16038,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -15837,7 +16085,7 @@ dvt = function () {
   };
   /**
    * Disables text selection.
-   * Note: Originally added for . 
+   * Note: Originally added for .
    * It is also needed to support 'grabbing' cursor on Safari at panning event.
    * @param {SVGElement} target
    */
@@ -15850,8 +16098,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -16314,8 +16563,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -16380,8 +16630,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -16453,8 +16704,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2011 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -16607,8 +16859,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -16800,8 +17053,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -17457,8 +17711,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -17703,7 +17958,7 @@ dvt = function () {
 
 
   dvt.ImageMarker.prototype._setSource = function (src) {
-    dvt.ToolkitUtils.setHref(this._elem, src);
+    dvt.ToolkitUtils.setHref(this._elem, dvt.ToolkitUtils.getImageUrl(this.getCtx(), src));
   };
   /**
    * Set the image state array
@@ -17916,8 +18171,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -18025,8 +18281,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -18075,8 +18332,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -18117,8 +18375,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -18452,8 +18711,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -18501,6 +18761,9 @@ dvt = function () {
   /** @const */
 
   dvt.OutputText.V_ALIGN_MIDDLE = 'middle';
+  /** @const */
+
+  dvt.OutputText.V_ALIGN_CENTRAL = 'central';
   /** @const */
 
   dvt.OutputText.V_ALIGN_BOTTOM = 'bottom';
@@ -18568,7 +18831,7 @@ dvt = function () {
     var textNode = this.getElem().firstChild;
 
     if (textNode !== null) {
-      textNode.nodeValue = textString; //@HTMLUpdateOK
+      textNode.nodeValue = textString;
     } else {
       // Otherwise create it
       textNode = document.createTextNode(textString);
@@ -18711,7 +18974,7 @@ dvt = function () {
 
 
   dvt.OutputText.prototype.setVertAlignment = function (align) {
-    if (align == dvt.OutputText.V_ALIGN_TOP) this.alignTop();else if (align == dvt.OutputText.V_ALIGN_MIDDLE) this.alignMiddle();else if (align == dvt.OutputText.V_ALIGN_BOTTOM) this.alignBottom();else if (align == dvt.OutputText.V_ALIGN_AUTO) this.alignAuto();
+    if (align == dvt.OutputText.V_ALIGN_TOP) this.alignTop();else if (align == dvt.OutputText.V_ALIGN_MIDDLE) this.alignMiddle();else if (align == dvt.OutputText.V_ALIGN_CENTRAL) this.alignCentral();else if (align == dvt.OutputText.V_ALIGN_BOTTOM) this.alignBottom();else if (align == dvt.OutputText.V_ALIGN_AUTO) this.alignAuto();
   };
   /**
    * Aligns the left side of the text to the x coordinate. Note: This does not always correspond to what the browser
@@ -18794,6 +19057,20 @@ dvt = function () {
     if (dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge') {
       this._setBaseline(true);
     } else this.SetDominantBaselineAttr('middle');
+  };
+  /**
+   * Aligns the center of the text (above the baseline) to the y coordinate.
+   */
+
+
+  dvt.OutputText.prototype.alignCentral = function () {
+    // No change in value, return
+    if (this._vertAlign == dvt.OutputText.V_ALIGN_CENTRAL) return;else if (this._vertAlign == dvt.OutputText.V_ALIGN_BOTTOM && dvt.Agent.browser === 'safari') this._setBaseline(false);
+    this._vertAlign = dvt.OutputText.V_ALIGN_CENTRAL; // - NODE RENDERED INCORRECTLY IN IE9+
+
+    if (dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge') {
+      this._setBaseline(true);
+    } else this.SetDominantBaselineAttr('central');
   };
   /**
    * Aligns the bottom of the text to the y coordinate.
@@ -18929,6 +19206,8 @@ dvt = function () {
             return .8 * size;
           } else if (valign == dvt.OutputText.V_ALIGN_MIDDLE) {
             return .3 * size;
+          } else if (valign == dvt.OutputText.V_ALIGN_CENTRAL) {
+            return .4 * size;
           } else if (valign == dvt.OutputText.V_ALIGN_BOTTOM) {
             return -.2 * size;
           }
@@ -19037,7 +19316,7 @@ dvt = function () {
     // also because browsers return inconsistently calculated dimensions based on alignment.
 
     if (hAlign === dvt.OutputText.H_ALIGN_RIGHT) localDims.x -= localDims.w;else if (hAlign === dvt.OutputText.H_ALIGN_CENTER) localDims.x -= localDims.w / 2;
-    if (vAlign === dvt.OutputText.V_ALIGN_TOP) localDims.y = this.getY();else if (vAlign === dvt.OutputText.V_ALIGN_BOTTOM) localDims.y = this.getY() - localDims.h;else if (vAlign === dvt.OutputText.V_ALIGN_MIDDLE) localDims.y = this.getY() - localDims.h / 2;else if (vAlign === dvt.OutputText.V_ALIGN_AUTO) localDims.y += this.getY(); // Transform to the target coord space and return
+    if (vAlign === dvt.OutputText.V_ALIGN_TOP) localDims.y = this.getY();else if (vAlign === dvt.OutputText.V_ALIGN_BOTTOM) localDims.y = this.getY() - localDims.h;else if (vAlign === dvt.OutputText.V_ALIGN_MIDDLE) localDims.y = this.getY() - localDims.h / 2;else if (vAlign === dvt.OutputText.V_ALIGN_CENTRAL) localDims.y = this.getY() - localDims.h * .4;else if (vAlign === dvt.OutputText.V_ALIGN_AUTO) localDims.y += this.getY(); // Transform to the target coord space and return
 
     return !targetCoordinateSpace || targetCoordinateSpace === this ? localDims : this.ConvertCoordSpaceRect(localDims, targetCoordinateSpace);
   };
@@ -19066,9 +19345,74 @@ dvt = function () {
     return dvt.Agent.isRightToLeft(this.getCtx());
   };
   /**
+   * @param {dvt.Context} ctx
+   * @param {object} iconOptions supports keys style, size, pos
+   */
+
+
+  dvt.OutputText.createIcon = function () {
+    // cache in closure scope
+    var baselineCache = {};
+
+    function getBaseline(ctx, size, character) {
+      if (!baselineCache[size]) {
+        var icon = new dvt.OutputText(ctx, character);
+        icon.setClassName('oj-fwk-icon oj-dvt-icon');
+        icon.getElem().style.fontSize = size + 'px';
+        icon.alignAuto(); // Add to the stage to obtain correct measurements
+
+        var stage = ctx.getStage();
+        stage.addChild(icon);
+        var dims = icon.GetSvgDimensions();
+        stage.removeChild(icon);
+        baselineCache[size] = -dims.y;
+      }
+
+      return baselineCache[size];
+    }
+
+    return function (ctx, iconOptions) {
+      // Icons might have their own transforms (e.g. rotate, scale) so we can't use attribute-based positioning
+      // Additionally, dvt.OutputText might have its own transform to deal with browser-specific text alignment
+      // First allow dvt.OutputText to set any alignment-based transform
+      // Then apply transform from the iconStyle
+      // Finally apply the positioning transform
+      // Note that this returned icon must be treated as immutable as mutation could lose transform information
+      var style = iconOptions.style;
+      var size = iconOptions.size;
+      var pos = iconOptions.pos || {
+        x: size / 2,
+        y: size / 2
+      };
+      var icon = new dvt.OutputText(ctx, style.character);
+      icon.setClassName('oj-fwk-icon oj-dvt-icon');
+      icon.getElem().style.fontSize = size + 'px';
+
+      if (dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge') {
+        // current positioned top, left
+        // reset any x alignment, all positioning will be done in the matrix
+        icon.SetSvgProperty('x', 0, 0); // Next line should position exactly, but may return incorrect number if icon font hasn't been loaded yet
+        // approximate for IE since the font loading check isn't supported
+
+        var baselineHeight = dvt.Agent.browser === 'ie' ? .8 * size : getBaseline(ctx, size, style.character); // call superclass.setMatrix, browser-specific logic is already being handled here
+
+        var isRTL = dvt.Agent.isRightToLeft(ctx);
+        var baselineTranslation = new dvt.Matrix(1, 0, 0, 1, isRTL ? size / 2 : -size / 2, baselineHeight - size / 2);
+        dvt.OutputText.superclass.setMatrix.call(icon, baselineTranslation.concat(style.transform).translate(pos.x, pos.y));
+      } else {
+        icon.alignCenter();
+        icon.alignCentral();
+        icon.setMatrix(style.transform.translate(pos.x, pos.y));
+      }
+
+      return icon;
+    };
+  }();
+  /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -19518,7 +19862,7 @@ dvt = function () {
     else if ((dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge') && vAlign == dvt.OutputText.V_ALIGN_BOTTOM) yAdjustment = -fontSize * 0.4; // IE, vAlign = bottom, rect must be shifted down a bit
 
     var deltaH = this.GetTextDimensionsForRealign(bboxDims);
-    if (vAlign == dvt.OutputText.V_ALIGN_TOP) this._backgroundRect.setY(this.getY());else if (vAlign == dvt.OutputText.V_ALIGN_MIDDLE) this._backgroundRect.setY(this.getY() - deltaH * 0.5 - yAdjustment);else if (vAlign == dvt.OutputText.V_ALIGN_BOTTOM) this._backgroundRect.setY(this.getY() - deltaH - yAdjustment);else if (vAlign == dvt.OutputText.V_ALIGN_AUTO) this._backgroundRect.setY(bboxDims.y); // width may need to be reset (rotated labels ended up extra long)
+    if (vAlign == dvt.OutputText.V_ALIGN_TOP) this._backgroundRect.setY(this.getY());else if (vAlign == dvt.OutputText.V_ALIGN_MIDDLE) this._backgroundRect.setY(this.getY() - deltaH * 0.5 - yAdjustment);else if (vAlign == dvt.OutputText.V_ALIGN_CENTRAL) this._backgroundRect.setY(this.getY() - deltaH * 0.5);else if (vAlign == dvt.OutputText.V_ALIGN_BOTTOM) this._backgroundRect.setY(this.getY() - deltaH - yAdjustment);else if (vAlign == dvt.OutputText.V_ALIGN_AUTO) this._backgroundRect.setY(bboxDims.y); // width may need to be reset (rotated labels ended up extra long)
 
     this._backgroundRect.setWidth(bboxDims.w + 2 * padding);
 
@@ -19587,8 +19931,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -19634,6 +19979,9 @@ dvt = function () {
   /** @const */
 
   dvt.MultilineText.V_ALIGN_MIDDLE = 'middle';
+  /** @const */
+
+  dvt.MultilineText.V_ALIGN_CENTRAL = 'central';
   /** @const */
 
   dvt.MultilineText.V_ALIGN_BOTTOM = 'bottom';
@@ -19958,6 +20306,24 @@ dvt = function () {
     return;
   };
   /**
+   * Aligns the center of the full text object (above the baseline) to the y coordinate.
+   */
+
+
+  dvt.MultilineText.prototype.alignCentral = function () {
+    // No change in value, return
+    if (this._vertAlign == dvt.MultilineText.V_ALIGN_CENTRAL) return;
+    this._vertAlign = dvt.MultilineText.V_ALIGN_CENTRAL;
+
+    this._alignVerticalText();
+
+    this._getTextLines().forEach(function (entry) {
+      entry.alignCentral();
+    });
+
+    return;
+  };
+  /**
    *  Aligns the bottom side of the full text object to the y coordinate.
    */
 
@@ -19993,7 +20359,7 @@ dvt = function () {
 
     for (var i = 0; i < textLines.length; i++) {
       var entry = textLines[i];
-      if (this._vertAlign == dvt.MultilineText.V_ALIGN_TOP) adjustment = lineHeight * i;else if (this._vertAlign == dvt.MultilineText.V_ALIGN_MIDDLE) {
+      if (this._vertAlign == dvt.MultilineText.V_ALIGN_TOP) adjustment = lineHeight * i;else if (this._vertAlign == dvt.MultilineText.V_ALIGN_MIDDLE || this.vertAlign == dvt.MultilineText.V_ALIGN_CENTRAL) {
         var range = lineHeight * (lineCount - 1);
         adjustment = lineHeight * i - range / 2;
       } else if (this._vertAlign == dvt.MultilineText.V_ALIGN_BOTTOM) adjustment = -lineHeight * (lineCount - i - 1);
@@ -20230,7 +20596,7 @@ dvt = function () {
           if (availHeight < lineSpace + lineHeight) {
             this._bTruncated = true;
             return true;
-          } // Update pointers to last truncated line 
+          } // Update pointers to last truncated line
 
 
           lastTruncatedString = currentLine.getTextString();
@@ -20398,12 +20764,13 @@ dvt = function () {
 
 
   dvt.MultilineText.prototype.setVertAlignment = function (align) {
-    if (align == dvt.MultilineText.V_ALIGN_TOP) this.alignTop();else if (align == dvt.MultilineText.V_ALIGN_MIDDLE) this.alignMiddle();else if (align == dvt.MultilineText.V_ALIGN_BOTTOM) this.alignBottom();
+    if (align == dvt.MultilineText.V_ALIGN_TOP) this.alignTop();else if (align == dvt.MultilineText.V_ALIGN_MIDDLE) this.alignMiddle();else if (align == dvt.MultilineText.V_ALIGN_CENTRAL) this.alignCentral();else if (align == dvt.MultilineText.V_ALIGN_BOTTOM) this.alignBottom();
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -20560,8 +20927,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -20634,8 +21002,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -20712,8 +21081,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -20781,8 +21151,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -21020,8 +21391,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -22245,8 +22617,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -22603,8 +22976,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -22776,8 +23150,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2016 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2016 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
   // DvtBaseComponentCache.js
@@ -22934,8 +23309,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -23210,8 +23586,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -23539,8 +23916,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -23750,8 +24128,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) 2008 %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -24282,8 +24661,317 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2008 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
+
+  /**
+   * dvt.IconButton
+   * @param {dvt.Context} context
+   * @param {'outlined'|'borderless'} chroming
+   * @param {object} iconOptions supports keys style, size, pos
+   * @param {dvt.Shape} background (optional)
+   * @param {string} id
+   * @param {object=} callback
+   * @param {object=} callbackObj
+   * @constructor
+   */
+
+
+  dvt.IconButton = function (context, chroming, iconOptions, background, id, callback, callbackObj) {
+    this.Init(context, chroming, iconOptions, background, id, callback, callbackObj);
+  };
+
+  dvt.Obj.createSubclass(dvt.IconButton, dvt.Container);
+  /**
+   * Initialization method called by the constructor
+   *
+   * @protected
+   *
+   * @param {dvt.Context} context  Platform specific context object
+   * @param {'outlined'|'borderless'} chroming
+   * @param {object} iconOptions supports keys style, size, pos
+   * @param {dvt.Shape} background (optional)
+   * @param {string} id   The id for this object
+   * @param {function} callback   The optional function that should be called on click event
+   * @param {object} callbackObj  The optional object instance on which the callback function is defined
+   *
+   */
+
+  dvt.IconButton.prototype.Init = function (context, chroming, iconOptions, background, id, callback, callbackObj) {
+    dvt.IconButton.superclass.Init.call(this, context, null, id);
+    this.setCallback(callback, callbackObj);
+    this._chroming = chroming;
+    if (!background) background = this._createDefaultBackground(iconOptions.size);
+    var solidBackground = background.copyShape();
+    solidBackground.setClassName('oj-dvt-button-background');
+    this.addChild(solidBackground);
+    this.addChild(background);
+    var icon = dvt.OutputText.createIcon(this.getCtx(), iconOptions);
+    this.addChild(icon);
+    this._tooltip = null;
+    this._bToggleEnabled = false;
+    this._bToggled = false;
+    this._bMouseOver = false;
+    this._bMouseDown = false;
+    this.setEnabled(true); // enable mouse events
+  };
+
+  dvt.IconButton.prototype._createDefaultBackground = function (iconSize) {
+    var padding = 4;
+    var cmd = dvt.PathUtils.roundedRectangle(-padding, -padding, iconSize + 2 * padding, iconSize + 2 * padding, padding, padding, padding, padding);
+    var background = new dvt.Path(this.getCtx(), cmd); // don't use pixel hinting on desktop bc the corners look broken
+
+    background.setPixelHinting(dvt.Agent.getDevicePixelRatio() > 1);
+    return background;
+  };
+  /**
+    *  Returns the enabled state of this button
+    *  @return {boolean}  true if the button is enabled,, else false.
+    */
+
+
+  dvt.IconButton.prototype.isEnabled = function () {
+    return this._enabled;
+  };
+  /**
+    *   Enable/disable the button
+    */
+
+
+  dvt.IconButton.prototype.setEnabled = function (bEnabled) {
+    if (this._enabled != bEnabled) {
+      this._enabled = bEnabled;
+      var isTouchDevice = dvt.Agent.isTouchDevice();
+      var clickEvent = isTouchDevice ? dvt.TouchEvent.TOUCHSTART : dvt.MouseEvent.CLICK; // Set passive: false for touch start event, so that preventDefault can be called on the event.
+
+      var clickEventOptions = isTouchDevice ? {
+        capture: false,
+        passive: false
+      } : {
+        capture: false
+      };
+
+      if (bEnabled) {
+        this.addEvtListener(dvt.MouseEvent.MOUSEOVER, this.OnMouseOver, false, this);
+        this.addEvtListener(dvt.MouseEvent.MOUSEOUT, this.OnMouseOut, false, this);
+        this.addEvtListener(dvt.MouseEvent.MOUSEDOWN, this.OnMouseDown, false, this);
+        this.addEvtListener(dvt.MouseEvent.MOUSEUP, this.OnMouseUp, false, this);
+        this.addEvtListener(clickEvent, this.OnClick, clickEventOptions, this);
+        this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
+      } else {
+        this.removeEvtListener(dvt.MouseEvent.MOUSEOVER, this.OnMouseOver, false, this);
+        this.removeEvtListener(dvt.MouseEvent.MOUSEOUT, this.OnMouseOut, false, this);
+        this.removeEvtListener(dvt.MouseEvent.MOUSEDOWN, this.OnMouseDown, false, this);
+        this.removeEvtListener(dvt.MouseEvent.MOUSEUP, this.OnMouseUp, false, this);
+        this.removeEvtListener(clickEvent, this.OnClick, clickEventOptions, this);
+        this.setCursor(null);
+        this._bMouseOver = false;
+        this._bMouseDown = false;
+      }
+
+      this._updateClasses();
+    }
+  };
+  /**
+   * Mouse over handler
+   * @protected
+   * @param {dvt.MouseEvent} event The dispatched event to be processed by the object
+   */
+
+
+  dvt.IconButton.prototype.OnMouseOver = function (event) {
+    this._bMouseOver = true;
+
+    this._updateClasses();
+  };
+  /**
+   * Mouse out handler
+   * @protected
+   * @param {dvt.MouseEvent} event The dispatched event to be processed by the object
+   */
+
+
+  dvt.IconButton.prototype.OnMouseOut = function (event) {
+    this._bMouseOver = false;
+
+    this._updateClasses();
+  };
+  /**
+   * Mouse down handler
+   * @protected
+   * @param {dvt.MouseEvent} event The dispatched event to be processed by the object
+   */
+
+
+  dvt.IconButton.prototype.OnMouseDown = function (event) {
+    this._bMouseDown = true;
+
+    this._updateClasses();
+  };
+  /**
+   * Mouse up handler
+   * @protected
+   * @param {dvt.MouseEvent} event The dispatched event to be processed by the object
+   */
+
+
+  dvt.IconButton.prototype.OnMouseUp = function (event) {
+    this._bMouseDown = false;
+
+    this._updateClasses();
+  };
+  /**
+   * @protected
+   * Click Handler
+   * @param {dvt.MouseEvent} event The dispatched event to be processed by the object
+   */
+
+
+  dvt.IconButton.prototype.OnClick = function (event) {
+    if (this._bToggleEnabled) {
+      this.setToggled(!this._bToggled);
+    } // Call the callback
+
+
+    if (this._callback) {
+      this._callback.call(this._callbackObj, event, this);
+
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  };
+  /**
+   * Set the callback function handler
+   *
+   * @public
+   *
+   * @param {function} callback    The function that should be called on click event
+   * @param {object} callbackObj   The object instance on which the callback function is defined
+   */
+
+
+  dvt.IconButton.prototype.setCallback = function (callback, callbackObj) {
+    this._callback = callback;
+    this._callbackObj = callbackObj;
+  };
+
+  dvt.IconButton.prototype.setTooltip = function (tooltip) {
+    this._tooltip = tooltip; // Assume that if using dvt.IconButton's tooltip getter/setter that we should set wai-aria properties
+    // Otherwise, assume that button owner has separate logical object that will handle accessibility
+
+    if (tooltip) {
+      this.setAriaRole('button');
+      this.setAriaProperty('label', tooltip);
+    }
+  };
+
+  dvt.IconButton.prototype.getTooltip = function () {
+    return this._tooltip;
+  };
+
+  dvt.IconButton.prototype.setToggleEnabled = function (bToggleEnabled) {
+    this._bToggleEnabled = bToggleEnabled;
+
+    this._updateClasses();
+  };
+
+  dvt.IconButton.prototype.setToggled = function (bToggled) {
+    if (this._bToggleEnabled) {
+      this._bToggled = bToggled;
+
+      this._updateClasses();
+    }
+  };
+
+  dvt.IconButton.prototype.isToggled = function () {
+    return this._bToggled;
+  };
+  /**
+   * Show keyboard focus
+   */
+
+
+  dvt.IconButton.prototype.showKeyboardFocusEffect = function () {
+    if (!this._keyboardFocusEffect) this._keyboardFocusEffect = this.CreateKeyboardFocusEffect();
+
+    this._keyboardFocusEffect.show();
+
+    this._isShowingKeyboardFocusEffect = true;
+    this.getCtx().setActiveElement(this);
+  };
+  /**
+   * Hide keyboard focus
+   */
+
+
+  dvt.IconButton.prototype.hideKeyboardFocusEffect = function () {
+    if (this._keyboardFocusEffect) this._keyboardFocusEffect.hide();
+    this._isShowingKeyboardFocusEffect = false;
+  };
+  /**
+   * Returns true if this navigable is showing its keyboard focus effect
+   * @return {boolean} true if showing keyboard focus effect
+   */
+
+
+  dvt.IconButton.prototype.isShowingKeyboardFocusEffect = function () {
+    return this._isShowingKeyboardFocusEffect;
+  };
+  /**
+   * @protected
+   * Creates keyboard focus effect for the component
+   * @return {dvt.KeyboardFocusEffect} keyboard focus effect
+   */
+
+
+  dvt.IconButton.prototype.CreateKeyboardFocusEffect = function () {
+    return new dvt.KeyboardFocusEffect(this.getCtx(), this, this.getDimensions(), null, null, true);
+  };
+  /**
+   * Handle keyboard event
+   * @param {dvt.KeyboardEvent} event keyboard event
+   */
+
+
+  dvt.IconButton.prototype.handleKeyboardEvent = function (event) {
+    var keyCode = event.keyCode;
+
+    if (keyCode == dvt.KeyboardEvent.ENTER || keyCode == dvt.KeyboardEvent.SPACE) {
+      // Call the callback
+      if (this._callback) {
+        this._callback.call(this._callbackObj, event, this);
+
+        event.stopPropagation();
+        event.preventDefault();
+      }
+    }
+  };
+
+  dvt.IconButton.prototype._updateClasses = function () {
+    var elem = this.getElem();
+    var disabled = false;
+    var hover = false;
+    var active = false;
+    var selected = this._bToggleEnabled && this._bToggled;
+    var unselected = this._bToggleEnabled && !this._bToggled;
+
+    if (this._enabled) {
+      hover = this._bMouseOver;
+      active = this._bMouseDown;
+    } else {
+      disabled = true;
+    }
+
+    this.setClassName("oj-dvt-button-".concat(this._chroming).concat(selected ? ' oj-selected' : '').concat(unselected ? ' oj-unselected' : '').concat(disabled ? ' oj-disabled' : '').concat(hover ? ' oj-hover' : '').concat(active ? ' oj-active' : ''));
+  };
+  /**
+   * @license
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -24291,22 +24979,20 @@ dvt = function () {
    * dvt.TransientButton. This adds listeners that hide and show this button based
    * on focus, blur, mouse over, and mouse out events on the current stage.
    * @param {dvt.Context} context The rendering context.
-   * @param {dvt.Displayable} upState The displayable representing this button's enabled state.
-   * @param {dvt.Displayable} overState The displayable representing this button's hover state.
-   * @param {dvt.Displayable} downState The displayable representing this button's active state.
-   * @param {dvt.Displayable} disabledState The displayable representing this button's disabled state.
-   * @param {string} callback The function that should be called to when this button is activated.
+   * @param {object} iconStyle the icon style
+   * @param {object} iconSize the icon size
+   * @param {function} callback The function that should be called to when this button is activated.
    * @param {object} callbackObj The object instance on which the callback function is defined.
    * @extends {dvt.Button}
    * @constructor
    */
 
 
-  dvt.TransientButton = function (context, upState, overState, downState, disabledState, callback, callbackObj) {
-    this.Init(context, upState, overState, downState, disabledState, callback, callbackObj);
+  dvt.TransientButton = function (context, iconStyle, iconSize, callback, callbackObj) {
+    this.Init(context, iconStyle, iconSize, callback, callbackObj);
   };
 
-  dvt.Obj.createSubclass(dvt.TransientButton, dvt.Button);
+  dvt.Obj.createSubclass(dvt.TransientButton, dvt.IconButton);
   /**
    * Attribute for button radius.
    * @const
@@ -24317,17 +25003,24 @@ dvt = function () {
   /**
    * Helper method called by the constructor to initialize this object.
    * @param {dvt.Context} context The rendering context.
-   * @param {dvt.Displayable} upState The displayable representing this button's enabled state.
-   * @param {dvt.Displayable} overState The displayable representing this button's hover state.
-   * @param {dvt.Displayable} downState The displayable representing this button's active state.
-   * @param {dvt.Displayable} disabledState The displayable representing this button's disabled state.
-   * @param {string} callback The function that should be called to when this button is activated.
+   * @param {object} iconStyle the icon style
+   * @param {object} iconSize the icon size
+   * @param {function} callback The function that should be called to when this button is activated.
    * @param {object} callbackObj The object instance on which the callback function is defined.
    * @protected
    */
 
-  dvt.TransientButton.prototype.Init = function (context, upState, overState, downState, disabledState, callback, callbackObj) {
-    dvt.TransientButton.superclass.Init.call(this, context, upState, overState, downState, disabledState, null, callbackObj, callback);
+  dvt.TransientButton.prototype.Init = function (context, iconStyle, iconSize, callback, callbackObj) {
+    var radius = dvt.TransientButton._DEFAULT_RADIUS;
+    var background = new dvt.Circle(context, radius, radius, radius);
+    dvt.TransientButton.superclass.Init.call(this, context, 'outlined', {
+      style: iconStyle,
+      size: iconSize,
+      pos: {
+        x: radius,
+        y: radius
+      }
+    }, background, null, callbackObj, callback);
     var stage = context.getStage(); // Need to set 'useCapture' to true for focus/blur event listeners since dvt.EventManager calls 'stopPropagation'
 
     stage.addEvtListener(DvtFocusEvent.FOCUS, this._onFocus, true, this);
@@ -24343,28 +25036,6 @@ dvt = function () {
         stage.addEvtListener(dvt.MouseEvent.MOUSEOUT, this._onMouseOut, false, this);
       }
     }
-  };
-  /**
-   * Creates and returns the dvt.Circle representing the button's given state.
-   * @param {dvt.Context} context The rendering context.
-   * @param {string} stateURL The string URL of the button's state.
-   * @param {number} imageWidth The width of the image.
-   * @param {number} imageHeight The height of the image.
-   * @param {string} fillColor The fill color of the button.
-   * @param {string} borderColor The border color of the button.
-   * @return {dvt.Circle}
-   */
-
-
-  dvt.TransientButton.getStateFromURL = function (context, stateURL, imageWidth, imageHeight, fillColor, borderColor) {
-    var radius = dvt.TransientButton._DEFAULT_RADIUS;
-    var halfRadius = radius / 2;
-    var background = new dvt.Circle(context, radius, radius, radius);
-    background.setSolidFill(fillColor);
-    background.setSolidStroke(borderColor);
-    var image = new dvt.Image(context, stateURL, halfRadius, halfRadius, imageWidth, imageHeight);
-    background.addChild(image);
-    return background;
   };
   /**
    * Sets this button as visible.
@@ -24462,8 +25133,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -24511,8 +25183,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -24586,8 +25259,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -24847,8 +25521,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -24954,8 +25629,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -25227,8 +25903,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -25651,8 +26328,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -25775,9 +26453,12 @@ dvt = function () {
         this._marquee.setHeight(0);
       }
 
-      this._marquee.setStroke(this._stroke);
+      this._marquee.setClassName('oj-dvt-marquee');
 
-      this._marquee.setFill(this._fill);
+      this._marquee.setStyle({
+        stroke: this._stroke.getColor(),
+        fill: this._fill.getColor()
+      });
 
       this._marquee.setPixelHinting(true);
 
@@ -25915,8 +26596,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -26217,8 +26899,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -26337,7 +27020,7 @@ dvt = function () {
     } else if (type == 'out') {
       // Process rollout if a highlight has occurred, or after the rollout delay has elapsed.
       var rolloutDelay = this._bHighlightMode ? this._hoverDelay : dvt.CategoryRolloverHandler._ROLLOUT_TIMEOUT;
-      this._hoverDelayCallback = setTimeout(this.GetRolloutCallback(event, objs, bAnyMatched, customAlpha), rolloutDelay);
+      this._hoverDelayCallback = setTimeout(this.GetRolloutCallback(event, objs, bAnyMatched, customAlpha), rolloutDelay); //@HTMLUpdateOK
     }
   };
   /**
@@ -26500,8 +27183,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -27758,13 +28442,11 @@ dvt = function () {
         // 1) If a tap, show clear selection only for multiple selection when more than 1 is selected
         // 2) If a touch and hold + release, don't attempt a clear or perform a  clear
 
-        if (this.isClearMenuAllowed(dlo)) {
-          var selType = selectionHandler.getType();
+        var selType = selectionHandler.getType();
 
-          if (selType == dvt.SelectionHandler.TYPE_MULTIPLE) {
-            if (selectionHandler.getSelectedCount() > 1) {
-              showClearDialog = true;
-            }
+        if (selType == dvt.SelectionHandler.TYPE_MULTIPLE) {
+          if (selectionHandler.getSelectedCount() > 1) {
+            showClearDialog = true;
           }
         }
 
@@ -27994,15 +28676,6 @@ dvt = function () {
     this.addActionTooltipMenuItem(dvt.EventManager.CLEAR_SELECTION_ACTION_TYPE, this.GetClearSelectionText(), this._actionTooltipClearListener, this); // Override color to always be gray
 
     if (actionTooltip) actionTooltip.setTooltipBorderColor(DvtCustomTooltip.DEFAULT_BORDER_COLOR);
-  };
-  /**
-   * @param {object} logicalObject The logical object to check if clear menu is allowed
-   * @return {boolean}
-   */
-
-
-  dvt.EventManager.prototype.isClearMenuAllowed = function (logicalObject) {
-    return true;
   }; // Add a menu item to the action tooltip
 
 
@@ -28959,8 +29632,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -29157,8 +29831,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
   // Custom tooltip event handler
@@ -29206,8 +29881,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -29453,8 +30129,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -29569,7 +30246,16 @@ dvt = function () {
     if (!this._isCustomClassName) outerElem.className = popupClass;
     this._isCustomClassName = false;
     if (!borderColor) borderColor = dvt.HtmlTooltipManager._BORDER_COLOR;
-    if (!this._isCustomBorderColor) outerElem.style.borderColor = borderColor;
+
+    if (!this._isCustomBorderColor) {
+      if (!this._isTooltip) {
+        // For data tips, use the outline color
+        outerElem.style.outlineColor = borderColor;
+      } else {
+        outerElem.style.borderColor = borderColor;
+      }
+    }
+
     this._isCustomBorderColor = false; // Position the outer element
 
     outerElem.style.position = 'absolute';
@@ -29912,13 +30598,16 @@ dvt = function () {
    * @param {string} tag Tag name.
    * @param {dvt.CSSStyle=} style optional CSS style to be added as the inline style.
    * @param {number|string|Array<Node>=} content optional child content
+   * @param {Array<string>=} classList optional CSS classes to be added as the element.
    * @return {Node} The HTML element.
    */
 
 
-  dvt.HtmlTooltipManager.createElement = function (tag, style, content) {
-    var element = document.createElement(tag);
+  dvt.HtmlTooltipManager.createElement = function (tag, style, content, classList) {
+    var element = document.createElement(tag); // @HTMLUpdateOK
+
     if (style) style.applyStylesToElement(element);
+    if (classList) element.classList.add.apply(element.classList, classList);
 
     if (content != null) {
       if (Array.isArray(content)) {
@@ -29932,8 +30621,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 
@@ -30031,8 +30721,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
   // Used for rendering SVG content in to an HTML div wrapper
@@ -30064,6 +30755,7 @@ dvt = function () {
     tooltip.innerHTML = ''; // @HTMLUpdateOK
 
     var context = new dvt.Context(tooltip, 'DvtCustomTooltip');
+    context.setJetProperties(this._context.getJetProperties());
     this._storedContexts[this._domElementId] = context;
   };
 
@@ -30109,8 +30801,9 @@ dvt = function () {
   };
   /**
    * @license
-   * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
    * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
 

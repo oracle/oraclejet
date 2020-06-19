@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+
 import Converter = require('../ojconverter');
 import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettableProperties } from '../ojdvt-base';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
@@ -206,6 +214,8 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
     };
+    describedBy: string | null;
+    disabled: boolean;
     hoverState: {
         borderColor?: string;
         color?: string;
@@ -214,6 +224,7 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
     };
+    labelledBy: string | null;
     max: number;
     min: number;
     orientation: 'vertical' | 'horizontal';
@@ -261,7 +272,13 @@ export namespace ojRatingGauge {
     // tslint:disable-next-line interface-over-type-literal
     type changedStateChanged = JetElementCustomEvent<ojRatingGauge["changedState"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = JetElementCustomEvent<ojRatingGauge["describedBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojRatingGauge["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type hoverStateChanged = JetElementCustomEvent<ojRatingGauge["hoverState"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojRatingGauge["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
     type maxChanged = JetElementCustomEvent<ojRatingGauge["max"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -306,7 +323,10 @@ export namespace ojRatingGauge {
 export interface ojRatingGaugeEventMap extends dvtBaseGaugeEventMap<ojRatingGaugeSettableProperties> {
     'changedChanged': JetElementCustomEvent<ojRatingGauge["changed"]>;
     'changedStateChanged': JetElementCustomEvent<ojRatingGauge["changedState"]>;
+    'describedByChanged': JetElementCustomEvent<ojRatingGauge["describedBy"]>;
+    'disabledChanged': JetElementCustomEvent<ojRatingGauge["disabled"]>;
     'hoverStateChanged': JetElementCustomEvent<ojRatingGauge["hoverState"]>;
+    'labelledByChanged': JetElementCustomEvent<ojRatingGauge["labelledBy"]>;
     'maxChanged': JetElementCustomEvent<ojRatingGauge["max"]>;
     'minChanged': JetElementCustomEvent<ojRatingGauge["min"]>;
     'orientationChanged': JetElementCustomEvent<ojRatingGauge["orientation"]>;
@@ -331,6 +351,8 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
     };
+    describedBy: string | null;
+    disabled: boolean;
     hoverState: {
         borderColor?: string;
         color?: string;
@@ -339,6 +361,7 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
     };
+    labelledBy: string | null;
     max: number;
     min: number;
     orientation: 'vertical' | 'horizontal';
@@ -391,6 +414,7 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
         }));
     };
     color: string;
+    describedBy: string | null;
     indicatorSize: number;
     innerRadius: number;
     label: {
@@ -398,6 +422,7 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
         style?: CSSStyleDeclaration;
         text?: string;
     };
+    labelledBy: string | null;
     max: number;
     metricLabel: {
         converter?: Converter<string>;
@@ -462,11 +487,15 @@ export namespace ojStatusMeterGauge {
     // tslint:disable-next-line interface-over-type-literal
     type colorChanged = JetElementCustomEvent<ojStatusMeterGauge["color"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = JetElementCustomEvent<ojStatusMeterGauge["describedBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type indicatorSizeChanged = JetElementCustomEvent<ojStatusMeterGauge["indicatorSize"]>;
     // tslint:disable-next-line interface-over-type-literal
     type innerRadiusChanged = JetElementCustomEvent<ojStatusMeterGauge["innerRadius"]>;
     // tslint:disable-next-line interface-over-type-literal
     type labelChanged = JetElementCustomEvent<ojStatusMeterGauge["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojStatusMeterGauge["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
     type maxChanged = JetElementCustomEvent<ojStatusMeterGauge["max"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -546,9 +575,11 @@ export interface ojStatusMeterGaugeEventMap extends dvtBaseGaugeEventMap<ojStatu
     'borderRadiusChanged': JetElementCustomEvent<ojStatusMeterGauge["borderRadius"]>;
     'centerChanged': JetElementCustomEvent<ojStatusMeterGauge["center"]>;
     'colorChanged': JetElementCustomEvent<ojStatusMeterGauge["color"]>;
+    'describedByChanged': JetElementCustomEvent<ojStatusMeterGauge["describedBy"]>;
     'indicatorSizeChanged': JetElementCustomEvent<ojStatusMeterGauge["indicatorSize"]>;
     'innerRadiusChanged': JetElementCustomEvent<ojStatusMeterGauge["innerRadius"]>;
     'labelChanged': JetElementCustomEvent<ojStatusMeterGauge["label"]>;
+    'labelledByChanged': JetElementCustomEvent<ojStatusMeterGauge["labelledBy"]>;
     'maxChanged': JetElementCustomEvent<ojStatusMeterGauge["max"]>;
     'metricLabelChanged': JetElementCustomEvent<ojStatusMeterGauge["metricLabel"]>;
     'minChanged': JetElementCustomEvent<ojStatusMeterGauge["min"]>;
@@ -582,6 +613,7 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
         }));
     };
     color: string;
+    describedBy: string | null;
     indicatorSize: number;
     innerRadius: number;
     label: {
@@ -589,6 +621,7 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
         style?: CSSStyleDeclaration;
         text?: string;
     };
+    labelledBy: string | null;
     max: number;
     metricLabel: {
         converter?: Converter<string>;

@@ -11,6 +11,7 @@ unspecified.
 THIRD-PARTY COMPONENT FILE                                               LICENSE
 (path in the installation)                   (see license text reproduced below)
 --------------------------------------------------------------------------------
+js/libs/chai/chai-4.2.0.js                                  MIT
 js/libs/crossroads/crossroads.js                                        MIT
 js/libs/es6-promise/es6-promise.js                                           MIT
 js/libs/hammer/hammer-2.0.8.js                          MIT
@@ -24,22 +25,28 @@ js/libs/jquery/jqueryui-amd-1.12.1/mouse.js              MIT
 js/libs/jquery/jqueryui-amd-1.12.1/position.js           MIT
 js/libs/jquery/jqueryui-amd-1.12.1/sortable.js           MIT
 js/libs/jquery/jqueryui-amd-1.12.1/widget.js             MIT
-js/libs/knockout/knockout-3.5.0.js                      MIT
+js/libs/knockout/knockout-3.5.1.js                      MIT
 js/libs/knockout/knockout-mapping-latest.js                             MIT
-js/libs/oj/v8.3.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
-js/libs/oj/v8.3.0/min/ojexpparser.js (expparser.js)              MIT
-js/libs/oj/v8.3.0/min/ojknockout.js (knockout-fast-foreach.js)   MIT
-js/libs/oj/v8.3.0/min/ojselectcombobox.js (Select2.js)           Apache 2.0
-js/libs/oj/v8.3.0/min/ojtree.js (jsTree.js)                      MIT
-js/libs/oj/v8.3.0/ojL10n.js (requireJS i18n)                     MIT
+js/libs/oj/v9.0.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
+js/libs/oj/v9.0.0/min/ojexpparser.js (expparser.js)              MIT
+js/libs/oj/v9.0.0/min/ojknockout.js (knockout-fast-foreach.js)   MIT
+js/libs/oj/v9.0.0/min/ojselectcombobox.js (Select2.js)           Apache 2.0
+js/libs/oj/v9.0.0/min/ojtree.js (jsTree.js)                      MIT
+js/libs/oj/v9.0.0/ojL10n.js (requireJS i18n)                     MIT
 js/libs/proj4js/dist/proj4.js                                                   Proj4js
 js/libs/require/require.js                                                    MIT
 js/libs/require/text.js                                                    MIT
 js/libs/require-css/css.min.js (require-css)                                MIT
 js/libs/webcomponents/custom-elements.min.js                            custom-elements
-scss/oj/v8.3.0/3rdparty/normalize/normalize.scss                 MIT
+scss/oj/v9.0.0/3rdparty/normalize/normalize.scss                 MIT
 js/libs/touchr/touchr.js                                                  MIT
-js/libs/oj/v8.3.0/min/ojvcomponent.js (petit-dom.js)             MIT
+js/libs/oj/v9.0.0/min/ojvcomponent.js (petit-dom.js)             MIT
+
+/*!
+ * chai
+ * Copyright(c) 2011-2014 Jake Luer <jake@alogicalparadox.com>
+ * MIT Licensed
+ */
 
 /*
  * expression-eval - v2.0.0

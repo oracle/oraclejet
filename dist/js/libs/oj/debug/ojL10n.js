@@ -1,7 +1,8 @@
 /**
  * @license
- * Copyright (c) %FIRST_YEAR% %CURRENT_YEAR%, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
@@ -15,7 +16,7 @@
  */
 /* jslint regexp: true */
 /* jslint browser: true*/
-/* global require: false, navigator: false, define: false */
+/* global define: false */
 
 /**
  * This plugin handles i18n! prefixed modules. It does the following:

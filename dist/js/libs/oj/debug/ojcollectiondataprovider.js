@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -28,7 +29,6 @@ class CollectionDataProvider {
     containsKeys(parameters) {
         return this._dataProviderAdapter.containsKeys(parameters);
     }
-    ;
     fetchByOffset(parameters) {
         return this._dataProviderAdapter.fetchByOffset(parameters);
     }

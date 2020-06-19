@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -144,10 +145,6 @@ var __oj_date_picker_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -254,6 +251,12 @@ var __oj_date_picker_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleMaxLengthExceeded": {
+          "type": "string"
+        },
+        "accessibleMaxLengthRemaining": {
+          "type": "string"
+        },
         "currentText": {
           "type": "string"
         },
@@ -359,6 +362,15 @@ var __oj_date_picker_metadata =
           "type": "string"
         }
       }
+    },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
     },
     "valid": {
       "type": "string",
@@ -527,10 +539,6 @@ var __oj_date_time_picker_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -662,6 +670,12 @@ var __oj_date_time_picker_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleMaxLengthExceeded": {
+          "type": "string"
+        },
+        "accessibleMaxLengthRemaining": {
+          "type": "string"
+        },
         "cancel": {
           "type": "string"
         },
@@ -773,6 +787,15 @@ var __oj_date_time_picker_metadata =
           "type": "string"
         }
       }
+    },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
     },
     "valid": {
       "type": "string",
@@ -950,10 +973,6 @@ var __oj_input_date_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -1060,6 +1079,12 @@ var __oj_input_date_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleMaxLengthExceeded": {
+          "type": "string"
+        },
+        "accessibleMaxLengthRemaining": {
+          "type": "string"
+        },
         "currentText": {
           "type": "string"
         },
@@ -1165,6 +1190,15 @@ var __oj_input_date_metadata =
           "type": "string"
         }
       }
+    },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
     },
     "valid": {
       "type": "string",
@@ -1340,10 +1374,6 @@ var __oj_input_date_time_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -1475,6 +1505,12 @@ var __oj_input_date_time_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleMaxLengthExceeded": {
+          "type": "string"
+        },
+        "accessibleMaxLengthRemaining": {
+          "type": "string"
+        },
         "cancel": {
           "type": "string"
         },
@@ -1587,6 +1623,15 @@ var __oj_input_date_time_metadata =
         }
       }
     },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
+    },
     "valid": {
       "type": "string",
       "writeback": true,
@@ -1683,10 +1728,6 @@ var __oj_input_time_metadata =
         },
         "validatorHint": {
           "type": "Array<string>|string",
-          "enumValues": [
-            "none",
-            "notewindow"
-          ],
           "value": [
             "notewindow"
           ]
@@ -1818,6 +1859,12 @@ var __oj_input_time_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleMaxLengthExceeded": {
+          "type": "string"
+        },
+        "accessibleMaxLengthRemaining": {
+          "type": "string"
+        },
         "ampmWheelLabel": {
           "type": "string"
         },
@@ -1909,6 +1956,15 @@ var __oj_input_time_metadata =
           "type": "string"
         }
       }
+    },
+    "userAssistanceDensity": {
+      "type": "string",
+      "enumValues": [
+        "compact",
+        "efficient",
+        "reflow"
+      ],
+      "value": "reflow"
     },
     "valid": {
       "type": "string",
@@ -2189,6 +2245,8 @@ function formatYear(year, month) {
  * @ojvbdefaultcolumns 4
  * @ojvbmincolumns 4
  *
+ * @ojuxspecs ['date-picker']
+ *
  * @classdesc
  * <h3 id="inputDateOverview-section">
  *   JET DatePicker (Inline mode)
@@ -2270,6 +2328,8 @@ function formatYear(year, month) {
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 2
  *
+ * @ojuxspecs ['input-date']
+ *
  * @classdesc
  * <h3 id="inputDateOverview-section">
  *   JET InputDate
@@ -2295,13 +2355,6 @@ function formatYear(year, month) {
  * </h3>
  *
  * {@ojinclude "name":"keyboardDoc"}
- *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
  *
  * <h3 id="a11y-section">
  *   Accessibility
@@ -2330,6 +2383,106 @@ function formatYear(year, month) {
  * information, if the <code>required</code> and <code>help</code> attributes are set.
  * </p>
  */
+// --------------------------------------------------- oj.ojInputDate Styling Start ------------------------------------------------------------
+  /**
+   * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+   * The form control style classes can be applied to the component, or an ancestor element. <br/>
+   * When applied to an ancestor element, all form components that support the style classes will be affected.
+   */
+  // ---------------- oj-form-control-full-width --------------
+  /**
+  * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
+  * @ojstyleclass oj-form-control-full-width
+  * @ojdisplayname Full Width
+  * @memberof oj.ojInputDate
+  * @ojtsexample
+  * &lt;oj-input-date class="oj-form-control-full-width">
+  * &lt;/oj-input-date>
+  */
+
+ // ---------------- oj-form-control max-width --------------
+  /**
+  * In the Redwood theme the default max width of a text field is 100%.
+  * These max width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-max-width
+  * @ojdisplayname Max Width
+  * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojInputDate
+  * @ojtsexample
+  * &lt;oj-input-date class="oj-form-control-max-width-md">&lt;/oj-input-date>
+  */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+  * @ojshortdesc Sets the max width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojInputDate
+   */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+  * @ojshortdesc Sets the max width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojInputDate
+   */
+
+  // ---------------- oj-form-control width --------------
+  /**
+  * In the Redwood theme the default width of a text field is 100%.
+  * These width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-width
+  * @ojdisplayname Width
+  * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojInputDate
+  * @ojtsexample
+  * &lt;oj-input-date class="oj-form-control-width-md">&lt;/oj-input-date>
+  */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-sm
+  * @ojshortdesc Sets the width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojInputDate
+   */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-md
+  * @ojshortdesc Sets the width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojInputDate
+   */
+
+ // ---------------- oj-form-control-text-align- --------------
+/**
+ * Classes that help align text of the element.
+ * @ojstyleset text-align
+ * @ojdisplayname Text Alignment
+ * @ojstylesetitems ["text-align.oj-form-control-text-align-right", "text-align.oj-form-control-text-align-start", "text-align.oj-form-control-text-align-end"]
+ * @ojstylerelation exclusive
+ * @memberof oj.ojInputDate
+ * @ojtsexample
+ * &lt;oj-input-date class="oj-form-control-text-align-right">
+ * &lt;/oj-input-date>
+ */
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-right
+ * @ojshortdesc Aligns the text to the right regardless of the reading direction. This is normally used for right aligning numbers.
+ * @ojdisplayname Align-Right
+ * @memberof! oj.ojInputDate
+ */
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-start
+ * @ojshortdesc Aligns the text to the left in LTR and to the right in RTL.
+ * @ojdisplayname Align-Start
+ * @memberof! oj.ojInputDate
+ */
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-end
+ * @ojshortdesc Aligns the text to the right in LTR and to the left in RTL.
+ * @ojdisplayname Align-End
+ * @memberof! oj.ojInputDate
+ */
+// --------------------------------------------------- oj.ojInputDate Styling end ------------------------------------------------------------
 oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
   widgetEventPrefix: 'oj',
 
@@ -2372,10 +2525,10 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
   _INPUT_CONTAINER_CLASS: ' oj-inputdatetime-input-container oj-text-field-container',
   _INLINE_WIDGET_CLASS: ' oj-inputdatetime-inline',
 
-  _ON_CLOSE_REASON_SELECTION: 'selection',  // A selection was made
-  _ON_CLOSE_REASON_CANCELLED: 'cancelled',  // Selection not made
-  _ON_CLOSE_REASON_TAB: 'tab',              // Tab key
-  _ON_CLOSE_REASON_CLOSE: 'close',          // Disable or other closes
+  _ON_CLOSE_REASON_SELECTION: 'selection', // A selection was made
+  _ON_CLOSE_REASON_CANCELLED: 'cancelled', // Selection not made
+  _ON_CLOSE_REASON_TAB: 'tab', // Tab key
+  _ON_CLOSE_REASON_CLOSE: 'close', // Disable or other closes
 
   _KEYBOARD_EDIT_OPTION_ENABLED: 'enabled',
   _KEYBOARD_EDIT_OPTION_DISABLED: 'disabled',
@@ -2486,6 +2639,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @ojvalue {string} '' Do not show anything
        * @ojvalue {string} 'today' Show the today button. When user clicks on the Today button, it will highlight the current day in the calendar.
        * @default "today"
+       * @ojdeprecated {since: "8.2.0", description: "This attribute is deprecated and should not be used as it will be ignored in new UX design."}
        * @ojsignature { target: "Type", value: "?string"}
        */
       footerLayout: '',
@@ -2973,7 +3127,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * @type {string}
      * @ojvalue {string} 'jet' Applications get full JET functionality.
      * @ojvalue {string} 'native' Applications get the functionality of the native picker. Native picker is
-     *  not available when the picker is inline, defaults to jet instead.</br></br>
+     *  not available when the picker is inline, defaults to 'jet' instead.</br></br>
      * Note that the native renderMode will attempt to load a Cordova plugin that
      * will launch the native picker. If the plugin is not found, the default JET
      * picker will be used.</br>
@@ -3264,6 +3418,21 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         this._createPopupDpDiv();
       }
     }
+  },
+
+  /**
+   * Don't render the readonly-div for the oj-date-picker.
+   * @ignore
+   * @override
+   * @protected
+   * @memberof oj.ojInputDate
+   * @return {boolean}
+   */
+  _UseReadonlyDiv: function () {
+    if (this._isInLine) {
+      return false;
+    }
+    return this._superApply(arguments);
   },
 
   _createDpDiv: function () {
@@ -4073,6 +4242,12 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
               .filter(function () {
                 return $(this).text() === cDay;
               });
+    if (cOver.length === 0) {
+      cOver = $('span.oj-disabled:contains(' + this._currentDay + ')', datePickerCalendar)
+              .filter(function () {
+                return $(this).text() === cDay;
+              });
+    }
     if (cOver.length === 1) {
       var cParent = cOver.parent();
       datePickerCalendar.addClass('oj-focus-highlight');
@@ -6689,46 +6864,6 @@ Components.setDefaultOptions(
  * @memberof oj.ojInputDate
  */
 
-/**
- * {@ojinclude "name":"ojStylingDocIntro"}
- * <p>The form control style classes can be applied to the component, or an ancestor element. When
- * applied to an ancestor element, all form components that support the style classes will be affected.
- *
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
- *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-form-control-full-width</td>
- *       <td>Changes the max-width to 100% so that form components will occupy
- *           all the available horizontal space
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-form-control-text-align-right</td>
- *       <td>Aligns the text to the right regardless of the reading direction.
- *           This is normally used for right aligning numbers
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-form-control-text-align-start</td>
- *       <td>Aligns the text to the left in ltr and to the right in rtl</td>
- *     </tr>
- *     <tr>
- *       <td>oj-form-control-text-align-end</td>
- *       <td>Aligns the text to the right in ltr and to the left in rtl</td>
- *     </tr>
- *   </tbody>
- * </table>
- *
- * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
- * @memberof oj.ojInputDate
- */
-
 // ////////////////     SUB-IDS     //////////////////
 
 /**
@@ -6840,7 +6975,7 @@ Components.setDefaultOptions(
 /* global TimePickerModel:false, coerceIsoString:false, createWheelGroup:false,
    getImplicitDateTimeRangeValidator: false,  _isLargeScreen:false, _getNativePickerDate:false,
    isPickerNative:false, disableEnableSpan:false,
-   bindActive:false, Components:false, __ConverterI18nUtils:false, __DateTimeConverter:false, Logger:false, Context:false, Promise:false, ThemeUtils  */
+   bindActive:false, Components:false, __ConverterI18nUtils:false, __DateTimeConverter:false, Logger:false, Context:false, Promise:false, ThemeUtils, Config:false  */
 /**
  * @private
  */
@@ -6950,6 +7085,8 @@ function _getTimePickerConverter(converter, addOpts) {
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 2
  *
+ * @ojuxspecs ['input-time']
+ *
  * @classdesc
  * <h3 id="inputTimeOverview-section">
  *   JET InputTime
@@ -6993,14 +7130,107 @@ function _getTimePickerConverter(converter, addOpts) {
  * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
  * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
- *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
  */
+// --------------------------------------------------- oj.ojInputTime Styling Start ------------------------------------------------------------
+  /**
+   * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+   * The form control style classes can be applied to the component, or an ancestor element. <br/>
+   * When applied to an ancestor element, all form components that support the style classes will be affected.
+   */
+  // ---------------- oj-form-control-full-width --------------
+  /**
+  * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
+  * @ojstyleclass oj-form-control-full-width
+  * @ojdisplayname Full Width
+  * @memberof oj.ojInputTime
+  * @ojtsexample
+  * &lt;oj-input-time class="oj-form-control-full-width">
+  * &lt;/oj-input-time>
+  */
+
+ // ---------------- oj-form-control max-width --------------
+  /**
+  * In the Redwood theme the default max width of a text field is 100%.
+  * These max width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-max-width
+  * @ojdisplayname Max Width
+  * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojInputTime
+  * @ojtsexample
+  * &lt;oj-input-time class="oj-form-control-max-width-md">&lt;/oj-input-time>
+  */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+  * @ojshortdesc Sets the max width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojInputTime
+   */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+  * @ojshortdesc Sets the max width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojInputTime
+   */
+
+  // ---------------- oj-form-control width --------------
+  /**
+  * In the Redwood theme the default width of a text field is 100%.
+  * These width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-width
+  * @ojdisplayname Width
+  * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojInputTime
+  * @ojtsexample
+  * &lt;oj-input-time class="oj-form-control-width-md">&lt;/oj-input-time>
+  */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-sm
+  * @ojshortdesc Sets the width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojInputTime
+   */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-md
+  * @ojshortdesc Sets the width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojInputTime
+   */
+
+ // ---------------- oj-form-control-text-align- --------------
+/**
+ * Classes that help align text of the element.
+ * @ojstyleset text-align
+ * @ojdisplayname Text Alignment
+ * @ojstylesetitems ["text-align.oj-form-control-text-align-right", "text-align.oj-form-control-text-align-start", "text-align.oj-form-control-text-align-end"]
+ * @ojstylerelation exclusive
+ * @memberof oj.ojInputTime
+ * @ojtsexample
+ * &lt;oj-input-time class="oj-form-control-text-align-right">
+ * &lt;/oj-input-time>
+ */
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-right
+ * @ojshortdesc Aligns the text to the right regardless of the reading direction. This is normally used for right aligning numbers.
+ * @ojdisplayname Align-Right
+ * @memberof! oj.ojInputTime
+ */
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-start
+ * @ojshortdesc Aligns the text to the left in LTR and to the right in RTL.
+ * @ojdisplayname Align-Start
+ * @memberof! oj.ojInputTime
+ */
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-end
+ * @ojshortdesc Aligns the text to the right in LTR and to the left in RTL.
+ * @ojdisplayname Align-End
+ * @memberof! oj.ojInputTime
+ */
+// --------------------------------------------------- oj.ojInputTime Styling end ------------------------------------------------------------
 oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
   {
     widgetEventPrefix: 'oj',
@@ -7033,10 +7263,10 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
     _TRIGGER_CLASS: 'oj-inputdatetime-input-trigger',
     _TRIGGER_TIME_CLASS: 'oj-inputdatetime-time-icon',
 
-    _ON_CLOSE_REASON_SELECTION: 'selection',  // A selection was made
-    _ON_CLOSE_REASON_CANCELLED: 'cancelled',  // Selection not made
-    _ON_CLOSE_REASON_TAB: 'tab',              // Tab key
-    _ON_CLOSE_REASON_CLOSE: 'close',          // Disable or other closes
+    _ON_CLOSE_REASON_SELECTION: 'selection', // A selection was made
+    _ON_CLOSE_REASON_CANCELLED: 'cancelled', // Selection not made
+    _ON_CLOSE_REASON_TAB: 'tab', // Tab key
+    _ON_CLOSE_REASON_CLOSE: 'close', // Disable or other closes
 
     _KEYBOARD_EDIT_OPTION_ENABLED: 'enabled',
     _KEYBOARD_EDIT_OPTION_DISABLED: 'disabled',
@@ -7104,11 +7334,6 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
 
     /**
      * The maximum selectable time, in ISO string format. When set to null, there is no maximum.
-     *
-     * <ul>
-     *  <li> type string - ISOString
-     *  <li> null - no limit
-     * </ul>
      *
      * @expose
      * @instance
@@ -7293,6 +7518,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
        * @type {string}
        * @ojvalue {string} '' Do not show anything
        * @ojvalue {string} 'now' Show the now button. When user clicks on the Now button, it will highlight the current time in the timepicker.
+       * @ojdeprecated {since: "8.2.0", description: "This attribute is deprecated and should not be used as it will be ignored in new UX design."}
        * @default ""
        */
         footerLayout: '',
@@ -7515,6 +7741,22 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
       }
     },
 
+    /**
+     * Don't render the readonly-div for the oj-date-time-picker. Just
+     * use an input since the time portion is short an input is ok.
+     * @ignore
+     * @override
+     * @protected
+     * @memberof! oj.ojInputTime
+     * @return {boolean}
+     */
+    _UseReadonlyDiv: function () {
+      if (this._isContainedInDateTimePicker() && this._isDatePickerInline()) {
+        return false;
+      }
+      return this._superApply(arguments);
+    },
+
     _createWheelPicker: function () {
       var pickerAttrs = this.options.pickerAttributes;
 
@@ -7523,7 +7765,11 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
       wheelPicker.style.display = 'none';
       var div = document.createElement('div');
       div.id = this._GetSubId(this._TIME_PICKER_ID);
-      div.className = 'oj-timepicker-content';
+      var cssClasses = 'oj-timepicker-content';
+      if (Config.getDeviceRenderMode() === 'phone') {
+        cssClasses += ' oj-timepicker-mobile-content';
+      }
+      div.className = cssClasses;
       wheelPicker.appendChild(div);
       this._wheelPicker = $(wheelPicker);
       var prependNode = this._getPrependNode()[0];
@@ -8911,7 +9157,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
         hours: date.getHours(),
         minutes: date.getMinutes(),
         seconds: date.getSeconds() });
-      value = converter.parse(isovalue);  // Convert to proper timezone
+      value = converter.parse(isovalue); // Convert to proper timezone
       var valueDate = converterUtils._clearTime(value);
       var minDateIso = this._getIsoDateLimit(converter, 'min', valueDate);
       var maxDateIso = this._getIsoDateLimit(converter, 'max', valueDate);
@@ -9310,47 +9556,6 @@ Components.setDefaultOptions(
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.ojInputTime
  */
-
-/**
- * {@ojinclude "name":"ojStylingDocIntro"}
- * <p>The form control style classes can be applied to the component, or an ancestor element. When
- * applied to an ancestor element, all form components that support the style classes will be affected.
- *
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
- *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-form-control-full-width</td>
- *       <td>Changes the max-width to 100% so that form components will occupy
- *           all the available horizontal space
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-form-control-text-align-right</td>
- *       <td>Aligns the text to the right regardless of the reading direction.
- *           This is normally used for right aligning numbers
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-form-control-text-align-start</td>
- *       <td>Aligns the text to the left in ltr and to the right in rtl</td>
- *     </tr>
- *     <tr>
- *       <td>oj-form-control-text-align-end</td>
- *       <td>Aligns the text to the right in ltr and to the left in rtl</td>
- *     </tr>
- *   </tbody>
- * </table>
- *
- * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
- * @memberof oj.ojInputTime
- */
-
 // ////////////////     SUB-IDS     //////////////////
 
 /**
@@ -10552,7 +10757,7 @@ function createWheelItem(model, position, isMeridian) {
  */
 // eslint-disable-next-line no-unused-vars
 function WheelModel(parentModel, properties) {
-  var SPIN_TIMES = [150, 100, 50, 25, 16];  // Note: No transitions for faster spins
+  var SPIN_TIMES = [150, 100, 50, 25, 16]; // Note: No transitions for faster spins
 
   var _value = 0;
   var _parentModel = parentModel;
@@ -10793,7 +10998,7 @@ function WheelModel(parentModel, properties) {
     }
 
     var parentIncrement = _parentModel.increment;
-    var inc = gcd(parentIncrement, _valueUpperMultiplier);  // For example 60 for minutes
+    var inc = gcd(parentIncrement, _valueUpperMultiplier); // For example 60 for minutes
 
     // If increment is a multiple of 60 then min and max are 0;
     if (inc === _valueUpperMultiplier) {
@@ -10986,6 +11191,8 @@ var _yearFormat = _defaultOptions.converterYear || 'numeric';
  * @ojvbdefaultcolumns 4
  * @ojvbmincolumns 4
  *
+ * @ojuxspecs ['input-date-and-time']
+ *
  * @classdesc
  * <h3 id="inputDateTimeOverview-section">
  *   JET DateTimePicker (Inline mode)
@@ -11064,6 +11271,8 @@ var _yearFormat = _defaultOptions.converterYear || 'numeric';
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 2
  *
+ * @ojuxspecs ['input-date-and-time']
+ *
  * @classdesc
  * <h3 id="inputDateTimeOverview-section">
  *   JET InputDateTime
@@ -11093,13 +11302,6 @@ var _yearFormat = _defaultOptions.converterYear || 'numeric';
  *
  * {@ojinclude "name":"keyboardDoc"}
  *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
- *
  * <h3 id="a11y-section">
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
@@ -11127,6 +11329,107 @@ var _yearFormat = _defaultOptions.converterYear || 'numeric';
  * information, if the <code>required</code> and <code>help</code> attributes are set.
  * </p>
  */
+// --------------------------------------------------- oj.ojInputDateTime Styling Start ------------------------------------------------------------
+  /**
+   * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+   * The form control style classes can be applied to the component, or an ancestor element. <br/>
+   * When applied to an ancestor element, all form components that support the style classes will be affected.
+   */
+  // ---------------- oj-form-control-full-width --------------
+  /**
+  * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
+  * @ojstyleclass oj-form-control-full-width
+  * @ojdisplayname Full Width
+  * @memberof oj.ojInputDateTime
+  * @ojtsexample
+  * &lt;oj-input-date-time class="oj-form-control-full-width">
+  * &lt;/oj-input-date-time>
+  */
+
+ // ---------------- oj-form-control max-width --------------
+  /**
+  * In the Redwood theme the default max width of a text field is 100%.
+  * These max width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-max-width
+  * @ojdisplayname Max Width
+  * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojInputDateTime
+  * @ojtsexample
+  * &lt;oj-input-date-time class="oj-form-control-max-width-md">&lt;/oj-input-date-time>
+  */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+  * @ojshortdesc Sets the max width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojInputDateTime
+   */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+  * @ojshortdesc Sets the max width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojInputDateTime
+   */
+
+  // ---------------- oj-form-control width --------------
+  /**
+  * In the Redwood theme the default width of a text field is 100%.
+  * These width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-width
+  * @ojdisplayname Width
+  * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojInputDateTime
+  * @ojtsexample
+  * &lt;oj-input-date-time class="oj-form-control-width-md">&lt;/oj-input-date-time>
+  */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-sm
+  * @ojshortdesc Sets the width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojInputDateTime
+   */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-md
+  * @ojshortdesc Sets the width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojInputDateTime
+   */
+
+ // ---------------- oj-form-control-text-align- --------------
+/**
+ * Classes that help align text of the element.
+ * @ojstyleset text-align
+ * @ojdisplayname Text Alignment
+ * @ojstylesetitems ["text-align.oj-form-control-text-align-right", "text-align.oj-form-control-text-align-start", "text-align.oj-form-control-text-align-end"]
+ * @ojstylerelation exclusive
+ * @memberof oj.ojInputDateTime
+ * @ojtsexample
+ * &lt;oj-input-date-time class="oj-form-control-text-align-right">
+ * &lt;/oj-input-date-time>
+ */
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-right
+ * @ojshortdesc Aligns the text to the right regardless of the reading direction. This is normally used for right aligning numbers.
+ * @ojdisplayname Align-Right
+ * @memberof! oj.ojInputDateTime
+ */
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-start
+ * @ojshortdesc Aligns the text to the left in LTR and to the right in RTL.
+ * @ojdisplayname Align-Start
+ * @memberof! oj.ojInputDateTime
+ */
+/**
+ * @ojstyleclass text-align.oj-form-control-text-align-end
+ * @ojshortdesc Aligns the text to the right in LTR and to the left in RTL.
+ * @ojdisplayname Align-End
+ * @memberof! oj.ojInputDateTime
+ */
+// --------------------------------------------------- oj.ojInputDateTime Styling end ------------------------------------------------------------
+
 oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
   widgetEventPrefix: 'oj',
 
@@ -11276,7 +11579,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * @type {string}
      * @ojvalue {string} 'jet' Applications get full JET functionality.
      * @ojvalue {string} 'native' Applications get the functionality of the native picker. Native picker is
-     *  not available when the picker is inline, defaults to jet instead.</br></br>
+     *  not available when the picker is inline, defaults to 'jet' instead.</br></br>
      *  Note that the native renderMode will attempt to load a Cordova plugin that
      *  will launch the native picker. If the plugin is not found, the default JET
      *  picker will be used.</br>
@@ -11404,6 +11707,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
        * @type {string}
        * @ojvalue {string} '' Do not show anything
        * @ojvalue {string} 'now' Show the now button. When user clicks on the Now button, it will highlight the current time in the timepicker.
+       * @ojdeprecated {since: "8.2.0", description: "This attribute is deprecated and should not be used as it will be ignored in new UX design."}
        * @default ""
        */
       footerLayout: '',
@@ -11743,7 +12047,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
 
     this._timePickerElement = this.element; // if the ojInputDateTime is inline, then this ref will change to a NEW input element
     this._timePicker = null;
-//    this._timeConverter = null;
+    //    this._timeConverter = null;
 
     // need to remember the last _SetValue for the case of timepicker [i.e. select a date that is not in range due to
     // time; however since we don't push invalid values to this.options["value"] the timepicker would pick up the wrong
@@ -11766,6 +12070,21 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
         this._createSwitcherDiv();
       }
     }
+  },
+
+  /**
+   * Don't render the readonly-div for the oj-date-time-picker.
+   * @ignore
+   * @override
+   * @protected
+   * @memberof! oj.ojInputDateTime
+   * @return {boolean}
+   */
+  _UseReadonlyDiv: function () {
+    if (this._isInLine) {
+      return false;
+    }
+    return this._superApply(arguments);
   },
 
   _createSwitcherDiv: function () {
@@ -11917,23 +12236,23 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
       passObject[passOptions[i]] = this.options[passOptions[i]];
     }
 
-    var messagesDisplayOption = this.options.displayOptions.messages;
-
+    // if it is inline, then go ahead and render the messages dom because
+    // the inputTime is rendered as its own input that someone can type into.
+    // if it is not inline, then do not render the messages dom, since then
+    // we'd get two and ojinputDateTime is rendered as one input, so we don't
+    // want two messages dom.
+    var messagesDisplayOption = this._isInLine ? this.options.displayOptions.messages : 'none';
     // create time instance for the time portion
-    // jmw Seems to be a bug where messages are always in notewindow. So I think I should
-    // carry the displayOptions over to the timePicker.
 
     var timePickerOptions = this.options.timePicker;
 
-    if (!this._isInLine) {
-      $.extend(timePickerOptions, { footerLayout: 'now' });
-    }
     var converter = this._GetConverter();
     if (!(converter instanceof Promise)) {
       var value = this._formatValueWithTimeConverter(this.options.value);
       this._timePicker = this._timePickerElement.ojInputTime(
         $.extend(passObject, {
           converter: this._timeConverter,
+          userAssistanceDensity: 'compact',
           displayOptions: { converterHint: 'none', title: 'none', messages: messagesDisplayOption },
           // need to pass the value down as otherwise if the value is null then it might pickup this.element.val() from
           // our frameworks generic if options.value is not defined then pick up from element; however that would be a formatted
@@ -11946,6 +12265,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
       this._timePicker = this._timePickerElement.ojInputTime(
         $.extend(passObject, {
           converter: this._timeConverter || this._timeConverterPromise,
+          userAssistanceDensity: 'compact',
           displayOptions: { converterHint: 'none', title: 'none', messages: messagesDisplayOption },
           value: this.options.value,
           timePicker: timePickerOptions,
@@ -12993,46 +13313,6 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
  * @memberof oj.ojDateTimePicker
  */
 
-/**
- * {@ojinclude "name":"ojStylingDocIntro"}
- * <p>The form control style classes can be applied to the component, or an ancestor element. When
- * applied to an ancestor element, all form components that support the style classes will be affected.
- *
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
- *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-form-control-full-width</td>
- *       <td>Changes the max-width to 100% so that form components will occupy
- *           all the available horizontal space
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-form-control-text-align-right</td>
- *       <td>Aligns the text to the right regardless of the reading direction.
- *           This is normally used for right aligning numbers
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-form-control-text-align-start</td>
- *       <td>Aligns the text to the left in ltr and to the right in rtl</td>
- *     </tr>
- *     <tr>
- *       <td>oj-form-control-text-align-end</td>
- *       <td>Aligns the text to the right in ltr and to the left in rtl</td>
- *     </tr>
- *   </tbody>
- * </table>
- *
- * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
- * @memberof oj.ojInputDateTime
- */
-
 // ////////////////     SUB-IDS     //////////////////
 
 /**
@@ -13138,36 +13418,46 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
 /* global __oj_input_time_metadata:false */
 
 (function () {
+  var bindingMeta = {
+    properties: {
+      readonly: {
+        binding: { consume: { name: 'readonly' } }
+      },
+      userAssistanceDensity: {
+        binding: { consume: { name: 'userAssistanceDensity' } }
+      }
+    }
+  };
   __oj_input_time_metadata.extension._WIDGET_NAME = 'ojInputTime';
   __oj_input_time_metadata.extension._INNER_ELEM = 'input';
   __oj_input_time_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['accesskey', 'aria-label', 'tabindex'];
   __oj_input_time_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
-  oj.CustomElementBridge.register('oj-input-time', { metadata: __oj_input_time_metadata });
-}());
+  oj.CustomElementBridge.register('oj-input-time', { metadata: oj.CollectionUtils.mergeDeep(
+    __oj_input_time_metadata, bindingMeta) });
 
-/* global __oj_input_date_metadata:false */
-(function () {
+  /* global __oj_input_date_metadata:false */
   __oj_input_date_metadata.extension._WIDGET_NAME = 'ojInputDate';
   __oj_input_date_metadata.extension._INNER_ELEM = 'input';
   __oj_input_date_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['accesskey', 'aria-label', 'tabindex'];
   __oj_input_date_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
+  oj.CollectionUtils.mergeDeep(__oj_input_date_metadata, bindingMeta);
+
   oj.CustomElementBridge.register('oj-input-date', { metadata: __oj_input_date_metadata });
 
-  var ojDatePickerMeta = oj.CollectionUtils.copyInto({}, __oj_input_date_metadata, undefined, true);
+  var ojDatePickerMeta = Object.assign({}, __oj_input_date_metadata);
   ojDatePickerMeta.extension._INNER_ELEM = 'div';
   oj.CustomElementBridge.register('oj-date-picker', { metadata: ojDatePickerMeta });
-}());
 
-/* global __oj_input_date_time_metadata:false */
-(function () {
+  /* global __oj_input_date_time_metadata:false */
   __oj_input_date_time_metadata.extension._WIDGET_NAME = 'ojInputDateTime';
   __oj_input_date_time_metadata.extension._INNER_ELEM = 'input';
   __oj_input_date_time_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['accesskey', 'aria-label', 'tabindex'];
   __oj_input_date_time_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
+  oj.CollectionUtils.mergeDeep(__oj_input_date_time_metadata, bindingMeta);
+
   oj.CustomElementBridge.register('oj-input-date-time', { metadata: __oj_input_date_time_metadata });
 
-  var ojDateTimePickerMeta = oj.CollectionUtils.copyInto({}, __oj_input_date_time_metadata,
-    undefined, true);
+  var ojDateTimePickerMeta = Object.assign({}, __oj_input_date_time_metadata);
   ojDateTimePickerMeta.extension._INNER_ELEM = 'div';
   oj.CustomElementBridge.register('oj-date-time-picker', { metadata: ojDateTimePickerMeta });
 }());

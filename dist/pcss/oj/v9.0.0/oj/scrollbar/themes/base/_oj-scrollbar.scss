@@ -1,0 +1,77 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+@include module-include-once("common.scrollbar") {
+  
+  * {
+    /* FF 68+ */
+    scrollbar-width: var(--oj-scrollbar-width);
+    scrollbar-color: var(--oj-scrollbar-thumb-color) var(--oj-scrollbar-track-color);
+  
+  }
+  
+  :hover {
+    /* FF 68+ */
+    scrollbar-color: var(--oj-scrollbar-thumb-color-hover) var(--oj-scrollbar-track-color-hover);
+  }
+  
+  
+  ::-webkit-scrollbar {
+      width: var(--oj-scrollbar-size);
+      height: var(--oj-scrollbar-size);
+  }
+
+  ::-webkit-scrollbar-track{
+      background-color: var(--oj-scrollbar-track-color);
+  }
+
+  ::-webkit-scrollbar-thumb{
+    background-color: var(--oj-scrollbar-thumb-color);
+    border-radius: var(--oj-scrollbar-thumb-border-radius);
+  }
+  
+  :hover::-webkit-scrollbar-track {
+      background-color: var(--oj-scrollbar-track-color-hover);
+  }
+  
+  :hover::-webkit-scrollbar-thumb{
+      background-color: var(--oj-scrollbar-thumb-color-hover);
+  }
+  
+  ::-webkit-scrollbar-button {
+    display: var(--oj-scrollbar-button-display);
+  }
+  
+  ::-webkit-scrollbar-corner {
+    background-color: var(--oj-scrollbar-track-color);
+  }
+
+    
+  .oj-scrollbar-force,
+  body {
+    /* FF 68+ */
+    scrollbar-color: var(--oj-scrollbar-thumb-color-force) var(--oj-scrollbar-track-color-force);
+  }
+  
+  .oj-scrollbar-force::-webkit-scrollbar-track,
+  body::-webkit-scrollbar-track {
+      background-color: var(--oj-scrollbar-track-color-force);
+  }
+
+  .oj-scrollbar-force::-webkit-scrollbar-thumb, 
+  body::-webkit-scrollbar-thumb {
+      background-color: var(--oj-scrollbar-thumb-color-force);
+  }
+
+  .oj-scrollbar-force::-webkit-scrollbar-corner,
+  body::-webkit-scrollbar-corner {
+    background-color: var(--oj-scrollbar-track-color-force);
+  }
+
+  .oj-scrollbar-force:hover::-webkit-scrollbar-thumb {
+      background-color: var(--oj-scrollbar-thumb-color-hover);
+  }
+
+
+
+}

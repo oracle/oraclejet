@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -50,6 +51,29 @@ var corerouter = (function () {
     }
     var url = urlAdapter.getUrlForRoutes(routes);
     return url;
+  };
+
+  /**
+   * Get an array of active routes, starting from the root router down to the
+   * last child.
+   * @return {Array.<CoreRouter.Route>} An array of all active routes, with the
+   * root route as the first element.
+   */
+  var getActiveRoutes = function () {
+    let router = rootRouter;
+    const routes = [];
+    let state;
+    while (router) {
+      state = router._activeState;
+      if (state) {
+        routes.push({
+          path: state.path || '',
+          params: state.params
+        });
+      }
+      router = router._childRouter;
+    }
+    return routes;
   };
 
   /**
@@ -399,7 +423,7 @@ var corerouter = (function () {
     var route = this._getRouteSegment();
     // Transition to the new route, or a default one if no current one exists
     return this._execute(route || { path: '', params: {} })
-    .then(function (state) {
+    .then((state) => {
       // Synchronize the next child router
       var p = state;
       var childRouter = this._childRouter;
@@ -410,7 +434,7 @@ var corerouter = (function () {
         noHistorySegments = [];
       }
       return p;
-    }.bind(this));
+    });
   };
 
   /**
@@ -537,20 +561,23 @@ var corerouter = (function () {
     });
     if (!goP) {
       const path = trans.map((t) => t.path).join('/');
+      // Get the current routes for all active routers, and compare that to the
+      // new routes for this transition.
+      const currentRoutes = getActiveRoutes();
+      const currentPath = urlAdapter.getUrlForRoutes(currentRoutes);
+      // Insert the new transitions after the current router's route offset
+      const newRoutes = currentRoutes.slice(0, this._offset).concat(trans);
+      const newPath = urlAdapter.getUrlForRoutes(newRoutes);
+
       if (this._noHistory) {
         Logger.info(`Navigating non-history tracking router(${this._name}) to ${path}`);
         // Non-history tracking routers use noHistorySegments in place of URL
         // to store their transitions. Replace the segments after our index with
         // the new transitions
         noHistorySegments = noHistorySegments.slice(0, this._noHistoryOffset).concat(trans);
-      } else {
+      } else if (currentPath !== newPath) {
         Logger.info(`Navigating router(${this._name}) to ${path}`);
-        // Get all current routes from the URL and replace the ones after our
-        // index with the new transition
-        var routes = urlAdapter.getRoutesForUrl();
-        routes = routes.slice(0, this._offset).concat(trans);
-        var fullPath = urlAdapter.getUrlForRoutes(routes);
-        window.history.pushState(null, 'path', fullPath);
+        window.history.pushState(null, 'path', newPath);
       }
       goP = this.sync();
     }
@@ -652,9 +679,7 @@ var corerouter = (function () {
       }
     });
     return Promise.all(allPub)
-    .then(function () {
-      return state;
-    });
+    .then(() => state);
   };
 
   CoreRouter.prototype._setupNavigationListener = function () {
@@ -932,6 +957,7 @@ var corerouter = (function () {
  * the routes and associated information to which it can navigate.
  * @interface CoreRouterState
  * @ojtsnamespace CoreRouter
+ * @ojtsimport knockout
  * @ojsignature [{
  *                target: "Type",
  *                value: "interface CoreRouterState<D extends {[key: string]: any} = {[key: string]: any}, P extends {[key: string]: any} = {[key: string]: any}>",

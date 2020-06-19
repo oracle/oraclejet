@@ -1,0 +1,21 @@
+<?js
+const data = obj;
+const componentPropertyInterfaceWithGenerics = data.componentPropertyInterface + data.propsTypeParams;
+const propsClassNameWithGenerics = data.propsClassName + data.propsTypeParams;
+const vpropsClassNameWithGenerics = data.vpropsClassName + data.propsTypeParams;
+if (data.propsClassName) {
+?>
+
+export interface <?js= componentPropertyInterfaceWithGenerics ?> extends Partial<<?js= data.settablePropertiesInterface ?>>, GlobalAttributes {}
+export interface <?js= vpropsClassNameWithGenerics ?> extends <?js= propsClassNameWithGenerics ?>, GlobalAttributes {}
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      "<?js= data.customElementName ?>": <?js= data.componentPropertyInterface ?><?js= data.propsTypeParamsAny ?>;
+    }
+  }
+}
+<?js } else { ?>
+export interface <?js= vpropsClassNameWithGenerics ?> extends GlobalAttributes {}
+<?js } ?>

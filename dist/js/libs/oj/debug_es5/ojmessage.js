@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -130,6 +131,8 @@ var __oj_message_metadata =
  * @ojshortdesc A message conveys categorized information to the user, often regarding errors.
  *
  * @ojsignature {target: "Type", value:"class ojMessage extends JetElement<ojMessageSettableProperties>"}
+ *
+ * @ojuxspecs ['messages']
  *
  * @classdesc
  * <h3 id="messageOverview-section">
@@ -481,13 +484,15 @@ var __oj_message_metadata =
  *          application level using this theme variable (SCSS) :</caption>
  * $messageAutoTimeoutCloseIconDisplay: block !default;
  *
+ * @ojshortdesc Specifies the UI affordance provided to end users to be able to close the message. See the Help documentation for more information.
+ *
  * @expose
  * @type {string}
  * @name message.closeAffordance
- * @ojvalue {string} "none" no UI affordance is provided to close the message. Application has to
+ * @ojvalue {string} "none" No UI affordance is provided to close the message. Application has to
  * call the close() method to dismiss the message
- * @ojvalue {string} "defaults" use implicit affordance to best suit the native theme, efficient use
- * of available space and screen touch capabilities. A close 'X' icon is displayed in all cases
+ * @ojvalue {string} "defaults" Use implicit affordance to best suit the native theme, efficient use
+ * of available space, and screen touch capabilities.<br><br>A close 'X' icon is displayed in all cases
  * except in the case when the message is set to auto-timeout when using mobile themes. The display
  * of the close icon can be further controlled by using the theme variables as noted below. See
  * keyboard and touch end user information sections in this document for interaction options.
@@ -875,7 +880,7 @@ var __oj_message_metadata =
  * @property {"header"|"none"|"auto"} [category] Defines display option for the category text in the
  *  message.
  */
-var _MESSAGE_VIEW = '<div :id="[[containerId]]" class="oj-message-container" on-keydown="[[handleKeydown]]">' + '  <div class="oj-message-header">' + '    <div class="oj-message-leading-header" :title="[[computedCategory]]">' + '      <oj-bind-if test="[[computedIconStyle]]">' + '        <div class="oj-component-icon oj-message-status-icon oj-message-custom-icon" ' + '         role="presentation" :title="[[computedCategory]]" ' + '         :style.background="[[computedIconStyle]]">' + '        </div>' + '      </oj-bind-if>' + '      <oj-bind-if test="[[computedIconClass]]">' + '        <div role="presentation" :title="[[computedCategory]]" :class="[[computedIconClass]]">' + '        </div>' + '      </oj-bind-if>' + '      <oj-bind-if test="[[computedCategory]]">' + '        <div class="oj-message-category" tabindex="-1">' + '          <h1 :title="[[computedCategory]]">' + '            <oj-bind-text value="[[computedCategory]]"></oj-bind-text> ' + '          </h1>' + '        </div>' + '      </oj-bind-if>' + '      <oj-bind-if test="[[!computedCategory() && computedSummary()]]">' + '        <div class="oj-message-summary">' + '          <oj-bind-text value="[[computedSummary]]"></oj-bind-text>' + '        </div>' + '      </oj-bind-if>' + '    </div>' + '    <div class="oj-message-trailing-header">' + '      <oj-bind-if test="[[formattedTimestamp]]">' + '        <div class="oj-message-timestamp">' + '          <oj-bind-text value="[[formattedTimestamp]]"></oj-bind-text> ' + '        </div>' + '      </oj-bind-if>' + '      <oj-bind-if test="[[hasCloseAffordance]]">' + '        <div :class="[[computedMessageCloseSelectors]]">' + '          <oj-button display="icons" chroming="half" on-click="[[handleCloseIcon]]">' + '            <span slot="startIcon" class="oj-fwk-icon oj-fwk-icon-cross"></span>' + '            <span>' + '              <oj-bind-text value="[[computedLabelCloseIcon]]"></oj-bind-text>' + '            </span>' + '          </oj-button>' + '        </div>' + '      </oj-bind-if>' + '    </div>  ' + '  </div>' + '  <div class="oj-message-body">' + '    <oj-bind-if test="[[computedCategory]]">' + '      <div class="oj-message-summary">' + '        <oj-bind-text value="[[computedSummary]]"></oj-bind-text>' + '      </div>' + '    </oj-bind-if>' + '    <div class="oj-message-detail">' + '      <oj-bind-slot name="detail">' + '        <oj-bind-text value="[[computedDetail]]"></oj-bind-text>' + '      </oj-bind-slot>' + '    </div>' + '  <div>' + '</div>';
+var _MESSAGE_VIEW = '<div :id="[[containerId]]" class="oj-message-container" on-keydown="[[handleKeydown]]">' + '  <div class="oj-message-header">' + '    <div class="oj-message-leading-header" :title="[[computedCategory]]">' + '      <oj-bind-if test="[[computedIconStyle]]">' + '        <div class="oj-component-icon oj-message-status-icon oj-message-custom-icon" ' + '         role="presentation" :title="[[computedCategory]]" ' + '         :style.background="[[computedIconStyle]]">' + '        </div>' + '      </oj-bind-if>' + '      <oj-bind-if test="[[computedIconClass]]">' + '        <div role="presentation" :title="[[computedCategory]]" :class="[[computedIconClass]]">' + '        </div>' + '      </oj-bind-if>' + '      <oj-bind-if test="[[computedCategory]]">' + '        <div class="oj-message-category" tabindex="-1">' + '          <h1 :title="[[computedCategory]]">' + '            <oj-bind-text value="[[computedCategory]]"></oj-bind-text> ' + '          </h1>' + '        </div>' + '      </oj-bind-if>' + '      <oj-bind-if test="[[!computedCategory() && computedSummary()]]">' + '        <div class="oj-message-summary">' + '          <oj-bind-text value="[[computedSummary]]"></oj-bind-text>' + '        </div>' + '      </oj-bind-if>' + '    </div>' + '    <div class="oj-message-trailing-header">' + '      <oj-bind-if test="[[formattedTimestamp]]">' + '        <div class="oj-message-timestamp">' + '          <oj-bind-text value="[[formattedTimestamp]]"></oj-bind-text> ' + '        </div>' + '      </oj-bind-if>' + '      <oj-bind-if test="[[hasCloseAffordance]]">' + '        <div :class="[[computedMessageCloseSelectors]]">' + '          <oj-button display="icons" chroming="borderless" on-click="[[handleCloseIcon]]">' + '            <span slot="startIcon" class="oj-fwk-icon oj-fwk-icon-cross"></span>' + '            <span>' + '              <oj-bind-text value="[[computedLabelCloseIcon]]"></oj-bind-text>' + '            </span>' + '          </oj-button>' + '        </div>' + '      </oj-bind-if>' + '    </div>  ' + '  </div>' + '  <div class="oj-message-body">' + '    <oj-bind-if test="[[computedCategory]]">' + '      <div class="oj-message-summary">' + '        <oj-bind-text value="[[computedSummary]]"></oj-bind-text>' + '      </div>' + '    </oj-bind-if>' + '    <div class="oj-message-detail">' + '      <oj-bind-slot name="detail">' + '        <oj-bind-text value="[[computedDetail]]"></oj-bind-text>' + '      </oj-bind-slot>' + '    </div>' + '  <div>' + '</div>';
 
 function MessageViewModel(context) {
   this._composite = context.element; // anything used by the view bindings can't be obfuscated and is why it's defined in quotes.
@@ -1412,9 +1417,10 @@ MessageViewModel.prototype._handleKeydown = function (event) {
   // if the event has been prevented or closeAffordance property is not "defaults", no-opt.
   if (event.defaultPrevented || this._computeCloseAffordance() !== 'defaults') {
     return;
-  }
+  } // keyCode is deprecated and it's not supported on some browsers.
 
-  if (event.keyCode === $.ui.keyCode.ESCAPE) {
+
+  if (event.keyCode === $.ui.keyCode.ESCAPE || event.key === 'Escape') {
     event.preventDefault();
 
     this._closeMessage(event);

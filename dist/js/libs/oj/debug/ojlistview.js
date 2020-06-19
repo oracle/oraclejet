@@ -1,7 +1,8 @@
 /**
  * @license
  * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
@@ -22,6 +23,14 @@ var __oj_list_view_metadata =
     },
     "data": {
       "type": "object"
+    },
+    "display": {
+      "type": "string",
+      "enumValues": [
+        "card",
+        "list"
+      ],
+      "value": "list"
     },
     "dnd": {
       "type": "object",
@@ -296,13 +305,14 @@ var __oj_list_view_metadata =
     "ojCopy": {},
     "ojCut": {},
     "ojExpand": {},
+    "ojItemAction": {},
     "ojPaste": {},
     "ojReorder": {}
   },
   "extension": {}
 };
 
-/* global List:false, Promise:false, Symbol:false, Logger:false, Context:false, KeyMap:false */
+/* global List:false, Promise:false, Symbol:false, Logger:false, Context:false, KeyMap:false, Set:false */
 /**
  * Handler for TreeDataProvider generated content
  * @constructor
@@ -317,6 +327,9 @@ oj.TreeDataProviderContentHandler = function (widget, root, data) {
 oj.Object.createSubclass(oj.TreeDataProviderContentHandler, List.DataProviderContentHandler,
                          'oj.TreeDataProviderContentHandler');
 
+// number of skeleton items to render for expand node
+oj.TreeDataProviderContentHandler.NUM_CHILD_SKELETONS = 3;
+
 /**
  * Initializes the instance.
  * @protected
@@ -324,6 +337,7 @@ oj.Object.createSubclass(oj.TreeDataProviderContentHandler, List.DataProviderCon
 oj.TreeDataProviderContentHandler.prototype.Init = function () {
   oj.TreeDataProviderContentHandler.superclass.Init.call(this);
   this.m_childDataProviders = new KeyMap();
+  this.m_fetchCalls = new Set();
 };
 
 /**
@@ -362,6 +376,7 @@ oj.TreeDataProviderContentHandler.prototype.fetchRows = function (forceFetch) {
 
   oj.TreeDataProviderContentHandler.superclass.fetchRows.call(this, forceFetch);
 
+  this.m_fetchCalls.clear();
   this._fetchChildren(null, this.m_root, null);
 
   this.signalTaskEnd(); // signal method task end
@@ -371,7 +386,7 @@ oj.TreeDataProviderContentHandler.prototype.fetchRows = function (forceFetch) {
  * @private
  */
 oj.TreeDataProviderContentHandler.prototype._fetchChildren =
-  function (parent, parentElem, successCallback) {
+  function (parent, parentElem, successCallback, errorCallback) {
     var self = this;
 
     this.signalTaskStart('fetching children from parent: ' + parent); // signal method task start
@@ -387,7 +402,8 @@ oj.TreeDataProviderContentHandler.prototype._fetchChildren =
         var collapseClass = this.m_widget.getCollapseIconStyleClass();
         // switch to loading icon
         if (anchor.hasClass(collapseClass)) {
-          var expandingClass = this.m_widget.getExpandingIconStyleClass();
+          var expandingClass = this.isSkeletonSupport() ? this.m_widget.getExpandIconStyleClass() :
+            this.m_widget.getExpandingIconStyleClass();
           anchor.removeClass(collapseClass)
             .addClass(expandingClass);
         }
@@ -396,9 +412,16 @@ oj.TreeDataProviderContentHandler.prototype._fetchChildren =
 
     // no need to check ready since multiple fetch from different parents can occur at the same time
     this.m_fetching = true;
+    if (parent != null) {
+      this.m_fetchCalls.add(parent);
+    }
+
+    // Create a clientId symbol that uniquely identify this consumer so that
+    // DataProvider which supports it can optimize resources
+    this._clientId = this._clientId || Symbol();
 
     // use -1 to fetch all child rows
-    var options = { size: -1 };
+    var options = { clientId: this._clientId, size: -1 };
 
     this.signalTaskStart('first fetch');
 
@@ -423,6 +446,12 @@ oj.TreeDataProviderContentHandler.prototype._fetchChildren =
         values[0].value.metadata = values[0].value.metadata.concat(value.value.metadata);
         return helperFunction(values);
       }, function (reason) {
+        if (parent != null) {
+          self.m_fetchCalls.delete(parent);
+        }
+        if (errorCallback) {
+          errorCallback(reason);
+        }
         self._handleFetchError(reason);
         self.signalTaskEnd(); // first fetch
       });
@@ -450,9 +479,6 @@ oj.TreeDataProviderContentHandler.prototype._fetchChildren =
         self.cleanItems(templateEngine, parentElem);
       }
 
-      // empty content now that we have data
-      $(parentElem).empty();
-
       // append loading indicator at the end as needed
       self._handleFetchSuccess(value, parent, parentElem, successCallback, templateEngine);
       self.signalTaskEnd(); // first fetch
@@ -460,6 +486,19 @@ oj.TreeDataProviderContentHandler.prototype._fetchChildren =
 
     this.signalTaskEnd(); // signal method task end
   };
+
+/**
+ * Promise that is resolved when all fetchChildren calls triggered by a single fetch
+ * has been completed.
+ * @private
+ */
+oj.TreeDataProviderContentHandler.prototype._getAtomicFetchChildPromise = function () {
+  var self = this;
+  // eslint-disable-next-line no-unused-vars
+  return new Promise(function (resolve, reject) {
+    self.m_fetchResolve = resolve;
+  });
+};
 
 oj.TreeDataProviderContentHandler.prototype._handleFetchSuccess =
   function (dataObj, parent, parentElem, successCallback, templateEngine) {
@@ -472,33 +511,11 @@ oj.TreeDataProviderContentHandler.prototype._handleFetchSuccess =
 
     this.signalTaskStart('handling successful fetch'); // signal method task start
 
-    var data = dataObj.value.data;
-    var keys = dataObj.value.metadata.map(function (value) {
-      return value.key;
-    });
-
-    if (data.length === keys.length) {
-      var index = 0;
-      var fragment = document.createDocumentFragment();
-      for (var i = 0; i < data.length; i++) {
-        var row = data[i];
-        // passing -1 for opt since we know it will be inserted at the end of the parent
-        this.addItem(fragment, -1, row, this.getMetadata(index, keys[i], row, parentElem),
-          templateEngine);
-
-        index += 1;
-      }
-      parentElem.appendChild(fragment);
-
-      // update aria-colspan on the gridcell representing the group header
-      if (this.shouldUseGridRole() && this.isCardLayout() && parent != null && index > 0) {
-        var gridcell = parentElem.parentNode.firstElementChild.firstElementChild;
-        $(gridcell).attr('aria-colspan', index + 1);
-      }
-    }
-
     // fetch is done
     this.m_fetching = false;
+    if (parent != null) {
+      this.m_fetchCalls.delete(parent);
+    }
 
     function postProcessing() {
       if (self.m_widget) {
@@ -514,16 +531,60 @@ oj.TreeDataProviderContentHandler.prototype._handleFetchSuccess =
       }
     }
 
-    if (this.isAsyncRendering()) {
-      // custom elements renders async so this is needed.
-      // Also, since the root for non-custom element is <ul>, when application do a whenReady within the context
-      // of <ul>, the postProcessing might be called after application's whenReady handler.
-      var busyContext = Context.getContext(this.m_root).getBusyContext();
-      busyContext.whenReady().then(function () {
-        postProcessing();
-      });
-    } else {
-      postProcessing();
+    var data = dataObj.value.data;
+    var keys = dataObj.value.metadata.map(function (value) {
+      return value.key;
+    });
+    var metadata = dataObj.value.metadata;
+    if (data.length === keys.length) {
+      var index = 0;
+      var fragment = document.createDocumentFragment();
+      for (var i = 0; i < data.length; i++) {
+        var row = data[i];
+        // passing -1 for opt since we know it will be inserted at the end of the parent
+        this.addItem(fragment, -1, row, this.getMetadata(index, keys[i], row, parentElem),
+          templateEngine, null, metadata[i]);
+
+        index += 1;
+      }
+
+      // check whether we are still expanding and therefore hold off appending child nodes
+      // also, we'll switch this off for NavList since it breaks the drill replace mode
+      if (this.m_fetchResolve != null || !this.shouldUseGridRole()) {
+        // subtree of what is currently expanding, so we should just be able to add it immediately
+        // (the root is still not attached yet)
+        $(parentElem).empty();
+        parentElem.appendChild(fragment); // @HTMLUpdateOK
+        if (!this.shouldUseGridRole()) {
+          // NavList case
+          postProcessing();
+        } else if (successCallback != null) {
+          successCallback.call(null, parentElem);
+        }
+      } else if (this.m_fetchCalls.size > 0) {
+        this._getAtomicFetchChildPromise().then(function () {
+          this.animateShowContent(parentElem, fragment, true).then(function () {
+            postProcessing();
+          });
+        }.bind(this));
+      } else {
+        this.animateShowContent(parentElem, fragment, true).then(function () {
+          postProcessing();
+        });
+      }
+
+      // update aria-colspan on the gridcell representing the group header
+      if (this.shouldUseGridRole() && this.isCardLayout() && parent != null && index > 0) {
+        var gridcell = parentElem.parentNode.firstElementChild.firstElementChild;
+        $(gridcell).attr('aria-colspan', index + 1);
+      }
+    }
+    // check if there's no more outstanding fetch children calls
+    if (this.m_fetchCalls.size === 0) {
+      if (this.m_fetchResolve != null) {
+        this.m_fetchResolve();
+        this.m_fetchResolve = null;
+      }
     }
 
     this.m_initialized = true;
@@ -629,8 +690,8 @@ oj.TreeDataProviderContentHandler.prototype.afterRenderItem =
         content.removeClass(focusedStyleClass);
         content.attr('role', 'row');
         content.children()
-          .wrapAll("<div role='gridcell' aria-expanded='false' class='oj-listview-cell-element " +
-                   focusedStyleClass + "'></div>"); // @HTMLUpdateOK
+          .wrapAll("<div role='gridcell' aria-expanded='false' class='oj-listview-cell-element " + // @HTMLUpdateOK
+                   focusedStyleClass + "'></div>");
       }
 
       // the yet to be expand group element
@@ -690,7 +751,23 @@ oj.TreeDataProviderContentHandler.prototype.Expand = function (item, successCall
 
   var parentKey = this.GetKey(item[0]);
   var parentElem = item.children('ul')[0];
-  this._fetchChildren(parentKey, parentElem, successCallback);
+  var showSkeletonTimeout;
+  if (this.isSkeletonSupport()) {
+    showSkeletonTimeout = setTimeout(function () { // @HTMLUpdateOK
+      this._renderExpandSkeletons(parentElem);
+    }.bind(this), this.m_widget._getShowStatusDelay());
+  }
+
+  this._fetchChildren(parentKey, parentElem, function (args) {
+    if (showSkeletonTimeout) {
+      clearTimeout(showSkeletonTimeout);
+    }
+    successCallback(args);
+    parentElem.classList.remove('oj-listview-skeleton-container');
+  }, function () {
+    this._destroyExpandSkeletons(parentElem);
+    this._handleFetchError();
+  }.bind(this));
 
   this.signalTaskEnd(); // signal method task end
 };
@@ -703,14 +780,14 @@ oj.TreeDataProviderContentHandler.prototype.Collapse = function (item) {
   }
 
   // remove all children nodes
-  item.empty(); // @HTMLUpdateOK
+  item.empty();
 };
 
 /**
  * @protected
  */
 oj.TreeDataProviderContentHandler.prototype.addItemsForModelInsert =
-  function (data, indexes, keys, parentKeys, isBeforeKeys, refKeys) {
+  function (data, indexes, keys, parentKeys, isBeforeKeys, refKeys, metadata) {
     // template engine should have already been loaded
     var templateEngine = this.getTemplateEngine();
 
@@ -740,7 +817,8 @@ oj.TreeDataProviderContentHandler.prototype.addItemsForModelInsert =
       this.addItem(parentElem, index, data[i],
                    this.getMetadata(index, keys[i], data[i], parentElem),
                    templateEngine,
-                   this.afterRenderItemForInsertEvent.bind(this));
+                   this.afterRenderItemForInsertEvent.bind(this),
+                   metadata != null ? metadata[i] : null);
 
       this.signalTaskEnd(); // signal add item end
     }
@@ -786,10 +864,76 @@ oj.TreeDataProviderContentHandler.prototype.handleModelRefreshEvent = function (
   // clear cached child DataProviders
   this.m_childDataProviders.clear();
 
+  // reset focus if needed
+  this.m_widget.resetFocusBeforeRefresh();
+
   // fetch data
   this.fetchRows(true);
 
   this.signalTaskEnd(); // signal method task end
+};
+
+oj.TreeDataProviderContentHandler.prototype.renderInitialSkeletons = function () {
+  // empty out root element before adding skeletons
+  if (this.m_superRoot) {
+    this.m_root = this.m_superRoot;
+    this.m_superRoot = null;
+  }
+  $(this.m_root).empty();
+
+  // determines how many items needed to fill the viewport
+  var height = this.getRootElementHeight();
+  var skeletonDimension = this.getDefaultSkeletonDimension();
+  var count = 0;
+  if (skeletonDimension.width > 0 && skeletonDimension.height > 0) {
+    var skeletonSetHeight = skeletonDimension.height *
+      (1 + oj.TreeDataProviderContentHandler.NUM_CHILD_SKELETONS); // one parent + 3 children
+    count = Math.ceil(height / skeletonSetHeight);
+  }
+
+  var container = document.createElement('li');
+  container.setAttribute('role', 'presentation');
+  container.classList.add('oj-listview-initial-skeletons');
+  var list = document.createElement('ul');
+  list.setAttribute('role', 'presentation');
+  list.classList.add(this.m_widget.getGroupStyleClass());
+  list.classList.add('oj-listview-skeleton-container');
+  for (var i = 0; i < count; i++) {
+    list.appendChild(this.createSkeletonItem()); // @HTMLUpdateOK
+    var parent = document.createElement('li');
+    var children = document.createElement('ul');
+    children.classList.add('oj-listview-child-skeleton');
+    parent.appendChild(children);
+    children.appendChild(this.createSkeletonItem()); // @HTMLUpdateOK
+    children.appendChild(this.createSkeletonItem()); // @HTMLUpdateOK
+    children.appendChild(this.createSkeletonItem()); // @HTMLUpdateOK
+    list.appendChild(parent);
+  }
+  container.appendChild(list); // @HTMLUpdateOK
+
+  this.m_root.appendChild(container); // @HTMLUpdateOK
+};
+
+oj.TreeDataProviderContentHandler.prototype._renderExpandSkeletons = function (elem) {
+  // make sure maxHeight wasn't set
+  // eslint-disable-next-line no-param-reassign
+  elem.style.maxHeight = 'none';
+  for (var i = 0; i < oj.TreeDataProviderContentHandler.NUM_CHILD_SKELETONS; i++) {
+    elem.appendChild(this.createSkeletonItem()); // @HTMLUpdateOK
+  }
+  elem.classList.add('oj-listview-skeleton-container');
+  elem.setAttribute('data-oj-initial-height', this._getExpandSkeletonHeight(elem));
+};
+
+oj.TreeDataProviderContentHandler.prototype._destroyExpandSkeletons = function (elem) {
+  $(elem).empty();
+};
+
+oj.TreeDataProviderContentHandler.prototype._getExpandSkeletonHeight = function (elem) {
+  if (this.m_expandSkeletonHeight == null || this.m_expandSkeletonHeight === 0) {
+    this.m_expandSkeletonHeight = elem.offsetHeight;
+  }
+  return this.m_expandSkeletonHeight;
 };
 
 
@@ -864,8 +1008,8 @@ oj.StaticContentHandler.prototype.RenderContent = function () {
     // in card layout, this is going to be a single row, N columns grid
     // so we'll need to wrap all <li> within a row
     $(this.m_root).children()
-      .wrapAll("<li role='presentation'><ul role='row' class='" +
-               this.m_widget.getGroupStyleClass() + "'></ul></li>"); // @HTMLUpdateOK
+      .wrapAll("<li role='presentation'><ul role='row' class='" + // @HTMLUpdateOK
+               this.m_widget.getGroupStyleClass() + "'></ul></li>");
     var wrapped = $(this.m_root).children('li').first().get(0);
     wrapped.style.width = '100%';
     root = wrapped.firstElementChild;
@@ -1060,9 +1204,6 @@ oj.StaticContentHandler.prototype.modifyContent = function (elem, depth) {
       this.modifyContent(groupItem[0], depth + 1);
     } else {
       item.addClass(itemStyleClass);
-      if (this.m_widget.getItemLayoutStyleClass) {
-        item.addClass(this.m_widget.getItemLayoutStyleClass());
-      }
     }
 
     if (this.m_widget._isSelectionEnabled() && this.isSelectable(context)) {
@@ -1177,8 +1318,8 @@ oj.StaticContentHandler.prototype.setGroupAriaProperties = function (group, coun
   group.removeClass(focusedElementStyleClass);
   group.attr('role', 'row');
   group.children()
-    .wrapAll("<div role='gridcell' aria-expanded='false' class='oj-listview-cell-element " +
-             focusedElementStyleClass + "'></div>"); // @HTMLUpdateOK
+    .wrapAll("<div role='gridcell' aria-expanded='false' class='oj-listview-cell-element " + // @HTMLUpdateOK
+             focusedElementStyleClass + "'></div>");
 
   if (this.isCardLayout() && count > 1) {
     group.children().first().attr('aria-colspan', count);
@@ -1594,6 +1735,8 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         self.signalTaskEnd(); // signal method task end
       });
     } else {
+      // remove existing no data content now before StaticContentHandler modifies content
+      this._removeNoData();
       // StaticContentHandler will handle cases where children are invalid or empty
       postProcess(new oj.StaticContentHandler(this, this.element[0]));
     }
@@ -1624,6 +1767,16 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     this.DestroyContentHandler(true);
     this._unregisterResizeListener(this.getListContainer());
     this._unregisterScrollHandler();
+    this._resetState();
+  },
+
+  /**
+   * Whether the selected option is exposed at the component
+   * @private
+   */
+  _isSelectedOptionExposed: function () {
+    // currently this is override by NavList, always true for ListView
+    return this.ShouldUseGridRole();
   },
 
   /**
@@ -1633,6 +1786,34 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
   _syncSelectionWithKeySet: function () {
     var selection = this.GetOption('selection');
     var selected = this.GetOption('selected');
+
+    // first check if selected is specified and sync that up with selection
+    // if selected option is not exposed then we don't need to sync selected with selection
+    if (this._isSelectedOptionExposed() &&
+      (selected && ((selected.isAddAll() || (selected.values && selected.values().size > 0))))) {
+      selection = [];
+      if (selected.isAddAll()) {
+        selection.inverted = true;
+        selected.deletedValues().forEach(function (key) {
+          selection.push(key);
+        });
+      } else {
+        selected.values().forEach(function (key) {
+          selection.push(key);
+        });
+      }
+
+      this.SetOption('selection', selection, {
+        _context: {
+          internalSet: true,
+        },
+        changed: true
+      });
+
+      return;
+    }
+
+    // now sync selected with selection
     var needsUpdate = false;
 
     // NavList do not have this property, need to initialize it
@@ -1667,10 +1848,57 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
   },
 
   /**
+   * @private
+   */
+  _isAnimateCards: function () {
+    return this.isCardDisplayMode() && this.m_contentHandler &&
+      !this.m_contentHandler.IsHierarchical();
+  },
+
+  /**
    * Redraw the entire list view after having made some external modifications.
    * Invoked by widget
    */
   refresh: function () {
+    var cards = this.element[0].querySelectorAll('.oj-listview-card');
+    if (cards.length > 0) {
+      var self = this;
+      this.signalTaskStart('Exit animation');
+      this._applyExitAnimation(cards).then(function () {
+        self._refresh();
+        self.signalTaskEnd();
+      });
+    } else {
+      this._refresh();
+    }
+  },
+
+  /**
+   * @private
+   */
+  _applyExitAnimation(cards) {
+    var root = this.element[0];
+    return new Promise(function (resolve) {
+      var listener = function () {
+        root.removeEventListener('animationend', listener);
+        resolve(true);
+      };
+      root.addEventListener('animationend', listener);
+      // apply animation class
+      cards.forEach(function (card) {
+        // eslint-disable-next-line no-param-reassign
+        card.style.animationDelay = '0ms';
+        card.classList.remove('oj-card-initial-entrance-animation');
+        card.classList.remove('oj-card-loadmore-entrance-animation');
+        card.classList.add('oj-card-initial-exit-animation');
+      });
+    });
+  },
+
+  /**
+   * @private
+   */
+  _refresh: function () {
     // reset content, wai aria properties, and ready state
     this._resetInternal();
 
@@ -1685,7 +1913,22 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     // update top/bottom gridlines
     this._updateGridlines();
 
+    // if active element is inside an item, we'll need to shift focus to
+    // the root otherwise focus is lost when all items are removed
+    this.resetFocusBeforeRefresh();
+
     this.signalTaskEnd(); // signal method task end
+  },
+
+  /**
+   * Invoked before refresh, including DataProviderRefresh event
+   */
+  resetFocusBeforeRefresh: function () {
+    if (this.element[0].contains(document.activeElement)) {
+      this.m_active = null;
+      this.SetRootElementTabIndex();
+      this.element[0].focus();
+    }
   },
 
   /**
@@ -1772,7 +2015,14 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     this.UnsetAriaProperties();
     this._cleanupTabbableElementProperties(this.element);
     this.DestroyContentHandler();
+    this._resetState();
+  },
 
+  /**
+   * Reset internal state and cache
+   * @private
+   */
+  _resetState: function () {
     this.m_active = null;
     this.m_isExpandAll = null;
     this.m_disclosing = null;
@@ -1788,6 +2038,8 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     this.m_gridlinePlaceholder = null;
 
     this.ClearCache();
+    this._clearFocusoutTimeout();
+    this._clearFocusoutBusyState();
 
     // give dnd context a chance to clear internals
     if (this.m_dndContext != null) {
@@ -2004,6 +2256,16 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
   },
 
   /**
+   * Retrieve metadata stored in dom
+   * @param {Element} item
+   * @return {any} data for item
+   * @private
+   */
+  _getMetadataForItem: function (item) {
+    return $.data(item, 'metadata');
+  },
+
+  /**
    * To be override by NavList
    * @protected
    */
@@ -2114,7 +2376,8 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
             options.item != null ||
             options.scrollPolicy != null ||
             options.scrollPolicyOptions != null ||
-            options.gridlines != null);
+            options.gridlines != null ||
+            options.display != null);
   },
 
   /**
@@ -2256,7 +2519,30 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
 
     return false;
   },
+  /**
+   * @private
+   */
+  isFirstSelectedItem: function (key) {
+    var firstSelectedData = this.GetOption('firstSelectedItem');
+    return firstSelectedData && oj.KeyUtils.equals(firstSelectedData.key, key);
+  },
+  /**
+   * @private
+   */
+  setFirstSelectedItem: function (key, data) {
+    var value = {
+      key: key,
+      data: data
+    };
 
+    this.SetOption('firstSelectedItem', value, {
+      _context: {
+        originalEvent: null,
+        internalSet: true
+      },
+      changed: true
+    });
+  },
   /**
    * @private
    */
@@ -2276,18 +2562,8 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     }
 
     if (key != null) {
-      var value = {
-        key: key,
-        data: this.getDataForVisibleItem({ key: key })
-      };
-
-      this.SetOption('firstSelectedItem', value, {
-        _context: {
-          originalEvent: null,
-          internalSet: true
-        },
-        changed: true
-      });
+      var data = this.getDataForVisibleItem({ key: key });
+      this.setFirstSelectedItem(key, data);
     }
   },
 
@@ -2298,54 +2574,52 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    */
   HandleSelectionOption: function (options) {
     if (options.selection != null || options.selected != null) {
-      if (this._isSelectionEnabled()) {
-        var selected = options.selected;
-        if (selected != null && selected.isAddAll()) {
-          var items = this._getItemsCache();
-          for (var j = 0; j < items.length; j++) {
-            this._applySelection(items[j], this.m_contentHandler.GetKey(items[j]));
-          }
-
-          // eslint-disable-next-line no-param-reassign
-          options.selection = KeySet.KeySetUtils.toArray(selected);
-        } else {
-          var set = selected != null ? selected.values() : options.selection;
-
-          // remove any non-selectable items, this will effectively clone the selection as well,
-          // which we'll need to do.  filterSelection takes an iterable
-          var filteredSelection = this._filterSelection(set);
-          // eslint-disable-next-line no-param-reassign
-          options.selection = filteredSelection;
-
-          // eslint-disable-next-line no-param-reassign
-          selected = this.GetOption('selected');
-          selected = selected.clear();
-          selected = selected.add(filteredSelection);
-          // eslint-disable-next-line no-param-reassign
-          options.selected = selected;
-
-          // keep selection frontier if it's part of selection
-          var selectionFrontier;
-          if (this.m_selectionFrontier) {
-            var frontierKey = this.GetKey(this.m_selectionFrontier.get(0));
-            selectionFrontier = selected.has(frontierKey) ? this.m_selectionFrontier : undefined;
-          }
-
-          // clear selection first
-          this._clearSelection(false, selectionFrontier);
-
-          // selects each key
-          for (var i = 0; i < filteredSelection.length; i++) {
-            var elem = this.FindElementByKey(filteredSelection[i]);
-            if (elem != null) {
-              this._applySelection(elem, filteredSelection[i]);
-            }
-          }
+      var selected = options.selected;
+      if (selected != null && selected.isAddAll()) {
+        var items = this._getItemsCache();
+        for (var j = 0; j < items.length; j++) {
+          this._applySelection(items[j], this.m_contentHandler.GetKey(items[j]));
         }
 
-        if (selected != null) {
-          this._updateFirstSelectedItem(selected);
+        // eslint-disable-next-line no-param-reassign
+        options.selection = KeySet.KeySetUtils.toArray(selected);
+      } else {
+        var set = selected != null ? selected.values() : options.selection;
+
+        // we used to filter non-selectable items, but not anymore, but we are still
+        // cloning by converting iterable into array
+        var newSelection = this._cloneSelection(set);
+        // eslint-disable-next-line no-param-reassign
+        options.selection = newSelection;
+
+        // eslint-disable-next-line no-param-reassign
+        selected = this.GetOption('selected');
+        selected = selected.clear();
+        selected = selected.add(newSelection);
+        // eslint-disable-next-line no-param-reassign
+        options.selected = selected;
+
+        // keep selection frontier if it's part of selection
+        var selectionFrontier;
+        if (this.m_selectionFrontier) {
+          var frontierKey = this.GetKey(this.m_selectionFrontier.get(0));
+          selectionFrontier = selected.has(frontierKey) ? this.m_selectionFrontier : undefined;
         }
+
+        // clear selection first
+        this._clearSelection(false, selectionFrontier);
+
+        // selects each key
+        for (var i = 0; i < newSelection.length; i++) {
+          var elem = this.FindElementByKey(newSelection[i]);
+          if (elem != null) {
+            this._applySelection(elem, newSelection[i]);
+          }
+        }
+      }
+
+      if (selected != null) {
+        this._updateFirstSelectedItem(selected);
       }
     }
   },
@@ -2475,12 +2749,25 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
 
   /** ************************************ Core rendering ********************************/
   /**
+   * Whether display option is set to 'card'.  Note this is different than isCardLayout which includes
+   * the legacy way to switch to card layout mode using marker style class.
+   * @private
+   */
+  isCardDisplayMode: function () {
+    return this.GetOption('display') === 'card';
+  },
+
+  /**
    * Whether the listview is in card layout mode
    * @return {boolean} true if it is in card layout mode, false otherwise
    */
   isCardLayout: function () {
     var elem = this.ojContext._IsCustomElement() ? this.GetRootElement() : this.element;
-    return elem.hasClass('oj-listview-card-layout');
+    // legacy marker class has precedence to ensure backward compatibility
+    if (elem.hasClass('oj-listview-card-layout')) {
+      return true;
+    }
+    return this.isCardDisplayMode();
   },
 
   /**
@@ -2851,7 +3138,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       listContainer = $(this.OuterWrapper);
     } else {
       listContainer = $(document.createElement('div'));
-      this.element.parent()[0].replaceChild(listContainer[0], this.element[0]); // @HTMLUpdateOK
+      this.element.parent()[0].replaceChild(listContainer[0], this.element[0]);
     }
 
     listContainer.addClass(this.GetContainerStyleClass()).addClass('oj-component');
@@ -3175,19 +3462,21 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         var slotMap = this.GetSlotMap();
         var slot = slotMap.noData;
         if (slot && slot.length > 0 && slot[0].tagName.toLowerCase() === 'template') {
-          var noDataContentRoot = document.createElement('div');
+          var noDataContentRoot = document.createElement('li');
           noDataContentRoot.id = this._createSubId('empty');
-          noDataContentRoot.className = 'oj-listview-no-data-container';
+          noDataContentRoot.classList.add('oj-listview-no-data-container');
+          noDataContentRoot.classList.add('oj-listview-no-data-item');
 
-          var root = this.GetRootElement();
+          var root = this.element;
+          root.addClass('oj-listview-no-data-container');
           root.append(noDataContentRoot); // @HTMLUpdateOK
 
           var self = this;
           this.signalTaskStart('run no data template');
           Config.__getTemplateEngine().then(function (engine) {
-            var nodes = engine.execute(root, slot[0], {}, null);
+            var nodes = engine.execute(self.GetRootElement(), slot[0], {}, null);
             nodes.forEach(function (node) {
-              noDataContentRoot.appendChild(node);
+              noDataContentRoot.appendChild(node); // @HTMLUpdateOK
             });
             self.m_noDataContent = noDataContentRoot;
             self.m_engine = engine;
@@ -3203,7 +3492,8 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       this.element.append(this._buildEmptyText()); // @HTMLUpdateOK
     } else {
       // cached
-      this.GetRootElement().append(this.m_noDataContent); // @HTMLUpdateOK
+      this.element.addClass('oj-listview-no-data-container');
+      this.element.append(this.m_noDataContent); // @HTMLUpdateOK
     }
   },
 
@@ -3217,6 +3507,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       if (this.m_engine) {
         this.m_engine.clean(elem);
       }
+      elem.parentNode.classList.remove('oj-listview-no-data-container');
       elem.parentNode.removeChild(elem);
     }
   },
@@ -3242,7 +3533,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     }
 
     // check if it's empty
-    if (this.element[0].childElementCount === 0) {
+    if (this._isEmpty()) {
       this._addNoData();
 
       // fire ready event
@@ -3295,16 +3586,18 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       // take a snapshot of the value since the value is live and mutable
       var selection = this.GetOption('selection').slice(0);
       if (selection.length > 0) {
-        this._validateSelection(selection).then(function (valid) {
+        this._validateSelection(selection).then(function (validRowKeyData) {
           // if all of the selection are invalid, then we'll need to select the first item
           // and update the selection
-          if (!valid) {
+          if (validRowKeyData.validKeys.length === 0) {
             self._selectFirstSelectableItem();
-
-            // ... and fire ready event (legacy)
-            self.Trigger('ready', null, {});
+          } else {
+            self._setSelectionOption(
+              KeySet.KeySetUtils.toKeySet(validRowKeyData.validKeys),
+              null, null, validRowKeyData.validData[0].data);
           }
-
+          // ... and fire ready event (legacy)
+          self.Trigger('ready', null, {});
           self.signalTaskEnd();
         });
       }
@@ -3336,8 +3629,41 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       this.m_gridlinePlaceholder = gridlinePlaceholder;
     }
 
+    // apply card entrance animation
+    if (this._isAnimateCards()) {
+      var isInitial = (this.element[0].querySelector('.oj-listview-card-animated') == null);
+      var delay = 0;
+      var increment = this._getCardEntranceAnimationDelay();
+      this.element[0].querySelectorAll('.oj-listview-card:not(.oj-listview-card-animated)').forEach(function (card) {
+        // mark as animated so we can filter it next time
+        card.classList.add('oj-listview-card-animated');
+        // eslint-disable-next-line no-param-reassign
+        card.style.opacity = 0;
+        if (isInitial) {
+          card.classList.add('oj-card-initial-entrance-animation');
+          // eslint-disable-next-line no-param-reassign
+          card.style.animationDelay = delay + 'ms';
+          delay = Math.min(1000, delay + increment);
+        } else {
+          card.classList.add('oj-card-loadmore-entrance-animation');
+        }
+      });
+    }
+
     // fire ready event
     this.Trigger('ready', null, {});
+  },
+
+  /**
+   * Retrieve the animation delay between card entrance animation
+   * @return {number} the delay in ms
+   * @private
+   */
+  _getCardEntranceAnimationDelay: function () {
+    var defaultOptions = this._getOptionDefaults();
+    var delay = parseInt(defaultOptions.cardAnimationDelay, 10);
+
+    return isNaN(delay) ? 0 : delay;
   },
 
   /**
@@ -3345,9 +3671,49 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    * @private
    */
   _validateSelection: function (selection) {
-    var promise = this._validateKeys(selection);
-    // if it cannot validate, treat it as a valid key and return a Promise that resolves to true so that the key does not get remove.
-    return promise === null ? Promise.resolve(true) : promise;
+    var validRowKeyDataPromise = this._fetchValidRowKeyData(selection);
+    if (validRowKeyDataPromise) {
+      return validRowKeyDataPromise.then(function (validRowKeyData) {
+        for (var i = selection.length - 1; i >= 0; i--) {
+          if (validRowKeyData.validKeys.indexOf(selection[i]) === -1) {
+            selection.splice(i, 1);
+          }
+        }
+        return validRowKeyData;
+      });
+    }
+    return Promise.resolve([]);
+  },
+
+  /**
+   * Validate keys in selected
+   * @private
+   */
+  _fetchValidRowKeyData: function (keys) {
+    // need to verify keys if we have a DataProvider that supports non-iteration 'fetchByKeys'
+    var dataProvider = this.m_contentHandler.getDataProvider();
+    if (dataProvider && dataProvider.getCapability) {
+      var capability = dataProvider.getCapability('fetchByKeys');
+      if (capability && capability.implementation === 'lookup') {
+        return new Promise(function (resolve) {
+          dataProvider.fetchByKeys({ keys: new Set(keys), scope: 'global' }).then(function (fetchResult) {
+            var validKeys = [];
+            var validData = [];
+            var validKeysResult = fetchResult.results;
+            validKeysResult.forEach(function (value, key) {
+              validKeys.push(key);
+              validData.push(value);
+            });
+            resolve({ validKeys: validKeys, validData: validData });
+          }, function () {
+            // something bad happened, treat keys as invalid
+            resolve([]);
+          });
+        });
+      }
+    }
+    // if we can't validate, return null
+    return null;
   },
 
   /**
@@ -3403,12 +3769,12 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     return oj.DomUtils.getScrollLeft(scroller);
   },
 
-    /**
-     * Validate a set of keys
-     * @return {Promise|null} a Promise that resolves to true if one of the keys specified is valid, false otherwise.
-     *                        Returns null if it cannot validate the keys.
-     * @private
-     */
+  /**
+   * Validate a set of keys
+   * @return {Promise|null} a Promise that resolves to true if one of the keys specified is valid, false otherwise.
+   *                        Returns null if it cannot validate the keys.
+   * @private
+   */
   _validateKeys: function (keys) {
     var self = this;
 
@@ -3442,7 +3808,6 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         });
       }
     }
-
     // else we can't verify, so just return null and let syncScrollPosition tries to fetch
     // and find the item
     return null;
@@ -3492,8 +3857,15 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    * @private
    */
   _isScrollable: function () {
-    return (Math.abs(this._getScrollHeight() - this._getClientHeight()) >= 1 ||
-      Math.abs(this._getScrollWidth() - this._getClientWidth()) >= 1);
+    return (this._isScrollableY() || this._isScrollableX());
+  },
+
+  _isScrollableX: function () {
+    return (Math.abs(this._getScrollWidth() - this._getClientWidth()) > 1);
+  },
+
+  _isScrollableY: function () {
+    return (Math.abs(this._getScrollHeight() - this._getClientHeight()) > 1);
   },
 
   /**
@@ -3583,6 +3955,12 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     // check if only x updated
     if ((!isNaN(x) && isNaN(y)) ||
         (!isNaN(x) && y === scrollTop && x !== this._getScrollX(scroller, x))) {
+      // if not horizontally scrollable then bail
+      if (!this._isScrollableX()) {
+        this._clearOutstandingScrollPosition();
+        return;
+      }
+
       this._setScrollX(scroller, x);
       var scrollPosition = this.GetOption('scrollPosition');
       x = this._getScrollX(scroller);
@@ -3604,10 +3982,21 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         }
       });
     } else if (y !== scrollTop) {
+      var scrollUpdated = false;
       // flag it so that handleScroll won't do anything
-      this._setScrollY(scroller, y);
-      if (!isNaN(x) && x !== this._getScrollX(scroller, x)) {
+      if (this._isScrollableY()) {
+        this._setScrollY(scroller, y);
+        scrollUpdated = true;
+      }
+      if (!isNaN(x) && x !== this._getScrollX(scroller, x) && this._isScrollableX()) {
         this._setScrollX(scroller, x);
+        scrollUpdated = true;
+      }
+
+      // if nothing is updated, just bail
+      if (!scrollUpdated) {
+        this._clearOutstandingScrollPosition();
+        return;
       }
 
       // checks if further scrolling is needed
@@ -3645,6 +4034,14 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       });
     }
 
+    this._clearOutstandingScrollPosition();
+  },
+
+  /**
+   * Clear the variable for intermediate scrollPosition (that require fetch)
+   * @private
+   */
+  _clearOutstandingScrollPosition: function () {
     if (this.m_scrollPosition != null) {
       // free signalTaskStart from earlier when m_scrollPosition is saved
       this.signalTaskEnd();
@@ -3666,10 +4063,13 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    * Called by content handler to reset the state of ListView
    * @private
    */
-  ClearCache: function () {
+  ClearCache: function (clearKeyMap) {
     // clear any element dependent cache
     this.m_items = null;
     this.m_groupItems = null;
+    if (clearKeyMap && this.m_keyElemMap != null) {
+      this.m_keyElemMap.clear();
+    }
   },
 
   /**
@@ -3730,8 +4130,46 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       // eslint-disable-next-line no-param-reassign
       effect = this.getAnimationEffect(action);
     }
+
+    var originalHeight;
+    var originalMaxHeight;
+    if (action === 'expand') {
+      var initialHeight = elem.getAttribute('data-oj-initial-height');
+      if (initialHeight != null && !isNaN(initialHeight)) {
+        // clone it to inject additional effect options
+        // eslint-disable-next-line no-param-reassign
+        effect = Object.assign({}, effect);
+        // eslint-disable-next-line no-param-reassign
+        effect.startMaxHeight = initialHeight + 'px';
+        var contentHeight = elem.offsetHeight;
+        // in the shrink case (skeleton height is taller than actual content height)
+        if (contentHeight < initialHeight) {
+          originalMaxHeight = elem.style.maxHeight;
+          originalHeight = elem.style.height;
+          // eslint-disable-next-line no-param-reassign
+          elem.style.maxHeight = 'none';
+          // eslint-disable-next-line no-param-reassign
+          elem.style.height = initialHeight + 'px';
+          // eslint-disable-next-line no-param-reassign
+          effect.effect = 'collapse';
+          // eslint-disable-next-line no-param-reassign
+          effect.endMaxHeight = contentHeight + 'px';
+        }
+        elem.removeAttribute('data-oj-initial-height');
+      }
+    }
+
     // eslint-disable-next-line no-undef
-    return AnimationUtils.startAnimation(elem, action, effect, this.ojContext);
+    var promise = AnimationUtils.startAnimation(elem, action, effect, this.ojContext);
+    if (originalHeight !== undefined) {
+      promise.then(function () {
+        // eslint-disable-next-line no-param-reassign
+        elem.style.height = originalHeight;
+        // eslint-disable-next-line no-param-reassign
+        elem.style.maxHeight = originalMaxHeight;
+      });
+    }
+    return promise;
   },
 
   /** ******************* context menu methods *****************/
@@ -3993,6 +4431,8 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    * @protected
    */
   HandleFocus: function (event) {
+    this._clearFocusoutTimeout();
+    this._clearFocusoutBusyState();
     this.getListContainer().addClass('oj-focus-ancestor');
 
     // first time tab into listview, focus on first item
@@ -4000,7 +4440,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       // checks whether there's pending click to active, and the focus target is not inside any item (if it is the focus will shift to that item) or it's a unfocusable item
       var item = this._findItem($(event.target));
       if (!this.m_preActive && !this._isFocusBlurTriggeredByDescendent(event) &&
-          (item == null || this.SkipFocus(item))) {
+        (item == null || this.SkipFocus(item))) {
         this._initFocus(event);
       }
     } else {
@@ -4010,7 +4450,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       // otherwise vo doesn't follow the focus. ex: when offcanvas is opened,
       // focus will be moved to root node
       if (!this.m_preActive && event.target === this.ojContext.element[0]
-          && !this._isFocusBlurTriggeredByDescendent(event)) {
+        && !this._isFocusBlurTriggeredByDescendent(event)) {
         this.HighlightActive();
         this._focusItem(this.m_active.elem);
       }
@@ -4089,27 +4529,76 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
   },
 
   /**
+  * Clears any pending focusout timeout.
+  * @private
+  */
+  _clearFocusoutTimeout: function () {
+    if (this._focusoutTimeout) {
+      clearTimeout(this._focusoutTimeout);
+      this._focusoutTimeout = null;
+    }
+  },
+
+  /**
+  * Sets the 'focusout' busy state.
+  * @private
+  */
+  _setFocusoutBusyState: function () {
+    if (!this._focusoutResolveFunc) {
+      this._focusoutResolveFunc = this._addComponentBusyState('is handling focusout.');
+    }
+  },
+
+  /**
+   * Called by component to add a busy state and return the resolve function
+   * to call when the busy state can be removed.
+   * @param {String} msg the description of the busy state
+   * @private
+   */
+  _addComponentBusyState: function (msg) {
+    var busyContext = Context.getContext(this.element[0]).getBusyContext();
+    var options = {
+      description: "The component identified by '" + this.element[0].id +
+        "' " + msg
+    };
+    return busyContext.addBusyState(options);
+  },
+
+  /**
+   * Clears the 'focusout' busy state.
+   * @private
+   */
+  _clearFocusoutBusyState: function () {
+    if (this._focusoutResolveFunc) {
+      this._focusoutResolveFunc();
+      this._focusoutResolveFunc = null;
+    }
+  },
+
+  /**
    * Handler for blur event
    * @param {Event} event the blur event
    * @protected
    */
   HandleBlur: function (event) {
-    // NOTE that prior to a fix in Firefox 48, relatedTarget is always null
-    // just bail in case if it wasn't supported
-    // NOTE also IE11 fires an extra blur event with null relatedTarget, should bail as well
-    if (!this._supportRelatedTargetOnBlur() || this._isExtraBlurEvent(event)) {
-      return;
-    }
-
-    // event.relatedTarget would be null if focus out of page
-    // the other check is to make sure the blur is not caused by shifting focus within listview
-    if (!this._isFocusBlurTriggeredByDescendent(event) && !this.m_preActive) {
-      this._doBlur();
-    }
+    this._clearFocusoutTimeout();
 
     // remove focus class on blur of expand/collapse icon
     if (this._isExpandCollapseIcon(event.target)) {
       this._focusOutHandler($(event.target));
+    }
+    if (this._isActionableMode()) {
+      this._setFocusoutBusyState();
+      // set timeout to stay in editable/actionable mode if focus comes back into the listview
+      this._focusoutTimeout = setTimeout(function () { // @HTMLUpdateOK
+        this._doBlur();
+        this._clearFocusoutBusyState();
+      }.bind(this), 100);
+
+      // event.relatedTarget would be null if focus out of page
+      // the other check is to make sure the blur is not caused by shifting focus within listview
+    } else if (!this._isFocusBlurTriggeredByDescendent(event) && !this.m_preActive) {
+      this._doBlur();
     }
   },
 
@@ -4117,6 +4606,10 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    * @private
    */
   _doBlur: function () {
+    if (this._isActionableMode()) {
+      this._exitActionableMode();
+    }
+
     this.getListContainer().removeClass('oj-focus-ancestor');
     this.UnhighlightActive();
 
@@ -4178,10 +4671,12 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    */
   HandleKeyDown: function (event) {
     if (this.isExpandable()) {
-      var keyCode = event.keyCode;
-      if (keyCode === this.LEFT_KEY || keyCode === this.RIGHT_KEY) {
+      var key = event.key || event.keyCode;
+      if (key === 'ArrowLeft' || key === 'Left' || key === this.LEFT_KEY ||
+        key === 'ArrowRight' || key === 'Right' || key === this.RIGHT_KEY) {
         var current = this.m_active.elem;
-        if (keyCode === this.LEFT_KEY) {
+
+        if (key === 'ArrowLeft' || key === 'Left' || key === this.LEFT_KEY) {
           if (this.GetState(current) === this.STATE_EXPANDED) {
             this.CollapseItem(current, event, true, this.m_active.key, true, true);
             return;
@@ -4214,7 +4709,8 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    */
   HandleKeyUp: function (event) {
     // popup process esc key on keyup so we have to stop keyup from bubbling
-    if (event.keyCode === this.ESC_KEY && this.m_keyProcessed) {
+    var key = event.key || event.keyCode;
+    if ((key === 'Escape' || key === 'Esc' || key === this.ESC_KEY) && this.m_keyProcessed) {
       event.stopPropagation();
     }
     this.m_keyProcessed = undefined;
@@ -4349,6 +4845,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         var effect = this.getAnimationEffect(action);
         effect.offsetX = ((this.m_touchPos.x) - offset.left) + 'px';
         effect.offsetY = ((this.m_touchPos.y) - offset.top) + 'px';
+
         var groupItem = this.m_preActiveItem.children('.' + this.getGroupItemStyleClass());
         var elem;
         if (groupItem.length > 0) {
@@ -4356,6 +4853,18 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         } else {
           elem = /** @type {Element} */ (this.getFocusItem(this.m_preActiveItem).get(0));
         }
+
+        // don't apply ripple effect on the item when target is one of these controls
+        var target = event.target;
+        var nodes = elem.querySelectorAll(
+          "input, select, button, a, textarea, object, [tabIndex]:not([tabIndex='-1'])");
+        for (var i = 0; i < nodes.length; i++) {
+          if (nodes[i].contains(target)) {
+            elem = target;
+            break;
+          }
+        }
+
         // we don't really care when animation ends
         this.StartAnimation(elem, action, effect);
 
@@ -4447,10 +4956,16 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
           var isTouch = this._isTouchSupport() && (sourceCapabilityTouch ||
             (this.touchStartEvent != null && this.touchStartEvent.target === event.target));
 
+          var processed = true;
           if (isTouch) {
-            this._handleTouchSelection(item, event);
+            processed = this._handleTouchSelection(item, event);
           } else {
-            this.HandleClickSelection(item, event);
+            processed = this.HandleClickSelection(item, event);
+          }
+
+          // if not processed, then we'll still need to make sure it's active
+          if (!processed) {
+            this.HandleClickActive(item, event);
           }
 
           // if user hits the padding part of item, since LI does not have tabindex anymore, item will not get focus
@@ -4466,6 +4981,9 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
           // if selection is disable, we'll still need to highlight the active item
           this.HandleClickActive(item, event);
         }
+
+        // triger action event
+        this._fireActionEvent(item.get(0), event);
 
         // click on input element inside item should trigger actionable mode
         if (this._isInputElement(target.get(0))) {
@@ -4483,6 +5001,22 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         }
       }
     }
+  },
+
+  /**
+   * Fires an item action event
+   * @private
+   */
+  _fireActionEvent: function (item, event) {
+    if (this._isActionableMode()) {
+      return;
+    }
+
+    var key = this.GetKey(item);
+    var data = this._getDataForItem(item);
+    var metadata = this._getMetadataForItem(item);
+    var ui = { context: { key: key, data: data, metadata: metadata } };
+    this.Trigger('itemAction', event, ui);
   },
 
   /**
@@ -4701,7 +5235,11 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     }
 
     // ask the content handler
-    return this.m_contentHandler.FindElementByKey(key);
+    if (this.m_contentHandler) {
+      return this.m_contentHandler.FindElementByKey(key);
+    }
+    // this should not happen
+    return null;
   },
 
   /**
@@ -4795,17 +5333,20 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
   /** ************************************* Navigation Common **************************/
   /**
    * Determine whether the key code is an arrow key
-   * @param {number} keyCode
+   * @param {string} key
    * @return {boolean} true if it's an arrow key, false otherwise
    * @protected
    */
-  IsArrowKey: function (keyCode) {
+  IsArrowKey: function (key) {
     if (this.isCardLayout()) {
-      return (keyCode === this.UP_KEY || keyCode === this.DOWN_KEY ||
-              keyCode === this.LEFT_KEY || keyCode === this.RIGHT_KEY);
+      return (key === 'ArrowUp' || key === 'Up' || key === this.UP_KEY ||
+              key === 'ArrowDown' || key === 'Down' || key === this.DOWN_KEY ||
+              key === 'ArrowLeft' || key === 'Left' || key === this.LEFT_KEY ||
+              key === 'ArrowRight' || key === 'Right' || key === this.RIGHT_KEY);
     }
 
-    return (keyCode === this.UP_KEY || keyCode === this.DOWN_KEY);
+    return (key === 'ArrowUp' || key === 'Up' || key === this.UP_KEY ||
+      key === 'ArrowDown' || key === 'Down' || key === this.DOWN_KEY);
   },
 
   /**
@@ -4861,12 +5402,12 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
 
   /**
    * Handles arrow keys navigation on item
-   * @param {number} keyCode description
+   * @param {string} key description
    * @param {boolean} isExtend
    * @param {Event} event the DOM event causing the arrow keys
    * @protected
    */
-  HandleArrowKeys: function (keyCode, isExtend, event) {
+  HandleArrowKeys: function (key, isExtend, event) {
     // ensure that there's no outstanding fetch requests
     if (!this.m_contentHandler.IsReady()) {
       // act as if processed to prevent page scrolling before fetch done
@@ -4883,8 +5424,10 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     // invoke different function for handling focusing on active item depending on whether selection is enabled
     var processed = false;
 
-    switch (keyCode) {
+    switch (key) {
       case this.UP_KEY:
+      case 'Up':
+      case 'ArrowUp':
         if (this.isCardLayout() && $(current).hasClass(this.getItemStyleClass())) {
           this._gotoItemAbove(current, isExtend, event);
         } else {
@@ -4895,6 +5438,8 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         processed = true;
         break;
       case this.DOWN_KEY:
+      case 'Down':
+      case 'ArrowDown':
         if (this.isCardLayout() && $(current).hasClass(this.getItemStyleClass())) {
           this._gotoItemBelow(current, isExtend, event);
         } else {
@@ -4905,14 +5450,18 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         processed = true;
         break;
       case this.LEFT_KEY:
+      case 'Left':
+      case 'ArrowLeft':
       case this.RIGHT_KEY:
+      case 'Right':
+      case 'ArrowRight':
         if (this.isCardLayout()) {
           if (this.ojContext._GetReadingDirection() === 'rtl') {
             // eslint-disable-next-line no-param-reassign
-            keyCode = (keyCode === this.LEFT_KEY) ? this.RIGHT_KEY : this.LEFT_KEY;
+            key = (key === 'ArrowLeft' || key === 'Left' || key === this.LEFT_KEY) ? 'ArrowRight' : 'ArrowLeft';
           }
 
-          if (keyCode === this.LEFT_KEY) {
+          if (key === 'ArrowLeft' || key === 'Left' || key === this.LEFT_KEY) {
             this._gotoPrevItem(current, isExtend, event);
           } else {
             this._gotoNextItem(current, isExtend, event);
@@ -5485,7 +6034,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
   enforceSelectionRequired: function () {
     if (this._isSelectionEnabled() && this._isSelectionRequired()) {
       var selection = this.GetOption('selection');
-      if (selection == null || selection.length === 0) {
+      if (selection == null || (selection.length === 0 && selection.inverted !== true)) {
         this._selectFirstSelectableItem();
       }
     }
@@ -5559,22 +6108,21 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
   },
 
   /**
-   * Filter the array of selection.  Remove any items that are not selectable, or if there are more than one items
-   * when selectionMode is single.
+   * Convert selection as an iterable to an array of selection.
+   * We used to remove any items that are not selectable, or if there are more than one items
+   * when selectionMode is single, but not anymore.
    * @param {Array|Set} selection array of selected items
-   * @return {Array} filtered array of items
+   * @return {Array} array of items
    * @private
    */
-  _filterSelection: function (selection) {
-    var filtered = [];
+  _cloneSelection: function (selection) {
+    var arr = [];
+    // Array.from is not supported in IE11 and we do not have the polyfill
     selection.forEach(function (key) {
-      var elem = this.FindElementByKey(key);
-      if (elem == null || (elem != null && this.IsSelectable(elem))) {
-        filtered.push(key);
-      }
-    }, this);
+      arr.push(key);
+    });
 
-    return filtered;
+    return arr;
   },
 
   /**
@@ -5613,6 +6161,16 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         this.SetOption('firstSelectedItem', value, {
           _context: {
             originalEvent: event,
+            internalSet: true
+          },
+          changed: true
+        });
+      } else if (firstSelectedItem.data === undefined) {
+        firstSelectedItem.data = firstSelectedItemData;
+        value = { key: firstSelectedItem.key, data: firstSelectedItemData };
+        this.SetOption('firstSelectedItem', value, {
+          _context: {
+            originalEvent: null,
             internalSet: true
           },
           changed: true
@@ -5733,18 +6291,22 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
 
     var ctrlKey = this._ctrlEquivalent(event);
     var shiftKey = event.shiftKey;
+    var processed = true;
     if (this._isMultipleSelection()) {
       if (!ctrlKey && !shiftKey) {
-        this.SelectAndFocus(item, event);
+        processed = this.SelectAndFocus(item, event);
       } else if (!ctrlKey && shiftKey) {
         // active item doesn't change in this case
-        this._extendSelection(item, event);
+        processed = this._extendSelection(item, event);
       } else {
+        // processed is always true in this case
         this._augmentSelectionAndFocus(item, event);
       }
     } else {
-      this.SelectAndFocus(item, event);
+      processed = this.SelectAndFocus(item, event);
     }
+
+    return processed;
   },
 
   /**
@@ -5754,17 +6316,20 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    * @private
    */
   _handleTouchSelection: function (item, event) {
+    var processed = true;
     if (this._isMultipleSelection()) {
       if (event.shiftKey) {
         // for touch device with keyboard support
-        this._extendSelection(item, event);
+        processed = this._extendSelection(item, event);
       } else {
         // treat this as like ctrl+click
         this._augmentSelectionAndFocus(item, event);
       }
     } else {
-      this.SelectAndFocus(item, event);
+      processed = this.SelectAndFocus(item, event);
     }
+
+    return processed;
   },
 
   /**
@@ -5807,7 +6372,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
 
     // check if there's only one item selected and selection is required
     if (exists && selected.values && selected.values().size === 1 && this._isSelectionRequired()) {
-      return;
+      return false;
     }
 
     // if it's already selected, deselect it and update options
@@ -5817,6 +6382,8 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       // add the elem to selection
       this._augmentSelectionAndFocus(item, event, selected.clear());
     }
+
+    return true;
   },
 
   /**
@@ -5827,19 +6394,21 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    */
   _extendSelection: function (item, event) {
     if (this.m_active == null) {
-      return;
+      return false;
     }
 
     // checks if selection has changed
     var current = this.m_selectionFrontier;
     if (current === item) {
-      return;
+      return false;
     }
 
     // remove focus style on the item click on
     this._unhighlightElem(item, 'oj-focus');
 
     this._extendSelectionRange(this.m_active.elem, item, event);
+
+    return true;
   },
 
   /**
@@ -6077,12 +6646,12 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       return false;
     }
 
-    var keyCode = event.keyCode;
+    var key = event.key || event.keyCode;
     var current = this.m_active.elem;
 
     if (this._isActionableMode()) {
       // Esc key goes to navigation mode
-      if (keyCode === this.ESC_KEY) {
+      if (key === 'Escape' || key === 'Esc' || key === this.ESC_KEY) {
         this._exitActionableMode();
 
         // force focus back on the active cell
@@ -6092,16 +6661,24 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         // make sure active item has tabindex set
         this._setTabIndex(current);
         processed = true;
-      } else if (keyCode === this.TAB_KEY) {
+      } else if (key === 'Tab' || key === this.TAB_KEY) {
         var focusElem = this.getFocusItem(current).get(0);
         if (event.shiftKey) {
           processed = DataCollectionUtils.handleActionablePrevTab(event, focusElem);
         } else {
           processed = DataCollectionUtils.handleActionableTab(event, focusElem);
         }
+
+        if ((!event.shiftKey && processed) || (event.shiftKey && !processed)) {
+          var firstFocuasble = DataCollectionUtils.getFocusableElementsInNode(focusElem)[0];
+          if (firstFocuasble && this._isExpandCollapseIcon(firstFocuasble)) {
+            this._focusInHandler($(firstFocuasble));
+          }
+        }
+
         // otherwise don't process and let browser handles tab
       }
-    } else if (keyCode === this.F2_KEY) {
+    } else if (key === 'F2' || key === this.F2_KEY) {
       // F2 key goes to actionable mode
       this._enterActionableMode();
 
@@ -6120,7 +6697,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         }
         current.removeClass('oj-focus-highlight');
       }
-    } else if (keyCode === this.SPACE_KEY && this._isSelectionEnabled()) {
+    } else if ((key === ' ' || key === 'Spacebar' || key === this.SPACE_KEY) && this._isSelectionEnabled()) {
       ctrlKey = this._ctrlEquivalent(event);
       shiftKey = event.shiftKey;
       if (shiftKey && !ctrlKey && this.m_selectionFrontier != null &&
@@ -6132,19 +6709,22 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         this.ToggleSelection(event, ctrlKey && !shiftKey && this._isMultipleSelection(), false);
       }
       processed = true;
-    } else if (keyCode === this.ENTER_KEY && this._isSelectionEnabled()) {
-      // selects it if it's not selected, do nothing if it's already selected
-      this.ToggleSelection(event, false, true);
-    } else if (this.IsArrowKey(keyCode)) {
+    } else if (key === 'Enter' || key === this.ENTER_KEY) {
+      if (this._isSelectionEnabled()) {
+        // selects it if it's not selected, do nothing if it's already selected
+        this.ToggleSelection(event, false, true);
+      }
+      this._fireActionEvent(current.get(0), event);
+    } else if (this.IsArrowKey(key)) {
       ctrlKey = this._ctrlEquivalent(event);
       shiftKey = event.shiftKey;
       if (!ctrlKey) {
-        processed = this.HandleArrowKeys(keyCode,
+        processed = this.HandleArrowKeys(key,
                                          (shiftKey && this._isSelectionEnabled() &&
                                           this._isMultipleSelection()),
                                          event);
       }
-    } else if (keyCode === this.TAB_KEY) {
+    } else if (key === 'Tab' || key === this.TAB_KEY) {
       // content could have changed, disable all elements in items before or after the active item
       if (event.shiftKey) {
         this._disableAllTabbableElementsBeforeItem(current);
@@ -6793,6 +7373,9 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    * @return {string} the list item style class
    */
   getItemStyleClass: function () {
+    if (this.isCardDisplayMode()) {
+      return 'oj-listview-card';
+    }
     return this._isGridlinesVisible() ? 'oj-listview-item' : 'oj-listview-item gridline-hidden';
   },
 
@@ -6838,7 +7421,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    * @return {string} the group element style class
    */
   getGroupStyleClass: function () {
-    return 'oj-listview-group';
+    return this.isCardDisplayMode() ? 'oj-listview-card-group' : 'oj-listview-group';
   },
 
   /**
@@ -6846,7 +7429,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    * @return {string} the group expand style class
    */
   getGroupExpandStyleClass: function () {
-    return 'oj-listview-collapsible-transition';
+    return '';
   },
 
   /**
@@ -7108,7 +7691,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    * @private
    */
   _getItemHeight: function () {
-    if (isNaN(this.m_itemHeight)) {
+    if (this.m_itemHeight == null) {
       var firstItem;
       var isHierData = this.m_contentHandler.IsHierarchical();
       if (isHierData) {
@@ -7119,7 +7702,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         }
       } else {
         firstItem =
-          $(this._getRootNodeForItems()).children('li.' + this.getItemStyleClass()).first();
+          $(this._getRootNodeForItems()).children('li.' + this.getItemElementStyleClass()).first();
         if (firstItem.length > 0) {
           this.m_itemHeight = firstItem.get(0).offsetHeight;
         }
@@ -7292,13 +7875,27 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
   },
 
   /**
+   * Whether there are no items in the list
+   */
+  _isEmpty: function () {
+    // can't just use childElementCount as there could be no data content or skeletons
+    var elem = this.element[0].firstElementChild;
+    if (elem) {
+      return !(elem.classList.contains(this.getItemElementStyleClass()) ||
+        elem.classList.contains('oj-listview-group-container') ||
+        elem.classList.contains('oj-listview-temp-item'));
+    }
+    return true;
+  },
+
+  /**
    * Scroll handler
    * @private
    */
   _handleScroll: function (event) {
     // since we are calling it from requestAnimationFrame, ListView could have been destroyed already
-    // do not handle scroll for NavList
-    if (this.m_contentHandler == null || !this.ShouldUseGridRole()) {
+    // do not handle scroll for NavList, or when it is empty (could scroll due to rendering of skeletons)
+    if (this.m_contentHandler == null || !this.ShouldUseGridRole() || this._isEmpty()) {
       return;
     }
 
@@ -7645,7 +8242,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
  * @augments oj.baseComponent
  * @since 1.1.0
  *
- * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "ItemMetadata"]}
  * @ojtsimport {module: "ojkeyset", type: "AMD", imported: ["KeySet"]}
  * @ojtsimport {module: "ojcommontypes", type: "AMD", importName: ["CommonTypes"]}
  * @ojsignature [{
@@ -7666,6 +8263,8 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
  * @ojpropertylayout {propertyGroup: "data", items: ["data", "selected"]}
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 2
+ *
+ * @ojuxspecs ['list-view']
  *
  * @classdesc
  * <h3 id="listViewOverview-section">
@@ -7796,6 +8395,10 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
  *       <td><kbd>data</kbd></td>
  *       <td>The data object for the item.</td>
  *     </tr>
+ *      <tr>
+ *       <td><kbd>metadata</kbd></td>
+ *       <td>The metadata object for the item.</td>
+ *     </tr>
  *     <tr>
  *       <td><kbd>parentElement</kbd></td>
  *       <td>The list item element.  The renderer can use this to directly append content.</td>
@@ -7841,12 +8444,6 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
  *
  * <p>Note that ListView uses the grid role and follows the <a href="https://www.w3.org/TR/wai-aria-practices/examples/grid/LayoutGrids.html">Layout Grid</a> design as outlined in the <a href="https://www.w3.org/TR/wai-aria-practices/#grid">grid design pattern</a>.
  *
- * <h3 id="styling-section">
- *   Styling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"stylingDoc"}
  *
  * <h3 id="perf-section">
  *   Performance
@@ -7923,6 +8520,114 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
  *   </tbody>
  * </table>
  */
+// --------------------------------------------------- oj.ojListView Styling Start -----------------------------------------------------------
+// ---------------- oj-clickthrough-disabled --------------
+/**
+* Use on any element inside an item where you do not want ListView to process the click event.
+* @ojstyleclass oj-clickthrough-disabled
+* @ojdisplayname Click Disabled
+* @ojstyleselector oj-list-view, oj-list-view *
+* @memberof oj.ojListView
+* @ojtsexample
+* &lt;oj-list-view class="oj-clickthrough-disabled">
+*   &lt;!-- Content -->
+* &lt;/oj-list-view>
+*/
+// ---------------- oj-focus-highlight --------------
+/**
+* Under normal circumstances this class is applied automatically.
+* It is documented here for the rare cases that an app developer needs per-instance control.<br/><br/>
+* The oj-focus-highlight class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.<br/><br/>
+* The application-level behavior for this component is controlled in the theme by the <code class="prettyprint"><span class="pln">$focusHighlightPolicy </span></code>SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:<br/><br/>
+* <code class="prettyprint"><span class="pln">nonPointer: </span></code>oj-focus-highlight is applied only when focus is not the result of pointer interaction. Most themes default to this value.<br/>
+* <code class="prettyprint"><span class="pln">all: </span></code> oj-focus-highlight is applied regardless of the focus mechanism.<br/>
+* <code class="prettyprint"><span class="pln">none: </span></code> oj-focus-highlight is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.<br/><br/>
+* To change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed.<br/>
+* @ojstyleclass oj-focus-highlight
+* @ojdisplayname Focus Styling
+* @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
+* @memberof oj.ojListView
+* @ojtsexample
+* &lt;oj-list-view class="oj-focus-highlight">
+*   &lt;!-- Content -->
+* &lt;/oj-list-view>
+*/
+// ---------------- oj-full-width --------------
+/**
+* Use when ListView occupies the entire width of the page. Removes left and right borders in card-layout mode and adjust positioning of cards to improve visual experience.
+* @ojstyleclass oj-full-width
+* @ojdisplayname Full Width
+* @memberof oj.ojListView
+* @ojtsexample
+* &lt;oj-list-view class="oj-full-width">
+*   &lt;!-- Content -->
+* &lt;/oj-list-view>
+*/
+// ---------------- oj-listview-card-layout --------------
+/**
+* Shows items as cards and lay them out in a grid.
+* @ojstyleclass oj-listview-card-layout
+* @ojdisplayname Card Layout
+* @memberof oj.ojListView
+* @ojtsexample
+* &lt;oj-list-view class="oj-listview-card-layout">
+*   &lt;!-- Content -->
+* &lt;/oj-list-view>
+*/
+// ---------------- oj-listview-drag-handle --------------
+/**
+* Use to show a drag handle in the item to facilitate item reordering or drag and drop.
+* @ojstyleclass oj-listview-drag-handle
+* @ojdisplayname Drag Handle
+* @ojstyleselector oj-list-view *
+* @memberof oj.ojListView
+* @ojtsexample
+* &lt;oj-list-view>
+*   &lt;template slot="itemTemplate" data-oj-as="item">
+*     ...
+*     &lt;div class="oj-flex-bar-end oj-sm-align-items-center">
+*      &lt;div role="button" tabindex="0" class="oj-flex-item oj-listview-drag-handle">
+*      &lt;/div>
+*     &lt;/div>
+*   &lt;/template>
+* &lt;/oj-list-view>
+*/
+// ---------------- oj-listview-drill-icon --------------
+/**
+* Use to show a drill-to-detail icon in the item.
+* @ojstyleclass oj-listview-drill-icon
+* @ojdisplayname Drill Icon
+* @ojstyleselector oj-list-view *
+* @memberof oj.ojListView
+* @ojtsexample
+* &lt;oj-list-view class="oj-listview-card-layout">
+*   &lt;template slot="itemTemplate" data-oj-as="item">
+*     ...
+*     &lt;div class="oj-flex-bar-end oj-sm-align-items-center">
+*      &lt;div role="presentation" class="oj-flex-item oj-fwk-icon oj-listview-drill-icon">
+*      &lt;/div>
+*     &lt;/div>
+*   &lt;/template>
+* &lt;/oj-list-view>
+*/
+// ---------------- oj-listview-item-layout --------------
+/**
+* Use when the page author overrides the default styling on the item root element and wants to apply the item style on some other element.
+* @ojstyleclass oj-listview-item-layout
+* @ojdisplayname Item Layout
+* @ojstyleselector oj-list-view *
+* @memberof oj.ojListView
+* @ojtsexample
+* &lt;oj-list-view class="">
+*   &lt;template slot="itemTemplate" data-oj-as="item">
+*     &lt;div class="oj-listview-item-layout">
+*     ...
+*     &lt;/div>
+*   &lt;/template>
+* &lt;/oj-list-view>
+*/
+// --------------------------------------------------- oj.listView Styling End -----------------------------------------------------------
+
 oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
   widgetEventPrefix: 'oj',
   options: {
@@ -8000,6 +8705,29 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      *               {target: "Type", value: "oj.TableDataSource|oj.TreeDataSource|oj.DataProvider", consumedBy:"js"}]
      */
     data: null,
+    /**
+     * Whether to display items as list items or as cards.
+     *
+     * @ojshortdesc Specifies how the items should be displayed.
+     * @expose
+     * @memberof! oj.ojListView
+     * @instance
+     * @type {string}
+     * @default "list"
+     * @ojvalue {string} "list" Display items as list item.
+     * @ojvalue {string} "card" Display items as cards.
+     *
+     * @example <caption>Initialize the ListView with the <code class="prettyprint">display</code> attribute specified:</caption>
+     * &lt;oj-list-view display='card'>&lt;/oj-list-view>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">display</code> property after initialization:</caption>
+     * // getter
+     * var displayValue = myListView.display;
+     *
+     * // setter
+     * myListView.display = 'card';
+     */
+    display: 'list',
     /**
      * Enable drag and drop functionality.<br><br>
      * JET provides support for HTML5 Drag and Drop events.  Please refer to {@link https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_and_drop third party documentation}
@@ -8233,6 +8961,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
        * @property {number} index the zero based index of the item, relative to its parent
        * @property {K} key the key of the item
        * @property {D} data the data object of the item
+       * @property {oj.ItemMetadata<K>} metadata the metadata object of the item
        * @property {Element} parentElement the item DOM element
        * @property {number=} depth the depth of the item
        * @property {K=} parentKey the key of the parent item
@@ -8636,7 +9365,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      * @event
      * @memberof oj.ojListView
      * @instance
-     * @property {string} action the action that starts the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+     * @property {string} action the action that starts the animation.<br><br>See <a href="#animation-section">animation</a> section for a list of actions.
      * @property {Element} element the target of animation.
      * @property {function():void} endCallback if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
      */
@@ -8649,7 +9378,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      * @event
      * @memberof oj.ojListView
      * @instance
-     * @property {string} action the action that started the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+     * @property {string} action the action that started the animation.<br><br>See <a href="#animation-section">animation</a> section for a list of actions.
      * @property {Element} element the target of animation.
      */
     animateEnd: null,
@@ -8759,6 +9488,26 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      *               {target:"Type", value:"K", for:"key"}]
      */
     expand: null,
+    /**
+     * Triggered when user performs an action gesture on an item while ListView is in navigation mode.  The action gestures include:
+     * <ul>
+     *   <li>User clicks anywhere in an item</li>
+     *   <li>User taps anywhere in an item</li>
+     *   <li>User pressed enter key while an item or its content has focus</li>
+     * </ul>
+     *
+     * @ojshortdesc Triggered when user performs an action gesture on an item.
+     * @expose
+     * @event
+     * @ojbubbles
+     * @memberof oj.ojListView
+     * @instance
+     * @property {any} context the context information about the item where the action gesture is performed on.
+     * @property {Event} originalEvent the DOM event that triggers the action.
+     * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"},
+     *               {target:"Type", value:"CommonTypes.ItemContext<K,D>", for:"context", jsdocOverride:true}]
+     */
+    itemAction: null,
     /**
      * Triggered when the paste action is performed on an item via context menu or keyboard shortcut.
      *
@@ -9458,44 +10207,6 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
  * @memberof oj.ojListView
  */
 
-/**
- * {@ojinclude "name":"ojStylingDocIntro"}
- *
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
- *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-clickthrough-disabled</td>
- *       <td>Use on any element inside an item where you do not want ListView to process the click event.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-focus-highlight</td>
- *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
- *     </tr>
- *     <tr>
- *       <td>oj-full-width</td>
- *       <td>Use when ListView occupies the entire width of the page.
- *           Removes left and right borders in card-layout mode and adjust positioning of cards to improve visual experience.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-listview-card-layout</td>
- *       <td>Shows items as cards and lay them out in a grid.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-listview-item-layout</td>
- *       <td>Use when the page author overrides the default styling on the item root element (&lt;LI&gt;) and wants to apply the item style on some other element.</td>
- *     </tr>
- *   </tbody>
- * </table>
- *
- * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
- * @memberof oj.ojListView
- */
 });
 
 // ////////////////     SUB-IDS     //////////////////
